@@ -1,0 +1,137 @@
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [pgvector(map: "vector")]
+}
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+model Workspace {
+  id                      String      @id @default(uuid())
+  name                    String
+  licenseKey              String?     @unique
+  plan                    String      @default("starter")
+  monthlyMessageLimit     Int         @default(1000)
+  messagesUsedThisMonth   Int         @default(0)
+  assistants              Assistant[]
+  createdAt               DateTime    @default(now())
+  updatedAt               DateTime    @updatedAt
+}
+
+model Assistant {
+  id                String            @id @default(uuid())
+  workspaceId       String
+  workspace         Workspace         @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  name              String
+  description       String?
+  systemPrompt      String            @db.Text
+  welcomeMessage    String            @default("Hi! How can I help you today?")
+  fallbackMessage   String            @default("I am sorry, but I do not have enough information about that in my knowledge base.")
+  temperature       Float             @default(0.3)
+  
+  // AI Provider & BYOK
+  provider          String            @default("ollama") // ollama, groq, openai, anthropic, gemini, deepseek, custom
+  modelName         String            @default("llama3.2")
+  apiKeyEncrypted   String?
+  customBaseUrl     String?
+  
+  // Branding & Widget
+  primaryColor      String            @default("#2563eb")
+  avatarUrl         String?
+  launcherPosition  String            @default("bottom-right") // bottom-right, bottom-left
+  starterQuestions  String[]          @default(["What are your services?", "What is your pricing?", "How can I contact support?"])
+  collectLeadEmail  Boolean           @default(false)
+  allowedDomains    String[]          @default([])
+  
+  // Relations
+  knowledgeSources  KnowledgeSource[]
+  documentChunks    DocumentChunk[]
+  conversations     Conversation[]
+  leads             Lead[]
+
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  @@index([workspaceId])
+}
+
+model KnowledgeSource {
+  id              String          @id @default(uuid())
+  assistantId     String
+  assistant       Assistant       @relation(fields: [assistantId], references: [id], onDelete: Cascade)
+  title           String
+  type            String          // pdf, csv, json, docx, txt, description
+  fileUrl         String?
+  fileSizeBytes   Int?
+  status          String          @default("pending") // pending, processing, ready, failed
+  errorMessage    String?
+  chunkCount      Int             @default(0)
+  documentChunks  DocumentChunk[]
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  @@index([assistantId])
+}
+
+model DocumentChunk {
+  id                String          @id @default(uuid())
+  assistantId       String
+  assistant         Assistant       @relation(fields: [assistantId], references: [id], onDelete: Cascade)
+  knowledgeSourceId String
+  knowledgeSource   KnowledgeSource @relation(fields: [knowledgeSourceId], references: [id], onDelete: Cascade)
+  content           String          @db.Text
+  chunkIndex        Int
+  tokenCount        Int
+  metadata          Json            @default("{}")
+  
+  // 384 dimensions for bge-small-en-v1.5 / all-MiniLM-L6-v2 (Zero-cost local embeddings)
+  embedding         Unsupported("vector(384)")?
+  
+  createdAt         DateTime        @default(now())
+
+  @@index([assistantId])
+  @@index([knowledgeSourceId])
+}
+
+model Conversation {
+  id           String      @id @default(uuid())
+  assistantId  String
+  assistant    Assistant   @relation(fields: [assistantId], references: [id], onDelete: Cascade)
+  visitorId    String?
+  visitorEmail String?
+  visitorName  String?
+  messages     Message[]
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  @@index([assistantId])
+}
+
+model Message {
+  id             String       @id @default(uuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  role           String       // user, assistant, system
+  content        String       @db.Text
+  citations      Json         @default("[]")
+  tokensUsed     Int          @default(0)
+  createdAt      DateTime     @default(now())
+
+  @@index([conversationId])
+}
+
+model Lead {
+  id          String    @id @default(uuid())
+  assistantId String
+  assistant   Assistant @relation(fields: [assistantId], references: [id], onDelete: Cascade)
+  email       String
+  name        String?
+  phone       String?
+  notes       String?
+  createdAt   DateTime  @default(now())
+
+  @@index([assistantId])
+}
