@@ -554,9 +554,8 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            <div className="pt-3 border-t border-slate-200 dark:border-slate-800 text-[11px] text-slate-400 dark:text-slate-500 flex items-center justify-between font-mono">
+            <div className="pt-3 border-t border-slate-200 dark:border-slate-800 text-[11px] text-slate-400 dark:text-slate-500 font-mono">
               <span>KORTEX v2.0</span>
-              <span className="text-emerald-600 dark:text-emerald-400 font-medium">Enterprise Clean</span>
             </div>
           </aside>
 
