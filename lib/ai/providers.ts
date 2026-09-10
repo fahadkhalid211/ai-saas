@@ -10,12 +10,25 @@ function getClient(options: ProviderOptions): { client: OpenAI; model: string } 
   switch (provider) {
     case 'groq': {
       const apiKey = options.apiKey || process.env.GROQ_API_KEY || 'dummy-key';
+      let model = options.modelName || 'openai/gpt-oss-120b';
+      // Auto-migrate retired/deprecated Groq models to current active Groq flagship
+      const deprecatedGroqModels = [
+        'llama-3.3-70b-versatile',
+        'llama-3.1-8b-instant',
+        'llama3-70b-8192',
+        'llama3-8b-8192',
+        'llama-3.1-70b-versatile',
+        'mixtral-8x7b-32768',
+      ];
+      if (deprecatedGroqModels.includes(model)) {
+        model = 'openai/gpt-oss-120b';
+      }
       return {
         client: new OpenAI({
           apiKey,
           baseURL: 'https://api.groq.com/openai/v1',
         }),
-        model: options.modelName || 'llama-3.3-70b-versatile',
+        model,
       };
     }
 
