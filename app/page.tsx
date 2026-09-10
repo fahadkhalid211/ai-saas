@@ -30,6 +30,9 @@ import {
   Globe,
   Zap,
   AlertTriangle,
+  Sun,
+  Moon,
+  Search,
 } from 'lucide-react';
 
 interface Assistant {
@@ -73,20 +76,37 @@ interface Lead {
 }
 
 export default function DashboardPage() {
+  // Theme state: default light, persisted in localStorage
+  const [theme, setTheme] = useState<'light' | 'dark'>('light');
+
+  useEffect(() => {
+    const saved = localStorage.getItem('kortex_theme') as 'light' | 'dark' | null;
+    if (saved) {
+      setTheme(saved);
+    } else if (typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      setTheme('dark');
+    }
+  }, []);
+
+  const toggleTheme = () => {
+    const next = theme === 'light' ? 'dark' : 'light';
+    setTheme(next);
+    localStorage.setItem('kortex_theme', next);
+  };
+
   const [assistants, setAssistants] = useState<Assistant[]>([]);
   const [activeAssistant, setActiveAssistant] = useState<Assistant | null>(null);
   const [activeTab, setActiveTab] = useState<
     'overview' | 'knowledge' | 'engine' | 'behavior' | 'widget' | 'playground' | 'leads'
   >('overview');
-  
+
   // Knowledge state
   const [sources, setSources] = useState<KnowledgeSource[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadText, setUploadText] = useState('');
   const [uploadTextTitle, setUploadTextTitle] = useState('');
   const [selectedFiles, setSelectedFiles] = useState<FileList | null>(null);
-  const [showChunkInspector, setShowChunkInspector] = useState(false);
-  const [chunksList, setChunksList] = useState<any[]>([]);
+  const [sourceFilter, setSourceFilter] = useState('');
 
   // Engine & Behavior state
   const [formData, setFormData] = useState<Partial<Assistant>>({});
@@ -98,6 +118,7 @@ export default function DashboardPage() {
   const [chatMessages, setChatMessages] = useState<{ role: string; content: string; citations?: any[] }[]>([]);
   const [inputQuery, setInputQuery] = useState('');
   const [isStreaming, setIsStreaming] = useState(false);
+  const [activeCitations, setActiveCitations] = useState<any[]>([]);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   // Leads state
@@ -123,9 +144,10 @@ export default function DashboardPage() {
       setChatMessages([
         {
           role: 'assistant',
-          content: activeAssistant.welcomeMessage || 'Hi! How can I help you today?',
+          content: activeAssistant.welcomeMessage || 'Hello! How can I assist you today?',
         },
       ]);
+      setActiveCitations([]);
     }
   }, [activeAssistant?.id]);
 
@@ -276,7 +298,6 @@ export default function DashboardPage() {
     setInputQuery('');
     setIsStreaming(true);
 
-    // Placeholder assistant message
     const tempIndex = newMsgs.length;
     setChatMessages([...newMsgs, { role: 'assistant', content: '', citations: [] }]);
 
@@ -323,6 +344,7 @@ export default function DashboardPage() {
                 const data = JSON.parse(line.slice(6));
                 if (data.type === 'citations') {
                   citations = data.citations || [];
+                  setActiveCitations(citations);
                 } else if (data.type === 'token') {
                   streamed += data.token;
                   if (!updateTimer) {
@@ -359,1238 +381,1400 @@ export default function DashboardPage() {
   }
 
   const totalChunks = sources.reduce((sum, s) => sum + (s.chunkCount || 0), 0);
+  const filteredSources = sources.filter((s) =>
+    s.title.toLowerCase().includes(sourceFilter.toLowerCase())
+  );
 
   return (
-    <div className="flex h-screen w-full flex-col bg-slate-950 text-slate-100 overflow-hidden font-sans">
-      {/* Top Header */}
-      <header className="flex h-16 w-full items-center justify-between border-b border-slate-800/80 bg-slate-900/60 px-6 backdrop-blur-md z-10">
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2.5">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-cyan-500 shadow-lg shadow-blue-500/20">
-              <Bot className="h-5 w-5 text-white" />
+    <div className={`${theme === 'dark' ? 'dark' : ''} h-screen w-full flex flex-col font-sans transition-colors duration-150`}>
+      <div className="flex h-screen w-full flex-col bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 overflow-hidden">
+        
+        {/* Top Enterprise Header */}
+        <header className="h-16 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-6 flex items-center justify-between sticky top-0 z-40 shrink-0">
+          <div className="flex items-center gap-5">
+            {/* Logo */}
+            <div className="flex items-center gap-3 cursor-pointer">
+              <div className="h-9 w-9 rounded-lg bg-blue-600 flex items-center justify-center text-white font-bold shadow-sm">
+                <Bot className="h-5 w-5" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="font-bold text-slate-900 dark:text-white text-base tracking-tight">KORTEX AI</span>
+                  <span className="text-[10px] font-semibold bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800 px-2 py-0.5 rounded">
+                    Enterprise SaaS
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400">Business Knowledge Chatbot Engine</p>
+              </div>
             </div>
-            <div>
-              <span className="text-base font-bold tracking-tight text-white flex items-center gap-1.5">
-                KORTEX <span className="text-blue-400 font-medium">ENGINE</span>
-              </span>
-              <span className="text-[10px] text-slate-400 block -mt-1 font-mono uppercase">
-                Zero-Cost Embeddings &bull; Multi-LLM BYOK
-              </span>
-            </div>
-          </div>
 
-          <div className="h-5 w-px bg-slate-800 ml-2" />
+            <div className="h-5 w-px bg-slate-200 dark:bg-slate-800 hidden md:block" />
 
-          {/* Assistant Selector */}
-          <div className="relative">
-            <div className="flex items-center gap-2 rounded-lg bg-slate-800/80 px-3 py-1.5 text-xs font-medium text-slate-200 border border-slate-700/60">
-              <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-              <select
-                value={activeAssistant?.id || ''}
-                onChange={(e) => {
-                  const ast = assistants.find((a) => a.id === e.target.value);
-                  if (ast) setActiveAssistant(ast);
-                }}
-                className="bg-transparent text-slate-200 outline-none cursor-pointer pr-2 font-medium"
-              >
-                {assistants.map((ast) => (
-                  <option key={ast.id} value={ast.id} className="bg-slate-900 text-slate-200">
-                    {ast.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          <button
-            onClick={() => setShowNewModal(true)}
-            className="flex items-center gap-1.5 rounded-lg border border-slate-700/60 bg-slate-850 px-2.5 py-1.5 text-xs font-medium text-slate-300 hover:bg-slate-800 hover:text-white transition"
-          >
-            <Plus className="h-3.5 w-3.5 text-blue-400" />
-            <span>New Bot</span>
-          </button>
-        </div>
-
-        {/* Right Actions */}
-        <div className="flex items-center gap-3">
-          <div className="hidden sm:flex items-center gap-2 text-xs text-slate-400 font-mono bg-slate-850 border border-slate-800 px-3 py-1.5 rounded-md">
-            <span className="text-slate-500">PROVIDER:</span>
-            <span className="text-cyan-400 uppercase font-bold">{activeAssistant?.provider || 'OLLAMA'}</span>
-          </div>
-
-          <button
-            onClick={() => setShowEmbedModal(true)}
-            className="flex items-center gap-2 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 px-3.5 py-1.5 text-xs font-semibold text-white shadow-md shadow-blue-500/20 hover:from-blue-500 hover:to-indigo-500 transition"
-          >
-            <Globe className="h-3.5 w-3.5" />
-            <span>Deploy &amp; WordPress</span>
-          </button>
-        </div>
-      </header>
-
-      {/* Main Area */}
-      <div className="flex flex-1 overflow-hidden">
-        {/* Sidebar Nav */}
-        <aside className="w-56 border-r border-slate-800/80 bg-slate-950/80 p-3 flex flex-col justify-between">
-          <nav className="space-y-1">
-            {[
-              { id: 'overview', label: 'Overview', icon: FileCheck },
-              { id: 'knowledge', label: 'Knowledge Base', icon: Upload, count: sources.length },
-              { id: 'engine', label: 'AI Engine (BYOK)', icon: Cpu },
-              { id: 'behavior', label: 'Behavior & Guardrails', icon: Sliders },
-              { id: 'widget', label: 'Widget & Styling', icon: Palette },
-              { id: 'playground', label: 'Test Playground', icon: MessageSquare },
-              { id: 'leads', label: 'Leads & Inquiries', icon: Users, count: leads.length },
-            ].map((tab) => {
-              const Icon = tab.icon;
-              const isActive = activeTab === tab.id;
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id as any)}
-                  className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-xs font-medium transition ${
-                    isActive
-                      ? 'bg-blue-600/15 text-blue-400 font-semibold border border-blue-500/20'
-                      : 'text-slate-400 hover:bg-slate-900 hover:text-slate-200'
-                  }`}
+            {/* Assistant Selector */}
+            <div className="relative flex items-center gap-2">
+              <div className="flex items-center gap-2 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60 px-3 py-1.5 text-xs">
+                <span className="h-2 w-2 rounded-full bg-emerald-500" />
+                <span className="text-slate-500 dark:text-slate-400 font-medium">Assistant:</span>
+                <select
+                  value={activeAssistant?.id || ''}
+                  onChange={(e) => {
+                    const ast = assistants.find((a) => a.id === e.target.value);
+                    if (ast) setActiveAssistant(ast);
+                  }}
+                  className="bg-transparent text-slate-800 dark:text-slate-200 outline-none cursor-pointer pr-2 font-semibold"
                 >
-                  <div className="flex items-center gap-2.5">
-                    <Icon className={`h-4 w-4 ${isActive ? 'text-blue-400' : 'text-slate-500'}`} />
-                    <span>{tab.label}</span>
-                  </div>
-                  {tab.count !== undefined && (
-                    <span
-                      className={`rounded-full px-1.5 py-0.5 text-[10px] ${
-                        isActive
-                          ? 'bg-blue-500/20 text-blue-300'
-                          : 'bg-slate-800 text-slate-400'
-                      }`}
-                    >
-                      {tab.count}
-                    </span>
-                  )}
-                </button>
-              );
-            })}
-          </nav>
+                  {assistants.map((ast) => (
+                    <option key={ast.id} value={ast.id} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">
+                      {ast.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-          {/* Bottom quick stats */}
-          <div className="rounded-xl border border-slate-800/80 bg-slate-900/40 p-3 text-[11px] space-y-1.5 text-slate-400">
-            <div className="flex justify-between">
-              <span>Embedding Cost:</span>
-              <span className="text-emerald-400 font-bold">$0.00 (Local)</span>
-            </div>
-            <div className="flex justify-between">
-              <span>Total Chunks:</span>
-              <span className="text-slate-200 font-semibold">{totalChunks}</span>
-            </div>
-            <div className="flex justify-between">
-              <span>Active Sources:</span>
-              <span className="text-slate-200 font-semibold">{sources.length}</span>
+              <button
+                onClick={() => setShowNewModal(true)}
+                className="flex items-center gap-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-2.5 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-750 transition shadow-xs"
+                title="Create New Assistant"
+              >
+                <Plus className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
+                <span>New Bot</span>
+              </button>
             </div>
           </div>
-        </aside>
 
-        {/* Content View */}
-        <main className="flex-1 overflow-y-auto bg-slate-950 p-6">
-          {/* TAB 1: OVERVIEW */}
-          {activeTab === 'overview' && (
-            <div className="max-w-5xl space-y-6">
-              <div>
-                <h1 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2.5">
-                  <span>Welcome to {activeAssistant?.name}</span>
-                </h1>
-                <p className="text-sm text-slate-400 mt-1">
-                  Your business assistant is ready. Train it on your documents, customize its prompt, and embed it anywhere.
-                </p>
-              </div>
-
-              {/* Stat Cards */}
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
-                <div className="rounded-xl border border-slate-800/80 bg-slate-900/50 p-4">
-                  <div className="text-xs font-medium text-slate-400">Knowledge Sources</div>
-                  <div className="mt-2 text-2xl font-bold text-white">{sources.length}</div>
-                  <div className="mt-1 text-[11px] text-slate-500">Files, CSVs, and descriptions</div>
-                </div>
-
-                <div className="rounded-xl border border-slate-800/80 bg-slate-900/50 p-4">
-                  <div className="text-xs font-medium text-slate-400">Indexed Chunks</div>
-                  <div className="mt-2 text-2xl font-bold text-cyan-400">{totalChunks}</div>
-                  <div className="mt-1 text-[11px] text-slate-500">384-dim local vectors</div>
-                </div>
-
-                <div className="rounded-xl border border-slate-800/80 bg-slate-900/50 p-4">
-                  <div className="text-xs font-medium text-slate-400">AI Model Provider</div>
-                  <div className="mt-2 text-xl font-bold text-indigo-400 uppercase">
-                    {activeAssistant?.provider || 'Ollama'}
-                  </div>
-                  <div className="mt-1 text-[11px] text-slate-500 font-mono">
-                    {activeAssistant?.modelName || 'llama3.2'}
-                  </div>
-                </div>
-
-                <div className="rounded-xl border border-slate-800/80 bg-slate-900/50 p-4">
-                  <div className="text-xs font-medium text-slate-400">Captured Leads</div>
-                  <div className="mt-2 text-2xl font-bold text-emerald-400">{leads.length}</div>
-                  <div className="mt-1 text-[11px] text-slate-500">Customer contacts</div>
-                </div>
-              </div>
-
-              {/* Quick Start Action Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="rounded-xl border border-slate-800/80 bg-slate-900/40 p-5 space-y-3">
-                  <div className="flex items-center gap-2.5 text-sm font-semibold text-white">
-                    <Upload className="h-4 w-4 text-blue-400" />
-                    <span>Upload Knowledge Documents</span>
-                  </div>
-                  <p className="text-xs text-slate-400 leading-relaxed">
-                    Upload your product lists (CSV), business return policies (PDF/DOCX), catalogues (JSON), or plain text. The local engine chunks and embeds them instantly for $0.
-                  </p>
-                  <button
-                    onClick={() => setActiveTab('knowledge')}
-                    className="inline-flex items-center gap-1.5 text-xs font-medium text-blue-400 hover:text-blue-300"
-                  >
-                    Go to Knowledge Base &rarr;
-                  </button>
-                </div>
-
-                <div className="rounded-xl border border-slate-800/80 bg-slate-900/40 p-5 space-y-3">
-                  <div className="flex items-center gap-2.5 text-sm font-semibold text-white">
-                    <MessageSquare className="h-4 w-4 text-indigo-400" />
-                    <span>Test Chat in Playground</span>
-                  </div>
-                  <p className="text-xs text-slate-400 leading-relaxed">
-                    Simulate real customer inquiries. Verify citations, check accuracy on product pricing or terms, and test fallback behavior before launching.
-                  </p>
-                  <button
-                    onClick={() => setActiveTab('playground')}
-                    className="inline-flex items-center gap-1.5 text-xs font-medium text-indigo-400 hover:text-indigo-300"
-                  >
-                    Open Playground &rarr;
-                  </button>
-                </div>
-              </div>
-
-              {/* 1-Click Embed Snippet */}
-              <div className="rounded-xl border border-slate-800/80 bg-slate-900/60 p-5 space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-sm font-semibold text-white">
-                    <Globe className="h-4 w-4 text-cyan-400" />
-                    <span>Embed On Any Website</span>
-                  </div>
-                  <button
-                    onClick={() => {
-                      navigator.clipboard.writeText(
-                        `<script src="${window.location.origin}/widget.js" data-assistant="${activeAssistant?.id}" defer></script>`
-                      );
-                      setCopiedCode(true);
-                      setTimeout(() => setCopiedCode(false), 2000);
-                    }}
-                    className="flex items-center gap-1.5 text-xs text-slate-300 hover:text-white bg-slate-800 px-2.5 py-1 rounded-md border border-slate-700"
-                  >
-                    <Copy className="h-3 w-3" />
-                    <span>{copiedCode ? 'Copied!' : 'Copy Code'}</span>
-                  </button>
-                </div>
-                <p className="text-xs text-slate-400">
-                  Paste this single line of HTML before the closing <code className="text-cyan-400">&lt;/body&gt;</code> tag of any WordPress, Shopify, Webflow, or custom site:
-                </p>
-                <div className="overflow-x-auto rounded-lg bg-slate-950 p-3 text-xs font-mono text-cyan-300 border border-slate-800">
-                  &lt;script src=&quot;{typeof window !== 'undefined' ? window.location.origin : 'https://your-domain.com'}/widget.js&quot; data-assistant=&quot;{activeAssistant?.id}&quot; defer&gt;&lt;/script&gt;
-                </div>
-              </div>
+          {/* Right Header Actions */}
+          <div className="flex items-center gap-3">
+            {/* Active Provider Indicator */}
+            <div className="hidden lg:flex items-center gap-2 text-xs font-mono bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-3 py-1.5 rounded-lg">
+              <span className="text-slate-500 dark:text-slate-400 font-sans">Active Engine:</span>
+              <span className="text-blue-600 dark:text-blue-400 uppercase font-bold">
+                {activeAssistant?.provider || 'OLLAMA'}
+              </span>
             </div>
-          )}
 
-          {/* TAB 2: KNOWLEDGE BASE */}
-          {activeTab === 'knowledge' && (
-            <div className="max-w-5xl space-y-6">
-              <div>
-                <h1 className="text-2xl font-bold tracking-tight text-white">Knowledge Base</h1>
-                <p className="text-sm text-slate-400 mt-1">
-                  Upload PDF, CSV, JSON, DOCX, and TXT files. Tabular files (CSV/JSON) are converted into row-aware semantic representations to ensure exact matching on prices, SKUs, and details.
-                </p>
-              </div>
-
-              {/* Upload Form */}
-              <form
-                onSubmit={handleUploadFiles}
-                className="rounded-2xl border border-dashed border-slate-700/80 bg-slate-900/30 p-6 space-y-4 hover:border-slate-600 transition"
-              >
-                <div className="flex flex-col items-center justify-center text-center space-y-3">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-600/10 text-blue-400">
-                    <Upload className="h-6 w-6" />
-                  </div>
-                  <div>
-                    <span className="text-sm font-semibold text-white">
-                      Drop files here or click to browse
-                    </span>
-                    <p className="text-xs text-slate-400 mt-0.5">
-                      Supports PDF, CSV, JSON, DOCX, TXT &amp; Images (JPG, PNG with OCR)
-                    </p>
-                  </div>
-                  <input
-                    type="file"
-                    multiple
-                    accept=".pdf,.csv,.json,.docx,.txt,.jpg,.jpeg,.png,.webp"
-                    onChange={(e) => setSelectedFiles(e.target.files)}
-                    className="text-xs text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-500 cursor-pointer"
-                  />
-                  {selectedFiles && selectedFiles.length > 0 && (
-                    <div className="text-xs text-emerald-400 font-medium">
-                      Selected {selectedFiles.length} file(s) for indexing
-                    </div>
-                  )}
-                </div>
-
-                <div className="relative flex py-1 items-center">
-                  <div className="flex-grow border-t border-slate-800"></div>
-                  <span className="flex-shrink mx-4 text-[11px] text-slate-500 uppercase font-mono">
-                    Or Enter Raw Business Description / FAQs
-                  </span>
-                  <div className="flex-grow border-t border-slate-800"></div>
-                </div>
-
-                <div className="space-y-2">
-                  <input
-                    type="text"
-                    placeholder="Section Title (e.g. Return Policy, Store Hours, Contact Info)"
-                    value={uploadTextTitle}
-                    onChange={(e) => setUploadTextTitle(e.target.value)}
-                    className="w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-xs text-slate-200 placeholder-slate-500 outline-none focus:border-blue-500"
-                  />
-                  <textarea
-                    rows={3}
-                    placeholder="Paste business instructions, FAQs, shipping details, or company background..."
-                    value={uploadText}
-                    onChange={(e) => setUploadText(e.target.value)}
-                    className="w-full rounded-lg border border-slate-800 bg-slate-950 p-3 text-xs text-slate-200 placeholder-slate-500 outline-none focus:border-blue-500"
-                  />
-                </div>
-
-                <div className="flex justify-end">
-                  <button
-                    type="submit"
-                    disabled={isUploading || ((!selectedFiles || selectedFiles.length === 0) && !uploadText.trim())}
-                    className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-xs font-semibold text-white hover:bg-blue-500 disabled:opacity-50 transition"
-                  >
-                    {isUploading ? (
-                      <>
-                        <RefreshCw className="h-3.5 w-3.5 animate-spin" />
-                        <span>Extracting &amp; Indexing Chunks...</span>
-                      </>
-                    ) : (
-                      <>
-                        <Sparkles className="h-3.5 w-3.5" />
-                        <span>Process &amp; Train Assistant</span>
-                      </>
-                    )}
-                  </button>
-                </div>
-              </form>
-
-              {/* Sources List */}
-              <div className="space-y-3">
-                <h3 className="text-sm font-semibold text-white flex items-center justify-between">
-                  <span>Processed Knowledge Documents ({sources.length})</span>
-                  <span className="text-xs text-slate-400 font-normal font-mono">
-                    Total Chunks: {totalChunks}
-                  </span>
-                </h3>
-
-                {sources.length === 0 ? (
-                  <div className="rounded-xl border border-slate-800/60 bg-slate-900/20 p-8 text-center text-xs text-slate-500">
-                    No documents uploaded yet. Add a PDF, product CSV, or text description above to train your assistant.
-                  </div>
-                ) : (
-                  <div className="rounded-xl border border-slate-800/80 bg-slate-900/40 divide-y divide-slate-800/60">
-                    {sources.map((source) => {
-                      return (
-                        <div key={source.id} className="flex items-center justify-between p-4 hover:bg-slate-850/40 transition">
-                          <div className="flex items-center gap-3">
-                            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-800 text-slate-300">
-                              {source.type === 'csv' ? (
-                                <FileSpreadsheet className="h-4 w-4 text-emerald-400" />
-                              ) : source.type === 'json' ? (
-                                <FileCode className="h-4 w-4 text-amber-400" />
-                              ) : source.type === 'pdf' ? (
-                                <FileText className="h-4 w-4 text-rose-400" />
-                              ) : (
-                                <FileText className="h-4 w-4 text-blue-400" />
-                              )}
-                            </div>
-                            <div>
-                              <div className="text-xs font-semibold text-white">{source.title}</div>
-                              <div className="flex items-center gap-2 mt-0.5 text-[11px] text-slate-400 font-mono">
-                                <span className="uppercase">{source.type}</span>
-                                <span>&bull;</span>
-                                <span className="text-cyan-400 font-bold">{source.chunkCount} chunks</span>
-                                <span>&bull;</span>
-                                <span>{new Date(source.createdAt).toLocaleDateString()}</span>
-                              </div>
-                            </div>
-                          </div>
-
-                          <div className="flex items-center gap-3">
-                            {source.status === 'ready' && (
-                              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-medium text-emerald-400 border border-emerald-500/20">
-                                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
-                                Ready
-                              </span>
-                            )}
-                            {source.status === 'processing' && (
-                              <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-2 py-0.5 text-[10px] font-medium text-amber-400 border border-amber-500/20">
-                                <RefreshCw className="h-2.5 w-2.5 animate-spin" />
-                                Processing...
-                              </span>
-                            )}
-                            {source.status === 'failed' && (
-                              <div className="flex flex-col items-end">
-                                <span className="inline-flex items-center gap-1 rounded-full bg-rose-500/10 px-2 py-0.5 text-[10px] font-medium text-rose-400 border border-rose-500/20">
-                                  <span className="h-1.5 w-1.5 rounded-full bg-rose-400"></span>
-                                  Failed
-                                </span>
-                                {source.errorMessage && (
-                                  <span className="text-[9px] text-rose-400/80 max-w-[180px] truncate" title={source.errorMessage}>
-                                    {source.errorMessage}
-                                  </span>
-                                )}
-                              </div>
-                            )}
-                            <button
-                              onClick={() => handleDeleteSource(source.id)}
-                              className="text-slate-500 hover:text-rose-400 transition p-1.5 rounded-md hover:bg-slate-800"
-                              title="Delete source"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </button>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* TAB 3: AI ENGINE (BYOK & OPEN SOURCE) */}
-          {activeTab === 'engine' && (
-            <div className="max-w-4xl space-y-6">
-              <div>
-                <h1 className="text-2xl font-bold tracking-tight text-white">AI Engine &amp; BYOK Configuration</h1>
-                <p className="text-sm text-slate-400 mt-1">
-                  Choose between 100% free open-source models (Ollama local or Groq free tier) or connect customer-provided API keys (OpenAI, Anthropic, Gemini, DeepSeek).
-                </p>
-              </div>
-
-              {saveSuccess && (
-                <div className="flex items-center gap-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20 p-3 text-xs text-emerald-400">
-                  <CheckCircle2 className="h-4 w-4" />
-                  <span>Configuration saved successfully!</span>
-                </div>
+            {/* Theme Toggle (Light / Dark) */}
+            <button
+              onClick={toggleTheme}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-750 transition shadow-xs"
+              title="Toggle Light / Dark Mode"
+            >
+              {theme === 'light' ? (
+                <>
+                  <Sun className="h-4 w-4 text-amber-500" />
+                  <span className="hidden sm:inline font-medium">Light Mode</span>
+                </>
+              ) : (
+                <>
+                  <Moon className="h-4 w-4 text-blue-400" />
+                  <span className="hidden sm:inline font-medium">Dark Mode</span>
+                </>
               )}
+            </button>
 
-              {/* Provider Selection Cards */}
-              {/* Provider Selection Cards */}
-              <div className="space-y-3">
-                <label className="text-xs font-semibold text-slate-300">Select AI Provider</label>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            {/* Deploy / WordPress Plugin Button */}
+            <button
+              onClick={() => setShowEmbedModal(true)}
+              className="flex items-center gap-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white px-3.5 py-1.5 text-xs font-semibold shadow-xs transition"
+            >
+              <Globe className="h-3.5 w-3.5" />
+              <span>Deploy &amp; WordPress</span>
+            </button>
+          </div>
+        </header>
+
+        {/* Main Shell (Sidebar + Content Workspace) */}
+        <div className="flex flex-1 overflow-hidden">
+          
+          {/* Left Enterprise Sidebar */}
+          <aside className="w-60 border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3 flex flex-col justify-between shrink-0">
+            <div className="space-y-6">
+              <div>
+                <div className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500 px-3 mb-2">
+                  Management
+                </div>
+                <nav className="space-y-1">
                   {[
-                    { id: 'groq', label: 'Groq Cloud', tag: '⚡ ULTRA-FAST (FREE)', desc: 'Instant sub-second Llama-3.3' },
-                    { id: 'gemini', label: 'Google Gemini', tag: '⚡ FAST (FREE TIER)', desc: 'Gemini 1.5 & 2.0 Flash' },
-                    { id: 'ollama', label: 'Local Ollama', tag: '100% FREE', desc: 'Local CPU/GPU machine' },
-                    { id: 'openai', label: 'OpenAI', tag: 'BYOK', desc: 'GPT-4o & GPT-4o-mini' },
-                    { id: 'anthropic', label: 'Anthropic Claude', tag: 'BYOK', desc: 'Claude 3.5 Sonnet & Haiku' },
-                    { id: 'deepseek', label: 'DeepSeek', tag: 'BYOK', desc: 'DeepSeek-V3 & R1' },
-                  ].map((prov) => {
-                    const isSelected = (formData.provider || 'ollama') === prov.id;
+                    { id: 'overview', label: 'Overview', icon: FileCheck },
+                    { id: 'knowledge', label: 'Knowledge Base', icon: Upload, count: sources.length },
+                    { id: 'playground', label: 'Testing Studio', icon: MessageSquare },
+                    { id: 'engine', label: 'AI Engine (BYOK)', icon: Cpu },
+                    { id: 'behavior', label: 'Behavior & Rules', icon: Sliders },
+                    { id: 'widget', label: 'Widget & Styling', icon: Palette },
+                    { id: 'leads', label: 'Captured Leads', icon: Users, count: leads.length },
+                  ].map((tab) => {
+                    const Icon = tab.icon;
+                    const isActive = activeTab === tab.id;
                     return (
                       <button
-                        key={prov.id}
-                        type="button"
-                        onClick={() => {
-                          const defaultModels: Record<string, string> = {
-                            ollama: 'llama3.2',
-                            groq: 'llama-3.3-70b-versatile',
-                            openai: 'gpt-4o-mini',
-                            gemini: 'gemini-1.5-flash',
-                            anthropic: 'claude-3-5-haiku-20241022',
-                            deepseek: 'deepseek-chat',
-                          };
-                          setFormData({
-                            ...formData,
-                            provider: prov.id,
-                            modelName: defaultModels[prov.id] || 'llama3.2',
-                          });
-                        }}
-                        className={`text-left p-3.5 rounded-xl border transition relative ${
-                          isSelected
-                            ? 'bg-blue-600/15 border-blue-500 text-white shadow-md shadow-blue-500/10'
-                            : 'bg-slate-900/50 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-slate-200'
+                        key={tab.id}
+                        onClick={() => setActiveTab(tab.id as any)}
+                        className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-xs font-medium transition ${
+                          isActive
+                            ? 'bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-400 font-semibold'
+                            : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-200'
                         }`}
                       >
-                        <div className="flex items-center justify-between">
-                          <span className="text-xs font-bold text-slate-100">{prov.label}</span>
-                          <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${
-                            prov.tag.includes('ULTRA-FAST')
-                              ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-                              : prov.tag.includes('FAST')
-                              ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30'
-                              : prov.tag.includes('FREE')
-                              ? 'bg-slate-800 text-slate-300'
-                              : 'bg-indigo-500/20 text-indigo-300'
-                          }`}>
-                            {prov.tag}
-                          </span>
+                        <div className="flex items-center gap-2.5">
+                          <Icon className={`h-4 w-4 ${isActive ? 'text-blue-600 dark:text-blue-400' : 'text-slate-500'}`} />
+                          <span>{tab.label}</span>
                         </div>
-                        <p className="text-[11px] text-slate-500 mt-1">{prov.desc}</p>
+                        {tab.count !== undefined && (
+                          <span
+                            className={`rounded px-1.5 py-0.5 text-[11px] font-mono ${
+                              isActive
+                                ? 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-300 font-bold'
+                                : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400'
+                            }`}
+                          >
+                            {tab.count}
+                          </span>
+                        )}
                       </button>
                     );
                   })}
-                </div>
+                </nav>
               </div>
 
-              {/* Provider Quick Recommendations / Notice */}
-              {formData.provider === 'groq' && (
-                <div className="rounded-xl border border-emerald-500/30 bg-emerald-950/20 p-4 text-xs text-emerald-200 flex items-start gap-3">
-                  <Zap className="h-5 w-5 text-emerald-400 shrink-0 mt-0.5" />
-                  <div className="space-y-1.5">
-                    <p className="font-bold text-emerald-300 flex items-center gap-2">
-                      <span>⚡ Recommended for Lightning Speed (~500+ tokens/sec)</span>
-                      <span className="bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded text-[10px]">100% Free Tier</span>
-                    </p>
-                    <p className="text-slate-300 text-[11.5px] leading-relaxed">
-                      Groq runs open-source Llama 3 models on specialized LPU hardware with near-instant responses. Their free tier offers 14,400 requests/day at $0 cost (no credit card required).
-                    </p>
-                    <div className="pt-1">
-                      <a
-                        href="https://console.groq.com/keys"
-                        target="_blank"
-                        rel="noreferrer"
-                        className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-950 bg-emerald-400 hover:bg-emerald-300 px-3 py-1.5 rounded-lg transition"
-                      >
-                        <span>Get Free Groq API Key (Takes 10 Seconds)</span>
-                        <ExternalLink className="h-3 w-3" />
-                      </a>
-                    </div>
-                  </div>
+              {/* Status Compliance Box */}
+              <div className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 text-xs space-y-2">
+                <div className="flex items-center justify-between font-semibold text-slate-700 dark:text-slate-300">
+                  <span>Enterprise RAG</span>
+                  <span className="text-emerald-600 dark:text-emerald-400 text-[10px] font-bold uppercase">Ready</span>
                 </div>
-              )}
-
-              {formData.provider === 'gemini' && (
-                <div className="rounded-xl border border-cyan-500/30 bg-cyan-950/20 p-4 text-xs text-cyan-200 flex items-start gap-3">
-                  <Zap className="h-5 w-5 text-cyan-400 shrink-0 mt-0.5" />
-                  <div className="space-y-1.5">
-                    <p className="font-bold text-cyan-300 flex items-center gap-2">
-                      <span>⚡ Sub-Second Speed with Google Gemini Flash</span>
-                      <span className="bg-cyan-500/20 text-cyan-300 px-2 py-0.5 rounded text-[10px]">Free Tier</span>
-                    </p>
-                    <p className="text-slate-300 text-[11.5px] leading-relaxed">
-                      Google AI Studio provides 15 requests per minute completely free with Gemini 1.5 &amp; 2.0 Flash.
-                    </p>
-                    <div className="pt-1">
-                      <a
-                        href="https://aistudio.google.com/app/apikey"
-                        target="_blank"
-                        rel="noreferrer"
-                        className="inline-flex items-center gap-1.5 text-xs font-semibold text-cyan-950 bg-cyan-400 hover:bg-cyan-300 px-3 py-1.5 rounded-lg transition"
-                      >
-                        <span>Get Free Gemini API Key</span>
-                        <ExternalLink className="h-3 w-3" />
-                      </a>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {formData.provider === 'ollama' && (
-                <div className="rounded-xl border border-amber-500/30 bg-amber-950/25 p-4 text-xs text-amber-200 flex items-start gap-3">
-                  <AlertTriangle className="h-5 w-5 text-amber-400 shrink-0 mt-0.5" />
-                  <div className="space-y-1">
-                    <p className="font-bold text-amber-300">Local CPU Speed Note</p>
-                    <p className="text-slate-300 text-[11.5px] leading-relaxed">
-                      Running local LLMs on a CPU (without an Nvidia GPU) typically runs at 2-4 tokens/sec, taking ~30-60 seconds per response.
-                    </p>
-                    <p className="text-amber-200/90 text-[11.5px]">
-                      👉 <strong>For instant responses (1-2s):</strong> Switch to <strong>Groq Cloud</strong> above (free API key at console.groq.com) for 100x faster generation at $0 cost!
-                    </p>
-                  </div>
-                </div>
-              )}
-
-              {/* Specific Provider Config */}
-              <div className="rounded-xl border border-slate-800 bg-slate-900/40 p-5 space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-xs font-semibold text-slate-300 block mb-1.5">
-                      Model Identifier
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.modelName || ''}
-                      onChange={(e) => setFormData({ ...formData, modelName: e.target.value })}
-                      placeholder="e.g. llama3.2, gpt-4o-mini, gemini-1.5-flash"
-                      className="w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-xs text-slate-200 font-mono outline-none focus:border-blue-500"
-                    />
-                    <p className="text-[11px] text-slate-500 mt-1 font-mono">
-                      Exact model string passed to completion API
-                    </p>
-                  </div>
-
-                  <div>
-                    <label className="text-xs font-semibold text-slate-300 block mb-1.5">
-                      Temperature ({formData.temperature ?? 0.3})
-                    </label>
-                    <input
-                      type="range"
-                      min="0"
-                      max="1"
-                      step="0.05"
-                      value={formData.temperature ?? 0.3}
-                      onChange={(e) => setFormData({ ...formData, temperature: parseFloat(e.target.value) })}
-                      className="w-full mt-2"
-                    />
-                    <div className="flex justify-between text-[10px] text-slate-500 font-mono mt-1">
-                      <span>0.0 (Strict factual)</span>
-                      <span>1.0 (Creative)</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Performance Tuning Row */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-3 border-t border-slate-800/80">
-                  <div>
-                    <label className="text-xs font-semibold text-slate-300 block mb-1.5 flex items-center justify-between">
-                      <span>Knowledge Context Chunks</span>
-                      <span className="text-blue-400 font-mono font-bold">{formData.contextChunks ?? 3} chunks</span>
-                    </label>
-                    <input
-                      type="range"
-                      min="1"
-                      max="5"
-                      step="1"
-                      value={formData.contextChunks ?? 3}
-                      onChange={(e) => setFormData({ ...formData, contextChunks: parseInt(e.target.value) })}
-                      className="w-full mt-2"
-                    />
-                    <p className="text-[11px] text-slate-500 mt-1">
-                      Fewer chunks cut prompt size by ~40-60%, drastically accelerating generation start.
-                    </p>
-                  </div>
-
-                  <div>
-                    <label className="text-xs font-semibold text-slate-300 block mb-1.5 flex items-center justify-between">
-                      <span>Max Response Tokens</span>
-                      <span className="text-blue-400 font-mono font-bold">{formData.maxTokens ?? 400} tokens</span>
-                    </label>
-                    <input
-                      type="range"
-                      min="150"
-                      max="800"
-                      step="50"
-                      value={formData.maxTokens ?? 400}
-                      onChange={(e) => setFormData({ ...formData, maxTokens: parseInt(e.target.value) })}
-                      className="w-full mt-2"
-                    />
-                    <p className="text-[11px] text-slate-500 mt-1">
-                      Keeps answers crisp and avoids overly long generation times.
-                    </p>
-                  </div>
-                </div>
-
-                {/* API Key if not Ollama */}
-                {(formData.provider || 'ollama') !== 'ollama' && (
-                  <div>
-                    <label className="text-xs font-semibold text-slate-300 block mb-1.5">
-                      {(formData.provider || '').toUpperCase()} API Key (BYOK)
-                    </label>
-                    <div className="relative">
-                      <input
-                        type={showApiKey ? 'text' : 'password'}
-                        value={formData.apiKeyEncrypted || ''}
-                        onChange={(e) => setFormData({ ...formData, apiKeyEncrypted: e.target.value })}
-                        placeholder="sk-..."
-                        className="w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 pr-10 text-xs text-slate-200 font-mono outline-none focus:border-blue-500"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowApiKey(!showApiKey)}
-                        className="absolute right-3 top-2.5 text-slate-500 hover:text-slate-300"
-                      >
-                        {showApiKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                      </button>
-                    </div>
-                    <p className="text-[11px] text-slate-500 mt-1">
-                      This key is encrypted and strictly scoped to this assistant. You never pay for customer tokens.
-                    </p>
-                  </div>
-                )}
-
-                {/* Custom Base URL (For Ollama or custom local server) */}
-                {(formData.provider || 'ollama') === 'ollama' && (
-                  <div>
-                    <label className="text-xs font-semibold text-slate-300 block mb-1.5">
-                      Ollama Endpoint URL
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.customBaseUrl || 'http://localhost:11434/v1'}
-                      onChange={(e) => setFormData({ ...formData, customBaseUrl: e.target.value })}
-                      placeholder="http://localhost:11434/v1"
-                      className="w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-xs text-slate-200 font-mono outline-none focus:border-blue-500"
-                    />
-                    <p className="text-[11px] text-slate-500 mt-1">
-                      Run `ollama run llama3.2` locally. No API key or subscription needed!
-                    </p>
-                  </div>
-                )}
-
-                <div className="pt-2 flex justify-end">
-                  <button
-                    onClick={handleSaveSettings}
-                    disabled={isSaving}
-                    className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-xs font-semibold text-white hover:bg-blue-500 disabled:opacity-50 transition"
-                  >
-                    {isSaving ? <RefreshCw className="h-3.5 w-3.5 animate-spin" /> : <CheckCircle2 className="h-3.5 w-3.5" />}
-                    <span>Save Engine Settings</span>
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* TAB 4: BEHAVIOR & PROMPTS */}
-          {activeTab === 'behavior' && (
-            <div className="max-w-4xl space-y-6">
-              <div>
-                <h1 className="text-2xl font-bold tracking-tight text-white">Behavior &amp; Guardrails</h1>
-                <p className="text-sm text-slate-400 mt-1">
-                  Define how your assistant represents the business, its personality tone, and what it says when information is missing.
+                <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-normal">
+                  Zero cloud embedding fees. 384-dim normalized vector cosine search.
                 </p>
               </div>
+            </div>
 
-              {saveSuccess && (
-                <div className="flex items-center gap-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20 p-3 text-xs text-emerald-400">
-                  <CheckCircle2 className="h-4 w-4" />
-                  <span>Behavior updated successfully!</span>
+            <div className="pt-3 border-t border-slate-200 dark:border-slate-800 text-[11px] text-slate-400 dark:text-slate-500 flex items-center justify-between font-mono">
+              <span>KORTEX v2.0</span>
+              <span className="text-emerald-600 dark:text-emerald-400 font-medium">Enterprise Clean</span>
+            </div>
+          </aside>
+
+          {/* Main Content Workspace */}
+          <main className="flex-1 overflow-y-auto bg-slate-50 dark:bg-slate-950 p-6 sm:p-8">
+            
+            {/* TAB 1: OVERVIEW */}
+            {activeTab === 'overview' && (
+              <div className="max-w-5xl space-y-6 mx-auto">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div>
+                    <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
+                      Welcome to {activeAssistant?.name}
+                    </h1>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                      Your business assistant is ready. Train it on proprietary business files, configure rules, and embed it anywhere.
+                    </p>
+                  </div>
                 </div>
-              )}
 
-              {/* Template Presets */}
-              <div className="space-y-2">
-                <label className="text-xs font-semibold text-slate-300">Quick Personality Templates</label>
-                <div className="flex flex-wrap gap-2">
-                  {[
-                    {
-                      name: 'E-commerce Sales Rep',
-                      prompt: 'You are an enthusiastic, knowledgeable sales assistant. Guide customers to the right products, highlight benefits, and confirm exact prices and shipping policies from the provided knowledge.',
-                    },
-                    {
-                      name: 'Customer Support Specialist',
-                      prompt: 'You are an empathetic, concise, and problem-solving support agent. Help customers troubleshoot issues, follow return guidelines, and provide clear step-by-step instructions.',
-                    },
-                    {
-                      name: 'Corporate FAQ Bot',
-                      prompt: 'You are an executive assistant representing our firm. Provide formal, precise, and verified facts. Never speculate on unannounced policies.',
-                    },
-                  ].map((t) => (
+                {/* Metric Stat Cards (Balanced Typography) */}
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
+                  <div className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs">
+                    <div className="text-[11px] font-medium text-slate-500 dark:text-slate-400">Total Articles</div>
+                    <div className="text-base font-semibold text-slate-900 dark:text-white mt-0.5">
+                      {sources.length} Documents
+                    </div>
+                    <div className="text-[10px] text-emerald-600 dark:text-emerald-400 mt-0.5 font-medium">+100% indexed</div>
+                  </div>
+
+                  <div className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs">
+                    <div className="text-[11px] font-medium text-slate-500 dark:text-slate-400">Vector Chunks</div>
+                    <div className="text-base font-semibold text-slate-900 dark:text-white mt-0.5">
+                      {totalChunks} Chunks
+                    </div>
+                    <div className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5 font-mono">384-dim BGE-Small</div>
+                  </div>
+
+                  <div className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs">
+                    <div className="text-[11px] font-medium text-slate-500 dark:text-slate-400">Retrieval Mode</div>
+                    <div className="text-base font-semibold text-blue-600 dark:text-blue-400 mt-0.5">
+                      Hybrid RRF
+                    </div>
+                    <div className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">Cosine + BM25 Keywords</div>
+                  </div>
+
+                  <div className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs">
+                    <div className="text-[11px] font-medium text-slate-500 dark:text-slate-400">Embedding Cost</div>
+                    <div className="text-base font-semibold text-slate-900 dark:text-white mt-0.5">
+                      $0.00 / mo
+                    </div>
+                    <div className="text-[10px] text-emerald-600 dark:text-emerald-400 mt-0.5 font-medium">Local CPU Embeddings</div>
+                  </div>
+                </div>
+
+                {/* Quick Action Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 space-y-3 shadow-xs">
+                    <div className="flex items-center gap-2.5 text-sm font-semibold text-slate-900 dark:text-white">
+                      <Upload className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                      <span>Upload Knowledge Documents</span>
+                    </div>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                      Upload your product lists (CSV), contracts (PDF/DOCX), catalogues (JSON), or plain text. The local engine chunks and embeds them instantly for $0.
+                    </p>
                     <button
-                      key={t.name}
-                      type="button"
-                      onClick={() => setFormData({ ...formData, systemPrompt: t.prompt })}
-                      className="rounded-lg border border-slate-800 bg-slate-900 px-3 py-1.5 text-xs text-slate-300 hover:border-slate-700 hover:text-white transition"
+                      onClick={() => setActiveTab('knowledge')}
+                      className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline"
                     >
-                      {t.name}
+                      Go to Knowledge Base &rarr;
                     </button>
-                  ))}
+                  </div>
+
+                  <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 space-y-3 shadow-xs">
+                    <div className="flex items-center gap-2.5 text-sm font-semibold text-slate-900 dark:text-white">
+                      <MessageSquare className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                      <span>Test Chat in Testing Studio</span>
+                    </div>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                      Simulate customer questions. Verify citations, check accuracy on product pricing or terms, and test fallback behavior before launching.
+                    </p>
+                    <button
+                      onClick={() => setActiveTab('playground')}
+                      className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline"
+                    >
+                      Open Testing Studio &rarr;
+                    </button>
+                  </div>
+                </div>
+
+                {/* Embed Snippet Card */}
+                <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 space-y-3 shadow-xs">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-sm font-semibold text-slate-900 dark:text-white">
+                      <Globe className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                      <span>Embed On Any Business Website</span>
+                    </div>
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(
+                          `<script src="${window.location.origin}/widget.js" data-assistant="${activeAssistant?.id}" defer></script>`
+                        );
+                        setCopiedCode(true);
+                        setTimeout(() => setCopiedCode(false), 2000);
+                      }}
+                      className="flex items-center gap-1.5 text-xs text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 bg-white dark:bg-slate-800 px-2.5 py-1 rounded-md border border-slate-200 dark:border-slate-700 shadow-xs transition"
+                    >
+                      <Copy className="h-3 w-3" />
+                      <span>{copiedCode ? 'Copied!' : 'Copy Code'}</span>
+                    </button>
+                  </div>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    Paste this single line of HTML before the closing <code className="text-blue-600 dark:text-blue-400 font-mono">&lt;/body&gt;</code> tag of any WordPress, Shopify, Webflow, or custom site:
+                  </p>
+                  <div className="overflow-x-auto rounded-lg bg-slate-50 dark:bg-slate-950 p-3 text-xs font-mono text-slate-800 dark:text-cyan-300 border border-slate-200 dark:border-slate-800">
+                    &lt;script src=&quot;{typeof window !== 'undefined' ? window.location.origin : 'https://your-domain.com'}/widget.js&quot; data-assistant=&quot;{activeAssistant?.id}&quot; defer&gt;&lt;/script&gt;
+                  </div>
                 </div>
               </div>
+            )}
 
-              {/* Form Inputs */}
-              <div className="space-y-4">
+            {/* TAB 2: KNOWLEDGE BASE */}
+            {activeTab === 'knowledge' && (
+              <div className="max-w-5xl space-y-6 mx-auto">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div>
+                    <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Knowledge Base</h1>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                      Upload PDF, CSV, JSON, DOCX, and TXT files. Tabular files are converted into row-aware representations for exact price and detail matching.
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => {
+                      if (activeAssistant) fetchKnowledge(activeAssistant.id);
+                    }}
+                    className="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-750 transition shadow-xs flex items-center gap-1.5"
+                  >
+                    <RefreshCw className="h-3.5 w-3.5 text-slate-500" />
+                    <span>Sync Sources</span>
+                  </button>
+                </div>
+
+                {/* Metric Stat Cards (Balanced Typography) */}
+                <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                  <div className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs">
+                    <div className="text-[11px] font-medium text-slate-500 dark:text-slate-400">Total Articles</div>
+                    <div className="text-base font-semibold text-slate-900 dark:text-white mt-0.5">
+                      {sources.length} Documents
+                    </div>
+                    <div className="text-[10px] text-emerald-600 dark:text-emerald-400 mt-0.5 font-medium">+100% indexed</div>
+                  </div>
+
+                  <div className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs">
+                    <div className="text-[11px] font-medium text-slate-500 dark:text-slate-400">Vector Chunks</div>
+                    <div className="text-base font-semibold text-slate-900 dark:text-white mt-0.5">
+                      {totalChunks} Chunks
+                    </div>
+                    <div className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5 font-mono">384-dim BGE-Small</div>
+                  </div>
+
+                  <div className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs">
+                    <div className="text-[11px] font-medium text-slate-500 dark:text-slate-400">Retrieval Mode</div>
+                    <div className="text-base font-semibold text-blue-600 dark:text-blue-400 mt-0.5">
+                      Hybrid RRF
+                    </div>
+                    <div className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">Cosine + BM25 Keywords</div>
+                  </div>
+
+                  <div className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs">
+                    <div className="text-[11px] font-medium text-slate-500 dark:text-slate-400">Embedding Cost</div>
+                    <div className="text-base font-semibold text-slate-900 dark:text-white mt-0.5">
+                      $0.00 / mo
+                    </div>
+                    <div className="text-[10px] text-emerald-600 dark:text-emerald-400 mt-0.5 font-medium">Local CPU Embeddings</div>
+                  </div>
+                </div>
+
+                {/* Upload Form */}
+                <form
+                  onSubmit={handleUploadFiles}
+                  className="rounded-xl border border-dashed border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 space-y-4 hover:border-blue-500 dark:hover:border-blue-500 transition shadow-xs"
+                >
+                  <div className="flex flex-col items-center justify-center text-center space-y-3">
+                    <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400">
+                      <Upload className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <span className="text-sm font-semibold text-slate-800 dark:text-slate-200">
+                        Drop files here or click to browse
+                      </span>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                        Supports PDF, CSV tables, JSON catalogues, Word DOCX, TXT &amp; Images
+                      </p>
+                    </div>
+                    <input
+                      type="file"
+                      multiple
+                      accept=".pdf,.csv,.json,.docx,.txt,.jpg,.jpeg,.png,.webp"
+                      onChange={(e) => setSelectedFiles(e.target.files)}
+                      className="text-xs text-slate-500 dark:text-slate-400 file:mr-4 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-500 cursor-pointer"
+                    />
+                    {selectedFiles && selectedFiles.length > 0 && (
+                      <div className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">
+                        Selected {selectedFiles.length} file(s) for indexing
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="relative flex py-1 items-center">
+                    <div className="flex-grow border-t border-slate-200 dark:border-slate-800"></div>
+                    <span className="flex-shrink mx-4 text-[11px] text-slate-400 dark:text-slate-500 uppercase font-semibold">
+                      Or Enter Raw Business Description / FAQs
+                    </span>
+                    <div className="flex-grow border-t border-slate-200 dark:border-slate-800"></div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <input
+                      type="text"
+                      placeholder="Section Title (e.g. Return Policy, Store Hours, Contact Info)"
+                      value={uploadTextTitle}
+                      onChange={(e) => setUploadTextTitle(e.target.value)}
+                      className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-850 px-3 py-2 text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 outline-none focus:border-blue-500"
+                    />
+                    <textarea
+                      rows={3}
+                      placeholder="Paste business instructions, FAQs, shipping details, or company background..."
+                      value={uploadText}
+                      onChange={(e) => setUploadText(e.target.value)}
+                      className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-850 p-3 text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 outline-none focus:border-blue-500"
+                    />
+                  </div>
+
+                  <div className="flex justify-end">
+                    <button
+                      type="submit"
+                      disabled={isUploading || ((!selectedFiles || selectedFiles.length === 0) && !uploadText.trim())}
+                      className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-xs font-semibold text-white hover:bg-blue-500 disabled:opacity-50 transition shadow-xs"
+                    >
+                      {isUploading ? (
+                        <>
+                          <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+                          <span>Extracting &amp; Indexing Chunks...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles className="h-3.5 w-3.5" />
+                          <span>Process &amp; Train Assistant</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </form>
+
+                {/* Structured Enterprise Table */}
+                <div className="border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-900 shadow-xs overflow-hidden">
+                  <div className="px-5 py-3.5 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-bold text-slate-900 dark:text-white">Uploaded Knowledge Sources</span>
+                      <span className="text-xs text-slate-500 dark:text-slate-400 font-mono">({sources.length})</span>
+                    </div>
+                    <div className="relative">
+                      <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" />
+                      <input
+                        type="text"
+                        placeholder="Search sources..."
+                        value={sourceFilter}
+                        onChange={(e) => setSourceFilter(e.target.value)}
+                        className="pl-8 pr-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs text-slate-800 dark:text-slate-200 focus:outline-none focus:border-blue-500 w-48"
+                      />
+                    </div>
+                  </div>
+
+                  {filteredSources.length === 0 ? (
+                    <div className="p-8 text-center text-xs text-slate-500 dark:text-slate-400">
+                      No documents found matching your filter.
+                    </div>
+                  ) : (
+                    <table className="w-full text-left text-xs">
+                      <thead className="bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 font-semibold border-b border-slate-200 dark:border-slate-800">
+                        <tr>
+                          <th className="py-3 px-5">Document Name</th>
+                          <th className="py-3 px-5">Type</th>
+                          <th className="py-3 px-5">Chunks</th>
+                          <th className="py-3 px-5">Status</th>
+                          <th className="py-3 px-5">Date</th>
+                          <th className="py-3 px-5 text-right">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100 dark:divide-slate-800/80">
+                        {filteredSources.map((source) => (
+                          <tr key={source.id} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/30 transition">
+                            <td className="py-3.5 px-5 font-semibold text-slate-800 dark:text-slate-100 flex items-center gap-2.5">
+                              <span className={`px-2 py-0.5 rounded font-mono text-[10px] font-bold ${
+                                source.type === 'pdf'
+                                  ? 'bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-800'
+                                  : source.type === 'csv'
+                                  ? 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800'
+                                  : source.type === 'json'
+                                  ? 'bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-800'
+                                  : 'bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800'
+                              }`}>
+                                {source.type.toUpperCase()}
+                              </span>
+                              <span className="truncate max-w-[280px]" title={source.title}>{source.title}</span>
+                            </td>
+                            <td className="py-3.5 px-5 text-slate-500 dark:text-slate-400 uppercase font-mono text-[11px]">
+                              {source.type}
+                            </td>
+                            <td className="py-3.5 px-5 font-mono text-blue-600 dark:text-blue-400 font-bold">
+                              {source.chunkCount} chunks
+                            </td>
+                            <td className="py-3.5 px-5">
+                              {source.status === 'ready' && (
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 font-semibold text-[11px]">
+                                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
+                                  Ready
+                                </span>
+                              )}
+                              {source.status === 'processing' && (
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800 font-semibold text-[11px]">
+                                  <RefreshCw className="h-2.5 w-2.5 animate-spin" />
+                                  Processing
+                                </span>
+                              )}
+                              {source.status === 'failed' && (
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-rose-50 dark:bg-rose-950/50 text-rose-700 dark:text-rose-400 border border-rose-200 dark:border-rose-800 font-semibold text-[11px]">
+                                  Failed
+                                </span>
+                              )}
+                            </td>
+                            <td className="py-3.5 px-5 text-slate-500 dark:text-slate-400 font-mono text-[11px]">
+                              {new Date(source.createdAt).toLocaleDateString()}
+                            </td>
+                            <td className="py-3.5 px-5 text-right">
+                              <button
+                                onClick={() => handleDeleteSource(source.id)}
+                                className="text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 transition p-1 rounded"
+                                title="Delete source"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* TAB 3: TESTING STUDIO (SPLIT PANE) */}
+            {activeTab === 'playground' && (
+              <div className="h-full flex flex-col max-w-6xl space-y-4 mx-auto">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Testing Studio</h1>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                      Verify assistant responses and inspect retrieved knowledge chunks in real time.
+                    </p>
+                  </div>
+                  <button
+                    onClick={() =>
+                      setChatMessages([
+                        {
+                          role: 'assistant',
+                          content: activeAssistant?.welcomeMessage || 'Hello! How can I assist you today?',
+                        },
+                      ])
+                    }
+                    className="text-xs font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 bg-white dark:bg-slate-850 border border-slate-200 dark:border-slate-700 px-3 py-1.5 rounded-lg shadow-xs transition"
+                  >
+                    Clear Chat
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 flex-1 min-h-[500px]">
+                  {/* Chat Messenger (2 cols) */}
+                  <div className="lg:col-span-2 border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-900 shadow-xs flex flex-col justify-between overflow-hidden">
+                    {/* Chat Messages */}
+                    <div className="p-4 overflow-y-auto space-y-3.5 flex-1 max-h-[460px]">
+                      {chatMessages.map((msg, i) => (
+                        <div
+                          key={i}
+                          className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}
+                        >
+                          <div
+                            className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-xs leading-relaxed ${
+                              msg.role === 'user'
+                                ? 'bg-blue-600 text-white rounded-br-xs'
+                                : 'bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 rounded-bl-xs border border-slate-200/80 dark:border-slate-700/60'
+                            }`}
+                          >
+                            <div className="whitespace-pre-wrap">{msg.content}</div>
+
+                            {/* Citations */}
+                            {msg.citations && msg.citations.length > 0 && (
+                              <div className="mt-2.5 pt-2 border-t border-slate-200 dark:border-slate-700 text-[11px]">
+                                <div className="font-semibold text-slate-600 dark:text-slate-400 mb-1">Citations &amp; Sources:</div>
+                                <div className="flex flex-wrap gap-1.5">
+                                  {msg.citations.map((c: any, ci: number) => (
+                                    <span
+                                      key={ci}
+                                      className="bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 px-2 py-0.5 rounded text-[10px] font-mono"
+                                      title={c.preview}
+                                    >
+                                      📄 {c.sourceTitle}
+                                    </span>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                      {isStreaming && (
+                        <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 text-xs py-1">
+                          <span className="h-2 w-2 rounded-full bg-blue-600 animate-pulse"></span>
+                          <span>Retrieving context &amp; generating streaming answer...</span>
+                        </div>
+                      )}
+                      <div ref={chatEndRef} />
+                    </div>
+
+                    {/* Starter Pills */}
+                    {activeAssistant?.starterQuestions && activeAssistant.starterQuestions.length > 0 && (
+                      <div className="px-4 py-2 bg-slate-50 dark:bg-slate-850/50 border-t border-slate-100 dark:border-slate-800 flex flex-wrap gap-1.5">
+                        {activeAssistant.starterQuestions.slice(0, 3).map((q, i) => (
+                          <button
+                            key={i}
+                            onClick={() => handleSendMessage(q)}
+                            className="text-[11px] rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-2.5 py-1 text-slate-700 dark:text-slate-300 hover:border-blue-500 hover:text-blue-600 transition"
+                          >
+                            {q}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Chat Input Bar */}
+                    <div className="p-3 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center gap-2">
+                      <input
+                        type="text"
+                        placeholder="Type a message to test your knowledge base..."
+                        value={inputQuery}
+                        onChange={(e) => setInputQuery(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') handleSendMessage();
+                        }}
+                        className="flex-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-850 px-3.5 py-2 text-xs text-slate-900 dark:text-slate-100 outline-none focus:border-blue-500"
+                      />
+                      <button
+                        onClick={() => handleSendMessage()}
+                        disabled={isStreaming || !inputQuery.trim()}
+                        className="flex items-center gap-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 px-4 py-2 text-xs font-semibold text-white disabled:opacity-50 transition shadow-xs"
+                      >
+                        <Send className="h-3.5 w-3.5" />
+                        <span>Send</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* RAG Inspector Panel (1 col) */}
+                  <div className="border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-900 p-5 space-y-4 flex flex-col justify-between shadow-xs">
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
+                        <span className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">RAG Inspector</span>
+                        <span className="text-[10px] font-mono font-semibold bg-emerald-50 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 px-1.5 py-0.5 rounded">
+                          Connected
+                        </span>
+                      </div>
+
+                      <div>
+                        <label className="text-[11px] font-medium text-slate-500 dark:text-slate-400 block mb-1">Active AI Provider</label>
+                        <div className="p-2.5 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs flex items-center justify-between">
+                          <span className="font-semibold text-slate-900 dark:text-white uppercase font-mono">{activeAssistant?.provider || 'Ollama'}</span>
+                          <span className="text-slate-500 dark:text-slate-400 font-mono text-[11px]">{activeAssistant?.modelName || 'llama3.2'}</span>
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="text-[11px] font-medium text-slate-500 dark:text-slate-400 block mb-1">
+                          Retrieved Fragments ({activeCitations.length})
+                        </label>
+                        {activeCitations.length === 0 ? (
+                          <div className="p-3 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 text-[11px] text-slate-500 dark:text-slate-400 text-center">
+                            Ask a question to see retrieved knowledge chunks and citations here.
+                          </div>
+                        ) : (
+                          <div className="space-y-2 max-h-60 overflow-y-auto">
+                            {activeCitations.map((c, i) => (
+                              <div key={i} className="p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60 text-[11px] space-y-1">
+                                <div className="text-blue-600 dark:text-blue-400 font-mono font-bold text-[10px]">
+                                  [{i + 1}] {c.sourceTitle}
+                                </div>
+                                <div className="text-slate-600 dark:text-slate-300 line-clamp-2">{c.preview}</div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="pt-3 border-t border-slate-200 dark:border-slate-800 text-[11px] text-slate-500 dark:text-slate-400 flex justify-between font-mono">
+                      <span>Vector Dims: <strong>384</strong></span>
+                      <span>Embed Cost: <strong className="text-emerald-600 dark:text-emerald-400">$0.00</strong></span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* TAB 4: AI ENGINE (BYOK) */}
+            {activeTab === 'engine' && (
+              <div className="max-w-4xl space-y-6 mx-auto">
                 <div>
-                  <label className="text-xs font-semibold text-slate-300 block mb-1.5">
-                    System Instructions &amp; Role
-                  </label>
-                  <textarea
-                    rows={6}
-                    value={formData.systemPrompt || ''}
-                    onChange={(e) => setFormData({ ...formData, systemPrompt: e.target.value })}
-                    className="w-full rounded-lg border border-slate-800 bg-slate-950 p-3 text-xs text-slate-200 outline-none focus:border-blue-500 leading-relaxed font-mono"
-                  />
-                  <p className="text-[11px] text-slate-500 mt-1">
-                    Defines the core personality. Grounded RAG instructions and retrieved knowledge fragments are automatically appended during inference.
+                  <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">AI Engine &amp; BYOK Configuration</h1>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                    Choose between 100% free open-source models (Ollama local or Groq free tier) or connect customer-provided API keys (OpenAI, Anthropic, Gemini, DeepSeek).
                   </p>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-xs font-semibold text-slate-300 block mb-1.5">
-                      Welcome Message
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.welcomeMessage || ''}
-                      onChange={(e) => setFormData({ ...formData, welcomeMessage: e.target.value })}
-                      className="w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-xs text-slate-200 outline-none focus:border-blue-500"
-                    />
+                {saveSuccess && (
+                  <div className="flex items-center gap-2 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 p-3 text-xs text-emerald-700 dark:text-emerald-300">
+                    <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                    <span>Configuration saved successfully!</span>
                   </div>
+                )}
 
-                  <div>
-                    <label className="text-xs font-semibold text-slate-300 block mb-1.5">
-                      Fallback Message (When info is not in knowledge base)
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.fallbackMessage || ''}
-                      onChange={(e) => setFormData({ ...formData, fallbackMessage: e.target.value })}
-                      className="w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-xs text-slate-200 outline-none focus:border-blue-500"
-                    />
-                  </div>
-                </div>
-
-                <div className="pt-2 flex justify-end">
-                  <button
-                    onClick={handleSaveSettings}
-                    disabled={isSaving}
-                    className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-xs font-semibold text-white hover:bg-blue-500 disabled:opacity-50 transition"
-                  >
-                    {isSaving ? <RefreshCw className="h-3.5 w-3.5 animate-spin" /> : <CheckCircle2 className="h-3.5 w-3.5" />}
-                    <span>Save Behavior</span>
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* TAB 5: WIDGET & STYLING */}
-          {activeTab === 'widget' && (
-            <div className="max-w-5xl space-y-6">
-              <div>
-                <h1 className="text-2xl font-bold tracking-tight text-white">Widget &amp; Branding</h1>
-                <p className="text-sm text-slate-400 mt-1">
-                  Customize the chat launcher, brand colors, position, and lead capture settings for your website or WordPress plugin.
-                </p>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                {/* Configuration controls */}
-                <div className="space-y-5">
-                  {/* Brand Color */}
-                  <div>
-                    <label className="text-xs font-semibold text-slate-300 block mb-2">
-                      Brand Accent Color
-                    </label>
-                    <div className="flex items-center gap-3">
-                      {['#2563eb', '#7c3aed', '#059669', '#e11d48', '#d97706', '#0f172a'].map((c) => (
+                {/* Provider Selection Cards */}
+                <div className="space-y-3">
+                  <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Select AI Provider</label>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    {[
+                      { id: 'groq', label: 'Groq Cloud', tag: '⚡ ULTRA-FAST (FREE)', desc: 'Instant sub-second Llama 3.3' },
+                      { id: 'gemini', label: 'Google Gemini', tag: '⚡ FAST (FREE TIER)', desc: 'Gemini 1.5 & 2.0 Flash' },
+                      { id: 'ollama', label: 'Local Ollama', tag: '100% FREE', desc: 'Runs on your PC CPU/GPU' },
+                      { id: 'openai', label: 'OpenAI', tag: 'BYOK', desc: 'GPT-4o & GPT-4o-mini' },
+                      { id: 'anthropic', label: 'Anthropic Claude', tag: 'BYOK', desc: 'Claude 3.5 Sonnet & Haiku' },
+                      { id: 'deepseek', label: 'DeepSeek', tag: 'BYOK', desc: 'DeepSeek-V3 & R1' },
+                    ].map((prov) => {
+                      const isSelected = (formData.provider || 'ollama') === prov.id;
+                      return (
                         <button
-                          key={c}
+                          key={prov.id}
                           type="button"
-                          onClick={() => setFormData({ ...formData, primaryColor: c })}
-                          style={{ backgroundColor: c }}
-                          className={`h-8 w-8 rounded-full border-2 transition ${
-                            formData.primaryColor === c ? 'border-white scale-110' : 'border-transparent'
+                          onClick={() => {
+                            const defaultModels: Record<string, string> = {
+                              ollama: 'llama3.2',
+                              groq: 'llama-3.3-70b-versatile',
+                              openai: 'gpt-4o-mini',
+                              gemini: 'gemini-1.5-flash',
+                              anthropic: 'claude-3-5-haiku-20241022',
+                              deepseek: 'deepseek-chat',
+                            };
+                            setFormData({
+                              ...formData,
+                              provider: prov.id,
+                              modelName: defaultModels[prov.id] || 'llama3.2',
+                            });
+                          }}
+                          className={`text-left p-3.5 rounded-xl border transition relative ${
+                            isSelected
+                              ? 'border-blue-600 bg-blue-50/60 dark:bg-blue-950/40 text-slate-900 dark:text-white shadow-xs'
+                              : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:border-slate-300 dark:hover:border-slate-700'
                           }`}
-                        />
-                      ))}
+                        >
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs font-bold text-slate-900 dark:text-white">{prov.label}</span>
+                            <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${
+                              prov.tag.includes('ULTRA-FAST')
+                                ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800'
+                                : prov.tag.includes('FAST')
+                                ? 'bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 border border-blue-300 dark:border-blue-800'
+                                : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300'
+                            }`}>
+                              {prov.tag}
+                            </span>
+                          </div>
+                          <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">{prov.desc}</p>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Groq Callout */}
+                {formData.provider === 'groq' && (
+                  <div className="rounded-xl border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/30 p-4 text-xs text-emerald-800 dark:text-emerald-200 flex items-start gap-3">
+                    <Zap className="h-5 w-5 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
+                    <div className="space-y-1.5">
+                      <p className="font-bold text-emerald-900 dark:text-emerald-200 flex items-center gap-2">
+                        <span>⚡ Recommended for Lightning Speed (~500+ tokens/sec)</span>
+                        <span className="bg-emerald-100 dark:bg-emerald-900 text-emerald-800 dark:text-emerald-200 px-2 py-0.5 rounded text-[10px]">100% Free Tier</span>
+                      </p>
+                      <p className="text-slate-600 dark:text-slate-300 text-[11.5px] leading-relaxed">
+                        Groq runs open-source Llama 3 models on specialized LPU hardware with near-instant responses. Their free tier offers 14,400 requests/day at $0 cost (no credit card required).
+                      </p>
+                      <div className="pt-1">
+                        <a
+                          href="https://console.groq.com/keys"
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex items-center gap-1.5 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 px-3 py-1.5 rounded-lg transition shadow-xs"
+                        >
+                          <span>Get Free Groq API Key (10 Seconds)</span>
+                          <ExternalLink className="h-3 w-3" />
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Gemini Callout */}
+                {formData.provider === 'gemini' && (
+                  <div className="rounded-xl border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-950/30 p-4 text-xs text-blue-800 dark:text-blue-200 flex items-start gap-3">
+                    <Zap className="h-5 w-5 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
+                    <div className="space-y-1.5">
+                      <p className="font-bold text-blue-900 dark:text-blue-200 flex items-center gap-2">
+                        <span>⚡ Sub-Second Speed with Google Gemini Flash</span>
+                        <span className="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-2 py-0.5 rounded text-[10px]">Free Tier</span>
+                      </p>
+                      <p className="text-slate-600 dark:text-slate-300 text-[11.5px] leading-relaxed">
+                        Google AI Studio provides 15 requests per minute completely free with Gemini 1.5 &amp; 2.0 Flash.
+                      </p>
+                      <div className="pt-1">
+                        <a
+                          href="https://aistudio.google.com/app/apikey"
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex items-center gap-1.5 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 px-3 py-1.5 rounded-lg transition shadow-xs"
+                        >
+                          <span>Get Free Gemini API Key</span>
+                          <ExternalLink className="h-3 w-3" />
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Ollama CPU Notice */}
+                {formData.provider === 'ollama' && (
+                  <div className="rounded-xl border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/30 p-4 text-xs text-amber-800 dark:text-amber-200 flex items-start gap-3">
+                    <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                    <div className="space-y-1">
+                      <p className="font-bold text-amber-900 dark:text-amber-200">Local CPU Speed Note</p>
+                      <p className="text-slate-600 dark:text-slate-300 text-[11.5px] leading-relaxed">
+                        Running local LLMs on a CPU (without an Nvidia GPU) typically runs at 2-4 tokens/sec, taking ~30-60 seconds per response.
+                      </p>
+                      <p className="text-amber-800 dark:text-amber-300 text-[11.5px]">
+                        👉 <strong>For instant responses (1-2s):</strong> Switch to <strong>Groq Cloud</strong> above (free API key at console.groq.com) for 100x faster generation at $0 cost!
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Engine Settings Box */}
+                <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 space-y-4 shadow-xs">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1.5">
+                        Model Identifier
+                      </label>
                       <input
                         type="text"
-                        value={formData.primaryColor || '#2563eb'}
-                        onChange={(e) => setFormData({ ...formData, primaryColor: e.target.value })}
-                        className="w-24 rounded-lg border border-slate-800 bg-slate-950 px-2 py-1.5 text-xs text-slate-200 font-mono outline-none"
+                        value={formData.modelName || ''}
+                        onChange={(e) => setFormData({ ...formData, modelName: e.target.value })}
+                        placeholder="e.g. llama-3.3-70b-versatile, gpt-4o-mini"
+                        className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-850 px-3 py-2 text-xs text-slate-900 dark:text-slate-100 font-mono outline-none focus:border-blue-500"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1.5">
+                        Temperature ({formData.temperature ?? 0.3})
+                      </label>
+                      <input
+                        type="range"
+                        min="0"
+                        max="1"
+                        step="0.05"
+                        value={formData.temperature ?? 0.3}
+                        onChange={(e) => setFormData({ ...formData, temperature: parseFloat(e.target.value) })}
+                        className="w-full mt-2 accent-blue-600"
                       />
                     </div>
                   </div>
 
-                  {/* Launcher Position */}
-                  <div>
-                    <label className="text-xs font-semibold text-slate-300 block mb-1.5">
-                      Launcher Position
-                    </label>
-                    <div className="flex gap-3">
-                      {['bottom-right', 'bottom-left'].map((pos) => (
-                        <button
-                          key={pos}
-                          type="button"
-                          onClick={() => setFormData({ ...formData, launcherPosition: pos })}
-                          className={`rounded-lg border px-4 py-2 text-xs font-medium capitalize transition ${
-                            formData.launcherPosition === pos
-                              ? 'bg-blue-600/20 border-blue-500 text-white'
-                              : 'bg-slate-900 border-slate-800 text-slate-400'
-                          }`}
-                        >
-                          {pos.replace('-', ' ')}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Starter Questions */}
-                  <div>
-                    <label className="text-xs font-semibold text-slate-300 block mb-1.5">
-                      Suggested Starter Questions (1 per line)
-                    </label>
-                    <textarea
-                      rows={3}
-                      value={(formData.starterQuestions || []).join('\n')}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          starterQuestions: e.target.value.split('\n').filter((q) => q.trim() !== ''),
-                        })
-                      }
-                      className="w-full rounded-lg border border-slate-800 bg-slate-950 p-2.5 text-xs text-slate-200 outline-none focus:border-blue-500"
-                    />
-                  </div>
-
-                  {/* Lead Capture Toggle */}
-                  <div className="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-900/40 p-4">
+                  {/* Performance Tuning Row */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-3 border-t border-slate-200 dark:border-slate-800">
                     <div>
-                      <div className="text-xs font-semibold text-white">Lead Capture Form</div>
-                      <div className="text-[11px] text-slate-400">Ask visitor for their email during the conversation</div>
+                      <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1.5 flex items-center justify-between">
+                        <span>Knowledge Context Chunks</span>
+                        <span className="text-blue-600 dark:text-blue-400 font-mono font-bold">{formData.contextChunks ?? 3} chunks</span>
+                      </label>
+                      <input
+                        type="range"
+                        min="1"
+                        max="5"
+                        step="1"
+                        value={formData.contextChunks ?? 3}
+                        onChange={(e) => setFormData({ ...formData, contextChunks: parseInt(e.target.value) })}
+                        className="w-full mt-2 accent-blue-600"
+                      />
                     </div>
-                    <input
-                      type="checkbox"
-                      checked={formData.collectLeadEmail || false}
-                      onChange={(e) => setFormData({ ...formData, collectLeadEmail: e.target.checked })}
-                      className="h-4 w-4 rounded accent-blue-600"
-                    />
+
+                    <div>
+                      <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1.5 flex items-center justify-between">
+                        <span>Max Response Tokens</span>
+                        <span className="text-blue-600 dark:text-blue-400 font-mono font-bold">{formData.maxTokens ?? 400} tokens</span>
+                      </label>
+                      <input
+                        type="range"
+                        min="150"
+                        max="800"
+                        step="50"
+                        value={formData.maxTokens ?? 400}
+                        onChange={(e) => setFormData({ ...formData, maxTokens: parseInt(e.target.value) })}
+                        className="w-full mt-2 accent-blue-600"
+                      />
+                    </div>
                   </div>
 
-                  <div className="pt-2">
+                  {/* API Key input if not Ollama */}
+                  {(formData.provider || 'ollama') !== 'ollama' && (
+                    <div>
+                      <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1.5">
+                        {(formData.provider || '').toUpperCase()} API Key (BYOK)
+                      </label>
+                      <div className="relative">
+                        <input
+                          type={showApiKey ? 'text' : 'password'}
+                          value={formData.apiKeyEncrypted || ''}
+                          onChange={(e) => setFormData({ ...formData, apiKeyEncrypted: e.target.value })}
+                          placeholder="gsk_... or sk-..."
+                          className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-850 px-3 py-2 pr-10 text-xs text-slate-900 dark:text-slate-100 font-mono outline-none focus:border-blue-500"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowApiKey(!showApiKey)}
+                          className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600"
+                        >
+                          {showApiKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Ollama endpoint if Ollama */}
+                  {(formData.provider || 'ollama') === 'ollama' && (
+                    <div>
+                      <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1.5">
+                        Ollama Endpoint URL
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.customBaseUrl || 'http://localhost:11434/v1'}
+                        onChange={(e) => setFormData({ ...formData, customBaseUrl: e.target.value })}
+                        placeholder="http://localhost:11434/v1"
+                        className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-850 px-3 py-2 text-xs text-slate-900 dark:text-slate-100 font-mono outline-none focus:border-blue-500"
+                      />
+                    </div>
+                  )}
+
+                  <div className="pt-2 flex justify-end">
                     <button
                       onClick={handleSaveSettings}
                       disabled={isSaving}
-                      className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-xs font-semibold text-white hover:bg-blue-500 transition"
+                      className="flex items-center gap-2 rounded-lg bg-blue-600 hover:bg-blue-700 px-4 py-2 text-xs font-semibold text-white disabled:opacity-50 transition shadow-xs"
                     >
-                      <CheckCircle2 className="h-3.5 w-3.5" />
-                      <span>Save Widget Appearance</span>
+                      {isSaving ? <RefreshCw className="h-3.5 w-3.5 animate-spin" /> : <CheckCircle2 className="h-3.5 w-3.5" />}
+                      <span>Save Engine Settings</span>
                     </button>
                   </div>
                 </div>
+              </div>
+            )}
 
-                {/* Live Preview Box */}
-                <div className="flex flex-col items-center justify-center rounded-2xl border border-slate-800 bg-slate-900/20 p-6">
-                  <div className="text-xs font-semibold text-slate-400 mb-4 font-mono uppercase">
-                    Live Widget Preview
+            {/* TAB 5: BEHAVIOR & RULES */}
+            {activeTab === 'behavior' && (
+              <div className="max-w-4xl space-y-6 mx-auto">
+                <div>
+                  <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Behavior &amp; Guardrails</h1>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                    Define how your assistant represents the business, its personality tone, and what it says when information is missing.
+                  </p>
+                </div>
+
+                {saveSuccess && (
+                  <div className="flex items-center gap-2 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 p-3 text-xs text-emerald-700 dark:text-emerald-300">
+                    <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                    <span>Behavior updated successfully!</span>
+                  </div>
+                )}
+
+                {/* Template Presets */}
+                <div className="space-y-2">
+                  <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Quick Personality Templates</label>
+                  <div className="flex flex-wrap gap-2">
+                    {[
+                      {
+                        name: 'E-commerce Sales Rep',
+                        prompt: 'You are an enthusiastic, knowledgeable sales assistant. Guide customers to the right products, highlight benefits, and confirm exact prices and shipping policies from the provided knowledge.',
+                      },
+                      {
+                        name: 'Customer Support Specialist',
+                        prompt: 'You are an empathetic, concise, and problem-solving support agent. Help customers troubleshoot issues, follow return guidelines, and provide clear step-by-step instructions.',
+                      },
+                      {
+                        name: 'Corporate FAQ Bot',
+                        prompt: 'You are an executive assistant representing our firm. Provide formal, precise, and verified facts. Never speculate on unannounced policies.',
+                      },
+                    ].map((t) => (
+                      <button
+                        key={t.name}
+                        type="button"
+                        onClick={() => setFormData({ ...formData, systemPrompt: t.prompt })}
+                        className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-300 hover:border-blue-500 hover:text-blue-600 transition shadow-xs"
+                      >
+                        {t.name}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Form Inputs */}
+                <div className="space-y-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-xs">
+                  <div>
+                    <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1.5">
+                      System Instructions &amp; Role
+                    </label>
+                    <textarea
+                      rows={5}
+                      value={formData.systemPrompt || ''}
+                      onChange={(e) => setFormData({ ...formData, systemPrompt: e.target.value })}
+                      className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-850 p-3 text-xs text-slate-900 dark:text-slate-100 outline-none focus:border-blue-500 leading-relaxed font-mono"
+                    />
                   </div>
 
-                  {/* Simulated widget window */}
-                  <div className="w-80 rounded-2xl bg-white text-slate-900 shadow-2xl overflow-hidden border border-slate-200">
-                    <div
-                      style={{ backgroundColor: formData.primaryColor || '#2563eb' }}
-                      className="p-3.5 text-white flex items-center justify-between"
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1.5">
+                        Welcome Message
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.welcomeMessage || ''}
+                        onChange={(e) => setFormData({ ...formData, welcomeMessage: e.target.value })}
+                        className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-850 px-3 py-2 text-xs text-slate-900 dark:text-slate-100 outline-none focus:border-blue-500"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1.5">
+                        Fallback Message
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.fallbackMessage || ''}
+                        onChange={(e) => setFormData({ ...formData, fallbackMessage: e.target.value })}
+                        className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-850 px-3 py-2 text-xs text-slate-900 dark:text-slate-100 outline-none focus:border-blue-500"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="pt-2 flex justify-end">
+                    <button
+                      onClick={handleSaveSettings}
+                      disabled={isSaving}
+                      className="flex items-center gap-2 rounded-lg bg-blue-600 hover:bg-blue-700 px-4 py-2 text-xs font-semibold text-white disabled:opacity-50 transition shadow-xs"
                     >
-                      <div className="flex items-center gap-2.5">
-                        <div className="h-8 w-8 rounded-full bg-white/20 flex items-center justify-center text-xs font-bold">
-                          AI
-                        </div>
-                        <div>
-                          <div className="text-xs font-bold leading-tight">{formData.name || 'Business AI'}</div>
-                          <div className="text-[10px] opacity-80 flex items-center gap-1">
-                            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400"></span> Online
-                          </div>
-                        </div>
+                      {isSaving ? <RefreshCw className="h-3.5 w-3.5 animate-spin" /> : <CheckCircle2 className="h-3.5 w-3.5" />}
+                      <span>Save Guardrails</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* TAB 6: WIDGET & STYLING */}
+            {activeTab === 'widget' && (
+              <div className="max-w-5xl space-y-6 mx-auto">
+                <div>
+                  <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Widget &amp; Branding</h1>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                    Customize the chat launcher, brand colors, position, and lead capture settings for your website or WordPress plugin.
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  {/* Configuration controls */}
+                  <div className="space-y-5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-xs">
+                    {/* Brand Color */}
+                    <div>
+                      <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-2">
+                        Brand Accent Color
+                      </label>
+                      <div className="flex items-center gap-3">
+                        {['#2563eb', '#7c3aed', '#059669', '#e11d48', '#d97706', '#0f172a'].map((c) => (
+                          <button
+                            key={c}
+                            type="button"
+                            onClick={() => setFormData({ ...formData, primaryColor: c })}
+                            style={{ backgroundColor: c }}
+                            className={`h-8 w-8 rounded-full border-2 transition ${
+                              formData.primaryColor === c ? 'border-slate-900 dark:border-white scale-110' : 'border-transparent'
+                            }`}
+                          />
+                        ))}
+                        <input
+                          type="text"
+                          value={formData.primaryColor || '#2563eb'}
+                          onChange={(e) => setFormData({ ...formData, primaryColor: e.target.value })}
+                          className="w-24 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-850 px-2 py-1.5 text-xs text-slate-900 dark:text-slate-100 font-mono outline-none"
+                        />
                       </div>
                     </div>
 
-                    <div className="p-4 bg-slate-50 space-y-3 min-h-[220px]">
-                      <div className="bg-white p-3 rounded-xl rounded-bl-sm text-xs shadow-sm border border-slate-100 max-w-[85%] text-slate-800">
-                        {formData.welcomeMessage || 'Hi! How can I help you today?'}
-                      </div>
-
-                      <div className="space-y-1.5 pt-1">
-                        {(formData.starterQuestions || []).slice(0, 2).map((q, i) => (
-                          <div
-                            key={i}
-                            className="text-[11px] bg-white border border-slate-200 px-3 py-1.5 rounded-full text-slate-700 font-medium"
+                    {/* Launcher Position */}
+                    <div>
+                      <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1.5">
+                        Launcher Position
+                      </label>
+                      <div className="flex gap-3">
+                        {['bottom-right', 'bottom-left'].map((pos) => (
+                          <button
+                            key={pos}
+                            type="button"
+                            onClick={() => setFormData({ ...formData, launcherPosition: pos })}
+                            className={`rounded-lg border px-4 py-2 text-xs font-semibold capitalize transition ${
+                              formData.launcherPosition === pos
+                                ? 'bg-blue-50 dark:bg-blue-950/60 border-blue-600 text-blue-700 dark:text-blue-400'
+                                : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400'
+                            }`}
                           >
-                            {q}
-                          </div>
+                            {pos.replace('-', ' ')}
+                          </button>
                         ))}
                       </div>
                     </div>
 
-                    <div className="p-2.5 bg-white border-t border-slate-200 flex items-center gap-2">
-                      <div className="flex-1 text-xs text-slate-400 px-3 py-1.5 bg-slate-100 rounded-full">
-                        Ask a question...
+                    {/* Starter Questions */}
+                    <div>
+                      <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1.5">
+                        Suggested Starter Questions (1 per line)
+                      </label>
+                      <textarea
+                        rows={3}
+                        value={(formData.starterQuestions || []).join('\n')}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            starterQuestions: e.target.value.split('\n').filter((q) => q.trim() !== ''),
+                          })
+                        }
+                        className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-850 p-2.5 text-xs text-slate-900 dark:text-slate-100 outline-none focus:border-blue-500"
+                      />
+                    </div>
+
+                    {/* Lead Capture Toggle */}
+                    <div className="flex items-center justify-between rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-850 p-3.5">
+                      <div>
+                        <div className="text-xs font-semibold text-slate-900 dark:text-white">Lead Capture Form</div>
+                        <div className="text-[11px] text-slate-500 dark:text-slate-400">Ask visitor for email address during chat</div>
                       </div>
+                      <input
+                        type="checkbox"
+                        checked={formData.collectLeadEmail || false}
+                        onChange={(e) => setFormData({ ...formData, collectLeadEmail: e.target.checked })}
+                        className="h-4 w-4 rounded accent-blue-600"
+                      />
+                    </div>
+
+                    <div className="pt-2">
+                      <button
+                        onClick={handleSaveSettings}
+                        disabled={isSaving}
+                        className="flex items-center gap-2 rounded-lg bg-blue-600 hover:bg-blue-700 px-4 py-2 text-xs font-semibold text-white transition shadow-xs"
+                      >
+                        <CheckCircle2 className="h-3.5 w-3.5" />
+                        <span>Save Widget Appearance</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Live Preview Frame */}
+                  <div className="flex flex-col items-center justify-center rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-100/60 dark:bg-slate-900/40 p-6 shadow-xs">
+                    <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-4 font-mono uppercase">
+                      Live Widget Preview
+                    </div>
+
+                    {/* Simulated Widget Window */}
+                    <div className="w-80 rounded-2xl bg-white dark:bg-slate-850 text-slate-900 dark:text-white shadow-xl overflow-hidden border border-slate-200 dark:border-slate-750">
                       <div
                         style={{ backgroundColor: formData.primaryColor || '#2563eb' }}
-                        className="h-7 w-7 rounded-full text-white flex items-center justify-center text-xs"
+                        className="p-3.5 text-white flex items-center justify-between"
                       >
-                        <Send className="h-3 w-3" />
+                        <div className="flex items-center gap-2.5">
+                          <div className="h-7 w-7 rounded-full bg-white/20 flex items-center justify-center text-xs font-bold">
+                            AI
+                          </div>
+                          <div>
+                            <div className="text-xs font-bold leading-tight">{formData.name || 'Business AI'}</div>
+                            <div className="text-[10px] opacity-85 flex items-center gap-1">
+                              <span className="h-1.5 w-1.5 rounded-full bg-emerald-300"></span> Online
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="p-4 bg-slate-50 dark:bg-slate-900 space-y-3 min-h-[220px]">
+                        <div className="bg-white dark:bg-slate-800 p-3 rounded-xl rounded-bl-xs text-xs shadow-xs border border-slate-200/60 dark:border-slate-700 text-slate-800 dark:text-slate-200 max-w-[85%]">
+                          {formData.welcomeMessage || 'Hello! How can I assist you today?'}
+                        </div>
+
+                        <div className="space-y-1.5 pt-1">
+                          {(formData.starterQuestions || []).slice(0, 2).map((q, i) => (
+                            <div
+                              key={i}
+                              className="text-[11px] bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-3 py-1.5 rounded-full text-slate-700 dark:text-slate-300 font-medium shadow-2xs"
+                            >
+                              {q}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="p-2.5 bg-white dark:bg-slate-850 border-t border-slate-200 dark:border-slate-750 flex items-center gap-2">
+                        <div className="flex-1 text-xs text-slate-400 px-3 py-1.5 bg-slate-100 dark:bg-slate-800 rounded-full">
+                          Ask a question...
+                        </div>
+                        <div
+                          style={{ backgroundColor: formData.primaryColor || '#2563eb' }}
+                          className="h-7 w-7 rounded-full text-white flex items-center justify-center text-xs shadow-xs"
+                        >
+                          <Send className="h-3 w-3" />
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {/* TAB 6: PLAYGROUND */}
-          {activeTab === 'playground' && (
-            <div className="h-full flex flex-col max-w-4xl space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h1 className="text-xl font-bold text-white flex items-center gap-2">
-                    <span>Chat Playground</span>
-                    <span className="text-xs font-mono font-normal text-slate-400 bg-slate-900 border border-slate-800 px-2 py-0.5 rounded">
-                      Model: {activeAssistant?.modelName || 'llama3.2'}
-                    </span>
-                  </h1>
-                  <p className="text-xs text-slate-400">
-                    Real-time streaming test environment with hybrid vector citations.
-                  </p>
-                </div>
-                <button
-                  onClick={() =>
-                    setChatMessages([
-                      {
-                        role: 'assistant',
-                        content: activeAssistant?.welcomeMessage || 'Hi! How can I help you today?',
-                      },
-                    ])
-                  }
-                  className="text-xs text-slate-400 hover:text-slate-200 bg-slate-900 border border-slate-800 px-2.5 py-1 rounded-md"
-                >
-                  Clear Chat
-                </button>
-              </div>
-
-              {/* Messages container */}
-              <div className="flex-1 overflow-y-auto rounded-xl border border-slate-800 bg-slate-900/30 p-4 space-y-3">
-                {chatMessages.map((msg, i) => (
-                  <div
-                    key={i}
-                    className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}
+            {/* TAB 7: LEADS & INQUIRIES */}
+            {activeTab === 'leads' && (
+              <div className="max-w-5xl space-y-6 mx-auto">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div>
+                    <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Captured Leads</h1>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                      Visitor contact details captured automatically during chatbot conversations.
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => {
+                      const csvHeader = 'ID,Email,Name,Phone,Date\n';
+                      const csvRows = leads
+                        .map((l) => `"${l.id}","${l.email}","${l.name || ''}","${l.phone || ''}","${l.createdAt}"`)
+                        .join('\n');
+                      const blob = new Blob([csvHeader + csvRows], { type: 'text/csv' });
+                      const url = URL.createObjectURL(blob);
+                      const a = document.createElement('a');
+                      a.href = url;
+                      a.download = `leads-${activeAssistant?.name || 'export'}.csv`;
+                      a.click();
+                    }}
+                    disabled={leads.length === 0}
+                    className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs disabled:opacity-50 transition"
                   >
-                    <div
-                      className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-xs leading-relaxed ${
-                        msg.role === 'user'
-                          ? 'bg-blue-600 text-white rounded-br-none'
-                          : 'bg-slate-850 text-slate-200 rounded-bl-none border border-slate-800'
-                      }`}
-                    >
-                      <div className="whitespace-pre-wrap">{msg.content}</div>
+                    <Download className="h-3.5 w-3.5" />
+                    <span>Export CSV</span>
+                  </button>
+                </div>
 
-                      {/* Citations */}
-                      {msg.citations && msg.citations.length > 0 && (
-                        <div className="mt-2.5 pt-2 border-t border-slate-700/60 text-[11px] text-slate-400">
-                          <div className="font-semibold text-slate-300 mb-1">Citations &amp; Knowledge:</div>
-                          <div className="flex flex-wrap gap-1.5">
-                            {msg.citations.map((c: any, ci: number) => (
-                              <span
-                                key={ci}
-                                className="bg-slate-800/80 text-cyan-400 border border-cyan-500/30 px-2 py-0.5 rounded text-[10px] font-mono"
-                                title={c.preview}
-                              >
-                                {c.sourceTitle}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-                      )}
+                <div className="border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-900 shadow-xs overflow-hidden">
+                  {leads.length === 0 ? (
+                    <div className="p-8 text-center text-xs text-slate-500 dark:text-slate-400">
+                      No leads captured yet. Enable &quot;Lead Capture Form&quot; in the Widget tab to begin collecting emails.
                     </div>
-                  </div>
-                ))}
-                {isStreaming && (
-                  <div className="flex items-center gap-1.5 text-slate-400 text-xs py-1">
-                    <span className="h-2 w-2 rounded-full bg-blue-500 animate-pulse"></span>
-                    <span>Retrieving context &amp; generating answer...</span>
-                  </div>
-                )}
-                <div ref={chatEndRef} />
-              </div>
-
-              {/* Starter questions quick pills */}
-              {activeAssistant?.starterQuestions && (
-                <div className="flex flex-wrap gap-2">
-                  {activeAssistant.starterQuestions.map((q, i) => (
-                    <button
-                      key={i}
-                      onClick={() => handleSendMessage(q)}
-                      className="text-[11px] rounded-full border border-slate-800 bg-slate-900/60 px-3 py-1 text-slate-300 hover:border-blue-500 hover:text-blue-400 transition"
-                    >
-                      {q}
-                    </button>
-                  ))}
-                </div>
-              )}
-
-              {/* Input box */}
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  placeholder="Ask a question about your products, pricing, or policies..."
-                  value={inputQuery}
-                  onChange={(e) => setInputQuery(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') handleSendMessage();
-                  }}
-                  className="flex-1 rounded-xl border border-slate-800 bg-slate-900 px-4 py-3 text-xs text-white placeholder-slate-500 outline-none focus:border-blue-500"
-                />
-                <button
-                  onClick={() => handleSendMessage()}
-                  disabled={isStreaming || !inputQuery.trim()}
-                  className="flex items-center gap-1.5 rounded-xl bg-blue-600 px-5 py-3 text-xs font-semibold text-white hover:bg-blue-500 disabled:opacity-50 transition"
-                >
-                  <Send className="h-4 w-4" />
-                  <span>Ask</span>
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* TAB 7: LEADS & INQUIRIES */}
-          {activeTab === 'leads' && (
-            <div className="max-w-5xl space-y-6">
-              <div>
-                <h1 className="text-2xl font-bold tracking-tight text-white">Collected Leads</h1>
-                <p className="text-sm text-slate-400 mt-1">
-                  Visitor contact information collected directly through your website chatbot.
-                </p>
-              </div>
-
-              {leads.length === 0 ? (
-                <div className="rounded-xl border border-slate-800/60 bg-slate-900/20 p-8 text-center text-xs text-slate-500">
-                  No leads captured yet. Turn on &quot;Lead Capture Form&quot; in the Widget tab to start collecting visitor emails!
-                </div>
-              ) : (
-                <div className="rounded-xl border border-slate-800 bg-slate-900/40 overflow-hidden">
-                  <table className="w-full text-left text-xs">
-                    <thead className="border-b border-slate-800 bg-slate-900/80 text-slate-400 font-mono uppercase text-[10px]">
-                      <tr>
-                        <th className="p-3.5">Email</th>
-                        <th className="p-3.5">Name</th>
-                        <th className="p-3.5">Phone</th>
-                        <th className="p-3.5">Date</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-800/60 text-slate-300">
-                      {leads.map((l) => (
-                        <tr key={l.id} className="hover:bg-slate-850/40">
-                          <td className="p-3.5 font-medium text-white">{l.email}</td>
-                          <td className="p-3.5">{l.name || '—'}</td>
-                          <td className="p-3.5">{l.phone || '—'}</td>
-                          <td className="p-3.5 font-mono text-[11px] text-slate-500">
-                            {new Date(l.createdAt).toLocaleDateString()}
-                          </td>
+                  ) : (
+                    <table className="w-full text-left text-xs">
+                      <thead className="bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 font-semibold border-b border-slate-200 dark:border-slate-800">
+                        <tr>
+                          <th className="py-3 px-5">Visitor Email</th>
+                          <th className="py-3 px-5">Name</th>
+                          <th className="py-3 px-5">Phone</th>
+                          <th className="py-3 px-5">Date Captured</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                        {leads.map((lead) => (
+                          <tr key={lead.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition">
+                            <td className="py-3.5 px-5 font-semibold text-slate-900 dark:text-white font-mono">
+                              {lead.email}
+                            </td>
+                            <td className="py-3.5 px-5 text-slate-600 dark:text-slate-400">
+                              {lead.name || '—'}
+                            </td>
+                            <td className="py-3.5 px-5 text-slate-600 dark:text-slate-400 font-mono">
+                              {lead.phone || '—'}
+                            </td>
+                            <td className="py-3.5 px-5 text-slate-500 dark:text-slate-400 font-mono">
+                              {new Date(lead.createdAt).toLocaleString()}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  )}
                 </div>
-              )}
-            </div>
-          )}
-        </main>
-      </div>
-
-      {/* Modal: Create Assistant */}
-      {showNewModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-          <div className="w-full max-w-md rounded-2xl border border-slate-800 bg-slate-900 p-6 shadow-2xl space-y-4">
-            <h3 className="text-lg font-bold text-white">Create New Business Assistant</h3>
-            <p className="text-xs text-slate-400">
-              Each assistant has its own independent knowledge base, personality, and embeddable widget.
-            </p>
-            <form onSubmit={handleCreateAssistant} className="space-y-4">
-              <div>
-                <label className="text-xs font-semibold text-slate-300 block mb-1">
-                  Assistant Name
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g. Sales Specialist, Store FAQ Bot"
-                  value={newAssistantName}
-                  onChange={(e) => setNewAssistantName(e.target.value)}
-                  className="w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-xs text-white outline-none focus:border-blue-500"
-                  autoFocus
-                />
               </div>
+            )}
 
-              <div className="flex justify-end gap-2 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setShowNewModal(false)}
-                  className="rounded-lg border border-slate-800 px-3 py-1.5 text-xs text-slate-300 hover:bg-slate-800"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={!newAssistantName.trim()}
-                  className="rounded-lg bg-blue-600 px-4 py-1.5 text-xs font-semibold text-white hover:bg-blue-500 disabled:opacity-50"
-                >
-                  Create Assistant
-                </button>
-              </div>
-            </form>
-          </div>
+          </main>
         </div>
-      )}
 
-      {/* Modal: Embed & WordPress Installation */}
-      {showEmbedModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-          <div className="w-full max-w-xl rounded-2xl border border-slate-800 bg-slate-900 p-6 shadow-2xl space-y-5">
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                <Globe className="h-5 w-5 text-blue-400" />
-                <span>Deploy &amp; Connect Website</span>
-              </h3>
-              <button
-                onClick={() => setShowEmbedModal(false)}
-                className="text-slate-400 hover:text-white text-xs"
-              >
-                ✕
-              </button>
-            </div>
-
-            {/* Option 1: WordPress Plugin */}
-            <div className="rounded-xl border border-slate-800 bg-slate-950 p-4 space-y-2.5">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-white flex items-center gap-1.5">
-                  <span className="bg-blue-600 text-white text-[10px] font-bold px-2 py-0.5 rounded">WP</span>
-                  WordPress 1-Click Plugin
-                </span>
-                <span className="text-[10px] text-emerald-400 font-mono">Ready in /wordpress</span>
-              </div>
-              <p className="text-xs text-slate-400">
-                Install the included <code className="text-slate-200">ai-business-assistant</code> plugin into your WordPress site, enter your Assistant ID, and your chatbot appears automatically on all pages!
+        {/* MODAL: NEW ASSISTANT */}
+        {showNewModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 backdrop-blur-xs p-4">
+            <div className="w-full max-w-md rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-2xl space-y-4">
+              <h2 className="text-base font-bold text-slate-900 dark:text-white">Create New Business Assistant</h2>
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                Create an isolated assistant with its own knowledge base, prompt instructions, and website widget.
               </p>
-              <div className="text-xs font-mono text-slate-400 bg-slate-900 p-2 rounded border border-slate-800">
-                Assistant ID: <strong className="text-cyan-300">{activeAssistant?.id}</strong>
-              </div>
-            </div>
-
-            {/* Option 2: Standalone HTML Embed */}
-            <div className="rounded-xl border border-slate-800 bg-slate-950 p-4 space-y-2.5">
-              <span className="text-xs font-bold text-white">
-                Universal HTML Script Tag (Shopify, Webflow, Squarespace, Custom)
-              </span>
-              <div className="rounded-lg bg-slate-900 p-3 text-xs font-mono text-cyan-300 border border-slate-800 overflow-x-auto">
-                &lt;script src=&quot;{typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000'}/widget.js&quot; data-assistant=&quot;{activeAssistant?.id}&quot; defer&gt;&lt;/script&gt;
-              </div>
-              <button
-                onClick={() => {
-                  navigator.clipboard.writeText(
-                    `<script src="${window.location.origin}/widget.js" data-assistant="${activeAssistant?.id}" defer></script>`
-                  );
-                  setCopiedCode(true);
-                  setTimeout(() => setCopiedCode(false), 2000);
-                }}
-                className="flex items-center gap-1.5 text-xs text-blue-400 hover:text-blue-300 font-medium"
-              >
-                <Copy className="h-3.5 w-3.5" />
-                <span>{copiedCode ? 'Copied to Clipboard!' : 'Copy Embed Code'}</span>
-              </button>
+              <form onSubmit={handleCreateAssistant} className="space-y-4">
+                <div>
+                  <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1">
+                    Assistant Name
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Sales Specialist, Store Support AI"
+                    value={newAssistantName}
+                    onChange={(e) => setNewAssistantName(e.target.value)}
+                    className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3 py-2 text-xs text-slate-900 dark:text-slate-100 outline-none focus:border-blue-500"
+                  />
+                </div>
+                <div className="flex justify-end gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowNewModal(false)}
+                    className="rounded-lg border border-slate-200 dark:border-slate-700 px-3 py-1.5 text-xs text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="rounded-lg bg-blue-600 hover:bg-blue-700 px-4 py-1.5 text-xs font-semibold text-white shadow-xs transition"
+                  >
+                    Create Assistant
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
-        </div>
-      )}
+        )}
+
+        {/* MODAL: EMBED & DEPLOY */}
+        {showEmbedModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 backdrop-blur-xs p-4">
+            <div className="w-full max-w-xl rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-2xl space-y-4">
+              <div className="flex items-center justify-between">
+                <h2 className="text-base font-bold text-slate-900 dark:text-white">Deploy on Website &amp; WordPress</h2>
+                <button
+                  onClick={() => setShowEmbedModal(false)}
+                  className="text-slate-400 hover:text-slate-600 text-xs"
+                >
+                  ✕
+                </button>
+              </div>
+
+              <div className="space-y-4 text-xs text-slate-600 dark:text-slate-300">
+                <div>
+                  <h4 className="font-semibold text-slate-900 dark:text-white mb-1">Option 1: Single-Line JavaScript Embed</h4>
+                  <p className="text-slate-500 dark:text-slate-400 text-[11px] mb-2">
+                    Paste this snippet before <code className="text-blue-600 dark:text-blue-400">&lt;/body&gt;</code> on any HTML, Shopify, or Webflow site:
+                  </p>
+                  <div className="relative">
+                    <pre className="p-3 rounded-lg bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-[11px] font-mono text-slate-800 dark:text-cyan-300 overflow-x-auto">
+{`<script src="${typeof window !== 'undefined' ? window.location.origin : 'https://your-domain.com'}/widget.js" data-assistant="${activeAssistant?.id}" defer></script>`}
+                    </pre>
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(
+                          `<script src="${window.location.origin}/widget.js" data-assistant="${activeAssistant?.id}" defer></script>`
+                        );
+                        setCopiedCode(true);
+                        setTimeout(() => setCopiedCode(false), 2000);
+                      }}
+                      className="absolute right-2 top-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-2 py-1 rounded text-[10px] text-slate-700 dark:text-slate-300 font-semibold"
+                    >
+                      {copiedCode ? 'Copied!' : 'Copy'}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="pt-2 border-t border-slate-200 dark:border-slate-800">
+                  <h4 className="font-semibold text-slate-900 dark:text-white mb-1">Option 2: 1-Click WordPress Plugin</h4>
+                  <p className="text-slate-500 dark:text-slate-400 text-[11px] mb-2">
+                    The standalone plugin is included in your repository at <code className="text-slate-700 dark:text-slate-300 font-mono">wordpress/ai-business-assistant/</code>.
+                  </p>
+                  <ol className="list-decimal pl-4 space-y-1 text-slate-600 dark:text-slate-400 text-[11px]">
+                    <li>Zip the <code className="font-mono">ai-business-assistant</code> folder and upload to WordPress Admin &rarr; Plugins &rarr; Add New.</li>
+                    <li>Activate the plugin and open <code className="font-mono">AI Assistant</code> settings in the WordPress menu.</li>
+                    <li>Set Server URL to <code className="font-mono">{typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000'}</code> and Assistant ID to <code className="font-mono">{activeAssistant?.id}</code>.</li>
+                  </ol>
+                </div>
+              </div>
+
+              <div className="flex justify-end pt-2">
+                <button
+                  onClick={() => setShowEmbedModal(false)}
+                  className="rounded-lg bg-blue-600 hover:bg-blue-700 px-4 py-1.5 text-xs font-semibold text-white shadow-xs transition"
+                >
+                  Done
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+      </div>
     </div>
   );
 }
