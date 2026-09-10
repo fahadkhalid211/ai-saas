@@ -179,18 +179,16 @@ function parseJson(content: string, title: string): ExtractedDocument {
 // Image OCR Parsing with Tesseract.js (JPG, PNG, WEBP)
 async function parseImage(buffer: Buffer, title: string): Promise<ExtractedDocument> {
   try {
-    const { createWorker } = await import('tesseract.js');
-    const worker = await createWorker('eng');
-    const ret = await worker.recognize(buffer);
-    await worker.terminate();
+    const Tesseract = await import('tesseract.js');
+    const ret = await Tesseract.recognize(buffer, 'eng');
 
-    const cleanText = ret.data.text
+    const cleanText = (ret.data.text || '')
       .replace(/\r\n/g, '\n')
       .replace(/\n{3,}/g, '\n\n')
       .trim();
 
     if (!cleanText || cleanText.length < 3) {
-      throw new Error('No legible text could be extracted from this image. Please ensure the image contains clear, readable text.');
+      throw new Error('Image contains no detectable text. Please upload documents or screenshots with legible text.');
     }
 
     return {
@@ -203,7 +201,7 @@ async function parseImage(buffer: Buffer, title: string): Promise<ExtractedDocum
     };
   } catch (error: any) {
     console.error('Error parsing Image OCR:', error);
-    throw new Error(`Failed to extract text from image: ${error?.message || 'OCR extraction failed'}`);
+    throw new Error(`Image extraction failed: ${error?.message || 'OCR failed'}`);
   }
 }
 

@@ -56,6 +56,7 @@ interface KnowledgeSource {
   chunkCount: number;
   fileSizeBytes?: number;
   status: string;
+  errorMessage?: string;
   createdAt: string;
 }
 
@@ -713,10 +714,31 @@ export default function DashboardPage() {
                           </div>
 
                           <div className="flex items-center gap-3">
-                            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-medium text-emerald-400 border border-emerald-500/20">
-                              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
-                              Ready
-                            </span>
+                            {source.status === 'ready' && (
+                              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-medium text-emerald-400 border border-emerald-500/20">
+                                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
+                                Ready
+                              </span>
+                            )}
+                            {source.status === 'processing' && (
+                              <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-2 py-0.5 text-[10px] font-medium text-amber-400 border border-amber-500/20">
+                                <RefreshCw className="h-2.5 w-2.5 animate-spin" />
+                                Processing...
+                              </span>
+                            )}
+                            {source.status === 'failed' && (
+                              <div className="flex flex-col items-end">
+                                <span className="inline-flex items-center gap-1 rounded-full bg-rose-500/10 px-2 py-0.5 text-[10px] font-medium text-rose-400 border border-rose-500/20">
+                                  <span className="h-1.5 w-1.5 rounded-full bg-rose-400"></span>
+                                  Failed
+                                </span>
+                                {source.errorMessage && (
+                                  <span className="text-[9px] text-rose-400/80 max-w-[180px] truncate" title={source.errorMessage}>
+                                    {source.errorMessage}
+                                  </span>
+                                )}
+                              </div>
+                            )}
                             <button
                               onClick={() => handleDeleteSource(source.id)}
                               className="text-slate-500 hover:text-rose-400 transition p-1.5 rounded-md hover:bg-slate-800"
