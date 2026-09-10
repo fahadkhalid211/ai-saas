@@ -747,13 +747,13 @@ export default function DashboardPage() {
                         Drop files here or click to browse
                       </span>
                       <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                        Supports PDF, CSV tables, JSON catalogues, Word DOCX, TXT &amp; Images
+                        Supports PDF, CSV tables, JSON catalogues, Word DOCX, TXT, Images, &amp; Video/Audio (MP4, MP3, WAV, M4A, WEBM)
                       </p>
                     </div>
                     <input
                       type="file"
                       multiple
-                      accept=".pdf,.csv,.json,.docx,.txt,.jpg,.jpeg,.png,.webp"
+                      accept=".pdf,.csv,.json,.docx,.txt,.jpg,.jpeg,.png,.webp,.mp4,.webm,.mov,.mkv,.avi,.m4v,.3gp,.mp3,.wav,.m4a,.ogg,.flac,.aac"
                       onChange={(e) => setSelectedFiles(e.target.files)}
                       className="text-xs text-slate-500 dark:text-slate-400 file:mr-4 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-500 cursor-pointer"
                     />
@@ -856,9 +856,17 @@ export default function DashboardPage() {
                                   ? 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800'
                                   : source.type === 'json'
                                   ? 'bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-800'
+                                  : ['mp4', 'webm', 'mov', 'mkv', 'avi', 'm4v', 'video'].includes(source.type.toLowerCase())
+                                  ? 'bg-purple-50 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-800'
+                                  : ['mp3', 'wav', 'm4a', 'ogg', 'flac', 'aac', 'audio'].includes(source.type.toLowerCase())
+                                  ? 'bg-cyan-50 dark:bg-cyan-950/50 text-cyan-600 dark:text-cyan-400 border border-cyan-200 dark:border-cyan-800'
                                   : 'bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800'
                               }`}>
-                                {source.type.toUpperCase()}
+                                {['mp4', 'webm', 'mov', 'mkv', 'avi', 'm4v', 'video'].includes(source.type.toLowerCase())
+                                  ? '🎥 VIDEO'
+                                  : ['mp3', 'wav', 'm4a', 'ogg', 'flac', 'aac', 'audio'].includes(source.type.toLowerCase())
+                                  ? '🎙️ AUDIO'
+                                  : source.type.toUpperCase()}
                               </span>
                               <span className="truncate max-w-[280px]" title={source.title}>{source.title}</span>
                             </td>
@@ -957,15 +965,28 @@ export default function DashboardPage() {
                               <div className="mt-2.5 pt-2 border-t border-slate-200 dark:border-slate-700 text-[11px]">
                                 <div className="font-semibold text-slate-600 dark:text-slate-400 mb-1">Citations &amp; Sources:</div>
                                 <div className="flex flex-wrap gap-1.5">
-                                  {msg.citations.map((c: any, ci: number) => (
-                                    <span
-                                      key={ci}
-                                      className="bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 px-2 py-0.5 rounded text-[10px] font-mono"
-                                      title={c.preview}
-                                    >
-                                      📄 {c.sourceTitle}
-                                    </span>
-                                  ))}
+                                  {msg.citations.map((c: any, ci: number) => {
+                                    const st = (c.sourceType || '').toLowerCase();
+                                    const stTitle = (c.sourceTitle || '').toLowerCase();
+                                    const isVid = ['mp4', 'webm', 'mov', 'mkv', 'avi', 'm4v', 'video'].some((e) => st.includes(e) || stTitle.endsWith(`.${e}`));
+                                    const isAud = ['mp3', 'wav', 'm4a', 'ogg', 'flac', 'aac', 'audio'].some((e) => st.includes(e) || stTitle.endsWith(`.${e}`));
+                                    const icon = isVid ? '🎥' : isAud ? '🎙️' : st === 'pdf' || stTitle.endsWith('.pdf') ? '📄' : st === 'csv' || stTitle.endsWith('.csv') ? '📊' : '📝';
+                                    return (
+                                      <span
+                                        key={ci}
+                                        className={`border px-2 py-0.5 rounded text-[10px] font-mono ${
+                                          isVid
+                                            ? 'bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800'
+                                            : isAud
+                                            ? 'bg-cyan-50 dark:bg-cyan-950/60 text-cyan-700 dark:text-cyan-300 border-cyan-200 dark:border-cyan-800'
+                                            : 'bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800'
+                                        }`}
+                                        title={c.preview}
+                                      >
+                                        {icon} {c.sourceTitle}
+                                      </span>
+                                    );
+                                  })}
                                 </div>
                               </div>
                             )}
@@ -1047,14 +1068,22 @@ export default function DashboardPage() {
                           </div>
                         ) : (
                           <div className="space-y-2 max-h-60 overflow-y-auto">
-                            {activeCitations.map((c, i) => (
-                              <div key={i} className="p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60 text-[11px] space-y-1">
-                                <div className="text-blue-600 dark:text-blue-400 font-mono font-bold text-[10px]">
-                                  [{i + 1}] {c.sourceTitle}
+                            {activeCitations.map((c, i) => {
+                              const st = (c.sourceType || '').toLowerCase();
+                              const stTitle = (c.sourceTitle || '').toLowerCase();
+                              const isVid = ['mp4', 'webm', 'mov', 'mkv', 'avi', 'm4v', 'video'].some((e) => st.includes(e) || stTitle.endsWith(`.${e}`));
+                              const isAud = ['mp3', 'wav', 'm4a', 'ogg', 'flac', 'aac', 'audio'].some((e) => st.includes(e) || stTitle.endsWith(`.${e}`));
+                              const icon = isVid ? '🎥' : isAud ? '🎙️' : st === 'pdf' || stTitle.endsWith('.pdf') ? '📄' : st === 'csv' || stTitle.endsWith('.csv') ? '📊' : '📝';
+                              return (
+                                <div key={i} className="p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60 text-[11px] space-y-1">
+                                  <div className="text-blue-600 dark:text-blue-400 font-mono font-bold text-[10px] flex items-center gap-1.5">
+                                    <span>[{i + 1}]</span>
+                                    <span>{icon} {c.sourceTitle}</span>
+                                  </div>
+                                  <div className="text-slate-600 dark:text-slate-300 line-clamp-2">{c.preview}</div>
                                 </div>
-                                <div className="text-slate-600 dark:text-slate-300 line-clamp-2">{c.preview}</div>
-                              </div>
-                            ))}
+                              );
+                            })}
                           </div>
                         )}
                       </div>

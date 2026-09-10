@@ -33,24 +33,31 @@ export async function POST(req: Request) {
         const arrayBuffer = await file.arrayBuffer();
         const buffer = Buffer.from(arrayBuffer);
 
-        // Determine extension
+        // Determine extension and media type
         const ext = filename.split('.').pop()?.toLowerCase() || 'txt';
+        const isVideo = ['mp4', 'webm', 'mov', 'mkv', 'avi', 'm4v', '3gp'].includes(ext);
+        const isAudio = ['mp3', 'wav', 'm4a', 'ogg', 'flac', 'aac', 'opus', 'wma'].includes(ext);
+        const sourceDocType = isVideo ? 'video' : isAudio ? 'audio' : ext;
 
         // 1. Create Knowledge Source record
         const source = await Database.createKnowledgeSource({
           assistantId,
           title: filename,
-          type: ext,
+          type: sourceDocType,
           fileSizeBytes: file.size,
           status: 'processing',
         });
 
         try {
-          // 2. Parse file
+          // 2. Parse file (transcribing video/audio speech if media file)
           const doc = await parseFileOrText({
             filename,
             type: ext,
             buffer,
+            options: {
+              apiKey: assistant.apiKeyEncrypted,
+              provider: assistant.provider,
+            },
           });
 
           // 3. Chunk text
@@ -73,7 +80,7 @@ export async function POST(req: Request) {
             metadata: {
               ...chunk.metadata,
               sourceTitle: filename,
-              sourceType: ext,
+              sourceType: doc.type || sourceDocType,
             },
             embedding: embeddings[i],
           }));

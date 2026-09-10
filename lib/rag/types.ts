@@ -1,6 +1,25 @@
 export interface ExtractedDocument {
   title: string;
-  type: 'pdf' | 'docx' | 'csv' | 'json' | 'txt' | 'description' | 'image' | 'jpg' | 'jpeg' | 'png' | 'webp';
+  type:
+    | 'pdf'
+    | 'docx'
+    | 'csv'
+    | 'json'
+    | 'txt'
+    | 'description'
+    | 'image'
+    | 'jpg'
+    | 'jpeg'
+    | 'png'
+    | 'webp'
+    | 'video'
+    | 'audio'
+    | 'mp4'
+    | 'mp3'
+    | 'wav'
+    | 'webm'
+    | 'm4a'
+    | string;
   content: string;
   sections?: {
     heading?: string;

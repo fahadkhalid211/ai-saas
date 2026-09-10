@@ -1,6 +1,15 @@
 import mammoth from 'mammoth';
 import { parse as parseCsvSync } from 'csv-parse/sync';
 import { ExtractedDocument } from './types';
+import {
+  parseMediaFile,
+  isMediaFile,
+  isVideoFile,
+  isAudioFile,
+  TranscribeOptions,
+} from './transcriber';
+
+export { isMediaFile, isVideoFile, isAudioFile };
 
 // PDF Parsing with unpdf (Universal Mozilla PDF.js for Node.js)
 async function parsePdf(buffer: Buffer, title: string): Promise<ExtractedDocument> {
@@ -215,9 +224,16 @@ export async function parseFileOrText(params: {
   type: string;
   buffer?: Buffer;
   text?: string;
+  options?: TranscribeOptions;
 }): Promise<ExtractedDocument> {
-  const { filename, type, buffer, text } = params;
+  const { filename, type, buffer, text, options } = params;
   const lowerName = filename.toLowerCase();
+
+  // Audio and Video files
+  if (isMediaFile(filename) || type === 'video' || type === 'audio') {
+    if (!buffer) throw new Error('Media file buffer required for speech transcription');
+    return await parseMediaFile(buffer, filename, options);
+  }
 
   if (type === 'pdf' || lowerName.endsWith('.pdf')) {
     if (!buffer) throw new Error('PDF buffer required');
