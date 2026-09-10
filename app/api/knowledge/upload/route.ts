@@ -3,6 +3,7 @@ import { Database } from '@/lib/db';
 import { parseFileOrText } from '@/lib/rag/parsers';
 import { chunkDocument } from '@/lib/rag/chunker';
 import { generateEmbeddingsBatch } from '@/lib/rag/embedder';
+import { diagnoseKnowledgeFailure } from '@/lib/rag/diagnostics';
 
 export async function POST(req: Request) {
   try {
@@ -101,15 +102,25 @@ export async function POST(req: Request) {
           });
         } catch (fileErr: any) {
           console.error(`Failed processing ${filename}:`, fileErr);
+          const diag = diagnoseKnowledgeFailure({
+            filename,
+            type: ext,
+            errorMessage: fileErr?.message,
+            fileSizeBytes: file.size,
+          });
+
           await Database.updateKnowledgeSource(source.id, {
             status: 'failed',
-            errorMessage: fileErr?.message || 'Extraction failed',
+            errorMessage: diag.reason,
+            errorResolution: diag.whatToDoNext,
           });
+
           processedSources.push({
             id: source.id,
             title: filename,
             status: 'failed',
-            error: fileErr?.message,
+            error: diag.reason,
+            whatToDoNext: diag.whatToDoNext,
           });
         }
       }
@@ -164,9 +175,23 @@ export async function POST(req: Request) {
           status: 'ready',
         });
       } catch (textErr: any) {
+        const diag = diagnoseKnowledgeFailure({
+          filename: textTitle,
+          type: 'description',
+          errorMessage: textErr?.message,
+          fileSizeBytes: Buffer.byteLength(rawText, 'utf-8'),
+        });
         await Database.updateKnowledgeSource(source.id, {
           status: 'failed',
-          errorMessage: textErr?.message || 'Processing failed',
+          errorMessage: diag.reason,
+          errorResolution: diag.whatToDoNext,
+        });
+        processedSources.push({
+          id: source.id,
+          title: textTitle,
+          status: 'failed',
+          error: diag.reason,
+          whatToDoNext: diag.whatToDoNext,
         });
       }
     }

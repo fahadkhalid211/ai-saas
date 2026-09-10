@@ -38,6 +38,7 @@ export interface KnowledgeSourceData {
   fileSizeBytes?: number;
   status: string; // pending, processing, ready, failed
   errorMessage?: string;
+  errorResolution?: string;
   chunkCount: number;
   createdAt: string;
   updatedAt: string;

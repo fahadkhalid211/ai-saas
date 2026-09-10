@@ -1,5 +1,6 @@
 import OpenAI, { toFile } from 'openai';
 import { ExtractedDocument } from './types';
+import { diagnoseKnowledgeFailure } from './diagnostics';
 
 // Supported audio and video extensions
 export const AUDIO_EXTENSIONS = new Set([
@@ -108,10 +109,16 @@ export async function transcribeMedia(
   const maxBytes = 25 * 1024 * 1024; // 25MB Whisper direct limit
 
   if (byteLength > maxBytes) {
-    const sizeMb = (byteLength / (1024 * 1024)).toFixed(1);
-    throw new Error(
-      `File "${filename}" is ${sizeMb}MB, exceeding the 25MB limit. Please compress the file or export an audio-only version (e.g. MP3 or M4A) for faster transcription.`
-    );
+    const diag = diagnoseKnowledgeFailure({
+      filename,
+      type: isVideoFile(filename) ? 'video' : 'audio',
+      fileSizeBytes: byteLength,
+      errorMessage: 'File size exceeds 25MB limit',
+    });
+    const sizeErr: any = new Error(diag.reason);
+    sizeErr.whatToDoNext = diag.whatToDoNext;
+    sizeErr.category = diag.category;
+    throw sizeErr;
   }
 
   // Determine provider and API key
@@ -182,11 +189,30 @@ export async function transcribeMedia(
     }
   }
 
-  const mimeType = getMediaMimeType(filename);
-  // Prepare file upload
-  const fileObj = await toFile(buffer, filename, { type: mimeType });
+  const ext = filename.split('.').pop()?.toLowerCase() || '';
+  const isVid = isVideoFile(filename);
 
-  console.log(`[Transcriber] Starting transcription of "${filename}" (${(byteLength / 1024).toFixed(1)} KB) using ${model}...`);
+  // Groq's API gateway strictly whitelists: flac, mp3, mp4, mpeg, mpga, m4a, ogg, opus, wav, webm.
+  // Map non-whitelisted video containers (e.g. .mov, .mkv, .avi) to .mp4 so Groq's backend ffmpeg handles them.
+  let uploadFilename = filename;
+  let uploadMime = getMediaMimeType(filename);
+
+  const GROQ_WHITELIST = new Set(['flac', 'mp3', 'mp4', 'mpeg', 'mpga', 'm4a', 'ogg', 'opus', 'wav', 'webm']);
+  if (!GROQ_WHITELIST.has(ext)) {
+    const baseName = filename.replace(/\.[^/.]+$/, '');
+    if (isVid) {
+      uploadFilename = `${baseName}.mp4`;
+      uploadMime = 'video/mp4';
+    } else {
+      uploadFilename = `${baseName}.m4a`;
+      uploadMime = 'audio/m4a';
+    }
+  }
+
+  // Prepare file upload
+  const fileObj = await toFile(buffer, uploadFilename, { type: uploadMime });
+
+  console.log(`[Transcriber] Starting transcription of "${filename}" (uploaded as "${uploadFilename}", ${(byteLength / 1024).toFixed(1)} KB) using ${model}...`);
 
   try {
     const resp: any = await client.audio.transcriptions.create({
@@ -220,9 +246,19 @@ export async function transcribeMedia(
     };
   } catch (err: any) {
     console.error(`[Transcriber] Transcription failed for ${filename}:`, err);
-    throw new Error(
-      `Media transcription failed: ${err?.response?.data?.error?.message || err?.message || 'Unknown transcription error'}`
-    );
+    const rawMsg = err?.response?.data?.error?.message || err?.message || 'Unknown transcription error';
+    const diag = diagnoseKnowledgeFailure({
+      filename,
+      type: isVid ? 'video' : 'audio',
+      errorMessage: rawMsg,
+      fileSizeBytes: byteLength,
+    });
+
+    const enrichedErr: any = new Error(diag.reason);
+    enrichedErr.whatToDoNext = diag.whatToDoNext;
+    enrichedErr.category = diag.category;
+    enrichedErr.rawMessage = rawMsg;
+    throw enrichedErr;
   }
 }
 
