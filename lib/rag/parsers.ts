@@ -176,6 +176,37 @@ function parseJson(content: string, title: string): ExtractedDocument {
   }
 }
 
+// Image OCR Parsing with Tesseract.js (JPG, PNG, WEBP)
+async function parseImage(buffer: Buffer, title: string): Promise<ExtractedDocument> {
+  try {
+    const { createWorker } = await import('tesseract.js');
+    const worker = await createWorker('eng');
+    const ret = await worker.recognize(buffer);
+    await worker.terminate();
+
+    const cleanText = ret.data.text
+      .replace(/\r\n/g, '\n')
+      .replace(/\n{3,}/g, '\n\n')
+      .trim();
+
+    if (!cleanText || cleanText.length < 3) {
+      throw new Error('No legible text could be extracted from this image. Please ensure the image contains clear, readable text.');
+    }
+
+    return {
+      title,
+      type: 'image',
+      content: `[Image Document: ${title}]\n\n` + cleanText,
+      metadata: {
+        confidence: ret.data.confidence,
+      },
+    };
+  } catch (error: any) {
+    console.error('Error parsing Image OCR:', error);
+    throw new Error(`Failed to extract text from image: ${error?.message || 'OCR extraction failed'}`);
+  }
+}
+
 // Universal parser entry point
 export async function parseFileOrText(params: {
   filename: string;
@@ -184,24 +215,39 @@ export async function parseFileOrText(params: {
   text?: string;
 }): Promise<ExtractedDocument> {
   const { filename, type, buffer, text } = params;
+  const lowerName = filename.toLowerCase();
 
-  if (type === 'pdf' || filename.endsWith('.pdf')) {
+  if (type === 'pdf' || lowerName.endsWith('.pdf')) {
     if (!buffer) throw new Error('PDF buffer required');
     return await parsePdf(buffer, filename);
   }
 
-  if (type === 'docx' || filename.endsWith('.docx')) {
+  if (type === 'docx' || lowerName.endsWith('.docx')) {
     if (!buffer) throw new Error('DOCX buffer required');
     return await parseDocx(buffer, filename);
   }
 
+  // Images (JPG, JPEG, PNG, WEBP)
+  const isImage =
+    type === 'image' ||
+    type === 'jpg' ||
+    type === 'jpeg' ||
+    type === 'png' ||
+    type === 'webp' ||
+    /\.(jpe?g|png|webp)$/i.test(lowerName);
+
+  if (isImage) {
+    if (!buffer) throw new Error('Image buffer required for OCR');
+    return await parseImage(buffer, filename);
+  }
+
   const textContent = text || (buffer ? buffer.toString('utf-8') : '');
 
-  if (type === 'csv' || filename.endsWith('.csv')) {
+  if (type === 'csv' || lowerName.endsWith('.csv')) {
     return parseCsv(textContent, filename);
   }
 
-  if (type === 'json' || filename.endsWith('.json')) {
+  if (type === 'json' || lowerName.endsWith('.json')) {
     return parseJson(textContent, filename);
   }
 
@@ -213,3 +259,4 @@ export async function parseFileOrText(params: {
     content: clean,
   };
 }
+

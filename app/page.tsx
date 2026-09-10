@@ -607,13 +607,13 @@ export default function DashboardPage() {
                       Drop files here or click to browse
                     </span>
                     <p className="text-xs text-slate-400 mt-0.5">
-                      Supports PDF, CSV, JSON, DOCX, TXT (up to 25MB per file)
+                      Supports PDF, CSV, JSON, DOCX, TXT &amp; Images (JPG, PNG with OCR)
                     </p>
                   </div>
                   <input
                     type="file"
                     multiple
-                    accept=".pdf,.csv,.json,.docx,.txt"
+                    accept=".pdf,.csv,.json,.docx,.txt,.jpg,.jpeg,.png,.webp"
                     onChange={(e) => setSelectedFiles(e.target.files)}
                     className="text-xs text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-500 cursor-pointer"
                   />

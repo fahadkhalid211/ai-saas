@@ -184,10 +184,23 @@ export async function* streamChatResponse(
   } catch (error: any) {
     console.error(`[AI Provider Error - ${provider}]:`, error);
 
-    if (provider === 'ollama' && error?.code === 'ECONNREFUSED') {
-      yield `\n\n*(Notice: Could not connect to local Ollama at ${options.customBaseUrl || 'http://localhost:11434'}. Please ensure Ollama is running (` +
-        '`ollama serve`' +
-        `) or configure a cloud provider like Groq, OpenAI, or Gemini in your assistant settings.)*`;
+    const isConnError =
+      error?.name === 'APIConnectionError' ||
+      error?.message?.toLowerCase().includes('connection error') ||
+      error?.message?.toLowerCase().includes('fetch failed') ||
+      error?.code === 'ECONNREFUSED' ||
+      error?.cause?.code === 'ECONNREFUSED';
+
+    if (provider === 'ollama' && isConnError) {
+      yield `\n\n*(Notice: Could not connect to local Ollama at ${options.customBaseUrl || 'http://localhost:11434'}.\n\n` +
+        `• **Option 1 (Local $0 Open-Source):** Make sure Ollama is installed and running: \`ollama run llama3.2\`\n` +
+        `• **Option 2 (Free Cloud Inference):** In the **"AI Engine (BYOK)"** tab, switch to **Groq** (free tier Llama 3) or **Google Gemini** (free tier).\n` +
+        `• **Option 3 (Paid BYOK):** Switch to **OpenAI**, **Anthropic Claude**, or **DeepSeek** and paste your API key.)*`;
+      return;
+    }
+
+    if (isConnError) {
+      yield `\n\n*(Connection Error: Unable to reach provider "${provider}". Please verify your endpoint URL or network connection in the "AI Engine (BYOK)" tab.)*`;
       return;
     }
 
