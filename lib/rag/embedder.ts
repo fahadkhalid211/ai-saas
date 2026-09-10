@@ -25,6 +25,8 @@ async function getExtractor() {
   return extractorPromise;
 }
 
+const embeddingCache = new Map<string, number[]>();
+
 /**
  * Generate a 384-dimensional embedding vector for a single text chunk.
  * 100% free, local, open-source.
@@ -35,6 +37,11 @@ export async function generateEmbedding(text: string): Promise<number[]> {
     return new Array(384).fill(0);
   }
 
+  // Check in-memory cache first (0ms latency)
+  if (embeddingCache.has(clean)) {
+    return embeddingCache.get(clean)!;
+  }
+
   try {
     const extractor = await getExtractor();
     if (extractor) {
@@ -42,7 +49,13 @@ export async function generateEmbedding(text: string): Promise<number[]> {
         pooling: 'mean',
         normalize: true,
       });
-      return Array.from(output.data);
+      const vec = Array.from(output.data) as number[];
+      if (embeddingCache.size > 500) {
+        const firstKey = embeddingCache.keys().next().value;
+        if (firstKey) embeddingCache.delete(firstKey);
+      }
+      embeddingCache.set(clean, vec);
+      return vec;
     }
   } catch (error) {
     console.error('[Embedder] Error generating real embedding:', error);

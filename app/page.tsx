@@ -28,6 +28,8 @@ import {
   ShieldCheck,
   ChevronDown,
   Globe,
+  Zap,
+  AlertTriangle,
 } from 'lucide-react';
 
 interface Assistant {
@@ -38,6 +40,8 @@ interface Assistant {
   welcomeMessage: string;
   fallbackMessage: string;
   temperature: number;
+  maxTokens?: number;
+  contextChunks?: number;
   provider: string;
   modelName: string;
   apiKeyEncrypted?: string;
@@ -294,6 +298,19 @@ export default function DashboardPage() {
       let citations: any[] = [];
 
       if (reader) {
+        let updateTimer: any = null;
+        const flushUpdate = () => {
+          setChatMessages((prev) => {
+            const updated = [...prev];
+            updated[tempIndex] = {
+              role: 'assistant',
+              content: streamed,
+              citations,
+            };
+            return updated;
+          });
+        };
+
         while (true) {
           const { done, value } = await reader.read();
           if (done) break;
@@ -308,15 +325,12 @@ export default function DashboardPage() {
                   citations = data.citations || [];
                 } else if (data.type === 'token') {
                   streamed += data.token;
-                  setChatMessages((prev) => {
-                    const updated = [...prev];
-                    updated[tempIndex] = {
-                      role: 'assistant',
-                      content: streamed,
-                      citations,
-                    };
-                    return updated;
-                  });
+                  if (!updateTimer) {
+                    updateTimer = setTimeout(() => {
+                      updateTimer = null;
+                      flushUpdate();
+                    }, 35);
+                  }
                 }
               } catch {
                 // partial parse
@@ -324,6 +338,10 @@ export default function DashboardPage() {
             }
           }
         }
+        if (updateTimer) {
+          clearTimeout(updateTimer);
+        }
+        flushUpdate();
       }
     } catch (err) {
       console.error('Playground chat error:', err);
@@ -774,13 +792,14 @@ export default function DashboardPage() {
               )}
 
               {/* Provider Selection Cards */}
+              {/* Provider Selection Cards */}
               <div className="space-y-3">
                 <label className="text-xs font-semibold text-slate-300">Select AI Provider</label>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                   {[
-                    { id: 'ollama', label: 'Local Ollama', tag: '100% FREE', desc: 'Runs on your server/machine' },
-                    { id: 'groq', label: 'Groq Cloud', tag: 'FREE TIER', desc: 'Blazing fast Llama-3.3-70b' },
-                    { id: 'gemini', label: 'Google Gemini', tag: 'FREE TIER / BYOK', desc: 'Gemini 1.5 & 2.0 Flash' },
+                    { id: 'groq', label: 'Groq Cloud', tag: '⚡ ULTRA-FAST (FREE)', desc: 'Instant sub-second Llama-3.3' },
+                    { id: 'gemini', label: 'Google Gemini', tag: '⚡ FAST (FREE TIER)', desc: 'Gemini 1.5 & 2.0 Flash' },
+                    { id: 'ollama', label: 'Local Ollama', tag: '100% FREE', desc: 'Local CPU/GPU machine' },
                     { id: 'openai', label: 'OpenAI', tag: 'BYOK', desc: 'GPT-4o & GPT-4o-mini' },
                     { id: 'anthropic', label: 'Anthropic Claude', tag: 'BYOK', desc: 'Claude 3.5 Sonnet & Haiku' },
                     { id: 'deepseek', label: 'DeepSeek', tag: 'BYOK', desc: 'DeepSeek-V3 & R1' },
@@ -814,7 +833,13 @@ export default function DashboardPage() {
                         <div className="flex items-center justify-between">
                           <span className="text-xs font-bold text-slate-100">{prov.label}</span>
                           <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${
-                            prov.tag.includes('FREE') ? 'bg-emerald-500/20 text-emerald-400' : 'bg-indigo-500/20 text-indigo-300'
+                            prov.tag.includes('ULTRA-FAST')
+                              ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                              : prov.tag.includes('FAST')
+                              ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30'
+                              : prov.tag.includes('FREE')
+                              ? 'bg-slate-800 text-slate-300'
+                              : 'bg-indigo-500/20 text-indigo-300'
                           }`}>
                             {prov.tag}
                           </span>
@@ -825,6 +850,74 @@ export default function DashboardPage() {
                   })}
                 </div>
               </div>
+
+              {/* Provider Quick Recommendations / Notice */}
+              {formData.provider === 'groq' && (
+                <div className="rounded-xl border border-emerald-500/30 bg-emerald-950/20 p-4 text-xs text-emerald-200 flex items-start gap-3">
+                  <Zap className="h-5 w-5 text-emerald-400 shrink-0 mt-0.5" />
+                  <div className="space-y-1.5">
+                    <p className="font-bold text-emerald-300 flex items-center gap-2">
+                      <span>⚡ Recommended for Lightning Speed (~500+ tokens/sec)</span>
+                      <span className="bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded text-[10px]">100% Free Tier</span>
+                    </p>
+                    <p className="text-slate-300 text-[11.5px] leading-relaxed">
+                      Groq runs open-source Llama 3 models on specialized LPU hardware with near-instant responses. Their free tier offers 14,400 requests/day at $0 cost (no credit card required).
+                    </p>
+                    <div className="pt-1">
+                      <a
+                        href="https://console.groq.com/keys"
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-950 bg-emerald-400 hover:bg-emerald-300 px-3 py-1.5 rounded-lg transition"
+                      >
+                        <span>Get Free Groq API Key (Takes 10 Seconds)</span>
+                        <ExternalLink className="h-3 w-3" />
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {formData.provider === 'gemini' && (
+                <div className="rounded-xl border border-cyan-500/30 bg-cyan-950/20 p-4 text-xs text-cyan-200 flex items-start gap-3">
+                  <Zap className="h-5 w-5 text-cyan-400 shrink-0 mt-0.5" />
+                  <div className="space-y-1.5">
+                    <p className="font-bold text-cyan-300 flex items-center gap-2">
+                      <span>⚡ Sub-Second Speed with Google Gemini Flash</span>
+                      <span className="bg-cyan-500/20 text-cyan-300 px-2 py-0.5 rounded text-[10px]">Free Tier</span>
+                    </p>
+                    <p className="text-slate-300 text-[11.5px] leading-relaxed">
+                      Google AI Studio provides 15 requests per minute completely free with Gemini 1.5 &amp; 2.0 Flash.
+                    </p>
+                    <div className="pt-1">
+                      <a
+                        href="https://aistudio.google.com/app/apikey"
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-1.5 text-xs font-semibold text-cyan-950 bg-cyan-400 hover:bg-cyan-300 px-3 py-1.5 rounded-lg transition"
+                      >
+                        <span>Get Free Gemini API Key</span>
+                        <ExternalLink className="h-3 w-3" />
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {formData.provider === 'ollama' && (
+                <div className="rounded-xl border border-amber-500/30 bg-amber-950/25 p-4 text-xs text-amber-200 flex items-start gap-3">
+                  <AlertTriangle className="h-5 w-5 text-amber-400 shrink-0 mt-0.5" />
+                  <div className="space-y-1">
+                    <p className="font-bold text-amber-300">Local CPU Speed Note</p>
+                    <p className="text-slate-300 text-[11.5px] leading-relaxed">
+                      Running local LLMs on a CPU (without an Nvidia GPU) typically runs at 2-4 tokens/sec, taking ~30-60 seconds per response.
+                    </p>
+                    <p className="text-amber-200/90 text-[11.5px]">
+                      👉 <strong>For instant responses (1-2s):</strong> Switch to <strong>Groq Cloud</strong> above (free API key at console.groq.com) for 100x faster generation at $0 cost!
+                    </p>
+                  </div>
+                </div>
+              )}
 
               {/* Specific Provider Config */}
               <div className="rounded-xl border border-slate-800 bg-slate-900/40 p-5 space-y-4">
@@ -862,6 +955,47 @@ export default function DashboardPage() {
                       <span>0.0 (Strict factual)</span>
                       <span>1.0 (Creative)</span>
                     </div>
+                  </div>
+                </div>
+
+                {/* Performance Tuning Row */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-3 border-t border-slate-800/80">
+                  <div>
+                    <label className="text-xs font-semibold text-slate-300 block mb-1.5 flex items-center justify-between">
+                      <span>Knowledge Context Chunks</span>
+                      <span className="text-blue-400 font-mono font-bold">{formData.contextChunks ?? 3} chunks</span>
+                    </label>
+                    <input
+                      type="range"
+                      min="1"
+                      max="5"
+                      step="1"
+                      value={formData.contextChunks ?? 3}
+                      onChange={(e) => setFormData({ ...formData, contextChunks: parseInt(e.target.value) })}
+                      className="w-full mt-2"
+                    />
+                    <p className="text-[11px] text-slate-500 mt-1">
+                      Fewer chunks cut prompt size by ~40-60%, drastically accelerating generation start.
+                    </p>
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-semibold text-slate-300 block mb-1.5 flex items-center justify-between">
+                      <span>Max Response Tokens</span>
+                      <span className="text-blue-400 font-mono font-bold">{formData.maxTokens ?? 400} tokens</span>
+                    </label>
+                    <input
+                      type="range"
+                      min="150"
+                      max="800"
+                      step="50"
+                      value={formData.maxTokens ?? 400}
+                      onChange={(e) => setFormData({ ...formData, maxTokens: parseInt(e.target.value) })}
+                      className="w-full mt-2"
+                    />
+                    <p className="text-[11px] text-slate-500 mt-1">
+                      Keeps answers crisp and avoids overly long generation times.
+                    </p>
                   </div>
                 </div>
 

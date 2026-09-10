@@ -43,11 +43,12 @@ export async function POST(req: NextRequest) {
     await Database.saveMessage(conv.id, 'user', latestUserMsg);
 
     // 2. Hybrid Context Retrieval
+    const topK = assistant.contextChunks || 3;
     const retrieval = await retrieveRelevantContext(
       assistantId,
       latestUserMsg,
       conversationHistory,
-      5
+      topK
     );
 
     // 3. Assemble Prompt
@@ -87,6 +88,7 @@ export async function POST(req: NextRequest) {
             apiKey: assistant.apiKeyEncrypted,
             customBaseUrl: assistant.customBaseUrl,
             temperature: assistant.temperature,
+            maxTokens: assistant.maxTokens || 400,
           });
 
           for await (const token of tokenGenerator) {
