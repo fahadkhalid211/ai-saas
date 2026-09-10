@@ -14,6 +14,8 @@ export interface ExtractedDocument {
     | 'webp'
     | 'video'
     | 'audio'
+    | 'youtube'
+    | 'web'
     | 'mp4'
     | 'mp3'
     | 'wav'

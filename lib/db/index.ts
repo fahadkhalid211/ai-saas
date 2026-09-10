@@ -337,11 +337,11 @@ export class Database {
       .sort((a, b) => b.score - a.score)
       .slice(0, 15);
 
-    // 2. Sparse Keyword Matching (BM25 style)
+    // 2. Sparse Keyword Matching (BM25 / Multilingual full-text)
     const keywordScored = assistantChunks
       .map((chunk) => ({
         ...chunk,
-        score: keywordRelevance(query, chunk.content),
+        score: keywordRelevance(query, `${chunk.content} ${chunk.metadata?.sourceTitle || ''}`),
       }))
       .sort((a, b) => b.score - a.score)
       .slice(0, 15);

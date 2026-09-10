@@ -17,25 +17,30 @@ export function cosineSimilarity(vecA: number[], vecB: number[]): number {
 }
 
 /**
- * Keyword BM25-style full-text relevance score
+ * Multilingual Keyword Relevance Score
+ * Supports Latin, alphanumeric symbols, Chinese, Japanese, Korean, Arabic, etc.
  */
 export function keywordRelevance(query: string, content: string): number {
-  const queryTerms = query
-    .toLowerCase()
-    .replace(/[^\w\s]/g, '')
-    .split(/\s+/)
-    .filter((term) => term.length > 2);
+  if (!query || !content) return 0;
+  const cleanQuery = query.toLowerCase();
+  const contentLower = content.toLowerCase();
 
+  // Extract CJK / non-Latin characters (Chinese, Japanese, Korean)
+  const cjkChars = cleanQuery.match(/[\u4e00-\u9fff\u3040-\u30ff\uac00-\ud7af]/g) || [];
+
+  // Extract alphanumeric tokens, splitting on punctuation and whitespace (e.g. "le", "feng", "video", "mov")
+  const alphaTokens = cleanQuery
+    .replace(/[\u4e00-\u9fff\u3040-\u30ff\uac00-\ud7af]/g, ' ')
+    .split(/[^a-z0-9_]+/i)
+    .filter((t) => t.length >= 2);
+
+  const queryTerms = [...new Set([...alphaTokens, ...cjkChars])];
   if (queryTerms.length === 0) return 0;
 
-  const contentLower = content.toLowerCase();
   let matches = 0;
   for (const term of queryTerms) {
-    // Check term presence & count occurrences
-    const regex = new RegExp(`\\b${term}\\b`, 'gi');
-    const matchCount = (contentLower.match(regex) || []).length;
-    if (matchCount > 0) {
-      matches += 1 + Math.log(matchCount);
+    if (contentLower.includes(term)) {
+      matches += 1;
     }
   }
 
@@ -45,28 +50,35 @@ export function keywordRelevance(query: string, content: string): number {
 /**
  * Reciprocal Rank Fusion (RRF)
  * Combines rankings from dense vector retrieval and sparse keyword search.
+ * Only awards rank points to items with positive similarity / keyword relevance.
  */
-export function reciprocalRankFusion<T extends { id: string }>(
+export function reciprocalRankFusion<T extends { id: string; score?: number }>(
   vectorRankedList: T[],
   keywordRankedList: T[],
   k: number = 60
 ): (T & { rrfScore: number })[] {
   const scoreMap = new Map<string, { item: T; score: number }>();
 
-  vectorRankedList.forEach((item, rank) => {
-    const rrf = 1 / (k + (rank + 1));
-    scoreMap.set(item.id, { item, score: rrf });
-  });
-
-  keywordRankedList.forEach((item, rank) => {
-    const rrf = 1 / (k + (rank + 1));
-    if (scoreMap.has(item.id)) {
-      const existing = scoreMap.get(item.id)!;
-      existing.score += rrf;
-    } else {
+  // Only consider items with positive vector score
+  vectorRankedList
+    .filter((item) => (item.score ?? 0) > 0)
+    .forEach((item, rank) => {
+      const rrf = 1 / (k + (rank + 1)) + (item.score ?? 0) * 0.05;
       scoreMap.set(item.id, { item, score: rrf });
-    }
-  });
+    });
+
+  // ONLY award keyword rank bonus if item actually matched keywords (score > 0)!
+  keywordRankedList
+    .filter((item) => (item.score ?? 0) > 0)
+    .forEach((item, rank) => {
+      const rrf = 1 / (k + (rank + 1));
+      if (scoreMap.has(item.id)) {
+        const existing = scoreMap.get(item.id)!;
+        existing.score += rrf;
+      } else {
+        scoreMap.set(item.id, { item, score: rrf });
+      }
+    });
 
   return Array.from(scoreMap.values())
     .map(({ item, score }) => ({ ...item, rrfScore: score }))

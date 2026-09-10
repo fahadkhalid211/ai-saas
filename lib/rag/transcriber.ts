@@ -91,9 +91,11 @@ export interface TranscriptionSegment {
 
 export interface TranscribeResult {
   text: string;
+  translatedText?: string;
   language?: string;
   duration?: number;
   segments?: TranscriptionSegment[];
+  translatedSegments?: TranscriptionSegment[];
 }
 
 /**
@@ -238,11 +240,45 @@ export async function transcribeMedia(
         }))
       : [];
 
+    const rawLang = (resp?.language || '').toLowerCase();
+    const isEnglish = rawLang === 'english' || rawLang === 'en';
+
+    let translatedText: string | undefined = undefined;
+    let translatedSegments: TranscriptionSegment[] | undefined = undefined;
+
+    // Multilingual support: If non-English (e.g. Chinese, Spanish, Arabic, etc.), translate to English
+    // so cross-lingual semantic search and English questions match seamlessly!
+    if (!isEnglish && provider === 'groq') {
+      try {
+        console.log(`[Transcriber] Detected non-English speech ("${resp?.language}"). Translating to English with Groq Whisper...`);
+        const transFileObj = await toFile(buffer, uploadFilename, { type: uploadMime });
+        const transResp: any = await client.audio.translations.create({
+          file: transFileObj,
+          model,
+          response_format: 'verbose_json',
+        });
+        translatedText = (transResp?.text || '').trim();
+        if (Array.isArray(transResp?.segments)) {
+          translatedSegments = transResp.segments.map((s: any) => ({
+            id: s.id,
+            start: s.start || 0,
+            end: s.end || 0,
+            text: (s.text || '').trim(),
+          }));
+        }
+        console.log(`[Transcriber] Translated speech: "${(translatedText || '').slice(0, 100)}..."`);
+      } catch (transErr: any) {
+        console.warn(`[Transcriber] Translation attempt warning: ${transErr?.message || transErr}`);
+      }
+    }
+
     return {
       text,
+      translatedText,
       language: resp?.language,
       duration: resp?.duration,
       segments,
+      translatedSegments,
     };
   } catch (err: any) {
     console.error(`[Transcriber] Transcription failed for ${filename}:`, err);
@@ -275,20 +311,31 @@ export async function parseMediaFile(
   const mediaCategory = isVid ? 'Video' : 'Audio';
 
   const result = await transcribeMedia(buffer, filename, options);
+  const isBilingual = Boolean(result.translatedText && result.translatedText.trim());
 
   const sections: ExtractedDocument['sections'] = [];
   const lines: string[] = [];
 
-  lines.push(`=== [${mediaCategory} Transcription: ${filename}] ===`);
+  lines.push(`=== [${mediaCategory} Transcription & Knowledge: ${filename}] ===`);
   if (result.language) {
-    lines.push(`Language: ${result.language}`);
+    lines.push(`Spoken Language: ${result.language}${isBilingual ? ' (Bilingual Indexed: English & ' + result.language + ')' : ''}`);
   }
   if (result.duration) {
     lines.push(`Duration: ${formatTimestamp(result.duration)} (${result.duration.toFixed(1)} seconds)`);
   }
-  lines.push('');
-  lines.push('--- Full Spoken Narrative ---');
-  lines.push(result.text);
+
+  if (isBilingual) {
+    lines.push('');
+    lines.push('--- English Translation & Explanation ---');
+    lines.push(result.translatedText!);
+    lines.push('');
+    lines.push(`--- Original Spoken Speech (${result.language || 'Original'}) ---`);
+    lines.push(result.text);
+  } else {
+    lines.push('');
+    lines.push('--- Full Spoken Narrative ---');
+    lines.push(result.text);
+  }
 
   if (result.segments && result.segments.length > 0) {
     lines.push('');
@@ -299,11 +346,14 @@ export async function parseMediaFile(
     let currentStart = result.segments[0].start;
     let currentEnd = result.segments[0].end;
 
-    for (const seg of result.segments) {
+    for (let i = 0; i < result.segments.length; i++) {
+      const seg = result.segments[i];
+      const transSeg = result.translatedSegments?.[i];
       const timeTag = `[${formatTimestamp(seg.start)} - ${formatTimestamp(seg.end)}]`;
-      lines.push(`${timeTag} ${seg.text}`);
+      const transSnippet = isBilingual && transSeg?.text ? ` | English: "${transSeg.text}"` : '';
 
-      currentChunkText.push(seg.text);
+      lines.push(`${timeTag} ${seg.text}${transSnippet}`);
+      currentChunkText.push(`${seg.text}${transSnippet ? ' (English translation: ' + transSeg?.text + ')' : ''}`);
       currentEnd = seg.end;
 
       // Group into ~30 second section windows or end of segment
@@ -316,6 +366,8 @@ export async function parseMediaFile(
             startTime: currentStart,
             endTime: currentEnd,
             formattedTime: `${formatTimestamp(currentStart)} - ${formatTimestamp(currentEnd)}`,
+            language: result.language,
+            isBilingual,
           },
         });
         currentChunkText = [];
@@ -332,6 +384,8 @@ export async function parseMediaFile(
           startTime: currentStart,
           endTime: currentEnd,
           formattedTime: `${formatTimestamp(currentStart)} - ${formatTimestamp(currentEnd)}`,
+          language: result.language,
+          isBilingual,
         },
       });
     }
@@ -346,6 +400,7 @@ export async function parseMediaFile(
       mediaType: mediaCategory.toLowerCase(),
       duration: result.duration,
       language: result.language,
+      isBilingual,
       totalSegments: result.segments?.length || 0,
     },
   };

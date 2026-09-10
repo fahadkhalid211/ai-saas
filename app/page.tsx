@@ -148,6 +148,12 @@ export default function DashboardPage() {
     whatToDoNext: string;
   } | null>(null);
 
+  // URL Ingestion state
+  const [urlInput, setUrlInput] = useState('');
+  const [urlCustomTitle, setUrlCustomTitle] = useState('');
+  const [isImportingUrl, setIsImportingUrl] = useState(false);
+  const [urlFeedback, setUrlFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+
   const formatBytes = (bytes?: number) => {
     if (!bytes || bytes <= 0) return '0 B';
     const k = 1024;
@@ -317,6 +323,58 @@ export default function DashboardPage() {
       console.error('Upload error:', err);
     } finally {
       setIsUploading(false);
+    }
+  }
+
+  async function handleImportUrl(e: React.FormEvent) {
+    e.preventDefault();
+    if (!activeAssistant || !urlInput.trim()) return;
+
+    setIsImportingUrl(true);
+    setUrlFeedback(null);
+
+    try {
+      const res = await fetch('/api/knowledge/url', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          assistantId: activeAssistant.id,
+          url: urlInput.trim(),
+          customTitle: urlCustomTitle.trim() || undefined,
+        }),
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        setUrlFeedback({
+          type: 'success',
+          message: `Successfully indexed "${data.source.title}" (${data.source.chunks} chunks generated)!`,
+        });
+        setUrlInput('');
+        setUrlCustomTitle('');
+        fetchKnowledge(activeAssistant.id);
+        setTimeout(() => setUrlFeedback(null), 5000);
+      } else {
+        setUrlFeedback({
+          type: 'error',
+          message: data.error || 'Failed to extract knowledge from this URL.',
+        });
+        if (data.source) {
+          setUploadFailureAlert({
+            title: data.source.title,
+            reason: data.error,
+            whatToDoNext: data.whatToDoNext,
+          });
+        }
+        fetchKnowledge(activeAssistant.id);
+      }
+    } catch (err: any) {
+      setUrlFeedback({
+        type: 'error',
+        message: err?.message || 'Network error importing URL.',
+      });
+    } finally {
+      setIsImportingUrl(false);
     }
   }
 
@@ -871,6 +929,97 @@ export default function DashboardPage() {
                   </div>
                 </form>
 
+                {/* Import Knowledge from URL (YouTube, Video, Webpage) */}
+                <form
+                  onSubmit={handleImportUrl}
+                  className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 space-y-3.5 shadow-xs"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2.5">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-red-50 dark:bg-red-950/60 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-900/40">
+                        <Globe className="h-4 w-4" />
+                      </div>
+                      <div>
+                        <span className="text-xs font-bold text-slate-900 dark:text-white">
+                          Import from YouTube, Webpage, or Media URL
+                        </span>
+                        <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                          Grabs transcripts and knowledge in any language (English, Chinese, Spanish, etc.)
+                        </p>
+                      </div>
+                    </div>
+
+                    {urlInput.trim() && (
+                      <span className="text-[10px] font-mono px-2 py-0.5 rounded-full font-semibold border bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700">
+                        {/(?:youtube\.com|youtu\.be)/i.test(urlInput)
+                          ? '🔴 YouTube Video'
+                          : /\.(mp4|webm|mov|mkv|avi|mp3|wav|m4a|ogg|flac)$/i.test(urlInput.split('?')[0])
+                          ? '🎥 Direct Media Stream'
+                          : '🌐 Webpage Scraper'}
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5">
+                    <div className="md:col-span-2">
+                      <input
+                        type="url"
+                        required
+                        placeholder="https://www.youtube.com/watch?v=... or https://yourcompany.com/about"
+                        value={urlInput}
+                        onChange={(e) => setUrlInput(e.target.value)}
+                        className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3 py-2 text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 outline-none focus:border-blue-500"
+                      />
+                    </div>
+                    <div>
+                      <input
+                        type="text"
+                        placeholder="Custom Title (optional)"
+                        value={urlCustomTitle}
+                        onChange={(e) => setUrlCustomTitle(e.target.value)}
+                        className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3 py-2 text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 outline-none focus:border-blue-500"
+                      />
+                    </div>
+                  </div>
+
+                  {urlFeedback && (
+                    <div
+                      className={`p-2.5 rounded-lg text-xs flex items-center gap-2 ${
+                        urlFeedback.type === 'success'
+                          ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
+                          : 'bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800'
+                      }`}
+                    >
+                      {urlFeedback.type === 'success' ? (
+                        <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600" />
+                      ) : (
+                        <AlertTriangle className="h-4 w-4 shrink-0 text-rose-600" />
+                      )}
+                      <span>{urlFeedback.message}</span>
+                    </div>
+                  )}
+
+                  <div className="flex justify-end">
+                    <button
+                      type="submit"
+                      disabled={isImportingUrl || !urlInput.trim()}
+                      className="flex items-center gap-2 rounded-lg bg-slate-900 dark:bg-white hover:bg-slate-800 dark:hover:bg-slate-100 text-white dark:text-slate-900 px-4 py-2 text-xs font-semibold disabled:opacity-50 transition shadow-xs cursor-pointer"
+                    >
+                      {isImportingUrl ? (
+                        <>
+                          <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+                          <span>Fetching &amp; Indexing Knowledge...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Globe className="h-3.5 w-3.5" />
+                          <span>Import Knowledge from URL</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </form>
+
                 {/* Failed sources alert banner */}
                 {sources.some((s) => s.status === 'failed') && (
                   <div className="rounded-xl border border-rose-200 dark:border-rose-900/50 bg-rose-50/70 dark:bg-rose-950/20 p-3.5 flex items-start gap-3 text-xs">
@@ -930,13 +1079,21 @@ export default function DashboardPage() {
                                   ? 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800'
                                   : source.type === 'json'
                                   ? 'bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-800'
+                                  : source.type === 'youtube'
+                                  ? 'bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-800'
+                                  : source.type === 'web'
+                                  ? 'bg-sky-50 dark:bg-sky-950/50 text-sky-600 dark:text-sky-400 border border-sky-200 dark:border-sky-800'
                                   : ['mp4', 'webm', 'mov', 'mkv', 'avi', 'm4v', 'video'].includes(source.type.toLowerCase())
                                   ? 'bg-purple-50 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-800'
                                   : ['mp3', 'wav', 'm4a', 'ogg', 'flac', 'aac', 'audio'].includes(source.type.toLowerCase())
                                   ? 'bg-cyan-50 dark:bg-cyan-950/50 text-cyan-600 dark:text-cyan-400 border border-cyan-200 dark:border-cyan-800'
                                   : 'bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800'
                               }`}>
-                                {['mp4', 'webm', 'mov', 'mkv', 'avi', 'm4v', 'video'].includes(source.type.toLowerCase())
+                                {source.type === 'youtube'
+                                  ? '🔴 YOUTUBE'
+                                  : source.type === 'web'
+                                  ? '🌐 WEB'
+                                  : ['mp4', 'webm', 'mov', 'mkv', 'avi', 'm4v', 'video'].includes(source.type.toLowerCase())
                                   ? '🎥 VIDEO'
                                   : ['mp3', 'wav', 'm4a', 'ogg', 'flac', 'aac', 'audio'].includes(source.type.toLowerCase())
                                   ? '🎙️ AUDIO'
@@ -1048,14 +1205,20 @@ export default function DashboardPage() {
                                   {msg.citations.map((c: any, ci: number) => {
                                     const st = (c.sourceType || '').toLowerCase();
                                     const stTitle = (c.sourceTitle || '').toLowerCase();
+                                    const isYt = st === 'youtube' || stTitle.includes('youtube');
+                                    const isWeb = st === 'web';
                                     const isVid = ['mp4', 'webm', 'mov', 'mkv', 'avi', 'm4v', 'video'].some((e) => st.includes(e) || stTitle.endsWith(`.${e}`));
                                     const isAud = ['mp3', 'wav', 'm4a', 'ogg', 'flac', 'aac', 'audio'].some((e) => st.includes(e) || stTitle.endsWith(`.${e}`));
-                                    const icon = isVid ? '🎥' : isAud ? '🎙️' : st === 'pdf' || stTitle.endsWith('.pdf') ? '📄' : st === 'csv' || stTitle.endsWith('.csv') ? '📊' : '📝';
+                                    const icon = isYt ? '🔴' : isWeb ? '🌐' : isVid ? '🎥' : isAud ? '🎙️' : st === 'pdf' || stTitle.endsWith('.pdf') ? '📄' : st === 'csv' || stTitle.endsWith('.csv') ? '📊' : '📝';
                                     return (
                                       <span
                                         key={ci}
                                         className={`border px-2 py-0.5 rounded text-[10px] font-mono ${
-                                          isVid
+                                          isYt
+                                            ? 'bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border-rose-200 dark:border-rose-800'
+                                            : isWeb
+                                            ? 'bg-sky-50 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300 border-sky-200 dark:border-sky-800'
+                                            : isVid
                                             ? 'bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800'
                                             : isAud
                                             ? 'bg-cyan-50 dark:bg-cyan-950/60 text-cyan-700 dark:text-cyan-300 border-cyan-200 dark:border-cyan-800'
@@ -1151,9 +1314,11 @@ export default function DashboardPage() {
                             {activeCitations.map((c, i) => {
                               const st = (c.sourceType || '').toLowerCase();
                               const stTitle = (c.sourceTitle || '').toLowerCase();
+                              const isYt = st === 'youtube' || stTitle.includes('youtube');
+                              const isWeb = st === 'web';
                               const isVid = ['mp4', 'webm', 'mov', 'mkv', 'avi', 'm4v', 'video'].some((e) => st.includes(e) || stTitle.endsWith(`.${e}`));
                               const isAud = ['mp3', 'wav', 'm4a', 'ogg', 'flac', 'aac', 'audio'].some((e) => st.includes(e) || stTitle.endsWith(`.${e}`));
-                              const icon = isVid ? '🎥' : isAud ? '🎙️' : st === 'pdf' || stTitle.endsWith('.pdf') ? '📄' : st === 'csv' || stTitle.endsWith('.csv') ? '📊' : '📝';
+                              const icon = isYt ? '🔴' : isWeb ? '🌐' : isVid ? '🎥' : isAud ? '🎙️' : st === 'pdf' || stTitle.endsWith('.pdf') ? '📄' : st === 'csv' || stTitle.endsWith('.csv') ? '📊' : '📝';
                               return (
                                 <div key={i} className="p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60 text-[11px] space-y-1">
                                   <div className="text-blue-600 dark:text-blue-400 font-mono font-bold text-[10px] flex items-center gap-1.5">
