@@ -2,26 +2,30 @@ import mammoth from 'mammoth';
 import { parse as parseCsvSync } from 'csv-parse/sync';
 import { ExtractedDocument } from './types';
 
-// PDF Parsing with pdf-parse
+// PDF Parsing with unpdf (Universal Mozilla PDF.js for Node.js)
 async function parsePdf(buffer: Buffer, title: string): Promise<ExtractedDocument> {
   try {
-    // Dynamic import to avoid SSR issues
-    const pdfParse = require('pdf-parse');
-    const data = await pdfParse(buffer);
-    
-    // Normalize newlines and whitespace
-    const cleanText = data.text
+    const { extractText } = await import('unpdf');
+    const uint8Array = new Uint8Array(buffer);
+    const result = await extractText(uint8Array);
+
+    const pages = Array.isArray(result.text) ? result.text : [result.text || ''];
+    const cleanText = pages
+      .join('\n\n')
       .replace(/\r\n/g, '\n')
       .replace(/\n{3,}/g, '\n\n')
       .trim();
+
+    if (!cleanText) {
+      throw new Error('No readable text found in this PDF. It may be an image-only scanned document.');
+    }
 
     return {
       title,
       type: 'pdf',
       content: cleanText,
       metadata: {
-        pageCount: data.numpages,
-        info: data.info,
+        pageCount: result.totalPages || pages.length,
       },
     };
   } catch (error: any) {

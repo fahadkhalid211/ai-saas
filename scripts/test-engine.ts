@@ -53,8 +53,28 @@ Puma Velocity,SKU-1003,$90.00,No,Training`;
   console.log(`✓ JSON Parsed successfully. Created ${jsonChunks.length} chunk(s).`);
   console.log(`Sample JSON chunk snippet:\n${jsonChunks[0].content.slice(0, 180)}...\n`);
 
-  // Test 3: Open-Source 384-dim Embedding Generation
-  console.log('Test 3: Zero-Cost Local Embeddings...');
+  // Test 3: PDF Document Parsing
+  console.log('Test 3: PDF Parsing & Text Extraction...');
+  const minimalPdf = Buffer.from(
+    '%PDF-1.1\n' +
+    '1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n' +
+    '2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n' +
+    '3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >>\nendobj\n' +
+    '4 0 obj\n<< /Length 55 >>\nstream\nBT /F1 12 Tf 72 712 Td (Fahad Khalid - Software Engineer) Tj ET\nendstream\nendobj\n' +
+    '5 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>\nendobj\nxref\n0 6\n' +
+    '0000000000 65535 f \n0000000009 00000 n \n0000000058 00000 n \n0000000115 00000 n \n0000000244 00000 n \n0000000350 00000 n \n' +
+    'trailer\n<< /Size 6 /Root 1 0 R >>\nstartxref\n427\n%%EOF'
+  );
+  const pdfDoc = await parseFileOrText({
+    filename: 'resume.pdf',
+    type: 'pdf',
+    buffer: minimalPdf,
+  });
+  const pdfChunks = chunkDocument(pdfDoc);
+  console.log(`✓ PDF Parsed successfully. Extracted text: "${pdfDoc.content.trim()}". Created ${pdfChunks.length} chunk(s).\n`);
+
+  // Test 4: Open-Source 384-dim Embedding Generation
+  console.log('Test 4: Zero-Cost Local Embeddings...');
   const query = 'How much are the Nike Air Max running shoes?';
   const queryEmbedding = await generateEmbedding(query);
   console.log(`✓ Generated query vector with ${queryEmbedding.length} dimensions.`);
