@@ -589,6 +589,267 @@
         color: var(--primary-color, #2563eb);
         text-decoration: underline;
       }
+      /* Widget Navigation Bar (Chat vs Knowledge Base) */
+      .widget-nav {
+        display: flex;
+        background: #ffffff;
+        border-bottom: 1px solid #e2e8f0;
+        padding: 0 8px;
+        gap: 4px;
+        flex-shrink: 0;
+      }
+      .nav-tab {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        padding: 9px 12px;
+        background: transparent;
+        border: none;
+        border-bottom: 2px solid transparent;
+        color: #64748b;
+        font-size: 12.5px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.15s ease;
+      }
+      .nav-tab:hover {
+        color: #1e293b;
+      }
+      .nav-tab.active {
+        color: var(--primary-color, #2563eb);
+        border-bottom-color: var(--primary-color, #2563eb);
+      }
+      .nav-tab-badge {
+        font-size: 10px;
+        font-weight: 700;
+        padding: 1px 6px;
+        border-radius: 10px;
+        background: #f1f5f9;
+        color: #475569;
+        line-height: 1.3;
+      }
+      .nav-tab.active .nav-tab-badge {
+        background: #eff6ff;
+        color: var(--primary-color, #2563eb);
+      }
+      /* Tab Panes */
+      .tab-pane {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        min-height: 0;
+      }
+      /* Knowledge Base Tab Pane */
+      .kb-header-bar {
+        padding: 10px 14px 8px 14px;
+        background: #ffffff;
+        border-bottom: 1px solid #f1f5f9;
+        flex-shrink: 0;
+      }
+      .kb-search-box {
+        position: relative;
+        display: flex;
+        align-items: center;
+      }
+      .kb-search-box svg {
+        position: absolute;
+        left: 10px;
+        color: #94a3b8;
+        pointer-events: none;
+      }
+      .kb-search-input {
+        width: 100%;
+        padding: 7px 12px 7px 32px;
+        font-size: 12px;
+        border-radius: 10px;
+        border: 1px solid #e2e8f0;
+        background: #f8fafc;
+        outline: none;
+        box-sizing: border-box;
+      }
+      .kb-search-input:focus {
+        border-color: var(--primary-color, #2563eb);
+        background: #ffffff;
+      }
+      .kb-list-container {
+        flex: 1;
+        overflow-y: auto;
+        padding: 12px 14px;
+        background: #f8fafc;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .kb-loading {
+        font-size: 11.5px;
+        color: #94a3b8;
+        text-align: center;
+        padding: 20px 0;
+      }
+      .kb-empty {
+        font-size: 12px;
+        color: #64748b;
+        text-align: center;
+        padding: 30px 16px;
+      }
+      .kb-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 11px 13px;
+        cursor: pointer;
+        transition: all 0.15s ease;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+      }
+      .kb-card:hover {
+        border-color: #cbd5e1;
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+        transform: translateY(-1px);
+      }
+      .kb-card-header {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-bottom: 5px;
+      }
+      .kb-card-type-badge {
+        font-size: 9.5px;
+        font-weight: 700;
+        text-transform: uppercase;
+        padding: 2px 6px;
+        border-radius: 6px;
+        background: #f1f5f9;
+        color: #475569;
+        letter-spacing: 0.03em;
+      }
+      .type-youtube { background: #fee2e2; color: #b91c1c; }
+      .type-pdf { background: #fee2e2; color: #dc2626; }
+      .type-csv { background: #dcfce7; color: #15803d; }
+      .type-web { background: #e0f2fe; color: #0369a1; }
+      .type-audio { background: #f3e8ff; color: #7e22ce; }
+      .type-video { background: #fae8ff; color: #86198f; }
+
+      .kb-card-title {
+        font-size: 12.5px;
+        font-weight: 600;
+        color: #0f172a;
+        line-height: 1.35;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+      }
+      .kb-card-summary {
+        font-size: 11px;
+        color: #64748b;
+        line-height: 1.45;
+        margin-top: 4px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+      }
+      .kb-card-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-top: 8px;
+        padding-top: 8px;
+        border-top: 1px solid #f8fafc;
+        font-size: 10.5px;
+        color: #94a3b8;
+      }
+      .kb-read-link {
+        font-weight: 600;
+        color: var(--primary-color, #2563eb);
+        display: flex;
+        align-items: center;
+        gap: 3px;
+      }
+      /* Reader View */
+      .kb-reader-view {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        background: #ffffff;
+        overflow: hidden;
+      }
+      .kb-reader-nav {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 8px 12px;
+        border-bottom: 1px solid #f1f5f9;
+        background: #f8fafc;
+        flex-shrink: 0;
+      }
+      .kb-back-btn {
+        background: transparent;
+        border: none;
+        color: #64748b;
+        font-size: 11.5px;
+        font-weight: 600;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px 8px;
+        border-radius: 6px;
+      }
+      .kb-back-btn:hover {
+        background: #e2e8f0;
+        color: #1e293b;
+      }
+      .kb-ask-btn {
+        background-color: var(--primary-color, #2563eb);
+        color: #ffffff;
+        border: none;
+        font-size: 11px;
+        font-weight: 600;
+        cursor: pointer;
+        padding: 5px 10px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        transition: opacity 0.15s;
+      }
+      .kb-ask-btn:hover {
+        opacity: 0.9;
+      }
+      .kb-reader-scroll {
+        flex: 1;
+        overflow-y: auto;
+        padding: 14px 16px;
+      }
+      .kb-reader-header {
+        margin-bottom: 12px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #f1f5f9;
+      }
+      .kb-reader-title {
+        font-size: 14px;
+        font-weight: 700;
+        color: #0f172a;
+        margin: 6px 0 3px 0;
+        line-height: 1.3;
+      }
+      .kb-reader-meta {
+        font-size: 10.5px;
+        color: #94a3b8;
+      }
+      .kb-reader-content {
+        font-size: 12px;
+        line-height: 1.6;
+        color: #334155;
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
     `;
     shadow.appendChild(style);
 
@@ -633,16 +894,80 @@
           </button>
         </div>
       </div>
-      <div class="messages-container" id="messages-body"></div>
-      <div class="chat-footer">
-        <textarea class="chat-input" id="chat-input" placeholder="Ask anything about our business..." rows="1"></textarea>
-        <button class="send-btn" id="send-msg-btn" title="Send message">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="22" y1="2" x2="11" y2="13"></line>
-            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+
+      <div class="widget-nav">
+        <button class="nav-tab active" id="tab-btn-chat">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
           </svg>
+          <span>Chat</span>
+        </button>
+        <button class="nav-tab" id="tab-btn-kb">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3">
+            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+          </svg>
+          <span>Knowledge Base</span>
+          <span class="nav-tab-badge" id="kb-tab-count">0</span>
         </button>
       </div>
+
+      <!-- Chat Tab Pane -->
+      <div class="tab-pane" id="pane-chat">
+        <div class="messages-container" id="messages-body"></div>
+        <div class="chat-footer">
+          <textarea class="chat-input" id="chat-input" placeholder="Ask anything about our business..." rows="1"></textarea>
+          <button class="send-btn" id="send-msg-btn" title="Send message">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="22" y1="2" x2="11" y2="13"></line>
+              <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Knowledge Base Tab Pane -->
+      <div class="tab-pane" id="pane-kb" style="display: none;">
+        <div class="kb-header-bar">
+          <div class="kb-search-box">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input type="text" class="kb-search-input" id="kb-search-input" placeholder="Search knowledge base articles..." />
+          </div>
+        </div>
+        <div class="kb-list-container" id="kb-list-container">
+          <div class="kb-loading" id="kb-loading">Loading articles...</div>
+          <div id="kb-cards-list" style="display: flex; flex-direction: column; gap: 8px;"></div>
+        </div>
+        <div class="kb-reader-view" id="kb-reader-view" style="display: none;">
+          <div class="kb-reader-nav">
+            <button class="kb-back-btn" id="kb-back-btn">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <line x1="19" y1="12" x2="5" y2="12"></line>
+                <polyline points="12 19 5 12 12 5"></polyline>
+              </svg>
+              <span>Back</span>
+            </button>
+            <button class="kb-ask-btn" id="kb-ask-article-btn">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+              </svg>
+              <span>Ask AI About This</span>
+            </button>
+          </div>
+          <div class="kb-reader-scroll">
+            <div class="kb-reader-header">
+              <span class="kb-card-type-badge" id="kb-reader-badge">DOCUMENT</span>
+              <h3 class="kb-reader-title" id="kb-reader-title">Title</h3>
+              <div class="kb-reader-meta" id="kb-reader-meta">0 chunks</div>
+            </div>
+            <div class="kb-reader-content" id="kb-reader-content"></div>
+          </div>
+        </div>
+      </div>
+
       <div class="chat-branding" id="widget-branding">
         <span>⚡ Powered by <a href="https://kortexai.com" target="_blank" rel="noopener noreferrer">Kortex AI</a></span>
       </div>
@@ -660,6 +985,161 @@
     var supportHeaderBtn = shadow.getElementById('header-support-btn');
     var nameEl = shadow.getElementById('ast-name');
     var avatarEl = shadow.getElementById('ast-avatar');
+
+    // KB References
+    var kbArticles = [];
+    var currentActiveArticle = null;
+    var tabBtnChat = shadow.getElementById('tab-btn-chat');
+    var tabBtnKb = shadow.getElementById('tab-btn-kb');
+    var paneChat = shadow.getElementById('pane-chat');
+    var paneKb = shadow.getElementById('pane-kb');
+    var kbTabCount = shadow.getElementById('kb-tab-count');
+    var kbSearchInput = shadow.getElementById('kb-search-input');
+    var kbListContainer = shadow.getElementById('kb-list-container');
+    var kbCardsList = shadow.getElementById('kb-cards-list');
+    var kbLoading = shadow.getElementById('kb-loading');
+    var kbReaderView = shadow.getElementById('kb-reader-view');
+    var kbBackBtn = shadow.getElementById('kb-back-btn');
+    var kbAskBtn = shadow.getElementById('kb-ask-article-btn');
+    var kbReaderTitle = shadow.getElementById('kb-reader-title');
+    var kbReaderBadge = shadow.getElementById('kb-reader-badge');
+    var kbReaderMeta = shadow.getElementById('kb-reader-meta');
+    var kbReaderContent = shadow.getElementById('kb-reader-content');
+
+    // ── Knowledge Base Tab Logic ──────────────────────────────────────────────
+
+    var kbLoaded = false;
+
+    function switchToTab(tab) {
+      if (tab === 'chat') {
+        if (tabBtnChat) tabBtnChat.classList.add('active');
+        if (tabBtnKb) tabBtnKb.classList.remove('active');
+        if (paneChat) paneChat.style.display = 'flex';
+        if (paneKb) paneKb.style.display = 'none';
+      } else {
+        if (tabBtnKb) tabBtnKb.classList.add('active');
+        if (tabBtnChat) tabBtnChat.classList.remove('active');
+        if (paneKb) paneKb.style.display = 'flex';
+        if (paneChat) paneChat.style.display = 'none';
+        if (!kbLoaded) loadKnowledgeBase();
+      }
+    }
+
+    if (tabBtnChat) {
+      tabBtnChat.addEventListener('click', function () { switchToTab('chat'); });
+    }
+    if (tabBtnKb) {
+      tabBtnKb.addEventListener('click', function () { switchToTab('kb'); });
+    }
+
+    function getTypeLabel(type) {
+      var labels = {
+        youtube: '▶ YouTube', pdf: '📄 PDF', csv: '📊 CSV',
+        web: '🌐 Web', audio: '🎙 Audio', video: '🎥 Video',
+        description: '📝 Text', png: '🖼 Image', jpg: '🖼 Image',
+        jpeg: '🖼 Image', docx: '📝 Doc', txt: '📄 Text'
+      };
+      return labels[(type || '').toLowerCase()] || (type || 'DOC').toUpperCase();
+    }
+
+    function formatDate(dateStr) {
+      try {
+        return new Date(dateStr).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+      } catch (e) { return ''; }
+    }
+
+    function renderKbCards(articles) {
+      if (!kbCardsList) return;
+      kbCardsList.innerHTML = '';
+      if (!articles || articles.length === 0) {
+        kbCardsList.innerHTML = '<div class="kb-empty">No articles match your search.</div>';
+        return;
+      }
+      articles.forEach(function (article) {
+        var card = document.createElement('div');
+        card.className = 'kb-card';
+        var typeClass = 'type-' + (article.type || 'default').toLowerCase();
+        card.innerHTML =
+          '<div class="kb-card-header">' +
+            '<span class="kb-card-type-badge ' + typeClass + '">' + escapeHtml(getTypeLabel(article.type)) + '</span>' +
+          '</div>' +
+          '<div class="kb-card-title">' + escapeHtml(article.title || 'Untitled') + '</div>' +
+          (article.previewSummary ? '<div class="kb-card-summary">' + escapeHtml(article.previewSummary) + '</div>' : '') +
+          '<div class="kb-card-footer">' +
+            '<span>' + (article.chunkCount || 0) + ' sections • ' + formatDate(article.createdAt) + '</span>' +
+            '<span class="kb-read-link">Read →</span>' +
+          '</div>';
+        card.addEventListener('click', function () { openKbArticle(article); });
+        kbCardsList.appendChild(card);
+      });
+    }
+
+    function openKbArticle(article) {
+      currentActiveArticle = article;
+      if (kbListContainer) kbListContainer.style.display = 'none';
+      if (kbReaderView) kbReaderView.style.display = 'flex';
+      if (kbReaderBadge) {
+        kbReaderBadge.textContent = getTypeLabel(article.type);
+        kbReaderBadge.className = 'kb-card-type-badge type-' + (article.type || 'default').toLowerCase();
+      }
+      if (kbReaderTitle) kbReaderTitle.textContent = article.title || 'Untitled';
+      if (kbReaderMeta) kbReaderMeta.textContent = (article.chunkCount || 0) + ' sections • ' + formatDate(article.createdAt);
+      if (kbReaderContent) kbReaderContent.textContent = article.fullContent || 'No content available.';
+    }
+
+    function showKbList() {
+      currentActiveArticle = null;
+      if (kbListContainer) kbListContainer.style.display = 'flex';
+      if (kbReaderView) kbReaderView.style.display = 'none';
+    }
+
+    if (kbBackBtn) {
+      kbBackBtn.addEventListener('click', showKbList);
+    }
+
+    if (kbAskBtn) {
+      kbAskBtn.addEventListener('click', function () {
+        if (!currentActiveArticle) return;
+        switchToTab('chat');
+        if (chatInput) chatInput.value = 'Tell me about: ' + currentActiveArticle.title;
+        setTimeout(function () { sendMessage(); }, 50);
+      });
+    }
+
+    if (kbSearchInput) {
+      kbSearchInput.addEventListener('input', function () {
+        var q = (kbSearchInput.value || '').toLowerCase().trim();
+        var filtered = q
+          ? kbArticles.filter(function (a) {
+              return (a.title || '').toLowerCase().indexOf(q) !== -1 ||
+                     (a.previewSummary || '').toLowerCase().indexOf(q) !== -1;
+            })
+          : kbArticles;
+        renderKbCards(filtered);
+      });
+    }
+
+    function loadKnowledgeBase() {
+      kbLoaded = true;
+      if (kbLoading) kbLoading.style.display = 'block';
+      if (kbCardsList) kbCardsList.innerHTML = '';
+      fetch(hostUrl + '/api/widget/' + assistantId + '/knowledge')
+        .then(function (res) {
+          if (!res.ok) throw new Error('Status ' + res.status);
+          return res.json();
+        })
+        .then(function (data) {
+          if (kbLoading) kbLoading.style.display = 'none';
+          kbArticles = data.articles || [];
+          if (kbTabCount) kbTabCount.textContent = kbArticles.length;
+          renderKbCards(kbArticles);
+        })
+        .catch(function (err) {
+          if (kbLoading) kbLoading.style.display = 'none';
+          if (kbCardsList) kbCardsList.innerHTML = '<div class="kb-empty">Could not load knowledge base. Please try again.</div>';
+          console.warn('[Widget] KB load error:', err);
+        });
+    }
 
     // Load Assistant Config
     fetch(hostUrl + '/api/widget/' + assistantId + '/config')
