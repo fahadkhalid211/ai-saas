@@ -118,7 +118,7 @@ async function* streamAnthropic(
     },
     body: JSON.stringify({
       model: options.modelName || 'claude-3-5-haiku-20241022',
-      max_tokens: options.maxTokens || 400,
+      max_tokens: options.maxTokens || 2048,
       system: systemMsg,
       messages: conversationMsgs,
       stream: true,
@@ -185,7 +185,7 @@ export async function* streamChatResponse(
       model,
       messages: messages as any,
       temperature: options.temperature ?? 0.3,
-      max_tokens: options.maxTokens || 400,
+      max_tokens: options.maxTokens || 2048,
       stream: true,
     });
 
@@ -248,7 +248,7 @@ You are "${assistantName}", representing this business.
 3. If the user asks for information that is NOT covered in the knowledge base, do not invent facts, speculate, or make assumptions. Instead, politely provide this fallback: "${fallbackMessage}".
 4. Always maintain a professional, helpful, and courteous tone.
 5. If the knowledge base includes product details, pricing, or instructions, be accurate and specific.
-6. Provide direct, structured, and concise answers without conversational filler or echoing the user's question, ensuring fast response times.
+6. Provide direct, structured, and comprehensive answers. Complete your thoughts and sentences fully, never cutting off mid-sentence.
 
 === VERIFIED KNOWLEDGE BASE ===
 ${contextText}

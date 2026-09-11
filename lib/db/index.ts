@@ -203,7 +203,7 @@ export class Database {
       welcomeMessage: data.welcomeMessage || 'Hello! How can I help you today?',
       fallbackMessage: data.fallbackMessage || "I'm sorry, I do not have that information in my knowledge base.",
       temperature: data.temperature ?? 0.3,
-      maxTokens: data.maxTokens ?? 400,
+      maxTokens: data.maxTokens ?? 2048,
       contextChunks: data.contextChunks ?? 3,
       provider: data.provider || 'ollama',
       modelName: data.modelName || 'llama3.2',

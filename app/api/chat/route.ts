@@ -88,7 +88,7 @@ export async function POST(req: NextRequest) {
             apiKey: assistant.apiKeyEncrypted,
             customBaseUrl: assistant.customBaseUrl,
             temperature: assistant.temperature,
-            maxTokens: assistant.maxTokens || 400,
+            maxTokens: assistant.maxTokens || 2048,
           });
 
           for await (const token of tokenGenerator) {

@@ -38,6 +38,7 @@ import {
   ArrowRight,
 } from 'lucide-react';
 import { diagnoseKnowledgeFailure } from '@/lib/rag/diagnostics';
+import { MarkdownRenderer } from '@/components/markdown-renderer';
 
 interface Assistant {
   id: string;
@@ -1195,7 +1196,11 @@ export default function DashboardPage() {
                                 : 'bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 rounded-bl-xs border border-slate-200/80 dark:border-slate-700/60'
                             }`}
                           >
-                            <div className="whitespace-pre-wrap">{msg.content}</div>
+                            {msg.role === 'assistant' ? (
+                              <MarkdownRenderer content={msg.content} />
+                            ) : (
+                              <div className="whitespace-pre-wrap">{msg.content}</div>
+                            )}
 
                             {/* Citations */}
                             {msg.citations && msg.citations.length > 0 && (
@@ -1563,14 +1568,14 @@ export default function DashboardPage() {
                     <div>
                       <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1.5 flex items-center justify-between">
                         <span>Max Response Tokens</span>
-                        <span className="text-blue-600 dark:text-blue-400 font-mono font-bold">{formData.maxTokens ?? 400} tokens</span>
+                        <span className="text-blue-600 dark:text-blue-400 font-mono font-bold">{formData.maxTokens ?? 2048} tokens</span>
                       </label>
                       <input
                         type="range"
-                        min="150"
-                        max="800"
+                        min="250"
+                        max="4096"
                         step="50"
-                        value={formData.maxTokens ?? 400}
+                        value={formData.maxTokens ?? 2048}
                         onChange={(e) => setFormData({ ...formData, maxTokens: parseInt(e.target.value) })}
                         className="w-full mt-2 accent-blue-600"
                       />

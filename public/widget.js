@@ -218,6 +218,18 @@
       border-bottom-left-radius: 3px;
       box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05), 0 0 0 1px rgba(0, 0, 0, 0.04);
     }
+    .msg-assistant h1 { font-size: 15px; font-weight: 700; margin: 10px 0 6px 0; border-bottom: 1px solid #e2e8f0; padding-bottom: 3px; }
+    .msg-assistant h2 { font-size: 14px; font-weight: 700; margin: 8px 0 4px 0; }
+    .msg-assistant h3 { font-size: 13px; font-weight: 700; margin: 6px 0 3px 0; }
+    .msg-assistant h4 { font-size: 12.5px; font-weight: 600; margin: 4px 0 2px 0; }
+    .msg-assistant ul { padding-left: 18px; margin: 6px 0; list-style-type: disc; }
+    .msg-assistant ol { padding-left: 18px; margin: 6px 0; list-style-type: decimal; }
+    .msg-assistant li { margin-bottom: 3px; }
+    .msg-assistant blockquote { border-left: 3px solid #2563eb; background: #eff6ff; padding: 4px 8px; margin: 6px 0; border-radius: 0 4px 4px 0; font-style: italic; font-size: 12px; }
+    .msg-assistant hr { border: none; border-top: 1px solid #e2e8f0; margin: 8px 0; }
+    .msg-assistant code { background: #f1f5f9; padding: 1px 4px; border-radius: 4px; font-size: 11.5px; font-family: monospace; border: 1px solid #e2e8f0; }
+    .msg-assistant pre { background: #0f172a; color: #f8fafc; padding: 8px; border-radius: 6px; overflow-x: auto; font-size: 11px; margin: 6px 0; }
+    .msg-assistant pre code { background: transparent; border: none; color: inherit; padding: 0; }
     .citations-box {
       margin-top: 8px;
       padding-top: 8px;
@@ -509,14 +521,60 @@
   }
 
   function formatMarkdown(text: string): string {
-    return text
+    if (!text) return '';
+    let html = text
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-      .replace(/\*(.*?)\*/g, '<em>$1</em>')
-      .replace(/`([^`]+)`/g, '<code style="background:#f1f5f9;padding:1px 4px;border-radius:4px;font-size:12px;">$1</code>')
-      .replace(/\n/g, '<br/>');
+      .replace(/>/g, '&gt;');
+
+    // Code blocks: ```lang ... ```
+    html = html.replace(/```(?:[a-zA-Z0-9_-]*)\n([\s\S]*?)```/g, function(_: string, code: string) {
+      return '<pre><code>' + code.trim() + '</code></pre>';
+    });
+
+    // Inline code: `code`
+    html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+
+    // Horizontal rule: --- or ***
+    html = html.replace(/^(?:---|[*]{3}|___)$/gm, '<hr/>');
+
+    // Headers
+    html = html.replace(/^#### (.*?)$/gm, '<h4>$1</h4>');
+    html = html.replace(/^### (.*?)$/gm, '<h3>$1</h3>');
+    html = html.replace(/^## (.*?)$/gm, '<h2>$1</h2>');
+    html = html.replace(/^# (.*?)$/gm, '<h1>$1</h1>');
+
+    // Blockquotes: > quote
+    html = html.replace(/^> (.*?)$/gm, '<blockquote>$1</blockquote>');
+
+    // Bold & Italics
+    html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
+    html = html.replace(/_([^_]+)_/g, '<em>$1</em>');
+
+    // Links: [title](url)
+    html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" style="color:#2563eb;text-decoration:underline;">$1</a>');
+
+    // Unordered lists (- item or * item)
+    html = html.replace(/^(?:-|\*)\s+(.*?)$/gm, '<li>$1</li>');
+    html = html.replace(/(<li>.*<\/li>(\n|$))+/g, function(match: string) {
+      return '<ul>' + match + '</ul>';
+    });
+
+    // Ordered lists (1. item)
+    html = html.replace(/^\d+\.\s+(.*?)$/gm, '<oli>$1</oli>');
+    html = html.replace(/(<oli>.*<\/oli>(\n|$))+/g, function(match: string) {
+      return '<ol>' + match.replace(/<\/?oli>/g, function(tag: string) { return tag.replace('oli', 'li'); }) + '</ol>';
+    });
+
+    // Newlines (outside pre/code/lists/blockquotes)
+    html = html.replace(/\n\n+/g, '<br/><br/>');
+    html = html.replace(/\n/g, '<br/>');
+
+    // Clean up br tags right after block elements
+    html = html.replace(/<\/(h[1-4]|ul|ol|blockquote|pre|hr)><br\/>/g, '</$1>');
+
+    return html;
   }
 
   // Send Streaming Message
