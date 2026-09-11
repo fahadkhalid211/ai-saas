@@ -108,6 +108,24 @@ interface Assistant {
   bookingProvider?: 'direct' | 'calendly' | 'cal_com';
   bookingUrl?: string;
   bookingPromptText?: string;
+  bookingSlotDuration?: number;
+  bookingStartHour?: string;
+  bookingEndHour?: string;
+  bookingAvailableDays?: string[];
+}
+
+export interface Appointment {
+  id: string;
+  assistantId: string;
+  name: string;
+  email: string;
+  phone?: string;
+  date: string;
+  timeSlot: string;
+  durationMinutes: number;
+  status: 'pending' | 'confirmed' | 'cancelled' | 'completed';
+  notes?: string;
+  createdAt: string;
 }
 
 interface KnowledgeSource {
@@ -138,12 +156,9 @@ export default function DashboardPage() {
 
   useEffect(() => {
     const saved = localStorage.getItem('kortex_theme') as 'light' | 'dark' | null;
-    if (saved === 'dark') {
-      setTheme('dark');
-      document.documentElement.classList.add('dark');
-    } else {
-      setTheme('light');
-      document.documentElement.classList.remove('dark');
+    if (saved) {
+      setTheme(saved);
+      if (saved === 'dark') document.documentElement.classList.add('dark');
     }
   }, []);
 
@@ -161,7 +176,7 @@ export default function DashboardPage() {
   const [assistants, setAssistants] = useState<Assistant[]>([]);
   const [activeAssistant, setActiveAssistant] = useState<Assistant | null>(null);
   const [activeTab, setActiveTab] = useState<
-    'overview' | 'knowledge' | 'engine' | 'behavior' | 'widget' | 'channels' | 'playground' | 'leads' | 'docs' | 'templates' | 'history'
+    'overview' | 'knowledge' | 'engine' | 'behavior' | 'widget' | 'channels' | 'playground' | 'leads' | 'appointments' | 'docs' | 'templates' | 'history'
   >('overview');
 
   // Channel & Integrations state
@@ -218,6 +233,13 @@ export default function DashboardPage() {
   // Leads state
   const [leads, setLeads] = useState<Lead[]>([]);
   const [selectedLeadModal, setSelectedLeadModal] = useState<Lead | null>(null);
+
+  // Appointments & Calendar Booking state
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [appointmentFilter, setAppointmentFilter] = useState<'all' | 'confirmed' | 'pending' | 'completed' | 'cancelled'>('all');
+  const [appointmentSearch, setAppointmentSearch] = useState('');
+  const [isSyncingAppointments, setIsSyncingAppointments] = useState(false);
+  const [selectedAppointmentModal, setSelectedAppointmentModal] = useState<Appointment | null>(null);
 
   // Unanswered Queries (Knowledge Gap Engine) state
   const [unansweredQueries, setUnansweredQueries] = useState<any[]>([]);
@@ -315,6 +337,7 @@ export default function DashboardPage() {
       setFormData(activeAssistant);
       fetchKnowledge(activeAssistant.id);
       fetchLeads(activeAssistant.id);
+      fetchAppointments(activeAssistant.id);
       fetchUnansweredQueries(activeAssistant.id);
       fetchConversations(activeAssistant.id);
       // Reset playground
@@ -330,6 +353,7 @@ export default function DashboardPage() {
       const pollTimer = setInterval(() => {
         fetchKnowledge(activeAssistant.id);
         fetchLeads(activeAssistant.id);
+        fetchAppointments(activeAssistant.id);
         fetchUnansweredQueries(activeAssistant.id);
         fetchConversations(activeAssistant.id);
       }, 3000);
@@ -399,6 +423,72 @@ export default function DashboardPage() {
       }
     } catch (err) {
       console.error('Failed to fetch leads:', err);
+    }
+  }
+
+  async function fetchAppointments(assistantId: string) {
+    try {
+      const res = await fetch(`/api/appointments?assistantId=${assistantId}`);
+      const data = await res.json();
+      if (data.appointments) {
+        setAppointments((prev) => {
+          if (
+            prev.length === data.appointments.length &&
+            prev.every((a, i) => a.id === data.appointments[i]?.id && a.status === data.appointments[i]?.status)
+          ) {
+            return prev;
+          }
+          return data.appointments;
+        });
+      }
+    } catch (err) {
+      console.error('Failed to fetch appointments:', err);
+    }
+  }
+
+  async function handleManualSyncAppointments() {
+    if (!activeAssistant) return;
+    setIsSyncingAppointments(true);
+    await fetchAppointments(activeAssistant.id);
+    setTimeout(() => setIsSyncingAppointments(false), 500);
+  }
+
+  async function handleUpdateAppointmentStatus(id: string, status: Appointment['status']) {
+    try {
+      const res = await fetch('/api/appointments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'update_status', id, status }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setAppointments((prev) =>
+          prev.map((a) => (a.id === id ? { ...a, status } : a))
+        );
+        if (selectedAppointmentModal && selectedAppointmentModal.id === id) {
+          setSelectedAppointmentModal((prev) => prev ? { ...prev, status } : null);
+        }
+      }
+    } catch (err) {
+      console.error('Failed to update appointment status:', err);
+    }
+  }
+
+  async function handleDeleteAppointment(id: string) {
+    if (!confirm('Are you sure you want to delete this appointment?')) return;
+    try {
+      const res = await fetch(`/api/appointments?id=${id}`, {
+        method: 'DELETE',
+      });
+      const data = await res.json();
+      if (data.success) {
+        setAppointments((prev) => prev.filter((a) => a.id !== id));
+        if (selectedAppointmentModal?.id === id) {
+          setSelectedAppointmentModal(null);
+        }
+      }
+    } catch (err) {
+      console.error('Failed to delete appointment:', err);
     }
   }
 
@@ -982,6 +1072,7 @@ export default function DashboardPage() {
                     { id: 'behavior', label: 'Behavior & Rules', icon: Sliders },
                     { id: 'widget', label: 'Widget & Styling', icon: Palette },
                     { id: 'leads', label: 'Captured Leads', icon: Users, count: leads.length },
+                    { id: 'appointments', label: 'Appointments', icon: Calendar, count: appointments.length },
                     { id: 'history', label: 'Chat History', icon: History, count: conversations.length },
                     { id: 'templates', label: 'Bot Templates', icon: LayoutTemplate },
                     { id: 'docs', label: 'Guides & Docs', icon: BookOpen },
@@ -2569,6 +2660,102 @@ export default function DashboardPage() {
                             </div>
                           </div>
 
+                          {(!formData.bookingProvider || formData.bookingProvider === 'direct') && (
+                            <div className="space-y-3 pt-2.5 border-t border-dashed border-emerald-200 dark:border-emerald-800">
+                              <div>
+                                <div className="flex items-center justify-between mb-1.5">
+                                  <label className="text-[11px] font-semibold text-slate-700 dark:text-slate-300">
+                                    Appointment Slot Duration
+                                  </label>
+                                  <span className="text-[10px] text-emerald-700 dark:text-emerald-300 font-bold px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-900/60">
+                                    {(formData.bookingSlotDuration || 30) >= 60 
+                                      ? `${(formData.bookingSlotDuration || 30) / 60} Hour(s)` 
+                                      : `${formData.bookingSlotDuration || 30} Mins`}
+                                  </span>
+                                </div>
+                                <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
+                                  {[
+                                    { duration: 15, label: '15 Mins' },
+                                    { duration: 30, label: '30 Mins' },
+                                    { duration: 45, label: '45 Mins' },
+                                    { duration: 60, label: '1 Hour' },
+                                    { duration: 90, label: '90 Mins' },
+                                    { duration: 120, label: '2 Hours' },
+                                  ].map((opt) => (
+                                    <button
+                                      key={opt.duration}
+                                      type="button"
+                                      onClick={() => setFormData({ ...formData, bookingSlotDuration: opt.duration })}
+                                      className={`py-1.5 px-2 rounded-lg text-xs font-semibold border text-center transition cursor-pointer ${
+                                        (formData.bookingSlotDuration || 30) === opt.duration
+                                          ? 'border-emerald-600 bg-emerald-600 text-white shadow-xs'
+                                          : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'
+                                      }`}
+                                    >
+                                      {opt.label}
+                                    </button>
+                                  ))}
+                                </div>
+                              </div>
+
+                              <div className="grid grid-cols-2 gap-3">
+                                <div>
+                                  <label className="text-[11px] font-semibold text-slate-700 dark:text-slate-300 block mb-1">
+                                    Daily Start Time
+                                  </label>
+                                  <input
+                                    type="time"
+                                    value={formData.bookingStartHour || '09:00'}
+                                    onChange={(e) => setFormData({ ...formData, bookingStartHour: e.target.value })}
+                                    className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-xs text-slate-900 dark:text-slate-100 font-mono outline-none focus:border-emerald-500"
+                                  />
+                                </div>
+                                <div>
+                                  <label className="text-[11px] font-semibold text-slate-700 dark:text-slate-300 block mb-1">
+                                    Daily End Time
+                                  </label>
+                                  <input
+                                    type="time"
+                                    value={formData.bookingEndHour || '17:00'}
+                                    onChange={(e) => setFormData({ ...formData, bookingEndHour: e.target.value })}
+                                    className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-xs text-slate-900 dark:text-slate-100 font-mono outline-none focus:border-emerald-500"
+                                  />
+                                </div>
+                              </div>
+
+                              <div>
+                                <label className="text-[11px] font-semibold text-slate-700 dark:text-slate-300 block mb-1.5">
+                                  Available Working Days
+                                </label>
+                                <div className="flex flex-wrap gap-1.5">
+                                  {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map((day) => {
+                                    const currentDays = formData.bookingAvailableDays || ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+                                    const isSelected = currentDays.includes(day);
+                                    return (
+                                      <button
+                                        key={day}
+                                        type="button"
+                                        onClick={() => {
+                                          const nextDays = isSelected
+                                            ? currentDays.filter((d) => d !== day)
+                                            : [...currentDays, day];
+                                          setFormData({ ...formData, bookingAvailableDays: nextDays });
+                                        }}
+                                        className={`px-2.5 py-1 rounded-md text-[11px] font-medium border transition cursor-pointer ${
+                                          isSelected
+                                            ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 font-semibold'
+                                            : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-400 hover:text-slate-600'
+                                        }`}
+                                      >
+                                        {isSelected ? '✓ ' : ''}{day.slice(0, 3)}
+                                      </button>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+                            </div>
+                          )}
+
                           {(formData.bookingProvider === 'calendly' || formData.bookingProvider === 'cal_com') && (
                             <div>
                               <label className="text-[11px] font-semibold text-slate-700 dark:text-slate-300 block mb-1">
@@ -3827,6 +4014,319 @@ export default function DashboardPage() {
               </div>
             )}
 
+            {/* TAB: BOOKED APPOINTMENTS */}
+            {activeTab === 'appointments' && (
+              <div className="max-w-6xl space-y-6 mx-auto">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div>
+                    <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2.5">
+                      <Calendar className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
+                      <span>Booked Appointments &amp; Meetings</span>
+                    </h1>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                      Manage client booking slots, track meeting status, and review consultation notes submitted via your AI widget.
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800 text-[11px] text-emerald-700 dark:text-emerald-300 font-medium">
+                      <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                      <span>Live Sync Active</span>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={handleManualSyncAppointments}
+                      disabled={isSyncingAppointments}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800/60 text-slate-700 dark:text-slate-300 text-xs font-semibold shadow-xs disabled:opacity-50 transition cursor-pointer"
+                      title="Fetch newest appointments"
+                    >
+                      <RefreshCw className={`h-3.5 w-3.5 ${isSyncingAppointments ? 'animate-spin text-emerald-600' : 'text-slate-500'}`} />
+                      <span>{isSyncingAppointments ? 'Syncing...' : 'Sync Now'}</span>
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        const csvHeader = 'ID,Name,Email,Phone,Date,TimeSlot,DurationMinutes,Status,Notes,CreatedAt\n';
+                        const csvRows = appointments
+                          .map((a) => {
+                            return `"${a.id}","${(a.name || '').replace(/"/g, '""')}","${a.email}","${(a.phone || '').replace(/"/g, '""')}","${a.date}","${a.timeSlot}","${a.durationMinutes}","${a.status}","${(a.notes || '').replace(/"/g, '""')}","${a.createdAt}"`;
+                          })
+                          .join('\n');
+                        const blob = new Blob([csvHeader + csvRows], { type: 'text/csv' });
+                        const url = URL.createObjectURL(blob);
+                        const link = document.createElement('a');
+                        link.href = url;
+                        link.download = `appointments-${activeAssistant?.name || 'export'}.csv`;
+                        link.click();
+                      }}
+                      disabled={appointments.length === 0}
+                      className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold shadow-xs disabled:opacity-50 transition cursor-pointer"
+                    >
+                      <Download className="h-3.5 w-3.5" />
+                      <span>Export CSV</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Key Metrics Overview */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
+                  <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs">
+                    <div className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                      Total Bookings
+                    </div>
+                    <div className="text-2xl font-bold text-slate-900 dark:text-white mt-1">
+                      {appointments.length}
+                    </div>
+                    <div className="text-[10px] text-slate-400 mt-0.5">All-time appointments</div>
+                  </div>
+
+                  <div className="p-4 rounded-xl border border-emerald-200 dark:border-emerald-900/50 bg-emerald-50/40 dark:bg-emerald-950/20 shadow-xs">
+                    <div className="text-[11px] font-semibold text-emerald-700 dark:text-emerald-300 uppercase tracking-wider flex items-center justify-between">
+                      <span>Confirmed</span>
+                      <span className="h-2 w-2 rounded-full bg-emerald-500"></span>
+                    </div>
+                    <div className="text-2xl font-bold text-emerald-700 dark:text-emerald-300 mt-1">
+                      {appointments.filter((a) => a.status === 'confirmed').length}
+                    </div>
+                    <div className="text-[10px] text-emerald-600/75 dark:text-emerald-400/75 mt-0.5">Ready for call/meeting</div>
+                  </div>
+
+                  <div className="p-4 rounded-xl border border-amber-200 dark:border-amber-900/50 bg-amber-50/40 dark:bg-amber-950/20 shadow-xs">
+                    <div className="text-[11px] font-semibold text-amber-700 dark:text-amber-300 uppercase tracking-wider flex items-center justify-between">
+                      <span>Pending</span>
+                      <span className="h-2 w-2 rounded-full bg-amber-500"></span>
+                    </div>
+                    <div className="text-2xl font-bold text-amber-700 dark:text-amber-300 mt-1">
+                      {appointments.filter((a) => a.status === 'pending').length}
+                    </div>
+                    <div className="text-[10px] text-amber-600/75 dark:text-amber-400/75 mt-0.5">Awaiting team review</div>
+                  </div>
+
+                  <div className="p-4 rounded-xl border border-blue-200 dark:border-blue-900/50 bg-blue-50/40 dark:bg-blue-950/20 shadow-xs">
+                    <div className="text-[11px] font-semibold text-blue-700 dark:text-blue-300 uppercase tracking-wider flex items-center justify-between">
+                      <span>Completed</span>
+                      <CheckCircle2 className="h-3 w-3 text-blue-500" />
+                    </div>
+                    <div className="text-2xl font-bold text-blue-700 dark:text-blue-300 mt-1">
+                      {appointments.filter((a) => a.status === 'completed').length}
+                    </div>
+                    <div className="text-[10px] text-blue-600/75 dark:text-blue-400/75 mt-0.5">Consultations finished</div>
+                  </div>
+                </div>
+
+                {/* Filter and Search Bar */}
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    {[
+                      { id: 'all', label: 'All Slots', count: appointments.length },
+                      { id: 'confirmed', label: 'Confirmed', count: appointments.filter((a) => a.status === 'confirmed').length },
+                      { id: 'pending', label: 'Pending', count: appointments.filter((a) => a.status === 'pending').length },
+                      { id: 'completed', label: 'Completed', count: appointments.filter((a) => a.status === 'completed').length },
+                      { id: 'cancelled', label: 'Cancelled', count: appointments.filter((a) => a.status === 'cancelled').length },
+                    ].map((f) => (
+                      <button
+                        key={f.id}
+                        type="button"
+                        onClick={() => setAppointmentFilter(f.id as any)}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer flex items-center gap-1.5 ${
+                          appointmentFilter === f.id
+                            ? 'bg-emerald-600 text-white shadow-xs'
+                            : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                        }`}
+                      >
+                        <span>{f.label}</span>
+                        <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono ${
+                          appointmentFilter === f.id ? 'bg-emerald-700 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300'
+                        }`}>
+                          {f.count}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className="relative w-full sm:w-64">
+                    <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+                    <input
+                      type="text"
+                      placeholder="Search appointments..."
+                      value={appointmentSearch}
+                      onChange={(e) => setAppointmentSearch(e.target.value)}
+                      className="w-full pl-8 pr-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-xs text-slate-900 dark:text-slate-100 outline-none focus:border-emerald-500"
+                    />
+                    {appointmentSearch && (
+                      <button
+                        type="button"
+                        onClick={() => setAppointmentSearch('')}
+                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Appointments Table */}
+                <div className="border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-900 shadow-xs overflow-hidden">
+                  {appointments.length === 0 ? (
+                    <div className="p-10 text-center space-y-3">
+                      <div className="flex h-12 w-12 mx-auto items-center justify-center rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
+                        <Calendar className="h-6 w-6" />
+                      </div>
+                      <div className="text-sm font-bold text-slate-900 dark:text-white">No appointments booked yet</div>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 max-w-md mx-auto">
+                        Visitors can book calls, consultations, and demos directly through the AI chat widget or by asking the bot to book a slot.
+                      </p>
+                      <div className="flex justify-center gap-3 pt-2">
+                        <button
+                          type="button"
+                          onClick={() => setActiveTab('widget')}
+                          className="px-3.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs font-semibold transition cursor-pointer"
+                        >
+                          Configure Slot Duration &amp; Hours
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setActiveTab('playground')}
+                          className="px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold shadow-xs transition cursor-pointer"
+                        >
+                          Test in Studio
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left text-xs">
+                        <thead className="bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 font-semibold border-b border-slate-200 dark:border-slate-800">
+                          <tr>
+                            <th className="py-3 px-5">Client / Contact</th>
+                            <th className="py-3 px-5">Date &amp; Time Slot</th>
+                            <th className="py-3 px-5">Duration</th>
+                            <th className="py-3 px-5">Meeting Topic / Notes</th>
+                            <th className="py-3 px-5">Status</th>
+                            <th className="py-3 px-5">Booked On</th>
+                            <th className="py-3 px-5 text-right">Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                          {appointments
+                            .filter((apt) => {
+                              if (appointmentFilter !== 'all' && apt.status !== appointmentFilter) return false;
+                              if (!appointmentSearch.trim()) return true;
+                              const q = appointmentSearch.toLowerCase();
+                              return (
+                                apt.name.toLowerCase().includes(q) ||
+                                apt.email.toLowerCase().includes(q) ||
+                                (apt.phone && apt.phone.toLowerCase().includes(q)) ||
+                                apt.date.toLowerCase().includes(q) ||
+                                apt.timeSlot.toLowerCase().includes(q) ||
+                                (apt.notes && apt.notes.toLowerCase().includes(q))
+                              );
+                            })
+                            .map((apt) => {
+                              const durationLabel = apt.durationMinutes >= 60 
+                                ? `${Math.floor(apt.durationMinutes / 60)}h${apt.durationMinutes % 60 > 0 ? ` ${apt.durationMinutes % 60}m` : ''}` 
+                                : `${apt.durationMinutes}m`;
+                              return (
+                                <tr key={apt.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition">
+                                  <td className="py-3.5 px-5">
+                                    <div className="font-semibold text-slate-900 dark:text-white flex items-center gap-1.5">
+                                      <span>{apt.name}</span>
+                                    </div>
+                                    <div className="flex items-center gap-1.5 mt-0.5">
+                                      <a
+                                        href={`mailto:${apt.email}?subject=Regarding%20Your%20Appointment%20on%20${encodeURIComponent(apt.date)}`}
+                                        className="text-blue-600 dark:text-blue-400 font-mono text-[11px] hover:underline"
+                                      >
+                                        {apt.email}
+                                      </a>
+                                    </div>
+                                    {apt.phone && (
+                                      <div className="text-slate-500 dark:text-slate-400 font-mono text-[10px] mt-0.5">
+                                        📞 {apt.phone}
+                                      </div>
+                                    )}
+                                  </td>
+
+                                  <td className="py-3.5 px-5 whitespace-nowrap">
+                                    <div className="font-semibold text-slate-900 dark:text-white flex items-center gap-1.5">
+                                      <Calendar className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+                                      <span>{apt.date}</span>
+                                    </div>
+                                    <div className="text-slate-600 dark:text-slate-300 font-medium text-[11px] mt-0.5">
+                                      ⏰ {apt.timeSlot}
+                                    </div>
+                                  </td>
+
+                                  <td className="py-3.5 px-5 whitespace-nowrap">
+                                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                                      {durationLabel}
+                                    </span>
+                                  </td>
+
+                                  <td className="py-3.5 px-5 max-w-xs">
+                                    <div className="text-slate-700 dark:text-slate-300 line-clamp-2">
+                                      {apt.notes || <span className="text-slate-400 italic">No notes attached</span>}
+                                    </div>
+                                  </td>
+
+                                  <td className="py-3.5 px-5 whitespace-nowrap">
+                                    <select
+                                      value={apt.status}
+                                      onChange={(e) => handleUpdateAppointmentStatus(apt.id, e.target.value as any)}
+                                      className={`text-[11px] font-semibold rounded-lg px-2 py-1 border outline-none cursor-pointer ${
+                                        apt.status === 'confirmed'
+                                          ? 'bg-emerald-50 dark:bg-emerald-950/60 border-emerald-300 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200'
+                                          : apt.status === 'pending'
+                                          ? 'bg-amber-50 dark:bg-amber-950/60 border-amber-300 dark:border-amber-800 text-amber-800 dark:text-amber-200'
+                                          : apt.status === 'completed'
+                                          ? 'bg-blue-50 dark:bg-blue-950/60 border-blue-300 dark:border-blue-800 text-blue-800 dark:text-blue-200'
+                                          : 'bg-rose-50 dark:bg-rose-950/60 border-rose-300 dark:border-rose-800 text-rose-800 dark:text-rose-200'
+                                      }`}
+                                    >
+                                      <option value="confirmed">Confirmed</option>
+                                      <option value="pending">Pending</option>
+                                      <option value="completed">Completed</option>
+                                      <option value="cancelled">Cancelled</option>
+                                    </select>
+                                  </td>
+
+                                  <td className="py-3.5 px-5 text-slate-500 dark:text-slate-400 font-mono text-[11px] whitespace-nowrap">
+                                    {new Date(apt.createdAt).toLocaleDateString()}{' '}
+                                    <span className="text-[10px] opacity-75">
+                                      {new Date(apt.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                    </span>
+                                  </td>
+
+                                  <td className="py-3.5 px-5 text-right whitespace-nowrap">
+                                    <div className="flex items-center justify-end gap-1.5">
+                                      <button
+                                        type="button"
+                                        onClick={() => setSelectedAppointmentModal(apt)}
+                                        className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/60 px-2.5 py-1 rounded transition cursor-pointer"
+                                      >
+                                        Details
+                                      </button>
+                                      <button
+                                        type="button"
+                                        onClick={() => handleDeleteAppointment(apt.id)}
+                                        className="p-1 rounded text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition cursor-pointer"
+                                        title="Delete appointment"
+                                      >
+                                        <Trash2 className="h-3.5 w-3.5" />
+                                      </button>
+                                    </div>
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
             {/* TAB: GUIDES & DOCS */}
             {activeTab === 'docs' && (
               <div className="p-6 max-w-4xl mx-auto space-y-8">
@@ -4674,6 +5174,141 @@ export default function DashboardPage() {
                 >
                   Close
                 </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* MODAL: VIEW APPOINTMENT DETAILS */}
+        {selectedAppointmentModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 backdrop-blur-xs p-4">
+            <div className="w-full max-w-lg rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-2xl space-y-5 animate-in fade-in duration-150">
+              <div className="flex items-start justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
+                    <Calendar className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+                      Appointment Details
+                    </h3>
+                    <div className="text-[11px] text-slate-500 font-mono">
+                      ID: {selectedAppointmentModal.id}
+                    </div>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setSelectedAppointmentModal(null)}
+                  className="rounded-lg p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition cursor-pointer"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+
+              <div className="space-y-4 text-xs">
+                <div className="grid grid-cols-2 gap-3 p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
+                  <div>
+                    <div className="text-[10px] uppercase font-bold text-slate-500 dark:text-slate-400 tracking-wider">
+                      Client Name
+                    </div>
+                    <div className="font-semibold text-slate-900 dark:text-white mt-0.5">
+                      {selectedAppointmentModal.name}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-[10px] uppercase font-bold text-slate-500 dark:text-slate-400 tracking-wider">
+                      Email Address
+                    </div>
+                    <div className="font-mono text-blue-600 dark:text-blue-400 mt-0.5">
+                      {selectedAppointmentModal.email}
+                    </div>
+                  </div>
+                  {selectedAppointmentModal.phone && (
+                    <div>
+                      <div className="text-[10px] uppercase font-bold text-slate-500 dark:text-slate-400 tracking-wider">
+                        Phone Number
+                      </div>
+                      <div className="font-mono text-slate-800 dark:text-slate-200 mt-0.5">
+                        {selectedAppointmentModal.phone}
+                      </div>
+                    </div>
+                  )}
+                  <div>
+                    <div className="text-[10px] uppercase font-bold text-slate-500 dark:text-slate-400 tracking-wider">
+                      Booking Status
+                    </div>
+                    <div className="mt-0.5">
+                      <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
+                        selectedAppointmentModal.status === 'confirmed'
+                          ? 'bg-emerald-100 dark:bg-emerald-900 text-emerald-800 dark:text-emerald-200'
+                          : selectedAppointmentModal.status === 'pending'
+                          ? 'bg-amber-100 dark:bg-amber-900 text-amber-800 dark:text-amber-200'
+                          : selectedAppointmentModal.status === 'completed'
+                          ? 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200'
+                          : 'bg-rose-100 dark:bg-rose-900 text-rose-800 dark:text-rose-200'
+                      }`}>
+                        {selectedAppointmentModal.status}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="p-3.5 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-emerald-50/50 dark:bg-emerald-950/20 space-y-1.5">
+                  <div className="text-[10px] uppercase font-bold text-emerald-800 dark:text-emerald-300 tracking-wider">
+                    Scheduled Time Slot
+                  </div>
+                  <div className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                    <Calendar className="h-4 w-4 text-emerald-600" />
+                    <span>{selectedAppointmentModal.date}</span>
+                    <span>•</span>
+                    <span>{selectedAppointmentModal.timeSlot}</span>
+                  </div>
+                  <div className="text-[11px] text-emerald-700 dark:text-emerald-300 font-semibold">
+                    Duration: {selectedAppointmentModal.durationMinutes >= 60 ? `${Math.floor(selectedAppointmentModal.durationMinutes / 60)} Hour(s)` : `${selectedAppointmentModal.durationMinutes} Minutes`}
+                  </div>
+                </div>
+
+                <div>
+                  <div className="text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">
+                    Meeting Notes / Visitor Inquiries
+                  </div>
+                  <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 whitespace-pre-wrap leading-relaxed">
+                    {selectedAppointmentModal.notes || <span className="text-slate-400 italic">No notes provided for this booking.</span>}
+                  </div>
+                </div>
+
+                <div className="pt-2 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[11px] font-semibold text-slate-500">Change Status:</span>
+                    <select
+                      value={selectedAppointmentModal.status}
+                      onChange={(e) => handleUpdateAppointmentStatus(selectedAppointmentModal.id, e.target.value as any)}
+                      className="text-xs font-semibold rounded-lg px-2 py-1 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 outline-none"
+                    >
+                      <option value="confirmed">Confirmed</option>
+                      <option value="pending">Pending</option>
+                      <option value="completed">Completed</option>
+                      <option value="cancelled">Cancelled</option>
+                    </select>
+                  </div>
+                  <div className="flex gap-2">
+                    <a
+                      href={`mailto:${selectedAppointmentModal.email}?subject=Regarding%20Your%20Scheduled%20Appointment%20(${selectedAppointmentModal.date}%20at%20${encodeURIComponent(selectedAppointmentModal.timeSlot)})`}
+                      className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold shadow-xs transition cursor-pointer"
+                    >
+                      <span>Email Client</span>
+                      <ExternalLink className="h-3 w-3" />
+                    </a>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedAppointmentModal(null)}
+                      className="rounded-lg border border-slate-200 dark:border-slate-700 px-3.5 py-1.5 text-xs text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
+                    >
+                      Close
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

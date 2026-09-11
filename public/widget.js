@@ -76,6 +76,10 @@
       bookingProvider: 'direct',
       bookingUrl: '',
       bookingPromptText: 'Schedule an Appointment',
+      bookingSlotDuration: 30,
+      bookingStartHour: '09:00',
+      bookingEndHour: '17:00',
+      bookingAvailableDays: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
     };
     var isOpen = false;
     var messages = [];
@@ -1415,6 +1419,50 @@
 
       // Direct In-Widget Date & Time Booking
       var tomorrow = new Date(Date.now() + 86400000).toISOString().slice(0, 10);
+      var slotDuration = parseInt(config.bookingSlotDuration, 10) || 30;
+      var durationLabel = slotDuration === 60 ? '1 hour' : slotDuration === 120 ? '2 hours' : slotDuration === 90 ? '1.5 hours' : slotDuration + ' mins';
+
+      // Generate dynamic slots based on admin duration and operating hours
+      function generateWidgetSlots(duration, startHourStr, endHourStr) {
+        var startParts = (startHourStr || '09:00').split(':');
+        var endParts = (endHourStr || '17:00').split(':');
+        var startTotalMins = parseInt(startParts[0], 10) * 60 + parseInt(startParts[1] || 0, 10);
+        var endTotalMins = parseInt(endParts[0], 10) * 60 + parseInt(endParts[1] || 0, 10);
+
+        if (endTotalMins <= startTotalMins) {
+          endTotalMins = startTotalMins + 480;
+        }
+
+        var slots = [];
+        var curr = startTotalMins;
+
+        function formatTime(mins) {
+          var h = Math.floor(mins / 60);
+          var m = mins % 60;
+          var period = h >= 12 ? 'PM' : 'AM';
+          var displayH = h % 12 === 0 ? 12 : h % 12;
+          var displayM = m < 10 ? '0' + m : m;
+          return displayH + ':' + displayM + ' ' + period;
+        }
+
+        while (curr + duration <= endTotalMins) {
+          var slotStart = formatTime(curr);
+          var slotEnd = formatTime(curr + duration);
+          slots.push(slotStart + ' - ' + slotEnd);
+          curr += duration;
+        }
+
+        if (slots.length === 0) {
+          slots.push('09:00 AM - 10:00 AM', '10:00 AM - 11:00 AM', '02:00 PM - 03:00 PM');
+        }
+        return slots;
+      }
+
+      var availableSlots = generateWidgetSlots(slotDuration, config.bookingStartHour, config.bookingEndHour);
+      var slotOptionsHtml = availableSlots.map(function (s, i) {
+        return '<option value="' + escapeHtml(s) + '" ' + (i === 1 || i === 0 ? 'selected' : '') + '>' + escapeHtml(s) + '</option>';
+      }).join('');
+
       card.innerHTML = `
         <div class="booking-header">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--primary-color, #2563eb)" stroke-width="2.5">
@@ -1425,7 +1473,7 @@
           </svg>
           <span>${escapeHtml(config.bookingPromptText || 'Schedule an Appointment')}</span>
         </div>
-        <div class="booking-desc">Select your preferred date &amp; time slot. We will confirm via email.</div>
+        <div class="booking-desc">Select your preferred date &amp; time (${escapeHtml(durationLabel)} session). We will confirm instantly.</div>
         <form id="widget-booking-form" style="display: flex; flex-direction: column; gap: 8px;">
           <div style="display: flex; gap: 8px;">
             <div style="flex: 1;">
@@ -1433,11 +1481,9 @@
               <input type="date" id="book-date" min="${tomorrow}" value="${tomorrow}" required style="width: 100%; box-sizing: border-box; padding: 6px 8px; border: 1px solid #cbd5e1; border-radius: 7px; font-size: 12px; outline: none;" />
             </div>
             <div style="flex: 1;">
-              <label style="font-size: 10.5px; font-weight: 600; color: #64748b; display: block; margin-bottom: 3px;">Time Slot</label>
+              <label style="font-size: 10.5px; font-weight: 600; color: #64748b; display: block; margin-bottom: 3px;">Time Slot (${escapeHtml(durationLabel)})</label>
               <select id="book-time" style="width: 100%; box-sizing: border-box; padding: 6px 8px; border: 1px solid #cbd5e1; border-radius: 7px; font-size: 12px; outline: none; background: #fff;">
-                <option value="Morning (9:00 AM - 12:00 PM)">Morning (9am - 12pm)</option>
-                <option value="Afternoon (1:00 PM - 4:00 PM)" selected>Afternoon (1pm - 4pm)</option>
-                <option value="Evening (5:00 PM - 7:00 PM)">Evening (5pm - 7pm)</option>
+                ${slotOptionsHtml}
               </select>
             </div>
           </div>
@@ -1445,12 +1491,22 @@
             <label style="font-size: 10.5px; font-weight: 600; color: #64748b; display: block; margin-bottom: 3px;">Your Name</label>
             <input type="text" id="book-name" placeholder="Full name" required style="width: 100%; box-sizing: border-box; padding: 6px 8px; border: 1px solid #cbd5e1; border-radius: 7px; font-size: 12px; outline: none;" />
           </div>
+          <div style="display: flex; gap: 8px;">
+            <div style="flex: 1;">
+              <label style="font-size: 10.5px; font-weight: 600; color: #64748b; display: block; margin-bottom: 3px;">Email Address</label>
+              <input type="email" id="book-email" placeholder="name@email.com" required style="width: 100%; box-sizing: border-box; padding: 6px 8px; border: 1px solid #cbd5e1; border-radius: 7px; font-size: 12px; outline: none;" />
+            </div>
+            <div style="flex: 1;">
+              <label style="font-size: 10.5px; font-weight: 600; color: #64748b; display: block; margin-bottom: 3px;">Phone (Optional)</label>
+              <input type="tel" id="book-phone" placeholder="+1..." style="width: 100%; box-sizing: border-box; padding: 6px 8px; border: 1px solid #cbd5e1; border-radius: 7px; font-size: 12px; outline: none;" />
+            </div>
+          </div>
           <div>
-            <label style="font-size: 10.5px; font-weight: 600; color: #64748b; display: block; margin-bottom: 3px;">Email Address</label>
-            <input type="email" id="book-email" placeholder="name@email.com" required style="width: 100%; box-sizing: border-box; padding: 6px 8px; border: 1px solid #cbd5e1; border-radius: 7px; font-size: 12px; outline: none;" />
+            <label style="font-size: 10.5px; font-weight: 600; color: #64748b; display: block; margin-bottom: 3px;">Meeting Note (Optional)</label>
+            <input type="text" id="book-notes" placeholder="What would you like to discuss?" style="width: 100%; box-sizing: border-box; padding: 6px 8px; border: 1px solid #cbd5e1; border-radius: 7px; font-size: 12px; outline: none;" />
           </div>
           <button type="submit" id="book-submit-btn" style="margin-top: 4px; padding: 8px; border: none; border-radius: 7px; background: var(--primary-color, #2563eb); color: #fff; font-size: 12px; font-weight: 600; cursor: pointer;">
-            Confirm Appointment
+            Confirm ${escapeHtml(durationLabel)} Appointment
           </button>
         </form>
       `;
@@ -1466,6 +1522,8 @@
           var timeVal = card.querySelector('#book-time').value;
           var nameVal = card.querySelector('#book-name').value;
           var emailVal = card.querySelector('#book-email').value;
+          var phoneVal = (card.querySelector('#book-phone') && card.querySelector('#book-phone').value) || '';
+          var notesVal = (card.querySelector('#book-notes') && card.querySelector('#book-notes').value) || '';
           var btnEl = card.querySelector('#book-submit-btn');
 
           if (btnEl) {
@@ -1473,32 +1531,36 @@
             btnEl.textContent = 'Confirming...';
           }
 
-          fetch(hostUrl + '/api/lead', {
+          var payloadNotes = notesVal ? (notesVal + (queryText ? ' | Inquired: ' + queryText : '')) : (queryText ? 'Inquired: ' + queryText : '');
+
+          fetch(hostUrl + '/api/appointments', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               assistantId: assistantId,
-              email: emailVal,
               name: nameVal,
-              notes: 'Booked Appointment on ' + dateVal + ' (' + timeVal + ')' + (queryText ? ' | Inquired: ' + queryText : ''),
-              customData: {
-                AppointmentDate: dateVal,
-                AppointmentTime: timeVal,
-                Type: 'Calendar Booking',
-              },
+              email: emailVal,
+              phone: phoneVal,
+              date: dateVal,
+              timeSlot: timeVal,
+              durationMinutes: slotDuration,
+              notes: payloadNotes,
             }),
           })
-            .then(function () {
+            .then(function (res) {
+              return res.json();
+            })
+            .then(function (data) {
               card.innerHTML = `
                 <div class="support-success-card">
                   <div class="support-success-title">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="3">
                       <polyline points="20 6 9 17 4 12"></polyline>
                     </svg>
-                    <span>Appointment Requested!</span>
+                    <span>Appointment Confirmed!</span>
                   </div>
                   <div class="support-success-text">
-                    Thank you, <strong>${escapeHtml(nameVal)}</strong>! Your appointment request for <strong>${escapeHtml(dateVal)}</strong> (${escapeHtml(timeVal)}) has been sent. A confirmation will be sent to <strong>${escapeHtml(emailVal)}</strong>.
+                    Thank you, <strong>${escapeHtml(nameVal)}</strong>! Your appointment has been booked for <strong>${escapeHtml(dateVal)}</strong> at <strong>${escapeHtml(timeVal)}</strong> (${escapeHtml(durationLabel)}). A confirmation email has been dispatched to <strong>${escapeHtml(emailVal)}</strong>.
                   </div>
                 </div>
               `;

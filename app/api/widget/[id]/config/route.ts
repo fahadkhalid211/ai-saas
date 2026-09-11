@@ -50,6 +50,10 @@ export async function GET(
       bookingProvider: assistant.bookingProvider || 'direct',
       bookingUrl: assistant.bookingUrl || '',
       bookingPromptText: assistant.bookingPromptText || 'Schedule an Appointment',
+      bookingSlotDuration: assistant.bookingSlotDuration || 30,
+      bookingStartHour: assistant.bookingStartHour || '09:00',
+      bookingEndHour: assistant.bookingEndHour || '17:00',
+      bookingAvailableDays: assistant.bookingAvailableDays || ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
     };
 
     return NextResponse.json(publicConfig, {

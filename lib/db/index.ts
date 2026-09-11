@@ -48,6 +48,10 @@ export interface AssistantData {
   bookingProvider?: 'direct' | 'calendly' | 'cal_com';
   bookingUrl?: string;
   bookingPromptText?: string;
+  bookingSlotDuration?: number;
+  bookingStartHour?: string;
+  bookingEndHour?: string;
+  bookingAvailableDays?: string[];
   createdAt: string;
   updatedAt: string;
 }
@@ -128,6 +132,20 @@ export interface UnansweredQueryData {
   suggestedAnswer?: string;
 }
 
+export interface AppointmentData {
+  id: string;
+  assistantId: string;
+  name: string;
+  email: string;
+  phone?: string;
+  date: string;
+  timeSlot: string;
+  durationMinutes: number;
+  status: 'pending' | 'confirmed' | 'cancelled' | 'completed';
+  notes?: string;
+  createdAt: string;
+}
+
 interface DatabaseState {
   workspaces: any[];
   assistants: AssistantData[];
@@ -137,6 +155,7 @@ interface DatabaseState {
   messages: MessageData[];
   leads: LeadData[];
   unansweredQueries?: UnansweredQueryData[];
+  appointments?: AppointmentData[];
 }
 
 const DATA_DIR = path.join(process.cwd(), '.data');
@@ -193,6 +212,7 @@ function loadState(): DatabaseState {
       messages: [],
       leads: [],
       unansweredQueries: [],
+      appointments: [],
     };
     fs.writeFileSync(DB_FILE, JSON.stringify(initialState, null, 2), 'utf-8');
     return initialState;
@@ -205,6 +225,7 @@ function loadState(): DatabaseState {
     if (!parsed.leads) parsed.leads = [];
     if (!parsed.conversations) parsed.conversations = [];
     if (!parsed.messages) parsed.messages = [];
+    if (!parsed.appointments) parsed.appointments = [];
     return parsed;
   } catch (err) {
     console.error('Failed to parse database state, creating empty:', err);
@@ -217,6 +238,7 @@ function loadState(): DatabaseState {
       messages: [],
       leads: [],
       unansweredQueries: [],
+      appointments: [],
     };
   }
 }
@@ -312,6 +334,7 @@ export class Database {
     state.chunks = state.chunks.filter((c) => c.assistantId !== id);
     state.conversations = state.conversations.filter((c) => c.assistantId !== id);
     state.leads = state.leads.filter((l) => l.assistantId !== id);
+    state.appointments = (state.appointments || []).filter((a) => a.assistantId !== id);
     saveState(state);
     return true;
   }
@@ -620,6 +643,65 @@ export class Database {
     const state = loadState();
     if (!state.unansweredQueries) return false;
     state.unansweredQueries = state.unansweredQueries.filter((q) => q.id !== id);
+    saveState(state);
+    return true;
+  }
+
+  // Appointment & Calendar Booking
+  static async saveAppointment(data: {
+    assistantId: string;
+    name: string;
+    email: string;
+    phone?: string;
+    date: string;
+    timeSlot: string;
+    durationMinutes?: number;
+    notes?: string;
+  }): Promise<AppointmentData> {
+    const state = loadState();
+    if (!state.appointments) state.appointments = [];
+
+    const apt: AppointmentData = {
+      id: 'apt_' + Math.random().toString(36).substring(2, 10),
+      assistantId: data.assistantId,
+      name: data.name,
+      email: data.email,
+      phone: data.phone,
+      date: data.date,
+      timeSlot: data.timeSlot,
+      durationMinutes: data.durationMinutes || 30,
+      status: 'confirmed',
+      notes: data.notes,
+      createdAt: new Date().toISOString(),
+    };
+
+    state.appointments.unshift(apt);
+    saveState(state);
+    return apt;
+  }
+
+  static async getAppointments(assistantId: string): Promise<AppointmentData[]> {
+    const state = loadState();
+    return (state.appointments || []).filter((a) => a.assistantId === assistantId);
+  }
+
+  static async updateAppointmentStatus(
+    id: string,
+    status: AppointmentData['status']
+  ): Promise<boolean> {
+    const state = loadState();
+    if (!state.appointments) return false;
+    const apt = state.appointments.find((a) => a.id === id);
+    if (!apt) return false;
+    apt.status = status;
+    saveState(state);
+    return true;
+  }
+
+  static async deleteAppointment(id: string): Promise<boolean> {
+    const state = loadState();
+    if (!state.appointments) return false;
+    state.appointments = state.appointments.filter((a) => a.id !== id);
     saveState(state);
     return true;
   }
