@@ -116,6 +116,7 @@ export async function POST(req: NextRequest) {
       async start(controller) {
         let webSearchQuery = '';
         let isWebSearchUsed = false;
+        let liveWebResults: any[] = [];
 
         try {
           // Check for explicit live web search intent
@@ -146,6 +147,7 @@ export async function POST(req: NextRequest) {
             const searchResults = await executeWebSearch(searchQuery);
 
             if (searchResults.length > 0) {
+              liveWebResults = searchResults;
               await ingestWebSearchResults(assistantId, searchQuery, searchResults);
               console.log(`[ChatRoute] Successfully ingested ${searchResults.length} online web sources for query: "${searchQuery}"`);
 
@@ -190,6 +192,7 @@ export async function POST(req: NextRequest) {
             try {
               const searchResults = await executeWebSearch(searchQuery);
               if (searchResults.length > 0) {
+                liveWebResults = searchResults;
                 await ingestWebSearchResults(assistantId, searchQuery, searchResults);
                 retrieval = await retrieveRelevantContext(
                   assistantId,
@@ -240,12 +243,24 @@ Directly use the content of this attached document to assist the visitor, answer
             })),
           ];
 
-          // Send citations first (including URLs for all web sources and attachment metadata)
+          // Format citations ONLY for genuine live external web search results.
+          // Never expose internal knowledge base files, documents, or training materials to customers.
+          const finalCitations = (isWebSearchUsed && liveWebResults.length > 0)
+            ? liveWebResults.map((r) => ({
+                sourceTitle: r.title,
+                url: r.url,
+                preview: r.snippet,
+                sourceType: 'web',
+                isLiveWebSearch: true,
+              }))
+            : [];
+
+          // Send citations (strictly only present when live web search is used)
           const citationsEvent = `data: ${JSON.stringify({
             type: 'citations',
-            citations: retrieval.citations,
+            citations: finalCitations,
             conversationId: conv.id,
-            isWebSearch: isWebSearchUsed,
+            isWebSearch: isWebSearchUsed && finalCitations.length > 0,
             webSearchQuery: isWebSearchUsed ? webSearchQuery : undefined,
             attachment: attachmentMeta,
           })}\n\n`;
@@ -273,7 +288,7 @@ Directly use the content of this attached document to assist the visitor, answer
             conv.id,
             'assistant',
             fullAssistantReply,
-            retrieval.citations,
+            finalCitations,
             Math.ceil(fullAssistantReply.length / 4)
           );
 

@@ -265,7 +265,7 @@ export default function DashboardPage() {
   const [isSyncingLeads, setIsSyncingLeads] = useState(false);
 
   // Playground state
-  const [chatMessages, setChatMessages] = useState<{ role: string; content: string; citations?: any[] }[]>([]);
+  const [chatMessages, setChatMessages] = useState<{ role: string; content: string; citations?: any[]; isWebSearch?: boolean }[]>([]);
   const [inputQuery, setInputQuery] = useState('');
   const [isStreaming, setIsStreaming] = useState(false);
   const [streamingStatus, setStreamingStatus] = useState<string | null>(null);
@@ -1302,6 +1302,7 @@ Thank you for using Kortex AI Business Engine.
       const decoder = new TextDecoder();
       let streamed = '';
       let citations: any[] = [];
+      let isWebSearch = false;
 
       if (reader) {
         let updateTimer: any = null;
@@ -1312,6 +1313,7 @@ Thank you for using Kortex AI Business Engine.
               role: 'assistant',
               content: streamed,
               citations,
+              isWebSearch,
             };
             return updated;
           });
@@ -1335,7 +1337,8 @@ Thank you for using Kortex AI Business Engine.
                   }
                 } else if (data.type === 'citations') {
                   citations = data.citations || [];
-                  setActiveCitations(citations);
+                  isWebSearch = Boolean(data.isWebSearch);
+                  setActiveCitations(isWebSearch ? citations : []);
                 } else if (data.type === 'token') {
                   setStreamingStatus(null);
                   streamed += data.token;
@@ -2885,8 +2888,10 @@ Thank you for using Kortex AI Business Engine.
                               <div className="whitespace-pre-wrap">{msg.content}</div>
                             )}
 
-                            {/* Web Citations ONLY - Never expose internal files, CSVs, or agreements */}
+                            {/* Web Citations ONLY for Live Web Search - Never expose internal knowledge base files, URLs, or documents */}
                             {(() => {
+                              const isLive = Boolean(msg.isWebSearch || (msg.citations || []).some((c: any) => c.isLiveWebSearch));
+                              if (!isLive) return null;
                               const webCitations = (msg.citations || []).filter((c: any) => c && c.url && (c.url.startsWith('http://') || c.url.startsWith('https://')));
                               if (webCitations.length === 0) return null;
                               return (
@@ -6033,8 +6038,10 @@ Thank you for using Kortex AI Business Engine.
                                   >
                                     <div className="whitespace-pre-wrap">{m.content}</div>
 
-                                    {/* Web Sources Preview (Never display internal filenames or CSVs) */}
+                                    {/* Web Sources Preview (Strictly for live web search - Never display internal knowledge base) */}
                                     {(() => {
+                                      const isLive = Boolean(m.isWebSearch || (m.citations || []).some((cite: any) => cite.isLiveWebSearch));
+                                      if (!isLive) return null;
                                       const webCitations = (m.citations || []).filter((cite: any) => cite && cite.url && (cite.url.startsWith('http://') || cite.url.startsWith('https://')));
                                       if (webCitations.length === 0) return null;
                                       return (

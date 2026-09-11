@@ -36,6 +36,7 @@ export default function EmbedChatPage({ params }: EmbedPageProps) {
       role: 'user' | 'assistant';
       content: string;
       citations?: any[];
+      isWebSearch?: boolean;
       attachment?: { name: string; type: string; size?: number };
     }[]
   >([]);
@@ -208,6 +209,7 @@ export default function EmbedChatPage({ params }: EmbedPageProps) {
       let streamBuffer = '';
       let replyText = '';
       let replyCitations: any[] = [];
+      let isWebSearch = false;
 
       while (true) {
         const { done, value } = await reader.read();
@@ -229,6 +231,7 @@ export default function EmbedChatPage({ params }: EmbedPageProps) {
                 setStreamingStatus(data.message || 'Searching knowledge...');
               } else if (data.type === 'citations') {
                 replyCitations = data.citations || [];
+                isWebSearch = Boolean(data.isWebSearch);
                 setStreamingStatus(null);
               } else if (data.type === 'token') {
                 replyText += data.token;
@@ -241,6 +244,7 @@ export default function EmbedChatPage({ params }: EmbedPageProps) {
                       ...updated[lastIdx],
                       content: replyText,
                       citations: replyCitations,
+                      isWebSearch: isWebSearch,
                     };
                   }
                   return updated;
@@ -422,8 +426,10 @@ export default function EmbedChatPage({ params }: EmbedPageProps) {
                 ) : (
                   <div>
                     <MarkdownRenderer content={msg.content} />
-                    {/* Web Sources Citations */}
+                    {/* Web Sources Citations (Strictly for live web search - never internal knowledge base) */}
                     {(() => {
+                      const isLive = Boolean(msg.isWebSearch || (msg.citations || []).some((c: any) => c.isLiveWebSearch));
+                      if (!isLive) return null;
                       const webCitations = (msg.citations || []).filter(
                         (c: any) => c && c.url && (c.url.startsWith('http://') || c.url.startsWith('https://'))
                       );

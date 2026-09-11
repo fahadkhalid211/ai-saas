@@ -1980,16 +1980,17 @@
           var assistantBubble = null;
           var hasMountedBubble = false;
           var currentCitations = [];
+          var isCurrentWebSearch = false;
 
           if (!reader) {
             throw new Error('No response body reader');
           }
 
-          function renderWidgetCitations(parentBubble, citations) {
-            if (!parentBubble || !citations || !citations.length) return;
-            // Strictly only surface external web search links — never internal documents, CSVs, or files
+          function renderWidgetCitations(parentBubble, citations, isWebSearch) {
+            if (!parentBubble || !citations || !citations.length || !isWebSearch) return;
+            // Strictly only surface active live external web search links — never internal knowledge base, documents, CSVs, or files
             var validCitations = citations.filter(function (c) {
-              return c && c.url && (c.url.indexOf('http://') === 0 || c.url.indexOf('https://') === 0);
+              return c && c.url && (c.url.indexOf('http://') === 0 || c.url.indexOf('https://') === 0) && (c.isLiveWebSearch || isWebSearch);
             });
             if (validCitations.length === 0) return;
 
@@ -2057,9 +2058,9 @@
                   renderSupportQuickButton(fbEl, text);
                 } else {
                   messages.push({ role: 'assistant', content: streamedText });
-                  // Attach citation pills if web search or local knowledge citations arrived
-                  if (assistantBubble && currentCitations.length > 0) {
-                    renderWidgetCitations(assistantBubble, currentCitations);
+                  // Attach citation pills strictly if a live external web search was executed
+                  if (assistantBubble && currentCitations.length > 0 && isCurrentWebSearch) {
+                    renderWidgetCitations(assistantBubble, currentCitations, isCurrentWebSearch);
                   }
                   // Check if bot suggested booking or support
                   if (assistantBubble && config.bookingEnabled && isBookingIntent(streamedText)) {
@@ -2115,6 +2116,7 @@
                       }
                     } else if (data.type === 'citations') {
                       if (data.conversationId) conversationId = data.conversationId;
+                      isCurrentWebSearch = Boolean(data.isWebSearch);
                       if (Array.isArray(data.citations)) {
                         currentCitations = data.citations;
                       }

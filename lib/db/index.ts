@@ -526,23 +526,30 @@ export class Database {
     const assistantChunks = state.chunks.filter((c) => c.assistantId === assistantId);
     if (assistantChunks.length === 0) return [];
 
-    // 1. Dense Vector Cosine Similarity
+    // 1. Dense Vector Cosine Similarity (require minimum 0.38 similarity for relevance)
     const vectorScored = assistantChunks
       .map((chunk) => ({
         ...chunk,
         score: cosineSimilarity(queryEmbedding, chunk.embedding),
       }))
+      .filter((chunk) => chunk.score >= 0.38)
       .sort((a, b) => b.score - a.score)
       .slice(0, 15);
 
-    // 2. Sparse Keyword Matching (BM25 / Multilingual full-text)
+    // 2. Sparse Keyword Matching (BM25 / Multilingual full-text - require at least 1 keyword match)
     const keywordScored = assistantChunks
       .map((chunk) => ({
         ...chunk,
         score: keywordRelevance(query, `${chunk.content} ${chunk.metadata?.sourceTitle || ''}`),
       }))
+      .filter((chunk) => chunk.score > 0)
       .sort((a, b) => b.score - a.score)
       .slice(0, 15);
+
+    // If both vector similarity is low and keyword matching is 0, no relevant chunks exist in knowledge base
+    if (vectorScored.length === 0 && keywordScored.length === 0) {
+      return [];
+    }
 
     // 3. Reciprocal Rank Fusion
     const fused = reciprocalRankFusion(vectorScored, keywordScored);
