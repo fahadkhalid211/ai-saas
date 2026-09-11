@@ -139,7 +139,7 @@ export async function POST(req: NextRequest) {
     console.error('Chat endpoint error:', error);
     return NextResponse.json(
       { error: error?.message || 'Chat generation failed' },
-      { status: 500 }
+      { status: 500, headers: { 'Access-Control-Allow-Origin': '*' } }
     );
   }
 }
