@@ -155,6 +155,9 @@ export default function DashboardPage() {
   const [isImportingUrl, setIsImportingUrl] = useState(false);
   const [urlFeedback, setUrlFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
+  // Custom host override for embed code on live sites
+  const [customEmbedHost, setCustomEmbedHost] = useState('');
+
   const formatBytes = (bytes?: number) => {
     if (!bytes || bytes <= 0) return '0 B';
     const k = 1024;
@@ -739,31 +742,64 @@ export default function DashboardPage() {
                 </div>
 
                 {/* Embed Snippet Card */}
-                <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 space-y-3 shadow-xs">
+                <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 space-y-4 shadow-xs">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2 text-sm font-semibold text-slate-900 dark:text-white">
                       <Globe className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                      <span>Embed On Any Business Website</span>
+                      <span>Embed On Any Business Website (WordPress, Shopify, Webflow)</span>
                     </div>
                     <button
                       onClick={() => {
+                        const effectiveHost = (customEmbedHost.trim() || (typeof window !== 'undefined' ? window.location.origin : 'https://your-domain.com')).replace(/\/+$/, '');
                         navigator.clipboard.writeText(
-                          `<script src="${window.location.origin}/widget.js" data-assistant="${activeAssistant?.id}" defer></script>`
+                          `<script src="${effectiveHost}/widget.js" data-assistant="${activeAssistant?.id}" defer></script>`
                         );
                         setCopiedCode(true);
                         setTimeout(() => setCopiedCode(false), 2000);
                       }}
-                      className="flex items-center gap-1.5 text-xs text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 bg-white dark:bg-slate-800 px-2.5 py-1 rounded-md border border-slate-200 dark:border-slate-700 shadow-xs transition"
+                      className="flex items-center gap-1.5 text-xs text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 bg-white dark:bg-slate-800 px-2.5 py-1 rounded-md border border-slate-200 dark:border-slate-700 shadow-xs transition cursor-pointer"
                     >
                       <Copy className="h-3 w-3" />
                       <span>{copiedCode ? 'Copied!' : 'Copy Code'}</span>
                     </button>
                   </div>
+
+                  {typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && !customEmbedHost.trim() && (
+                    <div className="rounded-lg border border-amber-200 dark:border-amber-900/50 bg-amber-50/70 dark:bg-amber-950/20 p-3.5 flex items-start gap-2.5 text-xs">
+                      <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                      <div className="text-slate-700 dark:text-slate-300 space-y-1">
+                        <span className="font-semibold text-amber-900 dark:text-amber-200">
+                          Embedding on a live HTTPS website (e.g. WordPress)?
+                        </span>
+                        <p className="leading-relaxed">
+                          Web browsers automatically block <code className="font-mono bg-amber-100 dark:bg-amber-900/40 px-1 py-0.5 rounded text-amber-800 dark:text-amber-300 font-semibold">http://localhost:3000</code> on live HTTPS websites due to browser <strong>Mixed Content Security</strong>.
+                        </p>
+                        <p className="leading-relaxed">
+                          To display the widget on a live site, deploy this app to a public HTTPS domain (e.g., <strong>Vercel</strong>, <strong>Railway</strong>) or use a secure HTTPS tunnel (like Cloudflare Tunnel or localtunnel), then enter your live URL in the field below.
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center justify-between">
+                      <span>Server Host URL</span>
+                      <span className="text-[11px] text-slate-400 font-normal">Leave blank to use current origin</span>
+                    </label>
+                    <input
+                      type="url"
+                      placeholder={typeof window !== 'undefined' ? window.location.origin : 'https://your-domain.com'}
+                      value={customEmbedHost}
+                      onChange={(e) => setCustomEmbedHost(e.target.value)}
+                      className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3 py-2 text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 outline-none focus:border-blue-500 font-mono"
+                    />
+                  </div>
+
                   <p className="text-xs text-slate-500 dark:text-slate-400">
-                    Paste this single line of HTML before the closing <code className="text-blue-600 dark:text-blue-400 font-mono">&lt;/body&gt;</code> tag of any WordPress, Shopify, Webflow, or custom site:
+                    Paste this snippet before the closing <code className="text-blue-600 dark:text-blue-400 font-mono">&lt;/body&gt;</code> tag on your website:
                   </p>
                   <div className="overflow-x-auto rounded-lg bg-slate-50 dark:bg-slate-950 p-3 text-xs font-mono text-slate-800 dark:text-cyan-300 border border-slate-200 dark:border-slate-800">
-                    &lt;script src=&quot;{typeof window !== 'undefined' ? window.location.origin : 'https://your-domain.com'}/widget.js&quot; data-assistant=&quot;{activeAssistant?.id}&quot; defer&gt;&lt;/script&gt;
+                    &lt;script src=&quot;{(customEmbedHost.trim() || (typeof window !== 'undefined' ? window.location.origin : 'https://your-domain.com')).replace(/\/+$/, '')}/widget.js&quot; data-assistant=&quot;{activeAssistant?.id}&quot; defer&gt;&lt;/script&gt;
                   </div>
                 </div>
               </div>
@@ -2155,17 +2191,18 @@ export default function DashboardPage() {
                   </p>
                   <div className="relative">
                     <pre className="p-3 rounded-lg bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-[11px] font-mono text-slate-800 dark:text-cyan-300 overflow-x-auto">
-{`<script src="${typeof window !== 'undefined' ? window.location.origin : 'https://your-domain.com'}/widget.js" data-assistant="${activeAssistant?.id}" defer></script>`}
+{`<script src="${(customEmbedHost.trim() || (typeof window !== 'undefined' ? window.location.origin : 'https://your-domain.com')).replace(/\/+$/, '')}/widget.js" data-assistant="${activeAssistant?.id}" defer></script>`}
                     </pre>
                     <button
                       onClick={() => {
+                        const effectiveHost = (customEmbedHost.trim() || (typeof window !== 'undefined' ? window.location.origin : 'https://your-domain.com')).replace(/\/+$/, '');
                         navigator.clipboard.writeText(
-                          `<script src="${window.location.origin}/widget.js" data-assistant="${activeAssistant?.id}" defer></script>`
+                          `<script src="${effectiveHost}/widget.js" data-assistant="${activeAssistant?.id}" defer></script>`
                         );
                         setCopiedCode(true);
                         setTimeout(() => setCopiedCode(false), 2000);
                       }}
-                      className="absolute right-2 top-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-2 py-1 rounded text-[10px] text-slate-700 dark:text-slate-300 font-semibold"
+                      className="absolute right-2 top-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-2 py-1 rounded text-[10px] text-slate-700 dark:text-slate-300 font-semibold cursor-pointer"
                     >
                       {copiedCode ? 'Copied!' : 'Copy'}
                     </button>
