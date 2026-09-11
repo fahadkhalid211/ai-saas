@@ -43,15 +43,28 @@ export async function POST(req: NextRequest) {
     const conv = await Database.getOrCreateConversation(assistantId, visitorId, conversationId);
     await Database.saveMessage(conv.id, 'user', latestUserMsg);
 
-    // Live Web Search Detection & Automatic Knowledge Ingestion
-    if (isWebSearchIntent(latestUserMsg)) {
+    // Live Web Search Detection & Automatic Knowledge Ingestion (Admin Controlled)
+    const canSearchWeb = assistant.allowWebSearch ?? true;
+    let webSearchQuery = '';
+
+    if (canSearchWeb && isWebSearchIntent(latestUserMsg)) {
       try {
-        const searchQuery = extractSearchQuery(latestUserMsg);
-        console.log(`[ChatRoute] User requested live web search: "${searchQuery}"...`);
+        const sources = await Database.getKnowledgeSources(assistantId);
+        const contextHints: string[] = [];
+        for (const s of sources) {
+          if (/sahar/i.test(s.title)) contextHints.push('Dr Sahar Yousef');
+          else if (s.title.length > 3 && !s.title.startsWith('Online Search:')) {
+            contextHints.push(s.title.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ').slice(0, 40));
+          }
+        }
+
+        const searchQuery = extractSearchQuery(latestUserMsg, conversationHistory, contextHints);
+        webSearchQuery = searchQuery;
+        console.log(`[ChatRoute] User requested live web search: "${searchQuery}" (Original: "${latestUserMsg}")...`);
         const searchResults = await executeWebSearch(searchQuery);
         if (searchResults.length > 0) {
           await ingestWebSearchResults(assistantId, searchQuery, searchResults);
-          console.log(`[ChatRoute] Successfully ingested ${searchResults.length} online web sources into knowledge base!`);
+          console.log(`[ChatRoute] Successfully ingested ${searchResults.length} online web sources into knowledge base for query: "${searchQuery}"!`);
         }
       } catch (searchErr: any) {
         console.warn('[ChatRoute] Online web search auto-ingestion error:', searchErr?.message);
@@ -59,10 +72,11 @@ export async function POST(req: NextRequest) {
     }
 
     // 2. Hybrid Context Retrieval
-    const topK = assistant.contextChunks || 3;
+    const topK = assistant.contextChunks || 5;
+    const effectiveQuery = webSearchQuery || latestUserMsg;
     const retrieval = await retrieveRelevantContext(
       assistantId,
-      latestUserMsg,
+      effectiveQuery,
       conversationHistory,
       topK
     );

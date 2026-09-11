@@ -58,6 +58,7 @@ interface Assistant {
   launcherPosition: string;
   starterQuestions: string[];
   collectLeadEmail: boolean;
+  allowWebSearch?: boolean;
   allowedDomains: string[];
 }
 
@@ -1568,8 +1569,11 @@ export default function DashboardPage() {
                     </div>
 
                     <div>
-                      <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1.5">
-                        Temperature ({formData.temperature ?? 0.3})
+                      <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1.5 flex items-center justify-between">
+                        <span>Temperature ({formData.temperature ?? 0.3})</span>
+                        <span className="text-[11px] font-medium text-blue-600 dark:text-blue-400">
+                          {(formData.temperature ?? 0.3) <= 0.2 ? '🎯 Strict & Factual' : (formData.temperature ?? 0.3) <= 0.5 ? '⚖️ Balanced (Recommended)' : '🎨 Creative'}
+                        </span>
                       </label>
                       <input
                         type="range"
@@ -1578,8 +1582,11 @@ export default function DashboardPage() {
                         step="0.05"
                         value={formData.temperature ?? 0.3}
                         onChange={(e) => setFormData({ ...formData, temperature: parseFloat(e.target.value) })}
-                        className="w-full mt-2 accent-blue-600"
+                        className="w-full mt-1 accent-blue-600"
                       />
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
+                        Controls response randomness: <strong>0.0</strong> is strict & deterministic (zero hallucination, ideal for factual business support); <strong>0.3–0.5</strong> is natural & conversational; <strong>0.8+</strong> is creative.
+                      </p>
                     </div>
                   </div>
 
@@ -1588,7 +1595,7 @@ export default function DashboardPage() {
                     <div>
                       <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1.5 flex items-center justify-between">
                         <span>Knowledge Context Chunks</span>
-                        <span className="text-blue-600 dark:text-blue-400 font-mono font-bold">{formData.contextChunks ?? 3} chunks</span>
+                        <span className="text-blue-600 dark:text-blue-400 font-mono font-bold">{formData.contextChunks ?? 5} chunks</span>
                       </label>
                       <input
                         type="range"
@@ -1616,6 +1623,33 @@ export default function DashboardPage() {
                         className="w-full mt-2 accent-blue-600"
                       />
                     </div>
+                  </div>
+
+                  {/* Live Web Search Permission Toggle */}
+                  <div className="pt-3 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between">
+                    <div>
+                      <div className="text-xs font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                        <Globe className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+                        <span>Allow Live Online Web Search</span>
+                        {(formData.allowWebSearch ?? true) ? (
+                          <span className="text-[10px] bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300 font-bold px-1.5 py-0.5 rounded-full">ENABLED</span>
+                        ) : (
+                          <span className="text-[10px] bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400 font-bold px-1.5 py-0.5 rounded-full">DISABLED</span>
+                        )}
+                      </div>
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 max-w-lg">
+                        When enabled, visitors can ask the bot to search the internet for fresh information in real-time. The bot automatically verifies and saves the new findings into this assistant's knowledge base.
+                      </p>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer ml-4">
+                      <input
+                        type="checkbox"
+                        checked={formData.allowWebSearch ?? true}
+                        onChange={(e) => setFormData({ ...formData, allowWebSearch: e.target.checked })}
+                        className="sr-only peer"
+                      />
+                      <div className="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
+                    </label>
                   </div>
 
                   {/* API Key input if not Ollama */}

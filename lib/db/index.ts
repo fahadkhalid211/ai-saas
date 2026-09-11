@@ -24,6 +24,7 @@ export interface AssistantData {
   launcherPosition: string;
   starterQuestions: string[];
   collectLeadEmail: boolean;
+  allowWebSearch?: boolean;
   allowedDomains: string[];
   createdAt: string;
   updatedAt: string;
@@ -214,6 +215,7 @@ export class Database {
       launcherPosition: data.launcherPosition || 'bottom-right',
       starterQuestions: data.starterQuestions || ['How can you help me?'],
       collectLeadEmail: data.collectLeadEmail ?? false,
+      allowWebSearch: data.allowWebSearch ?? true,
       allowedDomains: data.allowedDomains || [],
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),

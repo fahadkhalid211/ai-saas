@@ -14,20 +14,57 @@ export interface WebSearchResultItem {
  */
 export function isWebSearchIntent(message: string): boolean {
   if (!message) return false;
-  return /(?:search (?:online|the web|the internet|google|internet)|look ?up (?:online|on the web|on the internet)|find (?:online|on the web)|browse (?:the web|online)|check (?:online|the web))/i.test(message);
+  const m = message.trim();
+  // 1. Mentions internet, web, online, or google in a search/lookup context
+  if (/\b(search|look\s*up|find|google|check)\b.*?\b(internet|web|online|google)\b/i.test(m)) return true;
+  // 2. Direct search or google command at start of sentence
+  if (/^(search|google|look\s*up|find\s*online)\b/i.test(m)) return true;
+  // 3. Conversational commands: "search and tell me", "search for", "search it on", etc.
+  if (/\bsearch\s+(?:it\s+on|and\s+tell\s+me|and\s+find|for|about|on\s+the|on)\b/i.test(m)) return true;
+  // 4. Mentions searching on the internet anywhere
+  if (/\b(on the internet|on internet|from the web|from internet|online search)\b/i.test(m)) return true;
+  return false;
 }
 
 /**
- * Extracts the core search keywords from conversational search requests
+ * Extracts the core search keywords from conversational search requests,
+ * resolving pronouns like "it", "her", "his" using conversation history & context hints
  */
-export function extractSearchQuery(message: string): string {
+export function extractSearchQuery(
+  message: string,
+  history: { role: string; content: string }[] = [],
+  contextHints: string[] = []
+): string {
   let clean = message
-    .replace(/(?:can you|please|could you|i want you to)?\s*(?:search (?:online|the web|the internet|google|internet)(?: for)?|look ?up (?:online|on the web)(?: for)?|find (?:online|on the web)(?: for)?|browse (?:the web|online)(?: for)?)/gi, '')
+    .replace(/(?:can you|please|could you|i want you to)?\s*(?:search (?:it )?(?:on (?:the )?)?(?:internet|web|online|google)|google(?: it)?|look ?up (?:online|on (?:the )?web|on (?:the )?internet)|find (?:online|on (?:the )?web)|browse (?:the web|online))/gi, '')
     .replace(/(?:and (?:save|store|remember|keep) (?:it|that|the information) in (?:the )?(?:knowledge ?base|knowledge|memory))?/gi, '')
+    .replace(/^search\s+(?:and\s+tell\s+me|and\s+find|for|about|it\s+on\s+internet)?\s*/i, '')
+    .replace(/\b(on the internet|on internet|from the web|from internet|online)\b/gi, '')
     .replace(/[?.!]+$/, '')
     .trim();
 
-  return clean.length > 2 ? clean : message.trim();
+  // If clean is empty or just pronouns like "it", "her", "him", "this":
+  const isAmbiguous = !clean || clean.length < 3 || /^(it|her|him|them|this|that|its|hers|his)$/i.test(clean);
+
+  if (isAmbiguous && history.length > 0) {
+    // Find the latest user question in history
+    const lastUserMsg = [...history].reverse().find((m) => m.role === 'user');
+    if (lastUserMsg) {
+      const prev = lastUserMsg.content
+        .replace(/^(tell me|what is|who is|give me|can you tell me|do you know)\s*/i, '')
+        .replace(/[?.!]+$/, '')
+        .trim();
+      if (prev) clean = prev;
+    }
+  }
+
+  // Resolve pronouns (her/him/she/he/their) using context hints (e.g. "Dr Sahar Yousef")
+  if (/\b(her|him|she|he|his|their)\b/i.test(clean) && contextHints.length > 0) {
+    const mainEntity = contextHints[0];
+    clean = clean.replace(/\b(her|him|she|he|his|their)\b/gi, mainEntity);
+  }
+
+  return clean.length > 2 ? clean.trim() : message.trim();
 }
 
 /**
