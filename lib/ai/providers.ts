@@ -180,12 +180,43 @@ export async function* streamChatResponse(
   // OpenAI-compatible providers (Ollama, Groq, OpenAI, Gemini, DeepSeek, Custom)
   const { client, model } = getClient(options);
 
+  // Estimate prompt tokens (~3.8 characters per token)
+  let activeMessages = [...messages];
+  let promptChars = activeMessages.reduce((sum, m) => sum + (m.content?.length || 0), 0);
+  let estimatedPromptTokens = Math.ceil(promptChars / 3.8);
+
+  let safeMaxTokens = options.maxTokens || 2048;
+
+  if (provider === 'groq') {
+    // If prompt alone is large (> 5000 tokens), compress system prompt to stay within 8k TPM
+    if (estimatedPromptTokens > 5000) {
+      activeMessages = activeMessages.map((m) => {
+        if (m.role === 'system' && m.content) {
+          const maxChars = 4500 * 3.8;
+          if (m.content.length > maxChars) {
+            return {
+              ...m,
+              content: m.content.slice(0, maxChars) + '\n\n...[Context condensed to fit model budget]...\n================================',
+            };
+          }
+        }
+        return m;
+      });
+      promptChars = activeMessages.reduce((sum, m) => sum + (m.content?.length || 0), 0);
+      estimatedPromptTokens = Math.ceil(promptChars / 3.8);
+    }
+
+    // Ensure estimatedPromptTokens + safeMaxTokens <= 7500 (< 8000 TPM limit)
+    const remainingBudget = 7500 - estimatedPromptTokens;
+    safeMaxTokens = Math.min(safeMaxTokens, Math.max(800, remainingBudget));
+  }
+
   try {
     const stream = await client.chat.completions.create({
       model,
-      messages: messages as any,
+      messages: activeMessages as any,
       temperature: options.temperature ?? 0.3,
-      max_tokens: options.maxTokens || 2048,
+      max_tokens: safeMaxTokens,
       stream: true,
     });
 
@@ -197,6 +228,35 @@ export async function* streamChatResponse(
     }
   } catch (error: any) {
     console.error(`[AI Provider Error - ${provider}]:`, error);
+
+    const isRateLimit =
+      error?.status === 413 ||
+      error?.status === 429 ||
+      error?.message?.toLowerCase().includes('rate limit') ||
+      error?.message?.toLowerCase().includes('tokens per minute') ||
+      error?.message?.toLowerCase().includes('tpm');
+
+    // Automatic fallback on Groq TPM/Rate limits to high-capacity compound-mini (70,000 TPM)
+    if (provider === 'groq' && isRateLimit) {
+      console.warn(`[Groq TPM Fallback] 8k TPM reached on ${model}. Seamlessly failing over to groq/compound-mini (70k TPM)...`);
+      try {
+        const fallbackStream = await client.chat.completions.create({
+          model: 'groq/compound-mini',
+          messages: activeMessages as any,
+          temperature: options.temperature ?? 0.3,
+          max_tokens: 1500,
+          stream: true,
+        });
+
+        for await (const chunk of fallbackStream) {
+          const content = chunk.choices[0]?.delta?.content || '';
+          if (content) yield content;
+        }
+        return;
+      } catch (fallbackErr) {
+        console.error('[Groq Fallback Error]:', fallbackErr);
+      }
+    }
 
     const isConnError =
       error?.name === 'APIConnectionError' ||
@@ -250,6 +310,7 @@ You are "${assistantName}", representing this business.
 5. Always maintain a professional, helpful, and courteous tone.
 6. If the knowledge base includes product details, pricing, or instructions, be accurate and specific.
 7. Provide direct, structured, and comprehensive answers. Complete your thoughts and sentences fully, never cutting off mid-sentence.
+8. Formatting for Compact Chat: Never output markdown tables using vertical pipes (| col1 | col2 |). In compact website widgets, tables look cramped and broken. Always format information using clean bullet points, bold topic headings, or numbered steps.
 
 === VERIFIED KNOWLEDGE BASE ===
 ${contextText}

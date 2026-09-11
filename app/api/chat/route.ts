@@ -3,6 +3,7 @@ import { Database } from '@/lib/db';
 import { retrieveRelevantContext } from '@/lib/rag/retrieval';
 import { buildSystemPrompt, streamChatResponse } from '@/lib/ai/providers';
 import { ChatMessage } from '@/lib/ai/types';
+import { isWebSearchIntent, extractSearchQuery, executeWebSearch, ingestWebSearchResults } from '@/lib/rag/web-search';
 
 // Handle CORS pre-flight
 export async function OPTIONS() {
@@ -41,6 +42,21 @@ export async function POST(req: NextRequest) {
     // 1. Get or create conversation record
     const conv = await Database.getOrCreateConversation(assistantId, visitorId, conversationId);
     await Database.saveMessage(conv.id, 'user', latestUserMsg);
+
+    // Live Web Search Detection & Automatic Knowledge Ingestion
+    if (isWebSearchIntent(latestUserMsg)) {
+      try {
+        const searchQuery = extractSearchQuery(latestUserMsg);
+        console.log(`[ChatRoute] User requested live web search: "${searchQuery}"...`);
+        const searchResults = await executeWebSearch(searchQuery);
+        if (searchResults.length > 0) {
+          await ingestWebSearchResults(assistantId, searchQuery, searchResults);
+          console.log(`[ChatRoute] Successfully ingested ${searchResults.length} online web sources into knowledge base!`);
+        }
+      } catch (searchErr: any) {
+        console.warn('[ChatRoute] Online web search auto-ingestion error:', searchErr?.message);
+      }
+    }
 
     // 2. Hybrid Context Retrieval
     const topK = assistant.contextChunks || 3;

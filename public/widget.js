@@ -260,24 +260,34 @@
       .msg-assistant code { background: #f1f5f9; padding: 1px 4px; border-radius: 4px; font-size: 11.5px; font-family: monospace; border: 1px solid #e2e8f0; }
       .msg-assistant pre { background: #0f172a; color: #f8fafc; padding: 8px; border-radius: 6px; overflow-x: auto; font-size: 11px; margin: 6px 0; }
       .msg-assistant pre code { background: transparent; border: none; color: inherit; padding: 0; }
-      .citations-box {
-        margin-top: 8px;
-        padding-top: 8px;
-        border-top: 1px dashed #e2e8f0;
-        font-size: 11px;
-        color: #64748b;
-      }
-      .citation-tag {
-        display: inline-block;
-        background: #f1f5f9;
-        color: #475569;
-        border-radius: 4px;
-        padding: 2px 6px;
-        margin-right: 4px;
-        margin-top: 4px;
-        font-size: 10.5px;
-        font-weight: 500;
+      .table-responsive {
+        width: 100%;
+        overflow-x: auto;
+        margin: 8px 0;
+        border-radius: 6px;
         border: 1px solid #e2e8f0;
+      }
+      .msg-assistant table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 11.5px;
+      }
+      .msg-assistant th, .msg-assistant td {
+        border: 1px solid #e2e8f0;
+        padding: 5px 8px;
+        text-align: left;
+        line-height: 1.35;
+      }
+      .msg-assistant th {
+        background: #f1f5f9;
+        font-weight: 600;
+        color: #1e293b;
+      }
+      .msg-assistant td {
+        background: #ffffff;
+      }
+      .citations-box {
+        display: none !important;
       }
       /* Starter questions */
       .starter-list {
@@ -513,27 +523,18 @@
       sendMessage();
     });
 
-    function appendMessage(role, text, citations) {
+    function appendMessage(role, text) {
       messages.push({ role: role, content: text });
       var msgEl = document.createElement('div');
       msgEl.className = 'message ' + (role === 'user' ? 'msg-user' : 'msg-assistant');
       msgEl.innerHTML = formatMarkdown(text);
 
-      if (citations && citations.length > 0) {
-        var citeBox = document.createElement('div');
-        citeBox.className = 'citations-box';
-        citeBox.innerHTML =
-          '<div>Sources:</div>' +
-          citations
-            .map(function (c) {
-              return '<span class="citation-tag">' + (c.sourceTitle || 'Knowledge') + '</span>';
-            })
-            .join('');
-        msgEl.appendChild(citeBox);
-      }
-
       if (messagesBody) messagesBody.appendChild(msgEl);
-      scrollToBottom();
+      if (role === 'user') {
+        scrollToBottom();
+      } else {
+        scrollToStartOfMessage(msgEl);
+      }
       return msgEl;
     }
 
@@ -543,12 +544,21 @@
       }
     }
 
+    function scrollToStartOfMessage(el) {
+      if (!messagesBody || !el) return;
+      var targetY = Math.max(0, el.offsetTop - 16);
+      messagesBody.scrollTo({ top: targetY, behavior: 'smooth' });
+    }
+
     function formatMarkdown(text) {
       if (!text) return '';
       var html = text
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;');
+
+      // Restore allowed HTML breaks
+      html = html.replace(/&lt;br\s*\/?&gt;/gi, '<br/>');
 
       // Code blocks: ```lang ... ```
       html = html.replace(/```(?:[a-zA-Z0-9_-]*)\n([\s\S]*?)```/g, function (_, code) {
@@ -557,6 +567,30 @@
 
       // Inline code: `code`
       html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+
+      // Markdown tables: | col | col |
+      html = html.replace(/(?:^|\n)(\|.*\|(?:\n\|.*\|)+)/g, function (match, tableContent) {
+        var rows = tableContent.trim().split('\n');
+        var out = '<div class="table-responsive"><table>';
+        var isHeader = true;
+        for (var r = 0; r < rows.length; r++) {
+          var row = rows[r].trim();
+          if (/^\|[-:\s|]+\|$/.test(row)) {
+            isHeader = false;
+            continue;
+          }
+          var cells = row.split('|').slice(1, -1);
+          out += '<tr>';
+          for (var c = 0; c < cells.length; c++) {
+            var cellContent = cells[c].trim();
+            out += isHeader ? ('<th>' + cellContent + '</th>') : ('<td>' + cellContent + '</td>');
+          }
+          out += '</tr>';
+          if (r === 0) isHeader = false;
+        }
+        out += '</table></div>';
+        return out;
+      });
 
       // Horizontal rule: --- or ***
       html = html.replace(/^(?:---|[*]{3}|___)$/gm, '<hr/>');
@@ -595,7 +629,7 @@
       html = html.replace(/\n/g, '<br/>');
 
       // Clean up br tags right after block elements
-      html = html.replace(/<\/(h[1-4]|ul|ol|blockquote|pre|hr)><br\/>/g, '</$1>');
+      html = html.replace(/<\/(h[1-4]|ul|ol|blockquote|pre|hr|div|table)><br\/>/g, '</$1>');
 
       return html;
     }
@@ -656,23 +690,11 @@
           function readStream() {
             return reader.read().then(function (result) {
               if (result.done) {
-                if (receivedCitations.length > 0) {
-                  var citeBox = document.createElement('div');
-                  citeBox.className = 'citations-box';
-                  citeBox.innerHTML =
-                    '<div>Sources:</div>' +
-                    receivedCitations
-                      .map(function (c) {
-                        return '<span class="citation-tag">' + (c.sourceTitle || 'Knowledge') + '</span>';
-                      })
-                      .join('');
-                  assistantBubble.appendChild(citeBox);
-                }
                 messages.push({ role: 'assistant', content: streamedText });
                 isStreaming = false;
                 sendBtn.disabled = false;
                 chatInput.focus();
-                scrollToBottom();
+                scrollToStartOfMessage(assistantBubble);
                 return;
               }
 
