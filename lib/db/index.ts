@@ -267,10 +267,47 @@ export class Database {
     return true;
   }
 
-  // Knowledge Sources
+  // Knowledge Sources with auto-recovery for stalled processing jobs
   static async getKnowledgeSources(assistantId: string): Promise<KnowledgeSourceData[]> {
     const state = loadState();
-    return state.knowledgeSources.filter((k) => k.assistantId === assistantId);
+    let stateChanged = false;
+    const now = Date.now();
+
+    const sources = state.knowledgeSources.filter((k) => k.assistantId === assistantId);
+
+    for (const source of sources) {
+      if (source.status === 'processing') {
+        const createdMs = new Date(source.createdAt).getTime();
+        // If stuck in processing for more than 60 seconds, auto-heal to failed
+        if (now - createdMs > 60_000) {
+          source.status = 'failed';
+          const ext = (source.title.split('.').pop() || source.type || '').toLowerCase();
+          const isImg = ['png', 'jpg', 'jpeg', 'webp', 'image'].includes(ext);
+
+          if (isImg) {
+            source.errorMessage =
+              'This image appears to be a brand logo, icon, or graphic with no readable text body. AI assistants require text documents to learn facts and answer visitor questions.';
+            source.errorResolution =
+              'Logos do not need to be added to the knowledge base (you can set your assistant logo in Widget Branding). To train your AI, upload files containing text (PDF, DOCX, CSV, TXT) or high-contrast screenshots with legible text.';
+          } else {
+            source.errorMessage =
+              source.errorMessage || 'Processing timed out. The file could not be parsed or contains no readable text.';
+            source.errorResolution =
+              source.errorResolution ||
+              'Please check the file format and size, or convert the document and try again.';
+          }
+
+          source.updatedAt = new Date().toISOString();
+          stateChanged = true;
+        }
+      }
+    }
+
+    if (stateChanged) {
+      saveState(state);
+    }
+
+    return sources;
   }
 
   static async createKnowledgeSource(data: Partial<KnowledgeSourceData>): Promise<KnowledgeSourceData> {

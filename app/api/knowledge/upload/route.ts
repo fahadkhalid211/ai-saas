@@ -50,54 +50,64 @@ export async function POST(req: Request) {
         });
 
         try {
-          // 2. Parse file (transcribing video/audio speech if media file)
-          const doc = await parseFileOrText({
-            filename,
-            type: ext,
-            buffer,
-            options: {
-              apiKey: assistant.apiKeyEncrypted,
-              provider: assistant.provider,
-            },
-          });
+          const processFileTask = (async () => {
+            // 2. Parse file (transcribing video/audio speech if media file)
+            const doc = await parseFileOrText({
+              filename,
+              type: ext,
+              buffer,
+              options: {
+                apiKey: assistant.apiKeyEncrypted,
+                provider: assistant.provider,
+              },
+            });
 
-          // 3. Chunk text
-          const rawChunks = chunkDocument(doc);
-          if (rawChunks.length === 0) {
-            throw new Error('No readable text content extracted from file');
-          }
+            // 3. Chunk text
+            const rawChunks = chunkDocument(doc);
+            if (rawChunks.length === 0) {
+              throw new Error('No readable text content extracted from file');
+            }
 
-          // 4. Generate local 384-dimensional embeddings
-          const textsToEmbed = rawChunks.map((c) => c.content);
-          const embeddings = await generateEmbeddingsBatch(textsToEmbed);
+            // 4. Generate local 384-dimensional embeddings
+            const textsToEmbed = rawChunks.map((c) => c.content);
+            const embeddings = await generateEmbeddingsBatch(textsToEmbed);
 
-          // 5. Store chunks
-          const chunkRecords = rawChunks.map((chunk, i) => ({
-            assistantId,
-            knowledgeSourceId: source.id,
-            content: chunk.content,
-            chunkIndex: chunk.chunkIndex,
-            tokenCount: chunk.tokenCount,
-            metadata: {
-              ...chunk.metadata,
-              sourceTitle: filename,
-              sourceType: doc.type || sourceDocType,
-            },
-            embedding: embeddings[i],
-          }));
+            // 5. Store chunks
+            const chunkRecords = rawChunks.map((chunk, i) => ({
+              assistantId,
+              knowledgeSourceId: source.id,
+              content: chunk.content,
+              chunkIndex: chunk.chunkIndex,
+              tokenCount: chunk.tokenCount,
+              metadata: {
+                ...chunk.metadata,
+                sourceTitle: filename,
+                sourceType: doc.type || sourceDocType,
+              },
+              embedding: embeddings[i],
+            }));
 
-          await Database.saveChunks(chunkRecords);
+            await Database.saveChunks(chunkRecords);
 
-          // 6. Mark source READY
-          await Database.updateKnowledgeSource(source.id, {
-            status: 'ready',
-            chunkCount: chunkRecords.length,
-          });
+            // 6. Mark source READY
+            await Database.updateKnowledgeSource(source.id, {
+              status: 'ready',
+              chunkCount: chunkRecords.length,
+            });
+
+            return chunkRecords.length;
+          })();
+
+          const timeoutPromise = new Promise<never>((_, reject) =>
+            setTimeout(() => reject(new Error('File processing timed out after 30 seconds')), 30000)
+          );
+
+          const chunkCount = await Promise.race([processFileTask, timeoutPromise]);
 
           processedSources.push({
             id: source.id,
             title: filename,
-            chunks: chunkRecords.length,
+            chunks: chunkCount,
             status: 'ready',
           });
         } catch (fileErr: any) {

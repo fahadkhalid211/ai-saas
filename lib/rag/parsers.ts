@@ -8,6 +8,7 @@ import {
   isAudioFile,
   TranscribeOptions,
 } from './transcriber';
+import { extractTextFromImage } from './ocr';
 
 export { isMediaFile, isVideoFile, isAudioFile };
 
@@ -257,19 +258,20 @@ function parseJson(content: string, title: string): ExtractedDocument {
   }
 }
 
-// Image OCR Parsing with Tesseract.js (JPG, PNG, WEBP)
+// Image OCR Parsing with standalone OCR engine (JPG, PNG, WEBP)
 async function parseImage(buffer: Buffer, title: string): Promise<ExtractedDocument> {
   try {
-    const Tesseract = await import('tesseract.js');
-    const ret = await Tesseract.recognize(buffer, 'eng');
+    const { text, confidence } = await extractTextFromImage(buffer, 15000);
 
-    const cleanText = (ret.data.text || '')
+    const cleanText = text
       .replace(/\r\n/g, '\n')
       .replace(/\n{3,}/g, '\n\n')
       .trim();
 
-    if (!cleanText || cleanText.length < 3) {
-      throw new Error('Image contains no detectable text. Please upload documents or screenshots with legible text.');
+    if (!cleanText || cleanText.length < 5) {
+      throw new Error(
+        'Image contains no readable text (detected as a logo, graphic, or icon). AI knowledge bases require documents containing textual information (PDF, DOCX, CSV, TXT) or screenshots with legible typography.'
+      );
     }
 
     return {
@@ -277,7 +279,7 @@ async function parseImage(buffer: Buffer, title: string): Promise<ExtractedDocum
       type: 'image',
       content: `[Image Document: ${title}]\n\n` + cleanText,
       metadata: {
-        confidence: ret.data.confidence,
+        confidence,
       },
     };
   } catch (error: any) {

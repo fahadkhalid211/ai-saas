@@ -87,12 +87,30 @@ export function diagnoseKnowledgeFailure(params: {
     };
   }
 
-  // 5. Image OCR failed / unreadable
+  // 5. Image OCR failed / Logo / Unreadable
   if (
     ['jpg', 'jpeg', 'png', 'webp', 'image'].includes(ext) ||
     lowerMsg.includes('ocr') ||
     lowerMsg.includes('image extraction failed')
   ) {
+    const isLogoOrGraphic =
+      lowerMsg.includes('logo') ||
+      lowerMsg.includes('graphic') ||
+      lowerMsg.includes('icon') ||
+      lowerMsg.includes('no readable text') ||
+      lowerMsg.includes('no detectable text') ||
+      (fileSizeBytes && fileSizeBytes < 80 * 1024 && (filename.toLowerCase().includes('logo') || filename.toLowerCase().includes('icon')));
+
+    if (isLogoOrGraphic) {
+      return {
+        category: 'content',
+        reason: `This image appears to be a brand logo, icon, or graphic with no readable text body. AI assistants require text documents to learn facts and answer visitor questions.`,
+        whatToDoNext:
+          'Logos do not need to be added to the knowledge base (you can set your assistant logo in Widget Branding). To train your AI, upload files containing text (PDF, DOCX, CSV, TXT) or high-contrast screenshots with legible text.',
+        actionLabel: 'Upload Text Document (PDF, CSV, TXT)',
+      };
+    }
+
     return {
       category: 'content',
       reason: `The OCR vision model could not extract legible text from this image.`,
