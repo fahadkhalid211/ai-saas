@@ -60,7 +60,7 @@ export async function sendSupportLeadEmail(
     }
   }
 
-  const subject = `🔔 New Support Request from ${leadName} (${assistantName})`;
+  const subject = `New Support Request from ${leadName} (${assistantName})`;
 
   // Generate modern HTML template
   const htmlContent = `
@@ -199,7 +199,7 @@ export async function sendSupportLeadEmail(
 <body>
   <div class="card">
     <div class="header">
-      <h1>💬 New Support Request</h1>
+      <h1>New Support Request</h1>
       <p>Received via your AI Assistant: <strong>${assistantName}</strong></p>
     </div>
     <div class="body">
@@ -244,11 +244,11 @@ export async function sendSupportLeadEmail(
 
       <div class="actions">
         <a href="mailto:${leadEmail}?subject=Re:%20Support%20Request%20-%20${encodeURIComponent(assistantName)}" class="btn btn-primary">
-          ✉️ Reply via Email
+          Reply via Email
         </a>
         ${
           lead.phone && lead.phone.trim() !== ''
-            ? `<a href="tel:${lead.phone.trim()}" class="btn btn-secondary">📞 Call Visitor</a>`
+            ? `<a href="tel:${lead.phone.trim()}" class="btn btn-secondary">Call Visitor</a>`
             : ''
         }
       </div>
@@ -365,7 +365,7 @@ ${leadComments}
   // We log clearly so no lead data is ever lost, and provide instructions
   console.log(`
 ================================================================================
-🔔 [LEAD EMAIL NOTIFICATION - READY FOR SMTP DISPATCH]
+[LEAD EMAIL NOTIFICATION - READY FOR SMTP DISPATCH]
 --------------------------------------------------------------------------------
 To: ${recipient}
 CC: ${cleanCc.length > 0 ? cleanCc.join(', ') : 'None'}
@@ -376,7 +376,7 @@ Lead Phone: ${leadPhone}
 Comments: ${leadComments}
 ${customFieldEntries.length > 0 ? 'Custom Fields:\n' + customFieldEntries.map((f) => `  * ${f.label}: ${f.value}`).join('\n') : ''}
 --------------------------------------------------------------------------------
-💡 [Admin Setup Note]: To send direct inbox emails, configure standard SMTP in your .env file:
+[Admin Setup Note]: To send direct inbox emails, configure standard SMTP in your .env file:
    SMTP_HOST="smtp.gmail.com" (or your provider)
    SMTP_PORT=587
    SMTP_USER="your-email@gmail.com"

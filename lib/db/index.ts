@@ -105,6 +105,9 @@ export interface ConversationData {
   visitorId?: string;
   visitorEmail?: string;
   visitorName?: string;
+  sentiment?: 'urgent' | 'positive' | 'neutral';
+  escalated?: boolean;
+  resolved?: boolean;
   createdAt: string;
   messages?: MessageData[];
 }
@@ -556,6 +559,23 @@ export class Database {
     state.conversations.unshift(newConv);
     saveState(state);
     return { ...newConv, messages: [] };
+  }
+
+  static async updateConversation(
+    id: string,
+    data: Partial<ConversationData>
+  ): Promise<boolean> {
+    const state = loadState();
+    const idx = state.conversations.findIndex((c) => c.id === id);
+    if (idx !== -1) {
+      state.conversations[idx] = {
+        ...state.conversations[idx],
+        ...data,
+      };
+      saveState(state);
+      return true;
+    }
+    return false;
   }
 
   static async saveMessage(

@@ -124,7 +124,7 @@ export async function POST(req: Request) {
       ? `${Math.floor(resolvedDuration / 60)}h${resolvedDuration % 60 > 0 ? ` ${resolvedDuration % 60}m` : ''}` 
       : `${resolvedDuration}m`;
 
-    const leadNote = `📅 Booked Appointment: ${date.trim()} at ${timeSlot.trim()} (${durationLabel})${
+    const leadNote = `Booked Appointment: ${date.trim()} at ${timeSlot.trim()} (${durationLabel})${
       notes?.trim() ? ' | Notes: ' + notes.trim() : ''
     }`;
 

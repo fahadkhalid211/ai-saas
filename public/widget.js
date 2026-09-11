@@ -428,6 +428,76 @@
         opacity: 0.5;
         cursor: not-allowed;
       }
+      .voice-btn {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        border: 1px solid #e2e8f0;
+        background-color: #f8fafc;
+        color: #64748b;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+        flex-shrink: 0;
+      }
+      .voice-btn:hover {
+        background-color: #f1f5f9;
+        color: var(--primary-color, #2563eb);
+        border-color: #cbd5e1;
+      }
+      .voice-btn.listening {
+        background-color: #fee2e2;
+        color: #ef4444;
+        border-color: #fca5a5;
+        animation: pulseVoice 1.2s infinite ease-in-out;
+      }
+      @keyframes pulseVoice {
+        0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+        50% { transform: scale(1.08); box-shadow: 0 0 0 8px rgba(239, 68, 68, 0); }
+      }
+      .lang-dropdown-menu {
+        position: absolute;
+        top: 52px;
+        right: 14px;
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        padding: 6px;
+        display: none;
+        flex-direction: column;
+        gap: 2px;
+        z-index: 100;
+        min-width: 120px;
+      }
+      .lang-dropdown-menu.show {
+        display: flex;
+      }
+      .lang-item {
+        padding: 6px 10px;
+        font-size: 11.5px;
+        color: #334155;
+        border-radius: 6px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: transparent;
+        border: none;
+        width: 100%;
+        text-align: left;
+      }
+      .lang-item:hover {
+        background: #f1f5f9;
+        color: var(--primary-color, #2563eb);
+      }
+      .lang-item.active {
+        background: #eff6ff;
+        color: var(--primary-color, #2563eb);
+        font-weight: 600;
+      }
       /* Header action buttons */
       .header-actions {
         display: flex;
@@ -804,6 +874,22 @@
           </div>
         </div>
         <div class="header-actions">
+          <button class="header-action-btn" id="header-lang-btn" title="Choose Language">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="2" y1="12" x2="22" y2="12"></line>
+              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+            </svg>
+            <span id="header-lang-label">EN</span>
+          </button>
+          <div class="lang-dropdown-menu" id="lang-dropdown">
+            <button type="button" class="lang-item active" data-lang="en"><span>English</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></button>
+            <button type="button" class="lang-item" data-lang="es"><span>Español</span></button>
+            <button type="button" class="lang-item" data-lang="fr"><span>Français</span></button>
+            <button type="button" class="lang-item" data-lang="de"><span>Deutsch</span></button>
+            <button type="button" class="lang-item" data-lang="ar"><span>العربية</span></button>
+            <button type="button" class="lang-item" data-lang="ur"><span>اردو</span></button>
+          </div>
           <button class="header-action-btn" id="header-download-btn" title="Download Chat Transcript">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
@@ -829,6 +915,14 @@
       <div class="messages-container" id="messages-body"></div>
       <div class="chat-footer">
         <textarea class="chat-input" id="chat-input" placeholder="Ask anything about our business..." rows="1"></textarea>
+        <button class="voice-btn" id="voice-dictate-btn" type="button" title="Speak to dictate (Voice input)" aria-label="Voice input">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+            <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+            <line x1="12" y1="19" x2="12" y2="23"></line>
+            <line x1="8" y1="23" x2="16" y2="23"></line>
+          </svg>
+        </button>
         <button class="send-btn" id="send-msg-btn" title="Send message">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
             <line x1="22" y1="2" x2="11" y2="13"></line>
@@ -837,7 +931,7 @@
         </button>
       </div>
       <div class="chat-branding" id="widget-branding">
-        <span>⚡ Powered by <a href="https://kortexai.com" target="_blank" rel="noopener noreferrer">Kortex AI</a></span>
+        <span style="display:inline-flex;align-items:center;gap:4px;"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg> Powered by <a href="https://kortexai.com" target="_blank" rel="noopener noreferrer">Kortex AI</a></span>
       </div>
     `;
 
@@ -929,7 +1023,7 @@
           }
         } else {
           brandingEl.style.display = 'flex';
-          brandingEl.innerHTML = '<span>⚡ Powered by <a href="https://kortexai.com" target="_blank" rel="noopener noreferrer">Kortex AI</a></span>';
+          brandingEl.innerHTML = '<span style="display:inline-flex;align-items:center;gap:4px;"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg> Powered by <a href="https://kortexai.com" target="_blank" rel="noopener noreferrer">Kortex AI</a></span>';
         }
       }
 
@@ -1075,6 +1169,128 @@
     sendBtn.addEventListener('click', function () {
       sendMessage();
     });
+
+    // Voice Dictation (Speech-to-Text)
+    var voiceBtn = shadow.getElementById('voice-dictate-btn');
+    var isListening = false;
+    var recognition = null;
+    var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    if (SpeechRecognition) {
+      recognition = new SpeechRecognition();
+      recognition.continuous = false;
+      recognition.interimResults = true;
+      recognition.lang = 'en-US';
+
+      recognition.onstart = function () {
+        isListening = true;
+        if (voiceBtn) voiceBtn.classList.add('listening');
+        chatInput.placeholder = 'Listening... Speak now';
+      };
+
+      recognition.onresult = function (event) {
+        var transcript = '';
+        for (var i = event.resultIndex; i < event.results.length; ++i) {
+          transcript += event.results[i][0].transcript;
+        }
+        if (transcript) {
+          chatInput.value = transcript;
+          chatInput.style.height = 'auto';
+          chatInput.style.height = Math.min(chatInput.scrollHeight, 80) + 'px';
+        }
+      };
+
+      recognition.onerror = function () {
+        isListening = false;
+        if (voiceBtn) voiceBtn.classList.remove('listening');
+        chatInput.placeholder = 'Ask anything about our business...';
+      };
+
+      recognition.onend = function () {
+        isListening = false;
+        if (voiceBtn) voiceBtn.classList.remove('listening');
+        chatInput.placeholder = 'Ask anything about our business...';
+      };
+
+      if (voiceBtn) {
+        voiceBtn.addEventListener('click', function () {
+          if (isListening) {
+            recognition.stop();
+          } else {
+            try {
+              recognition.start();
+            } catch (err) {
+              console.warn('Speech recognition start failed:', err);
+            }
+          }
+        });
+      }
+    } else if (voiceBtn) {
+      voiceBtn.style.display = 'none';
+    }
+
+    // Language Dropdown Selector
+    var langBtn = shadow.getElementById('header-lang-btn');
+    var langDropdown = shadow.getElementById('lang-dropdown');
+    var langLabel = shadow.getElementById('header-lang-label');
+    var currentLanguage = 'en';
+
+    if (langBtn && langDropdown) {
+      langBtn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        langDropdown.classList.toggle('show');
+      });
+
+      document.addEventListener('click', function () {
+        langDropdown.classList.remove('show');
+      });
+
+      var langItems = langDropdown.querySelectorAll('.lang-item');
+      langItems.forEach(function (item) {
+        item.addEventListener('click', function () {
+          var langCode = item.getAttribute('data-lang');
+          currentLanguage = langCode;
+          if (langLabel) langLabel.textContent = langCode.toUpperCase();
+
+          langItems.forEach(function (i) {
+            i.classList.remove('active');
+            var check = i.querySelector('svg');
+            if (check) check.remove();
+          });
+          item.classList.add('active');
+          var checkSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+          checkSvg.setAttribute('width', '12');
+          checkSvg.setAttribute('height', '12');
+          checkSvg.setAttribute('viewBox', '0 0 24 24');
+          checkSvg.setAttribute('fill', 'none');
+          checkSvg.setAttribute('stroke', 'currentColor');
+          checkSvg.setAttribute('stroke-width', '3');
+          checkSvg.setAttribute('stroke-linecap', 'round');
+          checkSvg.setAttribute('stroke-linejoin', 'round');
+          checkSvg.innerHTML = '<polyline points="20 6 9 17 4 12"></polyline>';
+          item.appendChild(checkSvg);
+
+          langDropdown.classList.remove('show');
+
+          if (recognition) {
+            var langMap = { en: 'en-US', es: 'es-ES', fr: 'fr-FR', de: 'de-DE', ar: 'ar-SA', ur: 'ur-PK' };
+            recognition.lang = langMap[langCode] || 'en-US';
+          }
+
+          var greetings = {
+            en: 'Language set to English. How can I assist you?',
+            es: 'Idioma cambiado a Español. ¿En qué puedo ayudarte hoy?',
+            fr: 'Langue configurée en Français. Comment puis-je vous aider ?',
+            de: 'Sprache auf Deutsch eingestellt. Wie kann ich Ihnen helfen?',
+            ar: 'تم ضبط اللغة على العربية. كيف يمكنني مساعدتك اليوم؟',
+            ur: 'زبان اردو میں تبدیل کر دی گئی ہے۔ میں آپ کی کیا مدد کر سکتا ہوں؟'
+          };
+          if (greetings[langCode]) {
+            appendMessage('assistant', greetings[langCode]);
+          }
+        });
+      });
+    }
 
     function appendMessage(role, text) {
       messages.push({ role: role, content: text });
@@ -1281,7 +1497,11 @@
 
       card.innerHTML = `
         <div class="support-form-header">
-          <div class="support-form-icon">💬</div>
+          <div class="support-form-icon" style="display:flex;align-items:center;justify-content:center;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+            </svg>
+          </div>
           <div>
             <div class="support-form-title">Connect with Support</div>
             <div class="support-form-desc">Leave your details and our team will get back to you promptly.</div>
@@ -1430,7 +1650,7 @@
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
           <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
         </svg>
-        <span>💬 Connect with Support Team</span>
+        <span>Connect with Support Team</span>
       `;
       btn.addEventListener('click', function () {
         btn.remove();
@@ -1736,6 +1956,7 @@
           messages: messages.map(function (m) { return { role: m.role, content: m.content }; }),
           visitorId: visitorId,
           conversationId: conversationId,
+          preferredLanguage: currentLanguage,
         }),
       })
         .then(function (response) {

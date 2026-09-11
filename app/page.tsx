@@ -46,14 +46,42 @@ import {
   Shield,
   BookOpen,
   Calendar,
+  Clock,
   LayoutTemplate,
   History,
   Wand2,
   FileEdit,
+  BarChart3,
+  TrendingUp,
+  PieChart,
+  Mic,
+  MicOff,
+  Target,
+  Scale,
+  Dumbbell,
+  Home,
+  ShoppingBag,
+  Briefcase,
+  Phone,
+  Mail,
+  Rocket,
+  Lightbulb,
+  Plug,
+  Brain,
+  ClipboardList,
+  Video,
+  AlertCircle,
+  ThumbsUp,
 } from 'lucide-react';
 import { diagnoseKnowledgeFailure } from '@/lib/rag/diagnostics';
 import { MarkdownRenderer } from '@/components/markdown-renderer';
 import { BOT_TEMPLATES, BotTemplate } from '@/lib/templates';
+
+const Youtube = ({ className = 'h-4 w-4' }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+    <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+  </svg>
+);
 
 export interface SupportCustomField {
   id: string;
@@ -186,7 +214,7 @@ export default function DashboardPage() {
   const [assistants, setAssistants] = useState<Assistant[]>([]);
   const [activeAssistant, setActiveAssistant] = useState<Assistant | null>(null);
   const [activeTab, setActiveTab] = useState<
-    'overview' | 'knowledge' | 'engine' | 'behavior' | 'widget' | 'channels' | 'playground' | 'leads' | 'appointments' | 'docs' | 'templates' | 'history'
+    'overview' | 'analytics' | 'knowledge' | 'engine' | 'behavior' | 'widget' | 'channels' | 'playground' | 'leads' | 'appointments' | 'docs' | 'templates' | 'history'
   >('overview');
 
   // Channel & Integrations state
@@ -309,6 +337,117 @@ export default function DashboardPage() {
     });
   };
 
+  // Analytics state
+  const [analyticsData, setAnalyticsData] = useState<any>(null);
+  const [isLoadingAnalytics, setIsLoadingAnalytics] = useState(false);
+
+  const fetchAnalytics = async (assistantId?: string) => {
+    setIsLoadingAnalytics(true);
+    try {
+      const url = assistantId ? `/api/analytics?assistantId=${assistantId}` : '/api/analytics';
+      const res = await fetch(url);
+      if (res.ok) {
+        const data = await res.json();
+        setAnalyticsData(data);
+      }
+    } catch (err) {
+      console.error('Failed to fetch analytics', err);
+    } finally {
+      setIsLoadingAnalytics(false);
+    }
+  };
+
+  // Playground voice dictation
+  const [isVoiceListening, setIsVoiceListening] = useState(false);
+
+  const handlePlaygroundVoiceToggle = () => {
+    const SpeechRec = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRec) {
+      alert('Voice dictation is not supported in this browser. Please use Google Chrome, Edge, or Safari.');
+      return;
+    }
+
+    if (isVoiceListening) {
+      setIsVoiceListening(false);
+      return;
+    }
+
+    try {
+      const recognition = new SpeechRec();
+      recognition.continuous = false;
+      recognition.interimResults = true;
+      recognition.lang = 'en-US';
+
+      recognition.onstart = () => {
+        setIsVoiceListening(true);
+      };
+
+      recognition.onresult = (event: any) => {
+        let transcript = '';
+        for (let i = 0; i < event.results.length; i++) {
+          transcript += event.results[i][0].transcript;
+        }
+        setInputQuery(transcript);
+      };
+
+      recognition.onerror = (event: any) => {
+        console.warn('Voice recognition error:', event.error);
+        setIsVoiceListening(false);
+      };
+
+      recognition.onend = () => {
+        setIsVoiceListening(false);
+      };
+
+      recognition.start();
+    } catch (e) {
+      console.error('Failed to start speech recognition', e);
+      setIsVoiceListening(false);
+    }
+  };
+
+  // Conversation history sentiment filter & status toggle
+  const [conversationSentimentFilter, setConversationSentimentFilter] = useState<'all' | 'urgent' | 'positive' | 'neutral'>('all');
+
+  const handleToggleConversationStatus = async (convId: string, resolved: boolean) => {
+    try {
+      const res = await fetch('/api/conversations', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: convId, resolved }),
+      });
+      if (res.ok) {
+        setConversations((prev) =>
+          prev.map((c) => (c.id === convId ? { ...c, resolved } : c))
+        );
+        if (selectedConversation && selectedConversation.id === convId) {
+          setSelectedConversation((prev: any) => ({ ...prev, resolved }));
+        }
+      }
+    } catch (err) {
+      console.error('Failed to update conversation status', err);
+    }
+  };
+
+  const renderTemplateIcon = (iconName: string) => {
+    switch (iconName) {
+      case 'Dumbbell':
+        return <Dumbbell className="h-5 w-5 text-rose-500" />;
+      case 'Home':
+        return <Home className="h-5 w-5 text-emerald-500" />;
+      case 'ShoppingBag':
+        return <ShoppingBag className="h-5 w-5 text-purple-500" />;
+      case 'Briefcase':
+        return <Briefcase className="h-5 w-5 text-blue-500" />;
+      case 'Scale':
+        return <Scale className="h-5 w-5 text-slate-700 dark:text-slate-300" />;
+      case 'Activity':
+        return <Activity className="h-5 w-5 text-sky-500" />;
+      default:
+        return <Bot className="h-5 w-5 text-blue-500" />;
+    }
+  };
+
   // Modals & Alerts
   const [showNewModal, setShowNewModal] = useState(false);
   const [newAssistantName, setNewAssistantName] = useState('');
@@ -366,6 +505,7 @@ export default function DashboardPage() {
       fetchAppointments(activeAssistant.id);
       fetchUnansweredQueries(activeAssistant.id);
       fetchConversations(activeAssistant.id);
+    fetchAnalytics(activeAssistant.id);
       // Reset playground
       setChatMessages([
         {
@@ -1228,6 +1368,7 @@ export default function DashboardPage() {
                 <nav className="space-y-1">
                   {[
                     { id: 'overview', label: 'Overview', icon: FileCheck },
+                    { id: 'analytics', label: 'Analytics & KPIs', icon: BarChart3 },
                     { id: 'knowledge', label: 'Knowledge Base', icon: Upload, count: sources.length },
                     { id: 'playground', label: 'Testing Studio', icon: MessageSquare },
                     { id: 'channels', label: 'Channels & Integrations', icon: Share2 },
@@ -1293,6 +1434,234 @@ export default function DashboardPage() {
           {/* Main Content Workspace */}
           <main className="flex-1 overflow-y-auto bg-slate-50 dark:bg-slate-950 p-6 sm:p-8">
             
+
+            {/* TAB: ANALYTICS & KPIS */}
+            {activeTab === 'analytics' && (
+              <div className="max-w-6xl space-y-6 mx-auto">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div>
+                    <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2.5">
+                      <BarChart3 className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                      <span>Analytics &amp; Performance KPIs</span>
+                    </h1>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                      Real-time metrics, conversion rates, visitor sentiment, and conversation resolution health.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => fetchAnalytics(activeAssistant?.id)}
+                    disabled={isLoadingAnalytics}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition shadow-xs cursor-pointer"
+                  >
+                    <RefreshCw className={`h-3.5 w-3.5 ${isLoadingAnalytics ? 'animate-spin text-blue-600' : 'text-slate-500'}`} />
+                    <span>Refresh Metrics</span>
+                  </button>
+                </div>
+
+                {/* KPI Metrics Cards Grid */}
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3.5">
+                  <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-1">
+                    <div className="flex items-center justify-between text-slate-500 text-xs">
+                      <span>Conversations</span>
+                      <MessageSquare className="h-4 w-4 text-blue-500" />
+                    </div>
+                    <div className="text-xl font-bold text-slate-900 dark:text-white font-mono">
+                      {analyticsData?.totalConversations ?? conversations.length}
+                    </div>
+                    <div className="text-[10.5px] text-slate-400">Total sessions</div>
+                  </div>
+
+                  <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-1">
+                    <div className="flex items-center justify-between text-slate-500 text-xs">
+                      <span>Messages</span>
+                      <SendHorizontal className="h-4 w-4 text-indigo-500" />
+                    </div>
+                    <div className="text-xl font-bold text-slate-900 dark:text-white font-mono">
+                      {analyticsData?.totalMessages ?? 0}
+                    </div>
+                    <div className="text-[10.5px] text-slate-400">Visitor &amp; AI exchanges</div>
+                  </div>
+
+                  <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-1">
+                    <div className="flex items-center justify-between text-slate-500 text-xs">
+                      <span>Leads</span>
+                      <Users className="h-4 w-4 text-emerald-500" />
+                    </div>
+                    <div className="text-xl font-bold text-slate-900 dark:text-white font-mono">
+                      {analyticsData?.totalLeads ?? leads.length}
+                    </div>
+                    <div className="text-[10.5px] text-emerald-600 dark:text-emerald-400 font-semibold">
+                      {analyticsData?.conversionRate ?? 0}% conversion
+                    </div>
+                  </div>
+
+                  <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-1">
+                    <div className="flex items-center justify-between text-slate-500 text-xs">
+                      <span>Bookings</span>
+                      <Calendar className="h-4 w-4 text-purple-500" />
+                    </div>
+                    <div className="text-xl font-bold text-slate-900 dark:text-white font-mono">
+                      {analyticsData?.totalAppointments ?? appointments.length}
+                    </div>
+                    <div className="text-[10.5px] text-slate-400">Appointments scheduled</div>
+                  </div>
+
+                  <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-1">
+                    <div className="flex items-center justify-between text-slate-500 text-xs">
+                      <span>Resolution</span>
+                      <CheckCircle2 className="h-4 w-4 text-sky-500" />
+                    </div>
+                    <div className="text-xl font-bold text-slate-900 dark:text-white font-mono">
+                      {analyticsData?.resolutionRate ?? 100}%
+                    </div>
+                    <div className="text-[10.5px] text-slate-400">Inquiry solved rate</div>
+                  </div>
+
+                  <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-1">
+                    <div className="flex items-center justify-between text-slate-500 text-xs">
+                      <span>Knowledge</span>
+                      <BookOpen className="h-4 w-4 text-amber-500" />
+                    </div>
+                    <div className="text-xl font-bold text-slate-900 dark:text-white font-mono">
+                      {analyticsData?.totalKnowledgeChunks ?? 0}
+                    </div>
+                    <div className="text-[10.5px] text-slate-400">RAG chunks indexed</div>
+                  </div>
+                </div>
+
+                {/* Sentiment Breakdown & 7-Day Activity Trend */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {/* Visitor Sentiment Breakdown Card */}
+                  <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-xs space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <PieChart className="h-4 w-4 text-blue-500" />
+                        <h2 className="text-sm font-bold text-slate-900 dark:text-white">Visitor Sentiment Analysis</h2>
+                      </div>
+                      <span className="text-[11px] text-slate-400">Real-time Tone AI</span>
+                    </div>
+
+                    <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                      AI continuously scans visitor conversations for frustration, urgent escalations, or positive satisfaction.
+                    </p>
+
+                    {/* Progress Bar Distribution */}
+                    {(() => {
+                      const pos = analyticsData?.sentiment?.positive ?? 0;
+                      const neu = analyticsData?.sentiment?.neutral ?? (analyticsData?.totalConversations || 1);
+                      const urg = analyticsData?.sentiment?.urgent ?? 0;
+                      const total = Math.max(1, pos + neu + urg);
+                      const posPct = Math.round((pos / total) * 100);
+                      const urgPct = Math.round((urg / total) * 100);
+                      const neuPct = 100 - posPct - urgPct;
+
+                      return (
+                        <div className="space-y-3">
+                          <div className="h-3 w-full rounded-full bg-slate-100 dark:bg-slate-800 flex overflow-hidden">
+                            <div style={{ width: `${posPct}%` }} className="bg-emerald-500 transition-all duration-500" title="Positive" />
+                            <div style={{ width: `${neuPct}%` }} className="bg-slate-400 dark:bg-slate-600 transition-all duration-500" title="Neutral" />
+                            <div style={{ width: `${urgPct}%` }} className="bg-rose-500 transition-all duration-500" title="Urgent / Escalated" />
+                          </div>
+
+                          <div className="grid grid-cols-3 gap-2 text-center">
+                            <div className="p-2.5 rounded-xl border border-emerald-100 dark:border-emerald-900/40 bg-emerald-50/50 dark:bg-emerald-950/20">
+                              <div className="flex items-center justify-center gap-1 text-[11px] font-semibold text-emerald-700 dark:text-emerald-400">
+                                <ThumbsUp className="h-3 w-3" /> Positive
+                              </div>
+                              <div className="text-base font-bold font-mono text-emerald-900 dark:text-emerald-300 mt-0.5">{pos}</div>
+                              <div className="text-[10px] text-emerald-600/70">{posPct}%</div>
+                            </div>
+
+                            <div className="p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40">
+                              <div className="flex items-center justify-center gap-1 text-[11px] font-semibold text-slate-600 dark:text-slate-400">
+                                <MessageSquare className="h-3 w-3" /> Neutral
+                              </div>
+                              <div className="text-base font-bold font-mono text-slate-900 dark:text-white mt-0.5">{neu}</div>
+                              <div className="text-[10px] text-slate-400">{neuPct}%</div>
+                            </div>
+
+                            <div className="p-2.5 rounded-xl border border-rose-100 dark:border-rose-900/40 bg-rose-50/50 dark:bg-rose-950/20">
+                              <div className="flex items-center justify-center gap-1 text-[11px] font-semibold text-rose-700 dark:text-rose-400">
+                                <AlertCircle className="h-3 w-3" /> Urgent
+                              </div>
+                              <div className="text-base font-bold font-mono text-rose-900 dark:text-rose-300 mt-0.5">{urg}</div>
+                              <div className="text-[10px] text-rose-600/70">{urgPct}%</div>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })()}
+                  </div>
+
+                  {/* 7-Day Trend Chart */}
+                  <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-xs space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <TrendingUp className="h-4 w-4 text-emerald-500" />
+                        <h2 className="text-sm font-bold text-slate-900 dark:text-white">7-Day Engagement Activity</h2>
+                      </div>
+                      <span className="text-[11px] text-slate-400">Last 7 Days</span>
+                    </div>
+
+                    <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                      Daily conversation volume and lead capture frequency across your deployed channels.
+                    </p>
+
+                    <div className="grid grid-cols-7 gap-2 pt-2 items-end h-36">
+                      {(analyticsData?.trend7Days || [
+                        { date: 'Day 1', conversations: 0, leads: 0 },
+                        { date: 'Day 2', conversations: 0, leads: 0 },
+                        { date: 'Day 3', conversations: 0, leads: 0 },
+                        { date: 'Day 4', conversations: 0, leads: 0 },
+                        { date: 'Day 5', conversations: 0, leads: 0 },
+                        { date: 'Day 6', conversations: 0, leads: 0 },
+                        { date: 'Day 7', conversations: 0, leads: 0 },
+                      ]).map((item: any, idx: number) => {
+                        const maxVal = Math.max(5, ...((analyticsData?.trend7Days || []).map((t: any) => t.conversations)));
+                        const heightPct = Math.max(12, Math.round((item.conversations / maxVal) * 100));
+                        return (
+                          <div key={idx} className="flex flex-col items-center gap-1.5 h-full justify-end">
+                            <div className="text-[10px] font-mono text-slate-500 font-bold">{item.conversations}</div>
+                            <div
+                              style={{ height: `${heightPct}%` }}
+                              className="w-full rounded-t-lg bg-blue-500 hover:bg-blue-600 transition-all cursor-pointer"
+                              title={`${item.date}: ${item.conversations} conversations, ${item.leads} leads`}
+                            />
+                            <div className="text-[9.5px] text-slate-400 font-mono truncate w-full text-center">
+                              {item.date.slice(5) || item.date}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Knowledge Base Gap Health Card */}
+                <div className="p-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-4">
+                  <div className="flex items-center gap-3.5">
+                    <div className="h-10 w-10 rounded-xl bg-amber-50 dark:bg-amber-950/50 border border-amber-200 dark:border-amber-800 flex items-center justify-center shrink-0">
+                      <Target className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+                    </div>
+                    <div>
+                      <h3 className="text-xs font-bold text-slate-900 dark:text-white">Knowledge Gap Engine</h3>
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                        {analyticsData?.unansweredCount ?? 0} queries currently flagged where the AI had low retrieval confidence.
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('overview')}
+                    className="px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 dark:bg-slate-100 dark:hover:bg-white text-white dark:text-slate-900 text-xs font-semibold transition cursor-pointer"
+                  >
+                    View Gap Resolution &rarr;
+                  </button>
+                </div>
+              </div>
+            )}
+
             {/* TAB 1: OVERVIEW */}
             {activeTab === 'overview' && (
               <div className="max-w-5xl space-y-6 mx-auto">
@@ -1366,7 +1735,7 @@ export default function DashboardPage() {
                   {unansweredQueries.length === 0 ? (
                     <div className="rounded-lg border border-slate-100 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-800/30 p-4 text-center">
                       <div className="text-xs text-slate-600 dark:text-slate-400 font-medium">
-                        🎉 No knowledge gaps detected!
+                        <CheckCircle2 className="h-4 w-4 text-emerald-500 inline mr-1" /> No knowledge gaps detected!
                       </div>
                       <div className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">
                         Your assistant has answered questions using your indexed knowledge base. New missing questions will appear here automatically.
@@ -1753,10 +2122,10 @@ export default function DashboardPage() {
                     {urlInput.trim() && (
                       <span className="text-[10px] font-mono px-2 py-0.5 rounded-full font-semibold border bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700">
                         {/(?:youtube\.com|youtu\.be)/i.test(urlInput)
-                          ? '🔴 YouTube Video'
+                          ? 'YouTube Video'
                           : /\.(mp4|webm|mov|mkv|avi|mp3|wav|m4a|ogg|flac)$/i.test(urlInput.split('?')[0])
-                          ? '🎥 Direct Media Stream'
-                          : '🌐 Webpage Scraper'}
+                          ? 'Direct Media Stream'
+                          : 'Webpage Scraper'}
                       </span>
                     )}
                   </div>
@@ -1891,13 +2260,13 @@ export default function DashboardPage() {
                                   : 'bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800'
                               }`}>
                                 {source.type === 'youtube'
-                                  ? '🔴 YOUTUBE'
+                                  ? 'YOUTUBE'
                                   : source.type === 'web'
-                                  ? '🌐 WEB'
+                                  ? 'WEB'
                                   : ['mp4', 'webm', 'mov', 'mkv', 'avi', 'm4v', 'video'].includes(source.type.toLowerCase())
-                                  ? '🎥 VIDEO'
+                                  ? 'VIDEO'
                                   : ['mp3', 'wav', 'm4a', 'ogg', 'flac', 'aac', 'audio'].includes(source.type.toLowerCase())
-                                  ? '🎙️ AUDIO'
+                                  ? 'AUDIO'
                                   : source.type.toUpperCase()}
                               </span>
                               <span className="truncate max-w-[280px]" title={source.title}>{source.title}</span>
@@ -2026,7 +2395,7 @@ export default function DashboardPage() {
                               return (
                                 <div className="mt-2.5 pt-2 border-t border-slate-200 dark:border-slate-700 text-[11px]">
                                   <div className="font-semibold text-slate-600 dark:text-slate-400 mb-1 flex items-center gap-1">
-                                    <span>🌐 Web Sources:</span>
+                                    <span className="flex items-center gap-1"><Globe className="h-3 w-3 text-sky-500" /> Web Sources:</span>
                                   </div>
                                   <div className="flex flex-wrap gap-1.5">
                                     {webCitations.map((c: any, ci: number) => (
@@ -2038,7 +2407,7 @@ export default function DashboardPage() {
                                         className="inline-flex items-center gap-1 border px-2 py-0.5 rounded text-[10px] font-mono transition hover:underline hover:opacity-90 bg-sky-50 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300 border-sky-200 dark:border-sky-800"
                                         title={c.preview || c.url}
                                       >
-                                        <span>🌐 {c.sourceTitle}</span>
+                                        <span className="flex items-center gap-1"><Globe className="h-3 w-3 text-sky-500 shrink-0" /><span className="truncate max-w-[200px]">{c.sourceTitle}</span></span>
                                         <span className="text-[9px] opacity-70">↗</span>
                                       </a>
                                     ))}
@@ -2087,6 +2456,18 @@ export default function DashboardPage() {
 
                     {/* Chat Input Bar */}
                     <div className="p-3 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={handlePlaygroundVoiceToggle}
+                        title={isVoiceListening ? 'Stop Voice Dictation' : 'Speak / Voice Dictation'}
+                        className={`p-2 rounded-lg border transition cursor-pointer shrink-0 ${
+                          isVoiceListening
+                            ? 'bg-red-500 text-white border-red-600 animate-pulse'
+                            : 'bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700'
+                        }`}
+                      >
+                        {isVoiceListening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+                      </button>
                       <input
                         type="text"
                         placeholder="Type a message to test your knowledge base..."
@@ -2143,13 +2524,21 @@ export default function DashboardPage() {
                               const isWeb = st === 'web';
                               const isVid = ['mp4', 'webm', 'mov', 'mkv', 'avi', 'm4v', 'video'].some((e) => st.includes(e) || stTitle.endsWith(`.${e}`));
                               const isAud = ['mp3', 'wav', 'm4a', 'ogg', 'flac', 'aac', 'audio'].some((e) => st.includes(e) || stTitle.endsWith(`.${e}`));
-                              const icon = isYt ? '🔴' : isWeb ? '🌐' : isVid ? '🎥' : isAud ? '🎙️' : st === 'pdf' || stTitle.endsWith('.pdf') ? '📄' : st === 'csv' || stTitle.endsWith('.csv') ? '📊' : '📝';
+                              const renderCitationIcon = () => {
+                                if (isYt) return <Youtube className="h-3 w-3 text-red-500 shrink-0" />;
+                                if (isWeb) return <Globe className="h-3 w-3 text-emerald-500 shrink-0" />;
+                                if (isVid) return <Video className="h-3 w-3 text-purple-500 shrink-0" />;
+                                if (isAud) return <Mic className="h-3 w-3 text-cyan-500 shrink-0" />;
+                                if (st === 'pdf' || stTitle.endsWith('.pdf')) return <FileText className="h-3 w-3 text-red-500 shrink-0" />;
+                                if (st === 'csv' || stTitle.endsWith('.csv')) return <FileSpreadsheet className="h-3 w-3 text-green-500 shrink-0" />;
+                                return <FileEdit className="h-3 w-3 text-blue-500 shrink-0" />;
+                              };
                               return (
                                 <div key={i} className="p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60 text-[11px] space-y-1">
                                   <div className="flex items-center justify-between text-[10px] font-mono">
                                     <div className="text-blue-600 dark:text-blue-400 font-bold flex items-center gap-1.5 truncate pr-2">
                                       <span>[{i + 1}]</span>
-                                      <span className="truncate">{icon} {c.sourceTitle}</span>
+                                      <span className="truncate flex items-center gap-1">{renderCitationIcon()} {c.sourceTitle}</span>
                                     </div>
                                     {c.url && (
                                       <a
@@ -2210,8 +2599,8 @@ export default function DashboardPage() {
                   <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Select AI Provider</label>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                     {[
-                      { id: 'groq', label: 'Groq Cloud', tag: '⚡ ULTRA-FAST (FREE)', desc: 'Instant sub-second Llama 3.3' },
-                      { id: 'gemini', label: 'Google Gemini', tag: '⚡ FAST (FREE TIER)', desc: 'Gemini 1.5 & 2.0 Flash' },
+                      { id: 'groq', label: 'Groq Cloud', tag: 'ULTRA-FAST (FREE)', desc: 'Instant sub-second Llama 3.3' },
+                      { id: 'gemini', label: 'Google Gemini', tag: 'FAST (FREE TIER)', desc: 'Gemini 1.5 & 2.0 Flash' },
                       { id: 'ollama', label: 'Local Ollama', tag: '100% FREE', desc: 'Runs on your PC CPU/GPU' },
                       { id: 'openai', label: 'OpenAI', tag: 'BYOK', desc: 'GPT-4o & GPT-4o-mini' },
                       { id: 'anthropic', label: 'Anthropic Claude', tag: 'BYOK', desc: 'Claude 3.5 Sonnet & Haiku' },
@@ -2268,7 +2657,7 @@ export default function DashboardPage() {
                     <Zap className="h-5 w-5 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
                     <div className="space-y-1.5">
                       <p className="font-bold text-emerald-900 dark:text-emerald-200 flex items-center gap-2">
-                        <span>⚡ Recommended for Lightning Speed (~500+ tokens/sec)</span>
+                        <span>Recommended for Lightning Speed (~500+ tokens/sec)</span>
                         <span className="bg-emerald-100 dark:bg-emerald-900 text-emerald-800 dark:text-emerald-200 px-2 py-0.5 rounded text-[10px]">100% Free Tier</span>
                       </p>
                       <p className="text-slate-600 dark:text-slate-300 text-[11.5px] leading-relaxed">
@@ -2295,7 +2684,7 @@ export default function DashboardPage() {
                     <Zap className="h-5 w-5 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
                     <div className="space-y-1.5">
                       <p className="font-bold text-blue-900 dark:text-blue-200 flex items-center gap-2">
-                        <span>⚡ Sub-Second Speed with Google Gemini Flash</span>
+                        <span>Sub-Second Speed with Google Gemini Flash</span>
                         <span className="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-2 py-0.5 rounded text-[10px]">Free Tier</span>
                       </p>
                       <p className="text-slate-600 dark:text-slate-300 text-[11.5px] leading-relaxed">
@@ -2326,7 +2715,7 @@ export default function DashboardPage() {
                         Running local LLMs on a CPU (without an Nvidia GPU) typically runs at 2-4 tokens/sec, taking ~30-60 seconds per response.
                       </p>
                       <p className="text-amber-800 dark:text-amber-300 text-[11.5px]">
-                        👉 <strong>For instant responses (1-2s):</strong> Switch to <strong>Groq Cloud</strong> above (free API key at console.groq.com) for 100x faster generation at $0 cost!
+                        <strong>Instant Response Tip (1-2s):</strong> Switch to <strong>Groq Cloud</strong> above (free API key at console.groq.com) for 100x faster generation at $0 cost!
                       </p>
                     </div>
                   </div>
@@ -2375,7 +2764,7 @@ export default function DashboardPage() {
                       <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1.5 flex items-center justify-between">
                         <span>Temperature ({formData.temperature ?? 0.3})</span>
                         <span className="text-[11px] font-medium text-blue-600 dark:text-blue-400">
-                          {(formData.temperature ?? 0.3) <= 0.2 ? '🎯 Strict & Factual' : (formData.temperature ?? 0.3) <= 0.5 ? '⚖️ Balanced (Recommended)' : '🎨 Creative'}
+                          {(formData.temperature ?? 0.3) <= 0.2 ? 'Strict & Factual' : (formData.temperature ?? 0.3) <= 0.5 ? 'Balanced (Recommended)' : 'Creative'}
                         </span>
                       </label>
                       <input
@@ -2766,7 +3155,7 @@ export default function DashboardPage() {
                             </label>
                             <input
                               type="text"
-                              placeholder="e.g. 👋 Have questions about our pricing or plans? I'm here to help!"
+                              placeholder="e.g. Have questions about our pricing or plans? I'm here to help!"
                               value={formData.proactiveMessageText || ''}
                               onChange={(e) => setFormData({ ...formData, proactiveMessageText: e.target.value })}
                               className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-xs text-slate-900 dark:text-slate-100 outline-none focus:border-blue-500"
@@ -2943,7 +3332,7 @@ export default function DashboardPage() {
                                             : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-400 hover:text-slate-600'
                                         }`}
                                       >
-                                        {isSelected ? '✓ ' : ''}{day.slice(0, 3)}
+                                        <span className="flex items-center gap-1">{isSelected && <Check className="h-3 w-3 inline" />}{day.slice(0, 3)}</span>
                                       </button>
                                     );
                                   })}
@@ -2995,7 +3384,7 @@ export default function DashboardPage() {
                     <div className="space-y-4 pt-3 border-t border-slate-200 dark:border-slate-800">
                       <div>
                         <h2 className="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-1.5">
-                          <span>📧 Support Handoff &amp; Lead Email Alerts</span>
+                          <span className="flex items-center gap-1.5"><Mail className="h-4 w-4 text-blue-500 inline" /><span>Support Handoff &amp; Lead Email Alerts</span></span>
                         </h2>
                         <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
                           When visitors ask to connect with support, the widget displays a sleek form and immediately dispatches an email notification.
@@ -4054,7 +4443,7 @@ export default function DashboardPage() {
                             )
                           ) : (
                             <span>
-                              ⚡ Powered by{' '}
+                              <Zap className="h-3 w-3 text-blue-500 inline mr-1" />Powered by{' '}
                               <span className="text-slate-600 dark:text-slate-300 font-medium underline">
                                 Kortex AI
                               </span>
@@ -4065,8 +4454,8 @@ export default function DashboardPage() {
 
                       <div className="text-[11px] text-slate-500 text-center">
                         {formData.whiteLabelEnabled
-                          ? '✅ Client sees only your agency branding or zero platform badges.'
-                          : 'ℹ️ Displays default platform branding.'}
+                          ? 'Client sees only your agency branding or zero platform badges.'
+                          : 'Displays default platform branding.'}
                       </div>
                     </div>
                   </div>
@@ -4459,7 +4848,7 @@ export default function DashboardPage() {
                                     </div>
                                     {apt.phone && (
                                       <div className="text-slate-500 dark:text-slate-400 font-mono text-[10px] mt-0.5">
-                                        📞 {apt.phone}
+                                        <Phone className="h-3 w-3 text-slate-400 inline mr-1" />{apt.phone}
                                       </div>
                                     )}
                                   </td>
@@ -4470,7 +4859,7 @@ export default function DashboardPage() {
                                       <span>{apt.date}</span>
                                     </div>
                                     <div className="text-slate-600 dark:text-slate-300 font-medium text-[11px] mt-0.5">
-                                      ⏰ {apt.timeSlot}
+                                      <Clock className="h-3 w-3 text-slate-400 inline mr-1" />{apt.timeSlot}
                                     </div>
                                   </td>
 
@@ -4561,7 +4950,7 @@ export default function DashboardPage() {
                 {/* Section: Getting Started */}
                 <div>
                   <div className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-3">
-                    🚀 Getting Started
+                    Getting Started
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {[
@@ -4614,7 +5003,7 @@ export default function DashboardPage() {
                         </ol>
                         {guide.tip && (
                           <div className="flex items-start gap-2 text-[11px] text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900 rounded-xl p-2.5">
-                            <span className="text-base leading-none">💡</span>
+                            <Lightbulb className="h-3.5 w-3.5 text-amber-500 shrink-0 mt-0.5" />
                             <span>{guide.tip}</span>
                           </div>
                         )}
@@ -4626,7 +5015,7 @@ export default function DashboardPage() {
                 {/* Section: Integrations */}
                 <div>
                   <div className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-3">
-                    🔌 Integrations
+                    Integrations
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {[
@@ -4711,7 +5100,7 @@ export default function DashboardPage() {
                         </ol>
                         {guide.tip && (
                           <div className="flex items-start gap-2 text-[11px] text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900 rounded-xl p-2.5">
-                            <span className="text-base leading-none">💡</span>
+                            <Lightbulb className="h-3.5 w-3.5 text-amber-500 shrink-0 mt-0.5" />
                             <span>{guide.tip}</span>
                           </div>
                         )}
@@ -4723,37 +5112,37 @@ export default function DashboardPage() {
                 {/* Section: AI & Knowledge Tips */}
                 <div>
                   <div className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-3">
-                    🧠 AI & Knowledge Tips
+                    AI & Knowledge Tips
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     {[
                       {
-                        icon: '📄',
+                        iconName: 'file',
                         title: 'Best File Formats',
                         body: 'PDFs and CSVs give the best accuracy. For member data, use a CSV with headers like Name, Email, DOB, Plan. Avoid scanned images when possible — use real text PDFs.',
                       },
                       {
-                        icon: '🎯',
+                        iconName: 'target',
                         title: 'Writing a Good System Prompt',
                         body: 'Be specific: tell the AI its role ("You are a support agent for Acme Gym"), what it should and shouldn\'t answer, and what tone to use. Short and clear beats long and vague.',
                       },
                       {
-                        icon: '🔄',
+                        iconName: 'refresh',
                         title: 'Re-training After Updates',
                         body: 'After updating source material (new FAQ, updated policy), delete the old knowledge source and re-upload the new file. The AI uses what\'s indexed — stale data = stale answers.',
                       },
                       {
-                        icon: '🌐',
+                        iconName: 'globe',
                         title: 'Adding Web Pages',
                         body: 'Use the URL field to scrape any public webpage — product pages, terms, about pages. Works best on pages without JavaScript-rendered content (static HTML).',
                       },
                       {
-                        icon: '🎥',
+                        iconName: 'youtube',
                         title: 'YouTube Transcripts',
                         body: 'Paste a YouTube URL to extract the video transcript. Great for indexing explainer videos, tutorials, and interviews. Only works if captions are available on the video.',
                       },
                       {
-                        icon: '🖼️',
+                        iconName: 'eye',
                         title: 'Image Text (OCR)',
                         body: 'Upload PNG/JPG files — the AI extracts printed text from the image. Works best on clear, high-contrast text. Handwritten notes and low-quality scans may not extract well.',
                       },
@@ -4762,7 +5151,14 @@ export default function DashboardPage() {
                         key={card.title}
                         className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-xs"
                       >
-                        <div className="text-2xl mb-2">{card.icon}</div>
+                        <div className="mb-2.5 p-2 rounded-xl bg-slate-50 dark:bg-slate-800 inline-block border border-slate-200 dark:border-slate-700">
+                          {card.iconName === 'file' && <FileText className="h-5 w-5 text-blue-500" />}
+                          {card.iconName === 'target' && <Target className="h-5 w-5 text-rose-500" />}
+                          {card.iconName === 'refresh' && <RefreshCw className="h-5 w-5 text-amber-500" />}
+                          {card.iconName === 'globe' && <Globe className="h-5 w-5 text-emerald-500" />}
+                          {card.iconName === 'youtube' && <Youtube className="h-5 w-5 text-red-500" />}
+                          {card.iconName === 'eye' && <Eye className="h-5 w-5 text-purple-500" />}
+                        </div>
                         <h4 className="font-semibold text-slate-800 dark:text-slate-100 text-xs mb-1.5">{card.title}</h4>
                         <p className="text-[11.5px] text-slate-500 dark:text-slate-400 leading-relaxed">{card.body}</p>
                       </div>
@@ -4773,7 +5169,7 @@ export default function DashboardPage() {
                 {/* Section: Lead Capture */}
                 <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-xs">
                   <h3 className="font-semibold text-slate-800 dark:text-slate-100 text-sm mb-3 flex items-center gap-2">
-                    <span className="text-lg">📋</span> Setting Up Lead Capture
+                    <span className="flex items-center gap-1.5"><ClipboardList className="h-4 w-4 text-blue-500 inline" /><span>Setting Up Lead Capture</span></span>
                   </h3>
                   <ol className="space-y-2">
                     {[
@@ -4831,7 +5227,7 @@ export default function DashboardPage() {
                         <div className="space-y-3.5">
                           <div className="flex items-start justify-between gap-2">
                             <div className="flex items-center gap-2.5">
-                              <span className="text-2xl">{tmpl.icon}</span>
+                              <div className="p-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">{renderTemplateIcon(tmpl.icon)}</div>
                               <div>
                                 <h3 className="text-sm font-bold text-slate-900 dark:text-white">{tmpl.name}</h3>
                                 <span className="text-[10.5px] font-semibold text-slate-500 dark:text-slate-400">
@@ -4882,7 +5278,7 @@ export default function DashboardPage() {
                               </span>
                             )}
                             <span className="flex items-center gap-1">
-                              📚 {tmpl.sampleKnowledge.length} Sample Docs
+                              {tmpl.sampleKnowledge.length} Sample Docs
                             </span>
                           </div>
                         </div>
@@ -4962,10 +5358,19 @@ export default function DashboardPage() {
                         <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
                           {conversations.length} Active Sessions
                         </span>
-                        <span className="text-[10px] text-slate-400">Click to view transcript</span>
+                        <select
+                            value={conversationSentimentFilter}
+                            onChange={(e) => setConversationSentimentFilter(e.target.value as any)}
+                            className="text-[11px] font-medium rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-2 py-0.5 text-slate-700 dark:text-slate-300 outline-none"
+                          >
+                            <option value="all">All Tone</option>
+                            <option value="urgent">Urgent</option>
+                            <option value="positive">Positive</option>
+                            <option value="neutral">Neutral</option>
+                          </select>
                       </div>
                       <div className="divide-y divide-slate-100 dark:divide-slate-800 max-h-[600px] overflow-y-auto">
-                        {conversations.map((conv) => {
+                        {conversations.filter((c) => conversationSentimentFilter === 'all' || (c.sentiment || 'neutral') === conversationSentimentFilter).map((conv) => {
                           const isSelected = selectedConversation?.id === conv.id;
                           const msgCount = conv.messages?.length || 0;
                           const lastMsg = conv.messages && conv.messages[conv.messages.length - 1];
@@ -4984,9 +5389,26 @@ export default function DashboardPage() {
                                 <span className="text-xs font-semibold text-slate-900 dark:text-white font-mono">
                                   {conv.visitorId ? conv.visitorId.slice(0, 14) : conv.id.slice(0, 10)}
                                 </span>
-                                <span className="rounded-full bg-slate-100 dark:bg-slate-800 px-2 py-0.5 text-[10px] font-bold text-slate-600 dark:text-slate-400">
-                                  {msgCount} msgs
-                                </span>
+                                <div className="flex items-center gap-1.5">
+                                  {conv.sentiment === 'urgent' && (
+                                    <span className="flex items-center gap-0.5 rounded-full bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 px-1.5 py-0.5 text-[9px] font-bold border border-rose-200 dark:border-rose-800">
+                                      <AlertCircle className="h-2.5 w-2.5" /> Urgent
+                                    </span>
+                                  )}
+                                  {conv.sentiment === 'positive' && (
+                                    <span className="flex items-center gap-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 px-1.5 py-0.5 text-[9px] font-bold border border-emerald-200 dark:border-emerald-800">
+                                      <ThumbsUp className="h-2.5 w-2.5" /> Positive
+                                    </span>
+                                  )}
+                                  {conv.resolved && (
+                                    <span className="flex items-center gap-0.5 rounded-full bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 px-1.5 py-0.5 text-[9px] font-bold border border-blue-200 dark:border-blue-800">
+                                      <CheckCircle2 className="h-2.5 w-2.5" /> Solved
+                                    </span>
+                                  )}
+                                  <span className="rounded-full bg-slate-100 dark:bg-slate-800 px-2 py-0.5 text-[10px] font-bold text-slate-600 dark:text-slate-400">
+                                    {msgCount} msgs
+                                  </span>
+                                </div>
                               </div>
                               <div className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-1">
                                 {lastMsg ? lastMsg.content : 'No messages'}
@@ -5017,6 +5439,18 @@ export default function DashboardPage() {
                               <span className="rounded-full bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 font-semibold px-2.5 py-1 text-[11px]">
                                 {selectedConversation.messages?.length || 0} Messages
                               </span>
+                              <button
+                                type="button"
+                                onClick={() => handleToggleConversationStatus(selectedConversation.id, !selectedConversation.resolved)}
+                                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-xs font-semibold transition cursor-pointer ${
+                                  selectedConversation.resolved
+                                    ? 'bg-emerald-50 dark:bg-emerald-950/60 border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300'
+                                    : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50'
+                                }`}
+                              >
+                                <CheckCircle2 className={`h-3.5 w-3.5 ${selectedConversation.resolved ? 'text-emerald-600' : 'text-slate-400'}`} />
+                                <span>{selectedConversation.resolved ? 'Resolved' : 'Mark Resolved'}</span>
+                              </button>
                               <button
                                 type="button"
                                 onClick={() => downloadConversationTranscript(selectedConversation)}
@@ -5056,7 +5490,8 @@ export default function DashboardPage() {
                                       return (
                                         <div className="mt-2 pt-2 border-t border-slate-200 dark:border-slate-700 text-[10.5px]">
                                           <div className="font-semibold text-slate-500 dark:text-slate-400 mb-1 flex items-center gap-1">
-                                            <span>🌐 Web Sources:</span>
+                                            <Globe className="h-3 w-3 text-sky-500" />
+                                            <span>Web Sources:</span>
                                           </div>
                                           <div className="space-y-1">
                                             {webCitations.map((cite: any, cIdx: number) => (
@@ -5372,7 +5807,7 @@ export default function DashboardPage() {
                       <div className="space-y-4">
                         <div className="bg-indigo-50/60 dark:bg-indigo-950/30 border border-indigo-100 dark:border-indigo-900/40 rounded-xl p-3.5 text-xs text-slate-600 dark:text-slate-300">
                           <p className="font-semibold text-indigo-950 dark:text-indigo-200 mb-1">
-                            🎯 Fix Misheard Words &amp; Typos Across Embeddings
+                            Fix Misheard Words &amp; Typos Across Embeddings
                           </p>
                           <p className="text-[11px] leading-relaxed text-slate-500 dark:text-slate-400">
                             Did speech-to-text transcribe someone&apos;s name or product incorrectly (e.g. &ldquo;Jon Dough&rdquo; instead of &ldquo;John Doe&rdquo;)? Enter the misheard phrase and the correct term. We will update the text across all chunks and automatically recalculate high-dimensional vector embeddings in-place without re-uploading the file.
@@ -5469,7 +5904,7 @@ export default function DashboardPage() {
                       <div className="space-y-4">
                         <div className="bg-emerald-50/60 dark:bg-emerald-950/30 border border-emerald-100 dark:border-emerald-900/40 rounded-xl p-3.5 text-xs text-slate-600 dark:text-slate-300">
                           <p className="font-semibold text-emerald-950 dark:text-emerald-200 mb-1">
-                            🛡️ Official Fact &amp; Knowledge Override
+                            Official Fact &amp; Knowledge Override
                           </p>
                           <p className="text-[11px] leading-relaxed text-slate-500 dark:text-slate-400">
                             Have an authoritative policy change or crucial fact that should supersede any outdated audio/video transcription or legacy document statement? Write it here. An official override banner will be injected into this source&apos;s vector embeddings with maximum retrieval weight.
@@ -5515,7 +5950,7 @@ export default function DashboardPage() {
                       <div className="space-y-4">
                         <div className="bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700 rounded-xl p-3.5 text-xs text-slate-600 dark:text-slate-300">
                           <p className="font-semibold text-slate-900 dark:text-white mb-1">
-                            📝 Full Document Text Editor
+                            Full Document Text Editor
                           </p>
                           <p className="text-[11px] leading-relaxed text-slate-500 dark:text-slate-400">
                             View or edit the full synthesized text of this knowledge source. Saving will regenerate chunk boundaries and fresh vector embeddings across the entire document.
@@ -5619,9 +6054,9 @@ export default function DashboardPage() {
                 <h2 className="text-base font-bold text-slate-900 dark:text-white">Deploy on Website &amp; WordPress</h2>
                 <button
                   onClick={() => setShowEmbedModal(false)}
-                  className="text-slate-400 hover:text-slate-600 text-xs"
+                  className="text-slate-400 hover:text-slate-600 text-xs p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800"
                 >
-                  ✕
+                  <X className="h-4 w-4" />
                 </button>
               </div>
 

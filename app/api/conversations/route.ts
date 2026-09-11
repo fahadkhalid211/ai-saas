@@ -16,3 +16,24 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: error?.message || 'Failed to fetch conversations' }, { status: 500 });
   }
 }
+
+export async function PATCH(req: Request) {
+  try {
+    const body = await req.json();
+    const { id, resolved, escalated, sentiment } = body;
+
+    if (!id) {
+      return NextResponse.json({ error: 'Conversation id is required' }, { status: 400 });
+    }
+
+    const updated = await Database.updateConversation(id, {
+      ...(resolved !== undefined ? { resolved } : {}),
+      ...(escalated !== undefined ? { escalated } : {}),
+      ...(sentiment !== undefined ? { sentiment } : {}),
+    });
+
+    return NextResponse.json({ success: updated });
+  } catch (error: any) {
+    return NextResponse.json({ error: error?.message || 'Failed to update conversation' }, { status: 500 });
+  }
+}

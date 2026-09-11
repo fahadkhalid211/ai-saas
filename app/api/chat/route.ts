@@ -20,7 +20,7 @@ export async function OPTIONS() {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { assistantId, messages, visitorId, conversationId } = body;
+    const { assistantId, messages, visitorId, conversationId, preferredLanguage } = body;
 
     if (!assistantId) {
       return NextResponse.json({ error: 'assistantId is required' }, { status: 400 });
@@ -39,9 +39,27 @@ export async function POST(req: NextRequest) {
     const latestUserMsg = messages[messages.length - 1]?.content || '';
     const conversationHistory = messages.slice(0, -1);
 
+    // Analyze Sentiment and Potential Escalation
+    let detectedSentiment: 'urgent' | 'positive' | 'neutral' = 'neutral';
+    let isEscalation = false;
+
+    const urgentRegex = /\b(cancel|refund|broken|horrible|terrible|frustrated|angry|scam|lawyer|sue|complaint|worst|unacceptable|stolen|human agent|speak to human|real person|manager|emergency|help me now|urgent)\b/i;
+    const positiveRegex = /\b(thank|thanks|great|awesome|love|perfect|excellent|helpful|good job|amazing|kudos|appreciate)\b/i;
+
+    if (urgentRegex.test(latestUserMsg)) {
+      detectedSentiment = 'urgent';
+      isEscalation = true;
+    } else if (positiveRegex.test(latestUserMsg)) {
+      detectedSentiment = 'positive';
+    }
+
     // 1. Get or create conversation record
     const conv = await Database.getOrCreateConversation(assistantId, visitorId, conversationId);
     await Database.saveMessage(conv.id, 'user', latestUserMsg);
+    await Database.updateConversation(conv.id, {
+      sentiment: detectedSentiment,
+      ...(isEscalation ? { escalated: true } : {}),
+    });
 
     // 4. Setup Server-Sent Events (SSE) Stream
     const encoder = new TextEncoder();
@@ -139,12 +157,24 @@ export async function POST(req: NextRequest) {
           }
 
           // 3. Assemble Prompt with web-linking instructions
-          const fullSystemPrompt = buildSystemPrompt({
+          let fullSystemPrompt = buildSystemPrompt({
             businessPrompt: assistant.systemPrompt,
             contextText: retrieval.contextText,
             fallbackMessage: assistant.fallbackMessage,
             assistantName: assistant.name,
           });
+
+          if (preferredLanguage && preferredLanguage !== 'en') {
+            const langNames: Record<string, string> = {
+              es: 'Spanish (Español)',
+              fr: 'French (Français)',
+              de: 'German (Deutsch)',
+              ar: 'Arabic (العربية)',
+              ur: 'Urdu (اردو)',
+            };
+            const targetLang = langNames[preferredLanguage] || preferredLanguage;
+            fullSystemPrompt += `\n\n[USER PREFERRED LANGUAGE]: The visitor has selected ${targetLang}. Please formulate your reply completely and fluently in ${targetLang} while remaining faithful to the retrieved business facts.`;
+          }
 
           const llmMessages: ChatMessage[] = [
             { role: 'system', content: fullSystemPrompt },
