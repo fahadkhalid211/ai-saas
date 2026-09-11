@@ -69,6 +69,9 @@
       whiteLabelEnabled: false,
       customBrandingText: '',
       customBrandingUrl: '',
+      proactiveMessageEnabled: false,
+      proactiveMessageText: '',
+      proactiveMessageDelay: 5,
     };
     var isOpen = false;
     var messages = [];
@@ -589,6 +592,82 @@
         color: var(--primary-color, #2563eb);
         text-decoration: underline;
       }
+      /* Proactive message popup */
+      .proactive-popup {
+        position: absolute;
+        bottom: 76px;
+        right: 0;
+        width: 270px;
+        background: #ffffff;
+        border-radius: 16px;
+        box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.12), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        border: 1px solid #e2e8f0;
+        padding: 12px 14px;
+        font-size: 13px;
+        line-height: 1.45;
+        color: #1e293b;
+        cursor: pointer;
+        display: none;
+        animation: popupSlideUp 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        z-index: 2147483646;
+        box-sizing: border-box;
+      }
+      .pos-bottom-left .proactive-popup {
+        right: auto;
+        left: 0;
+      }
+      @keyframes popupSlideUp {
+        from { opacity: 0; transform: translateY(10px) scale(0.96); }
+        to { opacity: 1; transform: translateY(0) scale(1); }
+      }
+      .proactive-popup-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 5px;
+      }
+      .proactive-popup-author {
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--primary-color, #2563eb);
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+      }
+      .proactive-popup-close {
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        color: #94a3b8;
+        padding: 2px;
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: color 0.15s;
+      }
+      .proactive-popup-close:hover {
+        color: #475569;
+      }
+      .proactive-popup-text {
+        color: #334155;
+        font-size: 12.5px;
+        font-weight: 500;
+      }
+      .proactive-popup-tail {
+        position: absolute;
+        bottom: -6px;
+        right: 24px;
+        width: 12px;
+        height: 12px;
+        background: #ffffff;
+        border-right: 1px solid #e2e8f0;
+        border-bottom: 1px solid #e2e8f0;
+        transform: rotate(45deg);
+      }
+      .pos-bottom-left .proactive-popup-tail {
+        right: auto;
+        left: 24px;
+      }
     `;
     shadow.appendChild(style);
 
@@ -648,7 +727,26 @@
       </div>
     `;
 
+    // Proactive Speech Bubble
+    var proactiveBubble = document.createElement('div');
+    proactiveBubble.className = 'proactive-popup';
+    proactiveBubble.id = 'proactive-bubble';
+    proactiveBubble.innerHTML = `
+      <div class="proactive-popup-header">
+        <span class="proactive-popup-author" id="proactive-author">AI Assistant</span>
+        <button class="proactive-popup-close" id="proactive-close" title="Dismiss">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+      <div class="proactive-popup-text" id="proactive-text"></div>
+      <div class="proactive-popup-tail"></div>
+    `;
+
     widgetWrapper.appendChild(chatWindow);
+    widgetWrapper.appendChild(proactiveBubble);
     widgetWrapper.appendChild(launcher);
     shadow.appendChild(widgetWrapper);
 
@@ -660,6 +758,9 @@
     var supportHeaderBtn = shadow.getElementById('header-support-btn');
     var nameEl = shadow.getElementById('ast-name');
     var avatarEl = shadow.getElementById('ast-avatar');
+    var proactiveAuthor = shadow.getElementById('proactive-author');
+    var proactiveText = shadow.getElementById('proactive-text');
+    var proactiveClose = shadow.getElementById('proactive-close');
 
     // Load Assistant Config
     fetch(hostUrl + '/api/widget/' + assistantId + '/config')
@@ -723,6 +824,25 @@
         appendMessage('assistant', config.welcomeMessage);
         renderStarterQuestions();
       }
+
+      // Proactive Engagement Popup Automation
+      if (config.proactiveMessageEnabled && config.proactiveMessageText) {
+        var proactiveDismissed = false;
+        try {
+          proactiveDismissed = sessionStorage.getItem('ai_ast_proactive_dismissed') === 'true';
+        } catch (e) {}
+
+        if (!proactiveDismissed) {
+          var delay = (config.proactiveMessageDelay || 5) * 1000;
+          setTimeout(function () {
+            if (!isOpen && !proactiveDismissed && proactiveBubble) {
+              if (proactiveAuthor) proactiveAuthor.textContent = config.name || 'AI Assistant';
+              if (proactiveText) proactiveText.textContent = config.proactiveMessageText;
+              proactiveBubble.style.display = 'block';
+            }
+          }, delay);
+        }
+      }
     }
 
     function renderStarterQuestions() {
@@ -744,8 +864,32 @@
       scrollToBottom();
     }
 
+    // Proactive Bubble Interactions
+    if (proactiveBubble) {
+      proactiveBubble.addEventListener('click', function (e) {
+        if (e.target.closest('#proactive-close')) return;
+        proactiveBubble.style.display = 'none';
+        if (!isOpen) {
+          isOpen = true;
+          chatWindow.classList.add('open');
+          chatInput.focus();
+        }
+      });
+    }
+
+    if (proactiveClose) {
+      proactiveClose.addEventListener('click', function (e) {
+        e.stopPropagation();
+        if (proactiveBubble) proactiveBubble.style.display = 'none';
+        try {
+          sessionStorage.setItem('ai_ast_proactive_dismissed', 'true');
+        } catch (err) {}
+      });
+    }
+
     // Toggle Chat
     launcher.addEventListener('click', function () {
+      if (proactiveBubble) proactiveBubble.style.display = 'none';
       isOpen = !isOpen;
       if (isOpen) {
         chatWindow.classList.add('open');

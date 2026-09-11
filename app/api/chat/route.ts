@@ -139,6 +139,19 @@ export async function POST(req: NextRequest) {
             Math.ceil(fullAssistantReply.length / 4)
           );
 
+          // Automated Knowledge Gap Detection:
+          // Check if the reply fell back or no context was found for a real question
+          const isFallback =
+            (assistant.fallbackMessage && fullAssistantReply.includes(assistant.fallbackMessage.slice(0, 30))) ||
+            /don't have enough specific details|not mentioned in (the|my) knowledge base|connect you with our support team/i.test(fullAssistantReply) ||
+            (retrieval.chunks.length === 0 && latestUserMsg.length > 8);
+
+          if (isFallback) {
+            Database.recordUnansweredQuery(assistantId, latestUserMsg, visitorId).catch((err) =>
+              console.warn('[ChatRoute] Failed to record unanswered query:', err?.message)
+            );
+          }
+
           // Send done event
           const doneEvent = `data: ${JSON.stringify({
             type: 'done',

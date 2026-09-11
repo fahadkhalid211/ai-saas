@@ -41,6 +41,9 @@ export interface AssistantData {
   whiteLabelEnabled?: boolean;
   customBrandingText?: string;
   customBrandingUrl?: string;
+  proactiveMessageEnabled?: boolean;
+  proactiveMessageText?: string;
+  proactiveMessageDelay?: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -111,6 +114,16 @@ export interface LeadData {
   createdAt: string;
 }
 
+export interface UnansweredQueryData {
+  id: string;
+  assistantId: string;
+  query: string;
+  visitorId?: string;
+  createdAt: string;
+  resolved?: boolean;
+  suggestedAnswer?: string;
+}
+
 interface DatabaseState {
   workspaces: any[];
   assistants: AssistantData[];
@@ -119,6 +132,7 @@ interface DatabaseState {
   conversations: ConversationData[];
   messages: MessageData[];
   leads: LeadData[];
+  unansweredQueries?: UnansweredQueryData[];
 }
 
 const DATA_DIR = path.join(process.cwd(), '.data');
@@ -174,6 +188,7 @@ function loadState(): DatabaseState {
       conversations: [],
       messages: [],
       leads: [],
+      unansweredQueries: [],
     };
     fs.writeFileSync(DB_FILE, JSON.stringify(initialState, null, 2), 'utf-8');
     return initialState;
@@ -181,7 +196,12 @@ function loadState(): DatabaseState {
 
   try {
     const raw = fs.readFileSync(DB_FILE, 'utf-8');
-    return JSON.parse(raw);
+    const parsed = JSON.parse(raw);
+    if (!parsed.unansweredQueries) parsed.unansweredQueries = [];
+    if (!parsed.leads) parsed.leads = [];
+    if (!parsed.conversations) parsed.conversations = [];
+    if (!parsed.messages) parsed.messages = [];
+    return parsed;
   } catch (err) {
     console.error('Failed to parse database state, creating empty:', err);
     return {
@@ -192,6 +212,7 @@ function loadState(): DatabaseState {
       conversations: [],
       messages: [],
       leads: [],
+      unansweredQueries: [],
     };
   }
 }
@@ -536,5 +557,66 @@ export class Database {
   static async getLeads(assistantId: string): Promise<LeadData[]> {
     const state = loadState();
     return state.leads.filter((l) => l.assistantId === assistantId);
+  }
+
+  // Knowledge Gap & Unanswered Queries Engine
+  static async recordUnansweredQuery(
+    assistantId: string,
+    query: string,
+    visitorId?: string
+  ): Promise<UnansweredQueryData> {
+    const state = loadState();
+    if (!state.unansweredQueries) state.unansweredQueries = [];
+
+    // Avoid duplicate logging within 10 minutes for identical query
+    const tenMinsAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+    const cleanQuery = query.trim();
+    const existing = state.unansweredQueries.find(
+      (q) =>
+        q.assistantId === assistantId &&
+        q.query.toLowerCase() === cleanQuery.toLowerCase() &&
+        q.createdAt > tenMinsAgo
+    );
+    if (existing) return existing;
+
+    const record: UnansweredQueryData = {
+      id: 'uq_' + Math.random().toString(36).substring(2, 10),
+      assistantId,
+      query: cleanQuery,
+      visitorId,
+      createdAt: new Date().toISOString(),
+      resolved: false,
+    };
+
+    state.unansweredQueries.unshift(record);
+    if (state.unansweredQueries.length > 500) {
+      state.unansweredQueries = state.unansweredQueries.slice(0, 500);
+    }
+    saveState(state);
+    return record;
+  }
+
+  static async getUnansweredQueries(assistantId: string): Promise<UnansweredQueryData[]> {
+    const state = loadState();
+    return (state.unansweredQueries || []).filter((q) => q.assistantId === assistantId);
+  }
+
+  static async resolveUnansweredQuery(id: string, answer?: string): Promise<boolean> {
+    const state = loadState();
+    if (!state.unansweredQueries) return false;
+    const item = state.unansweredQueries.find((q) => q.id === id);
+    if (!item) return false;
+    item.resolved = true;
+    if (answer) item.suggestedAnswer = answer;
+    saveState(state);
+    return true;
+  }
+
+  static async deleteUnansweredQuery(id: string): Promise<boolean> {
+    const state = loadState();
+    if (!state.unansweredQueries) return false;
+    state.unansweredQueries = state.unansweredQueries.filter((q) => q.id !== id);
+    saveState(state);
+    return true;
   }
 }

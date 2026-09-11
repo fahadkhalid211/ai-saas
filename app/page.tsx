@@ -95,6 +95,10 @@ interface Assistant {
   whiteLabelEnabled?: boolean;
   customBrandingText?: string;
   customBrandingUrl?: string;
+  // Proactive Engagement
+  proactiveMessageEnabled?: boolean;
+  proactiveMessageText?: string;
+  proactiveMessageDelay?: number;
 }
 
 interface KnowledgeSource {
@@ -206,6 +210,12 @@ export default function DashboardPage() {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [selectedLeadModal, setSelectedLeadModal] = useState<Lead | null>(null);
 
+  // Unanswered Queries (Knowledge Gap Engine) state
+  const [unansweredQueries, setUnansweredQueries] = useState<any[]>([]);
+  const [resolvingQueryId, setResolvingQueryId] = useState<string | null>(null);
+  const [knowledgeAnswerText, setKnowledgeAnswerText] = useState('');
+  const [isSavingKnowledgeGap, setIsSavingKnowledgeGap] = useState(false);
+
   // Custom Form Field builder state
   const [newFieldLabel, setNewFieldLabel] = useState('');
   const [newFieldType, setNewFieldType] = useState<'text' | 'textarea' | 'tel' | 'select'>('text');
@@ -287,6 +297,7 @@ export default function DashboardPage() {
       setFormData(activeAssistant);
       fetchKnowledge(activeAssistant.id);
       fetchLeads(activeAssistant.id);
+      fetchUnansweredQueries(activeAssistant.id);
       // Reset playground
       setChatMessages([
         {
@@ -300,6 +311,7 @@ export default function DashboardPage() {
       const pollTimer = setInterval(() => {
         fetchKnowledge(activeAssistant.id);
         fetchLeads(activeAssistant.id);
+        fetchUnansweredQueries(activeAssistant.id);
       }, 3000);
 
       return () => clearInterval(pollTimer);
@@ -367,6 +379,56 @@ export default function DashboardPage() {
       }
     } catch (err) {
       console.error('Failed to fetch leads:', err);
+    }
+  }
+
+  async function fetchUnansweredQueries(assistantId: string) {
+    try {
+      const res = await fetch(`/api/analytics/unanswered?assistantId=${assistantId}`);
+      const data = await res.json();
+      if (data.unanswered) {
+        setUnansweredQueries(data.unanswered);
+      }
+    } catch (err) {
+      console.error('Failed to fetch unanswered queries:', err);
+    }
+  }
+
+  async function handleResolveUnansweredQuery(
+    id: string,
+    action: 'resolve' | 'delete' | 'addKnowledge',
+    query?: string
+  ) {
+    if (!activeAssistant) return;
+    try {
+      if (action === 'addKnowledge') {
+        if (!knowledgeAnswerText.trim()) return;
+        setIsSavingKnowledgeGap(true);
+      }
+      const res = await fetch('/api/analytics/unanswered', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id,
+          assistantId: activeAssistant.id,
+          action,
+          query,
+          answer: action === 'addKnowledge' ? knowledgeAnswerText.trim() : undefined,
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        if (action === 'addKnowledge') {
+          setResolvingQueryId(null);
+          setKnowledgeAnswerText('');
+          await fetchKnowledge(activeAssistant.id);
+        }
+        await fetchUnansweredQueries(activeAssistant.id);
+      }
+    } catch (err) {
+      console.error('Error updating unanswered query:', err);
+    } finally {
+      setIsSavingKnowledgeGap(false);
     }
   }
 
@@ -950,6 +1012,134 @@ export default function DashboardPage() {
                     </div>
                     <div className="text-[10px] text-emerald-600 dark:text-emerald-400 mt-0.5 font-medium">Local CPU Embeddings</div>
                   </div>
+                </div>
+
+                {/* Knowledge Gap & Unanswered Questions Engine */}
+                <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 space-y-4 shadow-xs">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <HelpCircle className="h-4 w-4 text-amber-500" />
+                        <h2 className="text-sm font-semibold text-slate-900 dark:text-white">
+                          Knowledge Gaps &amp; Unanswered Questions
+                        </h2>
+                        {unansweredQueries.filter((q) => !q.resolved).length > 0 && (
+                          <span className="rounded-full bg-amber-100 dark:bg-amber-950/60 px-2 py-0.5 text-[10px] font-bold text-amber-800 dark:text-amber-300">
+                            {unansweredQueries.filter((q) => !q.resolved).length} Needs Answer
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                        Questions visitors asked that the AI couldn't answer from current documents. Add the answer with 1-click to immediately retrain the AI.
+                      </p>
+                    </div>
+                  </div>
+
+                  {unansweredQueries.length === 0 ? (
+                    <div className="rounded-lg border border-slate-100 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-800/30 p-4 text-center">
+                      <div className="text-xs text-slate-600 dark:text-slate-400 font-medium">
+                        🎉 No knowledge gaps detected!
+                      </div>
+                      <div className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">
+                        Your assistant has answered questions using your indexed knowledge base. New missing questions will appear here automatically.
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      <div className="divide-y divide-slate-100 dark:divide-slate-800 border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden">
+                        {unansweredQueries.slice(0, 8).map((item) => {
+                          const isResolving = resolvingQueryId === item.id;
+                          return (
+                            <div key={item.id} className="p-3.5 bg-white dark:bg-slate-900 hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition">
+                              <div className="flex items-start justify-between gap-3">
+                                <div className="space-y-1">
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-xs font-semibold text-slate-900 dark:text-white">
+                                      &ldquo;{item.query}&rdquo;
+                                    </span>
+                                    {item.resolved ? (
+                                      <span className="rounded bg-emerald-50 dark:bg-emerald-950/50 px-1.5 py-0.5 text-[10px] font-bold text-emerald-700 dark:text-emerald-300">
+                                        Resolved
+                                      </span>
+                                    ) : (
+                                      <span className="rounded bg-amber-50 dark:bg-amber-950/50 px-1.5 py-0.5 text-[10px] font-bold text-amber-700 dark:text-amber-300">
+                                        Missing Answer
+                                      </span>
+                                    )}
+                                  </div>
+                                  <div className="text-[11px] text-slate-400">
+                                    Logged {new Date(item.createdAt).toLocaleDateString()} at {new Date(item.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                    {item.suggestedAnswer && (
+                                      <span className="text-slate-500 dark:text-slate-400 ml-2 italic">
+                                        &bull; Answer: {item.suggestedAnswer.slice(0, 60)}...
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+
+                                <div className="flex items-center gap-1.5 shrink-0">
+                                  {!item.resolved && (
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setResolvingQueryId(isResolving ? null : item.id);
+                                        setKnowledgeAnswerText('');
+                                      }}
+                                      className="px-2.5 py-1 rounded bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-900 text-blue-700 dark:text-blue-300 text-xs font-semibold hover:bg-blue-100 transition cursor-pointer"
+                                    >
+                                      {isResolving ? 'Cancel' : '1-Click Answer'}
+                                    </button>
+                                  )}
+                                  <button
+                                    type="button"
+                                    onClick={() => handleResolveUnansweredQuery(item.id, 'delete')}
+                                    title="Dismiss"
+                                    className="p-1 text-slate-400 hover:text-rose-600 transition cursor-pointer"
+                                  >
+                                    <Trash2 className="h-3.5 w-3.5" />
+                                  </button>
+                                </div>
+                              </div>
+
+                              {/* Inline Quick Answer Composer */}
+                              {isResolving && (
+                                <div className="mt-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 space-y-2.5 animate-in fade-in duration-150">
+                                  <div className="text-[11px] font-semibold text-slate-700 dark:text-slate-300">
+                                    Type the answer to this question. It will be indexed immediately:
+                                  </div>
+                                  <textarea
+                                    rows={2}
+                                    value={knowledgeAnswerText}
+                                    onChange={(e) => setKnowledgeAnswerText(e.target.value)}
+                                    placeholder="e.g. Yes, we offer full refunds within 14 days of purchase. Contact support@ourstore.com with your order number."
+                                    className="w-full rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-2 text-xs text-slate-900 dark:text-slate-100 outline-none focus:border-blue-500"
+                                  />
+                                  <div className="flex justify-end gap-2">
+                                    <button
+                                      type="button"
+                                      onClick={() => setResolvingQueryId(null)}
+                                      className="px-2.5 py-1 rounded text-xs text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700"
+                                    >
+                                      Cancel
+                                    </button>
+                                    <button
+                                      type="button"
+                                      disabled={!knowledgeAnswerText.trim() || isSavingKnowledgeGap}
+                                      onClick={() => handleResolveUnansweredQuery(item.id, 'addKnowledge', item.query)}
+                                      className="flex items-center gap-1.5 px-3 py-1 rounded bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold disabled:opacity-50 transition shadow-xs cursor-pointer"
+                                    >
+                                      {isSavingKnowledgeGap ? <RefreshCw className="h-3 w-3 animate-spin" /> : <Plus className="h-3 w-3" />}
+                                      <span>{isSavingKnowledgeGap ? 'Indexing...' : 'Save to Knowledge Base'}</span>
+                                    </button>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Quick Action Grid */}
@@ -2185,6 +2375,62 @@ export default function DashboardPage() {
                         onChange={(e) => setFormData({ ...formData, collectLeadEmail: e.target.checked })}
                         className="h-4 w-4 rounded accent-blue-600"
                       />
+                    </div>
+
+                    {/* Proactive Engagement Popup Automation */}
+                    <div className="rounded-xl border border-blue-200 dark:border-blue-900/60 bg-blue-50/50 dark:bg-blue-950/20 p-4 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="text-xs font-semibold text-slate-900 dark:text-white flex items-center gap-1.5">
+                            <Zap className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
+                            <span>Proactive Chat Popup (Conversion Booster)</span>
+                          </div>
+                          <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                            Automatically pops up a friendly message bubble above the closed launcher to greet visitors.
+                          </div>
+                        </div>
+                        <input
+                          type="checkbox"
+                          checked={formData.proactiveMessageEnabled || false}
+                          onChange={(e) => setFormData({ ...formData, proactiveMessageEnabled: e.target.checked })}
+                          className="h-4 w-4 rounded accent-blue-600"
+                        />
+                      </div>
+
+                      {formData.proactiveMessageEnabled && (
+                        <div className="space-y-3 pt-2 border-t border-blue-100 dark:border-blue-900/40 animate-in fade-in duration-150">
+                          <div>
+                            <label className="text-[11px] font-semibold text-slate-700 dark:text-slate-300 block mb-1">
+                              Popup Message Text
+                            </label>
+                            <input
+                              type="text"
+                              placeholder="e.g. 👋 Have questions about our pricing or plans? I'm here to help!"
+                              value={formData.proactiveMessageText || ''}
+                              onChange={(e) => setFormData({ ...formData, proactiveMessageText: e.target.value })}
+                              className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-xs text-slate-900 dark:text-slate-100 outline-none focus:border-blue-500"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-[11px] font-semibold text-slate-700 dark:text-slate-300 block mb-1">
+                              Trigger Delay (Seconds)
+                            </label>
+                            <div className="flex items-center gap-3">
+                              <input
+                                type="number"
+                                min={1}
+                                max={60}
+                                value={formData.proactiveMessageDelay ?? 5}
+                                onChange={(e) =>
+                                  setFormData({ ...formData, proactiveMessageDelay: parseInt(e.target.value) || 5 })
+                                }
+                                className="w-20 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-xs text-slate-900 dark:text-slate-100 font-mono outline-none"
+                              />
+                              <span className="text-[11px] text-slate-500 dark:text-slate-400">seconds after page loads</span>
+                            </div>
+                          </div>
+                        </div>
+                      )}
                     </div>
 
                     {/* Support Handoff & Email Notifications */}

@@ -43,6 +43,9 @@ export async function GET(
       whiteLabelEnabled: assistant.whiteLabelEnabled || false,
       customBrandingText: assistant.customBrandingText || '',
       customBrandingUrl: assistant.customBrandingUrl || '',
+      proactiveMessageEnabled: assistant.proactiveMessageEnabled || false,
+      proactiveMessageText: assistant.proactiveMessageText || '',
+      proactiveMessageDelay: assistant.proactiveMessageDelay ?? 5,
     };
 
     return NextResponse.json(publicConfig, {
