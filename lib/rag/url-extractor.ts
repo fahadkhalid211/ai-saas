@@ -2,6 +2,10 @@ import { YoutubeTranscript } from 'youtube-transcript';
 import { ExtractedDocument } from './types';
 import { parseMediaFile, TranscribeOptions, formatTimestamp } from './transcriber';
 import { diagnoseKnowledgeFailure } from './diagnostics';
+import { execFile } from 'child_process';
+import { promisify } from 'util';
+
+const execFileAsync = promisify(execFile);
 
 export function isYouTubeUrl(url: string): boolean {
   if (!url) return false;
@@ -237,35 +241,54 @@ export async function extractFromDirectMediaUrl(
   return await parseMediaFile(buffer, filename, options);
 }
 
-/**
- * Scrapes standard webpage HTML, cleans layout scripts/styles, and extracts readable text
- */
-export async function extractFromWebpage(url: string): Promise<ExtractedDocument> {
-  console.log(`[URLExtractor] Scraping webpage content from ${url}...`);
-  const res = await fetch(url, {
-    headers: {
-      'User-Agent':
-        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 AI-Crawler',
-      Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-      'Accept-Language': 'en-US,en;q=0.9',
-    },
-    signal: AbortSignal.timeout(15000),
-  });
+const REALISTIC_CHROME_HEADERS: Record<string, string> = {
+  'User-Agent':
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36',
+  'Accept':
+    'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+  'Accept-Language': 'en-US,en;q=0.9',
+  'Sec-Ch-Ua': '"Not(A:Brand";v="99", "Google Chrome";v="133", "Chromium";v="133"',
+  'Sec-Ch-Ua-Mobile': '?0',
+  'Sec-Ch-Ua-Platform': '"Windows"',
+  'Sec-Fetch-Dest': 'document',
+  'Sec-Fetch-Mode': 'navigate',
+  'Sec-Fetch-Site': 'none',
+  'Sec-Fetch-User': '?1',
+  'Upgrade-Insecure-Requests': '1',
+  'Cache-Control': 'max-age=0',
+};
 
-  if (!res.ok) {
-    throw new Error(`Failed to fetch webpage: ${res.status} ${res.statusText}`);
-  }
+function isCloudflareChallenge(html: string): boolean {
+  if (!html) return true;
+  return (
+    html.includes('Just a moment...') ||
+    html.includes('cf-browser-verification') ||
+    html.includes('Attention Required! | Cloudflare') ||
+    html.includes('challenge-running') ||
+    html.includes('cf-chl-widget') ||
+    (html.includes('Cloudflare Ray ID') && html.length < 5000)
+  );
+}
 
-  const html = await res.text();
+function cleanHtmlToStructuredText(html: string, url: string): { title: string; metaDesc?: string; text: string } {
+  // Extract page title: Check og:title, twitter:title, h1, then <title>
+  const ogTitleMatch =
+    html.match(/<meta[^>]*property=["']og:title["'][^>]*content=["']([^"']+)["']/i) ||
+    html.match(/<meta[^>]*name=["']twitter:title["'][^>]*content=["']([^"']+)["']/i);
+  const h1Match = html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/i);
+  const titleMatch = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i);
 
-  // Extract page title
-  const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
-  const ogTitleMatch = html.match(/<meta[^>]*property=["']og:title["'][^>]*content=["']([^"']+)["']/i);
-  const rawTitle = ogTitleMatch?.[1] || titleMatch?.[1] || new URL(url).hostname;
+  const rawTitle =
+    ogTitleMatch?.[1] ||
+    h1Match?.[1]?.replace(/<[^>]+>/g, '') ||
+    titleMatch?.[1] ||
+    new URL(url).hostname;
   const cleanTitle = rawTitle.replace(/\r?\n/g, ' ').replace(/\s+/g, ' ').trim();
 
   // Extract meta description
-  const metaDescMatch = html.match(/<meta[^>]*name=["']description["'][^>]*content=["']([^"']+)["']/i);
+  const metaDescMatch =
+    html.match(/<meta[^>]*name=["']description["'][^>]*content=["']([^"']+)["']/i) ||
+    html.match(/<meta[^>]*property=["']og:description["'][^>]*content=["']([^"']+)["']/i);
   const metaDesc = metaDescMatch?.[1]?.trim();
 
   // Clean HTML: Remove scripts, styles, iframes, SVGs, nav, footer, header
@@ -274,15 +297,16 @@ export async function extractFromWebpage(url: string): Promise<ExtractedDocument
     .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, ' ')
     .replace(/<noscript\b[^<]*(?:(?!<\/noscript>)<[^<]*)*<\/noscript>/gi, ' ')
     .replace(/<svg\b[^<]*(?:(?!<\/svg>)<[^<]*)*<\/svg>/gi, ' ')
+    .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, ' ')
     .replace(/<header\b[^<]*(?:(?!<\/header>)<[^<]*)*<\/header>/gi, ' ')
     .replace(/<footer\b[^<]*(?:(?!<\/footer>)<[^<]*)*<\/footer>/gi, ' ')
     .replace(/<nav\b[^<]*(?:(?!<\/nav>)<[^<]*)*<\/nav>/gi, ' ');
 
   // Convert headings and paragraphs into readable markdown structure
   cleanHtml = cleanHtml
-    .replace(/<(h[1-6])[^>]*>(.*?)<\/\1>/gi, '\n\n## $2\n')
-    .replace(/<li[^>]*>(.*?)<\/li>/gi, '\n- $1')
-    .replace(/<(p|div|tr)[^>]*>(.*?)<\/\1>/gi, '\n$2\n');
+    .replace(/<(h[1-6])[^>]*>([\s\S]*?)<\/\1>/gi, '\n\n## $2\n')
+    .replace(/<li[^>]*>([\s\S]*?)<\/li>/gi, '\n- $1')
+    .replace(/<(p|div|tr|article|section)[^>]*>([\s\S]*?)<\/\1>/gi, '\n$2\n');
 
   // Strip all remaining HTML tags
   let text = cleanHtml
@@ -291,6 +315,7 @@ export async function extractFromWebpage(url: string): Promise<ExtractedDocument
     .replace(/&amp;/g, '&')
     .replace(/&quot;/g, '"')
     .replace(/&#39;/g, "'")
+    .replace(/&#x27;/g, "'")
     .replace(/&lt;/g, '<')
     .replace(/&gt;/g, '>')
     .replace(/\r\n/g, '\n')
@@ -298,15 +323,134 @@ export async function extractFromWebpage(url: string): Promise<ExtractedDocument
     .replace(/\n\s*\n\s*\n+/g, '\n\n')
     .trim();
 
+  return { title: cleanTitle, metaDesc, text };
+}
+
+/**
+ * Scrapes standard webpage HTML using a resilient 3-tier waterfall:
+ * 1. Direct Browser-Emulated Fetch (Chrome 133 headers, avoids bot 403 blocks)
+ * 2. Native System Curl (bypasses Cloudflare / TLS fingerprint restrictions)
+ * 3. Jina AI Reader Engine (bypasses dynamic JS rendering & strict anti-scraping walls)
+ */
+export async function extractFromWebpage(url: string): Promise<ExtractedDocument> {
+  console.log(`[URLExtractor] Scraping webpage content from ${url}...`);
+  let rawContent = '';
+  let isMarkdown = false;
+  let extractionTier = 'direct';
+
+  // --- Tier 1: Direct Fetch with Realistic Chrome Headers ---
+  try {
+    const res = await fetch(url, {
+      headers: REALISTIC_CHROME_HEADERS,
+      signal: AbortSignal.timeout(12000),
+    });
+    if (res.ok) {
+      const html = await res.text();
+      if (html && html.length > 200 && !isCloudflareChallenge(html)) {
+        rawContent = html;
+        extractionTier = 'direct';
+      }
+    } else {
+      console.warn(`[URLExtractor] Direct fetch returned status ${res.status} ${res.statusText}, trying Tier 2 (curl)...`);
+    }
+  } catch (err: any) {
+    console.warn(`[URLExtractor] Tier 1 (direct fetch) error:`, err?.message);
+  }
+
+  // --- Tier 2: Native Curl (bypasses TLS fingerprint and Cloudflare challenge blocks) ---
+  if (!rawContent) {
+    try {
+      console.log(`[URLExtractor] Tier 2: Invoking native curl for ${url}...`);
+      const curlArgs = [
+        '-s',
+        '-L',
+        '--compressed',
+        '--max-time', '15',
+        '-H', `User-Agent: ${REALISTIC_CHROME_HEADERS['User-Agent']}`,
+        '-H', `Accept: ${REALISTIC_CHROME_HEADERS['Accept']}`,
+        '-H', `Accept-Language: ${REALISTIC_CHROME_HEADERS['Accept-Language']}`,
+        '-H', 'Sec-Fetch-Dest: document',
+        '-H', 'Sec-Fetch-Mode: navigate',
+        '-H', 'Sec-Fetch-Site: none',
+        '-H', 'Upgrade-Insecure-Requests: 1',
+        url,
+      ];
+      const { stdout } = await execFileAsync('curl', curlArgs, { maxBuffer: 15 * 1024 * 1024 });
+      if (stdout && stdout.length > 200 && !isCloudflareChallenge(stdout)) {
+        rawContent = stdout;
+        extractionTier = 'curl';
+        console.log(`[URLExtractor] Tier 2 (curl) succeeded with ${stdout.length} bytes.`);
+      }
+    } catch (curlErr: any) {
+      console.warn(`[URLExtractor] Tier 2 (curl) failed:`, curlErr?.message);
+    }
+  }
+
+  // --- Tier 3: Jina AI Reader Engine (Free LLM-oriented reader proxy) ---
+  if (!rawContent) {
+    try {
+      console.log(`[URLExtractor] Tier 3: Invoking Jina Reader for ${url}...`);
+      const jinaUrl = 'https://r.jina.ai/' + url;
+      const jinaRes = await fetch(jinaUrl, {
+        headers: {
+          'Accept': 'text/plain, text/markdown',
+          'User-Agent': REALISTIC_CHROME_HEADERS['User-Agent'],
+        },
+        signal: AbortSignal.timeout(18000),
+      });
+      if (jinaRes.ok) {
+        const jinaText = await jinaRes.text();
+        if (jinaText && jinaText.length > 200 && !jinaText.includes('Just a moment...') && !jinaText.includes('CAPTCHA')) {
+          rawContent = jinaText;
+          isMarkdown = true;
+          extractionTier = 'jina';
+          console.log(`[URLExtractor] Tier 3 (Jina) succeeded with ${jinaText.length} characters.`);
+        }
+      }
+    } catch (jinaErr: any) {
+      console.warn(`[URLExtractor] Tier 3 (Jina) failed:`, jinaErr?.message);
+    }
+  }
+
+  if (!rawContent) {
+    throw new Error(
+      `Failed to extract content from ${url}. The website rejected automated web access (HTTP 403 Forbidden / Anti-Bot Verification). Please copy the article text or save as PDF and upload it directly.`
+    );
+  }
+
+  let cleanTitle = new URL(url).hostname;
+  let metaDesc: string | undefined = undefined;
+  let text = '';
+
+  if (isMarkdown) {
+    // Parse Jina Markdown format: extracts Title: ... or # ...
+    const titleHeaderMatch = rawContent.match(/^Title:\s*(.+)$/m);
+    const mdH1Match = rawContent.match(/^#\s+(.+)$/m);
+    cleanTitle = (titleHeaderMatch?.[1] || mdH1Match?.[1] || new URL(url).hostname).trim();
+
+    // Remove Jina metadata headers (Title:, URL Source:, Markdown Content:)
+    text = rawContent
+      .replace(/^Title:.*$/m, '')
+      .replace(/^URL Source:.*$/m, '')
+      .replace(/^Markdown Content:\s*/m, '')
+      .trim();
+  } else {
+    // Parse cleaned HTML
+    const parsed = cleanHtmlToStructuredText(rawContent, url);
+    cleanTitle = parsed.title;
+    metaDesc = parsed.metaDesc;
+    text = parsed.text;
+  }
+
   if (!text || text.length < 50) {
     throw new Error(
       `Webpage "${cleanTitle}" contains insufficient readable text or is protected by client-side JavaScript rendering.`
     );
   }
 
-  // Truncate at ~30,000 characters to prevent overflow while capturing full documentation/pricing
-  if (text.length > 30000) {
-    text = text.slice(0, 30000) + '\n\n[... content truncated for optimal context processing ...]';
+  // Truncate at ~35,000 characters to ensure full long articles are preserved within model context
+  if (text.length > 35000) {
+    text = text.slice(0, 35000) + '\n\n[... content truncated for optimal context processing ...]';
   }
 
   const lines: string[] = [];
@@ -324,6 +468,7 @@ export async function extractFromWebpage(url: string): Promise<ExtractedDocument
       url,
       domain: new URL(url).hostname,
       characterCount: text.length,
+      extractorTier: extractionTier,
     },
   };
 }

@@ -148,6 +148,22 @@ export function diagnoseKnowledgeFailure(params: {
     };
   }
 
+  // 8. Website Rejected Web Request / 403 Forbidden / Bot Protection
+  if (
+    lowerMsg.includes('403') ||
+    lowerMsg.includes('forbidden') ||
+    lowerMsg.includes('access denied') ||
+    lowerMsg.includes('anti-bot')
+  ) {
+    return {
+      category: 'content',
+      reason: `The website rejected the web extraction request (HTTP 403 Forbidden). The site owner has configured strict Cloudflare, geoblocking, or anti-crawler rules.`,
+      whatToDoNext:
+        'Copy the text of the article and upload it directly as a TXT, Word, or PDF file into your Knowledge Base, or save the webpage as a PDF ("Print > Save as PDF") from your browser.',
+      actionLabel: 'Upload Article as Document or PDF',
+    };
+  }
+
   // 8. Corrupted or unparseable CSV / JSON
   if (ext === 'csv' || ext === 'json' || lowerMsg.includes('json') || lowerMsg.includes('csv')) {
     return {
