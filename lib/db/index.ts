@@ -317,6 +317,13 @@ export class Database {
     return state.chunks.filter((c) => c.assistantId === assistantId);
   }
 
+  static async getChunksBySource(sourceId: string): Promise<ChunkRecord[]> {
+    const state = loadState();
+    return state.chunks
+      .filter((c) => c.knowledgeSourceId === sourceId)
+      .sort((a, b) => a.chunkIndex - b.chunkIndex);
+  }
+
   // Hybrid Vector + Full-Text Search
   static async hybridSearch(
     assistantId: string,

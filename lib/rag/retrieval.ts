@@ -43,6 +43,13 @@ export function condenseQuery(
 }
 
 /**
+ * Detect if user is asking for a comprehensive or global overview of a document or video
+ */
+export function isGlobalOverviewQuery(query: string): boolean {
+  return /\b(complete|full|entire|whole|all|overview|summary|summarize|walkthrough|outline|explain (the|her|his|this)? ?(video|audio|document|presentation)|about the video|about her video)\b/i.test(query);
+}
+
+/**
  * Retrieve relevant knowledge chunks using Hybrid Search (Vector + Keyword)
  */
 export async function retrieveRelevantContext(
@@ -52,14 +59,84 @@ export async function retrieveRelevantContext(
   topK: number = 5
 ): Promise<RetrievalResult> {
   const condensedQuery = condenseQuery(userMessage, history);
+  const isOverview = isGlobalOverviewQuery(condensedQuery);
+  const effectiveTopK = isOverview ? Math.max(topK, 8) : topK;
   
   // 1. Generate 384-dimensional query embedding with local open-source embedder
   const queryEmbedding = await generateEmbedding(condensedQuery);
 
   // 2. Perform Hybrid Search
-  const chunks = await Database.hybridSearch(assistantId, condensedQuery, queryEmbedding, topK);
+  let chunks = await Database.hybridSearch(assistantId, condensedQuery, queryEmbedding, effectiveTopK * 2);
 
-  // 3. Format citations
+  // 3. If global overview query, handle timeline distribution & overview chunk
+  if (isOverview && chunks.length > 0) {
+    // Determine the primary target source (the one with highest rank or matching name)
+    const primarySourceId = chunks[0].knowledgeSourceId;
+    const allSourceChunks = await Database.getChunksBySource(primarySourceId);
+
+    if (allSourceChunks.length > 5) {
+      const overviewChunk = allSourceChunks.find((c) => c.metadata?.isOverview);
+      const regularChunks = allSourceChunks.filter((c) => !c.metadata?.isOverview);
+
+      // Sample representative timeline milestones across the entire resource
+      const ratios = [0, 0.15, 0.3, 0.45, 0.6, 0.75, 0.9, 0.98];
+      const milestoneIndices = ratios.map((p) =>
+        Math.min(regularChunks.length - 1, Math.floor(p * regularChunks.length))
+      );
+      const uniqueIndices = Array.from(new Set(milestoneIndices));
+
+      const combined: SearchResultChunk[] = [];
+      const seen = new Set<string>();
+
+      // Put Master Overview chunk first if available
+      if (overviewChunk) {
+        combined.push({
+          id: overviewChunk.id,
+          content: overviewChunk.content,
+          chunkIndex: overviewChunk.chunkIndex,
+          tokenCount: overviewChunk.tokenCount,
+          metadata: overviewChunk.metadata as any,
+          knowledgeSourceId: overviewChunk.knowledgeSourceId,
+          similarity: 1.0,
+        });
+        seen.add(overviewChunk.id);
+      }
+
+      // Add timeline milestone chunks
+      for (const idx of uniqueIndices) {
+        const c = regularChunks[idx];
+        if (c && !seen.has(c.id)) {
+          combined.push({
+            id: c.id,
+            content: c.content,
+            chunkIndex: c.chunkIndex,
+            tokenCount: c.tokenCount,
+            metadata: c.metadata as any,
+            knowledgeSourceId: c.knowledgeSourceId,
+            similarity: 0.9,
+          });
+          seen.add(c.id);
+        }
+      }
+
+      // Add top semantic search matches that belong to this source
+      for (const c of chunks) {
+        const cId = c.id || `chunk_${c.chunkIndex}`;
+        if (!seen.has(cId) && c.knowledgeSourceId === primarySourceId && combined.length < effectiveTopK + 2) {
+          combined.push(c);
+          seen.add(cId);
+        }
+      }
+
+      chunks = combined.slice(0, effectiveTopK);
+    } else {
+      chunks = chunks.slice(0, effectiveTopK);
+    }
+  } else {
+    chunks = chunks.slice(0, topK);
+  }
+
+  // 4. Format citations
   const citations: Citation[] = chunks.map((c) => ({
     sourceTitle: c.metadata.sourceTitle || 'Knowledge Source',
     sourceType: c.metadata.sourceType || 'document',
@@ -69,7 +146,7 @@ export async function retrieveRelevantContext(
     row: c.metadata.row,
   }));
 
-  // 4. Format context block for LLM prompt
+  // 5. Format context block for LLM prompt
   if (chunks.length === 0) {
     return {
       condensedQuery,
@@ -82,7 +159,8 @@ export async function retrieveRelevantContext(
   const contextText = chunks
     .map((chunk, i) => {
       const sourceTag = chunk.metadata.sourceTitle ? `[Source: ${chunk.metadata.sourceTitle}]` : '';
-      return `--- KNOWLEDGE FRAGMENT [${i + 1}] ${sourceTag} ---\n${chunk.content}`;
+      const timeTag = chunk.metadata?.formattedTime ? ` (Timestamp: ${chunk.metadata.formattedTime})` : '';
+      return `--- KNOWLEDGE FRAGMENT [${i + 1}] ${sourceTag}${timeTag} ---\n${chunk.content}`;
     })
     .join('\n\n');
 

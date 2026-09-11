@@ -1593,9 +1593,9 @@ export default function DashboardPage() {
                       <input
                         type="range"
                         min="1"
-                        max="5"
+                        max="15"
                         step="1"
-                        value={formData.contextChunks ?? 3}
+                        value={formData.contextChunks ?? 5}
                         onChange={(e) => setFormData({ ...formData, contextChunks: parseInt(e.target.value) })}
                         className="w-full mt-2 accent-blue-600"
                       />

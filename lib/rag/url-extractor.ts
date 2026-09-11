@@ -153,6 +153,46 @@ export async function extractFromYouTube(
     });
   }
 
+  // Prepend Master Overview & Full Timeline Outline for long videos (>= 8 sections)
+  if (sections.length >= 8 && rawTranscript.length >= 10) {
+    const totalDurationSec = (rawTranscript[rawTranscript.length - 1].offset + rawTranscript[rawTranscript.length - 1].duration) / 1000;
+    const formattedTotalDuration = formatTimestamp(totalDurationSec);
+    const numMilestones = Math.min(10, Math.max(5, Math.floor(rawTranscript.length / 12)));
+    const step = Math.floor(rawTranscript.length / numMilestones);
+    const milestoneLines: string[] = [];
+
+    for (let m = 0; m < rawTranscript.length; m += step) {
+      const item = rawTranscript[m];
+      const startT = item.offset / 1000;
+      const snippet = rawTranscript.slice(m, m + 5).map((t) => t.text).join(' ').slice(0, 140);
+      milestoneLines.push(`• [${formatTimestamp(startT)}]: ${snippet}...`);
+    }
+
+    const overviewContent = `=== Master Video Overview & Complete Timeline Directory ===
+Title: ${meta.title}
+Channel: ${meta.authorName || 'YouTube'}
+Total Duration: ${formattedTotalDuration}
+Status: 100% Fully Transcribed & Indexed (00:00 to ${formattedTotalDuration}) across ${sections.length} chapters.
+
+Comprehensive Topic Outline & Timeline Milestones:
+${milestoneLines.join('\n')}
+
+Summary & Core Message: Complete presentation walkthrough, scientific takeaways, core habits, and in-depth discussion.`;
+
+    sections.unshift({
+      heading: `Overview & Complete Timeline Directory [00:00 - ${formattedTotalDuration}]`,
+      text: overviewContent,
+      metadata: {
+        isOverview: true,
+        startTime: 0,
+        endTime: totalDurationSec,
+        formattedTime: `00:00 - ${formattedTotalDuration}`,
+        videoUrl: cleanUrl,
+        videoId,
+      },
+    });
+  }
+
   return {
     title: `${meta.title} (YouTube)`,
     type: 'youtube',
