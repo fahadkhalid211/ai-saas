@@ -140,6 +140,8 @@ export default function DashboardPage() {
   const [showApiKey, setShowApiKey] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [isSyncingLeads, setIsSyncingLeads] = useState(false);
 
   // Playground state
   const [chatMessages, setChatMessages] = useState<{ role: string; content: string; citations?: any[] }[]>([]);
@@ -241,6 +243,14 @@ export default function DashboardPage() {
         },
       ]);
       setActiveCitations([]);
+
+      // Zero-reload background polling: automatically updates counts & tables in real time
+      const pollTimer = setInterval(() => {
+        fetchKnowledge(activeAssistant.id);
+        fetchLeads(activeAssistant.id);
+      }, 3000);
+
+      return () => clearInterval(pollTimer);
     }
   }, [activeAssistant?.id]);
 
@@ -268,7 +278,20 @@ export default function DashboardPage() {
       const res = await fetch(`/api/knowledge?assistantId=${assistantId}`);
       const data = await res.json();
       if (data.sources) {
-        setSources(data.sources);
+        setSources((prev) => {
+          if (
+            prev.length === data.sources.length &&
+            prev.every(
+              (s, i) =>
+                s.id === data.sources[i]?.id &&
+                s.status === data.sources[i]?.status &&
+                s.chunkCount === data.sources[i]?.chunkCount
+            )
+          ) {
+            return prev;
+          }
+          return data.sources;
+        });
       }
     } catch (err) {
       console.error('Failed to fetch sources:', err);
@@ -280,12 +303,27 @@ export default function DashboardPage() {
       const res = await fetch(`/api/lead?assistantId=${assistantId}`);
       const data = await res.json();
       if (data.leads) {
-        setLeads(data.leads);
+        setLeads((prev) => {
+          if (
+            prev.length === data.leads.length &&
+            prev.every((l, i) => l.id === data.leads[i]?.id)
+          ) {
+            return prev;
+          }
+          return data.leads;
+        });
       }
     } catch (err) {
       console.error('Failed to fetch leads:', err);
     }
   }
+
+  const handleManualSyncLeads = async () => {
+    if (!activeAssistant) return;
+    setIsSyncingLeads(true);
+    await fetchLeads(activeAssistant.id);
+    setTimeout(() => setIsSyncingLeads(false), 500);
+  };
 
   async function handleCreateAssistant(e: React.FormEvent) {
     e.preventDefault();
@@ -315,6 +353,7 @@ export default function DashboardPage() {
   async function handleSaveSettings() {
     if (!activeAssistant) return;
     setIsSaving(true);
+    setSaveError(null);
     try {
       const res = await fetch(`/api/assistants/${activeAssistant.id}`, {
         method: 'PUT',
@@ -322,16 +361,22 @@ export default function DashboardPage() {
         body: JSON.stringify(formData),
       });
       const data = await res.json();
+      if (!res.ok || data.error) {
+        throw new Error(data.error || 'Failed to save settings');
+      }
       if (data.assistant) {
         setActiveAssistant(data.assistant);
+        setFormData(data.assistant);
         setAssistants((prev) =>
           prev.map((a) => (a.id === data.assistant.id ? data.assistant : a))
         );
         setSaveSuccess(true);
-        setTimeout(() => setSaveSuccess(false), 3000);
+        setTimeout(() => setSaveSuccess(false), 3500);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to save settings:', err);
+      setSaveError(err?.message || 'Failed to save settings');
+      setTimeout(() => setSaveError(null), 5000);
     } finally {
       setIsSaving(false);
     }
@@ -364,7 +409,7 @@ export default function DashboardPage() {
         setSelectedFiles(null);
         setUploadText('');
         setUploadTextTitle('');
-        fetchKnowledge(activeAssistant.id);
+        await fetchKnowledge(activeAssistant.id);
 
         const failedList = (data.sources || []).filter((s: any) => s.status === 'failed');
         if (failedList.length > 0) {
@@ -413,7 +458,7 @@ export default function DashboardPage() {
         });
         setUrlInput('');
         setUrlCustomTitle('');
-        fetchKnowledge(activeAssistant.id);
+        await fetchKnowledge(activeAssistant.id);
         setTimeout(() => setUrlFeedback(null), 5000);
       } else {
         setUrlFeedback({
@@ -1453,8 +1498,15 @@ export default function DashboardPage() {
 
                 {saveSuccess && (
                   <div className="flex items-center gap-2 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 p-3 text-xs text-emerald-700 dark:text-emerald-300">
-                    <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                    <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
                     <span>Configuration saved successfully!</span>
+                  </div>
+                )}
+
+                {saveError && (
+                  <div className="flex items-center gap-2 rounded-lg bg-rose-50 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-800 p-3 text-xs text-rose-700 dark:text-rose-300">
+                    <AlertTriangle className="h-4 w-4 text-rose-600 dark:text-rose-400 shrink-0" />
+                    <span>{saveError}</span>
                   </div>
                 )}
 
@@ -1775,8 +1827,15 @@ export default function DashboardPage() {
 
                 {saveSuccess && (
                   <div className="flex items-center gap-2 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 p-3 text-xs text-emerald-700 dark:text-emerald-300">
-                    <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                    <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
                     <span>Behavior updated successfully!</span>
+                  </div>
+                )}
+
+                {saveError && (
+                  <div className="flex items-center gap-2 rounded-lg bg-rose-50 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-800 p-3 text-xs text-rose-700 dark:text-rose-300">
+                    <AlertTriangle className="h-4 w-4 text-rose-600 dark:text-rose-400 shrink-0" />
+                    <span>{saveError}</span>
                   </div>
                 )}
 
@@ -1867,12 +1926,38 @@ export default function DashboardPage() {
             {/* TAB 6: WIDGET & STYLING */}
             {activeTab === 'widget' && (
               <div className="max-w-5xl space-y-6 mx-auto">
-                <div>
-                  <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Widget &amp; Branding</h1>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                    Customize the chat launcher, brand colors, position, and lead capture settings for your website or WordPress plugin.
-                  </p>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div>
+                    <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Widget &amp; Branding</h1>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                      Customize the chat launcher, brand colors, position, and lead capture settings for your website or WordPress plugin.
+                    </p>
+                  </div>
+                  <button
+                    onClick={handleSaveSettings}
+                    disabled={isSaving}
+                    className={`flex items-center gap-2 self-start sm:self-auto rounded-lg px-4 py-2 text-xs font-semibold text-white transition shadow-xs disabled:opacity-50 ${
+                      saveSuccess ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-blue-600 hover:bg-blue-700'
+                    }`}
+                  >
+                    {isSaving ? <RefreshCw className="h-3.5 w-3.5 animate-spin" /> : <CheckCircle2 className="h-3.5 w-3.5" />}
+                    <span>{isSaving ? 'Saving Settings...' : saveSuccess ? 'Saved Successfully!' : 'Save Widget Settings'}</span>
+                  </button>
                 </div>
+
+                {saveSuccess && (
+                  <div className="flex items-center gap-2 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 p-3 text-xs text-emerald-700 dark:text-emerald-300">
+                    <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                    <span>Widget &amp; support settings saved successfully!</span>
+                  </div>
+                )}
+
+                {saveError && (
+                  <div className="flex items-center gap-2 rounded-lg bg-rose-50 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-800 p-3 text-xs text-rose-700 dark:text-rose-300">
+                    <AlertTriangle className="h-4 w-4 text-rose-600 dark:text-rose-400 shrink-0" />
+                    <span>{saveError}</span>
+                  </div>
+                )}
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   {/* Configuration controls */}
@@ -2158,10 +2243,24 @@ export default function DashboardPage() {
                       <button
                         onClick={handleSaveSettings}
                         disabled={isSaving}
-                        className="flex items-center gap-2 rounded-lg bg-blue-600 hover:bg-blue-700 px-4 py-2 text-xs font-semibold text-white transition shadow-xs"
+                        className={`flex items-center gap-2 rounded-lg px-4 py-2 text-xs font-semibold text-white transition shadow-xs disabled:opacity-50 ${
+                          saveSuccess
+                            ? 'bg-emerald-600 hover:bg-emerald-700'
+                            : 'bg-blue-600 hover:bg-blue-700'
+                        }`}
                       >
-                        <CheckCircle2 className="h-3.5 w-3.5" />
-                        <span>Save Widget &amp; Support Settings</span>
+                        {isSaving ? (
+                          <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+                        ) : (
+                          <CheckCircle2 className="h-3.5 w-3.5" />
+                        )}
+                        <span>
+                          {isSaving
+                            ? 'Saving Settings...'
+                            : saveSuccess
+                            ? 'Saved Successfully!'
+                            : 'Save Widget & Support Settings'}
+                        </span>
                       </button>
                     </div>
                   </div>
@@ -2235,32 +2334,50 @@ export default function DashboardPage() {
                       Inquiries, contact info, and custom field data submitted by visitors via the chat widget.
                     </p>
                   </div>
-                  <button
-                    onClick={() => {
-                      const csvHeader = 'ID,Name,Email,Phone,Comments,Custom Fields,Date\n';
-                      const csvRows = leads
-                        .map((l) => {
-                          const customStr = l.customData
-                            ? Object.entries(l.customData)
-                                .map(([k, v]) => `${k}: ${v}`)
-                                .join(' | ')
-                            : '';
-                          return `"${l.id}","${(l.name || '').replace(/"/g, '""')}","${l.email}","${(l.phone || '').replace(/"/g, '""')}","${(l.notes || '').replace(/"/g, '""')}","${customStr.replace(/"/g, '""')}","${l.createdAt}"`;
-                        })
-                        .join('\n');
-                      const blob = new Blob([csvHeader + csvRows], { type: 'text/csv' });
-                      const url = URL.createObjectURL(blob);
-                      const a = document.createElement('a');
-                      a.href = url;
-                      a.download = `leads-${activeAssistant?.name || 'export'}.csv`;
-                      a.click();
-                    }}
-                    disabled={leads.length === 0}
-                    className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs disabled:opacity-50 transition cursor-pointer"
-                  >
-                    <Download className="h-3.5 w-3.5" />
-                    <span>Export CSV</span>
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800 text-[11px] text-emerald-700 dark:text-emerald-300 font-medium">
+                      <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                      <span>Live Sync Active</span>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={handleManualSyncLeads}
+                      disabled={isSyncingLeads}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800/60 text-slate-700 dark:text-slate-300 text-xs font-semibold shadow-xs disabled:opacity-50 transition cursor-pointer"
+                      title="Fetch newest leads right now"
+                    >
+                      <RefreshCw className={`h-3.5 w-3.5 ${isSyncingLeads ? 'animate-spin text-blue-600' : 'text-slate-500'}`} />
+                      <span>{isSyncingLeads ? 'Syncing...' : 'Sync Now'}</span>
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        const csvHeader = 'ID,Name,Email,Phone,Comments,Custom Fields,Date\n';
+                        const csvRows = leads
+                          .map((l) => {
+                            const customStr = l.customData
+                              ? Object.entries(l.customData)
+                                  .map(([k, v]) => `${k}: ${v}`)
+                                  .join(' | ')
+                              : '';
+                            return `"${l.id}","${(l.name || '').replace(/"/g, '""')}","${l.email}","${(l.phone || '').replace(/"/g, '""')}","${(l.notes || '').replace(/"/g, '""')}","${customStr.replace(/"/g, '""')}","${l.createdAt}"`;
+                          })
+                          .join('\n');
+                        const blob = new Blob([csvHeader + csvRows], { type: 'text/csv' });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `leads-${activeAssistant?.name || 'export'}.csv`;
+                        a.click();
+                      }}
+                      disabled={leads.length === 0}
+                      className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs disabled:opacity-50 transition cursor-pointer"
+                    >
+                      <Download className="h-3.5 w-3.5" />
+                      <span>Export CSV</span>
+                    </button>
+                  </div>
                 </div>
 
                 <div className="border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-900 shadow-xs overflow-hidden">
