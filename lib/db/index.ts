@@ -150,6 +150,35 @@ export interface UnansweredQueryData {
   suggestedAnswer?: string;
 }
 
+export interface InvoiceRecord {
+  id: string;
+  date: string;
+  planName: string;
+  amount: number;
+  status: 'paid' | 'pending' | 'failed';
+  pdfUrl?: string;
+}
+
+export interface WorkspaceBillingData {
+  id: string;
+  name: string;
+  planId: 'starter' | 'growth' | 'scale';
+  planName: string;
+  billingInterval: 'monthly' | 'annual';
+  monthlyChatLimit: number;
+  overageRatePerChat: number;
+  currentPeriodStart: string;
+  currentPeriodEnd: string;
+  paymentMethod?: {
+    brand: string;
+    last4: string;
+    expMonth: number;
+    expYear: number;
+  };
+  billingEmail?: string;
+  invoices?: InvoiceRecord[];
+}
+
 export interface AppointmentData {
   id: string;
   assistantId: string;
@@ -530,9 +559,11 @@ export class Database {
   }
 
   // Conversations & Messages
-  static async getConversations(assistantId: string): Promise<ConversationData[]> {
+  static async getConversations(assistantId?: string): Promise<ConversationData[]> {
     const state = loadState();
-    const convs = state.conversations.filter((c) => c.assistantId === assistantId);
+    const convs = assistantId
+      ? state.conversations.filter((c) => c.assistantId === assistantId)
+      : state.conversations;
     return convs.map((c) => ({
       ...c,
       messages: state.messages.filter((m) => m.conversationId === c.id),
@@ -765,5 +796,101 @@ export class Database {
     state.appointments = state.appointments.filter((a) => a.id !== id);
     saveState(state);
     return true;
+  }
+  // Workspace & Chat-Based Billing
+  static async getWorkspaceBilling(workspaceId: string = 'default-workspace'): Promise<WorkspaceBillingData> {
+    const state = loadState();
+    let ws = state.workspaces.find((w) => w.id === workspaceId);
+    const startOfCurrentMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString();
+    const endOfCurrentMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 1).toISOString();
+
+    if (!ws) {
+      ws = {
+        id: workspaceId,
+        name: 'My Workspace',
+        planId: 'starter',
+        planName: 'Starter',
+        billingInterval: 'monthly',
+        monthlyChatLimit: 100,
+        overageRatePerChat: 0.50,
+        currentPeriodStart: startOfCurrentMonth,
+        currentPeriodEnd: endOfCurrentMonth,
+        paymentMethod: {
+          brand: 'Visa',
+          last4: '4242',
+          expMonth: 12,
+          expYear: 2028,
+        },
+        billingEmail: 'billing@kortexai.com',
+        invoices: [
+          {
+            id: 'inv_10928',
+            date: startOfCurrentMonth.split('T')[0],
+            planName: 'Starter (100 Chats / mo)',
+            amount: 49,
+            status: 'paid',
+          },
+          {
+            id: 'inv_10814',
+            date: new Date(new Date().getFullYear(), new Date().getMonth() - 1, 1).toISOString().split('T')[0],
+            planName: 'Starter (100 Chats / mo)',
+            amount: 49,
+            status: 'paid',
+          },
+        ],
+      };
+      state.workspaces.push(ws);
+      saveState(state);
+    } else if (!ws.planId) {
+      ws.planId = 'starter';
+      ws.planName = 'Starter';
+      ws.billingInterval = 'monthly';
+      ws.monthlyChatLimit = 100;
+      ws.overageRatePerChat = 0.50;
+      ws.currentPeriodStart = startOfCurrentMonth;
+      ws.currentPeriodEnd = endOfCurrentMonth;
+      ws.paymentMethod = ws.paymentMethod || {
+        brand: 'Visa',
+        last4: '4242',
+        expMonth: 12,
+        expYear: 2028,
+      };
+      ws.billingEmail = ws.billingEmail || 'billing@kortexai.com';
+      ws.invoices = ws.invoices || [
+        {
+          id: 'inv_10928',
+          date: startOfCurrentMonth.split('T')[0],
+          planName: 'Starter (100 Chats / mo)',
+          amount: 49,
+          status: 'paid',
+        },
+        {
+          id: 'inv_10814',
+          date: new Date(new Date().getFullYear(), new Date().getMonth() - 1, 1).toISOString().split('T')[0],
+          planName: 'Starter (100 Chats / mo)',
+          amount: 49,
+          status: 'paid',
+        },
+      ];
+      saveState(state);
+    }
+    return ws as WorkspaceBillingData;
+  }
+
+  static async updateWorkspaceBilling(
+    workspaceId: string = 'default-workspace',
+    updates: Partial<WorkspaceBillingData>
+  ): Promise<WorkspaceBillingData> {
+    const state = loadState();
+    let ws = state.workspaces.find((w) => w.id === workspaceId);
+    if (!ws) {
+      await Database.getWorkspaceBilling(workspaceId);
+      ws = state.workspaces.find((w) => w.id === workspaceId);
+    }
+    if (ws) {
+      Object.assign(ws, updates);
+      saveState(state);
+    }
+    return ws as WorkspaceBillingData;
   }
 }
