@@ -108,6 +108,9 @@ export interface ConversationData {
   sentiment?: 'urgent' | 'positive' | 'neutral';
   escalated?: boolean;
   resolved?: boolean;
+  isLiveTakeover?: boolean;
+  assignedAgentName?: string;
+  status?: 'bot' | 'waiting_for_agent' | 'live_agent' | 'resolved';
   createdAt: string;
   messages?: MessageData[];
 }
@@ -115,10 +118,11 @@ export interface ConversationData {
 export interface MessageData {
   id: string;
   conversationId: string;
-  role: 'user' | 'assistant' | 'system';
+  role: 'user' | 'assistant' | 'system' | 'agent';
   content: string;
   citations: any[];
   tokensUsed: number;
+  senderName?: string;
   attachment?: {
     name: string;
     type: string;
@@ -606,6 +610,16 @@ export class Database {
     return { ...newConv, messages: [] };
   }
 
+  static async getConversationById(id: string): Promise<ConversationData | null> {
+    const state = loadState();
+    const conv = state.conversations.find((c) => c.id === id);
+    if (!conv) return null;
+    return {
+      ...conv,
+      messages: state.messages.filter((m) => m.conversationId === conv.id),
+    };
+  }
+
   static async updateConversation(
     id: string,
     data: Partial<ConversationData>
@@ -625,7 +639,7 @@ export class Database {
 
   static async saveMessage(
     conversationId: string,
-    role: 'user' | 'assistant' | 'system',
+    role: 'user' | 'assistant' | 'system' | 'agent',
     content: string,
     citations: any[] = [],
     tokensUsed: number = 0,
@@ -635,7 +649,8 @@ export class Database {
       size?: number;
       url?: string;
       preview?: string;
-    }
+    },
+    senderName?: string
   ): Promise<MessageData> {
     const state = loadState();
     const msg: MessageData = {
@@ -645,6 +660,7 @@ export class Database {
       content,
       citations,
       tokensUsed,
+      ...(senderName ? { senderName } : {}),
       ...(attachment ? { attachment } : {}),
       createdAt: new Date().toISOString(),
     };

@@ -261,6 +261,15 @@
         border-bottom-left-radius: 3px;
         box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05), 0 0 0 1px rgba(0, 0, 0, 0.04);
       }
+      .msg-agent {
+        align-self: flex-start;
+        background: #fdfcff;
+        color: #1e1b4b;
+        border: 1.5px solid #c4b5fd;
+        border-bottom-left-radius: 3px;
+        box-shadow: 0 2px 8px rgba(124, 58, 237, 0.08);
+      }
+
       .msg-assistant h1 { font-size: 15px; font-weight: 700; margin: 10px 0 6px 0; border-bottom: 1px solid #e2e8f0; padding-bottom: 3px; }
       .msg-assistant h2 { font-size: 14px; font-weight: 700; margin: 8px 0 4px 0; }
       .msg-assistant h3 { font-size: 13px; font-weight: 700; margin: 6px 0 3px 0; }
@@ -1300,15 +1309,91 @@
         });
       });
     }
+    var liveSyncTimer = null;
+    var knownMessageIds = {};
 
-    function appendMessage(role, text) {
-      messages.push({ role: role, content: text });
+    function renderTakeoverBanner(agentName) {
+      if (!messagesBody) return;
+      var existing = messagesBody.querySelector('#live-agent-banner');
+      if (!existing) {
+        var banner = document.createElement('div');
+        banner.id = 'live-agent-banner';
+        banner.style.cssText = 'background: #f5f3ff; border: 1px solid #ddd6fe; border-radius: 8px; padding: 6px 12px; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; font-size: 11px; color: #6d28d9; font-weight: 600;';
+        banner.innerHTML = `
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <span style="display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: #10b981; box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.25);"></span>
+            <span>Live Support Agent Connected (${escapeHtml(agentName || 'Agent')})</span>
+          </div>
+          <span style="font-size: 10px; color: #8b5cf6; font-weight: 500;">AI Paused</span>
+        `;
+        messagesBody.insertBefore(banner, messagesBody.firstChild);
+      }
+    }
+
+    function removeTakeoverBanner() {
+      if (!messagesBody) return;
+      var existing = messagesBody.querySelector('#live-agent-banner');
+      if (existing && existing.parentNode) {
+        existing.parentNode.removeChild(existing);
+      }
+    }
+
+    function startLiveSync() {
+      if (liveSyncTimer || !conversationId) return;
+      liveSyncTimer = setInterval(function () {
+        if (!conversationId || !isOpen) return;
+        fetch(config.backendUrl + '/api/conversations?id=' + encodeURIComponent(conversationId))
+          .then(function (res) { return res.json(); })
+          .then(function (data) {
+            if (!data || !data.conversation) return;
+            var conv = data.conversation;
+            var msgList = conv.messages || [];
+
+            if (conv.isLiveTakeover) {
+              renderTakeoverBanner(conv.assignedAgentName || 'Live Support Agent');
+            } else {
+              removeTakeoverBanner();
+            }
+
+            msgList.forEach(function (m) {
+              if (m.role === 'agent' && !knownMessageIds[m.id]) {
+                knownMessageIds[m.id] = true;
+                appendMessage('agent', m.content, m.senderName);
+              } else if (m.id) {
+                knownMessageIds[m.id] = true;
+              }
+            });
+          })
+          .catch(function () {});
+      }, 3500);
+    }
+
+    function appendMessage(role, text, senderName) {
+      messages.push({ role: role, content: text, senderName: senderName });
       var msgEl = document.createElement('div');
-      msgEl.className = 'message ' + (role === 'user' ? 'msg-user' : 'msg-assistant');
-      msgEl.innerHTML = formatMarkdown(text);
+      var isUser = role === 'user';
+      var isAgent = role === 'agent';
+      msgEl.className = 'message ' + (isUser ? 'msg-user' : isAgent ? 'msg-agent' : 'msg-assistant');
+
+      if (isAgent) {
+        var agentHeader = document.createElement('div');
+        agentHeader.style.cssText = 'display:flex;align-items:center;gap:5px;font-size:11px;font-weight:700;color:#7c3aed;margin-bottom:4px;';
+        agentHeader.innerHTML = `
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 18v-6a9 9 0 0 1 18 0v6"></path>
+            <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"></path>
+          </svg>
+          <span>${escapeHtml(senderName || 'Live Support Agent')}</span>
+        `;
+        msgEl.appendChild(agentHeader);
+      }
+
+      var textContainer = document.createElement('div');
+      textContainer.innerHTML = formatMarkdown(text);
+      msgEl.appendChild(textContainer);
 
       if (messagesBody) messagesBody.appendChild(msgEl);
-      if (role === 'user') {
+      if (isUser) {
         scrollToBottom();
       } else {
         scrollToStartOfMessage(msgEl);
@@ -2115,11 +2200,18 @@
                         }
                       }
                     } else if (data.type === 'citations') {
-                      if (data.conversationId) conversationId = data.conversationId;
+                      if (data.conversationId) {
+                        conversationId = data.conversationId;
+                        startLiveSync();
+                      }
                       isCurrentWebSearch = Boolean(data.isWebSearch);
                       if (Array.isArray(data.citations)) {
                         currentCitations = data.citations;
                       }
+                    } else if (data.type === 'takeover_active') {
+                      if (data.conversationId) conversationId = data.conversationId;
+                      renderTakeoverBanner(data.agentName || 'Live Support Agent');
+                      startLiveSync();
                     } else if (data.type === 'token') {
                       // MOUNT BUBBLE ON FIRST TOKEN ONLY
                       if (!hasMountedBubble) {
@@ -2137,7 +2229,10 @@
                     } else if (data.type === 'error') {
                       throw new Error(data.error || 'Inference error');
                     } else if (data.type === 'done') {
-                      if (data.conversationId) conversationId = data.conversationId;
+                      if (data.conversationId) {
+                        conversationId = data.conversationId;
+                        startLiveSync();
+                      }
                     }
                   } catch (e) {
                     if (e.message && (e.message.indexOf('Inference') !== -1 || e.message.indexOf('error') !== -1)) {

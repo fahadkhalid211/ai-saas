@@ -17,6 +17,7 @@ import {
   FileCheck,
   Check,
   Zap,
+  Headphones,
 } from 'lucide-react';
 import { MarkdownRenderer } from '@/components/markdown-renderer';
 
@@ -33,13 +34,18 @@ export default function EmbedChatPage({ params }: EmbedPageProps) {
   // Chat state
   const [messages, setMessages] = useState<
     {
-      role: 'user' | 'assistant';
+      id?: string;
+      role: 'user' | 'assistant' | 'agent';
       content: string;
+      senderName?: string;
       citations?: any[];
       isWebSearch?: boolean;
       attachment?: { name: string; type: string; size?: number };
     }[]
   >([]);
+  const [conversationId, setConversationId] = useState<string | null>(null);
+  const [isTakeoverActive, setIsTakeoverActive] = useState(false);
+  const [assignedAgentName, setAssignedAgentName] = useState<string>('Live Support Agent');
   const [input, setInput] = useState('');
   const [isStreaming, setIsStreaming] = useState(false);
   const [streamingStatus, setStreamingStatus] = useState<string | null>(null);
@@ -97,6 +103,47 @@ export default function EmbedChatPage({ params }: EmbedPageProps) {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, streamingStatus]);
+
+  // Real-time Live Operator Sync polling
+  useEffect(() => {
+    if (!conversationId) return;
+
+    const interval = setInterval(async () => {
+      try {
+        const res = await fetch(`/api/conversations?id=${encodeURIComponent(conversationId)}`);
+        if (!res.ok) return;
+        const data = await res.json();
+        if (!data || !data.conversation) return;
+
+        const conv = data.conversation;
+        setIsTakeoverActive(Boolean(conv.isLiveTakeover));
+        if (conv.assignedAgentName) setAssignedAgentName(conv.assignedAgentName);
+
+        const convMessages = conv.messages || [];
+        setMessages((prev) => {
+          const prevIds = new Set(prev.map((m) => m.id).filter(Boolean));
+          const newAgentMessages = convMessages.filter(
+            (m: any) => m.role === 'agent' && !prevIds.has(m.id)
+          );
+
+          if (newAgentMessages.length === 0) return prev;
+
+          const formatted = newAgentMessages.map((m: any) => ({
+            id: m.id,
+            role: 'agent' as const,
+            content: m.content,
+            senderName: m.senderName || conv.assignedAgentName || 'Live Support Agent',
+          }));
+
+          return [...prev, ...formatted];
+        });
+      } catch {
+        // Silent polling error
+      }
+    }, 3500);
+
+    return () => clearInterval(interval);
+  }, [conversationId]);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -187,6 +234,7 @@ export default function EmbedChatPage({ params }: EmbedPageProps) {
         body: JSON.stringify({
           assistantId,
           visitorId,
+          conversationId: conversationId || undefined,
           preferredLanguage: selectedLanguage,
           messages: newMessages.map((m) => ({ role: m.role, content: m.content })),
           attachment: currentAttachment
@@ -230,9 +278,17 @@ export default function EmbedChatPage({ params }: EmbedPageProps) {
               if (data.type === 'status') {
                 setStreamingStatus(data.message || 'Searching knowledge...');
               } else if (data.type === 'citations') {
+                if (data.conversationId) setConversationId(data.conversationId);
                 replyCitations = data.citations || [];
                 isWebSearch = Boolean(data.isWebSearch);
                 setStreamingStatus(null);
+              } else if (data.type === 'takeover_active') {
+                if (data.conversationId) setConversationId(data.conversationId);
+                setIsTakeoverActive(true);
+                if (data.agentName) setAssignedAgentName(data.agentName);
+                setStreamingStatus(null);
+              } else if (data.type === 'done') {
+                if (data.conversationId) setConversationId(data.conversationId);
               } else if (data.type === 'token') {
                 replyText += data.token;
                 setStreamingStatus(null);
@@ -250,7 +306,7 @@ export default function EmbedChatPage({ params }: EmbedPageProps) {
                   return updated;
                 });
               }
-            } catch (e) {
+            } catch {
               // ignore parse errors
             }
           }
@@ -277,6 +333,8 @@ export default function EmbedChatPage({ params }: EmbedPageProps) {
 
   const handleRestartChat = () => {
     if (confirm('Start a new conversation? Current chat history will be cleared.')) {
+      setConversationId(null);
+      setIsTakeoverActive(false);
       setMessages(
         config?.welcomeMessage
           ? [
@@ -392,7 +450,41 @@ export default function EmbedChatPage({ params }: EmbedPageProps) {
 
       {/* Messages Container */}
       <main className="flex-1 overflow-y-auto p-4 space-y-3.5">
+        {/* Live Agent Takeover Banner */}
+        {isTakeoverActive && (
+          <div className="bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800 rounded-xl px-3 py-2 flex items-center justify-between text-xs text-purple-700 dark:text-purple-300 shadow-xs">
+            <div className="flex items-center gap-2 font-medium">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+              </span>
+              <div className="flex items-center gap-1.5">
+                <Headphones className="h-3.5 w-3.5 text-purple-600 dark:text-purple-400" />
+                <span>Live Support Agent Connected ({assignedAgentName})</span>
+              </div>
+            </div>
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-purple-600 dark:text-purple-400 bg-purple-100 dark:bg-purple-900/60 px-2 py-0.5 rounded-full border border-purple-300/50 dark:border-purple-750">
+              AI Paused
+            </span>
+          </div>
+        )}
+
         {messages.map((msg, index) => {
+          if (msg.role === 'agent') {
+            return (
+              <div key={index} className="flex flex-col items-start">
+                <div className="max-w-[88%] sm:max-w-[80%] rounded-2xl px-4 py-2.5 text-xs leading-relaxed shadow-xs bg-white dark:bg-slate-900 border-1.5 border-purple-300 dark:border-purple-700 text-slate-900 dark:text-slate-100 rounded-bl-xs">
+                  <div className="flex items-center gap-1.5 font-bold text-purple-600 dark:text-purple-400 text-[11px] mb-1.5 pb-1 border-b border-purple-100 dark:border-purple-900/50">
+                    <Headphones className="h-3 w-3" />
+                    <span>{msg.senderName || assignedAgentName || 'Live Support Agent'}</span>
+                    <span className="ml-auto text-[9.5px] font-normal text-purple-500 dark:text-purple-400 opacity-80">Support Team</span>
+                  </div>
+                  <MarkdownRenderer content={msg.content} />
+                </div>
+              </div>
+            );
+          }
+
           const isUser = msg.role === 'user';
           return (
             <div key={index} className={`flex flex-col ${isUser ? 'items-end' : 'items-start'}`}>

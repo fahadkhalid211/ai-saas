@@ -108,6 +108,36 @@ export async function POST(req: NextRequest) {
       ...(isEscalation ? { escalated: true } : {}),
     });
 
+    // 2. If Human Agent Takeover is active, pause AI bot auto-reply
+    if (conv.isLiveTakeover) {
+      const encoder = new TextEncoder();
+      const stream = new ReadableStream({
+        start(controller) {
+          const agentName = conv.assignedAgentName || 'Live Support Agent';
+          const notificationMsg = `data: ${JSON.stringify({
+            type: 'token',
+            token: `[Message delivered to ${agentName}. They will reply shortly.]`,
+          })}\n\n`;
+          const takeoverEvent = `data: ${JSON.stringify({
+            type: 'takeover_active',
+            agentName,
+            conversationId: conv.id,
+          })}\n\n`;
+          controller.enqueue(encoder.encode(notificationMsg));
+          controller.enqueue(encoder.encode(takeoverEvent));
+          controller.close();
+        },
+      });
+
+      return new Response(stream, {
+        headers: {
+          'Content-Type': 'text/event-stream; charset=utf-8',
+          'Cache-Control': 'no-cache, no-transform',
+          Connection: 'keep-alive',
+        },
+      });
+    }
+
     // 4. Setup Server-Sent Events (SSE) Stream
     const encoder = new TextEncoder();
     const canSearchWeb = assistant.allowWebSearch ?? true;

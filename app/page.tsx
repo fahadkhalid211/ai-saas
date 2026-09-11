@@ -74,6 +74,8 @@ import {
   Video,
   AlertCircle,
   ThumbsUp,
+  Headphones,
+  UserCheck,
 } from 'lucide-react';
 import { diagnoseKnowledgeFailure } from '@/lib/rag/diagnostics';
 import { MarkdownRenderer } from '@/components/markdown-renderer';
@@ -548,6 +550,124 @@ Thank you for using Kortex AI Business Engine.
       console.error('Failed to update conversation status', err);
     }
   };
+
+  // Live Agent Takeover state
+  const [agentNameInput, setAgentNameInput] = useState<string>('Alex (Support)');
+  const [agentReplyText, setAgentReplyText] = useState<string>('');
+  const [isSendingAgentMessage, setIsSendingAgentMessage] = useState<boolean>(false);
+
+  const handleToggleTakeover = async (convId: string, isLiveTakeover: boolean) => {
+    try {
+      const res = await fetch('/api/conversations', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: convId,
+          isLiveTakeover,
+          assignedAgentName: agentNameInput.trim() || 'Support Agent',
+          status: isLiveTakeover ? 'live_agent' : 'bot',
+        }),
+      });
+      if (res.ok) {
+        setConversations((prev) =>
+          prev.map((c) =>
+            c.id === convId
+              ? {
+                  ...c,
+                  isLiveTakeover,
+                  assignedAgentName: agentNameInput.trim() || 'Support Agent',
+                  status: isLiveTakeover ? 'live_agent' : 'bot',
+                }
+              : c
+          )
+        );
+        if (selectedConversation && selectedConversation.id === convId) {
+          setSelectedConversation((prev: any) => ({
+            ...prev,
+            isLiveTakeover,
+            assignedAgentName: agentNameInput.trim() || 'Support Agent',
+            status: isLiveTakeover ? 'live_agent' : 'bot',
+          }));
+        }
+      }
+    } catch (err) {
+      console.error('Failed to toggle live takeover', err);
+    }
+  };
+
+  const handleSendAgentMessage = async () => {
+    if (!selectedConversation || !agentReplyText.trim() || isSendingAgentMessage) return;
+    const textToSend = agentReplyText.trim();
+    setIsSendingAgentMessage(true);
+    try {
+      const res = await fetch('/api/conversations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          conversationId: selectedConversation.id,
+          content: textToSend,
+          agentName: agentNameInput.trim() || 'Support Agent',
+          takeover: true,
+        }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setAgentReplyText('');
+        if (data.message) {
+          setSelectedConversation((prev: any) => {
+            if (!prev) return prev;
+            return {
+              ...prev,
+              isLiveTakeover: true,
+              messages: [...(prev.messages || []), data.message],
+            };
+          });
+          setConversations((prev) =>
+            prev.map((c) =>
+              c.id === selectedConversation.id
+                ? {
+                    ...c,
+                    isLiveTakeover: true,
+                    messages: [...(c.messages || []), data.message],
+                  }
+                : c
+            )
+          );
+        }
+      }
+    } catch (err) {
+      console.error('Failed to send agent message', err);
+    } finally {
+      setIsSendingAgentMessage(false);
+    }
+  };
+
+  // Live polling for selected conversation in Conversations tab
+  useEffect(() => {
+    if (activeTab !== 'history' || !selectedConversation) return;
+    const interval = setInterval(async () => {
+      try {
+        const res = await fetch(`/api/conversations?id=${encodeURIComponent(selectedConversation.id)}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.conversation) {
+            setSelectedConversation((prev: any) => {
+              if (!prev || prev.id !== data.conversation.id) return prev;
+              const prevCount = prev.messages?.length || 0;
+              const newCount = data.conversation.messages?.length || 0;
+              if (prevCount !== newCount || prev.isLiveTakeover !== data.conversation.isLiveTakeover) {
+                return data.conversation;
+              }
+              return prev;
+            });
+          }
+        }
+      } catch (e) {
+        // silent
+      }
+    }, 3200);
+    return () => clearInterval(interval);
+  }, [activeTab, selectedConversation?.id]);
 
   const renderTemplateIcon = (iconName: string) => {
     switch (iconName) {
@@ -5996,6 +6116,19 @@ Thank you for using Kortex AI Business Engine.
                               </span>
                               <button
                                 type="button"
+                                onClick={() => handleToggleTakeover(selectedConversation.id, !selectedConversation.isLiveTakeover)}
+                                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-xs font-semibold transition cursor-pointer ${
+                                  selectedConversation.isLiveTakeover
+                                    ? 'bg-purple-600 text-white border-purple-600 shadow-xs'
+                                    : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-950/40'
+                                }`}
+                                title={selectedConversation.isLiveTakeover ? "Click to release back to AI bot" : "Click to pause AI and take over as live human agent"}
+                              >
+                                <Headphones className="h-3.5 w-3.5" />
+                                <span>{selectedConversation.isLiveTakeover ? 'Live Agent (AI Paused)' : 'Take Over Chat'}</span>
+                              </button>
+                              <button
+                                type="button"
                                 onClick={() => handleToggleConversationStatus(selectedConversation.id, !selectedConversation.resolved)}
                                 className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-xs font-semibold transition cursor-pointer ${
                                   selectedConversation.resolved
@@ -6018,24 +6151,58 @@ Thank you for using Kortex AI Business Engine.
                             </div>
                           </div>
 
-                          <div className="space-y-3 max-h-[500px] overflow-y-auto pr-2">
+                          {selectedConversation.isLiveTakeover && (
+                            <div className="bg-purple-50 dark:bg-purple-950/50 border border-purple-200 dark:border-purple-800/80 rounded-xl p-3 flex items-center justify-between text-xs">
+                              <div className="flex items-center gap-2">
+                                <span className="relative flex h-2.5 w-2.5">
+                                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                                </span>
+                                <span className="font-semibold text-purple-900 dark:text-purple-200">
+                                  Live Operator Mode Active &bull; AI Bot is Paused
+                                </span>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => handleToggleTakeover(selectedConversation.id, false)}
+                                className="text-[11px] font-semibold text-purple-700 dark:text-purple-300 hover:underline cursor-pointer"
+                              >
+                                Release to AI Bot &rarr;
+                              </button>
+                            </div>
+                          )}
+
+                          <div className="space-y-3 max-h-[440px] overflow-y-auto pr-2">
                             {(selectedConversation.messages || []).map((m: any, idx: number) => {
                               const isUser = m.role === 'user';
+                              const isAgent = m.role === 'agent';
                               return (
                                 <div
                                   key={m.id || idx}
                                   className={`flex flex-col ${isUser ? 'items-end' : 'items-start'}`}
                                 >
-                                  <div className="text-[10px] text-slate-400 mb-1 px-1">
-                                    {isUser ? 'Visitor' : 'Assistant'} &bull; {new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                  <div className="text-[10px] text-slate-400 mb-1 px-1 flex items-center gap-1">
+                                    <span>
+                                      {isUser ? 'Visitor' : isAgent ? (m.senderName || 'Live Agent') : 'AI Assistant'}
+                                    </span>
+                                    <span>&bull;</span>
+                                    <span>{new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                                   </div>
                                   <div
                                     className={`rounded-2xl px-4 py-2.5 text-xs max-w-[85%] leading-relaxed ${
                                       isUser
                                         ? 'bg-blue-600 text-white rounded-br-xs'
+                                        : isAgent
+                                        ? 'bg-purple-50 dark:bg-purple-950/60 border border-purple-200 dark:border-purple-800 text-purple-950 dark:text-purple-100 rounded-bl-xs'
                                         : 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100 rounded-bl-xs'
                                     }`}
                                   >
+                                    {isAgent && (
+                                      <div className="flex items-center gap-1.5 text-[10.5px] font-bold text-purple-700 dark:text-purple-300 mb-1 border-b border-purple-200/60 dark:border-purple-800/60 pb-1">
+                                        <Headphones className="h-3 w-3" />
+                                        <span>{m.senderName || 'Live Support Agent'}</span>
+                                      </div>
+                                    )}
                                     <div className="whitespace-pre-wrap">{m.content}</div>
 
                                     {/* Web Sources Preview (Strictly for live web search - Never display internal knowledge base) */}
@@ -6073,6 +6240,68 @@ Thank you for using Kortex AI Business Engine.
                                 </div>
                               );
                             })}
+                          </div>
+
+                          {/* Live Operator Composer */}
+                          <div className="pt-3 border-t border-slate-100 dark:border-slate-800 space-y-2">
+                            {/* Quick canned replies */}
+                            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-[10px]">
+                              <span className="text-slate-400 shrink-0 font-medium">Quick replies:</span>
+                              {[
+                                'Hello! How can I assist you today?',
+                                'Checking on that right now for you!',
+                                'Thanks for waiting, I have the details.',
+                                'Let me connect you with our team specialist.',
+                              ].map((quickText, qIdx) => (
+                                <button
+                                  key={qIdx}
+                                  type="button"
+                                  onClick={() => setAgentReplyText(quickText)}
+                                  className="px-2 py-0.5 rounded-full border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-purple-50 dark:hover:bg-purple-950/40 hover:text-purple-700 hover:border-purple-300 transition whitespace-nowrap cursor-pointer"
+                                >
+                                  {quickText}
+                                </button>
+                              ))}
+                            </div>
+
+                            <div className="flex gap-2 items-center">
+                              <div className="relative">
+                                <input
+                                  type="text"
+                                  value={agentNameInput}
+                                  onChange={(e) => setAgentNameInput(e.target.value)}
+                                  placeholder="Agent Name"
+                                  className="w-32 text-xs border border-slate-200 dark:border-slate-700 rounded-lg px-2.5 py-2 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-200 outline-none focus:ring-1 focus:ring-purple-500 font-medium"
+                                  title="Your display name to the customer"
+                                />
+                              </div>
+                              <input
+                                type="text"
+                                value={agentReplyText}
+                                onChange={(e) => setAgentReplyText(e.target.value)}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter' && !e.shiftKey) {
+                                    e.preventDefault();
+                                    handleSendAgentMessage();
+                                  }
+                                }}
+                                placeholder={
+                                  selectedConversation.isLiveTakeover
+                                    ? "Type reply to visitor as Live Agent (AI is paused)..."
+                                    : "Type reply to take over chat from AI bot..."
+                                }
+                                className="flex-1 text-xs border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 outline-none focus:ring-1 focus:ring-purple-500"
+                              />
+                              <button
+                                type="button"
+                                onClick={handleSendAgentMessage}
+                                disabled={isSendingAgentMessage || !agentReplyText.trim()}
+                                className="flex items-center gap-1.5 px-3.5 py-2 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white rounded-lg text-xs font-semibold transition shadow-xs cursor-pointer"
+                              >
+                                <Send className="h-3.5 w-3.5" />
+                                <span>{isSendingAgentMessage ? 'Sending...' : 'Send'}</span>
+                              </button>
+                            </div>
                           </div>
                         </div>
                       ) : (
