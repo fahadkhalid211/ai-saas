@@ -180,35 +180,39 @@ export async function* streamChatResponse(
   // OpenAI-compatible providers (Ollama, Groq, OpenAI, Gemini, DeepSeek, Custom)
   const { client, model } = getClient(options);
 
-  // Estimate prompt tokens (~3.8 characters per token)
+  // Conservative token estimation (2.5 chars/token for dense CSV / numbers / code)
   let activeMessages = [...messages];
   let promptChars = activeMessages.reduce((sum, m) => sum + (m.content?.length || 0), 0);
-  let estimatedPromptTokens = Math.ceil(promptChars / 3.8);
+  let estimatedPromptTokens = Math.ceil(promptChars / 2.5);
 
   let safeMaxTokens = options.maxTokens || 2048;
 
   if (provider === 'groq') {
-    // If prompt alone is large (> 5000 tokens), compress system prompt to stay within 8k TPM
-    if (estimatedPromptTokens > 5000) {
+    // Strict Groq TPM budget guard (limit 8,000 TPM on free models like openai/gpt-oss-120b)
+    // Groq adds: estimated_prompt_tokens + max_tokens.
+    // If prompt is large (> 3,600 tokens), condense system prompt to ~8,500 chars (~3,400 tokens)
+    if (estimatedPromptTokens > 3600) {
       activeMessages = activeMessages.map((m) => {
         if (m.role === 'system' && m.content) {
-          const maxChars = 4500 * 3.8;
+          const maxChars = 8500;
           if (m.content.length > maxChars) {
             return {
               ...m,
-              content: m.content.slice(0, maxChars) + '\n\n...[Context condensed to fit model budget]...\n================================',
+              content:
+                m.content.slice(0, maxChars) +
+                '\n\n...[Context condensed to stay within provider token budget]...\n================================',
             };
           }
         }
         return m;
       });
       promptChars = activeMessages.reduce((sum, m) => sum + (m.content?.length || 0), 0);
-      estimatedPromptTokens = Math.ceil(promptChars / 3.8);
+      estimatedPromptTokens = Math.ceil(promptChars / 2.5);
     }
 
-    // Ensure estimatedPromptTokens + safeMaxTokens <= 7500 (< 8000 TPM limit)
-    const remainingBudget = 7500 - estimatedPromptTokens;
-    safeMaxTokens = Math.min(safeMaxTokens, Math.max(800, remainingBudget));
+    // Ensure estimatedPromptTokens + safeMaxTokens <= 5,500 (generous 2,500-token safety buffer under 8,000 TPM)
+    const remainingBudget = 5500 - estimatedPromptTokens;
+    safeMaxTokens = Math.min(safeMaxTokens, Math.min(1200, Math.max(350, remainingBudget)));
   }
 
   try {
@@ -234,17 +238,32 @@ export async function* streamChatResponse(
       error?.status === 429 ||
       error?.message?.toLowerCase().includes('rate limit') ||
       error?.message?.toLowerCase().includes('tokens per minute') ||
-      error?.message?.toLowerCase().includes('tpm');
+      error?.message?.toLowerCase().includes('tpm') ||
+      error?.message?.toLowerCase().includes('too large');
 
-    // Automatic fallback on Groq TPM/Rate limits to high-capacity compound-mini (70,000 TPM)
+    // Automatic fallback on Groq TPM/Rate limits to high-capacity compound-mini or openai/gpt-oss-20b
     if (provider === 'groq' && isRateLimit) {
-      console.warn(`[Groq TPM Fallback] 8k TPM reached on ${model}. Seamlessly failing over to groq/compound-mini (70k TPM)...`);
+      const fallbackModel = model === 'groq/compound-mini' ? 'openai/gpt-oss-20b' : 'groq/compound-mini';
+      console.warn(
+        `[Groq TPM Fallback] Rate limit reached on ${model}. Seamlessly failing over to ${fallbackModel}...`
+      );
       try {
+        // Condense messages down for fallback to guarantee success
+        const condensedFallbackMessages = activeMessages.map((m) => {
+          if (m.role === 'system' && m.content && m.content.length > 5000) {
+            return {
+              ...m,
+              content: m.content.slice(0, 5000) + '\n\n...[Condensed for fallback model]...',
+            };
+          }
+          return m;
+        });
+
         const fallbackStream = await client.chat.completions.create({
-          model: 'groq/compound-mini',
-          messages: activeMessages as any,
+          model: fallbackModel,
+          messages: condensedFallbackMessages as any,
           temperature: options.temperature ?? 0.3,
-          max_tokens: 1500,
+          max_tokens: 800,
           stream: true,
         });
 

@@ -22,8 +22,39 @@ export function chunkDocument(
     for (let i = 0; i < doc.sections.length; i++) {
       const section = doc.sections[i];
       const sectionText = section.heading ? `### ${section.heading}\n${section.text}` : section.text;
-      
-      // If single section is huge, split it using the standard sliding splitter
+
+      // If this section is explicitly marked as isOverview, emit it standalone as Chunk 0
+      if (section.metadata?.isOverview) {
+        if (currentBatch.length > 0) {
+          const batchContent = currentBatch.join('\n\n');
+          chunks.push({
+            content: batchContent,
+            chunkIndex: chunks.length,
+            tokenCount: Math.ceil(batchContent.length / 4),
+            metadata: {
+              sourceTitle: doc.title,
+              sourceType: doc.type,
+              section: `Batch ${sectionIndex++}`,
+            },
+          });
+          currentBatch = [];
+          currentLength = 0;
+        }
+
+        chunks.push({
+          content: sectionText,
+          chunkIndex: chunks.length,
+          tokenCount: Math.ceil(sectionText.length / 4),
+          metadata: {
+            sourceTitle: doc.title,
+            sourceType: doc.type,
+            section: 'Dataset Overview',
+            isOverview: true,
+            ...section.metadata,
+          },
+        });
+        continue;
+      }
       if (sectionText.length > maxChars) {
         if (currentBatch.length > 0) {
           const batchContent = currentBatch.join('\n\n');

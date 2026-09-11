@@ -72,7 +72,10 @@ export async function POST(req: NextRequest) {
     }
 
     // 2. Hybrid Context Retrieval
-    const topK = assistant.contextChunks || 5;
+    const isGroq = (assistant.provider || '').toLowerCase() === 'groq';
+    const configuredChunks = assistant.contextChunks || 5;
+    // On Groq free tier models with 8k TPM limit, clamp topK to 5 chunks to prevent prompt over-stuffing
+    const topK = isGroq ? Math.min(configuredChunks, 5) : configuredChunks;
     const effectiveQuery = webSearchQuery || latestUserMsg;
     const retrieval = await retrieveRelevantContext(
       assistantId,

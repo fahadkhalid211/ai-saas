@@ -85,9 +85,77 @@ function parseCsv(content: string, title: string): ExtractedDocument {
     }
 
     const headers = Object.keys(typedRecords[0] || {});
-    const sections: ExtractedDocument['sections'] = [];
-    const serializedRows: string[] = [];
+    const totalCount = typedRecords.length;
 
+    // 1. Analyze categorical columns for high-value aggregation summaries (e.g. membership, status, age_group)
+    const categoryBreakdowns: Record<string, Record<string, number>> = {};
+    const categoricalCandidates = headers.filter((h) =>
+      /membership|status|tier|role|plan|age_group|category|type|department|gender|country|state|city/i.test(h)
+    );
+
+    for (const catCol of categoricalCandidates) {
+      const counts: Record<string, number> = {};
+      let uniqueCount = 0;
+      for (const r of typedRecords) {
+        const val = String(r[catCol] || '').trim();
+        if (val) {
+          if (!counts[val]) uniqueCount++;
+          counts[val] = (counts[val] || 0) + 1;
+        }
+      }
+      if (uniqueCount > 0 && uniqueCount <= 20) {
+        categoryBreakdowns[catCol] = counts;
+      }
+    }
+
+    // 2. Sample records
+    const sampleRows: string[] = [];
+    typedRecords.slice(0, 5).forEach((r, idx) => {
+      const parts = Object.entries(r)
+        .filter(([_, v]) => v !== null && v !== undefined && String(v).trim() !== '')
+        .map(([k, v]) => `${k}: ${String(v).trim()}`);
+      sampleRows.push(`[Sample #${idx + 1}] ${parts.join(' | ')}`);
+    });
+
+    // 3. Build Master Dataset Overview & Statistics Block
+    const overviewLines: string[] = [
+      `### DATASET MASTER OVERVIEW & STATISTICS: ${title}`,
+      `- Total Registered Members / Total Records / Total Rows: Exactly ${totalCount} records / signups`,
+      `- Dataset Schema / Columns: ${headers.join(', ')}`,
+    ];
+
+    if (Object.keys(categoryBreakdowns).length > 0) {
+      overviewLines.push('- Summary Breakdowns:');
+      for (const [col, breakdown] of Object.entries(categoryBreakdowns)) {
+        const formatted = Object.entries(breakdown)
+          .map(([k, v]) => `${k} (${v})`)
+          .join(', ');
+        overviewLines.push(`  * ${col}: ${formatted}`);
+      }
+    }
+
+    overviewLines.push(
+      `- Sample Records (First 5 of ${totalCount}):`,
+      ...sampleRows.map((s) => `  ${s}`),
+      `\nIMPORTANT FACT FOR QUESTIONS: There are exactly ${totalCount} members / records in this file.`
+    );
+
+    const masterOverviewText = overviewLines.join('\n');
+
+    // 4. Build individual record sections with Master Overview at index 0
+    const sections: ExtractedDocument['sections'] = [
+      {
+        heading: `Dataset Master Overview: ${title}`,
+        text: masterOverviewText,
+        metadata: {
+          isOverview: true,
+          totalRecords: totalCount,
+          columns: headers,
+        },
+      },
+    ];
+
+    const serializedRows: string[] = [];
     typedRecords.forEach((row, idx) => {
       // Serialize row cleanly: "Field1: Value1 | Field2: Value2"
       const rowParts: string[] = [];
@@ -109,8 +177,7 @@ function parseCsv(content: string, title: string): ExtractedDocument {
       });
     });
 
-    const fullContent = `Dataset: ${title}\nColumns: ${headers.join(', ')}\nTotal Records: ${records.length}\n\n` +
-      serializedRows.join('\n');
+    const fullContent = `${masterOverviewText}\n\n` + serializedRows.join('\n');
 
     return {
       title,
@@ -118,8 +185,9 @@ function parseCsv(content: string, title: string): ExtractedDocument {
       content: fullContent,
       sections,
       metadata: {
-        rowCount: records.length,
+        rowCount: totalCount,
         columns: headers,
+        isOverview: true,
       },
     };
   } catch (error: any) {

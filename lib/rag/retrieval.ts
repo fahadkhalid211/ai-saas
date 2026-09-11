@@ -50,6 +50,13 @@ export function isGlobalOverviewQuery(query: string): boolean {
 }
 
 /**
+ * Detect if user is asking for counts, quantities, totals, statistics, or dataset summaries
+ */
+export function isCountOrAggregationQuery(query: string): boolean {
+  return /\b(how many|total|count|number of|sum of|how much|registered|signed up|signups|members|users|rows|records|entries|how many people|breakdown|statistics)\b/i.test(query);
+}
+
+/**
  * Retrieve relevant knowledge chunks using Hybrid Search (Vector + Keyword)
  */
 export async function retrieveRelevantContext(
@@ -60,7 +67,8 @@ export async function retrieveRelevantContext(
 ): Promise<RetrievalResult> {
   const condensedQuery = condenseQuery(userMessage, history);
   const isOverview = isGlobalOverviewQuery(condensedQuery);
-  const effectiveTopK = isOverview ? Math.max(topK, 8) : topK;
+  const isCountQuery = isCountOrAggregationQuery(condensedQuery);
+  const effectiveTopK = isOverview ? Math.max(topK, 8) : isCountQuery ? 4 : topK;
   
   // 1. Generate 384-dimensional query embedding with local open-source embedder
   const queryEmbedding = await generateEmbedding(condensedQuery);
@@ -68,8 +76,49 @@ export async function retrieveRelevantContext(
   // 2. Perform Hybrid Search
   let chunks = await Database.hybridSearch(assistantId, condensedQuery, queryEmbedding, effectiveTopK * 2);
 
-  // 3. If global overview query, handle timeline distribution & overview chunk
-  if (isOverview && chunks.length > 0) {
+  // 3. If count/aggregation query: prioritize Dataset Master Overview chunk(s)
+  if (isCountQuery) {
+    const assistantChunks = await Database.getChunksByAssistant(assistantId);
+    const overviewChunks = assistantChunks.filter(
+      (c) =>
+        c.metadata?.isOverview ||
+        c.content.includes('DATASET MASTER OVERVIEW') ||
+        c.content.includes('Total Registered Members') ||
+        c.content.includes('Total Records')
+    );
+
+    if (overviewChunks.length > 0) {
+      const combined: SearchResultChunk[] = [];
+      const seen = new Set<string>();
+
+      for (const ov of overviewChunks) {
+        if (!seen.has(ov.id)) {
+          combined.push({
+            id: ov.id,
+            content: ov.content,
+            chunkIndex: ov.chunkIndex,
+            tokenCount: ov.tokenCount,
+            metadata: ov.metadata as any,
+            knowledgeSourceId: ov.knowledgeSourceId,
+            similarity: 1.0,
+          });
+          seen.add(ov.id);
+        }
+      }
+
+      for (const c of chunks) {
+        const cId = c.id || `chunk_${c.chunkIndex}`;
+        if (!seen.has(cId) && combined.length < 4) {
+          combined.push(c);
+          seen.add(cId);
+        }
+      }
+
+      chunks = combined;
+    } else {
+      chunks = chunks.slice(0, effectiveTopK);
+    }
+  } else if (isOverview && chunks.length > 0) {
     // Determine the primary target source (the one with highest rank or matching name)
     const primarySourceId = chunks[0].knowledgeSourceId;
     const allSourceChunks = await Database.getChunksBySource(primarySourceId);
