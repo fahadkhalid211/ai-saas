@@ -39,6 +39,7 @@ export async function GET(
       launcherPosition: assistant.launcherPosition || 'bottom-right',
       starterQuestions: assistant.starterQuestions || [],
       collectLeadEmail: assistant.collectLeadEmail || false,
+      supportCustomFields: assistant.supportCustomFields || [],
     };
 
     return NextResponse.json(publicConfig, {

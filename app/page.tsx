@@ -40,6 +40,14 @@ import {
 import { diagnoseKnowledgeFailure } from '@/lib/rag/diagnostics';
 import { MarkdownRenderer } from '@/components/markdown-renderer';
 
+export interface SupportCustomField {
+  id: string;
+  label: string;
+  type: 'text' | 'textarea' | 'tel' | 'select';
+  required: boolean;
+  options?: string[];
+}
+
 interface Assistant {
   id: string;
   name: string;
@@ -60,6 +68,9 @@ interface Assistant {
   collectLeadEmail: boolean;
   allowWebSearch?: boolean;
   allowedDomains: string[];
+  supportReceiverEmail?: string;
+  supportCcEmails?: string[];
+  supportCustomFields?: SupportCustomField[];
 }
 
 interface KnowledgeSource {
@@ -79,6 +90,8 @@ interface Lead {
   email: string;
   name?: string;
   phone?: string;
+  notes?: string;
+  customData?: Record<string, any>;
   createdAt: string;
 }
 
@@ -137,6 +150,49 @@ export default function DashboardPage() {
 
   // Leads state
   const [leads, setLeads] = useState<Lead[]>([]);
+  const [selectedLeadModal, setSelectedLeadModal] = useState<Lead | null>(null);
+
+  // Custom Form Field builder state
+  const [newFieldLabel, setNewFieldLabel] = useState('');
+  const [newFieldType, setNewFieldType] = useState<'text' | 'textarea' | 'tel' | 'select'>('text');
+  const [newFieldRequired, setNewFieldRequired] = useState(false);
+  const [newFieldOptions, setNewFieldOptions] = useState('');
+  const [showAddFieldForm, setShowAddFieldForm] = useState(false);
+
+  const handleAddCustomField = () => {
+    if (!newFieldLabel.trim()) return;
+    const currentFields = formData.supportCustomFields || [];
+    const newField: SupportCustomField = {
+      id: 'field_' + Math.random().toString(36).substring(2, 9),
+      label: newFieldLabel.trim(),
+      type: newFieldType,
+      required: newFieldRequired,
+      options:
+        newFieldType === 'select'
+          ? newFieldOptions
+              .split(',')
+              .map((o) => o.trim())
+              .filter(Boolean)
+          : undefined,
+    };
+    setFormData({
+      ...formData,
+      supportCustomFields: [...currentFields, newField],
+    });
+    setNewFieldLabel('');
+    setNewFieldType('text');
+    setNewFieldRequired(false);
+    setNewFieldOptions('');
+    setShowAddFieldForm(false);
+  };
+
+  const handleRemoveCustomField = (id: string) => {
+    const currentFields = formData.supportCustomFields || [];
+    setFormData({
+      ...formData,
+      supportCustomFields: currentFields.filter((f) => f.id !== id),
+    });
+  };
 
   // Modals & Alerts
   const [showNewModal, setShowNewModal] = useState(false);
@@ -1902,6 +1958,202 @@ export default function DashboardPage() {
                       />
                     </div>
 
+                    {/* Support Handoff & Email Notifications */}
+                    <div className="space-y-4 pt-3 border-t border-slate-200 dark:border-slate-800">
+                      <div>
+                        <h2 className="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-1.5">
+                          <span>📧 Support Handoff &amp; Lead Email Alerts</span>
+                        </h2>
+                        <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                          When visitors ask to connect with support, the widget displays a sleek form and immediately dispatches an email notification.
+                        </p>
+                      </div>
+
+                      {/* Receiver Email */}
+                      <div>
+                        <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1">
+                          Receiver Email Address
+                        </label>
+                        <input
+                          type="email"
+                          placeholder="e.g. support@yourcompany.com"
+                          value={formData.supportReceiverEmail || ''}
+                          onChange={(e) => setFormData({ ...formData, supportReceiverEmail: e.target.value })}
+                          className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3 py-2 text-xs text-slate-900 dark:text-slate-100 outline-none focus:border-blue-500 font-mono"
+                        />
+                        <p className="text-[10.5px] text-slate-500 dark:text-slate-400 mt-1">
+                          Support inquiries submitted by visitors are sent directly to this address.
+                        </p>
+                      </div>
+
+                      {/* CC Emails */}
+                      <div>
+                        <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1">
+                          CC Notification Emails (Optional)
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="e.g. alerts@company.com, team@company.com"
+                          value={(formData.supportCcEmails || []).join(', ')}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              supportCcEmails: e.target.value.split(',').map((s) => s.trim()).filter(Boolean),
+                            })
+                          }
+                          className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3 py-2 text-xs text-slate-900 dark:text-slate-100 outline-none focus:border-blue-500 font-mono"
+                        />
+                        <p className="text-[10.5px] text-slate-500 dark:text-slate-400 mt-1">
+                          Comma-separated list of additional team emails to CC on every lead/support alert.
+                        </p>
+                      </div>
+
+                      {/* Form Custom Fields Builder */}
+                      <div className="pt-2 border-t border-slate-200 dark:border-slate-800 space-y-2.5">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <span className="text-xs font-semibold text-slate-800 dark:text-slate-200">
+                              Support Form Custom Fields
+                            </span>
+                            <p className="text-[10.5px] text-slate-500 dark:text-slate-400">
+                              Default: Name, Email, Phone (Required) &amp; Comments (Optional).
+                            </p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => setShowAddFieldForm(!showAddFieldForm)}
+                            className="flex items-center gap-1 text-[11px] font-semibold text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
+                          >
+                            <Plus className="h-3 w-3" />
+                            <span>{showAddFieldForm ? 'Close' : 'Add Custom Field'}</span>
+                          </button>
+                        </div>
+
+                        {/* Existing custom fields list */}
+                        {(formData.supportCustomFields || []).length > 0 ? (
+                          <div className="space-y-1.5">
+                            {(formData.supportCustomFields || []).map((cf) => (
+                              <div
+                                key={cf.id}
+                                className="flex items-center justify-between p-2 rounded-lg bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-xs"
+                              >
+                                <div className="flex items-center gap-2">
+                                  <span className="font-semibold text-slate-800 dark:text-slate-200">{cf.label}</span>
+                                  <span className="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300">
+                                    {cf.type}
+                                  </span>
+                                  {cf.required ? (
+                                    <span className="text-[10px] font-bold text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-900 px-1.5 py-0.5 rounded">
+                                      Required
+                                    </span>
+                                  ) : (
+                                    <span className="text-[10px] text-slate-500 px-1 py-0.5">Optional</span>
+                                  )}
+                                  {cf.type === 'select' && cf.options && cf.options.length > 0 && (
+                                    <span className="text-[10px] text-slate-400 font-mono">
+                                      ({cf.options.length} options)
+                                    </span>
+                                  )}
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => handleRemoveCustomField(cf.id)}
+                                  className="text-slate-400 hover:text-rose-600 p-1 transition cursor-pointer"
+                                  title="Remove Field"
+                                >
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-[11px] text-slate-400 italic">No custom fields added yet.</p>
+                        )}
+
+                        {/* Add Field Form */}
+                        {showAddFieldForm && (
+                          <div className="p-3 rounded-xl border border-blue-200 dark:border-blue-900/60 bg-blue-50/40 dark:bg-blue-950/30 space-y-2.5 animate-in fade-in duration-150">
+                            <div className="text-[11px] font-bold text-blue-900 dark:text-blue-300 uppercase tracking-wide">
+                              New Custom Field
+                            </div>
+                            <div className="grid grid-cols-2 gap-2">
+                              <div>
+                                <label className="text-[10.5px] font-medium text-slate-600 dark:text-slate-300 block mb-1">
+                                  Field Label *
+                                </label>
+                                <input
+                                  type="text"
+                                  placeholder="e.g. Company Name"
+                                  value={newFieldLabel}
+                                  onChange={(e) => setNewFieldLabel(e.target.value)}
+                                  className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2.5 py-1.5 text-xs outline-none focus:border-blue-500"
+                                />
+                              </div>
+                              <div>
+                                <label className="text-[10.5px] font-medium text-slate-600 dark:text-slate-300 block mb-1">
+                                  Field Type
+                                </label>
+                                <select
+                                  value={newFieldType}
+                                  onChange={(e) => setNewFieldType(e.target.value as any)}
+                                  className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2.5 py-1.5 text-xs outline-none focus:border-blue-500"
+                                >
+                                  <option value="text">Single Line Text</option>
+                                  <option value="textarea">Paragraph Textarea</option>
+                                  <option value="tel">Phone / Number</option>
+                                  <option value="select">Dropdown Select</option>
+                                </select>
+                              </div>
+                            </div>
+
+                            {newFieldType === 'select' && (
+                              <div>
+                                <label className="text-[10.5px] font-medium text-slate-600 dark:text-slate-300 block mb-1">
+                                  Dropdown Options (comma-separated)
+                                </label>
+                                <input
+                                  type="text"
+                                  placeholder="e.g. Billing, Technical Support, Sales"
+                                  value={newFieldOptions}
+                                  onChange={(e) => setNewFieldOptions(e.target.value)}
+                                  className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2.5 py-1.5 text-xs outline-none focus:border-blue-500"
+                                />
+                              </div>
+                            )}
+
+                            <div className="flex items-center justify-between pt-1">
+                              <label className="flex items-center gap-2 cursor-pointer text-xs text-slate-700 dark:text-slate-300">
+                                <input
+                                  type="checkbox"
+                                  checked={newFieldRequired}
+                                  onChange={(e) => setNewFieldRequired(e.target.checked)}
+                                  className="rounded accent-blue-600"
+                                />
+                                <span>Required field</span>
+                              </label>
+                              <div className="flex gap-2">
+                                <button
+                                  type="button"
+                                  onClick={() => setShowAddFieldForm(false)}
+                                  className="px-2.5 py-1 text-xs text-slate-500 hover:text-slate-700"
+                                >
+                                  Cancel
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={handleAddCustomField}
+                                  disabled={!newFieldLabel.trim()}
+                                  className="px-3 py-1 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold disabled:opacity-50"
+                                >
+                                  Add Field
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
                     <div className="pt-2">
                       <button
                         onClick={handleSaveSettings}
@@ -1909,7 +2161,7 @@ export default function DashboardPage() {
                         className="flex items-center gap-2 rounded-lg bg-blue-600 hover:bg-blue-700 px-4 py-2 text-xs font-semibold text-white transition shadow-xs"
                       >
                         <CheckCircle2 className="h-3.5 w-3.5" />
-                        <span>Save Widget Appearance</span>
+                        <span>Save Widget &amp; Support Settings</span>
                       </button>
                     </div>
                   </div>
@@ -1975,19 +2227,26 @@ export default function DashboardPage() {
 
             {/* TAB 7: LEADS & INQUIRIES */}
             {activeTab === 'leads' && (
-              <div className="max-w-5xl space-y-6 mx-auto">
+              <div className="max-w-6xl space-y-6 mx-auto">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Captured Leads</h1>
+                    <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Captured Leads &amp; Support Requests</h1>
                     <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                      Visitor contact details captured automatically during chatbot conversations.
+                      Inquiries, contact info, and custom field data submitted by visitors via the chat widget.
                     </p>
                   </div>
                   <button
                     onClick={() => {
-                      const csvHeader = 'ID,Email,Name,Phone,Date\n';
+                      const csvHeader = 'ID,Name,Email,Phone,Comments,Custom Fields,Date\n';
                       const csvRows = leads
-                        .map((l) => `"${l.id}","${l.email}","${l.name || ''}","${l.phone || ''}","${l.createdAt}"`)
+                        .map((l) => {
+                          const customStr = l.customData
+                            ? Object.entries(l.customData)
+                                .map(([k, v]) => `${k}: ${v}`)
+                                .join(' | ')
+                            : '';
+                          return `"${l.id}","${(l.name || '').replace(/"/g, '""')}","${l.email}","${(l.phone || '').replace(/"/g, '""')}","${(l.notes || '').replace(/"/g, '""')}","${customStr.replace(/"/g, '""')}","${l.createdAt}"`;
+                        })
                         .join('\n');
                       const blob = new Blob([csvHeader + csvRows], { type: 'text/csv' });
                       const url = URL.createObjectURL(blob);
@@ -1997,7 +2256,7 @@ export default function DashboardPage() {
                       a.click();
                     }}
                     disabled={leads.length === 0}
-                    className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs disabled:opacity-50 transition"
+                    className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs disabled:opacity-50 transition cursor-pointer"
                   >
                     <Download className="h-3.5 w-3.5" />
                     <span>Export CSV</span>
@@ -2007,35 +2266,79 @@ export default function DashboardPage() {
                 <div className="border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-900 shadow-xs overflow-hidden">
                   {leads.length === 0 ? (
                     <div className="p-8 text-center text-xs text-slate-500 dark:text-slate-400">
-                      No leads captured yet. Enable &quot;Lead Capture Form&quot; in the Widget tab to begin collecting emails.
+                      No leads or support requests captured yet. When visitors use the support form in the widget, submissions will appear here.
                     </div>
                   ) : (
                     <table className="w-full text-left text-xs">
                       <thead className="bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 font-semibold border-b border-slate-200 dark:border-slate-800">
                         <tr>
-                          <th className="py-3 px-5">Visitor Email</th>
-                          <th className="py-3 px-5">Name</th>
+                          <th className="py-3 px-5">Visitor Contact</th>
                           <th className="py-3 px-5">Phone</th>
-                          <th className="py-3 px-5">Date Captured</th>
+                          <th className="py-3 px-5">Comments / Notes</th>
+                          <th className="py-3 px-5">Custom Fields</th>
+                          <th className="py-3 px-5">Date</th>
+                          <th className="py-3 px-5 text-right">Actions</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                        {leads.map((lead) => (
-                          <tr key={lead.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition">
-                            <td className="py-3.5 px-5 font-semibold text-slate-900 dark:text-white font-mono">
-                              {lead.email}
-                            </td>
-                            <td className="py-3.5 px-5 text-slate-600 dark:text-slate-400">
-                              {lead.name || '—'}
-                            </td>
-                            <td className="py-3.5 px-5 text-slate-600 dark:text-slate-400 font-mono">
-                              {lead.phone || '—'}
-                            </td>
-                            <td className="py-3.5 px-5 text-slate-500 dark:text-slate-400 font-mono">
-                              {new Date(lead.createdAt).toLocaleString()}
-                            </td>
-                          </tr>
-                        ))}
+                        {leads.map((lead) => {
+                          const customEntries = lead.customData ? Object.entries(lead.customData) : [];
+                          return (
+                            <tr key={lead.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition">
+                              <td className="py-3.5 px-5">
+                                <div className="font-semibold text-slate-900 dark:text-white">
+                                  {lead.name || 'Website Visitor'}
+                                </div>
+                                <div className="text-blue-600 dark:text-blue-400 font-mono text-[11px]">
+                                  {lead.email}
+                                </div>
+                              </td>
+                              <td className="py-3.5 px-5 font-mono text-slate-700 dark:text-slate-300">
+                                {lead.phone || '—'}
+                              </td>
+                              <td className="py-3.5 px-5 max-w-[200px]">
+                                {lead.notes ? (
+                                  <span className="text-slate-600 dark:text-slate-400 line-clamp-2" title={lead.notes}>
+                                    {lead.notes}
+                                  </span>
+                                ) : (
+                                  <span className="text-slate-400 italic">None</span>
+                                )}
+                              </td>
+                              <td className="py-3.5 px-5">
+                                {customEntries.length > 0 ? (
+                                  <div className="flex flex-wrap gap-1 max-w-[220px]">
+                                    {customEntries.map(([k, v]) => (
+                                      <span
+                                        key={k}
+                                        className="inline-flex items-center px-2 py-0.5 rounded text-[10px] bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700"
+                                      >
+                                        <strong className="font-medium mr-1">{k}:</strong> {String(v)}
+                                      </span>
+                                    ))}
+                                  </div>
+                                ) : (
+                                  <span className="text-slate-400 italic text-[11px]">—</span>
+                                )}
+                              </td>
+                              <td className="py-3.5 px-5 text-slate-500 dark:text-slate-400 font-mono text-[11px] whitespace-nowrap">
+                                {new Date(lead.createdAt).toLocaleDateString()}{' '}
+                                <span className="text-[10px] opacity-75">
+                                  {new Date(lead.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                </span>
+                              </td>
+                              <td className="py-3.5 px-5 text-right">
+                                <button
+                                  type="button"
+                                  onClick={() => setSelectedLeadModal(lead)}
+                                  className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/60 px-2.5 py-1 rounded transition cursor-pointer"
+                                >
+                                  Details
+                                </button>
+                              </td>
+                            </tr>
+                          );
+                        })}
                       </tbody>
                     </table>
                   )}
@@ -2262,6 +2565,107 @@ export default function DashboardPage() {
                   className="rounded-lg bg-blue-600 hover:bg-blue-700 px-4 py-1.5 text-xs font-semibold text-white shadow-xs transition"
                 >
                   Done
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* MODAL: VIEW LEAD DETAILS */}
+        {selectedLeadModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 backdrop-blur-xs p-4">
+            <div className="w-full max-w-lg rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-2xl space-y-5 animate-in fade-in duration-150">
+              <div className="flex items-start justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-900">
+                    <Users className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <h2 className="text-base font-bold text-slate-900 dark:text-white">
+                      {selectedLeadModal.name || 'Website Visitor'}
+                    </h2>
+                    <p className="text-xs text-blue-600 dark:text-blue-400 font-mono">
+                      {selectedLeadModal.email}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setSelectedLeadModal(null)}
+                  className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+
+              <div className="space-y-3.5 text-xs">
+                <div className="grid grid-cols-2 gap-3 p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
+                  <div>
+                    <div className="text-[10.5px] font-semibold text-slate-400 uppercase tracking-wide">Phone Number</div>
+                    <div className="font-mono text-slate-800 dark:text-slate-200 mt-0.5">
+                      {selectedLeadModal.phone || 'Not provided'}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-[10.5px] font-semibold text-slate-400 uppercase tracking-wide">Submission Date</div>
+                    <div className="text-slate-800 dark:text-slate-200 mt-0.5">
+                      {new Date(selectedLeadModal.createdAt).toLocaleString()}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Custom Fields */}
+                {selectedLeadModal.customData && Object.keys(selectedLeadModal.customData).length > 0 && (
+                  <div>
+                    <div className="text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">
+                      Custom Fields
+                    </div>
+                    <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 space-y-2">
+                      {Object.entries(selectedLeadModal.customData).map(([key, val]) => (
+                        <div key={key} className="flex justify-between items-center text-xs border-b border-slate-200/50 dark:border-slate-700/50 pb-1.5 last:border-none last:pb-0">
+                          <span className="font-semibold text-slate-600 dark:text-slate-400">{key}:</span>
+                          <span className="font-medium text-slate-900 dark:text-white font-mono">{String(val)}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Visitor Comments */}
+                <div>
+                  <div className="text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">
+                    Visitor Comments / Message
+                  </div>
+                  <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 whitespace-pre-wrap leading-relaxed">
+                    {selectedLeadModal.notes || <span className="text-slate-400 italic">No additional comments provided.</span>}
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex justify-between items-center pt-2 border-t border-slate-200 dark:border-slate-800">
+                <div className="flex gap-2">
+                  <a
+                    href={`mailto:${selectedLeadModal.email}?subject=Re:%20Support%20Inquiry%20via%20${encodeURIComponent(activeAssistant?.name || 'AI Assistant')}`}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs transition"
+                  >
+                    <span>Reply Email</span>
+                    <ExternalLink className="h-3 w-3" />
+                  </a>
+                  {selectedLeadModal.phone && (
+                    <a
+                      href={`tel:${selectedLeadModal.phone}`}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 text-xs font-semibold shadow-xs transition"
+                    >
+                      <span>Call</span>
+                    </a>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setSelectedLeadModal(null)}
+                  className="rounded-lg border border-slate-200 dark:border-slate-700 px-4 py-1.5 text-xs text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
+                >
+                  Close
                 </button>
               </div>
             </div>

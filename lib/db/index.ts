@@ -26,8 +26,19 @@ export interface AssistantData {
   collectLeadEmail: boolean;
   allowWebSearch?: boolean;
   allowedDomains: string[];
+  supportReceiverEmail?: string;
+  supportCcEmails?: string[];
+  supportCustomFields?: SupportCustomField[];
   createdAt: string;
   updatedAt: string;
+}
+
+export interface SupportCustomField {
+  id: string;
+  label: string;
+  type: 'text' | 'textarea' | 'tel' | 'select';
+  required: boolean;
+  options?: string[];
 }
 
 export interface KnowledgeSourceData {
@@ -84,6 +95,7 @@ export interface LeadData {
   name?: string;
   phone?: string;
   notes?: string;
+  customData?: Record<string, any>;
   createdAt: string;
 }
 
@@ -217,6 +229,9 @@ export class Database {
       collectLeadEmail: data.collectLeadEmail ?? false,
       allowWebSearch: data.allowWebSearch ?? true,
       allowedDomains: data.allowedDomains || [],
+      supportReceiverEmail: data.supportReceiverEmail || '',
+      supportCcEmails: data.supportCcEmails || [],
+      supportCustomFields: data.supportCustomFields || [],
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
@@ -438,6 +453,7 @@ export class Database {
     name?: string;
     phone?: string;
     notes?: string;
+    customData?: Record<string, any>;
   }): Promise<LeadData> {
     const state = loadState();
     const lead: LeadData = {
@@ -447,6 +463,7 @@ export class Database {
       name: data.name,
       phone: data.phone,
       notes: data.notes,
+      customData: data.customData,
       createdAt: new Date().toISOString(),
     };
 

@@ -380,6 +380,188 @@
         opacity: 0.5;
         cursor: not-allowed;
       }
+      /* Header action buttons */
+      .header-actions {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .header-action-btn {
+        background: rgba(255, 255, 255, 0.18);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        color: #ffffff;
+        font-size: 11px;
+        font-weight: 600;
+        padding: 4px 8px;
+        border-radius: 6px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        transition: background 0.15s;
+      }
+      .header-action-btn:hover {
+        background: rgba(255, 255, 255, 0.28);
+      }
+      /* Sleek Support Form Card */
+      .support-form-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
+        padding: 16px;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06), 0 0 0 1px rgba(0, 0, 0, 0.02);
+        margin: 6px 0;
+        align-self: stretch;
+      }
+      .support-form-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 12px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #f1f5f9;
+      }
+      .support-form-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        background: #eff6ff;
+        color: var(--primary-color, #2563eb);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 15px;
+      }
+      .support-form-title {
+        font-size: 13.5px;
+        font-weight: 700;
+        color: #0f172a;
+      }
+      .support-form-desc {
+        font-size: 11px;
+        color: #64748b;
+        margin-top: 1px;
+      }
+      .support-field {
+        margin-bottom: 10px;
+      }
+      .support-label {
+        display: block;
+        font-size: 11px;
+        font-weight: 600;
+        color: #334155;
+        margin-bottom: 4px;
+      }
+      .support-label .required-star {
+        color: #ef4444;
+        margin-left: 2px;
+      }
+      .support-label .optional-tag {
+        font-size: 10px;
+        font-weight: normal;
+        color: #94a3b8;
+        margin-left: 4px;
+      }
+      .support-input, .support-select, .support-textarea {
+        width: 100%;
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+        padding: 8px 10px;
+        font-size: 12px;
+        color: #0f172a;
+        background: #f8fafc;
+        outline: none;
+        transition: border-color 0.15s, box-shadow 0.15s, background-color 0.15s;
+      }
+      .support-input:focus, .support-select:focus, .support-textarea:focus {
+        border-color: var(--primary-color, #2563eb);
+        background: #ffffff;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+      }
+      .support-textarea {
+        resize: vertical;
+        min-height: 55px;
+      }
+      .support-submit-btn {
+        width: 100%;
+        background-color: var(--primary-color, #2563eb);
+        color: #ffffff;
+        border: none;
+        border-radius: 8px;
+        padding: 10px 14px;
+        font-size: 12.5px;
+        font-weight: 600;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        transition: opacity 0.15s, transform 0.1s;
+        margin-top: 4px;
+      }
+      .support-submit-btn:hover {
+        opacity: 0.92;
+      }
+      .support-submit-btn:active {
+        transform: scale(0.99);
+      }
+      .support-submit-btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+      .support-error-box {
+        font-size: 11.5px;
+        color: #b91c1c;
+        background: #fef2f2;
+        border: 1px solid #fecaca;
+        border-radius: 6px;
+        padding: 7px 10px;
+        margin-bottom: 10px;
+        display: none;
+      }
+      .support-success-card {
+        background: #f0fdf4;
+        border: 1px solid #bbf7d0;
+        border-radius: 14px;
+        padding: 16px;
+        text-align: center;
+        color: #166534;
+        margin: 6px 0;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+      }
+      .support-success-title {
+        font-size: 13.5px;
+        font-weight: 700;
+        margin-bottom: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+      }
+      .support-success-text {
+        font-size: 12px;
+        color: #15803d;
+        line-height: 1.45;
+      }
+      .support-quick-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        background: #eff6ff;
+        color: var(--primary-color, #2563eb);
+        border: 1px solid #bfdbfe;
+        border-radius: 16px;
+        padding: 6px 12px;
+        font-size: 11.5px;
+        font-weight: 600;
+        cursor: pointer;
+        margin-top: 8px;
+        transition: all 0.15s;
+      }
+      .support-quick-btn:hover {
+        background: var(--primary-color, #2563eb);
+        color: #ffffff;
+      }
     `;
     shadow.appendChild(style);
 
@@ -409,12 +591,20 @@
             <div class="header-status"><span class="status-dot"></span> Online</div>
           </div>
         </div>
-        <button class="close-btn" id="close-chat-btn" title="Close chat">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <line x1="18" y1="6" x2="6" y2="18"></line>
-            <line x1="6" y1="6" x2="18" y2="18"></line>
-          </svg>
-        </button>
+        <div class="header-actions">
+          <button class="header-action-btn" id="header-support-btn" title="Contact Support">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+            </svg>
+            <span>Support</span>
+          </button>
+          <button class="close-btn" id="close-chat-btn" title="Close chat">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
       </div>
       <div class="messages-container" id="messages-body"></div>
       <div class="chat-footer">
@@ -437,6 +627,7 @@
     var chatInput = shadow.getElementById('chat-input');
     var sendBtn = shadow.getElementById('send-msg-btn');
     var closeBtn = shadow.getElementById('close-chat-btn');
+    var supportHeaderBtn = shadow.getElementById('header-support-btn');
     var nameEl = shadow.getElementById('ast-name');
     var avatarEl = shadow.getElementById('ast-avatar');
 
@@ -508,6 +699,12 @@
       closeBtn.addEventListener('click', function () {
         isOpen = false;
         chatWindow.classList.remove('open');
+      });
+    }
+
+    if (supportHeaderBtn) {
+      supportHeaderBtn.addEventListener('click', function () {
+        renderSupportForm();
       });
     }
 
@@ -634,7 +831,260 @@
       return html;
     }
 
-    // Send Streaming Message
+    function isSupportIntent(text) {
+      if (!text) return false;
+      var lower = text.toLowerCase().trim();
+      var keywords = [
+        'connect to support',
+        'connect with support',
+        'talk to support',
+        'contact support',
+        'talk to human',
+        'speak to human',
+        'talk to agent',
+        'speak with agent',
+        'talk to a person',
+        'speak to a person',
+        'customer service',
+        'customer support',
+        'human agent',
+        'human help',
+        'live agent',
+        'support team',
+        'support agent'
+      ];
+      for (var i = 0; i < keywords.length; i++) {
+        if (lower.indexOf(keywords[i]) !== -1) return true;
+      }
+      return false;
+    }
+
+    function isSupportSuggested(text) {
+      if (!text) return false;
+      var lower = text.toLowerCase();
+      return (
+        lower.indexOf('connect you with our support team') !== -1 ||
+        lower.indexOf('contact our support team') !== -1 ||
+        lower.indexOf('connect with our support team') !== -1 ||
+        lower.indexOf('connect to support') !== -1 ||
+        lower.indexOf('reach out to our support') !== -1 ||
+        lower.indexOf('support team for further assistance') !== -1
+      );
+    }
+
+    function formatHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function renderSupportForm(prefillNotes) {
+      // Don't duplicate if already open in view
+      var existing = messagesBody && messagesBody.querySelector('.support-form-card');
+      if (existing) {
+        existing.scrollIntoView({ behavior: 'smooth' });
+        var firstInput = existing.querySelector('input');
+        if (firstInput) firstInput.focus();
+        return;
+      }
+
+      var card = document.createElement('div');
+      card.className = 'support-form-card';
+
+      var customFieldsHtml = '';
+      var fieldsList = config.supportCustomFields || [];
+      if (Array.isArray(fieldsList) && fieldsList.length > 0) {
+        fieldsList.forEach(function (cf) {
+          var reqStar = cf.required ? '<span class="required-star">*</span>' : '<span class="optional-tag">(Optional)</span>';
+          customFieldsHtml += '<div class="support-field">';
+          customFieldsHtml += '<label class="support-label">' + formatHtml(cf.label) + ' ' + reqStar + '</label>';
+
+          if (cf.type === 'select' && cf.options && cf.options.length > 0) {
+            customFieldsHtml += '<select class="support-select" data-custom-id="' + cf.id + '" ' + (cf.required ? 'required' : '') + '>';
+            customFieldsHtml += '<option value="">-- Select ' + formatHtml(cf.label) + ' --</option>';
+            cf.options.forEach(function (opt) {
+              customFieldsHtml += '<option value="' + formatHtml(opt) + '">' + formatHtml(opt) + '</option>';
+            });
+            customFieldsHtml += '</select>';
+          } else if (cf.type === 'textarea') {
+            customFieldsHtml += '<textarea class="support-textarea" data-custom-id="' + cf.id + '" placeholder="' + formatHtml(cf.label) + '" ' + (cf.required ? 'required' : '') + '></textarea>';
+          } else if (cf.type === 'tel') {
+            customFieldsHtml += '<input type="tel" class="support-input" data-custom-id="' + cf.id + '" placeholder="e.g. +1 555-0199" ' + (cf.required ? 'required' : '') + ' />';
+          } else {
+            customFieldsHtml += '<input type="text" class="support-input" data-custom-id="' + cf.id + '" placeholder="' + formatHtml(cf.label) + '" ' + (cf.required ? 'required' : '') + ' />';
+          }
+
+          customFieldsHtml += '</div>';
+        });
+      }
+
+      var initialNotes = prefillNotes && !isSupportIntent(prefillNotes) ? formatHtml(prefillNotes) : '';
+
+      card.innerHTML = `
+        <div class="support-form-header">
+          <div class="support-form-icon">💬</div>
+          <div>
+            <div class="support-form-title">Connect with Support</div>
+            <div class="support-form-desc">Leave your details and our team will get back to you promptly.</div>
+          </div>
+        </div>
+        <div class="support-error-box" id="supp-err-box"></div>
+        <form id="supp-form">
+          <div class="support-field">
+            <label class="support-label">Full Name <span class="required-star">*</span></label>
+            <input type="text" class="support-input" id="supp-name" placeholder="John Doe" required />
+          </div>
+          <div class="support-field">
+            <label class="support-label">Email Address <span class="required-star">*</span></label>
+            <input type="email" class="support-input" id="supp-email" placeholder="john@example.com" required />
+          </div>
+          <div class="support-field">
+            <label class="support-label">Phone Number <span class="required-star">*</span></label>
+            <input type="tel" class="support-input" id="supp-phone" placeholder="e.g. +1 234 567 890" required />
+          </div>
+          ${customFieldsHtml}
+          <div class="support-field">
+            <label class="support-label">Comments / Message <span class="optional-tag">(Optional)</span></label>
+            <textarea class="support-textarea" id="supp-notes" placeholder="How can our team help you?">${initialNotes}</textarea>
+          </div>
+          <button type="submit" class="support-submit-btn" id="supp-submit-btn">
+            <span>Send Support Request</span>
+          </button>
+        </form>
+      `;
+
+      if (messagesBody) messagesBody.appendChild(card);
+      scrollToBottom();
+
+      var form = card.querySelector('#supp-form');
+      var errBox = card.querySelector('#supp-err-box');
+      var submitBtn = card.querySelector('#supp-submit-btn');
+
+      function showError(msg) {
+        errBox.textContent = msg;
+        errBox.style.display = 'block';
+        errBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+
+      form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        errBox.style.display = 'none';
+
+        var nameVal = (card.querySelector('#supp-name').value || '').trim();
+        var emailVal = (card.querySelector('#supp-email').value || '').trim();
+        var phoneVal = (card.querySelector('#supp-phone').value || '').trim();
+        var notesVal = (card.querySelector('#supp-notes').value || '').trim();
+
+        if (!nameVal) {
+          showError('Please enter your full name.');
+          return;
+        }
+        if (!emailVal || emailVal.indexOf('@') === -1 || emailVal.indexOf('.') === -1) {
+          showError('Please enter a valid email address.');
+          return;
+        }
+        if (!phoneVal) {
+          showError('Please enter your phone number.');
+          return;
+        }
+
+        // Collect custom fields
+        var customData = {};
+        var customInputs = card.querySelectorAll('[data-custom-id]');
+        var customHasError = false;
+        for (var i = 0; i < customInputs.length; i++) {
+          var input = customInputs[i];
+          var fieldId = input.getAttribute('data-custom-id');
+          var val = input.value.trim();
+          var isReq = input.hasAttribute('required');
+          if (isReq && !val) {
+            var parentLabel = input.parentElement.querySelector('label');
+            var labelText = parentLabel ? parentLabel.textContent.replace('*', '').trim() : 'This field';
+            showError('Please fill in ' + labelText + '.');
+            customHasError = true;
+            break;
+          }
+          if (val) {
+            customData[fieldId] = val;
+          }
+        }
+        if (customHasError) return;
+
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = `
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation: typing 0.8s infinite linear;">
+            <circle cx="12" cy="12" r="10" stroke-dasharray="30" stroke-dashoffset="10"/>
+          </svg>
+          <span>Submitting...</span>
+        `;
+
+        fetch(hostUrl + '/api/lead', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            assistantId: assistantId,
+            name: nameVal,
+            email: emailVal,
+            phone: phoneVal,
+            notes: notesVal,
+            customData: customData,
+            conversationId: conversationId,
+          }),
+        })
+          .then(function (res) {
+            return res.json();
+          })
+          .then(function (data) {
+            if (data.error) {
+              throw new Error(data.error);
+            }
+
+            // Replace card with sleek confirmation
+            card.innerHTML = `
+              <div class="support-success-card">
+                <div class="support-success-title">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="3">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg>
+                  <span>Support Request Sent!</span>
+                </div>
+                <div class="support-success-text">
+                  Thank you, <strong>${formatHtml(nameVal)}</strong>! Our team has received your message and will reach out to you via <strong>${formatHtml(emailVal)}</strong> or phone shortly.
+                </div>
+              </div>
+            `;
+            scrollToBottom();
+          })
+          .catch(function (err) {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<span>Send Support Request</span>';
+            showError(err.message || 'Failed to submit request. Please try again.');
+          });
+      });
+    }
+
+    function renderSupportQuickButton(parentMsgEl, queryText) {
+      if (!parentMsgEl || parentMsgEl.querySelector('.support-quick-btn')) return;
+      var btn = document.createElement('button');
+      btn.className = 'support-quick-btn';
+      btn.innerHTML = `
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+        </svg>
+        <span>💬 Connect with Support Team</span>
+      `;
+      btn.addEventListener('click', function () {
+        btn.remove();
+        renderSupportForm(queryText);
+      });
+      parentMsgEl.appendChild(btn);
+      scrollToBottom();
+    }
+
+    // Send Streaming Message with Stream Stability & Support Handoff
     function sendMessage() {
       var text = chatInput.value.trim();
       if (!text || isStreaming) return;
@@ -643,6 +1093,8 @@
       appendMessage('user', text);
       isStreaming = true;
       sendBtn.disabled = true;
+
+      var userWantsSupport = isSupportIntent(text);
 
       // Show typing dots
       var typing = document.createElement('div');
@@ -655,9 +1107,33 @@
       if (messagesBody) messagesBody.appendChild(typing);
       scrollToBottom();
 
+      // If user directly typed "connect to support", render form immediately!
+      if (userWantsSupport) {
+        if (typing.parentNode && messagesBody) {
+          messagesBody.removeChild(typing);
+        }
+        appendMessage('assistant', "I would be happy to connect you with our support team! Please fill in your contact details below:");
+        renderSupportForm(text);
+        isStreaming = false;
+        sendBtn.disabled = false;
+        chatInput.focus();
+        return;
+      }
+
+      // 28-second AbortController timeout safeguard against hanging connections
+      var controller = null;
+      var timeoutId = null;
+      if (typeof AbortController !== 'undefined') {
+        controller = new AbortController();
+        timeoutId = setTimeout(function () {
+          if (controller) controller.abort();
+        }, 28000);
+      }
+
       fetch(hostUrl + '/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        signal: controller ? controller.signal : undefined,
         body: JSON.stringify({
           assistantId: assistantId,
           messages: messages.map(function (m) { return { role: m.role, content: m.content }; }),
@@ -666,22 +1142,16 @@
         }),
       })
         .then(function (response) {
+          if (timeoutId) clearTimeout(timeoutId);
           if (!response.ok) {
             throw new Error('HTTP error ' + response.status);
           }
 
-          if (typing.parentNode && messagesBody) {
-            messagesBody.removeChild(typing);
-          }
-
-          var assistantBubble = document.createElement('div');
-          assistantBubble.className = 'message msg-assistant';
-          if (messagesBody) messagesBody.appendChild(assistantBubble);
-
           var reader = response.body && response.body.getReader();
           var decoder = new TextDecoder();
           var streamedText = '';
-          var receivedCitations = [];
+          var assistantBubble = null;
+          var hasMountedBubble = false;
 
           if (!reader) {
             throw new Error('No response body reader');
@@ -690,11 +1160,29 @@
           function readStream() {
             return reader.read().then(function (result) {
               if (result.done) {
-                messages.push({ role: 'assistant', content: streamedText });
+                if (typing.parentNode && messagesBody) {
+                  messagesBody.removeChild(typing);
+                }
+
+                if (!streamedText.trim()) {
+                  // If finished with zero tokens, display helpful message and offer support form
+                  var fallback = config.fallbackMessage || "I'm here to help! If you'd like to connect with our support team, please let us know below.";
+                  var fbEl = appendMessage('assistant', fallback);
+                  renderSupportQuickButton(fbEl, text);
+                } else {
+                  messages.push({ role: 'assistant', content: streamedText });
+                  // Check if bot suggested support or user mentioned support
+                  if (assistantBubble && isSupportSuggested(streamedText)) {
+                    renderSupportQuickButton(assistantBubble, text);
+                  }
+                  if (assistantBubble) {
+                    scrollToStartOfMessage(assistantBubble);
+                  }
+                }
+
                 isStreaming = false;
                 sendBtn.disabled = false;
                 chatInput.focus();
-                scrollToStartOfMessage(assistantBubble);
                 return;
               }
 
@@ -707,17 +1195,30 @@
                   try {
                     var data = JSON.parse(line.slice(6));
                     if (data.type === 'citations') {
-                      receivedCitations = data.citations || [];
                       if (data.conversationId) conversationId = data.conversationId;
                     } else if (data.type === 'token') {
+                      // MOUNT BUBBLE ON FIRST TOKEN ONLY
+                      if (!hasMountedBubble) {
+                        if (typing.parentNode && messagesBody) {
+                          messagesBody.removeChild(typing);
+                        }
+                        assistantBubble = document.createElement('div');
+                        assistantBubble.className = 'message msg-assistant';
+                        if (messagesBody) messagesBody.appendChild(assistantBubble);
+                        hasMountedBubble = true;
+                      }
                       streamedText += data.token;
                       assistantBubble.innerHTML = formatMarkdown(streamedText);
                       scrollToBottom();
+                    } else if (data.type === 'error') {
+                      throw new Error(data.error || 'Inference error');
                     } else if (data.type === 'done') {
                       if (data.conversationId) conversationId = data.conversationId;
                     }
                   } catch (e) {
-                    // partial chunk
+                    if (e.message && (e.message.indexOf('Inference') !== -1 || e.message.indexOf('error') !== -1)) {
+                      throw e;
+                    }
                   }
                 }
               }
@@ -729,9 +1230,14 @@
           return readStream();
         })
         .catch(function (err) {
+          if (timeoutId) clearTimeout(timeoutId);
           console.error('[AI Assistant Widget] Chat error:', err);
           if (typing.parentNode && messagesBody) messagesBody.removeChild(typing);
-          appendMessage('assistant', 'Sorry, I encountered an error connecting to the AI service. Please try again.');
+
+          var errMsg = "I apologize, but I encountered a temporary connection issue. You can ask again, or connect directly with our support team:";
+          var errBubble = appendMessage('assistant', errMsg);
+          renderSupportQuickButton(errBubble, text);
+
           isStreaming = false;
           sendBtn.disabled = false;
           chatInput.focus();
