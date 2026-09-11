@@ -185,23 +185,26 @@ export async function retrieveRelevantContext(
     chunks = chunks.slice(0, topK);
   }
 
-  // 4. Format citations with real web URLs
-  const citations: Citation[] = chunks.map((c) => {
-    let url = c.metadata?.url;
-    if (!url) {
-      const urlMatch = c.content.match(/(?:Source Web URL|URL):\s*(https?:\/\/[^\s\n\)]+)/i);
-      if (urlMatch) url = urlMatch[1];
-    }
-    return {
-      sourceTitle: c.metadata.sourceTitle || 'Knowledge Source',
-      sourceType: c.metadata.sourceType || 'document',
-      chunkIndex: c.chunkIndex,
-      preview: c.content.slice(0, 160).replace(/\s+/g, ' ') + '...',
-      url: url || undefined,
-      page: c.metadata.page,
-      row: c.metadata.row,
-    };
-  });
+  // 4. Format citations - ONLY include verified external web sources / online URLs
+  // Never expose internal filenames, private PDFs, or backend CSV database titles to customers
+  const citations: Citation[] = chunks
+    .map((c) => {
+      let url = c.metadata?.url;
+      if (!url) {
+        const urlMatch = c.content.match(/(?:Source Web URL|URL):\s*(https?:\/\/[^\s\n\)]+)/i);
+        if (urlMatch) url = urlMatch[1];
+      }
+      return {
+        sourceTitle: c.metadata.sourceTitle || 'Web Source',
+        sourceType: c.metadata.sourceType || 'web',
+        chunkIndex: c.chunkIndex,
+        preview: c.content.slice(0, 160).replace(/\s+/g, ' ') + '...',
+        url: url || undefined,
+        page: c.metadata.page,
+        row: c.metadata.row,
+      };
+    })
+    .filter((c) => Boolean(c.url && (c.url.startsWith('http://') || c.url.startsWith('https://'))));
 
   // 5. Format context block for LLM prompt
   if (chunks.length === 0) {

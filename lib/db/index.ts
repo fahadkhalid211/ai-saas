@@ -75,6 +75,14 @@ export interface KnowledgeSourceData {
   errorMessage?: string;
   errorResolution?: string;
   chunkCount: number;
+  corrections?: Array<{
+    id: string;
+    type: 'replace' | 'note' | 'edit';
+    findText?: string;
+    replaceText?: string;
+    note?: string;
+    appliedAt: string;
+  }>;
   createdAt: string;
   updatedAt: string;
 }
@@ -417,6 +425,11 @@ export class Database {
     }
   }
 
+  static async getKnowledgeSourceById(id: string): Promise<KnowledgeSourceData | null> {
+    const state = loadState();
+    return state.knowledgeSources.find((k) => k.id === id) || null;
+  }
+
   static async deleteKnowledgeSource(id: string): Promise<boolean> {
     const state = loadState();
     state.knowledgeSources = state.knowledgeSources.filter((k) => k.id !== id);
@@ -435,6 +448,19 @@ export class Database {
     }));
 
     state.chunks.push(...newRecords);
+    saveState(state);
+  }
+
+  static async updateChunks(updatedChunks: ChunkRecord[]): Promise<void> {
+    const state = loadState();
+    const map = new Map<string, ChunkRecord>(updatedChunks.map((c) => [c.id, c]));
+    state.chunks = state.chunks.map((c) => map.get(c.id) || c);
+    saveState(state);
+  }
+
+  static async deleteChunksBySource(sourceId: string): Promise<void> {
+    const state = loadState();
+    state.chunks = state.chunks.filter((c) => c.knowledgeSourceId !== sourceId);
     saveState(state);
   }
 

@@ -804,6 +804,14 @@
           </div>
         </div>
         <div class="header-actions">
+          <button class="header-action-btn" id="header-download-btn" title="Download Chat Transcript">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            <span>Save</span>
+          </button>
           <button class="header-action-btn" id="header-support-btn" title="Contact Support">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
               <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
@@ -1015,6 +1023,44 @@
     if (supportHeaderBtn) {
       supportHeaderBtn.addEventListener('click', function () {
         renderSupportForm();
+      });
+    }
+
+    var downloadHeaderBtn = shadow.getElementById('header-download-btn');
+    if (downloadHeaderBtn) {
+      downloadHeaderBtn.addEventListener('click', function () {
+        if (!messages || messages.length === 0) {
+          alert('No messages to download yet.');
+          return;
+        }
+        var astTitle = config.name || 'AI Assistant';
+        var now = new Date();
+        var dateStr = now.toLocaleDateString() + ' ' + now.toLocaleTimeString();
+        var lines = [
+          '=======================================================',
+          astTitle.toUpperCase() + ' - CHAT TRANSCRIPT',
+          'Exported: ' + dateStr,
+          'Total Messages: ' + messages.length,
+          '=======================================================',
+          ''
+        ];
+
+        messages.forEach(function (m, idx) {
+          var sender = m.role === 'user' ? 'Visitor' : astTitle;
+          lines.push('[' + (idx + 1) + '] ' + sender + ':');
+          lines.push(m.content);
+          lines.push('');
+        });
+
+        var blob = new Blob([lines.join('\r\n')], { type: 'text/plain;charset=utf-8' });
+        var blobUrl = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = blobUrl;
+        a.download = 'chat-transcript-' + now.toISOString().slice(0, 10) + '.txt';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(function () { URL.revokeObjectURL(blobUrl); }, 1500);
       });
     }
 
@@ -1404,13 +1450,16 @@
       var btn = document.createElement('button');
       btn.className = 'booking-quick-btn';
       btn.innerHTML = `
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
           <line x1="16" y1="2" x2="16" y2="6"></line>
           <line x1="8" y1="2" x2="8" y2="6"></line>
           <line x1="3" y1="10" x2="21" y2="10"></line>
+          <path d="M8 14h.01"></path>
+          <path d="M12 14h.01"></path>
+          <path d="M16 14h.01"></path>
         </svg>
-        <span>📅 ${escapeHtml(config.bookingPromptText || 'Book an Appointment')}</span>
+        <span>${escapeHtml(config.bookingPromptText || 'Schedule an Appointment')}</span>
       `;
       btn.addEventListener('click', function () {
         btn.remove();
@@ -1430,11 +1479,14 @@
         var providerName = isCalCom ? 'Cal.com' : 'Calendly';
         card.innerHTML = `
           <div class="booking-header">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--primary-color, #2563eb)" stroke-width="2.5">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--primary-color, #2563eb)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
               <line x1="16" y1="2" x2="16" y2="6"></line>
               <line x1="8" y1="2" x2="8" y2="6"></line>
               <line x1="3" y1="10" x2="21" y2="10"></line>
+              <path d="M8 14h.01"></path>
+              <path d="M12 14h.01"></path>
+              <path d="M16 14h.01"></path>
             </svg>
             <span>${escapeHtml(config.bookingPromptText || ('Schedule with ' + providerName))}</span>
           </div>
@@ -1501,11 +1553,14 @@
 
       card.innerHTML = `
         <div class="booking-header">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--primary-color, #2563eb)" stroke-width="2.5">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--primary-color, #2563eb)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
             <line x1="16" y1="2" x2="16" y2="6"></line>
             <line x1="8" y1="2" x2="8" y2="6"></line>
             <line x1="3" y1="10" x2="21" y2="10"></line>
+            <path d="M8 14h.01"></path>
+            <path d="M12 14h.01"></path>
+            <path d="M16 14h.01"></path>
           </svg>
           <span>${escapeHtml(config.bookingPromptText || 'Schedule an Appointment')}</span>
         </div>
@@ -1702,13 +1757,16 @@
 
           function renderWidgetCitations(parentBubble, citations) {
             if (!parentBubble || !citations || !citations.length) return;
-            var validCitations = citations.filter(function (c) { return c && (c.url || c.sourceTitle); });
+            // Strictly only surface external web search links — never internal documents, CSVs, or files
+            var validCitations = citations.filter(function (c) {
+              return c && c.url && (c.url.indexOf('http://') === 0 || c.url.indexOf('https://') === 0);
+            });
             if (validCitations.length === 0) return;
 
             var seen = {};
             var uniqueCitations = [];
             validCitations.forEach(function (c) {
-              var key = c.url || c.sourceTitle;
+              var key = c.url;
               if (!seen[key]) {
                 seen[key] = true;
                 uniqueCitations.push(c);
@@ -1726,39 +1784,30 @@
                 <line x1="2" y1="12" x2="22" y2="12"></line>
                 <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
               </svg>
-              <span>Sources &amp; References:</span>
+              <span>Web Sources:</span>
             `;
             container.appendChild(header);
 
             uniqueCitations.forEach(function (c) {
               var title = c.sourceTitle || (c.url ? (function() {
                 try { return new URL(c.url).hostname; } catch(e) { return c.url; }
-              })() : 'Source');
+              })() : 'Web Source');
 
-              if (c.url) {
-                var a = document.createElement('a');
-                a.href = c.url;
-                a.target = '_blank';
-                a.rel = 'noopener noreferrer';
-                a.className = 'source-pill-link';
-                a.title = c.preview || c.url;
-                a.innerHTML = `
-                  <span>${escapeHtml(title)}</span>
-                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
-                    <polyline points="15 3 21 3 21 9"></polyline>
-                    <line x1="10" y1="14" x2="21" y2="3"></line>
-                  </svg>
-                `;
-                container.appendChild(a);
-              } else {
-                var span = document.createElement('span');
-                span.className = 'source-pill-link';
-                span.style.color = '#475569';
-                span.style.cursor = 'default';
-                span.textContent = title;
-                container.appendChild(span);
-              }
+              var a = document.createElement('a');
+              a.href = c.url;
+              a.target = '_blank';
+              a.rel = 'noopener noreferrer';
+              a.className = 'source-pill-link';
+              a.title = c.preview || c.url;
+              a.innerHTML = `
+                <span>${escapeHtml(title)}</span>
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                  <polyline points="15 3 21 3 21 9"></polyline>
+                  <line x1="10" y1="14" x2="21" y2="3"></line>
+                </svg>
+              `;
+              container.appendChild(a);
             });
 
             parentBubble.appendChild(container);
