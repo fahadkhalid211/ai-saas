@@ -15,14 +15,14 @@ export interface WebSearchResultItem {
 export function isWebSearchIntent(message: string): boolean {
   if (!message) return false;
   const m = message.trim();
-  // 1. Mentions internet, web, online, or google in a search/lookup context
-  if (/\b(search|look\s*up|find|google|check)\b.*?\b(internet|web|online|google)\b/i.test(m)) return true;
-  // 2. Direct search or google command at start of sentence
-  if (/^(search|google|look\s*up|find\s*online)\b/i.test(m)) return true;
+  // 1. Mentions internet, web, online, or google/bing in a lookup context
+  if (/\b(search|look\s*up|find|google|browse|check)\b.*?\b(internet|web|online|google|bing|duckduckgo)\b/i.test(m)) return true;
+  // 2. Direct search phrases: "search ...", "web search ...", "search online ..."
+  if (/^(search|web\s*search|google|look\s*up|find\s*online|browse\s*web)\b/i.test(m)) return true;
   // 3. Conversational commands: "search and tell me", "search for", "search it on", etc.
   if (/\bsearch\s+(?:it\s+on|and\s+tell\s+me|and\s+find|for|about|on\s+the|on)\b/i.test(m)) return true;
   // 4. Mentions searching on the internet anywhere
-  if (/\b(on the internet|on internet|from the web|from internet|online search)\b/i.test(m)) return true;
+  if (/\b(on the internet|on internet|from the web|from internet|online search|live search)\b/i.test(m)) return true;
   return false;
 }
 
@@ -73,6 +73,34 @@ export function extractSearchQuery(
 export async function executeWebSearch(query: string): Promise<WebSearchResultItem[]> {
   const results: WebSearchResultItem[] = [];
 
+  function cleanDuckDuckGoUrl(rawUrl: string): string {
+    if (!rawUrl) return '';
+    let url = rawUrl.trim();
+    if (url.includes('uddg=')) {
+      const match = url.match(/uddg=([^&]+)/);
+      if (match && match[1]) {
+        try {
+          url = decodeURIComponent(match[1]);
+        } catch {}
+      }
+    }
+    if (url.startsWith('//')) {
+      url = 'https:' + url;
+    }
+    return url;
+  }
+
+  function cleanHtmlText(raw: string): string {
+    return raw
+      .replace(/<[^>]+>/g, '')
+      .replace(/&quot;/g, '"')
+      .replace(/&#x27;/g, "'")
+      .replace(/&amp;/g, '&')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .trim();
+  }
+
   // 1. Check DuckDuckGo Instant Answer / Abstract API
   try {
     const instantUrl = 'https://api.duckduckgo.com/?q=' + encodeURIComponent(query) + '&format=json&no_html=1&skip_disambig=1';
@@ -102,7 +130,7 @@ export async function executeWebSearch(query: string): Promise<WebSearchResultIt
     console.warn('[WebSearch] Instant Answer lookup failed:', err?.message);
   }
 
-  // 2. Fetch live web results from DuckDuckGo HTML endpoint
+  // 2. Fetch live web results from DuckDuckGo HTML endpoint with canonical decoded URLs
   try {
     const res = await fetch('https://html.duckduckgo.com/html/', {
       method: 'POST',
@@ -116,28 +144,37 @@ export async function executeWebSearch(query: string): Promise<WebSearchResultIt
 
     if (res.ok) {
       const html = await res.text();
+      const titleRegex = /<a[^>]*class="[^"]*result__a[^"]*"[^>]*href="([^"]*)"[^>]*>([\s\S]*?)<\/a>/g;
       const snippetRegex = /<a class="result__snippet[^>]*>([\s\S]*?)<\/a>/g;
-      const urlRegex = /<a class="result__url[^>]*href="([^"]*)"[^>]*>([\s\S]*?)<\/a>/g;
 
+      const titles: { title: string; url: string }[] = [];
       const snippets: string[] = [];
-      const urls: string[] = [];
+
+      let tm;
+      while ((tm = titleRegex.exec(html)) !== null && titles.length < 8) {
+        const parsedUrl = cleanDuckDuckGoUrl(tm[1]);
+        const parsedTitle = cleanHtmlText(tm[2]);
+        if (parsedUrl) {
+          titles.push({ url: parsedUrl, title: parsedTitle });
+        }
+      }
 
       let sm;
       while ((sm = snippetRegex.exec(html)) !== null && snippets.length < 8) {
-        snippets.push(sm[1].replace(/<[^>]+>/g, '').replace(/&quot;/g, '"').replace(/&#x27;/g, "'").replace(/&amp;/g, '&').trim());
+        snippets.push(cleanHtmlText(sm[1]));
       }
 
-      let um;
-      while ((um = urlRegex.exec(html)) !== null && urls.length < 8) {
-        urls.push(um[1].trim());
-      }
-
-      for (let i = 0; i < snippets.length; i++) {
-        results.push({
-          title: `Web Result ${i + 1} (${query})`,
-          snippet: snippets[i],
-          url: urls[i],
-        });
+      for (let i = 0; i < titles.length; i++) {
+        const item = titles[i];
+        const snippet = snippets[i] || item.title;
+        // Avoid duplicates
+        if (item.url && !results.some((r) => r.url === item.url)) {
+          results.push({
+            title: item.title || `Web Result ${results.length + 1}`,
+            snippet,
+            url: item.url,
+          });
+        }
       }
     }
   } catch (err: any) {
@@ -162,7 +199,7 @@ export async function ingestWebSearchResults(
   const dateStr = new Date().toISOString().split('T')[0];
   const sourceTitle = `Online Search: ${searchQuery}`;
 
-  // Assemble knowledge text
+  // Assemble knowledge text with clear clickable source URLs
   const lines: string[] = [];
   lines.push(`=== [Live Web Search Knowledge: ${searchQuery}] ===`);
   lines.push(`Search Query: "${searchQuery}"`);
@@ -173,9 +210,9 @@ export async function ingestWebSearchResults(
 
   for (let i = 0; i < results.length; i++) {
     const item = results[i];
-    lines.push(`[Source ${i + 1}: ${item.title}]`);
-    if (item.url) lines.push(`URL: ${item.url}`);
-    lines.push(item.snippet);
+    lines.push(`[Web Source ${i + 1}: ${item.title}]`);
+    if (item.url) lines.push(`Source Web URL: ${item.url}`);
+    lines.push(`Summary: ${item.snippet}`);
     lines.push('');
   }
 
@@ -203,22 +240,26 @@ export async function ingestWebSearchResults(
   // 3. Generate embeddings
   const embeddings = await generateEmbeddingsBatch(textsToEmbed);
 
-  // 4. Save chunk records
-  const chunkRecords = rawChunks.map((chunk, i) => ({
-    assistantId,
-    knowledgeSourceId: source.id,
-    content: chunk.content,
-    chunkIndex: chunk.chunkIndex,
-    tokenCount: chunk.tokenCount,
-    metadata: {
-      ...chunk.metadata,
-      sourceTitle,
-      sourceType: 'web',
-      searchQuery,
-      date: dateStr,
-    },
-    embedding: embeddings[i],
-  }));
+  // 4. Save chunk records with explicit metadata URL
+  const chunkRecords = rawChunks.map((chunk, i) => {
+    const matched = results.find((r) => r.url && chunk.content.includes(r.url)) || results[i] || results[0];
+    return {
+      assistantId,
+      knowledgeSourceId: source.id,
+      content: chunk.content,
+      chunkIndex: chunk.chunkIndex,
+      tokenCount: chunk.tokenCount,
+      metadata: {
+        ...chunk.metadata,
+        sourceTitle: matched?.title || sourceTitle,
+        sourceType: 'web',
+        searchQuery,
+        url: matched?.url || source.fileUrl || '',
+        date: dateStr,
+      },
+      embedding: embeddings[i],
+    };
+  });
 
   await Database.saveChunks(chunkRecords);
 

@@ -185,15 +185,23 @@ export async function retrieveRelevantContext(
     chunks = chunks.slice(0, topK);
   }
 
-  // 4. Format citations
-  const citations: Citation[] = chunks.map((c) => ({
-    sourceTitle: c.metadata.sourceTitle || 'Knowledge Source',
-    sourceType: c.metadata.sourceType || 'document',
-    chunkIndex: c.chunkIndex,
-    preview: c.content.slice(0, 160).replace(/\s+/g, ' ') + '...',
-    page: c.metadata.page,
-    row: c.metadata.row,
-  }));
+  // 4. Format citations with real web URLs
+  const citations: Citation[] = chunks.map((c) => {
+    let url = c.metadata?.url;
+    if (!url) {
+      const urlMatch = c.content.match(/(?:Source Web URL|URL):\s*(https?:\/\/[^\s\n\)]+)/i);
+      if (urlMatch) url = urlMatch[1];
+    }
+    return {
+      sourceTitle: c.metadata.sourceTitle || 'Knowledge Source',
+      sourceType: c.metadata.sourceType || 'document',
+      chunkIndex: c.chunkIndex,
+      preview: c.content.slice(0, 160).replace(/\s+/g, ' ') + '...',
+      url: url || undefined,
+      page: c.metadata.page,
+      row: c.metadata.row,
+    };
+  });
 
   // 5. Format context block for LLM prompt
   if (chunks.length === 0) {
@@ -208,8 +216,14 @@ export async function retrieveRelevantContext(
   const contextText = chunks
     .map((chunk, i) => {
       const sourceTag = chunk.metadata.sourceTitle ? `[Source: ${chunk.metadata.sourceTitle}]` : '';
+      let url = chunk.metadata?.url;
+      if (!url) {
+        const urlMatch = chunk.content.match(/(?:Source Web URL|URL):\s*(https?:\/\/[^\s\n\)]+)/i);
+        if (urlMatch) url = urlMatch[1];
+      }
+      const urlTag = url ? ` [Web URL: ${url}]` : '';
       const timeTag = chunk.metadata?.formattedTime ? ` (Timestamp: ${chunk.metadata.formattedTime})` : '';
-      return `--- KNOWLEDGE FRAGMENT [${i + 1}] ${sourceTag}${timeTag} ---\n${chunk.content}`;
+      return `--- KNOWLEDGE FRAGMENT [${i + 1}] ${sourceTag}${urlTag}${timeTag} ---\n${chunk.content}`;
     })
     .join('\n\n');
 

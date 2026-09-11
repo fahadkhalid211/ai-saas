@@ -353,6 +353,40 @@
         0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
         30% { transform: translateY(-4px); opacity: 1; }
       }
+      @keyframes spin {
+        100% { transform: rotate(360deg); }
+      }
+      .spin-icon {
+        animation: spin 1s linear infinite;
+      }
+      .sources-container {
+        margin-top: 8px;
+        padding-top: 8px;
+        border-top: 1px solid rgba(0, 0, 0, 0.07);
+        display: flex;
+        flex-wrap: wrap;
+        gap: 5px;
+      }
+      .source-pill-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 11px;
+        background: #f8fafc;
+        color: var(--primary-color, #2563eb);
+        padding: 3px 8px;
+        border-radius: 9999px;
+        text-decoration: none;
+        border: 1px solid #e2e8f0;
+        font-weight: 500;
+        transition: all 0.15s ease;
+        max-width: 100%;
+      }
+      .source-pill-link:hover {
+        background: #eff6ff;
+        border-color: #bfdbfe;
+        transform: translateY(-1px);
+      }
       /* Footer input */
       .chat-footer {
         padding: 12px 16px;
@@ -1083,7 +1117,7 @@
       html = html.replace(/_([^_]+)_/g, '<em>$1</em>');
 
       // Links: [title](url)
-      html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" style="color:#2563eb;text-decoration:underline;">$1</a>');
+      html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" style="color:var(--primary-color, #2563eb);text-decoration:underline;font-weight:550;word-break:break-word;">$1 &#8599;</a>');
 
       // Unordered lists (- item or * item)
       html = html.replace(/^(?:-|\*)\s+(.*?)$/gm, '<li>$1</li>');
@@ -1391,7 +1425,9 @@
       card.className = 'booking-card';
 
       if (config.bookingProvider === 'calendly' || config.bookingProvider === 'cal_com') {
-        var calUrl = config.bookingUrl || 'https://calendly.com';
+        var isCalCom = config.bookingProvider === 'cal_com';
+        var calUrl = config.bookingUrl || (isCalCom ? 'https://cal.com' : 'https://calendly.com');
+        var providerName = isCalCom ? 'Cal.com' : 'Calendly';
         card.innerHTML = `
           <div class="booking-header">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--primary-color, #2563eb)" stroke-width="2.5">
@@ -1400,11 +1436,11 @@
               <line x1="8" y1="2" x2="8" y2="6"></line>
               <line x1="3" y1="10" x2="21" y2="10"></line>
             </svg>
-            <span>${escapeHtml(config.bookingPromptText || 'Schedule an Appointment')}</span>
+            <span>${escapeHtml(config.bookingPromptText || ('Schedule with ' + providerName))}</span>
           </div>
-          <div class="booking-desc">Choose a convenient time on our interactive calendar to meet with our team.</div>
+          <div class="booking-desc">Choose a convenient time on ${escapeHtml(providerName)} to meet with our team.</div>
           <a href="${escapeHtml(calUrl)}" target="_blank" rel="noopener noreferrer" class="booking-external-btn">
-            <span>Open Calendar &amp; Pick a Time</span>
+            <span>Open ${escapeHtml(providerName)} &amp; Pick a Time</span>
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
               <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
               <polyline points="15 3 21 3 21 9"></polyline>
@@ -1658,9 +1694,74 @@
           var streamedText = '';
           var assistantBubble = null;
           var hasMountedBubble = false;
+          var currentCitations = [];
 
           if (!reader) {
             throw new Error('No response body reader');
+          }
+
+          function renderWidgetCitations(parentBubble, citations) {
+            if (!parentBubble || !citations || !citations.length) return;
+            var validCitations = citations.filter(function (c) { return c && (c.url || c.sourceTitle); });
+            if (validCitations.length === 0) return;
+
+            var seen = {};
+            var uniqueCitations = [];
+            validCitations.forEach(function (c) {
+              var key = c.url || c.sourceTitle;
+              if (!seen[key]) {
+                seen[key] = true;
+                uniqueCitations.push(c);
+              }
+            });
+
+            var container = document.createElement('div');
+            container.className = 'sources-container';
+
+            var header = document.createElement('div');
+            header.style.cssText = 'font-size:11px;font-weight:600;color:#64748b;display:flex;align-items:center;gap:4px;width:100%;margin-bottom:2px;';
+            header.innerHTML = `
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="2" y1="12" x2="22" y2="12"></line>
+                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+              </svg>
+              <span>Sources &amp; References:</span>
+            `;
+            container.appendChild(header);
+
+            uniqueCitations.forEach(function (c) {
+              var title = c.sourceTitle || (c.url ? (function() {
+                try { return new URL(c.url).hostname; } catch(e) { return c.url; }
+              })() : 'Source');
+
+              if (c.url) {
+                var a = document.createElement('a');
+                a.href = c.url;
+                a.target = '_blank';
+                a.rel = 'noopener noreferrer';
+                a.className = 'source-pill-link';
+                a.title = c.preview || c.url;
+                a.innerHTML = `
+                  <span>${escapeHtml(title)}</span>
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                    <polyline points="15 3 21 3 21 9"></polyline>
+                    <line x1="10" y1="14" x2="21" y2="3"></line>
+                  </svg>
+                `;
+                container.appendChild(a);
+              } else {
+                var span = document.createElement('span');
+                span.className = 'source-pill-link';
+                span.style.color = '#475569';
+                span.style.cursor = 'default';
+                span.textContent = title;
+                container.appendChild(span);
+              }
+            });
+
+            parentBubble.appendChild(container);
           }
 
           function readStream() {
@@ -1677,6 +1778,10 @@
                   renderSupportQuickButton(fbEl, text);
                 } else {
                   messages.push({ role: 'assistant', content: streamedText });
+                  // Attach citation pills if web search or local knowledge citations arrived
+                  if (assistantBubble && currentCitations.length > 0) {
+                    renderWidgetCitations(assistantBubble, currentCitations);
+                  }
                   // Check if bot suggested booking or support
                   if (assistantBubble && config.bookingEnabled && isBookingIntent(streamedText)) {
                     renderBookingQuickButton(assistantBubble, text);
@@ -1702,8 +1807,38 @@
                 if (line.indexOf('data: ') === 0) {
                   try {
                     var data = JSON.parse(line.slice(6));
-                    if (data.type === 'citations') {
+                    if (data.type === 'status') {
+                      if (data.status === 'searching_web') {
+                        if (typing) {
+                          typing.innerHTML = `
+                            <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--primary-color, #2563eb);font-weight:600;padding:2px 4px;">
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="spin-icon">
+                                <circle cx="11" cy="11" r="8"></circle>
+                                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                              </svg>
+                              <span>${escapeHtml(data.message || 'Searching the web...')}</span>
+                            </div>
+                          `;
+                          scrollToBottom();
+                        }
+                      } else if (data.status === 'web_results_found') {
+                        if (typing) {
+                          typing.innerHTML = `
+                            <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:#059669;font-weight:600;padding:2px 4px;">
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                              </svg>
+                              <span>Found web sources, writing response...</span>
+                            </div>
+                          `;
+                          scrollToBottom();
+                        }
+                      }
+                    } else if (data.type === 'citations') {
                       if (data.conversationId) conversationId = data.conversationId;
+                      if (Array.isArray(data.citations)) {
+                        currentCitations = data.citations;
+                      }
                     } else if (data.type === 'token') {
                       // MOUNT BUBBLE ON FIRST TOKEN ONLY
                       if (!hasMountedBubble) {

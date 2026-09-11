@@ -227,6 +227,7 @@ export default function DashboardPage() {
   const [chatMessages, setChatMessages] = useState<{ role: string; content: string; citations?: any[] }[]>([]);
   const [inputQuery, setInputQuery] = useState('');
   const [isStreaming, setIsStreaming] = useState(false);
+  const [streamingStatus, setStreamingStatus] = useState<string | null>(null);
   const [activeCitations, setActiveCitations] = useState<any[]>([]);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
@@ -858,6 +859,7 @@ export default function DashboardPage() {
     setChatMessages(newMsgs);
     setInputQuery('');
     setIsStreaming(true);
+    setStreamingStatus(null);
 
     const tempIndex = newMsgs.length;
     setChatMessages([...newMsgs, { role: 'assistant', content: '', citations: [] }]);
@@ -903,10 +905,17 @@ export default function DashboardPage() {
             if (line.startsWith('data: ')) {
               try {
                 const data = JSON.parse(line.slice(6));
-                if (data.type === 'citations') {
+                if (data.type === 'status') {
+                  if (data.status === 'searching_web') {
+                    setStreamingStatus(data.message || 'Searching the web...');
+                  } else if (data.status === 'web_results_found') {
+                    setStreamingStatus('Web sources found, formulating answer...');
+                  }
+                } else if (data.type === 'citations') {
                   citations = data.citations || [];
                   setActiveCitations(citations);
                 } else if (data.type === 'token') {
+                  setStreamingStatus(null);
                   streamed += data.token;
                   if (!updateTimer) {
                     updateTimer = setTimeout(() => {
@@ -938,6 +947,7 @@ export default function DashboardPage() {
       });
     } finally {
       setIsStreaming(false);
+      setStreamingStatus(null);
     }
   }
 
@@ -1852,7 +1862,29 @@ export default function DashboardPage() {
                                     const isVid = ['mp4', 'webm', 'mov', 'mkv', 'avi', 'm4v', 'video'].some((e) => st.includes(e) || stTitle.endsWith(`.${e}`));
                                     const isAud = ['mp3', 'wav', 'm4a', 'ogg', 'flac', 'aac', 'audio'].some((e) => st.includes(e) || stTitle.endsWith(`.${e}`));
                                     const icon = isYt ? '🔴' : isWeb ? '🌐' : isVid ? '🎥' : isAud ? '🎙️' : st === 'pdf' || stTitle.endsWith('.pdf') ? '📄' : st === 'csv' || stTitle.endsWith('.csv') ? '📊' : '📝';
-                                    return (
+                                    return c.url ? (
+                                      <a
+                                        key={ci}
+                                        href={c.url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className={`inline-flex items-center gap-1 border px-2 py-0.5 rounded text-[10px] font-mono transition hover:underline hover:opacity-90 ${
+                                          isYt
+                                            ? 'bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border-rose-200 dark:border-rose-800'
+                                            : isWeb
+                                            ? 'bg-sky-50 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300 border-sky-200 dark:border-sky-800'
+                                            : isVid
+                                            ? 'bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800'
+                                            : isAud
+                                            ? 'bg-cyan-50 dark:bg-cyan-950/60 text-cyan-700 dark:text-cyan-300 border-cyan-200 dark:border-cyan-800'
+                                            : 'bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800'
+                                        }`}
+                                        title={c.preview || c.url}
+                                      >
+                                        <span>{icon} {c.sourceTitle}</span>
+                                        <span className="text-[9px] opacity-70">↗</span>
+                                      </a>
+                                    ) : (
                                       <span
                                         key={ci}
                                         className={`border px-2 py-0.5 rounded text-[10px] font-mono ${
@@ -1879,9 +1911,21 @@ export default function DashboardPage() {
                         </div>
                       ))}
                       {isStreaming && (
-                        <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 text-xs py-1">
-                          <span className="h-2 w-2 rounded-full bg-blue-600 animate-pulse"></span>
-                          <span>Retrieving context &amp; generating streaming answer...</span>
+                        <div className="flex items-center gap-2 text-xs py-1">
+                          {streamingStatus ? (
+                            <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400 font-medium animate-pulse">
+                              <svg className="w-3.5 h-3.5 animate-spin text-blue-600 dark:text-blue-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                                <circle cx="11" cy="11" r="8"></circle>
+                                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                              </svg>
+                              <span>{streamingStatus}</span>
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400">
+                              <span className="h-2 w-2 rounded-full bg-blue-600 animate-pulse"></span>
+                              <span>Retrieving context &amp; generating streaming answer...</span>
+                            </div>
+                          )}
                         </div>
                       )}
                       <div ref={chatEndRef} />
@@ -1963,9 +2007,22 @@ export default function DashboardPage() {
                               const icon = isYt ? '🔴' : isWeb ? '🌐' : isVid ? '🎥' : isAud ? '🎙️' : st === 'pdf' || stTitle.endsWith('.pdf') ? '📄' : st === 'csv' || stTitle.endsWith('.csv') ? '📊' : '📝';
                               return (
                                 <div key={i} className="p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60 text-[11px] space-y-1">
-                                  <div className="text-blue-600 dark:text-blue-400 font-mono font-bold text-[10px] flex items-center gap-1.5">
-                                    <span>[{i + 1}]</span>
-                                    <span>{icon} {c.sourceTitle}</span>
+                                  <div className="flex items-center justify-between text-[10px] font-mono">
+                                    <div className="text-blue-600 dark:text-blue-400 font-bold flex items-center gap-1.5 truncate pr-2">
+                                      <span>[{i + 1}]</span>
+                                      <span className="truncate">{icon} {c.sourceTitle}</span>
+                                    </div>
+                                    {c.url && (
+                                      <a
+                                        href={c.url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-sky-600 dark:text-sky-400 hover:underline shrink-0 flex items-center gap-0.5 font-sans font-medium"
+                                      >
+                                        <span>Visit</span>
+                                        <span className="text-[9px]">↗</span>
+                                      </a>
+                                    )}
                                   </div>
                                   <div className="text-slate-600 dark:text-slate-300 line-clamp-2">{c.preview}</div>
                                 </div>
@@ -2756,10 +2813,28 @@ export default function DashboardPage() {
                             </div>
                           )}
 
-                          {(formData.bookingProvider === 'calendly' || formData.bookingProvider === 'cal_com') && (
-                            <div>
+                          {formData.bookingProvider === 'cal_com' && (
+                            <div className="animate-in fade-in duration-150">
                               <label className="text-[11px] font-semibold text-slate-700 dark:text-slate-300 block mb-1">
-                                Calendar URL
+                                Cal.com Scheduling URL
+                              </label>
+                              <input
+                                type="url"
+                                placeholder="https://cal.com/your-username/30min"
+                                value={formData.bookingUrl || ''}
+                                onChange={(e) => setFormData({ ...formData, bookingUrl: e.target.value })}
+                                className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-xs text-slate-900 dark:text-slate-100 font-mono outline-none focus:border-emerald-500"
+                              />
+                              <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1">
+                                Visitors will be presented with a direct button to open your Cal.com event page.
+                              </p>
+                            </div>
+                          )}
+
+                          {formData.bookingProvider === 'calendly' && (
+                            <div className="animate-in fade-in duration-150">
+                              <label className="text-[11px] font-semibold text-slate-700 dark:text-slate-300 block mb-1">
+                                Calendly Booking URL
                               </label>
                               <input
                                 type="url"
@@ -2768,6 +2843,9 @@ export default function DashboardPage() {
                                 onChange={(e) => setFormData({ ...formData, bookingUrl: e.target.value })}
                                 className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-xs text-slate-900 dark:text-slate-100 font-mono outline-none focus:border-emerald-500"
                               />
+                              <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1">
+                                Visitors will be presented with a direct button to open your Calendly booking page.
+                              </p>
                             </div>
                           )}
                         </div>
@@ -4829,8 +4907,21 @@ export default function DashboardPage() {
                                         </div>
                                         <div className="space-y-1">
                                           {m.citations.map((cite: any, cIdx: number) => (
-                                            <div key={cIdx} className="text-blue-600 dark:text-blue-400 font-mono">
-                                              &bull; {cite.sourceTitle || cite.sourceDoc || 'Document'}
+                                            <div key={cIdx} className="text-blue-600 dark:text-blue-400 font-mono text-[10px] flex items-center gap-1.5">
+                                              <span>&bull;</span>
+                                              {cite.url ? (
+                                                <a
+                                                  href={cite.url}
+                                                  target="_blank"
+                                                  rel="noopener noreferrer"
+                                                  className="hover:underline flex items-center gap-1 font-semibold"
+                                                >
+                                                  <span>{cite.sourceTitle || cite.sourceDoc || 'Web Source'}</span>
+                                                  <span>↗</span>
+                                                </a>
+                                              ) : (
+                                                <span>{cite.sourceTitle || cite.sourceDoc || 'Document'}</span>
+                                              )}
                                             </div>
                                           ))}
                                         </div>

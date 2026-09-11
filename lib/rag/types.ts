@@ -56,6 +56,7 @@ export interface Citation {
   sourceType: string;
   chunkIndex: number;
   preview: string;
+  url?: string;
   page?: number;
   row?: number;
 }

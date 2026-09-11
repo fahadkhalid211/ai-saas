@@ -43,78 +43,128 @@ export async function POST(req: NextRequest) {
     const conv = await Database.getOrCreateConversation(assistantId, visitorId, conversationId);
     await Database.saveMessage(conv.id, 'user', latestUserMsg);
 
-    // Live Web Search Detection & Automatic Knowledge Ingestion (Admin Controlled)
-    const canSearchWeb = assistant.allowWebSearch ?? true;
-    let webSearchQuery = '';
-
-    if (canSearchWeb && isWebSearchIntent(latestUserMsg)) {
-      try {
-        const sources = await Database.getKnowledgeSources(assistantId);
-        const contextHints: string[] = [];
-        for (const s of sources) {
-          if (/sahar/i.test(s.title)) contextHints.push('Dr Sahar Yousef');
-          else if (s.title.length > 3 && !s.title.startsWith('Online Search:')) {
-            contextHints.push(s.title.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ').slice(0, 40));
-          }
-        }
-
-        const searchQuery = extractSearchQuery(latestUserMsg, conversationHistory, contextHints);
-        webSearchQuery = searchQuery;
-        console.log(`[ChatRoute] User requested live web search: "${searchQuery}" (Original: "${latestUserMsg}")...`);
-        const searchResults = await executeWebSearch(searchQuery);
-        if (searchResults.length > 0) {
-          await ingestWebSearchResults(assistantId, searchQuery, searchResults);
-          console.log(`[ChatRoute] Successfully ingested ${searchResults.length} online web sources into knowledge base for query: "${searchQuery}"!`);
-        }
-      } catch (searchErr: any) {
-        console.warn('[ChatRoute] Online web search auto-ingestion error:', searchErr?.message);
-      }
-    }
-
-    // 2. Hybrid Context Retrieval
-    const isGroq = (assistant.provider || '').toLowerCase() === 'groq';
-    const configuredChunks = assistant.contextChunks || 5;
-    // On Groq free tier models with 8k TPM limit, clamp topK to 5 chunks to prevent prompt over-stuffing
-    const topK = isGroq ? Math.min(configuredChunks, 5) : configuredChunks;
-    const effectiveQuery = webSearchQuery || latestUserMsg;
-    const retrieval = await retrieveRelevantContext(
-      assistantId,
-      effectiveQuery,
-      conversationHistory,
-      topK
-    );
-
-    // 3. Assemble Prompt
-    const fullSystemPrompt = buildSystemPrompt({
-      businessPrompt: assistant.systemPrompt,
-      contextText: retrieval.contextText,
-      fallbackMessage: assistant.fallbackMessage,
-      assistantName: assistant.name,
-    });
-
-    const llmMessages: ChatMessage[] = [
-      { role: 'system', content: fullSystemPrompt },
-      ...messages.slice(-6).map((m: any) => ({
-        role: m.role as 'user' | 'assistant',
-        content: m.content,
-      })),
-    ];
-
     // 4. Setup Server-Sent Events (SSE) Stream
     const encoder = new TextEncoder();
+    const canSearchWeb = assistant.allowWebSearch ?? true;
+
     const stream = new ReadableStream({
       async start(controller) {
-        // Send citations first
-        const citationsEvent = `data: ${JSON.stringify({
-          type: 'citations',
-          citations: retrieval.citations,
-          conversationId: conv.id,
-        })}\n\n`;
-        controller.enqueue(encoder.encode(citationsEvent));
-
-        let fullAssistantReply = '';
+        let webSearchQuery = '';
+        let isWebSearchUsed = false;
 
         try {
+          // Check for explicit live web search intent
+          if (canSearchWeb && isWebSearchIntent(latestUserMsg)) {
+            const sources = await Database.getKnowledgeSources(assistantId);
+            const contextHints: string[] = [];
+            for (const s of sources) {
+              if (/sahar/i.test(s.title)) contextHints.push('Dr Sahar Yousef');
+              else if (s.title.length > 3 && !s.title.startsWith('Online Search:')) {
+                contextHints.push(s.title.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ').slice(0, 40));
+              }
+            }
+
+            const searchQuery = extractSearchQuery(latestUserMsg, conversationHistory, contextHints);
+            webSearchQuery = searchQuery;
+            isWebSearchUsed = true;
+
+            // Notify UI immediately that web search is underway
+            const searchingStatusEvent = `data: ${JSON.stringify({
+              type: 'status',
+              status: 'searching_web',
+              message: `Searching web for "${searchQuery}"...`,
+              query: searchQuery,
+            })}\n\n`;
+            controller.enqueue(encoder.encode(searchingStatusEvent));
+
+            console.log(`[ChatRoute] Executing live web search: "${searchQuery}"...`);
+            const searchResults = await executeWebSearch(searchQuery);
+
+            if (searchResults.length > 0) {
+              await ingestWebSearchResults(assistantId, searchQuery, searchResults);
+              console.log(`[ChatRoute] Successfully ingested ${searchResults.length} online web sources for query: "${searchQuery}"`);
+
+              // Notify UI that sources were found
+              const foundStatusEvent = `data: ${JSON.stringify({
+                type: 'status',
+                status: 'web_results_found',
+                message: `Found ${searchResults.length} web sources. Synthesizing answer...`,
+                count: searchResults.length,
+              })}\n\n`;
+              controller.enqueue(encoder.encode(foundStatusEvent));
+            }
+          }
+
+          // 2. Hybrid Context Retrieval
+          const isGroq = (assistant.provider || '').toLowerCase() === 'groq';
+          const configuredChunks = assistant.contextChunks || 5;
+          const topK = isGroq ? Math.min(configuredChunks, 5) : configuredChunks;
+          let effectiveQuery = webSearchQuery || latestUserMsg;
+
+          let retrieval = await retrieveRelevantContext(
+            assistantId,
+            effectiveQuery,
+            conversationHistory,
+            topK
+          );
+
+          // Smart fallback: If local KB found 0 chunks, user asked a real question, and web search is allowed
+          const isGreetingOrShort = /^(hi|hello|hey|greetings|help|how are you|good morning|good evening)$/i.test(latestUserMsg.trim());
+          if (!isWebSearchUsed && canSearchWeb && retrieval.chunks.length === 0 && latestUserMsg.length > 8 && !isGreetingOrShort) {
+            const searchQuery = latestUserMsg.trim();
+            isWebSearchUsed = true;
+
+            const fallbackSearchStatus = `data: ${JSON.stringify({
+              type: 'status',
+              status: 'searching_web',
+              message: `Searching web for "${searchQuery}"...`,
+              query: searchQuery,
+            })}\n\n`;
+            controller.enqueue(encoder.encode(fallbackSearchStatus));
+
+            try {
+              const searchResults = await executeWebSearch(searchQuery);
+              if (searchResults.length > 0) {
+                await ingestWebSearchResults(assistantId, searchQuery, searchResults);
+                retrieval = await retrieveRelevantContext(
+                  assistantId,
+                  searchQuery,
+                  conversationHistory,
+                  topK
+                );
+              }
+            } catch (autoErr) {
+              console.warn('[ChatRoute] Auto web search fallback error:', autoErr);
+            }
+          }
+
+          // 3. Assemble Prompt with web-linking instructions
+          const fullSystemPrompt = buildSystemPrompt({
+            businessPrompt: assistant.systemPrompt,
+            contextText: retrieval.contextText,
+            fallbackMessage: assistant.fallbackMessage,
+            assistantName: assistant.name,
+          });
+
+          const llmMessages: ChatMessage[] = [
+            { role: 'system', content: fullSystemPrompt },
+            ...messages.slice(-6).map((m: any) => ({
+              role: m.role as 'user' | 'assistant',
+              content: m.content,
+            })),
+          ];
+
+          // Send citations first (including URLs for all web sources)
+          const citationsEvent = `data: ${JSON.stringify({
+            type: 'citations',
+            citations: retrieval.citations,
+            conversationId: conv.id,
+            isWebSearch: isWebSearchUsed,
+          })}\n\n`;
+          controller.enqueue(encoder.encode(citationsEvent));
+
+          let fullAssistantReply = '';
+
           const tokenGenerator = streamChatResponse(llmMessages, {
             provider: assistant.provider,
             modelName: assistant.modelName,
