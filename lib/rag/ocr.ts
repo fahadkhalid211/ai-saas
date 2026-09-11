@@ -28,11 +28,29 @@ process.stdin.on('end', async () => {
 });
 `;
 
+import sharp from 'sharp';
+
 /**
  * Extracts text from an image buffer using Tesseract OCR in a standalone Node subprocess.
- * Running in a subprocess avoids Turbopack/Webpack worker_threads deadlock in Next.js.
+ * Preprocesses low-resolution images with Sharp (lanczos3 upscaling and sharpening)
+ * for significantly improved character recognition.
  */
-export async function extractTextFromImage(buffer: Buffer, timeoutMs = 15000): Promise<OcrResult> {
+export async function extractTextFromImage(rawBuffer: Buffer, timeoutMs = 15000): Promise<OcrResult> {
+  let buffer = rawBuffer;
+  try {
+    const meta = await sharp(rawBuffer).metadata();
+    if (meta.width && meta.height && (meta.width < 900 || meta.height < 900)) {
+      const scale = Math.min(4, Math.max(2, Math.ceil(900 / Math.max(meta.width, meta.height))));
+      buffer = await sharp(rawBuffer)
+        .resize({ width: meta.width * scale, height: meta.height * scale, kernel: 'lanczos3' })
+        .sharpen()
+        .toBuffer();
+    }
+  } catch (_) {
+    // If sharp fails or format unsupported, use original buffer
+    buffer = rawBuffer;
+  }
+
   return new Promise((resolve, reject) => {
     let settled = false;
 

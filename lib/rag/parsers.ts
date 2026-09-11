@@ -9,6 +9,7 @@ import {
   TranscribeOptions,
 } from './transcriber';
 import { extractTextFromImage } from './ocr';
+import { extractWithVisionAI } from './vision';
 
 export { isMediaFile, isVideoFile, isAudioFile };
 
@@ -258,8 +259,42 @@ function parseJson(content: string, title: string): ExtractedDocument {
   }
 }
 
-// Image OCR Parsing with standalone OCR engine (JPG, PNG, WEBP)
-async function parseImage(buffer: Buffer, title: string): Promise<ExtractedDocument> {
+// Intelligent Image Extraction (Vision AI + Preprocessed OCR Fallback)
+async function parseImage(
+  buffer: Buffer,
+  title: string,
+  options?: TranscribeOptions
+): Promise<ExtractedDocument> {
+  // 1. First attempt: High-Precision Multimodal Vision AI (Groq Qwen Vision, OpenAI, Gemini)
+  try {
+    const visionResult = await extractWithVisionAI(buffer, title, options);
+    if (visionResult && visionResult.text && visionResult.text.trim().length > 10) {
+      const cleanVisionText = visionResult.text.trim();
+      return {
+        title,
+        type: 'image',
+        content: `[Image Knowledge: ${title}]\n\n` + cleanVisionText,
+        sections: [
+          {
+            heading: `Image Analysis: ${title}`,
+            text: cleanVisionText,
+            metadata: {
+              source: visionResult.source,
+              isVisionAI: true,
+            },
+          },
+        ],
+        metadata: {
+          extractedWith: 'vision_ai',
+          engine: visionResult.source,
+        },
+      };
+    }
+  } catch (visionErr) {
+    console.warn('Vision AI extraction fallback to OCR:', visionErr);
+  }
+
+  // 2. Fallback: Standalone OCR engine with Sharp preprocessing
   try {
     const { text, confidence } = await extractTextFromImage(buffer, 15000);
 
@@ -280,6 +315,7 @@ async function parseImage(buffer: Buffer, title: string): Promise<ExtractedDocum
       content: `[Image Document: ${title}]\n\n` + cleanText,
       metadata: {
         confidence,
+        extractedWith: 'ocr_fallback',
       },
     };
   } catch (error: any) {
@@ -326,7 +362,7 @@ export async function parseFileOrText(params: {
 
   if (isImage) {
     if (!buffer) throw new Error('Image buffer required for OCR');
-    return await parseImage(buffer, filename);
+    return await parseImage(buffer, filename, options);
   }
 
   const textContent = text || (buffer ? buffer.toString('utf-8') : '');
