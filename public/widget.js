@@ -72,6 +72,10 @@
       proactiveMessageEnabled: false,
       proactiveMessageText: '',
       proactiveMessageDelay: 5,
+      bookingEnabled: false,
+      bookingProvider: 'direct',
+      bookingUrl: '',
+      bookingPromptText: 'Schedule an Appointment',
     };
     var isOpen = false;
     var messages = [];
@@ -566,6 +570,70 @@
       }
       .support-quick-btn:hover {
         background: var(--primary-color, #2563eb);
+        color: #ffffff;
+      }
+      /* Booking Card */
+      .booking-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 14px;
+        padding: 14px;
+        margin: 8px 0;
+        box-shadow: 0 3px 12px rgba(0, 0, 0, 0.05);
+      }
+      .booking-header {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        font-size: 13px;
+        font-weight: 700;
+        color: #0f172a;
+        margin-bottom: 5px;
+      }
+      .booking-desc {
+        font-size: 11.5px;
+        color: #64748b;
+        margin-bottom: 12px;
+        line-height: 1.4;
+      }
+      .booking-external-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        width: 100%;
+        background: var(--primary-color, #2563eb);
+        color: #ffffff;
+        border: none;
+        border-radius: 9px;
+        padding: 9px 14px;
+        font-size: 12.5px;
+        font-weight: 600;
+        cursor: pointer;
+        text-decoration: none;
+        box-sizing: border-box;
+        transition: opacity 0.15s;
+      }
+      .booking-external-btn:hover {
+        opacity: 0.92;
+      }
+      .booking-quick-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        background: #f0fdf4;
+        color: #15803d;
+        border: 1px solid #bbf7d0;
+        border-radius: 16px;
+        padding: 6px 12px;
+        font-size: 11.5px;
+        font-weight: 600;
+        cursor: pointer;
+        margin-top: 8px;
+        transition: all 0.15s;
+      }
+      .booking-quick-btn:hover {
+        background: #16a34a;
         color: #ffffff;
       }
       /* Footer branding */
@@ -1288,6 +1356,164 @@
       scrollToBottom();
     }
 
+    function isBookingIntent(text) {
+      if (!text) return false;
+      return /\b(book|schedule|appointment|tour|demo|meeting|call with|consultation|reserve a slot|calendar)\b/i.test(text);
+    }
+
+    function renderBookingQuickButton(parentMsgEl, queryText) {
+      if (!parentMsgEl || parentMsgEl.querySelector('.booking-quick-btn')) return;
+      var btn = document.createElement('button');
+      btn.className = 'booking-quick-btn';
+      btn.innerHTML = `
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+          <line x1="16" y1="2" x2="16" y2="6"></line>
+          <line x1="8" y1="2" x2="8" y2="6"></line>
+          <line x1="3" y1="10" x2="21" y2="10"></line>
+        </svg>
+        <span>📅 ${escapeHtml(config.bookingPromptText || 'Book an Appointment')}</span>
+      `;
+      btn.addEventListener('click', function () {
+        btn.remove();
+        renderBookingCard(queryText);
+      });
+      parentMsgEl.appendChild(btn);
+      scrollToBottom();
+    }
+
+    function renderBookingCard(queryText) {
+      var card = document.createElement('div');
+      card.className = 'booking-card';
+
+      if (config.bookingProvider === 'calendly' || config.bookingProvider === 'cal_com') {
+        var calUrl = config.bookingUrl || 'https://calendly.com';
+        card.innerHTML = `
+          <div class="booking-header">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--primary-color, #2563eb)" stroke-width="2.5">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="16" y1="2" x2="16" y2="6"></line>
+              <line x1="8" y1="2" x2="8" y2="6"></line>
+              <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
+            <span>${escapeHtml(config.bookingPromptText || 'Schedule an Appointment')}</span>
+          </div>
+          <div class="booking-desc">Choose a convenient time on our interactive calendar to meet with our team.</div>
+          <a href="${escapeHtml(calUrl)}" target="_blank" rel="noopener noreferrer" class="booking-external-btn">
+            <span>Open Calendar &amp; Pick a Time</span>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+              <polyline points="15 3 21 3 21 9"></polyline>
+              <line x1="10" y1="14" x2="21" y2="3"></line>
+            </svg>
+          </a>
+        `;
+        if (messagesBody) messagesBody.appendChild(card);
+        scrollToBottom();
+        return;
+      }
+
+      // Direct In-Widget Date & Time Booking
+      var tomorrow = new Date(Date.now() + 86400000).toISOString().slice(0, 10);
+      card.innerHTML = `
+        <div class="booking-header">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--primary-color, #2563eb)" stroke-width="2.5">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+            <line x1="16" y1="2" x2="16" y2="6"></line>
+            <line x1="8" y1="2" x2="8" y2="6"></line>
+            <line x1="3" y1="10" x2="21" y2="10"></line>
+          </svg>
+          <span>${escapeHtml(config.bookingPromptText || 'Schedule an Appointment')}</span>
+        </div>
+        <div class="booking-desc">Select your preferred date &amp; time slot. We will confirm via email.</div>
+        <form id="widget-booking-form" style="display: flex; flex-direction: column; gap: 8px;">
+          <div style="display: flex; gap: 8px;">
+            <div style="flex: 1;">
+              <label style="font-size: 10.5px; font-weight: 600; color: #64748b; display: block; margin-bottom: 3px;">Date</label>
+              <input type="date" id="book-date" min="${tomorrow}" value="${tomorrow}" required style="width: 100%; box-sizing: border-box; padding: 6px 8px; border: 1px solid #cbd5e1; border-radius: 7px; font-size: 12px; outline: none;" />
+            </div>
+            <div style="flex: 1;">
+              <label style="font-size: 10.5px; font-weight: 600; color: #64748b; display: block; margin-bottom: 3px;">Time Slot</label>
+              <select id="book-time" style="width: 100%; box-sizing: border-box; padding: 6px 8px; border: 1px solid #cbd5e1; border-radius: 7px; font-size: 12px; outline: none; background: #fff;">
+                <option value="Morning (9:00 AM - 12:00 PM)">Morning (9am - 12pm)</option>
+                <option value="Afternoon (1:00 PM - 4:00 PM)" selected>Afternoon (1pm - 4pm)</option>
+                <option value="Evening (5:00 PM - 7:00 PM)">Evening (5pm - 7pm)</option>
+              </select>
+            </div>
+          </div>
+          <div>
+            <label style="font-size: 10.5px; font-weight: 600; color: #64748b; display: block; margin-bottom: 3px;">Your Name</label>
+            <input type="text" id="book-name" placeholder="Full name" required style="width: 100%; box-sizing: border-box; padding: 6px 8px; border: 1px solid #cbd5e1; border-radius: 7px; font-size: 12px; outline: none;" />
+          </div>
+          <div>
+            <label style="font-size: 10.5px; font-weight: 600; color: #64748b; display: block; margin-bottom: 3px;">Email Address</label>
+            <input type="email" id="book-email" placeholder="name@email.com" required style="width: 100%; box-sizing: border-box; padding: 6px 8px; border: 1px solid #cbd5e1; border-radius: 7px; font-size: 12px; outline: none;" />
+          </div>
+          <button type="submit" id="book-submit-btn" style="margin-top: 4px; padding: 8px; border: none; border-radius: 7px; background: var(--primary-color, #2563eb); color: #fff; font-size: 12px; font-weight: 600; cursor: pointer;">
+            Confirm Appointment
+          </button>
+        </form>
+      `;
+
+      if (messagesBody) messagesBody.appendChild(card);
+      scrollToBottom();
+
+      var formEl = card.querySelector('#widget-booking-form');
+      if (formEl) {
+        formEl.addEventListener('submit', function (e) {
+          e.preventDefault();
+          var dateVal = card.querySelector('#book-date').value;
+          var timeVal = card.querySelector('#book-time').value;
+          var nameVal = card.querySelector('#book-name').value;
+          var emailVal = card.querySelector('#book-email').value;
+          var btnEl = card.querySelector('#book-submit-btn');
+
+          if (btnEl) {
+            btnEl.disabled = true;
+            btnEl.textContent = 'Confirming...';
+          }
+
+          fetch(hostUrl + '/api/lead', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              assistantId: assistantId,
+              email: emailVal,
+              name: nameVal,
+              notes: 'Booked Appointment on ' + dateVal + ' (' + timeVal + ')' + (queryText ? ' | Inquired: ' + queryText : ''),
+              customData: {
+                AppointmentDate: dateVal,
+                AppointmentTime: timeVal,
+                Type: 'Calendar Booking',
+              },
+            }),
+          })
+            .then(function () {
+              card.innerHTML = `
+                <div class="support-success-card">
+                  <div class="support-success-title">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="3">
+                      <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                    <span>Appointment Requested!</span>
+                  </div>
+                  <div class="support-success-text">
+                    Thank you, <strong>${escapeHtml(nameVal)}</strong>! Your appointment request for <strong>${escapeHtml(dateVal)}</strong> (${escapeHtml(timeVal)}) has been sent. A confirmation will be sent to <strong>${escapeHtml(emailVal)}</strong>.
+                  </div>
+                </div>
+              `;
+              scrollToBottom();
+            })
+            .catch(function () {
+              if (btnEl) {
+                btnEl.disabled = false;
+                btnEl.textContent = 'Confirm Appointment';
+              }
+            });
+        });
+      }
+    }
+
     // Send Streaming Message with Stream Stability & Support Handoff
     function sendMessage() {
       var text = chatInput.value.trim();
@@ -1299,6 +1525,7 @@
       sendBtn.disabled = true;
 
       var userWantsSupport = isSupportIntent(text);
+      var userWantsBooking = config.bookingEnabled && isBookingIntent(text);
 
       // Show typing dots
       var typing = document.createElement('div');
@@ -1310,6 +1537,19 @@
       `;
       if (messagesBody) messagesBody.appendChild(typing);
       scrollToBottom();
+
+      // If user wants appointment booking, render booking card immediately
+      if (userWantsBooking) {
+        if (typing.parentNode && messagesBody) {
+          messagesBody.removeChild(typing);
+        }
+        appendMessage('assistant', "I would be happy to help you schedule a time! Please pick your preferred date and slot below:");
+        renderBookingCard(text);
+        isStreaming = false;
+        sendBtn.disabled = false;
+        chatInput.focus();
+        return;
+      }
 
       // If user directly typed "connect to support", render form immediately!
       if (userWantsSupport) {
@@ -1375,8 +1615,10 @@
                   renderSupportQuickButton(fbEl, text);
                 } else {
                   messages.push({ role: 'assistant', content: streamedText });
-                  // Check if bot suggested support or user mentioned support
-                  if (assistantBubble && isSupportSuggested(streamedText)) {
+                  // Check if bot suggested booking or support
+                  if (assistantBubble && config.bookingEnabled && isBookingIntent(streamedText)) {
+                    renderBookingQuickButton(assistantBubble, text);
+                  } else if (assistantBubble && isSupportSuggested(streamedText)) {
                     renderSupportQuickButton(assistantBubble, text);
                   }
                   if (assistantBubble) {

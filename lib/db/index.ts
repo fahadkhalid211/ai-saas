@@ -44,6 +44,10 @@ export interface AssistantData {
   proactiveMessageEnabled?: boolean;
   proactiveMessageText?: string;
   proactiveMessageDelay?: number;
+  bookingEnabled?: boolean;
+  bookingProvider?: 'direct' | 'calendly' | 'cal_com';
+  bookingUrl?: string;
+  bookingPromptText?: string;
   createdAt: string;
   updatedAt: string;
 }

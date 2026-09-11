@@ -46,6 +46,10 @@ export async function GET(
       proactiveMessageEnabled: assistant.proactiveMessageEnabled || false,
       proactiveMessageText: assistant.proactiveMessageText || '',
       proactiveMessageDelay: assistant.proactiveMessageDelay ?? 5,
+      bookingEnabled: assistant.bookingEnabled || false,
+      bookingProvider: assistant.bookingProvider || 'direct',
+      bookingUrl: assistant.bookingUrl || '',
+      bookingPromptText: assistant.bookingPromptText || 'Schedule an Appointment',
     };
 
     return NextResponse.json(publicConfig, {

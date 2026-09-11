@@ -45,9 +45,13 @@ import {
   Link2,
   Shield,
   BookOpen,
+  Calendar,
+  LayoutTemplate,
+  History,
 } from 'lucide-react';
 import { diagnoseKnowledgeFailure } from '@/lib/rag/diagnostics';
 import { MarkdownRenderer } from '@/components/markdown-renderer';
+import { BOT_TEMPLATES, BotTemplate } from '@/lib/templates';
 
 export interface SupportCustomField {
   id: string;
@@ -99,6 +103,11 @@ interface Assistant {
   proactiveMessageEnabled?: boolean;
   proactiveMessageText?: string;
   proactiveMessageDelay?: number;
+  // Appointment & Calendar Booking
+  bookingEnabled?: boolean;
+  bookingProvider?: 'direct' | 'calendly' | 'cal_com';
+  bookingUrl?: string;
+  bookingPromptText?: string;
 }
 
 interface KnowledgeSource {
@@ -152,7 +161,7 @@ export default function DashboardPage() {
   const [assistants, setAssistants] = useState<Assistant[]>([]);
   const [activeAssistant, setActiveAssistant] = useState<Assistant | null>(null);
   const [activeTab, setActiveTab] = useState<
-    'overview' | 'knowledge' | 'engine' | 'behavior' | 'widget' | 'channels' | 'playground' | 'leads' | 'docs'
+    'overview' | 'knowledge' | 'engine' | 'behavior' | 'widget' | 'channels' | 'playground' | 'leads' | 'docs' | 'templates' | 'history'
   >('overview');
 
   // Channel & Integrations state
@@ -215,6 +224,15 @@ export default function DashboardPage() {
   const [resolvingQueryId, setResolvingQueryId] = useState<string | null>(null);
   const [knowledgeAnswerText, setKnowledgeAnswerText] = useState('');
   const [isSavingKnowledgeGap, setIsSavingKnowledgeGap] = useState(false);
+
+  // Conversation History state
+  const [conversations, setConversations] = useState<any[]>([]);
+  const [selectedConversation, setSelectedConversation] = useState<any | null>(null);
+  const [isLoadingConversations, setIsLoadingConversations] = useState(false);
+
+  // Template Marketplace state
+  const [applyingTemplateId, setApplyingTemplateId] = useState<string | null>(null);
+  const [templateSuccessMsg, setTemplateSuccessMsg] = useState<string | null>(null);
 
   // Custom Form Field builder state
   const [newFieldLabel, setNewFieldLabel] = useState('');
@@ -298,6 +316,7 @@ export default function DashboardPage() {
       fetchKnowledge(activeAssistant.id);
       fetchLeads(activeAssistant.id);
       fetchUnansweredQueries(activeAssistant.id);
+      fetchConversations(activeAssistant.id);
       // Reset playground
       setChatMessages([
         {
@@ -312,6 +331,7 @@ export default function DashboardPage() {
         fetchKnowledge(activeAssistant.id);
         fetchLeads(activeAssistant.id);
         fetchUnansweredQueries(activeAssistant.id);
+        fetchConversations(activeAssistant.id);
       }, 3000);
 
       return () => clearInterval(pollTimer);
@@ -429,6 +449,49 @@ export default function DashboardPage() {
       console.error('Error updating unanswered query:', err);
     } finally {
       setIsSavingKnowledgeGap(false);
+    }
+  }
+
+  async function fetchConversations(assistantId: string) {
+    try {
+      setIsLoadingConversations(true);
+      const res = await fetch(`/api/conversations?assistantId=${assistantId}`);
+      const data = await res.json();
+      if (data.conversations) {
+        setConversations(data.conversations);
+      }
+    } catch (err) {
+      console.error('Failed to fetch conversations:', err);
+    } finally {
+      setIsLoadingConversations(false);
+    }
+  }
+
+  async function handleApplyTemplate(templateId: string) {
+    if (!activeAssistant) return;
+    try {
+      setApplyingTemplateId(templateId);
+      const res = await fetch('/api/templates', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          templateId,
+          assistantId: activeAssistant.id,
+          seedKnowledge: true,
+        }),
+      });
+      const data = await res.json();
+      if (data.success && data.assistant) {
+        setActiveAssistant(data.assistant);
+        setFormData(data.assistant);
+        setTemplateSuccessMsg(`Applied "${data.assistant.name}" template & seeded ${data.seededKnowledgeCount || 0} sample knowledge articles!`);
+        await fetchKnowledge(data.assistant.id);
+        setTimeout(() => setTemplateSuccessMsg(null), 5000);
+      }
+    } catch (err) {
+      console.error('Failed to apply template:', err);
+    } finally {
+      setApplyingTemplateId(null);
     }
   }
 
@@ -847,6 +910,15 @@ export default function DashboardPage() {
                 <Plus className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
                 <span>New Bot</span>
               </button>
+
+              <button
+                onClick={() => setActiveTab('templates')}
+                className="flex items-center gap-1.5 rounded-lg border border-indigo-200 dark:border-indigo-800 bg-indigo-50/70 dark:bg-indigo-950/40 px-2.5 py-1.5 text-xs font-semibold text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 transition shadow-xs cursor-pointer"
+                title="Browse Ready-made Industry Bot Templates"
+              >
+                <LayoutTemplate className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" />
+                <span>Templates</span>
+              </button>
             </div>
           </div>
 
@@ -910,6 +982,8 @@ export default function DashboardPage() {
                     { id: 'behavior', label: 'Behavior & Rules', icon: Sliders },
                     { id: 'widget', label: 'Widget & Styling', icon: Palette },
                     { id: 'leads', label: 'Captured Leads', icon: Users, count: leads.length },
+                    { id: 'history', label: 'Chat History', icon: History, count: conversations.length },
+                    { id: 'templates', label: 'Bot Templates', icon: LayoutTemplate },
                     { id: 'docs', label: 'Guides & Docs', icon: BookOpen },
                   ].map((tab) => {
                     const Icon = tab.icon;
@@ -2433,6 +2507,86 @@ export default function DashboardPage() {
                       )}
                     </div>
 
+                    {/* Interactive Calendar & Appointment Booking */}
+                    <div className="rounded-xl border border-emerald-200 dark:border-emerald-900/60 bg-emerald-50/50 dark:bg-emerald-950/20 p-4 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="text-xs font-semibold text-slate-900 dark:text-white flex items-center gap-1.5">
+                            <Calendar className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+                            <span>Interactive Calendar &amp; Appointment Booking</span>
+                          </div>
+                          <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                            Allows visitors to schedule calls, consultations, tours, and demos directly inside the chat widget.
+                          </div>
+                        </div>
+                        <input
+                          type="checkbox"
+                          checked={formData.bookingEnabled || false}
+                          onChange={(e) => setFormData({ ...formData, bookingEnabled: e.target.checked })}
+                          className="h-4 w-4 rounded accent-emerald-600"
+                        />
+                      </div>
+
+                      {formData.bookingEnabled && (
+                        <div className="space-y-3 pt-2 border-t border-emerald-100 dark:border-emerald-900/40 animate-in fade-in duration-150">
+                          <div>
+                            <label className="text-[11px] font-semibold text-slate-700 dark:text-slate-300 block mb-1">
+                              Booking Prompt Button Text
+                            </label>
+                            <input
+                              type="text"
+                              placeholder="e.g. Schedule a Free 15-Minute Consultation"
+                              value={formData.bookingPromptText || ''}
+                              onChange={(e) => setFormData({ ...formData, bookingPromptText: e.target.value })}
+                              className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-xs text-slate-900 dark:text-slate-100 outline-none focus:border-emerald-500"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="text-[11px] font-semibold text-slate-700 dark:text-slate-300 block mb-1.5">
+                              Booking Provider
+                            </label>
+                            <div className="grid grid-cols-3 gap-2">
+                              {[
+                                { id: 'direct', label: 'Direct Date Picker', desc: 'Built-in slot picker' },
+                                { id: 'calendly', label: 'Calendly', desc: 'Calendly booking link' },
+                                { id: 'cal_com', label: 'Cal.com', desc: 'Cal.com link' },
+                              ].map((p) => (
+                                <button
+                                  key={p.id}
+                                  type="button"
+                                  onClick={() => setFormData({ ...formData, bookingProvider: p.id as any })}
+                                  className={`p-2.5 rounded-lg border text-left transition ${
+                                    (formData.bookingProvider || 'direct') === p.id
+                                      ? 'border-emerald-600 bg-emerald-100/50 dark:bg-emerald-950/70 text-emerald-900 dark:text-emerald-200 font-semibold'
+                                      : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-50'
+                                  }`}
+                                >
+                                  <div className="text-xs">{p.label}</div>
+                                  <div className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">{p.desc}</div>
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+
+                          {(formData.bookingProvider === 'calendly' || formData.bookingProvider === 'cal_com') && (
+                            <div>
+                              <label className="text-[11px] font-semibold text-slate-700 dark:text-slate-300 block mb-1">
+                                Calendar URL
+                              </label>
+                              <input
+                                type="url"
+                                placeholder="https://calendly.com/your-business/30min"
+                                value={formData.bookingUrl || ''}
+                                onChange={(e) => setFormData({ ...formData, bookingUrl: e.target.value })}
+                                className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-xs text-slate-900 dark:text-slate-100 font-mono outline-none focus:border-emerald-500"
+                              />
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+
                     {/* Support Handoff & Email Notifications */}
                     <div className="space-y-4 pt-3 border-t border-slate-200 dark:border-slate-800">
                       <div>
@@ -3924,6 +4078,278 @@ export default function DashboardPage() {
                   </ol>
                 </div>
 
+              </div>
+            )}
+
+            {/* TAB 9: BOT TEMPLATES GALLERY */}
+            {activeTab === 'templates' && (
+              <div className="max-w-6xl space-y-6 mx-auto">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div>
+                    <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2.5">
+                      <LayoutTemplate className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                      <span>Ready-to-Use Industry Bot Templates</span>
+                    </h1>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                      Instantly configure your assistant with expert system prompts, starter questions, lead fields, and seeded knowledge articles.
+                    </p>
+                  </div>
+                </div>
+
+                {templateSuccessMsg && (
+                  <div className="rounded-xl border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/50 p-4 text-xs text-emerald-800 dark:text-emerald-200 flex items-center gap-2.5 animate-in fade-in">
+                    <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                    <span className="font-semibold">{templateSuccessMsg}</span>
+                  </div>
+                )}
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                  {BOT_TEMPLATES.map((tmpl) => {
+                    const isApplying = applyingTemplateId === tmpl.id;
+                    return (
+                      <div
+                        key={tmpl.id}
+                        className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-xs flex flex-col justify-between hover:border-slate-300 dark:hover:border-slate-700 transition"
+                      >
+                        <div className="space-y-3.5">
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="flex items-center gap-2.5">
+                              <span className="text-2xl">{tmpl.icon}</span>
+                              <div>
+                                <h3 className="text-sm font-bold text-slate-900 dark:text-white">{tmpl.name}</h3>
+                                <span className="text-[10.5px] font-semibold text-slate-500 dark:text-slate-400">
+                                  {tmpl.industry}
+                                </span>
+                              </div>
+                            </div>
+                            <span
+                              className="h-3.5 w-3.5 rounded-full border border-slate-200 dark:border-slate-700 shrink-0 mt-1"
+                              style={{ backgroundColor: tmpl.primaryColor }}
+                              title={`Theme: ${tmpl.primaryColor}`}
+                            />
+                          </div>
+
+                          <p className="text-xs font-medium text-slate-700 dark:text-slate-300 leading-snug">
+                            {tmpl.tagline}
+                          </p>
+
+                          <p className="text-[11.5px] text-slate-500 dark:text-slate-400 leading-relaxed">
+                            {tmpl.description}
+                          </p>
+
+                          <div className="pt-2 border-t border-slate-100 dark:border-slate-800 space-y-1.5">
+                            <div className="text-[11px] font-semibold text-slate-700 dark:text-slate-300">
+                              Included Starter Questions:
+                            </div>
+                            <div className="flex flex-wrap gap-1.5">
+                              {tmpl.starterQuestions.slice(0, 3).map((q, idx) => (
+                                <span
+                                  key={idx}
+                                  className="text-[10px] bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 px-2 py-0.5 rounded-md"
+                                >
+                                  {q}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-2 text-[10.5px] text-slate-500 dark:text-slate-400 pt-1">
+                            {tmpl.bookingEnabled && (
+                              <span className="flex items-center gap-1 font-medium text-emerald-600 dark:text-emerald-400">
+                                <Calendar className="h-3 w-3" /> Booking Ready
+                              </span>
+                            )}
+                            {tmpl.collectLeadEmail && (
+                              <span className="flex items-center gap-1 font-medium text-blue-600 dark:text-blue-400">
+                                <Users className="h-3 w-3" /> Lead Capture
+                              </span>
+                            )}
+                            <span className="flex items-center gap-1">
+                              📚 {tmpl.sampleKnowledge.length} Sample Docs
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="pt-4 mt-3 border-t border-slate-100 dark:border-slate-800">
+                          <button
+                            type="button"
+                            disabled={isApplying}
+                            onClick={() => handleApplyTemplate(tmpl.id)}
+                            className="w-full flex items-center justify-center gap-2 rounded-xl bg-slate-900 hover:bg-slate-800 dark:bg-slate-100 dark:hover:bg-white dark:text-slate-900 text-white py-2 text-xs font-semibold transition shadow-xs disabled:opacity-50 cursor-pointer"
+                          >
+                            {isApplying ? (
+                              <>
+                                <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+                                <span>Applying Template...</span>
+                              </>
+                            ) : (
+                              <>
+                                <Check className="h-3.5 w-3.5" />
+                                <span>Use This Template</span>
+                              </>
+                            )}
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* TAB 10: CHAT HISTORY & CONVERSATION LOGS */}
+            {activeTab === 'history' && (
+              <div className="max-w-6xl space-y-6 mx-auto">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div>
+                    <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2.5">
+                      <History className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                      <span>Conversation History &amp; Logs</span>
+                    </h1>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                      Inspect real visitor interactions, retrieved knowledge citations, and response transcripts.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => activeAssistant && fetchConversations(activeAssistant.id)}
+                    disabled={isLoadingConversations}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 transition shadow-xs"
+                  >
+                    <RefreshCw className={`h-3.5 w-3.5 ${isLoadingConversations ? 'animate-spin text-blue-600' : 'text-slate-500'}`} />
+                    <span>Refresh Logs</span>
+                  </button>
+                </div>
+
+                {conversations.length === 0 ? (
+                  <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-12 text-center shadow-xs space-y-3">
+                    <div className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400">
+                      <MessageSquare className="h-6 w-6" />
+                    </div>
+                    <h3 className="text-sm font-semibold text-slate-900 dark:text-white">No Conversations Recorded Yet</h3>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm mx-auto">
+                      When visitors start chatting with your bot in the widget or Testing Studio, full transcripts will appear here.
+                    </p>
+                    <button
+                      onClick={() => setActiveTab('playground')}
+                      className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs transition"
+                    >
+                      <span>Open Testing Studio &rarr;</span>
+                    </button>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                    {/* Conversations List */}
+                    <div className="lg:col-span-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden shadow-xs">
+                      <div className="p-3.5 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40 flex items-center justify-between">
+                        <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                          {conversations.length} Active Sessions
+                        </span>
+                        <span className="text-[10px] text-slate-400">Click to view transcript</span>
+                      </div>
+                      <div className="divide-y divide-slate-100 dark:divide-slate-800 max-h-[600px] overflow-y-auto">
+                        {conversations.map((conv) => {
+                          const isSelected = selectedConversation?.id === conv.id;
+                          const msgCount = conv.messages?.length || 0;
+                          const lastMsg = conv.messages && conv.messages[conv.messages.length - 1];
+                          return (
+                            <button
+                              key={conv.id}
+                              type="button"
+                              onClick={() => setSelectedConversation(conv)}
+                              className={`w-full text-left p-3.5 transition flex flex-col gap-1.5 ${
+                                isSelected
+                                  ? 'bg-blue-50/70 dark:bg-blue-950/40 border-l-3 border-blue-600'
+                                  : 'hover:bg-slate-50/70 dark:hover:bg-slate-800/40'
+                              }`}
+                            >
+                              <div className="flex items-center justify-between">
+                                <span className="text-xs font-semibold text-slate-900 dark:text-white font-mono">
+                                  {conv.visitorId ? conv.visitorId.slice(0, 14) : conv.id.slice(0, 10)}
+                                </span>
+                                <span className="rounded-full bg-slate-100 dark:bg-slate-800 px-2 py-0.5 text-[10px] font-bold text-slate-600 dark:text-slate-400">
+                                  {msgCount} msgs
+                                </span>
+                              </div>
+                              <div className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-1">
+                                {lastMsg ? lastMsg.content : 'No messages'}
+                              </div>
+                              <div className="text-[10px] text-slate-400">
+                                {new Date(conv.createdAt).toLocaleDateString()} at {new Date(conv.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Selected Conversation Transcript */}
+                    <div className="lg:col-span-7 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-xs">
+                      {selectedConversation ? (
+                        <div className="space-y-4">
+                          <div className="pb-3 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                            <div>
+                              <div className="text-xs font-bold text-slate-900 dark:text-white font-mono">
+                                Session: {selectedConversation.id}
+                              </div>
+                              <div className="text-[11px] text-slate-400 mt-0.5">
+                                Started {new Date(selectedConversation.createdAt).toLocaleString()}
+                              </div>
+                            </div>
+                            <span className="rounded-full bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 font-semibold px-2.5 py-1 text-[11px]">
+                              {selectedConversation.messages?.length || 0} Messages
+                            </span>
+                          </div>
+
+                          <div className="space-y-3 max-h-[500px] overflow-y-auto pr-2">
+                            {(selectedConversation.messages || []).map((m: any, idx: number) => {
+                              const isUser = m.role === 'user';
+                              return (
+                                <div
+                                  key={m.id || idx}
+                                  className={`flex flex-col ${isUser ? 'items-end' : 'items-start'}`}
+                                >
+                                  <div className="text-[10px] text-slate-400 mb-1 px-1">
+                                    {isUser ? 'Visitor' : 'Assistant'} &bull; {new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                  </div>
+                                  <div
+                                    className={`rounded-2xl px-4 py-2.5 text-xs max-w-[85%] leading-relaxed ${
+                                      isUser
+                                        ? 'bg-blue-600 text-white rounded-br-xs'
+                                        : 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100 rounded-bl-xs'
+                                    }`}
+                                  >
+                                    <div className="whitespace-pre-wrap">{m.content}</div>
+
+                                    {/* Citations Preview if Assistant */}
+                                    {m.citations && m.citations.length > 0 && (
+                                      <div className="mt-2 pt-2 border-t border-slate-200 dark:border-slate-700 text-[10.5px]">
+                                        <div className="font-semibold text-slate-500 dark:text-slate-400 mb-1">
+                                          Referenced Sources:
+                                        </div>
+                                        <div className="space-y-1">
+                                          {m.citations.map((cite: any, cIdx: number) => (
+                                            <div key={cIdx} className="text-blue-600 dark:text-blue-400 font-mono">
+                                              &bull; {cite.sourceTitle || cite.sourceDoc || 'Document'}
+                                            </div>
+                                          ))}
+                                        </div>
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="py-20 text-center text-xs text-slate-400">
+                          Select a conversation from the left to inspect the transcript.
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
