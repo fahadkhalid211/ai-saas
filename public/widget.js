@@ -66,6 +66,9 @@
       launcherPosition: 'bottom-right',
       starterQuestions: [],
       collectLeadEmail: false,
+      whiteLabelEnabled: false,
+      customBrandingText: '',
+      customBrandingUrl: '',
     };
     var isOpen = false;
     var messages = [];
@@ -562,6 +565,30 @@
         background: var(--primary-color, #2563eb);
         color: #ffffff;
       }
+      /* Footer branding */
+      .chat-branding {
+        padding: 6px 16px 8px 16px;
+        background: #ffffff;
+        text-align: center;
+        font-size: 11px;
+        color: #94a3b8;
+        border-top: 1px solid #f8fafc;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+        line-height: 1;
+      }
+      .chat-branding a {
+        color: #64748b;
+        text-decoration: none;
+        font-weight: 500;
+        transition: color 0.15s;
+      }
+      .chat-branding a:hover {
+        color: var(--primary-color, #2563eb);
+        text-decoration: underline;
+      }
     `;
     shadow.appendChild(style);
 
@@ -616,6 +643,9 @@
           </svg>
         </button>
       </div>
+      <div class="chat-branding" id="widget-branding">
+        <span>⚡ Powered by <a href="https://kortexai.com" target="_blank" rel="noopener noreferrer">Kortex AI</a></span>
+      </div>
     `;
 
     widgetWrapper.appendChild(chatWindow);
@@ -648,6 +678,16 @@
         applyConfig();
       });
 
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
     function applyConfig() {
       shadow.host.style.setProperty('--primary-color', config.primaryColor);
       launcher.style.backgroundColor = config.primaryColor;
@@ -656,6 +696,26 @@
 
       if (config.launcherPosition === 'bottom-left') {
         widgetWrapper.className = 'widget-container pos-bottom-left';
+      }
+
+      // White-label & Custom Agency Branding
+      var brandingEl = shadow.getElementById('widget-branding');
+      if (brandingEl) {
+        if (config.whiteLabelEnabled) {
+          if (config.customBrandingText) {
+            brandingEl.style.display = 'flex';
+            if (config.customBrandingUrl) {
+              brandingEl.innerHTML = '<a href="' + escapeHtml(config.customBrandingUrl) + '" target="_blank" rel="noopener noreferrer">' + escapeHtml(config.customBrandingText) + '</a>';
+            } else {
+              brandingEl.innerHTML = '<span>' + escapeHtml(config.customBrandingText) + '</span>';
+            }
+          } else {
+            brandingEl.style.display = 'none';
+          }
+        } else {
+          brandingEl.style.display = 'flex';
+          brandingEl.innerHTML = '<span>⚡ Powered by <a href="https://kortexai.com" target="_blank" rel="noopener noreferrer">Kortex AI</a></span>';
+        }
       }
 
       // Add initial welcome message if empty

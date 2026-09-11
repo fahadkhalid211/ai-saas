@@ -29,6 +29,18 @@ export interface AssistantData {
   supportReceiverEmail?: string;
   supportCcEmails?: string[];
   supportCustomFields?: SupportCustomField[];
+  telegramBotToken?: string;
+  telegramBotEnabled?: boolean;
+  whatsappPhoneNumberId?: string;
+  whatsappAccessToken?: string;
+  whatsappVerifyToken?: string;
+  whatsappEnabled?: boolean;
+  webhookUrl?: string;
+  webhookSecret?: string;
+  webhookEvents?: string[];
+  whiteLabelEnabled?: boolean;
+  customBrandingText?: string;
+  customBrandingUrl?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -232,6 +244,18 @@ export class Database {
       supportReceiverEmail: data.supportReceiverEmail || '',
       supportCcEmails: data.supportCcEmails || [],
       supportCustomFields: data.supportCustomFields || [],
+      telegramBotToken: data.telegramBotToken || '',
+      telegramBotEnabled: data.telegramBotEnabled ?? false,
+      whatsappPhoneNumberId: data.whatsappPhoneNumberId || '',
+      whatsappAccessToken: data.whatsappAccessToken || '',
+      whatsappVerifyToken: data.whatsappVerifyToken || '',
+      whatsappEnabled: data.whatsappEnabled ?? false,
+      webhookUrl: data.webhookUrl || '',
+      webhookSecret: data.webhookSecret || '',
+      webhookEvents: data.webhookEvents || ['lead.created', 'chat.escalated'],
+      whiteLabelEnabled: data.whiteLabelEnabled ?? false,
+      customBrandingText: data.customBrandingText || '',
+      customBrandingUrl: data.customBrandingUrl || '',
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };

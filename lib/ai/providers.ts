@@ -335,3 +335,17 @@ You are "${assistantName}", representing this business.
 ${contextText}
 ================================`;
 }
+
+/**
+ * Non-streaming chat completion helper that collects streamed tokens
+ */
+export async function generateChatCompletion(
+  messages: ChatMessage[],
+  options: ProviderOptions
+): Promise<string> {
+  let result = '';
+  for await (const chunk of streamChatResponse(messages, options)) {
+    result += chunk;
+  }
+  return result;
+}

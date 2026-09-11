@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { Database } from '@/lib/db';
 import { sendSupportLeadEmail } from '@/lib/email';
+import { dispatchWebhook } from '@/lib/webhook';
 
 export async function OPTIONS() {
   return new NextResponse(null, {
@@ -91,6 +92,13 @@ export async function POST(req: Request) {
       console.log(
         `[LeadAPI] Lead saved for assistant "${assistant?.name || assistantId}". Note: No supportReceiverEmail configured in assistant settings.`
       );
+    }
+
+    // Asynchronously dispatch outbound webhook (Zapier, Make, CRM)
+    if (assistant?.webhookUrl && assistant.webhookUrl.trim()) {
+      dispatchWebhook(assistant, 'lead.created', lead).catch((webhookErr) => {
+        console.warn('[LeadAPI] Webhook dispatch warning:', webhookErr?.message);
+      });
     }
 
     return NextResponse.json(

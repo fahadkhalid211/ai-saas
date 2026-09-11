@@ -40,6 +40,9 @@ export async function GET(
       starterQuestions: assistant.starterQuestions || [],
       collectLeadEmail: assistant.collectLeadEmail || false,
       supportCustomFields: assistant.supportCustomFields || [],
+      whiteLabelEnabled: assistant.whiteLabelEnabled || false,
+      customBrandingText: assistant.customBrandingText || '',
+      customBrandingUrl: assistant.customBrandingUrl || '',
     };
 
     return NextResponse.json(publicConfig, {
