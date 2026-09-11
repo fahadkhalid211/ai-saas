@@ -904,6 +904,15 @@
             </svg>
             <span>Support</span>
           </button>
+          <button class="header-action-btn" id="header-expand-btn" title="Expand / Minimize chat window">
+            <svg id="header-expand-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="15 3 21 3 21 9"></polyline>
+              <polyline points="9 21 3 21 3 15"></polyline>
+              <line x1="21" y1="3" x2="14" y2="10"></line>
+              <line x1="3" y1="21" x2="10" y2="14"></line>
+            </svg>
+            <span id="header-expand-label">Expand</span>
+          </button>
           <button class="close-btn" id="close-chat-btn" title="Close chat">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <line x1="18" y1="6" x2="6" y2="18"></line>

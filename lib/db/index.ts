@@ -119,6 +119,13 @@ export interface MessageData {
   content: string;
   citations: any[];
   tokensUsed: number;
+  attachment?: {
+    name: string;
+    type: string;
+    size?: number;
+    url?: string;
+    preview?: string;
+  };
   createdAt: string;
 }
 
@@ -583,7 +590,14 @@ export class Database {
     role: 'user' | 'assistant' | 'system',
     content: string,
     citations: any[] = [],
-    tokensUsed: number = 0
+    tokensUsed: number = 0,
+    attachment?: {
+      name: string;
+      type: string;
+      size?: number;
+      url?: string;
+      preview?: string;
+    }
   ): Promise<MessageData> {
     const state = loadState();
     const msg: MessageData = {
@@ -593,6 +607,7 @@ export class Database {
       content,
       citations,
       tokensUsed,
+      ...(attachment ? { attachment } : {}),
       createdAt: new Date().toISOString(),
     };
 

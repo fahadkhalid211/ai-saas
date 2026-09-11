@@ -4,6 +4,7 @@ import { retrieveRelevantContext } from '@/lib/rag/retrieval';
 import { buildSystemPrompt, streamChatResponse } from '@/lib/ai/providers';
 import { ChatMessage } from '@/lib/ai/types';
 import { isWebSearchIntent, extractSearchQuery, executeWebSearch, ingestWebSearchResults } from '@/lib/rag/web-search';
+import { parseFileOrText } from '@/lib/rag/parsers';
 
 // Handle CORS pre-flight
 export async function OPTIONS() {
@@ -20,7 +21,7 @@ export async function OPTIONS() {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { assistantId, messages, visitorId, conversationId, preferredLanguage } = body;
+    const { assistantId, messages, visitorId, conversationId, preferredLanguage, attachment } = body;
 
     if (!assistantId) {
       return NextResponse.json({ error: 'assistantId is required' }, { status: 400 });
@@ -33,6 +34,52 @@ export async function POST(req: NextRequest) {
     const assistant = await Database.getAssistantById(assistantId);
     if (!assistant) {
       return NextResponse.json({ error: 'Assistant not found' }, { status: 404 });
+    }
+
+    // Process visitor attachment if uploaded
+    let attachmentParsedContent = '';
+    let attachmentMeta: any = null;
+
+    if (attachment && attachment.name && attachment.data) {
+      try {
+        const ext = (attachment.name.split('.').pop() || 'txt').toLowerCase();
+        let buffer: Buffer;
+        if (attachment.data.startsWith('data:')) {
+          const base64Data = attachment.data.split(',')[1] || '';
+          buffer = Buffer.from(base64Data, 'base64');
+        } else {
+          buffer = Buffer.from(attachment.data, 'utf8');
+        }
+
+        const parsedDoc = await parseFileOrText({
+          filename: attachment.name,
+          type: ext,
+          buffer,
+          options: {
+            apiKey: assistant.apiKeyEncrypted,
+            provider: assistant.provider,
+          },
+        });
+
+        if (parsedDoc && parsedDoc.content) {
+          attachmentParsedContent = parsedDoc.content.trim();
+        }
+
+        attachmentMeta = {
+          name: attachment.name,
+          type: attachment.type || ext,
+          size: attachment.size || buffer.length,
+          preview: attachmentParsedContent.slice(0, 160),
+        };
+      } catch (attachErr) {
+        console.warn('[ChatRoute] Attachment parse error:', attachErr);
+        attachmentParsedContent = `[Attached file: ${attachment.name}]`;
+        attachmentMeta = {
+          name: attachment.name,
+          type: attachment.type || 'file',
+          size: attachment.size || 0,
+        };
+      }
     }
 
     // Latest user message
@@ -55,7 +102,7 @@ export async function POST(req: NextRequest) {
 
     // 1. Get or create conversation record
     const conv = await Database.getOrCreateConversation(assistantId, visitorId, conversationId);
-    await Database.saveMessage(conv.id, 'user', latestUserMsg);
+    await Database.saveMessage(conv.id, 'user', latestUserMsg, [], 0, attachmentMeta);
     await Database.updateConversation(conv.id, {
       sentiment: detectedSentiment,
       ...(isEscalation ? { escalated: true } : {}),
@@ -164,6 +211,15 @@ export async function POST(req: NextRequest) {
             assistantName: assistant.name,
           });
 
+          if (attachmentParsedContent && attachmentMeta) {
+            fullSystemPrompt += `\n\n[VISITOR ATTACHED FILE: "${attachmentMeta.name}" (${attachmentMeta.type})]:
+The visitor attached a document to their message:
+"""
+${attachmentParsedContent.slice(0, 15000)}
+"""
+Directly use the content of this attached document to assist the visitor, answer their questions, extract information, or provide requested feedback.`;
+          }
+
           if (preferredLanguage && preferredLanguage !== 'en') {
             const langNames: Record<string, string> = {
               es: 'Spanish (Español)',
@@ -184,12 +240,14 @@ export async function POST(req: NextRequest) {
             })),
           ];
 
-          // Send citations first (including URLs for all web sources)
+          // Send citations first (including URLs for all web sources and attachment metadata)
           const citationsEvent = `data: ${JSON.stringify({
             type: 'citations',
             citations: retrieval.citations,
             conversationId: conv.id,
             isWebSearch: isWebSearchUsed,
+            webSearchQuery: isWebSearchUsed ? webSearchQuery : undefined,
+            attachment: attachmentMeta,
           })}\n\n`;
           controller.enqueue(encoder.encode(citationsEvent));
 

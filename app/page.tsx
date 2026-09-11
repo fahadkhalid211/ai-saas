@@ -17,6 +17,7 @@ import {
   Plus,
   RefreshCw,
   Send,
+  Paperclip,
   Download,
   FileSpreadsheet,
   FileCode,
@@ -453,6 +454,14 @@ export default function DashboardPage() {
   const [newAssistantName, setNewAssistantName] = useState('');
   const [showEmbedModal, setShowEmbedModal] = useState(false);
   const [copiedCode, setCopiedCode] = useState(false);
+  const [copiedIframeCode, setCopiedIframeCode] = useState(false);
+  const [playgroundAttachment, setPlaygroundAttachment] = useState<{
+    name: string;
+    type: string;
+    size: number;
+    data: string;
+  } | null>(null);
+  const playgroundFileInputRef = useRef<HTMLInputElement>(null);
   const [failedSourceModal, setFailedSourceModal] = useState<KnowledgeSource | null>(null);
   const [uploadFailureAlert, setUploadFailureAlert] = useState<{
     title: string;
@@ -2455,10 +2464,62 @@ export default function DashboardPage() {
                     )}
 
                     {/* Chat Input Bar */}
-                    <div className="p-3 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={handlePlaygroundVoiceToggle}
+                    <div className="p-3 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 space-y-2">
+                      {playgroundAttachment && (
+                        <div className="flex items-center justify-between p-2 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs">
+                          <div className="flex items-center gap-2 min-w-0">
+                            <FileText className="h-3.5 w-3.5 text-blue-600 shrink-0" />
+                            <span className="font-semibold truncate max-w-[200px] text-slate-800 dark:text-slate-200">{playgroundAttachment.name}</span>
+                            <span className="text-[10px] text-slate-400 font-mono">({Math.round(playgroundAttachment.size / 1024)} KB)</span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setPlaygroundAttachment(null);
+                              if (playgroundFileInputRef.current) playgroundFileInputRef.current.value = '';
+                            }}
+                            className="p-0.5 rounded hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-400 hover:text-slate-600 cursor-pointer"
+                          >
+                            <X className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
+                      )}
+                      <div className="flex items-center gap-2">
+                        <input
+                          ref={playgroundFileInputRef}
+                          type="file"
+                          accept=".pdf,.docx,.txt,.csv,.png,.jpg,.jpeg"
+                          className="hidden"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (!file) return;
+                            if (file.size > 15 * 1024 * 1024) {
+                              alert('File is too large. Maximum size is 15 MB.');
+                              return;
+                            }
+                            const reader = new FileReader();
+                            reader.onload = () => {
+                              setPlaygroundAttachment({
+                                name: file.name,
+                                type: file.type || file.name.split('.').pop() || 'file',
+                                size: file.size,
+                                data: reader.result as string,
+                              });
+                            };
+                            reader.readAsDataURL(file);
+                          }}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => playgroundFileInputRef.current?.click()}
+                          title="Attach file to chat"
+                          className="p-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition cursor-pointer shrink-0"
+                        >
+                          <Paperclip className="h-4 w-4" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handlePlaygroundVoiceToggle}
                         title={isVoiceListening ? 'Stop Voice Dictation' : 'Speak / Voice Dictation'}
                         className={`p-2 rounded-lg border transition cursor-pointer shrink-0 ${
                           isVoiceListening
@@ -2488,6 +2549,7 @@ export default function DashboardPage() {
                       </button>
                     </div>
                   </div>
+                </div>
 
                   {/* RAG Inspector Panel (1 col) */}
                   <div className="border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-900 p-5 space-y-4 flex flex-col justify-between shadow-xs">
@@ -6087,7 +6149,35 @@ export default function DashboardPage() {
                 </div>
 
                 <div className="pt-2 border-t border-slate-200 dark:border-slate-800">
-                  <h4 className="font-semibold text-slate-900 dark:text-white mb-1">Option 2: 1-Click WordPress Plugin</h4>
+                  <div className="flex items-center justify-between mb-1">
+                    <h4 className="font-semibold text-slate-900 dark:text-white">Option 2: Inline Iframe Embed (Embed Anywhere on Page)</h4>
+                    <span className="text-[10px] bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 font-semibold px-2 py-0.5 rounded">Inline Chatbox</span>
+                  </div>
+                  <p className="text-slate-500 dark:text-slate-400 text-[11px] mb-2">
+                    Embed the chatbox directly inside any page container, contact section, blog post, or full-width customer portal without a floating bubble:
+                  </p>
+                  <div className="relative">
+                    <pre className="p-3 rounded-lg bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-[11px] font-mono text-slate-800 dark:text-cyan-300 overflow-x-auto">
+{`<iframe src="${(customEmbedHost.trim() || (typeof window !== 'undefined' ? window.location.origin : 'https://your-domain.com')).replace(/\/+$/, '')}/embed/${activeAssistant?.id}" width="100%" height="650" frameborder="0" style="border:none; border-radius:16px; width:100%; height:650px; box-shadow:0 4px 20px rgba(0,0,0,0.06);" allow="microphone"></iframe>`}
+                    </pre>
+                    <button
+                      onClick={() => {
+                        const effectiveHost = (customEmbedHost.trim() || (typeof window !== 'undefined' ? window.location.origin : 'https://your-domain.com')).replace(/\/+$/, '');
+                        navigator.clipboard.writeText(
+                          `<iframe src="${effectiveHost}/embed/${activeAssistant?.id}" width="100%" height="650" frameborder="0" style="border:none; border-radius:16px; width:100%; height:650px; box-shadow:0 4px 20px rgba(0,0,0,0.06);" allow="microphone"></iframe>`
+                        );
+                        setCopiedIframeCode(true);
+                        setTimeout(() => setCopiedIframeCode(false), 2000);
+                      }}
+                      className="absolute right-2 top-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-2 py-1 rounded text-[10px] text-slate-700 dark:text-slate-300 font-semibold cursor-pointer"
+                    >
+                      {copiedIframeCode ? 'Copied!' : 'Copy Iframe'}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="pt-2 border-t border-slate-200 dark:border-slate-800">
+                  <h4 className="font-semibold text-slate-900 dark:text-white mb-1">Option 3: 1-Click WordPress Plugin</h4>
                   <p className="text-slate-500 dark:text-slate-400 text-[11px] mb-2">
                     The standalone plugin is included in your repository at <code className="text-slate-700 dark:text-slate-300 font-mono">wordpress/ai-business-assistant/</code>.
                   </p>
