@@ -781,7 +781,10 @@ Thank you for using Kortex AI Business Engine.
       const res = await fetch('/api/auth', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ apiKey: authApiKeyInput.trim() }),
+        body: JSON.stringify({
+          key: authApiKeyInput.trim(),
+          apiKey: authApiKeyInput.trim(),
+        }),
       });
       const data = await res.json();
       if (res.ok && data.success) {

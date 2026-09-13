@@ -10,10 +10,10 @@ const ADMIN_KEY_FILE = path.join(DATA_DIR, '.admin_key');
  */
 export function getAdminKey(): string {
   if (process.env.ADMIN_API_KEY && process.env.ADMIN_API_KEY.trim()) {
-    return process.env.ADMIN_API_KEY.trim();
+    return process.env.ADMIN_API_KEY.trim().replace(/^["']|["']$/g, '');
   }
   if (process.env.ADMIN_PASSWORD && process.env.ADMIN_PASSWORD.trim()) {
-    return process.env.ADMIN_PASSWORD.trim();
+    return process.env.ADMIN_PASSWORD.trim().replace(/^["']|["']$/g, '');
   }
 
   // Auto-generate a persistent secret in .data/ if not provided in .env
@@ -22,7 +22,7 @@ export function getAdminKey(): string {
       fs.mkdirSync(DATA_DIR, { recursive: true });
     }
     if (fs.existsSync(ADMIN_KEY_FILE)) {
-      const saved = fs.readFileSync(ADMIN_KEY_FILE, 'utf8').trim();
+      const saved = fs.readFileSync(ADMIN_KEY_FILE, 'utf8').trim().replace(/^["']|["']$/g, '');
       if (saved) return saved;
     }
 

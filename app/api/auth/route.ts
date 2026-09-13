@@ -30,14 +30,15 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const { key } = body;
+    const rawKey = body?.key || body?.apiKey || body?.passcode || body?.password;
 
-    if (!key || typeof key !== 'string' || !key.trim()) {
+    if (!rawKey || typeof rawKey !== 'string' || !rawKey.trim()) {
       return NextResponse.json({ error: 'Master Admin Key or Passcode is required' }, { status: 400 });
     }
 
+    const key = rawKey.trim().replace(/^["']|["']$/g, '');
     const masterKey = getAdminKey();
-    if (key.trim() !== masterKey) {
+    if (key !== masterKey) {
       return NextResponse.json({ error: 'Invalid master admin access key' }, { status: 401 });
     }
 
