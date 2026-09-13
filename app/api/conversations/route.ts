@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { Database } from '@/lib/db';
+import { verifyAdminRequest } from '@/lib/security/auth';
 
 export async function GET(req: Request) {
   try {
@@ -14,6 +15,11 @@ export async function GET(req: Request) {
         return NextResponse.json({ error: 'Conversation not found' }, { status: 404 });
       }
       return NextResponse.json({ conversation });
+    }
+
+    // Listing conversations across an assistant or workspace strictly requires admin auth
+    if (!(await verifyAdminRequest(req))) {
+      return NextResponse.json({ error: 'Unauthorized: Admin authentication required' }, { status: 401 });
     }
 
     // Assistant-specific conversations lookup
@@ -32,6 +38,11 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
+    // Only authenticated human operators can send operator messages
+    if (!(await verifyAdminRequest(req))) {
+      return NextResponse.json({ error: 'Unauthorized: Admin authentication required' }, { status: 401 });
+    }
+
     const body = await req.json();
     const { conversationId, content, agentName, takeover = true } = body;
 
@@ -81,6 +92,11 @@ export async function POST(req: Request) {
 
 export async function PATCH(req: Request) {
   try {
+    // Only authenticated admins/operators can patch conversation status
+    if (!(await verifyAdminRequest(req))) {
+      return NextResponse.json({ error: 'Unauthorized: Admin authentication required' }, { status: 401 });
+    }
+
     const body = await req.json();
     const { id, resolved, escalated, sentiment, isLiveTakeover, assignedAgentName, status } = body;
 

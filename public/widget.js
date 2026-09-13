@@ -1032,7 +1032,12 @@
           if (config.customBrandingText) {
             brandingEl.style.display = 'flex';
             if (config.customBrandingUrl) {
-              brandingEl.innerHTML = '<a href="' + escapeHtml(config.customBrandingUrl) + '" target="_blank" rel="noopener noreferrer">' + escapeHtml(config.customBrandingText) + '</a>';
+              var safeBrandingUrl = config.customBrandingUrl.trim();
+              if (/^(https?:\/\/)/i.test(safeBrandingUrl) && !/^javascript:/i.test(safeBrandingUrl)) {
+                brandingEl.innerHTML = '<a href="' + escapeHtml(safeBrandingUrl) + '" target="_blank" rel="noopener noreferrer">' + escapeHtml(config.customBrandingText) + '</a>';
+              } else {
+                brandingEl.innerHTML = '<span>' + escapeHtml(config.customBrandingText) + '</span>';
+              }
             } else {
               brandingEl.innerHTML = '<span>' + escapeHtml(config.customBrandingText) + '</span>';
             }
@@ -1473,7 +1478,13 @@
       html = html.replace(/_([^_]+)_/g, '<em>$1</em>');
 
       // Links: [title](url)
-      html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" style="color:var(--primary-color, #2563eb);text-decoration:underline;font-weight:550;word-break:break-word;">$1 &#8599;</a>');
+      html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, function (match, title, url) {
+        var cleanUrl = (url || '').trim();
+        if (/^(https?:\/\/|mailto:|tel:|#|\/)/i.test(cleanUrl) && !/^javascript:/i.test(cleanUrl)) {
+          return '<a href="' + escapeHtml(cleanUrl) + '" target="_blank" rel="noopener noreferrer" style="color:var(--primary-color, #2563eb);text-decoration:underline;font-weight:550;word-break:break-word;">' + title + ' &#8599;</a>';
+        }
+        return title;
+      });
 
       // Unordered lists (- item or * item)
       html = html.replace(/^(?:-|\*)\s+(.*?)$/gm, '<li>$1</li>');

@@ -74,16 +74,25 @@ export function MarkdownRenderer({ content, className = '' }: MarkdownRendererPr
               {children}
             </em>
           ),
-          a: ({ href, children }) => (
-            <a
-              href={href}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-blue-600 dark:text-blue-400 hover:underline font-medium break-all"
-            >
-              {children}
-            </a>
-          ),
+          a: ({ href, children }) => {
+            const isSafe =
+              href &&
+              /^(https?:\/\/|mailto:|tel:|#|\/)/i.test(href.trim()) &&
+              !/^javascript:/i.test(href.trim());
+            if (!isSafe) {
+              return <span className="underline break-all text-slate-700 dark:text-slate-300">{children}</span>;
+            }
+            return (
+              <a
+                href={href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-600 dark:text-blue-400 hover:underline font-medium break-all"
+              >
+                {children}
+              </a>
+            );
+          },
           table: ({ children }) => (
             <div className="overflow-x-auto my-2 rounded-lg border border-slate-200 dark:border-slate-800">
               <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-800 text-[11px]">

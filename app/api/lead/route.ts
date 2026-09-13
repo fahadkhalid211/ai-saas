@@ -2,13 +2,15 @@ import { NextResponse } from 'next/server';
 import { Database } from '@/lib/db';
 import { sendSupportLeadEmail } from '@/lib/email';
 import { dispatchWebhook } from '@/lib/webhook';
+import { verifyAdminRequest } from '@/lib/security/auth';
+import { checkRateLimit, getClientIp } from '@/lib/security/rate-limit';
 
 export async function OPTIONS() {
   return new NextResponse(null, {
     status: 200,
     headers: {
       'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+      'Access-Control-Allow-Methods': 'POST, OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type',
     },
   });
@@ -16,6 +18,16 @@ export async function OPTIONS() {
 
 export async function POST(req: Request) {
   try {
+    // Rate limit lead submissions (max 10 per minute per IP)
+    const ip = getClientIp(req);
+    const limit = checkRateLimit(`lead:${ip}`, { windowMs: 60 * 1000, max: 10 });
+    if (!limit.allowed) {
+      return NextResponse.json(
+        { error: 'Too many submissions. Please wait a moment before trying again.' },
+        { status: 429, headers: { 'Access-Control-Allow-Origin': '*' } }
+      );
+    }
+
     const body = await req.json();
     const { assistantId, email, name, phone, notes, customData } = body;
 
@@ -48,6 +60,12 @@ export async function POST(req: Request) {
     }
 
     const assistant = await Database.getAssistantById(assistantId);
+    if (!assistant) {
+      return NextResponse.json(
+        { error: 'Assistant not found' },
+        { status: 404, headers: { 'Access-Control-Allow-Origin': '*' } }
+      );
+    }
 
     // Validate required custom fields if configured
     if (assistant?.supportCustomFields && Array.isArray(assistant.supportCustomFields)) {
@@ -86,12 +104,7 @@ export async function POST(req: Request) {
         });
       } catch (mailErr: any) {
         console.error('[LeadAPI] Email notification dispatch failed:', mailErr?.message);
-        // Do not fail the user's lead submission if email delivery encounters an error
       }
-    } else {
-      console.log(
-        `[LeadAPI] Lead saved for assistant "${assistant?.name || assistantId}". Note: No supportReceiverEmail configured in assistant settings.`
-      );
     }
 
     // Asynchronously dispatch outbound webhook (Zapier, Make, CRM)
@@ -119,6 +132,11 @@ export async function POST(req: Request) {
 
 export async function GET(req: Request) {
   try {
+    // Only authenticated admins can view customer leads
+    if (!(await verifyAdminRequest(req))) {
+      return NextResponse.json({ error: 'Unauthorized: Admin authentication required' }, { status: 401 });
+    }
+
     const { searchParams } = new URL(req.url);
     const assistantId = searchParams.get('assistantId');
 

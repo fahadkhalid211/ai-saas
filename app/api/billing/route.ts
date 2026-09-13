@@ -1,9 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Database, InvoiceRecord } from '@/lib/db';
 import { BILLING_PLANS } from '@/lib/billing/plans';
+import { verifyAdminRequest } from '@/lib/security/auth';
 
 export async function GET(req: NextRequest) {
   try {
+    if (!(await verifyAdminRequest(req))) {
+      return NextResponse.json({ error: 'Unauthorized: Admin authentication required' }, { status: 401 });
+    }
+
     const ws = await Database.getWorkspaceBilling('default-workspace');
     const convs = await Database.getConversations();
 
@@ -62,6 +67,10 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
+    if (!(await verifyAdminRequest(req))) {
+      return NextResponse.json({ error: 'Unauthorized: Admin authentication required' }, { status: 401 });
+    }
+
     const body = await req.json();
     const { action, planId, billingInterval } = body;
 
@@ -110,6 +119,10 @@ export async function POST(req: NextRequest) {
 
 export async function PATCH(req: NextRequest) {
   try {
+    if (!(await verifyAdminRequest(req))) {
+      return NextResponse.json({ error: 'Unauthorized: Admin authentication required' }, { status: 401 });
+    }
+
     const body = await req.json();
     const { paymentMethod, billingEmail } = body;
 

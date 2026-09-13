@@ -1,10 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
+import crypto from 'crypto';
 import { Database } from '@/lib/db';
 import {
   getTelegramBotInfo,
   setTelegramWebhook,
   processTelegramUpdate,
 } from '@/lib/channels/telegram';
+import { verifyAdminRequest } from '@/lib/security/auth';
+
+function getTelegramSecretToken(assistantId: string, token: string): string {
+  return crypto.createHmac('sha256', token).update(assistantId).digest('hex').slice(0, 32);
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -22,6 +28,21 @@ export async function POST(req: NextRequest) {
 
     if (!assistant.telegramBotEnabled || !assistant.telegramBotToken) {
       return NextResponse.json({ error: 'Telegram bot not enabled or configured for this assistant' }, { status: 403 });
+    }
+
+    // Verify Telegram Webhook Secret Token if sent by Telegram
+    const secretTokenHeader = req.headers.get('x-telegram-bot-api-secret-token');
+    const expectedSecretToken = getTelegramSecretToken(assistant.id, assistant.telegramBotToken);
+
+    if (secretTokenHeader) {
+      const headerBuf = Buffer.from(secretTokenHeader);
+      const expectedBuf = Buffer.from(expectedSecretToken);
+      if (
+        headerBuf.length !== expectedBuf.length ||
+        !crypto.timingSafeEqual(headerBuf, expectedBuf)
+      ) {
+        return NextResponse.json({ error: 'Invalid secret token' }, { status: 403 });
+      }
     }
 
     const update = await req.json();
@@ -45,6 +66,12 @@ export async function GET(req: NextRequest) {
     const token = searchParams.get('token');
     const assistantId = searchParams.get('assistantId');
 
+    if (action === 'verify' || action === 'setWebhook') {
+      if (!(await verifyAdminRequest(req))) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
+    }
+
     // Action 1: Verify Bot Token and fetch info
     if (action === 'verify' && token) {
       const info = await getTelegramBotInfo(token);
@@ -62,8 +89,9 @@ export async function GET(req: NextRequest) {
       const host = req.headers.get('host') || 'localhost:3000';
       const protocol = host.includes('localhost') ? 'http' : 'https';
       const webhookUrl = `${protocol}://${host}/api/channels/telegram?assistantId=${assistant.id}`;
+      const secretToken = getTelegramSecretToken(assistant.id, assistant.telegramBotToken);
 
-      const res = await setTelegramWebhook(assistant.telegramBotToken, webhookUrl);
+      const res = await setTelegramWebhook(assistant.telegramBotToken, webhookUrl, secretToken);
       return NextResponse.json({ ...res, webhookUrl });
     }
 

@@ -4,9 +4,14 @@ import { parseFileOrText } from '@/lib/rag/parsers';
 import { chunkDocument } from '@/lib/rag/chunker';
 import { generateEmbeddingsBatch } from '@/lib/rag/embedder';
 import { diagnoseKnowledgeFailure } from '@/lib/rag/diagnostics';
+import { verifyAdminRequest } from '@/lib/security/auth';
 
 export async function POST(req: Request) {
   try {
+    if (!(await verifyAdminRequest(req))) {
+      return NextResponse.json({ error: 'Unauthorized: Admin authentication required' }, { status: 401 });
+    }
+
     const formData = await req.formData();
     const assistantId = formData.get('assistantId') as string;
 

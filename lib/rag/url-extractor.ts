@@ -4,6 +4,7 @@ import { parseMediaFile, TranscribeOptions, formatTimestamp } from './transcribe
 import { diagnoseKnowledgeFailure } from './diagnostics';
 import { execFile } from 'child_process';
 import { promisify } from 'util';
+import { validateSafeExternalUrl } from '../security/ssrf';
 
 const execFileAsync = promisify(execFile);
 
@@ -333,6 +334,11 @@ function cleanHtmlToStructuredText(html: string, url: string): { title: string; 
  * 3. Jina AI Reader Engine (bypasses dynamic JS rendering & strict anti-scraping walls)
  */
 export async function extractFromWebpage(url: string): Promise<ExtractedDocument> {
+  const ssrfCheck = await validateSafeExternalUrl(url);
+  if (!ssrfCheck.safe) {
+    throw new Error(ssrfCheck.error || 'Target URL points to an internal or forbidden address.');
+  }
+
   console.log(`[URLExtractor] Scraping webpage content from ${url}...`);
   let rawContent = '';
   let isMarkdown = false;

@@ -3,8 +3,9 @@ import { Database } from '@/lib/db';
 import { retrieveRelevantContext } from '@/lib/rag/retrieval';
 import { buildSystemPrompt, streamChatResponse } from '@/lib/ai/providers';
 import { ChatMessage } from '@/lib/ai/types';
-import { isWebSearchIntent, extractSearchQuery, executeWebSearch, ingestWebSearchResults } from '@/lib/rag/web-search';
+import { isWebSearchIntent, extractSearchQuery, executeWebSearch } from '@/lib/rag/web-search';
 import { parseFileOrText } from '@/lib/rag/parsers';
+import { checkRateLimit, getClientIp } from '@/lib/security/rate-limit';
 
 // Handle CORS pre-flight
 export async function OPTIONS() {
@@ -20,6 +21,16 @@ export async function OPTIONS() {
 
 export async function POST(req: NextRequest) {
   try {
+    // 1. Rate Limiting Check (max 35 messages per minute per IP)
+    const ip = getClientIp(req);
+    const rateCheck = checkRateLimit(`chat:${ip}`, { windowMs: 60 * 1000, max: 35 });
+    if (!rateCheck.allowed) {
+      return NextResponse.json(
+        { error: 'Rate limit exceeded. Please wait a moment before sending more messages.' },
+        { status: 429 }
+      );
+    }
+
     const body = await req.json();
     const { assistantId, messages, visitorId, conversationId, preferredLanguage, attachment } = body;
 
@@ -34,6 +45,41 @@ export async function POST(req: NextRequest) {
     const assistant = await Database.getAssistantById(assistantId);
     if (!assistant) {
       return NextResponse.json({ error: 'Assistant not found' }, { status: 404 });
+    }
+
+    // 2. Enforce Allowed Domains Whitelist (if configured)
+    if (assistant.allowedDomains && assistant.allowedDomains.length > 0) {
+      const origin = req.headers.get('origin');
+      const referer = req.headers.get('referer');
+      let incomingHost: string | null = null;
+      try {
+        if (origin) incomingHost = new URL(origin).hostname.toLowerCase();
+        else if (referer) incomingHost = new URL(referer).hostname.toLowerCase();
+      } catch {
+        incomingHost = null;
+      }
+
+      const isDevOrLocal =
+        process.env.NODE_ENV !== 'production' ||
+        incomingHost === 'localhost' ||
+        incomingHost === '127.0.0.1';
+
+      const isPermitted =
+        isDevOrLocal ||
+        (incomingHost &&
+          assistant.allowedDomains.some((d) => {
+            const clean = d.trim().toLowerCase().replace(/^https?:\/\//, '').split('/')[0];
+            return incomingHost === clean || incomingHost.endsWith('.' + clean);
+          }));
+
+      if (!isPermitted) {
+        return NextResponse.json(
+          {
+            error: `Access forbidden from domain "${incomingHost || 'unknown'}". Widget embedding is restricted to: ${assistant.allowedDomains.join(', ')}`,
+          },
+          { status: 403 }
+        );
+      }
     }
 
     // Process visitor attachment if uploaded
@@ -178,8 +224,7 @@ export async function POST(req: NextRequest) {
 
             if (searchResults.length > 0) {
               liveWebResults = searchResults;
-              await ingestWebSearchResults(assistantId, searchQuery, searchResults);
-              console.log(`[ChatRoute] Successfully ingested ${searchResults.length} online web sources for query: "${searchQuery}"`);
+              console.log(`[ChatRoute] Found ${searchResults.length} live online web sources for query: "${searchQuery}"`);
 
               // Notify UI that sources were found
               const foundStatusEvent = `data: ${JSON.stringify({
@@ -223,13 +268,6 @@ export async function POST(req: NextRequest) {
               const searchResults = await executeWebSearch(searchQuery);
               if (searchResults.length > 0) {
                 liveWebResults = searchResults;
-                await ingestWebSearchResults(assistantId, searchQuery, searchResults);
-                retrieval = await retrieveRelevantContext(
-                  assistantId,
-                  searchQuery,
-                  conversationHistory,
-                  topK
-                );
               }
             } catch (autoErr) {
               console.warn('[ChatRoute] Auto web search fallback error:', autoErr);
@@ -243,6 +281,14 @@ export async function POST(req: NextRequest) {
             fallbackMessage: assistant.fallbackMessage,
             assistantName: assistant.name,
           });
+
+          if (liveWebResults.length > 0) {
+            const webSnippets = liveWebResults
+              .slice(0, 6)
+              .map((r, i) => `[Live Web Result ${i + 1}: ${r.title}]\nURL: ${r.url}\nExcerpt: ${r.snippet}`)
+              .join('\n\n');
+            fullSystemPrompt += `\n\n[LIVE ONLINE WEB SEARCH FINDINGS]:\n${webSnippets}\nUse the above live web search findings to answer the visitor's question accurately and authoritatively.`;
+          }
 
           if (attachmentParsedContent && attachmentMeta) {
             fullSystemPrompt += `\n\n[VISITOR ATTACHED FILE: "${attachmentMeta.name}" (${attachmentMeta.type})]:

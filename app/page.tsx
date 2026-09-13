@@ -27,6 +27,9 @@ import {
   Sparkles,
   Info,
   ShieldCheck,
+  Lock,
+  Key,
+  LogOut,
   ChevronDown,
   Globe,
   Zap,
@@ -215,6 +218,14 @@ export default function DashboardPage() {
       document.documentElement.classList.remove('dark');
     }
   };
+
+  // Enterprise Admin Authentication & Session state
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(true);
+  const [isAuthChecking, setIsAuthChecking] = useState<boolean>(true);
+  const [authApiKeyInput, setAuthApiKeyInput] = useState<string>('');
+  const [showAuthPasscode, setShowAuthPasscode] = useState<boolean>(false);
+  const [authError, setAuthError] = useState<string | null>(null);
+  const [isLoggingIn, setIsLoggingIn] = useState<boolean>(false);
 
   const [assistants, setAssistants] = useState<Assistant[]>([]);
   const [activeAssistant, setActiveAssistant] = useState<Assistant | null>(null);
@@ -740,10 +751,59 @@ Thank you for using Kortex AI Business Engine.
     return `${(bytes / Math.pow(k, i)).toFixed(1)} ${sizes[i]}`;
   };
 
-  // Initial load
+  // Initial auth verification and dashboard bootstrap
   useEffect(() => {
-    fetchAssistants();
+    async function checkAuth() {
+      try {
+        const res = await fetch('/api/auth');
+        const data = await res.json();
+        if (data.authenticated) {
+          setIsAuthenticated(true);
+          await fetchAssistants();
+        } else {
+          setIsAuthenticated(false);
+        }
+      } catch {
+        setIsAuthenticated(false);
+      } finally {
+        setIsAuthChecking(false);
+      }
+    }
+    checkAuth();
   }, []);
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!authApiKeyInput.trim()) return;
+    setIsLoggingIn(true);
+    setAuthError(null);
+    try {
+      const res = await fetch('/api/auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ apiKey: authApiKeyInput.trim() }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setIsAuthenticated(true);
+        setAuthApiKeyInput('');
+        await fetchAssistants();
+      } else {
+        setAuthError(data.error || 'Invalid Admin Passcode or Key');
+      }
+    } catch (err: any) {
+      setAuthError(err.message || 'Authentication failed');
+    } finally {
+      setIsLoggingIn(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/auth', { method: 'DELETE' });
+    } catch {}
+    setIsAuthenticated(false);
+  };
 
   useEffect(() => {
     if (activeAssistant) {
@@ -784,6 +844,10 @@ Thank you for using Kortex AI Business Engine.
   async function fetchAssistants() {
     try {
       const res = await fetch('/api/assistants');
+      if (res.status === 401) {
+        setIsAuthenticated(false);
+        return;
+      }
       const data = await res.json();
       if (data.assistants && data.assistants.length > 0) {
         setAssistants(data.assistants);
@@ -1501,6 +1565,98 @@ Thank you for using Kortex AI Business Engine.
     s.title.toLowerCase().includes(sourceFilter.toLowerCase())
   );
 
+  if (isAuthChecking) {
+    return (
+      <div className={`${theme === 'dark' ? 'dark' : ''} h-screen w-full flex items-center justify-center bg-slate-50 dark:bg-slate-950 font-sans`}>
+        <div className="flex flex-col items-center gap-3">
+          <div className="h-10 w-10 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-md animate-pulse">
+            <Bot className="h-6 w-6" />
+          </div>
+          <div className="flex items-center gap-2 text-xs font-medium text-slate-500 dark:text-slate-400">
+            <RefreshCw className="h-3.5 w-3.5 animate-spin text-blue-600" />
+            <span>Verifying workspace session...</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <div className={`${theme === 'dark' ? 'dark' : ''} min-h-screen w-full flex items-center justify-center bg-slate-950 font-sans p-4 relative overflow-hidden`}>
+        <div className="w-full max-w-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl p-8 z-10 space-y-6">
+          <div className="flex flex-col items-center text-center space-y-2">
+            <div className="h-14 w-14 rounded-2xl bg-blue-600/10 dark:bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-600 dark:text-blue-400 mb-1">
+              <ShieldCheck className="h-7 w-7" />
+            </div>
+            <h2 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">
+              Admin Authentication
+            </h2>
+            <p className="text-xs text-slate-500 dark:text-slate-400 max-w-xs leading-relaxed">
+              This dashboard is protected by enterprise master key verification. Please authenticate to access the management console.
+            </p>
+          </div>
+
+          {authError && (
+            <div className="p-3 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900 text-rose-600 dark:text-rose-400 text-xs flex items-center gap-2.5">
+              <AlertCircle className="h-4 w-4 shrink-0" />
+              <span>{authError}</span>
+            </div>
+          )}
+
+          <form onSubmit={handleLogin} className="space-y-4">
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center justify-between">
+                <span>Master Admin Key / Passcode</span>
+                <span className="text-[10px] text-slate-400 font-normal">ADMIN_API_KEY</span>
+              </label>
+              <div className="relative">
+                <input
+                  type={showAuthPasscode ? 'text' : 'password'}
+                  value={authApiKeyInput}
+                  onChange={(e) => setAuthApiKeyInput(e.target.value)}
+                  placeholder="Enter admin passcode or key..."
+                  className="w-full pl-3.5 pr-10 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white text-xs font-mono placeholder:font-sans placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                  autoFocus
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowAuthPasscode(!showAuthPasscode)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer"
+                >
+                  {showAuthPasscode ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={isLoggingIn || !authApiKeyInput.trim()}
+              className="w-full py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white text-xs font-semibold shadow-md shadow-blue-600/20 transition flex items-center justify-center gap-2 cursor-pointer"
+            >
+              {isLoggingIn ? (
+                <>
+                  <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+                  <span>Verifying credentials...</span>
+                </>
+              ) : (
+                <>
+                  <Key className="h-3.5 w-3.5" />
+                  <span>Unlock Management Console</span>
+                </>
+              )}
+            </button>
+          </form>
+
+          <div className="pt-2 text-center text-[11px] text-slate-400 dark:text-slate-500 border-t border-slate-100 dark:border-slate-800">
+            Kortex AI Enterprise Security Guard · AES-256 GCM Protected
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className={`${theme === 'dark' ? 'dark' : ''} h-screen w-full flex flex-col font-sans transition-colors duration-150`}>
       <div className="flex h-screen w-full flex-col bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 overflow-hidden">
@@ -1603,6 +1759,16 @@ Thank you for using Kortex AI Business Engine.
             >
               <Globe className="h-3.5 w-3.5" />
               <span>Deploy &amp; WordPress</span>
+            </button>
+
+            {/* Lock / Logout Session Button */}
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-medium text-slate-600 dark:text-slate-300 hover:text-red-600 dark:hover:text-red-400 hover:border-red-200 dark:hover:border-red-900/50 hover:bg-red-50/50 dark:hover:bg-red-950/20 transition shadow-xs cursor-pointer"
+              title="Lock Admin Dashboard"
+            >
+              <Lock className="h-3.5 w-3.5 text-slate-500 dark:text-slate-400" />
+              <span className="hidden sm:inline font-medium">Lock</span>
             </button>
           </div>
         </header>

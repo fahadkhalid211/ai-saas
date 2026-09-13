@@ -1,10 +1,24 @@
 import { NextResponse } from 'next/server';
 import { Database } from '@/lib/db';
+import { verifyAdminRequest } from '@/lib/security/auth';
+import { maskSecret } from '@/lib/security/crypto';
 
-export async function GET() {
+export async function GET(req: Request) {
   try {
+    if (!(await verifyAdminRequest(req))) {
+      return NextResponse.json({ error: 'Unauthorized: Admin authentication required' }, { status: 401 });
+    }
+
     const assistants = await Database.getAssistants();
-    return NextResponse.json({ assistants });
+    const sanitized = assistants.map((a) => ({
+      ...a,
+      apiKeyEncrypted: a.apiKeyEncrypted ? maskSecret(a.apiKeyEncrypted) : '',
+      telegramBotToken: a.telegramBotToken ? maskSecret(a.telegramBotToken) : '',
+      whatsappAccessToken: a.whatsappAccessToken ? maskSecret(a.whatsappAccessToken) : '',
+      webhookSecret: a.webhookSecret ? maskSecret(a.webhookSecret) : '',
+    }));
+
+    return NextResponse.json({ assistants: sanitized });
   } catch (error: any) {
     return NextResponse.json(
       { error: error?.message || 'Failed to fetch assistants' },
@@ -15,13 +29,25 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
+    if (!(await verifyAdminRequest(req))) {
+      return NextResponse.json({ error: 'Unauthorized: Admin authentication required' }, { status: 401 });
+    }
+
     const body = await req.json();
     if (!body.name) {
       return NextResponse.json({ error: 'Assistant name is required' }, { status: 400 });
     }
 
     const assistant = await Database.createAssistant(body);
-    return NextResponse.json({ assistant }, { status: 201 });
+    const sanitized = {
+      ...assistant,
+      apiKeyEncrypted: assistant.apiKeyEncrypted ? maskSecret(assistant.apiKeyEncrypted) : '',
+      telegramBotToken: assistant.telegramBotToken ? maskSecret(assistant.telegramBotToken) : '',
+      whatsappAccessToken: assistant.whatsappAccessToken ? maskSecret(assistant.whatsappAccessToken) : '',
+      webhookSecret: assistant.webhookSecret ? maskSecret(assistant.webhookSecret) : '',
+    };
+
+    return NextResponse.json({ assistant: sanitized }, { status: 201 });
   } catch (error: any) {
     return NextResponse.json(
       { error: error?.message || 'Failed to create assistant' },

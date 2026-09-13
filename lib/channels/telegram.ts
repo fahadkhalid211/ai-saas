@@ -36,16 +36,19 @@ export async function getTelegramBotInfo(
  */
 export async function setTelegramWebhook(
   token: string,
-  webhookUrl: string
+  webhookUrl: string,
+  secretToken?: string
 ): Promise<{ ok: boolean; description?: string }> {
   if (!token || !webhookUrl) {
     return { ok: false, description: 'Token and Webhook URL are required' };
   }
 
   try {
-    const res = await fetch(
-      `https://api.telegram.org/bot${token.trim()}/setWebhook?url=${encodeURIComponent(webhookUrl.trim())}`
-    );
+    let url = `https://api.telegram.org/bot${token.trim()}/setWebhook?url=${encodeURIComponent(webhookUrl.trim())}`;
+    if (secretToken) {
+      url += `&secret_token=${encodeURIComponent(secretToken.trim())}`;
+    }
+    const res = await fetch(url);
     const data = await res.json();
     return { ok: !!data.ok, description: data.description };
   } catch (err: any) {

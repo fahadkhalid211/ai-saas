@@ -1,8 +1,13 @@
 import { NextResponse } from 'next/server';
 import { Database } from '@/lib/db';
+import { verifyAdminRequest } from '@/lib/security/auth';
 
 export async function GET(req: Request) {
   try {
+    if (!(await verifyAdminRequest(req))) {
+      return NextResponse.json({ error: 'Unauthorized: Admin authentication required' }, { status: 401 });
+    }
+
     const { searchParams } = new URL(req.url);
     const assistantId = searchParams.get('assistantId');
 
@@ -25,6 +30,10 @@ export async function GET(req: Request) {
 
 export async function DELETE(req: Request) {
   try {
+    if (!(await verifyAdminRequest(req))) {
+      return NextResponse.json({ error: 'Unauthorized: Admin authentication required' }, { status: 401 });
+    }
+
     const { searchParams } = new URL(req.url);
     const id = searchParams.get('id');
 

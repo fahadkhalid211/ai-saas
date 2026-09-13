@@ -4,9 +4,15 @@ import { extractFromUrl } from '@/lib/rag/url-extractor';
 import { chunkDocument } from '@/lib/rag/chunker';
 import { generateEmbeddingsBatch } from '@/lib/rag/embedder';
 import { diagnoseKnowledgeFailure } from '@/lib/rag/diagnostics';
+import { verifyAdminRequest } from '@/lib/security/auth';
+import { validateSafeExternalUrl } from '@/lib/security/ssrf';
 
 export async function POST(req: Request) {
   try {
+    if (!(await verifyAdminRequest(req))) {
+      return NextResponse.json({ error: 'Unauthorized: Admin authentication required' }, { status: 401 });
+    }
+
     const body = await req.json();
     const { assistantId, url, customTitle } = body;
 
@@ -18,12 +24,21 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Valid URL is required' }, { status: 400 });
     }
 
+    const cleanUrl = url.trim();
+
+    // SSRF Check: Prevent access to internal addresses, loopback, and cloud metadata
+    const ssrfCheck = await validateSafeExternalUrl(cleanUrl);
+    if (!ssrfCheck.safe) {
+      return NextResponse.json(
+        { error: ssrfCheck.error || 'Blocked: Target URL points to an internal or forbidden address.' },
+        { status: 400 }
+      );
+    }
+
     const assistant = await Database.getAssistantById(assistantId);
     if (!assistant) {
       return NextResponse.json({ error: 'Assistant not found' }, { status: 404 });
     }
-
-    const cleanUrl = url.trim();
 
     // 1. Create Knowledge Source in DB
     const isYouTube = /(?:youtube\.com|youtu\.be)/i.test(cleanUrl);

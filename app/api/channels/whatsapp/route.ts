@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import crypto from 'crypto';
 import { Database } from '@/lib/db';
 import { processWhatsAppWebhook } from '@/lib/channels/whatsapp';
 
@@ -55,7 +56,21 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'WhatsApp is not enabled for this assistant' }, { status: 403 });
     }
 
-    const body = await req.json();
+    const rawBody = await req.text();
+
+    // Verify Meta x-hub-signature-256 if app secret or verify token configured
+    const signature = req.headers.get('x-hub-signature-256');
+    const appSecret = process.env.WHATSAPP_APP_SECRET || assistant.whatsappVerifyToken;
+    if (appSecret && signature) {
+      const expectedSig = 'sha256=' + crypto.createHmac('sha256', appSecret).update(rawBody).digest('hex');
+      const sigBuf = Buffer.from(signature);
+      const expectedBuf = Buffer.from(expectedSig);
+      if (sigBuf.length !== expectedBuf.length || !crypto.timingSafeEqual(sigBuf, expectedBuf)) {
+        return NextResponse.json({ error: 'Invalid webhook signature' }, { status: 403 });
+      }
+    }
+
+    const body = JSON.parse(rawBody);
 
     // Process incoming message asynchronously so Meta gets 200 OK immediately
     processWhatsAppWebhook(assistant, body).catch((err) => {

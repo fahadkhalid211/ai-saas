@@ -45,7 +45,7 @@ export async function GET(
       );
       const firstChunk = sourceChunks[0]?.content || '';
       const previewSummary =
-        firstChunk.length > 200 ? firstChunk.slice(0, 200) + '...' : firstChunk;
+        firstChunk.length > 150 ? firstChunk.slice(0, 150) + '...' : firstChunk;
 
       return {
         id: s.id,
@@ -54,7 +54,6 @@ export async function GET(
         chunkCount: sourceChunks.length,
         createdAt: s.createdAt,
         previewSummary: previewSummary.replace(/\n+/g, ' ').trim(),
-        fullContent: sourceChunks.map((c) => c.content).join('\n\n'),
       };
     });
 

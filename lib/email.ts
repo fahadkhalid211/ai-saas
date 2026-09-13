@@ -23,10 +23,15 @@ export interface EmailSendResult {
   error?: string;
 }
 
-/**
- * Sends a modern, branded HTML notification email to the admin/support team
- * when a new support inquiry or lead is submitted from the chat widget.
- */
+function escapeHtml(str: string): string {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 export async function sendSupportLeadEmail(
   options: SendSupportLeadEmailOptions
 ): Promise<EmailSendResult> {
@@ -48,6 +53,14 @@ export async function sendSupportLeadEmail(
   const leadComments = lead.notes?.trim() || 'None provided';
   const submissionDate = lead.createdAt ? new Date(lead.createdAt).toLocaleString() : new Date().toLocaleString();
 
+  // Escape all user-supplied variables for safe HTML rendering
+  const safeAssistantName = escapeHtml(assistantName);
+  const safeLeadName = escapeHtml(leadName);
+  const safeLeadEmail = escapeHtml(leadEmail);
+  const safeLeadPhone = escapeHtml(leadPhone);
+  const safeLeadComments = escapeHtml(leadComments);
+  const safeSubmissionDate = escapeHtml(submissionDate);
+
   // Map custom fields to human-readable labels
   const customFieldEntries: Array<{ label: string; value: string }> = [];
   if (lead.customData && typeof lead.customData === 'object') {
@@ -60,7 +73,12 @@ export async function sendSupportLeadEmail(
     }
   }
 
-  const subject = `New Support Request from ${leadName} (${assistantName})`;
+  const safeCustomFieldEntries = customFieldEntries.map((f) => ({
+    label: escapeHtml(f.label),
+    value: escapeHtml(f.value),
+  }));
+
+  const subject = `New Support Request from ${leadName.replace(/[\r\n]/g, '')} (${assistantName.replace(/[\r\n]/g, '')})`;
 
   // Generate modern HTML template
   const htmlContent = `
@@ -200,7 +218,7 @@ export async function sendSupportLeadEmail(
   <div class="card">
     <div class="header">
       <h1>New Support Request</h1>
-      <p>Received via your AI Assistant: <strong>${assistantName}</strong></p>
+      <p>Received via your AI Assistant: <strong>${safeAssistantName}</strong></p>
     </div>
     <div class="body">
       <div class="badge">Action Required</div>
@@ -208,23 +226,23 @@ export async function sendSupportLeadEmail(
       <table class="info-table">
         <tr>
           <th>Full Name:</th>
-          <td><strong>${leadName}</strong></td>
+          <td><strong>${safeLeadName}</strong></td>
         </tr>
         <tr>
           <th>Email Address:</th>
-          <td><a href="mailto:${leadEmail}" style="color:#2563eb;text-decoration:none;font-weight:600;">${leadEmail}</a></td>
+          <td><a href="mailto:${encodeURIComponent(leadEmail)}" style="color:#2563eb;text-decoration:none;font-weight:600;">${safeLeadEmail}</a></td>
         </tr>
         <tr>
           <th>Phone Number:</th>
-          <td><a href="tel:${leadPhone}" style="color:#2563eb;text-decoration:none;">${leadPhone}</a></td>
+          <td><a href="tel:${safeLeadPhone.replace(/[^0-9+\-]/g, '')}" style="color:#2563eb;text-decoration:none;">${safeLeadPhone}</a></td>
         </tr>
         <tr>
           <th>Date &amp; Time:</th>
-          <td>${submissionDate}</td>
+          <td>${safeSubmissionDate}</td>
         </tr>
         ${
-          customFieldEntries.length > 0
-            ? customFieldEntries
+          safeCustomFieldEntries.length > 0
+            ? safeCustomFieldEntries
                 .map(
                   (f) => `
         <tr>
@@ -239,11 +257,11 @@ export async function sendSupportLeadEmail(
 
       <div class="comments-box">
         <div class="comments-title">Visitor Message / Comments:</div>
-        <div class="comments-body">${leadComments}</div>
+        <div class="comments-body">${safeLeadComments}</div>
       </div>
 
       <div class="actions">
-        <a href="mailto:${leadEmail}?subject=Re:%20Support%20Request%20-%20${encodeURIComponent(assistantName)}" class="btn btn-primary">
+        <a href="mailto:${encodeURIComponent(leadEmail)}?subject=Re:%20Support%20Request%20-%20${encodeURIComponent(assistantName)}" class="btn btn-primary">
           Reply via Email
         </a>
         ${

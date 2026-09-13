@@ -1,5 +1,6 @@
 import crypto from 'crypto';
 import { AssistantData } from './db';
+import { validateSafeExternalUrl } from './security/ssrf';
 
 export interface WebhookPayload {
   event: string;
@@ -19,6 +20,13 @@ export async function dispatchWebhook(
 ): Promise<{ success: boolean; statusCode?: number; error?: string }> {
   if (!assistant.webhookUrl || !assistant.webhookUrl.trim()) {
     return { success: false, error: 'No webhook URL configured' };
+  }
+
+  // SSRF Protection
+  const ssrf = await validateSafeExternalUrl(assistant.webhookUrl.trim());
+  if (!ssrf.safe) {
+    console.warn(`[Webhook] Blocked unsafe webhook target (${assistant.webhookUrl}):`, ssrf.error);
+    return { success: false, error: ssrf.error || 'Target webhook URL is blocked by security policy' };
   }
 
   // Check event whitelist if configured
@@ -84,6 +92,11 @@ export async function testWebhookPing(
 ): Promise<{ success: boolean; statusCode?: number; durationMs: number; error?: string }> {
   if (!webhookUrl || !webhookUrl.trim()) {
     return { success: false, durationMs: 0, error: 'Webhook URL is required' };
+  }
+
+  const ssrf = await validateSafeExternalUrl(webhookUrl.trim());
+  if (!ssrf.safe) {
+    return { success: false, durationMs: 0, error: ssrf.error || 'Blocked by SSRF security policy' };
   }
 
   const start = Date.now();

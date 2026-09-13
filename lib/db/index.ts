@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { cosineSimilarity, keywordRelevance, reciprocalRankFusion } from '../rag/vector-math';
 import { SearchResultChunk } from '../rag/types';
+import { encryptSecret, decryptSecret } from '../security/crypto';
 
 // Types matching the Prisma model
 export interface AssistantData {
@@ -306,12 +307,26 @@ export class Database {
   // Assistants
   static async getAssistants(workspaceId: string = 'default-workspace'): Promise<AssistantData[]> {
     const state = loadState();
-    return state.assistants;
+    return state.assistants.map((a) => ({
+      ...a,
+      apiKeyEncrypted: decryptSecret(a.apiKeyEncrypted || ''),
+      telegramBotToken: decryptSecret(a.telegramBotToken || ''),
+      whatsappAccessToken: decryptSecret(a.whatsappAccessToken || ''),
+      webhookSecret: decryptSecret(a.webhookSecret || ''),
+    }));
   }
 
   static async getAssistantById(id: string): Promise<AssistantData | null> {
     const state = loadState();
-    return state.assistants.find((a) => a.id === id) || null;
+    const a = state.assistants.find((ast) => ast.id === id);
+    if (!a) return null;
+    return {
+      ...a,
+      apiKeyEncrypted: decryptSecret(a.apiKeyEncrypted || ''),
+      telegramBotToken: decryptSecret(a.telegramBotToken || ''),
+      whatsappAccessToken: decryptSecret(a.whatsappAccessToken || ''),
+      webhookSecret: decryptSecret(a.webhookSecret || ''),
+    };
   }
 
   static async createAssistant(data: Partial<AssistantData>): Promise<AssistantData> {
@@ -330,7 +345,7 @@ export class Database {
       contextChunks: data.contextChunks ?? 3,
       provider: data.provider || 'ollama',
       modelName: data.modelName || 'llama3.2',
-      apiKeyEncrypted: data.apiKeyEncrypted || '',
+      apiKeyEncrypted: data.apiKeyEncrypted ? encryptSecret(data.apiKeyEncrypted) : '',
       customBaseUrl: data.customBaseUrl || '',
       primaryColor: data.primaryColor || '#2563eb',
       avatarUrl: data.avatarUrl || '',
@@ -342,14 +357,14 @@ export class Database {
       supportReceiverEmail: data.supportReceiverEmail || '',
       supportCcEmails: data.supportCcEmails || [],
       supportCustomFields: data.supportCustomFields || [],
-      telegramBotToken: data.telegramBotToken || '',
+      telegramBotToken: data.telegramBotToken ? encryptSecret(data.telegramBotToken) : '',
       telegramBotEnabled: data.telegramBotEnabled ?? false,
       whatsappPhoneNumberId: data.whatsappPhoneNumberId || '',
-      whatsappAccessToken: data.whatsappAccessToken || '',
+      whatsappAccessToken: data.whatsappAccessToken ? encryptSecret(data.whatsappAccessToken) : '',
       whatsappVerifyToken: data.whatsappVerifyToken || '',
       whatsappEnabled: data.whatsappEnabled ?? false,
       webhookUrl: data.webhookUrl || '',
-      webhookSecret: data.webhookSecret || '',
+      webhookSecret: data.webhookSecret ? encryptSecret(data.webhookSecret) : '',
       webhookEvents: data.webhookEvents || ['lead.created', 'chat.escalated'],
       whiteLabelEnabled: data.whiteLabelEnabled ?? false,
       customBrandingText: data.customBrandingText || '',
@@ -360,7 +375,13 @@ export class Database {
 
     state.assistants.push(newAssistant);
     saveState(state);
-    return newAssistant;
+    return {
+      ...newAssistant,
+      apiKeyEncrypted: decryptSecret(newAssistant.apiKeyEncrypted || ''),
+      telegramBotToken: decryptSecret(newAssistant.telegramBotToken || ''),
+      whatsappAccessToken: decryptSecret(newAssistant.whatsappAccessToken || ''),
+      webhookSecret: decryptSecret(newAssistant.webhookSecret || ''),
+    };
   }
 
   static async updateAssistant(id: string, data: Partial<AssistantData>): Promise<AssistantData | null> {
@@ -368,14 +389,54 @@ export class Database {
     const idx = state.assistants.findIndex((a) => a.id === id);
     if (idx === -1) return null;
 
+    const current = state.assistants[idx];
+    const updates = { ...data };
+
+    // Handle encrypted fields: Only update if a new unmasked value was provided
+    if (updates.apiKeyEncrypted !== undefined) {
+      if (updates.apiKeyEncrypted.includes('****')) {
+        delete updates.apiKeyEncrypted; // Preserve existing secret
+      } else if (updates.apiKeyEncrypted) {
+        updates.apiKeyEncrypted = encryptSecret(updates.apiKeyEncrypted);
+      }
+    }
+    if (updates.telegramBotToken !== undefined) {
+      if (updates.telegramBotToken.includes('****')) {
+        delete updates.telegramBotToken;
+      } else if (updates.telegramBotToken) {
+        updates.telegramBotToken = encryptSecret(updates.telegramBotToken);
+      }
+    }
+    if (updates.whatsappAccessToken !== undefined) {
+      if (updates.whatsappAccessToken.includes('****')) {
+        delete updates.whatsappAccessToken;
+      } else if (updates.whatsappAccessToken) {
+        updates.whatsappAccessToken = encryptSecret(updates.whatsappAccessToken);
+      }
+    }
+    if (updates.webhookSecret !== undefined) {
+      if (updates.webhookSecret.includes('****')) {
+        delete updates.webhookSecret;
+      } else if (updates.webhookSecret) {
+        updates.webhookSecret = encryptSecret(updates.webhookSecret);
+      }
+    }
+
     state.assistants[idx] = {
-      ...state.assistants[idx],
-      ...data,
+      ...current,
+      ...updates,
       updatedAt: new Date().toISOString(),
     };
 
     saveState(state);
-    return state.assistants[idx];
+    const updated = state.assistants[idx];
+    return {
+      ...updated,
+      apiKeyEncrypted: decryptSecret(updated.apiKeyEncrypted || ''),
+      telegramBotToken: decryptSecret(updated.telegramBotToken || ''),
+      whatsappAccessToken: decryptSecret(updated.whatsappAccessToken || ''),
+      webhookSecret: decryptSecret(updated.webhookSecret || ''),
+    };
   }
 
   static async deleteAssistant(id: string): Promise<boolean> {
