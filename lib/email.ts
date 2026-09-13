@@ -404,3 +404,378 @@ ${customFieldEntries.length > 0 ? 'Custom Fields:\n' + customFieldEntries.map((f
 
   return { success: true, simulated: true };
 }
+
+export interface SendAppointmentConfirmationEmailOptions {
+  to: string;
+  clientName: string;
+  clientEmail: string;
+  clientPhone?: string;
+  serviceName?: string;
+  price?: number;
+  date: string;
+  timeSlot: string;
+  durationMinutes: number;
+  notes?: string;
+  businessName: string;
+  businessAddress?: string;
+  businessPhone?: string;
+  manageToken?: string;
+  assistantSlug?: string;
+  assistantId?: string;
+  isAdminNotification?: boolean;
+}
+
+export interface SendAppointmentReminderEmailOptions {
+  to: string;
+  clientName: string;
+  clientEmail: string;
+  clientPhone?: string;
+  serviceName?: string;
+  price?: number;
+  date: string;
+  timeSlot: string;
+  durationMinutes: number;
+  businessName: string;
+  businessAddress?: string;
+  businessPhone?: string;
+  manageToken?: string;
+  assistantSlug?: string;
+  assistantId?: string;
+  reminderType: '24h' | '1h';
+  isAdminNotification?: boolean;
+}
+
+export function generateGoogleCalendarUrl(options: {
+  title: string;
+  date: string;
+  timeSlot: string;
+  durationMinutes: number;
+  details: string;
+  location?: string;
+}): string {
+  try {
+    const [hours, minutes] = options.timeSlot.split(':').map(Number);
+    const [year, month, day] = options.date.split('-').map(Number);
+    const startDate = new Date(Date.UTC(year, (month || 1) - 1, day || 1, hours || 9, minutes || 0, 0));
+    const endDate = new Date(startDate.getTime() + (options.durationMinutes || 30) * 60000);
+    const pad = (n: number) => String(n).padStart(2, '0');
+    const startStr = `${startDate.getUTCFullYear()}${pad(startDate.getUTCMonth() + 1)}${pad(startDate.getUTCDate())}T${pad(startDate.getUTCHours())}${pad(startDate.getUTCMinutes())}00Z`;
+    const endStr = `${endDate.getUTCFullYear()}${pad(endDate.getUTCMonth() + 1)}${pad(endDate.getUTCDate())}T${pad(endDate.getUTCHours())}${pad(endDate.getUTCMinutes())}00Z`;
+    return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(options.title)}&dates=${startStr}/${endStr}&details=${encodeURIComponent(options.details)}&location=${encodeURIComponent(options.location || '')}`;
+  } catch {
+    return 'https://calendar.google.com';
+  }
+}
+
+async function sendEmailTransport(payload: {
+  to: string;
+  subject: string;
+  text: string;
+  html: string;
+  fromName: string;
+}): Promise<EmailSendResult> {
+  const { to, subject, text, html, fromName } = payload;
+  const smtpHost = process.env.SMTP_HOST;
+  const smtpUser = process.env.SMTP_USER;
+  const smtpPass = process.env.SMTP_PASS;
+  const smtpPort = parseInt(process.env.SMTP_PORT || '587', 10);
+  const smtpSecure = process.env.SMTP_SECURE === 'true' || smtpPort === 465;
+  const smtpFrom = process.env.SMTP_FROM || smtpUser || `noreply@kortex-ai.com`;
+
+  if (smtpHost && smtpUser && smtpPass) {
+    try {
+      const transporter = nodemailer.createTransport({
+        host: smtpHost,
+        port: smtpPort,
+        secure: smtpSecure,
+        auth: { user: smtpUser, pass: smtpPass },
+      });
+
+      const info = await transporter.sendMail({
+        from: `"${fromName}" <${smtpFrom}>`,
+        to: to.trim(),
+        subject,
+        text,
+        html,
+      });
+
+      console.log(`[EmailService] Delivered via SMTP to ${to} (MessageID: ${info.messageId})`);
+      return { success: true, messageId: info.messageId };
+    } catch (err: any) {
+      console.error('[EmailService] SMTP delivery failed:', err?.message);
+      return { success: false, error: err?.message };
+    }
+  }
+
+  // Fallback simulator
+  console.log(`
+================================================================================
+[SIMULATED DISPATCH]
+To: ${to}
+From: ${fromName} <${smtpFrom}>
+Subject: ${subject}
+--------------------------------------------------------------------------------
+${text}
+================================================================================
+  `);
+  return { success: true, simulated: true };
+}
+
+export async function sendAppointmentConfirmationEmail(
+  options: SendAppointmentConfirmationEmailOptions
+): Promise<EmailSendResult> {
+  const {
+    to,
+    clientName,
+    clientEmail,
+    clientPhone = 'Not provided',
+    serviceName = 'Appointment',
+    price,
+    date,
+    timeSlot,
+    durationMinutes,
+    notes = 'None',
+    businessName,
+    businessAddress = 'Our Location',
+    businessPhone = '',
+    manageToken,
+    assistantSlug,
+    assistantId,
+    isAdminNotification = false,
+  } = options;
+
+  if (!to || !to.trim()) {
+    return { success: false, error: 'Recipient email missing' };
+  }
+
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  const targetSlug = assistantSlug || assistantId || 'demo-assistant';
+  const manageUrl = manageToken
+    ? `${appUrl}/site/${targetSlug}?manageToken=${manageToken}`
+    : `${appUrl}/site/${targetSlug}`;
+
+  const calUrl = generateGoogleCalendarUrl({
+    title: `${serviceName} at ${businessName}`,
+    date,
+    timeSlot,
+    durationMinutes,
+    details: `Client: ${clientName} (${clientPhone})\nService: ${serviceName}${price ? ` - $${price}` : ''}\nSelf-service manage link: ${manageUrl}`,
+    location: businessAddress,
+  });
+
+  const subject = isAdminNotification
+    ? `New Booking: ${clientName} - ${serviceName} on ${date} at ${timeSlot}`
+    : `Appointment Confirmed: ${serviceName} at ${businessName}`;
+
+  const textContent = isAdminNotification
+    ? `NEW APPOINTMENT BOOKED\n\nClient: ${clientName}\nEmail: ${clientEmail}\nPhone: ${clientPhone}\nService: ${serviceName}${price ? ` ($${price})` : ''}\nDate: ${date}\nTime: ${timeSlot} (${durationMinutes} mins)\nNotes: ${notes}\n`
+    : `APPOINTMENT CONFIRMATION\n\nDear ${clientName},\n\nYour appointment for ${serviceName} at ${businessName} is confirmed!\n\nDate: ${date}\nTime: ${timeSlot} (${durationMinutes} mins)\nLocation: ${businessAddress}\n${businessPhone ? `Phone: ${businessPhone}\n` : ''}${price ? `Price: $${price}\n` : ''}\nAdd to Google Calendar:\n${calUrl}\n\nReschedule or cancel:\n${manageUrl}\n`;
+
+  const htmlContent = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${escapeHtml(subject)}</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f8fafc; color: #0f172a; margin: 0; padding: 24px 12px; }
+    .container { max-width: 580px; margin: 0 auto; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+    .header { background: #0f172a; color: #ffffff; padding: 28px 24px; text-align: left; }
+    .header h1 { margin: 0 0 6px 0; font-size: 20px; font-weight: 600; letter-spacing: -0.01em; }
+    .badge { display: inline-block; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; background: #2563eb; color: #ffffff; padding: 4px 8px; border-radius: 4px; }
+    .content { padding: 28px 24px; }
+    .appointment-box { background: #f1f5f9; border-left: 4px solid #2563eb; border-radius: 6px; padding: 18px; margin: 20px 0; }
+    .item-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px; }
+    .label { color: #64748b; font-weight: 500; }
+    .value { color: #0f172a; font-weight: 600; text-align: right; }
+    .btn-primary { display: inline-block; background: #2563eb; color: #ffffff !important; text-decoration: none; padding: 12px 20px; border-radius: 6px; font-weight: 600; font-size: 14px; margin-right: 10px; margin-bottom: 10px; }
+    .btn-secondary { display: inline-block; background: #ffffff; color: #0f172a !important; text-decoration: none; padding: 11px 19px; border: 1px solid #cbd5e1; border-radius: 6px; font-weight: 600; font-size: 14px; margin-bottom: 10px; }
+    .footer { padding: 20px 24px; border-top: 1px solid #e2e8f0; font-size: 12px; color: #64748b; text-align: center; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <span class="badge">${isAdminNotification ? 'ADMIN NOTICE' : 'CONFIRMED'}</span>
+      <h1 style="margin-top: 10px;">${isAdminNotification ? 'New Booking Received' : 'Appointment Confirmed'}</h1>
+      <p style="margin: 0; font-size: 13px; color: #94a3b8;">${escapeHtml(businessName)}</p>
+    </div>
+    <div class="content">
+      <p style="font-size: 15px; margin-top: 0;">
+        ${isAdminNotification ? `A new appointment has been scheduled by <strong>${escapeHtml(clientName)}</strong>.` : `Hello <strong>${escapeHtml(clientName)}</strong>, your booking is confirmed. We look forward to seeing you.`}
+      </p>
+      <div class="appointment-box">
+        <table style="width: 100%; border-collapse: collapse;">
+          <tr>
+            <td style="padding: 6px 0; font-size: 13px; color: #64748b;">Service</td>
+            <td style="padding: 6px 0; font-size: 14px; font-weight: 600; text-align: right;">${escapeHtml(serviceName)}</td>
+          </tr>
+          ${price ? `<tr>
+            <td style="padding: 6px 0; font-size: 13px; color: #64748b;">Price</td>
+            <td style="padding: 6px 0; font-size: 14px; font-weight: 600; text-align: right;">$${price}</td>
+          </tr>` : ''}
+          <tr>
+            <td style="padding: 6px 0; font-size: 13px; color: #64748b;">Date & Time</td>
+            <td style="padding: 6px 0; font-size: 14px; font-weight: 600; text-align: right;">${escapeHtml(date)} at ${escapeHtml(timeSlot)}</td>
+          </tr>
+          <tr>
+            <td style="padding: 6px 0; font-size: 13px; color: #64748b;">Duration</td>
+            <td style="padding: 6px 0; font-size: 14px; font-weight: 600; text-align: right;">${durationMinutes} Minutes</td>
+          </tr>
+          <tr>
+            <td style="padding: 6px 0; font-size: 13px; color: #64748b;">Location</td>
+            <td style="padding: 6px 0; font-size: 14px; font-weight: 600; text-align: right;">${escapeHtml(businessAddress)}</td>
+          </tr>
+          ${clientPhone && clientPhone !== 'Not provided' ? `<tr>
+            <td style="padding: 6px 0; font-size: 13px; color: #64748b;">Phone</td>
+            <td style="padding: 6px 0; font-size: 14px; font-weight: 600; text-align: right;">${escapeHtml(clientPhone)}</td>
+          </tr>` : ''}
+        </table>
+      </div>
+      <div style="margin-top: 24px;">
+        <a href="${calUrl}" class="btn-primary" target="_blank" rel="noopener noreferrer">Add to Google Calendar</a>
+        <a href="${manageUrl}" class="btn-secondary" target="_blank" rel="noopener noreferrer">Manage Appointment</a>
+      </div>
+      <p style="font-size: 13px; color: #64748b; margin-top: 20px;">
+        Automated reminders will be sent 24 hours and 1 hour prior to your scheduled time. Need to make changes? Use the manage link above at any time.
+      </p>
+    </div>
+    <div class="footer">
+      <div>${escapeHtml(businessName)} &bull; ${escapeHtml(businessAddress)}</div>
+      ${businessPhone ? `<div style="margin-top: 4px;">Inquiries: ${escapeHtml(businessPhone)}</div>` : ''}
+    </div>
+  </div>
+</body>
+</html>
+  `;
+
+  return sendEmailTransport({
+    to,
+    subject,
+    text: textContent,
+    html: htmlContent,
+    fromName: businessName,
+  });
+}
+
+export async function sendAppointmentReminderEmail(
+  options: SendAppointmentReminderEmailOptions
+): Promise<EmailSendResult> {
+  const {
+    to,
+    clientName,
+    clientEmail,
+    clientPhone = 'Not provided',
+    serviceName = 'Appointment',
+    price,
+    date,
+    timeSlot,
+    durationMinutes,
+    businessName,
+    businessAddress = 'Our Location',
+    businessPhone = '',
+    manageToken,
+    assistantSlug,
+    assistantId,
+    reminderType,
+    isAdminNotification = false,
+  } = options;
+
+  if (!to || !to.trim()) {
+    return { success: false, error: 'Recipient email missing' };
+  }
+
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  const targetSlug = assistantSlug || assistantId || 'demo-assistant';
+  const manageUrl = manageToken
+    ? `${appUrl}/site/${targetSlug}?manageToken=${manageToken}`
+    : `${appUrl}/site/${targetSlug}`;
+
+  const reminderLabel = reminderType === '24h' ? 'Tomorrow (in 24 hours)' : 'Today (in 1 hour)';
+  const badgeLabel = reminderType === '24h' ? '24-HOUR REMINDER' : '1-HOUR REMINDER';
+
+  const subject = isAdminNotification
+    ? `Admin Reminder (${badgeLabel}): ${clientName} - ${serviceName} on ${date} at ${timeSlot}`
+    : `Upcoming Appointment Reminder: ${serviceName} ${reminderLabel}`;
+
+  const textContent = isAdminNotification
+    ? `UPCOMING APPOINTMENT REMINDER (${badgeLabel})\n\nClient: ${clientName}\nPhone: ${clientPhone}\nEmail: ${clientEmail}\nService: ${serviceName}${price ? ` ($${price})` : ''}\nScheduled for: ${date} at ${timeSlot} (${durationMinutes} mins)\n`
+    : `APPOINTMENT REMINDER (${badgeLabel})\n\nDear ${clientName},\n\nThis is a friendly reminder of your upcoming ${serviceName} at ${businessName} scheduled for ${reminderLabel}.\n\nDate: ${date}\nTime: ${timeSlot}\nLocation: ${businessAddress}\n${businessPhone ? `Phone: ${businessPhone}\n` : ''}\nManage appointment:\n${manageUrl}\n`;
+
+  const htmlContent = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${escapeHtml(subject)}</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f8fafc; color: #0f172a; margin: 0; padding: 24px 12px; }
+    .container { max-width: 580px; margin: 0 auto; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+    .header { background: #0f172a; color: #ffffff; padding: 28px 24px; text-align: left; }
+    .header h1 { margin: 0 0 6px 0; font-size: 20px; font-weight: 600; letter-spacing: -0.01em; }
+    .badge { display: inline-block; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; background: #f59e0b; color: #0f172a; padding: 4px 8px; border-radius: 4px; }
+    .content { padding: 28px 24px; }
+    .appointment-box { background: #fffbeb; border-left: 4px solid #f59e0b; border-radius: 6px; padding: 18px; margin: 20px 0; }
+    .btn-secondary { display: inline-block; background: #ffffff; color: #0f172a !important; text-decoration: none; padding: 11px 19px; border: 1px solid #cbd5e1; border-radius: 6px; font-weight: 600; font-size: 14px; }
+    .footer { padding: 20px 24px; border-top: 1px solid #e2e8f0; font-size: 12px; color: #64748b; text-align: center; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <span class="badge">${badgeLabel}</span>
+      <h1 style="margin-top: 10px;">${isAdminNotification ? 'Upcoming Appointment Reminder' : `Appointment ${reminderLabel}`}</h1>
+      <p style="margin: 0; font-size: 13px; color: #94a3b8;">${escapeHtml(businessName)}</p>
+    </div>
+    <div class="content">
+      <p style="font-size: 15px; margin-top: 0;">
+        ${isAdminNotification ? `Reminder for upcoming appointment with <strong>${escapeHtml(clientName)}</strong>.` : `Hello <strong>${escapeHtml(clientName)}</strong>, this is a reminder that your appointment is coming up ${escapeHtml(reminderLabel)}.`}
+      </p>
+      <div class="appointment-box">
+        <table style="width: 100%; border-collapse: collapse;">
+          <tr>
+            <td style="padding: 6px 0; font-size: 13px; color: #64748b;">Service</td>
+            <td style="padding: 6px 0; font-size: 14px; font-weight: 600; text-align: right;">${escapeHtml(serviceName)}</td>
+          </tr>
+          ${price ? `<tr>
+            <td style="padding: 6px 0; font-size: 13px; color: #64748b;">Price</td>
+            <td style="padding: 6px 0; font-size: 14px; font-weight: 600; text-align: right;">$${price}</td>
+          </tr>` : ''}
+          <tr>
+            <td style="padding: 6px 0; font-size: 13px; color: #64748b;">Scheduled Time</td>
+            <td style="padding: 6px 0; font-size: 14px; font-weight: 600; text-align: right;">${escapeHtml(date)} at ${escapeHtml(timeSlot)}</td>
+          </tr>
+          <tr>
+            <td style="padding: 6px 0; font-size: 13px; color: #64748b;">Location</td>
+            <td style="padding: 6px 0; font-size: 14px; font-weight: 600; text-align: right;">${escapeHtml(businessAddress)}</td>
+          </tr>
+          ${clientPhone && clientPhone !== 'Not provided' ? `<tr>
+            <td style="padding: 6px 0; font-size: 13px; color: #64748b;">Client Phone</td>
+            <td style="padding: 6px 0; font-size: 14px; font-weight: 600; text-align: right;">${escapeHtml(clientPhone)}</td>
+          </tr>` : ''}
+        </table>
+      </div>
+      <div style="margin-top: 24px;">
+        <a href="${manageUrl}" class="btn-secondary" target="_blank" rel="noopener noreferrer">View or Reschedule Appointment</a>
+      </div>
+    </div>
+    <div class="footer">
+      <div>${escapeHtml(businessName)} &bull; ${escapeHtml(businessAddress)}</div>
+      ${businessPhone ? `<div style="margin-top: 4px;">Inquiries: ${escapeHtml(businessPhone)}</div>` : ''}
+    </div>
+  </div>
+</body>
+</html>
+  `;
+
+  return sendEmailTransport({
+    to,
+    subject,
+    text: textContent,
+    html: htmlContent,
+    fromName: businessName,
+  });
+}
+

@@ -79,11 +79,19 @@ import {
   ThumbsUp,
   Headphones,
   UserCheck,
+  QrCode,
+  Bell,
+  UserPlus,
+  KeyRound,
+  ShieldAlert,
+  MapPin,
+  Scissors,
 } from 'lucide-react';
 import { diagnoseKnowledgeFailure } from '@/lib/rag/diagnostics';
 import { MarkdownRenderer } from '@/components/markdown-renderer';
 import { BOT_TEMPLATES, BotTemplate } from '@/lib/templates';
 import { BILLING_PLANS, PlanTier } from '@/lib/billing/plans';
+import { LandingPageConfig, DEFAULT_BARBER_LANDING_CONFIG } from '@/lib/landing/types';
 
 const Youtube = ({ className = 'h-4 w-4' }: { className?: string }) => (
   <svg className={className} viewBox="0 0 24 24" fill="currentColor">
@@ -230,7 +238,7 @@ export default function DashboardPage() {
   const [assistants, setAssistants] = useState<Assistant[]>([]);
   const [activeAssistant, setActiveAssistant] = useState<Assistant | null>(null);
   const [activeTab, setActiveTab] = useState<
-    'overview' | 'analytics' | 'billing' | 'knowledge' | 'engine' | 'behavior' | 'widget' | 'channels' | 'playground' | 'leads' | 'appointments' | 'docs' | 'templates' | 'history'
+    'overview' | 'analytics' | 'billing' | 'landing_page' | 'team' | 'security' | 'audit' | 'knowledge' | 'engine' | 'behavior' | 'widget' | 'channels' | 'playground' | 'leads' | 'appointments' | 'docs' | 'templates' | 'history'
   >('overview');
 
   // Channel & Integrations state
@@ -488,6 +496,267 @@ Thank you for using Kortex AI Business Engine.
     a.download = `${inv.id}.txt`;
     a.click();
     URL.revokeObjectURL(url);
+  };
+
+  // Landing Page State
+  const [landingConfig, setLandingConfig] = useState<LandingPageConfig>(DEFAULT_BARBER_LANDING_CONFIG);
+  const [isSavingLanding, setIsSavingLanding] = useState(false);
+  const [saveLandingSuccess, setSaveLandingSuccess] = useState(false);
+  const [saveLandingError, setSaveLandingError] = useState<string | null>(null);
+  const [copiedLandingUrl, setCopiedLandingUrl] = useState(false);
+  const [showCounterQrModal, setShowCounterQrModal] = useState(false);
+
+  // Team Management & RBAC State
+  const [teamMembers, setTeamMembers] = useState<any[]>([]);
+  const [isAddingTeamMember, setIsAddingTeamMember] = useState(false);
+  const [showAddTeamModal, setShowAddTeamModal] = useState(false);
+  const [newMemberName, setNewMemberName] = useState('');
+  const [newMemberEmail, setNewMemberEmail] = useState('');
+  const [newMemberRole, setNewMemberRole] = useState<'owner' | 'admin' | 'support_agent' | 'billing_manager' | 'viewer'>('support_agent');
+  const [teamError, setTeamError] = useState<string | null>(null);
+  const [teamSuccess, setTeamSuccess] = useState<string | null>(null);
+
+  // 2FA / Security State
+  const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
+  const [twoFactorSetupData, setTwoFactorSetupData] = useState<{ secret: string; otpUrl: string; recoveryCodes: string[] } | null>(null);
+  const [twoFactorCodeInput, setTwoFactorCodeInput] = useState('');
+  const [twoFactorLoading, setTwoFactorLoading] = useState(false);
+  const [twoFactorSuccess, setTwoFactorSuccess] = useState<string | null>(null);
+  const [twoFactorError, setTwoFactorError] = useState<string | null>(null);
+
+  // Security Audit Trail State
+  const [auditLogs, setAuditLogs] = useState<any[]>([]);
+  const [isSyncingAudit, setIsSyncingAudit] = useState(false);
+
+  // In-App Notifications State
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [unreadNotifCount, setUnreadNotifCount] = useState(0);
+  const [isNotifOpen, setIsNotifOpen] = useState(false);
+
+  const fetchLandingConfig = async (astId: string) => {
+    try {
+      const res = await fetch(`/api/landing-page?assistantId=${encodeURIComponent(astId)}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.config) setLandingConfig(data.config);
+      }
+    } catch (e) {
+      console.warn('Failed to fetch landing config', e);
+    }
+  };
+
+  const handleSaveLandingConfig = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!activeAssistant) return;
+    setIsSavingLanding(true);
+    setSaveLandingSuccess(false);
+    setSaveLandingError(null);
+    try {
+      const res = await fetch('/api/landing-page', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          assistantId: activeAssistant.id,
+          config: landingConfig,
+        }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setSaveLandingSuccess(true);
+        setTimeout(() => setSaveLandingSuccess(false), 3000);
+      } else {
+        setSaveLandingError(data.error || 'Failed to update landing page');
+      }
+    } catch (err: any) {
+      setSaveLandingError(err.message || 'Network error saving landing page');
+    } finally {
+      setIsSavingLanding(false);
+    }
+  };
+
+  const fetchTeamMembers = async () => {
+    try {
+      const res = await fetch('/api/team');
+      if (res.ok) {
+        const data = await res.json();
+        setTeamMembers(data.members || []);
+      }
+    } catch (e) {}
+  };
+
+  const handleAddTeamMember = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newMemberName.trim() || !newMemberEmail.trim()) return;
+    setIsAddingTeamMember(true);
+    setTeamError(null);
+    setTeamSuccess(null);
+    try {
+      const res = await fetch('/api/team', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: newMemberName.trim(),
+          email: newMemberEmail.trim(),
+          role: newMemberRole,
+        }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setTeamSuccess(`Invited ${newMemberName} as ${newMemberRole.replace('_', ' ')}.`);
+        setNewMemberName('');
+        setNewMemberEmail('');
+        setShowAddTeamModal(false);
+        await fetchTeamMembers();
+      } else {
+        setTeamError(data.error || 'Failed to add team member');
+      }
+    } catch (err: any) {
+      setTeamError(err.message || 'Network error adding member');
+    } finally {
+      setIsAddingTeamMember(false);
+    }
+  };
+
+  const handleUpdateTeamMemberRole = async (id: string, role: string) => {
+    try {
+      const res = await fetch('/api/team', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, role }),
+      });
+      if (res.ok) {
+        await fetchTeamMembers();
+      }
+    } catch (e) {}
+  };
+
+  const handleDeleteTeamMember = async (id: string) => {
+    if (!confirm('Are you sure you want to remove this team member?')) return;
+    try {
+      const res = await fetch(`/api/team?id=${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        await fetchTeamMembers();
+      }
+    } catch (e) {}
+  };
+
+  const fetchAuditLogs = async () => {
+    setIsSyncingAudit(true);
+    try {
+      const res = await fetch('/api/audit');
+      if (res.ok) {
+        const data = await res.json();
+        setAuditLogs(data.logs || []);
+      }
+    } catch (e) {} finally {
+      setIsSyncingAudit(false);
+    }
+  };
+
+  const fetchNotifications = async () => {
+    try {
+      const res = await fetch('/api/notifications');
+      if (res.ok) {
+        const data = await res.json();
+        setNotifications(data.notifications || []);
+        setUnreadNotifCount(data.unreadCount || 0);
+      }
+    } catch (e) {}
+  };
+
+  const handleMarkAllNotificationsRead = async () => {
+    try {
+      const res = await fetch('/api/notifications', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'mark_all_read' }),
+      });
+      if (res.ok) {
+        setUnreadNotifCount(0);
+        setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+      }
+    } catch (e) {}
+  };
+
+  const fetch2faStatus = async () => {
+    try {
+      const res = await fetch('/api/auth/2fa');
+      if (res.ok) {
+        const data = await res.json();
+        setTwoFactorEnabled(Boolean(data.enabled));
+      }
+    } catch (e) {}
+  };
+
+  const handleStart2faSetup = async () => {
+    setTwoFactorLoading(true);
+    setTwoFactorError(null);
+    try {
+      const res = await fetch('/api/auth/2fa?action=setup');
+      const data = await res.json();
+      if (res.ok) {
+        setTwoFactorSetupData(data);
+      } else {
+        setTwoFactorError(data.error || 'Failed to initiate 2FA setup');
+      }
+    } catch (err: any) {
+      setTwoFactorError(err.message || 'Network error');
+    } finally {
+      setTwoFactorLoading(false);
+    }
+  };
+
+  const handleConfirm2faEnable = async () => {
+    if (!twoFactorSetupData || !twoFactorCodeInput.trim()) return;
+    setTwoFactorLoading(true);
+    setTwoFactorError(null);
+    setTwoFactorSuccess(null);
+    try {
+      const res = await fetch('/api/auth/2fa', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'enable',
+          secret: twoFactorSetupData.secret,
+          code: twoFactorCodeInput.trim(),
+          recoveryCodes: twoFactorSetupData.recoveryCodes,
+        }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setTwoFactorEnabled(true);
+        setTwoFactorSuccess('Two-factor authentication is now active and protecting your account.');
+        setTwoFactorSetupData(null);
+        setTwoFactorCodeInput('');
+      } else {
+        setTwoFactorError(data.error || 'Invalid code');
+      }
+    } catch (err: any) {
+      setTwoFactorError(err.message || 'Error enabling 2FA');
+    } finally {
+      setTwoFactorLoading(false);
+    }
+  };
+
+  const handleDisable2fa = async () => {
+    if (!confirm('Are you sure you want to disable two-factor authentication?')) return;
+    setTwoFactorLoading(true);
+    setTwoFactorError(null);
+    try {
+      const res = await fetch('/api/auth/2fa', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'disable' }),
+      });
+      if (res.ok) {
+        setTwoFactorEnabled(false);
+        setTwoFactorSuccess('Two-factor authentication disabled.');
+      }
+    } catch (err: any) {
+      setTwoFactorError(err.message || 'Error disabling 2FA');
+    } finally {
+      setTwoFactorLoading(false);
+    }
   };
 
   // Playground voice dictation
@@ -816,8 +1085,13 @@ Thank you for using Kortex AI Business Engine.
       fetchAppointments(activeAssistant.id);
       fetchUnansweredQueries(activeAssistant.id);
       fetchConversations(activeAssistant.id);
-    fetchAnalytics(activeAssistant.id);
-    fetchBilling();
+      fetchAnalytics(activeAssistant.id);
+      fetchBilling();
+      fetchLandingConfig(activeAssistant.id);
+      fetchTeamMembers();
+      fetchAuditLogs();
+      fetchNotifications();
+      fetch2faStatus();
       // Reset playground
       setChatMessages([
         {
@@ -834,6 +1108,7 @@ Thank you for using Kortex AI Business Engine.
         fetchAppointments(activeAssistant.id);
         fetchUnansweredQueries(activeAssistant.id);
         fetchConversations(activeAssistant.id);
+        fetchNotifications();
       }, 3000);
 
       return () => clearInterval(pollTimer);
@@ -1755,6 +2030,60 @@ Thank you for using Kortex AI Business Engine.
               )}
             </button>
 
+            {/* Real-time In-App Notification Bell */}
+            <div className="relative">
+              <button
+                onClick={() => setIsNotifOpen(!isNotifOpen)}
+                className="relative flex items-center justify-center p-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 transition shadow-xs cursor-pointer"
+                title="Notifications"
+              >
+                <Bell className="h-4 w-4" />
+                {unreadNotifCount > 0 && (
+                  <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-rose-500 text-[9px] font-bold text-white ring-2 ring-white dark:ring-slate-900">
+                    {unreadNotifCount > 9 ? '9+' : unreadNotifCount}
+                  </span>
+                )}
+              </button>
+
+              {isNotifOpen && (
+                <div className="absolute right-0 mt-2 w-80 sm:w-96 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl p-4 z-50 space-y-3">
+                  <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
+                    <div className="flex items-center gap-2">
+                      <Bell className="h-4 w-4 text-blue-600" />
+                      <span className="font-bold text-xs text-slate-900 dark:text-white">Activity Notifications</span>
+                    </div>
+                    {unreadNotifCount > 0 && (
+                      <button
+                        onClick={handleMarkAllNotificationsRead}
+                        className="text-[11px] text-blue-600 dark:text-blue-400 hover:underline font-semibold"
+                      >
+                        Mark all read
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="max-h-72 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800/60 text-xs">
+                    {notifications.length === 0 ? (
+                      <div className="py-6 text-center text-slate-400">No activity yet</div>
+                    ) : (
+                      notifications.map((n) => (
+                        <div key={n.id} className={`py-2.5 px-1 flex gap-2.5 ${!n.read ? 'bg-blue-50/50 dark:bg-blue-950/20' : ''}`}>
+                          <div className="mt-0.5">
+                            <span className="h-2 w-2 rounded-full bg-blue-600 inline-block" />
+                          </div>
+                          <div className="flex-1 space-y-0.5">
+                            <div className="font-semibold text-slate-800 dark:text-slate-200 text-xs">{n.title}</div>
+                            <div className="text-slate-500 text-[11px] leading-relaxed">{n.message}</div>
+                            <div className="text-[10px] text-slate-400 font-mono">{new Date(n.createdAt).toLocaleTimeString()}</div>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+
             {/* Deploy / WordPress Plugin Button */}
             <button
               onClick={() => setShowEmbedModal(true)}
@@ -1791,6 +2120,10 @@ Thank you for using Kortex AI Business Engine.
                     { id: 'overview', label: 'Overview', icon: FileCheck },
                     { id: 'analytics', label: 'Analytics & KPIs', icon: BarChart3 },
                     { id: 'billing', label: 'Plans & Billing', icon: CreditCard },
+                    { id: 'landing_page', label: 'Landing Page', icon: Globe },
+                    { id: 'team', label: 'Team & RBAC', icon: UserCheck, count: teamMembers.length },
+                    { id: 'security', label: 'Security & 2FA', icon: ShieldCheck },
+                    { id: 'audit', label: 'Audit Trail', icon: ClipboardList, count: auditLogs.length },
                     { id: 'knowledge', label: 'Knowledge Base', icon: Upload, count: sources.length },
                     { id: 'playground', label: 'Testing Studio', icon: MessageSquare },
                     { id: 'channels', label: 'Channels & Integrations', icon: Share2 },
@@ -2446,6 +2779,828 @@ Thank you for using Kortex AI Business Engine.
                         </tbody>
                       </table>
                     </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* TAB: HOSTED BUSINESS LANDING PAGE */}
+            {activeTab === 'landing_page' && (
+              <div className="max-w-5xl space-y-6 mx-auto">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div>
+                    <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2.5">
+                      <Globe className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                      <span>Hosted Business Landing Page</span>
+                    </h1>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                      A complete public website for your business with integrated AI chatbot booking, live services menu, and automated reminders.
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2.5">
+                    <button
+                      type="button"
+                      onClick={() => setShowCounterQrModal(true)}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition shadow-xs"
+                    >
+                      <QrCode className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
+                      <span>In-Store QR Code</span>
+                    </button>
+                    <a
+                      href={`/site/${landingConfig.slug || activeAssistant?.id || 'demo-assistant'}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs transition"
+                    >
+                      <ExternalLink className="h-3.5 w-3.5" />
+                      <span>View Live Site</span>
+                    </a>
+                  </div>
+                </div>
+
+                {/* Live Site URL Banner */}
+                <div className="p-4 rounded-2xl border border-blue-100 dark:border-blue-900/40 bg-blue-50/60 dark:bg-blue-950/20 flex flex-col sm:flex-row items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className="h-10 w-10 rounded-xl bg-blue-600 text-white flex items-center justify-center shrink-0">
+                      <Globe className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <div className="text-xs font-bold text-slate-900 dark:text-white">Your Public Business Website is Live</div>
+                      <div className="text-[11px] text-blue-700 dark:text-blue-300 font-mono mt-0.5">
+                        {typeof window !== 'undefined' ? `${window.location.origin}/site/${landingConfig.slug || activeAssistant?.id || 'demo-assistant'}` : `/site/${landingConfig.slug || 'demo-assistant'}`}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const url = `${window.location.origin}/site/${landingConfig.slug || activeAssistant?.id || 'demo-assistant'}`;
+                        navigator.clipboard.writeText(url);
+                        setCopiedLandingUrl(true);
+                        setTimeout(() => setCopiedLandingUrl(false), 2000);
+                      }}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition shadow-xs"
+                    >
+                      {copiedLandingUrl ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5 text-slate-500" />}
+                      <span>{copiedLandingUrl ? 'Copied!' : 'Copy Link'}</span>
+                    </button>
+                  </div>
+                </div>
+
+                {saveLandingSuccess && (
+                  <div className="p-3.5 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-xl text-xs text-emerald-800 dark:text-emerald-300 flex items-center gap-2 font-medium">
+                    <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600" />
+                    <span>Landing page configuration successfully saved and published!</span>
+                  </div>
+                )}
+
+                {saveLandingError && (
+                  <div className="p-3.5 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 rounded-xl text-xs text-rose-800 dark:text-rose-300 flex items-center gap-2 font-medium">
+                    <AlertCircle className="h-4 w-4 shrink-0 text-rose-600" />
+                    <span>{saveLandingError}</span>
+                  </div>
+                )}
+
+                <form onSubmit={handleSaveLandingConfig} className="space-y-6">
+                  {/* General Business Info */}
+                  <div className="p-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-4">
+                    <h2 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                      <Briefcase className="h-4 w-4 text-blue-600" />
+                      <span>Business Identity &amp; URL</span>
+                    </h2>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Business Name</label>
+                        <input
+                          type="text"
+                          required
+                          value={landingConfig.businessName || ''}
+                          onChange={(e) => setLandingConfig({ ...landingConfig, businessName: e.target.value })}
+                          className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Website URL Slug (/site/[slug])</label>
+                        <input
+                          type="text"
+                          required
+                          value={landingConfig.slug || ''}
+                          onChange={(e) => setLandingConfig({ ...landingConfig, slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-') })}
+                          className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white font-mono focus:outline-none focus:border-blue-500"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Tagline / Subtitle</label>
+                      <input
+                        type="text"
+                        value={landingConfig.tagline || ''}
+                        onChange={(e) => setLandingConfig({ ...landingConfig, tagline: e.target.value })}
+                        className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Trust Badge Text (Top Banner)</label>
+                      <input
+                        type="text"
+                        value={landingConfig.badgeText || ''}
+                        onChange={(e) => setLandingConfig({ ...landingConfig, badgeText: e.target.value })}
+                        className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Hero Section Content */}
+                  <div className="p-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-4">
+                    <h2 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                      <Sparkles className="h-4 w-4 text-amber-500" />
+                      <span>Hero Section Copy &amp; Imagery</span>
+                    </h2>
+
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Hero Main Headline</label>
+                      <input
+                        type="text"
+                        value={landingConfig.heroHeadline || ''}
+                        onChange={(e) => setLandingConfig({ ...landingConfig, heroHeadline: e.target.value })}
+                        className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Hero Subheadline</label>
+                      <textarea
+                        rows={2}
+                        value={landingConfig.heroSubheadline || ''}
+                        onChange={(e) => setLandingConfig({ ...landingConfig, heroSubheadline: e.target.value })}
+                        className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 resize-none"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">CTA Button Text</label>
+                        <input
+                          type="text"
+                          value={landingConfig.heroCtaText || ''}
+                          onChange={(e) => setLandingConfig({ ...landingConfig, heroCtaText: e.target.value })}
+                          className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Hero Image URL</label>
+                        <input
+                          type="url"
+                          value={landingConfig.heroImageUrl || ''}
+                          onChange={(e) => setLandingConfig({ ...landingConfig, heroImageUrl: e.target.value })}
+                          className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white font-mono focus:outline-none focus:border-blue-500"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Contact & Location Info */}
+                  <div className="p-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-4">
+                    <h2 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                      <MapPin className="h-4 w-4 text-rose-500" />
+                      <span>Contact &amp; Location Information</span>
+                    </h2>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Phone Number</label>
+                        <input
+                          type="text"
+                          value={landingConfig.phone || ''}
+                          onChange={(e) => setLandingConfig({ ...landingConfig, phone: e.target.value })}
+                          className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Contact Email</label>
+                        <input
+                          type="email"
+                          value={landingConfig.email || ''}
+                          onChange={(e) => setLandingConfig({ ...landingConfig, email: e.target.value })}
+                          className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Google Maps Link</label>
+                        <input
+                          type="url"
+                          value={landingConfig.googleMapsUrl || ''}
+                          onChange={(e) => setLandingConfig({ ...landingConfig, googleMapsUrl: e.target.value })}
+                          className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white font-mono focus:outline-none focus:border-blue-500"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Full Physical Address</label>
+                      <input
+                        type="text"
+                        value={landingConfig.address || ''}
+                        onChange={(e) => setLandingConfig({ ...landingConfig, address: e.target.value })}
+                        className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Services & Pricing Editor */}
+                  <div className="p-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-4">
+                    <div className="flex items-center justify-between">
+                      <h2 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                        <Scissors className="h-4 w-4 text-amber-500" />
+                        <span>Services &amp; Pricing Menu</span>
+                      </h2>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const newService = {
+                            id: 'srv_' + Math.random().toString(36).substring(2, 9),
+                            name: 'New Custom Service',
+                            description: 'Service description and consultation details.',
+                            durationMinutes: 30,
+                            price: 40,
+                          };
+                          setLandingConfig({
+                            ...landingConfig,
+                            services: [...(landingConfig.services || []), newService],
+                          });
+                        }}
+                        className="flex items-center gap-1.5 px-3 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs font-semibold text-blue-600 dark:text-blue-400 hover:bg-slate-100 transition"
+                      >
+                        <Plus className="h-3.5 w-3.5" />
+                        <span>Add Service</span>
+                      </button>
+                    </div>
+
+                    <div className="space-y-3">
+                      {(landingConfig.services || []).map((service, sIdx) => (
+                        <div key={service.id || sIdx} className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40 space-y-3">
+                          <div className="flex items-center justify-between gap-3">
+                            <input
+                              type="text"
+                              value={service.name}
+                              placeholder="Service Name"
+                              onChange={(e) => {
+                                const next = [...(landingConfig.services || [])];
+                                next[sIdx].name = e.target.value;
+                                setLandingConfig({ ...landingConfig, services: next });
+                              }}
+                              className="font-bold text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-900 dark:text-white flex-1"
+                            />
+                            <div className="flex items-center gap-1">
+                              <span className="text-xs font-semibold text-slate-500">$</span>
+                              <input
+                                type="number"
+                                value={service.price}
+                                onChange={(e) => {
+                                  const next = [...(landingConfig.services || [])];
+                                  next[sIdx].price = parseFloat(e.target.value) || 0;
+                                  setLandingConfig({ ...landingConfig, services: next });
+                                }}
+                                className="w-16 font-bold text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1.5 text-slate-900 dark:text-white text-right"
+                              />
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <input
+                                type="number"
+                                value={service.durationMinutes}
+                                onChange={(e) => {
+                                  const next = [...(landingConfig.services || [])];
+                                  next[sIdx].durationMinutes = parseInt(e.target.value) || 30;
+                                  setLandingConfig({ ...landingConfig, services: next });
+                                }}
+                                className="w-16 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1.5 text-slate-900 dark:text-white text-right"
+                              />
+                              <span className="text-[11px] text-slate-400">min</span>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const next = (landingConfig.services || []).filter((_, i) => i !== sIdx);
+                                setLandingConfig({ ...landingConfig, services: next });
+                              }}
+                              className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg transition"
+                              title="Delete service"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </button>
+                          </div>
+
+                          <input
+                            type="text"
+                            value={service.description}
+                            placeholder="Brief description for clients"
+                            onChange={(e) => {
+                              const next = [...(landingConfig.services || [])];
+                              next[sIdx].description = e.target.value;
+                              setLandingConfig({ ...landingConfig, services: next });
+                            }}
+                            className="w-full text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-600 dark:text-slate-300"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="flex justify-end pt-2">
+                    <button
+                      type="submit"
+                      disabled={isSavingLanding}
+                      className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs rounded-xl shadow-xs transition flex items-center gap-2 disabled:opacity-50"
+                    >
+                      {isSavingLanding ? (
+                        <>
+                          <RefreshCw className="h-4 w-4 animate-spin" />
+                          <span>Saving Changes...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Check className="h-4 w-4" />
+                          <span>Save &amp; Publish Landing Page</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            )}
+
+            {/* TAB: MULTI-USER TEAM & RBAC */}
+            {activeTab === 'team' && (
+              <div className="max-w-5xl space-y-6 mx-auto">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div>
+                    <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2.5">
+                      <UserCheck className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                      <span>Team Members &amp; Role-Based Access</span>
+                    </h1>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                      Manage workspace collaborators, assign specific role privileges, and enforce two-factor authentication.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowAddTeamModal(true)}
+                    className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs transition"
+                  >
+                    <UserPlus className="h-3.5 w-3.5" />
+                    <span>Invite Team Member</span>
+                  </button>
+                </div>
+
+                {teamSuccess && (
+                  <div className="p-3.5 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-xl text-xs text-emerald-800 dark:text-emerald-300 flex items-center gap-2 font-medium">
+                    <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600" />
+                    <span>{teamSuccess}</span>
+                  </div>
+                )}
+
+                {teamError && (
+                  <div className="p-3.5 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 rounded-xl text-xs text-rose-800 dark:text-rose-300 flex items-center gap-2 font-medium">
+                    <AlertCircle className="h-4 w-4 shrink-0 text-rose-600" />
+                    <span>{teamError}</span>
+                  </div>
+                )}
+
+                {/* Role Permissions Reference Card */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-1">
+                    <div className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                      <ShieldCheck className="h-4 w-4 text-emerald-500" />
+                      <span>Owner &amp; Admin</span>
+                    </div>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
+                      Full administrative control: add/edit assistants, update billing, invite teammates, and view security audits.
+                    </p>
+                  </div>
+
+                  <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-1">
+                    <div className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                      <Headphones className="h-4 w-4 text-blue-500" />
+                      <span>Support Agent</span>
+                    </div>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
+                      Operational access: take over live chats, manage appointments, and respond to captured visitor leads.
+                    </p>
+                  </div>
+
+                  <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-1">
+                    <div className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                      <CreditCard className="h-4 w-4 text-purple-500" />
+                      <span>Billing &amp; Viewer</span>
+                    </div>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
+                      Specialized access: invoices and payment methods for Billing Managers; read-only analytics for Viewers.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Team Members Table */}
+                <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden shadow-xs">
+                  <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+                    <h2 className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                      Active Collaborators ({teamMembers.length})
+                    </h2>
+                    <button
+                      type="button"
+                      onClick={fetchTeamMembers}
+                      className="text-xs text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
+                    >
+                      <RefreshCw className="h-3 w-3" />
+                      <span>Refresh</span>
+                    </button>
+                  </div>
+
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-xs">
+                      <thead className="bg-slate-50 dark:bg-slate-800/60 text-slate-500 font-semibold border-b border-slate-200 dark:border-slate-800">
+                        <tr>
+                          <th className="py-3 px-4">Member Name</th>
+                          <th className="py-3 px-4">Email</th>
+                          <th className="py-3 px-4">Assigned Role</th>
+                          <th className="py-3 px-4">2FA Status</th>
+                          <th className="py-3 px-4 text-right">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                        {teamMembers.map((member) => (
+                          <tr key={member.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
+                            <td className="py-3.5 px-4 font-semibold text-slate-900 dark:text-white">
+                              {member.name}
+                            </td>
+                            <td className="py-3.5 px-4 text-slate-600 dark:text-slate-300 font-mono text-[11px]">
+                              {member.email}
+                            </td>
+                            <td className="py-3.5 px-4">
+                              <select
+                                value={member.role}
+                                onChange={(e) => handleUpdateTeamMemberRole(member.id, e.target.value)}
+                                className="bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-2.5 py-1 text-xs text-slate-800 dark:text-slate-200 font-medium capitalize"
+                              >
+                                <option value="owner">Owner</option>
+                                <option value="admin">Admin</option>
+                                <option value="support_agent">Support Agent</option>
+                                <option value="billing_manager">Billing Manager</option>
+                                <option value="viewer">Viewer</option>
+                              </select>
+                            </td>
+                            <td className="py-3.5 px-4">
+                              {member.twoFactorEnabled ? (
+                                <span className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-semibold text-[11px]">
+                                  <ShieldCheck className="h-3.5 w-3.5" />
+                                  <span>Enabled</span>
+                                </span>
+                              ) : (
+                                <span className="text-slate-400 text-[11px]">Not Setup</span>
+                              )}
+                            </td>
+                            <td className="py-3.5 px-4 text-right">
+                              {member.role !== 'owner' && (
+                                <button
+                                  type="button"
+                                  onClick={() => handleDeleteTeamMember(member.id)}
+                                  className="text-slate-400 hover:text-rose-600 transition p-1"
+                                  title="Remove Member"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </button>
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                {/* Invite Team Member Modal */}
+                {showAddTeamModal && (
+                  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+                    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4">
+                      <div className="flex items-center justify-between">
+                        <h3 className="text-base font-bold text-slate-900 dark:text-white">Invite Team Member</h3>
+                        <button onClick={() => setShowAddTeamModal(false)} className="text-slate-400 hover:text-slate-600">
+                          <X className="h-5 w-5" />
+                        </button>
+                      </div>
+
+                      <form onSubmit={handleAddTeamMember} className="space-y-4">
+                        <div>
+                          <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Full Name</label>
+                          <input
+                            type="text"
+                            required
+                            placeholder="e.g. Alex Morgan"
+                            value={newMemberName}
+                            onChange={(e) => setNewMemberName(e.target.value)}
+                            className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Email Address</label>
+                          <input
+                            type="email"
+                            required
+                            placeholder="alex@company.com"
+                            value={newMemberEmail}
+                            onChange={(e) => setNewMemberEmail(e.target.value)}
+                            className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Access Role</label>
+                          <select
+                            value={newMemberRole}
+                            onChange={(e) => setNewMemberRole(e.target.value as any)}
+                            className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white capitalize"
+                          >
+                            <option value="admin">Admin (Manage bots &amp; settings)</option>
+                            <option value="support_agent">Support Agent (Live takeover &amp; appointments)</option>
+                            <option value="billing_manager">Billing Manager (Invoices &amp; subscriptions)</option>
+                            <option value="viewer">Viewer (Read-only analytics)</option>
+                          </select>
+                        </div>
+
+                        <div className="flex justify-end gap-2 pt-2">
+                          <button
+                            type="button"
+                            onClick={() => setShowAddTeamModal(false)}
+                            className="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-medium text-slate-700 dark:text-slate-300"
+                          >
+                            Cancel
+                          </button>
+                          <button
+                            type="submit"
+                            disabled={isAddingTeamMember}
+                            className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold"
+                          >
+                            {isAddingTeamMember ? 'Inviting...' : 'Send Invite'}
+                          </button>
+                        </div>
+                      </form>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* TAB: SECURITY & TWO-FACTOR AUTHENTICATION (2FA) */}
+            {activeTab === 'security' && (
+              <div className="max-w-5xl space-y-6 mx-auto">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div>
+                    <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2.5">
+                      <ShieldCheck className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                      <span>Security Posture &amp; Two-Factor Authentication</span>
+                    </h1>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                      Protect your admin dashboard with hardware-grade TOTP multi-factor authentication and AES-256 encryption.
+                    </p>
+                  </div>
+                </div>
+
+                {twoFactorSuccess && (
+                  <div className="p-3.5 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-xl text-xs text-emerald-800 dark:text-emerald-300 flex items-center gap-2 font-medium">
+                    <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600" />
+                    <span>{twoFactorSuccess}</span>
+                  </div>
+                )}
+
+                {twoFactorError && (
+                  <div className="p-3.5 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 rounded-xl text-xs text-rose-800 dark:text-rose-300 flex items-center gap-2 font-medium">
+                    <AlertCircle className="h-4 w-4 shrink-0 text-rose-600" />
+                    <span>{twoFactorError}</span>
+                  </div>
+                )}
+
+                {/* 2FA Status Card */}
+                <div className="p-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div className="flex items-center gap-3.5">
+                      <div className={`h-12 w-12 rounded-2xl flex items-center justify-center shrink-0 ${twoFactorEnabled ? 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 border border-emerald-200 dark:border-emerald-800' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 border border-slate-200 dark:border-slate-700'}`}>
+                        <KeyRound className="h-6 w-6" />
+                      </div>
+                      <div>
+                        <h2 className="text-sm font-bold text-slate-900 dark:text-white">
+                          Two-Factor Authentication (TOTP)
+                        </h2>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                          Requires Google Authenticator, Authy, or Apple Keychain 6-digit codes on login.
+                        </p>
+                      </div>
+                    </div>
+
+                    <div>
+                      {twoFactorEnabled ? (
+                        <button
+                          type="button"
+                          onClick={handleDisable2fa}
+                          disabled={twoFactorLoading}
+                          className="px-4 py-2 rounded-xl bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800 text-xs font-semibold hover:bg-rose-100 transition"
+                        >
+                          Disable 2FA
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={handleStart2faSetup}
+                          disabled={twoFactorLoading}
+                          className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs transition flex items-center gap-1.5"
+                        >
+                          <ShieldCheck className="h-4 w-4" />
+                          <span>Enable 2FA Protection</span>
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* 2FA Setup Flow */}
+                  {twoFactorSetupData && !twoFactorEnabled && (
+                    <div className="mt-6 pt-6 border-t border-slate-200 dark:border-slate-800 space-y-6">
+                      <div className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                        Step 1: Scan QR Code or Copy Secret Key
+                      </div>
+
+                      <div className="flex flex-col sm:flex-row items-center gap-6">
+                        <div className="p-3 bg-white rounded-2xl border border-slate-200 shadow-sm shrink-0">
+                          <img
+                            src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(twoFactorSetupData.otpUrl)}`}
+                            alt="2FA QR Code"
+                            className="w-44 h-44 rounded-lg"
+                          />
+                        </div>
+
+                        <div className="space-y-3 flex-1 text-xs">
+                          <p className="text-slate-600 dark:text-slate-300 leading-relaxed">
+                            Open your authenticator app (Google Authenticator, Microsoft Authenticator, or 1Password) and scan the QR code to the left.
+                          </p>
+
+                          <div>
+                            <label className="block text-[11px] font-semibold text-slate-500 mb-1">Manual Base32 Secret Key</label>
+                            <div className="flex items-center gap-2">
+                              <code className="px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white font-mono text-xs font-bold tracking-widest">
+                                {twoFactorSetupData.secret}
+                              </code>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  navigator.clipboard.writeText(twoFactorSetupData.secret);
+                                  alert('Secret copied to clipboard!');
+                                }}
+                                className="p-1.5 text-slate-400 hover:text-slate-600"
+                              >
+                                <Copy className="h-4 w-4" />
+                              </button>
+                            </div>
+                          </div>
+
+                          {/* Recovery Codes */}
+                          <div>
+                            <div className="text-[11px] font-semibold text-slate-500 mb-1">Emergency Recovery Backup Codes</div>
+                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
+                              {twoFactorSetupData.recoveryCodes.map((code: string, i: number) => (
+                                <span key={i} className="px-2 py-1 bg-slate-100 dark:bg-slate-800 font-mono text-[10.5px] rounded text-slate-700 dark:text-slate-300 text-center">
+                                  {code}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Step 2: Verification Input */}
+                      <div className="pt-4 border-t border-slate-200 dark:border-slate-800 space-y-3">
+                        <div className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                          Step 2: Verify 6-Digit Code
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <input
+                            type="text"
+                            maxLength={6}
+                            placeholder="000000"
+                            value={twoFactorCodeInput}
+                            onChange={(e) => setTwoFactorCodeInput(e.target.value.replace(/[^0-9]/g, ''))}
+                            className="w-40 font-mono text-center text-lg font-bold tracking-widest bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
+                          />
+                          <button
+                            type="button"
+                            onClick={handleConfirm2faEnable}
+                            disabled={twoFactorCodeInput.length !== 6 || twoFactorLoading}
+                            className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded-xl shadow-xs transition disabled:opacity-50"
+                          >
+                            {twoFactorLoading ? 'Verifying...' : 'Confirm & Activate 2FA'}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Enterprise Security Checkup Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-slate-900 dark:text-white">AES-256 GCM Secret Vault</span>
+                      <span className="px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 font-bold text-[10px]">Active</span>
+                    </div>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                      All LLM provider API keys and webhook secrets are encrypted at rest with PBKDF2 salt derivation.
+                    </p>
+                  </div>
+
+                  <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-slate-900 dark:text-white">IP Rate Limiting &amp; Anti-DDoS</span>
+                      <span className="px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 font-bold text-[10px]">Active</span>
+                    </div>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                      Sliding window throttling limits abusive requests on chat, upload, and calendar booking endpoints.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* TAB: AUDIT TRAIL */}
+            {activeTab === 'audit' && (
+              <div className="max-w-5xl space-y-6 mx-auto">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div>
+                    <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2.5">
+                      <ClipboardList className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                      <span>Security Audit Trail &amp; Activity Log</span>
+                    </h1>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                      Immutable record of all administrative actions, logins, plan modifications, and appointment bookings.
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={fetchAuditLogs}
+                      disabled={isSyncingAudit}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 transition"
+                    >
+                      <RefreshCw className={`h-3.5 w-3.5 ${isSyncingAudit ? 'animate-spin text-blue-600' : ''}`} />
+                      <span>Refresh Logs</span>
+                    </button>
+                  </div>
+                </div>
+
+                <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden shadow-xs">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-xs">
+                      <thead className="bg-slate-50 dark:bg-slate-800/60 text-slate-500 font-semibold border-b border-slate-200 dark:border-slate-800">
+                        <tr>
+                          <th className="py-3 px-4">Timestamp</th>
+                          <th className="py-3 px-4">Actor</th>
+                          <th className="py-3 px-4">Action Event</th>
+                          <th className="py-3 px-4">Target</th>
+                          <th className="py-3 px-4">IP Address</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                        {auditLogs.length === 0 ? (
+                          <tr>
+                            <td colSpan={5} className="py-8 text-center text-slate-400">
+                              No security audit logs recorded yet.
+                            </td>
+                          </tr>
+                        ) : (
+                          auditLogs.map((log) => (
+                            <tr key={log.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
+                              <td className="py-3 px-4 font-mono text-[11px] text-slate-500 dark:text-slate-400">
+                                {new Date(log.timestamp).toLocaleString()}
+                              </td>
+                              <td className="py-3 px-4 font-medium text-slate-800 dark:text-slate-200">
+                                {log.actor?.name || 'Admin'}
+                              </td>
+                              <td className="py-3 px-4">
+                                <span className="px-2 py-0.5 rounded font-mono text-[11px] bg-slate-100 dark:bg-slate-800 text-blue-600 dark:text-blue-400 font-semibold">
+                                  {log.action}
+                                </span>
+                              </td>
+                              <td className="py-3 px-4 text-slate-500 font-mono text-[11px]">
+                                {log.targetType}
+                              </td>
+                              <td className="py-3 px-4 text-slate-400 font-mono text-[11px]">
+                                {log.actor?.ip || '127.0.0.1'}
+                              </td>
+                            </tr>
+                          ))
+                        )}
+                      </tbody>
+                    </table>
                   </div>
                 </div>
               </div>
@@ -7436,6 +8591,61 @@ Thank you for using Kortex AI Business Engine.
           </div>
         )}
 
+        {/* MODAL: COUNTERTOP QR CODE */}
+        {showCounterQrModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4">
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-8 max-w-sm w-full text-center space-y-5 shadow-2xl relative">
+              <button
+                onClick={() => setShowCounterQrModal(false)}
+                className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+              >
+                <X className="h-5 w-5" />
+              </button>
+
+              <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-blue-50 dark:bg-blue-950/50 text-blue-600 border border-blue-200 dark:border-blue-800 mx-auto">
+                <QrCode className="h-6 w-6" />
+              </div>
+
+              <div>
+                <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                  In-Store Countertop QR Code
+                </h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                  Print and place this on your reception desk for walk-in booking and live prices.
+                </p>
+              </div>
+
+              <div className="p-4 bg-white rounded-2xl border border-slate-200 flex items-center justify-center shadow-inner">
+                <img
+                  src={`https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${encodeURIComponent(
+                    typeof window !== 'undefined'
+                      ? `${window.location.origin}/site/${landingConfig.slug || activeAssistant?.id || 'demo-assistant'}`
+                      : 'http://localhost:3000/site/classic-barbershop'
+                  )}`}
+                  alt="Countertop QR Code"
+                  className="w-52 h-52 rounded-lg"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <button
+                  type="button"
+                  onClick={() => window.print()}
+                  className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl text-xs transition shadow-xs"
+                >
+                  Print Countertop Display
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowCounterQrModal(false)}
+                  className="w-full py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-medium rounded-xl text-xs transition"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

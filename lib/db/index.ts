@@ -1,8 +1,18 @@
 import fs from 'fs';
 import path from 'path';
+import crypto from 'crypto';
 import { cosineSimilarity, keywordRelevance, reciprocalRankFusion } from '../rag/vector-math';
 import { SearchResultChunk } from '../rag/types';
 import { encryptSecret, decryptSecret } from '../security/crypto';
+import {
+  LandingPageConfig,
+  LandingPageServiceItem,
+  LandingPageGalleryItem,
+  LandingPageTestimonialItem,
+  LandingPageWorkingHours,
+  DEFAULT_BARBER_LANDING_CONFIG,
+} from '../landing/types';
+export * from '../landing/types';
 
 // Types matching the Prisma model
 export interface AssistantData {
@@ -53,6 +63,7 @@ export interface AssistantData {
   bookingStartHour?: string;
   bookingEndHour?: string;
   bookingAvailableDays?: string[];
+  landingPageConfig?: LandingPageConfig;
   createdAt: string;
   updatedAt: string;
 }
@@ -195,6 +206,58 @@ export interface AppointmentData {
   durationMinutes: number;
   status: 'pending' | 'confirmed' | 'cancelled' | 'completed';
   notes?: string;
+  serviceId?: string;
+  serviceName?: string;
+  price?: number;
+  manageToken?: string;
+  cancellationReason?: string;
+  remindersSent?: {
+    reminder24h?: boolean;
+    reminder24hSentAt?: string;
+    reminder1h?: boolean;
+    reminder1hSentAt?: string;
+  };
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface TeamMemberData {
+  id: string;
+  workspaceId: string;
+  name: string;
+  email: string;
+  role: 'owner' | 'admin' | 'support_agent' | 'billing_manager' | 'viewer';
+  status: 'active' | 'invited';
+  invitedAt?: string;
+  lastLoginAt?: string;
+  twoFactorEnabled?: boolean;
+  twoFactorSecret?: string;
+  recoveryCodes?: string[];
+  createdAt: string;
+}
+
+export interface AuditLogData {
+  id: string;
+  timestamp: string;
+  actor: {
+    id: string;
+    name: string;
+    email?: string;
+    ip: string;
+  };
+  action: string;
+  targetType: string;
+  targetId?: string;
+  details: Record<string, any>;
+}
+
+export interface InAppNotificationData {
+  id: string;
+  assistantId?: string;
+  title: string;
+  message: string;
+  type: 'appointment_booked' | 'appointment_cancelled' | 'lead_captured' | 'takeover_requested' | 'reminder_dispatched';
+  read: boolean;
   createdAt: string;
 }
 
@@ -208,6 +271,9 @@ interface DatabaseState {
   leads: LeadData[];
   unansweredQueries?: UnansweredQueryData[];
   appointments?: AppointmentData[];
+  teamMembers?: TeamMemberData[];
+  auditLogs?: AuditLogData[];
+  notifications?: InAppNotificationData[];
 }
 
 const DATA_DIR = path.join(process.cwd(), '.data');
@@ -236,11 +302,11 @@ function loadState(): DatabaseState {
         {
           id: 'demo-assistant',
           workspaceId: 'default-workspace',
-          name: 'Business Sales & Support AI',
-          description: 'A friendly AI assistant trained to answer questions about our business, products, and services.',
-          systemPrompt: 'You are an intelligent, professional, and helpful business representative. Answer questions clearly and accurately based on the provided knowledge. Always be polite and direct.',
-          welcomeMessage: 'Hello! Welcome to our store. How can I assist you today?',
-          fallbackMessage: "I apologize, but I don't have enough specific details on that in my current knowledge base. Would you like me to connect you with our support team?",
+          name: 'Crown & Blade AI Concierge',
+          description: 'A friendly AI assistant trained to answer questions about our barbershop, services, and appointment bookings.',
+          systemPrompt: 'You are an intelligent, professional, and friendly representative for Crown & Blade Barbershop. Answer questions clearly about haircuts, beard trims, pricing, opening hours, and help clients schedule an appointment.',
+          welcomeMessage: 'Hello! Welcome to Crown & Blade Barbershop. How can I assist you with your grooming or booking today?',
+          fallbackMessage: "I apologize, but I don't have enough specific details on that in my knowledge base. Would you like to schedule an appointment or connect with our team?",
           temperature: 0.3,
           provider: 'ollama',
           modelName: 'llama3.2',
@@ -248,12 +314,21 @@ function loadState(): DatabaseState {
           primaryColor: '#2563eb',
           launcherPosition: 'bottom-right',
           starterQuestions: [
-            'What are your popular products?',
-            'What is your return policy?',
-            'How can I get support?',
+            'What services and haircuts do you offer?',
+            'How much is a haircut and beard trim?',
+            'What are your opening hours?',
+            'Can I book an appointment for today?',
           ],
-          collectLeadEmail: false,
+          collectLeadEmail: true,
           allowedDomains: [],
+          bookingEnabled: true,
+          bookingProvider: 'direct',
+          bookingPromptText: 'Schedule a Haircut Appointment',
+          bookingSlotDuration: 40,
+          bookingStartHour: '09:00',
+          bookingEndHour: '20:00',
+          bookingAvailableDays: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
+          landingPageConfig: DEFAULT_BARBER_LANDING_CONFIG,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         },
@@ -265,6 +340,9 @@ function loadState(): DatabaseState {
       leads: [],
       unansweredQueries: [],
       appointments: [],
+      teamMembers: [],
+      auditLogs: [],
+      notifications: [],
     };
     fs.writeFileSync(DB_FILE, JSON.stringify(initialState, null, 2), 'utf-8');
     return initialState;
@@ -278,6 +356,30 @@ function loadState(): DatabaseState {
     if (!parsed.conversations) parsed.conversations = [];
     if (!parsed.messages) parsed.messages = [];
     if (!parsed.appointments) parsed.appointments = [];
+    if (!parsed.teamMembers) parsed.teamMembers = [];
+    if (!parsed.auditLogs) parsed.auditLogs = [];
+    if (!parsed.notifications) parsed.notifications = [];
+
+    if (parsed.teamMembers.length === 0) {
+      parsed.teamMembers.push({
+        id: 'tm_owner',
+        workspaceId: 'default-workspace',
+        name: 'Master Admin',
+        email: 'admin@kortexai.com',
+        role: 'owner',
+        status: 'active',
+        createdAt: new Date().toISOString(),
+      });
+      saveState(parsed);
+    }
+
+    // Ensure demo assistant has landing page config initialized
+    const demo = (parsed.assistants || []).find((a: any) => a.id === 'demo-assistant');
+    if (demo && !demo.landingPageConfig) {
+      demo.landingPageConfig = DEFAULT_BARBER_LANDING_CONFIG;
+      demo.bookingEnabled = true;
+      saveState(parsed);
+    }
     return parsed;
   } catch (err) {
     console.error('Failed to parse database state, creating empty:', err);
@@ -833,9 +935,14 @@ export class Database {
     timeSlot: string;
     durationMinutes?: number;
     notes?: string;
+    serviceId?: string;
+    serviceName?: string;
+    price?: number;
   }): Promise<AppointmentData> {
     const state = loadState();
     if (!state.appointments) state.appointments = [];
+
+    const manageToken = crypto.randomBytes(16).toString('hex');
 
     const apt: AppointmentData = {
       id: 'apt_' + Math.random().toString(36).substring(2, 10),
@@ -848,7 +955,16 @@ export class Database {
       durationMinutes: data.durationMinutes || 30,
       status: 'confirmed',
       notes: data.notes,
+      serviceId: data.serviceId,
+      serviceName: data.serviceName,
+      price: data.price,
+      manageToken,
+      remindersSent: {
+        reminder24h: false,
+        reminder1h: false,
+      },
       createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     };
 
     state.appointments.unshift(apt);
@@ -861,15 +977,43 @@ export class Database {
     return (state.appointments || []).filter((a) => a.assistantId === assistantId);
   }
 
+  static async getAppointmentById(id: string): Promise<AppointmentData | null> {
+    const state = loadState();
+    const apt = (state.appointments || []).find((a) => a.id === id);
+    return apt || null;
+  }
+
+  static async getAppointmentByManageToken(token: string): Promise<AppointmentData | null> {
+    const state = loadState();
+    const apt = (state.appointments || []).find((a) => a.manageToken === token);
+    return apt || null;
+  }
+
+  static async updateAppointment(
+    id: string,
+    updates: Partial<AppointmentData>
+  ): Promise<AppointmentData | null> {
+    const state = loadState();
+    if (!state.appointments) return null;
+    const apt = state.appointments.find((a) => a.id === id);
+    if (!apt) return null;
+    Object.assign(apt, updates, { updatedAt: new Date().toISOString() });
+    saveState(state);
+    return apt;
+  }
+
   static async updateAppointmentStatus(
     id: string,
-    status: AppointmentData['status']
+    status: AppointmentData['status'],
+    cancellationReason?: string
   ): Promise<boolean> {
     const state = loadState();
     if (!state.appointments) return false;
     const apt = state.appointments.find((a) => a.id === id);
     if (!apt) return false;
     apt.status = status;
+    if (cancellationReason) apt.cancellationReason = cancellationReason;
+    apt.updatedAt = new Date().toISOString();
     saveState(state);
     return true;
   }
@@ -878,6 +1022,193 @@ export class Database {
     const state = loadState();
     if (!state.appointments) return false;
     state.appointments = state.appointments.filter((a) => a.id !== id);
+    saveState(state);
+    return true;
+  }
+
+  static async getUpcomingAppointmentsForReminders(): Promise<AppointmentData[]> {
+    const state = loadState();
+    return (state.appointments || []).filter((a) => a.status === 'confirmed');
+  }
+
+  static async markReminderSent(id: string, type: '24h' | '1h'): Promise<boolean> {
+    const state = loadState();
+    if (!state.appointments) return false;
+    const apt = state.appointments.find((a) => a.id === id);
+    if (!apt) return false;
+    if (!apt.remindersSent) {
+      apt.remindersSent = {};
+    }
+    if (type === '24h') {
+      apt.remindersSent.reminder24h = true;
+      apt.remindersSent.reminder24hSentAt = new Date().toISOString();
+    } else if (type === '1h') {
+      apt.remindersSent.reminder1h = true;
+      apt.remindersSent.reminder1hSentAt = new Date().toISOString();
+    }
+    saveState(state);
+    return true;
+  }
+
+  // Hosted Landing Page Config
+  static async getLandingPageConfig(assistantId: string): Promise<LandingPageConfig | null> {
+    const state = loadState();
+    const ast = state.assistants.find((a) => a.id === assistantId);
+    if (!ast) return null;
+    return ast.landingPageConfig || null;
+  }
+
+  static async updateLandingPageConfig(
+    assistantId: string,
+    config: Partial<LandingPageConfig>
+  ): Promise<LandingPageConfig | null> {
+    const state = loadState();
+    const ast = state.assistants.find((a) => a.id === assistantId);
+    if (!ast) return null;
+    ast.landingPageConfig = {
+      ...(ast.landingPageConfig || DEFAULT_BARBER_LANDING_CONFIG),
+      ...config,
+    };
+    ast.updatedAt = new Date().toISOString();
+    saveState(state);
+    return ast.landingPageConfig;
+  }
+
+  static async getAssistantBySlug(slug: string): Promise<AssistantData | null> {
+    const state = loadState();
+    const normalizedSlug = slug.toLowerCase().trim();
+    const ast = state.assistants.find((a) => {
+      if (a.id.toLowerCase() === normalizedSlug) return true;
+      if (a.landingPageConfig?.slug && a.landingPageConfig.slug.toLowerCase().trim() === normalizedSlug) return true;
+      return false;
+    });
+    if (!ast) return null;
+    return {
+      ...ast,
+      apiKeyEncrypted: decryptSecret(ast.apiKeyEncrypted || ''),
+      telegramBotToken: decryptSecret(ast.telegramBotToken || ''),
+      whatsappAccessToken: decryptSecret(ast.whatsappAccessToken || ''),
+      webhookSecret: decryptSecret(ast.webhookSecret || ''),
+    };
+  }
+
+  // Team Management & Role-Based Access Control
+  static async getTeamMembers(workspaceId: string = 'default-workspace'): Promise<TeamMemberData[]> {
+    const state = loadState();
+    return (state.teamMembers || []).filter((tm) => tm.workspaceId === workspaceId);
+  }
+
+  static async getTeamMemberByEmail(email: string): Promise<TeamMemberData | null> {
+    const state = loadState();
+    const member = (state.teamMembers || []).find((tm) => tm.email.toLowerCase() === email.toLowerCase().trim());
+    return member || null;
+  }
+
+  static async addTeamMember(data: Omit<TeamMemberData, 'id' | 'createdAt'>): Promise<TeamMemberData> {
+    const state = loadState();
+    if (!state.teamMembers) state.teamMembers = [];
+    const newMember: TeamMemberData = {
+      id: 'tm_' + Math.random().toString(36).substring(2, 10),
+      ...data,
+      createdAt: new Date().toISOString(),
+    };
+    state.teamMembers.push(newMember);
+    saveState(state);
+    return newMember;
+  }
+
+  static async updateTeamMember(
+    id: string,
+    updates: Partial<TeamMemberData>
+  ): Promise<TeamMemberData | null> {
+    const state = loadState();
+    if (!state.teamMembers) return null;
+    const member = state.teamMembers.find((m) => m.id === id);
+    if (!member) return null;
+    Object.assign(member, updates);
+    saveState(state);
+    return member;
+  }
+
+  static async deleteTeamMember(id: string): Promise<boolean> {
+    const state = loadState();
+    if (!state.teamMembers) return false;
+    const prevLen = state.teamMembers.length;
+    state.teamMembers = state.teamMembers.filter((m) => m.id !== id);
+    saveState(state);
+    return state.teamMembers.length < prevLen;
+  }
+
+  // Security Audit Trail
+  static async addAuditLog(entry: Omit<AuditLogData, 'id' | 'timestamp'>): Promise<AuditLogData> {
+    const state = loadState();
+    if (!state.auditLogs) state.auditLogs = [];
+    const log: AuditLogData = {
+      id: 'aud_' + Math.random().toString(36).substring(2, 12),
+      timestamp: new Date().toISOString(),
+      ...entry,
+    };
+    state.auditLogs.unshift(log);
+    // Keep last 1000 logs
+    if (state.auditLogs.length > 1000) {
+      state.auditLogs = state.auditLogs.slice(0, 1000);
+    }
+    saveState(state);
+    return log;
+  }
+
+  static async getAuditLogs(limit: number = 100): Promise<AuditLogData[]> {
+    const state = loadState();
+    return (state.auditLogs || []).slice(0, limit);
+  }
+
+  // Real-time In-App Notifications
+  static async getNotifications(assistantId?: string, limit: number = 50): Promise<InAppNotificationData[]> {
+    const state = loadState();
+    let notifs = state.notifications || [];
+    if (assistantId) {
+      notifs = notifs.filter((n) => !n.assistantId || n.assistantId === assistantId);
+    }
+    return notifs.slice(0, limit);
+  }
+
+  static async addNotification(
+    data: Omit<InAppNotificationData, 'id' | 'createdAt' | 'read'>
+  ): Promise<InAppNotificationData> {
+    const state = loadState();
+    if (!state.notifications) state.notifications = [];
+    const notif: InAppNotificationData = {
+      id: 'notif_' + Math.random().toString(36).substring(2, 10),
+      createdAt: new Date().toISOString(),
+      read: false,
+      ...data,
+    };
+    state.notifications.unshift(notif);
+    if (state.notifications.length > 200) {
+      state.notifications = state.notifications.slice(0, 200);
+    }
+    saveState(state);
+    return notif;
+  }
+
+  static async markNotificationAsRead(id: string): Promise<boolean> {
+    const state = loadState();
+    if (!state.notifications) return false;
+    const item = state.notifications.find((n) => n.id === id);
+    if (!item) return false;
+    item.read = true;
+    saveState(state);
+    return true;
+  }
+
+  static async markAllNotificationsAsRead(assistantId?: string): Promise<boolean> {
+    const state = loadState();
+    if (!state.notifications) return false;
+    for (const item of state.notifications) {
+      if (!assistantId || !item.assistantId || item.assistantId === assistantId) {
+        item.read = true;
+      }
+    }
     saveState(state);
     return true;
   }

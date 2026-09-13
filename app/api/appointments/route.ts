@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { Database } from '@/lib/db';
-import { sendSupportLeadEmail } from '@/lib/email';
+import { Database, DEFAULT_BARBER_LANDING_CONFIG } from '@/lib/db';
+import { sendSupportLeadEmail, sendAppointmentConfirmationEmail } from '@/lib/email';
 import { dispatchWebhook } from '@/lib/webhook';
 import { verifyAdminRequest } from '@/lib/security/auth';
 import { checkRateLimit, getClientIp } from '@/lib/security/rate-limit';
@@ -18,12 +18,23 @@ export async function OPTIONS() {
 
 export async function GET(req: Request) {
   try {
-    // Only authenticated admins can view booked appointments
+    const { searchParams } = new URL(req.url);
+    const manageToken = searchParams.get('manageToken');
+
+    // Public client lookup via secure self-service token
+    if (manageToken) {
+      const apt = await Database.getAppointmentByManageToken(manageToken);
+      if (!apt) {
+        return NextResponse.json({ error: 'Appointment not found or invalid link' }, { status: 404 });
+      }
+      return NextResponse.json({ appointment: apt });
+    }
+
+    // Only authenticated admins can view list of booked appointments
     if (!(await verifyAdminRequest(req))) {
       return NextResponse.json({ error: 'Unauthorized: Admin authentication required' }, { status: 401 });
     }
 
-    const { searchParams } = new URL(req.url);
     const assistantId = searchParams.get('assistantId');
 
     if (!assistantId) {
@@ -47,18 +58,63 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
 
+    // Client self-service cancellation via manageToken
+    if (body.action === 'client_cancel') {
+      const { manageToken, cancellationReason } = body;
+      if (!manageToken) {
+        return NextResponse.json({ error: 'manageToken required' }, { status: 400 });
+      }
+      const apt = await Database.getAppointmentByManageToken(manageToken);
+      if (!apt) {
+        return NextResponse.json({ error: 'Appointment not found' }, { status: 404 });
+      }
+      await Database.updateAppointmentStatus(apt.id, 'cancelled', cancellationReason || 'Cancelled by client');
+      await Database.addNotification({
+        assistantId: apt.assistantId,
+        title: 'Appointment Cancelled',
+        message: `${apt.name} cancelled their appointment for ${apt.date} at ${apt.timeSlot}. Reason: ${cancellationReason || 'No reason specified'}`,
+        type: 'appointment_cancelled',
+      });
+      return NextResponse.json({ success: true, message: 'Appointment successfully cancelled' });
+    }
+
+    // Client self-service reschedule via manageToken
+    if (body.action === 'client_reschedule') {
+      const { manageToken, newDate, newTimeSlot } = body;
+      if (!manageToken || !newDate || !newTimeSlot) {
+        return NextResponse.json({ error: 'manageToken, newDate, and newTimeSlot required' }, { status: 400 });
+      }
+      const apt = await Database.getAppointmentByManageToken(manageToken);
+      if (!apt) {
+        return NextResponse.json({ error: 'Appointment not found' }, { status: 404 });
+      }
+      const updated = await Database.updateAppointment(apt.id, {
+        date: newDate,
+        timeSlot: newTimeSlot,
+        status: 'confirmed',
+        remindersSent: { reminder24h: false, reminder1h: false },
+      });
+      await Database.addNotification({
+        assistantId: apt.assistantId,
+        title: 'Appointment Rescheduled',
+        message: `${apt.name} rescheduled their appointment to ${newDate} at ${newTimeSlot}.`,
+        type: 'appointment_booked',
+      });
+      return NextResponse.json({ success: true, appointment: updated });
+    }
+
     // Check if this is a status update (Requires Admin Authentication)
     if (body.action === 'update_status') {
       if (!(await verifyAdminRequest(req))) {
         return NextResponse.json({ error: 'Unauthorized: Admin authentication required' }, { status: 401 });
       }
 
-      const { id, status } = body;
+      const { id, status, cancellationReason } = body;
       if (!id || !status) {
         return NextResponse.json({ error: 'id and status are required' }, { status: 400 });
       }
 
-      const updated = await Database.updateAppointmentStatus(id, status);
+      const updated = await Database.updateAppointmentStatus(id, status, cancellationReason);
       if (!updated) {
         return NextResponse.json({ error: 'Appointment not found' }, { status: 404 });
       }
@@ -77,7 +133,19 @@ export async function POST(req: Request) {
       );
     }
 
-    const { assistantId, name, email, phone, date, timeSlot, durationMinutes, notes } = body;
+    const {
+      assistantId,
+      name,
+      email,
+      phone,
+      date,
+      timeSlot,
+      durationMinutes,
+      notes,
+      serviceId,
+      serviceName,
+      price,
+    } = body;
 
     if (!assistantId) {
       return NextResponse.json(
@@ -133,7 +201,71 @@ export async function POST(req: Request) {
       timeSlot: timeSlot.trim(),
       durationMinutes: resolvedDuration,
       notes: notes?.trim() || undefined,
+      serviceId,
+      serviceName,
+      price: price ? Number(price) : undefined,
     });
+
+    const landingConfig = assistant.landingPageConfig || DEFAULT_BARBER_LANDING_CONFIG;
+    const businessName = landingConfig.businessName || assistant.name || 'Our Business';
+    const businessAddress = landingConfig.address || 'In Shop';
+    const businessPhone = landingConfig.phone || '';
+    const assistantSlug = landingConfig.slug || assistant.id;
+
+    // Send instant confirmation email to client with Google Calendar and manage link
+    try {
+      await sendAppointmentConfirmationEmail({
+        to: appointment.email,
+        clientName: appointment.name,
+        clientEmail: appointment.email,
+        clientPhone: appointment.phone,
+        serviceName: appointment.serviceName || 'Appointment',
+        price: appointment.price,
+        date: appointment.date,
+        timeSlot: appointment.timeSlot,
+        durationMinutes: appointment.durationMinutes,
+        notes: appointment.notes,
+        businessName,
+        businessAddress,
+        businessPhone,
+        manageToken: appointment.manageToken,
+        assistantSlug,
+        assistantId: assistant.id,
+        isAdminNotification: false,
+      });
+    } catch (confErr: any) {
+      console.warn('[AppointmentsAPI] Client confirmation email warning:', confErr?.message);
+    }
+
+    // In-App notification for business dashboard
+    try {
+      await Database.addNotification({
+        assistantId,
+        title: 'New Appointment Booked',
+        message: `${appointment.name} scheduled ${appointment.serviceName || 'an appointment'} on ${appointment.date} at ${appointment.timeSlot}.`,
+        type: 'appointment_booked',
+      });
+    } catch (notifErr: any) {
+      console.warn('[AppointmentsAPI] In-app notification warning:', notifErr?.message);
+    }
+
+    // Security Audit Log
+    try {
+      await Database.addAuditLog({
+        actor: { id: 'client', name: appointment.name, email: appointment.email, ip },
+        action: 'appointment.created',
+        targetType: 'appointment',
+        targetId: appointment.id,
+        details: {
+          date: appointment.date,
+          timeSlot: appointment.timeSlot,
+          serviceName: appointment.serviceName,
+          price: appointment.price,
+        },
+      });
+    } catch (auditErr: any) {
+      console.warn('[AppointmentsAPI] Audit log warning:', auditErr?.message);
+    }
 
     // Also record as a Lead so admin has unified visibility
     const durationLabel = resolvedDuration >= 60 
@@ -141,8 +273,8 @@ export async function POST(req: Request) {
       : `${resolvedDuration}m`;
 
     const leadNote = `Booked Appointment: ${date.trim()} at ${timeSlot.trim()} (${durationLabel})${
-      notes?.trim() ? ' | Notes: ' + notes.trim() : ''
-    }`;
+      appointment.serviceName ? ` | Service: ${appointment.serviceName}` : ''
+    }${notes?.trim() ? ' | Notes: ' + notes.trim() : ''}`;
 
     try {
       await Database.saveLead({
@@ -156,6 +288,8 @@ export async function POST(req: Request) {
           AppointmentDate: date.trim(),
           AppointmentTime: timeSlot.trim(),
           DurationMinutes: resolvedDuration,
+          Service: appointment.serviceName,
+          Price: appointment.price,
           Type: 'Calendar Booking',
         },
       });
@@ -170,29 +304,30 @@ export async function POST(req: Request) {
       });
     }
 
-    // Email notification if configured
+    // Email notification to Admin if configured
     if (assistant.supportReceiverEmail && assistant.supportReceiverEmail.trim()) {
       try {
-        await sendSupportLeadEmail({
+        await sendAppointmentConfirmationEmail({
           to: assistant.supportReceiverEmail.trim(),
-          cc: assistant.supportCcEmails || [],
-          assistantName: assistant.name || 'AI Assistant',
-          lead: {
-            name: appointment.name,
-            email: appointment.email,
-            phone: appointment.phone || 'N/A',
-            notes: leadNote,
-            createdAt: appointment.createdAt,
-            customData: {
-              AppointmentDate: appointment.date,
-              AppointmentTime: appointment.timeSlot,
-              Duration: `${appointment.durationMinutes} minutes`,
-            },
-          },
-          customFieldsConfig: [],
+          clientName: appointment.name,
+          clientEmail: appointment.email,
+          clientPhone: appointment.phone,
+          serviceName: appointment.serviceName || 'Appointment',
+          price: appointment.price,
+          date: appointment.date,
+          timeSlot: appointment.timeSlot,
+          durationMinutes: appointment.durationMinutes,
+          notes: appointment.notes,
+          businessName,
+          businessAddress,
+          businessPhone,
+          manageToken: appointment.manageToken,
+          assistantSlug,
+          assistantId: assistant.id,
+          isAdminNotification: true,
         });
       } catch (mailErr: any) {
-        console.warn('[AppointmentsAPI] Email notification warning:', mailErr?.message);
+        console.warn('[AppointmentsAPI] Admin email notification warning:', mailErr?.message);
       }
     }
 
