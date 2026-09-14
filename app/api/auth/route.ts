@@ -31,29 +31,130 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const mode = body?.mode || (body?.email ? 'staff' : 'admin');
+    const mode = body?.mode || (body?.email && !body?.businessName ? 'staff' : body?.businessName ? 'register' : 'admin');
 
-    // 1. Staff / Team Member Credentials Login
+    // 1. Self-Serve Business Account Registration
+    if (mode === 'register') {
+      const businessName = (body?.businessName || '').trim();
+      const email = (body?.email || '').toLowerCase().trim();
+      const password = (body?.password || '').trim();
+      const industryTemplateSlug = body?.industryTemplateSlug || 'classic-barbershop';
+
+      if (!businessName || !email) {
+        return NextResponse.json(
+          { error: 'Business Name and Work Email are required to create an account' },
+          { status: 400 }
+        );
+      }
+
+      if (password && password.length < 6) {
+        return NextResponse.json(
+          { error: 'Password must be at least 6 characters' },
+          { status: 400 }
+        );
+      }
+
+      const tenantResult = await Database.createTenantWorkspace({
+        businessName,
+        ownerEmail: email,
+        password: password || 'Tenant123!',
+        industryTemplateSlug,
+      });
+
+      const sessionToken = generateSessionToken(
+        'owner',
+        tenantResult.owner.id,
+        tenantResult.workspace.id
+      );
+      const cookieHeader = createSessionCookieHeader(sessionToken);
+
+      await Database.addAuditLog({
+        actor: { id: tenantResult.owner.id, name: tenantResult.owner.name, ip },
+        action: 'auth.tenant_registered',
+        targetType: 'workspace',
+        targetId: tenantResult.workspace.id,
+        details: { businessName, email, template: industryTemplateSlug },
+      });
+
+      return NextResponse.json(
+        {
+          success: true,
+          message: `Welcome to Kortex AI! Workspace "${businessName}" created successfully.`,
+          isStaff: false,
+          isOwner: true,
+          member: tenantResult.owner,
+          workspace: tenantResult.workspace,
+          assistant: tenantResult.assistant,
+          token: sessionToken,
+        },
+        {
+          status: 201,
+          headers: {
+            'Set-Cookie': cookieHeader,
+          },
+        }
+      );
+    }
+
+    // 2. Staff / Tenant Credentials Login
     if (mode === 'staff' || (body?.email && (body?.password || body?.accessCode))) {
       const email = body?.email?.trim();
       const passwordOrCode = (body?.password || body?.accessCode || '').trim();
 
       if (!email || !passwordOrCode) {
         return NextResponse.json(
-          { error: 'Staff email and password/access code are required' },
+          { error: 'Email and password/access code are required' },
           { status: 400 }
         );
       }
 
+      // Check tenant workspace login
+      const tenantMatch = await Database.verifyTenantLogin(email, passwordOrCode);
+      if (tenantMatch) {
+        const sessionToken = generateSessionToken(
+          tenantMatch.member.role,
+          tenantMatch.member.id,
+          tenantMatch.workspace.id
+        );
+        const cookieHeader = createSessionCookieHeader(sessionToken);
+
+        await Database.addAuditLog({
+          actor: { id: tenantMatch.member.id, name: tenantMatch.member.name, ip },
+          action: 'auth.tenant_login_success',
+          targetType: 'workspace',
+          targetId: tenantMatch.workspace.id,
+          details: { email, role: tenantMatch.member.role },
+        });
+
+        return NextResponse.json(
+          {
+            success: true,
+            message: `Welcome back, ${tenantMatch.member.name}`,
+            isStaff: false,
+            isOwner: tenantMatch.member.role === 'owner',
+            member: tenantMatch.member,
+            workspace: tenantMatch.workspace,
+            token: sessionToken,
+          },
+          {
+            status: 200,
+            headers: {
+              'Set-Cookie': cookieHeader,
+            },
+          }
+        );
+      }
+
+      // Check staff team member login
       const staffMember = await Database.verifyStaffLogin(email, passwordOrCode);
       if (!staffMember) {
         return NextResponse.json(
-          { error: 'Invalid staff credentials or account inactive' },
+          { error: 'Invalid credentials or account inactive' },
           { status: 401 }
         );
       }
 
-      const sessionToken = generateSessionToken(staffMember.role, staffMember.id);
+      const sessionToken = generateSessionToken(staffMember.role, staffMember.id, 'default-workspace');
       const cookieHeader = createSessionCookieHeader(sessionToken);
 
       await Database.addAuditLog({

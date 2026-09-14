@@ -26,4 +26,26 @@ describe('Database Layer & Decoupled Storage', () => {
     const pages = await Database.getLandingPages();
     expect(Array.isArray(pages)).toBe(true);
   });
+
+  it('should create an isolated tenant workspace with assistant and landing page', async () => {
+    const uniqueEmail = `test_${Date.now()}@business.com`;
+    const result = await Database.createTenantWorkspace({
+      businessName: 'Apex Medical Clinic',
+      ownerEmail: uniqueEmail,
+      password: 'SecurePassword123!',
+      industryTemplateSlug: 'dental-clinic',
+    });
+
+    expect(result.workspace).toBeDefined();
+    expect(result.workspace.name).toBe('Apex Medical Clinic');
+    expect(result.workspace.planId).toBe('starter');
+    expect(result.assistant).toBeDefined();
+    expect(result.assistant.name).toContain('Apex Medical Clinic');
+    expect(result.landingPage).toBeDefined();
+    expect(result.owner.email).toBe(uniqueEmail);
+
+    const loginResult = await Database.verifyTenantLogin(uniqueEmail, 'SecurePassword123!');
+    expect(loginResult).not.toBeNull();
+    expect(loginResult?.workspace.id).toBe(result.workspace.id);
+  });
 });

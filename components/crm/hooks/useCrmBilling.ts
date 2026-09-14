@@ -43,26 +43,57 @@ export function useCrmBilling() {
     setChangingPlanId(targetPlanId);
     setPlanChangeMsg(null);
     try {
-      const res = await fetch('/api/billing', {
+      const res = await fetch('/api/billing/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          action: 'change_plan',
           planId: targetPlanId,
           billingInterval,
+          workspaceId: billingData?.workspaceId || 'default-workspace',
         }),
       });
       const data = await res.json();
       if (res.ok) {
-        setPlanChangeMsg({ type: 'success', text: data.message || `Successfully activated ${targetPlanId} plan!` });
+        if (!data.isSandbox && data.url) {
+          // Redirect to live Stripe Checkout session (supporting Google Pay, Apple Pay, Cards)
+          window.location.href = data.url;
+          return;
+        }
+        setPlanChangeMsg({
+          type: 'success',
+          text: data.message || `Successfully activated ${targetPlanId} plan (Sandbox Google Pay / Card verified)!`,
+        });
         await fetchBilling();
       } else {
-        setPlanChangeMsg({ type: 'error', text: data.error || 'Failed to switch plan' });
+        setPlanChangeMsg({ type: 'error', text: data.error || 'Failed to initialize checkout session' });
       }
     } catch (err: any) {
       setPlanChangeMsg({ type: 'error', text: err.message || 'Network error updating plan' });
     } finally {
       setChangingPlanId(null);
+    }
+  };
+
+  const handleOpenCustomerPortal = async () => {
+    try {
+      const res = await fetch('/api/billing/portal', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          workspaceId: billingData?.workspaceId || 'default-workspace',
+        }),
+      });
+      const data = await res.json();
+      if (res.ok && data.url) {
+        window.location.href = data.url;
+      } else {
+        setPlanChangeMsg({
+          type: 'error',
+          text: data.error || 'Customer portal is available after active Stripe checkout.',
+        });
+      }
+    } catch (err: any) {
+      setPlanChangeMsg({ type: 'error', text: err.message || 'Failed to open customer portal' });
     }
   };
 
@@ -142,6 +173,7 @@ Thank you for using Kortex AI Business Engine.
     isUpdatingCard,
     fetchBilling,
     handleSwitchPlan,
+    handleOpenCustomerPortal,
     handleUpdatePaymentMethod,
     handleDownloadInvoice,
   };

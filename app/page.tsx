@@ -74,9 +74,13 @@ export default function DashboardPage() {
   const [showAuthPasscode, setShowAuthPasscode] = useState<boolean>(false);
   const [authError, setAuthError] = useState<string | null>(null);
   const [isLoggingIn, setIsLoggingIn] = useState<boolean>(false);
-  const [authLoginMode, setAuthLoginMode] = useState<'admin' | 'staff'>('admin');
+  const [authLoginMode, setAuthLoginMode] = useState<'admin' | 'staff' | 'register'>('register');
   const [staffEmailInput, setStaffEmailInput] = useState<string>('');
   const [staffPasswordInput, setStaffPasswordInput] = useState<string>('');
+  const [regBusinessNameInput, setRegBusinessNameInput] = useState<string>('');
+  const [regEmailInput, setRegEmailInput] = useState<string>('');
+  const [regPasswordInput, setRegPasswordInput] = useState<string>('');
+  const [regTemplateInput, setRegTemplateInput] = useState<string>('classic-barbershop');
 
   const [activeTab, setActiveTab] = useState<
     'overview' | 'analytics' | 'billing' | 'landing_page' | 'team' | 'security' | 'audit' | 'knowledge' | 'engine' | 'behavior' | 'widget' | 'channels' | 'playground' | 'leads' | 'appointments' | 'docs' | 'templates' | 'history'
@@ -407,24 +411,37 @@ export default function DashboardPage() {
     e.preventDefault();
     if (authLoginMode === 'admin') {
       if (!authApiKeyInput.trim()) return;
-    } else {
+    } else if (authLoginMode === 'staff') {
       if (!staffEmailInput.trim() || !staffPasswordInput.trim()) return;
+    } else {
+      if (!regBusinessNameInput.trim() || !regEmailInput.trim() || !regPasswordInput.trim()) return;
     }
     setIsLoggingIn(true);
     setAuthError(null);
     try {
-      const payload =
-        authLoginMode === 'admin'
-          ? {
-              mode: 'admin',
-              key: authApiKeyInput.trim(),
-              apiKey: authApiKeyInput.trim(),
-            }
-          : {
-              mode: 'staff',
-              email: staffEmailInput.trim(),
-              password: staffPasswordInput.trim(),
-            };
+      let payload: any;
+      if (authLoginMode === 'admin') {
+        payload = {
+          mode: 'admin',
+          key: authApiKeyInput.trim(),
+          apiKey: authApiKeyInput.trim(),
+        };
+      } else if (authLoginMode === 'staff') {
+        payload = {
+          mode: 'staff',
+          email: staffEmailInput.trim(),
+          password: staffPasswordInput.trim(),
+        };
+      } else {
+        payload = {
+          mode: 'register',
+          businessName: regBusinessNameInput.trim(),
+          email: regEmailInput.trim(),
+          password: regPasswordInput.trim(),
+          industryTemplateSlug: regTemplateInput,
+        };
+      }
+
       const res = await fetch('/api/auth', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -436,9 +453,12 @@ export default function DashboardPage() {
         setAuthApiKeyInput('');
         setStaffEmailInput('');
         setStaffPasswordInput('');
+        setRegBusinessNameInput('');
+        setRegEmailInput('');
+        setRegPasswordInput('');
         await fetchAssistants();
       } else {
-        setAuthError(data.error || (authLoginMode === 'admin' ? 'Invalid Admin Passcode or Key' : 'Invalid Staff Credentials'));
+        setAuthError(data.error || (authLoginMode === 'admin' ? 'Invalid Admin Passcode or Key' : 'Authentication failed'));
       }
     } catch (err: any) {
       setAuthError(err.message || 'Authentication failed');
@@ -508,6 +528,14 @@ export default function DashboardPage() {
         setStaffEmailInput={setStaffEmailInput}
         staffPasswordInput={staffPasswordInput}
         setStaffPasswordInput={setStaffPasswordInput}
+        regBusinessNameInput={regBusinessNameInput}
+        setRegBusinessNameInput={setRegBusinessNameInput}
+        regEmailInput={regEmailInput}
+        setRegEmailInput={setRegEmailInput}
+        regPasswordInput={regPasswordInput}
+        setRegPasswordInput={setRegPasswordInput}
+        regTemplateInput={regTemplateInput}
+        setRegTemplateInput={setRegTemplateInput}
         isLoggingIn={isLoggingIn}
         handleLogin={handleLogin}
       />
@@ -585,6 +613,7 @@ export default function DashboardPage() {
                 handleSwitchPlan={billing.handleSwitchPlan}
                 setShowPaymentModal={billing.setShowPaymentModal}
                 handleDownloadInvoice={billing.handleDownloadInvoice}
+                handleOpenCustomerPortal={billing.handleOpenCustomerPortal}
               />
             )}
 

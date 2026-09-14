@@ -9,13 +9,15 @@ import {
   Eye,
   EyeOff,
   RefreshCw,
+  Sparkles,
+  Building2,
 } from 'lucide-react';
 
 interface AdminLoginScreenProps {
   theme: 'light' | 'dark';
   authError: string | null;
-  authLoginMode: 'admin' | 'staff';
-  setAuthLoginMode: (mode: 'admin' | 'staff') => void;
+  authLoginMode: 'admin' | 'staff' | 'register';
+  setAuthLoginMode: (mode: 'admin' | 'staff' | 'register') => void;
   setAuthError: (err: string | null) => void;
   authApiKeyInput: string;
   setAuthApiKeyInput: (val: string) => void;
@@ -25,6 +27,14 @@ interface AdminLoginScreenProps {
   setStaffEmailInput: (val: string) => void;
   staffPasswordInput: string;
   setStaffPasswordInput: (val: string) => void;
+  regBusinessNameInput: string;
+  setRegBusinessNameInput: (val: string) => void;
+  regEmailInput: string;
+  setRegEmailInput: (val: string) => void;
+  regPasswordInput: string;
+  setRegPasswordInput: (val: string) => void;
+  regTemplateInput: string;
+  setRegTemplateInput: (val: string) => void;
   isLoggingIn: boolean;
   handleLogin: (e: React.FormEvent) => void;
 }
@@ -43,21 +53,37 @@ export function AdminLoginScreen({
   setStaffEmailInput,
   staffPasswordInput,
   setStaffPasswordInput,
+  regBusinessNameInput,
+  setRegBusinessNameInput,
+  regEmailInput,
+  setRegEmailInput,
+  regPasswordInput,
+  setRegPasswordInput,
+  regTemplateInput,
+  setRegTemplateInput,
   isLoggingIn,
   handleLogin,
 }: AdminLoginScreenProps) {
+  const isSubmitDisabled =
+    isLoggingIn ||
+    (authLoginMode === 'admin' && !authApiKeyInput.trim()) ||
+    (authLoginMode === 'staff' && (!staffEmailInput.trim() || !staffPasswordInput.trim())) ||
+    (authLoginMode === 'register' && (!regBusinessNameInput.trim() || !regEmailInput.trim() || !regPasswordInput.trim()));
+
   return (
     <div className={`${theme === 'dark' ? 'dark' : ''} min-h-screen w-full flex items-center justify-center bg-slate-950 font-sans p-4 relative overflow-hidden`}>
-      <div className="w-full max-w-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl p-8 z-10 space-y-6">
-        <div className="flex flex-col items-center text-center space-y-2">
-          <div className="h-14 w-14 rounded-2xl bg-blue-600/10 dark:bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-600 dark:text-blue-400 mb-1">
-            <ShieldCheck className="h-7 w-7" />
+      <div className="w-full max-w-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl p-7 z-10 space-y-5">
+        <div className="flex flex-col items-center text-center space-y-1.5">
+          <div className="h-12 w-12 rounded-2xl bg-blue-600/10 dark:bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-600 dark:text-blue-400 mb-0.5">
+            {authLoginMode === 'register' ? <Building2 className="h-6 w-6" /> : <ShieldCheck className="h-6 w-6" />}
           </div>
           <h2 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">
-            Admin Authentication
+            {authLoginMode === 'register' ? 'Create Business Account' : 'Kortex AI Management'}
           </h2>
           <p className="text-xs text-slate-500 dark:text-slate-400 max-w-xs leading-relaxed">
-            This dashboard is protected by enterprise master key verification. Please authenticate to access the management console.
+            {authLoginMode === 'register'
+              ? 'Launch your automated AI customer assistant and hosted landing page in 2 minutes.'
+              : 'Sign in to access your business assistant, CRM leads, and live conversations.'}
           </p>
         </div>
 
@@ -68,36 +94,111 @@ export function AdminLoginScreen({
           </div>
         )}
 
-        {/* Login Type Tabs */}
+        {/* 3 Authentication Tabs */}
         <div className="flex items-center p-1 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-semibold">
           <button
             type="button"
-            onClick={() => { setAuthLoginMode('admin'); setAuthError(null); }}
-            className={`flex-1 py-1.5 rounded-lg transition cursor-pointer flex items-center justify-center gap-1.5 ${
-              authLoginMode === 'admin'
+            onClick={() => { setAuthLoginMode('register'); setAuthError(null); }}
+            className={`flex-1 py-1.5 rounded-lg transition cursor-pointer flex items-center justify-center gap-1 ${
+              authLoginMode === 'register'
                 ? 'bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-xs'
                 : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
-            <Key className="h-3.5 w-3.5" />
-            <span>Master Admin Key</span>
+            <Sparkles className="h-3 w-3" />
+            <span>Register</span>
           </button>
           <button
             type="button"
             onClick={() => { setAuthLoginMode('staff'); setAuthError(null); }}
-            className={`flex-1 py-1.5 rounded-lg transition cursor-pointer flex items-center justify-center gap-1.5 ${
+            className={`flex-1 py-1.5 rounded-lg transition cursor-pointer flex items-center justify-center gap-1 ${
               authLoginMode === 'staff'
                 ? 'bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-xs'
                 : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
-            <Users className="h-3.5 w-3.5" />
-            <span>Staff Login</span>
+            <Users className="h-3 w-3" />
+            <span>Sign In</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => { setAuthLoginMode('admin'); setAuthError(null); }}
+            className={`flex-1 py-1.5 rounded-lg transition cursor-pointer flex items-center justify-center gap-1 ${
+              authLoginMode === 'admin'
+                ? 'bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-xs'
+                : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+            }`}
+          >
+            <Key className="h-3 w-3" />
+            <span>Master Key</span>
           </button>
         </div>
 
-        <form onSubmit={handleLogin} className="space-y-4">
-          {authLoginMode === 'admin' ? (
+        <form onSubmit={handleLogin} className="space-y-3.5">
+          {/* Form 1: Self-Serve SaaS Registration */}
+          {authLoginMode === 'register' && (
+            <div className="space-y-3">
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Business / Company Name</label>
+                <input
+                  type="text"
+                  value={regBusinessNameInput}
+                  onChange={(e) => setRegBusinessNameInput(e.target.value)}
+                  placeholder="e.g. Apex Health Clinic"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white text-xs placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                  autoFocus
+                  required
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Owner Work Email</label>
+                <input
+                  type="email"
+                  value={regEmailInput}
+                  onChange={(e) => setRegEmailInput(e.target.value)}
+                  placeholder="owner@company.com"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white text-xs placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                  required
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Account Password</label>
+                <input
+                  type="password"
+                  value={regPasswordInput}
+                  onChange={(e) => setRegPasswordInput(e.target.value)}
+                  placeholder="At least 6 characters..."
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white text-xs placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                  required
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Industry Starter Template</label>
+                <select
+                  value={regTemplateInput}
+                  onChange={(e) => setRegTemplateInput(e.target.value)}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                >
+                  <option value="classic-barbershop">Barbershop & Grooming Salon</option>
+                  <option value="fitness-gym">Fitness & Athletics Gym</option>
+                  <option value="real-estate">Prestige Living Real Estate</option>
+                  <option value="ecommerce-store">LuxeLiving Retail E-Commerce</option>
+                  <option value="b2b-saas">CloudScale B2B SaaS</option>
+                  <option value="legal-law-firm">Sterling & Vance Legal Counsel</option>
+                  <option value="dental-clinic">Beacon Family Dental Clinic</option>
+                  <option value="nexus-ai">Nexus AI Technology Platform</option>
+                  <option value="hyperion-agency">Hyperion Creative Agency</option>
+                  <option value="aether-finance">Aether Finance & Wealth Management</option>
+                </select>
+              </div>
+            </div>
+          )}
+
+          {/* Form 2: Master Admin Key Login */}
+          {authLoginMode === 'admin' && (
             <div className="space-y-1.5">
               <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center justify-between">
                 <span>Master Admin Key / Passcode</span>
@@ -122,15 +223,18 @@ export function AdminLoginScreen({
                 </button>
               </div>
             </div>
-          ) : (
+          )}
+
+          {/* Form 3: Staff & Tenant Login */}
+          {authLoginMode === 'staff' && (
             <div className="space-y-3">
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Staff Email Address</label>
+                <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Account Email Address</label>
                 <input
                   type="email"
                   value={staffEmailInput}
                   onChange={(e) => setStaffEmailInput(e.target.value)}
-                  placeholder="staff@kortexai.com"
+                  placeholder="owner@company.com or staff@kortexai.com"
                   className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white text-xs placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
                   autoFocus
                   required
@@ -145,7 +249,7 @@ export function AdminLoginScreen({
                   type="password"
                   value={staffPasswordInput}
                   onChange={(e) => setStaffPasswordInput(e.target.value)}
-                  placeholder="Enter password or 6-digit access code..."
+                  placeholder="Enter password or access code..."
                   className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white text-xs placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
                   required
                 />
@@ -155,25 +259,33 @@ export function AdminLoginScreen({
 
           <button
             type="submit"
-            disabled={isLoggingIn || (authLoginMode === 'admin' ? !authApiKeyInput.trim() : (!staffEmailInput.trim() || !staffPasswordInput.trim()))}
+            disabled={isSubmitDisabled}
             className="w-full py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white text-xs font-semibold shadow-md shadow-blue-600/20 transition flex items-center justify-center gap-2 cursor-pointer"
           >
             {isLoggingIn ? (
               <>
                 <RefreshCw className="h-3.5 w-3.5 animate-spin" />
-                <span>Verifying credentials...</span>
+                <span>Processing request...</span>
               </>
             ) : (
               <>
-                <Key className="h-3.5 w-3.5" />
-                <span>{authLoginMode === 'admin' ? 'Unlock Management Console' : 'Sign In to Staff Portal'}</span>
+                {authLoginMode === 'register' && <Sparkles className="h-3.5 w-3.5" />}
+                {authLoginMode === 'admin' && <Key className="h-3.5 w-3.5" />}
+                {authLoginMode === 'staff' && <Users className="h-3.5 w-3.5" />}
+                <span>
+                  {authLoginMode === 'register'
+                    ? 'Create Workspace & Launch AI'
+                    : authLoginMode === 'admin'
+                    ? 'Unlock Management Console'
+                    : 'Sign In to Workspace'}
+                </span>
               </>
             )}
           </button>
         </form>
 
         <div className="pt-2 text-center text-[11px] text-slate-400 dark:text-slate-500 border-t border-slate-100 dark:border-slate-800">
-          Kortex AI Enterprise Security Guard · AES-256 GCM Protected
+          Kortex AI Multi-Tenant SaaS · AES-256 GCM Security
         </div>
       </div>
     </div>

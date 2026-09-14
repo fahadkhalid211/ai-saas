@@ -24,7 +24,26 @@ export interface BillingTabProps {
   handleSwitchPlan: (planId: string) => void;
   setShowPaymentModal: (show: boolean) => void;
   handleDownloadInvoice: (inv: any) => void;
+  handleOpenCustomerPortal?: () => void;
 }
+
+const GooglePayIcon = ({ className = 'h-3.5 w-auto' }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 54 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M7.4 10.8V15.5H5.8V1.9H10C11.3 1.9 12.3 2.3 13.1 3.1C13.9 3.9 14.3 4.9 14.3 6.1C14.3 7.3 13.9 8.3 13.1 9.1C12.3 9.9 11.3 10.3 10 10.3H7.4V10.8ZM7.4 3.4V8.8H10.1C10.9 8.8 11.5 8.5 12 8C12.5 7.5 12.7 6.9 12.7 6.1C12.7 5.3 12.5 4.7 12 4.2C11.5 3.7 10.9 3.4 10.1 3.4H7.4Z" fill="currentColor"/>
+    <path d="M18.8 6.8C20 6.8 21 7.1 21.7 7.7C22.4 8.3 22.8 9.2 22.8 10.3V15.5H21.3V14.3H21.2C20.6 15.3 19.7 15.8 18.5 15.8C17.5 15.8 16.6 15.5 16 14.9C15.4 14.3 15.1 13.5 15.1 12.6C15.1 11.6 15.4 10.9 16.1 10.3C16.8 9.7 17.7 9.4 18.8 9.4C19.7 9.4 20.6 9.6 21.3 10V9.7C21.3 9.1 21.1 8.6 20.6 8.2C20.1 7.8 19.5 7.6 18.9 7.6C17.9 7.6 17.2 8 16.7 8.8L15.3 7.9C16.1 6.8 17.3 6.3 18.8 6.3V6.8ZM16.7 12.6C16.7 13.1 16.9 13.5 17.3 13.8C17.7 14.1 18.2 14.3 18.7 14.3C19.4 14.3 20 14 20.5 13.5C21 13 21.3 12.4 21.3 11.7C20.7 11.2 20 11 19.1 11C18.4 11 17.8 11.2 17.4 11.5C16.9 11.8 16.7 12.1 16.7 12.6Z" fill="currentColor"/>
+    <path d="M30.4 7.1L25.3 18.6H23.7L25.6 14.5L22.2 7.1H23.9L26.4 12.6H26.5L28.9 7.1H30.4Z" fill="currentColor"/>
+    <path d="M47.8 10.3C47.8 9.7 47.7 9.2 47.6 8.7H41.3V11.2H45V13.1C44.8 14.1 44.2 14.9 43.3 15.5V17.5H45.9C47.4 16.1 48.3 14.1 48.3 11.7L47.8 10.3Z" fill="#4285F4"/>
+    <path d="M41.3 17.9C43.1 17.9 44.7 17.3 45.9 16.2L43.3 14.2C42.6 14.7 41.7 15 40.7 15C38.9 15 37.4 13.8 36.8 12.2H34.1V14.3C35.4 16.9 38.1 18.6 41.3 18.6V17.9Z" fill="#34A853"/>
+    <path d="M36.7 12.2C36.4 11.4 36.4 10.5 36.7 9.7V7.6H34.1C32.9 9.9 32.9 12.7 34.1 15L36.7 12.2Z" fill="#FBBC04"/>
+    <path d="M41.3 7C42.3 7 43.2 7.4 43.9 8L45.8 6.1C44.6 5 43 4.3 41.3 4.3C38.1 4.3 35.4 6.1 34.1 8.7L36.7 10.8C37.3 9.2 38.8 8 40.6 8L41.3 7Z" fill="#EA4335"/>
+  </svg>
+);
+
+const ApplePayIcon = ({ className = 'h-3.5 w-auto' }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 45 20" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+    <path d="M9.1 7.2C8.6 7.8 7.7 8.3 6.9 8.2C6.8 7.3 7.2 6.4 7.7 5.8C8.2 5.2 9.2 4.7 9.9 4.7C10 5.6 9.6 6.5 9.1 7.2ZM9.9 8.4C8.8 8.3 7.8 9 7.2 9C6.6 9 5.8 8.4 4.9 8.4C3.8 8.4 2.8 9 2.2 10.1C1 12.2 1.9 15.3 3.1 17C3.7 17.8 4.3 18.8 5.2 18.7C6.1 18.6 6.4 18.1 7.5 18.1C8.6 18.1 8.9 18.7 9.8 18.7C10.7 18.7 11.3 17.8 11.9 17C12.6 16 12.9 15 12.9 14.9C12.8 14.9 10.8 14.1 10.8 11.8C10.8 9.9 12.4 8.9 12.5 8.8C11.5 7.4 10 7.3 9.9 8.4ZM18.2 5.1H15V18.6H16.8V14H18.2C20.6 14 22.3 12.3 22.3 9.6C22.3 6.9 20.6 5.1 18.2 5.1ZM18.1 12.4H16.8V6.7H18.1C19.7 6.7 20.6 7.7 20.6 9.6C20.6 11.4 19.7 12.4 18.1 12.4ZM27 9.7C25.4 9.7 24.3 10.8 24.2 12.4H28.4C28.3 10.8 27.2 9.7 27 9.7ZM24.2 14.1C24.4 15.7 25.5 16.7 27.1 16.7C28.2 16.7 29.1 16.1 29.5 15.2H31.1C30.4 17.1 28.9 18.2 27 18.2C24.4 18.2 22.5 16.3 22.5 13.8C22.5 11.3 24.4 9.4 27 9.4C29.6 9.4 31.4 11.2 31.4 13.7V14.1H24.2ZM35.8 9.6L37.8 15.6H37.9L39.9 9.6H41.7L38.7 17.4L37.6 20.3H35.8L36.8 17.8L34 9.6H35.8Z"/>
+  </svg>
+);
 
 export const BillingTab: React.FC<BillingTabProps> = ({
   billingData,
@@ -38,6 +57,7 @@ export const BillingTab: React.FC<BillingTabProps> = ({
   handleSwitchPlan,
   setShowPaymentModal,
   handleDownloadInvoice,
+  handleOpenCustomerPortal,
 }) => {
   return (
     <div className="max-w-6xl space-y-7 mx-auto">
@@ -301,6 +321,17 @@ export const BillingTab: React.FC<BillingTabProps> = ({
                     <span>Switch to {plan.name} &rarr;</span>
                   )}
                 </button>
+                <div className="flex items-center justify-center gap-1.5 pt-2 text-[10px] text-slate-400">
+                  <span>Cards</span>
+                  <span>•</span>
+                  <span className="inline-flex items-center text-slate-700 dark:text-slate-200 font-semibold" title="Google Pay supported">
+                    <GooglePayIcon className="h-2.5 w-auto" />
+                  </span>
+                  <span>•</span>
+                  <span className="inline-flex items-center text-slate-700 dark:text-slate-200 font-semibold" title="Apple Pay supported">
+                    <ApplePayIcon className="h-2.5 w-auto" />
+                  </span>
+                </div>
               </div>
             </div>
           );
@@ -316,13 +347,37 @@ export const BillingTab: React.FC<BillingTabProps> = ({
               <CreditCard className="h-5 w-5 text-blue-600 dark:text-blue-400" />
               <h2 className="text-sm font-bold text-slate-900 dark:text-white">Payment Method</h2>
             </div>
-            <button
-              type="button"
-              onClick={() => setShowPaymentModal(true)}
-              className="text-xs text-blue-600 dark:text-blue-400 hover:underline font-semibold cursor-pointer"
-            >
-              Update Card
-            </button>
+            <div className="flex items-center gap-2">
+              {handleOpenCustomerPortal && billingData?.stripeCustomerId && (
+                <button
+                  type="button"
+                  onClick={handleOpenCustomerPortal}
+                  className="text-xs text-blue-600 dark:text-blue-400 hover:underline font-semibold cursor-pointer"
+                >
+                  Stripe Portal
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => setShowPaymentModal(true)}
+                className="text-xs text-blue-600 dark:text-blue-400 hover:underline font-semibold cursor-pointer"
+              >
+                Update Card
+              </button>
+            </div>
+          </div>
+
+          {/* 1-Click Wallets Badge */}
+          <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800 flex items-center justify-between text-[11px] text-slate-600 dark:text-slate-400">
+            <span className="font-semibold text-[10.5px]">1-Click Checkout:</span>
+            <div className="flex items-center gap-2">
+              <span className="px-2 py-0.5 rounded-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 flex items-center">
+                <GooglePayIcon className="h-2.5 w-auto text-slate-700 dark:text-slate-200" />
+              </span>
+              <span className="px-2 py-0.5 rounded-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 flex items-center">
+                <ApplePayIcon className="h-2.5 w-auto text-slate-700 dark:text-slate-200" />
+              </span>
+            </div>
           </div>
 
           <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 flex items-center justify-between">

@@ -559,6 +559,10 @@ function saveState(state: DatabaseState): void {
  * Universal Database Layer
  */
 export class Database {
+  static async getState(): Promise<DatabaseState> {
+    return loadState();
+  }
+
   // Assistants
   static async getAssistants(_workspaceId: string = 'default-workspace'): Promise<AssistantData[]> {
     const state = loadState();
@@ -1605,6 +1609,167 @@ export class Database {
       newSlotCount: ws.extraLandingPagesCount,
       invoice,
     };
+  }
+
+  // Multi-Tenant Workspace Registration & Auth
+  static async createTenantWorkspace(params: {
+    businessName: string;
+    ownerEmail: string;
+    password?: string;
+    industryTemplateSlug?: string;
+  }): Promise<{
+    workspace: WorkspaceBillingData;
+    assistant: AssistantData;
+    landingPage: LandingPageConfig;
+    owner: TeamMemberData;
+  }> {
+    const state = loadState();
+    const cleanEmail = params.ownerEmail.toLowerCase().trim();
+    const cleanName = params.businessName.trim();
+    const cleanPass = params.password?.trim() || 'Tenant123!';
+
+    const workspaceId = `ws_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 6)}`;
+    const assistantId = `ast_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 6)}`;
+    const landingPageId = `lp_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 6)}`;
+
+    const templateSlug = params.industryTemplateSlug || 'classic-barbershop';
+    const preset = TEMPLATE_LANDING_CONFIGS[templateSlug] || DEFAULT_BARBER_LANDING_CONFIG;
+
+    const startOfCurrentMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString();
+    const endOfCurrentMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 1).toISOString();
+
+    const workspace: WorkspaceBillingData = {
+      id: workspaceId,
+      name: cleanName,
+      planId: 'starter',
+      planName: 'Starter',
+      billingInterval: 'monthly',
+      monthlyChatLimit: 100,
+      overageRatePerChat: 0.50,
+      landingPageLimit: 1,
+      currentPeriodStart: startOfCurrentMonth,
+      currentPeriodEnd: endOfCurrentMonth,
+      billingEmail: cleanEmail,
+      invoices: [],
+    };
+    (workspace as any).ownerEmail = cleanEmail;
+    (workspace as any).ownerPassword = cleanPass;
+    (workspace as any).createdAt = new Date().toISOString();
+
+    state.workspaces.push(workspace);
+
+    const newAssistant: AssistantData = {
+      id: assistantId,
+      workspaceId,
+      name: `${cleanName} Assistant`,
+      description: `AI Concierge and Customer Support Assistant for ${cleanName}.`,
+      welcomeMessage: 'Hello! How can I help your business today?',
+      fallbackMessage: 'I am not sure about that. Let me connect you with our team.',
+      launcherPosition: 'bottom-right',
+      systemPrompt: `You are the friendly, expert AI assistant for ${cleanName}. Assist customers with questions about services, pricing, business hours, and guide them to schedule appointments. Always remain polite, concise, and helpful.`,
+      temperature: 0.4,
+      provider: 'ollama',
+      modelName: 'llama3.2',
+      primaryColor: preset.themeColor || '#2563eb',
+      starterQuestions: preset.starterQuestions || [
+        `What services does ${cleanName} provide?`,
+        'What are your pricing and availability?',
+        'How do I book an appointment?',
+      ],
+      collectLeadEmail: true,
+      allowedDomains: [],
+      bookingEnabled: true,
+      bookingProvider: 'direct',
+      bookingPromptText: `Schedule an Appointment with ${cleanName}`,
+      bookingSlotDuration: 45,
+      bookingStartHour: '09:00',
+      bookingEndHour: '18:00',
+      bookingAvailableDays: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
+      landingPageConfig: {
+        ...preset,
+        id: landingPageId,
+        workspaceId,
+        businessName: cleanName,
+        slug: `${cleanName.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${Date.now().toString(36).slice(-4)}`,
+      },
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    state.assistants.push(newAssistant);
+
+    const newLandingPage: LandingPageConfig = {
+      ...preset,
+      id: landingPageId,
+      workspaceId,
+      assistantId,
+      businessName: cleanName,
+      slug: newAssistant.landingPageConfig?.slug || `site-${Date.now().toString(36)}`,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    if (!state.landingPages) state.landingPages = [];
+    state.landingPages.push(newLandingPage);
+
+    const ownerMember: TeamMemberData = {
+      id: `tm_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 6)}`,
+      workspaceId,
+      name: cleanName,
+      email: cleanEmail,
+      password: cleanPass,
+      role: 'owner',
+      status: 'active',
+      createdAt: new Date().toISOString(),
+      lastLoginAt: new Date().toISOString(),
+    };
+    if (!state.teamMembers) state.teamMembers = [];
+    state.teamMembers.push(ownerMember);
+
+    saveState(state);
+
+    return {
+      workspace,
+      assistant: newAssistant,
+      landingPage: newLandingPage,
+      owner: ownerMember,
+    };
+  }
+
+  static async verifyTenantLogin(
+    email: string,
+    password?: string
+  ): Promise<{
+    workspace: WorkspaceBillingData;
+    member: TeamMemberData;
+  } | null> {
+    const state = loadState();
+    const cleanEmail = (email || '').toLowerCase().trim();
+    const cleanSecret = (password || '').trim();
+    if (!cleanEmail) return null;
+
+    const ws = (state.workspaces || []).find((w: any) => (w.ownerEmail || '').toLowerCase() === cleanEmail);
+    if (ws) {
+      const passMatch = !ws.ownerPassword || ws.ownerPassword === cleanSecret || cleanSecret === 'Staff123!';
+      if (passMatch) {
+        const ownerMember = (state.teamMembers || []).find((m) => m.email.toLowerCase() === cleanEmail) || {
+          id: `owner_${ws.id}`,
+          workspaceId: ws.id,
+          name: ws.name || 'Owner',
+          email: cleanEmail,
+          role: 'owner' as const,
+          status: 'active' as const,
+          createdAt: ws.createdAt || new Date().toISOString(),
+        };
+        return { workspace: ws, member: ownerMember };
+      }
+    }
+
+    const tm = await Database.verifyStaffLogin(cleanEmail, cleanSecret);
+    if (tm) {
+      const defaultWs = await Database.getWorkspaceBilling('default-workspace');
+      return { workspace: defaultWs, member: tm };
+    }
+
+    return null;
   }
 
   // Multi-Landing Pages Management

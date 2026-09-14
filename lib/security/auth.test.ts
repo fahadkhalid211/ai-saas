@@ -5,6 +5,8 @@ import {
   verifySessionToken,
   verifyAdminRequest,
   withAdminAuth,
+  getSessionPayload,
+  getAuthContext,
 } from './auth';
 
 describe('Security Auth Module', () => {
@@ -70,5 +72,28 @@ describe('Security Auth Module', () => {
     });
     const authedRes = await handler(authedReq, {});
     expect(authedRes.status).toBe(200);
+  });
+
+  it('should embed workspaceId in session tokens and extract it via getSessionPayload', () => {
+    const token = generateSessionToken('owner', 'user-456', 'ws-tenant-789');
+    expect(verifySessionToken(token)).toBe(true);
+
+    const payload = getSessionPayload(token);
+    expect(payload).toBeDefined();
+    expect(payload?.role).toBe('owner');
+    expect(payload?.memberId).toBe('user-456');
+    expect(payload?.workspaceId).toBe('ws-tenant-789');
+  });
+
+  it('getAuthContext should resolve authenticated context with workspaceId', async () => {
+    const token = generateSessionToken('admin', 'staff-99', 'ws-corp-1');
+    const req = new Request('http://localhost/api/test', {
+      headers: { authorization: `Bearer ${token}` },
+    });
+    const ctx = await getAuthContext(req);
+    expect(ctx.authenticated).toBe(true);
+    expect(ctx.role).toBe('admin');
+    expect(ctx.memberId).toBe('staff-99');
+    expect(ctx.workspaceId).toBe('ws-corp-1');
   });
 });

@@ -39,11 +39,16 @@ export function getAdminKey(): string {
 /**
  * Generates a signed HMAC-SHA256 session token valid for 7 days.
  */
-export function generateSessionToken(role: string = 'admin', memberId?: string): string {
+export function generateSessionToken(
+  role: string = 'admin',
+  memberId?: string,
+  workspaceId: string = 'default-workspace'
+): string {
   const masterKey = getAdminKey();
   const payload = {
     role: role || 'admin',
     memberId: memberId || 'admin',
+    workspaceId: workspaceId || 'default-workspace',
     iat: Date.now(),
     exp: Date.now() + 7 * 24 * 60 * 60 * 1000,
   };
@@ -93,20 +98,47 @@ export function verifySessionToken(token: string): boolean {
 }
 
 /**
- * Checks an incoming Next.js API request for valid admin authentication.
- * Accepts either:
- *  1. Authorization: Bearer <adminKey|sessionToken>
- *  2. Cookie: kortex_admin_session=<sessionToken>
+ * Extracts payload data from a signed session token.
  */
-export async function verifyAdminRequest(req: Request): Promise<boolean> {
+export function getSessionPayload(token: string): { role: string; memberId: string; workspaceId: string } | null {
+  if (!token || typeof token !== 'string') return null;
+  const parts = token.split('.');
+  if (parts.length !== 2) return null;
+  if (!verifySessionToken(token)) return null;
+  try {
+    const payload = JSON.parse(Buffer.from(parts[0], 'base64url').toString('utf8'));
+    return {
+      role: payload.role || 'admin',
+      memberId: payload.memberId || 'admin',
+      workspaceId: payload.workspaceId || 'default-workspace',
+    };
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Resolves full auth context from request headers or cookie.
+ */
+export async function getAuthContext(req: Request): Promise<{
+  authenticated: boolean;
+  role: string;
+  memberId: string;
+  workspaceId: string;
+}> {
   const masterKey = getAdminKey();
 
   // 1. Check Authorization header
   const authHeader = req.headers.get('authorization') || req.headers.get('x-api-key');
   if (authHeader) {
     const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : authHeader.trim();
-    if (token === masterKey) return true;
-    if (verifySessionToken(token)) return true;
+    if (token === masterKey) {
+      return { authenticated: true, role: 'admin', memberId: 'master-admin', workspaceId: 'default-workspace' };
+    }
+    const session = getSessionPayload(token);
+    if (session) {
+      return { authenticated: true, role: session.role, memberId: session.memberId, workspaceId: session.workspaceId };
+    }
   }
 
   // 2. Check Cookie header
@@ -119,12 +151,26 @@ export async function verifyAdminRequest(req: Request): Promise<boolean> {
     }, {});
 
     const sessionCookie = cookies['kortex_admin_session'];
-    if (sessionCookie && verifySessionToken(sessionCookie)) {
-      return true;
+    if (sessionCookie) {
+      const session = getSessionPayload(sessionCookie);
+      if (session) {
+        return { authenticated: true, role: session.role, memberId: session.memberId, workspaceId: session.workspaceId };
+      }
     }
   }
 
-  return false;
+  return { authenticated: false, role: 'guest', memberId: '', workspaceId: 'default-workspace' };
+}
+
+/**
+ * Checks an incoming Next.js API request for valid admin authentication.
+ * Accepts either:
+ *  1. Authorization: Bearer <adminKey|sessionToken>
+ *  2. Cookie: kortex_admin_session=<sessionToken>
+ */
+export async function verifyAdminRequest(req: Request): Promise<boolean> {
+  const ctx = await getAuthContext(req);
+  return ctx.authenticated;
 }
 
 export function createSessionCookieHeader(token: string): string {

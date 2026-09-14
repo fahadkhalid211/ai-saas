@@ -26,6 +26,10 @@ import {
   Home,
   ShoppingBag,
   Scale,
+  Eye,
+  TrendingUp,
+  Monitor,
+  X,
 } from 'lucide-react';
 import {
   LandingPageConfig,
@@ -47,6 +51,11 @@ export const LANDING_TEMPLATES_LIST = [
     category: 'Grooming & Salon',
     icon: Scissors,
     colorClass: 'text-amber-600 bg-amber-100 dark:bg-amber-950/60 dark:text-amber-400',
+    themeHex: '#f59e0b',
+    heroImage: 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=800&q=80',
+    headline: 'Look Sharp. Feel Confident.',
+    badge: '5.0 Stars (280+ Reviews)',
+    servicesSample: ['Precision Skin Fade ($35)', 'Hot Towel Shave ($30)', 'Beard Sculpt ($25)'],
     description: 'Haircuts, beard trims, hot towel shaves with calendar bookings and automated SMS reminders.',
   },
   {
@@ -56,6 +65,11 @@ export const LANDING_TEMPLATES_LIST = [
     category: 'Gym & Fitness Club',
     icon: Dumbbell,
     colorClass: 'text-rose-600 bg-rose-100 dark:bg-rose-950/60 dark:text-rose-400',
+    themeHex: '#e11d48',
+    heroImage: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=800&q=80',
+    headline: 'Forge Elite Strength & Conditioning',
+    badge: 'Top Rated Gym 2026',
+    servicesSample: ['1-on-1 Personal Training ($75)', 'HIIT Conditioning ($30)', 'Cold Plunge Pass ($25)'],
     description: '1-on-1 personal training, HIIT conditioning, cold plunge passes, and membership triage.',
   },
   {
@@ -65,6 +79,11 @@ export const LANDING_TEMPLATES_LIST = [
     category: 'Real Estate & Properties',
     icon: Home,
     colorClass: 'text-emerald-600 bg-emerald-100 dark:bg-emerald-950/60 dark:text-emerald-400',
+    themeHex: '#10b981',
+    heroImage: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=800&q=80',
+    headline: 'Extraordinary Homes For Remarkable Lives',
+    badge: '$250M+ In Portfolio Sales',
+    servicesSample: ['Private Estate Tour', 'Listing Valuation ($0)', 'Buyer Advisory ($0)'],
     description: 'Private estate tours, luxury walkthroughs, buyer pre-qualification, and valuation requests.',
   },
   {
@@ -74,6 +93,11 @@ export const LANDING_TEMPLATES_LIST = [
     category: 'E-Commerce & Retail',
     icon: ShoppingBag,
     colorClass: 'text-purple-600 bg-purple-100 dark:bg-purple-950/60 dark:text-purple-400',
+    themeHex: '#9333ea',
+    heroImage: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=800&q=80',
+    headline: 'Curated Scandinavian Furniture & Decor',
+    badge: 'Complimentary White-Glove Delivery',
+    servicesSample: ['Virtual Styling ($0)', 'Custom Swatch Box ($15)', 'Living Room Audit ($150)'],
     description: 'Virtual styling consultations, order tracking, product sizing, and VIP client concierge.',
   },
   {
@@ -83,6 +107,11 @@ export const LANDING_TEMPLATES_LIST = [
     category: 'B2B Enterprise Software',
     icon: Briefcase,
     colorClass: 'text-blue-600 bg-blue-100 dark:bg-blue-950/60 dark:text-blue-400',
+    themeHex: '#2563eb',
+    heroImage: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=800&q=80',
+    headline: 'Unified Observability & Vector Pipelines',
+    badge: 'SOC2 Type II Certified · 99.99% SLA',
+    servicesSample: ['Platform Demo ($0)', 'Architecture Review ($0)', 'Migration Audit ($1,200)'],
     description: 'Enterprise product demos, architectural consultations, security reviews, and SLA discovery.',
   },
   {
@@ -92,6 +121,11 @@ export const LANDING_TEMPLATES_LIST = [
     category: 'Law Firm & Counsel',
     icon: Scale,
     colorClass: 'text-slate-700 bg-slate-200 dark:bg-slate-800 dark:text-slate-300',
+    themeHex: '#475569',
+    heroImage: 'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=800&q=80',
+    headline: 'Relentless Advocacy. Trusted Counsel.',
+    badge: 'Ranked Tier 1 Best Law Firms 2026',
+    servicesSample: ['Case Evaluation ($0)', 'Contract Review ($450)', 'Dispute Counsel ($600)'],
     description: 'Confidential case evaluations, attorney intake, corporate contract reviews, and dispute advice.',
   },
   {
@@ -101,7 +135,54 @@ export const LANDING_TEMPLATES_LIST = [
     category: 'Healthcare & Dental Clinic',
     icon: Activity,
     colorClass: 'text-sky-600 bg-sky-100 dark:bg-sky-950/60 dark:text-sky-400',
+    themeHex: '#0284c7',
+    heroImage: 'https://images.unsplash.com/photo-1629909613654-28e377c37b09?auto=format&fit=crop&w=800&q=80',
+    headline: 'Gentle, State-of-the-Art Dental Care',
+    badge: 'Most Trusted Practice in Manhattan',
+    servicesSample: ['Exam & Cleaning ($180)', 'Whitening ($350)', 'Invisalign Consult ($0)'],
     description: 'New patient intake, routine dental cleanings, toothache triage, and cosmetic consultations.',
+  },
+  {
+    slug: 'nexus-ai',
+    industryId: 'ai_tech',
+    name: 'Nexus AI Intelligence',
+    category: 'Silicon Valley AI Platform',
+    icon: Sparkles,
+    colorClass: 'text-indigo-600 bg-indigo-100 dark:bg-indigo-950/60 dark:text-indigo-400',
+    themeHex: '#6366f1',
+    heroImage: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80',
+    headline: 'Next-Gen Autonomous Agent Orchestration',
+    badge: 'High-Speed Neural Inference',
+    servicesSample: ['Live Agent Demo ($0)', 'Custom Vector Tuning ($500)', 'Enterprise Setup ($3,500)'],
+    description: 'Autonomous neural agents, enterprise LLM orchestration, vector pipeline audits, and API demos.',
+  },
+  {
+    slug: 'hyperion-agency',
+    industryId: 'creative_agency',
+    name: 'Hyperion Creative Studio',
+    category: 'Design & Motion Agency',
+    icon: Briefcase,
+    colorClass: 'text-fuchsia-600 bg-fuchsia-100 dark:bg-fuchsia-950/60 dark:text-fuchsia-400',
+    themeHex: '#d946ef',
+    heroImage: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=800&q=80',
+    headline: 'Avant-Garde Digital & Motion Direction',
+    badge: 'Awwwards Agency Nominee',
+    servicesSample: ['Creative Consult ($0)', 'Brand Sprint ($3,500)', '3D Motion Reel ($7,500)'],
+    description: 'Brand identity, 3D motion design, immersive WebGL art direction, and client portfolio intake.',
+  },
+  {
+    slug: 'aether-finance',
+    industryId: 'fintech',
+    name: 'Aether Capital & Wealth',
+    category: 'Private Wealth Management',
+    icon: TrendingUp,
+    colorClass: 'text-teal-600 bg-teal-100 dark:bg-teal-950/60 dark:text-teal-400',
+    themeHex: '#14b8a6',
+    heroImage: 'https://images.unsplash.com/photo-1639762681485-074b7f938ba0?auto=format&fit=crop&w=800&q=80',
+    headline: 'Sovereign Capital In The Algorithmic Era',
+    badge: 'Institutional Bullion & Sovereign Wealth',
+    servicesSample: ['Treasury Review ($0)', 'MPC Custody Setup ($750)', 'Yield Arbitrage ($2,000)'],
+    description: 'Discretionary portfolio management, algorithmic yield strategies, family office advisory.',
   },
 ];
 
@@ -152,6 +233,8 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
   appointments,
   theme,
 }) => {
+  const [inspectingSnapshot, setInspectingSnapshot] = React.useState<any | null>(null);
+
   return (
               <div className="max-w-5xl space-y-6 mx-auto">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -201,65 +284,142 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                     {LANDING_TEMPLATES_LIST.map((tpl) => {
                       const IconComponent = tpl.icon;
                       const isActive = landingConfig.slug === tpl.slug || landingConfig.industry === tpl.industryId;
                       return (
                         <div
                           key={tpl.slug}
-                          className={`flex flex-col justify-between p-3.5 rounded-xl border transition ${
+                          className={`group flex flex-col justify-between rounded-2xl border overflow-hidden transition-all duration-200 shadow-2xs hover:shadow-md ${
                             isActive
-                              ? 'border-blue-500 bg-blue-50/40 dark:bg-blue-950/20 shadow-xs'
-                              : 'border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30 hover:border-slate-300 dark:hover:border-slate-700'
+                              ? 'border-blue-500 bg-blue-50/30 dark:bg-blue-950/20 ring-1 ring-blue-500'
+                              : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-blue-400 dark:hover:border-blue-500'
                           }`}
                         >
-                          <div className="space-y-2">
-                            <div className="flex items-center justify-between gap-2">
-                              <div className="flex items-center gap-2">
-                                <div className={`h-7 w-7 rounded-lg flex items-center justify-center ${tpl.colorClass}`}>
-                                  <IconComponent className="h-4 w-4" />
-                                </div>
-                                <span className="text-xs font-bold text-slate-900 dark:text-white">
-                                  {tpl.name}
-                                </span>
+                          {/* Miniature Desktop Browser Frame & Visual Snapshot */}
+                          <div className="relative border-b border-slate-100 dark:border-slate-800/80 bg-slate-100 dark:bg-slate-800/60">
+                            {/* Browser Top Bar */}
+                            <div className="flex items-center justify-between px-2.5 py-1.5 border-b border-slate-200/70 dark:border-slate-700/70">
+                              <div className="flex items-center gap-1">
+                                <span className="h-1.5 w-1.5 rounded-full bg-rose-400" />
+                                <span className="h-1.5 w-1.5 rounded-full bg-amber-400" />
+                                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
                               </div>
-                              {isActive && (
-                                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-600 text-white">
-                                  <Check className="h-2.5 w-2.5" />
-                                  <span>Active</span>
-                                </span>
-                              )}
+                              <div className="text-[9px] font-mono text-slate-400 bg-white dark:bg-slate-900 px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-800 truncate max-w-[125px]">
+                                kortex.ai/site/{tpl.slug}
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => setInspectingSnapshot(tpl)}
+                                className="p-0.5 rounded text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 cursor-pointer"
+                                title={`Inspect full snapshot of ${tpl.name}`}
+                              >
+                                <Eye className="h-3 w-3" />
+                              </button>
                             </div>
-                            <p className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed">
-                              {tpl.description}
-                            </p>
+
+                            {/* Snapshot Hero Thumbnail with Hover Zoom */}
+                            <div
+                              onClick={() => setInspectingSnapshot(tpl)}
+                              className="relative h-28 w-full overflow-hidden cursor-pointer"
+                            >
+                              <img
+                                src={tpl.heroImage}
+                                alt={tpl.name}
+                                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                              />
+                              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-slate-950/40 to-transparent" />
+
+                              {/* Snapshot Badge */}
+                              <span className="absolute top-2 left-2 px-1.5 py-0.5 rounded-full text-[9px] font-semibold bg-white/90 dark:bg-slate-900/90 text-slate-900 dark:text-white shadow-2xs backdrop-blur-xs max-w-[150px] truncate">
+                                {tpl.badge}
+                              </span>
+
+                              {/* Snapshot Headline */}
+                              <div className="absolute bottom-2 left-2 right-2 text-white font-bold text-[11px] leading-tight drop-shadow-xs truncate">
+                                {tpl.headline}
+                              </div>
+
+                              {/* Hover Action Overlay */}
+                              <div className="absolute inset-0 bg-slate-950/60 backdrop-blur-2xs opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1.5 text-white">
+                                <Eye className="h-3.5 w-3.5 text-blue-400" />
+                                <span className="text-[11px] font-semibold">Inspect Snapshot</span>
+                              </div>
+                            </div>
                           </div>
 
-                          <div className="flex items-center gap-2 pt-3 mt-2 border-t border-slate-100 dark:border-slate-800/60">
-                            <button
-                              type="button"
-                              onClick={() => {
-                                const preset = TEMPLATE_LANDING_CONFIGS[tpl.slug];
-                                if (preset) {
-                                  setLandingConfig({ ...preset });
-                                  setPresetNotice(`Loaded "${preset.businessName}" preset! Click "Save & Publish" below to persist changes to this assistant.`);
-                                  setTimeout(() => setPresetNotice(null), 6000);
-                                }
-                              }}
-                              className="flex-1 py-1.5 px-2.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-[11px] font-semibold text-slate-800 dark:text-slate-200 transition text-center shadow-2xs cursor-pointer"
-                            >
-                              Load Preset
-                            </button>
-                            <a
-                              href={`/site/${tpl.slug}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 transition"
-                              title={`Preview ${tpl.name} live site`}
-                            >
-                              <ExternalLink className="h-3.5 w-3.5" />
-                            </a>
+                          {/* Template Details */}
+                          <div className="p-3.5 space-y-2.5 flex-1 flex flex-col justify-between">
+                            <div className="space-y-1.5">
+                              <div className="flex items-center justify-between gap-1.5">
+                                <div className="flex items-center gap-2 min-w-0">
+                                  <div className={`h-6 w-6 rounded-md flex items-center justify-center shrink-0 ${tpl.colorClass}`}>
+                                    <IconComponent className="h-3.5 w-3.5" />
+                                  </div>
+                                  <span className="text-xs font-bold text-slate-900 dark:text-white truncate">
+                                    {tpl.name}
+                                  </span>
+                                </div>
+                                {isActive && (
+                                  <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-blue-600 text-white shrink-0">
+                                    <Check className="h-2.5 w-2.5" />
+                                    <span>Active</span>
+                                  </span>
+                                )}
+                              </div>
+
+                              <p className="text-[10.5px] text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed">
+                                {tpl.description}
+                              </p>
+
+                              {/* Top 2 Services Sample Pills */}
+                              <div className="flex flex-wrap gap-1 pt-0.5">
+                                {tpl.servicesSample?.slice(0, 2).map((svc: string, sIdx: number) => (
+                                  <span
+                                    key={sIdx}
+                                    className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-[9.5px] font-medium text-slate-600 dark:text-slate-300 truncate max-w-[135px]"
+                                  >
+                                    {svc}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+
+                            {/* Card Footer Actions */}
+                            <div className="flex items-center gap-1.5 pt-2.5 border-t border-slate-100 dark:border-slate-800/80">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const preset = TEMPLATE_LANDING_CONFIGS[tpl.slug];
+                                  if (preset) {
+                                    setLandingConfig({ ...preset });
+                                    setPresetNotice(`Loaded "${preset.businessName}" preset! Click "Save & Publish" below to persist changes.`);
+                                    setTimeout(() => setPresetNotice(null), 6000);
+                                  }
+                                }}
+                                className="flex-1 py-1 px-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-[10.5px] font-semibold transition text-center cursor-pointer shadow-2xs"
+                              >
+                                Load Preset
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setInspectingSnapshot(tpl)}
+                                className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 transition cursor-pointer"
+                                title={`Inspect ${tpl.name} design snapshot`}
+                              >
+                                <Eye className="h-3.5 w-3.5" />
+                              </button>
+                              <a
+                                href={`/site/${tpl.slug}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 transition"
+                                title={`Open live site for ${tpl.name}`}
+                              >
+                                <ExternalLink className="h-3.5 w-3.5" />
+                              </a>
+                            </div>
                           </div>
                         </div>
                       );
@@ -1385,6 +1545,129 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
                     </button>
                   </div>
                 </form>
+
+                {/* Interactive Full Snapshot Inspector Modal */}
+                {inspectingSnapshot && (
+                  <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/75 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl max-w-2xl w-full shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+                      {/* Modal Top Bar */}
+                      <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                        <div className="flex items-center gap-2.5">
+                          <div className={`h-8 w-8 rounded-xl flex items-center justify-center ${inspectingSnapshot.colorClass}`}>
+                            {React.createElement(inspectingSnapshot.icon, { className: 'h-4 w-4' })}
+                          </div>
+                          <div>
+                            <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                              <span>{inspectingSnapshot.name}</span>
+                              <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-semibold">
+                                {inspectingSnapshot.category}
+                              </span>
+                            </h3>
+                            <p className="text-[11px] text-slate-400 font-mono">
+                              site.kortex.ai/{inspectingSnapshot.slug}
+                            </p>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setInspectingSnapshot(null)}
+                          className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                      </div>
+
+                      {/* Snapshot Preview Window */}
+                      <div className="overflow-y-auto p-5 space-y-4">
+                        {/* Hero Section Preview */}
+                        <div className="rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden relative shadow-sm">
+                          <div className="relative h-48 sm:h-56 w-full">
+                            <img
+                              src={inspectingSnapshot.heroImage}
+                              alt={inspectingSnapshot.name}
+                              className="w-full h-full object-cover"
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/50 to-slate-950/20" />
+                            <div className="absolute inset-0 p-5 flex flex-col justify-end text-white space-y-2">
+                              <span className="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-white/20 backdrop-blur-md self-start border border-white/30">
+                                {inspectingSnapshot.badge}
+                              </span>
+                              <h2 className="text-lg sm:text-xl font-black leading-tight max-w-lg">
+                                {inspectingSnapshot.headline}
+                              </h2>
+                              <p className="text-xs text-slate-200 line-clamp-2 max-w-md">
+                                {inspectingSnapshot.description}
+                              </p>
+                              <div className="pt-1">
+                                <span
+                                  style={{ backgroundColor: inspectingSnapshot.themeHex }}
+                                  className="inline-block px-4 py-1.5 rounded-xl text-white font-bold text-xs shadow-md"
+                                >
+                                  Book Appointment &rarr;
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Catalog Highlights */}
+                        <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30 space-y-2">
+                          <div className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                            Included Services &amp; Pricing Menu
+                          </div>
+                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                            {inspectingSnapshot.servicesSample?.map((svc: string, idx: number) => (
+                              <div
+                                key={idx}
+                                className="p-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-2 shadow-2xs"
+                              >
+                                <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
+                                <span className="truncate">{svc}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Modal Actions Footer */}
+                      <div className="p-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-3 bg-slate-50/50 dark:bg-slate-800/20">
+                        <a
+                          href={`/site/${inspectingSnapshot.slug}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-200 flex items-center gap-1.5 transition"
+                        >
+                          <ExternalLink className="h-3.5 w-3.5" />
+                          <span>Open Full Interactive Site</span>
+                        </a>
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => setInspectingSnapshot(null)}
+                            className="px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 cursor-pointer"
+                          >
+                            Cancel
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const preset = TEMPLATE_LANDING_CONFIGS[inspectingSnapshot.slug];
+                              if (preset) {
+                                setLandingConfig({ ...preset });
+                                setPresetNotice(`Loaded "${preset.businessName}" preset! Click "Save & Publish" below.`);
+                                setTimeout(() => setPresetNotice(null), 6000);
+                              }
+                              setInspectingSnapshot(null);
+                            }}
+                            className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-md shadow-blue-600/20 transition cursor-pointer"
+                          >
+                            Load This Preset
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
   );
 };
