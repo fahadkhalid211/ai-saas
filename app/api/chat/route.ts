@@ -132,10 +132,14 @@ export async function POST(req: NextRequest) {
     let detectedSentiment: 'urgent' | 'positive' | 'neutral' = 'neutral';
     let isEscalation = false;
 
-    const urgentRegex = /\b(cancel|refund|broken|horrible|terrible|frustrated|angry|scam|lawyer|sue|complaint|worst|unacceptable|stolen|human agent|speak to human|real person|manager|emergency|help me now|urgent)\b/i;
+    const humanAgentRegex = /\b(human|agent|person|representative|rep|manager|operator|specialist|support team|someone real|talk to a person|speak with someone|transfer me)\b/i;
+    const urgentRegex = /\b(cancel|refund|broken|horrible|terrible|frustrated|angry|scam|lawyer|sue|complaint|worst|unacceptable|stolen|emergency|help me now|urgent|dispute|chargeback)\b/i;
     const positiveRegex = /\b(thank|thanks|great|awesome|love|perfect|excellent|helpful|good job|amazing|kudos|appreciate)\b/i;
 
-    if (urgentRegex.test(latestUserMsg)) {
+    const asksForHuman = humanAgentRegex.test(latestUserMsg);
+    const isUrgent = urgentRegex.test(latestUserMsg);
+
+    if (asksForHuman || isUrgent) {
       detectedSentiment = 'urgent';
       isEscalation = true;
     } else if (positiveRegex.test(latestUserMsg)) {
@@ -146,14 +150,29 @@ export async function POST(req: NextRequest) {
     const conv = await Database.getOrCreateConversation(assistantId, visitorId, conversationId);
     const isFirstMessage = (conv.messages || []).length === 0;
     await Database.saveMessage(conv.id, 'user', latestUserMsg, [], 0, attachmentMeta);
+
+    const nextStatus = conv.isLiveTakeover
+      ? 'live_agent'
+      : isEscalation
+      ? 'waiting_for_agent'
+      : conv.status || 'bot';
+
     await Database.updateConversation(conv.id, {
       sentiment: detectedSentiment,
+      status: nextStatus,
       ...(isEscalation ? { escalated: true } : {}),
     });
 
-    // Notify dashboard for new chats or messages
+    // Notify dashboard for new chats, escalations, or messages
     try {
-      if (isFirstMessage) {
+      if (isEscalation && !conv.isLiveTakeover) {
+        await Database.addNotification({
+          title: asksForHuman ? 'Live Agent Requested' : 'Chat Escalation (Urgent)',
+          message: `Visitor requested human assistance: "${latestUserMsg.slice(0, 75)}"`,
+          type: 'chat_escalated',
+          metadata: { conversationId: conv.id, assistantId, sentiment: detectedSentiment },
+        });
+      } else if (isFirstMessage) {
         await Database.addNotification({
           title: 'New Live Visitor Chat',
           message: `A new visitor started a chat: "${latestUserMsg.slice(0, 75)}"`,
@@ -189,6 +208,45 @@ export async function POST(req: NextRequest) {
           })}\n\n`;
           controller.enqueue(encoder.encode(notificationMsg));
           controller.enqueue(encoder.encode(takeoverEvent));
+          controller.close();
+        },
+      });
+
+      return new Response(stream, {
+        headers: {
+          'Content-Type': 'text/event-stream; charset=utf-8',
+          'Cache-Control': 'no-cache, no-transform',
+          Connection: 'keep-alive',
+        },
+      });
+    }
+
+    // 3. If visitor specifically requested a human agent, emit handoff acknowledgment
+    if (asksForHuman && !conv.isLiveTakeover) {
+      const handoffText =
+        'I have alerted our live support team and connected your session. A human representative has received your message and will join this chat shortly.';
+      await Database.saveMessage(conv.id, 'assistant', handoffText, [], 0);
+
+      const encoder = new TextEncoder();
+      const stream = new ReadableStream({
+        start(controller) {
+          controller.enqueue(
+            encoder.encode(
+              `data: ${JSON.stringify({
+                type: 'token',
+                token: handoffText,
+              })}\n\n`
+            )
+          );
+          controller.enqueue(
+            encoder.encode(
+              `data: ${JSON.stringify({
+                type: 'escalation',
+                status: 'waiting_for_agent',
+                conversationId: conv.id,
+              })}\n\n`
+            )
+          );
           controller.close();
         },
       });

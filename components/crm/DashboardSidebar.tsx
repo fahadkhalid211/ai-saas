@@ -31,6 +31,7 @@ interface DashboardSidebarProps {
   leadsCount: number;
   appointmentsCount: number;
   conversationsCount: number;
+  waitingConversationsCount?: number;
 }
 
 export function DashboardSidebar({
@@ -42,6 +43,7 @@ export function DashboardSidebar({
   leadsCount,
   appointmentsCount,
   conversationsCount,
+  waitingConversationsCount = 0,
 }: DashboardSidebarProps) {
   const tabs = [
     { id: 'overview', label: 'Overview', icon: FileCheck },
@@ -59,7 +61,7 @@ export function DashboardSidebar({
     { id: 'widget', label: 'Widget & Styling', icon: Palette },
     { id: 'leads', label: 'Captured Leads', icon: Users, count: leadsCount },
     { id: 'appointments', label: 'Appointments', icon: Calendar, count: appointmentsCount },
-    { id: 'history', label: 'Chat History', icon: HistoryIcon, count: conversationsCount },
+    { id: 'history', label: 'Chat History', icon: HistoryIcon, count: conversationsCount, waitingCount: waitingConversationsCount },
     { id: 'templates', label: 'Bot Templates', icon: LayoutTemplate },
     { id: 'docs', label: 'Guides & Docs', icon: BookOpen },
   ];
@@ -89,17 +91,24 @@ export function DashboardSidebar({
                     <Icon className={`h-4 w-4 ${isActive ? 'text-blue-600 dark:text-blue-400' : 'text-slate-500'}`} />
                     <span>{tab.label}</span>
                   </div>
-                  {tab.count !== undefined && (
-                    <span
-                      className={`rounded px-1.5 py-0.5 text-[11px] font-mono ${
-                        isActive
-                          ? 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-300 font-bold'
-                          : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400'
-                      }`}
-                    >
-                      {tab.count}
-                    </span>
-                  )}
+                  <div className="flex items-center gap-1.5">
+                    {tab.waitingCount && tab.waitingCount > 0 ? (
+                      <span className="rounded-full bg-amber-500 text-white px-1.5 py-0.2 text-[10px] font-bold animate-pulse">
+                        {tab.waitingCount} Waiting
+                      </span>
+                    ) : null}
+                    {tab.count !== undefined && (
+                      <span
+                        className={`rounded px-1.5 py-0.5 text-[11px] font-mono ${
+                          isActive
+                            ? 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-300 font-bold'
+                            : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400'
+                        }`}
+                      >
+                        {tab.count}
+                      </span>
+                    )}
+                  </div>
                 </button>
               );
             })}

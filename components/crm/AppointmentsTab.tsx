@@ -12,6 +12,9 @@ import {
   Clock,
   Trash2,
   X,
+  Copy,
+  Check,
+  Share2,
 } from 'lucide-react';
 
 export interface Appointment {
@@ -53,6 +56,8 @@ export const AppointmentsTab: React.FC<AppointmentsTabProps> = ({
 }) => {
   const [appointmentFilter, setAppointmentFilter] = useState<'all' | 'confirmed' | 'pending' | 'completed' | 'cancelled'>('all');
   const [appointmentSearch, setAppointmentSearch] = useState('');
+  const [showCalendarSyncModal, setShowCalendarSyncModal] = useState(false);
+  const [copiedFeedUrl, setCopiedFeedUrl] = useState(false);
 
   return (
               <div className="max-w-6xl space-y-6 mx-auto">
@@ -66,11 +71,21 @@ export const AppointmentsTab: React.FC<AppointmentsTabProps> = ({
                       Manage client booking slots, track meeting status, and review consultation notes submitted via your AI widget.
                     </p>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
                     <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800 text-[11px] text-emerald-700 dark:text-emerald-300 font-medium">
                       <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
                       <span>Live Sync Active</span>
                     </div>
+
+                    <button
+                      type="button"
+                      onClick={() => setShowCalendarSyncModal(true)}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-emerald-300 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 text-xs font-semibold shadow-xs transition cursor-pointer"
+                      title="Sync with Google Calendar, Outlook, and Apple Calendar"
+                    >
+                      <Share2 className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+                      <span>Calendar Sync (.ics)</span>
+                    </button>
 
                     <button
                       type="button"
@@ -386,6 +401,142 @@ export const AppointmentsTab: React.FC<AppointmentsTabProps> = ({
                     </div>
                   )}
                 </div>
+
+                {/* Calendar Sync & Webcal Modal */}
+                {showCalendarSyncModal && (
+                  <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 backdrop-blur-xs p-4">
+                    <div className="w-full max-w-xl rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-2xl space-y-5 animate-in fade-in duration-150">
+                      <div className="flex items-start justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
+                        <div className="flex items-center gap-3">
+                          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
+                            <Calendar className="h-5 w-5" />
+                          </div>
+                          <div>
+                            <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+                              Live Calendar Sync (iCal / Webcal)
+                            </h3>
+                            <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                              Real-time two-way synchronization with Google Calendar, Outlook, and Apple Calendar.
+                            </p>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setShowCalendarSyncModal(false)}
+                          className="rounded-lg p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition cursor-pointer"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                      </div>
+
+                      <div className="space-y-4 text-xs">
+                        <div>
+                          <label className="text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider block mb-1.5">
+                            Your Live Calendar Subscription Feed URL
+                          </label>
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="text"
+                              readOnly
+                              value={
+                                typeof window !== 'undefined'
+                                  ? `${window.location.origin}/api/appointments/calendar?assistantId=${activeAssistant?.id || 'demo-assistant'}`
+                                  : `/api/appointments/calendar?assistantId=${activeAssistant?.id || 'demo-assistant'}`
+                              }
+                              className="flex-1 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 font-mono text-xs text-slate-800 dark:text-slate-200 select-all outline-none"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const feedUrl = `${window.location.origin}/api/appointments/calendar?assistantId=${activeAssistant?.id || 'demo-assistant'}`;
+                                navigator.clipboard.writeText(feedUrl);
+                                setCopiedFeedUrl(true);
+                                setTimeout(() => setCopiedFeedUrl(false), 2500);
+                              }}
+                              className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-semibold shadow-xs transition cursor-pointer shrink-0"
+                            >
+                              {copiedFeedUrl ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+                              <span>{copiedFeedUrl ? 'Copied!' : 'Copy Feed'}</span>
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Direct Actions */}
+                        <div className="flex flex-wrap items-center gap-2 pt-1">
+                          <a
+                            href={`/api/appointments/calendar?assistantId=${activeAssistant?.id || 'demo-assistant'}`}
+                            download="appointments.ics"
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold transition cursor-pointer"
+                          >
+                            <Download className="h-3.5 w-3.5 text-slate-500" />
+                            <span>Download Offline .ics</span>
+                          </a>
+
+                          <a
+                            href={
+                              typeof window !== 'undefined'
+                                ? `webcal://${window.location.host}/api/appointments/calendar?assistantId=${activeAssistant?.id || 'demo-assistant'}`
+                                : '#'
+                            }
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 text-xs font-semibold transition cursor-pointer"
+                          >
+                            <Calendar className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+                            <span>Subscribe in Apple / Outlook Calendar</span>
+                          </a>
+                        </div>
+
+                        {/* Setup Instructions Cards */}
+                        <div className="space-y-2.5 pt-2">
+                          <div className="text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                            How to Subscribe by App
+                          </div>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                            <div className="p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 space-y-1">
+                              <div className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                                <span className="h-2 w-2 rounded-full bg-blue-500"></span>
+                                <span>Google Calendar</span>
+                              </div>
+                              <p className="text-[11px] text-slate-600 dark:text-slate-400 leading-relaxed">
+                                Open Google Calendar &gt; Other calendars (+) &gt; <strong>From URL</strong> &gt; Paste your feed URL and click Add calendar.
+                              </p>
+                            </div>
+
+                            <div className="p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 space-y-1">
+                              <div className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                                <span className="h-2 w-2 rounded-full bg-sky-500"></span>
+                                <span>Microsoft Outlook</span>
+                              </div>
+                              <p className="text-[11px] text-slate-600 dark:text-slate-400 leading-relaxed">
+                                Go to Outlook Calendar &gt; <strong>Add Calendar</strong> &gt; <strong>Subscribe from web</strong> &gt; Paste URL &gt; Click Import.
+                              </p>
+                            </div>
+
+                            <div className="p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 space-y-1">
+                              <div className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                                <span className="h-2 w-2 rounded-full bg-purple-500"></span>
+                                <span>Apple Calendar</span>
+                              </div>
+                              <p className="text-[11px] text-slate-600 dark:text-slate-400 leading-relaxed">
+                                In Calendar, click <strong>File &gt; New Calendar Subscription</strong> &gt; Paste URL &gt; Choose refresh interval.
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="pt-3 border-t border-slate-200 dark:border-slate-800 flex justify-end">
+                          <button
+                            type="button"
+                            onClick={() => setShowCalendarSyncModal(false)}
+                            className="rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 px-4 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-200 transition cursor-pointer"
+                          >
+                            Close
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
   );
 };

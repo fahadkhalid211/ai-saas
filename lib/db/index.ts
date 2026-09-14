@@ -285,7 +285,7 @@ export interface InAppNotificationData {
   assistantId?: string;
   title: string;
   message: string;
-  type: 'appointment_booked' | 'appointment_cancelled' | 'lead_captured' | 'takeover_requested' | 'reminder_dispatched' | 'chat_new' | 'chat_message';
+  type: 'appointment_booked' | 'appointment_cancelled' | 'lead_captured' | 'takeover_requested' | 'reminder_dispatched' | 'chat_new' | 'chat_message' | 'chat_escalated';
   metadata?: Record<string, any>;
   read: boolean;
   createdAt: string;

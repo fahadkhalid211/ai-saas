@@ -190,6 +190,9 @@ export default function DashboardPage() {
           if (lastNotifIdRef.current && latest.id !== lastNotifIdRef.current && !latest.read) {
             playNotificationChime();
             setIncomingToast(latest);
+            if (latest.type === 'chat_escalated' && activeAssistant?.id) {
+              fetchConversations(activeAssistant.id);
+            }
           }
           lastNotifIdRef.current = latest.id;
         }
@@ -494,6 +497,14 @@ export default function DashboardPage() {
     }
   }, [activeAssistant?.id]);
 
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    const interval = setInterval(() => {
+      fetchNotifications();
+    }, 12000);
+    return () => clearInterval(interval);
+  }, [isAuthenticated, activeAssistant?.id]);
+
   const totalChunks = knowledge.sources.reduce((sum, s) => sum + (s.chunkCount || 0), 0);
 
   if (isAuthChecking) {
@@ -577,6 +588,7 @@ export default function DashboardPage() {
             leadsCount={leads.length}
             appointmentsCount={appointments.length}
             conversationsCount={conversations.length}
+            waitingConversationsCount={conversations.filter((c) => c.status === 'waiting_for_agent' && !c.isLiveTakeover).length}
           />
 
           {/* Main Content Workspace */}
@@ -965,6 +977,7 @@ export default function DashboardPage() {
           incomingToast={incomingToast}
           setIncomingToast={setIncomingToast}
           setIsNotifOpen={setIsNotifOpen}
+          setActiveTab={setActiveTab}
         />
       </div>
     </div>

@@ -1,8 +1,9 @@
 'use client';
 
 import React from 'react';
-import { Calendar, X, ExternalLink } from 'lucide-react';
+import { Calendar, X, ExternalLink, Download } from 'lucide-react';
 import { Appointment } from '@/components/crm/AppointmentsTab';
+import { generateGoogleCalendarUrl, generateOutlookCalendarUrl, generateSingleIcs } from '@/lib/calendar/ical';
 
 export interface AppointmentDetailsModalProps {
   appt: Appointment | null;
@@ -112,6 +113,75 @@ export const AppointmentDetailsModal: React.FC<AppointmentDetailsModalProps> = (
             </div>
             <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 whitespace-pre-wrap leading-relaxed">
               {appt.notes || <span className="text-slate-400 italic">No notes provided for this booking.</span>}
+            </div>
+          </div>
+
+          {/* Calendar Sync Shortcuts */}
+          <div className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/70 dark:bg-slate-800/50 space-y-2">
+            <div className="text-[10px] uppercase font-bold text-slate-500 dark:text-slate-400 tracking-wider">
+              Export &amp; Calendar Sync
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <a
+                href={generateGoogleCalendarUrl(
+                  {
+                    name: appt.name,
+                    email: appt.email,
+                    phone: appt.phone,
+                    date: appt.date,
+                    timeSlot: appt.timeSlot,
+                    durationMinutes: appt.durationMinutes,
+                    notes: appt.notes,
+                  },
+                  'Client Consultation',
+                  'Our Office'
+                )}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-semibold shadow-2xs transition"
+              >
+                <Calendar className="h-3.5 w-3.5 text-blue-600" />
+                <span>Add to Google Calendar</span>
+              </a>
+
+              <a
+                href={generateOutlookCalendarUrl(
+                  {
+                    name: appt.name,
+                    email: appt.email,
+                    phone: appt.phone,
+                    date: appt.date,
+                    timeSlot: appt.timeSlot,
+                    durationMinutes: appt.durationMinutes,
+                    notes: appt.notes,
+                  },
+                  'Client Consultation',
+                  'Our Office'
+                )}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-semibold shadow-2xs transition"
+              >
+                <Calendar className="h-3.5 w-3.5 text-sky-600" />
+                <span>Add to Outlook</span>
+              </a>
+
+              <button
+                type="button"
+                onClick={() => {
+                  const ics = generateSingleIcs(appt, 'Client Consultation');
+                  const blob = new Blob([ics], { type: 'text/calendar' });
+                  const url = URL.createObjectURL(blob);
+                  const link = document.createElement('a');
+                  link.href = url;
+                  link.download = `appointment-${appt.id}.ics`;
+                  link.click();
+                }}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-semibold shadow-2xs transition cursor-pointer"
+              >
+                <Download className="h-3.5 w-3.5 text-emerald-600" />
+                <span>Download .ics</span>
+              </button>
             </div>
           </div>
 

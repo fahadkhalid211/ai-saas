@@ -11,6 +11,7 @@ import {
   Globe,
   Calendar,
   Send,
+  Bot,
 } from 'lucide-react';
 
 export interface ConversationsTabProps {
@@ -33,7 +34,8 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
   playNotificationChime,
 }) => {
   const [selectedConversation, setSelectedConversation] = useState<any | null>(null);
-  const [conversationSentimentFilter, setConversationSentimentFilter] = useState<'all' | 'urgent' | 'positive' | 'neutral'>('all');
+  const [conversationSentimentFilter, setConversationSentimentFilter] = useState<'all' | 'waiting' | 'urgent' | 'positive' | 'neutral'>('all');
+  const waitingCount = conversations.filter((c) => c.status === 'waiting_for_agent' && !c.isLiveTakeover).length;
   const [agentNameInput, setAgentNameInput] = useState<string>('Alex (Support)');
   const [agentReplyText, setAgentReplyText] = useState<string>('');
   const [isSendingAgentMessage, setIsSendingAgentMessage] = useState<boolean>(false);
@@ -260,14 +262,25 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
                             onChange={(e) => setConversationSentimentFilter(e.target.value as any)}
                             className="text-[11px] font-medium rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-2 py-0.5 text-slate-700 dark:text-slate-300 outline-none"
                           >
-                            <option value="all">All Tone</option>
+                            <option value="all">All Sessions</option>
+                            <option value="waiting">Waiting for Agent ({waitingCount})</option>
                             <option value="urgent">Urgent</option>
                             <option value="positive">Positive</option>
                             <option value="neutral">Neutral</option>
                           </select>
                       </div>
                       <div className="divide-y divide-slate-100 dark:divide-slate-800 max-h-[600px] overflow-y-auto">
-                        {conversations.filter((c) => conversationSentimentFilter === 'all' || (c.sentiment || 'neutral') === conversationSentimentFilter).map((conv) => {
+                        {conversations
+                          .filter((c) => {
+                            if (conversationSentimentFilter === 'waiting') {
+                              return c.status === 'waiting_for_agent' && !c.isLiveTakeover;
+                            }
+                            if (conversationSentimentFilter === 'urgent') return c.sentiment === 'urgent' || c.escalated;
+                            if (conversationSentimentFilter === 'positive') return c.sentiment === 'positive';
+                            if (conversationSentimentFilter === 'neutral') return c.sentiment === 'neutral' || !c.sentiment;
+                            return true;
+                          })
+                          .map((conv) => {
                           const isSelected = selectedConversation?.id === conv.id;
                           const msgCount = conv.messages?.length || 0;
                           const lastMsg = conv.messages && conv.messages[conv.messages.length - 1];
@@ -287,7 +300,17 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
                                   {conv.visitorId ? conv.visitorId.slice(0, 14) : conv.id.slice(0, 10)}
                                 </span>
                                 <div className="flex items-center gap-1.5">
-                                  {conv.sentiment === 'urgent' && (
+                                  {conv.status === 'waiting_for_agent' && !conv.isLiveTakeover && (
+                                    <span className="flex items-center gap-0.5 rounded-full bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 px-1.5 py-0.5 text-[9px] font-bold border border-amber-300 dark:border-amber-800 animate-pulse">
+                                      <Headphones className="h-2.5 w-2.5" /> Waiting
+                                    </span>
+                                  )}
+                                  {conv.isLiveTakeover && (
+                                    <span className="flex items-center gap-0.5 rounded-full bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 px-1.5 py-0.5 text-[9px] font-bold border border-purple-300 dark:border-purple-800">
+                                      <Headphones className="h-2.5 w-2.5" /> Live Agent
+                                    </span>
+                                  )}
+                                  {conv.sentiment === 'urgent' && conv.status !== 'waiting_for_agent' && (
                                     <span className="flex items-center gap-0.5 rounded-full bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 px-1.5 py-0.5 text-[9px] font-bold border border-rose-200 dark:border-rose-800">
                                       <AlertCircle className="h-2.5 w-2.5" /> Urgent
                                     </span>
@@ -373,23 +396,54 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
                             </div>
                           </div>
 
+                          {/* Waiting for Agent Attention Banner */}
+                          {selectedConversation.status === 'waiting_for_agent' && !selectedConversation.isLiveTakeover && (
+                            <div className="bg-amber-50 dark:bg-amber-950/50 border border-amber-300 dark:border-amber-800 rounded-xl p-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
+                              <div className="flex items-center gap-2.5">
+                                <span className="relative flex h-3 w-3 shrink-0">
+                                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                                  <span className="relative inline-flex rounded-full h-3 w-3 bg-amber-500"></span>
+                                </span>
+                                <div>
+                                  <div className="font-bold text-amber-900 dark:text-amber-200 flex items-center gap-1.5">
+                                    <Headphones className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
+                                    <span>Customer Waiting for Live Agent</span>
+                                  </div>
+                                  <p className="text-[11px] text-amber-700 dark:text-amber-300 mt-0.5">
+                                    Visitor requested human assistance. Click to take over and start typing real-time responses.
+                                  </p>
+                                </div>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => handleToggleTakeover(selectedConversation.id, true)}
+                                className="px-3.5 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs shadow-xs transition shrink-0 cursor-pointer flex items-center gap-1.5"
+                              >
+                                <Headphones className="h-3.5 w-3.5" />
+                                <span>Accept &amp; Take Over</span>
+                              </button>
+                            </div>
+                          )}
+
+                          {/* Live Operator Active Banner */}
                           {selectedConversation.isLiveTakeover && (
-                            <div className="bg-purple-50 dark:bg-purple-950/50 border border-purple-200 dark:border-purple-800/80 rounded-xl p-3 flex items-center justify-between text-xs">
+                            <div className="bg-purple-50 dark:bg-purple-950/50 border border-purple-200 dark:border-purple-800/80 rounded-xl p-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-xs">
                               <div className="flex items-center gap-2">
                                 <span className="relative flex h-2.5 w-2.5">
                                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                                   <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
                                 </span>
                                 <span className="font-semibold text-purple-900 dark:text-purple-200">
-                                  Live Operator Mode Active &bull; AI Bot is Paused
+                                  Live Operator Mode Active &bull; Assigned to: <strong>{selectedConversation.assignedAgentName || agentNameInput}</strong>
                                 </span>
                               </div>
                               <button
                                 type="button"
                                 onClick={() => handleToggleTakeover(selectedConversation.id, false)}
-                                className="text-[11px] font-semibold text-purple-700 dark:text-purple-300 hover:underline cursor-pointer"
+                                className="text-[11px] font-semibold text-purple-700 dark:text-purple-300 bg-white dark:bg-slate-900 border border-purple-200 dark:border-purple-700 hover:bg-purple-100 dark:hover:bg-purple-950/60 px-3 py-1 rounded-lg transition cursor-pointer flex items-center gap-1"
                               >
-                                Release to AI Bot &rarr;
+                                <Bot className="h-3 w-3 text-purple-500" />
+                                <span>Hand Back to AI</span>
                               </button>
                             </div>
                           )}

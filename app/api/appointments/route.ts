@@ -30,12 +30,26 @@ export async function GET(req: Request) {
       return NextResponse.json({ appointment: apt });
     }
 
+    const assistantId = searchParams.get('assistantId');
+    const checkDate = searchParams.get('checkDate');
+
+    // Public live slot availability check for booking widgets and landing pages
+    if (checkDate && assistantId) {
+      const allAppointments = await Database.getAppointments(assistantId);
+      const bookedSlots = allAppointments
+        .filter((a) => a.date === checkDate && a.status !== 'cancelled')
+        .map((a) => a.timeSlot);
+
+      return NextResponse.json(
+        { date: checkDate, bookedSlots },
+        { headers: { 'Access-Control-Allow-Origin': '*' } }
+      );
+    }
+
     // Only authenticated admins can view list of booked appointments
     if (!(await verifyAdminRequest(req))) {
       return NextResponse.json({ error: 'Unauthorized: Admin authentication required' }, { status: 401 });
     }
-
-    const assistantId = searchParams.get('assistantId');
 
     if (!assistantId) {
       return NextResponse.json(
@@ -191,6 +205,18 @@ export async function POST(req: Request) {
 
     const resolvedDuration = durationMinutes || assistant.bookingSlotDuration || 30;
     const landingConfig = assistant.landingPageConfig || DEFAULT_BARBER_LANDING_CONFIG;
+
+    // Live availability check: prevent double-booking
+    const existingAppointments = await Database.getAppointments(assistantId);
+    const conflict = existingAppointments.find(
+      (a) => a.date === date.trim() && a.timeSlot === timeSlot.trim() && a.status !== 'cancelled'
+    );
+    if (conflict) {
+      return NextResponse.json(
+        { error: `The time slot "${timeSlot.trim()}" on ${date.trim()} has already been booked. Please select another time.` },
+        { status: 409, headers: { 'Access-Control-Allow-Origin': '*' } }
+      );
+    }
 
     const appointment = await Database.saveAppointment({
       assistantId,

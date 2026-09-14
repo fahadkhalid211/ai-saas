@@ -31,7 +31,9 @@ import {
   Bot,
   Sun,
   Moon,
+  Download,
 } from 'lucide-react';
+import { generateGoogleCalendarUrl, generateOutlookCalendarUrl, generateSingleIcs } from '@/lib/calendar/ical';
 import {
   LandingPageConfig,
   LandingPageServiceItem,
@@ -244,6 +246,8 @@ export default function HostedBusinessSite({ params }: SitePageProps) {
   const [bookingSubmitting, setBookingSubmitting] = useState(false);
   const [bookingSuccessData, setBookingSuccessData] = useState<any>(null);
   const [bookingError, setBookingError] = useState<string | null>(null);
+  const [occupiedSlots, setOccupiedSlots] = useState<string[]>([]);
+  const [isLoadingSlots, setIsLoadingSlots] = useState(false);
 
   // Manage Booking Modal (via manageToken)
   const [manageToken, setManageToken] = useState<string | null>(null);
@@ -531,6 +535,37 @@ export default function HostedBusinessSite({ params }: SitePageProps) {
     }
     return slots;
   }, []);
+
+  // Check live availability for selected booking date to avoid double bookings
+  useEffect(() => {
+    if (!bookingDate) {
+      setOccupiedSlots([]);
+      return;
+    }
+    let isCancelled = false;
+    setIsLoadingSlots(true);
+    fetch(
+      `/api/appointments?assistantId=${encodeURIComponent(assistantId || 'demo-assistant')}&checkDate=${encodeURIComponent(
+        bookingDate
+      )}`
+    )
+      .then((res) => (res.ok ? res.json() : { bookedSlots: [] }))
+      .then((data) => {
+        if (!isCancelled) {
+          setOccupiedSlots(data.bookedSlots || []);
+        }
+      })
+      .catch(() => {
+        if (!isCancelled) setOccupiedSlots([]);
+      })
+      .finally(() => {
+        if (!isCancelled) setIsLoadingSlots(false);
+      });
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [bookingDate, assistantId]);
 
   const openBookingForService = (service: LandingPageServiceItem) => {
     setSelectedService(service);
@@ -1102,15 +1137,22 @@ export default function HostedBusinessSite({ params }: SitePageProps) {
                     />
                   </div>
                   <div>
-                    <label className={`block text-xs font-medium ${isDark ? 'text-slate-300' : 'text-slate-700'} mb-1.5`}>Time Slot</label>
+                    <label className={`block text-xs font-medium ${isDark ? 'text-slate-300' : 'text-slate-700'} mb-1.5`}>
+                      Time Slot {isLoadingSlots ? '(Checking availability...)' : ''}
+                    </label>
                     <select
                       value={bookingTime}
                       onChange={(e) => setBookingTime(e.target.value)}
                       className={`w-full ${isDark ? 'bg-slate-950 border-slate-800 text-white' : 'bg-slate-50 border-slate-300 text-slate-900'} border rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-amber-500`}
                     >
-                      {availableSlots.map((slot) => (
-                        <option key={slot} value={slot}>{slot}</option>
-                      ))}
+                      {availableSlots.map((slot) => {
+                        const isBooked = occupiedSlots.includes(slot);
+                        return (
+                          <option key={slot} value={slot} disabled={isBooked}>
+                            {slot} {isBooked ? '(Reserved / Unavailable)' : ''}
+                          </option>
+                        );
+                      })}
                     </select>
                   </div>
                 </div>
@@ -1211,6 +1253,83 @@ export default function HostedBusinessSite({ params }: SitePageProps) {
                   <div className="flex justify-between">
                     <span className={isDark ? 'text-slate-400' : 'text-slate-500'}>Reminders:</span>
                     <span className="text-emerald-500 font-medium">Active (24h & 1h prior)</span>
+                  </div>
+                </div>
+
+                {/* 1-Click Calendar Sync for Client */}
+                <div className="pt-1 space-y-2">
+                  <div className={`text-xs font-semibold ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                    Add to Your Calendar
+                  </div>
+                  <div className="flex flex-wrap gap-2 justify-center">
+                    <a
+                      href={generateGoogleCalendarUrl(
+                        {
+                          name: bookingSuccessData.name,
+                          email: bookingSuccessData.email,
+                          phone: bookingSuccessData.phone,
+                          date: bookingSuccessData.date,
+                          timeSlot: bookingSuccessData.timeSlot,
+                          durationMinutes: bookingSuccessData.durationMinutes,
+                          serviceName: bookingSuccessData.serviceName,
+                          notes: bookingSuccessData.notes,
+                        },
+                        landingConfig.businessName || 'Our Business',
+                        landingConfig.address || ''
+                      )}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold shadow-xs transition"
+                    >
+                      <Calendar className="w-3.5 h-3.5" />
+                      <span>Google Calendar</span>
+                    </a>
+
+                    <a
+                      href={generateOutlookCalendarUrl(
+                        {
+                          name: bookingSuccessData.name,
+                          email: bookingSuccessData.email,
+                          phone: bookingSuccessData.phone,
+                          date: bookingSuccessData.date,
+                          timeSlot: bookingSuccessData.timeSlot,
+                          durationMinutes: bookingSuccessData.durationMinutes,
+                          serviceName: bookingSuccessData.serviceName,
+                          notes: bookingSuccessData.notes,
+                        },
+                        landingConfig.businessName || 'Our Business',
+                        landingConfig.address || ''
+                      )}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-sky-600 hover:bg-sky-500 text-white text-xs font-semibold shadow-xs transition"
+                    >
+                      <Calendar className="w-3.5 h-3.5" />
+                      <span>Outlook</span>
+                    </a>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const ics = generateSingleIcs(
+                          bookingSuccessData,
+                          landingConfig.businessName || 'Our Business',
+                          landingConfig.address || ''
+                        );
+                        const blob = new Blob([ics], { type: 'text/calendar' });
+                        const url = URL.createObjectURL(blob);
+                        const link = document.createElement('a');
+                        link.href = url;
+                        link.download = `appointment-${bookingSuccessData.id || 'confirmed'}.ics`;
+                        link.click();
+                      }}
+                      className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-xl ${
+                        isDark ? 'bg-slate-800 hover:bg-slate-700 text-white' : 'bg-slate-200 hover:bg-slate-300 text-slate-800'
+                      } text-xs font-semibold transition cursor-pointer`}
+                    >
+                      <Download className="w-3.5 h-3.5" />
+                      <span>Download .ics</span>
+                    </button>
                   </div>
                 </div>
 
