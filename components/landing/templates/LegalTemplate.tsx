@@ -538,12 +538,12 @@ export const LegalTemplate: React.FC<IndustryTemplateProps> = ({
       </section>
 
       {/* 11. FINAL CTA */}
-      <section className={`py-20 border-t ${isDark ? 'border-slate-800 bg-slate-950' : 'border-slate-200 bg-slate-900 text-white'}`}>
+      <section className={`py-20 border-t ${isDark ? 'border-slate-800 bg-slate-950 text-slate-100' : 'border-slate-200 bg-slate-50 text-slate-900'}`}>
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6">
-          <h3 className="text-3xl sm:text-5xl font-serif font-bold tracking-tight">
+          <h3 className={`text-3xl sm:text-5xl font-serif font-bold tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>
             Schedule a Confidential Case Evaluation
           </h3>
-          <p className="text-sm sm:text-base text-slate-400 max-w-xl mx-auto">
+          <p className={`text-sm sm:text-base ${isDark ? 'text-slate-400' : 'text-slate-600'} max-w-xl mx-auto`}>
             Discuss your dispute or corporate matter under full Attorney-Client Privilege protection.
           </p>
           <div className="pt-2 flex flex-wrap justify-center gap-4">
@@ -555,9 +555,9 @@ export const LegalTemplate: React.FC<IndustryTemplateProps> = ({
             </button>
             <button
               onClick={onOpenChat}
-              className="px-6 py-3.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold text-xs tracking-wider uppercase border border-slate-700 transition-colors flex items-center gap-2 cursor-pointer"
+              className={`px-6 py-3.5 rounded-xl ${isDark ? 'bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700' : 'bg-white hover:bg-slate-100 text-slate-800 border-slate-200 shadow-xs'} font-semibold text-xs tracking-wider uppercase border transition-colors flex items-center gap-2 cursor-pointer`}
             >
-              <MessageSquare className="w-3.5 h-3.5 text-blue-400" />
+              <MessageSquare className="w-3.5 h-3.5 text-blue-500" />
               <span>Privileged Counsel Chat</span>
             </button>
           </div>

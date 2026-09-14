@@ -548,12 +548,12 @@ export const BarbershopTemplate: React.FC<IndustryTemplateProps> = ({
       </section>
 
       {/* 12. FINAL PRIORITY CHAIR CTA */}
-      <section className={`py-20 border-t ${isDark ? 'border-amber-900/60 bg-[#0A0705]' : 'border-amber-200 bg-slate-950 text-white'}`}>
+      <section className={`py-20 border-t ${isDark ? 'border-amber-900/60 bg-[#0A0705] text-amber-50' : 'border-amber-200 bg-amber-50/70 text-slate-900'}`}>
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6">
-          <h3 className="text-3xl sm:text-5xl font-serif font-bold tracking-tight">
+          <h3 className={`text-3xl sm:text-5xl font-serif font-bold tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>
             Reserve Your Chair Today
           </h3>
-          <p className="text-sm sm:text-base text-amber-200/70 max-w-xl mx-auto">
+          <p className={`text-sm sm:text-base ${isDark ? 'text-amber-200/70' : 'text-slate-600'} max-w-xl mx-auto`}>
             Experience the gold standard in master grooming. Walk out confident.
           </p>
           <div className="pt-2 flex flex-wrap justify-center gap-4">
@@ -565,9 +565,9 @@ export const BarbershopTemplate: React.FC<IndustryTemplateProps> = ({
             </button>
             <button
               onClick={onOpenChat}
-              className="px-6 py-3.5 rounded-xl bg-amber-950/60 hover:bg-amber-900 text-amber-200 font-semibold text-xs tracking-wider uppercase border border-amber-800 transition-colors flex items-center gap-2 cursor-pointer"
+              className={`px-6 py-3.5 rounded-xl ${isDark ? 'bg-amber-950/60 hover:bg-amber-900 text-amber-200 border-amber-800' : 'bg-white hover:bg-amber-100 text-amber-900 border-amber-300 shadow-sm'} font-semibold text-xs tracking-wider uppercase border transition-colors flex items-center gap-2 cursor-pointer`}
             >
-              <MessageSquare className="w-3.5 h-3.5 text-amber-400" />
+              <MessageSquare className="w-3.5 h-3.5 text-amber-500" />
               <span>Ask Available Chairs</span>
             </button>
           </div>

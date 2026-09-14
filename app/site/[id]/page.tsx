@@ -365,6 +365,16 @@ export default function HostedBusinessSite({ params }: SitePageProps) {
     }
   };
 
+  useEffect(() => {
+    if (typeof document !== 'undefined') {
+      if (isDark) {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    }
+  }, [isDark]);
+
   // Dynamic SEO Meta Tags
   useEffect(() => {
     if (typeof document === 'undefined') return;
@@ -843,7 +853,7 @@ export default function HostedBusinessSite({ params }: SitePageProps) {
   const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(currentUrl)}`;
 
   return (
-    <div className={`min-h-screen ${isDark ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'} font-sans ${currentTheme.selectionBg} transition-colors duration-200`}>
+    <div className={`min-h-screen ${isDark ? 'dark bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'} font-sans ${currentTheme.selectionBg} transition-colors duration-200`}>
       {/* Top Announcement Bar */}
       <div className={`${currentTheme.badgeBg} py-2 px-4 text-center text-xs font-semibold tracking-wider uppercase flex items-center justify-center gap-2 shadow-xs`}>
         <Sparkles className="w-3.5 h-3.5" />
@@ -1048,10 +1058,10 @@ export default function HostedBusinessSite({ params }: SitePageProps) {
       {/* Booking Appointment Modal */}
       {isBookingOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 overflow-y-auto">
-          <div className="relative w-full max-w-lg bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl my-8">
+          <div className={`relative w-full max-w-lg ${isDark ? 'bg-slate-900 border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-900 shadow-2xl'} border rounded-3xl p-6 sm:p-8 my-8`}>
             <button
               onClick={() => setIsBookingOpen(false)}
-              className="absolute top-6 right-6 text-slate-400 hover:text-white transition-colors"
+              className={`absolute top-6 right-6 ${isDark ? 'text-slate-400 hover:text-white' : 'text-slate-400 hover:text-slate-800'} transition-colors`}
             >
               <X className="w-5 h-5" />
             </button>
@@ -1059,13 +1069,13 @@ export default function HostedBusinessSite({ params }: SitePageProps) {
             {!bookingSuccessData ? (
               <form onSubmit={handleBookingSubmit} className="space-y-5">
                 <div>
-                  <span className="text-amber-400 text-xs font-bold uppercase tracking-wider">Book Your Chair</span>
-                  <h3 className="text-2xl font-bold text-white mt-1">
+                  <span className={`${currentTheme.accentText} text-xs font-bold uppercase tracking-wider`}>Book Your Chair</span>
+                  <h3 className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-slate-900'} mt-1`}>
                     {selectedService ? selectedService.name : 'Schedule Appointment'}
                   </h3>
                   {selectedService && (
-                    <div className="flex items-center gap-3 text-xs text-slate-400 mt-1.5">
-                      <span className="text-amber-400 font-bold">${selectedService.price}</span>
+                    <div className={`flex items-center gap-3 text-xs ${isDark ? 'text-slate-400' : 'text-slate-500'} mt-1.5`}>
+                      <span className={`${currentTheme.accentText} font-bold`}>${selectedService.price}</span>
                       <span>&bull;</span>
                       <span>{selectedService.durationMinutes} Minutes</span>
                     </div>
@@ -1081,22 +1091,22 @@ export default function HostedBusinessSite({ params }: SitePageProps) {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-medium text-slate-300 mb-1.5">Preferred Date</label>
+                    <label className={`block text-xs font-medium ${isDark ? 'text-slate-300' : 'text-slate-700'} mb-1.5`}>Preferred Date</label>
                     <input
                       type="date"
                       required
                       min={new Date().toISOString().split('T')[0]}
                       value={bookingDate}
                       onChange={(e) => setBookingDate(e.target.value)}
-                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-amber-500"
+                      className={`w-full ${isDark ? 'bg-slate-950 border-slate-800 text-white' : 'bg-slate-50 border-slate-300 text-slate-900'} border rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-amber-500`}
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-slate-300 mb-1.5">Time Slot</label>
+                    <label className={`block text-xs font-medium ${isDark ? 'text-slate-300' : 'text-slate-700'} mb-1.5`}>Time Slot</label>
                     <select
                       value={bookingTime}
                       onChange={(e) => setBookingTime(e.target.value)}
-                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-amber-500"
+                      className={`w-full ${isDark ? 'bg-slate-950 border-slate-800 text-white' : 'bg-slate-50 border-slate-300 text-slate-900'} border rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-amber-500`}
                     >
                       {availableSlots.map((slot) => (
                         <option key={slot} value={slot}>{slot}</option>
@@ -1106,56 +1116,56 @@ export default function HostedBusinessSite({ params }: SitePageProps) {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-medium text-slate-300 mb-1.5">Your Full Name</label>
+                  <label className={`block text-xs font-medium ${isDark ? 'text-slate-300' : 'text-slate-700'} mb-1.5`}>Your Full Name</label>
                   <input
                     type="text"
                     required
                     placeholder="e.g. Marcus Vance"
                     value={clientName}
                     onChange={(e) => setClientName(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-amber-500 placeholder:text-slate-600"
+                    className={`w-full ${isDark ? 'bg-slate-950 border-slate-800 text-white placeholder:text-slate-600' : 'bg-slate-50 border-slate-300 text-slate-900 placeholder:text-slate-400'} border rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-amber-500`}
                   />
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-medium text-slate-300 mb-1.5">Email (For 24h/1h Reminders)</label>
+                    <label className={`block text-xs font-medium ${isDark ? 'text-slate-300' : 'text-slate-700'} mb-1.5`}>Email (For 24h/1h Reminders)</label>
                     <input
                       type="email"
                       required
                       placeholder="client@gmail.com"
                       value={clientEmail}
                       onChange={(e) => setClientEmail(e.target.value)}
-                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-amber-500 placeholder:text-slate-600"
+                      className={`w-full ${isDark ? 'bg-slate-950 border-slate-800 text-white placeholder:text-slate-600' : 'bg-slate-50 border-slate-300 text-slate-900 placeholder:text-slate-400'} border rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-amber-500`}
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-slate-300 mb-1.5">Phone Number</label>
+                    <label className={`block text-xs font-medium ${isDark ? 'text-slate-300' : 'text-slate-700'} mb-1.5`}>Phone Number</label>
                     <input
                       type="tel"
                       placeholder="+1 (555) 019-2831"
                       value={clientPhone}
                       onChange={(e) => setClientPhone(e.target.value)}
-                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-amber-500 placeholder:text-slate-600"
+                      className={`w-full ${isDark ? 'bg-slate-950 border-slate-800 text-white placeholder:text-slate-600' : 'bg-slate-50 border-slate-300 text-slate-900 placeholder:text-slate-400'} border rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-amber-500`}
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-medium text-slate-300 mb-1.5">Notes or Special Preferences</label>
+                  <label className={`block text-xs font-medium ${isDark ? 'text-slate-300' : 'text-slate-700'} mb-1.5`}>Notes or Special Preferences</label>
                   <textarea
                     rows={2}
                     placeholder="e.g. Skin taper fade, beard sculpting, or preferred barber"
                     value={bookingNotes}
                     onChange={(e) => setBookingNotes(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-amber-500 placeholder:text-slate-600 resize-none"
+                    className={`w-full ${isDark ? 'bg-slate-950 border-slate-800 text-white placeholder:text-slate-600' : 'bg-slate-50 border-slate-300 text-slate-900 placeholder:text-slate-400'} border rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-amber-500 resize-none`}
                   />
                 </div>
 
                 <button
                   type="submit"
                   disabled={bookingSubmitting}
-                  className="w-full py-3.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-xl text-sm transition-all shadow-lg shadow-amber-500/25 flex items-center justify-center gap-2 disabled:opacity-50"
+                  className={`w-full py-3.5 ${currentTheme.btnBg} ${currentTheme.btnHoverBg} ${currentTheme.btnText} font-bold rounded-xl text-sm transition-all shadow-lg flex items-center justify-center gap-2 disabled:opacity-50`}
                 >
                   {bookingSubmitting ? (
                     <>
@@ -1177,37 +1187,37 @@ export default function HostedBusinessSite({ params }: SitePageProps) {
                 </div>
 
                 <div>
-                  <h3 className="text-2xl font-bold text-white">Chair Confirmed!</h3>
-                  <p className="text-sm text-slate-300 mt-1">
+                  <h3 className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>Chair Confirmed!</h3>
+                  <p className={`text-sm ${isDark ? 'text-slate-300' : 'text-slate-600'} mt-1`}>
                     We look forward to seeing you, <strong>{bookingSuccessData.name}</strong>.
                   </p>
                 </div>
 
-                <div className="bg-slate-950 border border-slate-800 rounded-2xl p-4 text-left text-sm space-y-2">
+                <div className={`${isDark ? 'bg-slate-950 border-slate-800' : 'bg-slate-50 border-slate-200'} border rounded-2xl p-4 text-left text-sm space-y-2`}>
                   <div className="flex justify-between">
-                    <span className="text-slate-400">Service:</span>
-                    <span className="font-semibold text-white">{bookingSuccessData.serviceName}</span>
+                    <span className={isDark ? 'text-slate-400' : 'text-slate-500'}>Service:</span>
+                    <span className={`font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}>{bookingSuccessData.serviceName}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-slate-400">Date & Time:</span>
-                    <span className="font-semibold text-amber-400">
+                    <span className={isDark ? 'text-slate-400' : 'text-slate-500'}>Date & Time:</span>
+                    <span className={`${currentTheme.accentText} font-semibold`}>
                       {bookingSuccessData.date} at {bookingSuccessData.timeSlot}
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-slate-400">Shop:</span>
-                    <span className="text-slate-300">{landingConfig.businessName}</span>
+                    <span className={isDark ? 'text-slate-400' : 'text-slate-500'}>Shop:</span>
+                    <span className={isDark ? 'text-slate-300' : 'text-slate-700'}>{landingConfig.businessName}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-slate-400">Reminders:</span>
-                    <span className="text-emerald-400 font-medium">Active (24h & 1h prior)</span>
+                    <span className={isDark ? 'text-slate-400' : 'text-slate-500'}>Reminders:</span>
+                    <span className="text-emerald-500 font-medium">Active (24h & 1h prior)</span>
                   </div>
                 </div>
 
                 <div className="space-y-3 pt-2">
                   <button
                     onClick={() => setIsBookingOpen(false)}
-                    className="w-full py-3 bg-slate-800 hover:bg-slate-700 text-white font-medium rounded-xl text-sm transition-colors"
+                    className={`w-full py-3 ${isDark ? 'bg-slate-800 hover:bg-slate-700 text-white' : 'bg-slate-900 hover:bg-slate-800 text-white'} font-medium rounded-xl text-sm transition-colors`}
                   >
                     Done
                   </button>
@@ -1221,16 +1231,16 @@ export default function HostedBusinessSite({ params }: SitePageProps) {
       {/* Managed Appointment Modal (Reschedule / Cancel) */}
       {manageToken && managedAppointment && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-4">
-          <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl relative">
+          <div className={`w-full max-w-md ${isDark ? 'bg-slate-900 border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-900 shadow-2xl'} border rounded-3xl p-6 sm:p-8 relative`}>
             <button
               onClick={() => setManageToken(null)}
-              className="absolute top-6 right-6 text-slate-400 hover:text-white"
+              className={`absolute top-6 right-6 ${isDark ? 'text-slate-400 hover:text-white' : 'text-slate-400 hover:text-slate-800'}`}
             >
               <X className="w-5 h-5" />
             </button>
 
-            <span className="text-amber-400 text-xs font-bold uppercase tracking-wider">Client Self-Service</span>
-            <h3 className="text-2xl font-bold text-white mt-1">Manage Your Booking</h3>
+            <span className={`${currentTheme.accentText} text-xs font-bold uppercase tracking-wider`}>Client Self-Service</span>
+            <h3 className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-slate-900'} mt-1`}>Manage Your Booking</h3>
 
             {manageSuccessMsg && (
               <div className="mt-4 p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-xl text-xs text-emerald-400 flex items-center gap-2">
@@ -1246,22 +1256,22 @@ export default function HostedBusinessSite({ params }: SitePageProps) {
               </div>
             )}
 
-            <div className="mt-5 p-4 rounded-2xl bg-slate-950 border border-slate-800 text-xs space-y-2">
+            <div className={`mt-5 p-4 rounded-2xl ${isDark ? 'bg-slate-950 border-slate-800' : 'bg-slate-50 border-slate-200'} border text-xs space-y-2`}>
               <div className="flex justify-between">
-                <span className="text-slate-400">Client:</span>
-                <span className="text-white font-medium">{managedAppointment.name}</span>
+                <span className={isDark ? 'text-slate-400' : 'text-slate-500'}>Client:</span>
+                <span className={`${isDark ? 'text-white' : 'text-slate-900'} font-medium`}>{managedAppointment.name}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-400">Service:</span>
-                <span className="text-white font-medium">{managedAppointment.serviceName || 'Haircut'}</span>
+                <span className={isDark ? 'text-slate-400' : 'text-slate-500'}>Service:</span>
+                <span className={`${isDark ? 'text-white' : 'text-slate-900'} font-medium`}>{managedAppointment.serviceName || 'Haircut'}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-400">Current Slot:</span>
-                <span className="text-amber-400 font-semibold">{managedAppointment.date} at {managedAppointment.timeSlot}</span>
+                <span className={isDark ? 'text-slate-400' : 'text-slate-500'}>Current Slot:</span>
+                <span className={`${currentTheme.accentText} font-semibold`}>{managedAppointment.date} at {managedAppointment.timeSlot}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-400">Status:</span>
-                <span className={`capitalize font-semibold ${managedAppointment.status === 'cancelled' ? 'text-rose-400' : 'text-emerald-400'}`}>
+                <span className={isDark ? 'text-slate-400' : 'text-slate-500'}>Status:</span>
+                <span className={`capitalize font-semibold ${managedAppointment.status === 'cancelled' ? 'text-rose-400' : 'text-emerald-500'}`}>
                   {managedAppointment.status}
                 </span>
               </div>
@@ -1270,21 +1280,21 @@ export default function HostedBusinessSite({ params }: SitePageProps) {
             {managedAppointment.status !== 'cancelled' && (
               <div className="mt-6 space-y-4">
                 <div>
-                  <label className="block text-xs font-medium text-slate-300 mb-1">Pick New Date</label>
+                  <label className={`block text-xs font-medium ${isDark ? 'text-slate-300' : 'text-slate-700'} mb-1`}>Pick New Date</label>
                   <input
                     type="date"
                     min={new Date().toISOString().split('T')[0]}
                     value={rescheduleDate}
                     onChange={(e) => setRescheduleDate(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white"
+                    className={`w-full ${isDark ? 'bg-slate-950 border-slate-800 text-white' : 'bg-slate-50 border-slate-300 text-slate-900'} border rounded-xl px-3 py-2 text-xs`}
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-slate-300 mb-1">Pick New Time</label>
+                  <label className={`block text-xs font-medium ${isDark ? 'text-slate-300' : 'text-slate-700'} mb-1`}>Pick New Time</label>
                   <select
                     value={rescheduleTime}
                     onChange={(e) => setRescheduleTime(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white"
+                    className={`w-full ${isDark ? 'bg-slate-950 border-slate-800 text-white' : 'bg-slate-50 border-slate-300 text-slate-900'} border rounded-xl px-3 py-2 text-xs`}
                   >
                     {availableSlots.map((s) => (
                       <option key={s} value={s}>{s}</option>
@@ -1296,7 +1306,7 @@ export default function HostedBusinessSite({ params }: SitePageProps) {
                   <button
                     onClick={handleClientReschedule}
                     disabled={isRescheduling}
-                    className="flex-1 py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-xl text-xs transition-colors flex items-center justify-center gap-1.5"
+                    className={`flex-1 py-2.5 ${currentTheme.btnBg} ${currentTheme.btnHoverBg} ${currentTheme.btnText} font-bold rounded-xl text-xs transition-colors flex items-center justify-center gap-1.5`}
                   >
                     <CalendarCheck className="w-4 h-4" />
                     <span>{isRescheduling ? 'Rescheduling...' : 'Confirm New Time'}</span>
@@ -1305,7 +1315,7 @@ export default function HostedBusinessSite({ params }: SitePageProps) {
                   <button
                     onClick={handleClientCancel}
                     disabled={isCancelling}
-                    className="px-4 py-2.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 font-medium rounded-xl text-xs transition-colors flex items-center gap-1.5"
+                    className="px-4 py-2.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 border border-rose-500/30 font-medium rounded-xl text-xs transition-colors flex items-center gap-1.5 cursor-pointer"
                   >
                     <CalendarX className="w-4 h-4" />
                     <span>{isCancelling ? 'Cancelling...' : 'Cancel Slot'}</span>
@@ -1328,24 +1338,24 @@ export default function HostedBusinessSite({ params }: SitePageProps) {
             <span className="text-sm">Chat with {landingConfig.businessName.split(' ')[0]} AI</span>
           </button>
         ) : (
-          <div className="w-[360px] sm:w-[400px] h-[520px] bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl flex flex-col overflow-hidden">
+          <div className={`w-[360px] sm:w-[400px] h-[520px] ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'} border rounded-3xl shadow-2xl flex flex-col overflow-hidden`}>
             {/* Chat Header */}
-            <div className="bg-slate-950 border-b border-slate-800 p-4 flex items-center justify-between">
+            <div className={`${isDark ? 'bg-slate-950 border-slate-800' : 'bg-slate-50 border-slate-200'} border-b p-4 flex items-center justify-between`}>
               <div className="flex items-center gap-3">
                 <div className={`w-8 h-8 rounded-full ${currentTheme.lightBg} ${currentTheme.accentText} border ${currentTheme.accentBorder} flex items-center justify-center`}>
                   <IndustryIcon industry={landingConfig.industry} className="w-4 h-4" />
                 </div>
                 <div>
-                  <div className="text-sm font-bold text-white">{landingConfig.businessName} AI</div>
-                  <div className="text-xs text-emerald-400 flex items-center gap-1">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  <div className={`text-sm font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>{landingConfig.businessName} AI</div>
+                  <div className="text-xs text-emerald-500 flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                     <span>Online & Ready to Assist</span>
                   </div>
                 </div>
               </div>
               <button
                 onClick={() => setIsChatOpen(false)}
-                className="text-slate-400 hover:text-white transition-colors"
+                className={`${isDark ? 'text-slate-400 hover:text-white' : 'text-slate-400 hover:text-slate-800'} transition-colors`}
               >
                 <X className="w-5 h-5" />
               </button>
@@ -1363,7 +1373,7 @@ export default function HostedBusinessSite({ params }: SitePageProps) {
             )}
 
             {/* Chat Messages */}
-            <div className="flex-1 p-4 overflow-y-auto space-y-3 bg-slate-950/40 text-xs">
+            <div className={`flex-1 p-4 overflow-y-auto space-y-3 ${isDark ? 'bg-slate-950/40 text-slate-200' : 'bg-slate-50/60 text-slate-800'} text-xs`}>
               {chatMessages.map((msg, i) => {
                 const isUser = msg.role === 'user';
                 const isAgent = msg.role === 'agent';
@@ -1386,7 +1396,9 @@ export default function HostedBusinessSite({ params }: SitePageProps) {
                           ? `${currentTheme.btnBg} ${currentTheme.btnText} font-medium`
                           : isAgent
                           ? 'bg-amber-950/40 text-slate-200 border border-amber-800/60'
-                          : 'bg-slate-800 text-slate-200 border border-slate-700'
+                          : isDark
+                          ? 'bg-slate-800 text-slate-200 border border-slate-700'
+                          : 'bg-white text-slate-800 border border-slate-200 shadow-2xs'
                       }`}
                     >
                       {isAgent && (
@@ -1406,10 +1418,10 @@ export default function HostedBusinessSite({ params }: SitePageProps) {
 
                       {/* Interactive In-Chat Booking Form Card */}
                       {hasBookingAction && (
-                        <div className="mt-3 p-3 rounded-xl bg-slate-900 border border-slate-700/80 space-y-2.5 shadow-md">
-                          <div className="flex items-center justify-between border-b border-slate-800 pb-2">
-                            <span className="text-[11px] font-bold text-white flex items-center gap-1.5">
-                              <Calendar className="h-3.5 w-3.5 text-blue-400" />
+                        <div className={`mt-3 p-3 rounded-xl ${isDark ? 'bg-slate-900 border-slate-700/80' : 'bg-slate-50 border-slate-200'} border space-y-2.5 shadow-md`}>
+                          <div className={`flex items-center justify-between border-b ${isDark ? 'border-slate-800' : 'border-slate-200'} pb-2`}>
+                            <span className={`text-[11px] font-bold ${isDark ? 'text-white' : 'text-slate-900'} flex items-center gap-1.5`}>
+                              <Calendar className="h-3.5 w-3.5 text-blue-500" />
                               <span>{landingConfig.businessName} Booking</span>
                             </span>
                             <span className="px-1.5 py-0.5 rounded text-[9.5px] font-semibold bg-emerald-950/80 text-emerald-300 border border-emerald-800/60">
@@ -1419,7 +1431,7 @@ export default function HostedBusinessSite({ params }: SitePageProps) {
 
                           {landingConfig.services && landingConfig.services.length > 0 && (
                             <div className="space-y-1">
-                              <span className="text-[10px] text-slate-400 block font-medium">Select a service:</span>
+                              <span className={`text-[10px] ${isDark ? 'text-slate-400' : 'text-slate-500'} block font-medium`}>Select a service:</span>
                               <div className="grid grid-cols-1 gap-1">
                                 {landingConfig.services.slice(0, 3).map((srv) => (
                                   <button
@@ -1429,10 +1441,10 @@ export default function HostedBusinessSite({ params }: SitePageProps) {
                                       setSelectedService(srv);
                                       setIsBookingOpen(true);
                                     }}
-                                    className="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-[11px] text-slate-200 border border-slate-700 transition flex items-center justify-between text-left cursor-pointer"
+                                    className={`px-2.5 py-1.5 rounded-lg ${isDark ? 'bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700' : 'bg-white hover:bg-slate-100 text-slate-800 border-slate-200 shadow-2xs'} border text-[11px] transition flex items-center justify-between text-left cursor-pointer`}
                                   >
                                     <span className="font-semibold">{srv.name}</span>
-                                    <span className="font-mono text-emerald-400 font-bold">${srv.price}</span>
+                                    <span className="font-mono text-emerald-500 font-bold">${srv.price}</span>
                                   </button>
                                 ))}
                               </div>
@@ -1455,7 +1467,7 @@ export default function HostedBusinessSite({ params }: SitePageProps) {
               })}
               {chatLoading && chatMessages[chatMessages.length - 1]?.role === 'user' && (
                 <div className="flex justify-start">
-                  <div className="bg-slate-800 border border-slate-700 rounded-2xl p-3 text-slate-400 flex items-center gap-1.5">
+                  <div className={`${isDark ? 'bg-slate-800 border-slate-700 text-slate-400' : 'bg-white border-slate-200 text-slate-600 shadow-2xs'} border rounded-2xl p-3 flex items-center gap-1.5`}>
                     <RefreshCw className="w-3.5 h-3.5 animate-spin" />
                     <span>Thinking...</span>
                   </div>
@@ -1465,14 +1477,14 @@ export default function HostedBusinessSite({ params }: SitePageProps) {
 
             {/* Quick Prompts (Instant Auto-Send on Click) */}
             {starterQuestionsList && starterQuestionsList.length > 0 && (
-              <div className="px-3 py-2 bg-slate-950 border-t border-slate-800/80 flex gap-1.5 overflow-x-auto text-[11px] no-scrollbar">
+              <div className={`px-3 py-2 ${isDark ? 'bg-slate-950 border-slate-800/80' : 'bg-slate-100/80 border-slate-200'} border-t flex gap-1.5 overflow-x-auto text-[11px] no-scrollbar`}>
                 {starterQuestionsList.map((q: string, idx: number) => (
                   <button
                     key={idx}
                     type="button"
                     onClick={() => handleSendChatMessage(undefined, q)}
                     disabled={chatLoading}
-                    className="px-2.5 py-1 bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white rounded-lg whitespace-nowrap border border-slate-800 transition-colors shrink-0 disabled:opacity-50"
+                    className={`px-2.5 py-1 ${isDark ? 'bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border-slate-800' : 'bg-white hover:bg-slate-200 text-slate-700 hover:text-slate-900 border-slate-200 shadow-2xs'} rounded-lg whitespace-nowrap border transition-colors shrink-0 disabled:opacity-50 cursor-pointer`}
                   >
                     {q}
                   </button>
@@ -1481,18 +1493,18 @@ export default function HostedBusinessSite({ params }: SitePageProps) {
             )}
 
             {/* Chat Input */}
-            <form onSubmit={handleSendChatMessage} className="p-3 bg-slate-950 border-t border-slate-800 flex gap-2">
+            <form onSubmit={handleSendChatMessage} className={`p-3 ${isDark ? 'bg-slate-950 border-slate-800' : 'bg-white border-slate-200'} border-t flex gap-2`}>
               <input
                 type="text"
                 value={chatInput}
                 onChange={(e) => setChatInput(e.target.value)}
                 placeholder={`Ask anything about ${landingConfig.businessName.split(' ')[0]} or booking...`}
-                className="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-blue-500"
+                className={`flex-1 ${isDark ? 'bg-slate-900 border-slate-800 text-white placeholder:text-slate-500' : 'bg-slate-100 border-slate-200 text-slate-900 placeholder:text-slate-400'} border rounded-xl px-3.5 py-2 text-xs focus:outline-none focus:border-blue-500`}
               />
               <button
                 type="submit"
                 disabled={chatLoading || !chatInput.trim()}
-                className={`p-2 ${currentTheme.btnBg} ${currentTheme.btnHoverBg} ${currentTheme.btnText} rounded-xl transition-colors disabled:opacity-50`}
+                className={`p-2 ${currentTheme.btnBg} ${currentTheme.btnHoverBg} ${currentTheme.btnText} rounded-xl transition-colors disabled:opacity-50 cursor-pointer`}
               >
                 <Send className="w-4 h-4" />
               </button>
@@ -1504,24 +1516,24 @@ export default function HostedBusinessSite({ params }: SitePageProps) {
       {/* In-Store Countertop QR Code Modal */}
       {isQrModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-          <div className="bg-white text-slate-950 rounded-3xl p-8 max-w-sm w-full text-center space-y-5 shadow-2xl relative">
+          <div className={`${isDark ? 'bg-slate-900 border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-950 shadow-2xl'} border rounded-3xl p-8 max-w-sm w-full text-center space-y-5 relative`}>
             <button
               onClick={() => setIsQrModalOpen(false)}
-              className="absolute top-4 right-4 text-slate-400 hover:text-slate-800"
+              className={`absolute top-4 right-4 ${isDark ? 'text-slate-400 hover:text-white' : 'text-slate-400 hover:text-slate-800'}`}
             >
               <X className="w-5 h-5" />
             </button>
 
-            <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-amber-100 text-amber-600">
+            <div className={`inline-flex items-center justify-center w-12 h-12 rounded-2xl ${currentTheme.lightBg} ${currentTheme.accentText}`}>
               <QrCode className="w-6 h-6" />
             </div>
 
             <div>
-              <h3 className="text-xl font-bold">{landingConfig.businessName}</h3>
-              <p className="text-xs text-slate-500 mt-1">Scan to Book a Chair or View Services</p>
+              <h3 className={`text-xl font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>{landingConfig.businessName}</h3>
+              <p className={`text-xs ${isDark ? 'text-slate-400' : 'text-slate-500'} mt-1`}>Scan to Book a Chair or View Services</p>
             </div>
 
-            <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl flex items-center justify-center">
+            <div className={`p-4 ${isDark ? 'bg-white border border-slate-200' : 'bg-slate-50 border border-slate-200'} rounded-2xl flex items-center justify-center`}>
               <img
                 src={qrCodeUrl}
                 alt="QR Code"
@@ -1532,11 +1544,11 @@ export default function HostedBusinessSite({ params }: SitePageProps) {
             <div className="space-y-2">
               <button
                 onClick={() => window.print()}
-                className="w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-semibold rounded-xl text-xs transition-colors"
+                className={`w-full py-2.5 ${isDark ? 'bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold' : 'bg-slate-900 hover:bg-slate-800 text-white font-semibold'} rounded-xl text-xs transition-colors cursor-pointer`}
               >
                 Print Countertop Sign
               </button>
-              <p className="text-[11px] text-slate-400">
+              <p className={`text-[11px] ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
                 Place this QR code on your reception desk or mirror stations.
               </p>
             </div>

@@ -255,10 +255,10 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({
                       <DollarSign className="h-4 w-4 text-amber-500" />
                     </div>
                     <div className="text-xl font-bold text-slate-900 dark:text-white font-mono">
-                      $${(analyticsData?.webAnalytics?.overview?.totalPipelineRevenue ?? 0).toLocaleString()}
+                      ${(analyticsData?.webAnalytics?.overview?.totalPipelineRevenue ?? 0).toLocaleString()}
                     </div>
                     <div className="text-[10.5px] text-slate-400">
-                      Avg $${analyticsData?.webAnalytics?.overview?.avgBookingValue ?? 45}/order
+                      Avg ${analyticsData?.webAnalytics?.overview?.avgBookingValue ?? 45}/order
                     </div>
                   </div>
 
@@ -390,7 +390,7 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({
                                           </>
                                         ) : (
                                           <>
-                                            <div>Revenue: <span className="text-emerald-400 font-mono font-bold">$${item.revenue || item.bookings * 45}</span></div>
+                                            <div>Revenue: <span className="text-emerald-400 font-mono font-bold">${item.revenue || item.bookings * 45}</span></div>
                                             <div>Bookings: <span className="text-blue-400 font-mono font-bold">{item.bookings}</span></div>
                                           </>
                                         )}
@@ -677,7 +677,7 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({
                                         {client.totalBookings}
                                       </td>
                                       <td className="px-4 py-3 font-mono font-bold text-emerald-600 dark:text-emerald-400">
-                                        $${client.totalSpend}
+                                        ${client.totalSpend}
                                       </td>
                                       <td className="px-4 py-3 text-slate-600 dark:text-slate-300 max-w-[200px] truncate">
                                         {(client.preferredServices || []).join(', ') || 'General Consultation'}
@@ -816,7 +816,7 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({
                                   </span>
                                 </td>
                                 <td className="px-4 py-3 font-mono font-bold text-emerald-600 dark:text-emerald-400">
-                                  $${page.revenue}
+                                  ${page.revenue}
                                 </td>
                                 <td className="px-4 py-3 text-right">
                                   <a

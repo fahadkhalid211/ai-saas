@@ -704,12 +704,12 @@ export const EcommerceTemplate: React.FC<IndustryTemplateProps> = ({
       </section>
 
       {/* 11. VIP REPLENISHMENT CTA */}
-      <section className={`py-20 border-t ${isDark ? 'border-neutral-800 bg-neutral-950' : 'border-neutral-200 bg-neutral-900 text-white'}`}>
+      <section className={`py-20 border-t ${isDark ? 'border-neutral-800 bg-neutral-950 text-neutral-100' : 'border-neutral-200 bg-neutral-50 text-neutral-900'}`}>
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6">
-          <h3 className="text-3xl sm:text-5xl font-serif font-light tracking-tight">
+          <h3 className={`text-3xl sm:text-5xl font-serif font-light tracking-tight ${isDark ? 'text-white' : 'text-neutral-900'}`}>
             Join The Private Capsule Registry
           </h3>
-          <p className="text-sm sm:text-base text-neutral-400 max-w-xl mx-auto font-light">
+          <p className={`text-sm sm:text-base ${isDark ? 'text-neutral-400' : 'text-neutral-600'} max-w-xl mx-auto font-light`}>
             Enjoy priority 24-hour access to limited seasonal runs and complimentary bespoke tailoring invitations.
           </p>
           <div className="pt-2 flex flex-wrap justify-center gap-4">
@@ -721,9 +721,9 @@ export const EcommerceTemplate: React.FC<IndustryTemplateProps> = ({
             </button>
             <button
               onClick={onOpenChat}
-              className="px-6 py-3.5 rounded-full bg-neutral-800 hover:bg-neutral-700 text-neutral-200 font-semibold text-xs tracking-wider uppercase border border-neutral-700 transition-colors flex items-center gap-2 cursor-pointer"
+              className={`px-6 py-3.5 rounded-full ${isDark ? 'bg-neutral-800 hover:bg-neutral-700 text-neutral-200 border-neutral-700' : 'bg-white hover:bg-neutral-100 text-neutral-800 border-neutral-300 shadow-xs'} font-semibold text-xs tracking-wider uppercase border transition-colors flex items-center gap-2 cursor-pointer`}
             >
-              <MessageSquare className="w-3.5 h-3.5 text-amber-400" />
+              <MessageSquare className="w-3.5 h-3.5 text-amber-500" />
               <span>Ask Styling Concierge</span>
             </button>
           </div>
