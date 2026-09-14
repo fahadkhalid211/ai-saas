@@ -48,4 +48,22 @@ describe('Database Layer & Decoupled Storage', () => {
     expect(loginResult).not.toBeNull();
     expect(loginResult?.workspace.id).toBe(result.workspace.id);
   });
+
+  it('should redirect storage to tmp directory in serverless Vercel environment', async () => {
+    const { resolveDataDir } = await import('./storage');
+    const originalVercel = process.env.VERCEL;
+    try {
+      process.env.VERCEL = '1';
+      const resolved = resolveDataDir();
+      expect(resolved).toContain('.data');
+      expect(resolved.startsWith(process.cwd())).toBe(false);
+    } finally {
+      if (originalVercel !== undefined) {
+        process.env.VERCEL = originalVercel;
+      } else {
+        delete process.env.VERCEL;
+      }
+    }
+  });
 });
+

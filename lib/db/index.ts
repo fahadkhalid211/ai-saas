@@ -21,6 +21,8 @@ import {
   getLandingConfigForSlugOrTemplate,
 } from '../landing/types';
 export * from '../landing/types';
+import { resolveDataDir, ensureDirectory, safeAtomicWrite, safeReadFile } from './storage';
+export { resolveDataDir, ensureDirectory, safeAtomicWrite, safeReadFile } from './storage';
 
 // Types matching the Prisma model
 export interface AssistantData {
@@ -321,30 +323,16 @@ interface DatabaseState {
   pageViews?: PageViewEventData[];
 }
 
-const DATA_DIR = path.join(process.cwd(), '.data');
+const DATA_DIR = resolveDataDir();
 const DB_FILE = path.join(DATA_DIR, 'db.json');
 const VECTORS_FILE = path.join(DATA_DIR, 'vectors.json');
 
 function ensureDataDir(): void {
-  if (!fs.existsSync(DATA_DIR)) {
-    fs.mkdirSync(DATA_DIR, { recursive: true });
-  }
+  ensureDirectory(DATA_DIR);
 }
 
 function atomicWriteFileSync(filePath: string, data: string): void {
-  ensureDataDir();
-  const tmpPath = `${filePath}.${Date.now()}.${Math.random().toString(36).substring(2, 8)}.tmp`;
-  fs.writeFileSync(tmpPath, data, 'utf-8');
-  try {
-    fs.renameSync(tmpPath, filePath);
-  } catch {
-    try {
-      fs.copyFileSync(tmpPath, filePath);
-      fs.unlinkSync(tmpPath);
-    } catch {
-      fs.writeFileSync(filePath, data, 'utf-8');
-    }
-  }
+  safeAtomicWrite(filePath, data);
 }
 
 // In-Memory Singleton Caches
@@ -370,9 +358,9 @@ function loadChunksState(): ChunkRecord[] {
     return cachedChunks;
   }
   ensureDataDir();
-  if (fs.existsSync(VECTORS_FILE)) {
+  const raw = safeReadFile(VECTORS_FILE);
+  if (raw) {
     try {
-      const raw = fs.readFileSync(VECTORS_FILE, 'utf-8');
       const parsed = JSON.parse(raw);
       if (Array.isArray(parsed)) {
         cachedChunks = parsed;
@@ -383,6 +371,25 @@ function loadChunksState(): ChunkRecord[] {
       console.error('[Database] Failed to read vectors.json:', err);
     }
   }
+
+  // Check bundled vectors file if DATA_DIR was redirected to /tmp
+  const bundledVectors = path.join(process.cwd(), '.data', 'vectors.json');
+  if (bundledVectors !== VECTORS_FILE) {
+    const bundledRaw = safeReadFile(bundledVectors);
+    if (bundledRaw) {
+      try {
+        const parsed = JSON.parse(bundledRaw);
+        if (Array.isArray(parsed)) {
+          cachedChunks = parsed;
+          rebuildChunkIndex(cachedChunks);
+          return cachedChunks;
+        }
+      } catch (err) {
+        console.error('[Database] Failed to read bundled vectors.json:', err);
+      }
+    }
+  }
+
   cachedChunks = [];
   rebuildChunkIndex(cachedChunks);
   return cachedChunks;
@@ -404,9 +411,39 @@ function loadState(): DatabaseState {
   }
 
   ensureDataDir();
-  let state: DatabaseState;
+  let state: DatabaseState | null = null;
 
-  if (!fs.existsSync(DB_FILE)) {
+  // 1. Try reading DB_FILE from DATA_DIR
+  const existingRaw = safeReadFile(DB_FILE);
+  if (existingRaw) {
+    try {
+      state = JSON.parse(existingRaw);
+    } catch (err) {
+      console.error('[Database] Failed to parse db.json:', err);
+    }
+  }
+
+  // 2. If DB_FILE did not exist, check bundled db.json (e.g. initial serverless spin-up)
+  if (!state) {
+    const bundledDb = path.join(process.cwd(), '.data', 'db.json');
+    if (bundledDb !== DB_FILE) {
+      const bundledRaw = safeReadFile(bundledDb);
+      if (bundledRaw) {
+        try {
+          const parsed = JSON.parse(bundledRaw);
+          if (parsed && typeof parsed === 'object') {
+            state = parsed;
+            saveState(parsed);
+          }
+        } catch (err) {
+          console.error('[Database] Failed to parse bundled db.json:', err);
+        }
+      }
+    }
+  }
+
+  // 3. If still not loaded, construct clean initialState
+  if (!state) {
     const initialState: DatabaseState = {
       workspaces: [
         {
@@ -459,84 +496,67 @@ function loadState(): DatabaseState {
       leads: [],
       unansweredQueries: [],
       appointments: [],
-      teamMembers: [],
+      teamMembers: [
+        {
+          id: 'tm_owner',
+          workspaceId: 'default-workspace',
+          name: 'Master Admin',
+          email: 'admin@kortexai.com',
+          role: 'owner',
+          status: 'active',
+          createdAt: new Date().toISOString(),
+        },
+      ],
       auditLogs: [],
       notifications: [],
       landingPages: [],
       pageViews: [],
     };
     saveState(initialState);
-    cachedState = initialState;
-    loadChunksState();
-    cachedState.chunks = cachedChunks || [];
-    return cachedState;
+    state = initialState;
   }
 
-  try {
-    const raw = fs.readFileSync(DB_FILE, 'utf-8');
-    const parsed = JSON.parse(raw);
-    if (!parsed.unansweredQueries) parsed.unansweredQueries = [];
-    if (!parsed.leads) parsed.leads = [];
-    if (!parsed.conversations) parsed.conversations = [];
-    if (!parsed.messages) parsed.messages = [];
-    if (!parsed.appointments) parsed.appointments = [];
-    if (!parsed.teamMembers) parsed.teamMembers = [];
-    if (!parsed.auditLogs) parsed.auditLogs = [];
-    if (!parsed.notifications) parsed.notifications = [];
-    if (!parsed.landingPages) parsed.landingPages = [];
-    if (!parsed.pageViews) parsed.pageViews = [];
+  if (!state.unansweredQueries) state.unansweredQueries = [];
+  if (!state.leads) state.leads = [];
+  if (!state.conversations) state.conversations = [];
+  if (!state.messages) state.messages = [];
+  if (!state.appointments) state.appointments = [];
+  if (!state.teamMembers) state.teamMembers = [];
+  if (!state.auditLogs) state.auditLogs = [];
+  if (!state.notifications) state.notifications = [];
+  if (!state.landingPages) state.landingPages = [];
+  if (!state.pageViews) state.pageViews = [];
 
-    // AUTOMATED ZERO-DOWNTIME MIGRATION:
-    // If db.json contains vector chunks, migrate them to vectors.json and strip from db.json
-    if (Array.isArray(parsed.chunks) && parsed.chunks.length > 0) {
-      if (!fs.existsSync(VECTORS_FILE)) {
-        console.log(`[Database Migration] Migrating ${parsed.chunks.length} chunks from db.json to vectors.json...`);
-        saveChunksState(parsed.chunks);
-      }
-      parsed.chunks = [];
-      saveState(parsed);
+  // AUTOMATED ZERO-DOWNTIME MIGRATION:
+  // If db.json contains vector chunks, migrate them to vectors.json and strip from db.json
+  if (Array.isArray(state.chunks) && state.chunks.length > 0) {
+    if (!fs.existsSync(VECTORS_FILE)) {
+      console.log(`[Database Migration] Migrating ${state.chunks.length} chunks from db.json to vectors.json...`);
+      saveChunksState(state.chunks);
     }
+    state.chunks = [];
+    saveState(state);
+  }
 
-    if (parsed.teamMembers.length === 0) {
-      parsed.teamMembers.push({
-        id: 'tm_owner',
-        workspaceId: 'default-workspace',
-        name: 'Master Admin',
-        email: 'admin@kortexai.com',
-        role: 'owner',
-        status: 'active',
-        createdAt: new Date().toISOString(),
-      });
-      saveState(parsed);
-    }
+  if (state.teamMembers.length === 0) {
+    state.teamMembers.push({
+      id: 'tm_owner',
+      workspaceId: 'default-workspace',
+      name: 'Master Admin',
+      email: 'admin@kortexai.com',
+      role: 'owner',
+      status: 'active',
+      createdAt: new Date().toISOString(),
+    });
+    saveState(state);
+  }
 
-    // Ensure demo assistant has landing page config initialized
-    const demo = (parsed.assistants || []).find((a: any) => a.id === 'demo-assistant');
-    if (demo && !demo.landingPageConfig) {
-      demo.landingPageConfig = DEFAULT_BARBER_LANDING_CONFIG;
-      demo.bookingEnabled = true;
-      saveState(parsed);
-    }
-
-    state = parsed;
-  } catch (err) {
-    console.error('Failed to parse database state, creating empty:', err);
-    state = {
-      workspaces: [],
-      assistants: [],
-      knowledgeSources: [],
-      chunks: [],
-      conversations: [],
-      messages: [],
-      leads: [],
-      unansweredQueries: [],
-      appointments: [],
-      teamMembers: [],
-      auditLogs: [],
-      notifications: [],
-      landingPages: [],
-      pageViews: [],
-    };
+  // Ensure demo assistant has landing page config initialized
+  const demo = (state.assistants || []).find((a: any) => a.id === 'demo-assistant');
+  if (demo && !demo.landingPageConfig) {
+    demo.landingPageConfig = DEFAULT_BARBER_LANDING_CONFIG;
+    demo.bookingEnabled = true;
+    saveState(state);
   }
 
   // Bind chunks from decoupled vector store
