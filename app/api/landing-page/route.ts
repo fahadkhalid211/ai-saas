@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Database, DEFAULT_BARBER_LANDING_CONFIG, getLandingConfigForSlugOrTemplate } from '@/lib/db';
 import { BILLING_PLANS } from '@/lib/billing/plans';
-import { verifyAdminRequest } from '@/lib/security/auth';
+import { verifyAdminRequest, getAuthContext } from '@/lib/security/auth';
 import { getClientIp } from '@/lib/security/rate-limit';
 import { LandingPageConfig } from '@/lib/landing/types';
 
@@ -64,12 +64,13 @@ export async function GET(req: NextRequest) {
 
     // 1. List all landing pages for dashboard hub
     if (all === 'true') {
-      if (!(await verifyAdminRequest(req))) {
+      const ctx = await getAuthContext(req);
+      if (!ctx.authenticated) {
         return NextResponse.json({ error: 'Unauthorized: Admin access required' }, { status: 401 });
       }
 
-      const landingPages = await Database.getLandingPages();
-      const billing = await Database.getWorkspaceBilling();
+      const landingPages = await Database.getLandingPages(ctx.workspaceId);
+      const billing = await Database.getWorkspaceBilling(ctx.workspaceId);
       const plan = BILLING_PLANS.find((p) => p.id === billing.planId) || BILLING_PLANS[0];
       const planLimit = plan.landingPageLimit || 1;
       const extraSlots = billing.extraLandingPagesCount || 0;
@@ -185,7 +186,8 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    if (!(await verifyAdminRequest(req))) {
+    const ctx = await getAuthContext(req);
+    if (!ctx.authenticated) {
       return NextResponse.json({ error: 'Unauthorized: Admin access required' }, { status: 401 });
     }
 
@@ -198,8 +200,8 @@ export async function POST(req: NextRequest) {
 
     // Quota validation if creating a new landing page
     if (isNewPage) {
-      const existingPages = await Database.getLandingPages();
-      const billing = await Database.getWorkspaceBilling();
+      const existingPages = await Database.getLandingPages(ctx.workspaceId);
+      const billing = await Database.getWorkspaceBilling(ctx.workspaceId);
       const plan = BILLING_PLANS.find((p) => p.id === billing.planId) || BILLING_PLANS[0];
       const maxAllowed = (plan.landingPageLimit || 1) + (billing.extraLandingPagesCount || 0);
 
@@ -215,6 +217,7 @@ export async function POST(req: NextRequest) {
 
     const savedConfig = await Database.saveLandingPage({
       ...config,
+      workspaceId: config.workspaceId || ctx.workspaceId,
       assistantId: assistantId || config.assistantId,
     });
 
@@ -225,7 +228,7 @@ export async function POST(req: NextRequest) {
 
     const ip = getClientIp(req);
     await Database.addAuditLog({
-      actor: { id: 'admin', name: 'Master Admin', ip },
+      actor: { id: ctx.memberId, name: ctx.role, ip },
       action: isNewPage ? 'landing_page.created' : 'landing_page.updated',
       targetType: 'landing_page',
       targetId: savedConfig.id || savedConfig.slug,

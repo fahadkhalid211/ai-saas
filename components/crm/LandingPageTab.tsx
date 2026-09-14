@@ -184,6 +184,20 @@ export const LANDING_TEMPLATES_LIST = [
     servicesSample: ['Treasury Review ($0)', 'MPC Custody Setup ($750)', 'Yield Arbitrage ($2,000)'],
     description: 'Discretionary portfolio management, algorithmic yield strategies, family office advisory.',
   },
+  {
+    slug: 'custom',
+    industryId: 'custom',
+    name: 'Custom Blank Canvas',
+    category: 'Modular Skeleton Architecture',
+    icon: LayoutTemplate,
+    colorClass: 'text-indigo-600 bg-indigo-100 dark:bg-indigo-950/60 dark:text-indigo-400',
+    themeHex: '#6366f1',
+    heroImage: 'https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?auto=format&fit=crop&w=800&q=80',
+    headline: 'Your Custom Headline & Brand Positioning',
+    badge: 'Custom Skeleton · Fully Modular Blueprint',
+    servicesSample: ['Core Service Tier ($150)', 'Advanced Strategy ($250)', 'Custom Implementation ($499)'],
+    description: 'Clean wireframe skeleton for any custom industry, agency, consulting firm, or bespoke business.',
+  },
 ];
 
 export interface LandingPageTabProps {

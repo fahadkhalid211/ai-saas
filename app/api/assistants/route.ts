@@ -1,11 +1,12 @@
 import { NextResponse } from 'next/server';
 import { Database } from '@/lib/db';
-import { withAdminAuth } from '@/lib/security/auth';
+import { withAdminAuth, getAuthContext } from '@/lib/security/auth';
 import { maskSecret } from '@/lib/security/crypto';
 
-export const GET = withAdminAuth(async (_req: Request) => {
+export const GET = withAdminAuth(async (req: Request) => {
   try {
-    const assistants = await Database.getAssistants();
+    const ctx = await getAuthContext(req);
+    const assistants = await Database.getAssistants(ctx.workspaceId);
     const sanitized = assistants.map((a) => ({
       ...a,
       apiKeyEncrypted: a.apiKeyEncrypted ? maskSecret(a.apiKeyEncrypted) : '',
@@ -25,12 +26,16 @@ export const GET = withAdminAuth(async (_req: Request) => {
 
 export const POST = withAdminAuth(async (req: Request) => {
   try {
+    const ctx = await getAuthContext(req);
     const body = await req.json();
     if (!body.name) {
       return NextResponse.json({ error: 'Assistant name is required' }, { status: 400 });
     }
 
-    const assistant = await Database.createAssistant(body);
+    const assistant = await Database.createAssistant({
+      ...body,
+      workspaceId: body.workspaceId || ctx.workspaceId,
+    });
     const sanitized = {
       ...assistant,
       apiKeyEncrypted: assistant.apiKeyEncrypted ? maskSecret(assistant.apiKeyEncrypted) : '',

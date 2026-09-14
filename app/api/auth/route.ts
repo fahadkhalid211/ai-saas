@@ -3,6 +3,7 @@ import {
   getAdminKey,
   generateSessionToken,
   verifyAdminRequest,
+  getAuthContext,
   createSessionCookieHeader,
   createClearCookieHeader,
 } from '@/lib/security/auth';
@@ -11,8 +12,35 @@ import { Database } from '@/lib/db';
 
 export async function GET(req: Request) {
   try {
-    const isAuthed = await verifyAdminRequest(req);
-    return NextResponse.json({ authenticated: isAuthed });
+    const ctx = await getAuthContext(req);
+    if (!ctx.authenticated) {
+      return NextResponse.json({ authenticated: false });
+    }
+
+    const member = await Database.getTeamMemberById(ctx.memberId);
+    const workspace = await Database.getWorkspaceBilling(ctx.workspaceId);
+
+    return NextResponse.json({
+      authenticated: true,
+      role: ctx.role,
+      memberId: ctx.memberId,
+      workspaceId: ctx.workspaceId,
+      member: member || {
+        id: ctx.memberId,
+        workspaceId: ctx.workspaceId,
+        name: ctx.role === 'owner' ? 'Master Admin' : 'Staff Member',
+        email: 'admin@kortexai.com',
+        role: ctx.role,
+        title: 'Master Administrator',
+        avatarUrl: '',
+      },
+      workspace: {
+        id: workspace.id,
+        name: workspace.name,
+        planId: workspace.planId || 'starter',
+        planName: workspace.planName || 'Starter',
+      },
+    });
   } catch (error: any) {
     return NextResponse.json({ authenticated: false, error: error?.message }, { status: 500 });
   }

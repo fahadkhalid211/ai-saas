@@ -42,6 +42,7 @@ interface DashboardHeaderProps {
   handleMarkAllNotificationsRead: () => void;
   setShowEmbedModal: (show: boolean) => void;
   handleLogout: () => void;
+  currentUser?: any;
 }
 
 export function DashboardHeader({
@@ -59,6 +60,7 @@ export function DashboardHeader({
   handleMarkAllNotificationsRead,
   setShowEmbedModal,
   handleLogout,
+  currentUser,
 }: DashboardHeaderProps) {
   return (
     <header className="h-16 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-6 flex items-center justify-between sticky top-0 z-40 shrink-0">
@@ -204,6 +206,37 @@ export function DashboardHeader({
             </div>
           )}
         </div>
+
+        {/* User Profile Avatar Pill */}
+        <button
+          onClick={() => setActiveTab('profile')}
+          className="flex items-center gap-2 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700/60 transition shadow-xs cursor-pointer text-left"
+          title="Open My Profile Settings"
+        >
+          <div className="h-6 w-6 rounded-full bg-blue-600 overflow-hidden flex items-center justify-center text-white text-[10px] font-bold shrink-0">
+            {currentUser?.avatarUrl ? (
+              <img
+                src={currentUser.avatarUrl}
+                alt={currentUser.name || 'User Profile'}
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              <span>
+                {currentUser?.name
+                  ? currentUser.name.slice(0, 2).toUpperCase()
+                  : 'ME'}
+              </span>
+            )}
+          </div>
+          <div className="hidden xl:block leading-tight">
+            <div className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate max-w-[110px]">
+              {currentUser?.name || 'My Profile'}
+            </div>
+            <div className="text-[10px] text-blue-600 dark:text-blue-400 font-medium truncate max-w-[110px]">
+              {currentUser?.title || (currentUser?.role === 'owner' ? 'Owner' : 'Admin')}
+            </div>
+          </div>
+        </button>
 
         {/* Deploy / WordPress Plugin Button */}
         <button

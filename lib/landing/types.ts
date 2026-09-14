@@ -967,6 +967,74 @@ export const DEFAULT_AETHER_FINANCE_CONFIG: LandingPageConfig = {
   },
 };
 
+// 11. Custom Blank Canvas & Skeleton Architecture
+export const DEFAULT_CUSTOM_SKELETON_CONFIG: LandingPageConfig = {
+  enabled: true,
+  slug: 'custom',
+  businessName: 'Your Company Name',
+  industry: 'custom',
+  themeColor: '#6366f1',
+  tagline: 'Modular Wireframe Skeleton · Tailored To Your Brand Identity',
+  badgeText: 'Custom Blank Canvas · Fully Modular Skeleton Architecture',
+  heroHeadline: 'Craft Your Bespoke Presence. Convert Visitors Seamlessly.',
+  heroSubheadline: 'This is a clean, modular skeleton template designed for bespoke businesses and agencies. Replace this placeholder copy with your core value proposition, upload your brand assets, and connect appointments directly.',
+  heroCtaText: 'Schedule Custom Consultation',
+  heroImageUrl: 'https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?auto=format&fit=crop&w=1200&q=80',
+  aboutTitle: 'About Your Company & Mission',
+  aboutText: 'Introduce your company story, core vision, and client commitments here. This clean skeleton layout is fully customizable: update services, working hours, pricing tiers, and embed customer testimonials with one click.',
+  address: '100 Innovation Boulevard, Suite 500, Tech District, CA 94107',
+  phone: '+1 (555) 019-2834',
+  email: 'hello@yourcompany.com',
+  starterQuestions: [
+    'What custom services and solutions do you offer?',
+    'What are your pricing tiers and timelines?',
+    'How do we schedule a discovery consultation?',
+    'Where can I review project specifications?',
+  ],
+  workingHours: [
+    { days: 'Monday – Friday', hours: '9:00 AM – 6:00 PM' },
+    { days: 'Saturday', hours: '10:00 AM – 3:00 PM' },
+    { days: 'Sunday', hours: 'Closed / By Appointment' },
+  ],
+  services: [
+    {
+      id: 'custom_srv_1',
+      name: 'Custom Service Tier 1 (Placeholder)',
+      description: 'Your primary service offering with comprehensive onboarding, project scoping, and dedicated client milestones.',
+      durationMinutes: 45,
+      price: 150,
+      popular: true,
+    },
+    {
+      id: 'custom_srv_2',
+      name: 'Advanced Consultation & Strategy',
+      description: 'In-depth consultation session analyzing your specific requirements with bespoke action blueprints.',
+      durationMinutes: 60,
+      price: 250,
+    },
+    {
+      id: 'custom_srv_3',
+      name: 'Turnkey Implementation Package',
+      description: 'Turnkey execution tailored specifically to your organizational workflows and delivery milestones.',
+      durationMinutes: 90,
+      price: 499,
+    },
+  ],
+  testimonials: [
+    {
+      id: 'custom_test_1',
+      clientName: 'Alex Jordan',
+      rating: 5,
+      comment: 'The customized approach delivered exactly the bespoke results our organization needed on time.',
+      clientRole: 'Operations Director',
+    },
+  ],
+  socialLinks: {
+    linkedin: 'https://linkedin.com',
+    twitter: 'https://x.com',
+  },
+};
+
 // Preset mapping dictionary
 export const TEMPLATE_LANDING_CONFIGS: Record<string, LandingPageConfig> = {
   // Barbershop
@@ -980,6 +1048,7 @@ export const TEMPLATE_LANDING_CONFIGS: Record<string, LandingPageConfig> = {
   // Real Estate
   'real-estate': DEFAULT_REAL_ESTATE_LANDING_CONFIG,
   'template_real_estate': DEFAULT_REAL_ESTATE_LANDING_CONFIG,
+  'real_estate': DEFAULT_REAL_ESTATE_LANDING_CONFIG,
   // E-Commerce
   'ecommerce-store': DEFAULT_ECOMMERCE_LANDING_CONFIG,
   'template_ecommerce': DEFAULT_ECOMMERCE_LANDING_CONFIG,
@@ -1009,6 +1078,11 @@ export const TEMPLATE_LANDING_CONFIGS: Record<string, LandingPageConfig> = {
   'template_aether_finance': DEFAULT_AETHER_FINANCE_CONFIG,
   'fintech': DEFAULT_AETHER_FINANCE_CONFIG,
   'finance': DEFAULT_AETHER_FINANCE_CONFIG,
+  // Custom Blank Canvas / Skeleton
+  'custom': DEFAULT_CUSTOM_SKELETON_CONFIG,
+  'custom-template': DEFAULT_CUSTOM_SKELETON_CONFIG,
+  'template_custom': DEFAULT_CUSTOM_SKELETON_CONFIG,
+  'skeleton': DEFAULT_CUSTOM_SKELETON_CONFIG,
 };
 
 export function getLandingConfigForSlugOrTemplate(slugOrId: string): LandingPageConfig {

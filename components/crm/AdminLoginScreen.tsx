@@ -192,6 +192,7 @@ export function AdminLoginScreen({
                   <option value="nexus-ai">Nexus AI Technology Platform</option>
                   <option value="hyperion-agency">Hyperion Creative Agency</option>
                   <option value="aether-finance">Aether Finance & Wealth Management</option>
+                  <option value="custom">Custom Blank Canvas (Modular Skeleton)</option>
                 </select>
               </div>
             </div>

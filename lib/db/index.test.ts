@@ -65,5 +65,72 @@ describe('Database Layer & Decoupled Storage', () => {
       }
     }
   });
+
+  it('should filter assistants by workspaceId ensuring tenant isolation', async () => {
+    const tenantEmail = `tenant_${Date.now()}@domain.com`;
+    const tenant = await Database.createTenantWorkspace({
+      businessName: 'Vanguard Legal',
+      ownerEmail: tenantEmail,
+      password: 'Password123!',
+      industryTemplateSlug: 'legal-law-firm',
+    });
+
+    const tenantAssistants = await Database.getAssistants(tenant.workspace.id);
+    expect(tenantAssistants.length).toBe(1);
+    expect(tenantAssistants[0].id).toBe(tenant.assistant.id);
+    expect(tenantAssistants[0].workspaceId).toBe(tenant.workspace.id);
+
+    const defaultAssistants = await Database.getAssistants('default-workspace');
+    expect(defaultAssistants.some((a) => a.id === tenant.assistant.id)).toBe(false);
+  });
+
+  it('should return exactly 1 landing page for tenant workspace without leaking 7 legacy presets', async () => {
+    const tenantEmail = `tenant_pages_${Date.now()}@domain.com`;
+    const tenant = await Database.createTenantWorkspace({
+      businessName: 'Solaria Energy',
+      ownerEmail: tenantEmail,
+      password: 'Password123!',
+      industryTemplateSlug: 'custom',
+    });
+
+    const pages = await Database.getLandingPages(tenant.workspace.id);
+    expect(pages.length).toBe(1);
+    expect(pages[0].businessName).toBe('Solaria Energy');
+  });
+
+  it('should update user profile including title, avatar, and name', async () => {
+    const memberEmail = `member_${Date.now()}@domain.com`;
+    const member = await Database.addTeamMember({
+      workspaceId: 'default-workspace',
+      name: 'Taylor Reed',
+      email: memberEmail,
+      role: 'support_agent',
+      status: 'active',
+      title: 'Customer Specialist',
+    });
+
+    const updated = await Database.updateTeamMemberProfile(member.id, {
+      name: 'Taylor Reed Jr.',
+      title: 'Lead Support Specialist',
+      avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
+    });
+
+    expect(updated).not.toBeNull();
+    expect(updated?.name).toBe('Taylor Reed Jr.');
+    expect(updated?.title).toBe('Lead Support Specialist');
+    expect(updated?.avatarUrl).toContain('unsplash.com');
+
+    const fetched = await Database.getTeamMemberById(member.id);
+    expect(fetched?.title).toBe('Lead Support Specialist');
+  });
+
+  it('should resolve custom blank canvas skeleton template config', async () => {
+    const { getLandingConfigForSlugOrTemplate } = await import('../landing/types');
+    const customConfig = getLandingConfigForSlugOrTemplate('custom');
+    expect(customConfig).toBeDefined();
+    expect(customConfig.industry).toBe('custom');
+    expect(customConfig.slug).toBe('custom');
+    expect(customConfig.services?.length).toBeGreaterThan(0);
+  });
 });
 

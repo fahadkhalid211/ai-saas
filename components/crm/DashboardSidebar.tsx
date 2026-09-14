@@ -20,6 +20,7 @@ import {
   History as HistoryIcon,
   LayoutTemplate,
   BookOpen,
+  UserCircle,
 } from 'lucide-react';
 
 interface DashboardSidebarProps {
@@ -47,6 +48,7 @@ export function DashboardSidebar({
 }: DashboardSidebarProps) {
   const tabs = [
     { id: 'overview', label: 'Overview', icon: FileCheck },
+    { id: 'profile', label: 'My Profile', icon: UserCircle },
     { id: 'analytics', label: 'Analytics & KPIs', icon: BarChart3 },
     { id: 'billing', label: 'Plans & Billing', icon: CreditCard },
     { id: 'landing_page', label: 'Landing Page', icon: Globe },

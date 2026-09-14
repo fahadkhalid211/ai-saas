@@ -50,6 +50,7 @@ import { HealthcareTemplate } from '@/components/landing/templates/HealthcareTem
 import { NexusAiTemplate } from '@/components/landing/templates/NexusAiTemplate';
 import { CreativeAgencyTemplate } from '@/components/landing/templates/CreativeAgencyTemplate';
 import { FintechTemplate } from '@/components/landing/templates/FintechTemplate';
+import { CustomSkeletonTemplate } from '@/components/landing/templates/CustomSkeletonTemplate';
 import { consumeChatStream } from '@/lib/chat/stream';
 
 
@@ -862,6 +863,9 @@ export default function HostedBusinessSite({ params }: SitePageProps) {
     }
     if (ind.includes('aether') || ind === 'fintech' || ind === 'finance') {
       return <FintechTemplate {...templateProps} />;
+    }
+    if (ind.includes('custom') || ind.includes('skeleton')) {
+      return <CustomSkeletonTemplate {...templateProps} />;
     }
     if (ind.includes('gym') || ind.includes('fitness')) {
       return <GymTemplate {...templateProps} />;

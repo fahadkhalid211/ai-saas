@@ -34,6 +34,7 @@ import { ConversationsTab } from '@/components/crm/ConversationsTab';
 import { LandingPageTab } from '@/components/crm/LandingPageTab';
 import { WidgetTab } from '@/components/crm/WidgetTab';
 import { AppointmentsTab } from '@/components/crm/AppointmentsTab';
+import { ProfileTab } from '@/components/crm/ProfileTab';
 
 import { useCrmAssistants } from '@/components/crm/hooks/useCrmAssistants';
 import { useCrmBilling } from '@/components/crm/hooks/useCrmBilling';
@@ -83,8 +84,10 @@ export default function DashboardPage() {
   const [regTemplateInput, setRegTemplateInput] = useState<string>('classic-barbershop');
 
   const [activeTab, setActiveTab] = useState<
-    'overview' | 'analytics' | 'billing' | 'landing_page' | 'team' | 'security' | 'audit' | 'knowledge' | 'engine' | 'behavior' | 'widget' | 'channels' | 'playground' | 'leads' | 'appointments' | 'docs' | 'templates' | 'history'
+    'overview' | 'profile' | 'analytics' | 'billing' | 'landing_page' | 'team' | 'security' | 'audit' | 'knowledge' | 'engine' | 'behavior' | 'widget' | 'channels' | 'playground' | 'leads' | 'appointments' | 'docs' | 'templates' | 'history'
   >('overview');
+
+  const [currentUser, setCurrentUser] = useState<any | null>(null);
 
   // Assistants Hook
   const {
@@ -397,6 +400,9 @@ export default function DashboardPage() {
         const data = await res.json();
         if (data.authenticated) {
           setIsAuthenticated(true);
+          if (data.member) {
+            setCurrentUser(data.member);
+          }
           await fetchAssistants();
         } else {
           setIsAuthenticated(false);
@@ -453,13 +459,23 @@ export default function DashboardPage() {
       const data = await res.json();
       if (res.ok && data.success) {
         setIsAuthenticated(true);
+        if (data.member) {
+          setCurrentUser(data.member);
+        }
         setAuthApiKeyInput('');
         setStaffEmailInput('');
         setStaffPasswordInput('');
         setRegBusinessNameInput('');
         setRegEmailInput('');
         setRegPasswordInput('');
-        await fetchAssistants();
+        if (data.assistant) {
+          setAssistants([data.assistant]);
+          setActiveAssistant(data.assistant);
+          setFormData(data.assistant);
+          await fetchAssistants(data.assistant.id);
+        } else {
+          await fetchAssistants();
+        }
       } else {
         setAuthError(data.error || (authLoginMode === 'admin' ? 'Invalid Admin Passcode or Key' : 'Authentication failed'));
       }
@@ -573,6 +589,7 @@ export default function DashboardPage() {
           handleMarkAllNotificationsRead={handleMarkAllNotificationsRead}
           setShowEmbedModal={setShowEmbedModal}
           handleLogout={handleLogout}
+          currentUser={currentUser}
         />
 
         {/* Main Shell (Sidebar + Content Workspace) */}
@@ -593,6 +610,14 @@ export default function DashboardPage() {
 
           {/* Main Content Workspace */}
           <main className="flex-1 overflow-y-auto bg-slate-50 dark:bg-slate-950 p-6 sm:p-8">
+
+            {/* TAB: USER PROFILE */}
+            {activeTab === 'profile' && (
+              <ProfileTab
+                currentUser={currentUser}
+                onProfileUpdated={(updated) => setCurrentUser(updated)}
+              />
+            )}
             
             {/* TAB: ANALYTICS & KPIS */}
             {activeTab === 'analytics' && (

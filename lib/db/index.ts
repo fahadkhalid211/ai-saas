@@ -249,7 +249,10 @@ export interface TeamMemberData {
   twoFactorEnabled?: boolean;
   twoFactorSecret?: string;
   recoveryCodes?: string[];
+  title?: string;
+  avatarUrl?: string;
   createdAt: string;
+  updatedAt?: string;
 }
 
 
@@ -584,9 +587,12 @@ export class Database {
   }
 
   // Assistants
-  static async getAssistants(_workspaceId: string = 'default-workspace'): Promise<AssistantData[]> {
+  static async getAssistants(workspaceId?: string): Promise<AssistantData[]> {
     const state = loadState();
-    return state.assistants.map((a) => ({
+    const list = workspaceId && workspaceId !== '*'
+      ? state.assistants.filter((a) => (a.workspaceId || 'default-workspace') === workspaceId)
+      : state.assistants;
+    return list.map((a) => ({
       ...a,
       apiKeyEncrypted: decryptSecret(a.apiKeyEncrypted || ''),
       telegramBotToken: decryptSecret(a.telegramBotToken || ''),
@@ -1410,6 +1416,77 @@ export class Database {
     return member;
   }
 
+  static async getTeamMemberById(id: string): Promise<TeamMemberData | null> {
+    const state = loadState();
+    if (!state.teamMembers) state.teamMembers = [];
+    let member = state.teamMembers.find((m) => m.id === id);
+    if (!member && (id === 'admin' || id === 'master-admin' || id === 'tm_owner')) {
+      member = state.teamMembers.find((m) => m.role === 'owner') || {
+        id,
+        workspaceId: 'default-workspace',
+        name: 'Master Admin',
+        email: 'admin@kortexai.com',
+        role: 'owner',
+        status: 'active',
+        title: 'Master Administrator',
+        createdAt: new Date().toISOString(),
+      };
+    }
+    return member || null;
+  }
+
+  static async updateTeamMemberProfile(
+    id: string,
+    updates: {
+      name?: string;
+      title?: string;
+      avatarUrl?: string;
+      password?: string;
+    }
+  ): Promise<TeamMemberData | null> {
+    const state = loadState();
+    if (!state.teamMembers) state.teamMembers = [];
+    let member = state.teamMembers.find((m) => m.id === id);
+    if (!member && (id === 'admin' || id === 'master-admin' || id === 'tm_owner')) {
+      member = state.teamMembers.find((m) => m.role === 'owner');
+      if (!member) {
+        member = {
+          id: 'tm_owner',
+          workspaceId: 'default-workspace',
+          name: 'Master Admin',
+          email: 'admin@kortexai.com',
+          role: 'owner',
+          status: 'active',
+          title: 'Master Administrator',
+          createdAt: new Date().toISOString(),
+        };
+        state.teamMembers.push(member);
+      }
+    }
+    if (!member) return null;
+
+    if (updates.name !== undefined && updates.name.trim()) {
+      member.name = updates.name.trim();
+    }
+    if (updates.title !== undefined) {
+      member.title = updates.title.trim();
+    }
+    if (updates.avatarUrl !== undefined) {
+      member.avatarUrl = updates.avatarUrl;
+    }
+    if (updates.password !== undefined && updates.password.trim()) {
+      member.password = updates.password.trim();
+      const ws = state.workspaces.find((w) => w.id === member!.workspaceId);
+      if (ws && (ws as any).ownerEmail && (ws as any).ownerEmail.toLowerCase() === member.email.toLowerCase()) {
+        (ws as any).ownerPassword = updates.password.trim();
+      }
+    }
+    member.updatedAt = new Date().toISOString();
+    saveState(state);
+    return member;
+  }
+
+
   // Security Audit Trail
   static async addAuditLog(entry: Omit<AuditLogData, 'id' | 'timestamp'>): Promise<AuditLogData> {
     const state = loadState();
@@ -1795,21 +1872,34 @@ export class Database {
   // Multi-Landing Pages Management
   static async getLandingPages(workspaceId: string = 'default-workspace'): Promise<LandingPageConfig[]> {
     const state = loadState();
-    if (!state.landingPages || state.landingPages.length === 0) {
-      // Initialize with our 7 complete industry presets so user has full catalog immediately
-      const initialPages: LandingPageConfig[] = [
-        { ...DEFAULT_BARBER_LANDING_CONFIG, id: 'lp_barbershop', workspaceId },
-        { ...TEMPLATE_LANDING_CONFIGS['fitness-gym'], id: 'lp_gym', workspaceId },
-        { ...TEMPLATE_LANDING_CONFIGS['real-estate'], id: 'lp_real_estate', workspaceId },
-        { ...TEMPLATE_LANDING_CONFIGS['ecommerce-store'], id: 'lp_ecommerce', workspaceId },
-        { ...TEMPLATE_LANDING_CONFIGS['b2b-saas'], id: 'lp_saas', workspaceId },
-        { ...TEMPLATE_LANDING_CONFIGS['legal-law-firm'], id: 'lp_legal', workspaceId },
-        { ...TEMPLATE_LANDING_CONFIGS['dental-clinic'], id: 'lp_dental', workspaceId },
-      ];
-      state.landingPages = initialPages;
+    if (!state.landingPages) state.landingPages = [];
+
+    // Purge legacy mock template IDs that were previously auto-seeded by mistake
+    const legacyTemplateIds = new Set(['lp_gym', 'lp_real_estate', 'lp_ecommerce', 'lp_saas', 'lp_legal', 'lp_dental']);
+    const prevCount = state.landingPages.length;
+    state.landingPages = state.landingPages.filter((p) => !p.id || !legacyTemplateIds.has(p.id));
+    if (state.landingPages.length !== prevCount) {
       saveState(state);
     }
-    return (state.landingPages || []).filter((p) => !p.workspaceId || p.workspaceId === workspaceId);
+
+    // If default workspace has no page, initialize only the primary barbershop page
+    const defaultPages = state.landingPages.filter((p) => !p.workspaceId || p.workspaceId === 'default-workspace');
+    if (defaultPages.length === 0 && (workspaceId === 'default-workspace' || workspaceId === '*')) {
+      const barberPage: LandingPageConfig = {
+        ...DEFAULT_BARBER_LANDING_CONFIG,
+        id: 'lp_barbershop',
+        workspaceId: 'default-workspace',
+        assistantId: 'demo-assistant',
+      };
+      state.landingPages.unshift(barberPage);
+      saveState(state);
+    }
+
+    if (workspaceId === '*') {
+      return state.landingPages;
+    }
+
+    return state.landingPages.filter((p) => (p.workspaceId || 'default-workspace') === workspaceId);
   }
 
   static async getLandingPageById(id: string): Promise<LandingPageConfig | null> {

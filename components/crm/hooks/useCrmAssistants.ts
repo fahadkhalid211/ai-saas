@@ -15,14 +15,14 @@ export function useCrmAssistants() {
   const [showNewModal, setShowNewModal] = useState(false);
   const [newAssistantName, setNewAssistantName] = useState('');
 
-  const fetchAssistants = async () => {
+  const fetchAssistants = async (preferredId?: string) => {
     try {
       const res = await fetch('/api/assistants');
       const data = await res.json();
       if (data.assistants && data.assistants.length > 0) {
         setAssistants(data.assistants);
-        const currentId = activeAssistant?.id;
-        const matched = currentId ? data.assistants.find((a: Assistant) => a.id === currentId) : null;
+        const targetId = preferredId || activeAssistant?.id;
+        const matched = targetId ? data.assistants.find((a: Assistant) => a.id === targetId) : null;
         const chosen = matched || data.assistants[0];
         setActiveAssistant(chosen);
         setFormData(chosen);
