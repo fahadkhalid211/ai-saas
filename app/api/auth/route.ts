@@ -7,6 +7,7 @@ import {
   createClearCookieHeader,
 } from '@/lib/security/auth';
 import { checkRateLimit, getClientIp } from '@/lib/security/rate-limit';
+import { Database } from '@/lib/db';
 
 export async function GET(req: Request) {
   try {
@@ -30,6 +31,62 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
+    const mode = body?.mode || (body?.email ? 'staff' : 'admin');
+
+    // 1. Staff / Team Member Credentials Login
+    if (mode === 'staff' || (body?.email && (body?.password || body?.accessCode))) {
+      const email = body?.email?.trim();
+      const passwordOrCode = (body?.password || body?.accessCode || '').trim();
+
+      if (!email || !passwordOrCode) {
+        return NextResponse.json(
+          { error: 'Staff email and password/access code are required' },
+          { status: 400 }
+        );
+      }
+
+      const staffMember = await Database.verifyStaffLogin(email, passwordOrCode);
+      if (!staffMember) {
+        return NextResponse.json(
+          { error: 'Invalid staff credentials or account inactive' },
+          { status: 401 }
+        );
+      }
+
+      const sessionToken = generateSessionToken(staffMember.role, staffMember.id);
+      const cookieHeader = createSessionCookieHeader(sessionToken);
+
+      await Database.addAuditLog({
+        actor: { id: staffMember.id, name: staffMember.name, ip },
+        action: 'auth.staff_login_success',
+        targetType: 'session',
+        targetId: staffMember.id,
+        details: { email: staffMember.email, role: staffMember.role },
+      });
+
+      return NextResponse.json(
+        {
+          success: true,
+          message: `Welcome back, ${staffMember.name}`,
+          isStaff: true,
+          member: {
+            id: staffMember.id,
+            name: staffMember.name,
+            email: staffMember.email,
+            role: staffMember.role,
+          },
+          token: sessionToken,
+        },
+        {
+          status: 200,
+          headers: {
+            'Set-Cookie': cookieHeader,
+          },
+        }
+      );
+    }
+
+    // 2. Master Admin Key / Passcode Login
     const rawKey = body?.key || body?.apiKey || body?.passcode || body?.password;
 
     if (!rawKey || typeof rawKey !== 'string' || !rawKey.trim()) {
@@ -45,8 +102,27 @@ export async function POST(req: Request) {
     const sessionToken = generateSessionToken();
     const cookieHeader = createSessionCookieHeader(sessionToken);
 
+    await Database.addAuditLog({
+      actor: { id: 'admin', name: 'Master Admin', ip },
+      action: 'auth.master_admin_login_success',
+      targetType: 'session',
+      targetId: 'admin',
+      details: { role: 'owner' },
+    });
+
     return NextResponse.json(
-      { success: true, message: 'Authenticated successfully', token: sessionToken },
+      {
+        success: true,
+        message: 'Authenticated successfully as Master Admin',
+        isStaff: false,
+        member: {
+          id: 'admin',
+          name: 'Master Admin',
+          email: 'admin@kortexai.com',
+          role: 'owner',
+        },
+        token: sessionToken,
+      },
       {
         status: 200,
         headers: {

@@ -1,14 +1,10 @@
 import { NextResponse } from 'next/server';
 import { Database } from '@/lib/db';
-import { verifyAdminRequest } from '@/lib/security/auth';
+import { withAdminAuth } from '@/lib/security/auth';
 import { maskSecret } from '@/lib/security/crypto';
 
-export async function GET(req: Request) {
+export const GET = withAdminAuth(async (_req: Request) => {
   try {
-    if (!(await verifyAdminRequest(req))) {
-      return NextResponse.json({ error: 'Unauthorized: Admin authentication required' }, { status: 401 });
-    }
-
     const assistants = await Database.getAssistants();
     const sanitized = assistants.map((a) => ({
       ...a,
@@ -25,14 +21,10 @@ export async function GET(req: Request) {
       { status: 500 }
     );
   }
-}
+});
 
-export async function POST(req: Request) {
+export const POST = withAdminAuth(async (req: Request) => {
   try {
-    if (!(await verifyAdminRequest(req))) {
-      return NextResponse.json({ error: 'Unauthorized: Admin authentication required' }, { status: 401 });
-    }
-
     const body = await req.json();
     if (!body.name) {
       return NextResponse.json({ error: 'Assistant name is required' }, { status: 400 });
@@ -54,4 +46,4 @@ export async function POST(req: Request) {
       { status: 500 }
     );
   }
-}
+});

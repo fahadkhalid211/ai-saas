@@ -4,13 +4,15 @@ import { BOT_TEMPLATES } from '@/lib/templates';
 import { parseFileOrText } from '@/lib/rag/parsers';
 import { chunkDocument } from '@/lib/rag/chunker';
 import { generateEmbeddingsBatch } from '@/lib/rag/embedder';
+import { withAdminAuth } from '@/lib/security/auth';
 
 export async function GET() {
   return NextResponse.json({ templates: BOT_TEMPLATES });
 }
 
-export async function POST(req: Request) {
+export const POST = withAdminAuth(async (req: Request) => {
   try {
+
     const body = await req.json();
     const { templateId, assistantId, seedKnowledge = true } = body;
 
@@ -104,4 +106,4 @@ export async function POST(req: Request) {
     console.error('Template apply error:', error);
     return NextResponse.json({ error: error?.message || 'Failed to apply template' }, { status: 500 });
   }
-}
+});

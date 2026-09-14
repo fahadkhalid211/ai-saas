@@ -3,7 +3,7 @@ import { Database, DEFAULT_BARBER_LANDING_CONFIG } from '@/lib/db';
 import { sendSupportLeadEmail, sendAppointmentConfirmationEmail } from '@/lib/email';
 import { dispatchWebhook } from '@/lib/webhook';
 import { verifyAdminRequest } from '@/lib/security/auth';
-import { checkRateLimit, getClientIp } from '@/lib/security/rate-limit';
+import { enforceRateLimit } from '@/lib/security/rate-limit';
 
 export async function OPTIONS() {
   return new NextResponse(null, {
@@ -124,14 +124,11 @@ export async function POST(req: Request) {
 
     // New Appointment Booking (Public Widget / Embed)
     // Rate limit booking submissions (max 10 per minute per IP)
-    const ip = getClientIp(req);
-    const limit = checkRateLimit(`appts:${ip}`, { windowMs: 60 * 1000, max: 10 });
-    if (!limit.allowed) {
-      return NextResponse.json(
-        { error: 'Too many booking attempts. Please wait a moment before trying again.' },
-        { status: 429, headers: { 'Access-Control-Allow-Origin': '*' } }
-      );
+    const rateLimit = enforceRateLimit(req, 'appts', { windowMs: 60 * 1000, max: 10 });
+    if (rateLimit.errorResponse) {
+      return rateLimit.errorResponse;
     }
+    const ip = rateLimit.clientIp;
 
     const {
       assistantId,
@@ -145,6 +142,8 @@ export async function POST(req: Request) {
       serviceId,
       serviceName,
       price,
+      landingPageName,
+      landingPageSlug,
     } = body;
 
     if (!assistantId) {
@@ -191,6 +190,7 @@ export async function POST(req: Request) {
     }
 
     const resolvedDuration = durationMinutes || assistant.bookingSlotDuration || 30;
+    const landingConfig = assistant.landingPageConfig || DEFAULT_BARBER_LANDING_CONFIG;
 
     const appointment = await Database.saveAppointment({
       assistantId,
@@ -204,9 +204,9 @@ export async function POST(req: Request) {
       serviceId,
       serviceName,
       price: price ? Number(price) : undefined,
+      landingPageName: landingPageName || landingConfig.businessName,
+      landingPageSlug: landingPageSlug || landingConfig.slug,
     });
-
-    const landingConfig = assistant.landingPageConfig || DEFAULT_BARBER_LANDING_CONFIG;
     const businessName = landingConfig.businessName || assistant.name || 'Our Business';
     const businessAddress = landingConfig.address || 'In Shop';
     const businessPhone = landingConfig.phone || '';

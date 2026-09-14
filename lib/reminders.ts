@@ -1,4 +1,4 @@
-import { Database, AppointmentData, DEFAULT_BARBER_LANDING_CONFIG } from './db';
+import { Database, DEFAULT_BARBER_LANDING_CONFIG } from './db';
 import { sendAppointmentReminderEmail } from './email';
 
 export interface ReminderProcessResult {

@@ -86,26 +86,39 @@ import {
   ShieldAlert,
   MapPin,
   Scissors,
+  Smartphone,
+  Monitor,
+  DollarSign,
+  Filter,
+  Award,
 } from 'lucide-react';
 import { diagnoseKnowledgeFailure } from '@/lib/rag/diagnostics';
 import { MarkdownRenderer } from '@/components/markdown-renderer';
 import { BOT_TEMPLATES, BotTemplate } from '@/lib/templates';
 import { BILLING_PLANS, PlanTier } from '@/lib/billing/plans';
-import { LandingPageConfig, DEFAULT_BARBER_LANDING_CONFIG } from '@/lib/landing/types';
+import {
+  LandingPageConfig,
+  DEFAULT_BARBER_LANDING_CONFIG,
+  TEMPLATE_LANDING_CONFIGS,
+  getLandingConfigForSlugOrTemplate,
+} from '@/lib/landing/types';
+import { AuditTab } from '@/components/crm/AuditTab';
+import { SecurityTab } from '@/components/crm/SecurityTab';
+import { TeamTab } from '@/components/crm/TeamTab';
+import { BillingTab } from '@/components/crm/BillingTab';
+import { AnalyticsTab } from '@/components/crm/AnalyticsTab';
+import { KnowledgeTab } from '@/components/crm/KnowledgeTab';
+import { ChannelsTab } from '@/components/crm/ChannelsTab';
+import { ConversationsTab } from '@/components/crm/ConversationsTab';
+import { LandingPageTab, LANDING_TEMPLATES_LIST } from '@/components/crm/LandingPageTab';
+import { WidgetTab, SupportCustomField } from '@/components/crm/WidgetTab';
+import { AppointmentsTab, Appointment } from '@/components/crm/AppointmentsTab';
 
 const Youtube = ({ className = 'h-4 w-4' }: { className?: string }) => (
   <svg className={className} viewBox="0 0 24 24" fill="currentColor">
     <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
   </svg>
 );
-
-export interface SupportCustomField {
-  id: string;
-  label: string;
-  type: 'text' | 'textarea' | 'tel' | 'select';
-  required: boolean;
-  options?: string[];
-}
 
 interface Assistant {
   id: string;
@@ -158,20 +171,6 @@ interface Assistant {
   bookingStartHour?: string;
   bookingEndHour?: string;
   bookingAvailableDays?: string[];
-}
-
-export interface Appointment {
-  id: string;
-  assistantId: string;
-  name: string;
-  email: string;
-  phone?: string;
-  date: string;
-  timeSlot: string;
-  durationMinutes: number;
-  status: 'pending' | 'confirmed' | 'cancelled' | 'completed';
-  notes?: string;
-  createdAt: string;
 }
 
 interface KnowledgeSource {
@@ -234,40 +233,15 @@ export default function DashboardPage() {
   const [showAuthPasscode, setShowAuthPasscode] = useState<boolean>(false);
   const [authError, setAuthError] = useState<string | null>(null);
   const [isLoggingIn, setIsLoggingIn] = useState<boolean>(false);
+  const [authLoginMode, setAuthLoginMode] = useState<'admin' | 'staff'>('admin');
+  const [staffEmailInput, setStaffEmailInput] = useState<string>('');
+  const [staffPasswordInput, setStaffPasswordInput] = useState<string>('');
 
   const [assistants, setAssistants] = useState<Assistant[]>([]);
   const [activeAssistant, setActiveAssistant] = useState<Assistant | null>(null);
   const [activeTab, setActiveTab] = useState<
     'overview' | 'analytics' | 'billing' | 'landing_page' | 'team' | 'security' | 'audit' | 'knowledge' | 'engine' | 'behavior' | 'widget' | 'channels' | 'playground' | 'leads' | 'appointments' | 'docs' | 'templates' | 'history'
   >('overview');
-
-  // Channel & Integrations state
-  const [showTelegramToken, setShowTelegramToken] = useState(false);
-  const [showWhatsAppToken, setShowWhatsAppToken] = useState(false);
-  const [showWebhookSecret, setShowWebhookSecret] = useState(false);
-  const [copiedWaWebhookUrl, setCopiedWaWebhookUrl] = useState(false);
-  const [copiedWaVerifyToken, setCopiedWaVerifyToken] = useState(false);
-  const [telegramStatus, setTelegramStatus] = useState<{
-    loading: boolean;
-    tested?: boolean;
-    success?: boolean;
-    error?: string;
-    botInfo?: { id: number; username: string; firstName: string; canJoinGroups: boolean };
-  }>({ loading: false });
-  const [telegramWebhookStatus, setTelegramWebhookStatus] = useState<{
-    loading: boolean;
-    success?: boolean;
-    error?: string;
-    message?: string;
-  }>({ loading: false });
-  const [webhookTestStatus, setWebhookTestStatus] = useState<{
-    loading: boolean;
-    tested?: boolean;
-    success?: boolean;
-    error?: string;
-    statusCode?: number;
-    latencyMs?: number;
-  }>({ loading: false });
 
   // Knowledge state
   const [sources, setSources] = useState<KnowledgeSource[]>([]);
@@ -299,8 +273,6 @@ export default function DashboardPage() {
 
   // Appointments & Calendar Booking state
   const [appointments, setAppointments] = useState<Appointment[]>([]);
-  const [appointmentFilter, setAppointmentFilter] = useState<'all' | 'confirmed' | 'pending' | 'completed' | 'cancelled'>('all');
-  const [appointmentSearch, setAppointmentSearch] = useState('');
   const [isSyncingAppointments, setIsSyncingAppointments] = useState(false);
   const [selectedAppointmentModal, setSelectedAppointmentModal] = useState<Appointment | null>(null);
 
@@ -312,63 +284,30 @@ export default function DashboardPage() {
 
   // Conversation History state
   const [conversations, setConversations] = useState<any[]>([]);
-  const [selectedConversation, setSelectedConversation] = useState<any | null>(null);
   const [isLoadingConversations, setIsLoadingConversations] = useState(false);
 
   // Template Marketplace state
   const [applyingTemplateId, setApplyingTemplateId] = useState<string | null>(null);
   const [templateSuccessMsg, setTemplateSuccessMsg] = useState<string | null>(null);
 
-  // Custom Form Field builder state
-  const [newFieldLabel, setNewFieldLabel] = useState('');
-  const [newFieldType, setNewFieldType] = useState<'text' | 'textarea' | 'tel' | 'select'>('text');
-  const [newFieldRequired, setNewFieldRequired] = useState(false);
-  const [newFieldOptions, setNewFieldOptions] = useState('');
-  const [showAddFieldForm, setShowAddFieldForm] = useState(false);
-
-  const handleAddCustomField = () => {
-    if (!newFieldLabel.trim()) return;
-    const currentFields = formData.supportCustomFields || [];
-    const newField: SupportCustomField = {
-      id: 'field_' + Math.random().toString(36).substring(2, 9),
-      label: newFieldLabel.trim(),
-      type: newFieldType,
-      required: newFieldRequired,
-      options:
-        newFieldType === 'select'
-          ? newFieldOptions
-              .split(',')
-              .map((o) => o.trim())
-              .filter(Boolean)
-          : undefined,
-    };
-    setFormData({
-      ...formData,
-      supportCustomFields: [...currentFields, newField],
-    });
-    setNewFieldLabel('');
-    setNewFieldType('text');
-    setNewFieldRequired(false);
-    setNewFieldOptions('');
-    setShowAddFieldForm(false);
-  };
-
-  const handleRemoveCustomField = (id: string) => {
-    const currentFields = formData.supportCustomFields || [];
-    setFormData({
-      ...formData,
-      supportCustomFields: currentFields.filter((f) => f.id !== id),
-    });
-  };
-
   // Analytics state
   const [analyticsData, setAnalyticsData] = useState<any>(null);
   const [isLoadingAnalytics, setIsLoadingAnalytics] = useState(false);
+  const [analyticsRange, setAnalyticsRange] = useState<number>(30);
+  const [analyticsSlugFilter, setAnalyticsSlugFilter] = useState<string>('all');
 
-  const fetchAnalytics = async (assistantId?: string) => {
+  const fetchAnalytics = async (assistantId?: string, slug?: string, days?: number) => {
     setIsLoadingAnalytics(true);
     try {
-      const url = assistantId ? `/api/analytics?assistantId=${assistantId}` : '/api/analytics';
+      const astId = assistantId !== undefined ? assistantId : activeAssistant?.id;
+      const targetSlug = slug !== undefined ? slug : analyticsSlugFilter;
+      const targetDays = days !== undefined ? days : analyticsRange;
+      const params = new URLSearchParams();
+      if (astId) params.set('assistantId', astId);
+      if (targetSlug && targetSlug !== 'all') params.set('slug', targetSlug);
+      if (targetDays !== undefined) params.set('days', targetDays.toString());
+
+      const url = `/api/analytics?${params.toString()}`;
       const res = await fetch(url);
       if (res.ok) {
         const data = await res.json();
@@ -505,6 +444,7 @@ Thank you for using Kortex AI Business Engine.
   const [saveLandingError, setSaveLandingError] = useState<string | null>(null);
   const [copiedLandingUrl, setCopiedLandingUrl] = useState(false);
   const [showCounterQrModal, setShowCounterQrModal] = useState(false);
+  const [presetNotice, setPresetNotice] = useState<string | null>(null);
 
   // Team Management & RBAC State
   const [teamMembers, setTeamMembers] = useState<any[]>([]);
@@ -532,6 +472,275 @@ Thank you for using Kortex AI Business Engine.
   const [notifications, setNotifications] = useState<any[]>([]);
   const [unreadNotifCount, setUnreadNotifCount] = useState(0);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
+
+  // Multi-Landing Page & Add-on Management State
+  const [allLandingPages, setAllLandingPages] = useState<LandingPageConfig[]>([]);
+  const [landingPageLimits, setLandingPageLimits] = useState<{
+    planTier: string;
+    baseLimit: number;
+    extraSlots: number;
+    totalAllowed: number;
+    currentCount: number;
+  }>({
+    planTier: 'starter',
+    baseLimit: 1,
+    extraSlots: 0,
+    totalAllowed: 1,
+    currentCount: 1,
+  });
+  const [isPurchasingAddon, setIsPurchasingAddon] = useState(false);
+  const [addonSuccessMsg, setAddonSuccessMsg] = useState<string | null>(null);
+  const [addonErrorMsg, setAddonErrorMsg] = useState<string | null>(null);
+  const [showNewPageModal, setShowNewPageModal] = useState(false);
+  const [newPageName, setNewPageName] = useState('');
+  const [newPageSlug, setNewPageSlug] = useState('');
+  const [newPageIndustry, setNewPageIndustry] = useState('barbershop');
+
+  // Email Delivery & SMTP Diagnostic State
+  const [smtpConfig, setSmtpConfig] = useState<{
+    host: string;
+    port: number;
+    user: string;
+    pass: string;
+    from: string;
+    resendApiKey?: string;
+    provider: 'smtp' | 'resend';
+  }>({
+    host: '',
+    port: 587,
+    user: '',
+    pass: '',
+    from: '',
+    resendApiKey: '',
+    provider: 'smtp',
+  });
+  const [smtpLoading, setSmtpLoading] = useState(false);
+  const [smtpSaveSuccess, setSmtpSaveSuccess] = useState(false);
+  const [smtpSaveError, setSmtpSaveError] = useState<string | null>(null);
+  const [smtpTestEmail, setSmtpTestEmail] = useState('');
+  const [smtpTesting, setSmtpTesting] = useState(false);
+  const [smtpTestResult, setSmtpTestResult] = useState<{ success: boolean; message: string } | null>(null);
+
+  // Audio Notification Chime & Bottom-Left Toast
+  const [incomingToast, setIncomingToast] = useState<any | null>(null);
+  const lastNotifIdRef = useRef<string | null>(null);
+
+  const playNotificationChime = () => {
+    try {
+      if (typeof window === 'undefined') return;
+      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+      if (!AudioCtx) return;
+      const ctx = new AudioCtx();
+      const now = ctx.currentTime;
+      
+      const osc1 = ctx.createOscillator();
+      const gain1 = ctx.createGain();
+      osc1.type = 'sine';
+      osc1.frequency.setValueAtTime(587.33, now); // D5
+      osc1.frequency.exponentialRampToValueAtTime(880, now + 0.15); // A5
+      gain1.gain.setValueAtTime(0.18, now);
+      gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+      osc1.connect(gain1);
+      gain1.connect(ctx.destination);
+      osc1.start(now);
+      osc1.stop(now + 0.35);
+
+      const osc2 = ctx.createOscillator();
+      const gain2 = ctx.createGain();
+      osc2.type = 'sine';
+      osc2.frequency.setValueAtTime(880, now + 0.12);
+      osc2.frequency.exponentialRampToValueAtTime(1174.66, now + 0.3); // D6
+      gain2.gain.setValueAtTime(0.15, now + 0.12);
+      gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.55);
+      osc2.connect(gain2);
+      gain2.connect(ctx.destination);
+      osc2.start(now + 0.12);
+      osc2.stop(now + 0.55);
+    } catch (err) {
+      console.warn('Audio notification error:', err);
+    }
+  };
+
+  const fetchAllLandingPages = async () => {
+    try {
+      const res = await fetch('/api/landing-page?all=true');
+      if (res.ok) {
+        const data = await res.json();
+        const pagesList = data.landingPages || data.pages;
+        if (Array.isArray(pagesList)) {
+          setAllLandingPages(pagesList);
+        }
+        if (data.limits) {
+          setLandingPageLimits(data.limits);
+        } else if (data.totalAllowed !== undefined) {
+          setLandingPageLimits({
+            planTier: data.planName || 'starter',
+            baseLimit: data.planLimit || 1,
+            extraSlots: data.extraSlots || 0,
+            totalAllowed: data.totalAllowed || 1,
+            currentCount: data.currentCount || (pagesList ? pagesList.length : 1),
+          });
+        }
+      }
+    } catch (e) {
+      console.warn('Failed to fetch all landing pages', e);
+    }
+  };
+
+  const handlePurchaseExtraLandingPage = async () => {
+    setIsPurchasingAddon(true);
+    setAddonSuccessMsg(null);
+    setAddonErrorMsg(null);
+    try {
+      const res = await fetch('/api/billing/addon', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ addonType: 'extra_landing_page' }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to purchase add-on');
+      }
+      setAddonSuccessMsg('Extra Landing Page slot unlocked for $100! Your workspace limit has been updated.');
+      playNotificationChime();
+      await fetchAllLandingPages();
+      await fetchBilling();
+      await fetchNotifications();
+      setTimeout(() => setAddonSuccessMsg(null), 5000);
+    } catch (err: any) {
+      setAddonErrorMsg(err.message);
+    } finally {
+      setIsPurchasingAddon(false);
+    }
+  };
+
+  const handleCreateNewLandingPage = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newPageName.trim() || !newPageSlug.trim()) return;
+
+    try {
+      const basePreset = TEMPLATE_LANDING_CONFIGS[newPageSlug] || TEMPLATE_LANDING_CONFIGS[newPageIndustry] || DEFAULT_BARBER_LANDING_CONFIG;
+      const cleanSlug = newPageSlug.toLowerCase().replace(/[^a-z0-9-]/g, '-');
+      const newConfig: LandingPageConfig = {
+        ...basePreset,
+        id: 'lp_' + cleanSlug,
+        businessName: newPageName,
+        slug: cleanSlug,
+        industry: newPageIndustry,
+      };
+
+      const res = await fetch('/api/landing-page', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          assistantId: activeAssistant?.id || 'demo-assistant',
+          config: newConfig,
+          isNewPage: true,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to create new landing page');
+      }
+
+      setShowNewPageModal(false);
+      setNewPageName('');
+      setNewPageSlug('');
+      await fetchAllLandingPages();
+      setLandingConfig(newConfig);
+      setPresetNotice('Created new landing page: ' + newConfig.businessName);
+      setTimeout(() => setPresetNotice(null), 4000);
+    } catch (err: any) {
+      alert(err.message);
+    }
+  };
+
+  const fetchSmtpSettings = async () => {
+    try {
+      setSmtpLoading(true);
+      const res = await fetch('/api/email/test');
+      if (res.ok) {
+        const data = await res.json();
+        if (data.settings) {
+          setSmtpConfig((prev) => ({
+            ...prev,
+            host: data.settings.host || '',
+            port: data.settings.port || 587,
+            user: data.settings.user || '',
+            from: data.settings.from || '',
+            provider: data.settings.provider || 'smtp',
+          }));
+        }
+      }
+    } catch (e) {
+      console.warn('Failed to load SMTP settings', e);
+    } finally {
+      setSmtpLoading(false);
+    }
+  };
+
+  const handleSaveSmtpSettings = async () => {
+    try {
+      setSmtpLoading(true);
+      setSmtpSaveSuccess(false);
+      setSmtpSaveError(null);
+      const res = await fetch('/api/email/test', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'save_settings',
+          settings: smtpConfig,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to save SMTP settings');
+      setSmtpSaveSuccess(true);
+      setTimeout(() => setSmtpSaveSuccess(false), 3000);
+    } catch (err: any) {
+      setSmtpSaveError(err.message);
+    } finally {
+      setSmtpLoading(false);
+    }
+  };
+
+  const handleTestEmailSend = async () => {
+    if (!smtpTestEmail.trim()) return;
+    try {
+      setSmtpTesting(true);
+      setSmtpTestResult(null);
+      const res = await fetch('/api/email/test', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'test_send',
+          to: smtpTestEmail.trim(),
+          config: smtpConfig,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        setSmtpTestResult({
+          success: false,
+          message: data.error || data.details || 'Email sending failed. Please verify credentials.',
+        });
+      } else {
+        setSmtpTestResult({
+          success: true,
+          message: data.message || ('Test email dispatched to ' + smtpTestEmail + '! Check inbox or spam folder.'),
+        });
+        playNotificationChime();
+      }
+    } catch (err: any) {
+      setSmtpTestResult({
+        success: false,
+        message: err.message || 'Network error sending test email',
+      });
+    } finally {
+      setSmtpTesting(false);
+    }
+  };
+
 
   const fetchLandingConfig = async (astId: string) => {
     try {
@@ -658,8 +867,18 @@ Thank you for using Kortex AI Business Engine.
       const res = await fetch('/api/notifications');
       if (res.ok) {
         const data = await res.json();
-        setNotifications(data.notifications || []);
+        const list = data.notifications || [];
+        setNotifications(list);
         setUnreadNotifCount(data.unreadCount || 0);
+
+        if (list.length > 0) {
+          const latest = list[0];
+          if (lastNotifIdRef.current && latest.id !== lastNotifIdRef.current && !latest.read) {
+            playNotificationChime();
+            setIncomingToast(latest);
+          }
+          lastNotifIdRef.current = latest.id;
+        }
       }
     } catch (e) {}
   };
@@ -808,147 +1027,6 @@ Thank you for using Kortex AI Business Engine.
     }
   };
 
-  // Conversation history sentiment filter & status toggle
-  const [conversationSentimentFilter, setConversationSentimentFilter] = useState<'all' | 'urgent' | 'positive' | 'neutral'>('all');
-
-  const handleToggleConversationStatus = async (convId: string, resolved: boolean) => {
-    try {
-      const res = await fetch('/api/conversations', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: convId, resolved }),
-      });
-      if (res.ok) {
-        setConversations((prev) =>
-          prev.map((c) => (c.id === convId ? { ...c, resolved } : c))
-        );
-        if (selectedConversation && selectedConversation.id === convId) {
-          setSelectedConversation((prev: any) => ({ ...prev, resolved }));
-        }
-      }
-    } catch (err) {
-      console.error('Failed to update conversation status', err);
-    }
-  };
-
-  // Live Agent Takeover state
-  const [agentNameInput, setAgentNameInput] = useState<string>('Alex (Support)');
-  const [agentReplyText, setAgentReplyText] = useState<string>('');
-  const [isSendingAgentMessage, setIsSendingAgentMessage] = useState<boolean>(false);
-
-  const handleToggleTakeover = async (convId: string, isLiveTakeover: boolean) => {
-    try {
-      const res = await fetch('/api/conversations', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          id: convId,
-          isLiveTakeover,
-          assignedAgentName: agentNameInput.trim() || 'Support Agent',
-          status: isLiveTakeover ? 'live_agent' : 'bot',
-        }),
-      });
-      if (res.ok) {
-        setConversations((prev) =>
-          prev.map((c) =>
-            c.id === convId
-              ? {
-                  ...c,
-                  isLiveTakeover,
-                  assignedAgentName: agentNameInput.trim() || 'Support Agent',
-                  status: isLiveTakeover ? 'live_agent' : 'bot',
-                }
-              : c
-          )
-        );
-        if (selectedConversation && selectedConversation.id === convId) {
-          setSelectedConversation((prev: any) => ({
-            ...prev,
-            isLiveTakeover,
-            assignedAgentName: agentNameInput.trim() || 'Support Agent',
-            status: isLiveTakeover ? 'live_agent' : 'bot',
-          }));
-        }
-      }
-    } catch (err) {
-      console.error('Failed to toggle live takeover', err);
-    }
-  };
-
-  const handleSendAgentMessage = async () => {
-    if (!selectedConversation || !agentReplyText.trim() || isSendingAgentMessage) return;
-    const textToSend = agentReplyText.trim();
-    setIsSendingAgentMessage(true);
-    try {
-      const res = await fetch('/api/conversations', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          conversationId: selectedConversation.id,
-          content: textToSend,
-          agentName: agentNameInput.trim() || 'Support Agent',
-          takeover: true,
-        }),
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setAgentReplyText('');
-        if (data.message) {
-          setSelectedConversation((prev: any) => {
-            if (!prev) return prev;
-            return {
-              ...prev,
-              isLiveTakeover: true,
-              messages: [...(prev.messages || []), data.message],
-            };
-          });
-          setConversations((prev) =>
-            prev.map((c) =>
-              c.id === selectedConversation.id
-                ? {
-                    ...c,
-                    isLiveTakeover: true,
-                    messages: [...(c.messages || []), data.message],
-                  }
-                : c
-            )
-          );
-        }
-      }
-    } catch (err) {
-      console.error('Failed to send agent message', err);
-    } finally {
-      setIsSendingAgentMessage(false);
-    }
-  };
-
-  // Live polling for selected conversation in Conversations tab
-  useEffect(() => {
-    if (activeTab !== 'history' || !selectedConversation) return;
-    const interval = setInterval(async () => {
-      try {
-        const res = await fetch(`/api/conversations?id=${encodeURIComponent(selectedConversation.id)}`);
-        if (res.ok) {
-          const data = await res.json();
-          if (data.conversation) {
-            setSelectedConversation((prev: any) => {
-              if (!prev || prev.id !== data.conversation.id) return prev;
-              const prevCount = prev.messages?.length || 0;
-              const newCount = data.conversation.messages?.length || 0;
-              if (prevCount !== newCount || prev.isLiveTakeover !== data.conversation.isLiveTakeover) {
-                return data.conversation;
-              }
-              return prev;
-            });
-          }
-        }
-      } catch (e) {
-        // silent
-      }
-    }, 3200);
-    return () => clearInterval(interval);
-  }, [activeTab, selectedConversation?.id]);
-
   const renderTemplateIcon = (iconName: string) => {
     switch (iconName) {
       case 'Dumbbell':
@@ -1043,25 +1121,40 @@ Thank you for using Kortex AI Business Engine.
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!authApiKeyInput.trim()) return;
+    if (authLoginMode === 'admin') {
+      if (!authApiKeyInput.trim()) return;
+    } else {
+      if (!staffEmailInput.trim() || !staffPasswordInput.trim()) return;
+    }
     setIsLoggingIn(true);
     setAuthError(null);
     try {
+      const payload =
+        authLoginMode === 'admin'
+          ? {
+              mode: 'admin',
+              key: authApiKeyInput.trim(),
+              apiKey: authApiKeyInput.trim(),
+            }
+          : {
+              mode: 'staff',
+              email: staffEmailInput.trim(),
+              password: staffPasswordInput.trim(),
+            };
       const res = await fetch('/api/auth', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          key: authApiKeyInput.trim(),
-          apiKey: authApiKeyInput.trim(),
-        }),
+        body: JSON.stringify(payload),
       });
       const data = await res.json();
       if (res.ok && data.success) {
         setIsAuthenticated(true);
         setAuthApiKeyInput('');
+        setStaffEmailInput('');
+        setStaffPasswordInput('');
         await fetchAssistants();
       } else {
-        setAuthError(data.error || 'Invalid Admin Passcode or Key');
+        setAuthError(data.error || (authLoginMode === 'admin' ? 'Invalid Admin Passcode or Key' : 'Invalid Staff Credentials'));
       }
     } catch (err: any) {
       setAuthError(err.message || 'Authentication failed');
@@ -1088,6 +1181,7 @@ Thank you for using Kortex AI Business Engine.
       fetchAnalytics(activeAssistant.id);
       fetchBilling();
       fetchLandingConfig(activeAssistant.id);
+      fetchAllLandingPages();
       fetchTeamMembers();
       fetchAuditLogs();
       fetchNotifications();
@@ -1114,6 +1208,12 @@ Thank you for using Kortex AI Business Engine.
       return () => clearInterval(pollTimer);
     }
   }, [activeAssistant?.id]);
+
+  useEffect(() => {
+    if (activeTab === 'landing_page' || activeTab === 'analytics') {
+      fetchAllLandingPages();
+    }
+  }, [activeTab]);
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -1314,39 +1414,6 @@ Thank you for using Kortex AI Business Engine.
     }
   }
 
-  function downloadConversationTranscript(conv: any) {
-    if (!conv || !conv.messages || conv.messages.length === 0) return;
-    const assistantName = activeAssistant?.name || 'AI Assistant';
-    const dateStr = new Date(conv.createdAt).toLocaleString();
-    const lines = [
-      '=======================================================',
-      `${assistantName.toUpperCase()} - CONVERSATION TRANSCRIPT`,
-      `Session ID: ${conv.id}`,
-      `Date Started: ${dateStr}`,
-      `Total Messages: ${conv.messages.length}`,
-      '=======================================================',
-      '',
-    ];
-
-    conv.messages.forEach((m: any, idx: number) => {
-      const time = new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-      const sender = m.role === 'user' ? 'Visitor' : assistantName;
-      lines.push(`[${time}] ${sender}:`);
-      lines.push(m.content);
-      lines.push('');
-    });
-
-    const blob = new Blob([lines.join('\r\n')], { type: 'text/plain;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `chat-session-${conv.id.slice(0, 8)}-${new Date().toISOString().slice(0, 10)}.txt`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    setTimeout(() => URL.revokeObjectURL(url), 1500);
-  }
-
   async function handleApplyTemplate(templateId: string) {
     if (!activeAssistant) return;
     try {
@@ -1436,96 +1503,6 @@ Thank you for using Kortex AI Business Engine.
       setTimeout(() => setSaveError(null), 5000);
     } finally {
       setIsSaving(false);
-    }
-  }
-
-  async function handleTelegramVerify() {
-    if (!formData.telegramBotToken?.trim()) {
-      setTelegramStatus({ loading: false, tested: true, success: false, error: 'Please enter a Telegram Bot API Token.' });
-      return;
-    }
-    setTelegramStatus({ loading: true });
-    try {
-      const res = await fetch(`/api/channels/telegram?action=verify&token=${encodeURIComponent(formData.telegramBotToken.trim())}`);
-      const data = await res.json();
-      if (data.ok && data.bot) {
-        setTelegramStatus({ loading: false, tested: true, success: true, botInfo: data.bot });
-      } else {
-        setTelegramStatus({ loading: false, tested: true, success: false, error: data.error || 'Invalid Bot Token' });
-      }
-    } catch (err: any) {
-      setTelegramStatus({ loading: false, tested: true, success: false, error: err?.message || 'Verification failed' });
-    }
-  }
-
-  async function handleTelegramSetWebhook() {
-    if (!activeAssistant) return;
-    setTelegramWebhookStatus({ loading: true });
-    try {
-      const webhookUrl = `${window.location.origin}/api/channels/telegram`;
-      const res = await fetch(`/api/channels/telegram?action=setWebhook&assistantId=${activeAssistant.id}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ webhookUrl }),
-      });
-      const data = await res.json();
-      if (data.ok) {
-        setTelegramWebhookStatus({
-          loading: false,
-          success: true,
-          message: 'Webhook registered with Telegram! Incoming bot messages will receive live AI answers.',
-        });
-        setTimeout(() => setTelegramWebhookStatus({ loading: false }), 6000);
-      } else {
-        setTelegramWebhookStatus({ loading: false, success: false, error: data.error || 'Failed to register webhook' });
-      }
-    } catch (err: any) {
-      setTelegramWebhookStatus({ loading: false, success: false, error: err?.message || 'Failed to register webhook' });
-    }
-  }
-
-  async function handleWebhookTestPing() {
-    if (!formData.webhookUrl?.trim()) {
-      setWebhookTestStatus({ loading: false, tested: true, success: false, error: 'Please provide a Target Webhook URL.' });
-      return;
-    }
-    setWebhookTestStatus({ loading: true });
-    try {
-      const res = await fetch('/api/webhook/test', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          assistantId: activeAssistant?.id,
-          webhookUrl: formData.webhookUrl.trim(),
-          webhookSecret: formData.webhookSecret?.trim(),
-        }),
-      });
-      const data = await res.json();
-      if (data.success) {
-        setWebhookTestStatus({
-          loading: false,
-          tested: true,
-          success: true,
-          statusCode: data.statusCode,
-          latencyMs: data.latencyMs,
-        });
-      } else {
-        setWebhookTestStatus({
-          loading: false,
-          tested: true,
-          success: false,
-          error: data.error || 'Webhook ping failed',
-          statusCode: data.statusCode,
-          latencyMs: data.latencyMs,
-        });
-      }
-    } catch (err: any) {
-      setWebhookTestStatus({
-        loading: false,
-        tested: true,
-        success: false,
-        error: err?.message || 'Webhook ping failed',
-      });
     }
   }
 
@@ -1882,35 +1859,94 @@ Thank you for using Kortex AI Business Engine.
             </div>
           )}
 
+          {/* Login Type Tabs */}
+          <div className="flex items-center p-1 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-semibold">
+            <button
+              type="button"
+              onClick={() => { setAuthLoginMode('admin'); setAuthError(null); }}
+              className={`flex-1 py-1.5 rounded-lg transition cursor-pointer flex items-center justify-center gap-1.5 ${
+                authLoginMode === 'admin'
+                  ? 'bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-xs'
+                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+              }`}
+            >
+              <Key className="h-3.5 w-3.5" />
+              <span>Master Admin Key</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => { setAuthLoginMode('staff'); setAuthError(null); }}
+              className={`flex-1 py-1.5 rounded-lg transition cursor-pointer flex items-center justify-center gap-1.5 ${
+                authLoginMode === 'staff'
+                  ? 'bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-xs'
+                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+              }`}
+            >
+              <Users className="h-3.5 w-3.5" />
+              <span>Staff Login</span>
+            </button>
+          </div>
+
           <form onSubmit={handleLogin} className="space-y-4">
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center justify-between">
-                <span>Master Admin Key / Passcode</span>
-                <span className="text-[10px] text-slate-400 font-normal">ADMIN_API_KEY</span>
-              </label>
-              <div className="relative">
-                <input
-                  type={showAuthPasscode ? 'text' : 'password'}
-                  value={authApiKeyInput}
-                  onChange={(e) => setAuthApiKeyInput(e.target.value)}
-                  placeholder="Enter admin passcode or key..."
-                  className="w-full pl-3.5 pr-10 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white text-xs font-mono placeholder:font-sans placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-                  autoFocus
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowAuthPasscode(!showAuthPasscode)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer"
-                >
-                  {showAuthPasscode ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
+            {authLoginMode === 'admin' ? (
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center justify-between">
+                  <span>Master Admin Key / Passcode</span>
+                  <span className="text-[10px] text-slate-400 font-normal">ADMIN_API_KEY</span>
+                </label>
+                <div className="relative">
+                  <input
+                    type={showAuthPasscode ? 'text' : 'password'}
+                    value={authApiKeyInput}
+                    onChange={(e) => setAuthApiKeyInput(e.target.value)}
+                    placeholder="Enter admin passcode or key..."
+                    className="w-full pl-3.5 pr-10 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white text-xs font-mono placeholder:font-sans placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                    autoFocus
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowAuthPasscode(!showAuthPasscode)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer"
+                  >
+                    {showAuthPasscode ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
               </div>
-            </div>
+            ) : (
+              <div className="space-y-3">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Staff Email Address</label>
+                  <input
+                    type="email"
+                    value={staffEmailInput}
+                    onChange={(e) => setStaffEmailInput(e.target.value)}
+                    placeholder="staff@kortexai.com"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white text-xs placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                    autoFocus
+                    required
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center justify-between">
+                    <span>Password or Access Code</span>
+                    <span className="text-[10px] text-slate-400">e.g. Staff123!</span>
+                  </label>
+                  <input
+                    type="password"
+                    value={staffPasswordInput}
+                    onChange={(e) => setStaffPasswordInput(e.target.value)}
+                    placeholder="Enter password or 6-digit access code..."
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white text-xs placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                    required
+                  />
+                </div>
+              </div>
+            )}
 
             <button
               type="submit"
-              disabled={isLoggingIn || !authApiKeyInput.trim()}
+              disabled={isLoggingIn || (authLoginMode === 'admin' ? !authApiKeyInput.trim() : (!staffEmailInput.trim() || !staffPasswordInput.trim()))}
               className="w-full py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white text-xs font-semibold shadow-md shadow-blue-600/20 transition flex items-center justify-center gap-2 cursor-pointer"
             >
               {isLoggingIn ? (
@@ -1921,7 +1957,7 @@ Thank you for using Kortex AI Business Engine.
               ) : (
                 <>
                   <Key className="h-3.5 w-3.5" />
-                  <span>Unlock Management Console</span>
+                  <span>{authLoginMode === 'admin' ? 'Unlock Management Console' : 'Sign In to Staff Portal'}</span>
                 </>
               )}
             </button>
@@ -2192,1418 +2228,111 @@ Thank you for using Kortex AI Business Engine.
 
             {/* TAB: ANALYTICS & KPIS */}
             {activeTab === 'analytics' && (
-              <div className="max-w-6xl space-y-6 mx-auto">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2.5">
-                      <BarChart3 className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-                      <span>Analytics &amp; Performance KPIs</span>
-                    </h1>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                      Real-time metrics, conversion rates, visitor sentiment, and conversation resolution health.
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => fetchAnalytics(activeAssistant?.id)}
-                    disabled={isLoadingAnalytics}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition shadow-xs cursor-pointer"
-                  >
-                    <RefreshCw className={`h-3.5 w-3.5 ${isLoadingAnalytics ? 'animate-spin text-blue-600' : 'text-slate-500'}`} />
-                    <span>Refresh Metrics</span>
-                  </button>
-                </div>
-
-                {/* KPI Metrics Cards Grid */}
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3.5">
-                  <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-1">
-                    <div className="flex items-center justify-between text-slate-500 text-xs">
-                      <span>Conversations</span>
-                      <MessageSquare className="h-4 w-4 text-blue-500" />
-                    </div>
-                    <div className="text-xl font-bold text-slate-900 dark:text-white font-mono">
-                      {analyticsData?.totalConversations ?? conversations.length}
-                    </div>
-                    <div className="text-[10.5px] text-slate-400">Total sessions</div>
-                  </div>
-
-                  <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-1">
-                    <div className="flex items-center justify-between text-slate-500 text-xs">
-                      <span>Messages</span>
-                      <SendHorizontal className="h-4 w-4 text-indigo-500" />
-                    </div>
-                    <div className="text-xl font-bold text-slate-900 dark:text-white font-mono">
-                      {analyticsData?.totalMessages ?? 0}
-                    </div>
-                    <div className="text-[10.5px] text-slate-400">Visitor &amp; AI exchanges</div>
-                  </div>
-
-                  <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-1">
-                    <div className="flex items-center justify-between text-slate-500 text-xs">
-                      <span>Leads</span>
-                      <Users className="h-4 w-4 text-emerald-500" />
-                    </div>
-                    <div className="text-xl font-bold text-slate-900 dark:text-white font-mono">
-                      {analyticsData?.totalLeads ?? leads.length}
-                    </div>
-                    <div className="text-[10.5px] text-emerald-600 dark:text-emerald-400 font-semibold">
-                      {analyticsData?.conversionRate ?? 0}% conversion
-                    </div>
-                  </div>
-
-                  <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-1">
-                    <div className="flex items-center justify-between text-slate-500 text-xs">
-                      <span>Bookings</span>
-                      <Calendar className="h-4 w-4 text-purple-500" />
-                    </div>
-                    <div className="text-xl font-bold text-slate-900 dark:text-white font-mono">
-                      {analyticsData?.totalAppointments ?? appointments.length}
-                    </div>
-                    <div className="text-[10.5px] text-slate-400">Appointments scheduled</div>
-                  </div>
-
-                  <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-1">
-                    <div className="flex items-center justify-between text-slate-500 text-xs">
-                      <span>Resolution</span>
-                      <CheckCircle2 className="h-4 w-4 text-sky-500" />
-                    </div>
-                    <div className="text-xl font-bold text-slate-900 dark:text-white font-mono">
-                      {analyticsData?.resolutionRate ?? 100}%
-                    </div>
-                    <div className="text-[10.5px] text-slate-400">Inquiry solved rate</div>
-                  </div>
-
-                  <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-1">
-                    <div className="flex items-center justify-between text-slate-500 text-xs">
-                      <span>Knowledge</span>
-                      <BookOpen className="h-4 w-4 text-amber-500" />
-                    </div>
-                    <div className="text-xl font-bold text-slate-900 dark:text-white font-mono">
-                      {analyticsData?.totalKnowledgeChunks ?? 0}
-                    </div>
-                    <div className="text-[10.5px] text-slate-400">RAG chunks indexed</div>
-                  </div>
-                </div>
-
-                {/* Sentiment Breakdown & 7-Day Activity Trend */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  {/* Visitor Sentiment Breakdown Card */}
-                  <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-xs space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <PieChart className="h-4 w-4 text-blue-500" />
-                        <h2 className="text-sm font-bold text-slate-900 dark:text-white">Visitor Sentiment Analysis</h2>
-                      </div>
-                      <span className="text-[11px] text-slate-400">Real-time Tone AI</span>
-                    </div>
-
-                    <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                      AI continuously scans visitor conversations for frustration, urgent escalations, or positive satisfaction.
-                    </p>
-
-                    {/* Progress Bar Distribution */}
-                    {(() => {
-                      const pos = analyticsData?.sentiment?.positive ?? 0;
-                      const neu = analyticsData?.sentiment?.neutral ?? (analyticsData?.totalConversations || 1);
-                      const urg = analyticsData?.sentiment?.urgent ?? 0;
-                      const total = Math.max(1, pos + neu + urg);
-                      const posPct = Math.round((pos / total) * 100);
-                      const urgPct = Math.round((urg / total) * 100);
-                      const neuPct = 100 - posPct - urgPct;
-
-                      return (
-                        <div className="space-y-3">
-                          <div className="h-3 w-full rounded-full bg-slate-100 dark:bg-slate-800 flex overflow-hidden">
-                            <div style={{ width: `${posPct}%` }} className="bg-emerald-500 transition-all duration-500" title="Positive" />
-                            <div style={{ width: `${neuPct}%` }} className="bg-slate-400 dark:bg-slate-600 transition-all duration-500" title="Neutral" />
-                            <div style={{ width: `${urgPct}%` }} className="bg-rose-500 transition-all duration-500" title="Urgent / Escalated" />
-                          </div>
-
-                          <div className="grid grid-cols-3 gap-2 text-center">
-                            <div className="p-2.5 rounded-xl border border-emerald-100 dark:border-emerald-900/40 bg-emerald-50/50 dark:bg-emerald-950/20">
-                              <div className="flex items-center justify-center gap-1 text-[11px] font-semibold text-emerald-700 dark:text-emerald-400">
-                                <ThumbsUp className="h-3 w-3" /> Positive
-                              </div>
-                              <div className="text-base font-bold font-mono text-emerald-900 dark:text-emerald-300 mt-0.5">{pos}</div>
-                              <div className="text-[10px] text-emerald-600/70">{posPct}%</div>
-                            </div>
-
-                            <div className="p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40">
-                              <div className="flex items-center justify-center gap-1 text-[11px] font-semibold text-slate-600 dark:text-slate-400">
-                                <MessageSquare className="h-3 w-3" /> Neutral
-                              </div>
-                              <div className="text-base font-bold font-mono text-slate-900 dark:text-white mt-0.5">{neu}</div>
-                              <div className="text-[10px] text-slate-400">{neuPct}%</div>
-                            </div>
-
-                            <div className="p-2.5 rounded-xl border border-rose-100 dark:border-rose-900/40 bg-rose-50/50 dark:bg-rose-950/20">
-                              <div className="flex items-center justify-center gap-1 text-[11px] font-semibold text-rose-700 dark:text-rose-400">
-                                <AlertCircle className="h-3 w-3" /> Urgent
-                              </div>
-                              <div className="text-base font-bold font-mono text-rose-900 dark:text-rose-300 mt-0.5">{urg}</div>
-                              <div className="text-[10px] text-rose-600/70">{urgPct}%</div>
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })()}
-                  </div>
-
-                  {/* 7-Day Trend Chart */}
-                  <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-xs space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <TrendingUp className="h-4 w-4 text-emerald-500" />
-                        <h2 className="text-sm font-bold text-slate-900 dark:text-white">7-Day Engagement Activity</h2>
-                      </div>
-                      <span className="text-[11px] text-slate-400">Last 7 Days</span>
-                    </div>
-
-                    <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                      Daily conversation volume and lead capture frequency across your deployed channels.
-                    </p>
-
-                    <div className="grid grid-cols-7 gap-2 pt-2 items-end h-36">
-                      {(analyticsData?.trend7Days || [
-                        { date: 'Day 1', conversations: 0, leads: 0 },
-                        { date: 'Day 2', conversations: 0, leads: 0 },
-                        { date: 'Day 3', conversations: 0, leads: 0 },
-                        { date: 'Day 4', conversations: 0, leads: 0 },
-                        { date: 'Day 5', conversations: 0, leads: 0 },
-                        { date: 'Day 6', conversations: 0, leads: 0 },
-                        { date: 'Day 7', conversations: 0, leads: 0 },
-                      ]).map((item: any, idx: number) => {
-                        const maxVal = Math.max(5, ...((analyticsData?.trend7Days || []).map((t: any) => t.conversations)));
-                        const heightPct = Math.max(12, Math.round((item.conversations / maxVal) * 100));
-                        return (
-                          <div key={idx} className="flex flex-col items-center gap-1.5 h-full justify-end">
-                            <div className="text-[10px] font-mono text-slate-500 font-bold">{item.conversations}</div>
-                            <div
-                              style={{ height: `${heightPct}%` }}
-                              className="w-full rounded-t-lg bg-blue-500 hover:bg-blue-600 transition-all cursor-pointer"
-                              title={`${item.date}: ${item.conversations} conversations, ${item.leads} leads`}
-                            />
-                            <div className="text-[9.5px] text-slate-400 font-mono truncate w-full text-center">
-                              {item.date.slice(5) || item.date}
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Knowledge Base Gap Health Card */}
-                <div className="p-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-4">
-                  <div className="flex items-center gap-3.5">
-                    <div className="h-10 w-10 rounded-xl bg-amber-50 dark:bg-amber-950/50 border border-amber-200 dark:border-amber-800 flex items-center justify-center shrink-0">
-                      <Target className="h-5 w-5 text-amber-600 dark:text-amber-400" />
-                    </div>
-                    <div>
-                      <h3 className="text-xs font-bold text-slate-900 dark:text-white">Knowledge Gap Engine</h3>
-                      <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                        {analyticsData?.unansweredCount ?? 0} queries currently flagged where the AI had low retrieval confidence.
-                      </p>
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab('overview')}
-                    className="px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 dark:bg-slate-100 dark:hover:bg-white text-white dark:text-slate-900 text-xs font-semibold transition cursor-pointer"
-                  >
-                    View Gap Resolution &rarr;
-                  </button>
-                </div>
-              </div>
+              <AnalyticsTab
+                analyticsData={analyticsData}
+                isLoadingAnalytics={isLoadingAnalytics}
+                analyticsRange={analyticsRange}
+                setAnalyticsRange={setAnalyticsRange}
+                analyticsSlugFilter={analyticsSlugFilter}
+                setAnalyticsSlugFilter={setAnalyticsSlugFilter}
+                fetchAnalytics={fetchAnalytics}
+                activeAssistant={activeAssistant}
+                allLandingPages={allLandingPages}
+                setActiveTab={setActiveTab}
+                appointments={appointments}
+              />
             )}
 
 
             {/* TAB: PLANS & BILLING (CHAT-BASED PRICING) */}
             {activeTab === 'billing' && (
-              <div className="max-w-6xl space-y-7 mx-auto">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2.5">
-                      <CreditCard className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-                      <span>Plans, Usage &amp; Billing</span>
-                    </h1>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                      Chat-session based billing. Never pay per message—pay only for engaged customer conversations ($0.50/chat overage).
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={fetchBilling}
-                    disabled={isLoadingBilling}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition shadow-xs cursor-pointer"
-                  >
-                    <RefreshCw className={`h-3.5 w-3.5 ${isLoadingBilling ? 'animate-spin text-blue-600' : 'text-slate-500'}`} />
-                    <span>Refresh Billing</span>
-                  </button>
-                </div>
-
-                {/* Plan change alert feedback */}
-                {planChangeMsg && (
-                  <div
-                    className={`p-3.5 rounded-xl border text-xs flex items-center justify-between gap-3 ${
-                      planChangeMsg.type === 'success'
-                        ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-200 border-emerald-200 dark:border-emerald-800'
-                        : 'bg-rose-50 dark:bg-rose-950/40 text-rose-800 dark:text-rose-200 border-rose-200 dark:border-rose-800'
-                    }`}
-                  >
-                    <div className="flex items-center gap-2">
-                      <CheckCircle2 className="h-4 w-4 shrink-0" />
-                      <span className="font-semibold">{planChangeMsg.text}</span>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setPlanChangeMsg(null)}
-                      className="p-1 rounded hover:bg-black/5 dark:hover:bg-white/10"
-                    >
-                      <X className="h-3.5 w-3.5" />
-                    </button>
-                  </div>
-                )}
-
-                {/* Top 4 KPI & Quota Cards */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                  {/* Card 1: Active Subscription */}
-                  <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-2">
-                    <div className="flex items-center justify-between text-xs text-slate-500">
-                      <span>Active Plan</span>
-                      <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-semibold text-[10px] uppercase">
-                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                        Active
-                      </span>
-                    </div>
-                    <div className="text-xl font-bold text-slate-900 dark:text-white capitalize">
-                      {billingData?.planName || 'Starter'}
-                    </div>
-                    <div className="text-[11px] text-slate-400">
-                      Renews {new Date(billingData?.currentPeriodEnd || Date.now()).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                    </div>
-                  </div>
-
-                  {/* Card 2: Chat Sessions Meter */}
-                  <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-2">
-                    <div className="flex items-center justify-between text-xs text-slate-500">
-                      <span>Chat Sessions Quota</span>
-                      <MessageSquare className="h-4 w-4 text-blue-500" />
-                    </div>
-                    <div className="flex items-baseline gap-1.5">
-                      <span className="text-xl font-bold text-slate-900 dark:text-white font-mono">
-                        {billingData?.chatsUsed ?? 0}
-                      </span>
-                      <span className="text-xs text-slate-400 font-mono">
-                        / {billingData?.monthlyChatLimit ?? 100} chats
-                      </span>
-                    </div>
-                    <div className="space-y-1">
-                      <div className="h-2 w-full rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
-                        <div
-                          style={{ width: `${billingData?.percentUsed ?? 0}%` }}
-                          className={`h-full transition-all duration-500 ${
-                            (billingData?.percentUsed ?? 0) > 90
-                              ? 'bg-rose-500'
-                              : (billingData?.percentUsed ?? 0) > 75
-                              ? 'bg-amber-500'
-                              : 'bg-blue-600'
-                          }`}
-                        />
-                      </div>
-                      <div className="flex justify-between text-[10px] text-slate-400 font-mono">
-                        <span>{billingData?.percentUsed ?? 0}% used</span>
-                        <span>{billingData?.remainingChats ?? 100} chats left</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Card 3: Overages & Unit Rate */}
-                  <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-2">
-                    <div className="flex items-center justify-between text-xs text-slate-500">
-                      <span>Overage Protection</span>
-                      <Zap className="h-4 w-4 text-amber-500" />
-                    </div>
-                    <div className="text-xl font-bold text-slate-900 dark:text-white font-mono">
-                      ${(billingData?.overageRatePerChat ?? 0.50).toFixed(2)}
-                      <span className="text-xs text-slate-400 font-normal"> / chat</span>
-                    </div>
-                    <div className="text-[11px] text-slate-400">
-                      {billingData?.overagesCount > 0
-                        ? `${billingData.overagesCount} extra chats (${billingData.overageCost})`
-                        : '0 overage chats this cycle'}
-                    </div>
-                  </div>
-
-                  {/* Card 4: Value Delivered / ROI */}
-                  <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-2">
-                    <div className="flex items-center justify-between text-xs text-slate-500">
-                      <span>Value Delivered</span>
-                      <TrendingUp className="h-4 w-4 text-emerald-500" />
-                    </div>
-                    <div className="text-xl font-bold text-emerald-600 dark:text-emerald-400 font-mono">
-                      ~${billingData?.estimatedDollarSavings ?? 0}
-                    </div>
-                    <div className="text-[11px] text-slate-400">
-                      Saved ${billingData?.estimatedHoursSaved ?? 0}h of human live chat
-                    </div>
-                  </div>
-                </div>
-
-                {/* Monthly vs Annual Billing Toggle */}
-                <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
-                  <div>
-                    <h2 className="text-base font-bold text-slate-900 dark:text-white">Choose the Right Plan for Your Scale</h2>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                      Predictable chat pricing. Upgrade or downgrade anytime with zero lock-in contracts.
-                    </p>
-                  </div>
-                  <div className="inline-flex items-center p-1 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs">
-                    <button
-                      type="button"
-                      onClick={() => setBillingInterval('monthly')}
-                      className={`px-3 py-1.5 rounded-lg font-semibold transition cursor-pointer ${
-                        billingInterval === 'monthly'
-                          ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs'
-                          : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
-                      }`}
-                    >
-                      Monthly
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setBillingInterval('annual')}
-                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-semibold transition cursor-pointer ${
-                        billingInterval === 'annual'
-                          ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs'
-                          : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
-                      }`}
-                    >
-                      <span>Annual</span>
-                      <span className="bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 text-[10px] px-1.5 py-0.2 rounded-full font-bold">
-                        Save 20%
-                      </span>
-                    </button>
-                  </div>
-                </div>
-
-                {/* The 3 Pricing Tier Cards */}
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
-                  {BILLING_PLANS.map((plan) => {
-                    const isCurrent = (billingData?.planId || 'starter') === plan.id;
-                    const isChanging = changingPlanId === plan.id;
-                    const price = billingInterval === 'annual' ? plan.annualMonthlyPrice : plan.monthlyPrice;
-
-                    return (
-                      <div
-                        key={plan.id}
-                        className={`rounded-3xl border bg-white dark:bg-slate-900 p-6 flex flex-col justify-between transition relative shadow-xs ${
-                          plan.popular
-                            ? 'border-blue-600 dark:border-blue-500 shadow-blue-500/10 shadow-lg ring-1 ring-blue-600 dark:ring-blue-500'
-                            : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700'
-                        }`}
-                      >
-                        {plan.popular && (
-                          <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-blue-600 px-3 py-0.5 text-[10.5px] font-bold uppercase tracking-wider text-white shadow-xs">
-                            Most Popular
-                          </div>
-                        )}
-
-                        <div className="space-y-4">
-                          <div>
-                            <div className="flex items-center justify-between">
-                              <h3 className="text-base font-bold text-slate-900 dark:text-white">{plan.name}</h3>
-                              <span className="text-[11px] font-mono font-semibold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
-                                {plan.highlight}
-                              </span>
-                            </div>
-                            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1.5 leading-relaxed min-h-[36px]">
-                              {plan.tagline}
-                            </p>
-                          </div>
-
-                          {/* Price Display */}
-                          <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
-                            <div className="flex items-baseline gap-1">
-                              <span className="text-3xl font-black text-slate-900 dark:text-white font-mono">
-                                ${price}
-                              </span>
-                              <span className="text-xs text-slate-400">/ month</span>
-                            </div>
-                            <div className="text-[11px] text-slate-400 mt-0.5">
-                              {billingInterval === 'annual'
-                                ? `Billed ${price * 12}/year (${plan.chatSessionsLimit.toLocaleString()} chats included)`
-                                : `${plan.chatSessionsLimit.toLocaleString()} chat sessions included / month`}
-                            </div>
-                          </div>
-
-                          {/* Features List */}
-                          <div className="space-y-2 pt-3 border-t border-slate-100 dark:border-slate-800">
-                            <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
-                              Included Features:
-                            </div>
-                            <ul className="space-y-2 text-xs text-slate-600 dark:text-slate-300">
-                              {plan.features.map((feat, fIdx) => (
-                                <li key={fIdx} className="flex items-start gap-2">
-                                  <Check className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
-                                  <span className="leading-snug">{feat}</span>
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                        </div>
-
-                        {/* Plan Action Button */}
-                        <div className="pt-6 mt-6 border-t border-slate-100 dark:border-slate-800">
-                          <button
-                            type="button"
-                            disabled={isCurrent || isChanging}
-                            onClick={() => handleSwitchPlan(plan.id)}
-                            className={`w-full py-2.5 px-4 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition cursor-pointer shadow-xs ${
-                              isCurrent
-                                ? 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 cursor-default'
-                                : plan.popular
-                                ? 'bg-blue-600 hover:bg-blue-700 text-white'
-                                : 'bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900'
-                            }`}
-                          >
-                            {isChanging ? (
-                              <>
-                                <RefreshCw className="h-3.5 w-3.5 animate-spin" />
-                                <span>Activating Plan...</span>
-                              </>
-                            ) : isCurrent ? (
-                              <>
-                                <CheckCircle2 className="h-4 w-4 text-emerald-500" />
-                                <span>Current Active Plan</span>
-                              </>
-                            ) : (
-                              <span>Switch to {plan.name} &rarr;</span>
-                            )}
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-
-                {/* Payment Method & Invoice Receipts */}
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 pt-3">
-                  {/* Left Column: Payment Details */}
-                  <div className="lg:col-span-5 rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-xs space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2.5">
-                        <CreditCard className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                        <h2 className="text-sm font-bold text-slate-900 dark:text-white">Payment Method</h2>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => setShowPaymentModal(true)}
-                        className="text-xs text-blue-600 dark:text-blue-400 hover:underline font-semibold cursor-pointer"
-                      >
-                        Update Card
-                      </button>
-                    </div>
-
-                    <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="h-10 w-12 rounded-lg bg-slate-900 text-white dark:bg-white dark:text-slate-900 flex items-center justify-center font-bold text-xs font-mono">
-                          {billingData?.paymentMethod?.brand || 'VISA'}
-                        </div>
-                        <div>
-                          <div className="text-xs font-bold text-slate-900 dark:text-white font-mono">
-                            •••• •••• •••• {billingData?.paymentMethod?.last4 || '4242'}
-                          </div>
-                          <div className="text-[11px] text-slate-500 dark:text-slate-400">
-                            Expires {billingData?.paymentMethod?.expMonth || 12}/{billingData?.paymentMethod?.expYear || 2028}
-                          </div>
-                        </div>
-                      </div>
-                      <span className="rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 px-2 py-0.5 text-[10px] font-bold">
-                        Default
-                      </span>
-                    </div>
-
-                    <div className="text-xs space-y-1 pt-1">
-                      <div className="text-slate-500 dark:text-slate-400">Billing Email:</div>
-                      <div className="font-semibold text-slate-800 dark:text-slate-200 font-mono text-[11px]">
-                        {billingData?.billingEmail || 'billing@kortexai.com'}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Right Column: Invoices & Receipts */}
-                  <div className="lg:col-span-7 rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-xs space-y-4">
-                    <div className="flex items-center justify-between">
-                      <h2 className="text-sm font-bold text-slate-900 dark:text-white">Billing History &amp; Receipts</h2>
-                      <span className="text-[11px] text-slate-400">Past cycles</span>
-                    </div>
-
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-left text-xs">
-                        <thead>
-                          <tr className="border-b border-slate-100 dark:border-slate-800 text-[10.5px] uppercase font-semibold text-slate-400">
-                            <th className="pb-2.5">Date</th>
-                            <th className="pb-2.5">Description</th>
-                            <th className="pb-2.5">Amount</th>
-                            <th className="pb-2.5">Status</th>
-                            <th className="pb-2.5 text-right">Receipt</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                          {(billingData?.invoices || [
-                            { id: 'inv_10928', date: '2026-09-01', planName: 'Starter (100 Chats / mo)', amount: 49, status: 'paid' },
-                            { id: 'inv_10814', date: '2026-08-01', planName: 'Starter (100 Chats / mo)', amount: 49, status: 'paid' },
-                          ]).map((inv: any) => (
-                            <tr key={inv.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
-                              <td className="py-3 font-mono text-[11px] text-slate-500 dark:text-slate-400">{inv.date}</td>
-                              <td className="py-3 font-medium text-slate-800 dark:text-slate-200">{inv.planName}</td>
-                              <td className="py-3 font-mono font-bold text-slate-900 dark:text-white">${inv.amount}.00</td>
-                              <td className="py-3">
-                                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
-                                  Paid
-                                </span>
-                              </td>
-                              <td className="py-3 text-right">
-                                <button
-                                  type="button"
-                                  onClick={() => handleDownloadInvoice(inv)}
-                                  className="inline-flex items-center gap-1 text-[11px] font-semibold text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
-                                >
-                                  <Download className="h-3 w-3" />
-                                  <span>Receipt</span>
-                                </button>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <BillingTab
+                billingData={billingData}
+                fetchBilling={fetchBilling}
+                isLoadingBilling={isLoadingBilling}
+                planChangeMsg={planChangeMsg}
+                setPlanChangeMsg={setPlanChangeMsg}
+                billingInterval={billingInterval}
+                setBillingInterval={setBillingInterval}
+                changingPlanId={changingPlanId}
+                handleSwitchPlan={handleSwitchPlan}
+                setShowPaymentModal={setShowPaymentModal}
+                handleDownloadInvoice={handleDownloadInvoice}
+              />
             )}
 
             {/* TAB: HOSTED BUSINESS LANDING PAGE */}
             {activeTab === 'landing_page' && (
-              <div className="max-w-5xl space-y-6 mx-auto">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2.5">
-                      <Globe className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-                      <span>Hosted Business Landing Page</span>
-                    </h1>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                      A complete public website for your business with integrated AI chatbot booking, live services menu, and automated reminders.
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2.5">
-                    <button
-                      type="button"
-                      onClick={() => setShowCounterQrModal(true)}
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition shadow-xs"
-                    >
-                      <QrCode className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
-                      <span>In-Store QR Code</span>
-                    </button>
-                    <a
-                      href={`/site/${landingConfig.slug || activeAssistant?.id || 'demo-assistant'}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs transition"
-                    >
-                      <ExternalLink className="h-3.5 w-3.5" />
-                      <span>View Live Site</span>
-                    </a>
-                  </div>
-                </div>
-
-                {/* Live Site URL Banner */}
-                <div className="p-4 rounded-2xl border border-blue-100 dark:border-blue-900/40 bg-blue-50/60 dark:bg-blue-950/20 flex flex-col sm:flex-row items-center justify-between gap-3">
-                  <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-xl bg-blue-600 text-white flex items-center justify-center shrink-0">
-                      <Globe className="h-5 w-5" />
-                    </div>
-                    <div>
-                      <div className="text-xs font-bold text-slate-900 dark:text-white">Your Public Business Website is Live</div>
-                      <div className="text-[11px] text-blue-700 dark:text-blue-300 font-mono mt-0.5">
-                        {typeof window !== 'undefined' ? `${window.location.origin}/site/${landingConfig.slug || activeAssistant?.id || 'demo-assistant'}` : `/site/${landingConfig.slug || 'demo-assistant'}`}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const url = `${window.location.origin}/site/${landingConfig.slug || activeAssistant?.id || 'demo-assistant'}`;
-                        navigator.clipboard.writeText(url);
-                        setCopiedLandingUrl(true);
-                        setTimeout(() => setCopiedLandingUrl(false), 2000);
-                      }}
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition shadow-xs"
-                    >
-                      {copiedLandingUrl ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5 text-slate-500" />}
-                      <span>{copiedLandingUrl ? 'Copied!' : 'Copy Link'}</span>
-                    </button>
-                  </div>
-                </div>
-
-                {saveLandingSuccess && (
-                  <div className="p-3.5 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-xl text-xs text-emerald-800 dark:text-emerald-300 flex items-center gap-2 font-medium">
-                    <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600" />
-                    <span>Landing page configuration successfully saved and published!</span>
-                  </div>
-                )}
-
-                {saveLandingError && (
-                  <div className="p-3.5 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 rounded-xl text-xs text-rose-800 dark:text-rose-300 flex items-center gap-2 font-medium">
-                    <AlertCircle className="h-4 w-4 shrink-0 text-rose-600" />
-                    <span>{saveLandingError}</span>
-                  </div>
-                )}
-
-                <form onSubmit={handleSaveLandingConfig} className="space-y-6">
-                  {/* General Business Info */}
-                  <div className="p-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-4">
-                    <h2 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                      <Briefcase className="h-4 w-4 text-blue-600" />
-                      <span>Business Identity &amp; URL</span>
-                    </h2>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Business Name</label>
-                        <input
-                          type="text"
-                          required
-                          value={landingConfig.businessName || ''}
-                          onChange={(e) => setLandingConfig({ ...landingConfig, businessName: e.target.value })}
-                          className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Website URL Slug (/site/[slug])</label>
-                        <input
-                          type="text"
-                          required
-                          value={landingConfig.slug || ''}
-                          onChange={(e) => setLandingConfig({ ...landingConfig, slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-') })}
-                          className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white font-mono focus:outline-none focus:border-blue-500"
-                        />
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Tagline / Subtitle</label>
-                      <input
-                        type="text"
-                        value={landingConfig.tagline || ''}
-                        onChange={(e) => setLandingConfig({ ...landingConfig, tagline: e.target.value })}
-                        className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Trust Badge Text (Top Banner)</label>
-                      <input
-                        type="text"
-                        value={landingConfig.badgeText || ''}
-                        onChange={(e) => setLandingConfig({ ...landingConfig, badgeText: e.target.value })}
-                        className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Hero Section Content */}
-                  <div className="p-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-4">
-                    <h2 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                      <Sparkles className="h-4 w-4 text-amber-500" />
-                      <span>Hero Section Copy &amp; Imagery</span>
-                    </h2>
-
-                    <div>
-                      <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Hero Main Headline</label>
-                      <input
-                        type="text"
-                        value={landingConfig.heroHeadline || ''}
-                        onChange={(e) => setLandingConfig({ ...landingConfig, heroHeadline: e.target.value })}
-                        className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Hero Subheadline</label>
-                      <textarea
-                        rows={2}
-                        value={landingConfig.heroSubheadline || ''}
-                        onChange={(e) => setLandingConfig({ ...landingConfig, heroSubheadline: e.target.value })}
-                        className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 resize-none"
-                      />
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">CTA Button Text</label>
-                        <input
-                          type="text"
-                          value={landingConfig.heroCtaText || ''}
-                          onChange={(e) => setLandingConfig({ ...landingConfig, heroCtaText: e.target.value })}
-                          className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Hero Image URL</label>
-                        <input
-                          type="url"
-                          value={landingConfig.heroImageUrl || ''}
-                          onChange={(e) => setLandingConfig({ ...landingConfig, heroImageUrl: e.target.value })}
-                          className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white font-mono focus:outline-none focus:border-blue-500"
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Contact & Location Info */}
-                  <div className="p-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-4">
-                    <h2 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                      <MapPin className="h-4 w-4 text-rose-500" />
-                      <span>Contact &amp; Location Information</span>
-                    </h2>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                      <div>
-                        <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Phone Number</label>
-                        <input
-                          type="text"
-                          value={landingConfig.phone || ''}
-                          onChange={(e) => setLandingConfig({ ...landingConfig, phone: e.target.value })}
-                          className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Contact Email</label>
-                        <input
-                          type="email"
-                          value={landingConfig.email || ''}
-                          onChange={(e) => setLandingConfig({ ...landingConfig, email: e.target.value })}
-                          className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Google Maps Link</label>
-                        <input
-                          type="url"
-                          value={landingConfig.googleMapsUrl || ''}
-                          onChange={(e) => setLandingConfig({ ...landingConfig, googleMapsUrl: e.target.value })}
-                          className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white font-mono focus:outline-none focus:border-blue-500"
-                        />
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Full Physical Address</label>
-                      <input
-                        type="text"
-                        value={landingConfig.address || ''}
-                        onChange={(e) => setLandingConfig({ ...landingConfig, address: e.target.value })}
-                        className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Services & Pricing Editor */}
-                  <div className="p-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-4">
-                    <div className="flex items-center justify-between">
-                      <h2 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                        <Scissors className="h-4 w-4 text-amber-500" />
-                        <span>Services &amp; Pricing Menu</span>
-                      </h2>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const newService = {
-                            id: 'srv_' + Math.random().toString(36).substring(2, 9),
-                            name: 'New Custom Service',
-                            description: 'Service description and consultation details.',
-                            durationMinutes: 30,
-                            price: 40,
-                          };
-                          setLandingConfig({
-                            ...landingConfig,
-                            services: [...(landingConfig.services || []), newService],
-                          });
-                        }}
-                        className="flex items-center gap-1.5 px-3 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs font-semibold text-blue-600 dark:text-blue-400 hover:bg-slate-100 transition"
-                      >
-                        <Plus className="h-3.5 w-3.5" />
-                        <span>Add Service</span>
-                      </button>
-                    </div>
-
-                    <div className="space-y-3">
-                      {(landingConfig.services || []).map((service, sIdx) => (
-                        <div key={service.id || sIdx} className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40 space-y-3">
-                          <div className="flex items-center justify-between gap-3">
-                            <input
-                              type="text"
-                              value={service.name}
-                              placeholder="Service Name"
-                              onChange={(e) => {
-                                const next = [...(landingConfig.services || [])];
-                                next[sIdx].name = e.target.value;
-                                setLandingConfig({ ...landingConfig, services: next });
-                              }}
-                              className="font-bold text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-900 dark:text-white flex-1"
-                            />
-                            <div className="flex items-center gap-1">
-                              <span className="text-xs font-semibold text-slate-500">$</span>
-                              <input
-                                type="number"
-                                value={service.price}
-                                onChange={(e) => {
-                                  const next = [...(landingConfig.services || [])];
-                                  next[sIdx].price = parseFloat(e.target.value) || 0;
-                                  setLandingConfig({ ...landingConfig, services: next });
-                                }}
-                                className="w-16 font-bold text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1.5 text-slate-900 dark:text-white text-right"
-                              />
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <input
-                                type="number"
-                                value={service.durationMinutes}
-                                onChange={(e) => {
-                                  const next = [...(landingConfig.services || [])];
-                                  next[sIdx].durationMinutes = parseInt(e.target.value) || 30;
-                                  setLandingConfig({ ...landingConfig, services: next });
-                                }}
-                                className="w-16 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1.5 text-slate-900 dark:text-white text-right"
-                              />
-                              <span className="text-[11px] text-slate-400">min</span>
-                            </div>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                const next = (landingConfig.services || []).filter((_, i) => i !== sIdx);
-                                setLandingConfig({ ...landingConfig, services: next });
-                              }}
-                              className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg transition"
-                              title="Delete service"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </button>
-                          </div>
-
-                          <input
-                            type="text"
-                            value={service.description}
-                            placeholder="Brief description for clients"
-                            onChange={(e) => {
-                              const next = [...(landingConfig.services || [])];
-                              next[sIdx].description = e.target.value;
-                              setLandingConfig({ ...landingConfig, services: next });
-                            }}
-                            className="w-full text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-600 dark:text-slate-300"
-                          />
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="flex justify-end pt-2">
-                    <button
-                      type="submit"
-                      disabled={isSavingLanding}
-                      className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs rounded-xl shadow-xs transition flex items-center gap-2 disabled:opacity-50"
-                    >
-                      {isSavingLanding ? (
-                        <>
-                          <RefreshCw className="h-4 w-4 animate-spin" />
-                          <span>Saving Changes...</span>
-                        </>
-                      ) : (
-                        <>
-                          <Check className="h-4 w-4" />
-                          <span>Save &amp; Publish Landing Page</span>
-                        </>
-                      )}
-                    </button>
-                  </div>
-                </form>
-              </div>
+              <LandingPageTab
+                landingConfig={landingConfig}
+                setLandingConfig={setLandingConfig}
+                isSavingLanding={isSavingLanding}
+                saveLandingSuccess={saveLandingSuccess}
+                saveLandingError={saveLandingError}
+                copiedLandingUrl={copiedLandingUrl}
+                setCopiedLandingUrl={setCopiedLandingUrl}
+                setShowCounterQrModal={setShowCounterQrModal}
+                presetNotice={presetNotice}
+                setPresetNotice={setPresetNotice}
+                allLandingPages={allLandingPages}
+                landingPageLimits={landingPageLimits}
+                isPurchasingAddon={isPurchasingAddon}
+                addonSuccessMsg={addonSuccessMsg}
+                addonErrorMsg={addonErrorMsg}
+                setShowNewPageModal={setShowNewPageModal}
+                handlePurchaseExtraLandingPage={handlePurchaseExtraLandingPage}
+                handleSaveLandingConfig={handleSaveLandingConfig}
+                activeAssistant={activeAssistant}
+                appointments={appointments}
+                theme={theme}
+              />
             )}
 
             {/* TAB: MULTI-USER TEAM & RBAC */}
             {activeTab === 'team' && (
-              <div className="max-w-5xl space-y-6 mx-auto">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2.5">
-                      <UserCheck className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-                      <span>Team Members &amp; Role-Based Access</span>
-                    </h1>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                      Manage workspace collaborators, assign specific role privileges, and enforce two-factor authentication.
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setShowAddTeamModal(true)}
-                    className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs transition"
-                  >
-                    <UserPlus className="h-3.5 w-3.5" />
-                    <span>Invite Team Member</span>
-                  </button>
-                </div>
-
-                {teamSuccess && (
-                  <div className="p-3.5 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-xl text-xs text-emerald-800 dark:text-emerald-300 flex items-center gap-2 font-medium">
-                    <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600" />
-                    <span>{teamSuccess}</span>
-                  </div>
-                )}
-
-                {teamError && (
-                  <div className="p-3.5 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 rounded-xl text-xs text-rose-800 dark:text-rose-300 flex items-center gap-2 font-medium">
-                    <AlertCircle className="h-4 w-4 shrink-0 text-rose-600" />
-                    <span>{teamError}</span>
-                  </div>
-                )}
-
-                {/* Role Permissions Reference Card */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-1">
-                    <div className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
-                      <ShieldCheck className="h-4 w-4 text-emerald-500" />
-                      <span>Owner &amp; Admin</span>
-                    </div>
-                    <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
-                      Full administrative control: add/edit assistants, update billing, invite teammates, and view security audits.
-                    </p>
-                  </div>
-
-                  <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-1">
-                    <div className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
-                      <Headphones className="h-4 w-4 text-blue-500" />
-                      <span>Support Agent</span>
-                    </div>
-                    <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
-                      Operational access: take over live chats, manage appointments, and respond to captured visitor leads.
-                    </p>
-                  </div>
-
-                  <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-1">
-                    <div className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
-                      <CreditCard className="h-4 w-4 text-purple-500" />
-                      <span>Billing &amp; Viewer</span>
-                    </div>
-                    <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
-                      Specialized access: invoices and payment methods for Billing Managers; read-only analytics for Viewers.
-                    </p>
-                  </div>
-                </div>
-
-                {/* Team Members Table */}
-                <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden shadow-xs">
-                  <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
-                    <h2 className="text-xs font-bold uppercase tracking-wider text-slate-500">
-                      Active Collaborators ({teamMembers.length})
-                    </h2>
-                    <button
-                      type="button"
-                      onClick={fetchTeamMembers}
-                      className="text-xs text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
-                    >
-                      <RefreshCw className="h-3 w-3" />
-                      <span>Refresh</span>
-                    </button>
-                  </div>
-
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-left text-xs">
-                      <thead className="bg-slate-50 dark:bg-slate-800/60 text-slate-500 font-semibold border-b border-slate-200 dark:border-slate-800">
-                        <tr>
-                          <th className="py-3 px-4">Member Name</th>
-                          <th className="py-3 px-4">Email</th>
-                          <th className="py-3 px-4">Assigned Role</th>
-                          <th className="py-3 px-4">2FA Status</th>
-                          <th className="py-3 px-4 text-right">Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                        {teamMembers.map((member) => (
-                          <tr key={member.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
-                            <td className="py-3.5 px-4 font-semibold text-slate-900 dark:text-white">
-                              {member.name}
-                            </td>
-                            <td className="py-3.5 px-4 text-slate-600 dark:text-slate-300 font-mono text-[11px]">
-                              {member.email}
-                            </td>
-                            <td className="py-3.5 px-4">
-                              <select
-                                value={member.role}
-                                onChange={(e) => handleUpdateTeamMemberRole(member.id, e.target.value)}
-                                className="bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-2.5 py-1 text-xs text-slate-800 dark:text-slate-200 font-medium capitalize"
-                              >
-                                <option value="owner">Owner</option>
-                                <option value="admin">Admin</option>
-                                <option value="support_agent">Support Agent</option>
-                                <option value="billing_manager">Billing Manager</option>
-                                <option value="viewer">Viewer</option>
-                              </select>
-                            </td>
-                            <td className="py-3.5 px-4">
-                              {member.twoFactorEnabled ? (
-                                <span className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-semibold text-[11px]">
-                                  <ShieldCheck className="h-3.5 w-3.5" />
-                                  <span>Enabled</span>
-                                </span>
-                              ) : (
-                                <span className="text-slate-400 text-[11px]">Not Setup</span>
-                              )}
-                            </td>
-                            <td className="py-3.5 px-4 text-right">
-                              {member.role !== 'owner' && (
-                                <button
-                                  type="button"
-                                  onClick={() => handleDeleteTeamMember(member.id)}
-                                  className="text-slate-400 hover:text-rose-600 transition p-1"
-                                  title="Remove Member"
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                </button>
-                              )}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-
-                {/* Invite Team Member Modal */}
-                {showAddTeamModal && (
-                  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-                    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4">
-                      <div className="flex items-center justify-between">
-                        <h3 className="text-base font-bold text-slate-900 dark:text-white">Invite Team Member</h3>
-                        <button onClick={() => setShowAddTeamModal(false)} className="text-slate-400 hover:text-slate-600">
-                          <X className="h-5 w-5" />
-                        </button>
-                      </div>
-
-                      <form onSubmit={handleAddTeamMember} className="space-y-4">
-                        <div>
-                          <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Full Name</label>
-                          <input
-                            type="text"
-                            required
-                            placeholder="e.g. Alex Morgan"
-                            value={newMemberName}
-                            onChange={(e) => setNewMemberName(e.target.value)}
-                            className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white"
-                          />
-                        </div>
-
-                        <div>
-                          <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Email Address</label>
-                          <input
-                            type="email"
-                            required
-                            placeholder="alex@company.com"
-                            value={newMemberEmail}
-                            onChange={(e) => setNewMemberEmail(e.target.value)}
-                            className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white"
-                          />
-                        </div>
-
-                        <div>
-                          <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Access Role</label>
-                          <select
-                            value={newMemberRole}
-                            onChange={(e) => setNewMemberRole(e.target.value as any)}
-                            className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white capitalize"
-                          >
-                            <option value="admin">Admin (Manage bots &amp; settings)</option>
-                            <option value="support_agent">Support Agent (Live takeover &amp; appointments)</option>
-                            <option value="billing_manager">Billing Manager (Invoices &amp; subscriptions)</option>
-                            <option value="viewer">Viewer (Read-only analytics)</option>
-                          </select>
-                        </div>
-
-                        <div className="flex justify-end gap-2 pt-2">
-                          <button
-                            type="button"
-                            onClick={() => setShowAddTeamModal(false)}
-                            className="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-medium text-slate-700 dark:text-slate-300"
-                          >
-                            Cancel
-                          </button>
-                          <button
-                            type="submit"
-                            disabled={isAddingTeamMember}
-                            className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold"
-                          >
-                            {isAddingTeamMember ? 'Inviting...' : 'Send Invite'}
-                          </button>
-                        </div>
-                      </form>
-                    </div>
-                  </div>
-                )}
-              </div>
+              <TeamTab
+                teamMembers={teamMembers}
+                teamSuccess={teamSuccess}
+                teamError={teamError}
+                showAddTeamModal={showAddTeamModal}
+                setShowAddTeamModal={setShowAddTeamModal}
+                fetchTeamMembers={fetchTeamMembers}
+                handleUpdateTeamMemberRole={handleUpdateTeamMemberRole}
+                handleDeleteTeamMember={handleDeleteTeamMember}
+                handleAddTeamMember={handleAddTeamMember}
+                newMemberName={newMemberName}
+                setNewMemberName={setNewMemberName}
+                newMemberEmail={newMemberEmail}
+                setNewMemberEmail={setNewMemberEmail}
+                newMemberRole={newMemberRole}
+                setNewMemberRole={setNewMemberRole}
+                isAddingTeamMember={isAddingTeamMember}
+              />
             )}
 
             {/* TAB: SECURITY & TWO-FACTOR AUTHENTICATION (2FA) */}
             {activeTab === 'security' && (
-              <div className="max-w-5xl space-y-6 mx-auto">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2.5">
-                      <ShieldCheck className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-                      <span>Security Posture &amp; Two-Factor Authentication</span>
-                    </h1>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                      Protect your admin dashboard with hardware-grade TOTP multi-factor authentication and AES-256 encryption.
-                    </p>
-                  </div>
-                </div>
-
-                {twoFactorSuccess && (
-                  <div className="p-3.5 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-xl text-xs text-emerald-800 dark:text-emerald-300 flex items-center gap-2 font-medium">
-                    <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600" />
-                    <span>{twoFactorSuccess}</span>
-                  </div>
-                )}
-
-                {twoFactorError && (
-                  <div className="p-3.5 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 rounded-xl text-xs text-rose-800 dark:text-rose-300 flex items-center gap-2 font-medium">
-                    <AlertCircle className="h-4 w-4 shrink-0 text-rose-600" />
-                    <span>{twoFactorError}</span>
-                  </div>
-                )}
-
-                {/* 2FA Status Card */}
-                <div className="p-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-4">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                    <div className="flex items-center gap-3.5">
-                      <div className={`h-12 w-12 rounded-2xl flex items-center justify-center shrink-0 ${twoFactorEnabled ? 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 border border-emerald-200 dark:border-emerald-800' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 border border-slate-200 dark:border-slate-700'}`}>
-                        <KeyRound className="h-6 w-6" />
-                      </div>
-                      <div>
-                        <h2 className="text-sm font-bold text-slate-900 dark:text-white">
-                          Two-Factor Authentication (TOTP)
-                        </h2>
-                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                          Requires Google Authenticator, Authy, or Apple Keychain 6-digit codes on login.
-                        </p>
-                      </div>
-                    </div>
-
-                    <div>
-                      {twoFactorEnabled ? (
-                        <button
-                          type="button"
-                          onClick={handleDisable2fa}
-                          disabled={twoFactorLoading}
-                          className="px-4 py-2 rounded-xl bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800 text-xs font-semibold hover:bg-rose-100 transition"
-                        >
-                          Disable 2FA
-                        </button>
-                      ) : (
-                        <button
-                          type="button"
-                          onClick={handleStart2faSetup}
-                          disabled={twoFactorLoading}
-                          className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs transition flex items-center gap-1.5"
-                        >
-                          <ShieldCheck className="h-4 w-4" />
-                          <span>Enable 2FA Protection</span>
-                        </button>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* 2FA Setup Flow */}
-                  {twoFactorSetupData && !twoFactorEnabled && (
-                    <div className="mt-6 pt-6 border-t border-slate-200 dark:border-slate-800 space-y-6">
-                      <div className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
-                        Step 1: Scan QR Code or Copy Secret Key
-                      </div>
-
-                      <div className="flex flex-col sm:flex-row items-center gap-6">
-                        <div className="p-3 bg-white rounded-2xl border border-slate-200 shadow-sm shrink-0">
-                          <img
-                            src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(twoFactorSetupData.otpUrl)}`}
-                            alt="2FA QR Code"
-                            className="w-44 h-44 rounded-lg"
-                          />
-                        </div>
-
-                        <div className="space-y-3 flex-1 text-xs">
-                          <p className="text-slate-600 dark:text-slate-300 leading-relaxed">
-                            Open your authenticator app (Google Authenticator, Microsoft Authenticator, or 1Password) and scan the QR code to the left.
-                          </p>
-
-                          <div>
-                            <label className="block text-[11px] font-semibold text-slate-500 mb-1">Manual Base32 Secret Key</label>
-                            <div className="flex items-center gap-2">
-                              <code className="px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white font-mono text-xs font-bold tracking-widest">
-                                {twoFactorSetupData.secret}
-                              </code>
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  navigator.clipboard.writeText(twoFactorSetupData.secret);
-                                  alert('Secret copied to clipboard!');
-                                }}
-                                className="p-1.5 text-slate-400 hover:text-slate-600"
-                              >
-                                <Copy className="h-4 w-4" />
-                              </button>
-                            </div>
-                          </div>
-
-                          {/* Recovery Codes */}
-                          <div>
-                            <div className="text-[11px] font-semibold text-slate-500 mb-1">Emergency Recovery Backup Codes</div>
-                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
-                              {twoFactorSetupData.recoveryCodes.map((code: string, i: number) => (
-                                <span key={i} className="px-2 py-1 bg-slate-100 dark:bg-slate-800 font-mono text-[10.5px] rounded text-slate-700 dark:text-slate-300 text-center">
-                                  {code}
-                                </span>
-                              ))}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Step 2: Verification Input */}
-                      <div className="pt-4 border-t border-slate-200 dark:border-slate-800 space-y-3">
-                        <div className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
-                          Step 2: Verify 6-Digit Code
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <input
-                            type="text"
-                            maxLength={6}
-                            placeholder="000000"
-                            value={twoFactorCodeInput}
-                            onChange={(e) => setTwoFactorCodeInput(e.target.value.replace(/[^0-9]/g, ''))}
-                            className="w-40 font-mono text-center text-lg font-bold tracking-widest bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
-                          />
-                          <button
-                            type="button"
-                            onClick={handleConfirm2faEnable}
-                            disabled={twoFactorCodeInput.length !== 6 || twoFactorLoading}
-                            className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded-xl shadow-xs transition disabled:opacity-50"
-                          >
-                            {twoFactorLoading ? 'Verifying...' : 'Confirm & Activate 2FA'}
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                {/* Enterprise Security Checkup Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-slate-900 dark:text-white">AES-256 GCM Secret Vault</span>
-                      <span className="px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 font-bold text-[10px]">Active</span>
-                    </div>
-                    <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                      All LLM provider API keys and webhook secrets are encrypted at rest with PBKDF2 salt derivation.
-                    </p>
-                  </div>
-
-                  <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-slate-900 dark:text-white">IP Rate Limiting &amp; Anti-DDoS</span>
-                      <span className="px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 font-bold text-[10px]">Active</span>
-                    </div>
-                    <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                      Sliding window throttling limits abusive requests on chat, upload, and calendar booking endpoints.
-                    </p>
-                  </div>
-                </div>
-              </div>
+              <SecurityTab
+                twoFactorEnabled={twoFactorEnabled}
+                twoFactorSuccess={twoFactorSuccess}
+                twoFactorError={twoFactorError}
+                twoFactorLoading={twoFactorLoading}
+                twoFactorSetupData={twoFactorSetupData}
+                twoFactorCodeInput={twoFactorCodeInput}
+                setTwoFactorCodeInput={setTwoFactorCodeInput}
+                handleDisable2fa={handleDisable2fa}
+                handleStart2faSetup={handleStart2faSetup}
+                handleConfirm2faEnable={handleConfirm2faEnable}
+              />
             )}
 
             {/* TAB: AUDIT TRAIL */}
             {activeTab === 'audit' && (
-              <div className="max-w-5xl space-y-6 mx-auto">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2.5">
-                      <ClipboardList className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-                      <span>Security Audit Trail &amp; Activity Log</span>
-                    </h1>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                      Immutable record of all administrative actions, logins, plan modifications, and appointment bookings.
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={fetchAuditLogs}
-                      disabled={isSyncingAudit}
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 transition"
-                    >
-                      <RefreshCw className={`h-3.5 w-3.5 ${isSyncingAudit ? 'animate-spin text-blue-600' : ''}`} />
-                      <span>Refresh Logs</span>
-                    </button>
-                  </div>
-                </div>
-
-                <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden shadow-xs">
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-left text-xs">
-                      <thead className="bg-slate-50 dark:bg-slate-800/60 text-slate-500 font-semibold border-b border-slate-200 dark:border-slate-800">
-                        <tr>
-                          <th className="py-3 px-4">Timestamp</th>
-                          <th className="py-3 px-4">Actor</th>
-                          <th className="py-3 px-4">Action Event</th>
-                          <th className="py-3 px-4">Target</th>
-                          <th className="py-3 px-4">IP Address</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                        {auditLogs.length === 0 ? (
-                          <tr>
-                            <td colSpan={5} className="py-8 text-center text-slate-400">
-                              No security audit logs recorded yet.
-                            </td>
-                          </tr>
-                        ) : (
-                          auditLogs.map((log) => (
-                            <tr key={log.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
-                              <td className="py-3 px-4 font-mono text-[11px] text-slate-500 dark:text-slate-400">
-                                {new Date(log.timestamp).toLocaleString()}
-                              </td>
-                              <td className="py-3 px-4 font-medium text-slate-800 dark:text-slate-200">
-                                {log.actor?.name || 'Admin'}
-                              </td>
-                              <td className="py-3 px-4">
-                                <span className="px-2 py-0.5 rounded font-mono text-[11px] bg-slate-100 dark:bg-slate-800 text-blue-600 dark:text-blue-400 font-semibold">
-                                  {log.action}
-                                </span>
-                              </td>
-                              <td className="py-3 px-4 text-slate-500 font-mono text-[11px]">
-                                {log.targetType}
-                              </td>
-                              <td className="py-3 px-4 text-slate-400 font-mono text-[11px]">
-                                {log.actor?.ip || '127.0.0.1'}
-                              </td>
-                            </tr>
-                          ))
-                        )}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </div>
+              <AuditTab
+                auditLogs={auditLogs}
+                isSyncingAudit={isSyncingAudit}
+                fetchAuditLogs={fetchAuditLogs}
+              />
             )}
 
             {/* TAB 1: OVERVIEW */}
@@ -3884,404 +2613,33 @@ Thank you for using Kortex AI Business Engine.
 
             {/* TAB 2: KNOWLEDGE BASE */}
             {activeTab === 'knowledge' && (
-              <div className="max-w-5xl space-y-6 mx-auto">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Knowledge Base</h1>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                      Upload PDF, CSV, JSON, DOCX, and TXT files. Tabular files are converted into row-aware representations for exact price and detail matching.
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => {
-                      if (activeAssistant) fetchKnowledge(activeAssistant.id);
-                    }}
-                    className="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 transition shadow-xs flex items-center gap-1.5"
-                  >
-                    <RefreshCw className="h-3.5 w-3.5 text-slate-500" />
-                    <span>Sync Sources</span>
-                  </button>
-                </div>
-
-                {/* Metric Stat Cards (Balanced Typography) */}
-                <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-                  <div className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs">
-                    <div className="text-[11px] font-medium text-slate-500 dark:text-slate-400">Total Articles</div>
-                    <div className="text-base font-semibold text-slate-900 dark:text-white mt-0.5">
-                      {sources.length} Documents
-                    </div>
-                    <div className="text-[10px] text-emerald-600 dark:text-emerald-400 mt-0.5 font-medium">+100% indexed</div>
-                  </div>
-
-                  <div className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs">
-                    <div className="text-[11px] font-medium text-slate-500 dark:text-slate-400">Vector Chunks</div>
-                    <div className="text-base font-semibold text-slate-900 dark:text-white mt-0.5">
-                      {totalChunks} Chunks
-                    </div>
-                    <div className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5 font-mono">384-dim BGE-Small</div>
-                  </div>
-
-                  <div className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs">
-                    <div className="text-[11px] font-medium text-slate-500 dark:text-slate-400">Retrieval Mode</div>
-                    <div className="text-base font-semibold text-blue-600 dark:text-blue-400 mt-0.5">
-                      Hybrid RRF
-                    </div>
-                    <div className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">Cosine + BM25 Keywords</div>
-                  </div>
-
-                  <div className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs">
-                    <div className="text-[11px] font-medium text-slate-500 dark:text-slate-400">Embedding Cost</div>
-                    <div className="text-base font-semibold text-slate-900 dark:text-white mt-0.5">
-                      $0.00 / mo
-                    </div>
-                    <div className="text-[10px] text-emerald-600 dark:text-emerald-400 mt-0.5 font-medium">Local CPU Embeddings</div>
-                  </div>
-                </div>
-
-                {/* Upload Failure Alert */}
-                {uploadFailureAlert && (
-                  <div className="rounded-xl border border-rose-300 dark:border-rose-900 bg-rose-50 dark:bg-rose-950/40 p-4 shadow-xs flex items-start gap-3">
-                    <AlertTriangle className="h-5 w-5 text-rose-600 dark:text-rose-400 shrink-0 mt-0.5" />
-                    <div className="flex-1 space-y-1.5 text-xs">
-                      <div className="flex items-center justify-between">
-                        <span className="font-bold text-rose-900 dark:text-rose-200">
-                          Upload Processing Failed: {uploadFailureAlert.title}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => setUploadFailureAlert(null)}
-                          className="text-rose-500 hover:text-rose-700 dark:hover:text-rose-300 cursor-pointer"
-                        >
-                          <X className="h-4 w-4" />
-                        </button>
-                      </div>
-                      <div className="text-rose-800 dark:text-rose-300 leading-relaxed">
-                        <strong>Why it failed:</strong> {uploadFailureAlert.reason}
-                      </div>
-                      <div className="p-2.5 rounded-lg bg-white/70 dark:bg-slate-900/60 border border-rose-200 dark:border-rose-900/50 text-slate-700 dark:text-slate-300">
-                        <strong className="text-rose-700 dark:text-rose-400">What you should do next:</strong>{' '}
-                        {uploadFailureAlert.whatToDoNext}
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Upload Form */}
-                <form
-                  onSubmit={handleUploadFiles}
-                  className="rounded-xl border border-dashed border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 space-y-4 hover:border-blue-500 dark:hover:border-blue-500 transition shadow-xs"
-                >
-                  <div className="flex flex-col items-center justify-center text-center space-y-3">
-                    <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400">
-                      <Upload className="h-5 w-5" />
-                    </div>
-                    <div>
-                      <span className="text-sm font-semibold text-slate-800 dark:text-slate-200">
-                        Drop files here or click to browse
-                      </span>
-                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                        Supports PDF, CSV tables, JSON catalogues, Word DOCX, TXT, Images, &amp; Video/Audio (MP4, MP3, WAV, M4A, WEBM)
-                      </p>
-                    </div>
-                    <input
-                      type="file"
-                      multiple
-                      accept=".pdf,.csv,.json,.docx,.txt,.jpg,.jpeg,.png,.webp,.mp4,.webm,.mov,.mkv,.avi,.m4v,.3gp,.mp3,.wav,.m4a,.ogg,.flac,.aac"
-                      onChange={(e) => setSelectedFiles(e.target.files)}
-                      className="text-xs text-slate-500 dark:text-slate-400 file:mr-4 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-500 cursor-pointer"
-                    />
-                    {selectedFiles && selectedFiles.length > 0 && (
-                      <div className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">
-                        Selected {selectedFiles.length} file(s) for indexing
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="relative flex py-1 items-center">
-                    <div className="flex-grow border-t border-slate-200 dark:border-slate-800"></div>
-                    <span className="flex-shrink mx-4 text-[11px] text-slate-400 dark:text-slate-500 uppercase font-semibold">
-                      Or Enter Raw Business Description / FAQs
-                    </span>
-                    <div className="flex-grow border-t border-slate-200 dark:border-slate-800"></div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <input
-                      type="text"
-                      placeholder="Section Title (e.g. Return Policy, Store Hours, Contact Info)"
-                      value={uploadTextTitle}
-                      onChange={(e) => setUploadTextTitle(e.target.value)}
-                      className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3 py-2 text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 outline-none focus:border-blue-500"
-                    />
-                    <textarea
-                      rows={3}
-                      placeholder="Paste business instructions, FAQs, shipping details, or company background..."
-                      value={uploadText}
-                      onChange={(e) => setUploadText(e.target.value)}
-                      className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-3 text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 outline-none focus:border-blue-500"
-                    />
-                  </div>
-
-                  <div className="flex justify-end">
-                    <button
-                      type="submit"
-                      disabled={isUploading || ((!selectedFiles || selectedFiles.length === 0) && !uploadText.trim())}
-                      className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-xs font-semibold text-white hover:bg-blue-500 disabled:opacity-50 transition shadow-xs"
-                    >
-                      {isUploading ? (
-                        <>
-                          <RefreshCw className="h-3.5 w-3.5 animate-spin" />
-                          <span>Extracting &amp; Indexing Chunks...</span>
-                        </>
-                      ) : (
-                        <>
-                          <Sparkles className="h-3.5 w-3.5" />
-                          <span>Process &amp; Train Assistant</span>
-                        </>
-                      )}
-                    </button>
-                  </div>
-                </form>
-
-                {/* Import Knowledge from URL (YouTube, Video, Webpage) */}
-                <form
-                  onSubmit={handleImportUrl}
-                  className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 space-y-3.5 shadow-xs"
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2.5">
-                      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-red-50 dark:bg-red-950/60 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-900/40">
-                        <Globe className="h-4 w-4" />
-                      </div>
-                      <div>
-                        <span className="text-xs font-bold text-slate-900 dark:text-white">
-                          Import from YouTube, Webpage, or Media URL
-                        </span>
-                        <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                          Grabs transcripts and knowledge in any language (English, Chinese, Spanish, etc.)
-                        </p>
-                      </div>
-                    </div>
-
-                    {urlInput.trim() && (
-                      <span className="text-[10px] font-mono px-2 py-0.5 rounded-full font-semibold border bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700">
-                        {/(?:youtube\.com|youtu\.be)/i.test(urlInput)
-                          ? 'YouTube Video'
-                          : /\.(mp4|webm|mov|mkv|avi|mp3|wav|m4a|ogg|flac)$/i.test(urlInput.split('?')[0])
-                          ? 'Direct Media Stream'
-                          : 'Webpage Scraper'}
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5">
-                    <div className="md:col-span-2">
-                      <input
-                        type="url"
-                        required
-                        placeholder="https://www.youtube.com/watch?v=... or https://yourcompany.com/about"
-                        value={urlInput}
-                        onChange={(e) => setUrlInput(e.target.value)}
-                        className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3 py-2 text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 outline-none focus:border-blue-500"
-                      />
-                    </div>
-                    <div>
-                      <input
-                        type="text"
-                        placeholder="Custom Title (optional)"
-                        value={urlCustomTitle}
-                        onChange={(e) => setUrlCustomTitle(e.target.value)}
-                        className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3 py-2 text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 outline-none focus:border-blue-500"
-                      />
-                    </div>
-                  </div>
-
-                  {urlFeedback && (
-                    <div
-                      className={`p-2.5 rounded-lg text-xs flex items-center gap-2 ${
-                        urlFeedback.type === 'success'
-                          ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
-                          : 'bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800'
-                      }`}
-                    >
-                      {urlFeedback.type === 'success' ? (
-                        <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600" />
-                      ) : (
-                        <AlertTriangle className="h-4 w-4 shrink-0 text-rose-600" />
-                      )}
-                      <span>{urlFeedback.message}</span>
-                    </div>
-                  )}
-
-                  <div className="flex justify-end">
-                    <button
-                      type="submit"
-                      disabled={isImportingUrl || !urlInput.trim()}
-                      className="flex items-center gap-2 rounded-lg bg-slate-900 dark:bg-white hover:bg-slate-800 dark:hover:bg-slate-100 text-white dark:text-slate-900 px-4 py-2 text-xs font-semibold disabled:opacity-50 transition shadow-xs cursor-pointer"
-                    >
-                      {isImportingUrl ? (
-                        <>
-                          <RefreshCw className="h-3.5 w-3.5 animate-spin" />
-                          <span>Fetching &amp; Indexing Knowledge...</span>
-                        </>
-                      ) : (
-                        <>
-                          <Globe className="h-3.5 w-3.5" />
-                          <span>Import Knowledge from URL</span>
-                        </>
-                      )}
-                    </button>
-                  </div>
-                </form>
-
-                {/* Failed sources alert banner */}
-                {sources.some((s) => s.status === 'failed') && (
-                  <div className="rounded-xl border border-rose-200 dark:border-rose-900/50 bg-rose-50/70 dark:bg-rose-950/20 p-3.5 flex items-start gap-3 text-xs">
-                    <AlertTriangle className="w-4 h-4 text-rose-600 dark:text-rose-400 shrink-0 mt-0.5" />
-                    <div className="flex-1 text-slate-700 dark:text-slate-300">
-                      <span className="font-semibold text-rose-900 dark:text-rose-200">
-                        {sources.filter((s) => s.status === 'failed').length} file(s) failed to index.
-                      </span>{' '}
-                      Click <span className="font-semibold text-rose-600 dark:text-rose-400">"View Fix"</span> in the table below to see the exact reason and step-by-step instructions on what to do next.
-                    </div>
-                  </div>
-                )}
-
-                {/* Structured Enterprise Table */}
-                <div className="border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-900 shadow-xs overflow-hidden">
-                  <div className="px-5 py-3.5 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-bold text-slate-900 dark:text-white">Uploaded Knowledge Sources</span>
-                      <span className="text-xs text-slate-500 dark:text-slate-400 font-mono">({sources.length})</span>
-                    </div>
-                    <div className="relative">
-                      <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" />
-                      <input
-                        type="text"
-                        placeholder="Search sources..."
-                        value={sourceFilter}
-                        onChange={(e) => setSourceFilter(e.target.value)}
-                        className="pl-8 pr-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs text-slate-800 dark:text-slate-200 focus:outline-none focus:border-blue-500 w-48"
-                      />
-                    </div>
-                  </div>
-
-                  {filteredSources.length === 0 ? (
-                    <div className="p-8 text-center text-xs text-slate-500 dark:text-slate-400">
-                      No documents found matching your filter.
-                    </div>
-                  ) : (
-                    <table className="w-full text-left text-xs">
-                      <thead className="bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 font-semibold border-b border-slate-200 dark:border-slate-800">
-                        <tr>
-                          <th className="py-3 px-5">Document Name</th>
-                          <th className="py-3 px-5">Type</th>
-                          <th className="py-3 px-5">Chunks</th>
-                          <th className="py-3 px-5">Status</th>
-                          <th className="py-3 px-5">Date</th>
-                          <th className="py-3 px-5 text-right">Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-slate-100 dark:divide-slate-800/80">
-                        {filteredSources.map((source) => (
-                          <tr key={source.id} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/30 transition">
-                            <td className="py-3.5 px-5 font-semibold text-slate-800 dark:text-slate-100 flex items-center gap-2.5">
-                              <span className={`px-2 py-0.5 rounded font-mono text-[10px] font-bold ${
-                                source.type === 'pdf'
-                                  ? 'bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-800'
-                                  : source.type === 'csv'
-                                  ? 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800'
-                                  : source.type === 'json'
-                                  ? 'bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-800'
-                                  : source.type === 'youtube'
-                                  ? 'bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-800'
-                                  : source.type === 'web'
-                                  ? 'bg-sky-50 dark:bg-sky-950/50 text-sky-600 dark:text-sky-400 border border-sky-200 dark:border-sky-800'
-                                  : ['mp4', 'webm', 'mov', 'mkv', 'avi', 'm4v', 'video'].includes(source.type.toLowerCase())
-                                  ? 'bg-purple-50 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-800'
-                                  : ['mp3', 'wav', 'm4a', 'ogg', 'flac', 'aac', 'audio'].includes(source.type.toLowerCase())
-                                  ? 'bg-cyan-50 dark:bg-cyan-950/50 text-cyan-600 dark:text-cyan-400 border border-cyan-200 dark:border-cyan-800'
-                                  : 'bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800'
-                              }`}>
-                                {source.type === 'youtube'
-                                  ? 'YOUTUBE'
-                                  : source.type === 'web'
-                                  ? 'WEB'
-                                  : ['mp4', 'webm', 'mov', 'mkv', 'avi', 'm4v', 'video'].includes(source.type.toLowerCase())
-                                  ? 'VIDEO'
-                                  : ['mp3', 'wav', 'm4a', 'ogg', 'flac', 'aac', 'audio'].includes(source.type.toLowerCase())
-                                  ? 'AUDIO'
-                                  : source.type.toUpperCase()}
-                              </span>
-                              <span className="truncate max-w-[280px]" title={source.title}>{source.title}</span>
-                            </td>
-                            <td className="py-3.5 px-5 text-slate-500 dark:text-slate-400 uppercase font-mono text-[11px]">
-                              {source.type}
-                            </td>
-                            <td className="py-3.5 px-5 font-mono text-blue-600 dark:text-blue-400 font-bold">
-                              {source.chunkCount} chunks
-                            </td>
-                            <td className="py-3.5 px-5">
-                              {source.status === 'ready' && (
-                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 font-semibold text-[11px]">
-                                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
-                                  Ready
-                                </span>
-                              )}
-                              {source.status === 'processing' && (
-                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800 font-semibold text-[11px]">
-                                  <RefreshCw className="h-2.5 w-2.5 animate-spin" />
-                                  Processing
-                                </span>
-                              )}
-                              {source.status === 'failed' && (
-                                <button
-                                  type="button"
-                                  onClick={() => setFailedSourceModal(source)}
-                                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-400 border border-rose-200 dark:border-rose-800 font-semibold text-[11px] hover:bg-rose-100 dark:hover:bg-rose-900/60 transition cursor-pointer"
-                                  title="Click to view failure explanation & fix"
-                                >
-                                  <AlertTriangle className="h-3 w-3 text-rose-500" />
-                                  <span>Failed · View Fix</span>
-                                </button>
-                              )}
-                            </td>
-                            <td className="py-3.5 px-5 text-slate-500 dark:text-slate-400 font-mono text-[11px]">
-                              {new Date(source.createdAt).toLocaleDateString()}
-                            </td>
-                            <td className="py-3.5 px-5 text-right">
-                              <div className="flex items-center justify-end gap-1.5">
-                                {source.status === 'ready' && (
-                                  <button
-                                    onClick={() => handleOpenCorrectionModal(source)}
-                                    className="inline-flex items-center gap-1.5 text-xs text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 font-medium px-2.5 py-1 rounded-md bg-indigo-50 dark:bg-indigo-950/50 border border-indigo-200 dark:border-indigo-800/60 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 transition cursor-pointer"
-                                    title="Correct misheard audio/OCR words, add fact overrides, or edit text"
-                                  >
-                                    <Wand2 className="h-3.5 w-3.5 text-indigo-500" />
-                                    <span>Correct</span>
-                                    {source.corrections && source.corrections.length > 0 && (
-                                      <span className="ml-0.5 px-1.5 py-0.2 rounded-full text-[10px] font-mono font-bold bg-indigo-200 dark:bg-indigo-800 text-indigo-800 dark:text-indigo-200">
-                                        {source.corrections.length}
-                                      </span>
-                                    )}
-                                  </button>
-                                )}
-                                <button
-                                  onClick={() => handleDeleteSource(source.id)}
-                                  className="text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 transition p-1.5 rounded hover:bg-rose-50 dark:hover:bg-rose-950/40 cursor-pointer"
-                                  title="Delete source"
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                </button>
-                              </div>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  )}
-                </div>
-              </div>
+              <KnowledgeTab
+                activeAssistant={activeAssistant}
+                fetchKnowledge={fetchKnowledge}
+                uploadFailureAlert={uploadFailureAlert}
+                setUploadFailureAlert={setUploadFailureAlert}
+                handleUploadFiles={handleUploadFiles}
+                selectedFiles={selectedFiles}
+                setSelectedFiles={setSelectedFiles}
+                uploadTextTitle={uploadTextTitle}
+                setUploadTextTitle={setUploadTextTitle}
+                uploadText={uploadText}
+                setUploadText={setUploadText}
+                isUploading={isUploading}
+                handleImportUrl={handleImportUrl}
+                urlInput={urlInput}
+                setUrlInput={setUrlInput}
+                urlCustomTitle={urlCustomTitle}
+                setUrlCustomTitle={setUrlCustomTitle}
+                sourceFilter={sourceFilter}
+                setSourceFilter={setSourceFilter}
+                sources={sources}
+                setFailedSourceModal={setFailedSourceModal}
+                handleOpenCorrectionModal={handleOpenCorrectionModal}
+                handleDeleteSource={handleDeleteSource}
+                isImportingUrl={isImportingUrl}
+                urlFeedback={urlFeedback}
+              />
             )}
 
             {/* TAB 3: TESTING STUDIO (SPLIT PANE) */}
@@ -5008,1476 +3366,39 @@ Thank you for using Kortex AI Business Engine.
 
             {/* TAB 6: WIDGET & STYLING */}
             {activeTab === 'widget' && (
-              <div className="max-w-5xl space-y-6 mx-auto">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                  <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Widget &amp; Branding</h1>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                      Customize the chat launcher, brand colors, position, and lead capture settings for your website or WordPress plugin.
-                    </p>
-                  </div>
-                  <button
-                    onClick={handleSaveSettings}
-                    disabled={isSaving}
-                    className={`flex items-center gap-2 self-start sm:self-auto rounded-lg px-4 py-2 text-xs font-semibold text-white transition shadow-xs disabled:opacity-50 ${
-                      saveSuccess ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-blue-600 hover:bg-blue-700'
-                    }`}
-                  >
-                    {isSaving ? <RefreshCw className="h-3.5 w-3.5 animate-spin" /> : <CheckCircle2 className="h-3.5 w-3.5" />}
-                    <span>{isSaving ? 'Saving Settings...' : saveSuccess ? 'Saved Successfully!' : 'Save Widget Settings'}</span>
-                  </button>
-                </div>
-
-                {saveSuccess && (
-                  <div className="flex items-center gap-2 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 p-3 text-xs text-emerald-700 dark:text-emerald-300">
-                    <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                    <span>Widget &amp; support settings saved successfully!</span>
-                  </div>
-                )}
-
-                {saveError && (
-                  <div className="flex items-center gap-2 rounded-lg bg-rose-50 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-800 p-3 text-xs text-rose-700 dark:text-rose-300">
-                    <AlertTriangle className="h-4 w-4 text-rose-600 dark:text-rose-400 shrink-0" />
-                    <span>{saveError}</span>
-                  </div>
-                )}
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  {/* Configuration controls */}
-                  <div className="space-y-5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-xs">
-                    {/* Brand Color */}
-                    <div>
-                      <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-2">
-                        Brand Accent Color
-                      </label>
-                      <div className="flex items-center gap-3">
-                        {['#2563eb', '#7c3aed', '#059669', '#e11d48', '#d97706', '#0f172a'].map((c) => (
-                          <button
-                            key={c}
-                            type="button"
-                            onClick={() => setFormData({ ...formData, primaryColor: c })}
-                            style={{ backgroundColor: c }}
-                            className={`h-8 w-8 rounded-full border-2 transition ${
-                              formData.primaryColor === c ? 'border-slate-900 dark:border-white scale-110' : 'border-transparent'
-                            }`}
-                          />
-                        ))}
-                        <input
-                          type="text"
-                          value={formData.primaryColor || '#2563eb'}
-                          onChange={(e) => setFormData({ ...formData, primaryColor: e.target.value })}
-                          className="w-24 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-2 py-1.5 text-xs text-slate-900 dark:text-slate-100 font-mono outline-none"
-                        />
-                      </div>
-                    </div>
-
-                    {/* Launcher Position */}
-                    <div>
-                      <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1.5">
-                        Launcher Position
-                      </label>
-                      <div className="flex gap-3">
-                        {['bottom-right', 'bottom-left'].map((pos) => (
-                          <button
-                            key={pos}
-                            type="button"
-                            onClick={() => setFormData({ ...formData, launcherPosition: pos })}
-                            className={`rounded-lg border px-4 py-2 text-xs font-semibold capitalize transition ${
-                              formData.launcherPosition === pos
-                                ? 'bg-blue-50 dark:bg-blue-950/60 border-blue-600 text-blue-700 dark:text-blue-400'
-                                : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400'
-                            }`}
-                          >
-                            {pos.replace('-', ' ')}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Starter Questions */}
-                    <div>
-                      <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1.5">
-                        Suggested Starter Questions (1 per line)
-                      </label>
-                      <textarea
-                        rows={3}
-                        value={(formData.starterQuestions || []).join('\n')}
-                        onChange={(e) =>
-                          setFormData({
-                            ...formData,
-                            starterQuestions: e.target.value.split('\n').filter((q) => q.trim() !== ''),
-                          })
-                        }
-                        className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-2.5 text-xs text-slate-900 dark:text-slate-100 outline-none focus:border-blue-500"
-                      />
-                    </div>
-
-                    {/* Lead Capture Toggle */}
-                    <div className="flex items-center justify-between rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 p-3.5">
-                      <div>
-                        <div className="text-xs font-semibold text-slate-900 dark:text-white">Lead Capture Form</div>
-                        <div className="text-[11px] text-slate-500 dark:text-slate-400">Ask visitor for email address during chat</div>
-                      </div>
-                      <input
-                        type="checkbox"
-                        checked={formData.collectLeadEmail || false}
-                        onChange={(e) => setFormData({ ...formData, collectLeadEmail: e.target.checked })}
-                        className="h-4 w-4 rounded accent-blue-600"
-                      />
-                    </div>
-
-                    {/* Proactive Engagement Popup Automation */}
-                    <div className="rounded-xl border border-blue-200 dark:border-blue-900/60 bg-blue-50/50 dark:bg-blue-950/20 p-4 space-y-3">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <div className="text-xs font-semibold text-slate-900 dark:text-white flex items-center gap-1.5">
-                            <Zap className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
-                            <span>Proactive Chat Popup (Conversion Booster)</span>
-                          </div>
-                          <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
-                            Automatically pops up a friendly message bubble above the closed launcher to greet visitors.
-                          </div>
-                        </div>
-                        <input
-                          type="checkbox"
-                          checked={formData.proactiveMessageEnabled || false}
-                          onChange={(e) => setFormData({ ...formData, proactiveMessageEnabled: e.target.checked })}
-                          className="h-4 w-4 rounded accent-blue-600"
-                        />
-                      </div>
-
-                      {formData.proactiveMessageEnabled && (
-                        <div className="space-y-3 pt-2 border-t border-blue-100 dark:border-blue-900/40 animate-in fade-in duration-150">
-                          <div>
-                            <label className="text-[11px] font-semibold text-slate-700 dark:text-slate-300 block mb-1">
-                              Popup Message Text
-                            </label>
-                            <input
-                              type="text"
-                              placeholder="e.g. Have questions about our pricing or plans? I'm here to help!"
-                              value={formData.proactiveMessageText || ''}
-                              onChange={(e) => setFormData({ ...formData, proactiveMessageText: e.target.value })}
-                              className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-xs text-slate-900 dark:text-slate-100 outline-none focus:border-blue-500"
-                            />
-                          </div>
-                          <div>
-                            <label className="text-[11px] font-semibold text-slate-700 dark:text-slate-300 block mb-1">
-                              Trigger Delay (Seconds)
-                            </label>
-                            <div className="flex items-center gap-3">
-                              <input
-                                type="number"
-                                min={1}
-                                max={60}
-                                value={formData.proactiveMessageDelay ?? 5}
-                                onChange={(e) =>
-                                  setFormData({ ...formData, proactiveMessageDelay: parseInt(e.target.value) || 5 })
-                                }
-                                className="w-20 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-xs text-slate-900 dark:text-slate-100 font-mono outline-none"
-                              />
-                              <span className="text-[11px] text-slate-500 dark:text-slate-400">seconds after page loads</span>
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Interactive Calendar & Appointment Booking */}
-                    <div className="rounded-xl border border-emerald-200 dark:border-emerald-900/60 bg-emerald-50/50 dark:bg-emerald-950/20 p-4 space-y-3">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <div className="text-xs font-semibold text-slate-900 dark:text-white flex items-center gap-1.5">
-                            <Calendar className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
-                            <span>Interactive Calendar &amp; Appointment Booking</span>
-                          </div>
-                          <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
-                            Allows visitors to schedule calls, consultations, tours, and demos directly inside the chat widget.
-                          </div>
-                        </div>
-                        <input
-                          type="checkbox"
-                          checked={formData.bookingEnabled || false}
-                          onChange={(e) => setFormData({ ...formData, bookingEnabled: e.target.checked })}
-                          className="h-4 w-4 rounded accent-emerald-600"
-                        />
-                      </div>
-
-                      {formData.bookingEnabled && (
-                        <div className="space-y-3 pt-2 border-t border-emerald-100 dark:border-emerald-900/40 animate-in fade-in duration-150">
-                          <div>
-                            <label className="text-[11px] font-semibold text-slate-700 dark:text-slate-300 block mb-1">
-                              Booking Prompt Button Text
-                            </label>
-                            <input
-                              type="text"
-                              placeholder="e.g. Schedule a Free 15-Minute Consultation"
-                              value={formData.bookingPromptText || ''}
-                              onChange={(e) => setFormData({ ...formData, bookingPromptText: e.target.value })}
-                              className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-xs text-slate-900 dark:text-slate-100 outline-none focus:border-emerald-500"
-                            />
-                          </div>
-
-                          <div>
-                            <label className="text-[11px] font-semibold text-slate-700 dark:text-slate-300 block mb-1.5">
-                              Booking Provider
-                            </label>
-                            <div className="grid grid-cols-3 gap-2">
-                              {[
-                                { id: 'direct', label: 'Direct Date Picker', desc: 'Built-in slot picker' },
-                                { id: 'calendly', label: 'Calendly', desc: 'Calendly booking link' },
-                                { id: 'cal_com', label: 'Cal.com', desc: 'Cal.com link' },
-                              ].map((p) => (
-                                <button
-                                  key={p.id}
-                                  type="button"
-                                  onClick={() => setFormData({ ...formData, bookingProvider: p.id as any })}
-                                  className={`p-2.5 rounded-lg border text-left transition ${
-                                    (formData.bookingProvider || 'direct') === p.id
-                                      ? 'border-emerald-600 bg-emerald-100/50 dark:bg-emerald-950/70 text-emerald-900 dark:text-emerald-200 font-semibold'
-                                      : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-50'
-                                  }`}
-                                >
-                                  <div className="text-xs">{p.label}</div>
-                                  <div className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">{p.desc}</div>
-                                </button>
-                              ))}
-                            </div>
-                          </div>
-
-                          {(!formData.bookingProvider || formData.bookingProvider === 'direct') && (
-                            <div className="space-y-3 pt-2.5 border-t border-dashed border-emerald-200 dark:border-emerald-800">
-                              <div>
-                                <div className="flex items-center justify-between mb-1.5">
-                                  <label className="text-[11px] font-semibold text-slate-700 dark:text-slate-300">
-                                    Appointment Slot Duration
-                                  </label>
-                                  <span className="text-[10px] text-emerald-700 dark:text-emerald-300 font-bold px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-900/60">
-                                    {(formData.bookingSlotDuration || 30) >= 60 
-                                      ? `${(formData.bookingSlotDuration || 30) / 60} Hour(s)` 
-                                      : `${formData.bookingSlotDuration || 30} Mins`}
-                                  </span>
-                                </div>
-                                <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
-                                  {[
-                                    { duration: 15, label: '15 Mins' },
-                                    { duration: 30, label: '30 Mins' },
-                                    { duration: 45, label: '45 Mins' },
-                                    { duration: 60, label: '1 Hour' },
-                                    { duration: 90, label: '90 Mins' },
-                                    { duration: 120, label: '2 Hours' },
-                                  ].map((opt) => (
-                                    <button
-                                      key={opt.duration}
-                                      type="button"
-                                      onClick={() => setFormData({ ...formData, bookingSlotDuration: opt.duration })}
-                                      className={`py-1.5 px-2 rounded-lg text-xs font-semibold border text-center transition cursor-pointer ${
-                                        (formData.bookingSlotDuration || 30) === opt.duration
-                                          ? 'border-emerald-600 bg-emerald-600 text-white shadow-xs'
-                                          : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'
-                                      }`}
-                                    >
-                                      {opt.label}
-                                    </button>
-                                  ))}
-                                </div>
-                              </div>
-
-                              <div className="grid grid-cols-2 gap-3">
-                                <div>
-                                  <label className="text-[11px] font-semibold text-slate-700 dark:text-slate-300 block mb-1">
-                                    Daily Start Time
-                                  </label>
-                                  <input
-                                    type="time"
-                                    value={formData.bookingStartHour || '09:00'}
-                                    onChange={(e) => setFormData({ ...formData, bookingStartHour: e.target.value })}
-                                    className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-xs text-slate-900 dark:text-slate-100 font-mono outline-none focus:border-emerald-500"
-                                  />
-                                </div>
-                                <div>
-                                  <label className="text-[11px] font-semibold text-slate-700 dark:text-slate-300 block mb-1">
-                                    Daily End Time
-                                  </label>
-                                  <input
-                                    type="time"
-                                    value={formData.bookingEndHour || '17:00'}
-                                    onChange={(e) => setFormData({ ...formData, bookingEndHour: e.target.value })}
-                                    className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-xs text-slate-900 dark:text-slate-100 font-mono outline-none focus:border-emerald-500"
-                                  />
-                                </div>
-                              </div>
-
-                              <div>
-                                <label className="text-[11px] font-semibold text-slate-700 dark:text-slate-300 block mb-1.5">
-                                  Available Working Days
-                                </label>
-                                <div className="flex flex-wrap gap-1.5">
-                                  {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map((day) => {
-                                    const currentDays = formData.bookingAvailableDays || ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
-                                    const isSelected = currentDays.includes(day);
-                                    return (
-                                      <button
-                                        key={day}
-                                        type="button"
-                                        onClick={() => {
-                                          const nextDays = isSelected
-                                            ? currentDays.filter((d) => d !== day)
-                                            : [...currentDays, day];
-                                          setFormData({ ...formData, bookingAvailableDays: nextDays });
-                                        }}
-                                        className={`px-2.5 py-1 rounded-md text-[11px] font-medium border transition cursor-pointer ${
-                                          isSelected
-                                            ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 font-semibold'
-                                            : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-400 hover:text-slate-600'
-                                        }`}
-                                      >
-                                        <span className="flex items-center gap-1">{isSelected && <Check className="h-3 w-3 inline" />}{day.slice(0, 3)}</span>
-                                      </button>
-                                    );
-                                  })}
-                                </div>
-                              </div>
-                            </div>
-                          )}
-
-                          {formData.bookingProvider === 'cal_com' && (
-                            <div className="animate-in fade-in duration-150">
-                              <label className="text-[11px] font-semibold text-slate-700 dark:text-slate-300 block mb-1">
-                                Cal.com Scheduling URL
-                              </label>
-                              <input
-                                type="url"
-                                placeholder="https://cal.com/your-username/30min"
-                                value={formData.bookingUrl || ''}
-                                onChange={(e) => setFormData({ ...formData, bookingUrl: e.target.value })}
-                                className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-xs text-slate-900 dark:text-slate-100 font-mono outline-none focus:border-emerald-500"
-                              />
-                              <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1">
-                                Visitors will be presented with a direct button to open your Cal.com event page.
-                              </p>
-                            </div>
-                          )}
-
-                          {formData.bookingProvider === 'calendly' && (
-                            <div className="animate-in fade-in duration-150">
-                              <label className="text-[11px] font-semibold text-slate-700 dark:text-slate-300 block mb-1">
-                                Calendly Booking URL
-                              </label>
-                              <input
-                                type="url"
-                                placeholder="https://calendly.com/your-business/30min"
-                                value={formData.bookingUrl || ''}
-                                onChange={(e) => setFormData({ ...formData, bookingUrl: e.target.value })}
-                                className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-xs text-slate-900 dark:text-slate-100 font-mono outline-none focus:border-emerald-500"
-                              />
-                              <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1">
-                                Visitors will be presented with a direct button to open your Calendly booking page.
-                              </p>
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Support Handoff & Email Notifications */}
-                    <div className="space-y-4 pt-3 border-t border-slate-200 dark:border-slate-800">
-                      <div>
-                        <h2 className="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-1.5">
-                          <span className="flex items-center gap-1.5"><Mail className="h-4 w-4 text-blue-500 inline" /><span>Support Handoff &amp; Lead Email Alerts</span></span>
-                        </h2>
-                        <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
-                          When visitors ask to connect with support, the widget displays a sleek form and immediately dispatches an email notification.
-                        </p>
-                      </div>
-
-                      {/* Receiver Email */}
-                      <div>
-                        <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1">
-                          Receiver Email Address
-                        </label>
-                        <input
-                          type="email"
-                          placeholder="e.g. support@yourcompany.com"
-                          value={formData.supportReceiverEmail || ''}
-                          onChange={(e) => setFormData({ ...formData, supportReceiverEmail: e.target.value })}
-                          className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3 py-2 text-xs text-slate-900 dark:text-slate-100 outline-none focus:border-blue-500 font-mono"
-                        />
-                        <p className="text-[10.5px] text-slate-500 dark:text-slate-400 mt-1">
-                          Support inquiries submitted by visitors are sent directly to this address.
-                        </p>
-                      </div>
-
-                      {/* CC Emails */}
-                      <div>
-                        <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1">
-                          CC Notification Emails (Optional)
-                        </label>
-                        <input
-                          type="text"
-                          placeholder="e.g. alerts@company.com, team@company.com"
-                          value={(formData.supportCcEmails || []).join(', ')}
-                          onChange={(e) =>
-                            setFormData({
-                              ...formData,
-                              supportCcEmails: e.target.value.split(',').map((s) => s.trim()).filter(Boolean),
-                            })
-                          }
-                          className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3 py-2 text-xs text-slate-900 dark:text-slate-100 outline-none focus:border-blue-500 font-mono"
-                        />
-                        <p className="text-[10.5px] text-slate-500 dark:text-slate-400 mt-1">
-                          Comma-separated list of additional team emails to CC on every lead/support alert.
-                        </p>
-                      </div>
-
-                      {/* Form Custom Fields Builder */}
-                      <div className="pt-2 border-t border-slate-200 dark:border-slate-800 space-y-2.5">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <span className="text-xs font-semibold text-slate-800 dark:text-slate-200">
-                              Support Form Custom Fields
-                            </span>
-                            <p className="text-[10.5px] text-slate-500 dark:text-slate-400">
-                              Default: Name, Email, Phone (Required) &amp; Comments (Optional).
-                            </p>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => setShowAddFieldForm(!showAddFieldForm)}
-                            className="flex items-center gap-1 text-[11px] font-semibold text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
-                          >
-                            <Plus className="h-3 w-3" />
-                            <span>{showAddFieldForm ? 'Close' : 'Add Custom Field'}</span>
-                          </button>
-                        </div>
-
-                        {/* Existing custom fields list */}
-                        {(formData.supportCustomFields || []).length > 0 ? (
-                          <div className="space-y-1.5">
-                            {(formData.supportCustomFields || []).map((cf) => (
-                              <div
-                                key={cf.id}
-                                className="flex items-center justify-between p-2 rounded-lg bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-xs"
-                              >
-                                <div className="flex items-center gap-2">
-                                  <span className="font-semibold text-slate-800 dark:text-slate-200">{cf.label}</span>
-                                  <span className="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300">
-                                    {cf.type}
-                                  </span>
-                                  {cf.required ? (
-                                    <span className="text-[10px] font-bold text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-900 px-1.5 py-0.5 rounded">
-                                      Required
-                                    </span>
-                                  ) : (
-                                    <span className="text-[10px] text-slate-500 px-1 py-0.5">Optional</span>
-                                  )}
-                                  {cf.type === 'select' && cf.options && cf.options.length > 0 && (
-                                    <span className="text-[10px] text-slate-400 font-mono">
-                                      ({cf.options.length} options)
-                                    </span>
-                                  )}
-                                </div>
-                                <button
-                                  type="button"
-                                  onClick={() => handleRemoveCustomField(cf.id)}
-                                  className="text-slate-400 hover:text-rose-600 p-1 transition cursor-pointer"
-                                  title="Remove Field"
-                                >
-                                  <Trash2 className="h-3.5 w-3.5" />
-                                </button>
-                              </div>
-                            ))}
-                          </div>
-                        ) : (
-                          <p className="text-[11px] text-slate-400 italic">No custom fields added yet.</p>
-                        )}
-
-                        {/* Add Field Form */}
-                        {showAddFieldForm && (
-                          <div className="p-3 rounded-xl border border-blue-200 dark:border-blue-900/60 bg-blue-50/40 dark:bg-blue-950/30 space-y-2.5 animate-in fade-in duration-150">
-                            <div className="text-[11px] font-bold text-blue-900 dark:text-blue-300 uppercase tracking-wide">
-                              New Custom Field
-                            </div>
-                            <div className="grid grid-cols-2 gap-2">
-                              <div>
-                                <label className="text-[10.5px] font-medium text-slate-600 dark:text-slate-300 block mb-1">
-                                  Field Label *
-                                </label>
-                                <input
-                                  type="text"
-                                  placeholder="e.g. Company Name"
-                                  value={newFieldLabel}
-                                  onChange={(e) => setNewFieldLabel(e.target.value)}
-                                  className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2.5 py-1.5 text-xs outline-none focus:border-blue-500"
-                                />
-                              </div>
-                              <div>
-                                <label className="text-[10.5px] font-medium text-slate-600 dark:text-slate-300 block mb-1">
-                                  Field Type
-                                </label>
-                                <select
-                                  value={newFieldType}
-                                  onChange={(e) => setNewFieldType(e.target.value as any)}
-                                  className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2.5 py-1.5 text-xs outline-none focus:border-blue-500"
-                                >
-                                  <option value="text">Single Line Text</option>
-                                  <option value="textarea">Paragraph Textarea</option>
-                                  <option value="tel">Phone / Number</option>
-                                  <option value="select">Dropdown Select</option>
-                                </select>
-                              </div>
-                            </div>
-
-                            {newFieldType === 'select' && (
-                              <div>
-                                <label className="text-[10.5px] font-medium text-slate-600 dark:text-slate-300 block mb-1">
-                                  Dropdown Options (comma-separated)
-                                </label>
-                                <input
-                                  type="text"
-                                  placeholder="e.g. Billing, Technical Support, Sales"
-                                  value={newFieldOptions}
-                                  onChange={(e) => setNewFieldOptions(e.target.value)}
-                                  className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2.5 py-1.5 text-xs outline-none focus:border-blue-500"
-                                />
-                              </div>
-                            )}
-
-                            <div className="flex items-center justify-between pt-1">
-                              <label className="flex items-center gap-2 cursor-pointer text-xs text-slate-700 dark:text-slate-300">
-                                <input
-                                  type="checkbox"
-                                  checked={newFieldRequired}
-                                  onChange={(e) => setNewFieldRequired(e.target.checked)}
-                                  className="rounded accent-blue-600"
-                                />
-                                <span>Required field</span>
-                              </label>
-                              <div className="flex gap-2">
-                                <button
-                                  type="button"
-                                  onClick={() => setShowAddFieldForm(false)}
-                                  className="px-2.5 py-1 text-xs text-slate-500 hover:text-slate-700"
-                                >
-                                  Cancel
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={handleAddCustomField}
-                                  disabled={!newFieldLabel.trim()}
-                                  className="px-3 py-1 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold disabled:opacity-50"
-                                >
-                                  Add Field
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="pt-2">
-                      <button
-                        onClick={handleSaveSettings}
-                        disabled={isSaving}
-                        className={`flex items-center gap-2 rounded-lg px-4 py-2 text-xs font-semibold text-white transition shadow-xs disabled:opacity-50 ${
-                          saveSuccess
-                            ? 'bg-emerald-600 hover:bg-emerald-700'
-                            : 'bg-blue-600 hover:bg-blue-700'
-                        }`}
-                      >
-                        {isSaving ? (
-                          <RefreshCw className="h-3.5 w-3.5 animate-spin" />
-                        ) : (
-                          <CheckCircle2 className="h-3.5 w-3.5" />
-                        )}
-                        <span>
-                          {isSaving
-                            ? 'Saving Settings...'
-                            : saveSuccess
-                            ? 'Saved Successfully!'
-                            : 'Save Widget & Support Settings'}
-                        </span>
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Live Preview Frame */}
-                  <div className="flex flex-col items-center justify-center rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-100/60 dark:bg-slate-900/40 p-6 shadow-xs">
-                    <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-4 font-mono uppercase">
-                      Live Widget Preview
-                    </div>
-
-                    {/* Simulated Widget Window */}
-                    <div className="w-80 rounded-2xl bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xl overflow-hidden border border-slate-200 dark:border-slate-800">
-                      <div
-                        style={{ backgroundColor: formData.primaryColor || '#2563eb' }}
-                        className="p-3.5 text-white flex items-center justify-between"
-                      >
-                        <div className="flex items-center gap-2.5">
-                          <div className="h-7 w-7 rounded-full bg-white/20 flex items-center justify-center text-xs font-bold">
-                            AI
-                          </div>
-                          <div>
-                            <div className="text-xs font-bold leading-tight">{formData.name || 'Business AI'}</div>
-                            <div className="text-[10px] opacity-85 flex items-center gap-1">
-                              <span className="h-1.5 w-1.5 rounded-full bg-emerald-300"></span> Online
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="p-4 bg-slate-50 dark:bg-slate-950 space-y-3 min-h-[220px]">
-                        <div className="bg-white dark:bg-slate-800 p-3 rounded-xl rounded-bl-xs text-xs shadow-xs border border-slate-200/60 dark:border-slate-700 text-slate-800 dark:text-slate-200 max-w-[85%]">
-                          {formData.welcomeMessage || 'Hello! How can I assist you today?'}
-                        </div>
-
-                        <div className="space-y-1.5 pt-1">
-                          {(formData.starterQuestions || []).slice(0, 2).map((q, i) => (
-                            <div
-                              key={i}
-                              className="text-[11px] bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-3 py-1.5 rounded-full text-slate-700 dark:text-slate-300 font-medium shadow-2xs"
-                            >
-                              {q}
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-
-                      <div className="p-2.5 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 flex items-center gap-2">
-                        <div className="flex-1 text-xs text-slate-400 dark:text-slate-300 px-3 py-1.5 bg-slate-100 dark:bg-slate-800 border border-transparent dark:border-slate-700 rounded-full">
-                          Ask a question...
-                        </div>
-                        <div
-                          style={{ backgroundColor: formData.primaryColor || '#2563eb' }}
-                          className="h-7 w-7 rounded-full text-white flex items-center justify-center text-xs shadow-xs"
-                        >
-                          <Send className="h-3 w-3" />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <WidgetTab
+                formData={formData}
+                setFormData={setFormData}
+                handleSaveSettings={handleSaveSettings}
+                isSaving={isSaving}
+                saveSuccess={saveSuccess}
+                saveError={saveError}
+              />
             )}
 
             {/* TAB: CHANNELS & INTEGRATIONS */}
             {activeTab === 'channels' && (
-              <div className="max-w-6xl space-y-8 mx-auto pb-12">
-                {/* Header Section with Save Trigger */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-5">
-                  <div>
-                    <div className="flex items-center gap-2.5">
-                      <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
-                        Channels &amp; Integrations
-                      </h1>
-                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-800 dark:bg-blue-900/60 dark:text-blue-300 uppercase tracking-wider">
-                        Omnichannel v2.0
-                      </span>
-                    </div>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1.5">
-                      Deploy your RAG AI Assistant across web, Telegram, WhatsApp, and dispatch real-time events to Zapier, Make.com, or custom CRMs.
-                    </p>
-                  </div>
-
-                  <div className="flex items-center gap-2.5">
-                    {saveSuccess && (
-                      <div className="flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400 font-semibold bg-emerald-50 dark:bg-emerald-950/40 px-3 py-1.5 rounded-lg border border-emerald-200 dark:border-emerald-800 animate-in fade-in">
-                        <CheckCircle2 className="h-3.5 w-3.5" />
-                        <span>Saved Successfully</span>
-                      </div>
-                    )}
-                    {saveError && (
-                      <div className="flex items-center gap-1.5 text-xs text-rose-600 dark:text-rose-400 font-semibold bg-rose-50 dark:bg-rose-950/40 px-3 py-1.5 rounded-lg border border-rose-200 dark:border-rose-800">
-                        <AlertTriangle className="h-3.5 w-3.5" />
-                        <span>{saveError}</span>
-                      </div>
-                    )}
-                    <button
-                      type="button"
-                      onClick={handleSaveSettings}
-                      disabled={isSaving}
-                      className="flex items-center gap-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 text-xs font-semibold shadow-sm transition disabled:opacity-50 cursor-pointer"
-                    >
-                      {isSaving ? (
-                        <>
-                          <RefreshCw className="h-3.5 w-3.5 animate-spin" />
-                          <span>Saving Changes...</span>
-                        </>
-                      ) : (
-                        <>
-                          <Check className="h-3.5 w-3.5" />
-                          <span>Save Channel Settings</span>
-                        </>
-                      )}
-                    </button>
-                  </div>
-                </div>
-
-                {/* 4 Summary Stat Cards */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                  {/* Web Widget Card */}
-                  <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs flex items-center justify-between">
-                    <div className="space-y-1">
-                      <div className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">
-                        Web Chat Widget
-                      </div>
-                      <div className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
-                        <span>Embedded &amp; Live</span>
-                      </div>
-                      <div className="text-[11px] text-emerald-600 dark:text-emerald-400 flex items-center gap-1 font-medium">
-                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
-                        Active on web pages
-                      </div>
-                    </div>
-                    <div className="h-11 w-11 rounded-xl bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 flex items-center justify-center border border-blue-100 dark:border-blue-900/40">
-                      <Globe className="h-5 w-5" />
-                    </div>
-                  </div>
-
-                  {/* Telegram Card */}
-                  <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs flex items-center justify-between">
-                    <div className="space-y-1">
-                      <div className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">
-                        Telegram Bot API
-                      </div>
-                      <div className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
-                        <span>{formData.telegramBotEnabled ? 'Enabled' : 'Disabled'}</span>
-                      </div>
-                      <div className="text-[11px] text-slate-500 dark:text-slate-400 flex items-center gap-1 font-medium">
-                        <span className={`h-1.5 w-1.5 rounded-full ${formData.telegramBotEnabled ? 'bg-sky-500' : 'bg-slate-400'}`}></span>
-                        {formData.telegramBotToken ? 'Token Set' : 'Token Missing'}
-                      </div>
-                    </div>
-                    <div className="h-11 w-11 rounded-xl bg-sky-50 dark:bg-sky-950/50 text-sky-600 dark:text-sky-400 flex items-center justify-center border border-sky-100 dark:border-sky-900/40">
-                      <SendHorizontal className="h-5 w-5" />
-                    </div>
-                  </div>
-
-                  {/* WhatsApp Cloud Card */}
-                  <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs flex items-center justify-between">
-                    <div className="space-y-1">
-                      <div className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">
-                        WhatsApp Cloud API
-                      </div>
-                      <div className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
-                        <span>{formData.whatsappEnabled ? 'Enabled' : 'Disabled'}</span>
-                      </div>
-                      <div className="text-[11px] text-slate-500 dark:text-slate-400 flex items-center gap-1 font-medium">
-                        <span className={`h-1.5 w-1.5 rounded-full ${formData.whatsappEnabled ? 'bg-emerald-500' : 'bg-slate-400'}`}></span>
-                        {formData.whatsappPhoneNumberId ? 'Phone ID Set' : 'Setup Required'}
-                      </div>
-                    </div>
-                    <div className="h-11 w-11 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 flex items-center justify-center border border-emerald-100 dark:border-emerald-900/40">
-                      <Radio className="h-5 w-5" />
-                    </div>
-                  </div>
-
-                  {/* Webhooks & Zapier Card */}
-                  <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs flex items-center justify-between">
-                    <div className="space-y-1">
-                      <div className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">
-                        Zapier &amp; Webhooks
-                      </div>
-                      <div className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
-                        <span>{formData.webhookUrl ? 'Connected' : 'Inactive'}</span>
-                      </div>
-                      <div className="text-[11px] text-slate-500 dark:text-slate-400 flex items-center gap-1 font-medium">
-                        <span className={`h-1.5 w-1.5 rounded-full ${formData.webhookUrl ? 'bg-amber-500' : 'bg-slate-400'}`}></span>
-                        {(formData.webhookEvents || ['lead.created']).length} Events Active
-                      </div>
-                    </div>
-                    <div className="h-11 w-11 rounded-xl bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 flex items-center justify-center border border-amber-100 dark:border-amber-900/40">
-                      <Webhook className="h-5 w-5" />
-                    </div>
-                  </div>
-                </div>
-
-                {/* CHANNEL 1: TELEGRAM BOT CONNECTOR */}
-                <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 sm:p-7 shadow-xs space-y-6">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-200 dark:border-slate-800">
-                    <div className="flex items-center gap-3.5">
-                      <div className="h-12 w-12 rounded-2xl bg-sky-50 dark:bg-sky-950/60 text-sky-600 dark:text-sky-400 flex items-center justify-center border border-sky-200 dark:border-sky-900/50">
-                        <SendHorizontal className="h-6 w-6" />
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <h2 className="text-base font-bold text-slate-900 dark:text-white">
-                            Telegram Bot Integration
-                          </h2>
-                          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-sky-100 text-sky-800 dark:bg-sky-950 dark:text-sky-300">
-                            Zero Cost
-                          </span>
-                        </div>
-                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                          Deploy a 24/7 autonomous Telegram assistant that answers questions from your knowledge base and captures leads.
-                        </p>
-                      </div>
-                    </div>
-
-                    <label className="relative inline-flex items-center cursor-pointer select-none">
-                      <input
-                        type="checkbox"
-                        checked={formData.telegramBotEnabled || false}
-                        onChange={(e) =>
-                          setFormData({ ...formData, telegramBotEnabled: e.target.checked })
-                        }
-                        className="sr-only peer"
-                      />
-                      <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-800 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-slate-600 peer-checked:bg-sky-600"></div>
-                      <span className="ml-2.5 text-xs font-semibold text-slate-700 dark:text-slate-300">
-                        {formData.telegramBotEnabled ? 'Enabled' : 'Disabled'}
-                      </span>
-                    </label>
-                  </div>
-
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    {/* Left: Configuration Inputs */}
-                    <div className="space-y-4">
-                      <div>
-                        <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                          Telegram Bot API Token <span className="text-rose-500">*</span>
-                        </label>
-                        <div className="relative">
-                          <input
-                            type={showTelegramToken ? 'text' : 'password'}
-                            placeholder="e.g. 123456789:ABCdefGhIJKlmNoPQRsTUVwxyZ"
-                            value={formData.telegramBotToken || ''}
-                            onChange={(e) =>
-                              setFormData({ ...formData, telegramBotToken: e.target.value })
-                            }
-                            className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-3.5 py-2.5 text-xs font-mono text-slate-900 dark:text-slate-100 outline-none focus:border-sky-500 pr-10"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => setShowTelegramToken(!showTelegramToken)}
-                            className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
-                          >
-                            {showTelegramToken ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                          </button>
-                        </div>
-                        <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
-                          Generated via <span className="font-semibold text-sky-600 dark:text-sky-400">@BotFather</span> on Telegram.
-                        </p>
-                      </div>
-
-                      {/* Action buttons: Verify and Set Webhook */}
-                      <div className="flex flex-wrap gap-2.5 pt-1">
-                        <button
-                          type="button"
-                          onClick={handleTelegramVerify}
-                          disabled={telegramStatus.loading}
-                          className="flex items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 px-3.5 py-2 text-xs font-semibold shadow-2xs transition disabled:opacity-50 cursor-pointer"
-                        >
-                          {telegramStatus.loading ? (
-                            <RefreshCw className="h-3.5 w-3.5 animate-spin text-sky-500" />
-                          ) : (
-                            <ShieldCheck className="h-3.5 w-3.5 text-sky-600 dark:text-sky-400" />
-                          )}
-                          <span>Verify Bot Token</span>
-                        </button>
-
-                        <button
-                          type="button"
-                          onClick={handleTelegramSetWebhook}
-                          disabled={telegramWebhookStatus.loading || !formData.telegramBotToken}
-                          className="flex items-center gap-1.5 rounded-xl bg-sky-600 hover:bg-sky-700 text-white px-4 py-2 text-xs font-semibold shadow-2xs transition disabled:opacity-50 cursor-pointer"
-                        >
-                          {telegramWebhookStatus.loading ? (
-                            <RefreshCw className="h-3.5 w-3.5 animate-spin" />
-                          ) : (
-                            <Zap className="h-3.5 w-3.5" />
-                          )}
-                          <span>Register Live Webhook</span>
-                        </button>
-                      </div>
-
-                      {/* Verification feedback box */}
-                      {telegramStatus.tested && (
-                        <div
-                          className={`p-3 rounded-xl border text-xs ${
-                            telegramStatus.success
-                              ? 'bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800/60 text-emerald-800 dark:text-emerald-300'
-                              : 'bg-rose-50 dark:bg-rose-950/30 border-rose-200 dark:border-rose-800/60 text-rose-800 dark:text-rose-300'
-                          }`}
-                        >
-                          {telegramStatus.success && telegramStatus.botInfo ? (
-                            <div className="space-y-1">
-                              <div className="font-bold flex items-center gap-1.5">
-                                <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-                                <span>Verified Bot: @{telegramStatus.botInfo.username}</span>
-                              </div>
-                              <p className="text-[11px] opacity-90 font-mono">
-                                Name: {telegramStatus.botInfo.firstName} (ID: {telegramStatus.botInfo.id})
-                              </p>
-                            </div>
-                          ) : (
-                            <div className="flex items-center gap-1.5">
-                              <AlertTriangle className="h-4 w-4 text-rose-600 dark:text-rose-400" />
-                              <span>{telegramStatus.error || 'Token verification failed'}</span>
-                            </div>
-                          )}
-                        </div>
-                      )}
-
-                      {/* Webhook status message */}
-                      {telegramWebhookStatus.message && (
-                        <div className="p-3 rounded-xl border border-sky-200 dark:border-sky-800/60 bg-sky-50 dark:bg-sky-950/30 text-xs text-sky-800 dark:text-sky-300 flex items-center gap-2">
-                          <CheckCircle2 className="h-4 w-4 text-sky-600 shrink-0" />
-                          <span>{telegramWebhookStatus.message}</span>
-                        </div>
-                      )}
-                      {telegramWebhookStatus.error && (
-                        <div className="p-3 rounded-xl border border-rose-200 dark:border-rose-800/60 bg-rose-50 dark:bg-rose-950/30 text-xs text-rose-800 dark:text-rose-300 flex items-center gap-2">
-                          <AlertTriangle className="h-4 w-4 text-rose-600 shrink-0" />
-                          <span>{telegramWebhookStatus.error}</span>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Right: 3-Step Setup Guide */}
-                    <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/60 space-y-3">
-                      <div className="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
-                        <Sparkles className="h-3.5 w-3.5 text-sky-500" />
-                        <span>Quick 60-Second Telegram Setup</span>
-                      </div>
-                      <ol className="text-xs text-slate-600 dark:text-slate-400 space-y-2.5 list-decimal pl-4">
-                        <li>
-                          Open Telegram and search for <strong className="text-slate-900 dark:text-white">@BotFather</strong>.
-                        </li>
-                        <li>
-                          Send <code className="bg-slate-200 dark:bg-slate-800 px-1 py-0.5 rounded text-[11px] font-mono">/newbot</code>, choose a bot display name and a username ending in <code className="bg-slate-200 dark:bg-slate-800 px-1 py-0.5 rounded text-[11px] font-mono">bot</code>.
-                        </li>
-                        <li>
-                          Copy the token provided by @BotFather, paste it into the field on the left, and click <strong className="text-slate-900 dark:text-white">Register Live Webhook</strong>.
-                        </li>
-                      </ol>
-                      <div className="pt-2 border-t border-slate-200 dark:border-slate-800 text-[11px] text-slate-500 dark:text-slate-400 font-mono">
-                        Webhook URL: <span className="text-sky-600 dark:text-sky-400">{typeof window !== 'undefined' ? window.location.origin : ''}/api/channels/telegram</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* CHANNEL 2: WHATSAPP CLOUD API */}
-                <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 sm:p-7 shadow-xs space-y-6">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-200 dark:border-slate-800">
-                    <div className="flex items-center gap-3.5">
-                      <div className="h-12 w-12 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center border border-emerald-200 dark:border-emerald-900/50">
-                        <Radio className="h-6 w-6" />
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <h2 className="text-base font-bold text-slate-900 dark:text-white">
-                            WhatsApp Cloud API (Meta Official)
-                          </h2>
-                          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
-                            Enterprise
-                          </span>
-                        </div>
-                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                          Direct integration with Meta Graph API for official business phone numbers with zero 3rd-party per-message fees.
-                        </p>
-                      </div>
-                    </div>
-
-                    <label className="relative inline-flex items-center cursor-pointer select-none">
-                      <input
-                        type="checkbox"
-                        checked={formData.whatsappEnabled || false}
-                        onChange={(e) =>
-                          setFormData({ ...formData, whatsappEnabled: e.target.checked })
-                        }
-                        className="sr-only peer"
-                      />
-                      <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-800 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-slate-600 peer-checked:bg-emerald-600"></div>
-                      <span className="ml-2.5 text-xs font-semibold text-slate-700 dark:text-slate-300">
-                        {formData.whatsappEnabled ? 'Enabled' : 'Disabled'}
-                      </span>
-                    </label>
-                  </div>
-
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    {/* Left: WhatsApp API Credentials */}
-                    <div className="space-y-4">
-                      <div>
-                        <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                          Phone Number ID <span className="text-rose-500">*</span>
-                        </label>
-                        <input
-                          type="text"
-                          placeholder="e.g. 109823485729104"
-                          value={formData.whatsappPhoneNumberId || ''}
-                          onChange={(e) =>
-                            setFormData({ ...formData, whatsappPhoneNumberId: e.target.value })
-                          }
-                          className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-3.5 py-2.5 text-xs font-mono text-slate-900 dark:text-slate-100 outline-none focus:border-emerald-500"
-                        />
-                        <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
-                          From Meta Developer App &gt; WhatsApp &gt; API Setup &gt; Phone number ID.
-                        </p>
-                      </div>
-
-                      <div>
-                        <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                          System User Access Token <span className="text-rose-500">*</span>
-                        </label>
-                        <div className="relative">
-                          <input
-                            type={showWhatsAppToken ? 'text' : 'password'}
-                            placeholder="EAAB..."
-                            value={formData.whatsappAccessToken || ''}
-                            onChange={(e) =>
-                              setFormData({ ...formData, whatsappAccessToken: e.target.value })
-                            }
-                            className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-3.5 py-2.5 text-xs font-mono text-slate-900 dark:text-slate-100 outline-none focus:border-emerald-500 pr-10"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => setShowWhatsAppToken(!showWhatsAppToken)}
-                            className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
-                          >
-                            {showWhatsAppToken ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                          </button>
-                        </div>
-                      </div>
-
-                      <div>
-                        <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                          Meta Webhook Verify Token
-                        </label>
-                        <input
-                          type="text"
-                          placeholder="kortex_wa_token"
-                          value={formData.whatsappVerifyToken || 'kortex_wa_token'}
-                          onChange={(e) =>
-                            setFormData({ ...formData, whatsappVerifyToken: e.target.value })
-                          }
-                          className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-3.5 py-2.5 text-xs font-mono text-slate-900 dark:text-slate-100 outline-none focus:border-emerald-500"
-                        />
-                      </div>
-                    </div>
-
-                    {/* Right: Meta Webhook Setup Helper */}
-                    <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/60 space-y-3.5">
-                      <div className="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
-                        <Sparkles className="h-3.5 w-3.5 text-emerald-500" />
-                        <span>Meta App Dashboard Webhook Settings</span>
-                      </div>
-                      <p className="text-xs text-slate-600 dark:text-slate-400">
-                        Paste these two values into <strong className="text-slate-900 dark:text-white">developers.facebook.com &gt; WhatsApp &gt; Configuration &gt; Callback URL</strong>:
-                      </p>
-
-                      <div className="space-y-2">
-                        <div>
-                          <div className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 mb-1">
-                            Callback URL:
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <input
-                              type="text"
-                              readOnly
-                              value={`${typeof window !== 'undefined' ? window.location.origin : ''}/api/channels/whatsapp`}
-                              className="flex-1 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-1.5 text-xs font-mono text-slate-700 dark:text-slate-300 outline-none"
-                            />
-                            <button
-                              type="button"
-                              onClick={() => {
-                                navigator.clipboard.writeText(
-                                  `${window.location.origin}/api/channels/whatsapp`
-                                );
-                                setCopiedWaWebhookUrl(true);
-                                setTimeout(() => setCopiedWaWebhookUrl(false), 2500);
-                              }}
-                              className="p-2 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition cursor-pointer"
-                              title="Copy Callback URL"
-                            >
-                              {copiedWaWebhookUrl ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5" />}
-                            </button>
-                          </div>
-                        </div>
-
-                        <div>
-                          <div className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 mb-1">
-                            Verify Token:
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <input
-                              type="text"
-                              readOnly
-                              value={formData.whatsappVerifyToken || 'kortex_wa_token'}
-                              className="flex-1 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-1.5 text-xs font-mono text-slate-700 dark:text-slate-300 outline-none"
-                            />
-                            <button
-                              type="button"
-                              onClick={() => {
-                                navigator.clipboard.writeText(
-                                  formData.whatsappVerifyToken || 'kortex_wa_token'
-                                );
-                                setCopiedWaVerifyToken(true);
-                                setTimeout(() => setCopiedWaVerifyToken(false), 2500);
-                              }}
-                              className="p-2 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition cursor-pointer"
-                              title="Copy Verify Token"
-                            >
-                              {copiedWaVerifyToken ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5" />}
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="pt-2 border-t border-slate-200 dark:border-slate-800 text-[11px] text-slate-500 dark:text-slate-400">
-                        Subscribed Webhook Field: <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">messages</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* INTEGRATION 3: OUTBOUND WEBHOOK DISPATCHER (ZAPIER / MAKE / CRMS) */}
-                <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 sm:p-7 shadow-xs space-y-6">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-200 dark:border-slate-800">
-                    <div className="flex items-center gap-3.5">
-                      <div className="h-12 w-12 rounded-2xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center border border-amber-200 dark:border-amber-900/50">
-                        <Webhook className="h-6 w-6" />
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <h2 className="text-base font-bold text-slate-900 dark:text-white">
-                            Outbound Webhooks (Zapier, Make.com, n8n, CRMs)
-                          </h2>
-                          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300">
-                            Real-time Event Stream
-                          </span>
-                        </div>
-                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                          Automatically post captured leads and escalation alerts to external webhooks with HMAC SHA-256 signatures.
-                        </p>
-                      </div>
-                    </div>
-
-                    <button
-                      type="button"
-                      onClick={handleWebhookTestPing}
-                      disabled={webhookTestStatus.loading || !formData.webhookUrl}
-                      className="flex items-center gap-1.5 rounded-xl border border-amber-300 dark:border-amber-800/80 bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/40 dark:hover:bg-amber-950/70 text-amber-900 dark:text-amber-200 px-4 py-2 text-xs font-semibold shadow-2xs transition disabled:opacity-50 cursor-pointer"
-                    >
-                      {webhookTestStatus.loading ? (
-                        <RefreshCw className="h-3.5 w-3.5 animate-spin text-amber-600" />
-                      ) : (
-                        <Activity className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
-                      )}
-                      <span>Send Live Test Ping</span>
-                    </button>
-                  </div>
-
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    {/* Left: Webhook URL & Secret */}
-                    <div className="space-y-4">
-                      <div>
-                        <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                          Target Webhook URL
-                        </label>
-                        <input
-                          type="url"
-                          placeholder="https://hooks.zapier.com/hooks/catch/... or https://hook.eu1.make.com/..."
-                          value={formData.webhookUrl || ''}
-                          onChange={(e) =>
-                            setFormData({ ...formData, webhookUrl: e.target.value })
-                          }
-                          className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-3.5 py-2.5 text-xs font-mono text-slate-900 dark:text-slate-100 outline-none focus:border-amber-500"
-                        />
-                        <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
-                          Compatible with Zapier "Catch Hook", Make.com "Custom Webhook", n8n, Slack, or any backend HTTP endpoint.
-                        </p>
-                      </div>
-
-                      <div>
-                        <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                          Webhook Signing Secret (Optional)
-                        </label>
-                        <div className="relative">
-                          <input
-                            type={showWebhookSecret ? 'text' : 'password'}
-                            placeholder="whsec_..."
-                            value={formData.webhookSecret || ''}
-                            onChange={(e) =>
-                              setFormData({ ...formData, webhookSecret: e.target.value })
-                            }
-                            className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-3.5 py-2.5 text-xs font-mono text-slate-900 dark:text-slate-100 outline-none focus:border-amber-500 pr-10"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => setShowWebhookSecret(!showWebhookSecret)}
-                            className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
-                          >
-                            {showWebhookSecret ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                          </button>
-                        </div>
-                        <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
-                          Included in the <code className="font-mono">X-Kortex-Signature</code> header as HMAC SHA-256 for payload verification.
-                        </p>
-                      </div>
-
-                      {/* Event Subscriptions */}
-                      <div>
-                        <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-2">
-                          Dispatched Events
-                        </label>
-                        <div className="space-y-2">
-                          <label className="flex items-center gap-2 text-xs text-slate-700 dark:text-slate-300 cursor-pointer">
-                            <input
-                              type="checkbox"
-                              checked={(formData.webhookEvents || ['lead.created']).includes('lead.created')}
-                              onChange={(e) => {
-                                const current = formData.webhookEvents || ['lead.created'];
-                                const next = e.target.checked
-                                  ? [...current, 'lead.created']
-                                  : current.filter((x) => x !== 'lead.created');
-                                setFormData({ ...formData, webhookEvents: next });
-                              }}
-                              className="rounded text-amber-600 focus:ring-amber-500 dark:bg-slate-950 dark:border-slate-800"
-                            />
-                            <span><strong className="font-semibold">lead.created</strong> — Fired immediately whenever a visitor submits the contact/lead form</span>
-                          </label>
-
-                          <label className="flex items-center gap-2 text-xs text-slate-700 dark:text-slate-300 cursor-pointer">
-                            <input
-                              type="checkbox"
-                              checked={(formData.webhookEvents || []).includes('conversation.escalated')}
-                              onChange={(e) => {
-                                const current = formData.webhookEvents || ['lead.created'];
-                                const next = e.target.checked
-                                  ? [...current, 'conversation.escalated']
-                                  : current.filter((x) => x !== 'conversation.escalated');
-                                setFormData({ ...formData, webhookEvents: next });
-                              }}
-                              className="rounded text-amber-600 focus:ring-amber-500 dark:bg-slate-950 dark:border-slate-800"
-                            />
-                            <span><strong className="font-semibold">conversation.escalated</strong> — Fired when a user requests human support assistance</span>
-                          </label>
-                        </div>
-                      </div>
-
-                      {/* Test Ping Result Box */}
-                      {webhookTestStatus.tested && (
-                        <div
-                          className={`p-3 rounded-xl border text-xs ${
-                            webhookTestStatus.success
-                              ? 'bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800/60 text-emerald-800 dark:text-emerald-300'
-                              : 'bg-rose-50 dark:bg-rose-950/30 border-rose-200 dark:border-rose-800/60 text-rose-800 dark:text-rose-300'
-                          }`}
-                        >
-                          <div className="flex items-center justify-between font-semibold">
-                            <div className="flex items-center gap-1.5">
-                              {webhookTestStatus.success ? (
-                                <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-                              ) : (
-                                <AlertTriangle className="h-4 w-4 text-rose-600 dark:text-rose-400" />
-                              )}
-                              <span>
-                                {webhookTestStatus.success ? 'Test Ping Received (200 OK)' : 'Ping Failed'}
-                              </span>
-                            </div>
-                            {webhookTestStatus.latencyMs !== undefined && (
-                              <span className="font-mono text-[11px] opacity-80">
-                                {webhookTestStatus.latencyMs}ms latency
-                              </span>
-                            )}
-                          </div>
-                          {webhookTestStatus.error && (
-                            <p className="mt-1 text-[11px] font-mono opacity-90">
-                              {webhookTestStatus.error}
-                            </p>
-                          )}
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Right: Sample JSON Payload Preview */}
-                    <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-950 text-slate-100 space-y-2.5">
-                      <div className="flex items-center justify-between text-xs font-semibold text-slate-300 pb-2 border-b border-slate-800">
-                        <span className="flex items-center gap-1.5">
-                          <FileCode className="h-3.5 w-3.5 text-amber-400" />
-                          <span>Sample Outbound Payload</span>
-                        </span>
-                        <span className="text-[10px] font-mono text-slate-400 uppercase">POST / JSON</span>
-                      </div>
-                      <pre className="text-[11px] font-mono text-emerald-400 leading-relaxed overflow-x-auto whitespace-pre-wrap">
-{`{
-  "event": "lead.created",
-  "assistantId": "${activeAssistant?.id || 'ast_123'}",
-  "timestamp": "${new Date().toISOString()}",
-  "data": {
-    "name": "Sarah Connor",
-    "email": "sarah@cyberdyne.io",
-    "phone": "+1 (555) 234-5678",
-    "notes": "Looking for enterprise bot deployment",
-    "customData": {
-      "companySize": "50-200"
-    }
-  }
-}`}
-                      </pre>
-                    </div>
-                  </div>
-                </div>
-
-                {/* INTEGRATION 4: AGENCY WHITE-LABELING & RESELLER BRANDING */}
-                <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 sm:p-7 shadow-xs space-y-6">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-200 dark:border-slate-800">
-                    <div className="flex items-center gap-3.5">
-                      <div className="h-12 w-12 rounded-2xl bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 flex items-center justify-center border border-purple-200 dark:border-purple-900/50">
-                        <Shield className="h-6 w-6" />
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <h2 className="text-base font-bold text-slate-900 dark:text-white">
-                            Agency White-Labeling &amp; Custom Branding
-                          </h2>
-                          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300">
-                            Reseller Ready
-                          </span>
-                        </div>
-                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                          Sell chatbots under your agency brand. Remove default "Powered by Kortex AI" or replace with your custom branding and backlink.
-                        </p>
-                      </div>
-                    </div>
-
-                    <label className="relative inline-flex items-center cursor-pointer select-none">
-                      <input
-                        type="checkbox"
-                        checked={formData.whiteLabelEnabled || false}
-                        onChange={(e) =>
-                          setFormData({ ...formData, whiteLabelEnabled: e.target.checked })
-                        }
-                        className="sr-only peer"
-                      />
-                      <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-800 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-slate-600 peer-checked:bg-purple-600"></div>
-                      <span className="ml-2.5 text-xs font-semibold text-slate-700 dark:text-slate-300">
-                        {formData.whiteLabelEnabled ? 'White-Label Enabled' : 'Default Branding'}
-                      </span>
-                    </label>
-                  </div>
-
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    {/* Left: Custom Branding Controls */}
-                    <div className="space-y-4">
-                      <div>
-                        <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                          Custom Agency Footer Text
-                        </label>
-                        <input
-                          type="text"
-                          disabled={!formData.whiteLabelEnabled}
-                          placeholder="e.g. Powered by Apex Growth Agency (or leave blank for 100% unbranded)"
-                          value={formData.customBrandingText || ''}
-                          onChange={(e) =>
-                            setFormData({ ...formData, customBrandingText: e.target.value })
-                          }
-                          className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-3.5 py-2.5 text-xs text-slate-900 dark:text-slate-100 outline-none focus:border-purple-500 disabled:opacity-40 disabled:cursor-not-allowed"
-                        />
-                        <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
-                          If left blank with White-Label enabled, the widget footer will be completely clean and unbranded.
-                        </p>
-                      </div>
-
-                      <div>
-                        <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                          Custom Agency Link (URL)
-                        </label>
-                        <input
-                          type="url"
-                          disabled={!formData.whiteLabelEnabled || !formData.customBrandingText}
-                          placeholder="https://apexsolutions.agency"
-                          value={formData.customBrandingUrl || ''}
-                          onChange={(e) =>
-                            setFormData({ ...formData, customBrandingUrl: e.target.value })
-                          }
-                          className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-3.5 py-2.5 text-xs font-mono text-slate-900 dark:text-slate-100 outline-none focus:border-purple-500 disabled:opacity-40 disabled:cursor-not-allowed"
-                        />
-                        <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
-                          Clicking your agency text will open this URL in a new tab.
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* Right: Live Visual Preview of the Widget Footer */}
-                    <div className="p-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/60 flex flex-col justify-center items-center space-y-4">
-                      <div className="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider text-[10px]">
-                        Live Widget Footer Preview
-                      </div>
-                      
-                      {/* Mockup Chat Box Base */}
-                      <div className="w-full max-w-sm rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-md overflow-hidden">
-                        {/* Fake Input Row */}
-                        <div className="p-3 border-b border-slate-100 dark:border-slate-800 flex items-center gap-2">
-                          <div className="flex-1 bg-slate-100 dark:bg-slate-800 h-7 rounded-lg text-[11px] text-slate-400 flex items-center px-2.5">
-                            Ask anything about our business...
-                          </div>
-                          <div className="h-7 w-7 rounded-full bg-blue-600 text-white flex items-center justify-center">
-                            <Send className="h-3 w-3" />
-                          </div>
-                        </div>
-
-                        {/* The Actual Footer Branding Bar */}
-                        <div className="py-2 px-4 bg-white dark:bg-slate-900 text-center text-[11px] text-slate-400 dark:text-slate-500">
-                          {formData.whiteLabelEnabled ? (
-                            formData.customBrandingText ? (
-                              formData.customBrandingUrl ? (
-                                <a
-                                  href={formData.customBrandingUrl}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-slate-600 dark:text-slate-300 font-medium hover:underline hover:text-blue-600"
-                                >
-                                  {formData.customBrandingText}
-                                </a>
-                              ) : (
-                                <span>{formData.customBrandingText}</span>
-                              )
-                            ) : (
-                              <span className="italic text-slate-300 dark:text-slate-600 text-[10px]">
-                                (Completely Clean &amp; Unbranded)
-                              </span>
-                            )
-                          ) : (
-                            <span>
-                              <Zap className="h-3 w-3 text-blue-500 inline mr-1" />Powered by{' '}
-                              <span className="text-slate-600 dark:text-slate-300 font-medium underline">
-                                Kortex AI
-                              </span>
-                            </span>
-                          )}
-                        </div>
-                      </div>
-
-                      <div className="text-[11px] text-slate-500 text-center">
-                        {formData.whiteLabelEnabled
-                          ? 'Client sees only your agency branding or zero platform badges.'
-                          : 'Displays default platform branding.'}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Bottom Save Reminder */}
-                <div className="p-4 rounded-2xl border border-blue-200 dark:border-blue-900/40 bg-blue-50/50 dark:bg-blue-950/20 flex flex-col sm:flex-row items-center justify-between gap-3">
-                  <div className="flex items-center gap-2.5 text-xs text-blue-900 dark:text-blue-200">
-                    <Info className="h-4 w-4 text-blue-600 shrink-0" />
-                    <span>
-                      Remember to click <strong>Save Channel Settings</strong> above to apply your Telegram, WhatsApp, and Webhook tokens to the live bot.
-                    </span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={handleSaveSettings}
-                    disabled={isSaving}
-                    className="shrink-0 rounded-xl bg-blue-600 hover:bg-blue-700 text-white px-4 py-1.5 text-xs font-semibold shadow-xs transition disabled:opacity-50 cursor-pointer"
-                  >
-                    Save Settings
-                  </button>
-                </div>
-              </div>
+              <ChannelsTab
+                activeAssistant={activeAssistant}
+                formData={formData}
+                setFormData={setFormData}
+                handleSaveSettings={handleSaveSettings}
+                isSaving={isSaving}
+                saveSuccess={saveSuccess}
+                saveError={saveError}
+                leads={leads}
+                smtpConfig={smtpConfig}
+                setSmtpConfig={setSmtpConfig}
+                smtpLoading={smtpLoading}
+                smtpSaveSuccess={smtpSaveSuccess}
+                smtpSaveError={smtpSaveError}
+                smtpTestEmail={smtpTestEmail}
+                setSmtpTestEmail={setSmtpTestEmail}
+                smtpTesting={smtpTesting}
+                smtpTestResult={smtpTestResult}
+                handleSaveSmtpSettings={handleSaveSmtpSettings}
+                handleTestEmailSend={handleTestEmailSend}
+              />
             )}
 
             {/* TAB 7: LEADS & INQUIRIES */}
@@ -6621,315 +3542,16 @@ Thank you for using Kortex AI Business Engine.
 
             {/* TAB: BOOKED APPOINTMENTS */}
             {activeTab === 'appointments' && (
-              <div className="max-w-6xl space-y-6 mx-auto">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2.5">
-                      <Calendar className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
-                      <span>Booked Appointments &amp; Meetings</span>
-                    </h1>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                      Manage client booking slots, track meeting status, and review consultation notes submitted via your AI widget.
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800 text-[11px] text-emerald-700 dark:text-emerald-300 font-medium">
-                      <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                      <span>Live Sync Active</span>
-                    </div>
-
-                    <button
-                      type="button"
-                      onClick={handleManualSyncAppointments}
-                      disabled={isSyncingAppointments}
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800/60 text-slate-700 dark:text-slate-300 text-xs font-semibold shadow-xs disabled:opacity-50 transition cursor-pointer"
-                      title="Fetch newest appointments"
-                    >
-                      <RefreshCw className={`h-3.5 w-3.5 ${isSyncingAppointments ? 'animate-spin text-emerald-600' : 'text-slate-500'}`} />
-                      <span>{isSyncingAppointments ? 'Syncing...' : 'Sync Now'}</span>
-                    </button>
-
-                    <button
-                      onClick={() => {
-                        const csvHeader = 'ID,Name,Email,Phone,Date,TimeSlot,DurationMinutes,Status,Notes,CreatedAt\n';
-                        const csvRows = appointments
-                          .map((a) => {
-                            return `"${a.id}","${(a.name || '').replace(/"/g, '""')}","${a.email}","${(a.phone || '').replace(/"/g, '""')}","${a.date}","${a.timeSlot}","${a.durationMinutes}","${a.status}","${(a.notes || '').replace(/"/g, '""')}","${a.createdAt}"`;
-                          })
-                          .join('\n');
-                        const blob = new Blob([csvHeader + csvRows], { type: 'text/csv' });
-                        const url = URL.createObjectURL(blob);
-                        const link = document.createElement('a');
-                        link.href = url;
-                        link.download = `appointments-${activeAssistant?.name || 'export'}.csv`;
-                        link.click();
-                      }}
-                      disabled={appointments.length === 0}
-                      className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold shadow-xs disabled:opacity-50 transition cursor-pointer"
-                    >
-                      <Download className="h-3.5 w-3.5" />
-                      <span>Export CSV</span>
-                    </button>
-                  </div>
-                </div>
-
-                {/* Key Metrics Overview */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
-                  <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs">
-                    <div className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                      Total Bookings
-                    </div>
-                    <div className="text-2xl font-bold text-slate-900 dark:text-white mt-1">
-                      {appointments.length}
-                    </div>
-                    <div className="text-[10px] text-slate-400 mt-0.5">All-time appointments</div>
-                  </div>
-
-                  <div className="p-4 rounded-xl border border-emerald-200 dark:border-emerald-900/50 bg-emerald-50/40 dark:bg-emerald-950/20 shadow-xs">
-                    <div className="text-[11px] font-semibold text-emerald-700 dark:text-emerald-300 uppercase tracking-wider flex items-center justify-between">
-                      <span>Confirmed</span>
-                      <span className="h-2 w-2 rounded-full bg-emerald-500"></span>
-                    </div>
-                    <div className="text-2xl font-bold text-emerald-700 dark:text-emerald-300 mt-1">
-                      {appointments.filter((a) => a.status === 'confirmed').length}
-                    </div>
-                    <div className="text-[10px] text-emerald-600/75 dark:text-emerald-400/75 mt-0.5">Ready for call/meeting</div>
-                  </div>
-
-                  <div className="p-4 rounded-xl border border-amber-200 dark:border-amber-900/50 bg-amber-50/40 dark:bg-amber-950/20 shadow-xs">
-                    <div className="text-[11px] font-semibold text-amber-700 dark:text-amber-300 uppercase tracking-wider flex items-center justify-between">
-                      <span>Pending</span>
-                      <span className="h-2 w-2 rounded-full bg-amber-500"></span>
-                    </div>
-                    <div className="text-2xl font-bold text-amber-700 dark:text-amber-300 mt-1">
-                      {appointments.filter((a) => a.status === 'pending').length}
-                    </div>
-                    <div className="text-[10px] text-amber-600/75 dark:text-amber-400/75 mt-0.5">Awaiting team review</div>
-                  </div>
-
-                  <div className="p-4 rounded-xl border border-blue-200 dark:border-blue-900/50 bg-blue-50/40 dark:bg-blue-950/20 shadow-xs">
-                    <div className="text-[11px] font-semibold text-blue-700 dark:text-blue-300 uppercase tracking-wider flex items-center justify-between">
-                      <span>Completed</span>
-                      <CheckCircle2 className="h-3 w-3 text-blue-500" />
-                    </div>
-                    <div className="text-2xl font-bold text-blue-700 dark:text-blue-300 mt-1">
-                      {appointments.filter((a) => a.status === 'completed').length}
-                    </div>
-                    <div className="text-[10px] text-blue-600/75 dark:text-blue-400/75 mt-0.5">Consultations finished</div>
-                  </div>
-                </div>
-
-                {/* Filter and Search Bar */}
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
-                  <div className="flex flex-wrap items-center gap-1.5">
-                    {[
-                      { id: 'all', label: 'All Slots', count: appointments.length },
-                      { id: 'confirmed', label: 'Confirmed', count: appointments.filter((a) => a.status === 'confirmed').length },
-                      { id: 'pending', label: 'Pending', count: appointments.filter((a) => a.status === 'pending').length },
-                      { id: 'completed', label: 'Completed', count: appointments.filter((a) => a.status === 'completed').length },
-                      { id: 'cancelled', label: 'Cancelled', count: appointments.filter((a) => a.status === 'cancelled').length },
-                    ].map((f) => (
-                      <button
-                        key={f.id}
-                        type="button"
-                        onClick={() => setAppointmentFilter(f.id as any)}
-                        className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer flex items-center gap-1.5 ${
-                          appointmentFilter === f.id
-                            ? 'bg-emerald-600 text-white shadow-xs'
-                            : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
-                        }`}
-                      >
-                        <span>{f.label}</span>
-                        <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono ${
-                          appointmentFilter === f.id ? 'bg-emerald-700 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300'
-                        }`}>
-                          {f.count}
-                        </span>
-                      </button>
-                    ))}
-                  </div>
-
-                  <div className="relative w-full sm:w-64">
-                    <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
-                    <input
-                      type="text"
-                      placeholder="Search appointments..."
-                      value={appointmentSearch}
-                      onChange={(e) => setAppointmentSearch(e.target.value)}
-                      className="w-full pl-8 pr-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-xs text-slate-900 dark:text-slate-100 outline-none focus:border-emerald-500"
-                    />
-                    {appointmentSearch && (
-                      <button
-                        type="button"
-                        onClick={() => setAppointmentSearch('')}
-                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer"
-                      >
-                        <X className="h-3 w-3" />
-                      </button>
-                    )}
-                  </div>
-                </div>
-
-                {/* Appointments Table */}
-                <div className="border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-900 shadow-xs overflow-hidden">
-                  {appointments.length === 0 ? (
-                    <div className="p-10 text-center space-y-3">
-                      <div className="flex h-12 w-12 mx-auto items-center justify-center rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
-                        <Calendar className="h-6 w-6" />
-                      </div>
-                      <div className="text-sm font-bold text-slate-900 dark:text-white">No appointments booked yet</div>
-                      <p className="text-xs text-slate-500 dark:text-slate-400 max-w-md mx-auto">
-                        Visitors can book calls, consultations, and demos directly through the AI chat widget or by asking the bot to book a slot.
-                      </p>
-                      <div className="flex justify-center gap-3 pt-2">
-                        <button
-                          type="button"
-                          onClick={() => setActiveTab('widget')}
-                          className="px-3.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs font-semibold transition cursor-pointer"
-                        >
-                          Configure Slot Duration &amp; Hours
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setActiveTab('playground')}
-                          className="px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold shadow-xs transition cursor-pointer"
-                        >
-                          Test in Studio
-                        </button>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-left text-xs">
-                        <thead className="bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 font-semibold border-b border-slate-200 dark:border-slate-800">
-                          <tr>
-                            <th className="py-3 px-5">Client / Contact</th>
-                            <th className="py-3 px-5">Date &amp; Time Slot</th>
-                            <th className="py-3 px-5">Duration</th>
-                            <th className="py-3 px-5">Meeting Topic / Notes</th>
-                            <th className="py-3 px-5">Status</th>
-                            <th className="py-3 px-5">Booked On</th>
-                            <th className="py-3 px-5 text-right">Actions</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                          {appointments
-                            .filter((apt) => {
-                              if (appointmentFilter !== 'all' && apt.status !== appointmentFilter) return false;
-                              if (!appointmentSearch.trim()) return true;
-                              const q = appointmentSearch.toLowerCase();
-                              return (
-                                apt.name.toLowerCase().includes(q) ||
-                                apt.email.toLowerCase().includes(q) ||
-                                (apt.phone && apt.phone.toLowerCase().includes(q)) ||
-                                apt.date.toLowerCase().includes(q) ||
-                                apt.timeSlot.toLowerCase().includes(q) ||
-                                (apt.notes && apt.notes.toLowerCase().includes(q))
-                              );
-                            })
-                            .map((apt) => {
-                              const durationLabel = apt.durationMinutes >= 60 
-                                ? `${Math.floor(apt.durationMinutes / 60)}h${apt.durationMinutes % 60 > 0 ? ` ${apt.durationMinutes % 60}m` : ''}` 
-                                : `${apt.durationMinutes}m`;
-                              return (
-                                <tr key={apt.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition">
-                                  <td className="py-3.5 px-5">
-                                    <div className="font-semibold text-slate-900 dark:text-white flex items-center gap-1.5">
-                                      <span>{apt.name}</span>
-                                    </div>
-                                    <div className="flex items-center gap-1.5 mt-0.5">
-                                      <a
-                                        href={`mailto:${apt.email}?subject=Regarding%20Your%20Appointment%20on%20${encodeURIComponent(apt.date)}`}
-                                        className="text-blue-600 dark:text-blue-400 font-mono text-[11px] hover:underline"
-                                      >
-                                        {apt.email}
-                                      </a>
-                                    </div>
-                                    {apt.phone && (
-                                      <div className="text-slate-500 dark:text-slate-400 font-mono text-[10px] mt-0.5">
-                                        <Phone className="h-3 w-3 text-slate-400 inline mr-1" />{apt.phone}
-                                      </div>
-                                    )}
-                                  </td>
-
-                                  <td className="py-3.5 px-5 whitespace-nowrap">
-                                    <div className="font-semibold text-slate-900 dark:text-white flex items-center gap-1.5">
-                                      <Calendar className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
-                                      <span>{apt.date}</span>
-                                    </div>
-                                    <div className="text-slate-600 dark:text-slate-300 font-medium text-[11px] mt-0.5">
-                                      <Clock className="h-3 w-3 text-slate-400 inline mr-1" />{apt.timeSlot}
-                                    </div>
-                                  </td>
-
-                                  <td className="py-3.5 px-5 whitespace-nowrap">
-                                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
-                                      {durationLabel}
-                                    </span>
-                                  </td>
-
-                                  <td className="py-3.5 px-5 max-w-xs">
-                                    <div className="text-slate-700 dark:text-slate-300 line-clamp-2">
-                                      {apt.notes || <span className="text-slate-400 italic">No notes attached</span>}
-                                    </div>
-                                  </td>
-
-                                  <td className="py-3.5 px-5 whitespace-nowrap">
-                                    <select
-                                      value={apt.status}
-                                      onChange={(e) => handleUpdateAppointmentStatus(apt.id, e.target.value as any)}
-                                      className={`text-[11px] font-semibold rounded-lg px-2 py-1 border outline-none cursor-pointer ${
-                                        apt.status === 'confirmed'
-                                          ? 'bg-emerald-50 dark:bg-emerald-950/60 border-emerald-300 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200'
-                                          : apt.status === 'pending'
-                                          ? 'bg-amber-50 dark:bg-amber-950/60 border-amber-300 dark:border-amber-800 text-amber-800 dark:text-amber-200'
-                                          : apt.status === 'completed'
-                                          ? 'bg-blue-50 dark:bg-blue-950/60 border-blue-300 dark:border-blue-800 text-blue-800 dark:text-blue-200'
-                                          : 'bg-rose-50 dark:bg-rose-950/60 border-rose-300 dark:border-rose-800 text-rose-800 dark:text-rose-200'
-                                      }`}
-                                    >
-                                      <option value="confirmed">Confirmed</option>
-                                      <option value="pending">Pending</option>
-                                      <option value="completed">Completed</option>
-                                      <option value="cancelled">Cancelled</option>
-                                    </select>
-                                  </td>
-
-                                  <td className="py-3.5 px-5 text-slate-500 dark:text-slate-400 font-mono text-[11px] whitespace-nowrap">
-                                    {new Date(apt.createdAt).toLocaleDateString()}{' '}
-                                    <span className="text-[10px] opacity-75">
-                                      {new Date(apt.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                    </span>
-                                  </td>
-
-                                  <td className="py-3.5 px-5 text-right whitespace-nowrap">
-                                    <div className="flex items-center justify-end gap-1.5">
-                                      <button
-                                        type="button"
-                                        onClick={() => setSelectedAppointmentModal(apt)}
-                                        className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/60 px-2.5 py-1 rounded transition cursor-pointer"
-                                      >
-                                        Details
-                                      </button>
-                                      <button
-                                        type="button"
-                                        onClick={() => handleDeleteAppointment(apt.id)}
-                                        className="p-1 rounded text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition cursor-pointer"
-                                        title="Delete appointment"
-                                      >
-                                        <Trash2 className="h-3.5 w-3.5" />
-                                      </button>
-                                    </div>
-                                  </td>
-                                </tr>
-                              );
-                            })}
-                        </tbody>
-                      </table>
-                    </div>
-                  )}
-                </div>
-              </div>
+              <AppointmentsTab
+                activeAssistant={activeAssistant}
+                setActiveTab={setActiveTab}
+                appointments={appointments}
+                isSyncingAppointments={isSyncingAppointments}
+                setSelectedAppointmentModal={setSelectedAppointmentModal}
+                handleManualSyncAppointments={handleManualSyncAppointments}
+                handleUpdateAppointmentStatus={handleUpdateAppointmentStatus}
+                handleDeleteAppointment={handleDeleteAppointment}
+              />
             )}
 
             {/* TAB: GUIDES & DOCS */}
@@ -7311,332 +3933,15 @@ Thank you for using Kortex AI Business Engine.
 
             {/* TAB 10: CHAT HISTORY & CONVERSATION LOGS */}
             {activeTab === 'history' && (
-              <div className="max-w-6xl space-y-6 mx-auto">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2.5">
-                      <History className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-                      <span>Conversation History &amp; Logs</span>
-                    </h1>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                      Inspect real visitor interactions, retrieved knowledge citations, and response transcripts.
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => activeAssistant && fetchConversations(activeAssistant.id)}
-                    disabled={isLoadingConversations}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 transition shadow-xs"
-                  >
-                    <RefreshCw className={`h-3.5 w-3.5 ${isLoadingConversations ? 'animate-spin text-blue-600' : 'text-slate-500'}`} />
-                    <span>Refresh Logs</span>
-                  </button>
-                </div>
-
-                {conversations.length === 0 ? (
-                  <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-12 text-center shadow-xs space-y-3">
-                    <div className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400">
-                      <MessageSquare className="h-6 w-6" />
-                    </div>
-                    <h3 className="text-sm font-semibold text-slate-900 dark:text-white">No Conversations Recorded Yet</h3>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm mx-auto">
-                      When visitors start chatting with your bot in the widget or Testing Studio, full transcripts will appear here.
-                    </p>
-                    <button
-                      onClick={() => setActiveTab('playground')}
-                      className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs transition"
-                    >
-                      <span>Open Testing Studio &rarr;</span>
-                    </button>
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-                    {/* Conversations List */}
-                    <div className="lg:col-span-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden shadow-xs">
-                      <div className="p-3.5 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40 flex items-center justify-between">
-                        <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                          {conversations.length} Active Sessions
-                        </span>
-                        <select
-                            value={conversationSentimentFilter}
-                            onChange={(e) => setConversationSentimentFilter(e.target.value as any)}
-                            className="text-[11px] font-medium rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-2 py-0.5 text-slate-700 dark:text-slate-300 outline-none"
-                          >
-                            <option value="all">All Tone</option>
-                            <option value="urgent">Urgent</option>
-                            <option value="positive">Positive</option>
-                            <option value="neutral">Neutral</option>
-                          </select>
-                      </div>
-                      <div className="divide-y divide-slate-100 dark:divide-slate-800 max-h-[600px] overflow-y-auto">
-                        {conversations.filter((c) => conversationSentimentFilter === 'all' || (c.sentiment || 'neutral') === conversationSentimentFilter).map((conv) => {
-                          const isSelected = selectedConversation?.id === conv.id;
-                          const msgCount = conv.messages?.length || 0;
-                          const lastMsg = conv.messages && conv.messages[conv.messages.length - 1];
-                          return (
-                            <button
-                              key={conv.id}
-                              type="button"
-                              onClick={() => setSelectedConversation(conv)}
-                              className={`w-full text-left p-3.5 transition flex flex-col gap-1.5 ${
-                                isSelected
-                                  ? 'bg-blue-50/70 dark:bg-blue-950/40 border-l-3 border-blue-600'
-                                  : 'hover:bg-slate-50/70 dark:hover:bg-slate-800/40'
-                              }`}
-                            >
-                              <div className="flex items-center justify-between">
-                                <span className="text-xs font-semibold text-slate-900 dark:text-white font-mono">
-                                  {conv.visitorId ? conv.visitorId.slice(0, 14) : conv.id.slice(0, 10)}
-                                </span>
-                                <div className="flex items-center gap-1.5">
-                                  {conv.sentiment === 'urgent' && (
-                                    <span className="flex items-center gap-0.5 rounded-full bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 px-1.5 py-0.5 text-[9px] font-bold border border-rose-200 dark:border-rose-800">
-                                      <AlertCircle className="h-2.5 w-2.5" /> Urgent
-                                    </span>
-                                  )}
-                                  {conv.sentiment === 'positive' && (
-                                    <span className="flex items-center gap-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 px-1.5 py-0.5 text-[9px] font-bold border border-emerald-200 dark:border-emerald-800">
-                                      <ThumbsUp className="h-2.5 w-2.5" /> Positive
-                                    </span>
-                                  )}
-                                  {conv.resolved && (
-                                    <span className="flex items-center gap-0.5 rounded-full bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 px-1.5 py-0.5 text-[9px] font-bold border border-blue-200 dark:border-blue-800">
-                                      <CheckCircle2 className="h-2.5 w-2.5" /> Solved
-                                    </span>
-                                  )}
-                                  <span className="rounded-full bg-slate-100 dark:bg-slate-800 px-2 py-0.5 text-[10px] font-bold text-slate-600 dark:text-slate-400">
-                                    {msgCount} msgs
-                                  </span>
-                                </div>
-                              </div>
-                              <div className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-1">
-                                {lastMsg ? lastMsg.content : 'No messages'}
-                              </div>
-                              <div className="text-[10px] text-slate-400">
-                                {new Date(conv.createdAt).toLocaleDateString()} at {new Date(conv.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                              </div>
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-
-                    {/* Selected Conversation Transcript */}
-                    <div className="lg:col-span-7 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-xs">
-                      {selectedConversation ? (
-                        <div className="space-y-4">
-                          <div className="pb-3 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
-                            <div>
-                              <div className="text-xs font-bold text-slate-900 dark:text-white font-mono">
-                                Session: {selectedConversation.id}
-                              </div>
-                              <div className="text-[11px] text-slate-400 mt-0.5">
-                                Started {new Date(selectedConversation.createdAt).toLocaleString()}
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <span className="rounded-full bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 font-semibold px-2.5 py-1 text-[11px]">
-                                {selectedConversation.messages?.length || 0} Messages
-                              </span>
-                              <button
-                                type="button"
-                                onClick={() => handleToggleTakeover(selectedConversation.id, !selectedConversation.isLiveTakeover)}
-                                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-xs font-semibold transition cursor-pointer ${
-                                  selectedConversation.isLiveTakeover
-                                    ? 'bg-purple-600 text-white border-purple-600 shadow-xs'
-                                    : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-950/40'
-                                }`}
-                                title={selectedConversation.isLiveTakeover ? "Click to release back to AI bot" : "Click to pause AI and take over as live human agent"}
-                              >
-                                <Headphones className="h-3.5 w-3.5" />
-                                <span>{selectedConversation.isLiveTakeover ? 'Live Agent (AI Paused)' : 'Take Over Chat'}</span>
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => handleToggleConversationStatus(selectedConversation.id, !selectedConversation.resolved)}
-                                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-xs font-semibold transition cursor-pointer ${
-                                  selectedConversation.resolved
-                                    ? 'bg-emerald-50 dark:bg-emerald-950/60 border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300'
-                                    : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50'
-                                }`}
-                              >
-                                <CheckCircle2 className={`h-3.5 w-3.5 ${selectedConversation.resolved ? 'text-emerald-600' : 'text-slate-400'}`} />
-                                <span>{selectedConversation.resolved ? 'Resolved' : 'Mark Resolved'}</span>
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => downloadConversationTranscript(selectedConversation)}
-                                className="flex items-center gap-1.5 px-3 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-750 text-xs font-semibold transition shadow-xs"
-                                title="Download chat transcript as TXT"
-                              >
-                                <Download className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
-                                <span>Download Chat</span>
-                              </button>
-                            </div>
-                          </div>
-
-                          {selectedConversation.isLiveTakeover && (
-                            <div className="bg-purple-50 dark:bg-purple-950/50 border border-purple-200 dark:border-purple-800/80 rounded-xl p-3 flex items-center justify-between text-xs">
-                              <div className="flex items-center gap-2">
-                                <span className="relative flex h-2.5 w-2.5">
-                                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
-                                </span>
-                                <span className="font-semibold text-purple-900 dark:text-purple-200">
-                                  Live Operator Mode Active &bull; AI Bot is Paused
-                                </span>
-                              </div>
-                              <button
-                                type="button"
-                                onClick={() => handleToggleTakeover(selectedConversation.id, false)}
-                                className="text-[11px] font-semibold text-purple-700 dark:text-purple-300 hover:underline cursor-pointer"
-                              >
-                                Release to AI Bot &rarr;
-                              </button>
-                            </div>
-                          )}
-
-                          <div className="space-y-3 max-h-[440px] overflow-y-auto pr-2">
-                            {(selectedConversation.messages || []).map((m: any, idx: number) => {
-                              const isUser = m.role === 'user';
-                              const isAgent = m.role === 'agent';
-                              return (
-                                <div
-                                  key={m.id || idx}
-                                  className={`flex flex-col ${isUser ? 'items-end' : 'items-start'}`}
-                                >
-                                  <div className="text-[10px] text-slate-400 mb-1 px-1 flex items-center gap-1">
-                                    <span>
-                                      {isUser ? 'Visitor' : isAgent ? (m.senderName || 'Live Agent') : 'AI Assistant'}
-                                    </span>
-                                    <span>&bull;</span>
-                                    <span>{new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                                  </div>
-                                  <div
-                                    className={`rounded-2xl px-4 py-2.5 text-xs max-w-[85%] leading-relaxed ${
-                                      isUser
-                                        ? 'bg-blue-600 text-white rounded-br-xs'
-                                        : isAgent
-                                        ? 'bg-purple-50 dark:bg-purple-950/60 border border-purple-200 dark:border-purple-800 text-purple-950 dark:text-purple-100 rounded-bl-xs'
-                                        : 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100 rounded-bl-xs'
-                                    }`}
-                                  >
-                                    {isAgent && (
-                                      <div className="flex items-center gap-1.5 text-[10.5px] font-bold text-purple-700 dark:text-purple-300 mb-1 border-b border-purple-200/60 dark:border-purple-800/60 pb-1">
-                                        <Headphones className="h-3 w-3" />
-                                        <span>{m.senderName || 'Live Support Agent'}</span>
-                                      </div>
-                                    )}
-                                    <div className="whitespace-pre-wrap">{m.content}</div>
-
-                                    {/* Web Sources Preview (Strictly for live web search - Never display internal knowledge base) */}
-                                    {(() => {
-                                      const isLive = Boolean(m.isWebSearch || (m.citations || []).some((cite: any) => cite.isLiveWebSearch));
-                                      if (!isLive) return null;
-                                      const webCitations = (m.citations || []).filter((cite: any) => cite && cite.url && (cite.url.startsWith('http://') || cite.url.startsWith('https://')));
-                                      if (webCitations.length === 0) return null;
-                                      return (
-                                        <div className="mt-2 pt-2 border-t border-slate-200 dark:border-slate-700 text-[10.5px]">
-                                          <div className="font-semibold text-slate-500 dark:text-slate-400 mb-1 flex items-center gap-1">
-                                            <Globe className="h-3 w-3 text-sky-500" />
-                                            <span>Web Sources:</span>
-                                          </div>
-                                          <div className="space-y-1">
-                                            {webCitations.map((cite: any, cIdx: number) => (
-                                              <div key={cIdx} className="text-blue-600 dark:text-blue-400 font-mono text-[10px] flex items-center gap-1.5">
-                                                <span>&bull;</span>
-                                                <a
-                                                  href={cite.url}
-                                                  target="_blank"
-                                                  rel="noopener noreferrer"
-                                                  className="hover:underline flex items-center gap-1 font-semibold"
-                                                >
-                                                  <span>{cite.sourceTitle || 'Web Source'}</span>
-                                                  <span>↗</span>
-                                                </a>
-                                              </div>
-                                            ))}
-                                          </div>
-                                        </div>
-                                      );
-                                    })()}
-                                  </div>
-                                </div>
-                              );
-                            })}
-                          </div>
-
-                          {/* Live Operator Composer */}
-                          <div className="pt-3 border-t border-slate-100 dark:border-slate-800 space-y-2">
-                            {/* Quick canned replies */}
-                            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-[10px]">
-                              <span className="text-slate-400 shrink-0 font-medium">Quick replies:</span>
-                              {[
-                                'Hello! How can I assist you today?',
-                                'Checking on that right now for you!',
-                                'Thanks for waiting, I have the details.',
-                                'Let me connect you with our team specialist.',
-                              ].map((quickText, qIdx) => (
-                                <button
-                                  key={qIdx}
-                                  type="button"
-                                  onClick={() => setAgentReplyText(quickText)}
-                                  className="px-2 py-0.5 rounded-full border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-purple-50 dark:hover:bg-purple-950/40 hover:text-purple-700 hover:border-purple-300 transition whitespace-nowrap cursor-pointer"
-                                >
-                                  {quickText}
-                                </button>
-                              ))}
-                            </div>
-
-                            <div className="flex gap-2 items-center">
-                              <div className="relative">
-                                <input
-                                  type="text"
-                                  value={agentNameInput}
-                                  onChange={(e) => setAgentNameInput(e.target.value)}
-                                  placeholder="Agent Name"
-                                  className="w-32 text-xs border border-slate-200 dark:border-slate-700 rounded-lg px-2.5 py-2 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-200 outline-none focus:ring-1 focus:ring-purple-500 font-medium"
-                                  title="Your display name to the customer"
-                                />
-                              </div>
-                              <input
-                                type="text"
-                                value={agentReplyText}
-                                onChange={(e) => setAgentReplyText(e.target.value)}
-                                onKeyDown={(e) => {
-                                  if (e.key === 'Enter' && !e.shiftKey) {
-                                    e.preventDefault();
-                                    handleSendAgentMessage();
-                                  }
-                                }}
-                                placeholder={
-                                  selectedConversation.isLiveTakeover
-                                    ? "Type reply to visitor as Live Agent (AI is paused)..."
-                                    : "Type reply to take over chat from AI bot..."
-                                }
-                                className="flex-1 text-xs border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 outline-none focus:ring-1 focus:ring-purple-500"
-                              />
-                              <button
-                                type="button"
-                                onClick={handleSendAgentMessage}
-                                disabled={isSendingAgentMessage || !agentReplyText.trim()}
-                                className="flex items-center gap-1.5 px-3.5 py-2 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white rounded-lg text-xs font-semibold transition shadow-xs cursor-pointer"
-                              >
-                                <Send className="h-3.5 w-3.5" />
-                                <span>{isSendingAgentMessage ? 'Sending...' : 'Send'}</span>
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="py-20 text-center text-xs text-slate-400">
-                          Select a conversation from the left to inspect the transcript.
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
+              <ConversationsTab
+                activeAssistant={activeAssistant}
+                setActiveTab={setActiveTab}
+                conversations={conversations}
+                setConversations={setConversations}
+                isLoadingConversations={isLoadingConversations}
+                fetchConversations={fetchConversations}
+                playNotificationChime={playNotificationChime}
+              />
             )}
 
           </main>
@@ -8592,6 +4897,134 @@ Thank you for using Kortex AI Business Engine.
         )}
 
         {/* MODAL: COUNTERTOP QR CODE */}
+
+        {/* Bottom-Left Notification Arrival Toast & Chime Alert */}
+        {incomingToast && (
+          <div className="fixed bottom-6 left-6 z-50 max-w-sm w-full bg-white dark:bg-slate-900 border border-blue-500/40 dark:border-blue-500/30 rounded-2xl shadow-2xl p-4 animate-in slide-in-from-bottom-5 duration-300 flex items-start gap-3">
+            <div className="p-2 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 shrink-0">
+              <Bell className="w-5 h-5 animate-bounce" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-slate-900 dark:text-white truncate">{incomingToast.title}</span>
+                <button
+                  type="button"
+                  onClick={() => setIncomingToast(null)}
+                  className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+              <p className="text-xs text-slate-600 dark:text-slate-300 mt-0.5 line-clamp-2">{incomingToast.message}</p>
+              <div className="mt-2 flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIncomingToast(null);
+                    setIsNotifOpen(true);
+                  }}
+                  className="text-[11px] font-semibold text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
+                >
+                  View Notifications
+                </button>
+                <span className="text-slate-300 dark:text-slate-700">&bull;</span>
+                <span className="text-[10px] text-slate-400 font-mono">Just now</span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Modal: Create New Landing Page */}
+        {showNewPageModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-xs p-4">
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="p-2 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400">
+                    <Globe className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-slate-900 dark:text-white">Create New Landing Page</h3>
+                    <p className="text-xs text-slate-500">Add a dedicated hosted website for your business or campaign.</p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowNewPageModal(false)}
+                  className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <form onSubmit={handleCreateNewLandingPage} className="space-y-4 pt-2">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Business Name</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Apex Health & Aesthetics"
+                    value={newPageName}
+                    onChange={(e) => {
+                      setNewPageName(e.target.value);
+                      if (!newPageSlug) {
+                        setNewPageSlug(e.target.value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''));
+                      }
+                    }}
+                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">URL Slug (/site/[slug])</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. apex-health"
+                    value={newPageSlug}
+                    onChange={(e) => setNewPageSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-'))}
+                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white font-mono focus:outline-none focus:border-blue-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Base Industry Template</label>
+                  <select
+                    value={newPageIndustry}
+                    onChange={(e) => setNewPageIndustry(e.target.value)}
+                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 cursor-pointer"
+                  >
+                    <option value="barbershop">Barbershop &amp; Men's Grooming</option>
+                    <option value="gym">Gym &amp; Fitness Athletics</option>
+                    <option value="real_estate">Real Estate &amp; Properties</option>
+                    <option value="ecommerce">E-Commerce &amp; Retail</option>
+                    <option value="saas">B2B SaaS &amp; Tech</option>
+                    <option value="legal">Legal &amp; Law Firm</option>
+                    <option value="healthcare">Dental &amp; Healthcare</option>
+                  </select>
+                </div>
+
+                <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
+                  <button
+                    type="button"
+                    onClick={() => setShowNewPageModal(false)}
+                    className="px-3.5 py-2 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-4 py-2 text-xs font-semibold bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition shadow-xs cursor-pointer flex items-center gap-1.5"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Create Landing Page</span>
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
         {showCounterQrModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4">
             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-8 max-w-sm w-full text-center space-y-5 shadow-2xl relative">

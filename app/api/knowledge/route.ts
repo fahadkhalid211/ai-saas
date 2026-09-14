@@ -1,13 +1,9 @@
 import { NextResponse } from 'next/server';
 import { Database } from '@/lib/db';
-import { verifyAdminRequest } from '@/lib/security/auth';
+import { withAdminAuth } from '@/lib/security/auth';
 
-export async function GET(req: Request) {
+export const GET = withAdminAuth(async (req: Request) => {
   try {
-    if (!(await verifyAdminRequest(req))) {
-      return NextResponse.json({ error: 'Unauthorized: Admin authentication required' }, { status: 401 });
-    }
-
     const { searchParams } = new URL(req.url);
     const assistantId = searchParams.get('assistantId');
 
@@ -26,14 +22,10 @@ export async function GET(req: Request) {
   } catch (error: any) {
     return NextResponse.json({ error: error?.message || 'Failed to fetch knowledge' }, { status: 500 });
   }
-}
+});
 
-export async function DELETE(req: Request) {
+export const DELETE = withAdminAuth(async (req: Request) => {
   try {
-    if (!(await verifyAdminRequest(req))) {
-      return NextResponse.json({ error: 'Unauthorized: Admin authentication required' }, { status: 401 });
-    }
-
     const { searchParams } = new URL(req.url);
     const id = searchParams.get('id');
 
@@ -46,4 +38,4 @@ export async function DELETE(req: Request) {
   } catch (error: any) {
     return NextResponse.json({ error: error?.message || 'Failed to delete knowledge source' }, { status: 500 });
   }
-}
+});

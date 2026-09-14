@@ -1,14 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { Database, InvoiceRecord } from '@/lib/db';
 import { BILLING_PLANS } from '@/lib/billing/plans';
-import { verifyAdminRequest } from '@/lib/security/auth';
+import { withAdminAuth } from '@/lib/security/auth';
 
-export async function GET(req: NextRequest) {
+export const GET = withAdminAuth(async (req: Request) => {
   try {
-    if (!(await verifyAdminRequest(req))) {
-      return NextResponse.json({ error: 'Unauthorized: Admin authentication required' }, { status: 401 });
-    }
-
     const ws = await Database.getWorkspaceBilling('default-workspace');
     const convs = await Database.getConversations();
 
@@ -63,14 +59,10 @@ export async function GET(req: NextRequest) {
     console.error('Error fetching billing data:', error);
     return NextResponse.json({ error: error.message || 'Failed to fetch billing data' }, { status: 500 });
   }
-}
+});
 
-export async function POST(req: NextRequest) {
+export const POST = withAdminAuth(async (req: Request) => {
   try {
-    if (!(await verifyAdminRequest(req))) {
-      return NextResponse.json({ error: 'Unauthorized: Admin authentication required' }, { status: 401 });
-    }
-
     const body = await req.json();
     const { action, planId, billingInterval } = body;
 
@@ -115,14 +107,10 @@ export async function POST(req: NextRequest) {
     console.error('Error updating billing plan:', error);
     return NextResponse.json({ error: error.message || 'Failed to update billing' }, { status: 500 });
   }
-}
+});
 
-export async function PATCH(req: NextRequest) {
+export const PATCH = withAdminAuth(async (req: Request) => {
   try {
-    if (!(await verifyAdminRequest(req))) {
-      return NextResponse.json({ error: 'Unauthorized: Admin authentication required' }, { status: 401 });
-    }
-
     const body = await req.json();
     const { paymentMethod, billingEmail } = body;
 
@@ -141,4 +129,4 @@ export async function PATCH(req: NextRequest) {
     console.error('Error updating payment info:', error);
     return NextResponse.json({ error: error.message || 'Failed to update payment info' }, { status: 500 });
   }
-}
+});

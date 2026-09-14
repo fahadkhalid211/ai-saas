@@ -1,19 +1,15 @@
 import { NextResponse } from 'next/server';
 import { Database } from '@/lib/db';
-import { verifyAdminRequest } from '@/lib/security/auth';
+import { withAdminAuth } from '@/lib/security/auth';
+import { checkRateLimit, getClientIp } from '@/lib/security/rate-limit';
 
-export async function GET(req: Request) {
+export const GET = withAdminAuth(async (req: Request) => {
   try {
-    if (!(await verifyAdminRequest(req))) {
-      return NextResponse.json({ error: 'Unauthorized: Admin authentication required' }, { status: 401 });
-    }
 
     const { searchParams } = new URL(req.url);
-    const assistantId = searchParams.get('assistantId');
-
-    if (!assistantId) {
-      return NextResponse.json({ error: 'assistantId query parameter required' }, { status: 400 });
-    }
+    const assistantId = searchParams.get('assistantId') || 'demo-assistant';
+    const slug = searchParams.get('slug') || 'all';
+    const days = parseInt(searchParams.get('days') || '30', 10);
 
     const convs = await Database.getConversations(assistantId);
     const leads = await Database.getLeads(assistantId);
@@ -47,7 +43,7 @@ export async function GET(req: Request) {
       neutral: convs.filter((c) => !c.sentiment || c.sentiment === 'neutral').length,
     };
 
-    // 7-day trend
+    // 7-day conversational trend
     const now = new Date();
     const last7Days: { date: string; label: string; count: number; leads: number }[] = [];
     for (let i = 6; i >= 0; i--) {
@@ -58,6 +54,13 @@ export async function GET(req: Request) {
       const lCount = leads.filter((l) => l.createdAt && l.createdAt.slice(0, 10) === dateStr).length;
       last7Days.push({ date: dateStr, label: dayLabel, count: cCount, leads: lCount });
     }
+
+    // Google-grade Complete Web Pageviews & Customer Intelligence Analytics
+    const webAndCustomerAnalytics = await Database.getCompleteAnalytics({
+      assistantId,
+      slug,
+      days,
+    });
 
     return NextResponse.json({
       metrics: {
@@ -74,9 +77,59 @@ export async function GET(req: Request) {
         sentiment,
         trend: last7Days,
       },
+      webAnalytics: webAndCustomerAnalytics,
     });
   } catch (error: any) {
     console.error('Failed to get analytics:', error);
     return NextResponse.json({ error: error?.message || 'Failed to get analytics' }, { status: 500 });
+  }
+});
+
+// Record live page view event from hosted landing page
+export async function POST(req: Request) {
+  try {
+    const ip = getClientIp(req);
+    const limit = checkRateLimit(`pageview:${ip}`, { windowMs: 60 * 1000, max: 120 });
+    if (!limit.allowed) {
+      return NextResponse.json({ error: 'Too many analytics events' }, { status: 429 });
+    }
+
+    const body = await req.json();
+    const { slug, landingPageName, visitorId, referrer, userAgent, source } = body;
+
+    if (!slug || typeof slug !== 'string' || !slug.trim()) {
+      return NextResponse.json({ error: 'slug is required' }, { status: 400 });
+    }
+
+    const cleanSlug = slug.trim().slice(0, 80);
+    const cleanLandingPageName = (landingPageName && typeof landingPageName === 'string')
+      ? landingPageName.trim().slice(0, 120)
+      : undefined;
+    const cleanVisitorId = (visitorId && typeof visitorId === 'string')
+      ? visitorId.trim().slice(0, 64)
+      : undefined;
+    const cleanReferrer = (referrer && typeof referrer === 'string')
+      ? referrer.trim().slice(0, 500)
+      : undefined;
+    const cleanUserAgent = (userAgent && typeof userAgent === 'string')
+      ? userAgent.trim().slice(0, 500)
+      : undefined;
+    const cleanSource = (source && typeof source === 'string')
+      ? source.trim().slice(0, 50)
+      : undefined;
+
+    const record = await Database.recordPageView({
+      slug: cleanSlug,
+      landingPageName: cleanLandingPageName,
+      visitorId: cleanVisitorId,
+      referrer: cleanReferrer,
+      userAgent: cleanUserAgent,
+      source: cleanSource,
+    });
+
+    return NextResponse.json({ success: true, record });
+  } catch (error: any) {
+    console.error('Failed to record page view:', error);
+    return NextResponse.json({ error: error?.message || 'Failed to record page view' }, { status: 500 });
   }
 }

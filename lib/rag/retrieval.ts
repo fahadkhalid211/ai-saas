@@ -188,7 +188,6 @@ export async function retrieveRelevantContext(
   // 4. Internal Knowledge Base Citations - Strictly disabled for internal knowledge base
   // Customer-facing chat should NEVER expose internal knowledge base files, private documents, or training URLs.
   // External web sources are only cited when a live web search is actively performed.
-  const citations: Citation[] = [];
 
   // 5. Format context block for LLM prompt
   if (chunks.length === 0) {

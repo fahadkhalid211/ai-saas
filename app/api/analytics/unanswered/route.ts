@@ -3,14 +3,10 @@ import { Database } from '@/lib/db';
 import { parseFileOrText } from '@/lib/rag/parsers';
 import { chunkDocument } from '@/lib/rag/chunker';
 import { generateEmbeddingsBatch } from '@/lib/rag/embedder';
-import { verifyAdminRequest } from '@/lib/security/auth';
+import { withAdminAuth } from '@/lib/security/auth';
 
-export async function GET(req: Request) {
+export const GET = withAdminAuth(async (req: Request) => {
   try {
-    if (!(await verifyAdminRequest(req))) {
-      return NextResponse.json({ error: 'Unauthorized: Admin authentication required' }, { status: 401 });
-    }
-
     const { searchParams } = new URL(req.url);
     const assistantId = searchParams.get('assistantId');
 
@@ -23,14 +19,10 @@ export async function GET(req: Request) {
   } catch (error: any) {
     return NextResponse.json({ error: error?.message || 'Failed to fetch unanswered queries' }, { status: 500 });
   }
-}
+});
 
-export async function POST(req: Request) {
+export const POST = withAdminAuth(async (req: Request) => {
   try {
-    if (!(await verifyAdminRequest(req))) {
-      return NextResponse.json({ error: 'Unauthorized: Admin authentication required' }, { status: 401 });
-    }
-
     const body = await req.json();
     const { id, assistantId, action, answer, query } = body;
 
@@ -113,4 +105,4 @@ export async function POST(req: Request) {
     console.error('Error handling unanswered query action:', error);
     return NextResponse.json({ error: error?.message || 'Action failed' }, { status: 500 });
   }
-}
+});

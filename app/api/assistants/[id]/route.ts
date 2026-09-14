@@ -1,17 +1,13 @@
 import { NextResponse } from 'next/server';
 import { Database } from '@/lib/db';
-import { verifyAdminRequest } from '@/lib/security/auth';
+import { withAdminAuth } from '@/lib/security/auth';
 import { maskSecret } from '@/lib/security/crypto';
 
-export async function GET(
-  req: Request,
+export const GET = withAdminAuth(async (
+  _req: Request,
   { params }: { params: Promise<{ id: string }> }
-) {
+) => {
   try {
-    if (!(await verifyAdminRequest(req))) {
-      return NextResponse.json({ error: 'Unauthorized: Admin authentication required' }, { status: 401 });
-    }
-
     const { id } = await params;
     const assistant = await Database.getAssistantById(id);
     if (!assistant) {
@@ -30,17 +26,13 @@ export async function GET(
   } catch (error: any) {
     return NextResponse.json({ error: error?.message || 'Failed to get assistant' }, { status: 500 });
   }
-}
+});
 
-export async function PUT(
+export const PUT = withAdminAuth(async (
   req: Request,
   { params }: { params: Promise<{ id: string }> }
-) {
+) => {
   try {
-    if (!(await verifyAdminRequest(req))) {
-      return NextResponse.json({ error: 'Unauthorized: Admin authentication required' }, { status: 401 });
-    }
-
     const { id } = await params;
     const body = await req.json();
     const updated = await Database.updateAssistant(id, body);
@@ -60,21 +52,17 @@ export async function PUT(
   } catch (error: any) {
     return NextResponse.json({ error: error?.message || 'Failed to update assistant' }, { status: 500 });
   }
-}
+});
 
-export async function DELETE(
-  req: Request,
+export const DELETE = withAdminAuth(async (
+  _req: Request,
   { params }: { params: Promise<{ id: string }> }
-) {
+) => {
   try {
-    if (!(await verifyAdminRequest(req))) {
-      return NextResponse.json({ error: 'Unauthorized: Admin authentication required' }, { status: 401 });
-    }
-
     const { id } = await params;
     await Database.deleteAssistant(id);
     return NextResponse.json({ success: true });
   } catch (error: any) {
     return NextResponse.json({ error: error?.message || 'Failed to delete assistant' }, { status: 500 });
   }
-}
+});

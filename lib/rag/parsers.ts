@@ -114,7 +114,7 @@ function parseCsv(content: string, title: string): ExtractedDocument {
     const sampleRows: string[] = [];
     typedRecords.slice(0, 5).forEach((r, idx) => {
       const parts = Object.entries(r)
-        .filter(([_, v]) => v !== null && v !== undefined && String(v).trim() !== '')
+        .filter(([, v]) => v !== null && v !== undefined && String(v).trim() !== '')
         .map(([k, v]) => `${k}: ${String(v).trim()}`);
       sampleRows.push(`[Sample #${idx + 1}] ${parts.join(' | ')}`);
     });

@@ -30,7 +30,7 @@ export function isPrivateOrReservedIp(ip: string): boolean {
   const parts = ip.split('.').map(Number);
   if (parts.length !== 4 || parts.some(isNaN)) return true;
 
-  const [a, b, c, d] = parts;
+  const [a, b] = parts;
 
   // 0.0.0.0/8 (Current network)
   if (a === 0) return true;

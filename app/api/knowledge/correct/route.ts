@@ -2,14 +2,10 @@ import { NextResponse } from 'next/server';
 import { Database, ChunkRecord } from '@/lib/db';
 import { generateEmbeddingsBatch } from '@/lib/rag/embedder';
 import { chunkDocument } from '@/lib/rag/chunker';
-import { verifyAdminRequest } from '@/lib/security/auth';
+import { withAdminAuth } from '@/lib/security/auth';
 
-export async function GET(req: Request) {
+export const GET = withAdminAuth(async (req: Request) => {
   try {
-    if (!(await verifyAdminRequest(req))) {
-      return NextResponse.json({ error: 'Unauthorized: Admin authentication required' }, { status: 401 });
-    }
-
     const { searchParams } = new URL(req.url);
     const sourceId = searchParams.get('sourceId');
 
@@ -44,14 +40,10 @@ export async function GET(req: Request) {
       { status: 500 }
     );
   }
-}
+});
 
-export async function POST(req: Request) {
+export const POST = withAdminAuth(async (req: Request) => {
   try {
-    if (!(await verifyAdminRequest(req))) {
-      return NextResponse.json({ error: 'Unauthorized: Admin authentication required' }, { status: 401 });
-    }
-
     const body = await req.json();
     const { sourceId, action, findText, replaceText, note, fullText } = body;
 
@@ -263,4 +255,4 @@ export async function POST(req: Request) {
       { status: 500 }
     );
   }
-}
+});

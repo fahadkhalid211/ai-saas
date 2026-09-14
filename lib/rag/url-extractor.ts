@@ -1,7 +1,6 @@
 import { YoutubeTranscript } from 'youtube-transcript';
 import { ExtractedDocument } from './types';
 import { parseMediaFile, TranscribeOptions, formatTimestamp } from './transcriber';
-import { diagnoseKnowledgeFailure } from './diagnostics';
 import { execFile } from 'child_process';
 import { promisify } from 'util';
 import { validateSafeExternalUrl } from '../security/ssrf';
@@ -58,7 +57,7 @@ async function fetchYouTubeMetadata(videoUrl: string): Promise<{ title: string; 
  */
 export async function extractFromYouTube(
   url: string,
-  options: TranscribeOptions = {}
+  _options: TranscribeOptions = {}
 ): Promise<ExtractedDocument> {
   const videoId = extractYouTubeVideoId(url);
   if (!videoId) {
@@ -310,7 +309,7 @@ function cleanHtmlToStructuredText(html: string, url: string): { title: string; 
     .replace(/<(p|div|tr|article|section)[^>]*>([\s\S]*?)<\/\1>/gi, '\n$2\n');
 
   // Strip all remaining HTML tags
-  let text = cleanHtml
+  const text = cleanHtml
     .replace(/<[^>]+>/g, ' ')
     .replace(/&nbsp;/g, ' ')
     .replace(/&amp;/g, '&')

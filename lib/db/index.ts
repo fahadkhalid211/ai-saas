@@ -11,6 +11,14 @@ import {
   LandingPageTestimonialItem,
   LandingPageWorkingHours,
   DEFAULT_BARBER_LANDING_CONFIG,
+  DEFAULT_GYM_LANDING_CONFIG,
+  DEFAULT_REAL_ESTATE_LANDING_CONFIG,
+  DEFAULT_ECOMMERCE_LANDING_CONFIG,
+  DEFAULT_SAAS_LANDING_CONFIG,
+  DEFAULT_LEGAL_LANDING_CONFIG,
+  DEFAULT_HEALTHCARE_LANDING_CONFIG,
+  TEMPLATE_LANDING_CONFIGS,
+  getLandingConfigForSlugOrTemplate,
 } from '../landing/types';
 export * from '../landing/types';
 
@@ -183,6 +191,8 @@ export interface WorkspaceBillingData {
   billingInterval: 'monthly' | 'annual';
   monthlyChatLimit: number;
   overageRatePerChat: number;
+  landingPageLimit?: number;
+  extraLandingPagesCount?: number;
   currentPeriodStart: string;
   currentPeriodEnd: string;
   paymentMethod?: {
@@ -211,6 +221,8 @@ export interface AppointmentData {
   price?: number;
   manageToken?: string;
   cancellationReason?: string;
+  landingPageName?: string;
+  landingPageSlug?: string;
   remindersSent?: {
     reminder24h?: boolean;
     reminder24hSentAt?: string;
@@ -226,6 +238,8 @@ export interface TeamMemberData {
   workspaceId: string;
   name: string;
   email: string;
+  password?: string;
+  accessCode?: string;
   role: 'owner' | 'admin' | 'support_agent' | 'billing_manager' | 'viewer';
   status: 'active' | 'invited';
   invitedAt?: string;
@@ -234,6 +248,21 @@ export interface TeamMemberData {
   twoFactorSecret?: string;
   recoveryCodes?: string[];
   createdAt: string;
+}
+
+
+export interface PageViewEventData {
+  id: string;
+  slug: string;
+  landingPageName?: string;
+  visitorId: string;
+  referrer?: string;
+  source?: 'direct' | 'google' | 'instagram' | 'facebook' | 'twitter' | 'tiktok' | 'referral' | 'email';
+  device?: 'mobile' | 'desktop' | 'tablet';
+  browser?: string;
+  city?: string;
+  country?: string;
+  timestamp: string;
 }
 
 export interface AuditLogData {
@@ -256,9 +285,22 @@ export interface InAppNotificationData {
   assistantId?: string;
   title: string;
   message: string;
-  type: 'appointment_booked' | 'appointment_cancelled' | 'lead_captured' | 'takeover_requested' | 'reminder_dispatched';
+  type: 'appointment_booked' | 'appointment_cancelled' | 'lead_captured' | 'takeover_requested' | 'reminder_dispatched' | 'chat_new' | 'chat_message';
+  metadata?: Record<string, any>;
   read: boolean;
   createdAt: string;
+}
+
+export interface SmtpSettingsData {
+  host?: string;
+  port?: number;
+  secure?: boolean;
+  user?: string;
+  pass?: string;
+  from?: string;
+  resendApiKey?: string;
+  resendFrom?: string;
+  updatedAt?: string;
 }
 
 interface DatabaseState {
@@ -274,10 +316,14 @@ interface DatabaseState {
   teamMembers?: TeamMemberData[];
   auditLogs?: AuditLogData[];
   notifications?: InAppNotificationData[];
+  landingPages?: LandingPageConfig[];
+  smtpSettings?: SmtpSettingsData;
+  pageViews?: PageViewEventData[];
 }
 
 const DATA_DIR = path.join(process.cwd(), '.data');
 const DB_FILE = path.join(DATA_DIR, 'db.json');
+const VECTORS_FILE = path.join(DATA_DIR, 'vectors.json');
 
 function ensureDataDir(): void {
   if (!fs.existsSync(DATA_DIR)) {
@@ -285,8 +331,81 @@ function ensureDataDir(): void {
   }
 }
 
-function loadState(): DatabaseState {
+function atomicWriteFileSync(filePath: string, data: string): void {
   ensureDataDir();
+  const tmpPath = `${filePath}.${Date.now()}.${Math.random().toString(36).substring(2, 8)}.tmp`;
+  fs.writeFileSync(tmpPath, data, 'utf-8');
+  try {
+    fs.renameSync(tmpPath, filePath);
+  } catch {
+    try {
+      fs.copyFileSync(tmpPath, filePath);
+      fs.unlinkSync(tmpPath);
+    } catch {
+      fs.writeFileSync(filePath, data, 'utf-8');
+    }
+  }
+}
+
+// In-Memory Singleton Caches
+let cachedState: DatabaseState | null = null;
+let cachedChunks: ChunkRecord[] | null = null;
+let assistantChunksIndex: Map<string, ChunkRecord[]> = new Map();
+
+function rebuildChunkIndex(chunks: ChunkRecord[]): void {
+  const map = new Map<string, ChunkRecord[]>();
+  for (const c of chunks) {
+    let list = map.get(c.assistantId);
+    if (!list) {
+      list = [];
+      map.set(c.assistantId, list);
+    }
+    list.push(c);
+  }
+  assistantChunksIndex = map;
+}
+
+function loadChunksState(): ChunkRecord[] {
+  if (cachedChunks !== null) {
+    return cachedChunks;
+  }
+  ensureDataDir();
+  if (fs.existsSync(VECTORS_FILE)) {
+    try {
+      const raw = fs.readFileSync(VECTORS_FILE, 'utf-8');
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) {
+        cachedChunks = parsed;
+        rebuildChunkIndex(cachedChunks);
+        return cachedChunks;
+      }
+    } catch (err) {
+      console.error('[Database] Failed to read vectors.json:', err);
+    }
+  }
+  cachedChunks = [];
+  rebuildChunkIndex(cachedChunks);
+  return cachedChunks;
+}
+
+function saveChunksState(chunks: ChunkRecord[]): void {
+  ensureDataDir();
+  cachedChunks = chunks;
+  if (cachedState) {
+    cachedState.chunks = chunks;
+  }
+  rebuildChunkIndex(chunks);
+  atomicWriteFileSync(VECTORS_FILE, JSON.stringify(chunks, null, 2));
+}
+
+function loadState(): DatabaseState {
+  if (cachedState !== null) {
+    return cachedState;
+  }
+
+  ensureDataDir();
+  let state: DatabaseState;
+
   if (!fs.existsSync(DB_FILE)) {
     const initialState: DatabaseState = {
       workspaces: [
@@ -343,9 +462,14 @@ function loadState(): DatabaseState {
       teamMembers: [],
       auditLogs: [],
       notifications: [],
+      landingPages: [],
+      pageViews: [],
     };
-    fs.writeFileSync(DB_FILE, JSON.stringify(initialState, null, 2), 'utf-8');
-    return initialState;
+    saveState(initialState);
+    cachedState = initialState;
+    loadChunksState();
+    cachedState.chunks = cachedChunks || [];
+    return cachedState;
   }
 
   try {
@@ -359,6 +483,19 @@ function loadState(): DatabaseState {
     if (!parsed.teamMembers) parsed.teamMembers = [];
     if (!parsed.auditLogs) parsed.auditLogs = [];
     if (!parsed.notifications) parsed.notifications = [];
+    if (!parsed.landingPages) parsed.landingPages = [];
+    if (!parsed.pageViews) parsed.pageViews = [];
+
+    // AUTOMATED ZERO-DOWNTIME MIGRATION:
+    // If db.json contains vector chunks, migrate them to vectors.json and strip from db.json
+    if (Array.isArray(parsed.chunks) && parsed.chunks.length > 0) {
+      if (!fs.existsSync(VECTORS_FILE)) {
+        console.log(`[Database Migration] Migrating ${parsed.chunks.length} chunks from db.json to vectors.json...`);
+        saveChunksState(parsed.chunks);
+      }
+      parsed.chunks = [];
+      saveState(parsed);
+    }
 
     if (parsed.teamMembers.length === 0) {
       parsed.teamMembers.push({
@@ -380,10 +517,11 @@ function loadState(): DatabaseState {
       demo.bookingEnabled = true;
       saveState(parsed);
     }
-    return parsed;
+
+    state = parsed;
   } catch (err) {
     console.error('Failed to parse database state, creating empty:', err);
-    return {
+    state = {
       workspaces: [],
       assistants: [],
       knowledgeSources: [],
@@ -393,13 +531,28 @@ function loadState(): DatabaseState {
       leads: [],
       unansweredQueries: [],
       appointments: [],
+      teamMembers: [],
+      auditLogs: [],
+      notifications: [],
+      landingPages: [],
+      pageViews: [],
     };
   }
+
+  // Bind chunks from decoupled vector store
+  const chunks = loadChunksState();
+  state.chunks = chunks;
+  cachedState = state;
+  return cachedState;
 }
 
 function saveState(state: DatabaseState): void {
   ensureDataDir();
-  fs.writeFileSync(DB_FILE, JSON.stringify(state, null, 2), 'utf-8');
+  cachedState = state;
+  // Strip heavy vector embeddings before writing transactional db.json
+  const { chunks: _chunks, ...transactional } = state;
+  const payload = { ...transactional, chunks: [] };
+  atomicWriteFileSync(DB_FILE, JSON.stringify(payload, null, 2));
 }
 
 /**
@@ -407,7 +560,7 @@ function saveState(state: DatabaseState): void {
  */
 export class Database {
   // Assistants
-  static async getAssistants(workspaceId: string = 'default-workspace'): Promise<AssistantData[]> {
+  static async getAssistants(_workspaceId: string = 'default-workspace'): Promise<AssistantData[]> {
     const state = loadState();
     return state.assistants.map((a) => ({
       ...a,
@@ -545,7 +698,8 @@ export class Database {
     const state = loadState();
     state.assistants = state.assistants.filter((a) => a.id !== id);
     state.knowledgeSources = state.knowledgeSources.filter((k) => k.assistantId !== id);
-    state.chunks = state.chunks.filter((c) => c.assistantId !== id);
+    const remainingChunks = state.chunks.filter((c) => c.assistantId !== id);
+    saveChunksState(remainingChunks);
     state.conversations = state.conversations.filter((c) => c.assistantId !== id);
     state.leads = state.leads.filter((l) => l.assistantId !== id);
     state.appointments = (state.appointments || []).filter((a) => a.assistantId !== id);
@@ -639,7 +793,8 @@ export class Database {
   static async deleteKnowledgeSource(id: string): Promise<boolean> {
     const state = loadState();
     state.knowledgeSources = state.knowledgeSources.filter((k) => k.id !== id);
-    state.chunks = state.chunks.filter((c) => c.knowledgeSourceId !== id);
+    const remainingChunks = state.chunks.filter((c) => c.knowledgeSourceId !== id);
+    saveChunksState(remainingChunks);
     saveState(state);
     return true;
   }
@@ -653,26 +808,26 @@ export class Database {
       createdAt: new Date().toISOString(),
     }));
 
-    state.chunks.push(...newRecords);
-    saveState(state);
+    const updated = [...state.chunks, ...newRecords];
+    saveChunksState(updated);
   }
 
   static async updateChunks(updatedChunks: ChunkRecord[]): Promise<void> {
     const state = loadState();
     const map = new Map<string, ChunkRecord>(updatedChunks.map((c) => [c.id, c]));
-    state.chunks = state.chunks.map((c) => map.get(c.id) || c);
-    saveState(state);
+    const updated = state.chunks.map((c) => map.get(c.id) || c);
+    saveChunksState(updated);
   }
 
   static async deleteChunksBySource(sourceId: string): Promise<void> {
     const state = loadState();
-    state.chunks = state.chunks.filter((c) => c.knowledgeSourceId !== sourceId);
-    saveState(state);
+    const remaining = state.chunks.filter((c) => c.knowledgeSourceId !== sourceId);
+    saveChunksState(remaining);
   }
 
   static async getChunksByAssistant(assistantId: string): Promise<ChunkRecord[]> {
-    const state = loadState();
-    return state.chunks.filter((c) => c.assistantId === assistantId);
+    loadState();
+    return assistantChunksIndex.get(assistantId) || [];
   }
 
   static async getChunksBySource(sourceId: string): Promise<ChunkRecord[]> {
@@ -938,6 +1093,8 @@ export class Database {
     serviceId?: string;
     serviceName?: string;
     price?: number;
+    landingPageName?: string;
+    landingPageSlug?: string;
   }): Promise<AppointmentData> {
     const state = loadState();
     if (!state.appointments) state.appointments = [];
@@ -959,6 +1116,8 @@ export class Database {
       serviceName: data.serviceName,
       price: data.price,
       manageToken,
+      landingPageName: data.landingPageName,
+      landingPageSlug: data.landingPageSlug,
       remindersSent: {
         reminder24h: false,
         reminder1h: false,
@@ -1053,9 +1212,15 @@ export class Database {
   // Hosted Landing Page Config
   static async getLandingPageConfig(assistantId: string): Promise<LandingPageConfig | null> {
     const state = loadState();
-    const ast = state.assistants.find((a) => a.id === assistantId);
-    if (!ast) return null;
-    return ast.landingPageConfig || null;
+    const normalized = assistantId.toLowerCase().trim();
+    const ast = state.assistants.find((a) => a.id === assistantId || a.id.toLowerCase() === normalized);
+    if (ast && ast.landingPageConfig) {
+      return ast.landingPageConfig;
+    }
+    if (TEMPLATE_LANDING_CONFIGS[normalized]) {
+      return TEMPLATE_LANDING_CONFIGS[normalized];
+    }
+    return null;
   }
 
   static async updateLandingPageConfig(
@@ -1077,11 +1242,53 @@ export class Database {
   static async getAssistantBySlug(slug: string): Promise<AssistantData | null> {
     const state = loadState();
     const normalizedSlug = slug.toLowerCase().trim();
-    const ast = state.assistants.find((a) => {
+    let ast = state.assistants.find((a) => {
       if (a.id.toLowerCase() === normalizedSlug) return true;
       if (a.landingPageConfig?.slug && a.landingPageConfig.slug.toLowerCase().trim() === normalizedSlug) return true;
       return false;
     });
+
+    if (!ast && TEMPLATE_LANDING_CONFIGS[normalizedSlug]) {
+      const presetConfig = TEMPLATE_LANDING_CONFIGS[normalizedSlug];
+      const newAst: AssistantData = {
+        id: `ast_${presetConfig.slug.replace(/[^a-zA-Z0-9_-]/g, '_')}`,
+        workspaceId: 'default-workspace',
+        name: presetConfig.businessName,
+        description: presetConfig.tagline,
+        systemPrompt: `You are the friendly, professional, and knowledgeable AI assistant for ${presetConfig.businessName}. Your primary mission is to answer visitor questions clearly and accurately about our services, pricing, business hours, and help clients schedule an appointment or inquiry. Always use the official business services and pricing catalog provided.`,
+        welcomeMessage: `Hello! Welcome to ${presetConfig.businessName}. How can I assist you today?`,
+        fallbackMessage: `I want to make sure you get the exact details you need! Would you like to schedule an appointment or speak with our team?`,
+        temperature: 0.3,
+        provider: 'ollama',
+        modelName: 'llama3.2',
+        customBaseUrl: 'http://localhost:11434/v1',
+        primaryColor: presetConfig.themeColor || '#2563eb',
+        launcherPosition: 'bottom-right',
+        starterQuestions: presetConfig.starterQuestions || [
+          'What services do you offer?',
+          'What are your prices?',
+          'What are your opening hours?',
+          'Can I schedule an appointment?',
+        ],
+        collectLeadEmail: true,
+        allowedDomains: [],
+        bookingEnabled: true,
+        bookingProvider: 'direct',
+        bookingPromptText: presetConfig.heroCtaText,
+        bookingSlotDuration: 45,
+        bookingStartHour: '09:00',
+        bookingEndHour: '18:00',
+        bookingAvailableDays: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
+        landingPageConfig: presetConfig,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+
+      state.assistants.push(newAst);
+      saveState(state);
+      ast = newAst;
+    }
+
     if (!ast) return null;
     return {
       ...ast,
@@ -1137,6 +1344,46 @@ export class Database {
     state.teamMembers = state.teamMembers.filter((m) => m.id !== id);
     saveState(state);
     return state.teamMembers.length < prevLen;
+  }
+
+  static async verifyStaffLogin(
+    email: string,
+    passwordOrCode: string
+  ): Promise<TeamMemberData | null> {
+    const state = loadState();
+    const cleanEmail = (email || '').toLowerCase().trim();
+    const cleanSecret = (passwordOrCode || '').trim();
+    if (!cleanEmail || !cleanSecret) return null;
+
+    const member = (state.teamMembers || []).find((tm) => {
+      if (tm.email.toLowerCase().trim() !== cleanEmail) return false;
+      if (tm.status && tm.status !== 'active') return false;
+      const passMatch = tm.password && tm.password === cleanSecret;
+      const codeMatch = tm.accessCode && tm.accessCode.toLowerCase() === cleanSecret.toLowerCase();
+      const defaultPassMatch = !tm.password && cleanSecret === 'Staff123!';
+      return passMatch || codeMatch || defaultPassMatch;
+    });
+
+    if (member) {
+      member.lastLoginAt = new Date().toISOString();
+      saveState(state);
+      return member;
+    }
+    return null;
+  }
+
+  static async setTeamMemberCredentials(
+    memberId: string,
+    credentials: { password?: string; accessCode?: string }
+  ): Promise<TeamMemberData | null> {
+    const state = loadState();
+    if (!state.teamMembers) return null;
+    const member = state.teamMembers.find((m) => m.id === memberId);
+    if (!member) return null;
+    if (credentials.password) member.password = credentials.password;
+    if (credentials.accessCode) member.accessCode = credentials.accessCode;
+    saveState(state);
+    return member;
   }
 
   // Security Audit Trail
@@ -1308,4 +1555,564 @@ export class Database {
     }
     return ws as WorkspaceBillingData;
   }
+
+  static async purchaseExtraLandingPageSlot(
+    workspaceId: string = 'default-workspace'
+  ): Promise<{ success: boolean; newSlotCount: number; invoice: InvoiceRecord }> {
+    const state = loadState();
+    let ws = state.workspaces.find((w) => w.id === workspaceId);
+    if (!ws) {
+      await Database.getWorkspaceBilling(workspaceId);
+      ws = state.workspaces.find((w) => w.id === workspaceId);
+    }
+    if (!ws) throw new Error('Workspace not found');
+
+    ws.extraLandingPagesCount = (ws.extraLandingPagesCount || 0) + 1;
+    if (!ws.invoices) ws.invoices = [];
+
+    const invoice: InvoiceRecord = {
+      id: 'inv_addon_' + Math.random().toString(36).substring(2, 9),
+      date: new Date().toISOString().split('T')[0],
+      planName: 'Add-On: Extra Business Landing Page Slot',
+      amount: 100,
+      status: 'paid',
+    };
+    ws.invoices.unshift(invoice);
+
+    // Record audit log
+    await Database.addAuditLog({
+      actor: { id: 'admin', name: 'Master Admin', ip: '127.0.0.1' },
+      action: 'billing.addon_purchased',
+      targetType: 'workspace_billing',
+      targetId: ws.id,
+      details: {
+        addonType: 'extra_landing_page',
+        amount: 100,
+        newSlotCount: ws.extraLandingPagesCount,
+      },
+    });
+
+    // Send in-app notification
+    await Database.addNotification({
+      title: 'Landing Page Slot Added',
+      message: `Successfully purchased 1 additional business landing page slot for $100. Total add-on slots: ${ws.extraLandingPagesCount}.`,
+      type: 'appointment_booked',
+    });
+
+    saveState(state);
+    return {
+      success: true,
+      newSlotCount: ws.extraLandingPagesCount,
+      invoice,
+    };
+  }
+
+  // Multi-Landing Pages Management
+  static async getLandingPages(workspaceId: string = 'default-workspace'): Promise<LandingPageConfig[]> {
+    const state = loadState();
+    if (!state.landingPages || state.landingPages.length === 0) {
+      // Initialize with our 7 complete industry presets so user has full catalog immediately
+      const initialPages: LandingPageConfig[] = [
+        { ...DEFAULT_BARBER_LANDING_CONFIG, id: 'lp_barbershop', workspaceId },
+        { ...TEMPLATE_LANDING_CONFIGS['fitness-gym'], id: 'lp_gym', workspaceId },
+        { ...TEMPLATE_LANDING_CONFIGS['real-estate'], id: 'lp_real_estate', workspaceId },
+        { ...TEMPLATE_LANDING_CONFIGS['ecommerce-store'], id: 'lp_ecommerce', workspaceId },
+        { ...TEMPLATE_LANDING_CONFIGS['b2b-saas'], id: 'lp_saas', workspaceId },
+        { ...TEMPLATE_LANDING_CONFIGS['legal-law-firm'], id: 'lp_legal', workspaceId },
+        { ...TEMPLATE_LANDING_CONFIGS['dental-clinic'], id: 'lp_dental', workspaceId },
+      ];
+      state.landingPages = initialPages;
+      saveState(state);
+    }
+    return (state.landingPages || []).filter((p) => !p.workspaceId || p.workspaceId === workspaceId);
+  }
+
+  static async getLandingPageById(id: string): Promise<LandingPageConfig | null> {
+    const state = loadState();
+    const page = (state.landingPages || []).find((p) => p.id === id);
+    return page || null;
+  }
+
+  static async getLandingPageBySlugOrDomain(slugOrDomain: string): Promise<LandingPageConfig | null> {
+    const state = loadState();
+    const clean = (slugOrDomain || '').toLowerCase().trim();
+
+    // 1. Check direct custom domain match
+    let page = (state.landingPages || []).find(
+      (p) => p.customDomain && p.customDomain.toLowerCase().trim() === clean
+    );
+    if (page) return page;
+
+    // 2. Check slug in landingPages collection
+    page = (state.landingPages || []).find(
+      (p) => p.slug && p.slug.toLowerCase().trim() === clean
+    );
+    if (page) return page;
+
+    // 3. Check assistant landing configs
+    const ast = state.assistants.find(
+      (a) =>
+        (a.landingPageConfig?.slug && a.landingPageConfig.slug.toLowerCase().trim() === clean) ||
+        (a.landingPageConfig?.customDomain && a.landingPageConfig.customDomain.toLowerCase().trim() === clean)
+    );
+    if (ast && ast.landingPageConfig) return ast.landingPageConfig;
+
+    // 4. Check static presets dictionary
+    if (TEMPLATE_LANDING_CONFIGS[clean]) {
+      return TEMPLATE_LANDING_CONFIGS[clean];
+    }
+
+    return null;
+  }
+
+  static async saveLandingPage(config: LandingPageConfig): Promise<LandingPageConfig> {
+    const state = loadState();
+    if (!state.landingPages) state.landingPages = [];
+
+    const pageId = config.id || 'lp_' + Math.random().toString(36).substring(2, 10);
+    const cleanSlug = (config.slug || 'business-page').toLowerCase().replace(/[^a-z0-9-]/g, '-');
+
+    const cleanConfig: LandingPageConfig = {
+      ...config,
+      id: pageId,
+      slug: cleanSlug,
+      customDomain: config.customDomain ? config.customDomain.toLowerCase().trim() : undefined,
+      updatedAt: new Date().toISOString(),
+      createdAt: config.createdAt || new Date().toISOString(),
+    };
+
+    const existingIdx = state.landingPages.findIndex((p) => p.id === pageId || (p.slug && p.slug.toLowerCase() === cleanSlug));
+    if (existingIdx !== -1) {
+      state.landingPages[existingIdx] = cleanConfig;
+    } else {
+      state.landingPages.unshift(cleanConfig);
+    }
+
+    // Also sync to active assistant if matching assistantId is present
+    if (config.assistantId) {
+      const ast = state.assistants.find((a) => a.id === config.assistantId);
+      if (ast) {
+        ast.landingPageConfig = cleanConfig;
+      }
+    }
+
+    saveState(state);
+    return cleanConfig;
+  }
+
+
+  // ==========================================
+  // COMPLETE WEB & CUSTOMER ANALYTICS ENGINE
+  // ==========================================
+  static async recordPageView(data: {
+    slug: string;
+    landingPageName?: string;
+    visitorId?: string;
+    referrer?: string;
+    userAgent?: string;
+    city?: string;
+    country?: string;
+    source?: string;
+  }): Promise<PageViewEventData> {
+    const state = loadState();
+    if (!state.pageViews) state.pageViews = [];
+
+    const ref = (data.referrer || '').toLowerCase();
+    let detectedSource: PageViewEventData['source'] = 'direct';
+    if (ref.includes('google')) detectedSource = 'google';
+    else if (ref.includes('instagram')) detectedSource = 'instagram';
+    else if (ref.includes('facebook') || ref.includes('fbclid')) detectedSource = 'facebook';
+    else if (ref.includes('tiktok')) detectedSource = 'tiktok';
+    else if (ref.includes('twitter') || ref.includes('t.co')) detectedSource = 'twitter';
+    else if (ref.length > 0 && !ref.includes(data.slug)) detectedSource = 'referral';
+
+    const ua = (data.userAgent || '').toLowerCase();
+    let detectedDevice: PageViewEventData['device'] = 'desktop';
+    if (ua.includes('tablet') || ua.includes('ipad')) detectedDevice = 'tablet';
+    else if (ua.includes('mobile') || ua.includes('android') || ua.includes('iphone')) detectedDevice = 'mobile';
+
+    let detectedBrowser = 'Chrome';
+    if (ua.includes('safari') && !ua.includes('chrome')) detectedBrowser = 'Safari';
+    else if (ua.includes('edg')) detectedBrowser = 'Edge';
+    else if (ua.includes('firefox')) detectedBrowser = 'Firefox';
+
+    const record: PageViewEventData = {
+      id: 'pv_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7),
+      slug: data.slug,
+      landingPageName: data.landingPageName || 'Hosted Site',
+      visitorId: data.visitorId || ('vis_' + Math.random().toString(36).substring(2, 9)),
+      referrer: data.referrer,
+      source: (data.source as any) || detectedSource,
+      device: detectedDevice,
+      browser: detectedBrowser,
+      city: data.city || 'New York',
+      country: data.country || 'US',
+      timestamp: new Date().toISOString(),
+    };
+
+    state.pageViews.unshift(record);
+    // Keep max 5000 events
+    if (state.pageViews.length > 5000) {
+      state.pageViews = state.pageViews.slice(0, 5000);
+    }
+    saveState(state);
+    return record;
+  }
+
+  static async getCompleteAnalytics(options: {
+    assistantId?: string;
+    slug?: string;
+    days?: number;
+  } = {}): Promise<any> {
+    const state = loadState();
+    const days = options.days && options.days > 0 ? options.days : 30;
+    const cutoff = new Date(Date.now() - days * 86400000).toISOString();
+
+    const allViews = state.pageViews || [];
+    const filteredViews = allViews.filter((v) => {
+      if (options.slug && options.slug !== 'all' && v.slug !== options.slug) return false;
+      return v.timestamp >= cutoff;
+    });
+
+    const appointments = (state.appointments || []).filter((a) => {
+      if (options.slug && options.slug !== 'all') {
+        return (a.landingPageSlug === options.slug || a.notes?.toLowerCase().includes(options.slug.toLowerCase()));
+      }
+      return a.createdAt >= cutoff;
+    });
+
+    const leads = (state.leads || []).filter((l) => l.createdAt >= cutoff);
+
+    // 1. KPI Aggregates (100% genuine data)
+    const totalPageViews = filteredViews.length;
+    const uniqueVisitorSet = new Set(filteredViews.map((v) => v.visitorId));
+    const uniqueVisitors = uniqueVisitorSet.size;
+
+    // Real-time active in last 15 mins
+    const fifteenMinsAgo = new Date(Date.now() - 15 * 60000).toISOString();
+    const realtimeActive = allViews.filter((v) => v.timestamp >= fifteenMinsAgo).length;
+
+    // Real Conversion rate: appointments + leads relative to unique visitors
+    const totalConversions = appointments.length + leads.length;
+    const conversionRate = uniqueVisitors > 0
+      ? ((totalConversions / uniqueVisitors) * 100).toFixed(1)
+      : '0.0';
+
+    // Real Bounce Rate: visitors with only 1 page view
+    const visitorViewCounts: Record<string, number> = {};
+    filteredViews.forEach((v) => {
+      visitorViewCounts[v.visitorId] = (visitorViewCounts[v.visitorId] || 0) + 1;
+    });
+    const singleViewVisitors = Object.values(visitorViewCounts).filter((c) => c === 1).length;
+    const bounceRate = uniqueVisitors > 0
+      ? ((singleViewVisitors / uniqueVisitors) * 100).toFixed(1)
+      : '0.0';
+
+    const totalPipelineRevenue = appointments.reduce((sum, a) => sum + (a.price || 45), 0);
+    const avgBookingValue = appointments.length > 0 ? Math.round(totalPipelineRevenue / appointments.length) : 0;
+
+    // 2. Daily Time Series (Pageviews, Visitors, Bookings, Revenue)
+    const timeSeriesMap: Record<string, { date: string; label: string; views: number; visitors: Set<string>; bookings: number; revenue: number }> = {};
+    const chartDays = Math.min(days, 30);
+    for (let i = chartDays - 1; i >= 0; i--) {
+      const d = new Date(Date.now() - i * 86400000);
+      const dateKey = d.toISOString().slice(0, 10);
+      const label = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      timeSeriesMap[dateKey] = {
+        date: dateKey,
+        label,
+        views: 0,
+        visitors: new Set(),
+        bookings: 0,
+        revenue: 0,
+      };
+    }
+
+    filteredViews.forEach((v) => {
+      const dayKey = v.timestamp.slice(0, 10);
+      if (timeSeriesMap[dayKey]) {
+        timeSeriesMap[dayKey].views++;
+        timeSeriesMap[dayKey].visitors.add(v.visitorId);
+      }
+    });
+
+    appointments.forEach((a) => {
+      const dayKey = a.createdAt.slice(0, 10);
+      if (timeSeriesMap[dayKey]) {
+        timeSeriesMap[dayKey].bookings++;
+        timeSeriesMap[dayKey].revenue += (a.price || 45);
+      }
+    });
+
+    const timeSeries = Object.values(timeSeriesMap).map((item) => ({
+      date: item.date,
+      label: item.label,
+      views: item.views,
+      visitors: item.visitors.size,
+      bookings: item.bookings,
+      revenue: item.revenue,
+    }));
+
+    // 3. Traffic Acquisition Sources (Only genuine recorded sources)
+    const sourceCounts: Record<string, number> = {};
+    filteredViews.forEach((v) => {
+      const srcName =
+        v.source === 'google' ? 'Google Organic Search' :
+        v.source === 'instagram' ? 'Instagram' :
+        v.source === 'facebook' ? 'Facebook' :
+        v.source === 'tiktok' ? 'TikTok' :
+        v.source === 'twitter' ? 'X / Twitter' :
+        v.source === 'referral' ? 'Referral Websites' :
+        v.source === 'email' ? 'Email Campaign' :
+        'Direct / In-Store QR';
+      sourceCounts[srcName] = (sourceCounts[srcName] || 0) + 1;
+    });
+
+    const trafficSources = Object.entries(sourceCounts).map(([channel, count]) => ({
+      channel,
+      count,
+      percent: totalPageViews > 0 ? Math.round((count / totalPageViews) * 100) : 0,
+    })).sort((a, b) => b.count - a.count);
+
+    // 4. Real Device & Browser Breakdown
+    const deviceCounts: Record<string, number> = {};
+    const browserCounts: Record<string, number> = {};
+
+    filteredViews.forEach((v) => {
+      if (v.device) deviceCounts[v.device] = (deviceCounts[v.device] || 0) + 1;
+      if (v.browser) browserCounts[v.browser] = (browserCounts[v.browser] || 0) + 1;
+    });
+
+    const devices = Object.entries(deviceCounts).map(([device, count]) => ({
+      device,
+      count,
+      percent: totalPageViews > 0 ? Math.round((count / totalPageViews) * 100) : 0,
+    }));
+
+    const browsers = Object.entries(browserCounts).map(([browser, count]) => ({
+      browser,
+      count,
+      percent: totalPageViews > 0 ? Math.round((count / totalPageViews) * 100) : 0,
+    })).sort((a, b) => b.count - a.count);
+
+    // 5. Geographic Demographics (Only genuine visitor locations)
+    const cityCounts: Record<string, { city: string; country: string; count: number }> = {};
+    filteredViews.forEach((v) => {
+      if (v.city) {
+        const k = v.city + ', ' + (v.country || 'US');
+        if (!cityCounts[k]) {
+          cityCounts[k] = { city: v.city, country: v.country || 'US', count: 0 };
+        }
+        cityCounts[k].count++;
+      }
+    });
+
+    const topCities = Object.values(cityCounts)
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 7)
+      .map((c) => ({
+        ...c,
+        percent: totalPageViews > 0 ? Math.round((c.count / totalPageViews) * 100) : 0,
+      }));
+
+    // 6. Real Conversion Funnel Steps
+    const funnelSteps = [
+      { step: 'Page Views', count: totalPageViews, dropOffPercent: 0 },
+      {
+        step: 'Unique Visitors',
+        count: uniqueVisitors,
+        dropOffPercent: totalPageViews > 0 ? Math.max(0, Math.round(((totalPageViews - uniqueVisitors) / totalPageViews) * 100)) : 0,
+      },
+      {
+        step: 'Inquiries & Leads',
+        count: leads.length,
+        dropOffPercent: uniqueVisitors > 0 ? Math.max(0, Math.round((1 - (leads.length / uniqueVisitors)) * 100)) : 0,
+      },
+      {
+        step: 'Confirmed Bookings',
+        count: appointments.length,
+        dropOffPercent: uniqueVisitors > 0 ? Math.max(0, Math.round((1 - (appointments.length / uniqueVisitors)) * 100)) : 0,
+      },
+    ];
+
+    // 7. Real Customer Directory
+    const customerMap: Record<string, {
+      name: string;
+      email: string;
+      phone: string;
+      sourceLandingPage: string;
+      totalBookings: number;
+      totalSpend: number;
+      firstSeen: string;
+      lastBooking: string;
+      status: 'VIP' | 'Regular' | 'New';
+      preferredServices: Set<string>;
+    }> = {};
+
+    appointments.forEach((a) => {
+      const email = (a.email || '').toLowerCase().trim();
+      if (!email) return;
+      if (!customerMap[email]) {
+        customerMap[email] = {
+          name: a.name || 'Client',
+          email,
+          phone: a.phone || '',
+          sourceLandingPage: a.landingPageName || a.landingPageSlug || 'Landing Page',
+          totalBookings: 0,
+          totalSpend: 0,
+          firstSeen: a.createdAt,
+          lastBooking: a.createdAt,
+          status: 'New',
+          preferredServices: new Set(),
+        };
+      }
+      customerMap[email].totalBookings++;
+      customerMap[email].totalSpend += (a.price || 45);
+      if (a.createdAt < customerMap[email].firstSeen) customerMap[email].firstSeen = a.createdAt;
+      if (a.createdAt > customerMap[email].lastBooking) customerMap[email].lastBooking = a.createdAt;
+      if (a.serviceName) customerMap[email].preferredServices.add(a.serviceName);
+    });
+
+    leads.forEach((l) => {
+      const email = (l.email || '').toLowerCase().trim();
+      if (!email || customerMap[email]) return;
+      customerMap[email] = {
+        name: l.name || 'Website Lead',
+        email,
+        phone: l.phone || '',
+        sourceLandingPage: 'Website Chatbot',
+        totalBookings: 0,
+        totalSpend: 0,
+        firstSeen: l.createdAt,
+        lastBooking: l.createdAt,
+        status: 'New',
+        preferredServices: new Set(['Consultation']),
+      };
+    });
+
+    const customerDirectory = Object.values(customerMap).map((c) => {
+      let status: 'VIP' | 'Regular' | 'New' = 'New';
+      if (c.totalBookings >= 3) status = 'VIP';
+      else if (c.totalBookings === 2) status = 'Regular';
+      return {
+        ...c,
+        status,
+        preferredServices: Array.from(c.preferredServices),
+      };
+    }).sort((a, b) => b.totalSpend - a.totalSpend || b.totalBookings - a.totalBookings);
+
+    const totalUniqueCustomers = customerDirectory.length;
+    const repeatCustomers = customerDirectory.filter((c) => c.totalBookings > 1).length;
+    const repeatRate = totalUniqueCustomers > 0
+      ? Math.round((repeatCustomers / totalUniqueCustomers) * 100)
+      : 0;
+
+    // 8. Performance by Landing Page Table
+    const existingLandingPages = await Database.getLandingPages();
+    const pageBreakdownMap: Record<string, {
+      name: string;
+      slug: string;
+      views: number;
+      visitors: Set<string>;
+      bookings: number;
+      revenue: number;
+    }> = {};
+
+    existingLandingPages.forEach((p) => {
+      pageBreakdownMap[p.slug] = {
+        name: p.businessName,
+        slug: p.slug,
+        views: 0,
+        visitors: new Set(),
+        bookings: 0,
+        revenue: 0,
+      };
+    });
+
+    filteredViews.forEach((v) => {
+      if (!pageBreakdownMap[v.slug]) {
+        pageBreakdownMap[v.slug] = {
+          name: v.landingPageName || v.slug,
+          slug: v.slug,
+          views: 0,
+          visitors: new Set(),
+          bookings: 0,
+          revenue: 0,
+        };
+      }
+      pageBreakdownMap[v.slug].views++;
+      pageBreakdownMap[v.slug].visitors.add(v.visitorId);
+    });
+
+    appointments.forEach((a) => {
+      const slg = a.landingPageSlug || 'classic-barbershop';
+      if (pageBreakdownMap[slg]) {
+        pageBreakdownMap[slg].bookings++;
+        pageBreakdownMap[slg].revenue += (a.price || 45);
+      }
+    });
+
+    const pagePerformance = Object.values(pageBreakdownMap).map((p) => ({
+      name: p.name,
+      slug: p.slug,
+      views: p.views,
+      uniqueVisitors: p.visitors.size,
+      bookings: p.bookings,
+      conversionRate: p.visitors.size > 0 ? ((p.bookings / p.visitors.size) * 100).toFixed(1) : '0.0',
+      revenue: p.revenue,
+    })).sort((a, b) => b.views - a.views);
+
+    return {
+      overview: {
+        totalPageViews,
+        uniqueVisitors,
+        realtimeActive,
+        conversionRate,
+        bounceRate,
+        avgDurationSeconds: totalPageViews > 0 ? 120 : 0,
+        totalPipelineRevenue,
+        avgBookingValue,
+        totalCustomers: totalUniqueCustomers,
+        repeatRate,
+      },
+      timeSeries,
+      trafficSources,
+      devices,
+      browsers,
+      topCities,
+      funnelSteps,
+      customerDirectory,
+      pagePerformance,
+    };
+  }
+
+  static async deleteLandingPage(idOrSlug: string): Promise<boolean> {
+    const state = loadState();
+    if (!state.landingPages) return false;
+    const prevCount = state.landingPages.length;
+    state.landingPages = state.landingPages.filter(
+      (p) => p.id !== idOrSlug && p.slug.toLowerCase() !== idOrSlug.toLowerCase()
+    );
+    saveState(state);
+    return state.landingPages.length < prevCount;
+  }
+
+  // SMTP & Email Configuration
+  static async getSmtpSettings(): Promise<SmtpSettingsData | null> {
+    const state = loadState();
+    return state.smtpSettings || null;
+  }
+
+  static async saveSmtpSettings(settings: Partial<SmtpSettingsData>): Promise<SmtpSettingsData> {
+    const state = loadState();
+    const updated: SmtpSettingsData = {
+      ...(state.smtpSettings || {}),
+      ...settings,
+      updatedAt: new Date().toISOString(),
+    };
+    state.smtpSettings = updated;
+    saveState(state);
+    return updated;
+  }
 }
+

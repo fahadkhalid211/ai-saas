@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server';
 import { Database } from '@/lib/db';
 import { executeWebSearch, ingestWebSearchResults } from '@/lib/rag/web-search';
+import { withAdminAuth } from '@/lib/security/auth';
 
-export async function POST(req: Request) {
+export const POST = withAdminAuth(async (req: Request) => {
   try {
     const body = await req.json();
     const { assistantId, query } = body;
@@ -48,4 +49,4 @@ export async function POST(req: Request) {
       { status: 500 }
     );
   }
-}
+});

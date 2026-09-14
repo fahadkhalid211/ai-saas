@@ -46,7 +46,7 @@ export async function extractTextFromImage(rawBuffer: Buffer, timeoutMs = 15000)
         .sharpen()
         .toBuffer();
     }
-  } catch (_) {
+  } catch {
     // If sharp fails or format unsupported, use original buffer
     buffer = rawBuffer;
   }
@@ -65,7 +65,7 @@ export async function extractTextFromImage(rawBuffer: Buffer, timeoutMs = 15000)
         settled = true;
         try {
           child.kill();
-        } catch (_) {}
+        } catch {}
         reject(new Error(`OCR recognition timed out after ${timeoutMs / 1000}s`));
       }
     }, timeoutMs);

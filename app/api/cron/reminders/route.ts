@@ -1,19 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { processScheduledReminders } from '@/lib/reminders';
+import { getAdminKey, verifyAdminRequest } from '@/lib/security/auth';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
   try {
-    // Basic auth check via header or search param
     const authHeader = request.headers.get('authorization');
     const secretHeader = request.headers.get('x-cron-secret');
     const searchParams = request.nextUrl.searchParams;
     const queryKey = searchParams.get('key');
-    const expectedKey = process.env.CRON_SECRET || process.env.ADMIN_API_KEY || 'admin123';
+    const expectedKey = process.env.CRON_SECRET || process.env.ADMIN_API_KEY || getAdminKey();
 
     const token = authHeader?.replace(/^Bearer\s+/i, '') || secretHeader || queryKey;
-    if (expectedKey && token !== expectedKey && process.env.NODE_ENV === 'production') {
+    const isSessionAuthed = await verifyAdminRequest(request);
+
+    if (!isSessionAuthed && (!token || token !== expectedKey)) {
       return NextResponse.json({ error: 'Unauthorized cron access' }, { status: 401 });
     }
 

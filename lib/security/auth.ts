@@ -1,6 +1,7 @@
 import crypto from 'crypto';
 import fs from 'fs';
 import path from 'path';
+import { NextResponse } from 'next/server';
 
 const DATA_DIR = path.join(process.cwd(), '.data');
 const ADMIN_KEY_FILE = path.join(DATA_DIR, '.admin_key');
@@ -30,7 +31,7 @@ export function getAdminKey(): string {
     fs.writeFileSync(ADMIN_KEY_FILE, generated, 'utf8');
     console.log(`[Security] No ADMIN_API_KEY configured in .env. Auto-generated master key: ${generated}`);
     return generated;
-  } catch (err) {
+  } catch {
     return 'kortex_admin_secret_fallback_key';
   }
 }
@@ -38,10 +39,11 @@ export function getAdminKey(): string {
 /**
  * Generates a signed HMAC-SHA256 session token valid for 7 days.
  */
-export function generateSessionToken(): string {
+export function generateSessionToken(role: string = 'admin', memberId?: string): string {
   const masterKey = getAdminKey();
   const payload = {
-    role: 'admin',
+    role: role || 'admin',
+    memberId: memberId || 'admin',
     iat: Date.now(),
     exp: Date.now() + 7 * 24 * 60 * 60 * 1000,
   };
@@ -83,7 +85,8 @@ export function verifySessionToken(token: string): boolean {
     if (payload.exp && payload.exp < Date.now()) {
       return false; // Expired token
     }
-    return payload.role === 'admin';
+    const validRoles = ['admin', 'owner', 'support_agent', 'billing_manager', 'viewer'];
+    return validRoles.includes(payload.role);
   } catch {
     return false;
   }
@@ -133,3 +136,20 @@ export function createClearCookieHeader(): string {
   const isProd = process.env.NODE_ENV === 'production';
   return `kortex_admin_session=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0${isProd ? '; Secure' : ''}`;
 }
+
+/**
+ * Higher-order API route wrapper that enforces administrator authentication.
+ * Returns HTTP 401 JSON if unauthorized; otherwise invokes the inner handler.
+ */
+export function withAdminAuth<T = any>(
+  handler: (req: Request, context: T) => Promise<Response>
+): (req: Request, context: T) => Promise<Response> {
+  return async (req: Request, context: T): Promise<Response> => {
+    const isAuthed = await verifyAdminRequest(req);
+    if (!isAuthed) {
+      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+    }
+    return handler(req, context);
+  };
+}
+

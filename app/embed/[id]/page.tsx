@@ -20,6 +20,7 @@ import {
   Headphones,
 } from 'lucide-react';
 import { MarkdownRenderer } from '@/components/markdown-renderer';
+import { consumeChatStream } from '@/lib/chat/stream';
 
 interface EmbedPageProps {
   params: Promise<{ id: string }>;
@@ -252,66 +253,44 @@ export default function EmbedChatPage({ params }: EmbedPageProps) {
         throw new Error('Failed to get response');
       }
 
-      const reader = res.body.getReader();
-      const decoder = new TextDecoder();
-      let streamBuffer = '';
-      let replyText = '';
       let replyCitations: any[] = [];
       let isWebSearch = false;
 
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-
-        streamBuffer += decoder.decode(value, { stream: true });
-        const lines = streamBuffer.split('\n');
-        streamBuffer = lines.pop() || '';
-
-        for (const line of lines) {
-          const trimmed = line.trim();
-          if (trimmed.startsWith('data: ')) {
-            const jsonStr = trimmed.slice(6);
-            if (jsonStr === '[DONE]') continue;
-
-            try {
-              const data = JSON.parse(jsonStr);
-              if (data.type === 'status') {
-                setStreamingStatus(data.message || 'Searching knowledge...');
-              } else if (data.type === 'citations') {
-                if (data.conversationId) setConversationId(data.conversationId);
-                replyCitations = data.citations || [];
-                isWebSearch = Boolean(data.isWebSearch);
-                setStreamingStatus(null);
-              } else if (data.type === 'takeover_active') {
-                if (data.conversationId) setConversationId(data.conversationId);
-                setIsTakeoverActive(true);
-                if (data.agentName) setAssignedAgentName(data.agentName);
-                setStreamingStatus(null);
-              } else if (data.type === 'done') {
-                if (data.conversationId) setConversationId(data.conversationId);
-              } else if (data.type === 'token') {
-                replyText += data.token;
-                setStreamingStatus(null);
-                setMessages((prev) => {
-                  const updated = [...prev];
-                  const lastIdx = updated.length - 1;
-                  if (lastIdx >= 0 && updated[lastIdx].role === 'assistant') {
-                    updated[lastIdx] = {
-                      ...updated[lastIdx],
-                      content: replyText,
-                      citations: replyCitations,
-                      isWebSearch: isWebSearch,
-                    };
-                  }
-                  return updated;
-                });
-              }
-            } catch {
-              // ignore parse errors
+      await consumeChatStream(res.body, {
+        onToken: (accumulated) => {
+          setStreamingStatus(null);
+          setMessages((prev) => {
+            const updated = [...prev];
+            const lastIdx = updated.length - 1;
+            if (lastIdx >= 0 && updated[lastIdx].role === 'assistant') {
+              updated[lastIdx] = {
+                ...updated[lastIdx],
+                content: accumulated,
+                citations: replyCitations,
+                isWebSearch: isWebSearch,
+              };
             }
-          }
-        }
-      }
+            return updated;
+          });
+        },
+        onStatus: (statusText) => {
+          setStreamingStatus(statusText);
+        },
+        onCitations: (citations, webSearch) => {
+          replyCitations = citations;
+          isWebSearch = Boolean(webSearch);
+          setStreamingStatus(null);
+        },
+        onTakeover: (agentName, convId) => {
+          if (convId) setConversationId(convId);
+          setIsTakeoverActive(true);
+          if (agentName) setAssignedAgentName(agentName);
+          setStreamingStatus(null);
+        },
+        onDone: (convId) => {
+          if (convId) setConversationId(convId);
+        },
+      });
     } catch (err) {
       console.error('Streaming error:', err);
       setMessages((prev) => {

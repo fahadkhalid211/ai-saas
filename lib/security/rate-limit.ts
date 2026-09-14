@@ -1,3 +1,5 @@
+import { NextResponse } from 'next/server';
+
 interface RateLimitRecord {
   timestamps: number[];
 }
@@ -70,4 +72,43 @@ export function getClientIp(req: Request): string {
   if (cfIp) return cfIp.trim();
 
   return '127.0.0.1';
+}
+
+/**
+ * Standardized rate limit enforcer.
+ * Returns an immediate HTTP 429 response if rate limit is exceeded, or null if allowed.
+ */
+export function enforceRateLimit(
+  req: Request,
+  prefix: string,
+  options: RateLimitOptions = { windowMs: 60 * 1000, max: 30 }
+): { errorResponse: NextResponse | null; remaining: number; resetTime: number; clientIp: string } {
+  const ip = getClientIp(req);
+  const limit = checkRateLimit(`${prefix}:${ip}`, options);
+
+  if (!limit.allowed) {
+    return {
+      errorResponse: NextResponse.json(
+        { error: 'Too many requests. Please try again later.' },
+        {
+          status: 429,
+          headers: {
+            'X-RateLimit-Limit': String(options.max),
+            'X-RateLimit-Remaining': '0',
+            'X-RateLimit-Reset': String(limit.resetTime),
+          },
+        }
+      ),
+      remaining: 0,
+      resetTime: limit.resetTime,
+      clientIp: ip,
+    };
+  }
+
+  return {
+    errorResponse: null,
+    remaining: limit.remaining,
+    resetTime: limit.resetTime,
+    clientIp: ip,
+  };
 }

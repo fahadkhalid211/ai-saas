@@ -1,12 +1,9 @@
 import { NextResponse } from 'next/server';
 import { testWebhookPing } from '@/lib/webhook';
-import { verifyAdminRequest } from '@/lib/security/auth';
+import { withAdminAuth } from '@/lib/security/auth';
 
-export async function POST(req: Request) {
+export const POST = withAdminAuth(async (req: Request) => {
   try {
-    if (!(await verifyAdminRequest(req))) {
-      return NextResponse.json({ error: 'Unauthorized: Admin authentication required' }, { status: 401 });
-    }
 
     const body = await req.json();
     const { webhookUrl, secret } = body;
@@ -23,4 +20,4 @@ export async function POST(req: Request) {
       { status: 500 }
     );
   }
-}
+});

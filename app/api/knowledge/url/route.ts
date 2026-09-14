@@ -4,15 +4,11 @@ import { extractFromUrl } from '@/lib/rag/url-extractor';
 import { chunkDocument } from '@/lib/rag/chunker';
 import { generateEmbeddingsBatch } from '@/lib/rag/embedder';
 import { diagnoseKnowledgeFailure } from '@/lib/rag/diagnostics';
-import { verifyAdminRequest } from '@/lib/security/auth';
+import { withAdminAuth } from '@/lib/security/auth';
 import { validateSafeExternalUrl } from '@/lib/security/ssrf';
 
-export async function POST(req: Request) {
+export const POST = withAdminAuth(async (req: Request) => {
   try {
-    if (!(await verifyAdminRequest(req))) {
-      return NextResponse.json({ error: 'Unauthorized: Admin authentication required' }, { status: 401 });
-    }
-
     const body = await req.json();
     const { assistantId, url, customTitle } = body;
 
@@ -141,4 +137,4 @@ export async function POST(req: Request) {
       { status: 500 }
     );
   }
-}
+});

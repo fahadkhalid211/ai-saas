@@ -1,15 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Database } from '@/lib/db';
-import { verifyAdminRequest } from '@/lib/security/auth';
+import { withAdminAuth } from '@/lib/security/auth';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET(req: NextRequest) {
+export const GET = withAdminAuth(async (req: Request) => {
   try {
-    if (!(await verifyAdminRequest(req))) {
-      return NextResponse.json({ error: 'Unauthorized: Admin access required' }, { status: 401 });
-    }
-
     const { searchParams } = new URL(req.url);
     const limit = parseInt(searchParams.get('limit') || '100', 10);
 
@@ -18,4 +14,4 @@ export async function GET(req: NextRequest) {
   } catch (error: any) {
     return NextResponse.json({ error: error?.message || 'Failed to fetch audit trail' }, { status: 500 });
   }
-}
+});

@@ -3,7 +3,7 @@ import { Database } from '@/lib/db';
 import { sendSupportLeadEmail } from '@/lib/email';
 import { dispatchWebhook } from '@/lib/webhook';
 import { verifyAdminRequest } from '@/lib/security/auth';
-import { checkRateLimit, getClientIp } from '@/lib/security/rate-limit';
+import { enforceRateLimit } from '@/lib/security/rate-limit';
 
 export async function OPTIONS() {
   return new NextResponse(null, {
@@ -19,13 +19,9 @@ export async function OPTIONS() {
 export async function POST(req: Request) {
   try {
     // Rate limit lead submissions (max 10 per minute per IP)
-    const ip = getClientIp(req);
-    const limit = checkRateLimit(`lead:${ip}`, { windowMs: 60 * 1000, max: 10 });
-    if (!limit.allowed) {
-      return NextResponse.json(
-        { error: 'Too many submissions. Please wait a moment before trying again.' },
-        { status: 429, headers: { 'Access-Control-Allow-Origin': '*' } }
-      );
+    const rateLimit = enforceRateLimit(req, 'lead', { windowMs: 60 * 1000, max: 10 });
+    if (rateLimit.errorResponse) {
+      return rateLimit.errorResponse;
     }
 
     const body = await req.json();

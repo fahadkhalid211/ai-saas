@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { Database } from '@/lib/db';
+import { Database, getLandingConfigForSlugOrTemplate } from '@/lib/db';
 import { retrieveRelevantContext } from '@/lib/rag/retrieval';
 import { buildSystemPrompt, streamChatResponse } from '@/lib/ai/providers';
 import { ChatMessage } from '@/lib/ai/types';
 import { isWebSearchIntent, extractSearchQuery, executeWebSearch } from '@/lib/rag/web-search';
 import { parseFileOrText } from '@/lib/rag/parsers';
-import { checkRateLimit, getClientIp } from '@/lib/security/rate-limit';
+import { enforceRateLimit } from '@/lib/security/rate-limit';
 
 // Handle CORS pre-flight
 export async function OPTIONS() {
@@ -22,17 +22,13 @@ export async function OPTIONS() {
 export async function POST(req: NextRequest) {
   try {
     // 1. Rate Limiting Check (max 35 messages per minute per IP)
-    const ip = getClientIp(req);
-    const rateCheck = checkRateLimit(`chat:${ip}`, { windowMs: 60 * 1000, max: 35 });
-    if (!rateCheck.allowed) {
-      return NextResponse.json(
-        { error: 'Rate limit exceeded. Please wait a moment before sending more messages.' },
-        { status: 429 }
-      );
+    const rateLimit = enforceRateLimit(req, 'chat', { windowMs: 60 * 1000, max: 35 });
+    if (rateLimit.errorResponse) {
+      return rateLimit.errorResponse;
     }
 
     const body = await req.json();
-    const { assistantId, messages, visitorId, conversationId, preferredLanguage, attachment } = body;
+    const { assistantId, messages, visitorId, conversationId, preferredLanguage, attachment, landingPageSlug } = body;
 
     if (!assistantId) {
       return NextResponse.json({ error: 'assistantId is required' }, { status: 400 });
@@ -148,11 +144,33 @@ export async function POST(req: NextRequest) {
 
     // 1. Get or create conversation record
     const conv = await Database.getOrCreateConversation(assistantId, visitorId, conversationId);
+    const isFirstMessage = (conv.messages || []).length === 0;
     await Database.saveMessage(conv.id, 'user', latestUserMsg, [], 0, attachmentMeta);
     await Database.updateConversation(conv.id, {
       sentiment: detectedSentiment,
       ...(isEscalation ? { escalated: true } : {}),
     });
+
+    // Notify dashboard for new chats or messages
+    try {
+      if (isFirstMessage) {
+        await Database.addNotification({
+          title: 'New Live Visitor Chat',
+          message: `A new visitor started a chat: "${latestUserMsg.slice(0, 75)}"`,
+          type: 'chat_new',
+          metadata: { conversationId: conv.id, assistantId },
+        });
+      } else if (conv.isLiveTakeover) {
+        await Database.addNotification({
+          title: 'Live Chat Visitor Message',
+          message: `Incoming visitor message in active takeover: "${latestUserMsg.slice(0, 75)}"`,
+          type: 'chat_message',
+          metadata: { conversationId: conv.id, assistantId },
+        });
+      }
+    } catch (notifErr) {
+      console.warn('[ChatRoute] Notification error:', notifErr);
+    }
 
     // 2. If Human Agent Takeover is active, pause AI bot auto-reply
     if (conv.isLiveTakeover) {
@@ -274,12 +292,91 @@ export async function POST(req: NextRequest) {
             }
           }
 
+          // Determine active landing page config
+          let activeLandingConfig = assistant.landingPageConfig;
+          if (landingPageSlug) {
+            const dbPage = await Database.getLandingPageBySlugOrDomain(landingPageSlug);
+            if (dbPage) {
+              activeLandingConfig = dbPage;
+            } else {
+              activeLandingConfig = getLandingConfigForSlugOrTemplate(landingPageSlug);
+            }
+          }
+
+          // Filter out foreign industry knowledge chunks to prevent cross-contamination
+          if (activeLandingConfig) {
+            const currentIndustry = (activeLandingConfig.industry || activeLandingConfig.slug || '').toLowerCase();
+            const isBarber = currentIndustry.includes('barber');
+            const isGym = currentIndustry.includes('gym') || currentIndustry.includes('fitness');
+            const isRealEstate = currentIndustry.includes('real') || currentIndustry.includes('estate') || currentIndustry.includes('property');
+
+            retrieval.chunks = (retrieval.chunks || []).filter((chunk: any) => {
+              const text = (chunk.content || '').toLowerCase();
+              if (isBarber) {
+                // If on barber page, reject gym, fitness, real estate chunks
+                if (text.includes('gym') || text.includes('cardio') || text.includes('sauna') || text.includes('workout pass') || text.includes('property listing')) {
+                  return false;
+                }
+              } else if (isGym) {
+                // If on gym page, reject barber haircut chunks
+                if (text.includes('haircut') || text.includes('beard trim') || text.includes('fade')) {
+                  return false;
+                }
+              }
+              return true;
+            });
+            retrieval.contextText = retrieval.chunks.map((c: any) => c.content).join('\n\n');
+          }
+
+          // Inject official landing page services, pricing, and operating details into context
+          let landingKnowledge = '';
+          let businessPrompt = assistant.systemPrompt;
+
+          if (activeLandingConfig) {
+            const cfg = activeLandingConfig;
+            const srvList = (cfg.services || []).map((s: any) => 
+              `- ${s.name}: ${s.price} (Duration: ${s.durationMinutes} mins) - ${s.description}`
+            ).join('\n');
+            const hoursList = (cfg.workingHours || []).map((h: any) => `- ${h.days}: ${h.hours}`).join('\n');
+            landingKnowledge = `\n\n[OFFICIAL BUSINESS PROFILE, SERVICES & PRICING CATALOG]:
+Business Name: ${cfg.businessName}
+Tagline: ${cfg.tagline}
+Address / Location: ${cfg.address || 'Local facility'}
+Phone: ${cfg.phone || 'Direct contact available'}
+Email: ${cfg.email || 'Direct contact available'}
+
+OFFICIAL SERVICES & LIVE PRICING:
+${srvList || 'Consultation and custom packages available upon request.'}
+
+OFFICIAL OPERATING HOURS:
+${hoursList || 'Regular business hours.'}
+
+INSTRUCTIONS FOR INQUIRIES:
+Always cite the exact prices and service durations from the official catalog above when visitors inquire about prices, services, hours, or appointments. Always invite the user to schedule their appointment.
+When the user asks to book, schedule, or reserve an appointment, enthusiastically encourage them and ALWAYS include the token [ACTION:BOOKING_FORM] at the very end of your response so the interactive booking card is displayed.`;
+
+            businessPrompt = `You are the friendly, professional AI representative for ${cfg.businessName}.
+Tagline: ${cfg.tagline}
+Physical Address: ${cfg.address || 'Local facility'}
+Phone: ${cfg.phone || 'Available online'}
+Email: ${cfg.email || 'Available online'}
+
+CRITICAL IDENTITY & BUSINESS SCOPE:
+- You represent ONLY ${cfg.businessName}.
+- You answer questions strictly regarding ${cfg.businessName}'s services, haircuts, beard grooming, pricing, appointments, and operating hours.
+- You must NEVER mention gym memberships, fitness passes, personal training, real estate listings, legal consults, or any other unrelated business.
+- When asked about prices or services, ALWAYS cite the exact services and prices from the official catalog.
+- When the visitor expresses interest in booking an appointment, confirm warmly and append [ACTION:BOOKING_FORM] at the end of your message.`;
+          }
+
+          const combinedContext = (retrieval.contextText || '') + landingKnowledge;
+
           // 3. Assemble Prompt with web-linking instructions
           let fullSystemPrompt = buildSystemPrompt({
-            businessPrompt: assistant.systemPrompt,
-            contextText: retrieval.contextText,
+            businessPrompt,
+            contextText: combinedContext,
             fallbackMessage: assistant.fallbackMessage,
-            assistantName: assistant.name,
+            assistantName: activeLandingConfig?.businessName || assistant.name,
           });
 
           if (liveWebResults.length > 0) {

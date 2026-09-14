@@ -8,9 +8,12 @@ export interface PlanTier {
   monthlyPrice: number;
   annualMonthlyPrice: number; // when billed annually
   botLimit: number | 'Unlimited';
+  landingPageLimit: number; // included landing pages
   features: string[];
   highlight: string;
 }
+
+export const EXTRA_LANDING_PAGE_ADDON_PRICE = 100; // $100 one-time per additional landing page
 
 export const BILLING_PLANS: PlanTier[] = [
   {
@@ -22,10 +25,12 @@ export const BILLING_PLANS: PlanTier[] = [
     monthlyPrice: 49,
     annualMonthlyPrice: 39,
     botLimit: 1,
+    landingPageLimit: 1,
     highlight: '$0.49 per chat session',
     features: [
       '100 Chat Sessions / month ($0.50/extra chat)',
       '1 AI Assistant Bot',
+      '1 Hosted Business Landing Page',
       'Standard RAG Knowledge Base (PDF, DOCX, TXT, CSV)',
       'Live Webpage Scraper & URL Indexing',
       'Lead Capture Form & Instant Email Alerts',
@@ -43,10 +48,12 @@ export const BILLING_PLANS: PlanTier[] = [
     monthlyPrice: 149,
     annualMonthlyPrice: 119,
     botLimit: 5,
+    landingPageLimit: 3,
     highlight: '$0.30 per chat session — Save 40%',
     features: [
       '500 Chat Sessions / month ($0.40/extra chat)',
       '5 AI Assistant Bots',
+      '3 Hosted Business Landing Pages',
       'Multimodal RAG (Audio & Video Transcripts + Image OCR)',
       'Appointment Booking & Calendar Sync (Direct, Calendly, Cal.com)',
       'Full Agency White-Label (Zero Platform Branding)',
@@ -64,10 +71,12 @@ export const BILLING_PLANS: PlanTier[] = [
     monthlyPrice: 399,
     annualMonthlyPrice: 319,
     botLimit: 'Unlimited',
+    landingPageLimit: 7,
     highlight: '$0.20 per chat session — Best ROI',
     features: [
       '2,000 Chat Sessions / month ($0.30/extra chat)',
       'Unlimited AI Assistant Bots',
+      '7 Hosted Business Landing Pages',
       'Omnichannel: WhatsApp Cloud API & Telegram Bot integrations',
       'Outbound Webhook Dispatching & CRM Pipeline Sync',
       'Knowledge Gap Correction & Instant Vector Overrides',

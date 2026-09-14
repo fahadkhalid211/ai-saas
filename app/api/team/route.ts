@@ -1,16 +1,12 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { Database } from '@/lib/db';
-import { verifyAdminRequest } from '@/lib/security/auth';
+import { withAdminAuth } from '@/lib/security/auth';
 import { getClientIp } from '@/lib/security/rate-limit';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET(req: NextRequest) {
+export const GET = withAdminAuth(async (req: Request) => {
   try {
-    if (!(await verifyAdminRequest(req))) {
-      return NextResponse.json({ error: 'Unauthorized: Admin access required' }, { status: 401 });
-    }
-
     const { searchParams } = new URL(req.url);
     const workspaceId = searchParams.get('workspaceId') || 'default-workspace';
 
@@ -19,14 +15,10 @@ export async function GET(req: NextRequest) {
   } catch (error: any) {
     return NextResponse.json({ error: error?.message || 'Failed to fetch team members' }, { status: 500 });
   }
-}
+});
 
-export async function POST(req: NextRequest) {
+export const POST = withAdminAuth(async (req: Request) => {
   try {
-    if (!(await verifyAdminRequest(req))) {
-      return NextResponse.json({ error: 'Unauthorized: Admin access required' }, { status: 401 });
-    }
-
     const body = await req.json();
     const { name, email, role = 'support_agent', workspaceId = 'default-workspace' } = body;
 
@@ -60,14 +52,10 @@ export async function POST(req: NextRequest) {
   } catch (error: any) {
     return NextResponse.json({ error: error?.message || 'Failed to add team member' }, { status: 500 });
   }
-}
+});
 
-export async function PUT(req: NextRequest) {
+export const PUT = withAdminAuth(async (req: Request) => {
   try {
-    if (!(await verifyAdminRequest(req))) {
-      return NextResponse.json({ error: 'Unauthorized: Admin access required' }, { status: 401 });
-    }
-
     const body = await req.json();
     const { id, role, status, name } = body;
 
@@ -98,14 +86,10 @@ export async function PUT(req: NextRequest) {
   } catch (error: any) {
     return NextResponse.json({ error: error?.message || 'Failed to update team member' }, { status: 500 });
   }
-}
+});
 
-export async function DELETE(req: NextRequest) {
+export const DELETE = withAdminAuth(async (req: Request) => {
   try {
-    if (!(await verifyAdminRequest(req))) {
-      return NextResponse.json({ error: 'Unauthorized: Admin access required' }, { status: 401 });
-    }
-
     const { searchParams } = new URL(req.url);
     const id = searchParams.get('id');
 
@@ -141,4 +125,4 @@ export async function DELETE(req: NextRequest) {
   } catch (error: any) {
     return NextResponse.json({ error: error?.message || 'Failed to remove team member' }, { status: 500 });
   }
-}
+});

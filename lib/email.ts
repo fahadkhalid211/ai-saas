@@ -1,5 +1,5 @@
 import nodemailer from 'nodemailer';
-import { SupportCustomField } from './db';
+import { Database, SupportCustomField } from './db';
 
 export interface SendSupportLeadEmailOptions {
   to: string;
@@ -475,12 +475,43 @@ async function sendEmailTransport(payload: {
   fromName: string;
 }): Promise<EmailSendResult> {
   const { to, subject, text, html, fromName } = payload;
-  const smtpHost = process.env.SMTP_HOST;
-  const smtpUser = process.env.SMTP_USER;
-  const smtpPass = process.env.SMTP_PASS;
-  const smtpPort = parseInt(process.env.SMTP_PORT || '587', 10);
-  const smtpSecure = process.env.SMTP_SECURE === 'true' || smtpPort === 465;
-  const smtpFrom = process.env.SMTP_FROM || smtpUser || `noreply@kortex-ai.com`;
+  const dbSmtp = await Database.getSmtpSettings().catch(() => null);
+
+  // 1. Resend API Check
+  const resendKey = dbSmtp?.resendApiKey || process.env.RESEND_API_KEY;
+  if (resendKey && resendKey.startsWith('re_')) {
+    try {
+      const fromEmail = dbSmtp?.resendFrom || process.env.RESEND_FROM || 'onboarding@resend.dev';
+      const res = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${resendKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          from: `${fromName} <${fromEmail}>`,
+          to: [to.trim()],
+          subject,
+          html,
+          text,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.message || 'Resend API error');
+      console.log(`[EmailService] Delivered via Resend to ${to} (ID: ${data.id})`);
+      return { success: true, messageId: data.id };
+    } catch (resendErr: any) {
+      console.error('[EmailService] Resend failed, falling back to SMTP:', resendErr?.message);
+    }
+  }
+
+  // 2. SMTP Check
+  const smtpHost = dbSmtp?.host || process.env.SMTP_HOST;
+  const smtpUser = dbSmtp?.user || process.env.SMTP_USER;
+  const smtpPass = dbSmtp?.pass || process.env.SMTP_PASS;
+  const smtpPort = dbSmtp?.port || parseInt(process.env.SMTP_PORT || '587', 10);
+  const smtpSecure = dbSmtp?.secure !== undefined ? dbSmtp.secure : (process.env.SMTP_SECURE === 'true' || smtpPort === 465);
+  const smtpFrom = dbSmtp?.from || process.env.SMTP_FROM || smtpUser || `noreply@kortex-ai.com`;
 
   if (smtpHost && smtpUser && smtpPass) {
     try {
@@ -510,7 +541,7 @@ async function sendEmailTransport(payload: {
   // Fallback simulator
   console.log(`
 ================================================================================
-[SIMULATED DISPATCH]
+[SIMULATED EMAIL DISPATCH - NO SMTP CONFIGURED]
 To: ${to}
 From: ${fromName} <${smtpFrom}>
 Subject: ${subject}
@@ -519,6 +550,94 @@ ${text}
 ================================================================================
   `);
   return { success: true, simulated: true };
+}
+
+export async function sendTestDiagnosticEmail(
+  to: string,
+  customConfig?: {
+    host?: string;
+    port?: number;
+    secure?: boolean;
+    user?: string;
+    pass?: string;
+    from?: string;
+    resendApiKey?: string;
+    resendFrom?: string;
+  }
+): Promise<EmailSendResult> {
+  const subject = `Kortex AI SMTP Test: Verification Succeeded`;
+  const text = `Congratulations! Your email server settings are working correctly.\nDispatched at: ${new Date().toISOString()}\nTarget: ${to}\n`;
+  const html = `
+    <div style="font-family:sans-serif;max-width:500px;margin:20px auto;border:1px solid #e2e8f0;border-radius:12px;padding:24px;background:#ffffff;">
+      <h2 style="color:#0f172a;margin-top:0;">Email Delivery Verification</h2>
+      <p style="color:#16a34a;font-weight:bold;font-size:16px;">Success! Your SMTP / Email delivery configuration is connected.</p>
+      <p style="color:#475569;font-size:13px;line-height:1.6;">
+        All appointment confirmations, 24-hour and 1-hour reminders, and new lead inquiries will now be dispatched live to client inboxes.
+      </p>
+      <div style="background:#f8fafc;padding:12px;border-radius:8px;font-size:12px;color:#64748b;font-family:monospace;margin-top:16px;">
+        Dispatched at: ${new Date().toLocaleString()}<br/>
+        Recipient: ${escapeHtml(to)}
+      </div>
+    </div>
+  `;
+
+  if (customConfig?.resendApiKey) {
+    try {
+      const fromEmail = customConfig.resendFrom || 'onboarding@resend.dev';
+      const res = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${customConfig.resendApiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          from: `Kortex AI <${fromEmail}>`,
+          to: [to.trim()],
+          subject,
+          html,
+          text,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.message || 'Resend API error');
+      return { success: true, messageId: data.id };
+    } catch (err: any) {
+      return { success: false, error: err?.message };
+    }
+  }
+
+  if (customConfig?.host && customConfig?.user && customConfig?.pass) {
+    try {
+      const port = customConfig.port || 587;
+      const secure = customConfig.secure !== undefined ? customConfig.secure : port === 465;
+      const transporter = nodemailer.createTransport({
+        host: customConfig.host,
+        port,
+        secure,
+        auth: { user: customConfig.user, pass: customConfig.pass },
+      });
+
+      const info = await transporter.sendMail({
+        from: `"Kortex AI Diagnostic" <${customConfig.from || customConfig.user}>`,
+        to: to.trim(),
+        subject,
+        text,
+        html,
+      });
+
+      return { success: true, messageId: info.messageId };
+    } catch (err: any) {
+      return { success: false, error: err?.message };
+    }
+  }
+
+  return sendEmailTransport({
+    to,
+    subject,
+    text,
+    html,
+    fromName: 'Kortex AI Diagnostic',
+  });
 }
 
 export async function sendAppointmentConfirmationEmail(
