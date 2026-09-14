@@ -259,9 +259,9 @@ export async function POST(req: NextRequest) {
           const isGroq = (assistant.provider || '').toLowerCase() === 'groq';
           const configuredChunks = assistant.contextChunks || 5;
           const topK = isGroq ? Math.min(configuredChunks, 5) : configuredChunks;
-          let effectiveQuery = webSearchQuery || latestUserMsg;
+          const effectiveQuery = webSearchQuery || latestUserMsg;
 
-          let retrieval = await retrieveRelevantContext(
+          const retrieval = await retrieveRelevantContext(
             assistantId,
             effectiveQuery,
             conversationHistory,
