@@ -1,6 +1,7 @@
 import { AssistantData, Database } from '../db';
 import { retrieveRelevantContext } from '../rag/retrieval';
 import { buildSystemPrompt, generateChatCompletion } from '../ai/providers';
+import { convertMarkdownForMessagingChannel } from './format';
 
 export interface TelegramBotInfo {
   id: number;
@@ -158,7 +159,7 @@ export async function processTelegramUpdate(
       }
     );
 
-    const cleanReply = aiResponse.trim() || assistant.fallbackMessage;
+    const cleanReply = convertMarkdownForMessagingChannel(aiResponse.trim() || assistant.fallbackMessage);
 
     // 5. Send reply to Telegram
     await sendTelegramMessage(assistant.telegramBotToken, chatId, cleanReply);

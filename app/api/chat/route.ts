@@ -8,6 +8,10 @@ import { parseFileOrText } from '@/lib/rag/parsers';
 import { enforceRateLimit, enforceGlobalRateLimit, enforceRateLimitByKey } from '@/lib/security/rate-limit';
 import { generateConversationAccessToken } from '@/lib/security/auth';
 
+// Streamed responses (token-by-token LLM output, plus an optional live web
+// search round-trip) can run well past a short default function timeout.
+export const maxDuration = 120;
+
 // Handle CORS pre-flight
 export async function OPTIONS() {
   return new NextResponse(null, {
@@ -243,9 +247,14 @@ export async function POST(req: NextRequest) {
       ...(isEscalation ? { escalated: true } : {}),
     });
 
-    // Notify dashboard for new chats, escalations, or messages
+    // Notify dashboard for new chats, escalations, or messages.
+    // Guard escalation notifications with `!conv.escalated` (the pre-update
+    // flag) so a conversation already waiting for an agent doesn't spawn a
+    // fresh "Chat Escalation" notification on every subsequent message that
+    // happens to match the urgent/human-agent keyword regex — previously
+    // that fired repeatedly for the same conversation.
     try {
-      if (isEscalation && !conv.isLiveTakeover) {
+      if (isEscalation && !conv.isLiveTakeover && !conv.escalated) {
         await Database.addNotification({
           title: asksForHuman ? 'Live Agent Requested' : 'Chat Escalation (Urgent)',
           message: `Visitor requested human assistance: "${latestUserMsg.slice(0, 75)}"`,
@@ -523,7 +532,8 @@ ${hoursList || 'Regular business hours.'}
 
 INSTRUCTIONS FOR INQUIRIES:
 Answer visitor questions accurately and authoritatively using the verified knowledge base documentation and the official business catalog above.
-Always cite the exact prices and service durations from the official catalog above when visitors inquire about prices, services, hours, or appointments. Always invite the user to schedule their appointment.
+For a given service, the official catalog above is the source of truth for its current price/duration — use it by default when visitors inquire about prices, services, hours, or appointments. Always invite the user to schedule their appointment.
+PRICE/BUDGET CONFLICTS: If the knowledge base documentation states a different price, budget, or figure than the official catalog for what appears to be the SAME service or item, do NOT silently pick one number. Point out that you found two different figures, state both (and where each came from, e.g. "the current pricing catalog" vs. "a document titled X"), and ask the visitor a clarifying question (e.g. which package, tier, or scope they mean) before committing to a number. Only state a single confident figure when the sources agree or the visitor has clarified which one applies.
 When the user asks to book, schedule, or reserve an appointment, enthusiastically encourage them and ALWAYS include the token [ACTION:BOOKING_FORM] at the very end of your response so the interactive booking card is displayed.`;
 
             businessPrompt = `You are the friendly, professional AI representative for ${cfg.businessName}.
@@ -536,7 +546,8 @@ CRITICAL IDENTITY & BUSINESS SCOPE:
 - You represent ONLY ${cfg.businessName}.
 - You answer questions accurately, politely, and authoritatively using the verified knowledge base and official business services catalog.
 - If the visitor asks questions covered in the knowledge base, provide clear, comprehensive answers using that knowledge.
-- When asked about prices, hours, or services, cite the exact services and prices from the official catalog.
+- When asked about prices, hours, or services, cite the exact services and prices from the official catalog by default.
+- If a knowledge base document quotes a different price/budget for what looks like the same service, don't guess which is right: mention both figures and their source, and ask the visitor to clarify (e.g. which package or scope) rather than confidently stating a single number.
 - When the visitor expresses interest in booking an appointment or reservation, confirm warmly and append [ACTION:BOOKING_FORM] at the end of your message.`;
           }
 
@@ -584,8 +595,13 @@ Directly use the content of this attached document to assist the visitor, answer
 
           const llmMessages: ChatMessage[] = [
             { role: 'system', content: fullSystemPrompt },
+            // Prior turns can include 'agent' (human live-support) messages
+            // once a conversation has gone through a takeover. LLM providers
+            // only accept 'user'/'assistant' roles, so collapse anything
+            // that isn't a user turn into 'assistant' rather than passing
+            // the raw role through (which providers reject with a 400).
             ...messages.slice(-6).map((m: any) => ({
-              role: m.role as 'user' | 'assistant',
+              role: (m.role === 'user' ? 'user' : 'assistant') as 'user' | 'assistant',
               content: m.content,
             })),
           ];

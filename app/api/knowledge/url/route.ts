@@ -7,6 +7,11 @@ import { diagnoseKnowledgeFailure } from '@/lib/rag/diagnostics';
 import { withAdminAuth } from '@/lib/security/auth';
 import { validateSafeExternalUrl } from '@/lib/security/ssrf';
 
+// Webpage scraping falls back through up to three tiers (direct fetch, curl,
+// Jina reader) and YouTube/media extraction can involve transcription, so
+// this route needs more headroom than a typical short-lived API route.
+export const maxDuration = 300;
+
 export const POST = withAdminAuth(async (req: Request) => {
   try {
     const body = await req.json();

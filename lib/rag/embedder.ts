@@ -66,14 +66,36 @@ export async function generateEmbedding(text: string): Promise<number[]> {
 }
 
 /**
- * Generate embeddings for multiple text chunks in batches.
+ * Generate embeddings for multiple text chunks.
+ *
+ * Runs with bounded concurrency instead of one-at-a-time: a document that
+ * chunks into hundreds of pieces (a large CSV, a long transcript) used to
+ * take one inference call per chunk in strict sequence, which is the main
+ * reason large knowledge-base uploads were slow enough to trip the upload
+ * route's processing timeout. The local transformer pipeline itself is
+ * still single-threaded CPU work, but overlapping calls lets the event loop
+ * pipeline tokenization/post-processing of one chunk while the model runs
+ * on another, and — more importantly — bounds worst-case latency to
+ * (n / concurrency) calls instead of n.
  */
-export async function generateEmbeddingsBatch(texts: string[]): Promise<number[][]> {
-  const results: number[][] = [];
-  for (const text of texts) {
-    const emb = await generateEmbedding(text);
-    results.push(emb);
+export async function generateEmbeddingsBatch(
+  texts: string[],
+  concurrency: number = 8
+): Promise<number[][]> {
+  const results: number[][] = new Array(texts.length);
+  let nextIndex = 0;
+
+  async function worker() {
+    while (true) {
+      const i = nextIndex++;
+      if (i >= texts.length) return;
+      results[i] = await generateEmbedding(texts[i]);
+    }
   }
+
+  const workerCount = Math.max(1, Math.min(concurrency, texts.length));
+  await Promise.all(Array.from({ length: workerCount }, () => worker()));
+
   return results;
 }
 

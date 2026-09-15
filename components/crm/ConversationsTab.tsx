@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { MarkdownRenderer } from '@/components/markdown-renderer';
 import {
   History,
   RefreshCw,
@@ -510,7 +511,11 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
                                         <span>{m.senderName || 'Live Support Agent'}</span>
                                       </div>
                                     )}
-                                    <div className="whitespace-pre-wrap">{m.content}</div>
+                                    {isUser ? (
+                                      <div className="whitespace-pre-wrap">{m.content}</div>
+                                    ) : (
+                                      <MarkdownRenderer content={m.content} />
+                                    )}
 
                                     {/* Web Sources Preview (Strictly for live web search - Never display internal knowledge base) */}
                                     {(() => {

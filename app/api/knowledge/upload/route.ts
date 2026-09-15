@@ -6,6 +6,12 @@ import { generateEmbeddingsBatch } from '@/lib/rag/embedder';
 import { diagnoseKnowledgeFailure } from '@/lib/rag/diagnostics';
 import { withAdminAuth } from '@/lib/security/auth';
 
+// Audio/video transcription (+ optional translation) followed by embedding
+// hundreds of chunks can legitimately take well over a minute; let the
+// platform know this route needs real headroom instead of being killed at
+// whatever short default applies (e.g. Vercel's default function timeout).
+export const maxDuration = 300;
+
 export const POST = withAdminAuth(async (req: Request) => {
   try {
     const formData = await req.formData();
@@ -99,8 +105,18 @@ export const POST = withAdminAuth(async (req: Request) => {
             return chunkRecords.length;
           })();
 
+          // Media files go through transcription (and, for non-English speech,
+          // a second translation pass) before chunking/embedding even starts,
+          // so they legitimately need much longer than a plain text document.
+          // A flat 30s cap was failing real uploads outright rather than
+          // protecting against anything — this scales the budget by type
+          // while still bounding a genuinely stuck request.
+          const timeoutMs = isVideo || isAudio ? 270_000 : 90_000;
           const timeoutPromise = new Promise<never>((_, reject) =>
-            setTimeout(() => reject(new Error('File processing timed out after 30 seconds')), 30000)
+            setTimeout(
+              () => reject(new Error(`File processing timed out after ${Math.round(timeoutMs / 1000)} seconds`)),
+              timeoutMs
+            )
           );
 
           const chunkCount = await Promise.race([processFileTask, timeoutPromise]);

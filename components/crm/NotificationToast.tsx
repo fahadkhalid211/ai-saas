@@ -1,21 +1,44 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Bell, X } from 'lucide-react';
 
+interface ToastNotification {
+  id?: string;
+  title: string;
+  message: string;
+  type?: string;
+  metadata?: any;
+}
+
 interface NotificationToastProps {
-  incomingToast: { title: string; message: string; type?: string; metadata?: any } | null;
-  setIncomingToast: (toast: any) => void;
+  toastQueue: ToastNotification[];
+  onDismiss: () => void;
   setIsNotifOpen: (open: boolean) => void;
   setActiveTab?: (tab: any) => void;
 }
 
+const AUTO_DISMISS_MS = 5000;
+
 export function NotificationToast({
-  incomingToast,
-  setIncomingToast,
+  toastQueue,
+  onDismiss,
   setIsNotifOpen,
   setActiveTab,
 }: NotificationToastProps) {
+  const incomingToast = toastQueue[0] || null;
+
+  // Auto-dismiss the currently visible toast after 5 seconds so a queue of
+  // notifications advances on its own instead of piling up behind one stuck
+  // popup (or requiring the admin to close each one manually).
+  useEffect(() => {
+    if (!incomingToast) return;
+    const timer = setTimeout(() => {
+      onDismiss();
+    }, AUTO_DISMISS_MS);
+    return () => clearTimeout(timer);
+  }, [incomingToast, onDismiss]);
+
   if (!incomingToast) return null;
 
   const isEscalation =
@@ -45,7 +68,7 @@ export function NotificationToast({
           <span className="text-xs font-bold text-slate-900 dark:text-white truncate">{incomingToast.title}</span>
           <button
             type="button"
-            onClick={() => setIncomingToast(null)}
+            onClick={onDismiss}
             className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer"
           >
             <X className="w-4 h-4" />
@@ -57,7 +80,7 @@ export function NotificationToast({
             <button
               type="button"
               onClick={() => {
-                setIncomingToast(null);
+                onDismiss();
                 setActiveTab('history');
               }}
               className={`text-[11px] font-bold hover:underline cursor-pointer ${
@@ -72,7 +95,7 @@ export function NotificationToast({
             <button
               type="button"
               onClick={() => {
-                setIncomingToast(null);
+                onDismiss();
                 setIsNotifOpen(true);
               }}
               className="text-[11px] font-semibold text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
@@ -82,6 +105,12 @@ export function NotificationToast({
           )}
           <span className="text-slate-300 dark:text-slate-700">&bull;</span>
           <span className="text-[10px] text-slate-400 font-mono">Just now</span>
+          {toastQueue.length > 1 && (
+            <>
+              <span className="text-slate-300 dark:text-slate-700">&bull;</span>
+              <span className="text-[10px] text-slate-400 font-semibold">+{toastQueue.length - 1} more</span>
+            </>
+          )}
         </div>
       </div>
     </div>

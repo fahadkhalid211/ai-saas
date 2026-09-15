@@ -1,6 +1,7 @@
 import { AssistantData, Database } from '../db';
 import { retrieveRelevantContext } from '../rag/retrieval';
 import { buildSystemPrompt, generateChatCompletion } from '../ai/providers';
+import { convertMarkdownForMessagingChannel } from './format';
 
 /**
  * Sends a message to a customer via the official Meta WhatsApp Cloud API.
@@ -97,7 +98,7 @@ export async function processWhatsAppWebhook(
       }
     );
 
-    const cleanReply = aiResponse.trim() || assistant.fallbackMessage;
+    const cleanReply = convertMarkdownForMessagingChannel(aiResponse.trim() || assistant.fallbackMessage);
 
     // 4. Send response back to customer's WhatsApp
     await sendWhatsAppMessage(

@@ -135,8 +135,14 @@ export default function DashboardPage() {
   const [notifications, setNotifications] = useState<any[]>([]);
   const [unreadNotifCount, setUnreadNotifCount] = useState(0);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
-  const [incomingToast, setIncomingToast] = useState<any | null>(null);
+  // Queue of unread notifications waiting to be shown as a toast, one at a
+  // time (oldest first). The visible toast is always toastQueue[0].
+  const [toastQueue, setToastQueue] = useState<any[]>([]);
   const lastNotifIdRef = useRef<string | null>(null);
+
+  const dismissFrontToast = () => {
+    setToastQueue((prev) => prev.slice(1));
+  };
 
   // Embed State
   const [showEmbedModal, setShowEmbedModal] = useState(false);
@@ -189,15 +195,24 @@ export default function DashboardPage() {
         setUnreadNotifCount(data.unreadCount || 0);
 
         if (list.length > 0) {
-          const latest = list[0];
-          if (lastNotifIdRef.current && latest.id !== lastNotifIdRef.current && !latest.read) {
-            playNotificationChime();
-            setIncomingToast(latest);
-            if (latest.type === 'chat_escalated' && activeAssistant?.id) {
-              fetchConversations(activeAssistant.id);
+          if (lastNotifIdRef.current) {
+            // `list` is newest-first; everything before the last id we saw
+            // is new since the previous poll. If that id fell out of the
+            // returned page entirely, don't dump the whole backlog as toasts.
+            const prevIdx = list.findIndex((n: any) => n.id === lastNotifIdRef.current);
+            const freshOnes = prevIdx === -1 ? [] : list.slice(0, prevIdx);
+            const newUnread = freshOnes.filter((n: any) => !n.read);
+
+            if (newUnread.length > 0) {
+              playNotificationChime();
+              // Oldest-of-the-batch first, appended to whatever is still queued.
+              setToastQueue((prev) => [...prev, ...newUnread.slice().reverse()]);
+              if (newUnread.some((n: any) => n.type === 'chat_escalated') && activeAssistant?.id) {
+                fetchConversations(activeAssistant.id);
+              }
             }
           }
-          lastNotifIdRef.current = latest.id;
+          lastNotifIdRef.current = list[0].id;
         }
       }
     } catch (e) {}
@@ -1020,8 +1035,8 @@ export default function DashboardPage() {
 
         {/* Bottom-Left Notification Arrival Toast & Chime Alert */}
         <NotificationToast
-          incomingToast={incomingToast}
-          setIncomingToast={setIncomingToast}
+          toastQueue={toastQueue}
+          onDismiss={dismissFrontToast}
           setIsNotifOpen={setIsNotifOpen}
           setActiveTab={setActiveTab}
         />
