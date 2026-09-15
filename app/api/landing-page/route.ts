@@ -7,8 +7,38 @@ import { LandingPageConfig } from '@/lib/landing/types';
 
 export const dynamic = 'force-dynamic';
 
+async function resolveAssistantForLandingPage(page: LandingPageConfig): Promise<string> {
+  if (page.assistantId) {
+    const existing = await Database.getAssistantById(page.assistantId);
+    if (existing) return existing.id;
+  }
+
+  const wsId = page.workspaceId || 'default-workspace';
+  const wsAssistants = await Database.getAssistants(wsId);
+  if (wsAssistants.length > 0) {
+    const matchedId = wsAssistants[0].id;
+    if (page.id && page.assistantId !== matchedId) {
+      page.assistantId = matchedId;
+      try {
+        await Database.saveLandingPage(page);
+      } catch (saveErr) {
+        console.warn('[LandingPage] Failed to persist canonical assistantId:', saveErr);
+      }
+    }
+    return matchedId;
+  }
+
+  const demo = await Database.getAssistantById('demo-assistant');
+  if (demo) return demo.id;
+
+  return page.assistantId || 'demo-assistant';
+}
+
 async function getPublicAssistantConfig(assistantId: string, fallbackName?: string) {
-  const assistant = await Database.getAssistantById(assistantId);
+  let assistant = await Database.getAssistantById(assistantId);
+  if (!assistant && assistantId !== 'demo-assistant') {
+    assistant = await Database.getAssistantById('demo-assistant');
+  }
   if (!assistant) {
     return {
       id: assistantId,
@@ -101,7 +131,7 @@ export async function GET(req: NextRequest) {
     if (domain) {
       const page = await Database.getLandingPageBySlugOrDomain(domain);
       if (page) {
-        const astId = page.assistantId || `ast_${page.slug}`;
+        const astId = await resolveAssistantForLandingPage(page);
         const assistant = await getPublicAssistantConfig(astId, page.businessName);
         return NextResponse.json({
           assistantId: astId,
@@ -122,7 +152,7 @@ export async function GET(req: NextRequest) {
       }
 
       if (page) {
-        const astId = page.assistantId || `ast_${page.slug}`;
+        const astId = await resolveAssistantForLandingPage(page);
         const assistant = await getPublicAssistantConfig(astId, page.businessName);
         return NextResponse.json({
           assistantId: astId,
@@ -145,7 +175,8 @@ export async function GET(req: NextRequest) {
       }
 
       const preset = getLandingConfigForSlugOrTemplate(slug);
-      const astId = `ast_${slug.replace(/[^a-zA-Z0-9_-]/g, '_')}`;
+      const defaultAst = await Database.getAssistantById('demo-assistant');
+      const astId = defaultAst?.id || 'demo-assistant';
       const assistant = await getPublicAssistantConfig(astId, preset.businessName);
       return NextResponse.json({
         assistantId: astId,
@@ -172,9 +203,11 @@ export async function GET(req: NextRequest) {
     }
 
     const preset = getLandingConfigForSlugOrTemplate(assistantId);
-    const assistant = await getPublicAssistantConfig(assistantId, preset.businessName);
+    const defaultAst = await Database.getAssistantById('demo-assistant');
+    const astId = defaultAst?.id || assistantId;
+    const assistant = await getPublicAssistantConfig(astId, preset.businessName);
     return NextResponse.json({
-      assistantId,
+      assistantId: astId,
       assistantName: preset.businessName,
       config: preset,
       assistant,

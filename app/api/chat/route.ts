@@ -38,7 +38,33 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'messages array is required' }, { status: 400 });
     }
 
-    const assistant = await Database.getAssistantById(assistantId);
+    let assistant = await Database.getAssistantById(assistantId);
+    if (!assistant) {
+      // 1. Check if assistantId is actually a landing page slug or custom domain
+      let page = await Database.getLandingPageBySlugOrDomain(assistantId);
+      if (!page && landingPageSlug) {
+        page = await Database.getLandingPageBySlugOrDomain(landingPageSlug);
+      }
+      if (page?.assistantId) {
+        assistant = await Database.getAssistantById(page.assistantId);
+      }
+      if (!assistant && page?.workspaceId) {
+        const wsAsts = await Database.getAssistants(page.workspaceId);
+        if (wsAsts.length > 0) assistant = wsAsts[0];
+      }
+      // 2. Check getAssistantBySlug
+      if (!assistant) {
+        assistant = await Database.getAssistantBySlug(assistantId);
+      }
+      if (!assistant && landingPageSlug) {
+        assistant = await Database.getAssistantBySlug(landingPageSlug);
+      }
+      // 3. Fallback to demo-assistant
+      if (!assistant) {
+        assistant = await Database.getAssistantById('demo-assistant');
+      }
+    }
+
     if (!assistant) {
       return NextResponse.json({ error: 'Assistant not found' }, { status: 404 });
     }
@@ -320,11 +346,29 @@ export async function POST(req: NextRequest) {
           const effectiveQuery = webSearchQuery || latestUserMsg;
 
           const retrieval = await retrieveRelevantContext(
-            assistantId,
+            assistant.id,
             effectiveQuery,
             conversationHistory,
             topK
           );
+
+          // Smart fallback: If assistant has 0 chunks and is in default-workspace, check demo-assistant chunks
+          if (
+            retrieval.chunks.length === 0 &&
+            assistant.id !== 'demo-assistant' &&
+            (assistant.workspaceId || 'default-workspace') === 'default-workspace'
+          ) {
+            const fallbackRetrieval = await retrieveRelevantContext(
+              'demo-assistant',
+              effectiveQuery,
+              conversationHistory,
+              topK
+            );
+            if (fallbackRetrieval.chunks.length > 0) {
+              retrieval.chunks = fallbackRetrieval.chunks;
+              retrieval.contextText = fallbackRetrieval.contextText;
+            }
+          }
 
           // Smart fallback: If local KB found 0 chunks, user asked a real question, and web search is allowed
           const isGreetingOrShort = /^(hi|hello|hey|greetings|help|how are you|good morning|good evening)$/i.test(latestUserMsg.trim());
@@ -361,23 +405,19 @@ export async function POST(req: NextRequest) {
             }
           }
 
-          // Filter out foreign industry knowledge chunks to prevent cross-contamination
+          // Filter out foreign industry knowledge chunks to prevent cross-contamination from seed presets
           if (activeLandingConfig) {
             const currentIndustry = (activeLandingConfig.industry || activeLandingConfig.slug || '').toLowerCase();
             const isBarber = currentIndustry.includes('barber');
             const isGym = currentIndustry.includes('gym') || currentIndustry.includes('fitness');
-            const isRealEstate = currentIndustry.includes('real') || currentIndustry.includes('estate') || currentIndustry.includes('property');
 
             retrieval.chunks = (retrieval.chunks || []).filter((chunk: any) => {
-              const text = (chunk.content || '').toLowerCase();
-              if (isBarber) {
-                // If on barber page, reject gym, fitness, real estate chunks
-                if (text.includes('gym') || text.includes('cardio') || text.includes('sauna') || text.includes('workout pass') || text.includes('property listing')) {
+              const src = (chunk.metadata?.sourceTitle || '').toLowerCase();
+              if (src.startsWith('template:') || src.startsWith('sample:')) {
+                if (isBarber && (src.includes('gym') || src.includes('fitness') || src.includes('real estate'))) {
                   return false;
                 }
-              } else if (isGym) {
-                // If on gym page, reject barber haircut chunks
-                if (text.includes('haircut') || text.includes('beard trim') || text.includes('fade')) {
+                if (isGym && src.includes('barber')) {
                   return false;
                 }
               }
@@ -398,7 +438,7 @@ export async function POST(req: NextRequest) {
             const hoursList = (cfg.workingHours || []).map((h: any) => `- ${h.days}: ${h.hours}`).join('\n');
             landingKnowledge = `\n\n[OFFICIAL BUSINESS PROFILE, SERVICES & PRICING CATALOG]:
 Business Name: ${cfg.businessName}
-Tagline: ${cfg.tagline}
+Tagline: ${cfg.tagline || ''}
 Address / Location: ${cfg.address || 'Local facility'}
 Phone: ${cfg.phone || 'Direct contact available'}
 Email: ${cfg.email || 'Direct contact available'}
@@ -410,24 +450,28 @@ OFFICIAL OPERATING HOURS:
 ${hoursList || 'Regular business hours.'}
 
 INSTRUCTIONS FOR INQUIRIES:
+Answer visitor questions accurately and authoritatively using the verified knowledge base documentation and the official business catalog above.
 Always cite the exact prices and service durations from the official catalog above when visitors inquire about prices, services, hours, or appointments. Always invite the user to schedule their appointment.
 When the user asks to book, schedule, or reserve an appointment, enthusiastically encourage them and ALWAYS include the token [ACTION:BOOKING_FORM] at the very end of your response so the interactive booking card is displayed.`;
 
             businessPrompt = `You are the friendly, professional AI representative for ${cfg.businessName}.
-Tagline: ${cfg.tagline}
+Tagline: ${cfg.tagline || ''}
 Physical Address: ${cfg.address || 'Local facility'}
 Phone: ${cfg.phone || 'Available online'}
 Email: ${cfg.email || 'Available online'}
 
 CRITICAL IDENTITY & BUSINESS SCOPE:
 - You represent ONLY ${cfg.businessName}.
-- You answer questions strictly regarding ${cfg.businessName}'s services, haircuts, beard grooming, pricing, appointments, and operating hours.
-- You must NEVER mention gym memberships, fitness passes, personal training, real estate listings, legal consults, or any other unrelated business.
-- When asked about prices or services, ALWAYS cite the exact services and prices from the official catalog.
-- When the visitor expresses interest in booking an appointment, confirm warmly and append [ACTION:BOOKING_FORM] at the end of your message.`;
+- You answer questions accurately, politely, and authoritatively using the verified knowledge base and official business services catalog.
+- If the visitor asks questions covered in the knowledge base, provide clear, comprehensive answers using that knowledge.
+- When asked about prices, hours, or services, cite the exact services and prices from the official catalog.
+- When the visitor expresses interest in booking an appointment or reservation, confirm warmly and append [ACTION:BOOKING_FORM] at the end of your message.`;
           }
 
-          const combinedContext = (retrieval.contextText || '') + landingKnowledge;
+          const combinedContext = [
+            retrieval.contextText ? `[OFFICIAL VERIFIED KNOWLEDGE BASE]:\n${retrieval.contextText}` : '',
+            landingKnowledge,
+          ].filter(Boolean).join('\n\n');
 
           // 3. Assemble Prompt with web-linking instructions
           let fullSystemPrompt = buildSystemPrompt({
