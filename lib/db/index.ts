@@ -23,6 +23,14 @@ import {
 export * from '../landing/types';
 import { resolveDataDir, ensureDirectory, safeAtomicWrite, safeReadFile } from './storage';
 export { resolveDataDir, ensureDirectory, safeAtomicWrite, safeReadFile } from './storage';
+import {
+  isSupabaseConfigured,
+  fetchSupabaseState,
+  persistSupabaseState,
+  fetchSupabaseChunks,
+  persistSupabaseChunks,
+} from './supabase';
+export { isSupabaseConfigured } from './supabase';
 
 // Types matching the Prisma model
 export interface AssistantData {
@@ -406,6 +414,12 @@ function saveChunksState(chunks: ChunkRecord[]): void {
   }
   rebuildChunkIndex(chunks);
   atomicWriteFileSync(VECTORS_FILE, JSON.stringify(chunks, null, 2));
+
+  if (isSupabaseConfigured()) {
+    persistSupabaseChunks(chunks).catch((err) => {
+      console.warn('[Database] Failed to sync chunks to Supabase:', err);
+    });
+  }
 }
 
 function loadState(): DatabaseState {
@@ -576,6 +590,69 @@ function saveState(state: DatabaseState): void {
   const { chunks: _chunks, ...transactional } = state;
   const payload = { ...transactional, chunks: [] };
   atomicWriteFileSync(DB_FILE, JSON.stringify(payload, null, 2));
+
+  if (isSupabaseConfigured()) {
+    persistSupabaseState(state).catch((err) => {
+      console.warn('[Database] Failed to sync state to Supabase:', err);
+    });
+  }
+}
+
+let isSupabaseLoaded = false;
+let supabaseSyncPromise: Promise<void> | null = null;
+
+async function ensureInitialized(): Promise<DatabaseState> {
+  if (!isSupabaseConfigured()) {
+    return loadState();
+  }
+
+  if (cachedState !== null && isSupabaseLoaded) {
+    return cachedState;
+  }
+
+  if (!supabaseSyncPromise) {
+    supabaseSyncPromise = (async () => {
+      try {
+        const remoteState = await fetchSupabaseState();
+        if (remoteState && typeof remoteState === 'object') {
+          cachedState = {
+            workspaces: Array.isArray(remoteState.workspaces) ? remoteState.workspaces : [],
+            assistants: Array.isArray(remoteState.assistants) ? remoteState.assistants : [],
+            knowledgeSources: Array.isArray(remoteState.knowledgeSources) ? remoteState.knowledgeSources : [],
+            chunks: Array.isArray(remoteState.chunks) ? remoteState.chunks : [],
+            conversations: Array.isArray(remoteState.conversations) ? remoteState.conversations : [],
+            messages: Array.isArray(remoteState.messages) ? remoteState.messages : [],
+            leads: Array.isArray(remoteState.leads) ? remoteState.leads : [],
+            unansweredQueries: Array.isArray(remoteState.unansweredQueries) ? remoteState.unansweredQueries : [],
+            appointments: Array.isArray(remoteState.appointments) ? remoteState.appointments : [],
+            teamMembers: Array.isArray(remoteState.teamMembers) ? remoteState.teamMembers : [],
+            auditLogs: Array.isArray(remoteState.auditLogs) ? remoteState.auditLogs : [],
+            notifications: Array.isArray(remoteState.notifications) ? remoteState.notifications : [],
+            landingPages: Array.isArray(remoteState.landingPages) ? remoteState.landingPages : [],
+            smtpSettings: remoteState.smtpSettings,
+            pageViews: Array.isArray(remoteState.pageViews) ? remoteState.pageViews : [],
+          };
+        } else {
+          const localState = loadState();
+          await persistSupabaseState(localState);
+        }
+
+        const remoteChunks = await fetchSupabaseChunks();
+        if (remoteChunks && Array.isArray(remoteChunks)) {
+          cachedChunks = remoteChunks;
+          rebuildChunkIndex(remoteChunks);
+        }
+        isSupabaseLoaded = true;
+      } catch (err) {
+        console.warn('[Database] Failed to sync with Supabase, using local fallback:', err);
+      } finally {
+        supabaseSyncPromise = null;
+      }
+    })();
+  }
+
+  await supabaseSyncPromise;
+  return loadState();
 }
 
 /**
@@ -583,12 +660,12 @@ function saveState(state: DatabaseState): void {
  */
 export class Database {
   static async getState(): Promise<DatabaseState> {
-    return loadState();
+    return ensureInitialized();
   }
 
   // Assistants
   static async getAssistants(workspaceId?: string): Promise<AssistantData[]> {
-    const state = loadState();
+    const state = await ensureInitialized();
     const list = workspaceId && workspaceId !== '*'
       ? state.assistants.filter((a) => (a.workspaceId || 'default-workspace') === workspaceId)
       : state.assistants;
@@ -602,7 +679,7 @@ export class Database {
   }
 
   static async getAssistantById(id: string): Promise<AssistantData | null> {
-    const state = loadState();
+    const state = await ensureInitialized();
     const a = state.assistants.find((ast) => ast.id === id);
     if (!a) return null;
     return {
@@ -615,7 +692,7 @@ export class Database {
   }
 
   static async createAssistant(data: Partial<AssistantData>): Promise<AssistantData> {
-    const state = loadState();
+    const state = await ensureInitialized();
     const id = data.id || 'ast_' + Math.random().toString(36).substring(2, 10);
     const newAssistant: AssistantData = {
       id,
@@ -670,7 +747,7 @@ export class Database {
   }
 
   static async updateAssistant(id: string, data: Partial<AssistantData>): Promise<AssistantData | null> {
-    const state = loadState();
+    const state = await ensureInitialized();
     const idx = state.assistants.findIndex((a) => a.id === id);
     if (idx === -1) return null;
 
@@ -725,7 +802,7 @@ export class Database {
   }
 
   static async deleteAssistant(id: string): Promise<boolean> {
-    const state = loadState();
+    const state = await ensureInitialized();
     state.assistants = state.assistants.filter((a) => a.id !== id);
     state.knowledgeSources = state.knowledgeSources.filter((k) => k.assistantId !== id);
     const remainingChunks = state.chunks.filter((c) => c.assistantId !== id);
@@ -739,7 +816,7 @@ export class Database {
 
   // Knowledge Sources with auto-recovery for stalled processing jobs
   static async getKnowledgeSources(assistantId: string): Promise<KnowledgeSourceData[]> {
-    const state = loadState();
+    const state = await ensureInitialized();
     let stateChanged = false;
     const now = Date.now();
 
@@ -781,7 +858,7 @@ export class Database {
   }
 
   static async createKnowledgeSource(data: Partial<KnowledgeSourceData>): Promise<KnowledgeSourceData> {
-    const state = loadState();
+    const state = await ensureInitialized();
     const id = data.id || 'src_' + Math.random().toString(36).substring(2, 10);
     const newSource: KnowledgeSourceData = {
       id,
@@ -803,7 +880,7 @@ export class Database {
   }
 
   static async updateKnowledgeSource(id: string, data: Partial<KnowledgeSourceData>): Promise<void> {
-    const state = loadState();
+    const state = await ensureInitialized();
     const idx = state.knowledgeSources.findIndex((k) => k.id === id);
     if (idx !== -1) {
       state.knowledgeSources[idx] = {
@@ -816,12 +893,12 @@ export class Database {
   }
 
   static async getKnowledgeSourceById(id: string): Promise<KnowledgeSourceData | null> {
-    const state = loadState();
+    const state = await ensureInitialized();
     return state.knowledgeSources.find((k) => k.id === id) || null;
   }
 
   static async deleteKnowledgeSource(id: string): Promise<boolean> {
-    const state = loadState();
+    const state = await ensureInitialized();
     state.knowledgeSources = state.knowledgeSources.filter((k) => k.id !== id);
     const remainingChunks = state.chunks.filter((c) => c.knowledgeSourceId !== id);
     saveChunksState(remainingChunks);
@@ -831,7 +908,7 @@ export class Database {
 
   // Chunks
   static async saveChunks(chunks: Omit<ChunkRecord, 'id' | 'createdAt'>[]): Promise<void> {
-    const state = loadState();
+    const state = await ensureInitialized();
     const newRecords: ChunkRecord[] = chunks.map((c) => ({
       ...c,
       id: 'chk_' + Math.random().toString(36).substring(2, 10),
@@ -843,14 +920,14 @@ export class Database {
   }
 
   static async updateChunks(updatedChunks: ChunkRecord[]): Promise<void> {
-    const state = loadState();
+    const state = await ensureInitialized();
     const map = new Map<string, ChunkRecord>(updatedChunks.map((c) => [c.id, c]));
     const updated = state.chunks.map((c) => map.get(c.id) || c);
     saveChunksState(updated);
   }
 
   static async deleteChunksBySource(sourceId: string): Promise<void> {
-    const state = loadState();
+    const state = await ensureInitialized();
     const remaining = state.chunks.filter((c) => c.knowledgeSourceId !== sourceId);
     saveChunksState(remaining);
   }
@@ -861,7 +938,7 @@ export class Database {
   }
 
   static async getChunksBySource(sourceId: string): Promise<ChunkRecord[]> {
-    const state = loadState();
+    const state = await ensureInitialized();
     return state.chunks
       .filter((c) => c.knowledgeSourceId === sourceId)
       .sort((a, b) => a.chunkIndex - b.chunkIndex);
@@ -874,7 +951,7 @@ export class Database {
     queryEmbedding: number[],
     topK: number = 6
   ): Promise<SearchResultChunk[]> {
-    const state = loadState();
+    const state = await ensureInitialized();
     const assistantChunks = state.chunks.filter((c) => c.assistantId === assistantId);
     if (assistantChunks.length === 0) return [];
 
@@ -919,7 +996,7 @@ export class Database {
 
   // Conversations & Messages
   static async getConversations(assistantId?: string): Promise<ConversationData[]> {
-    const state = loadState();
+    const state = await ensureInitialized();
     const convs = assistantId
       ? state.conversations.filter((c) => c.assistantId === assistantId)
       : state.conversations;
@@ -934,7 +1011,7 @@ export class Database {
     visitorId?: string,
     conversationId?: string
   ): Promise<ConversationData> {
-    const state = loadState();
+    const state = await ensureInitialized();
     if (conversationId) {
       const existing = state.conversations.find((c) => c.id === conversationId);
       if (existing) {
@@ -959,7 +1036,7 @@ export class Database {
   }
 
   static async getConversationById(id: string): Promise<ConversationData | null> {
-    const state = loadState();
+    const state = await ensureInitialized();
     const conv = state.conversations.find((c) => c.id === id);
     if (!conv) return null;
     return {
@@ -972,7 +1049,7 @@ export class Database {
     id: string,
     data: Partial<ConversationData>
   ): Promise<boolean> {
-    const state = loadState();
+    const state = await ensureInitialized();
     const idx = state.conversations.findIndex((c) => c.id === id);
     if (idx !== -1) {
       state.conversations[idx] = {
@@ -1000,7 +1077,7 @@ export class Database {
     },
     senderName?: string
   ): Promise<MessageData> {
-    const state = loadState();
+    const state = await ensureInitialized();
     const msg: MessageData = {
       id: 'msg_' + Math.random().toString(36).substring(2, 10),
       conversationId,
@@ -1027,7 +1104,7 @@ export class Database {
     notes?: string;
     customData?: Record<string, any>;
   }): Promise<LeadData> {
-    const state = loadState();
+    const state = await ensureInitialized();
     const lead: LeadData = {
       id: 'lead_' + Math.random().toString(36).substring(2, 10),
       assistantId: data.assistantId,
@@ -1045,7 +1122,7 @@ export class Database {
   }
 
   static async getLeads(assistantId: string): Promise<LeadData[]> {
-    const state = loadState();
+    const state = await ensureInitialized();
     return state.leads.filter((l) => l.assistantId === assistantId);
   }
 
@@ -1055,7 +1132,7 @@ export class Database {
     query: string,
     visitorId?: string
   ): Promise<UnansweredQueryData> {
-    const state = loadState();
+    const state = await ensureInitialized();
     if (!state.unansweredQueries) state.unansweredQueries = [];
 
     // Avoid duplicate logging within 10 minutes for identical query
@@ -1087,12 +1164,12 @@ export class Database {
   }
 
   static async getUnansweredQueries(assistantId: string): Promise<UnansweredQueryData[]> {
-    const state = loadState();
+    const state = await ensureInitialized();
     return (state.unansweredQueries || []).filter((q) => q.assistantId === assistantId);
   }
 
   static async resolveUnansweredQuery(id: string, answer?: string): Promise<boolean> {
-    const state = loadState();
+    const state = await ensureInitialized();
     if (!state.unansweredQueries) return false;
     const item = state.unansweredQueries.find((q) => q.id === id);
     if (!item) return false;
@@ -1103,7 +1180,7 @@ export class Database {
   }
 
   static async deleteUnansweredQuery(id: string): Promise<boolean> {
-    const state = loadState();
+    const state = await ensureInitialized();
     if (!state.unansweredQueries) return false;
     state.unansweredQueries = state.unansweredQueries.filter((q) => q.id !== id);
     saveState(state);
@@ -1126,7 +1203,7 @@ export class Database {
     landingPageName?: string;
     landingPageSlug?: string;
   }): Promise<AppointmentData> {
-    const state = loadState();
+    const state = await ensureInitialized();
     if (!state.appointments) state.appointments = [];
 
     const manageToken = crypto.randomBytes(16).toString('hex');
@@ -1162,18 +1239,18 @@ export class Database {
   }
 
   static async getAppointments(assistantId: string): Promise<AppointmentData[]> {
-    const state = loadState();
+    const state = await ensureInitialized();
     return (state.appointments || []).filter((a) => a.assistantId === assistantId);
   }
 
   static async getAppointmentById(id: string): Promise<AppointmentData | null> {
-    const state = loadState();
+    const state = await ensureInitialized();
     const apt = (state.appointments || []).find((a) => a.id === id);
     return apt || null;
   }
 
   static async getAppointmentByManageToken(token: string): Promise<AppointmentData | null> {
-    const state = loadState();
+    const state = await ensureInitialized();
     const apt = (state.appointments || []).find((a) => a.manageToken === token);
     return apt || null;
   }
@@ -1182,7 +1259,7 @@ export class Database {
     id: string,
     updates: Partial<AppointmentData>
   ): Promise<AppointmentData | null> {
-    const state = loadState();
+    const state = await ensureInitialized();
     if (!state.appointments) return null;
     const apt = state.appointments.find((a) => a.id === id);
     if (!apt) return null;
@@ -1196,7 +1273,7 @@ export class Database {
     status: AppointmentData['status'],
     cancellationReason?: string
   ): Promise<boolean> {
-    const state = loadState();
+    const state = await ensureInitialized();
     if (!state.appointments) return false;
     const apt = state.appointments.find((a) => a.id === id);
     if (!apt) return false;
@@ -1208,7 +1285,7 @@ export class Database {
   }
 
   static async deleteAppointment(id: string): Promise<boolean> {
-    const state = loadState();
+    const state = await ensureInitialized();
     if (!state.appointments) return false;
     state.appointments = state.appointments.filter((a) => a.id !== id);
     saveState(state);
@@ -1216,12 +1293,12 @@ export class Database {
   }
 
   static async getUpcomingAppointmentsForReminders(): Promise<AppointmentData[]> {
-    const state = loadState();
+    const state = await ensureInitialized();
     return (state.appointments || []).filter((a) => a.status === 'confirmed');
   }
 
   static async markReminderSent(id: string, type: '24h' | '1h'): Promise<boolean> {
-    const state = loadState();
+    const state = await ensureInitialized();
     if (!state.appointments) return false;
     const apt = state.appointments.find((a) => a.id === id);
     if (!apt) return false;
@@ -1241,7 +1318,7 @@ export class Database {
 
   // Hosted Landing Page Config
   static async getLandingPageConfig(assistantId: string): Promise<LandingPageConfig | null> {
-    const state = loadState();
+    const state = await ensureInitialized();
     const normalized = assistantId.toLowerCase().trim();
     const ast = state.assistants.find((a) => a.id === assistantId || a.id.toLowerCase() === normalized);
     if (ast && ast.landingPageConfig) {
@@ -1257,7 +1334,7 @@ export class Database {
     assistantId: string,
     config: Partial<LandingPageConfig>
   ): Promise<LandingPageConfig | null> {
-    const state = loadState();
+    const state = await ensureInitialized();
     const ast = state.assistants.find((a) => a.id === assistantId);
     if (!ast) return null;
     ast.landingPageConfig = {
@@ -1270,7 +1347,7 @@ export class Database {
   }
 
   static async getAssistantBySlug(slug: string): Promise<AssistantData | null> {
-    const state = loadState();
+    const state = await ensureInitialized();
     const normalizedSlug = slug.toLowerCase().trim();
     let ast = state.assistants.find((a) => {
       if (a.id.toLowerCase() === normalizedSlug) return true;
@@ -1331,18 +1408,18 @@ export class Database {
 
   // Team Management & Role-Based Access Control
   static async getTeamMembers(workspaceId: string = 'default-workspace'): Promise<TeamMemberData[]> {
-    const state = loadState();
+    const state = await ensureInitialized();
     return (state.teamMembers || []).filter((tm) => tm.workspaceId === workspaceId);
   }
 
   static async getTeamMemberByEmail(email: string): Promise<TeamMemberData | null> {
-    const state = loadState();
+    const state = await ensureInitialized();
     const member = (state.teamMembers || []).find((tm) => tm.email.toLowerCase() === email.toLowerCase().trim());
     return member || null;
   }
 
   static async addTeamMember(data: Omit<TeamMemberData, 'id' | 'createdAt'>): Promise<TeamMemberData> {
-    const state = loadState();
+    const state = await ensureInitialized();
     if (!state.teamMembers) state.teamMembers = [];
     const newMember: TeamMemberData = {
       id: 'tm_' + Math.random().toString(36).substring(2, 10),
@@ -1358,7 +1435,7 @@ export class Database {
     id: string,
     updates: Partial<TeamMemberData>
   ): Promise<TeamMemberData | null> {
-    const state = loadState();
+    const state = await ensureInitialized();
     if (!state.teamMembers) return null;
     const member = state.teamMembers.find((m) => m.id === id);
     if (!member) return null;
@@ -1368,7 +1445,7 @@ export class Database {
   }
 
   static async deleteTeamMember(id: string): Promise<boolean> {
-    const state = loadState();
+    const state = await ensureInitialized();
     if (!state.teamMembers) return false;
     const prevLen = state.teamMembers.length;
     state.teamMembers = state.teamMembers.filter((m) => m.id !== id);
@@ -1380,7 +1457,7 @@ export class Database {
     email: string,
     passwordOrCode: string
   ): Promise<TeamMemberData | null> {
-    const state = loadState();
+    const state = await ensureInitialized();
     const cleanEmail = (email || '').toLowerCase().trim();
     const cleanSecret = (passwordOrCode || '').trim();
     if (!cleanEmail || !cleanSecret) return null;
@@ -1406,7 +1483,7 @@ export class Database {
     memberId: string,
     credentials: { password?: string; accessCode?: string }
   ): Promise<TeamMemberData | null> {
-    const state = loadState();
+    const state = await ensureInitialized();
     if (!state.teamMembers) return null;
     const member = state.teamMembers.find((m) => m.id === memberId);
     if (!member) return null;
@@ -1416,21 +1493,48 @@ export class Database {
     return member;
   }
 
-  static async getTeamMemberById(id: string): Promise<TeamMemberData | null> {
-    const state = loadState();
+  static async getTeamMemberById(id: string, workspaceId?: string): Promise<TeamMemberData | null> {
+    const state = await ensureInitialized();
     if (!state.teamMembers) state.teamMembers = [];
     let member = state.teamMembers.find((m) => m.id === id);
     if (!member && (id === 'admin' || id === 'master-admin' || id === 'tm_owner')) {
-      member = state.teamMembers.find((m) => m.role === 'owner') || {
-        id,
-        workspaceId: 'default-workspace',
-        name: 'Master Admin',
-        email: 'admin@kortexai.com',
-        role: 'owner',
-        status: 'active',
-        title: 'Master Administrator',
-        createdAt: new Date().toISOString(),
-      };
+      member = state.teamMembers.find((m) => m.role === 'owner' && (!workspaceId || m.workspaceId === workspaceId))
+        || state.teamMembers.find((m) => m.role === 'owner');
+      if (!member) {
+        member = {
+          id: 'tm_owner',
+          workspaceId: workspaceId || 'default-workspace',
+          name: 'Master Admin',
+          email: 'admin@kortexai.com',
+          role: 'owner',
+          status: 'active',
+          title: 'Master Administrator',
+          createdAt: new Date().toISOString(),
+        };
+        state.teamMembers.push(member);
+        saveState(state);
+      }
+    }
+    if (!member && workspaceId) {
+      member = state.teamMembers.find((m) => m.workspaceId === workspaceId && m.role === 'owner');
+      if (!member) {
+        const ws = state.workspaces.find((w) => w.id === workspaceId);
+        if (ws) {
+          const ownerEmail = (ws as any).ownerEmail || ws.billingEmail || 'owner@kortexai.com';
+          member = {
+            id: `owner_${ws.id}`,
+            workspaceId: ws.id,
+            name: ws.name || 'Owner',
+            email: ownerEmail,
+            role: 'owner',
+            status: 'active',
+            title: 'Workspace Owner',
+            createdAt: ws.createdAt || new Date().toISOString(),
+          };
+          state.teamMembers.push(member);
+          saveState(state);
+        }
+      }
     }
     return member || null;
   }
@@ -1442,28 +1546,53 @@ export class Database {
       title?: string;
       avatarUrl?: string;
       password?: string;
-    }
+    },
+    workspaceId?: string
   ): Promise<TeamMemberData | null> {
-    const state = loadState();
+    const state = await ensureInitialized();
     if (!state.teamMembers) state.teamMembers = [];
     let member = state.teamMembers.find((m) => m.id === id);
+
+    // If not found by exact id, attempt fallback resolution
     if (!member && (id === 'admin' || id === 'master-admin' || id === 'tm_owner')) {
-      member = state.teamMembers.find((m) => m.role === 'owner');
+      member = state.teamMembers.find((m) => m.role === 'owner' && (!workspaceId || m.workspaceId === workspaceId))
+        || state.teamMembers.find((m) => m.role === 'owner');
       if (!member) {
         member = {
           id: 'tm_owner',
-          workspaceId: 'default-workspace',
-          name: 'Master Admin',
+          workspaceId: workspaceId || 'default-workspace',
+          name: updates.name?.trim() || 'Master Admin',
           email: 'admin@kortexai.com',
           role: 'owner',
           status: 'active',
-          title: 'Master Administrator',
+          title: updates.title?.trim() || 'Master Administrator',
           createdAt: new Date().toISOString(),
         };
         state.teamMembers.push(member);
       }
     }
-    if (!member) return null;
+
+    // If still not found, check if this is an owner or member for the specified workspace
+    if (!member && workspaceId) {
+      member = state.teamMembers.find((m) => m.workspaceId === workspaceId && m.role === 'owner');
+    }
+
+    // Auto-upsert if member still does not exist so profile edits never get lost
+    if (!member) {
+      const targetWs = workspaceId ? state.workspaces.find((w) => w.id === workspaceId) : null;
+      member = {
+        id,
+        workspaceId: targetWs?.id || workspaceId || 'default-workspace',
+        name: updates.name?.trim() || targetWs?.name || 'User',
+        email: (targetWs as any)?.ownerEmail || (targetWs as any)?.billingEmail || 'user@kortexai.com',
+        role: 'owner',
+        status: 'active',
+        title: updates.title?.trim() || '',
+        avatarUrl: updates.avatarUrl || '',
+        createdAt: new Date().toISOString(),
+      };
+      state.teamMembers.push(member);
+    }
 
     if (updates.name !== undefined && updates.name.trim()) {
       member.name = updates.name.trim();
@@ -1489,7 +1618,7 @@ export class Database {
 
   // Security Audit Trail
   static async addAuditLog(entry: Omit<AuditLogData, 'id' | 'timestamp'>): Promise<AuditLogData> {
-    const state = loadState();
+    const state = await ensureInitialized();
     if (!state.auditLogs) state.auditLogs = [];
     const log: AuditLogData = {
       id: 'aud_' + Math.random().toString(36).substring(2, 12),
@@ -1506,13 +1635,13 @@ export class Database {
   }
 
   static async getAuditLogs(limit: number = 100): Promise<AuditLogData[]> {
-    const state = loadState();
+    const state = await ensureInitialized();
     return (state.auditLogs || []).slice(0, limit);
   }
 
   // Real-time In-App Notifications
   static async getNotifications(assistantId?: string, limit: number = 50): Promise<InAppNotificationData[]> {
-    const state = loadState();
+    const state = await ensureInitialized();
     let notifs = state.notifications || [];
     if (assistantId) {
       notifs = notifs.filter((n) => !n.assistantId || n.assistantId === assistantId);
@@ -1523,7 +1652,7 @@ export class Database {
   static async addNotification(
     data: Omit<InAppNotificationData, 'id' | 'createdAt' | 'read'>
   ): Promise<InAppNotificationData> {
-    const state = loadState();
+    const state = await ensureInitialized();
     if (!state.notifications) state.notifications = [];
     const notif: InAppNotificationData = {
       id: 'notif_' + Math.random().toString(36).substring(2, 10),
@@ -1540,7 +1669,7 @@ export class Database {
   }
 
   static async markNotificationAsRead(id: string): Promise<boolean> {
-    const state = loadState();
+    const state = await ensureInitialized();
     if (!state.notifications) return false;
     const item = state.notifications.find((n) => n.id === id);
     if (!item) return false;
@@ -1550,7 +1679,7 @@ export class Database {
   }
 
   static async markAllNotificationsAsRead(assistantId?: string): Promise<boolean> {
-    const state = loadState();
+    const state = await ensureInitialized();
     if (!state.notifications) return false;
     for (const item of state.notifications) {
       if (!assistantId || !item.assistantId || item.assistantId === assistantId) {
@@ -1562,7 +1691,7 @@ export class Database {
   }
   // Workspace & Chat-Based Billing
   static async getWorkspaceBilling(workspaceId: string = 'default-workspace'): Promise<WorkspaceBillingData> {
-    const state = loadState();
+    const state = await ensureInitialized();
     let ws = state.workspaces.find((w) => w.id === workspaceId);
     const startOfCurrentMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString();
     const endOfCurrentMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 1).toISOString();
@@ -1644,7 +1773,7 @@ export class Database {
     workspaceId: string = 'default-workspace',
     updates: Partial<WorkspaceBillingData>
   ): Promise<WorkspaceBillingData> {
-    const state = loadState();
+    const state = await ensureInitialized();
     let ws = state.workspaces.find((w) => w.id === workspaceId);
     if (!ws) {
       await Database.getWorkspaceBilling(workspaceId);
@@ -1660,7 +1789,7 @@ export class Database {
   static async purchaseExtraLandingPageSlot(
     workspaceId: string = 'default-workspace'
   ): Promise<{ success: boolean; newSlotCount: number; invoice: InvoiceRecord }> {
-    const state = loadState();
+    const state = await ensureInitialized();
     let ws = state.workspaces.find((w) => w.id === workspaceId);
     if (!ws) {
       await Database.getWorkspaceBilling(workspaceId);
@@ -1720,7 +1849,7 @@ export class Database {
     landingPage: LandingPageConfig;
     owner: TeamMemberData;
   }> {
-    const state = loadState();
+    const state = await ensureInitialized();
     const cleanEmail = params.ownerEmail.toLowerCase().trim();
     const cleanName = params.businessName.trim();
     const cleanPass = params.password?.trim() || 'Tenant123!';
@@ -1838,7 +1967,7 @@ export class Database {
     workspace: WorkspaceBillingData;
     member: TeamMemberData;
   } | null> {
-    const state = loadState();
+    const state = await ensureInitialized();
     const cleanEmail = (email || '').toLowerCase().trim();
     const cleanSecret = (password || '').trim();
     if (!cleanEmail) return null;
@@ -1847,15 +1976,21 @@ export class Database {
     if (ws) {
       const passMatch = !ws.ownerPassword || ws.ownerPassword === cleanSecret || cleanSecret === 'Staff123!';
       if (passMatch) {
-        const ownerMember = (state.teamMembers || []).find((m) => m.email.toLowerCase() === cleanEmail) || {
-          id: `owner_${ws.id}`,
-          workspaceId: ws.id,
-          name: ws.name || 'Owner',
-          email: cleanEmail,
-          role: 'owner' as const,
-          status: 'active' as const,
-          createdAt: ws.createdAt || new Date().toISOString(),
-        };
+        let ownerMember = (state.teamMembers || []).find((m) => m.email.toLowerCase() === cleanEmail);
+        if (!ownerMember) {
+          ownerMember = {
+            id: `owner_${ws.id}`,
+            workspaceId: ws.id,
+            name: ws.name || 'Owner',
+            email: cleanEmail,
+            role: 'owner' as const,
+            status: 'active' as const,
+            createdAt: ws.createdAt || new Date().toISOString(),
+          };
+          if (!state.teamMembers) state.teamMembers = [];
+          state.teamMembers.push(ownerMember);
+          saveState(state);
+        }
         return { workspace: ws, member: ownerMember };
       }
     }
@@ -1871,7 +2006,7 @@ export class Database {
 
   // Multi-Landing Pages Management
   static async getLandingPages(workspaceId: string = 'default-workspace'): Promise<LandingPageConfig[]> {
-    const state = loadState();
+    const state = await ensureInitialized();
     if (!state.landingPages) state.landingPages = [];
 
     // Purge legacy mock template IDs that were previously auto-seeded by mistake
@@ -1903,13 +2038,13 @@ export class Database {
   }
 
   static async getLandingPageById(id: string): Promise<LandingPageConfig | null> {
-    const state = loadState();
+    const state = await ensureInitialized();
     const page = (state.landingPages || []).find((p) => p.id === id);
     return page || null;
   }
 
   static async getLandingPageBySlugOrDomain(slugOrDomain: string): Promise<LandingPageConfig | null> {
-    const state = loadState();
+    const state = await ensureInitialized();
     const clean = (slugOrDomain || '').toLowerCase().trim();
 
     // 1. Check direct custom domain match
@@ -1941,7 +2076,7 @@ export class Database {
   }
 
   static async saveLandingPage(config: LandingPageConfig): Promise<LandingPageConfig> {
-    const state = loadState();
+    const state = await ensureInitialized();
     if (!state.landingPages) state.landingPages = [];
 
     const pageId = config.id || 'lp_' + Math.random().toString(36).substring(2, 10);
@@ -1989,7 +2124,7 @@ export class Database {
     country?: string;
     source?: string;
   }): Promise<PageViewEventData> {
-    const state = loadState();
+    const state = await ensureInitialized();
     if (!state.pageViews) state.pageViews = [];
 
     const ref = (data.referrer || '').toLowerCase();
@@ -2039,7 +2174,7 @@ export class Database {
     slug?: string;
     days?: number;
   } = {}): Promise<any> {
-    const state = loadState();
+    const state = await ensureInitialized();
     const days = options.days && options.days > 0 ? options.days : 30;
     const cutoff = new Date(Date.now() - days * 86400000).toISOString();
 
@@ -2362,7 +2497,7 @@ export class Database {
   }
 
   static async deleteLandingPage(idOrSlug: string): Promise<boolean> {
-    const state = loadState();
+    const state = await ensureInitialized();
     if (!state.landingPages) return false;
     const prevCount = state.landingPages.length;
     state.landingPages = state.landingPages.filter(
@@ -2374,12 +2509,12 @@ export class Database {
 
   // SMTP & Email Configuration
   static async getSmtpSettings(): Promise<SmtpSettingsData | null> {
-    const state = loadState();
+    const state = await ensureInitialized();
     return state.smtpSettings || null;
   }
 
   static async saveSmtpSettings(settings: Partial<SmtpSettingsData>): Promise<SmtpSettingsData> {
-    const state = loadState();
+    const state = await ensureInitialized();
     const updated: SmtpSettingsData = {
       ...(state.smtpSettings || {}),
       ...settings,
