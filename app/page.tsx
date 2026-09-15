@@ -150,6 +150,25 @@ export default function DashboardPage() {
   const [copiedCode, setCopiedCode] = useState(false);
   const [customEmbedHost, setCustomEmbedHost] = useState('');
 
+  // Database Connectivity Status
+  const [dbStatus, setDbStatus] = useState<{
+    connected: boolean;
+    provider: 'postgres' | 'supabase' | 'ephemeral';
+    isServerless: boolean;
+    message?: string;
+  } | null>(null);
+  const [dismissedDbBanner, setDismissedDbBanner] = useState(false);
+
+  const fetchDbStatus = async () => {
+    try {
+      const res = await fetch('/api/db-status');
+      if (res.ok) {
+        const data = await res.json();
+        setDbStatus(data);
+      }
+    } catch {}
+  };
+
   const playNotificationChime = () => {
     try {
       if (typeof window === 'undefined') return;
@@ -425,6 +444,7 @@ export default function DashboardPage() {
   useEffect(() => {
     async function checkAuth() {
       try {
+        fetchDbStatus();
         const res = await fetch('/api/auth');
         const data = await res.json();
         if (data.authenticated) {
@@ -550,14 +570,15 @@ export default function DashboardPage() {
     return () => clearInterval(interval);
   }, [isAuthenticated, activeAssistant?.id]);
 
-  // Auto-sync appointments every 30 seconds so new bookings appear without manual refresh
+  // Auto-sync appointments immediately when Appointments tab opens & every 8 seconds while active
   useEffect(() => {
-    if (!isAuthenticated || !activeAssistant?.id) return;
+    if (!isAuthenticated || !activeAssistant?.id || activeTab !== 'appointments') return;
+    fetchAppointments(activeAssistant.id);
     const interval = setInterval(() => {
       fetchAppointments(activeAssistant.id);
-    }, 30000);
+    }, 8000);
     return () => clearInterval(interval);
-  }, [isAuthenticated, activeAssistant?.id]);
+  }, [isAuthenticated, activeAssistant?.id, activeTab]);
 
   // Auto-refresh conversation list every 8 seconds while Chat History tab is open
   // so new visitor messages (including escalations) appear without a manual refresh
@@ -640,7 +661,28 @@ export default function DashboardPage() {
           setShowEmbedModal={setShowEmbedModal}
           handleLogout={handleLogout}
           currentUser={currentUser}
+          dbStatus={dbStatus}
         />
+
+        {/* Cloud Persistence Notice Banner */}
+        {dbStatus && !dbStatus.connected && dbStatus.isServerless && !dismissedDbBanner && (
+          <div className="bg-amber-500/15 border-b border-amber-500/30 text-amber-900 dark:text-amber-200 px-4 py-2 text-xs font-medium flex items-center justify-between shrink-0">
+            <div className="flex items-center gap-2">
+              <span className="font-bold uppercase tracking-wider text-[10px] bg-amber-500 text-slate-900 px-1.5 py-0.5 rounded font-mono">
+                Storage Warning
+              </span>
+              <span>
+                Cloud database is not connected. Booked appointments and chats are currently in temporary serverless memory and reset across requests. Set <code className="font-mono font-bold">DATABASE_URL</code> or Supabase variables in Vercel to persist permanently.
+              </span>
+            </div>
+            <button
+              onClick={() => setDismissedDbBanner(true)}
+              className="text-amber-800 dark:text-amber-300 hover:text-amber-950 dark:hover:text-white text-xs font-semibold px-2 py-0.5 cursor-pointer ml-4 shrink-0"
+            >
+              Dismiss
+            </button>
+          </div>
+        )}
 
         {/* Main Shell (Sidebar + Content Workspace) */}
         <div className="flex flex-1 overflow-hidden">

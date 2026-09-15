@@ -25,13 +25,15 @@ export * from '../landing/types';
 import { resolveDataDir, ensureDirectory, safeAtomicWrite, safeReadFile } from './storage';
 export { resolveDataDir, ensureDirectory, safeAtomicWrite, safeReadFile } from './storage';
 import {
-  isSupabaseConfigured,
-  fetchSupabaseState,
-  persistSupabaseState,
-  fetchSupabaseChunks,
-  persistSupabaseChunks,
-} from './supabase';
-export { isSupabaseConfigured } from './supabase';
+  isCloudDbConfigured,
+  getCloudDbProvider,
+  fetchCloudState,
+  persistCloudState,
+  fetchCloudChunks,
+  persistCloudChunks,
+} from './cloud';
+import { isSupabaseConfigured } from './supabase';
+export { isCloudDbConfigured, getCloudDbProvider, isSupabaseConfigured };
 
 // Types matching the Prisma model
 export interface AssistantData {
@@ -428,9 +430,9 @@ function saveChunksState(chunks: ChunkRecord[]): void {
   rebuildChunkIndex(chunks);
   atomicWriteFileSync(VECTORS_FILE, JSON.stringify(chunks, null, 2));
 
-  if (isSupabaseConfigured()) {
-    persistSupabaseChunks(chunks).catch((err) => {
-      console.warn('[Database] Failed to sync chunks to Supabase:', err);
+  if (isCloudDbConfigured()) {
+    persistCloudChunks(chunks).catch((err) => {
+      console.warn('[Database] Failed to sync chunks to Cloud DB:', err);
     });
   }
 }
@@ -471,7 +473,7 @@ function loadState(): DatabaseState {
           const parsed = JSON.parse(bundledRaw);
           if (parsed && typeof parsed === 'object') {
             state = parsed;
-            saveState(parsed);
+            saveLocalStateSync(parsed);
           }
         } catch (err) {
           console.error('[Database] Failed to parse bundled db.json:', err);
@@ -551,7 +553,7 @@ function loadState(): DatabaseState {
       landingPages: [],
       pageViews: [],
     };
-    saveState(initialState);
+    saveLocalStateSync(initialState);
     state = initialState;
   }
 
@@ -574,7 +576,7 @@ function loadState(): DatabaseState {
       saveChunksState(state.chunks);
     }
     state.chunks = [];
-    saveState(state);
+    saveLocalStateSync(state);
   }
 
   if (state.teamMembers.length === 0) {
@@ -587,7 +589,7 @@ function loadState(): DatabaseState {
       status: 'active',
       createdAt: new Date().toISOString(),
     });
-    saveState(state);
+    saveLocalStateSync(state);
   }
 
   // Ensure demo assistant has landing page config initialized
@@ -595,7 +597,7 @@ function loadState(): DatabaseState {
   if (demo && !demo.landingPageConfig) {
     demo.landingPageConfig = DEFAULT_BARBER_LANDING_CONFIG;
     demo.bookingEnabled = true;
-    saveState(state);
+    saveLocalStateSync(state);
   }
 
   // Bind chunks from decoupled vector store
@@ -605,7 +607,7 @@ function loadState(): DatabaseState {
   return cachedState;
 }
 
-function saveState(state: DatabaseState): void {
+function saveLocalStateSync(state: DatabaseState): void {
   ensureDataDir();
   cachedState = state;
   // Strip heavy vector embeddings before writing transactional db.json
@@ -615,31 +617,40 @@ function saveState(state: DatabaseState): void {
   try {
     lastDbFileMtime = fs.statSync(DB_FILE).mtimeMs;
   } catch {}
+}
 
-  if (isSupabaseConfigured()) {
-    persistSupabaseState(state).catch((err) => {
-      console.warn('[Database] Failed to sync state to Supabase:', err);
-    });
+async function saveState(state: DatabaseState): Promise<void> {
+  saveLocalStateSync(state);
+
+  if (isCloudDbConfigured()) {
+    try {
+      await persistCloudState(state);
+      lastCloudFetchTime = Date.now();
+    } catch (err) {
+      console.warn('[Database] Failed to sync state to Cloud DB:', err);
+    }
   }
 }
 
-let isSupabaseLoaded = false;
-let supabaseSyncPromise: Promise<void> | null = null;
+let lastCloudFetchTime = 0;
+const CLOUD_CACHE_TTL_MS = 2500;
+let cloudSyncPromise: Promise<void> | null = null;
 
-async function ensureInitialized(): Promise<DatabaseState> {
-  if (!isSupabaseConfigured()) {
+async function ensureInitialized(forceFresh = false): Promise<DatabaseState> {
+  if (!isCloudDbConfigured()) {
     return loadState();
   }
 
-  if (cachedState !== null && isSupabaseLoaded) {
+  const now = Date.now();
+  if (cachedState !== null && !forceFresh && (now - lastCloudFetchTime < CLOUD_CACHE_TTL_MS)) {
     return cachedState;
   }
 
-  if (!supabaseSyncPromise) {
-    supabaseSyncPromise = (async () => {
+  if (!cloudSyncPromise) {
+    cloudSyncPromise = (async () => {
       try {
-        const remoteState = await fetchSupabaseState();
-        if (remoteState && typeof remoteState === 'object') {
+        const remoteState = await fetchCloudState();
+        if (remoteState && typeof remoteState === 'object' && Array.isArray(remoteState.workspaces)) {
           cachedState = {
             workspaces: Array.isArray(remoteState.workspaces) ? remoteState.workspaces : [],
             assistants: Array.isArray(remoteState.assistants) ? remoteState.assistants : [],
@@ -659,25 +670,82 @@ async function ensureInitialized(): Promise<DatabaseState> {
           };
         } else {
           const localState = loadState();
-          await persistSupabaseState(localState);
+          await persistCloudState(localState);
+          cachedState = localState;
         }
 
-        const remoteChunks = await fetchSupabaseChunks();
+        const remoteChunks = await fetchCloudChunks();
         if (remoteChunks && Array.isArray(remoteChunks)) {
           cachedChunks = remoteChunks;
           rebuildChunkIndex(remoteChunks);
         }
-        isSupabaseLoaded = true;
+        lastCloudFetchTime = Date.now();
       } catch (err) {
-        console.warn('[Database] Failed to sync with Supabase, using local fallback:', err);
+        console.warn('[Database] Failed to sync with Cloud DB, using local fallback:', err);
+        if (cachedState === null) {
+          cachedState = loadState();
+        }
       } finally {
-        supabaseSyncPromise = null;
+        cloudSyncPromise = null;
       }
     })();
   }
 
-  await supabaseSyncPromise;
-  return loadState();
+  await cloudSyncPromise;
+  return cachedState || loadState();
+}
+
+function matchesAssistant(
+  recordAssistantId: string | undefined,
+  targetAssistantId: string,
+  state: DatabaseState
+): boolean {
+  if (!recordAssistantId) return targetAssistantId === 'demo-assistant';
+  if (recordAssistantId === targetAssistantId) return true;
+
+  const resolveCanonical = (idOrSlug: string): string => {
+    const ast = (state.assistants || []).find(
+      (a) => a.id === idOrSlug || a.landingPageConfig?.slug === idOrSlug
+    );
+    if (ast) return ast.id;
+    const lp = (state.landingPages || []).find(
+      (p) => p.slug === idOrSlug || p.id === idOrSlug
+    );
+    if (lp?.assistantId) return lp.assistantId;
+    if (idOrSlug === 'barbershop' || idOrSlug === 'classic-barbershop') return 'demo-assistant';
+    return idOrSlug;
+  };
+
+  const canonicalRecord = resolveCanonical(recordAssistantId);
+  const canonicalTarget = resolveCanonical(targetAssistantId);
+  if (canonicalRecord === canonicalTarget) return true;
+
+  const targetAst = (state.assistants || []).find((a) => a.id === targetAssistantId);
+  const targetSlug = targetAst?.landingPageConfig?.slug;
+
+  // 1. Direct slug or landing page match
+  if (targetSlug && recordAssistantId === targetSlug) return true;
+
+  // 2. Check if recordAssistantId matches any landing page for this assistant
+  const landingPage = (state.landingPages || []).find(
+    (p) => p.slug === recordAssistantId || p.id === recordAssistantId
+  );
+  if (landingPage && landingPage.assistantId === targetAssistantId) return true;
+
+  // 3. Template slug match (e.g. barbershop, gym, real_estate)
+  if (targetAssistantId === 'demo-assistant' || canonicalTarget === 'demo-assistant') {
+    if (recordAssistantId === 'barbershop' || recordAssistantId === 'classic-barbershop') {
+      return true;
+    }
+    const existsAsOther = (state.assistants || []).some(
+      (a) => a.id !== 'demo-assistant' && (a.id === recordAssistantId || a.landingPageConfig?.slug === recordAssistantId)
+    );
+    if (!existsAsOther) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 /**
@@ -1021,13 +1089,19 @@ export class Database {
 
   // Conversations & Messages
   static async getConversations(assistantId?: string): Promise<ConversationData[]> {
-    const state = await ensureInitialized();
-    const convs = assistantId
-      ? state.conversations.filter((c) => c.assistantId === assistantId)
-      : state.conversations;
-    return convs.map((c) => ({
+    const state = await ensureInitialized(true);
+    const allConvs = state.conversations || [];
+    if (!assistantId) {
+      return allConvs.map((c) => ({
+        ...c,
+        messages: (state.messages || []).filter((m) => m.conversationId === c.id),
+      }));
+    }
+
+    const matched = allConvs.filter((c) => matchesAssistant(c.assistantId, assistantId, state));
+    return matched.map((c) => ({
       ...c,
-      messages: state.messages.filter((m) => m.conversationId === c.id),
+      messages: (state.messages || []).filter((m) => m.conversationId === c.id),
     }));
   }
 
@@ -1036,10 +1110,14 @@ export class Database {
     visitorId?: string,
     conversationId?: string
   ): Promise<ConversationData> {
-    const state = await ensureInitialized();
+    const state = await ensureInitialized(true);
     if (conversationId) {
       const existing = state.conversations.find((c) => c.id === conversationId);
       if (existing) {
+        if (assistantId && existing.assistantId !== assistantId) {
+          existing.assistantId = assistantId;
+          await saveState(state);
+        }
         return {
           ...existing,
           messages: state.messages.filter((m) => m.conversationId === existing.id),
@@ -1056,7 +1134,7 @@ export class Database {
     };
 
     state.conversations.unshift(newConv);
-    saveState(state);
+    await saveState(state);
     return { ...newConv, messages: [] };
   }
 
@@ -1074,14 +1152,14 @@ export class Database {
     id: string,
     data: Partial<ConversationData>
   ): Promise<boolean> {
-    const state = await ensureInitialized();
+    const state = await ensureInitialized(true);
     const idx = state.conversations.findIndex((c) => c.id === id);
     if (idx !== -1) {
       state.conversations[idx] = {
         ...state.conversations[idx],
         ...data,
       };
-      saveState(state);
+      await saveState(state);
       return true;
     }
     return false;
@@ -1102,7 +1180,7 @@ export class Database {
     },
     senderName?: string
   ): Promise<MessageData> {
-    const state = await ensureInitialized();
+    const state = await ensureInitialized(true);
     const msg: MessageData = {
       id: 'msg_' + Math.random().toString(36).substring(2, 10),
       conversationId,
@@ -1116,7 +1194,7 @@ export class Database {
     };
 
     state.messages.push(msg);
-    saveState(state);
+    await saveState(state);
     return msg;
   }
 
@@ -1129,7 +1207,7 @@ export class Database {
     notes?: string;
     customData?: Record<string, any>;
   }): Promise<LeadData> {
-    const state = await ensureInitialized();
+    const state = await ensureInitialized(true);
     const lead: LeadData = {
       id: 'lead_' + Math.random().toString(36).substring(2, 10),
       assistantId: data.assistantId,
@@ -1142,12 +1220,12 @@ export class Database {
     };
 
     state.leads.unshift(lead);
-    saveState(state);
+    await saveState(state);
     return lead;
   }
 
   static async getLeads(assistantId: string): Promise<LeadData[]> {
-    const state = await ensureInitialized();
+    const state = await ensureInitialized(true);
     return state.leads.filter((l) => l.assistantId === assistantId);
   }
 
@@ -1259,23 +1337,43 @@ export class Database {
     };
 
     state.appointments.unshift(apt);
-    saveState(state);
+    await saveState(state);
     return apt;
   }
 
+  static async createAppointment(data: Parameters<typeof Database.saveAppointment>[0]): Promise<AppointmentData> {
+    return Database.saveAppointment(data);
+  }
+
   static async getAppointments(assistantId: string): Promise<AppointmentData[]> {
-    const state = await ensureInitialized();
-    return (state.appointments || []).filter((a) => a.assistantId === assistantId);
+    const state = await ensureInitialized(true);
+    const all = state.appointments || [];
+
+    if (!assistantId) return all;
+
+    const matched = all.filter(
+      (a) =>
+        matchesAssistant(a.assistantId, assistantId, state) ||
+        (a.landingPageSlug ? matchesAssistant(a.landingPageSlug, assistantId, state) : false)
+    );
+    if (matched.length > 0) return matched;
+
+    // Fallback: if assistantId is 'demo-assistant' or there's only 1 assistant in workspace, return all
+    if (assistantId === 'demo-assistant' || (state.assistants && state.assistants.length <= 1)) {
+      return all;
+    }
+
+    return matched;
   }
 
   static async getAppointmentById(id: string): Promise<AppointmentData | null> {
-    const state = await ensureInitialized();
+    const state = await ensureInitialized(true);
     const apt = (state.appointments || []).find((a) => a.id === id);
     return apt || null;
   }
 
   static async getAppointmentByManageToken(token: string): Promise<AppointmentData | null> {
-    const state = await ensureInitialized();
+    const state = await ensureInitialized(true);
     const apt = (state.appointments || []).find((a) => a.manageToken === token);
     return apt || null;
   }
@@ -1284,12 +1382,12 @@ export class Database {
     id: string,
     updates: Partial<AppointmentData>
   ): Promise<AppointmentData | null> {
-    const state = await ensureInitialized();
+    const state = await ensureInitialized(true);
     if (!state.appointments) return null;
     const apt = state.appointments.find((a) => a.id === id);
     if (!apt) return null;
     Object.assign(apt, updates, { updatedAt: new Date().toISOString() });
-    saveState(state);
+    await saveState(state);
     return apt;
   }
 
@@ -1298,32 +1396,32 @@ export class Database {
     status: AppointmentData['status'],
     cancellationReason?: string
   ): Promise<boolean> {
-    const state = await ensureInitialized();
+    const state = await ensureInitialized(true);
     if (!state.appointments) return false;
     const apt = state.appointments.find((a) => a.id === id);
     if (!apt) return false;
     apt.status = status;
     if (cancellationReason) apt.cancellationReason = cancellationReason;
     apt.updatedAt = new Date().toISOString();
-    saveState(state);
+    await saveState(state);
     return true;
   }
 
   static async deleteAppointment(id: string): Promise<boolean> {
-    const state = await ensureInitialized();
+    const state = await ensureInitialized(true);
     if (!state.appointments) return false;
     state.appointments = state.appointments.filter((a) => a.id !== id);
-    saveState(state);
+    await saveState(state);
     return true;
   }
 
   static async getUpcomingAppointmentsForReminders(): Promise<AppointmentData[]> {
-    const state = await ensureInitialized();
+    const state = await ensureInitialized(true);
     return (state.appointments || []).filter((a) => a.status === 'confirmed');
   }
 
   static async markReminderSent(id: string, type: '24h' | '1h'): Promise<boolean> {
-    const state = await ensureInitialized();
+    const state = await ensureInitialized(true);
     if (!state.appointments) return false;
     const apt = state.appointments.find((a) => a.id === id);
     if (!apt) return false;
@@ -1337,7 +1435,8 @@ export class Database {
       apt.remindersSent.reminder1h = true;
       apt.remindersSent.reminder1hSentAt = new Date().toISOString();
     }
-    saveState(state);
+    apt.updatedAt = new Date().toISOString();
+    await saveState(state);
     return true;
   }
 

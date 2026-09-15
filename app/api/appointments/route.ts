@@ -195,7 +195,23 @@ export async function POST(req: Request) {
       );
     }
 
-    const assistant = await Database.getAssistantById(assistantId);
+    let assistant = await Database.getAssistantById(assistantId);
+    if (!assistant) {
+      assistant = await Database.getAssistantBySlug(assistantId);
+    }
+    if (!assistant && landingPageSlug) {
+      assistant = await Database.getAssistantBySlug(landingPageSlug);
+    }
+    if (!assistant) {
+      const page = await Database.getLandingPageBySlugOrDomain(assistantId);
+      if (page?.assistantId) {
+        assistant = await Database.getAssistantById(page.assistantId);
+      }
+    }
+    if (!assistant) {
+      assistant = await Database.getAssistantById('demo-assistant');
+    }
+
     if (!assistant) {
       return NextResponse.json(
         { error: 'Assistant not found' },
@@ -207,7 +223,7 @@ export async function POST(req: Request) {
     const landingConfig = assistant.landingPageConfig || DEFAULT_BARBER_LANDING_CONFIG;
 
     // Live availability check: prevent double-booking
-    const existingAppointments = await Database.getAppointments(assistantId);
+    const existingAppointments = await Database.getAppointments(assistant.id);
     const conflict = existingAppointments.find(
       (a) => a.date === date.trim() && a.timeSlot === timeSlot.trim() && a.status !== 'cancelled'
     );
@@ -219,7 +235,7 @@ export async function POST(req: Request) {
     }
 
     const appointment = await Database.saveAppointment({
-      assistantId,
+      assistantId: assistant.id,
       name: name.trim(),
       email: email.trim(),
       phone: phone ? phone.trim() : undefined,

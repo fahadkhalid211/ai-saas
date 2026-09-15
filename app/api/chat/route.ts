@@ -226,8 +226,8 @@ export async function POST(req: NextRequest) {
       detectedSentiment = 'positive';
     }
 
-    // 1. Get or create conversation record
-    const conv = await Database.getOrCreateConversation(assistantId, visitorId, conversationId);
+    // 1. Get or create conversation record with canonical assistant ID
+    const conv = await Database.getOrCreateConversation(assistant.id, visitorId, conversationId);
     // Capability token letting the (unauthenticated) widget poll this
     // specific conversation for live-agent replies without exposing every
     // conversation to anyone who knows/guesses its id.
@@ -242,6 +242,7 @@ export async function POST(req: NextRequest) {
       : conv.status || 'bot';
 
     await Database.updateConversation(conv.id, {
+      assistantId: assistant.id,
       sentiment: detectedSentiment,
       status: nextStatus,
       ...(isEscalation ? { escalated: true } : {}),

@@ -43,6 +43,12 @@ interface DashboardHeaderProps {
   setShowEmbedModal: (show: boolean) => void;
   handleLogout: () => void;
   currentUser?: any;
+  dbStatus?: {
+    connected: boolean;
+    provider: string;
+    isServerless: boolean;
+    message?: string;
+  } | null;
 }
 
 export function DashboardHeader({
@@ -61,6 +67,7 @@ export function DashboardHeader({
   setShowEmbedModal,
   handleLogout,
   currentUser,
+  dbStatus,
 }: DashboardHeaderProps) {
   return (
     <header className="h-16 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-6 flex items-center justify-between sticky top-0 z-40 shrink-0">
@@ -126,6 +133,21 @@ export function DashboardHeader({
 
       {/* Right Header Actions */}
       <div className="flex items-center gap-3">
+        {/* Database Persistence Status Badge */}
+        {dbStatus && (
+          <div
+            className={`hidden xl:flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-lg border font-medium ${
+              dbStatus.connected
+                ? 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300'
+                : 'bg-amber-50 dark:bg-amber-950/40 border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-300'
+            }`}
+            title={dbStatus.message || (dbStatus.connected ? 'Cloud Database Connected' : 'Ephemeral Storage Mode')}
+          >
+            <span className={`h-2 w-2 rounded-full ${dbStatus.connected ? 'bg-emerald-500' : 'bg-amber-500 animate-pulse'}`} />
+            <span>{dbStatus.connected ? `DB: ${dbStatus.provider === 'postgres' ? 'PostgreSQL' : 'Supabase'}` : 'DB: Ephemeral'}</span>
+          </div>
+        )}
+
         {/* Active Provider Indicator */}
         <div className="hidden lg:flex items-center gap-2 text-xs font-mono bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-3 py-1.5 rounded-lg">
           <span className="text-slate-500 dark:text-slate-400 font-sans">Active Engine:</span>
