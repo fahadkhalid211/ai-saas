@@ -703,7 +703,7 @@ export default function HostedBusinessSite({ params }: SitePageProps) {
         ...prev,
         {
           role: 'assistant' as const,
-          content: `✅ **Booking confirmed!** ${serviceLabel} on **${dateLabel}** at **${timeLabel}**. A confirmation has been sent to ${clientEmail}. We look forward to seeing you!`,
+          content: `**Booking confirmed!** ${serviceLabel} on **${dateLabel}** at **${timeLabel}**. A confirmation has been sent to ${clientEmail}. We look forward to seeing you!`,
         },
       ]);
       playChatReceiveSound();

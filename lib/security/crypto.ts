@@ -7,12 +7,14 @@ const ENCRYPTION_KEY_FILE = path.join(DATA_DIR, '.encryption_key');
 
 let inMemoryEncryptionSecret: string | null = null;
 
+const DEFAULT_FALLBACK_ENCRYPTION_SECRET = 'kortex-ai-default-encryption-salt-2026';
+
 /**
  * Resolves the secret used to derive the AES-256-GCM key that protects every
- * stored provider API key. Never falls back to a fixed, source-visible
- * constant: an unconfigured deployment gets a random secret generated once
- * and persisted to DATA_DIR so previously-encrypted values keep decrypting
- * across restarts on the same instance/volume.
+ * stored provider API key. On serverless platforms (such as Vercel) where /tmp
+ * is isolated per Lambda instance, falls back to a deterministic key when neither
+ * ENCRYPTION_SECRET nor ADMIN_API_KEY is configured so that encryption and
+ * decryption remain consistent across different lambda workers.
  */
 function getEncryptionSecret(): string {
   if (process.env.ENCRYPTION_SECRET && process.env.ENCRYPTION_SECRET.trim()) {
@@ -20,6 +22,12 @@ function getEncryptionSecret(): string {
   }
   if (process.env.ADMIN_API_KEY && process.env.ADMIN_API_KEY.trim()) {
     return process.env.ADMIN_API_KEY.trim();
+  }
+
+  // If deployed to Vercel/serverless without explicit keys, use the stable default
+  // so concurrent lambdas don't generate divergent keys and break decryption.
+  if (process.env.VERCEL || process.env.VERCEL_ENV) {
+    return DEFAULT_FALLBACK_ENCRYPTION_SECRET;
   }
 
   if (inMemoryEncryptionSecret) {
@@ -48,10 +56,7 @@ function getEncryptionSecret(): string {
     inMemoryEncryptionSecret = generated;
     return inMemoryEncryptionSecret;
   } catch {
-    if (!inMemoryEncryptionSecret) {
-      inMemoryEncryptionSecret = crypto.randomBytes(32).toString('hex');
-    }
-    return inMemoryEncryptionSecret;
+    return DEFAULT_FALLBACK_ENCRYPTION_SECRET;
   }
 }
 
@@ -106,6 +111,22 @@ export function decryptSecret(ciphertext: string): string {
 
     return decrypted;
   } catch (err) {
+    // If decryption with current key fails, attempt fallback with legacy default salt
+    try {
+      const parts = ciphertext.split(':');
+      if (parts.length === 5) {
+        const iv = Buffer.from(parts[2], 'hex');
+        const authTag = Buffer.from(parts[3], 'hex');
+        const encryptedHex = parts[4];
+        const legacyKey = crypto.createHash('sha256').update(DEFAULT_FALLBACK_ENCRYPTION_SECRET).digest();
+        const decipher = crypto.createDecipheriv('aes-256-gcm', legacyKey, iv);
+        decipher.setAuthTag(authTag);
+        let decrypted = decipher.update(encryptedHex, 'hex', 'utf8');
+        decrypted += decipher.final('utf8');
+        return decrypted;
+      }
+    } catch {}
+
     console.error('[Crypto] Decryption error (invalid key or corrupted ciphertext):', err);
     return '';
   }

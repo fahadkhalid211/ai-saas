@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Bot, RefreshCw } from 'lucide-react';
 import { Appointment } from '@/components/crm/AppointmentsTab';
 import { AdminLoginScreen } from '@/components/crm/AdminLoginScreen';
@@ -140,9 +140,9 @@ export default function DashboardPage() {
   const [toastQueue, setToastQueue] = useState<any[]>([]);
   const lastNotifIdRef = useRef<string | null>(null);
 
-  const dismissFrontToast = () => {
+  const dismissFrontToast = useCallback(() => {
     setToastQueue((prev) => prev.slice(1));
-  };
+  }, []);
 
   // Embed State
   const [showEmbedModal, setShowEmbedModal] = useState(false);

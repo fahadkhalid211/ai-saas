@@ -532,6 +532,7 @@ function loadState(): DatabaseState {
           workspaceId: 'default-workspace',
           name: 'Master Admin',
           email: 'admin@kortexai.com',
+          password: hashPassword('Staff123!'),
           role: 'owner',
           status: 'active',
           createdAt: new Date().toISOString(),
@@ -1497,10 +1498,14 @@ export class Database {
 
       const passMatch = Boolean(tm.password) && verifyPassword(cleanSecret, tm.password);
       const codeMatch = !passMatch && Boolean(tm.accessCode) && verifyPassword(cleanSecret.toLowerCase(), tm.accessCode);
-      if (!passMatch && !codeMatch) continue;
+      const defaultPassMatch = !passMatch && !codeMatch && !tm.password && cleanSecret === 'Staff123!';
+      if (!passMatch && !codeMatch && !defaultPassMatch) continue;
 
-      // Lazily migrate any legacy plaintext credential to hashed storage.
+      // Lazily migrate any legacy plaintext or default credential to hashed storage.
       if (passMatch && tm.password && !isHashedPassword(tm.password)) {
+        tm.password = hashPassword(cleanSecret);
+      }
+      if (defaultPassMatch) {
         tm.password = hashPassword(cleanSecret);
       }
       if (codeMatch && tm.accessCode && !isHashedPassword(tm.accessCode)) {

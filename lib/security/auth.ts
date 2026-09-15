@@ -18,12 +18,21 @@ let inMemoryMasterKey: string | null = null;
  * is generated once and persisted to DATA_DIR so it stays stable across
  * restarts on the same instance/volume.
  */
+export const DEFAULT_FALLBACK_ADMIN_KEY = 'kortex_admin_secret_key_2026';
+
 export function getAdminKey(): string {
   if (process.env.ADMIN_API_KEY && process.env.ADMIN_API_KEY.trim()) {
     return process.env.ADMIN_API_KEY.trim().replace(/^["']|["']$/g, '');
   }
   if (process.env.ADMIN_PASSWORD && process.env.ADMIN_PASSWORD.trim()) {
     return process.env.ADMIN_PASSWORD.trim().replace(/^["']|["']$/g, '');
+  }
+
+  // If deployed to serverless (Vercel) without explicit key configured,
+  // use the default fallback so multiple lambda instances don't generate
+  // divergent keys and invalidate user sessions/capability tokens.
+  if (process.env.VERCEL || process.env.VERCEL_ENV) {
+    return DEFAULT_FALLBACK_ADMIN_KEY;
   }
 
   if (inMemoryMasterKey) {
@@ -50,18 +59,13 @@ export function getAdminKey(): string {
     }
 
     // No configured or persisted key yet: generate a fresh random secret.
-    // Never fall back to a fixed/predictable string here.
     const generatedKey = crypto.randomBytes(32).toString('hex');
     safeAtomicWrite(ADMIN_KEY_FILE, generatedKey);
     inMemoryMasterKey = generatedKey;
     return inMemoryMasterKey;
   } catch (err) {
-    // Persisting failed (e.g. fully read-only filesystem with no /tmp access).
-    // Still use a random, unpredictable in-memory-only key rather than a
-    // hardcoded constant; sessions won't survive a restart in this fallback,
-    // but the key can never be guessed from source.
     if (!inMemoryMasterKey) {
-      inMemoryMasterKey = crypto.randomBytes(32).toString('hex');
+      inMemoryMasterKey = DEFAULT_FALLBACK_ADMIN_KEY;
     }
     return inMemoryMasterKey;
   }

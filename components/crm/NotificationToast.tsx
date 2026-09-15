@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Bell, X } from 'lucide-react';
 
 interface ToastNotification {
@@ -27,6 +27,8 @@ export function NotificationToast({
   setActiveTab,
 }: NotificationToastProps) {
   const incomingToast = toastQueue[0] || null;
+  const onDismissRef = useRef(onDismiss);
+  onDismissRef.current = onDismiss;
 
   // Auto-dismiss the currently visible toast after 5 seconds so a queue of
   // notifications advances on its own instead of piling up behind one stuck
@@ -34,10 +36,10 @@ export function NotificationToast({
   useEffect(() => {
     if (!incomingToast) return;
     const timer = setTimeout(() => {
-      onDismiss();
+      onDismissRef.current();
     }, AUTO_DISMISS_MS);
     return () => clearTimeout(timer);
-  }, [incomingToast, onDismiss]);
+  }, [incomingToast?.id || incomingToast?.title]);
 
   if (!incomingToast) return null;
 
