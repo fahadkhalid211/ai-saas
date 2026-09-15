@@ -138,7 +138,8 @@ export default function DashboardPage() {
   // Queue of unread notifications waiting to be shown as a toast, one at a
   // time (oldest first). The visible toast is always toastQueue[0].
   const [toastQueue, setToastQueue] = useState<any[]>([]);
-  const lastNotifIdRef = useRef<string | null>(null);
+  const seenNotifIdsRef = useRef<Set<string>>(new Set());
+  const initialFetchDoneRef = useRef(false);
 
   const dismissFrontToast = useCallback(() => {
     setToastQueue((prev) => prev.slice(1));
@@ -157,12 +158,13 @@ export default function DashboardPage() {
       const ctx = new AudioCtx();
       const now = ctx.currentTime;
       
+      // Two-tone alert chime (E5 -> A5)
       const osc1 = ctx.createOscillator();
       const gain1 = ctx.createGain();
       osc1.type = 'sine';
-      osc1.frequency.setValueAtTime(587.33, now);
+      osc1.frequency.setValueAtTime(659.25, now);
       osc1.frequency.exponentialRampToValueAtTime(880, now + 0.15);
-      gain1.gain.setValueAtTime(0.18, now);
+      gain1.gain.setValueAtTime(0.2, now);
       gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
       osc1.connect(gain1);
       gain1.connect(ctx.destination);
@@ -174,7 +176,7 @@ export default function DashboardPage() {
       osc2.type = 'sine';
       osc2.frequency.setValueAtTime(880, now + 0.12);
       osc2.frequency.exponentialRampToValueAtTime(1174.66, now + 0.3);
-      gain2.gain.setValueAtTime(0.15, now + 0.12);
+      gain2.gain.setValueAtTime(0.18, now + 0.12);
       gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.55);
       osc2.connect(gain2);
       gain2.connect(ctx.destination);
@@ -195,24 +197,36 @@ export default function DashboardPage() {
         setUnreadNotifCount(data.unreadCount || 0);
 
         if (list.length > 0) {
-          if (lastNotifIdRef.current) {
-            // `list` is newest-first; everything before the last id we saw
-            // is new since the previous poll. If that id fell out of the
-            // returned page entirely, don't dump the whole backlog as toasts.
-            const prevIdx = list.findIndex((n: any) => n.id === lastNotifIdRef.current);
-            const freshOnes = prevIdx === -1 ? [] : list.slice(0, prevIdx);
-            const newUnread = freshOnes.filter((n: any) => !n.read);
+          if (!initialFetchDoneRef.current) {
+            initialFetchDoneRef.current = true;
+            list.forEach((n: any) => seenNotifIdsRef.current.add(n.id));
 
-            if (newUnread.length > 0) {
+            // On initial load, immediately pop toast for any pending unread urgent escalation from last 10 mins
+            const now = Date.now();
+            const recentUrgent = list.filter((n: any) => {
+              if (n.read) return false;
+              if (n.type !== 'chat_escalated') return false;
+              const age = now - new Date(n.createdAt).getTime();
+              return age < 10 * 60 * 1000;
+            });
+            if (recentUrgent.length > 0) {
               playNotificationChime();
-              // Oldest-of-the-batch first, appended to whatever is still queued.
-              setToastQueue((prev) => [...prev, ...newUnread.slice().reverse()]);
-              if (newUnread.some((n: any) => n.type === 'chat_escalated') && activeAssistant?.id) {
+              setToastQueue((prev) => [...prev, ...recentUrgent.slice().reverse()]);
+            }
+          } else {
+            const freshUnread = list.filter(
+              (n: any) => !n.read && !seenNotifIdsRef.current.has(n.id)
+            );
+            list.forEach((n: any) => seenNotifIdsRef.current.add(n.id));
+
+            if (freshUnread.length > 0) {
+              playNotificationChime();
+              setToastQueue((prev) => [...prev, ...freshUnread.slice().reverse()]);
+              if (freshUnread.some((n: any) => n.type === 'chat_escalated') && activeAssistant?.id) {
                 fetchConversations(activeAssistant.id);
               }
             }
           }
-          lastNotifIdRef.current = list[0].id;
         }
       }
     } catch (e) {}
@@ -532,7 +546,7 @@ export default function DashboardPage() {
     if (!isAuthenticated) return;
     const interval = setInterval(() => {
       fetchNotifications();
-    }, 12000);
+    }, 3500);
     return () => clearInterval(interval);
   }, [isAuthenticated, activeAssistant?.id]);
 

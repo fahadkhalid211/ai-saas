@@ -424,7 +424,7 @@ export default function HostedBusinessSite({ params }: SitePageProps) {
       } catch {
         // Silent polling error
       }
-    }, 2500);
+    }, 1000);
 
     return () => clearInterval(interval);
   }, [conversationId, conversationToken]);

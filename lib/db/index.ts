@@ -435,12 +435,20 @@ function saveChunksState(chunks: ChunkRecord[]): void {
   }
 }
 
+let lastDbFileMtime = 0;
+
 function loadState(): DatabaseState {
-  if (cachedState !== null) {
-    return cachedState;
+  ensureDataDir();
+  try {
+    const stats = fs.statSync(DB_FILE);
+    if (cachedState !== null && stats.mtimeMs <= lastDbFileMtime) {
+      return cachedState;
+    }
+    lastDbFileMtime = stats.mtimeMs;
+  } catch {
+    if (cachedState !== null) return cachedState;
   }
 
-  ensureDataDir();
   let state: DatabaseState | null = null;
 
   // 1. Try reading DB_FILE from DATA_DIR
@@ -604,6 +612,9 @@ function saveState(state: DatabaseState): void {
   const { chunks: _chunks, ...transactional } = state;
   const payload = { ...transactional, chunks: [] };
   atomicWriteFileSync(DB_FILE, JSON.stringify(payload, null, 2));
+  try {
+    lastDbFileMtime = fs.statSync(DB_FILE).mtimeMs;
+  } catch {}
 
   if (isSupabaseConfigured()) {
     persistSupabaseState(state).catch((err) => {

@@ -212,7 +212,7 @@ export async function POST(req: NextRequest) {
     let detectedSentiment: 'urgent' | 'positive' | 'neutral' = 'neutral';
     let isEscalation = false;
 
-    const humanAgentRegex = /\b(human|agent|person|representative|rep|manager|operator|specialist|support team|someone real|talk to a person|speak with someone|transfer me)\b/i;
+    const humanAgentRegex = /\b(human|agent|person|representative|rep|manager|operator|specialist|support team|someone real|talk to a person|speak with someone|transfer me|talk to human|speak to human|live chat|real person|real human|customer service|help desk|support agent)\b/i;
     const urgentRegex = /\b(cancel|refund|broken|horrible|terrible|frustrated|angry|scam|lawyer|sue|complaint|worst|unacceptable|stolen|emergency|help me now|urgent|dispute|chargeback)\b/i;
     const positiveRegex = /\b(thank|thanks|great|awesome|love|perfect|excellent|helpful|good job|amazing|kudos|appreciate)\b/i;
 
@@ -248,18 +248,18 @@ export async function POST(req: NextRequest) {
     });
 
     // Notify dashboard for new chats, escalations, or messages.
-    // Guard escalation notifications with `!conv.escalated` (the pre-update
-    // flag) so a conversation already waiting for an agent doesn't spawn a
-    // fresh "Chat Escalation" notification on every subsequent message that
-    // happens to match the urgent/human-agent keyword regex — previously
-    // that fired repeatedly for the same conversation.
+    // When a visitor explicitly asks for human support, always dispatch an alert
+    // to the operator console even if the conversation was previously flagged,
+    // ensuring customer follow-up requests are never silently ignored.
     try {
-      if (isEscalation && !conv.isLiveTakeover && !conv.escalated) {
+      const shouldNotifyEscalation = isEscalation && !conv.isLiveTakeover && (!conv.escalated || asksForHuman);
+      if (shouldNotifyEscalation) {
         await Database.addNotification({
+          assistantId: assistant.id || assistantId,
           title: asksForHuman ? 'Live Agent Requested' : 'Chat Escalation (Urgent)',
           message: `Visitor requested human assistance: "${latestUserMsg.slice(0, 75)}"`,
           type: 'chat_escalated',
-          metadata: { conversationId: conv.id, assistantId, sentiment: detectedSentiment },
+          metadata: { conversationId: conv.id, assistantId: assistant.id || assistantId, sentiment: detectedSentiment },
         });
       } else if (isFirstMessage) {
         await Database.addNotification({
