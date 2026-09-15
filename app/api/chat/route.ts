@@ -111,7 +111,7 @@ export async function POST(req: NextRequest) {
           ...assistant,
           provider: 'gemini',
           apiKeyEncrypted: process.env.GEMINI_API_KEY,
-          modelName: assistant.modelName === 'llama3.2' ? 'gemini-2.5-flash' : assistant.modelName,
+          modelName: assistant.modelName === 'llama3.2' ? 'gemini-3.6-flash' : assistant.modelName,
         };
       } else if (process.env.OPENAI_API_KEY) {
         assistant = {

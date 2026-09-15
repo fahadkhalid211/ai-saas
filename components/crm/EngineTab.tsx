@@ -60,7 +60,7 @@ export const EngineTab: React.FC<EngineTabProps> = ({
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                     {[
                       { id: 'groq', label: 'Groq Cloud', tag: 'ULTRA-FAST (FREE)', desc: 'Instant sub-second Llama 3.3' },
-                      { id: 'gemini', label: 'Google Gemini', tag: 'FAST (FREE TIER)', desc: 'Gemini 2.5 & 2.0 Flash' },
+                      { id: 'gemini', label: 'Google Gemini', tag: 'FAST (FREE TIER)', desc: 'Gemini 3.6 Flash' },
                       { id: 'ollama', label: 'Local Ollama', tag: '100% FREE', desc: 'Runs on your PC CPU/GPU' },
                       { id: 'openai', label: 'OpenAI', tag: 'BYOK', desc: 'GPT-4o & GPT-4o-mini' },
                       { id: 'anthropic', label: 'Anthropic Claude', tag: 'BYOK', desc: 'Claude 3.5 Sonnet & Haiku' },
@@ -76,7 +76,7 @@ export const EngineTab: React.FC<EngineTabProps> = ({
                               ollama: 'llama3.2',
                               groq: 'openai/gpt-oss-120b',
                               openai: 'gpt-4o-mini',
-                              gemini: 'gemini-2.5-flash',
+                              gemini: 'gemini-3.6-flash',
                               anthropic: 'claude-3-5-haiku-20241022',
                               deepseek: 'deepseek-chat',
                             };
@@ -222,9 +222,9 @@ export const EngineTab: React.FC<EngineTabProps> = ({
                         <div className="mt-2 flex flex-wrap gap-1.5 items-center">
                           <span className="text-[10px] text-slate-500 dark:text-slate-400">Gemini Models:</span>
                           {[
-                            { id: 'gemini-2.5-flash', label: 'Gemini 2.5 Flash (Recommended)' },
-                            { id: 'gemini-2.0-flash', label: 'Gemini 2.0 Flash' },
-                            { id: 'gemini-2.5-flash-lite', label: 'Gemini 2.5 Flash-Lite' },
+                            { id: 'gemini-3.6-flash', label: 'Gemini 3.6 Flash (Recommended)' },
+                            { id: 'gemini-3.1-pro-preview', label: 'Gemini 3.1 Pro' },
+                            { id: 'gemini-3.1-flash-lite', label: 'Gemini 3.1 Flash-Lite' },
                           ].map((m) => (
                             <button
                               key={m.id}

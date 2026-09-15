@@ -42,9 +42,13 @@ function getClient(options: ProviderOptions): { client: OpenAI; model: string } 
 
     case 'gemini': {
       const apiKey = options.apiKey || process.env.GEMINI_API_KEY || '';
-      let model = options.modelName || 'gemini-2.5-flash';
+      let model = options.modelName || 'gemini-3.6-flash';
       // Auto-migrate retired/deprecated Gemini models to current active Gemini flagship
       const deprecatedGeminiModels = [
+        'gemini-2.5-flash',
+        'gemini-2.5-flash-lite',
+        'gemini-2.0-flash',
+        'gemini-2.0-flash-lite',
         'gemini-1.5-flash',
         'gemini-1.5-flash-latest',
         'gemini-1.5-flash-8b',
@@ -54,7 +58,7 @@ function getClient(options: ProviderOptions): { client: OpenAI; model: string } 
         'gemini-pro',
       ];
       if (deprecatedGeminiModels.includes(model)) {
-        model = 'gemini-2.5-flash';
+        model = 'gemini-3.6-flash';
       }
       return {
         client: new OpenAI({

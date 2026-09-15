@@ -110,13 +110,13 @@ export async function extractWithVisionAI(
     }
   }
 
-  // 3. Try Gemini with gemini-2.5-flash / gemini-2.0-flash
+  // 3. Try Gemini with gemini-3.6-flash
   const geminiKey = options?.apiKey || process.env.GEMINI_API_KEY;
   const isGemini = (options?.provider || '').toLowerCase() === 'gemini' || geminiKey?.startsWith('AIza');
 
   if (geminiKey && isGemini) {
     try {
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiKey}`;
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${geminiKey}`;
       const res = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
