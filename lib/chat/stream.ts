@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Consolidated SSE chat stream reader for web, iframe embed, and CRM interfaces.
  */
 
@@ -46,6 +46,16 @@ export async function consumeChatStream(
             callbacks.onCitations(parsed.citations || [], Boolean(parsed.isWebSearch));
           } else if (parsed.type === 'takeover_active' && callbacks.onTakeover) {
             callbacks.onTakeover(parsed.agentName, parsed.conversationId);
+            // Also signal done so the widget starts polling for agent replies
+            if (parsed.conversationId && callbacks.onDone) {
+              callbacks.onDone(parsed.conversationId);
+            }
+          } else if (parsed.type === 'escalation') {
+            // Human-agent handoff acknowledged — set conversationId so widget starts
+            // polling for incoming agent messages
+            if (parsed.conversationId && callbacks.onDone) {
+              callbacks.onDone(parsed.conversationId);
+            }
           } else if (parsed.type === 'done' && callbacks.onDone) {
             callbacks.onDone(parsed.conversationId);
           }

@@ -177,6 +177,20 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
     URL.revokeObjectURL(url);
   }
 
+  const handleSelectConversation = async (conv: any) => {
+    // Show immediately with what we have, then fetch fresh data
+    setSelectedConversation(conv);
+    try {
+      const res = await fetch(`/api/conversations?id=${encodeURIComponent(conv.id)}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.conversation) setSelectedConversation(data.conversation);
+      }
+    } catch {
+      // Keep stale data if fetch fails
+    }
+  };
+
   // Live polling for selected conversation in Conversations tab
   useEffect(() => {
     if (!selectedConversation) return;
@@ -206,7 +220,7 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
       } catch (e) {
         // silent
       }
-    }, 3200);
+    }, 2000);
     return () => clearInterval(interval);
   }, [selectedConversation?.id, playNotificationChime]);
 
@@ -288,7 +302,7 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
                             <button
                               key={conv.id}
                               type="button"
-                              onClick={() => setSelectedConversation(conv)}
+                              onClick={() => handleSelectConversation(conv)}
                               className={`w-full text-left p-3.5 transition flex flex-col gap-1.5 ${
                                 isSelected
                                   ? 'bg-blue-50/70 dark:bg-blue-950/40 border-l-3 border-blue-600'

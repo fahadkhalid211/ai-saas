@@ -260,8 +260,13 @@ export async function POST(req: NextRequest) {
             agentName,
             conversationId: conv.id,
           })}\n\n`;
+          const doneEvent = `data: ${JSON.stringify({
+            type: 'done',
+            conversationId: conv.id,
+          })}\n\n`;
           controller.enqueue(encoder.encode(notificationMsg));
           controller.enqueue(encoder.encode(takeoverEvent));
+          controller.enqueue(encoder.encode(doneEvent));
           controller.close();
         },
       });
@@ -297,6 +302,15 @@ export async function POST(req: NextRequest) {
               `data: ${JSON.stringify({
                 type: 'escalation',
                 status: 'waiting_for_agent',
+                conversationId: conv.id,
+              })}\n\n`
+            )
+          );
+          // Send done so the widget sets its conversationId and starts polling for agent replies
+          controller.enqueue(
+            encoder.encode(
+              `data: ${JSON.stringify({
+                type: 'done',
                 conversationId: conv.id,
               })}\n\n`
             )

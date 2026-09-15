@@ -194,7 +194,7 @@ export default function EmbedChatPage({ params }: EmbedPageProps) {
       } catch {
         // Silent polling error
       }
-    }, 3500);
+    }, 1000);
 
     return () => clearInterval(interval);
   }, [conversationId]);

@@ -530,6 +530,18 @@ export default function DashboardPage() {
     return () => clearInterval(interval);
   }, [isAuthenticated, activeAssistant?.id]);
 
+  // Auto-refresh conversation list every 8 seconds while Chat History tab is open
+  // so new visitor messages (including escalations) appear without a manual refresh
+  useEffect(() => {
+    if (!isAuthenticated || !activeAssistant?.id || activeTab !== 'history') return;
+    // Immediate refresh when tab opens
+    fetchConversations(activeAssistant.id);
+    const interval = setInterval(() => {
+      fetchConversations(activeAssistant.id);
+    }, 8000);
+    return () => clearInterval(interval);
+  }, [isAuthenticated, activeAssistant?.id, activeTab]);
+
   const totalChunks = knowledge.sources.reduce((sum, s) => sum + (s.chunkCount || 0), 0);
 
   if (isAuthChecking) {
