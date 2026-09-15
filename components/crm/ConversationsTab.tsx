@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   History,
   RefreshCw,
@@ -191,29 +191,46 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
     }
   };
 
-  // Live polling for selected conversation in Conversations tab
+  // Live polling for selected conversation in Conversations tab.
+  // Fetches incrementally via sinceCount so each 2s poll only transfers
+  // messages the dashboard hasn't seen yet, instead of the full (and
+  // ever-growing) transcript every time.
+  const selectedConvKnownCountRef = useRef(0);
   useEffect(() => {
     if (!selectedConversation) return;
+    selectedConvKnownCountRef.current = selectedConversation.messages?.length || 0;
+
     const interval = setInterval(async () => {
       try {
-        const res = await fetch(`/api/conversations?id=${encodeURIComponent(selectedConversation.id)}`);
+        const params = new URLSearchParams({
+          id: selectedConversation.id,
+          sinceCount: String(selectedConvKnownCountRef.current),
+        });
+        const res = await fetch(`/api/conversations?${params.toString()}`);
         if (res.ok) {
           const data = await res.json();
           if (data.conversation) {
+            if (typeof data.totalMessageCount === 'number') {
+              selectedConvKnownCountRef.current = data.totalMessageCount;
+            }
+            const incoming = data.newMessages || [];
+
             setSelectedConversation((prev: any) => {
               if (!prev || prev.id !== data.conversation.id) return prev;
-              const prevCount = prev.messages?.length || 0;
-              const newCount = data.conversation.messages?.length || 0;
-              if (prevCount !== newCount || prev.isLiveTakeover !== data.conversation.isLiveTakeover) {
-                if (newCount > prevCount) {
-                  const lastMsg = data.conversation.messages[newCount - 1];
-                  if (lastMsg && lastMsg.role === 'user' && playNotificationChime) {
-                    playNotificationChime();
-                  }
-                }
-                return data.conversation;
+              if (incoming.length === 0 && prev.isLiveTakeover === data.conversation.isLiveTakeover) {
+                return prev;
               }
-              return prev;
+              if (incoming.length > 0) {
+                const lastMsg = incoming[incoming.length - 1];
+                if (lastMsg && lastMsg.role === 'user' && playNotificationChime) {
+                  playNotificationChime();
+                }
+              }
+              return {
+                ...prev,
+                ...data.conversation,
+                messages: [...(prev.messages || []), ...incoming],
+              };
             });
           }
         }

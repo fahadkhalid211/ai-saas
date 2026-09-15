@@ -6,8 +6,8 @@ export interface StreamChatEvents {
   onToken: (accumulated: string, token: string) => void;
   onStatus?: (statusText: string) => void;
   onCitations?: (citations: any[], isWebSearch?: boolean) => void;
-  onTakeover?: (agentName?: string, conversationId?: string) => void;
-  onDone?: (conversationId?: string) => void;
+  onTakeover?: (agentName?: string, conversationId?: string, conversationToken?: string) => void;
+  onDone?: (conversationId?: string, conversationToken?: string) => void;
 }
 
 export async function consumeChatStream(
@@ -45,19 +45,19 @@ export async function consumeChatStream(
           } else if (parsed.type === 'citations' && callbacks.onCitations) {
             callbacks.onCitations(parsed.citations || [], Boolean(parsed.isWebSearch));
           } else if (parsed.type === 'takeover_active' && callbacks.onTakeover) {
-            callbacks.onTakeover(parsed.agentName, parsed.conversationId);
+            callbacks.onTakeover(parsed.agentName, parsed.conversationId, parsed.conversationToken);
             // Also signal done so the widget starts polling for agent replies
             if (parsed.conversationId && callbacks.onDone) {
-              callbacks.onDone(parsed.conversationId);
+              callbacks.onDone(parsed.conversationId, parsed.conversationToken);
             }
           } else if (parsed.type === 'escalation') {
             // Human-agent handoff acknowledged — set conversationId so widget starts
             // polling for incoming agent messages
             if (parsed.conversationId && callbacks.onDone) {
-              callbacks.onDone(parsed.conversationId);
+              callbacks.onDone(parsed.conversationId, parsed.conversationToken);
             }
           } else if (parsed.type === 'done' && callbacks.onDone) {
-            callbacks.onDone(parsed.conversationId);
+            callbacks.onDone(parsed.conversationId, parsed.conversationToken);
           }
         } catch {
           // Ignore partial or malformed chunk splits

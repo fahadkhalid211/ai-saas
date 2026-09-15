@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { Database } from '@/lib/db';
+import { Database, sanitizeTeamMember } from '@/lib/db';
 import { withAdminAuth } from '@/lib/security/auth';
 import { getClientIp } from '@/lib/security/rate-limit';
 
@@ -11,7 +11,7 @@ export const GET = withAdminAuth(async (req: Request) => {
     const workspaceId = searchParams.get('workspaceId') || 'default-workspace';
 
     const members = await Database.getTeamMembers(workspaceId);
-    return NextResponse.json({ members });
+    return NextResponse.json({ members: members.map(sanitizeTeamMember) });
   } catch (error: any) {
     return NextResponse.json({ error: error?.message || 'Failed to fetch team members' }, { status: 500 });
   }
@@ -48,7 +48,16 @@ export const POST = withAdminAuth(async (req: Request) => {
       details: { email: member.email, role: member.role },
     });
 
-    return NextResponse.json({ success: true, member }, { status: 201 });
+    return NextResponse.json(
+      {
+        success: true,
+        member: sanitizeTeamMember(member),
+        // Shown once so the inviter can share it with the new team member;
+        // only present when the caller didn't supply their own credential.
+        temporaryPassword: member.temporaryPassword,
+      },
+      { status: 201 }
+    );
   } catch (error: any) {
     return NextResponse.json({ error: error?.message || 'Failed to add team member' }, { status: 500 });
   }
@@ -82,7 +91,7 @@ export const PUT = withAdminAuth(async (req: Request) => {
       details: { role, status },
     });
 
-    return NextResponse.json({ success: true, member: updated });
+    return NextResponse.json({ success: true, member: sanitizeTeamMember(updated) });
   } catch (error: any) {
     return NextResponse.json({ error: error?.message || 'Failed to update team member' }, { status: 500 });
   }

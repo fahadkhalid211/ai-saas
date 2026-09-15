@@ -8,7 +8,8 @@ import {
   createClearCookieHeader,
 } from '@/lib/security/auth';
 import { checkRateLimit, getClientIp } from '@/lib/security/rate-limit';
-import { Database } from '@/lib/db';
+import { timingSafeStringEqual } from '@/lib/security/password';
+import { Database, sanitizeTeamMember } from '@/lib/db';
 
 export async function GET(req: Request) {
   try {
@@ -25,7 +26,7 @@ export async function GET(req: Request) {
       role: ctx.role,
       memberId: ctx.memberId,
       workspaceId: ctx.workspaceId,
-      member: member || {
+      member: sanitizeTeamMember(member) || {
         id: ctx.memberId,
         workspaceId: ctx.workspaceId,
         name: ctx.role === 'owner' ? 'Master Admin' : 'Staff Member',
@@ -85,7 +86,7 @@ export async function POST(req: Request) {
       const tenantResult = await Database.createTenantWorkspace({
         businessName,
         ownerEmail: email,
-        password: password || 'Tenant123!',
+        password: password || undefined,
         industryTemplateSlug,
       });
 
@@ -110,10 +111,13 @@ export async function POST(req: Request) {
           message: `Welcome to Kortex AI! Workspace "${businessName}" created successfully.`,
           isStaff: false,
           isOwner: true,
-          member: tenantResult.owner,
+          member: sanitizeTeamMember(tenantResult.owner),
           workspace: tenantResult.workspace,
           assistant: tenantResult.assistant,
           token: sessionToken,
+          // Only present when the caller didn't supply their own password;
+          // show it once so it can be recorded — it is never stored in the clear.
+          temporaryPassword: tenantResult.temporaryPassword,
         },
         {
           status: 201,
@@ -160,7 +164,7 @@ export async function POST(req: Request) {
             message: `Welcome back, ${tenantMatch.member.name}`,
             isStaff: false,
             isOwner: tenantMatch.member.role === 'owner',
-            member: tenantMatch.member,
+            member: sanitizeTeamMember(tenantMatch.member),
             workspace: tenantMatch.workspace,
             token: sessionToken,
           },
@@ -224,7 +228,7 @@ export async function POST(req: Request) {
 
     const key = rawKey.trim().replace(/^["']|["']$/g, '');
     const masterKey = getAdminKey();
-    if (key !== masterKey) {
+    if (!timingSafeStringEqual(key, masterKey)) {
       return NextResponse.json({ error: 'Invalid master admin access key' }, { status: 401 });
     }
 

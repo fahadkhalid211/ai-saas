@@ -160,11 +160,9 @@ export const TeamTab: React.FC<TeamTabProps> = ({
                 <tr key={member.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
                   <td className="py-3.5 px-4 font-semibold text-slate-900 dark:text-white">
                     <div>{member.name}</div>
-                    <div className="text-[10px] text-slate-400 font-mono">Code: {member.accessCode || 'STAFF101'}</div>
                   </td>
                   <td className="py-3.5 px-4 text-slate-600 dark:text-slate-300 font-mono text-[11px]">
                     <div>{member.email}</div>
-                    <div className="text-[10px] text-blue-600 dark:text-blue-400 font-mono">Pass: {member.password || 'Staff123!'}</div>
                   </td>
                   <td className="py-3.5 px-4">
                     <select

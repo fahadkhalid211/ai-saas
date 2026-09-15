@@ -45,6 +45,7 @@ export default function EmbedChatPage({ params }: EmbedPageProps) {
     }[]
   >([]);
   const [conversationId, setConversationId] = useState<string | null>(null);
+  const [conversationToken, setConversationToken] = useState<string | null>(null);
   const [isTakeoverActive, setIsTakeoverActive] = useState(false);
   const [assignedAgentName, setAssignedAgentName] = useState<string>('Live Support Agent');
   const [input, setInput] = useState('');
@@ -158,13 +159,29 @@ export default function EmbedChatPage({ params }: EmbedPageProps) {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, streamingStatus]);
 
-  // Real-time Live Operator Sync polling
+  // Real-time Live Operator Sync polling.
+  // Uses the per-conversation capability token issued by /api/chat (rather
+  // than an admin session) so this endpoint can't be used to read arbitrary
+  // conversations by guessing an id. Also fetches incrementally via
+  // sinceCount so each poll only transfers new messages, not the whole
+  // (ever-growing) transcript.
+  // Tracks how many messages (of ANY role) the server confirmed we've
+  // already seen, so each poll only asks for what's new since then.
+  const knownServerMessageCountRef = useRef(0);
+
   useEffect(() => {
-    if (!conversationId) return;
+    if (!conversationId || !conversationToken) return;
+    // Reset the cursor whenever we start following a (new) conversation.
+    knownServerMessageCountRef.current = 0;
 
     const interval = setInterval(async () => {
       try {
-        const res = await fetch(`/api/conversations?id=${encodeURIComponent(conversationId)}`);
+        const params = new URLSearchParams({
+          id: conversationId,
+          token: conversationToken,
+          sinceCount: String(knownServerMessageCountRef.current),
+        });
+        const res = await fetch(`/api/conversations?${params.toString()}`);
         if (!res.ok) return;
         const data = await res.json();
         if (!data || !data.conversation) return;
@@ -173,10 +190,16 @@ export default function EmbedChatPage({ params }: EmbedPageProps) {
         setIsTakeoverActive(Boolean(conv.isLiveTakeover));
         if (conv.assignedAgentName) setAssignedAgentName(conv.assignedAgentName);
 
-        const convMessages = conv.messages || [];
+        if (typeof data.totalMessageCount === 'number') {
+          knownServerMessageCountRef.current = data.totalMessageCount;
+        }
+
+        const incomingMessages = data.newMessages || [];
+        if (incomingMessages.length === 0) return;
+
         setMessages((prev) => {
           const prevIds = new Set(prev.map((m) => m.id).filter(Boolean));
-          const newAgentMessages = convMessages.filter(
+          const newAgentMessages = incomingMessages.filter(
             (m: any) => m.role === 'agent' && !prevIds.has(m.id)
           );
 
@@ -197,7 +220,7 @@ export default function EmbedChatPage({ params }: EmbedPageProps) {
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [conversationId]);
+  }, [conversationId, conversationToken]);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -335,14 +358,16 @@ export default function EmbedChatPage({ params }: EmbedPageProps) {
           isWebSearch = Boolean(webSearch);
           setStreamingStatus(null);
         },
-        onTakeover: (agentName, convId) => {
+        onTakeover: (agentName, convId, convToken) => {
           if (convId) setConversationId(convId);
+          if (convToken) setConversationToken(convToken);
           setIsTakeoverActive(true);
           if (agentName) setAssignedAgentName(agentName);
           setStreamingStatus(null);
         },
-        onDone: (convId) => {
+        onDone: (convId, convToken) => {
           if (convId) setConversationId(convId);
+          if (convToken) setConversationToken(convToken);
           playReceiveChime();
         },
       });
@@ -368,6 +393,7 @@ export default function EmbedChatPage({ params }: EmbedPageProps) {
   const handleRestartChat = () => {
     if (confirm('Start a new conversation? Current chat history will be cleared.')) {
       setConversationId(null);
+      setConversationToken(null);
       setIsTakeoverActive(false);
       setMessages(
         config?.welcomeMessage

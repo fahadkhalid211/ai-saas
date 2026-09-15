@@ -4,6 +4,7 @@ import crypto from 'crypto';
 import { cosineSimilarity, keywordRelevance, reciprocalRankFusion } from '../rag/vector-math';
 import { SearchResultChunk } from '../rag/types';
 import { encryptSecret, decryptSecret } from '../security/crypto';
+import { hashPassword, verifyPassword, isHashedPassword, generateTempPassword } from '../security/password';
 import {
   LandingPageConfig,
   LandingPageServiceItem,
@@ -261,6 +262,18 @@ export interface TeamMemberData {
   avatarUrl?: string;
   createdAt: string;
   updatedAt?: string;
+}
+
+/**
+ * Strips credential/secret fields (password hash, access code hash, TOTP
+ * secret, recovery codes) from a team member record before it is ever sent
+ * to a client. Every API route that returns a TeamMemberData object to the
+ * browser must pass it through this first.
+ */
+export function sanitizeTeamMember<T extends Partial<TeamMemberData> | null | undefined>(member: T): T {
+  if (!member) return member;
+  const { password, accessCode, twoFactorSecret, recoveryCodes, ...safe } = member as TeamMemberData;
+  return safe as T;
 }
 
 
@@ -1418,17 +1431,33 @@ export class Database {
     return member || null;
   }
 
-  static async addTeamMember(data: Omit<TeamMemberData, 'id' | 'createdAt'>): Promise<TeamMemberData> {
+  static async addTeamMember(
+    data: Omit<TeamMemberData, 'id' | 'createdAt'>
+  ): Promise<TeamMemberData & { temporaryPassword?: string }> {
     const state = await ensureInitialized();
     if (!state.teamMembers) state.teamMembers = [];
+
+    // Newly invited members always get a unique, randomly generated
+    // temporary password (returned once to the inviter) instead of relying
+    // on a shared, predictable default credential.
+    let temporaryPassword: string | undefined;
+    let storedPassword = data.password;
+    if (!storedPassword) {
+      temporaryPassword = generateTempPassword();
+      storedPassword = hashPassword(temporaryPassword);
+    } else if (!isHashedPassword(storedPassword)) {
+      storedPassword = hashPassword(storedPassword);
+    }
+
     const newMember: TeamMemberData = {
-      id: 'tm_' + Math.random().toString(36).substring(2, 10),
       ...data,
+      id: 'tm_' + Math.random().toString(36).substring(2, 10),
+      password: storedPassword,
       createdAt: new Date().toISOString(),
     };
     state.teamMembers.push(newMember);
     saveState(state);
-    return newMember;
+    return { ...newMember, temporaryPassword };
   }
 
   static async updateTeamMember(
@@ -1462,19 +1491,25 @@ export class Database {
     const cleanSecret = (passwordOrCode || '').trim();
     if (!cleanEmail || !cleanSecret) return null;
 
-    const member = (state.teamMembers || []).find((tm) => {
-      if (tm.email.toLowerCase().trim() !== cleanEmail) return false;
-      if (tm.status && tm.status !== 'active') return false;
-      const passMatch = tm.password && tm.password === cleanSecret;
-      const codeMatch = tm.accessCode && tm.accessCode.toLowerCase() === cleanSecret.toLowerCase();
-      const defaultPassMatch = !tm.password && cleanSecret === 'Staff123!';
-      return passMatch || codeMatch || defaultPassMatch;
-    });
+    for (const tm of state.teamMembers || []) {
+      if (tm.email.toLowerCase().trim() !== cleanEmail) continue;
+      if (tm.status && tm.status !== 'active') continue;
 
-    if (member) {
-      member.lastLoginAt = new Date().toISOString();
+      const passMatch = Boolean(tm.password) && verifyPassword(cleanSecret, tm.password);
+      const codeMatch = !passMatch && Boolean(tm.accessCode) && verifyPassword(cleanSecret.toLowerCase(), tm.accessCode);
+      if (!passMatch && !codeMatch) continue;
+
+      // Lazily migrate any legacy plaintext credential to hashed storage.
+      if (passMatch && tm.password && !isHashedPassword(tm.password)) {
+        tm.password = hashPassword(cleanSecret);
+      }
+      if (codeMatch && tm.accessCode && !isHashedPassword(tm.accessCode)) {
+        tm.accessCode = hashPassword(cleanSecret.toLowerCase());
+      }
+
+      tm.lastLoginAt = new Date().toISOString();
       saveState(state);
-      return member;
+      return tm;
     }
     return null;
   }
@@ -1487,8 +1522,8 @@ export class Database {
     if (!state.teamMembers) return null;
     const member = state.teamMembers.find((m) => m.id === memberId);
     if (!member) return null;
-    if (credentials.password) member.password = credentials.password;
-    if (credentials.accessCode) member.accessCode = credentials.accessCode;
+    if (credentials.password) member.password = hashPassword(credentials.password.trim());
+    if (credentials.accessCode) member.accessCode = hashPassword(credentials.accessCode.trim().toLowerCase());
     saveState(state);
     return member;
   }
@@ -1604,10 +1639,11 @@ export class Database {
       member.avatarUrl = updates.avatarUrl;
     }
     if (updates.password !== undefined && updates.password.trim()) {
-      member.password = updates.password.trim();
+      const hashed = hashPassword(updates.password.trim());
+      member.password = hashed;
       const ws = state.workspaces.find((w) => w.id === member!.workspaceId);
       if (ws && (ws as any).ownerEmail && (ws as any).ownerEmail.toLowerCase() === member.email.toLowerCase()) {
-        (ws as any).ownerPassword = updates.password.trim();
+        (ws as any).ownerPassword = hashed;
       }
     }
     member.updatedAt = new Date().toISOString();
@@ -1848,11 +1884,18 @@ export class Database {
     assistant: AssistantData;
     landingPage: LandingPageConfig;
     owner: TeamMemberData;
+    temporaryPassword?: string;
   }> {
     const state = await ensureInitialized();
     const cleanEmail = params.ownerEmail.toLowerCase().trim();
     const cleanName = params.businessName.trim();
-    const cleanPass = params.password?.trim() || 'Tenant123!';
+    const providedPass = params.password?.trim();
+    // If the caller didn't supply a password, generate a unique random one
+    // and surface it once to the caller rather than falling back to a fixed,
+    // shared, predictable default credential.
+    const temporaryPassword = providedPass ? undefined : generateTempPassword();
+    const cleanPass = providedPass || temporaryPassword!;
+    const hashedPass = hashPassword(cleanPass);
 
     const workspaceId = `ws_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 6)}`;
     const assistantId = `ast_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 6)}`;
@@ -1879,7 +1922,7 @@ export class Database {
       invoices: [],
     };
     (workspace as any).ownerEmail = cleanEmail;
-    (workspace as any).ownerPassword = cleanPass;
+    (workspace as any).ownerPassword = hashedPass;
     (workspace as any).createdAt = new Date().toISOString();
 
     state.workspaces.push(workspace);
@@ -1941,7 +1984,7 @@ export class Database {
       workspaceId,
       name: cleanName,
       email: cleanEmail,
-      password: cleanPass,
+      password: hashedPass,
       role: 'owner',
       status: 'active',
       createdAt: new Date().toISOString(),
@@ -1957,6 +2000,7 @@ export class Database {
       assistant: newAssistant,
       landingPage: newLandingPage,
       owner: ownerMember,
+      temporaryPassword,
     };
   }
 
@@ -1970,12 +2014,16 @@ export class Database {
     const state = await ensureInitialized();
     const cleanEmail = (email || '').toLowerCase().trim();
     const cleanSecret = (password || '').trim();
-    if (!cleanEmail) return null;
+    if (!cleanEmail || !cleanSecret) return null;
 
     const ws = (state.workspaces || []).find((w: any) => (w.ownerEmail || '').toLowerCase() === cleanEmail);
     if (ws) {
-      const passMatch = !ws.ownerPassword || ws.ownerPassword === cleanSecret || cleanSecret === 'Staff123!';
+      const passMatch = Boolean((ws as any).ownerPassword) && verifyPassword(cleanSecret, (ws as any).ownerPassword);
       if (passMatch) {
+        // Lazily migrate a legacy plaintext owner password to hashed storage.
+        if (!isHashedPassword((ws as any).ownerPassword)) {
+          (ws as any).ownerPassword = hashPassword(cleanSecret);
+        }
         let ownerMember = (state.teamMembers || []).find((m) => m.email.toLowerCase() === cleanEmail);
         if (!ownerMember) {
           ownerMember = {
@@ -1989,8 +2037,8 @@ export class Database {
           };
           if (!state.teamMembers) state.teamMembers = [];
           state.teamMembers.push(ownerMember);
-          saveState(state);
         }
+        saveState(state);
         return { workspace: ws, member: ownerMember };
       }
     }

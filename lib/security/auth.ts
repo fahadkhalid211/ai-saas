@@ -2,6 +2,7 @@ import crypto from 'crypto';
 import path from 'path';
 import { NextResponse } from 'next/server';
 import { resolveDataDir, ensureDirectory, safeReadFile, safeAtomicWrite } from '../db/storage';
+import { timingSafeStringEqual } from './password';
 
 const DATA_DIR = resolveDataDir();
 const ADMIN_KEY_FILE = path.join(DATA_DIR, '.admin_key');
@@ -10,6 +11,12 @@ let inMemoryMasterKey: string | null = null;
 
 /**
  * Retrieves the configured or auto-generated Master Admin Key.
+ *
+ * IMPORTANT: this key signs every admin session token and gates every admin
+ * API route, so it must never fall back to a fixed, source-visible constant.
+ * When no ADMIN_API_KEY/ADMIN_PASSWORD env var is set, a random 256-bit key
+ * is generated once and persisted to DATA_DIR so it stays stable across
+ * restarts on the same instance/volume.
  */
 export function getAdminKey(): string {
   if (process.env.ADMIN_API_KEY && process.env.ADMIN_API_KEY.trim()) {
@@ -42,13 +49,20 @@ export function getAdminKey(): string {
       }
     }
 
-    // Default predictable fallback for master admin key when no env variable is provided
-    const fallbackKey = 'kortex_admin_secret_key_2026';
-    safeAtomicWrite(ADMIN_KEY_FILE, fallbackKey);
-    inMemoryMasterKey = fallbackKey;
+    // No configured or persisted key yet: generate a fresh random secret.
+    // Never fall back to a fixed/predictable string here.
+    const generatedKey = crypto.randomBytes(32).toString('hex');
+    safeAtomicWrite(ADMIN_KEY_FILE, generatedKey);
+    inMemoryMasterKey = generatedKey;
     return inMemoryMasterKey;
   } catch (err) {
-    inMemoryMasterKey = 'kortex_admin_secret_key_2026';
+    // Persisting failed (e.g. fully read-only filesystem with no /tmp access).
+    // Still use a random, unpredictable in-memory-only key rather than a
+    // hardcoded constant; sessions won't survive a restart in this fallback,
+    // but the key can never be guessed from source.
+    if (!inMemoryMasterKey) {
+      inMemoryMasterKey = crypto.randomBytes(32).toString('hex');
+    }
     return inMemoryMasterKey;
   }
 }
@@ -149,7 +163,7 @@ export async function getAuthContext(req: Request): Promise<{
   const authHeader = req.headers.get('authorization') || req.headers.get('x-api-key');
   if (authHeader) {
     const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : authHeader.trim();
-    if (token === masterKey) {
+    if (timingSafeStringEqual(token, masterKey)) {
       return { authenticated: true, role: 'admin', memberId: 'master-admin', workspaceId: 'default-workspace' };
     }
     const session = getSessionPayload(token);
@@ -188,6 +202,28 @@ export async function getAuthContext(req: Request): Promise<{
 export async function verifyAdminRequest(req: Request): Promise<boolean> {
   const ctx = await getAuthContext(req);
   return ctx.authenticated;
+}
+
+/**
+ * Generates an unguessable, deterministic capability token scoping access to
+ * a single conversation, so the public (unauthenticated) chat widget can poll
+ * for live-agent replies without exposing every conversation to anyone who
+ * knows or guesses its id. The token is derived from the server-side admin
+ * key via HMAC, so it never needs to be stored anywhere.
+ */
+export function generateConversationAccessToken(conversationId: string): string {
+  const masterKey = getAdminKey();
+  return crypto
+    .createHmac('sha256', masterKey)
+    .update(`conversation-access:${conversationId}`)
+    .digest('hex')
+    .slice(0, 32);
+}
+
+export function verifyConversationAccessToken(conversationId: string, token: string | null | undefined): boolean {
+  if (!token || typeof token !== 'string') return false;
+  const expected = generateConversationAccessToken(conversationId);
+  return timingSafeStringEqual(token, expected);
 }
 
 export function createSessionCookieHeader(token: string): string {

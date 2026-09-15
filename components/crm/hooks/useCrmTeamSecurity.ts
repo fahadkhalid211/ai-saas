@@ -53,7 +53,11 @@ export function useCrmTeamSecurity() {
       });
       const data = await res.json();
       if (res.ok) {
-        setTeamSuccess(`Invited ${newMemberName} as ${newMemberRole.replace('_', ' ')}.`);
+        setTeamSuccess(
+          data.temporaryPassword
+            ? `Invited ${newMemberName} as ${newMemberRole.replace('_', ' ')}. Temporary password (share securely, shown only once): ${data.temporaryPassword}`
+            : `Invited ${newMemberName} as ${newMemberRole.replace('_', ' ')}.`
+        );
         setNewMemberName('');
         setNewMemberEmail('');
         setShowAddTeamModal(false);

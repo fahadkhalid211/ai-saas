@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Database } from '@/lib/db';
 import { verifyAdminRequest, withAdminAuth } from '@/lib/security/auth';
+import { enforceRateLimit } from '@/lib/security/rate-limit';
 import {
   generateBase32Secret,
   generateOtpAuthUrl,
@@ -54,6 +55,15 @@ export async function POST(req: NextRequest) {
     const owner = members.find((m) => m.role === 'owner') || members[0];
 
     if (action === 'verify_login') {
+      // Throttle brute-force guessing of the 6-digit TOTP code / recovery
+      // codes: a handful of attempts per email+IP per window is far more
+      // than a legitimate user ever needs.
+      const rateLimitKey = `2fa-verify:${(email || owner?.email || '').toLowerCase()}`;
+      const rl = enforceRateLimit(req, rateLimitKey, { windowMs: 5 * 60 * 1000, max: 5 });
+      if (rl.errorResponse) {
+        return rl.errorResponse;
+      }
+
       // Login verification challenge
       if (!owner || !owner.twoFactorEnabled || !owner.twoFactorSecret) {
         return NextResponse.json({ success: true, message: '2FA not enabled for account' });

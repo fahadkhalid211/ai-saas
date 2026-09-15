@@ -35,7 +35,7 @@ describe('Chat Stream Consumer', () => {
       'data: {"type":"status","message":"Searching knowledge..."}\n\n',
       'data: {"type":"citations","citations":[{"title":"Doc 1","text":"Sample"}],"isWebSearch":false}\n\n',
       'data: {"type":"token","token":"Answer"}\n\n',
-      'data: {"type":"done","conversationId":"conv_123"}\n\n',
+      'data: {"type":"done","conversationId":"conv_123","conversationToken":"tok_abc"}\n\n',
     ]);
 
     const onStatus = vi.fn();
@@ -53,7 +53,7 @@ describe('Chat Stream Consumer', () => {
     expect(result).toBe('Answer');
     expect(onStatus).toHaveBeenCalledWith('Searching knowledge...');
     expect(onCitations).toHaveBeenCalledWith([{ title: 'Doc 1', text: 'Sample' }], false);
-    expect(onDone).toHaveBeenCalledWith('conv_123');
+    expect(onDone).toHaveBeenCalledWith('conv_123', 'tok_abc');
   });
 
   it('should handle split chunks across stream buffer boundaries', async () => {

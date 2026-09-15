@@ -2,19 +2,49 @@ import { describe, it, expect } from 'vitest';
 import { checkRateLimit, enforceRateLimit, getClientIp } from './rate-limit';
 
 describe('Rate Limiting Module', () => {
-  it('should extract client IP from request headers', () => {
+  it('should trust cf-connecting-ip unconditionally (Cloudflare overwrites it at the edge)', () => {
+    const req = new Request('http://localhost', {
+      headers: { 'cf-connecting-ip': '203.0.113.195', 'x-forwarded-for': '9.9.9.9' },
+    });
+    expect(getClientIp(req)).toBe('203.0.113.195');
+  });
+
+  it('should ignore spoofable x-forwarded-for/x-real-ip when no trusted proxy is configured', () => {
+    // Without Cloudflare or an explicit trusted-proxy signal, these headers
+    // are entirely attacker-controlled and must not be used to identify a
+    // client for rate-limiting purposes (otherwise limits are trivially
+    // bypassed by rotating a fake header per request).
     const req1 = new Request('http://localhost', {
       headers: { 'x-forwarded-for': '203.0.113.195, 70.41.3.18' },
     });
-    expect(getClientIp(req1)).toBe('203.0.113.195');
+    expect(getClientIp(req1)).toBe('untrusted-direct-client');
 
     const req2 = new Request('http://localhost', {
       headers: { 'x-real-ip': '198.51.100.4' },
     });
-    expect(getClientIp(req2)).toBe('198.51.100.4');
+    expect(getClientIp(req2)).toBe('untrusted-direct-client');
 
     const req3 = new Request('http://localhost');
-    expect(getClientIp(req3)).toBe('127.0.0.1');
+    expect(getClientIp(req3)).toBe('untrusted-direct-client');
+  });
+
+  it('should trust x-forwarded-for/x-real-ip when TRUST_PROXY_HEADERS is explicitly enabled', () => {
+    const original = process.env.TRUST_PROXY_HEADERS;
+    process.env.TRUST_PROXY_HEADERS = 'true';
+    try {
+      const req1 = new Request('http://localhost', {
+        headers: { 'x-forwarded-for': '203.0.113.195, 70.41.3.18' },
+      });
+      expect(getClientIp(req1)).toBe('203.0.113.195');
+
+      const req2 = new Request('http://localhost', {
+        headers: { 'x-real-ip': '198.51.100.4' },
+      });
+      expect(getClientIp(req2)).toBe('198.51.100.4');
+    } finally {
+      if (original === undefined) delete process.env.TRUST_PROXY_HEADERS;
+      else process.env.TRUST_PROXY_HEADERS = original;
+    }
   });
 
   it('should allow requests within limit and track remaining quota', () => {

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { Database, TeamMemberData } from '@/lib/db';
 import { getAuthContext, getAdminKey } from '@/lib/security/auth';
 import { getClientIp } from '@/lib/security/rate-limit';
+import { verifyPassword, timingSafeStringEqual } from '@/lib/security/password';
 
 export async function GET(req: Request) {
   try {
@@ -81,11 +82,12 @@ export async function PATCH(req: Request) {
       const cleanCurr = String(currentPassword).trim();
       const masterKey = getAdminKey();
 
-      let passValid = false;
-      if (ctx.role === 'admin' || ctx.role === 'owner' || ctx.memberId === 'master-admin' || ctx.memberId === 'admin') {
-        passValid = cleanCurr === masterKey || cleanCurr === existingMember?.password || cleanCurr === 'Staff123!' || cleanCurr === 'Tenant123!';
-      } else {
-        passValid = cleanCurr === existingMember?.password || cleanCurr === 'Tenant123!' || cleanCurr === 'Staff123!';
+      let passValid = verifyPassword(cleanCurr, existingMember?.password);
+      if (
+        !passValid &&
+        (ctx.role === 'admin' || ctx.role === 'owner' || ctx.memberId === 'master-admin' || ctx.memberId === 'admin')
+      ) {
+        passValid = timingSafeStringEqual(cleanCurr, masterKey);
       }
 
       if (!passValid) {

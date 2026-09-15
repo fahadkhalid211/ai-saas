@@ -203,14 +203,14 @@ export function AdminLoginScreen({
             <div className="space-y-1.5">
               <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center justify-between">
                 <span>Master Admin Key / Passcode</span>
-                <span className="text-[10px] text-slate-400 font-normal">ADMIN_API_KEY (default: kortex_admin_secret_key_2026)</span>
+                <span className="text-[10px] text-slate-400 font-normal">Set via the ADMIN_API_KEY environment variable</span>
               </label>
               <div className="relative">
                 <input
                   type={showAuthPasscode ? 'text' : 'password'}
                   value={authApiKeyInput}
                   onChange={(e) => setAuthApiKeyInput(e.target.value)}
-                  placeholder="Enter ADMIN_API_KEY or kortex_admin_secret_key_2026"
+                  placeholder="Enter your ADMIN_API_KEY"
                   className="w-full pl-3.5 pr-10 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white text-xs font-mono placeholder:font-sans placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
                   autoFocus
                   required
@@ -244,7 +244,6 @@ export function AdminLoginScreen({
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center justify-between">
                   <span>Password or Access Code</span>
-                  <span className="text-[10px] text-slate-400">e.g. Staff123!</span>
                 </label>
                 <input
                   type="password"

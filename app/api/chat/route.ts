@@ -5,7 +5,8 @@ import { buildSystemPrompt, streamChatResponse } from '@/lib/ai/providers';
 import { ChatMessage } from '@/lib/ai/types';
 import { isWebSearchIntent, extractSearchQuery, executeWebSearch } from '@/lib/rag/web-search';
 import { parseFileOrText } from '@/lib/rag/parsers';
-import { enforceRateLimit } from '@/lib/security/rate-limit';
+import { enforceRateLimit, enforceGlobalRateLimit, enforceRateLimitByKey } from '@/lib/security/rate-limit';
+import { generateConversationAccessToken } from '@/lib/security/auth';
 
 // Handle CORS pre-flight
 export async function OPTIONS() {
@@ -25,6 +26,14 @@ export async function POST(req: NextRequest) {
     const rateLimit = enforceRateLimit(req, 'chat', { windowMs: 60 * 1000, max: 35 });
     if (rateLimit.errorResponse) {
       return rateLimit.errorResponse;
+    }
+
+    // Backstop: per-IP limiting alone can be defeated by rotating spoofable
+    // client-supplied headers, so also cap total system-wide chat volume as
+    // a circuit breaker on worst-case LLM provider cost/quota exhaustion.
+    const globalLimit = enforceGlobalRateLimit('chat', { windowMs: 60 * 1000, max: 600 });
+    if (globalLimit.errorResponse) {
+      return globalLimit.errorResponse;
     }
 
     const body = await req.json();
@@ -67,6 +76,19 @@ export async function POST(req: NextRequest) {
 
     if (!assistant) {
       return NextResponse.json({ error: 'Assistant not found' }, { status: 404 });
+    }
+
+    // Per-assistant cost/quota cap. The embed-domain allowlist below is
+    // enforced by inspecting Origin/Referer headers, which a non-browser
+    // caller can freely spoof to bypass it; this bucket bounds how much
+    // traffic (and therefore LLM provider spend) any single assistant can
+    // absorb regardless of which IP or forged domain it arrives from.
+    const perAssistantLimit = enforceRateLimitByKey(`chat:assistant:${assistant.id}`, {
+      windowMs: 60 * 1000,
+      max: 120,
+    });
+    if (perAssistantLimit.errorResponse) {
+      return perAssistantLimit.errorResponse;
     }
 
     // Provider fallback: if assistant is still on the default 'ollama' provider but no Ollama
@@ -202,6 +224,10 @@ export async function POST(req: NextRequest) {
 
     // 1. Get or create conversation record
     const conv = await Database.getOrCreateConversation(assistantId, visitorId, conversationId);
+    // Capability token letting the (unauthenticated) widget poll this
+    // specific conversation for live-agent replies without exposing every
+    // conversation to anyone who knows/guesses its id.
+    const convToken = generateConversationAccessToken(conv.id);
     const isFirstMessage = (conv.messages || []).length === 0;
     await Database.saveMessage(conv.id, 'user', latestUserMsg, [], 0, attachmentMeta);
 
@@ -259,10 +285,12 @@ export async function POST(req: NextRequest) {
             type: 'takeover_active',
             agentName,
             conversationId: conv.id,
+            conversationToken: convToken,
           })}\n\n`;
           const doneEvent = `data: ${JSON.stringify({
             type: 'done',
             conversationId: conv.id,
+            conversationToken: convToken,
           })}\n\n`;
           controller.enqueue(encoder.encode(notificationMsg));
           controller.enqueue(encoder.encode(takeoverEvent));
@@ -303,6 +331,7 @@ export async function POST(req: NextRequest) {
                 type: 'escalation',
                 status: 'waiting_for_agent',
                 conversationId: conv.id,
+                conversationToken: convToken,
               })}\n\n`
             )
           );
@@ -312,6 +341,7 @@ export async function POST(req: NextRequest) {
               `data: ${JSON.stringify({
                 type: 'done',
                 conversationId: conv.id,
+                conversationToken: convToken,
               })}\n\n`
             )
           );
@@ -577,6 +607,7 @@ Directly use the content of this attached document to assist the visitor, answer
             type: 'citations',
             citations: finalCitations,
             conversationId: conv.id,
+            conversationToken: convToken,
             isWebSearch: isWebSearchUsed && finalCitations.length > 0,
             webSearchQuery: isWebSearchUsed ? webSearchQuery : undefined,
             attachment: attachmentMeta,
@@ -626,6 +657,7 @@ Directly use the content of this attached document to assist the visitor, answer
           const doneEvent = `data: ${JSON.stringify({
             type: 'done',
             conversationId: conv.id,
+            conversationToken: convToken,
           })}\n\n`;
           controller.enqueue(encoder.encode(doneEvent));
         } catch (streamErr: any) {

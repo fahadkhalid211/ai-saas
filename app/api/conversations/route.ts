@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { Database } from '@/lib/db';
-import { verifyAdminRequest } from '@/lib/security/auth';
+import { verifyAdminRequest, verifyConversationAccessToken } from '@/lib/security/auth';
 
 export async function GET(req: Request) {
   try {
@@ -8,12 +8,39 @@ export async function GET(req: Request) {
     const id = searchParams.get('id');
     const assistantId = searchParams.get('assistantId');
 
-    // Single conversation lookup (used for live sync in widget and dashboard)
+    // Single conversation lookup (used for live sync in widget and dashboard).
+    // The public widget has no login session, so it authorizes with a
+    // per-conversation capability token instead; admins may use their
+    // existing session/cookie in place of a token.
     if (id) {
+      const token = searchParams.get('token');
+      const isAdmin = await verifyAdminRequest(req);
+      if (!isAdmin && !verifyConversationAccessToken(id, token)) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
+
       const conversation = await Database.getConversationById(id);
       if (!conversation) {
         return NextResponse.json({ error: 'Conversation not found' }, { status: 404 });
       }
+
+      // Incremental polling support: when the caller already has the first
+      // `sinceCount` messages, only return what's new plus lightweight
+      // conversation metadata, instead of re-transferring the full,
+      // ever-growing transcript on every 1-2s poll.
+      const sinceCountRaw = searchParams.get('sinceCount');
+      const sinceCount = sinceCountRaw ? parseInt(sinceCountRaw, 10) : NaN;
+      if (Number.isInteger(sinceCount) && sinceCount >= 0) {
+        const allMessages = conversation.messages || [];
+        const newMessages = sinceCount < allMessages.length ? allMessages.slice(sinceCount) : [];
+        const { messages: _omit, ...meta } = conversation;
+        return NextResponse.json({
+          conversation: meta,
+          newMessages,
+          totalMessageCount: allMessages.length,
+        });
+      }
+
       return NextResponse.json({ conversation });
     }
 

@@ -1,9 +1,63 @@
 import crypto from 'crypto';
+import path from 'path';
+import { resolveDataDir, ensureDirectory, safeReadFile, safeAtomicWrite } from '../db/storage';
 
-// 32-byte key derivation from environment secret or fallback seed
+const DATA_DIR = resolveDataDir();
+const ENCRYPTION_KEY_FILE = path.join(DATA_DIR, '.encryption_key');
+
+let inMemoryEncryptionSecret: string | null = null;
+
+/**
+ * Resolves the secret used to derive the AES-256-GCM key that protects every
+ * stored provider API key. Never falls back to a fixed, source-visible
+ * constant: an unconfigured deployment gets a random secret generated once
+ * and persisted to DATA_DIR so previously-encrypted values keep decrypting
+ * across restarts on the same instance/volume.
+ */
+function getEncryptionSecret(): string {
+  if (process.env.ENCRYPTION_SECRET && process.env.ENCRYPTION_SECRET.trim()) {
+    return process.env.ENCRYPTION_SECRET.trim();
+  }
+  if (process.env.ADMIN_API_KEY && process.env.ADMIN_API_KEY.trim()) {
+    return process.env.ADMIN_API_KEY.trim();
+  }
+
+  if (inMemoryEncryptionSecret) {
+    return inMemoryEncryptionSecret;
+  }
+
+  try {
+    ensureDirectory(DATA_DIR);
+    const saved = safeReadFile(ENCRYPTION_KEY_FILE);
+    if (saved && saved.trim()) {
+      inMemoryEncryptionSecret = saved.trim();
+      return inMemoryEncryptionSecret;
+    }
+
+    const bundledKeyFile = path.join(process.cwd(), '.data', '.encryption_key');
+    if (bundledKeyFile !== ENCRYPTION_KEY_FILE) {
+      const bundledSaved = safeReadFile(bundledKeyFile);
+      if (bundledSaved && bundledSaved.trim()) {
+        inMemoryEncryptionSecret = bundledSaved.trim();
+        return inMemoryEncryptionSecret;
+      }
+    }
+
+    const generated = crypto.randomBytes(32).toString('hex');
+    safeAtomicWrite(ENCRYPTION_KEY_FILE, generated);
+    inMemoryEncryptionSecret = generated;
+    return inMemoryEncryptionSecret;
+  } catch {
+    if (!inMemoryEncryptionSecret) {
+      inMemoryEncryptionSecret = crypto.randomBytes(32).toString('hex');
+    }
+    return inMemoryEncryptionSecret;
+  }
+}
+
+// 32-byte key derivation from the resolved encryption secret
 function getMasterKey(): Buffer {
-  const secret = process.env.ENCRYPTION_SECRET || process.env.ADMIN_API_KEY || 'kortex-ai-default-encryption-salt-2026';
-  return crypto.createHash('sha256').update(secret).digest();
+  return crypto.createHash('sha256').update(getEncryptionSecret()).digest();
 }
 
 /**
