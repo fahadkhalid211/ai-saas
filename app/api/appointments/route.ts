@@ -282,7 +282,7 @@ export async function POST(req: Request) {
     // In-App notification for business dashboard
     try {
       await Database.addNotification({
-        assistantId,
+        assistantId: assistant.id,
         title: 'New Appointment Booked',
         message: `${appointment.name} scheduled ${appointment.serviceName || 'an appointment'} on ${appointment.date} at ${appointment.timeSlot}.`,
         type: 'appointment_booked',
@@ -320,7 +320,7 @@ export async function POST(req: Request) {
 
     try {
       await Database.saveLead({
-        assistantId,
+        assistantId: assistant.id,
         email: email.trim(),
         name: name.trim(),
         phone: phone ? phone.trim() : undefined,
@@ -333,6 +333,7 @@ export async function POST(req: Request) {
           Service: appointment.serviceName,
           Price: appointment.price,
           Type: 'Calendar Booking',
+          originalAssistantId: assistantId !== assistant.id ? assistantId : undefined,
         },
       });
     } catch (leadErr) {

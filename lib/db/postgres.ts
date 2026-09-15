@@ -2,6 +2,18 @@ import { Pool } from 'pg';
 
 let pgPoolInstance: Pool | null = null;
 let isSchemaInitialized = false;
+let isPostgresDisabledUntil = 0;
+
+export function disablePostgresTemporarily(durationMs = 60000): void {
+  isPostgresDisabledUntil = Date.now() + durationMs;
+  if (pgPoolInstance) {
+    try {
+      pgPoolInstance.end().catch(() => {});
+    } catch {}
+    pgPoolInstance = null;
+  }
+  isSchemaInitialized = false;
+}
 
 export function getPostgresUrl(): string | undefined {
   return (
@@ -13,6 +25,7 @@ export function getPostgresUrl(): string | undefined {
 }
 
 export function isPostgresConfigured(): boolean {
+  if (Date.now() < isPostgresDisabledUntil) return false;
   const url = getPostgresUrl();
   return Boolean(url && (url.startsWith('postgres://') || url.startsWith('postgresql://')));
 }
@@ -31,11 +44,14 @@ export function getPostgresPool(): Pool | null {
     ssl: isLocal ? false : { rejectUnauthorized: false },
     max: 10,
     idleTimeoutMillis: 30000,
-    connectionTimeoutMillis: 10000,
+    connectionTimeoutMillis: 1500,
   });
 
   pgPoolInstance.on('error', (err) => {
     console.warn('[Postgres Pool] Unexpected error on idle client:', err?.message || err);
+    if (err?.message?.includes('ECONNREFUSED') || err?.message?.includes('timeout')) {
+      disablePostgresTemporarily();
+    }
   });
 
   return pgPoolInstance;
@@ -59,6 +75,7 @@ export async function ensurePostgresSchema(): Promise<boolean> {
     return true;
   } catch (err: any) {
     console.warn('[Postgres Schema] Could not initialize kortex_app_state table:', err?.message || err);
+    disablePostgresTemporarily();
     return false;
   }
 }
@@ -68,7 +85,8 @@ export async function fetchPostgresState(): Promise<any | null> {
   if (!pool) return null;
 
   try {
-    await ensurePostgresSchema();
+    const initialized = await ensurePostgresSchema();
+    if (!initialized) return null;
     const result = await pool.query(
       'SELECT data FROM kortex_app_state WHERE id = $1 LIMIT 1',
       ['default']
@@ -77,6 +95,7 @@ export async function fetchPostgresState(): Promise<any | null> {
     return result.rows[0].data || null;
   } catch (err: any) {
     console.warn('[Postgres] Exception fetching state:', err?.message || err);
+    disablePostgresTemporarily();
     return null;
   }
 }
@@ -86,7 +105,8 @@ export async function persistPostgresState(state: any): Promise<boolean> {
   if (!pool) return false;
 
   try {
-    await ensurePostgresSchema();
+    const initialized = await ensurePostgresSchema();
+    if (!initialized) return false;
     const { chunks: _chunks, ...transactional } = state;
     await pool.query(
       `INSERT INTO kortex_app_state (id, data, updated_at)
@@ -98,6 +118,7 @@ export async function persistPostgresState(state: any): Promise<boolean> {
     return true;
   } catch (err: any) {
     console.warn('[Postgres] Exception persisting state:', err?.message || err);
+    disablePostgresTemporarily();
     return false;
   }
 }

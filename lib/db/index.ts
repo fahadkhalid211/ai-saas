@@ -745,6 +745,44 @@ function matchesAssistant(
     }
   }
 
+  // 4. Bidirectional workspace association for starter concierges
+  // If either the record or the target is 'demo-assistant' (or template default),
+  // and both belong to the same workspace (default-workspace),
+  // they share the business landing page, bookings, and chats if no competing custom slug is set.
+  const recordAst = (state.assistants || []).find((a) => a.id === recordAssistantId || a.id === canonicalRecord);
+  const targetAstObj = targetAst || (state.assistants || []).find((a) => a.id === canonicalTarget);
+  const recordWs = recordAst?.workspaceId || 'default-workspace';
+  const targetWs = targetAstObj?.workspaceId || 'default-workspace';
+
+  if (recordWs === targetWs) {
+    const isRecordDemo =
+      canonicalRecord === 'demo-assistant' ||
+      recordAssistantId === 'demo-assistant' ||
+      recordAssistantId === 'barbershop' ||
+      recordAssistantId === 'classic-barbershop';
+
+    const isTargetDemo =
+      canonicalTarget === 'demo-assistant' ||
+      targetAssistantId === 'demo-assistant' ||
+      targetAssistantId === 'barbershop' ||
+      targetAssistantId === 'classic-barbershop';
+
+    if (isRecordDemo || isTargetDemo) {
+      const targetSlugVal = targetAstObj?.landingPageConfig?.slug;
+      const recordSlugVal = recordAst?.landingPageConfig?.slug;
+      if (
+        !targetSlugVal ||
+        targetSlugVal === 'classic-barbershop' ||
+        targetSlugVal === 'barbershop' ||
+        !recordSlugVal ||
+        recordSlugVal === 'classic-barbershop' ||
+        recordSlugVal === 'barbershop'
+      ) {
+        return true;
+      }
+    }
+  }
+
   return false;
 }
 
@@ -1098,7 +1136,20 @@ export class Database {
       }));
     }
 
-    const matched = allConvs.filter((c) => matchesAssistant(c.assistantId, assistantId, state));
+    let matched = allConvs.filter((c) => matchesAssistant(c.assistantId, assistantId, state));
+    if (matched.length === 0) {
+      const targetAst = (state.assistants || []).find((a) => a.id === assistantId);
+      const targetWs = targetAst?.workspaceId || 'default-workspace';
+      const workspaceConvs = allConvs.filter((c) => {
+        const cAst = (state.assistants || []).find((ast) => ast.id === c.assistantId);
+        const cWs = cAst?.workspaceId || 'default-workspace';
+        return cWs === targetWs;
+      });
+      if (workspaceConvs.length > 0) {
+        matched = workspaceConvs;
+      }
+    }
+
     return matched.map((c) => ({
       ...c,
       messages: (state.messages || []).filter((m) => m.conversationId === c.id),
@@ -1224,9 +1275,26 @@ export class Database {
     return lead;
   }
 
-  static async getLeads(assistantId: string): Promise<LeadData[]> {
+  static async getLeads(assistantId?: string): Promise<LeadData[]> {
     const state = await ensureInitialized(true);
-    return state.leads.filter((l) => l.assistantId === assistantId);
+    const allLeads = state.leads || [];
+    if (!assistantId) return allLeads;
+
+    let matched = allLeads.filter((l) => matchesAssistant(l.assistantId, assistantId, state));
+    if (matched.length === 0) {
+      const targetAst = (state.assistants || []).find((a) => a.id === assistantId);
+      const targetWs = targetAst?.workspaceId || 'default-workspace';
+      const workspaceLeads = allLeads.filter((l) => {
+        const lAst = (state.assistants || []).find((ast) => ast.id === l.assistantId);
+        const lWs = lAst?.workspaceId || 'default-workspace';
+        return lWs === targetWs;
+      });
+      if (workspaceLeads.length > 0) {
+        matched = workspaceLeads;
+      }
+    }
+
+    return matched;
   }
 
   // Knowledge Gap & Unanswered Queries Engine
@@ -1345,7 +1413,7 @@ export class Database {
     return Database.saveAppointment(data);
   }
 
-  static async getAppointments(assistantId: string): Promise<AppointmentData[]> {
+  static async getAppointments(assistantId?: string): Promise<AppointmentData[]> {
     const state = await ensureInitialized(true);
     const all = state.appointments || [];
 
@@ -1358,9 +1426,17 @@ export class Database {
     );
     if (matched.length > 0) return matched;
 
-    // Fallback: if assistantId is 'demo-assistant' or there's only 1 assistant in workspace, return all
-    if (assistantId === 'demo-assistant' || (state.assistants && state.assistants.length <= 1)) {
-      return all;
+    // Fallback: Check if there are appointments in the same workspace
+    const targetAst = (state.assistants || []).find((a) => a.id === assistantId);
+    const targetWs = targetAst?.workspaceId || 'default-workspace';
+    const workspaceAppointments = all.filter((a) => {
+      const aAst = (state.assistants || []).find((ast) => ast.id === a.assistantId);
+      const aWs = aAst?.workspaceId || 'default-workspace';
+      return aWs === targetWs;
+    });
+
+    if (workspaceAppointments.length > 0) {
+      return workspaceAppointments;
     }
 
     return matched;
