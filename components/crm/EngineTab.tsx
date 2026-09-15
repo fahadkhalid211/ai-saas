@@ -60,7 +60,7 @@ export const EngineTab: React.FC<EngineTabProps> = ({
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                     {[
                       { id: 'groq', label: 'Groq Cloud', tag: 'ULTRA-FAST (FREE)', desc: 'Instant sub-second Llama 3.3' },
-                      { id: 'gemini', label: 'Google Gemini', tag: 'FAST (FREE TIER)', desc: 'Gemini 1.5 & 2.0 Flash' },
+                      { id: 'gemini', label: 'Google Gemini', tag: 'FAST (FREE TIER)', desc: 'Gemini 2.5 & 2.0 Flash' },
                       { id: 'ollama', label: 'Local Ollama', tag: '100% FREE', desc: 'Runs on your PC CPU/GPU' },
                       { id: 'openai', label: 'OpenAI', tag: 'BYOK', desc: 'GPT-4o & GPT-4o-mini' },
                       { id: 'anthropic', label: 'Anthropic Claude', tag: 'BYOK', desc: 'Claude 3.5 Sonnet & Haiku' },
@@ -76,7 +76,7 @@ export const EngineTab: React.FC<EngineTabProps> = ({
                               ollama: 'llama3.2',
                               groq: 'openai/gpt-oss-120b',
                               openai: 'gpt-4o-mini',
-                              gemini: 'gemini-1.5-flash',
+                              gemini: 'gemini-2.5-flash',
                               anthropic: 'claude-3-5-haiku-20241022',
                               deepseek: 'deepseek-chat',
                             };
@@ -148,7 +148,7 @@ export const EngineTab: React.FC<EngineTabProps> = ({
                         <span className="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-2 py-0.5 rounded text-[10px]">Free Tier</span>
                       </p>
                       <p className="text-slate-600 dark:text-slate-300 text-[11.5px] leading-relaxed">
-                        Google AI Studio provides 15 requests per minute completely free with Gemini 1.5 &amp; 2.0 Flash.
+                        Google AI Studio provides generous free tier usage with Gemini 2.5 Flash &amp; 2.0 Flash.
                       </p>
                       <div className="pt-1">
                         <a
@@ -202,6 +202,29 @@ export const EngineTab: React.FC<EngineTabProps> = ({
                             { id: 'openai/gpt-oss-120b', label: 'GPT-OSS 120B (Recommended)' },
                             { id: 'qwen/qwen3.8-27b', label: 'Qwen 3.8 27B (Ultra-Fast)' },
                             { id: 'openai/gpt-oss-20b', label: 'GPT-OSS 20B' },
+                          ].map((m) => (
+                            <button
+                              key={m.id}
+                              type="button"
+                              onClick={() => setFormData({ ...formData, modelName: m.id })}
+                              className={`text-[10px] px-2 py-0.5 rounded border transition font-mono ${
+                                formData.modelName === m.id
+                                  ? 'bg-blue-100 dark:bg-blue-900/60 border-blue-400 text-blue-800 dark:text-blue-300 font-bold'
+                                  : 'bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:text-blue-600'
+                              }`}
+                            >
+                              {m.label}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                      {(formData.provider || 'ollama') === 'gemini' && (
+                        <div className="mt-2 flex flex-wrap gap-1.5 items-center">
+                          <span className="text-[10px] text-slate-500 dark:text-slate-400">Gemini Models:</span>
+                          {[
+                            { id: 'gemini-2.5-flash', label: 'Gemini 2.5 Flash (Recommended)' },
+                            { id: 'gemini-2.0-flash', label: 'Gemini 2.0 Flash' },
+                            { id: 'gemini-2.5-flash-lite', label: 'Gemini 2.5 Flash-Lite' },
                           ].map((m) => (
                             <button
                               key={m.id}

@@ -110,7 +110,7 @@ export async function extractWithVisionAI(
     }
   }
 
-  // 3. Try Gemini with gemini-2.0-flash / gemini-1.5-flash
+  // 3. Try Gemini with gemini-2.5-flash / gemini-2.0-flash
   const geminiKey = options?.apiKey || process.env.GEMINI_API_KEY;
   const isGemini = (options?.provider || '').toLowerCase() === 'gemini' || geminiKey?.startsWith('AIza');
 
