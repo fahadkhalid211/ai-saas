@@ -100,18 +100,21 @@ export const AppointmentsTab: React.FC<AppointmentsTabProps> = ({
 
                     <button
                       onClick={() => {
-                        const csvHeader = 'ID,Name,Email,Phone,Date,TimeSlot,DurationMinutes,Status,Notes,CreatedAt\n';
+                        const csvHeader = 'ID,Name,Email,Phone,Date,TimeSlot,DurationMinutes,Status,Notes,LandingPage,CreatedAt\n';
                         const csvRows = appointments
                           .map((a) => {
-                            return `"${a.id}","${(a.name || '').replace(/"/g, '""')}","${a.email}","${(a.phone || '').replace(/"/g, '""')}","${a.date}","${a.timeSlot}","${a.durationMinutes}","${a.status}","${(a.notes || '').replace(/"/g, '""')}","${a.createdAt}"`;
+                            return `"${a.id}","${(a.name || '').replace(/"/g, '""')}","${a.email}","${(a.phone || '').replace(/"/g, '""')}","${a.date}","${a.timeSlot}","${a.durationMinutes}","${a.status}","${(a.notes || '').replace(/"/g, '""')}","${(a.landingPageName || '').replace(/"/g, '""')}","${a.createdAt}"`;
                           })
                           .join('\n');
-                        const blob = new Blob([csvHeader + csvRows], { type: 'text/csv' });
+                        const blob = new Blob([csvHeader + csvRows], { type: 'text/csv;charset=utf-8;' });
                         const url = URL.createObjectURL(blob);
                         const link = document.createElement('a');
                         link.href = url;
-                        link.download = `appointments-${activeAssistant?.name || 'export'}.csv`;
+                        link.setAttribute('download', `appointments-${activeAssistant?.name || 'export'}-${new Date().toISOString().slice(0, 10)}.csv`);
+                        document.body.appendChild(link);
                         link.click();
+                        document.body.removeChild(link);
+                        setTimeout(() => URL.revokeObjectURL(url), 1000);
                       }}
                       disabled={appointments.length === 0}
                       className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold shadow-xs disabled:opacity-50 transition cursor-pointer"

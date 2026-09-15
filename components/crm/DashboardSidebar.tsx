@@ -69,8 +69,8 @@ export function DashboardSidebar({
   ];
 
   return (
-    <aside className="w-60 border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3 flex flex-col justify-between shrink-0">
-      <div className="space-y-6">
+    <aside className="w-60 border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3 flex flex-col justify-between shrink-0 overflow-hidden">
+      <div className="flex flex-col flex-1 min-h-0 gap-6 overflow-y-auto pr-0.5">
         <div>
           <div className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500 px-3 mb-2">
             Management

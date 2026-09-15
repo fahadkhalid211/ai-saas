@@ -69,6 +69,34 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Assistant not found' }, { status: 404 });
     }
 
+    // Provider fallback: if assistant is still on the default 'ollama' provider but no Ollama
+    // is available, transparently upgrade to a configured env-level provider so the chatbot works
+    // even when Supabase has not yet persisted the user's Engine settings.
+    if ((assistant.provider || 'ollama').toLowerCase() === 'ollama' && !assistant.apiKeyEncrypted) {
+      if (process.env.GROQ_API_KEY) {
+        assistant = {
+          ...assistant,
+          provider: 'groq',
+          apiKeyEncrypted: process.env.GROQ_API_KEY,
+          modelName: assistant.modelName === 'llama3.2' ? 'openai/gpt-oss-120b' : assistant.modelName,
+        };
+      } else if (process.env.GEMINI_API_KEY) {
+        assistant = {
+          ...assistant,
+          provider: 'gemini',
+          apiKeyEncrypted: process.env.GEMINI_API_KEY,
+          modelName: assistant.modelName === 'llama3.2' ? 'gemini-1.5-flash' : assistant.modelName,
+        };
+      } else if (process.env.OPENAI_API_KEY) {
+        assistant = {
+          ...assistant,
+          provider: 'openai',
+          apiKeyEncrypted: process.env.OPENAI_API_KEY,
+          modelName: assistant.modelName === 'llama3.2' ? 'gpt-4o-mini' : assistant.modelName,
+        };
+      }
+    }
+
     // 2. Enforce Allowed Domains Whitelist (if configured)
     if (assistant.allowedDomains && assistant.allowedDomains.length > 0) {
       const origin = req.headers.get('origin');

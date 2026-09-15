@@ -521,6 +521,15 @@ export default function DashboardPage() {
     return () => clearInterval(interval);
   }, [isAuthenticated, activeAssistant?.id]);
 
+  // Auto-sync appointments every 30 seconds so new bookings appear without manual refresh
+  useEffect(() => {
+    if (!isAuthenticated || !activeAssistant?.id) return;
+    const interval = setInterval(() => {
+      fetchAppointments(activeAssistant.id);
+    }, 30000);
+    return () => clearInterval(interval);
+  }, [isAuthenticated, activeAssistant?.id]);
+
   const totalChunks = knowledge.sources.reduce((sum, s) => sum + (s.chunkCount || 0), 0);
 
   if (isAuthChecking) {
