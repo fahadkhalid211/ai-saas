@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import {
   Scissors,
   Calendar,
@@ -52,6 +52,7 @@ import { CreativeAgencyTemplate } from '@/components/landing/templates/CreativeA
 import { FintechTemplate } from '@/components/landing/templates/FintechTemplate';
 import { CustomSkeletonTemplate } from '@/components/landing/templates/CustomSkeletonTemplate';
 import { consumeChatStream } from '@/lib/chat/stream';
+import { MarkdownRenderer } from '@/components/markdown-renderer';
 
 
 function InstagramIcon({ className = 'w-4 h-4' }: { className?: string }) {
@@ -289,12 +290,73 @@ export default function HostedBusinessSite({ params }: SitePageProps) {
 
   // Floating Chat Widget State
   const [isChatOpen, setIsChatOpen] = useState(false);
-  const [chatMessages, setChatMessages] = useState<Array<{ role: 'user' | 'assistant' | 'agent'; content: string; senderName?: string }>>([]);
+  const [chatMessages, setChatMessages] = useState<Array<{ id?: string; role: 'user' | 'assistant' | 'agent'; content: string; senderName?: string }>>([]);
   const [chatInput, setChatInput] = useState('');
   const [chatLoading, setChatLoading] = useState(false);
   const [isTakeoverActive, setIsTakeoverActive] = useState(false);
   const [assignedAgentName, setAssignedAgentName] = useState('Support Agent');
   const [conversationId, setConversationId] = useState<string>('');
+  const [conversationToken, setConversationToken] = useState<string | null>(null);
+  const chatMessagesEndRef = useRef<HTMLDivElement>(null);
+  const knownServerMessageCountRef = useRef(0);
+
+  // Auto-scroll to the latest message whenever the transcript grows or the
+  // assistant's streamed reply updates, so a new message never sits below
+  // the visible fold.
+  useEffect(() => {
+    chatMessagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+  }, [chatMessages, chatLoading]);
+
+  const playChatSendSound = () => {
+    try {
+      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+      if (!AudioCtx) return;
+      const ctx = new AudioCtx();
+      const now = ctx.currentTime;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(440, now);
+      osc.frequency.exponentialRampToValueAtTime(660, now + 0.12);
+      gain.gain.setValueAtTime(0.12, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.3);
+    } catch {}
+  };
+
+  const playChatReceiveSound = () => {
+    try {
+      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+      if (!AudioCtx) return;
+      const ctx = new AudioCtx();
+      const now = ctx.currentTime;
+      const osc1 = ctx.createOscillator();
+      const gain1 = ctx.createGain();
+      osc1.type = 'sine';
+      osc1.frequency.setValueAtTime(587.33, now);
+      osc1.frequency.exponentialRampToValueAtTime(880, now + 0.15);
+      gain1.gain.setValueAtTime(0.15, now);
+      gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+      osc1.connect(gain1);
+      gain1.connect(ctx.destination);
+      osc1.start(now);
+      osc1.stop(now + 0.35);
+      const osc2 = ctx.createOscillator();
+      const gain2 = ctx.createGain();
+      osc2.type = 'sine';
+      osc2.frequency.setValueAtTime(880, now + 0.12);
+      osc2.frequency.exponentialRampToValueAtTime(1174.66, now + 0.3);
+      gain2.gain.setValueAtTime(0.12, now + 0.12);
+      gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.55);
+      osc2.connect(gain2);
+      gain2.connect(ctx.destination);
+      osc2.start(now + 0.12);
+      osc2.stop(now + 0.55);
+    } catch {}
+  };
 
   useEffect(() => {
     if (typeof window !== 'undefined' && identifier) {
@@ -308,13 +370,22 @@ export default function HostedBusinessSite({ params }: SitePageProps) {
     }
   }, [identifier]);
 
-  // Real-time synchronization with Live Agent Takeover in Admin Panel
+  // Real-time synchronization with Live Agent Takeover in Admin Panel.
+  // /api/conversations requires either an admin session or the per-conversation
+  // capability token issued by /api/chat, so polling only starts once a
+  // token has actually been received (i.e. after the first message).
   useEffect(() => {
-    if (!conversationId) return;
+    if (!conversationId || !conversationToken) return;
+    knownServerMessageCountRef.current = 0;
 
     const interval = setInterval(async () => {
       try {
-        const res = await fetch(`/api/conversations?id=${encodeURIComponent(conversationId)}`);
+        const params = new URLSearchParams({
+          id: conversationId,
+          token: conversationToken,
+          sinceCount: String(knownServerMessageCountRef.current),
+        });
+        const res = await fetch(`/api/conversations?${params.toString()}`);
         if (!res.ok) return;
         const data = await res.json();
         if (!data || !data.conversation) return;
@@ -325,16 +396,24 @@ export default function HostedBusinessSite({ params }: SitePageProps) {
           setAssignedAgentName(conv.assignedAgentName);
         }
 
-        const convMessages = conv.messages || [];
+        if (typeof data.totalMessageCount === 'number') {
+          knownServerMessageCountRef.current = data.totalMessageCount;
+        }
+
+        const incomingMessages = data.newMessages || [];
+        if (incomingMessages.length === 0) return;
+
         setChatMessages((prev) => {
-          const prevContents = new Set(prev.map((m) => m.content));
-          const newAgentMessages = convMessages.filter(
-            (m: any) => m.role === 'agent' && !prevContents.has(m.content)
+          const prevIds = new Set(prev.map((m) => m.id).filter(Boolean));
+          const newAgentMessages = incomingMessages.filter(
+            (m: any) => m.role === 'agent' && !prevIds.has(m.id)
           );
 
           if (newAgentMessages.length === 0) return prev;
 
+          playChatReceiveSound();
           const formatted = newAgentMessages.map((m: any) => ({
+            id: m.id,
             role: 'agent' as const,
             content: m.content,
             senderName: m.senderName || conv.assignedAgentName || 'Live Support Agent',
@@ -348,7 +427,7 @@ export default function HostedBusinessSite({ params }: SitePageProps) {
     }, 2500);
 
     return () => clearInterval(interval);
-  }, [conversationId]);
+  }, [conversationId, conversationToken]);
 
   // QR Code Modal State
   const [isQrModalOpen, setIsQrModalOpen] = useState(false);
@@ -612,6 +691,22 @@ export default function HostedBusinessSite({ params }: SitePageProps) {
       }
 
       setBookingSuccessData(data.appointment);
+
+      // Log the confirmation in the chat transcript too, so a visitor who
+      // booked via the in-chat form (or reopens the chat later) can see it
+      // was confirmed without having to re-check the separate success panel.
+      const appt = data.appointment || {};
+      const serviceLabel = appt.serviceName || selectedService?.name || 'your appointment';
+      const dateLabel = appt.date || bookingDate;
+      const timeLabel = appt.timeSlot || bookingTime;
+      setChatMessages((prev) => [
+        ...prev,
+        {
+          role: 'assistant' as const,
+          content: `✅ **Booking confirmed!** ${serviceLabel} on **${dateLabel}** at **${timeLabel}**. A confirmation has been sent to ${clientEmail}. We look forward to seeing you!`,
+        },
+      ]);
+      playChatReceiveSound();
     } catch (err: any) {
       setBookingError(err.message || 'Booking failed');
     } finally {
@@ -699,6 +794,7 @@ export default function HostedBusinessSite({ params }: SitePageProps) {
     // Append empty placeholder for real-time assistant streaming
     setChatMessages([...updatedMessages, { role: 'assistant' as const, content: '' }]);
     setChatLoading(true);
+    playChatSendSound();
 
     try {
       const res = await fetch('/api/chat', {
@@ -725,6 +821,17 @@ export default function HostedBusinessSite({ params }: SitePageProps) {
             copy[copy.length - 1] = { role: 'assistant', content: acc };
             return copy;
           });
+        },
+        onTakeover: (agentName, convId, convToken) => {
+          if (convId) setConversationId(convId);
+          if (convToken) setConversationToken(convToken);
+          setIsTakeoverActive(true);
+          if (agentName) setAssignedAgentName(agentName);
+        },
+        onDone: (convId, convToken) => {
+          if (convId) setConversationId(convId);
+          if (convToken) setConversationToken(convToken);
+          playChatReceiveSound();
         },
       });
 
@@ -1530,14 +1637,18 @@ export default function HostedBusinessSite({ params }: SitePageProps) {
                         </div>
                       )}
 
-                      <div className="whitespace-pre-line">
-                        {cleanContent || (
-                          <span className="flex items-center gap-1.5 text-slate-400">
-                            <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                            <span>Consulting knowledgebase...</span>
-                          </span>
-                        )}
-                      </div>
+                      {cleanContent ? (
+                        isUser ? (
+                          <div className="whitespace-pre-line">{cleanContent}</div>
+                        ) : (
+                          <MarkdownRenderer content={cleanContent} />
+                        )
+                      ) : (
+                        <span className="flex items-center gap-1.5 text-slate-400">
+                          <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                          <span>Consulting knowledgebase...</span>
+                        </span>
+                      )}
 
                       {/* Interactive In-Chat Booking Form Card */}
                       {hasBookingAction && (
@@ -1596,6 +1707,7 @@ export default function HostedBusinessSite({ params }: SitePageProps) {
                   </div>
                 </div>
               )}
+              <div ref={chatMessagesEndRef} />
             </div>
 
             {/* Quick Prompts (Instant Auto-Send on Click) */}
