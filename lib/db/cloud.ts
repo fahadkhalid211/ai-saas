@@ -38,7 +38,8 @@ function mergeById<T extends { id: string; updatedAt?: string; createdAt?: strin
 
 export async function fetchCloudState(): Promise<any | null> {
   if (isPostgresConfigured()) {
-    return fetchPostgresState();
+    const pg = await fetchPostgresState();
+    if (pg) return pg;
   }
   if (isSupabaseConfigured()) {
     return fetchSupabaseState();
@@ -67,7 +68,8 @@ export async function persistCloudState(state: any): Promise<boolean> {
     }
 
     if (isPostgresConfigured()) {
-      return await persistPostgresState(mergedState);
+      const ok = await persistPostgresState(mergedState);
+      if (ok) return true;
     }
     if (isSupabaseConfigured()) {
       return await persistSupabaseState(mergedState);
@@ -76,7 +78,8 @@ export async function persistCloudState(state: any): Promise<boolean> {
   } catch (err: any) {
     console.warn('[Cloud DB] Exception during state persistence:', err?.message || err);
     if (isPostgresConfigured()) {
-      return await persistPostgresState(state);
+      const ok = await persistPostgresState(state);
+      if (ok) return true;
     }
     if (isSupabaseConfigured()) {
       return await persistSupabaseState(state);
@@ -87,7 +90,8 @@ export async function persistCloudState(state: any): Promise<boolean> {
 
 export async function fetchCloudChunks(): Promise<any[] | null> {
   if (isPostgresConfigured()) {
-    return fetchPostgresChunks();
+    const pg = await fetchPostgresChunks();
+    if (pg) return pg;
   }
   if (isSupabaseConfigured()) {
     return fetchSupabaseChunks();
@@ -97,7 +101,8 @@ export async function fetchCloudChunks(): Promise<any[] | null> {
 
 export async function persistCloudChunks(chunks: any[]): Promise<boolean> {
   if (isPostgresConfigured()) {
-    return persistPostgresChunks(chunks);
+    const ok = await persistPostgresChunks(chunks);
+    if (ok) return true;
   }
   if (isSupabaseConfigured()) {
     return persistSupabaseChunks(chunks);

@@ -27,7 +27,15 @@ export function getPostgresUrl(): string | undefined {
 export function isPostgresConfigured(): boolean {
   if (Date.now() < isPostgresDisabledUntil) return false;
   const url = getPostgresUrl();
-  return Boolean(url && (url.startsWith('postgres://') || url.startsWith('postgresql://')));
+  if (!url) return false;
+  const isServerless =
+    Boolean(process.env.VERCEL) ||
+    Boolean(process.env.VERCEL_ENV) ||
+    Boolean(process.env.AWS_LAMBDA_FUNCTION_NAME);
+  if (isServerless && (url.includes('localhost') || url.includes('127.0.0.1'))) {
+    return false;
+  }
+  return Boolean(url.startsWith('postgres://') || url.startsWith('postgresql://'));
 }
 
 export function getPostgresPool(): Pool | null {
