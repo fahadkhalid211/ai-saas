@@ -13,7 +13,8 @@ export function getCloudDbProvider(): 'postgres' | 'supabase' | 'ephemeral' {
 
 function mergeById<T extends { id: string; updatedAt?: string; createdAt?: string }>(
   baseList: T[] = [],
-  incomingList: T[] = []
+  incomingList: T[] = [],
+  incomingWins: boolean = false
 ): T[] {
   const map = new Map<string, T>();
   for (const item of baseList) {
@@ -22,11 +23,11 @@ function mergeById<T extends { id: string; updatedAt?: string; createdAt?: strin
   for (const item of incomingList) {
     if (item && item.id) {
       const existing = map.get(item.id);
-      if (!existing) {
-        map.set(item.id, item);
+      if (!existing || incomingWins) {
+        map.set(item.id, { ...(existing || {}), ...item });
       } else {
-        const itemTime = item.updatedAt || item.createdAt || '';
-        const existingTime = existing.updatedAt || existing.createdAt || '';
+        const itemTime = new Date(item.updatedAt || item.createdAt || 0).getTime();
+        const existingTime = new Date(existing.updatedAt || existing.createdAt || 0).getTime();
         if (itemTime >= existingTime) {
           map.set(item.id, { ...existing, ...item });
         }
@@ -63,8 +64,8 @@ export async function persistCloudState(state: any): Promise<boolean> {
       mergedState.notifications = mergeById(remote.notifications || [], state.notifications || []);
       mergedState.unansweredQueries = mergeById(remote.unansweredQueries || [], state.unansweredQueries || []);
       mergedState.auditLogs = mergeById(remote.auditLogs || [], state.auditLogs || []);
-      mergedState.landingPages = mergeById(remote.landingPages || [], state.landingPages || []);
-      mergedState.assistants = mergeById(remote.assistants || [], state.assistants || []);
+      mergedState.landingPages = mergeById(remote.landingPages || [], state.landingPages || [], true);
+      mergedState.assistants = mergeById(remote.assistants || [], state.assistants || [], true);
     }
 
     if (isPostgresConfigured()) {

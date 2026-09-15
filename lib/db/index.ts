@@ -867,7 +867,7 @@ export class Database {
     };
 
     state.assistants.push(newAssistant);
-    saveState(state);
+    await saveState(state);
     return {
       ...newAssistant,
       apiKeyEncrypted: decryptSecret(newAssistant.apiKeyEncrypted || ''),
@@ -921,7 +921,7 @@ export class Database {
       updatedAt: new Date().toISOString(),
     };
 
-    saveState(state);
+    await saveState(state);
     const updated = state.assistants[idx];
     return {
       ...updated,
@@ -941,7 +941,7 @@ export class Database {
     state.conversations = state.conversations.filter((c) => c.assistantId !== id);
     state.leads = state.leads.filter((l) => l.assistantId !== id);
     state.appointments = (state.appointments || []).filter((a) => a.assistantId !== id);
-    saveState(state);
+    await saveState(state);
     return true;
   }
 
@@ -982,7 +982,7 @@ export class Database {
     }
 
     if (stateChanged) {
-      saveState(state);
+      await saveState(state);
     }
 
     return sources;
@@ -1006,7 +1006,7 @@ export class Database {
     };
 
     state.knowledgeSources.push(newSource);
-    saveState(state);
+    await saveState(state);
     return newSource;
   }
 
@@ -1019,7 +1019,7 @@ export class Database {
         ...data,
         updatedAt: new Date().toISOString(),
       };
-      saveState(state);
+      await saveState(state);
     }
   }
 
@@ -1033,7 +1033,7 @@ export class Database {
     state.knowledgeSources = state.knowledgeSources.filter((k) => k.id !== id);
     const remainingChunks = state.chunks.filter((c) => c.knowledgeSourceId !== id);
     saveChunksState(remainingChunks);
-    saveState(state);
+    await saveState(state);
     return true;
   }
 
@@ -1330,7 +1330,7 @@ export class Database {
     if (state.unansweredQueries.length > 500) {
       state.unansweredQueries = state.unansweredQueries.slice(0, 500);
     }
-    saveState(state);
+    await saveState(state);
     return record;
   }
 
@@ -1346,7 +1346,7 @@ export class Database {
     if (!item) return false;
     item.resolved = true;
     if (answer) item.suggestedAnswer = answer;
-    saveState(state);
+    await saveState(state);
     return true;
   }
 
@@ -1354,7 +1354,7 @@ export class Database {
     const state = await ensureInitialized();
     if (!state.unansweredQueries) return false;
     state.unansweredQueries = state.unansweredQueries.filter((q) => q.id !== id);
-    saveState(state);
+    await saveState(state);
     return true;
   }
 
@@ -1542,7 +1542,7 @@ export class Database {
       ...config,
     };
     ast.updatedAt = new Date().toISOString();
-    saveState(state);
+    await saveState(state);
     return ast.landingPageConfig;
   }
 
@@ -1592,7 +1592,7 @@ export class Database {
       };
 
       state.assistants.push(newAst);
-      saveState(state);
+      await saveState(state);
       ast = newAst;
     }
 
@@ -1643,7 +1643,7 @@ export class Database {
       createdAt: new Date().toISOString(),
     };
     state.teamMembers.push(newMember);
-    saveState(state);
+    await saveState(state);
     return { ...newMember, temporaryPassword };
   }
 
@@ -1656,7 +1656,7 @@ export class Database {
     const member = state.teamMembers.find((m) => m.id === id);
     if (!member) return null;
     Object.assign(member, updates);
-    saveState(state);
+    await saveState(state);
     return member;
   }
 
@@ -1665,7 +1665,7 @@ export class Database {
     if (!state.teamMembers) return false;
     const prevLen = state.teamMembers.length;
     state.teamMembers = state.teamMembers.filter((m) => m.id !== id);
-    saveState(state);
+    await saveState(state);
     return state.teamMembers.length < prevLen;
   }
 
@@ -1699,7 +1699,7 @@ export class Database {
       }
 
       tm.lastLoginAt = new Date().toISOString();
-      saveState(state);
+      await saveState(state);
       return tm;
     }
     return null;
@@ -1715,7 +1715,7 @@ export class Database {
     if (!member) return null;
     if (credentials.password) member.password = hashPassword(credentials.password.trim());
     if (credentials.accessCode) member.accessCode = hashPassword(credentials.accessCode.trim().toLowerCase());
-    saveState(state);
+    await saveState(state);
     return member;
   }
 
@@ -1738,7 +1738,7 @@ export class Database {
           createdAt: new Date().toISOString(),
         };
         state.teamMembers.push(member);
-        saveState(state);
+        await saveState(state);
       }
     }
     if (!member && workspaceId) {
@@ -1758,7 +1758,7 @@ export class Database {
             createdAt: ws.createdAt || new Date().toISOString(),
           };
           state.teamMembers.push(member);
-          saveState(state);
+          await saveState(state);
         }
       }
     }
@@ -1838,7 +1838,7 @@ export class Database {
       }
     }
     member.updatedAt = new Date().toISOString();
-    saveState(state);
+    await saveState(state);
     return member;
   }
 
@@ -1857,7 +1857,7 @@ export class Database {
     if (state.auditLogs.length > 1000) {
       state.auditLogs = state.auditLogs.slice(0, 1000);
     }
-    saveState(state);
+    await saveState(state);
     return log;
   }
 
@@ -1891,7 +1891,7 @@ export class Database {
     if (state.notifications.length > 200) {
       state.notifications = state.notifications.slice(0, 200);
     }
-    saveState(state);
+    await saveState(state);
     return notif;
   }
 
@@ -1901,7 +1901,7 @@ export class Database {
     const item = state.notifications.find((n) => n.id === id);
     if (!item) return false;
     item.read = true;
-    saveState(state);
+    await saveState(state);
     return true;
   }
 
@@ -1913,7 +1913,7 @@ export class Database {
         item.read = true;
       }
     }
-    saveState(state);
+    await saveState(state);
     return true;
   }
   // Workspace & Chat-Based Billing
@@ -1959,7 +1959,7 @@ export class Database {
         ],
       };
       state.workspaces.push(ws);
-      saveState(state);
+      await saveState(state);
     } else if (!ws.planId) {
       ws.planId = 'starter';
       ws.planName = 'Starter';
@@ -1991,7 +1991,7 @@ export class Database {
           status: 'paid',
         },
       ];
-      saveState(state);
+      await saveState(state);
     }
     return ws as WorkspaceBillingData;
   }
@@ -2008,7 +2008,7 @@ export class Database {
     }
     if (ws) {
       Object.assign(ws, updates);
-      saveState(state);
+      await saveState(state);
     }
     return ws as WorkspaceBillingData;
   }
@@ -2056,7 +2056,7 @@ export class Database {
       type: 'appointment_booked',
     });
 
-    saveState(state);
+    await saveState(state);
     return {
       success: true,
       newSlotCount: ws.extraLandingPagesCount,
@@ -2184,7 +2184,7 @@ export class Database {
     if (!state.teamMembers) state.teamMembers = [];
     state.teamMembers.push(ownerMember);
 
-    saveState(state);
+    await saveState(state);
 
     return {
       workspace,
@@ -2229,7 +2229,7 @@ export class Database {
           if (!state.teamMembers) state.teamMembers = [];
           state.teamMembers.push(ownerMember);
         }
-        saveState(state);
+        await saveState(state);
         return { workspace: ws, member: ownerMember };
       }
     }
@@ -2253,7 +2253,7 @@ export class Database {
     const prevCount = state.landingPages.length;
     state.landingPages = state.landingPages.filter((p) => !p.id || !legacyTemplateIds.has(p.id));
     if (state.landingPages.length !== prevCount) {
-      saveState(state);
+      await saveState(state);
     }
 
     // If default workspace has no page, initialize only the primary barbershop page
@@ -2266,7 +2266,7 @@ export class Database {
         assistantId: 'demo-assistant',
       };
       state.landingPages.unshift(barberPage);
-      saveState(state);
+      await saveState(state);
     }
 
     if (workspaceId === '*') {
@@ -2345,7 +2345,7 @@ export class Database {
       }
     }
 
-    saveState(state);
+    await saveState(state);
     return cleanConfig;
   }
 
@@ -2404,7 +2404,7 @@ export class Database {
     if (state.pageViews.length > 5000) {
       state.pageViews = state.pageViews.slice(0, 5000);
     }
-    saveState(state);
+    await saveState(state);
     return record;
   }
 
@@ -2742,7 +2742,7 @@ export class Database {
     state.landingPages = state.landingPages.filter(
       (p) => p.id !== idOrSlug && p.slug.toLowerCase() !== idOrSlug.toLowerCase()
     );
-    saveState(state);
+    await saveState(state);
     return state.landingPages.length < prevCount;
   }
 
@@ -2760,7 +2760,7 @@ export class Database {
       updatedAt: new Date().toISOString(),
     };
     state.smtpSettings = updated;
-    saveState(state);
+    await saveState(state);
     return updated;
   }
 }
