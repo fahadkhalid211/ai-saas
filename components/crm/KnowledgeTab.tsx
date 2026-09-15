@@ -45,6 +45,7 @@ export interface KnowledgeTabProps {
   uploadText: string;
   setUploadText: (text: string) => void;
   isUploading: boolean;
+  uploadStatusText?: string | null;
   handleImportUrl: (e: React.FormEvent) => Promise<void>;
   urlInput: string;
   setUrlInput: (url: string) => void;
@@ -73,6 +74,7 @@ export const KnowledgeTab: React.FC<KnowledgeTabProps> = ({
   uploadText,
   setUploadText,
   isUploading,
+  uploadStatusText,
   handleImportUrl,
   urlInput,
   setUrlInput,
@@ -239,7 +241,7 @@ export const KnowledgeTab: React.FC<KnowledgeTabProps> = ({
                       {isUploading ? (
                         <>
                           <RefreshCw className="h-3.5 w-3.5 animate-spin" />
-                          <span>Extracting &amp; Indexing Chunks...</span>
+                          <span>{uploadStatusText || 'Extracting & Indexing Chunks...'}</span>
                         </>
                       ) : (
                         <>

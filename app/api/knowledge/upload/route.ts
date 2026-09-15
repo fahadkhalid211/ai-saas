@@ -10,6 +10,7 @@ import { withAdminAuth } from '@/lib/security/auth';
 // hundreds of chunks can legitimately take well over a minute; let the
 // platform know this route needs real headroom instead of being killed at
 // whatever short default applies (e.g. Vercel's default function timeout).
+export const dynamic = 'force-dynamic';
 export const maxDuration = 300;
 
 export const POST = withAdminAuth(async (req: Request) => {
@@ -18,12 +19,12 @@ export const POST = withAdminAuth(async (req: Request) => {
     const assistantId = formData.get('assistantId') as string;
 
     if (!assistantId) {
-      return NextResponse.json({ error: 'assistantId is required' }, { status: 400 });
+      return NextResponse.json({ success: false, error: 'assistantId is required' }, { status: 400 });
     }
 
     const assistant = await Database.getAssistantById(assistantId);
     if (!assistant) {
-      return NextResponse.json({ error: 'Assistant not found' }, { status: 404 });
+      return NextResponse.json({ success: false, error: 'Assistant not found' }, { status: 404 });
     }
 
     const files = formData.getAll('files') as File[];
@@ -230,7 +231,7 @@ export const POST = withAdminAuth(async (req: Request) => {
   } catch (error: any) {
     console.error('Upload route error:', error);
     return NextResponse.json(
-      { error: error?.message || 'Upload processing failed' },
+      { success: false, error: error?.message || 'Upload processing failed' },
       { status: 500 }
     );
   }

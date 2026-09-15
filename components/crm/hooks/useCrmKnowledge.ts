@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { extractAudioFromVideoFile } from '@/lib/media/audioExtractor';
 
 export interface KnowledgeSource {
   id: string;
@@ -29,6 +30,7 @@ interface UseCrmKnowledgeOptions {
 export function useCrmKnowledge({ activeAssistant }: UseCrmKnowledgeOptions) {
   const [sources, setSources] = useState<KnowledgeSource[]>([]);
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadStatusText, setUploadStatusText] = useState<string | null>(null);
   const [uploadText, setUploadText] = useState('');
   const [uploadTextTitle, setUploadTextTitle] = useState('');
   const [selectedFiles, setSelectedFiles] = useState<FileList | null>(null);
@@ -89,22 +91,80 @@ export function useCrmKnowledge({ activeAssistant }: UseCrmKnowledgeOptions) {
     if ((!selectedFiles || selectedFiles.length === 0) && !uploadText.trim()) return;
 
     setIsUploading(true);
-    const body = new FormData();
-    body.append('assistantId', activeAssistant.id);
-
-    if (selectedFiles) {
-      Array.from(selectedFiles).forEach((f) => body.append('files', f));
-    }
-    if (uploadText.trim()) {
-      body.append('text', uploadText.trim());
-      body.append('title', uploadTextTitle.trim() || 'Business Knowledge Description');
-    }
+    setUploadFailureAlert(null);
+    setUploadStatusText('Preparing files...');
 
     try {
+      const body = new FormData();
+      body.append('assistantId', activeAssistant.id);
+
+      if (selectedFiles) {
+        const fileList = Array.from(selectedFiles);
+        for (const f of fileList) {
+          try {
+            const processedFile = await extractAudioFromVideoFile(f, (status) => {
+              setUploadStatusText(status);
+            });
+            // Pass original filename so source preserves the expected name & extension
+            body.append('files', processedFile, f.name);
+          } catch (extractErr: unknown) {
+            const msg = extractErr instanceof Error ? extractErr.message : String(extractErr);
+            setUploadFailureAlert({
+              title: f.name,
+              reason: msg,
+              whatToDoNext:
+                'Please ensure your video has audible speaking voice or export the audio as MP3/M4A and try again.',
+            });
+            setIsUploading(false);
+            setUploadStatusText(null);
+            return;
+          }
+        }
+      }
+
+      if (uploadText.trim()) {
+        body.append('text', uploadText.trim());
+        body.append('title', uploadTextTitle.trim() || 'Business Knowledge Description');
+      }
+
+      setUploadStatusText('Uploading & indexing chunks...');
+
       const res = await fetch('/api/knowledge/upload', {
         method: 'POST',
         body,
       });
+
+      if (!res.ok) {
+        let errorMsg = `Server returned status ${res.status}`;
+        let whatToDo = 'Please check the file format and requirements, or try again.';
+        try {
+          const errData = await res.json();
+          if (errData.error) errorMsg = errData.error;
+        } catch {
+          const text = await res.text().catch(() => '');
+          if (res.status === 413 || text.includes('FUNCTION_PAYLOAD_TOO_LARGE')) {
+            errorMsg = 'File size exceeds the 4.5MB serverless upload limit.';
+            whatToDo =
+              'Video files contain heavy video frames. Please export the audio track as an MP3 or M4A file (usually 2-5 MB) and upload it.';
+          } else if (res.status === 401) {
+            errorMsg = 'Your administrator session has expired.';
+            whatToDo = 'Please refresh the page to renew your login session.';
+          } else if (res.status === 504) {
+            errorMsg = 'The upload timed out while processing.';
+            whatToDo = 'For long recordings, export a shorter audio clip (MP3/M4A) and re-upload.';
+          } else if (text) {
+            errorMsg = text.slice(0, 200);
+          }
+        }
+
+        setUploadFailureAlert({
+          title: selectedFiles?.[0]?.name || uploadTextTitle || 'Upload Failed',
+          reason: errorMsg,
+          whatToDoNext: whatToDo,
+        });
+        return;
+      }
+
       const data = await res.json();
       if (data.success) {
         setSelectedFiles(null);
@@ -125,11 +185,24 @@ export function useCrmKnowledge({ activeAssistant }: UseCrmKnowledgeOptions) {
         } else {
           setUploadFailureAlert(null);
         }
+      } else {
+        setUploadFailureAlert({
+          title: selectedFiles?.[0]?.name || uploadTextTitle || 'Upload Failed',
+          reason: data.error || 'Failed to process and index knowledge content.',
+          whatToDoNext: 'Please check your AI Engine settings and verify the file is readable.',
+        });
       }
-    } catch (err) {
+    } catch (err: unknown) {
       console.error('Upload error:', err);
+      const errMsg = err instanceof Error ? err.message : String(err);
+      setUploadFailureAlert({
+        title: selectedFiles?.[0]?.name || uploadTextTitle || 'Upload Error',
+        reason: errMsg || 'A network error occurred while uploading.',
+        whatToDoNext: 'Please check your network connection and server status, then try again.',
+      });
     } finally {
       setIsUploading(false);
+      setUploadStatusText(null);
     }
   };
 
@@ -253,6 +326,7 @@ export function useCrmKnowledge({ activeAssistant }: UseCrmKnowledgeOptions) {
     sources,
     setSources,
     isUploading,
+    uploadStatusText,
     uploadText,
     setUploadText,
     uploadTextTitle,

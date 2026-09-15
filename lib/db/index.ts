@@ -421,7 +421,7 @@ function loadChunksState(): ChunkRecord[] {
   return cachedChunks;
 }
 
-function saveChunksState(chunks: ChunkRecord[]): void {
+async function saveChunksState(chunks: ChunkRecord[]): Promise<void> {
   ensureDataDir();
   cachedChunks = chunks;
   if (cachedState) {
@@ -431,9 +431,11 @@ function saveChunksState(chunks: ChunkRecord[]): void {
   atomicWriteFileSync(VECTORS_FILE, JSON.stringify(chunks, null, 2));
 
   if (isCloudDbConfigured()) {
-    persistCloudChunks(chunks).catch((err) => {
+    try {
+      await persistCloudChunks(chunks);
+    } catch (err) {
       console.warn('[Database] Failed to sync chunks to Cloud DB:', err);
-    });
+    }
   }
 }
 
@@ -573,7 +575,7 @@ function loadState(): DatabaseState {
   if (Array.isArray(state.chunks) && state.chunks.length > 0) {
     if (!fs.existsSync(VECTORS_FILE)) {
       console.log(`[Database Migration] Migrating ${state.chunks.length} chunks from db.json to vectors.json...`);
-      saveChunksState(state.chunks);
+      void saveChunksState(state.chunks);
     }
     state.chunks = [];
     saveLocalStateSync(state);
@@ -937,7 +939,7 @@ export class Database {
     state.assistants = state.assistants.filter((a) => a.id !== id);
     state.knowledgeSources = state.knowledgeSources.filter((k) => k.assistantId !== id);
     const remainingChunks = state.chunks.filter((c) => c.assistantId !== id);
-    saveChunksState(remainingChunks);
+    await saveChunksState(remainingChunks);
     state.conversations = state.conversations.filter((c) => c.assistantId !== id);
     state.leads = state.leads.filter((l) => l.assistantId !== id);
     state.appointments = (state.appointments || []).filter((a) => a.assistantId !== id);
@@ -1032,7 +1034,7 @@ export class Database {
     const state = await ensureInitialized();
     state.knowledgeSources = state.knowledgeSources.filter((k) => k.id !== id);
     const remainingChunks = state.chunks.filter((c) => c.knowledgeSourceId !== id);
-    saveChunksState(remainingChunks);
+    await saveChunksState(remainingChunks);
     await saveState(state);
     return true;
   }
@@ -1047,20 +1049,20 @@ export class Database {
     }));
 
     const updated = [...state.chunks, ...newRecords];
-    saveChunksState(updated);
+    await saveChunksState(updated);
   }
 
   static async updateChunks(updatedChunks: ChunkRecord[]): Promise<void> {
     const state = await ensureInitialized();
     const map = new Map<string, ChunkRecord>(updatedChunks.map((c) => [c.id, c]));
     const updated = state.chunks.map((c) => map.get(c.id) || c);
-    saveChunksState(updated);
+    await saveChunksState(updated);
   }
 
   static async deleteChunksBySource(sourceId: string): Promise<void> {
     const state = await ensureInitialized();
     const remaining = state.chunks.filter((c) => c.knowledgeSourceId !== sourceId);
-    saveChunksState(remaining);
+    await saveChunksState(remaining);
   }
 
   static async getChunksByAssistant(assistantId: string): Promise<ChunkRecord[]> {

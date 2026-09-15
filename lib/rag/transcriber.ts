@@ -98,8 +98,85 @@ export interface TranscribeResult {
   translatedSegments?: TranscriptionSegment[];
 }
 
+export function detectAudioBufferFormat(buffer: Buffer): { ext: string; mime: string } | null {
+  if (buffer.byteLength >= 12) {
+    if (buffer.subarray(0, 4).toString('ascii') === 'RIFF' && buffer.subarray(8, 12).toString('ascii') === 'WAVE') {
+      return { ext: 'wav', mime: 'audio/wav' };
+    }
+    if (buffer.subarray(0, 4).toString('ascii') === 'OggS') {
+      return { ext: 'ogg', mime: 'audio/ogg' };
+    }
+    if (buffer.subarray(0, 4).toString('ascii') === 'fLaC') {
+      return { ext: 'flac', mime: 'audio/flac' };
+    }
+    if (buffer.subarray(0, 3).toString('ascii') === 'ID3') {
+      return { ext: 'mp3', mime: 'audio/mpeg' };
+    }
+    if (buffer[0] === 0xff && (buffer[1] & 0xe0) === 0xe0) {
+      return { ext: 'mp3', mime: 'audio/mpeg' };
+    }
+  }
+  return null;
+}
+
+async function transcribeWithGemini(
+  buffer: Buffer,
+  filename: string,
+  mimeType: string,
+  apiKey: string
+): Promise<TranscribeResult> {
+  const base64Data = buffer.toString('base64');
+  const isVid = isVideoFile(filename);
+  const mediaLabel = isVid ? 'video' : 'audio';
+
+  const prompt = `You are an expert audio and video transcriber for an AI business knowledge base.
+Please transcribe the spoken audio of this ${mediaLabel} recording thoroughly and accurately.
+1. Transcribe all spoken words and narration in full.
+2. If there are topics, sections, or timestamps, include them in chronological order (e.g. [00:00 - 00:30]).
+3. Capture every detail: service names, prices, contact info, business policies, and answers to common questions.
+4. Output the complete spoken narrative clearly.`;
+
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${apiKey}`;
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      contents: [
+        {
+          parts: [
+            { text: prompt },
+            {
+              inlineData: {
+                mimeType,
+                data: base64Data,
+              },
+            },
+          ],
+        },
+      ],
+    }),
+  });
+
+  if (!res.ok) {
+    const errText = await res.text().catch(() => '');
+    throw new Error(`Gemini transcription failed (${res.status}): ${errText.slice(0, 300)}`);
+  }
+
+  const data = await res.json();
+  const text = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+  if (!text) {
+    throw new Error('Gemini processed the file but returned an empty transcription.');
+  }
+
+  return {
+    text,
+    language: 'en',
+    segments: [],
+  };
+}
+
 /**
- * Transcribes audio and video files using Groq Whisper (free & fast) or OpenAI Whisper.
+ * Transcribes audio and video files using Groq Whisper, Google Gemini, or OpenAI Whisper.
  * Supports direct MP4, WEBM, MOV, MP3, WAV, M4A, etc. up to 25MB.
  */
 export async function transcribeMedia(
@@ -132,6 +209,9 @@ export async function transcribeMedia(
     if (process.env.GROQ_API_KEY) {
       apiKey = process.env.GROQ_API_KEY;
       provider = 'groq';
+    } else if (process.env.GEMINI_API_KEY) {
+      apiKey = process.env.GEMINI_API_KEY;
+      provider = 'gemini';
     } else if (process.env.OPENAI_API_KEY) {
       apiKey = process.env.OPENAI_API_KEY;
       provider = 'openai';
@@ -140,13 +220,55 @@ export async function transcribeMedia(
 
   if (apiKey.startsWith('gsk_')) {
     provider = 'groq';
+  } else if (apiKey.startsWith('AIza') || apiKey.includes('AIzaSy')) {
+    provider = 'gemini';
   } else if (apiKey.startsWith('sk-') && !provider) {
     provider = 'openai';
   }
 
-  // Default to Groq if key is available or fallback
-  if (!provider) {
-    provider = 'groq';
+  // Determine upload filename and MIME type
+  const ext = filename.split('.').pop()?.toLowerCase() || '';
+  const isVid = isVideoFile(filename);
+
+  let uploadFilename = filename;
+  let uploadMime = getMediaMimeType(filename);
+
+  // Magic bytes check: if buffer is already a converted WAV or audio file, override extension
+  const detectedAudio = detectAudioBufferFormat(buffer);
+  if (detectedAudio) {
+    uploadMime = detectedAudio.mime;
+    const baseName = filename.replace(/\.[^/.]+$/, '');
+    uploadFilename = `${baseName}.${detectedAudio.ext}`;
+  } else {
+    // Groq's API gateway strictly whitelists: flac, mp3, mp4, mpeg, mpga, m4a, ogg, opus, wav, webm.
+    const GROQ_WHITELIST = new Set(['flac', 'mp3', 'mp4', 'mpeg', 'mpga', 'm4a', 'ogg', 'opus', 'wav', 'webm']);
+    if (!GROQ_WHITELIST.has(ext)) {
+      const baseName = filename.replace(/\.[^/.]+$/, '');
+      if (isVid) {
+        uploadFilename = `${baseName}.mp4`;
+        uploadMime = 'video/mp4';
+      } else {
+        uploadFilename = `${baseName}.m4a`;
+        uploadMime = 'audio/m4a';
+      }
+    }
+  }
+
+  // Route by provider
+  if (provider === 'gemini') {
+    const geminiKey = apiKey || process.env.GEMINI_API_KEY || '';
+    if (!geminiKey) {
+      const fallbackGroq = process.env.GROQ_API_KEY || '';
+      if (!fallbackGroq) {
+        throw new Error(
+          'Google Gemini API key required for transcription. Please provide a Gemini API key in AI Engine settings or set GEMINI_API_KEY.'
+        );
+      }
+      provider = 'groq';
+      apiKey = fallbackGroq;
+    } else {
+      return await transcribeWithGemini(buffer, uploadFilename, uploadMime, geminiKey);
+    }
   }
 
   let client: OpenAI;
@@ -155,6 +277,11 @@ export async function transcribeMedia(
   if (provider === 'groq') {
     const groqKey = apiKey || process.env.GROQ_API_KEY || '';
     if (!groqKey) {
+      // Fallback to Gemini if available
+      const geminiFallback = process.env.GEMINI_API_KEY || '';
+      if (geminiFallback) {
+        return await transcribeWithGemini(buffer, uploadFilename, uploadMime, geminiFallback);
+      }
       throw new Error(
         'Groq API key required for fast audio/video transcription. Please provide a free Groq API key in the AI Engine settings.'
       );
@@ -174,40 +301,26 @@ export async function transcribeMedia(
     client = new OpenAI({ apiKey: openaiKey });
     model = 'whisper-1';
   } else {
-    // If user has Groq API key in env or entered on assistant, use it
-    const fallbackKey =
-      process.env.GROQ_API_KEY ||
-      (apiKey.startsWith('gsk_') ? apiKey : '');
-    if (fallbackKey) {
+    // Check fallback keys across all available providers
+    const fallbackGroq = process.env.GROQ_API_KEY || (apiKey.startsWith('gsk_') ? apiKey : '');
+    const fallbackGemini = process.env.GEMINI_API_KEY || (apiKey.startsWith('AIza') ? apiKey : '');
+    const fallbackOpenAI = process.env.OPENAI_API_KEY || (apiKey.startsWith('sk-') ? apiKey : '');
+
+    if (fallbackGroq) {
       client = new OpenAI({
-        apiKey: fallbackKey,
+        apiKey: fallbackGroq,
         baseURL: 'https://api.groq.com/openai/v1',
       });
       model = 'whisper-large-v3';
+    } else if (fallbackGemini) {
+      return await transcribeWithGemini(buffer, uploadFilename, uploadMime, fallbackGemini);
+    } else if (fallbackOpenAI) {
+      client = new OpenAI({ apiKey: fallbackOpenAI });
+      model = 'whisper-1';
     } else {
       throw new Error(
-        `Transcription not supported directly for provider "${provider}". Please configure a free Groq API key in the AI Engine settings or set GROQ_API_KEY.`
+        'Speech and video transcription requires an AI API key. Please configure a free Groq API key (starts with "gsk_") or Google Gemini API key in the AI Engine settings.'
       );
-    }
-  }
-
-  const ext = filename.split('.').pop()?.toLowerCase() || '';
-  const isVid = isVideoFile(filename);
-
-  // Groq's API gateway strictly whitelists: flac, mp3, mp4, mpeg, mpga, m4a, ogg, opus, wav, webm.
-  // Map non-whitelisted video containers (e.g. .mov, .mkv, .avi) to .mp4 so Groq's backend ffmpeg handles them.
-  let uploadFilename = filename;
-  let uploadMime = getMediaMimeType(filename);
-
-  const GROQ_WHITELIST = new Set(['flac', 'mp3', 'mp4', 'mpeg', 'mpga', 'm4a', 'ogg', 'opus', 'wav', 'webm']);
-  if (!GROQ_WHITELIST.has(ext)) {
-    const baseName = filename.replace(/\.[^/.]+$/, '');
-    if (isVid) {
-      uploadFilename = `${baseName}.mp4`;
-      uploadMime = 'video/mp4';
-    } else {
-      uploadFilename = `${baseName}.m4a`;
-      uploadMime = 'audio/m4a';
     }
   }
 

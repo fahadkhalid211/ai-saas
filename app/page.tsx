@@ -856,6 +856,7 @@ export default function DashboardPage() {
                 uploadText={knowledge.uploadText}
                 setUploadText={knowledge.setUploadText}
                 isUploading={knowledge.isUploading}
+                uploadStatusText={knowledge.uploadStatusText}
                 handleImportUrl={knowledge.handleImportUrl}
                 urlInput={knowledge.urlInput}
                 setUrlInput={knowledge.setUrlInput}
