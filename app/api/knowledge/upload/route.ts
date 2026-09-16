@@ -30,6 +30,9 @@ export const POST = withAdminAuth(async (req: Request) => {
     const files = formData.getAll('files') as File[];
     const rawText = formData.get('text') as string;
     const textTitle = (formData.get('title') as string) || 'Text Description';
+    const sourceType = (formData.get('sourceType') as string) || 'description';
+    const rawFileSizeBytes = formData.get('fileSizeBytes');
+    const fileSizeBytes = rawFileSizeBytes ? Number(rawFileSizeBytes) : Buffer.byteLength(rawText || '', 'utf-8');
 
     const processedSources = [];
 
@@ -154,24 +157,34 @@ export const POST = withAdminAuth(async (req: Request) => {
       }
     }
 
-    // Case 2: Process direct text / business description
+    // Case 2: Process direct text / business description / reviewed extraction
     if (rawText && rawText.trim().length > 0) {
+      const cleanText = rawText.replace(/\r\n/g, '\n').trim();
+      const resolvedFileSize = isNaN(fileSizeBytes) ? Buffer.byteLength(cleanText, 'utf-8') : fileSizeBytes;
+
       const source = await Database.createKnowledgeSource({
         assistantId,
         title: textTitle,
-        type: 'description',
-        fileSizeBytes: Buffer.byteLength(rawText, 'utf-8'),
+        type: sourceType,
+        fileSizeBytes: resolvedFileSize,
         status: 'processing',
       });
 
       try {
-        const doc = await parseFileOrText({
-          filename: textTitle,
-          type: 'description',
-          text: rawText,
-        });
+        const doc = {
+          title: textTitle,
+          type: sourceType as any,
+          content: cleanText,
+          metadata: {
+            isReviewed: true,
+          },
+        };
 
         const rawChunks = chunkDocument(doc);
+        if (rawChunks.length === 0) {
+          throw new Error('No readable text content found to index');
+        }
+
         const textsToEmbed = rawChunks.map((c) => c.content);
         const embeddings = await generateEmbeddingsBatch(textsToEmbed);
 
@@ -184,7 +197,7 @@ export const POST = withAdminAuth(async (req: Request) => {
           metadata: {
             ...chunk.metadata,
             sourceTitle: textTitle,
-            sourceType: 'description',
+            sourceType,
           },
           embedding: embeddings[i],
         }));
@@ -205,9 +218,9 @@ export const POST = withAdminAuth(async (req: Request) => {
       } catch (textErr: any) {
         const diag = diagnoseKnowledgeFailure({
           filename: textTitle,
-          type: 'description',
+          type: sourceType,
           errorMessage: textErr?.message,
-          fileSizeBytes: Buffer.byteLength(rawText, 'utf-8'),
+          fileSizeBytes: resolvedFileSize,
         });
         await Database.updateKnowledgeSource(source.id, {
           status: 'failed',

@@ -888,6 +888,17 @@ export default function DashboardPage() {
                 setDeleteToast={knowledge.setDeleteToast}
                 isImportingUrl={knowledge.isImportingUrl}
                 urlFeedback={knowledge.urlFeedback}
+                reviewDraft={knowledge.reviewDraft}
+                setReviewDraft={knowledge.setReviewDraft}
+                isExtracting={knowledge.isExtracting}
+                extractionStatusText={knowledge.extractionStatusText}
+                isSavingDraft={knowledge.isSavingDraft}
+                draftSaveSuccess={knowledge.draftSaveSuccess}
+                setDraftSaveSuccess={knowledge.setDraftSaveSuccess}
+                handleExtractContent={knowledge.handleExtractContent}
+                handleSaveReviewDraft={knowledge.handleSaveReviewDraft}
+                handleDiscardReviewDraft={knowledge.handleDiscardReviewDraft}
+                handleExtractUrl={knowledge.handleExtractUrl}
               />
             )}
 

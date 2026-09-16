@@ -23,6 +23,15 @@ export interface KnowledgeSource {
   createdAt: string;
 }
 
+export interface KnowledgeReviewDraft {
+  title: string;
+  content: string;
+  type: string;
+  fileSizeBytes?: number;
+  originalFileName?: string;
+  isEdited?: boolean;
+}
+
 interface UseCrmKnowledgeOptions {
   activeAssistant: any;
 }
@@ -73,6 +82,13 @@ export function useCrmKnowledge({ activeAssistant }: UseCrmKnowledgeOptions) {
   const [resolvingQueryId, setResolvingQueryId] = useState<string | null>(null);
   const [knowledgeAnswerText, setKnowledgeAnswerText] = useState('');
   const [isSavingKnowledgeGap, setIsSavingKnowledgeGap] = useState(false);
+
+  // Two-Stage Ingestion & Review Draft state
+  const [reviewDraft, setReviewDraft] = useState<KnowledgeReviewDraft | null>(null);
+  const [isExtracting, setIsExtracting] = useState(false);
+  const [extractionStatusText, setExtractionStatusText] = useState<string | null>(null);
+  const [isSavingDraft, setIsSavingDraft] = useState(false);
+  const [draftSaveSuccess, setDraftSaveSuccess] = useState<string | null>(null);
 
   const fetchKnowledge = async (assistantId: string) => {
     try {
@@ -218,6 +234,261 @@ export function useCrmKnowledge({ activeAssistant }: UseCrmKnowledgeOptions) {
       resetUploaderFiles();
       setIsUploading(false);
       setUploadStatusText(null);
+    }
+  };
+
+  const handleExtractContent = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!activeAssistant) return;
+
+    const fileList = selectedFiles ? Array.from(selectedFiles) : [];
+    const hasFiles = fileList.length > 0;
+    const hasRawText = Boolean(uploadText.trim());
+
+    if (!hasFiles && !hasRawText) return;
+
+    // Case A: Raw text entered directly
+    if (!hasFiles && hasRawText) {
+      setReviewDraft({
+        title: uploadTextTitle.trim() || 'Business Knowledge Description',
+        content: uploadText.trim(),
+        type: 'description',
+        fileSizeBytes: new Blob([uploadText.trim()]).size,
+      });
+      setUploadText('');
+      setUploadTextTitle('');
+      setUploadFailureAlert(null);
+      return;
+    }
+
+    // Case B: Files selected for extraction
+    setIsExtracting(true);
+    setUploadFailureAlert(null);
+    setDraftSaveSuccess(null);
+    setExtractionStatusText('Preparing document...');
+
+    try {
+      const extractedSections: string[] = [];
+      let detectedType = 'txt';
+      let totalBytes = 0;
+      let primaryTitle = fileList[0].name;
+
+      for (let i = 0; i < fileList.length; i++) {
+        const file = fileList[i];
+        totalBytes += file.size;
+        const ext = file.name.split('.').pop()?.toLowerCase() || 'txt';
+        const isVideo = ['mp4', 'webm', 'mov', 'mkv', 'avi', 'm4v', '3gp'].includes(ext);
+        const isAudio = ['mp3', 'wav', 'm4a', 'ogg', 'flac', 'aac', 'opus', 'wma'].includes(ext);
+
+        let fileToUpload: File = file;
+
+        if (isVideo) {
+          setExtractionStatusText(`Extracting audio track locally from ${file.name}...`);
+          try {
+            fileToUpload = await extractAudioFromVideoFile(file, (status) => {
+              setExtractionStatusText(status);
+            });
+          } catch (extractErr: unknown) {
+            const msg = extractErr instanceof Error ? extractErr.message : String(extractErr);
+            setUploadFailureAlert({
+              title: file.name,
+              reason: msg,
+              whatToDoNext:
+                'Please ensure your video contains spoken dialogue, or export the audio as MP3/M4A and try again.',
+            });
+            setIsExtracting(false);
+            setExtractionStatusText(null);
+            return;
+          }
+        }
+
+        const progressLabel =
+          isVideo || isAudio
+            ? `Transcribing speech with AI Engine (${file.name})...`
+            : ['pdf', 'docx'].includes(ext)
+            ? `Extracting text from ${file.name}...`
+            : ['jpg', 'jpeg', 'png', 'webp'].includes(ext)
+            ? `Reading text with Vision AI & OCR (${file.name})...`
+            : `Reading ${file.name}...`;
+
+        setExtractionStatusText(progressLabel);
+
+        const formData = new FormData();
+        formData.append('assistantId', activeAssistant.id);
+        formData.append('file', fileToUpload, file.name);
+
+        const res = await fetch('/api/knowledge/extract', {
+          method: 'POST',
+          body: formData,
+        });
+
+        const data = await res.json().catch(() => null);
+
+        if (!res.ok || !data?.success) {
+          const reason = data?.error || `Extraction server returned status ${res.status}`;
+          const nextStep =
+            data?.whatToDoNext ||
+            (res.status === 413
+              ? 'File exceeds upload limit. Please export a smaller segment and try again.'
+              : 'Please verify document format or check server AI settings.');
+
+          setUploadFailureAlert({
+            title: file.name,
+            reason,
+            whatToDoNext: nextStep,
+          });
+          setIsExtracting(false);
+          setExtractionStatusText(null);
+          return;
+        }
+
+        detectedType = data.type || (isVideo ? 'video' : isAudio ? 'audio' : ext);
+        if (fileList.length > 1) {
+          extractedSections.push(`=== Source Document: ${file.name} ===\n\n${data.content}`);
+        } else {
+          extractedSections.push(data.content);
+        }
+      }
+
+      const combinedContent = extractedSections.join('\n\n\n');
+      if (fileList.length > 1) {
+        primaryTitle = `${fileList[0].name} (+${fileList.length - 1} more)`;
+      }
+
+      setReviewDraft({
+        title: primaryTitle,
+        content: combinedContent,
+        type: fileList.length > 1 ? 'multi-source' : detectedType,
+        fileSizeBytes: totalBytes,
+        originalFileName: fileList[0].name,
+      });
+
+      // Clear the selected file from uploader input
+      resetUploaderFiles();
+      setUploadFailureAlert(null);
+    } catch (err: unknown) {
+      console.error('Extraction error:', err);
+      const errMsg = err instanceof Error ? err.message : String(err);
+      setUploadFailureAlert({
+        title: fileList[0]?.name || 'Extraction Error',
+        reason: errMsg || 'Failed to extract content from file.',
+        whatToDoNext: 'Please check your connection, verify document is not corrupted, and try again.',
+      });
+    } finally {
+      setIsExtracting(false);
+      setExtractionStatusText(null);
+    }
+  };
+
+  const handleSaveReviewDraft = async () => {
+    if (!activeAssistant || !reviewDraft || !reviewDraft.content.trim()) return;
+
+    setIsSavingDraft(true);
+    setUploadFailureAlert(null);
+    setDraftSaveSuccess(null);
+
+    try {
+      const formData = new FormData();
+      formData.append('assistantId', activeAssistant.id);
+      formData.append('text', reviewDraft.content.trim());
+      formData.append('title', reviewDraft.title.trim() || 'Reviewed Knowledge Document');
+      formData.append('sourceType', reviewDraft.type || 'txt');
+      if (reviewDraft.fileSizeBytes) {
+        formData.append('fileSizeBytes', String(reviewDraft.fileSizeBytes));
+      }
+
+      const res = await fetch('/api/knowledge/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const data = await res.json().catch(() => null);
+
+      if (!res.ok || !data?.success) {
+        const firstFailed = data?.sources?.find((s: any) => s.status === 'failed');
+        setUploadFailureAlert({
+          title: reviewDraft.title,
+          reason: firstFailed?.error || data?.error || 'Failed to index knowledge into database.',
+          whatToDoNext:
+            firstFailed?.whatToDoNext || 'Please check database connectivity or try saving again.',
+        });
+        return;
+      }
+
+      await fetchKnowledge(activeAssistant.id);
+      setDraftSaveSuccess(`Successfully indexed "${reviewDraft.title}" into knowledge base!`);
+      setTimeout(() => setDraftSaveSuccess(null), 6000);
+      setReviewDraft(null);
+    } catch (saveErr: unknown) {
+      console.error('Save review draft error:', saveErr);
+      const errMsg = saveErr instanceof Error ? saveErr.message : String(saveErr);
+      setUploadFailureAlert({
+        title: reviewDraft.title,
+        reason: errMsg || 'Network error while saving knowledge.',
+        whatToDoNext: 'Please verify server status and try again.',
+      });
+    } finally {
+      setIsSavingDraft(false);
+    }
+  };
+
+  const handleDiscardReviewDraft = () => {
+    setReviewDraft(null);
+    setDraftSaveSuccess(null);
+  };
+
+  const handleExtractUrl = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!activeAssistant || !urlInput.trim()) return;
+
+    setIsExtracting(true);
+    setUrlFeedback(null);
+    setUploadFailureAlert(null);
+    setExtractionStatusText('Fetching and extracting content from URL...');
+
+    try {
+      const res = await fetch('/api/knowledge/extract', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          assistantId: activeAssistant.id,
+          url: urlInput.trim(),
+        }),
+      });
+
+      const data = await res.json().catch(() => null);
+
+      if (!res.ok || !data?.success) {
+        setUrlFeedback({
+          type: 'error',
+          message: data?.error || 'Failed to extract content from this URL.',
+        });
+        return;
+      }
+
+      setReviewDraft({
+        title: urlCustomTitle.trim() || data.title || urlInput.trim(),
+        content: data.content || '',
+        type: data.type || 'web',
+        fileSizeBytes: data.fileSizeBytes,
+      });
+
+      setUrlInput('');
+      setUrlCustomTitle('');
+      setUrlFeedback({
+        type: 'success',
+        message: 'Content extracted! Please review and verify the text below before saving.',
+      });
+      setTimeout(() => setUrlFeedback(null), 5000);
+    } catch (err: unknown) {
+      console.error('URL extraction error:', err);
+      setUrlFeedback({
+        type: 'error',
+        message: err instanceof Error ? err.message : 'Network error extracting URL content.',
+      });
+    } finally {
+      setIsExtracting(false);
+      setExtractionStatusText(null);
     }
   };
 
@@ -433,5 +704,17 @@ export function useCrmKnowledge({ activeAssistant }: UseCrmKnowledgeOptions) {
     handleOpenCorrectionModal,
     fetchUnansweredQueries,
     handleResolveUnansweredQuery,
+    // Two-Stage Ingestion & Review Draft
+    reviewDraft,
+    setReviewDraft,
+    isExtracting,
+    extractionStatusText,
+    isSavingDraft,
+    draftSaveSuccess,
+    setDraftSaveSuccess,
+    handleExtractContent,
+    handleSaveReviewDraft,
+    handleDiscardReviewDraft,
+    handleExtractUrl,
   };
 }
