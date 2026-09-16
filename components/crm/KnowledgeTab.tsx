@@ -13,6 +13,9 @@ import {
   FileText,
   Check,
   Edit3,
+  Bot,
+  ShieldCheck,
+  Plus,
 } from 'lucide-react';
 import type { KnowledgeReviewDraft } from './hooks/useCrmKnowledge';
 
@@ -38,6 +41,9 @@ export interface KnowledgeSource {
 
 export interface KnowledgeTabProps {
   activeAssistant: any;
+  assistants?: any[];
+  setActiveAssistant?: (assistant: any) => void;
+  onOpenNewAssistantModal?: () => void;
   fetchKnowledge: (assistantId: string) => Promise<void>;
   uploadFailureAlert: any;
   setUploadFailureAlert: (alert: any) => void;
@@ -87,6 +93,9 @@ export interface KnowledgeTabProps {
 
 export const KnowledgeTab: React.FC<KnowledgeTabProps> = ({
   activeAssistant,
+  assistants,
+  setActiveAssistant,
+  onOpenNewAssistantModal,
   fetchKnowledge,
   uploadFailureAlert,
   setUploadFailureAlert,
@@ -159,6 +168,68 @@ export const KnowledgeTab: React.FC<KnowledgeTabProps> = ({
                     <RefreshCw className="h-3.5 w-3.5 text-slate-500" />
                     <span>Sync Sources</span>
                   </button>
+                </div>
+
+                {/* Active Bot Scope & Switcher Banner */}
+                <div className="p-4 rounded-2xl border border-blue-200 dark:border-blue-900/60 bg-gradient-to-r from-blue-50/80 via-white to-blue-50/40 dark:from-blue-950/40 dark:via-slate-900 dark:to-blue-950/20 shadow-xs space-y-3">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div className="flex items-center gap-2.5">
+                      <div className="p-2 rounded-xl bg-blue-600 text-white shadow-xs shrink-0">
+                        <Bot className="h-5 w-5" />
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-bold text-slate-900 dark:text-white">
+                            Training Target:
+                          </span>
+                          {assistants && assistants.length > 1 ? (
+                            <select
+                              value={activeAssistant?.id || ''}
+                              onChange={(e) => {
+                                const selected = assistants.find((a) => a.id === e.target.value);
+                                if (selected && setActiveAssistant) {
+                                  setActiveAssistant(selected);
+                                }
+                              }}
+                              aria-label="Select AI Assistant for Training"
+                              className="px-2.5 py-1 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-bold text-blue-700 dark:text-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
+                            >
+                              {assistants.map((ast) => (
+                                <option key={ast.id} value={ast.id}>
+                                  {ast.name} ({ast.id})
+                                </option>
+                              ))}
+                            </select>
+                          ) : (
+                            <span className="text-xs font-bold text-blue-700 dark:text-blue-400">
+                              {activeAssistant?.name || 'Default Assistant'}
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                          ID: <span className="font-mono text-slate-700 dark:text-slate-300 font-semibold">{activeAssistant?.id || 'demo-assistant'}</span>
+                        </p>
+                      </div>
+                    </div>
+
+                    {onOpenNewAssistantModal && (
+                      <button
+                        type="button"
+                        onClick={onOpenNewAssistantModal}
+                        className="self-start sm:self-auto flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs transition cursor-pointer"
+                      >
+                        <Plus className="h-3.5 w-3.5" />
+                        <span>Create New Bot</span>
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="flex items-center gap-2 pt-2 border-t border-blue-100 dark:border-blue-900/40 text-[11.5px] text-blue-900 dark:text-blue-200">
+                    <ShieldCheck className="h-4 w-4 text-blue-600 dark:text-blue-400 shrink-0" />
+                    <span>
+                      <strong>Strict Per-Bot Isolation:</strong> Documents, websites, and YouTube videos uploaded here are partitioned exclusively to <strong>{activeAssistant?.name || 'this assistant'}</strong>. Other bots and separate landing pages will never access or cross-contaminate these materials.
+                    </span>
+                  </div>
                 </div>
 
                 {/* Metric Stat Cards (Balanced Typography) */}
@@ -613,9 +684,21 @@ export const KnowledgeTab: React.FC<KnowledgeTabProps> = ({
                     </div>
                   </div>
 
-                  {filteredSources.length === 0 ? (
+                  {sources.length === 0 ? (
+                    <div className="p-10 text-center space-y-2">
+                      <div className="mx-auto w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400">
+                        <FileText className="w-5 h-5" />
+                      </div>
+                      <div className="text-xs font-semibold text-slate-800 dark:text-slate-200">
+                        No training materials for {activeAssistant?.name || 'this bot'} yet
+                      </div>
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400 max-w-sm mx-auto">
+                        Upload PDFs, text documents, website links, or YouTube videos using the panels above to build an isolated knowledge base specifically for this assistant.
+                      </p>
+                    </div>
+                  ) : filteredSources.length === 0 ? (
                     <div className="p-8 text-center text-xs text-slate-500 dark:text-slate-400">
-                      No documents found matching your filter.
+                      No documents found matching your filter "{sourceFilter}".
                     </div>
                   ) : (
                     <table className="w-full text-left text-xs">

@@ -197,5 +197,68 @@ describe('Database Layer & Decoupled Storage', () => {
     const chunksAfterDelete = await Database.getChunksBySource(source.id);
     expect(chunksAfterDelete.length).toBe(0);
   });
+
+  it('should strictly isolate knowledge bases between bots and never leak cross-assistant chunks', async () => {
+    const barberBot = await Database.createAssistant({
+      name: 'Crown Barber Bot',
+      workspaceId: 'default-workspace',
+    });
+
+    const realEstateBot = await Database.createAssistant({
+      name: 'Prestige Realty Bot',
+      workspaceId: 'default-workspace',
+    });
+
+    const barberSource = await Database.createKnowledgeSource({
+      assistantId: barberBot.id,
+      title: 'Barber Services Price List',
+      type: 'txt',
+      chunkCount: 1,
+      status: 'ready',
+    });
+
+    const dummyVec = new Array(384).fill(0.08);
+    await Database.saveChunks([
+      {
+        assistantId: barberBot.id,
+        knowledgeSourceId: barberSource.id,
+        content: 'Specialty haircut costs $35, beard trim costs $20 with hot towel service.',
+        chunkIndex: 0,
+        tokenCount: 15,
+        metadata: { sourceTitle: barberSource.title },
+        embedding: dummyVec,
+      },
+    ]);
+
+    // Real estate bot has no training materials uploaded yet
+    const realEstateSources = await Database.getKnowledgeSources(realEstateBot.id);
+    expect(realEstateSources.length).toBe(0);
+
+    const realEstateChunks = await Database.getChunksByAssistant(realEstateBot.id);
+    expect(realEstateChunks.length).toBe(0);
+
+    // Hybrid search for real estate bot MUST return empty and never leak barber knowledge
+    const leakedSearch = await Database.hybridSearch(
+      realEstateBot.id,
+      'haircut beard trim price',
+      dummyVec,
+      5
+    );
+    expect(leakedSearch.length).toBe(0);
+
+    // Barber bot should retrieve its own chunks correctly
+    const barberSearch = await Database.hybridSearch(
+      barberBot.id,
+      'haircut beard trim price',
+      dummyVec,
+      5
+    );
+    expect(barberSearch.length).toBe(1);
+    expect(barberSearch[0].content).toContain('haircut costs $35');
+
+    // Clean up
+    await Database.deleteKnowledgeSource(barberSource.id);
+  });
 });
+
 

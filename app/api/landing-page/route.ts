@@ -15,21 +15,64 @@ async function resolveAssistantForLandingPage(page: LandingPageConfig): Promise<
 
   const wsId = page.workspaceId || 'default-workspace';
   const wsAssistants = await Database.getAssistants(wsId);
-  if (wsAssistants.length > 0) {
-    const matchedId = wsAssistants[0].id;
-    if (page.id && page.assistantId !== matchedId) {
-      page.assistantId = matchedId;
-      try {
-        await Database.saveLandingPage(page);
-      } catch (saveErr) {
-        console.warn('[LandingPage] Failed to persist canonical assistantId:', saveErr);
-      }
+
+  // 1. Check if any assistant in the workspace matches this landing page's slug or business name
+  const matched = wsAssistants.find((ast) =>
+    ast.id === page.slug ||
+    ast.id === `ast_${page.slug}` ||
+    ast.name.toLowerCase().includes((page.businessName || '').toLowerCase())
+  );
+
+  if (matched) {
+    page.assistantId = matched.id;
+    try {
+      await Database.saveLandingPage(page);
+    } catch (saveErr) {
+      console.warn('[LandingPage] Failed to persist canonical assistantId:', saveErr);
     }
-    return matchedId;
+    return matched.id;
   }
 
-  const demo = await Database.getAssistantById('demo-assistant');
-  if (demo) return demo.id;
+  // 2. Only map to demo-assistant if the landing page is explicitly barbershop
+  if (page.slug === 'classic-barbershop' || page.industry === 'barbershop') {
+    const demo = await Database.getAssistantById('demo-assistant');
+    if (demo) return demo.id;
+  }
+
+  // 3. Auto-create a dedicated assistant for this landing page to keep its knowledge base completely isolated
+  try {
+    const newBotId = 'ast_' + (page.slug || 'site').replace(/[^a-z0-9]/g, '_') + '_' + Math.random().toString(36).substring(2, 6);
+    const created = await Database.createAssistant({
+      id: newBotId,
+      workspaceId: wsId,
+      name: `${page.businessName || 'Business'} Concierge`,
+      description: `Dedicated AI assistant and booking concierge for ${page.businessName || 'this business'}.`,
+      systemPrompt: `You are the exclusive AI assistant for ${page.businessName || 'this business'}. You answer questions, help clients book services, and provide accurate details based solely on this business's knowledge base and service catalog. Never discuss or confuse details from other businesses or industries.`,
+      welcomeMessage: `Welcome to ${page.businessName || 'our business'}! How can I assist you today?`,
+      fallbackMessage: `I do not have that specific information in the knowledge base. Would you like to schedule an appointment or speak with our staff?`,
+      primaryColor: page.themeColor || '#2563eb',
+      starterQuestions: page.starterQuestions && page.starterQuestions.length > 0
+        ? page.starterQuestions
+        : [
+            `What services does ${page.businessName || 'this business'} offer?`,
+            `How can I book an appointment?`,
+            `What are your hours and location?`,
+          ],
+      collectLeadEmail: true,
+      bookingEnabled: true,
+      bookingProvider: 'direct',
+      bookingPromptText: 'Schedule an Appointment',
+    });
+    page.assistantId = created.id;
+    await Database.saveLandingPage(page);
+    return created.id;
+  } catch (err) {
+    console.warn('[LandingPage] Failed to auto-create dedicated assistant:', err);
+  }
+
+  if (wsAssistants.length > 0) {
+    return wsAssistants[0].id;
+  }
 
   return page.assistantId || 'demo-assistant';
 }
@@ -225,7 +268,7 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { assistantId, config, isNewPage } = body;
+    const { assistantId, config, isNewPage, createDedicatedAssistant } = body;
 
     if (!config || !config.businessName || !config.slug) {
       return NextResponse.json({ error: 'businessName and slug are required' }, { status: 400 });
@@ -248,15 +291,49 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    let finalAssistantId = assistantId || config.assistantId;
+
+    // Auto-create a dedicated assistant for this new landing page to guarantee isolated knowledge bases
+    if (isNewPage && (createDedicatedAssistant || (!finalAssistantId && config.slug !== 'classic-barbershop'))) {
+      try {
+        const newBotId = 'ast_' + config.slug.replace(/[^a-z0-9]/g, '_') + '_' + Math.random().toString(36).substring(2, 6);
+        const industryLabel = config.industry || 'services';
+        const createdAssistant = await Database.createAssistant({
+          id: newBotId,
+          workspaceId: ctx.workspaceId,
+          name: `${config.businessName} Concierge`,
+          description: `Dedicated AI assistant and booking concierge for ${config.businessName} (${industryLabel}).`,
+          systemPrompt: `You are the exclusive AI assistant for ${config.businessName}. You answer questions, help clients book services, and provide accurate details based solely on ${config.businessName}'s knowledge base and service catalog. Never discuss or confuse details from other businesses or industries.`,
+          welcomeMessage: `Welcome to ${config.businessName}! How can I assist you today?`,
+          fallbackMessage: `I do not have that specific information in the ${config.businessName} knowledge base. Would you like me to connect you with our team?`,
+          primaryColor: config.themeColor || '#2563eb',
+          starterQuestions: config.starterQuestions && config.starterQuestions.length > 0
+            ? config.starterQuestions
+            : [
+                `What services does ${config.businessName} offer?`,
+                `How can I book an appointment?`,
+                `What are your hours and location?`,
+              ],
+          collectLeadEmail: true,
+          bookingEnabled: true,
+          bookingProvider: 'direct',
+          bookingPromptText: 'Schedule an Appointment',
+        });
+        finalAssistantId = createdAssistant.id;
+      } catch (err) {
+        console.warn('[LandingPage POST] Failed to create dedicated assistant:', err);
+      }
+    }
+
     const savedConfig = await Database.saveLandingPage({
       ...config,
       workspaceId: config.workspaceId || ctx.workspaceId,
-      assistantId: assistantId || config.assistantId,
+      assistantId: finalAssistantId,
     });
 
     // Also update assistant config if assistantId provided
-    if (assistantId) {
-      await Database.updateLandingPageConfig(assistantId, savedConfig);
+    if (finalAssistantId) {
+      await Database.updateLandingPageConfig(finalAssistantId, savedConfig);
     }
 
     const ip = getClientIp(req);

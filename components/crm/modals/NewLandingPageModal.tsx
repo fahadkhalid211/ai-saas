@@ -13,6 +13,9 @@ export interface NewLandingPageModalProps {
   setNewPageSlug: (slug: string) => void;
   newPageIndustry: string;
   setNewPageIndustry: (industry: string) => void;
+  assistants?: any[];
+  newPageAssistantId?: string;
+  setNewPageAssistantId?: (id: string) => void;
 }
 
 export const NewLandingPageModal: React.FC<NewLandingPageModalProps> = ({
@@ -25,6 +28,9 @@ export const NewLandingPageModal: React.FC<NewLandingPageModalProps> = ({
   setNewPageSlug,
   newPageIndustry,
   setNewPageIndustry,
+  assistants = [],
+  newPageAssistantId = 'auto_create',
+  setNewPageAssistantId,
 }) => {
   if (!isOpen) return null;
 
@@ -95,6 +101,29 @@ export const NewLandingPageModal: React.FC<NewLandingPageModalProps> = ({
               <option value="legal">Legal &amp; Law Firm</option>
               <option value="healthcare">Dental &amp; Healthcare</option>
             </select>
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+              AI Chatbot &amp; Knowledge Base
+            </label>
+            <select
+              value={newPageAssistantId}
+              onChange={(e) => setNewPageAssistantId?.(e.target.value)}
+              className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 cursor-pointer"
+            >
+              <option value="auto_create">
+                Auto-create dedicated bot for this page (Recommended - isolated knowledge)
+              </option>
+              {assistants && assistants.map((ast) => (
+                <option key={ast.id} value={ast.id}>
+                  Connect existing bot: {ast.name} ({ast.id})
+                </option>
+              ))}
+            </select>
+            <p className="text-[10.5px] text-slate-500 dark:text-slate-400 mt-1">
+              Auto-creating a dedicated bot ensures its knowledge base remains strictly isolated from your other landing pages and bots.
+            </p>
           </div>
 
           <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">

@@ -745,46 +745,20 @@ function matchesAssistant(
   );
   if (landingPage && landingPage.assistantId === targetAssistantId) return true;
 
-  // 3. Template slug match (e.g. barbershop, gym, real_estate)
-  if (targetAssistantId === 'demo-assistant' || canonicalTarget === 'demo-assistant') {
+  // 3. For legacy demo assistant, match legacy barbershop template slug ONLY if no other assistant owns that slug
+  if (canonicalTarget === 'demo-assistant') {
     if (recordAssistantId === 'barbershop' || recordAssistantId === 'classic-barbershop') {
-      return true;
-    }
-    const existsAsOther = (state.assistants || []).some(
-      (a) => a.id !== 'demo-assistant' && (a.id === recordAssistantId || a.landingPageConfig?.slug === recordAssistantId)
-    );
-    if (!existsAsOther) {
-      return true;
-    }
-  }
-
-  // 4. Bidirectional workspace association for starter concierges
-  // If either the record or the target is 'demo-assistant' (or template default),
-  // and both belong to the same workspace (default-workspace),
-  // they share the business landing page, bookings, and chats if no competing custom slug is set.
-  const recordAst = (state.assistants || []).find((a) => a.id === recordAssistantId || a.id === canonicalRecord);
-  const targetAstObj = targetAst || (state.assistants || []).find((a) => a.id === canonicalTarget);
-  const recordWs = recordAst?.workspaceId || 'default-workspace';
-  const targetWs = targetAstObj?.workspaceId || 'default-workspace';
-
-  if (recordWs === targetWs) {
-    const isRecordDemo =
-      canonicalRecord === 'demo-assistant' ||
-      recordAssistantId === 'demo-assistant' ||
-      recordAssistantId === 'barbershop' ||
-      recordAssistantId === 'classic-barbershop';
-
-    const isTargetDemo =
-      canonicalTarget === 'demo-assistant' ||
-      targetAssistantId === 'demo-assistant' ||
-      targetAssistantId === 'barbershop' ||
-      targetAssistantId === 'classic-barbershop';
-
-    if (isRecordDemo || isTargetDemo) {
-      return true;
+      const existsAsOther = (state.assistants || []).some(
+        (a) => a.id !== 'demo-assistant' && (a.id === recordAssistantId || a.landingPageConfig?.slug === recordAssistantId)
+      );
+      if (!existsAsOther) {
+        return true;
+      }
     }
   }
 
+  // Strictly NO workspace-wide fallback across different bots.
+  // Each bot owns its own knowledge base, chunks, leads, and landing pages.
   return false;
 }
 
@@ -1097,15 +1071,6 @@ export class Database {
       state = await ensureInitialized(true);
       chunks = (state.chunks || []).filter((c) => matchesAssistant(c.assistantId, assistantId, state));
     }
-    if (chunks.length === 0) {
-      const targetAst = (state.assistants || []).find((a) => a.id === assistantId || a.landingPageConfig?.slug === assistantId);
-      const targetWs = targetAst?.workspaceId || 'default-workspace';
-      chunks = (state.chunks || []).filter((c) => {
-        const cAst = (state.assistants || []).find((a) => a.id === c.assistantId);
-        const cWs = cAst?.workspaceId || 'default-workspace';
-        return cWs === targetWs;
-      });
-    }
     return chunks;
   }
 
@@ -1136,18 +1101,7 @@ export class Database {
       state = await ensureInitialized(true);
       assistantChunks = (state.chunks || []).filter((c) => matchesAssistant(c.assistantId, assistantId, state));
     }
-    if (assistantChunks.length === 0) {
-      const targetAst = (state.assistants || []).find((a) => a.id === assistantId || a.landingPageConfig?.slug === assistantId);
-      const targetWs = targetAst?.workspaceId || 'default-workspace';
-      const workspaceChunks = (state.chunks || []).filter((c) => {
-        const cAst = (state.assistants || []).find((a) => a.id === c.assistantId);
-        const cWs = cAst?.workspaceId || 'default-workspace';
-        return cWs === targetWs;
-      });
-      if (workspaceChunks.length > 0) {
-        assistantChunks = workspaceChunks;
-      }
-    }
+    // Strict isolation: if assistant has no chunks, never pull other assistants' chunks.
     if (assistantChunks.length === 0) return [];
 
     // 1. Dense Vector Cosine Similarity (require minimum 0.25 similarity for relevance)
@@ -1372,19 +1326,6 @@ export class Database {
     if (!assistantId) return allLeads;
 
     let matched = allLeads.filter((l) => matchesAssistant(l.assistantId, assistantId, state));
-    if (matched.length === 0) {
-      const targetAst = (state.assistants || []).find((a) => a.id === assistantId);
-      const targetWs = targetAst?.workspaceId || 'default-workspace';
-      const workspaceLeads = allLeads.filter((l) => {
-        const lAst = (state.assistants || []).find((ast) => ast.id === l.assistantId);
-        const lWs = lAst?.workspaceId || 'default-workspace';
-        return lWs === targetWs;
-      });
-      if (workspaceLeads.length > 0) {
-        matched = workspaceLeads;
-      }
-    }
-
     return matched;
   }
 

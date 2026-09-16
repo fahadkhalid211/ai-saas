@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { extractAudioFromVideoFile } from '@/lib/media/audioExtractor';
 
 export interface KnowledgeSource {
@@ -114,6 +114,18 @@ export function useCrmKnowledge({ activeAssistant }: UseCrmKnowledgeOptions) {
       console.error('Failed to fetch sources:', err);
     }
   };
+
+  // Automatically synchronize knowledge sources whenever active assistant switches
+  useEffect(() => {
+    if (activeAssistant?.id) {
+      setSources([]);
+      setReviewDraft(null);
+      setUploadFailureAlert(null);
+      setUrlFeedback(null);
+      setDraftSaveSuccess(null);
+      fetchKnowledge(activeAssistant.id);
+    }
+  }, [activeAssistant?.id]);
 
   const handleUploadFiles = async (e: React.FormEvent) => {
     e.preventDefault();

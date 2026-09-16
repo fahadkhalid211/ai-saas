@@ -777,6 +777,9 @@ export default function DashboardPage() {
                 handlePurchaseExtraLandingPage={landing.handlePurchaseExtraLandingPage}
                 handleSaveLandingConfig={landing.handleSaveLandingConfig}
                 activeAssistant={activeAssistant}
+                assistants={assistants}
+                setActiveAssistant={setActiveAssistant}
+                setActiveTab={setActiveTab}
                 appointments={appointments}
                 theme={theme}
               />
@@ -854,6 +857,9 @@ export default function DashboardPage() {
             {activeTab === 'knowledge' && (
               <KnowledgeTab
                 activeAssistant={activeAssistant}
+                assistants={assistants}
+                setActiveAssistant={setActiveAssistant}
+                onOpenNewAssistantModal={() => setShowNewModal(true)}
                 fetchKnowledge={knowledge.fetchKnowledge}
                 uploadFailureAlert={knowledge.uploadFailureAlert}
                 setUploadFailureAlert={knowledge.setUploadFailureAlert}
@@ -1112,6 +1118,9 @@ export default function DashboardPage() {
           setNewPageSlug={landing.setNewPageSlug}
           newPageIndustry={landing.newPageIndustry}
           setNewPageIndustry={landing.setNewPageIndustry}
+          assistants={assistants}
+          newPageAssistantId={landing.newPageAssistantId}
+          setNewPageAssistantId={landing.setNewPageAssistantId}
         />
 
         <CounterQrModal

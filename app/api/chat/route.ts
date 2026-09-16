@@ -61,9 +61,15 @@ export async function POST(req: NextRequest) {
       if (page?.assistantId) {
         assistant = await Database.getAssistantById(page.assistantId);
       }
-      if (!assistant && page?.workspaceId) {
-        const wsAsts = await Database.getAssistants(page.workspaceId);
-        if (wsAsts.length > 0) assistant = wsAsts[0];
+      if (!assistant && page) {
+        const wsId = page.workspaceId || 'default-workspace';
+        const wsAsts = await Database.getAssistants(wsId);
+        const matched = wsAsts.find((ast) =>
+          ast.id === page!.slug ||
+          ast.id === `ast_${page!.slug}` ||
+          ast.name.toLowerCase().includes((page!.businessName || '').toLowerCase())
+        );
+        if (matched) assistant = matched;
       }
       // 2. Check getAssistantBySlug
       if (!assistant) {
@@ -72,8 +78,8 @@ export async function POST(req: NextRequest) {
       if (!assistant && landingPageSlug) {
         assistant = await Database.getAssistantBySlug(landingPageSlug);
       }
-      // 3. Fallback to demo-assistant
-      if (!assistant) {
+      // 3. Fallback to demo-assistant ONLY if explicitly requested or for classic barbershop
+      if (!assistant && (assistantId === 'demo-assistant' || landingPageSlug === 'classic-barbershop' || !landingPageSlug)) {
         assistant = await Database.getAssistantById('demo-assistant');
       }
     }

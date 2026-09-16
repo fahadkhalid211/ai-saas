@@ -49,6 +49,7 @@ export function useCrmLanding({
   const [newPageName, setNewPageName] = useState('');
   const [newPageSlug, setNewPageSlug] = useState('');
   const [newPageIndustry, setNewPageIndustry] = useState('barbershop');
+  const [newPageAssistantId, setNewPageAssistantId] = useState('auto_create');
 
   const fetchAllLandingPages = async () => {
     try {
@@ -122,7 +123,8 @@ export function useCrmLanding({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          assistantId: activeAssistant?.id || 'demo-assistant',
+          assistantId: newPageAssistantId === 'auto_create' ? undefined : newPageAssistantId,
+          createDedicatedAssistant: newPageAssistantId === 'auto_create',
           config: newConfig,
           isNewPage: true,
         }),
@@ -136,8 +138,9 @@ export function useCrmLanding({
       setShowNewPageModal(false);
       setNewPageName('');
       setNewPageSlug('');
+      setNewPageAssistantId('auto_create');
       await fetchAllLandingPages();
-      setLandingConfig(newConfig);
+      setLandingConfig(data.config || newConfig);
       setPresetNotice('Created new landing page: ' + newConfig.businessName);
       setTimeout(() => setPresetNotice(null), 4000);
     } catch (err: any) {
@@ -211,6 +214,8 @@ export function useCrmLanding({
     setNewPageSlug,
     newPageIndustry,
     setNewPageIndustry,
+    newPageAssistantId,
+    setNewPageAssistantId,
     fetchAllLandingPages,
     handlePurchaseExtraLandingPage,
     handleCreateNewLandingPage,

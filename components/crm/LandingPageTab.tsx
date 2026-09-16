@@ -30,6 +30,8 @@ import {
   TrendingUp,
   Monitor,
   X,
+  Bot,
+  ShieldCheck,
 } from 'lucide-react';
 import {
   LandingPageConfig,
@@ -98,35 +100,35 @@ export const LANDING_TEMPLATES_LIST = [
     headline: 'Curated Scandinavian Furniture & Decor',
     badge: 'Complimentary White-Glove Delivery',
     servicesSample: ['Virtual Styling ($0)', 'Custom Swatch Box ($15)', 'Living Room Audit ($150)'],
-    description: 'Virtual styling consultations, order tracking, product sizing, and VIP client concierge.',
+    description: 'Virtual styling, swatch box requests, bespoke furniture consultations, and order triage.',
   },
   {
-    slug: 'b2b-saas',
+    slug: 'saas-landing',
     industryId: 'saas',
-    name: 'CloudScale SaaS',
-    category: 'B2B Enterprise Software',
+    name: 'CloudScale Engine',
+    category: 'B2B SaaS & Tech',
     icon: Briefcase,
     colorClass: 'text-blue-600 bg-blue-100 dark:bg-blue-950/60 dark:text-blue-400',
     themeHex: '#2563eb',
     heroImage: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=800&q=80',
-    headline: 'Unified Observability & Vector Pipelines',
+    headline: 'Serverless Infrastructure Orchestration',
     badge: 'SOC2 Type II Certified · 99.99% SLA',
-    servicesSample: ['Platform Demo ($0)', 'Architecture Review ($0)', 'Migration Audit ($1,200)'],
-    description: 'Enterprise product demos, architectural consultations, security reviews, and SLA discovery.',
+    servicesSample: ['Enterprise Demo ($0)', 'Architecture Review ($500)', 'Migration Sprint ($2,000)'],
+    description: 'Product walkthroughs, enterprise migration audits, SLA inquiries, and SOC2 compliance triage.',
   },
   {
-    slug: 'legal-law-firm',
+    slug: 'legal-firm',
     industryId: 'legal',
-    name: 'Sterling & Vance Legal',
-    category: 'Law Firm & Counsel',
+    name: 'Vanguard Legal Partners',
+    category: 'Legal & Law Firm',
     icon: Scale,
-    colorClass: 'text-slate-700 bg-slate-200 dark:bg-slate-800 dark:text-slate-300',
-    themeHex: '#475569',
+    colorClass: 'text-slate-700 bg-slate-100 dark:bg-slate-800 dark:text-slate-300',
+    themeHex: '#334155',
     heroImage: 'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=800&q=80',
-    headline: 'Relentless Advocacy. Trusted Counsel.',
-    badge: 'Ranked Tier 1 Best Law Firms 2026',
-    servicesSample: ['Case Evaluation ($0)', 'Contract Review ($450)', 'Dispute Counsel ($600)'],
-    description: 'Confidential case evaluations, attorney intake, corporate contract reviews, and dispute advice.',
+    headline: 'Uncompromising Advocacy When Stakes Are Highest',
+    badge: '40+ Years Combined Trial Experience',
+    servicesSample: ['Case Evaluation ($0)', 'Contract Audit ($350)', 'Trial Retainer ($2,500)'],
+    description: 'Confidential case intake, litigation consultations, NDA reviews, and retainer scheduling.',
   },
   {
     slug: 'dental-clinic',
@@ -220,6 +222,9 @@ export interface LandingPageTabProps {
   handlePurchaseExtraLandingPage: () => Promise<void>;
   handleSaveLandingConfig: (e: React.FormEvent) => Promise<void>;
   activeAssistant: any;
+  assistants?: any[];
+  setActiveAssistant?: (ast: any) => void;
+  setActiveTab?: (tab: any) => void;
   appointments: any[];
   theme: string;
 }
@@ -244,6 +249,9 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
   handlePurchaseExtraLandingPage,
   handleSaveLandingConfig,
   activeAssistant,
+  assistants = [],
+  setActiveAssistant,
+  setActiveTab: setParentActiveTab,
   appointments,
   theme,
 }) => {
@@ -534,6 +542,74 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
         {/* Tab 1: Identity & Branding */}
         {activeTab === 'identity' && (
           <div className="space-y-6 animate-in fade-in duration-150">
+            {/* Connected AI Bot & Dedicated Knowledge Base Card */}
+            <div className="p-6 rounded-2xl border border-blue-200 dark:border-blue-900/60 bg-gradient-to-r from-blue-50/50 via-white to-blue-50/20 dark:from-blue-950/30 dark:via-slate-900 dark:to-blue-950/10 shadow-xs space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="p-2 rounded-xl bg-blue-600 text-white shadow-xs shrink-0">
+                    <Bot className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+                      Assigned AI Concierge &amp; Knowledge Base
+                    </h3>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                      The chatbot on this landing page only answers questions from this bot's knowledge base.
+                    </p>
+                  </div>
+                </div>
+
+                {setParentActiveTab && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const targetId = landingConfig.assistantId || activeAssistant?.id;
+                      const matched = assistants.find((a) => a.id === targetId);
+                      if (matched && setActiveAssistant) {
+                        setActiveAssistant(matched);
+                      }
+                      setParentActiveTab('knowledge');
+                    }}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-blue-300 dark:border-blue-700 bg-white dark:bg-slate-800 text-xs font-semibold text-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-slate-700 transition shadow-2xs cursor-pointer self-start sm:self-auto"
+                  >
+                    <span>Manage Bot Knowledge Base</span>
+                  </button>
+                )}
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-blue-100 dark:border-blue-900/40">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                    Connected AI Bot
+                  </label>
+                  {assistants && assistants.length > 0 ? (
+                    <select
+                      value={landingConfig.assistantId || activeAssistant?.id || ''}
+                      onChange={(e) => setLandingConfig({ ...landingConfig, assistantId: e.target.value })}
+                      className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 cursor-pointer"
+                    >
+                      {assistants.map((ast) => (
+                        <option key={ast.id} value={ast.id}>
+                          {ast.name} ({ast.id})
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <div className="px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-xs font-mono text-slate-700 dark:text-slate-300">
+                      {landingConfig.assistantId || activeAssistant?.id || 'demo-assistant'}
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex items-center gap-2 p-3 rounded-xl bg-white/80 dark:bg-slate-800/80 border border-blue-100 dark:border-blue-900/40 text-[11.5px] text-slate-600 dark:text-slate-300">
+                  <ShieldCheck className="h-4 w-4 text-blue-600 dark:text-blue-400 shrink-0" />
+                  <span>
+                    Separate landing pages (e.g. Barber vs. Real Estate) should use distinct bots so their service catalogs and training materials never mix.
+                  </span>
+                </div>
+              </div>
+            </div>
+
             <div className="p-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-4">
               <h2 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
                 <Briefcase className="h-4 w-4 text-blue-600" />
