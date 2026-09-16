@@ -51,6 +51,8 @@ export async function fetchCloudState(): Promise<any | null> {
 export interface PersistCloudStateOptions {
   deletedSourceId?: string;
   deletedAssistantId?: string;
+  deletedLandingPageId?: string;
+  deletedLandingPageSlug?: string;
 }
 
 export async function persistCloudState(
@@ -78,9 +80,39 @@ export async function persistCloudState(
         baseAssistants = baseAssistants.filter((a: any) => a.id !== options.deletedAssistantId);
       }
 
+      // Filter out deleted landing page from remote
+      let baseLandingPages = remote.landingPages || [];
+      const deletedLpTargets = new Set<string>();
+      if (options?.deletedLandingPageId) {
+        deletedLpTargets.add(options.deletedLandingPageId.trim().toLowerCase());
+      }
+      if (options?.deletedLandingPageSlug) {
+        deletedLpTargets.add(options.deletedLandingPageSlug.trim().toLowerCase());
+      }
+
+      if (deletedLpTargets.size > 0) {
+        baseLandingPages = baseLandingPages.filter((p: any) => {
+          const pId = (p.id || '').trim().toLowerCase();
+          const pSlug = (p.slug || '').trim().toLowerCase();
+          return (!pId || !deletedLpTargets.has(pId)) && (!pSlug || !deletedLpTargets.has(pSlug));
+        });
+      }
+
       mergedState.knowledgeSources = mergeById(baseSources, state.knowledgeSources || [], true);
       mergedState.assistants = mergeById(baseAssistants, state.assistants || [], true);
-      mergedState.landingPages = mergeById(remote.landingPages || [], state.landingPages || [], true);
+
+      // For landing pages: state.landingPages is authoritative.
+      // If a deletion was specified, do not re-insert deleted pages.
+      if (deletedLpTargets.size > 0) {
+        mergedState.landingPages = (state.landingPages || []).filter((p: any) => {
+          const pId = (p.id || '').trim().toLowerCase();
+          const pSlug = (p.slug || '').trim().toLowerCase();
+          return (!pId || !deletedLpTargets.has(pId)) && (!pSlug || !deletedLpTargets.has(pSlug));
+        });
+      } else {
+        mergedState.landingPages = mergeById(baseLandingPages, state.landingPages || [], true);
+      }
+      mergedState.landingPagesInitialized = true;
       mergedState.appointments = mergeById(remote.appointments || [], state.appointments || []);
       mergedState.conversations = mergeById(remote.conversations || [], state.conversations || []);
       mergedState.messages = mergeById(remote.messages || [], state.messages || []);

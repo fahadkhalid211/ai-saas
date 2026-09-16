@@ -556,6 +556,7 @@ function loadState(): DatabaseState {
       auditLogs: [],
       notifications: [],
       landingPages: [],
+      landingPagesInitialized: true,
       pageViews: [],
     };
     saveLocalStateSync(initialState);
@@ -673,6 +674,7 @@ async function ensureInitialized(forceFresh = false): Promise<DatabaseState> {
             auditLogs: Array.isArray(remoteState.auditLogs) ? remoteState.auditLogs : [],
             notifications: Array.isArray(remoteState.notifications) ? remoteState.notifications : [],
             landingPages: Array.isArray(remoteState.landingPages) ? remoteState.landingPages : [],
+            landingPagesInitialized: remoteState.landingPagesInitialized !== undefined ? remoteState.landingPagesInitialized : true,
             smtpSettings: remoteState.smtpSettings,
             pageViews: Array.isArray(remoteState.pageViews) ? remoteState.pageViews : [],
           };
@@ -2769,22 +2771,57 @@ export class Database {
     };
   }
 
-  static async deleteLandingPage(idOrSlug: string): Promise<boolean> {
-    const state = await ensureInitialized();
+  static async deleteLandingPage(idOrSlug: string, optionalSlug?: string): Promise<boolean> {
+    const state = await ensureInitialized(true);
     state.landingPagesInitialized = true;
     if (!state.landingPages) {
       state.landingPages = [];
-      await saveState(state);
-      return true;
     }
-    const prevCount = state.landingPages.length;
+
     const targetClean = (idOrSlug || '').trim().toLowerCase();
-    state.landingPages = state.landingPages.filter((p) => {
+    const slugClean = (optionalSlug || '').trim().toLowerCase();
+
+    const targets = new Set<string>();
+    if (targetClean) targets.add(targetClean);
+    if (slugClean) targets.add(slugClean);
+
+    // Collect all associated identifiers from existing records
+    (state.landingPages || []).forEach((p) => {
       const pId = (p.id || '').trim().toLowerCase();
       const pSlug = (p.slug || '').trim().toLowerCase();
-      return pId !== targetClean && pSlug !== targetClean;
+      const pAst = (p.assistantId || '').trim().toLowerCase();
+      if ((pId && targets.has(pId)) || (pSlug && targets.has(pSlug)) || (pAst && targets.has(pAst))) {
+        if (pId) targets.add(pId);
+        if (pSlug) targets.add(pSlug);
+        if (pAst) targets.add(pAst);
+      }
     });
-    await saveState(state);
+
+    state.landingPages = (state.landingPages || []).filter((p) => {
+      const pId = (p.id || '').trim().toLowerCase();
+      const pSlug = (p.slug || '').trim().toLowerCase();
+      const pAst = (p.assistantId || '').trim().toLowerCase();
+      const match = (pId && targets.has(pId)) || (pSlug && targets.has(pSlug)) || (pAst && targets.has(pAst));
+      return !match;
+    });
+
+    // Also unlink landingPageConfig from any matching assistants
+    (state.assistants || []).forEach((ast) => {
+      if (ast.landingPageConfig) {
+        const lpId = (ast.landingPageConfig.id || '').trim().toLowerCase();
+        const lpSlug = (ast.landingPageConfig.slug || '').trim().toLowerCase();
+        if ((lpId && targets.has(lpId)) || (lpSlug && targets.has(lpSlug)) || targets.has((ast.id || '').trim().toLowerCase())) {
+          delete ast.landingPageConfig;
+        }
+      }
+    });
+
+    await saveState(state, {
+      deletedLandingPageId: idOrSlug,
+      deletedLandingPageSlug: optionalSlug,
+    });
+    cachedState = state;
+    lastCloudFetchTime = Date.now();
     return true;
   }
 

@@ -259,6 +259,41 @@ describe('Database Layer & Decoupled Storage', () => {
     // Clean up
     await Database.deleteKnowledgeSource(barberSource.id);
   });
+
+  it('should permanently delete a landing page and prevent it from resurrecting', async () => {
+    const testSlug = `test-delete-page-${Date.now()}`;
+    const newPage = await Database.saveLandingPage({
+      businessName: 'Temporary Test Barbershop',
+      slug: testSlug,
+      industry: 'barbershop',
+      enabled: true,
+      tagline: 'Grooming Excellence',
+      heroHeadline: 'Temporary Landing Page',
+      heroSubheadline: 'Testing complete deletion lifecycle',
+      heroCtaText: 'Book Now',
+      workspaceId: 'default-workspace',
+    });
+
+    expect(newPage.id).toBeDefined();
+    expect(newPage.slug).toBe(testSlug);
+
+    // Verify it exists in the landing pages collection
+    let pages = await Database.getLandingPages('default-workspace');
+    expect(pages.some((p) => p.slug === testSlug || p.id === newPage.id)).toBe(true);
+
+    // Delete the landing page using its id and slug
+    const targetId = newPage.id || testSlug;
+    const deleted = await Database.deleteLandingPage(targetId, testSlug);
+    expect(deleted).toBe(true);
+
+    // Verify it is permanently removed
+    pages = await Database.getLandingPages('default-workspace');
+    expect(pages.some((p) => p.slug === testSlug || p.id === newPage.id)).toBe(false);
+
+    // Verify slug lookup returns null
+    const lookup = await Database.getLandingPageBySlugOrDomain(testSlug);
+    expect(lookup).toBeNull();
+  });
 });
 
 

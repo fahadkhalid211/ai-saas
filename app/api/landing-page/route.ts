@@ -362,11 +362,13 @@ export async function DELETE(req: NextRequest) {
 
     const { searchParams } = new URL(req.url);
     const id = searchParams.get('id');
-    if (!id) {
+    const slug = searchParams.get('slug');
+    if (!id && !slug) {
       return NextResponse.json({ error: 'Landing page id or slug required' }, { status: 400 });
     }
 
-    const deleted = await Database.deleteLandingPage(id);
+    const targetId = id || slug || '';
+    const deleted = await Database.deleteLandingPage(targetId, slug || undefined);
     if (!deleted) {
       return NextResponse.json({ error: 'Landing page not found' }, { status: 404 });
     }
@@ -376,8 +378,8 @@ export async function DELETE(req: NextRequest) {
       actor: { id: 'admin', name: 'Master Admin', ip },
       action: 'landing_page.deleted',
       targetType: 'landing_page',
-      targetId: id,
-      details: { id },
+      targetId: targetId,
+      details: { id: targetId, slug: slug || '' },
     });
 
     return NextResponse.json({ success: true, message: 'Landing page deleted' });

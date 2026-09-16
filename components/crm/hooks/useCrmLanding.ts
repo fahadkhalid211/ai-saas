@@ -225,7 +225,8 @@ export function useCrmLanding({
       setDeleteProgress(40);
       setDeleteStatusMessage('Disconnecting isolated AI concierge and booking catalog...');
 
-      const deletePromise = fetch(`/api/landing-page?id=${encodeURIComponent(target)}`, {
+      const deleteUrl = `/api/landing-page?id=${encodeURIComponent(target)}${pageToDelete.slug ? `&slug=${encodeURIComponent(pageToDelete.slug)}` : ''}`;
+      const deletePromise = fetch(deleteUrl, {
         method: 'DELETE',
       });
 
@@ -244,7 +245,11 @@ export function useCrmLanding({
       await new Promise((r) => setTimeout(r, 350));
 
       const remaining = allLandingPages.filter(
-        (p) => p.id !== target && p.slug !== target && (p.slug || '').toLowerCase() !== (pageToDelete.slug || '').toLowerCase()
+        (p) =>
+          p.id !== target &&
+          p.slug !== target &&
+          (p.slug || '').toLowerCase() !== (pageToDelete.slug || '').toLowerCase() &&
+          (!pageToDelete.id || p.id !== pageToDelete.id)
       );
       setAllLandingPages(remaining);
 
@@ -258,7 +263,7 @@ export function useCrmLanding({
       setTimeout(() => setPresetNotice(null), 4000);
 
       // Re-sync with backend
-      fetchAllLandingPages();
+      await fetchAllLandingPages();
     } catch (err: any) {
       alert(err.message || 'Failed to delete landing page');
     } finally {
