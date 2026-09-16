@@ -70,4 +70,19 @@ For emergencies after 6pm, please dial our emergency helpline directly.
     expect(diag.whatToDoNext).toBeDefined();
     expect(diag.whatToDoNext.length).toBeGreaterThan(10);
   });
+
+  it('correctly extracts and structures YouTube video transcripts with multi-lingual caption support', async () => {
+    const { extractFromUrl, isYouTubeUrl, extractYouTubeVideoId } = await import('./url-extractor');
+    const testUrl = 'https://www.youtube.com/watch?v=3Cm0y8-5PZE';
+
+    expect(isYouTubeUrl(testUrl)).toBe(true);
+    expect(extractYouTubeVideoId(testUrl)).toBe('3Cm0y8-5PZE');
+
+    const doc = await extractFromUrl(testUrl);
+    expect(doc).toBeDefined();
+    expect(doc.type).toBe('youtube');
+    expect(doc.content.length).toBeGreaterThan(500);
+    expect(doc.title).toContain('YouTube');
+    expect(doc.sections?.length).toBeGreaterThan(0);
+  }, 35000);
 });

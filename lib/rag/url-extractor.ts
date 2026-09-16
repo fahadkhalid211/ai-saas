@@ -52,12 +52,192 @@ async function fetchYouTubeMetadata(videoUrl: string): Promise<{ title: string; 
   return { title: 'YouTube Video' };
 }
 
+function decodeHtmlEntities(str: string): string {
+  return str
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&apos;/g, "'")
+    .replace(/&#(\d+);/g, (_, dec) => String.fromCharCode(dec))
+    .replace(/&#x([0-9a-fA-F]+);/g, (_, hex) => String.fromCharCode(parseInt(hex, 16)));
+}
+
+function parseTimedtextXml(
+  xml: string,
+  lang: string = 'en'
+): Array<{ text: string; duration: number; offset: number; lang?: string }> {
+  const results: Array<{ text: string; duration: number; offset: number; lang?: string }> = [];
+
+  // Format 3 (srv3): <p t="ms" d="ms"><s>word</s>...</p> or <p t="ms" d="ms">text</p>
+  const pRegex = /<p\s+t="(\d+)"\s+d="(\d+)"[^>]*>([\s\S]*?)<\/p>/g;
+  let match: RegExpExecArray | null;
+  while ((match = pRegex.exec(xml)) !== null) {
+    const startMs = parseInt(match[1], 10);
+    const durMs = parseInt(match[2], 10);
+    const inner = match[3];
+    let text = '';
+    const sRegex = /<s[^>]*>([^<]*)<\/s>/g;
+    let sMatch: RegExpExecArray | null;
+    while ((sMatch = sRegex.exec(inner)) !== null) {
+      text += sMatch[1];
+    }
+    if (!text) {
+      text = inner.replace(/<[^>]+>/g, '');
+    }
+    text = decodeHtmlEntities(text).replace(/\s+/g, ' ').trim();
+    if (text) {
+      results.push({
+        text,
+        offset: startMs,
+        duration: durMs,
+        lang,
+      });
+    }
+  }
+
+  if (results.length > 0) return results;
+
+  // Classic format: <text start="s" dur="s">content</text>
+  const textRegex = /<text\s+start="([0-9.]+)"\s+dur="([0-9.]+)"[^>]*>([\s\S]*?)<\/text>/g;
+  while ((match = textRegex.exec(xml)) !== null) {
+    const startSec = parseFloat(match[1]);
+    const durSec = parseFloat(match[2]);
+    const rawContent = match[3].replace(/<[^>]+>/g, '');
+    const cleanText = decodeHtmlEntities(rawContent).replace(/\s+/g, ' ').trim();
+    if (cleanText) {
+      results.push({
+        text: cleanText,
+        offset: Math.round(startSec * 1000),
+        duration: Math.round(durSec * 1000),
+        lang,
+      });
+    }
+  }
+
+  return results;
+}
+
+async function fetchWithRetry(
+  url: string,
+  options: RequestInit = {},
+  retries: number = 3,
+  backoffMs: number = 600
+): Promise<Response> {
+  let lastError: any;
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      const resp = await fetch(url, options);
+      if (resp.ok) return resp;
+      if (resp.status >= 500 || resp.status === 429) {
+        if (attempt < retries) {
+          await new Promise((r) => setTimeout(r, backoffMs * attempt));
+          continue;
+        }
+      }
+      return resp;
+    } catch (err: any) {
+      lastError = err;
+      if (attempt < retries) {
+        await new Promise((r) => setTimeout(r, backoffMs * attempt));
+      }
+    }
+  }
+  throw lastError || new Error(`Failed to fetch ${url} after ${retries} attempts`);
+}
+
+interface YouTubeCaptionTrack {
+  baseUrl: string;
+  name?: { runs?: Array<{ text: string }> };
+  vssId?: string;
+  languageCode: string;
+  kind?: string;
+  isTranslatable?: boolean;
+}
+
+interface YouTubeInnerTubeData {
+  title?: string;
+  author?: string;
+  captionTracks?: YouTubeCaptionTrack[];
+  audioStreamUrl?: string;
+}
+
+async function queryYouTubeInnerTube(videoId: string): Promise<YouTubeInnerTubeData> {
+  const clients = [
+    {
+      name: 'ANDROID',
+      context: { client: { clientName: 'ANDROID', clientVersion: '20.10.38' } },
+      userAgent: 'com.google.android.youtube/20.10.38 (Linux; U; Android 14)',
+    },
+    {
+      name: 'IOS',
+      context: { client: { clientName: 'IOS', clientVersion: '19.45.4', deviceModel: 'iPhone16,2' } },
+      userAgent: 'com.google.ios.youtube/19.45.4 (iPhone16,2; U; CPU iOS 18_1 like Mac OS X)',
+    },
+    {
+      name: 'WEB',
+      context: { client: { clientName: 'WEB', clientVersion: '2.20241115.01.00' } },
+      userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+    },
+  ];
+
+  for (const client of clients) {
+    try {
+      const resp = await fetchWithRetry(
+        'https://www.youtube.com/youtubei/v1/player?prettyPrint=false',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'User-Agent': client.userAgent,
+          },
+          body: JSON.stringify({
+            context: client.context,
+            videoId,
+          }),
+          signal: AbortSignal.timeout(12000),
+        },
+        2,
+        500
+      );
+
+      if (!resp.ok) continue;
+
+      const data = await resp.json();
+      const title: string | undefined = data?.videoDetails?.title;
+      const author: string | undefined = data?.videoDetails?.author;
+      const captionTracks: YouTubeCaptionTrack[] =
+        data?.captions?.playerCaptionsTracklistRenderer?.captionTracks || [];
+      const adaptiveFormats = data?.streamingData?.adaptiveFormats;
+      let audioStreamUrl: string | undefined;
+
+      if (Array.isArray(adaptiveFormats)) {
+        const audioFormat = adaptiveFormats.find(
+          (f: any) => f.mimeType?.startsWith('audio/') && f.url
+        );
+        if (audioFormat?.url) {
+          audioStreamUrl = audioFormat.url;
+        }
+      }
+
+      if (captionTracks.length > 0 || audioStreamUrl || title) {
+        return { title, author, captionTracks, audioStreamUrl };
+      }
+    } catch (err: any) {
+      console.warn(`[URLExtractor] InnerTube ${client.name} attempt failed for ${videoId}:`, err?.message || err);
+    }
+  }
+
+  return {};
+}
+
 /**
  * Extracts transcript and structured knowledge from YouTube videos
  */
 export async function extractFromYouTube(
   url: string,
-  _options: TranscribeOptions = {}
+  options: TranscribeOptions = {}
 ): Promise<ExtractedDocument> {
   const videoId = extractYouTubeVideoId(url);
   if (!videoId) {
@@ -65,28 +245,120 @@ export async function extractFromYouTube(
   }
 
   const cleanUrl = `https://www.youtube.com/watch?v=${videoId}`;
-  const meta = await fetchYouTubeMetadata(cleanUrl);
+  
+  // Strategy 1: Direct Multi-Client InnerTube Query with Automatic Retry
+  const innerTubeData = await queryYouTubeInnerTube(videoId);
+
+  let metaTitle = innerTubeData.title;
+  let metaAuthor = innerTubeData.author;
+
+  if (!metaTitle) {
+    const meta = await fetchYouTubeMetadata(cleanUrl);
+    metaTitle = meta.title;
+    metaAuthor = meta.authorName;
+  }
+
+  const finalTitle = metaTitle || 'YouTube Video';
+  const finalAuthor = metaAuthor || 'YouTube';
 
   let rawTranscript: Array<{ text: string; duration: number; offset: number; lang?: string }> = [];
 
-  try {
-    rawTranscript = await YoutubeTranscript.fetchTranscript(videoId);
-  } catch (err: any) {
-    console.warn(`[URLExtractor] Primary transcript fetch failed for ${videoId}:`, err?.message);
-    // Try fetching with auto-generated / language hints
+  if (innerTubeData.captionTracks && innerTubeData.captionTracks.length > 0) {
+    const tracks = innerTubeData.captionTracks;
+    // Prefer English if available, otherwise take the first available track
+    const selectedTrack =
+      tracks.find((t) => t.languageCode === 'en' || t.languageCode.startsWith('en-')) ||
+      tracks[0];
+
     try {
-      rawTranscript = await YoutubeTranscript.fetchTranscript(videoId, { lang: 'en' });
-    } catch {
-      // Captions not available on video
-      throw new Error(
-        `Could not retrieve captions from this YouTube video ("${meta.title}"). The creator has disabled subtitles/closed-captions. Please download the audio/video file and upload it directly so Whisper AI can transcribe it.`
+      const tResp = await fetchWithRetry(
+        selectedTrack.baseUrl,
+        {
+          headers: {
+            'User-Agent':
+              'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+          },
+          signal: AbortSignal.timeout(15000),
+        },
+        3,
+        600
       );
+
+      const xml = await tResp.text();
+      rawTranscript = parseTimedtextXml(xml, selectedTrack.languageCode);
+    } catch (trackErr: any) {
+      console.warn(
+        `[URLExtractor] Failed to download caption track ${selectedTrack.languageCode} for ${videoId}:`,
+        trackErr?.message || trackErr
+      );
+    }
+  }
+
+  // Strategy 2: Fallback to youtube-transcript library with dynamic language detection
+  if (rawTranscript.length === 0) {
+    try {
+      rawTranscript = await YoutubeTranscript.fetchTranscript(videoId);
+    } catch (ytErr: any) {
+      console.warn(`[URLExtractor] Primary transcript fetch failed for ${videoId}:`, ytErr?.message);
+      // Parse available languages from error message if present (e.g. "Available languages: hi, ur")
+      const availableLangsMatch = ytErr?.message?.match(/Available languages:\s*([a-zA-Z0-9_,-]+)/i);
+      if (availableLangsMatch) {
+        const langs = availableLangsMatch[1].split(',').map((l: string) => l.trim()).filter(Boolean);
+        for (const lang of langs) {
+          try {
+            rawTranscript = await YoutubeTranscript.fetchTranscript(videoId, { lang });
+            if (rawTranscript.length > 0) break;
+          } catch {
+            // continue
+          }
+        }
+      }
+    }
+  }
+
+  // Strategy 3: If closed captions are absent/disabled, stream audio directly for AI transcription
+  if (rawTranscript.length === 0 && innerTubeData.audioStreamUrl) {
+    console.log(`[URLExtractor] Closed captions not found on video. Streaming audio directly for AI transcription...`);
+    try {
+      const audioResp = await fetchWithRetry(
+        innerTubeData.audioStreamUrl,
+        {
+          headers: {
+            'User-Agent': 'com.google.android.youtube/20.10.38 (Linux; U; Android 14)',
+            // Download up to 15MB for fast transcription
+            'Range': 'bytes=0-15728640',
+          },
+          signal: AbortSignal.timeout(60000),
+        },
+        2,
+        1000
+      );
+
+      const arrayBuffer = await audioResp.arrayBuffer();
+      const audioBuffer = Buffer.from(arrayBuffer);
+
+      if (audioBuffer.length > 1000) {
+        const filename = `${finalTitle.replace(/[^a-z0-9_-]/gi, '_').slice(0, 50)}.mp4`;
+        const transcribedDoc = await parseMediaFile(audioBuffer, filename, options);
+        return {
+          ...transcribedDoc,
+          title: `${finalTitle} (YouTube)`,
+          metadata: {
+            ...transcribedDoc.metadata,
+            videoId,
+            videoUrl: cleanUrl,
+            channel: finalAuthor,
+          },
+        };
+      }
+    } catch (audioErr: any) {
+      console.warn(`[URLExtractor] Audio stream transcription fallback failed for ${videoId}:`, audioErr?.message || audioErr);
     }
   }
 
   if (!rawTranscript || rawTranscript.length === 0) {
     throw new Error(
-      `No spoken transcript found for this YouTube video. The video may contain only music or no audible speech.`
+      `No spoken transcript or captions found for this YouTube video ("${finalTitle}"). The video may contain only music or no audible speech.`
     );
   }
 
@@ -98,9 +370,9 @@ export async function extractFromYouTube(
   const isNonEnglish = detectedLang !== 'en' || hasChinese;
 
   const lines: string[] = [];
-  lines.push(`=== [YouTube Video Knowledge: ${meta.title}] ===`);
+  lines.push(`=== [YouTube Video Knowledge: ${finalTitle}] ===`);
   lines.push(`Video URL: ${cleanUrl}`);
-  if (meta.authorName) lines.push(`Channel: ${meta.authorName}`);
+  if (finalAuthor) lines.push(`Channel: ${finalAuthor}`);
   lines.push(`Spoken Language: ${hasChinese ? 'Chinese (zh)' : detectedLang.toUpperCase()}`);
   lines.push('');
   lines.push('--- Full Spoken Transcript ---');
@@ -128,7 +400,7 @@ export async function extractFromYouTube(
       const heading = `YouTube [${formatTimestamp(currentStart)} - ${formatTimestamp(currentEnd)}]`;
       sections.push({
         heading,
-        text: `${heading} ${meta.title}\n${currentChunk.join(' ')}`,
+        text: `${heading} ${finalTitle}\n${currentChunk.join(' ')}`,
         metadata: {
           startTime: currentStart,
           endTime: currentEnd,
@@ -146,7 +418,7 @@ export async function extractFromYouTube(
     const heading = `YouTube [${formatTimestamp(currentStart)} - ${formatTimestamp(currentEnd)}]`;
     sections.push({
       heading,
-      text: `${heading} ${meta.title}\n${currentChunk.join(' ')}`,
+      text: `${heading} ${finalTitle}\n${currentChunk.join(' ')}`,
       metadata: {
         startTime: currentStart,
         endTime: currentEnd,
@@ -173,8 +445,8 @@ export async function extractFromYouTube(
     }
 
     const overviewContent = `=== Master Video Overview & Complete Timeline Directory ===
-Title: ${meta.title}
-Channel: ${meta.authorName || 'YouTube'}
+Title: ${finalTitle}
+Channel: ${finalAuthor}
 Total Duration: ${formattedTotalDuration}
 Status: 100% Fully Transcribed & Indexed (00:00 to ${formattedTotalDuration}) across ${sections.length} chapters.
 
@@ -198,14 +470,14 @@ Summary & Core Message: Complete presentation walkthrough, scientific takeaways,
   }
 
   return {
-    title: `${meta.title} (YouTube)`,
+    title: `${finalTitle} (YouTube)`,
     type: 'youtube',
     content: lines.join('\n'),
     sections: sections.length > 0 ? sections : undefined,
     metadata: {
       videoId,
       videoUrl: cleanUrl,
-      channel: meta.authorName,
+      channel: finalAuthor,
       isNonEnglish,
       totalLines: rawTranscript.length,
     },
