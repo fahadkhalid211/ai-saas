@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { extractAudioFromVideoFile } from '@/lib/media/audioExtractor';
 
 export interface KnowledgeSource {
@@ -34,7 +34,15 @@ export function useCrmKnowledge({ activeAssistant }: UseCrmKnowledgeOptions) {
   const [uploadText, setUploadText] = useState('');
   const [uploadTextTitle, setUploadTextTitle] = useState('');
   const [selectedFiles, setSelectedFiles] = useState<FileList | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [sourceFilter, setSourceFilter] = useState('');
+
+  const resetUploaderFiles = () => {
+    setSelectedFiles(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
 
   // Modals & Alerts
   const [failedSourceModal, setFailedSourceModal] = useState<KnowledgeSource | null>(null);
@@ -43,6 +51,12 @@ export function useCrmKnowledge({ activeAssistant }: UseCrmKnowledgeOptions) {
     reason: string;
     whatToDoNext: string;
   } | null>(null);
+
+  // Deletion Confirmation & Status state
+  const [deleteConfirmSource, setDeleteConfirmSource] = useState<KnowledgeSource | null>(null);
+  const [isDeletingSource, setIsDeletingSource] = useState(false);
+  const [recentlyDeletedIds, setRecentlyDeletedIds] = useState<Record<string, boolean>>({});
+  const [deleteToast, setDeleteToast] = useState<string | null>(null);
 
   // URL Ingestion state
   const [urlInput, setUrlInput] = useState('');
@@ -201,6 +215,7 @@ export function useCrmKnowledge({ activeAssistant }: UseCrmKnowledgeOptions) {
         whatToDoNext: 'Please check your network connection and server status, then try again.',
       });
     } finally {
+      resetUploaderFiles();
       setIsUploading(false);
       setUploadStatusText(null);
     }
@@ -258,12 +273,57 @@ export function useCrmKnowledge({ activeAssistant }: UseCrmKnowledgeOptions) {
     }
   };
 
-  const handleDeleteSource = async (id: string) => {
+  const handleDeleteSource = (sourceOrId: KnowledgeSource | string) => {
+    if (typeof sourceOrId === 'string') {
+      const found = sources.find((s) => s.id === sourceOrId);
+      if (found) {
+        setDeleteConfirmSource(found);
+      } else {
+        setDeleteConfirmSource({
+          id: sourceOrId,
+          title: 'Knowledge Source',
+          type: 'doc',
+          status: 'ready',
+          chunkCount: 0,
+          createdAt: new Date().toISOString(),
+        });
+      }
+    } else {
+      setDeleteConfirmSource(sourceOrId);
+    }
+  };
+
+  const confirmDeleteSource = async () => {
+    if (!deleteConfirmSource) return;
+    const target = deleteConfirmSource;
+    setIsDeletingSource(true);
     try {
-      await fetch(`/api/knowledge?id=${id}`, { method: 'DELETE' });
-      setSources((prev) => prev.filter((s) => s.id !== id));
+      // Mark as deleted immediately in local list so status displays 'Deleted'
+      setRecentlyDeletedIds((prev) => ({ ...prev, [target.id]: true }));
+      setSources((prev) =>
+        prev.map((s) => (s.id === target.id ? { ...s, status: 'deleted' } : s))
+      );
+      setDeleteToast(`Status: Deleted - "${target.title}" was removed.`);
+
+      await fetch(`/api/knowledge?id=${target.id}`, { method: 'DELETE' });
+
+      // Close modal
+      setDeleteConfirmSource(null);
+
+      // Keep showing 'Deleted' status for 2.5 seconds before removing from list
+      setTimeout(() => {
+        setSources((prev) => prev.filter((s) => s.id !== target.id));
+        setRecentlyDeletedIds((prev) => {
+          const copy = { ...prev };
+          delete copy[target.id];
+          return copy;
+        });
+      }, 2500);
+      setTimeout(() => setDeleteToast(null), 5000);
     } catch (err) {
       console.error('Failed to delete source:', err);
+    } finally {
+      setIsDeletingSource(false);
     }
   };
 
@@ -333,12 +393,21 @@ export function useCrmKnowledge({ activeAssistant }: UseCrmKnowledgeOptions) {
     setUploadTextTitle,
     selectedFiles,
     setSelectedFiles,
+    fileInputRef,
+    resetUploaderFiles,
     sourceFilter,
     setSourceFilter,
     failedSourceModal,
     setFailedSourceModal,
     uploadFailureAlert,
     setUploadFailureAlert,
+    deleteConfirmSource,
+    setDeleteConfirmSource,
+    isDeletingSource,
+    confirmDeleteSource,
+    recentlyDeletedIds,
+    deleteToast,
+    setDeleteToast,
     urlInput,
     setUrlInput,
     urlCustomTitle,

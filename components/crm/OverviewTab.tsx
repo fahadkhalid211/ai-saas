@@ -64,39 +64,58 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                 </div>
 
                 {/* Metric Stat Cards (Balanced Typography) */}
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
-                  <div className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs">
-                    <div className="text-[11px] font-medium text-slate-500 dark:text-slate-400">Total Articles</div>
-                    <div className="text-base font-semibold text-slate-900 dark:text-white mt-0.5">
-                      {sources.length} Documents
-                    </div>
-                    <div className="text-[10px] text-emerald-600 dark:text-emerald-400 mt-0.5 font-medium">+100% indexed</div>
-                  </div>
+                {(() => {
+                  const readySources = (sources || []).filter((s) => s.status === 'ready');
+                  const failedSources = (sources || []).filter((s) => s.status === 'failed');
+                  const processingSources = (sources || []).filter((s) => s.status === 'processing');
+                  const pctIndexed = (sources || []).length > 0 ? Math.round((readySources.length / sources.length) * 100) : 0;
 
-                  <div className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs">
-                    <div className="text-[11px] font-medium text-slate-500 dark:text-slate-400">Vector Chunks</div>
-                    <div className="text-base font-semibold text-slate-900 dark:text-white mt-0.5">
-                      {totalChunks} Chunks
-                    </div>
-                    <div className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5 font-mono">384-dim BGE-Small</div>
-                  </div>
+                  return (
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
+                      <div className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs">
+                        <div className="text-[11px] font-medium text-slate-500 dark:text-slate-400">Total Articles</div>
+                        <div className="text-base font-semibold text-slate-900 dark:text-white mt-0.5">
+                          {sources.length} {sources.length === 1 ? 'Document' : 'Documents'}
+                        </div>
+                        <div className="text-[10px] mt-0.5 font-medium">
+                          {sources.length === 0 ? (
+                            <span className="text-slate-400 dark:text-slate-500">0% indexed</span>
+                          ) : failedSources.length > 0 ? (
+                            <span className="text-rose-600 dark:text-rose-400">{pctIndexed}% ready ({failedSources.length} failed)</span>
+                          ) : processingSources.length > 0 ? (
+                            <span className="text-amber-600 dark:text-amber-400">{pctIndexed}% ready ({processingSources.length} processing)</span>
+                          ) : (
+                            <span className="text-emerald-600 dark:text-emerald-400">100% indexed</span>
+                          )}
+                        </div>
+                      </div>
 
-                  <div className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs">
-                    <div className="text-[11px] font-medium text-slate-500 dark:text-slate-400">Retrieval Mode</div>
-                    <div className="text-base font-semibold text-blue-600 dark:text-blue-400 mt-0.5">
-                      Hybrid RRF
-                    </div>
-                    <div className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">Cosine + BM25 Keywords</div>
-                  </div>
+                      <div className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs">
+                        <div className="text-[11px] font-medium text-slate-500 dark:text-slate-400">Vector Chunks</div>
+                        <div className="text-base font-semibold text-slate-900 dark:text-white mt-0.5">
+                          {totalChunks} Chunks
+                        </div>
+                        <div className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5 font-mono">384-dim BGE-Small</div>
+                      </div>
 
-                  <div className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs">
-                    <div className="text-[11px] font-medium text-slate-500 dark:text-slate-400">Embedding Cost</div>
-                    <div className="text-base font-semibold text-slate-900 dark:text-white mt-0.5">
-                      $0.00 / mo
+                      <div className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs">
+                        <div className="text-[11px] font-medium text-slate-500 dark:text-slate-400">Retrieval Mode</div>
+                        <div className="text-base font-semibold text-blue-600 dark:text-blue-400 mt-0.5">
+                          Hybrid RRF
+                        </div>
+                        <div className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">Cosine + BM25 Keywords</div>
+                      </div>
+
+                      <div className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs">
+                        <div className="text-[11px] font-medium text-slate-500 dark:text-slate-400">Embedding Cost</div>
+                        <div className="text-base font-semibold text-slate-900 dark:text-white mt-0.5">
+                          $0.00 / mo
+                        </div>
+                        <div className="text-[10px] text-emerald-600 dark:text-emerald-400 mt-0.5 font-medium">Local CPU Embeddings</div>
+                      </div>
                     </div>
-                    <div className="text-[10px] text-emerald-600 dark:text-emerald-400 mt-0.5 font-medium">Local CPU Embeddings</div>
-                  </div>
-                </div>
+                  );
+                })()}
 
                 {/* Knowledge Gap & Unanswered Questions Engine */}
                 <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 space-y-4 shadow-xs">

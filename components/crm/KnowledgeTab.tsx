@@ -40,6 +40,8 @@ export interface KnowledgeTabProps {
   handleUploadFiles: (e: React.FormEvent) => Promise<void>;
   selectedFiles: FileList | null;
   setSelectedFiles: (files: FileList | null) => void;
+  fileInputRef?: React.RefObject<HTMLInputElement | null>;
+  resetUploaderFiles?: () => void;
   uploadTextTitle: string;
   setUploadTextTitle: (title: string) => void;
   uploadText: string;
@@ -56,7 +58,14 @@ export interface KnowledgeTabProps {
   sources: KnowledgeSource[];
   setFailedSourceModal: (source: KnowledgeSource) => void;
   handleOpenCorrectionModal: (source: KnowledgeSource) => void;
-  handleDeleteSource: (id: string) => Promise<void>;
+  handleDeleteSource: (sourceOrId: KnowledgeSource | string) => void | Promise<void>;
+  deleteConfirmSource?: KnowledgeSource | null;
+  setDeleteConfirmSource?: (source: KnowledgeSource | null) => void;
+  isDeletingSource?: boolean;
+  confirmDeleteSource?: () => Promise<void>;
+  recentlyDeletedIds?: Record<string, boolean>;
+  deleteToast?: string | null;
+  setDeleteToast?: (toast: string | null) => void;
   isImportingUrl: boolean;
   urlFeedback: { type: 'success' | 'error'; message: string } | null;
 }
@@ -69,6 +78,8 @@ export const KnowledgeTab: React.FC<KnowledgeTabProps> = ({
   handleUploadFiles,
   selectedFiles,
   setSelectedFiles,
+  fileInputRef,
+  resetUploaderFiles,
   uploadTextTitle,
   setUploadTextTitle,
   uploadText,
@@ -86,10 +97,21 @@ export const KnowledgeTab: React.FC<KnowledgeTabProps> = ({
   setFailedSourceModal,
   handleOpenCorrectionModal,
   handleDeleteSource,
+  deleteConfirmSource,
+  setDeleteConfirmSource,
+  isDeletingSource,
+  confirmDeleteSource,
+  recentlyDeletedIds,
+  deleteToast,
+  setDeleteToast,
   isImportingUrl,
   urlFeedback,
 }) => {
   const totalChunks = sources.reduce((sum, s) => sum + (s.chunkCount || 0), 0);
+  const readySources = sources.filter((s) => s.status === 'ready');
+  const failedSources = sources.filter((s) => s.status === 'failed');
+  const processingSources = sources.filter((s) => s.status === 'processing');
+  const pctIndexed = sources.length > 0 ? Math.round((readySources.length / sources.length) * 100) : 0;
   const filteredSources = sources.filter((s) =>
     s.title.toLowerCase().includes(sourceFilter.toLowerCase())
   );
@@ -118,9 +140,19 @@ export const KnowledgeTab: React.FC<KnowledgeTabProps> = ({
                   <div className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs">
                     <div className="text-[11px] font-medium text-slate-500 dark:text-slate-400">Total Articles</div>
                     <div className="text-base font-semibold text-slate-900 dark:text-white mt-0.5">
-                      {sources.length} Documents
+                      {sources.length} {sources.length === 1 ? 'Document' : 'Documents'}
                     </div>
-                    <div className="text-[10px] text-emerald-600 dark:text-emerald-400 mt-0.5 font-medium">+100% indexed</div>
+                    <div className="text-[10px] mt-0.5 font-medium">
+                      {sources.length === 0 ? (
+                        <span className="text-slate-400 dark:text-slate-500">0% indexed</span>
+                      ) : failedSources.length > 0 ? (
+                        <span className="text-rose-600 dark:text-rose-400">{pctIndexed}% ready ({failedSources.length} failed)</span>
+                      ) : processingSources.length > 0 ? (
+                        <span className="text-amber-600 dark:text-amber-400">{pctIndexed}% ready ({processingSources.length} processing)</span>
+                      ) : (
+                        <span className="text-emerald-600 dark:text-emerald-400">100% indexed</span>
+                      )}
+                    </div>
                   </div>
 
                   <div className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs">
@@ -147,6 +179,23 @@ export const KnowledgeTab: React.FC<KnowledgeTabProps> = ({
                     <div className="text-[10px] text-emerald-600 dark:text-emerald-400 mt-0.5 font-medium">Local CPU Embeddings</div>
                   </div>
                 </div>
+
+                {/* Status: Deleted Toast Notification */}
+                {deleteToast && (
+                  <div className="rounded-xl border border-rose-200 dark:border-rose-900 bg-rose-50 dark:bg-rose-950/60 p-3.5 shadow-xs flex items-center justify-between animate-in fade-in">
+                    <div className="flex items-center gap-2 text-xs font-semibold text-rose-800 dark:text-rose-200">
+                      <Trash2 className="h-4 w-4 text-rose-600 dark:text-rose-400" />
+                      <span>{deleteToast}</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setDeleteToast?.(null)}
+                      className="text-rose-500 hover:text-rose-700 dark:hover:text-rose-300 cursor-pointer"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                )}
 
                 {/* Upload Failure Alert */}
                 {uploadFailureAlert && (
@@ -194,6 +243,7 @@ export const KnowledgeTab: React.FC<KnowledgeTabProps> = ({
                       </p>
                     </div>
                     <input
+                      ref={fileInputRef}
                       type="file"
                       multiple
                       accept=".pdf,.csv,.json,.docx,.txt,.jpg,.jpeg,.png,.webp,.mp4,.webm,.mov,.mkv,.avi,.m4v,.3gp,.mp3,.wav,.m4a,.ogg,.flac,.aac"
@@ -201,8 +251,23 @@ export const KnowledgeTab: React.FC<KnowledgeTabProps> = ({
                       className="text-xs text-slate-500 dark:text-slate-400 file:mr-4 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-500 cursor-pointer"
                     />
                     {selectedFiles && selectedFiles.length > 0 && (
-                      <div className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">
-                        Selected {selectedFiles.length} file(s) for indexing
+                      <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-xs text-emerald-800 dark:text-emerald-300">
+                        <span className="font-semibold">
+                          Selected {selectedFiles.length} file(s):
+                        </span>
+                        <span className="font-mono text-[11px] truncate max-w-xs">
+                          {Array.from(selectedFiles).map((f) => f.name).join(', ')}
+                        </span>
+                        {resetUploaderFiles && (
+                          <button
+                            type="button"
+                            onClick={resetUploaderFiles}
+                            className="ml-auto p-0.5 text-emerald-600 hover:text-emerald-900 dark:hover:text-emerald-100 cursor-pointer rounded hover:bg-emerald-100 dark:hover:bg-emerald-900"
+                            title="Clear selected files"
+                          >
+                            <X className="h-3.5 w-3.5" />
+                          </button>
+                        )}
                       </div>
                     )}
                   </div>
@@ -432,19 +497,22 @@ export const KnowledgeTab: React.FC<KnowledgeTabProps> = ({
                               {source.chunkCount} chunks
                             </td>
                             <td className="py-3.5 px-5">
-                              {source.status === 'ready' && (
+                              {(source.status === 'deleted' || recentlyDeletedIds?.[source.id]) ? (
+                                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-rose-100 dark:bg-rose-950/80 text-rose-700 dark:text-rose-300 border border-rose-300 dark:border-rose-800 font-bold text-[11px] animate-pulse">
+                                  <CheckCircle2 className="h-3 w-3 text-rose-600 dark:text-rose-400" />
+                                  Deleted
+                                </span>
+                              ) : source.status === 'ready' ? (
                                 <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 font-semibold text-[11px]">
                                   <span className="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
                                   Ready
                                 </span>
-                              )}
-                              {source.status === 'processing' && (
+                              ) : source.status === 'processing' ? (
                                 <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800 font-semibold text-[11px]">
                                   <RefreshCw className="h-2.5 w-2.5 animate-spin" />
                                   Processing
                                 </span>
-                              )}
-                              {source.status === 'failed' && (
+                              ) : (
                                 <button
                                   type="button"
                                   onClick={() => setFailedSourceModal(source)}
@@ -461,7 +529,7 @@ export const KnowledgeTab: React.FC<KnowledgeTabProps> = ({
                             </td>
                             <td className="py-3.5 px-5 text-right">
                               <div className="flex items-center justify-end gap-1.5">
-                                {source.status === 'ready' && (
+                                {source.status === 'ready' && !recentlyDeletedIds?.[source.id] && (
                                   <button
                                     onClick={() => handleOpenCorrectionModal(source)}
                                     className="inline-flex items-center gap-1.5 text-xs text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 font-medium px-2.5 py-1 rounded-md bg-indigo-50 dark:bg-indigo-950/50 border border-indigo-200 dark:border-indigo-800/60 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 transition cursor-pointer"
@@ -477,8 +545,15 @@ export const KnowledgeTab: React.FC<KnowledgeTabProps> = ({
                                   </button>
                                 )}
                                 <button
-                                  onClick={() => handleDeleteSource(source.id)}
-                                  className="text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 transition p-1.5 rounded hover:bg-rose-50 dark:hover:bg-rose-950/40 cursor-pointer"
+                                  disabled={source.status === 'deleted' || Boolean(recentlyDeletedIds?.[source.id])}
+                                  onClick={() => {
+                                    if (setDeleteConfirmSource) {
+                                      setDeleteConfirmSource(source);
+                                    } else {
+                                      handleDeleteSource(source.id);
+                                    }
+                                  }}
+                                  className="text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 transition p-1.5 rounded hover:bg-rose-50 dark:hover:bg-rose-950/40 cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
                                   title="Delete source"
                                 >
                                   <Trash2 className="h-4 w-4" />
@@ -491,6 +566,54 @@ export const KnowledgeTab: React.FC<KnowledgeTabProps> = ({
                     </table>
                   )}
                 </div>
+
+                {/* Delete Confirmation Popup Modal */}
+                {deleteConfirmSource && (
+                  <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4 animate-in fade-in duration-150">
+                    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4 animate-in zoom-in-95 duration-150">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-rose-100 dark:bg-rose-950/80 text-rose-600 dark:text-rose-400">
+                          <Trash2 className="h-5 w-5" />
+                        </div>
+                        <div>
+                          <h3 className="text-base font-bold text-slate-900 dark:text-white">Delete Knowledge Source?</h3>
+                          <p className="text-xs text-slate-500 dark:text-slate-400">This action cannot be undone.</p>
+                        </div>
+                      </div>
+                      <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                        Are you sure you want to delete <strong className="text-slate-900 dark:text-white font-semibold">&ldquo;{deleteConfirmSource.title}&rdquo;</strong>? All associated vector chunks and trained embeddings will be permanently removed from your AI assistant.
+                      </p>
+                      <div className="flex justify-end gap-2.5 pt-2">
+                        <button
+                          type="button"
+                          disabled={isDeletingSource}
+                          onClick={() => setDeleteConfirmSource?.(null)}
+                          className="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-750 transition cursor-pointer"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          type="button"
+                          disabled={isDeletingSource}
+                          onClick={() => confirmDeleteSource?.()}
+                          className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-xs font-semibold text-white transition flex items-center gap-1.5 shadow-xs disabled:opacity-50 cursor-pointer"
+                        >
+                          {isDeletingSource ? (
+                            <>
+                              <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+                              <span>Deleting...</span>
+                            </>
+                          ) : (
+                            <>
+                              <Trash2 className="h-3.5 w-3.5" />
+                              <span>Yes, Delete Source</span>
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
   );
 };

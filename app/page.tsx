@@ -851,6 +851,8 @@ export default function DashboardPage() {
                 handleUploadFiles={knowledge.handleUploadFiles}
                 selectedFiles={knowledge.selectedFiles}
                 setSelectedFiles={knowledge.setSelectedFiles}
+                fileInputRef={knowledge.fileInputRef}
+                resetUploaderFiles={knowledge.resetUploaderFiles}
                 uploadTextTitle={knowledge.uploadTextTitle}
                 setUploadTextTitle={knowledge.setUploadTextTitle}
                 uploadText={knowledge.uploadText}
@@ -868,6 +870,13 @@ export default function DashboardPage() {
                 setFailedSourceModal={knowledge.setFailedSourceModal}
                 handleOpenCorrectionModal={knowledge.handleOpenCorrectionModal}
                 handleDeleteSource={knowledge.handleDeleteSource}
+                deleteConfirmSource={knowledge.deleteConfirmSource}
+                setDeleteConfirmSource={knowledge.setDeleteConfirmSource}
+                isDeletingSource={knowledge.isDeletingSource}
+                confirmDeleteSource={knowledge.confirmDeleteSource}
+                recentlyDeletedIds={knowledge.recentlyDeletedIds}
+                deleteToast={knowledge.deleteToast}
+                setDeleteToast={knowledge.setDeleteToast}
                 isImportingUrl={knowledge.isImportingUrl}
                 urlFeedback={knowledge.urlFeedback}
               />

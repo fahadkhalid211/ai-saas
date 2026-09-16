@@ -148,6 +148,23 @@ export function diagnoseKnowledgeFailure(params: {
     };
   }
 
+  // 7b. Provider High Demand or Temporary Capacity Unavailable (503)
+  if (
+    lowerMsg.includes('503') ||
+    lowerMsg.includes('high demand') ||
+    lowerMsg.includes('temporarily unavailable') ||
+    lowerMsg.includes('unavailable') ||
+    lowerMsg.includes('overloaded')
+  ) {
+    return {
+      category: 'auth',
+      reason: `The AI speech transcription provider experienced a temporary server capacity spike (HTTP 503 Service Unavailable).`,
+      whatToDoNext:
+        'Our system now automatically retries alternative model versions (Gemini 2.5/2.0/1.5 Flash) and falls back to Groq Whisper. Please click "Retry Upload", or configure a free Groq API key in AI Engine settings for instant speech transcription.',
+      actionLabel: 'Retry Upload or Use Groq',
+    };
+  }
+
   // 8. Website Rejected Web Request / 403 Forbidden / Bot Protection
   if (
     lowerMsg.includes('403') ||

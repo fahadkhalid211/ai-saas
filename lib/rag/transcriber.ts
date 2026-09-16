@@ -136,43 +136,65 @@ Please transcribe the spoken audio of this ${mediaLabel} recording thoroughly an
 3. Capture every detail: service names, prices, contact info, business policies, and answers to common questions.
 4. Output the complete spoken narrative clearly.`;
 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${apiKey}`;
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      contents: [
-        {
-          parts: [
-            { text: prompt },
-            {
-              inlineData: {
-                mimeType,
-                data: base64Data,
+  // Candidate Google Gemini models in priority order
+  const candidateModels = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash'];
+  let lastError: any = null;
+
+  for (const model of candidateModels) {
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try {
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [
+              {
+                parts: [
+                  { text: prompt },
+                  {
+                    inlineData: {
+                      mimeType,
+                      data: base64Data,
+                    },
+                  },
+                ],
               },
-            },
-          ],
-        },
-      ],
-    }),
-  });
+            ],
+          }),
+        });
 
-  if (!res.ok) {
-    const errText = await res.text().catch(() => '');
-    throw new Error(`Gemini transcription failed (${res.status}): ${errText.slice(0, 300)}`);
+        if (res.ok) {
+          const data = await res.json();
+          const text = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+          if (text) {
+            return {
+              text,
+              language: 'en',
+              segments: [],
+            };
+          }
+        }
+
+        const errText = await res.text().catch(() => '');
+        lastError = new Error(`Gemini transcription (${model}) failed (${res.status}): ${errText.slice(0, 300)}`);
+
+        // If high demand (503) or rate limited (429), back off before retrying or switching models
+        if (res.status === 503 || res.status === 429) {
+          console.warn(`[Transcriber] Gemini model ${model} returned ${res.status}, waiting before retry/fallback...`);
+          await new Promise((r) => setTimeout(r, 1200));
+          continue;
+        } else {
+          break; // Non-retryable on this model (e.g. 404), advance to next candidate model
+        }
+      } catch (err: any) {
+        lastError = err;
+        await new Promise((r) => setTimeout(r, 800));
+      }
+    }
   }
 
-  const data = await res.json();
-  const text = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
-  if (!text) {
-    throw new Error('Gemini processed the file but returned an empty transcription.');
-  }
-
-  return {
-    text,
-    language: 'en',
-    segments: [],
-  };
+  throw lastError || new Error('Gemini transcription failed across candidate models.');
 }
 
 /**
@@ -267,7 +289,18 @@ export async function transcribeMedia(
       provider = 'groq';
       apiKey = fallbackGroq;
     } else {
-      return await transcribeWithGemini(buffer, uploadFilename, uploadMime, geminiKey);
+      try {
+        return await transcribeWithGemini(buffer, uploadFilename, uploadMime, geminiKey);
+      } catch (geminiErr: any) {
+        const fallbackGroq = process.env.GROQ_API_KEY || '';
+        if (fallbackGroq) {
+          console.warn('[Transcriber] Gemini failed, falling back to Groq Whisper:', geminiErr?.message || geminiErr);
+          provider = 'groq';
+          apiKey = fallbackGroq;
+        } else {
+          throw geminiErr;
+        }
+      }
     }
   }
 

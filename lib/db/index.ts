@@ -961,27 +961,40 @@ export class Database {
   static async getKnowledgeSources(assistantId: string): Promise<KnowledgeSourceData[]> {
     let state = await ensureInitialized();
     let sources = (state.knowledgeSources || []).filter((k) => matchesAssistant(k.assistantId, assistantId, state));
-    if (sources.length === 0 && isCloudDbConfigured()) {
+    
+    // If no sources or any source is in 'processing' state, do a fresh fetch from Cloud DB
+    const hasProcessing = sources.some((s) => s.status === 'processing');
+    if ((sources.length === 0 || hasProcessing) && isCloudDbConfigured()) {
       state = await ensureInitialized(true);
       sources = (state.knowledgeSources || []).filter((k) => matchesAssistant(k.assistantId, assistantId, state));
     }
+
     let stateChanged = false;
     const now = Date.now();
 
     for (const source of sources) {
       if (source.status === 'processing') {
-        const createdMs = new Date(source.createdAt).getTime();
-        // If stuck in processing for more than 60 seconds, auto-heal to failed
-        if (now - createdMs > 60_000) {
+        const createdMs = new Date(source.updatedAt || source.createdAt || 0).getTime();
+        // If stuck in processing for more than 45 seconds or date invalid, auto-heal to failed
+        if (isNaN(createdMs) || createdMs === 0 || now - createdMs > 45_000) {
           source.status = 'failed';
           const ext = (source.title.split('.').pop() || source.type || '').toLowerCase();
           const isImg = ['png', 'jpg', 'jpeg', 'webp', 'image'].includes(ext);
+          const isVid = ['mp4', 'webm', 'mov', 'mkv', 'avi', 'm4v', '3gp'].includes(ext) || source.type === 'video';
+          const isAudio = ['mp3', 'wav', 'm4a', 'ogg', 'flac', 'aac'].includes(ext) || source.type === 'audio';
 
           if (isImg) {
             source.errorMessage =
               'This image appears to be a brand logo, icon, or graphic with no readable text body. AI assistants require text documents to learn facts and answer visitor questions.';
             source.errorResolution =
               'Logos do not need to be added to the knowledge base (you can set your assistant logo in Widget Branding). To train your AI, upload files containing text (PDF, DOCX, CSV, TXT) or high-contrast screenshots with legible text.';
+          } else if (isVid || isAudio) {
+            source.errorMessage =
+              source.errorMessage ||
+              'Processing timed out. Speech transcription took longer than the serverless execution limit or encountered a provider timeout.';
+            source.errorResolution =
+              source.errorResolution ||
+              'Please delete this entry and re-upload. For large video files, export an MP3 or M4A audio copy (2-5 MB) to index speech quickly.';
           } else {
             source.errorMessage =
               source.errorMessage || 'Processing timed out. The file could not be parsed or contains no readable text.';
