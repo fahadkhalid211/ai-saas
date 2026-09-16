@@ -1055,14 +1055,18 @@ export const TEMPLATE_LANDING_CONFIGS: Record<string, LandingPageConfig> = {
   'ecommerce': DEFAULT_ECOMMERCE_LANDING_CONFIG,
   // SaaS
   'b2b-saas': DEFAULT_SAAS_LANDING_CONFIG,
+  'saas-landing': DEFAULT_SAAS_LANDING_CONFIG,
   'template_saas': DEFAULT_SAAS_LANDING_CONFIG,
   'saas': DEFAULT_SAAS_LANDING_CONFIG,
   // Legal
   'legal-law-firm': DEFAULT_LEGAL_LANDING_CONFIG,
+  'legal-firm': DEFAULT_LEGAL_LANDING_CONFIG,
+  'law-firm': DEFAULT_LEGAL_LANDING_CONFIG,
   'template_legal': DEFAULT_LEGAL_LANDING_CONFIG,
   'legal': DEFAULT_LEGAL_LANDING_CONFIG,
   // Healthcare
   'dental-clinic': DEFAULT_HEALTHCARE_LANDING_CONFIG,
+  'clinic': DEFAULT_HEALTHCARE_LANDING_CONFIG,
   'template_healthcare': DEFAULT_HEALTHCARE_LANDING_CONFIG,
   'healthcare': DEFAULT_HEALTHCARE_LANDING_CONFIG,
   // Premium Webflow & Framer Caliber Pages
@@ -1071,6 +1075,7 @@ export const TEMPLATE_LANDING_CONFIGS: Record<string, LandingPageConfig> = {
   'nexus_ai': DEFAULT_NEXUS_AI_CONFIG,
   'ai_tech': DEFAULT_NEXUS_AI_CONFIG,
   'hyperion-agency': DEFAULT_HYPERION_AGENCY_CONFIG,
+  'agency': DEFAULT_HYPERION_AGENCY_CONFIG,
   'template_hyperion_agency': DEFAULT_HYPERION_AGENCY_CONFIG,
   'creative_agency': DEFAULT_HYPERION_AGENCY_CONFIG,
   'design_agency': DEFAULT_HYPERION_AGENCY_CONFIG,

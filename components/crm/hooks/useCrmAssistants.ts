@@ -89,6 +89,39 @@ export function useCrmAssistants() {
     }
   };
 
+  const handleDeleteAssistant = async (assistantId: string) => {
+    if (assistants.length <= 1) {
+      alert('You must have at least one assistant in your workspace. Create a new bot before removing this one.');
+      return;
+    }
+
+    const ast = assistants.find((a) => a.id === assistantId);
+    const confirmed = typeof window !== 'undefined'
+      ? window.confirm(`Are you sure you want to permanently delete "${ast?.name || assistantId}"? All of its training documents, knowledge chunks, and conversations will be deleted.`)
+      : true;
+    if (!confirmed) return;
+
+    try {
+      const res = await fetch(`/api/assistants/${assistantId}`, {
+        method: 'DELETE',
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || 'Failed to delete assistant');
+      }
+
+      const remaining = assistants.filter((a) => a.id !== assistantId);
+      setAssistants(remaining);
+      if (activeAssistant?.id === assistantId) {
+        setActiveAssistant(remaining[0]);
+        setFormData(remaining[0]);
+      }
+      await fetchAssistants(remaining[0]?.id);
+    } catch (err: any) {
+      alert(err.message || 'Failed to delete assistant');
+    }
+  };
+
   return {
     assistants,
     setAssistants,
@@ -106,5 +139,6 @@ export function useCrmAssistants() {
     fetchAssistants,
     handleCreateAssistant,
     handleSaveSettings,
+    handleDeleteAssistant,
   };
 }

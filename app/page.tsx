@@ -107,6 +107,7 @@ export default function DashboardPage() {
     fetchAssistants,
     handleCreateAssistant,
     handleSaveSettings,
+    handleDeleteAssistant,
   } = useCrmAssistants();
 
   // Leads & Appointments
@@ -669,6 +670,7 @@ export default function DashboardPage() {
           handleMarkAllNotificationsRead={handleMarkAllNotificationsRead}
           setShowEmbedModal={setShowEmbedModal}
           handleLogout={handleLogout}
+          handleDeleteAssistant={handleDeleteAssistant}
           currentUser={currentUser}
           dbStatus={dbStatus}
         />
@@ -776,6 +778,7 @@ export default function DashboardPage() {
                 setShowNewPageModal={landing.setShowNewPageModal}
                 handlePurchaseExtraLandingPage={landing.handlePurchaseExtraLandingPage}
                 handleSaveLandingConfig={landing.handleSaveLandingConfig}
+                handleDeleteLandingPage={landing.handleDeleteLandingPage}
                 activeAssistant={activeAssistant}
                 assistants={assistants}
                 setActiveAssistant={setActiveAssistant}
@@ -859,6 +862,7 @@ export default function DashboardPage() {
                 activeAssistant={activeAssistant}
                 assistants={assistants}
                 setActiveAssistant={setActiveAssistant}
+                handleDeleteAssistant={handleDeleteAssistant}
                 onOpenNewAssistantModal={() => setShowNewModal(true)}
                 fetchKnowledge={knowledge.fetchKnowledge}
                 uploadFailureAlert={knowledge.uploadFailureAlert}

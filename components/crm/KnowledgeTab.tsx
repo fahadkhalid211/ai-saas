@@ -43,6 +43,7 @@ export interface KnowledgeTabProps {
   activeAssistant: any;
   assistants?: any[];
   setActiveAssistant?: (assistant: any) => void;
+  handleDeleteAssistant?: (assistantId: string) => Promise<void> | void;
   onOpenNewAssistantModal?: () => void;
   fetchKnowledge: (assistantId: string) => Promise<void>;
   uploadFailureAlert: any;
@@ -95,6 +96,7 @@ export const KnowledgeTab: React.FC<KnowledgeTabProps> = ({
   activeAssistant,
   assistants,
   setActiveAssistant,
+  handleDeleteAssistant,
   onOpenNewAssistantModal,
   fetchKnowledge,
   uploadFailureAlert,
@@ -212,16 +214,33 @@ export const KnowledgeTab: React.FC<KnowledgeTabProps> = ({
                       </div>
                     </div>
 
-                    {onOpenNewAssistantModal && (
-                      <button
-                        type="button"
-                        onClick={onOpenNewAssistantModal}
-                        className="self-start sm:self-auto flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs transition cursor-pointer"
-                      >
-                        <Plus className="h-3.5 w-3.5" />
-                        <span>Create New Bot</span>
-                      </button>
-                    )}
+                    <div className="flex items-center gap-2 self-start sm:self-auto">
+                      {handleDeleteAssistant && assistants && assistants.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (activeAssistant?.id) {
+                              handleDeleteAssistant(activeAssistant.id);
+                            }
+                          }}
+                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-rose-200 dark:border-rose-900/60 bg-rose-50 dark:bg-rose-950/30 text-rose-700 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-900/60 text-xs font-semibold shadow-xs transition cursor-pointer"
+                          title="Permanently remove this bot and all its training documents"
+                        >
+                          <Trash2 className="h-3.5 w-3.5 text-rose-600 dark:text-rose-400" />
+                          <span>Delete Bot</span>
+                        </button>
+                      )}
+                      {onOpenNewAssistantModal && (
+                        <button
+                          type="button"
+                          onClick={onOpenNewAssistantModal}
+                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs transition cursor-pointer"
+                        >
+                          <Plus className="h-3.5 w-3.5" />
+                          <span>Create New Bot</span>
+                        </button>
+                      )}
+                    </div>
                   </div>
 
                   <div className="flex items-center gap-2 pt-2 border-t border-blue-100 dark:border-blue-900/40 text-[11.5px] text-blue-900 dark:text-blue-200">

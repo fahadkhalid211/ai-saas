@@ -7,7 +7,10 @@ import { LandingPageConfig } from '@/lib/landing/types';
 
 export const dynamic = 'force-dynamic';
 
-async function resolveAssistantForLandingPage(page: LandingPageConfig): Promise<string> {
+async function resolveAssistantForLandingPage(page: LandingPageConfig): Promise<string | null> {
+  if (page.assistantId === '' || page.assistantId === 'none') {
+    return null;
+  }
   if (page.assistantId) {
     const existing = await Database.getAssistantById(page.assistantId);
     if (existing) return existing.id;
@@ -175,7 +178,7 @@ export async function GET(req: NextRequest) {
       const page = await Database.getLandingPageBySlugOrDomain(domain);
       if (page) {
         const astId = await resolveAssistantForLandingPage(page);
-        const assistant = await getPublicAssistantConfig(astId, page.businessName);
+        const assistant = astId ? await getPublicAssistantConfig(astId, page.businessName) : null;
         return NextResponse.json({
           assistantId: astId,
           assistantName: page.businessName,
@@ -196,7 +199,7 @@ export async function GET(req: NextRequest) {
 
       if (page) {
         const astId = await resolveAssistantForLandingPage(page);
-        const assistant = await getPublicAssistantConfig(astId, page.businessName);
+        const assistant = astId ? await getPublicAssistantConfig(astId, page.businessName) : null;
         return NextResponse.json({
           assistantId: astId,
           assistantName: page.businessName,
@@ -291,10 +294,10 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    let finalAssistantId = assistantId || config.assistantId;
+    let finalAssistantId = config.assistantId !== undefined ? config.assistantId : assistantId;
 
     // Auto-create a dedicated assistant for this new landing page to guarantee isolated knowledge bases
-    if (isNewPage && (createDedicatedAssistant || (!finalAssistantId && config.slug !== 'classic-barbershop'))) {
+    if (isNewPage && finalAssistantId !== '' && (createDedicatedAssistant || (!finalAssistantId && config.slug !== 'classic-barbershop'))) {
       try {
         const newBotId = 'ast_' + config.slug.replace(/[^a-z0-9]/g, '_') + '_' + Math.random().toString(36).substring(2, 6);
         const industryLabel = config.industry || 'services';

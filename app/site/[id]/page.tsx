@@ -1572,195 +1572,197 @@ export default function HostedBusinessSite({ params }: SitePageProps) {
       )}
 
       {/* Floating AI Concierge Chatbot Button & Drawer */}
-      <div className="fixed bottom-6 right-6 z-40">
-        {!isChatOpen ? (
-          <button
-            onClick={() => setIsChatOpen(true)}
-            className={`flex items-center gap-2.5 px-5 py-3.5 ${currentTheme.btnBg} ${currentTheme.btnHoverBg} ${currentTheme.btnText} font-bold rounded-full shadow-2xl transition-all hover:scale-105 active:scale-95`}
-          >
-            <MessageSquare className="w-5 h-5" />
-            <span className="text-sm">Chat with {landingConfig.businessName.split(' ')[0]} AI</span>
-          </button>
-        ) : (
-          <div className={`w-[360px] sm:w-[400px] h-[520px] ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'} border rounded-3xl shadow-2xl flex flex-col overflow-hidden`}>
-            {/* Chat Header */}
-            <div className={`${isDark ? 'bg-slate-950 border-slate-800' : 'bg-slate-50 border-slate-200'} border-b p-4 flex items-center justify-between`}>
-              <div className="flex items-center gap-3">
-                <div className={`w-8 h-8 rounded-full ${currentTheme.lightBg} ${currentTheme.accentText} border ${currentTheme.accentBorder} flex items-center justify-center`}>
-                  <IndustryIcon industry={landingConfig.industry} className="w-4 h-4" />
-                </div>
-                <div>
-                  <div className={`text-sm font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>{landingConfig.businessName} AI</div>
-                  <div className="text-xs text-emerald-500 flex items-center gap-1">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                    <span>Online & Ready to Assist</span>
+      {landingConfig.assistantId !== '' && landingConfig.assistantId !== 'none' && Boolean(assistantData) && (
+        <div className="fixed bottom-6 right-6 z-40">
+          {!isChatOpen ? (
+            <button
+              onClick={() => setIsChatOpen(true)}
+              className={`flex items-center gap-2.5 px-5 py-3.5 ${currentTheme.btnBg} ${currentTheme.btnHoverBg} ${currentTheme.btnText} font-bold rounded-full shadow-2xl transition-all hover:scale-105 active:scale-95`}
+            >
+              <MessageSquare className="w-5 h-5" />
+              <span className="text-sm">Chat with {landingConfig.businessName.split(' ')[0]} AI</span>
+            </button>
+          ) : (
+            <div className={`w-[360px] sm:w-[400px] h-[520px] ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'} border rounded-3xl shadow-2xl flex flex-col overflow-hidden`}>
+              {/* Chat Header */}
+              <div className={`${isDark ? 'bg-slate-950 border-slate-800' : 'bg-slate-50 border-slate-200'} border-b p-4 flex items-center justify-between`}>
+                <div className="flex items-center gap-3">
+                  <div className={`w-8 h-8 rounded-full ${currentTheme.lightBg} ${currentTheme.accentText} border ${currentTheme.accentBorder} flex items-center justify-center`}>
+                    <IndustryIcon industry={landingConfig.industry} className="w-4 h-4" />
                   </div>
-                </div>
-              </div>
-              <button
-                onClick={() => setIsChatOpen(false)}
-                className={`${isDark ? 'text-slate-400 hover:text-white' : 'text-slate-400 hover:text-slate-800'} transition-colors`}
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            {/* Live Takeover Status Banner */}
-            {isTakeoverActive && (
-              <div className="px-3 py-1.5 bg-amber-950/80 border-b border-amber-800/80 text-[11px] text-amber-300 font-medium flex items-center justify-between shrink-0">
-                <span className="flex items-center gap-1.5">
-                  <span className="h-2 w-2 rounded-full bg-amber-400 animate-pulse"></span>
-                  <span>Live Operator Active: {assignedAgentName}</span>
-                </span>
-                <span className="text-[10px] text-amber-400/80 font-mono">AI Paused</span>
-              </div>
-            )}
-
-            {/* Chat Messages */}
-            <div className={`flex-1 p-4 overflow-y-auto space-y-3 ${isDark ? 'bg-slate-950/40 text-slate-200' : 'bg-slate-50/60 text-slate-800'} text-xs`}>
-              {chatMessages.map((msg, i) => {
-                const isUser = msg.role === 'user';
-                const isAgent = msg.role === 'agent';
-                const hasBookingAction =
-                  msg.content.includes('[ACTION:BOOKING_FORM]') ||
-                  msg.content.includes('[BOOKING_FORM]');
-                const cleanContent = msg.content
-                  .replace(/\[ACTION:BOOKING_FORM\]/g, '')
-                  .replace(/\[BOOKING_FORM\]/g, '')
-                  .trim();
-
-                return (
-                  <div
-                    key={i}
-                    className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}
-                  >
-                    <div
-                      className={`max-w-[88%] rounded-2xl p-3 leading-relaxed ${
-                        isUser
-                          ? `${currentTheme.btnBg} ${currentTheme.btnText} font-medium`
-                          : isAgent
-                          ? 'bg-amber-950/40 text-slate-200 border border-amber-800/60'
-                          : isDark
-                          ? 'bg-slate-800 text-slate-200 border border-slate-700'
-                          : 'bg-white text-slate-800 border border-slate-200 shadow-2xs'
-                      }`}
-                    >
-                      {isAgent && (
-                        <div className="text-[10px] font-bold text-amber-400 mb-1 flex items-center gap-1">
-                          <span>Operator {msg.senderName || assignedAgentName}</span>
-                        </div>
-                      )}
-
-                      {cleanContent ? (
-                        isUser ? (
-                          <div className="whitespace-pre-line">{cleanContent}</div>
-                        ) : (
-                          <MarkdownRenderer content={cleanContent} />
-                        )
-                      ) : (
-                        <span className="flex items-center gap-1.5 text-slate-400">
-                          <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                          <span>Consulting knowledgebase...</span>
-                        </span>
-                      )}
-
-                      {/* Interactive In-Chat Booking Form Card */}
-                      {hasBookingAction && (
-                        <div className={`mt-3 p-3 rounded-xl ${isDark ? 'bg-slate-900 border-slate-700/80' : 'bg-slate-50 border-slate-200'} border space-y-2.5 shadow-md`}>
-                          <div className={`flex items-center justify-between border-b ${isDark ? 'border-slate-800' : 'border-slate-200'} pb-2`}>
-                            <span className={`text-[11px] font-bold ${isDark ? 'text-white' : 'text-slate-900'} flex items-center gap-1.5`}>
-                              <Calendar className="h-3.5 w-3.5 text-blue-500" />
-                              <span>{landingConfig.businessName} Booking</span>
-                            </span>
-                            <span className="px-1.5 py-0.5 rounded text-[9.5px] font-semibold bg-emerald-950/80 text-emerald-300 border border-emerald-800/60">
-                              Instant Confirmation
-                            </span>
-                          </div>
-
-                          {landingConfig.services && landingConfig.services.length > 0 && (
-                            <div className="space-y-1">
-                              <span className={`text-[10px] ${isDark ? 'text-slate-400' : 'text-slate-500'} block font-medium`}>Select a service:</span>
-                              <div className="grid grid-cols-1 gap-1">
-                                {landingConfig.services.slice(0, 3).map((srv) => (
-                                  <button
-                                    key={srv.id}
-                                    type="button"
-                                    onClick={() => {
-                                      setSelectedService(srv);
-                                      setIsBookingOpen(true);
-                                    }}
-                                    className={`px-2.5 py-1.5 rounded-lg ${isDark ? 'bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700' : 'bg-white hover:bg-slate-100 text-slate-800 border-slate-200 shadow-2xs'} border text-[11px] transition flex items-center justify-between text-left cursor-pointer`}
-                                  >
-                                    <span className="font-semibold">{srv.name}</span>
-                                    <span className="font-mono text-emerald-500 font-bold">${srv.price}</span>
-                                  </button>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-
-                          <button
-                            type="button"
-                            onClick={() => setIsBookingOpen(true)}
-                            className={`w-full py-2 px-3 rounded-lg ${currentTheme.btnBg} ${currentTheme.btnText} font-bold text-xs flex items-center justify-center gap-1.5 shadow-sm transition hover:opacity-95 cursor-pointer`}
-                          >
-                            <Calendar className="h-3.5 w-3.5" />
-                            <span>Complete Booking Form &amp; Pick Slot</span>
-                          </button>
-                        </div>
-                      )}
+                  <div>
+                    <div className={`text-sm font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>{landingConfig.businessName} AI</div>
+                    <div className="text-xs text-emerald-500 flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                      <span>Online & Ready to Assist</span>
                     </div>
                   </div>
-                );
-              })}
-              {chatLoading && chatMessages[chatMessages.length - 1]?.role === 'user' && (
-                <div className="flex justify-start">
-                  <div className={`${isDark ? 'bg-slate-800 border-slate-700 text-slate-400' : 'bg-white border-slate-200 text-slate-600 shadow-2xs'} border rounded-2xl p-3 flex items-center gap-1.5`}>
-                    <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                    <span>Thinking...</span>
-                  </div>
+                </div>
+                <button
+                  onClick={() => setIsChatOpen(false)}
+                  className={`${isDark ? 'text-slate-400 hover:text-white' : 'text-slate-400 hover:text-slate-800'} transition-colors`}
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Live Takeover Status Banner */}
+              {isTakeoverActive && (
+                <div className="px-3 py-1.5 bg-amber-950/80 border-b border-amber-800/80 text-[11px] text-amber-300 font-medium flex items-center justify-between shrink-0">
+                  <span className="flex items-center gap-1.5">
+                    <span className="h-2 w-2 rounded-full bg-amber-400 animate-pulse"></span>
+                    <span>Live Operator Active: {assignedAgentName}</span>
+                  </span>
+                  <span className="text-[10px] text-amber-400/80 font-mono">AI Paused</span>
                 </div>
               )}
-              <div ref={chatMessagesEndRef} />
-            </div>
 
-            {/* Quick Prompts (Instant Auto-Send on Click) */}
-            {starterQuestionsList && starterQuestionsList.length > 0 && (
-              <div className={`px-3 py-2 ${isDark ? 'bg-slate-950 border-slate-800/80' : 'bg-slate-100/80 border-slate-200'} border-t flex gap-1.5 overflow-x-auto text-[11px] no-scrollbar`}>
-                {starterQuestionsList.map((q: string, idx: number) => (
-                  <button
-                    key={idx}
-                    type="button"
-                    onClick={() => handleSendChatMessage(undefined, q)}
-                    disabled={chatLoading}
-                    className={`px-2.5 py-1 ${isDark ? 'bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border-slate-800' : 'bg-white hover:bg-slate-200 text-slate-700 hover:text-slate-900 border-slate-200 shadow-2xs'} rounded-lg whitespace-nowrap border transition-colors shrink-0 disabled:opacity-50 cursor-pointer`}
-                  >
-                    {q}
-                  </button>
-                ))}
+              {/* Chat Messages */}
+              <div className={`flex-1 p-4 overflow-y-auto space-y-3 ${isDark ? 'bg-slate-950/40 text-slate-200' : 'bg-slate-50/60 text-slate-800'} text-xs`}>
+                {chatMessages.map((msg, i) => {
+                  const isUser = msg.role === 'user';
+                  const isAgent = msg.role === 'agent';
+                  const hasBookingAction =
+                    msg.content.includes('[ACTION:BOOKING_FORM]') ||
+                    msg.content.includes('[BOOKING_FORM]');
+                  const cleanContent = msg.content
+                    .replace(/\[ACTION:BOOKING_FORM\]/g, '')
+                    .replace(/\[BOOKING_FORM\]/g, '')
+                    .trim();
+
+                  return (
+                    <div
+                      key={i}
+                      className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}
+                    >
+                      <div
+                        className={`max-w-[88%] rounded-2xl p-3 leading-relaxed ${
+                          isUser
+                            ? `${currentTheme.btnBg} ${currentTheme.btnText} font-medium`
+                            : isAgent
+                            ? 'bg-amber-950/40 text-slate-200 border border-amber-800/60'
+                            : isDark
+                            ? 'bg-slate-800 text-slate-200 border border-slate-700'
+                            : 'bg-white text-slate-800 border border-slate-200 shadow-2xs'
+                        }`}
+                      >
+                        {isAgent && (
+                          <div className="text-[10px] font-bold text-amber-400 mb-1 flex items-center gap-1">
+                            <span>Operator {msg.senderName || assignedAgentName}</span>
+                          </div>
+                        )}
+
+                        {cleanContent ? (
+                          isUser ? (
+                            <div className="whitespace-pre-line">{cleanContent}</div>
+                          ) : (
+                            <MarkdownRenderer content={cleanContent} />
+                          )
+                        ) : (
+                          <span className="flex items-center gap-1.5 text-slate-400">
+                            <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                            <span>Consulting knowledgebase...</span>
+                          </span>
+                        )}
+
+                        {/* Interactive In-Chat Booking Form Card */}
+                        {hasBookingAction && (
+                          <div className={`mt-3 p-3 rounded-xl ${isDark ? 'bg-slate-900 border-slate-700/80' : 'bg-slate-50 border-slate-200'} border space-y-2.5 shadow-md`}>
+                            <div className={`flex items-center justify-between border-b ${isDark ? 'border-slate-800' : 'border-slate-200'} pb-2`}>
+                              <span className={`text-[11px] font-bold ${isDark ? 'text-white' : 'text-slate-900'} flex items-center gap-1.5`}>
+                                <Calendar className="h-3.5 w-3.5 text-blue-500" />
+                                <span>{landingConfig.businessName} Booking</span>
+                              </span>
+                              <span className="px-1.5 py-0.5 rounded text-[9.5px] font-semibold bg-emerald-950/80 text-emerald-300 border border-emerald-800/60">
+                                Instant Confirmation
+                              </span>
+                            </div>
+
+                            {landingConfig.services && landingConfig.services.length > 0 && (
+                              <div className="space-y-1">
+                                <span className={`text-[10px] ${isDark ? 'text-slate-400' : 'text-slate-500'} block font-medium`}>Select a service:</span>
+                                <div className="grid grid-cols-1 gap-1">
+                                  {landingConfig.services.slice(0, 3).map((srv) => (
+                                    <button
+                                      key={srv.id}
+                                      type="button"
+                                      onClick={() => {
+                                        setSelectedService(srv);
+                                        setIsBookingOpen(true);
+                                      }}
+                                      className={`p-2 rounded-lg ${isDark ? 'bg-slate-800 hover:bg-slate-700 text-slate-200' : 'bg-white hover:bg-slate-100 text-slate-800'} border border-slate-200 dark:border-slate-700 flex items-center justify-between text-left transition text-[11px] cursor-pointer`}
+                                    >
+                                      <span className="font-semibold">{srv.name}</span>
+                                      <span className={`${currentTheme.accentText} font-bold`}>{srv.price}</span>
+                                    </button>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+
+                            <button
+                              type="button"
+                              onClick={() => setIsBookingOpen(true)}
+                              className={`w-full py-2 px-3 rounded-lg ${currentTheme.btnBg} ${currentTheme.btnText} font-bold text-xs flex items-center justify-center gap-1.5 shadow-sm transition hover:opacity-95 cursor-pointer`}
+                            >
+                              <Calendar className="h-3.5 w-3.5" />
+                              <span>Complete Booking Form &amp; Pick Slot</span>
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+                {chatLoading && chatMessages[chatMessages.length - 1]?.role === 'user' && (
+                  <div className="flex justify-start">
+                    <div className={`${isDark ? 'bg-slate-800 border-slate-700 text-slate-400' : 'bg-white border-slate-200 text-slate-600 shadow-2xs'} border rounded-2xl p-3 flex items-center gap-1.5`}>
+                      <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                      <span>Thinking...</span>
+                    </div>
+                  </div>
+                )}
+                <div ref={chatMessagesEndRef} />
               </div>
-            )}
 
-            {/* Chat Input */}
-            <form onSubmit={handleSendChatMessage} className={`p-3 ${isDark ? 'bg-slate-950 border-slate-800' : 'bg-white border-slate-200'} border-t flex gap-2`}>
-              <input
-                type="text"
-                value={chatInput}
-                onChange={(e) => setChatInput(e.target.value)}
-                placeholder={`Ask anything about ${landingConfig.businessName.split(' ')[0]} or booking...`}
-                className={`flex-1 ${isDark ? 'bg-slate-900 border-slate-800 text-white placeholder:text-slate-500' : 'bg-slate-100 border-slate-200 text-slate-900 placeholder:text-slate-400'} border rounded-xl px-3.5 py-2 text-xs focus:outline-none focus:border-blue-500`}
-              />
-              <button
-                type="submit"
-                disabled={chatLoading || !chatInput.trim()}
-                className={`p-2 ${currentTheme.btnBg} ${currentTheme.btnHoverBg} ${currentTheme.btnText} rounded-xl transition-colors disabled:opacity-50 cursor-pointer`}
-              >
-                <Send className="w-4 h-4" />
-              </button>
-            </form>
-          </div>
-        )}
-      </div>
+              {/* Quick Prompts (Instant Auto-Send on Click) */}
+              {starterQuestionsList && starterQuestionsList.length > 0 && (
+                <div className={`px-3 py-2 ${isDark ? 'bg-slate-950 border-slate-800/80' : 'bg-slate-100/80 border-slate-200'} border-t flex gap-1.5 overflow-x-auto text-[11px] no-scrollbar`}>
+                  {starterQuestionsList.map((q: string, idx: number) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => handleSendChatMessage(undefined, q)}
+                      disabled={chatLoading}
+                      className={`px-2.5 py-1 ${isDark ? 'bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border-slate-800' : 'bg-white hover:bg-slate-200 text-slate-700 hover:text-slate-900 border-slate-200 shadow-2xs'} rounded-lg whitespace-nowrap border transition-colors shrink-0 disabled:opacity-50 cursor-pointer`}
+                    >
+                      {q}
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {/* Chat Input */}
+              <form onSubmit={handleSendChatMessage} className={`p-3 ${isDark ? 'bg-slate-950 border-slate-800' : 'bg-white border-slate-200'} border-t flex gap-2`}>
+                <input
+                  type="text"
+                  value={chatInput}
+                  onChange={(e) => setChatInput(e.target.value)}
+                  placeholder={`Ask anything about ${landingConfig.businessName.split(' ')[0]} or booking...`}
+                  className={`flex-1 ${isDark ? 'bg-slate-900 border-slate-800 text-white placeholder:text-slate-500' : 'bg-slate-100 border-slate-200 text-slate-900 placeholder:text-slate-400'} border rounded-xl px-3.5 py-2 text-xs focus:outline-none focus:border-blue-500`}
+                />
+                <button
+                  type="submit"
+                  disabled={chatLoading || !chatInput.trim()}
+                  className={`p-2 ${currentTheme.btnBg} ${currentTheme.btnHoverBg} ${currentTheme.btnText} rounded-xl transition-colors disabled:opacity-50 cursor-pointer`}
+                >
+                  <Send className="w-4 h-4" />
+                </button>
+              </form>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* In-Store Countertop QR Code Modal */}
       {isQrModalOpen && (

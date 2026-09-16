@@ -171,7 +171,7 @@ export function useCrmLanding({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          assistantId: activeAssistant.id,
+          assistantId: landingConfig.assistantId !== undefined ? landingConfig.assistantId : activeAssistant.id,
           config: landingConfig,
         }),
       });
@@ -186,6 +186,42 @@ export function useCrmLanding({
       setSaveLandingError(err.message || 'Network error saving landing page');
     } finally {
       setIsSavingLanding(false);
+    }
+  };
+
+  const handleDeleteLandingPage = async (pageIdOrSlug?: string) => {
+    const target = pageIdOrSlug || landingConfig.id || landingConfig.slug;
+    if (!target) return;
+
+    if (allLandingPages.length <= 1) {
+      alert('You must have at least one landing page in your workspace. Create another page before deleting this one.');
+      return;
+    }
+
+    const pageToDelete = allLandingPages.find((p) => p.id === target || p.slug === target) || landingConfig;
+    const confirmed = typeof window !== 'undefined' ? window.confirm(`Are you sure you want to permanently delete the landing page "${pageToDelete.businessName}" (/site/${pageToDelete.slug})? This cannot be undone.`) : true;
+    if (!confirmed) return;
+
+    try {
+      const res = await fetch(`/api/landing-page?id=${encodeURIComponent(pageToDelete.id || pageToDelete.slug)}`, {
+        method: 'DELETE',
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to delete landing page');
+      }
+
+      await fetchAllLandingPages();
+      const remaining = allLandingPages.filter((p) => (p.id || p.slug) !== (pageToDelete.id || pageToDelete.slug));
+      if (remaining.length > 0) {
+        setLandingConfig(remaining[0]);
+      } else {
+        setLandingConfig(DEFAULT_BARBER_LANDING_CONFIG);
+      }
+      setPresetNotice(`Deleted landing page "${pageToDelete.businessName}".`);
+      setTimeout(() => setPresetNotice(null), 4000);
+    } catch (err: any) {
+      alert(err.message || 'Failed to delete landing page');
     }
   };
 
@@ -219,6 +255,7 @@ export function useCrmLanding({
     fetchAllLandingPages,
     handlePurchaseExtraLandingPage,
     handleCreateNewLandingPage,
+    handleDeleteLandingPage,
     fetchLandingConfig,
     handleSaveLandingConfig,
   };
