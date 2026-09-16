@@ -10,12 +10,24 @@ const execFileAsync = promisify(execFile);
 
 export function isYouTubeUrl(url: string): boolean {
   if (!url) return false;
-  return /(?:youtube\.com\/(?:watch\?v=|shorts\/|embed\/)|youtu\.be\/)/i.test(url.trim());
+  return /(?:youtu\.be\/|youtube\.com\/(?:watch|shorts|embed|live|v|e|attribution_link))/i.test(url.trim());
 }
 
 export function extractYouTubeVideoId(url: string): string | null {
-  const match = url.match(/(?:youtube\.com\/(?:watch\?.*?v=|shorts\/|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/i);
-  return match ? match[1] : null;
+  if (!url) return null;
+  const clean = url.trim();
+
+  // Handle standard watch url: watch?v=... or watch?...&v=...
+  const watchMatch = clean.match(/[?&]v=([a-zA-Z0-9_-]{11})/i);
+  if (watchMatch) return watchMatch[1];
+
+  // Handle youtu.be/ID, shorts/ID, embed/ID, live/ID, v/ID
+  const pathMatch = clean.match(/(?:youtu\.be\/|(?:shorts|embed|live|v|e)\/)([a-zA-Z0-9_-]{11})/i);
+  if (pathMatch) return pathMatch[1];
+
+  // Fallback match any 11-char ID following youtube patterns
+  const genericMatch = clean.match(/(?:youtube\.com\/(?:watch\?.*?v=|shorts\/|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/i);
+  return genericMatch ? genericMatch[1] : null;
 }
 
 export function isDirectMediaUrl(url: string): boolean {
@@ -66,20 +78,47 @@ function decodeHtmlEntities(str: string): string {
 }
 
 function parseTimedtextXml(
-  xml: string,
+  payload: string,
   lang: string = 'en'
 ): Array<{ text: string; duration: number; offset: number; lang?: string }> {
   const results: Array<{ text: string; duration: number; offset: number; lang?: string }> = [];
 
-  // Format 3 (srv3): <p t="ms" d="ms"><s>word</s>...</p> or <p t="ms" d="ms">text</p>
-  const pRegex = /<p\s+t="(\d+)"\s+d="(\d+)"[^>]*>([\s\S]*?)<\/p>/g;
-  let match: RegExpExecArray | null;
-  while ((match = pRegex.exec(xml)) !== null) {
-    const startMs = parseInt(match[1], 10);
-    const durMs = parseInt(match[2], 10);
-    const inner = match[3];
+  // Try JSON (fmt=json3)
+  try {
+    const json = JSON.parse(payload);
+    if (Array.isArray(json?.events)) {
+      for (const ev of json.events) {
+        if (!Array.isArray(ev.segs)) continue;
+        const text = ev.segs.map((s: any) => s.utf8 || '').join('').trim();
+        if (text) {
+          results.push({
+            text: decodeHtmlEntities(text),
+            offset: ev.tStartMs || 0,
+            duration: ev.dDurationMs || 0,
+            lang,
+          });
+        }
+      }
+      if (results.length > 0) return results;
+    }
+  } catch {
+    // Not JSON, continue to XML
+  }
+
+  // Format 3 (srv3): <p ...>...</p> (order-independent attributes)
+  const pRegex = /<p\b([^>]*)>([\s\S]*?)<\/p>/gi;
+  let pMatch: RegExpExecArray | null;
+  while ((pMatch = pRegex.exec(payload)) !== null) {
+    const attrs = pMatch[1];
+    const inner = pMatch[2];
+
+    const tMatch = attrs.match(/\bt="(\d+)"/i);
+    const dMatch = attrs.match(/\bd="(\d+)"/i);
+    const startMs = tMatch ? parseInt(tMatch[1], 10) : 0;
+    const durMs = dMatch ? parseInt(dMatch[1], 10) : 0;
+
     let text = '';
-    const sRegex = /<s[^>]*>([^<]*)<\/s>/g;
+    const sRegex = /<s\b[^>]*>([^<]*)<\/s>/gi;
     let sMatch: RegExpExecArray | null;
     while ((sMatch = sRegex.exec(inner)) !== null) {
       text += sMatch[1];
@@ -100,12 +139,18 @@ function parseTimedtextXml(
 
   if (results.length > 0) return results;
 
-  // Classic format: <text start="s" dur="s">content</text>
-  const textRegex = /<text\s+start="([0-9.]+)"\s+dur="([0-9.]+)"[^>]*>([\s\S]*?)<\/text>/g;
-  while ((match = textRegex.exec(xml)) !== null) {
-    const startSec = parseFloat(match[1]);
-    const durSec = parseFloat(match[2]);
-    const rawContent = match[3].replace(/<[^>]+>/g, '');
+  // Classic format: <text ...>content</text>
+  const textRegex = /<text\b([^>]*)>([\s\S]*?)<\/text>/gi;
+  let tMatch: RegExpExecArray | null;
+  while ((tMatch = textRegex.exec(payload)) !== null) {
+    const attrs = tMatch[1];
+    const rawContent = tMatch[2].replace(/<[^>]+>/g, '');
+
+    const startMatch = attrs.match(/\bstart="([0-9.]+)"/i);
+    const durMatch = attrs.match(/\bdur="([0-9.]+)"/i);
+    const startSec = startMatch ? parseFloat(startMatch[1]) : 0;
+    const durSec = durMatch ? parseFloat(durMatch[1]) : 0;
+
     const cleanText = decodeHtmlEntities(rawContent).replace(/\s+/g, ' ').trim();
     if (cleanText) {
       results.push({
@@ -382,31 +427,41 @@ export async function extractFromYouTube(
 
   if (innerTubeData.captionTracks && innerTubeData.captionTracks.length > 0) {
     const tracks = innerTubeData.captionTracks;
-    // Prefer English if available, otherwise take the first available track
-    const selectedTrack =
-      tracks.find((t) => t.languageCode === 'en' || t.languageCode.startsWith('en-')) ||
-      tracks[0];
+    // Prefer English if available, then other languages
+    const sortedTracks = [...tracks].sort((a, b) => {
+      const aIsEn = a.languageCode === 'en' || a.languageCode.startsWith('en-');
+      const bIsEn = b.languageCode === 'en' || b.languageCode.startsWith('en-');
+      if (aIsEn && !bIsEn) return -1;
+      if (!aIsEn && bIsEn) return 1;
+      return 0;
+    });
 
-    try {
-      const res = await queryHttpsWithRetry(
-        () =>
-          httpsGetBuffer(
-            selectedTrack.baseUrl,
-            'com.google.android.youtube/20.10.38 (Linux; U; Android 14)',
-            undefined,
-            20000
-          ),
-        4,
-        600
-      );
+    for (const selectedTrack of sortedTracks) {
+      try {
+        const res = await queryHttpsWithRetry(
+          () =>
+            httpsGetBuffer(
+              selectedTrack.baseUrl,
+              'com.google.android.youtube/20.10.38 (Linux; U; Android 14)',
+              undefined,
+              20000
+            ),
+          4,
+          600
+        );
 
-      const xml = res.data.toString('utf-8');
-      rawTranscript = parseTimedtextXml(xml, selectedTrack.languageCode);
-    } catch (trackErr: any) {
-      console.warn(
-        `[URLExtractor] Failed to download caption track ${selectedTrack.languageCode} for ${videoId}:`,
-        trackErr?.message || trackErr
-      );
+        const xmlOrJson = res.data.toString('utf-8');
+        const parsed = parseTimedtextXml(xmlOrJson, selectedTrack.languageCode);
+        if (parsed.length > 0) {
+          rawTranscript = parsed;
+          break;
+        }
+      } catch (trackErr: any) {
+        console.warn(
+          `[URLExtractor] Failed to download caption track ${selectedTrack.languageCode} for ${videoId}:`,
+          trackErr?.message || trackErr
+        );
+      }
     }
   }
 
@@ -431,6 +486,8 @@ export async function extractFromYouTube(
       }
     }
   }
+
+  let audioFallbackError: string | undefined;
 
   // Strategy 3: If closed captions are absent/disabled, stream audio directly for AI transcription
   if (rawTranscript.length === 0 && innerTubeData.audioStreamUrl) {
@@ -465,13 +522,17 @@ export async function extractFromYouTube(
         };
       }
     } catch (audioErr: any) {
-      console.warn(`[URLExtractor] Audio stream transcription fallback failed for ${videoId}:`, audioErr?.message || audioErr);
+      audioFallbackError = audioErr?.message || String(audioErr);
+      console.warn(`[URLExtractor] Audio stream transcription fallback failed for ${videoId}:`, audioFallbackError);
     }
   }
 
   if (!rawTranscript || rawTranscript.length === 0) {
+    const errorDetails = audioFallbackError
+      ? ` Audio transcription was attempted but failed: ${audioFallbackError}`
+      : '';
     throw new Error(
-      `No spoken transcript or captions found for this YouTube video ("${finalTitle}"). The video may contain only music or no audible speech.`
+      `No spoken transcript or captions found for this YouTube video ("${finalTitle}").${errorDetails} The video may contain only music or no audible speech.`
     );
   }
 
