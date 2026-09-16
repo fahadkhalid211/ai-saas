@@ -132,5 +132,70 @@ describe('Database Layer & Decoupled Storage', () => {
     expect(customConfig.slug).toBe('custom');
     expect(customConfig.services?.length).toBeGreaterThan(0);
   });
+
+  it('should manage knowledge sources and chunks with hybridSearch and cleanup', async () => {
+    const testAssistantId = 'demo-assistant';
+    const source = await Database.createKnowledgeSource({
+      assistantId: testAssistantId,
+      title: 'WhatsApp Video Guide.mp4',
+      type: 'mp4',
+      status: 'ready',
+      chunkCount: 2,
+    });
+
+    expect(source.id).toBeDefined();
+    expect(source.title).toBe('WhatsApp Video Guide.mp4');
+
+    const fetchedSource = await Database.getKnowledgeSourceById(source.id);
+    expect(fetchedSource).not.toBeNull();
+    expect(fetchedSource?.id).toBe(source.id);
+
+    const dummyEmbedding = new Array(384).fill(0.05);
+    await Database.saveChunks([
+      {
+        assistantId: testAssistantId,
+        knowledgeSourceId: source.id,
+        content: 'Our barbershop provides premium fade haircuts, beard shaping, and hot towel treatments.',
+        chunkIndex: 0,
+        tokenCount: 20,
+        metadata: { sourceTitle: source.title },
+        embedding: dummyEmbedding,
+      },
+      {
+        assistantId: testAssistantId,
+        knowledgeSourceId: source.id,
+        content: 'Booking appointments is available online every Monday through Saturday from 9 AM to 8 PM.',
+        chunkIndex: 1,
+        tokenCount: 22,
+        metadata: { sourceTitle: source.title },
+        embedding: dummyEmbedding,
+      },
+    ]);
+
+    const sourceChunks = await Database.getChunksBySource(source.id);
+    expect(sourceChunks.length).toBe(2);
+    expect(sourceChunks[0].knowledgeSourceId).toBe(source.id);
+
+    const assistantChunks = await Database.getChunksByAssistant(testAssistantId);
+    expect(assistantChunks.some((c) => c.knowledgeSourceId === source.id)).toBe(true);
+
+    const searchResults = await Database.hybridSearch(
+      testAssistantId,
+      'haircut beard shaping appointments',
+      dummyEmbedding,
+      5
+    );
+    expect(searchResults.length).toBeGreaterThan(0);
+    expect(searchResults.some((r) => r.knowledgeSourceId === source.id)).toBe(true);
+
+    const deleted = await Database.deleteKnowledgeSource(source.id);
+    expect(deleted).toBe(true);
+
+    const sourceAfterDelete = await Database.getKnowledgeSourceById(source.id);
+    expect(sourceAfterDelete).toBeNull();
+
+    const chunksAfterDelete = await Database.getChunksBySource(source.id);
+    expect(chunksAfterDelete.length).toBe(0);
+  });
 });
 

@@ -48,7 +48,15 @@ export async function fetchCloudState(): Promise<any | null> {
   return null;
 }
 
-export async function persistCloudState(state: any): Promise<boolean> {
+export interface PersistCloudStateOptions {
+  deletedSourceId?: string;
+  deletedAssistantId?: string;
+}
+
+export async function persistCloudState(
+  state: any,
+  options?: PersistCloudStateOptions
+): Promise<boolean> {
   if (!isCloudDbConfigured()) return false;
 
   try {
@@ -57,6 +65,22 @@ export async function persistCloudState(state: any): Promise<boolean> {
     let mergedState = { ...state };
 
     if (remote && typeof remote === 'object') {
+      let baseSources = remote.knowledgeSources || [];
+      if (options?.deletedSourceId) {
+        baseSources = baseSources.filter((s: any) => s.id !== options.deletedSourceId);
+      }
+      if (options?.deletedAssistantId) {
+        baseSources = baseSources.filter((s: any) => s.assistantId !== options.deletedAssistantId);
+      }
+
+      let baseAssistants = remote.assistants || [];
+      if (options?.deletedAssistantId) {
+        baseAssistants = baseAssistants.filter((a: any) => a.id !== options.deletedAssistantId);
+      }
+
+      mergedState.knowledgeSources = mergeById(baseSources, state.knowledgeSources || [], true);
+      mergedState.assistants = mergeById(baseAssistants, state.assistants || [], true);
+      mergedState.landingPages = mergeById(remote.landingPages || [], state.landingPages || [], true);
       mergedState.appointments = mergeById(remote.appointments || [], state.appointments || []);
       mergedState.conversations = mergeById(remote.conversations || [], state.conversations || []);
       mergedState.messages = mergeById(remote.messages || [], state.messages || []);
@@ -64,8 +88,8 @@ export async function persistCloudState(state: any): Promise<boolean> {
       mergedState.notifications = mergeById(remote.notifications || [], state.notifications || []);
       mergedState.unansweredQueries = mergeById(remote.unansweredQueries || [], state.unansweredQueries || []);
       mergedState.auditLogs = mergeById(remote.auditLogs || [], state.auditLogs || []);
-      mergedState.landingPages = mergeById(remote.landingPages || [], state.landingPages || [], true);
-      mergedState.assistants = mergeById(remote.assistants || [], state.assistants || [], true);
+      mergedState.teamMembers = mergeById(remote.teamMembers || [], state.teamMembers || []);
+      mergedState.workspaces = mergeById(remote.workspaces || [], state.workspaces || []);
     }
 
     if (isPostgresConfigured()) {
@@ -100,13 +124,25 @@ export async function fetchCloudChunks(): Promise<any[] | null> {
   return null;
 }
 
-export async function persistCloudChunks(chunks: any[]): Promise<boolean> {
+export async function persistCloudChunks(chunks: any[], overwrite: boolean = false): Promise<boolean> {
+  let chunksToPersist = chunks;
+  if (!overwrite) {
+    try {
+      const remote = await fetchCloudChunks();
+      if (remote && Array.isArray(remote) && remote.length > 0) {
+        chunksToPersist = mergeById(remote, chunks, true);
+      }
+    } catch (err: any) {
+      console.warn('[Cloud DB] Failed to merge remote chunks:', err?.message || err);
+    }
+  }
+
   if (isPostgresConfigured()) {
-    const ok = await persistPostgresChunks(chunks);
+    const ok = await persistPostgresChunks(chunksToPersist);
     if (ok) return true;
   }
   if (isSupabaseConfigured()) {
-    return persistSupabaseChunks(chunks);
+    return persistSupabaseChunks(chunksToPersist);
   }
   return false;
 }

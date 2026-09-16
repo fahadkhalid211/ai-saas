@@ -29,6 +29,7 @@ import {
   getCloudDbProvider,
   fetchCloudState,
   persistCloudState,
+  PersistCloudStateOptions,
   fetchCloudChunks,
   persistCloudChunks,
 } from './cloud';
@@ -421,7 +422,7 @@ function loadChunksState(): ChunkRecord[] {
   return cachedChunks;
 }
 
-async function saveChunksState(chunks: ChunkRecord[]): Promise<void> {
+async function saveChunksState(chunks: ChunkRecord[], overwrite: boolean = false): Promise<void> {
   ensureDataDir();
   cachedChunks = chunks;
   if (cachedState) {
@@ -432,7 +433,7 @@ async function saveChunksState(chunks: ChunkRecord[]): Promise<void> {
 
   if (isCloudDbConfigured()) {
     try {
-      await persistCloudChunks(chunks);
+      await persistCloudChunks(chunks, overwrite);
     } catch (err) {
       console.warn('[Database] Failed to sync chunks to Cloud DB:', err);
     }
@@ -621,12 +622,12 @@ function saveLocalStateSync(state: DatabaseState): void {
   } catch {}
 }
 
-async function saveState(state: DatabaseState): Promise<void> {
+async function saveState(state: DatabaseState, options?: PersistCloudStateOptions): Promise<void> {
   saveLocalStateSync(state);
 
   if (isCloudDbConfigured()) {
     try {
-      await persistCloudState(state);
+      await persistCloudState(state, options);
       lastCloudFetchTime = Date.now();
     } catch (err) {
       console.warn('[Database] Failed to sync state to Cloud DB:', err);
@@ -645,6 +646,9 @@ async function ensureInitialized(forceFresh = false): Promise<DatabaseState> {
 
   const now = Date.now();
   if (cachedState !== null && !forceFresh && (now - lastCloudFetchTime < CLOUD_CACHE_TTL_MS)) {
+    if ((!cachedState.chunks || cachedState.chunks.length === 0) && cachedChunks && cachedChunks.length > 0) {
+      cachedState.chunks = cachedChunks;
+    }
     return cachedState;
   }
 
@@ -679,7 +683,13 @@ async function ensureInitialized(forceFresh = false): Promise<DatabaseState> {
         const remoteChunks = await fetchCloudChunks();
         if (remoteChunks && Array.isArray(remoteChunks)) {
           cachedChunks = remoteChunks;
+          if (cachedState) {
+            cachedState.chunks = remoteChunks;
+          }
           rebuildChunkIndex(remoteChunks);
+        } else if (cachedState && (!cachedState.chunks || cachedState.chunks.length === 0)) {
+          const localChunks = loadChunksState();
+          cachedState.chunks = localChunks;
         }
         lastCloudFetchTime = Date.now();
       } catch (err) {
@@ -939,21 +949,24 @@ export class Database {
     state.assistants = state.assistants.filter((a) => a.id !== id);
     state.knowledgeSources = state.knowledgeSources.filter((k) => k.assistantId !== id);
     const remainingChunks = state.chunks.filter((c) => c.assistantId !== id);
-    await saveChunksState(remainingChunks);
+    await saveChunksState(remainingChunks, true);
     state.conversations = state.conversations.filter((c) => c.assistantId !== id);
     state.leads = state.leads.filter((l) => l.assistantId !== id);
     state.appointments = (state.appointments || []).filter((a) => a.assistantId !== id);
-    await saveState(state);
+    await saveState(state, { deletedAssistantId: id });
     return true;
   }
 
   // Knowledge Sources with auto-recovery for stalled processing jobs
   static async getKnowledgeSources(assistantId: string): Promise<KnowledgeSourceData[]> {
-    const state = await ensureInitialized();
+    let state = await ensureInitialized();
+    let sources = (state.knowledgeSources || []).filter((k) => matchesAssistant(k.assistantId, assistantId, state));
+    if (sources.length === 0 && isCloudDbConfigured()) {
+      state = await ensureInitialized(true);
+      sources = (state.knowledgeSources || []).filter((k) => matchesAssistant(k.assistantId, assistantId, state));
+    }
     let stateChanged = false;
     const now = Date.now();
-
-    const sources = state.knowledgeSources.filter((k) => k.assistantId === assistantId);
 
     for (const source of sources) {
       if (source.status === 'processing') {
@@ -1013,8 +1026,12 @@ export class Database {
   }
 
   static async updateKnowledgeSource(id: string, data: Partial<KnowledgeSourceData>): Promise<void> {
-    const state = await ensureInitialized();
-    const idx = state.knowledgeSources.findIndex((k) => k.id === id);
+    let state = await ensureInitialized();
+    let idx = state.knowledgeSources.findIndex((k) => k.id === id);
+    if (idx === -1 && isCloudDbConfigured()) {
+      state = await ensureInitialized(true);
+      idx = state.knowledgeSources.findIndex((k) => k.id === id);
+    }
     if (idx !== -1) {
       state.knowledgeSources[idx] = {
         ...state.knowledgeSources[idx],
@@ -1026,16 +1043,21 @@ export class Database {
   }
 
   static async getKnowledgeSourceById(id: string): Promise<KnowledgeSourceData | null> {
-    const state = await ensureInitialized();
-    return state.knowledgeSources.find((k) => k.id === id) || null;
+    let state = await ensureInitialized();
+    let source = (state.knowledgeSources || []).find((k) => k.id === id) || null;
+    if (!source && isCloudDbConfigured()) {
+      state = await ensureInitialized(true);
+      source = (state.knowledgeSources || []).find((k) => k.id === id) || null;
+    }
+    return source;
   }
 
   static async deleteKnowledgeSource(id: string): Promise<boolean> {
     const state = await ensureInitialized();
     state.knowledgeSources = state.knowledgeSources.filter((k) => k.id !== id);
     const remainingChunks = state.chunks.filter((c) => c.knowledgeSourceId !== id);
-    await saveChunksState(remainingChunks);
-    await saveState(state);
+    await saveChunksState(remainingChunks, true);
+    await saveState(state, { deletedSourceId: id });
     return true;
   }
 
@@ -1062,19 +1084,31 @@ export class Database {
   static async deleteChunksBySource(sourceId: string): Promise<void> {
     const state = await ensureInitialized();
     const remaining = state.chunks.filter((c) => c.knowledgeSourceId !== sourceId);
-    await saveChunksState(remaining);
+    await saveChunksState(remaining, true);
   }
 
   static async getChunksByAssistant(assistantId: string): Promise<ChunkRecord[]> {
-    loadState();
-    return assistantChunksIndex.get(assistantId) || [];
+    let state = await ensureInitialized();
+    let chunks = (state.chunks || []).filter((c) => matchesAssistant(c.assistantId, assistantId, state));
+    if (chunks.length === 0 && isCloudDbConfigured()) {
+      state = await ensureInitialized(true);
+      chunks = (state.chunks || []).filter((c) => matchesAssistant(c.assistantId, assistantId, state));
+    }
+    return chunks;
   }
 
   static async getChunksBySource(sourceId: string): Promise<ChunkRecord[]> {
-    const state = await ensureInitialized();
-    return state.chunks
+    let state = await ensureInitialized();
+    let chunks = (state.chunks || [])
       .filter((c) => c.knowledgeSourceId === sourceId)
       .sort((a, b) => a.chunkIndex - b.chunkIndex);
+    if (chunks.length === 0 && isCloudDbConfigured()) {
+      state = await ensureInitialized(true);
+      chunks = (state.chunks || [])
+        .filter((c) => c.knowledgeSourceId === sourceId)
+        .sort((a, b) => a.chunkIndex - b.chunkIndex);
+    }
+    return chunks;
   }
 
   // Hybrid Vector + Full-Text Search
@@ -1084,8 +1118,12 @@ export class Database {
     queryEmbedding: number[],
     topK: number = 6
   ): Promise<SearchResultChunk[]> {
-    const state = await ensureInitialized();
-    const assistantChunks = state.chunks.filter((c) => c.assistantId === assistantId);
+    let state = await ensureInitialized();
+    let assistantChunks = (state.chunks || []).filter((c) => matchesAssistant(c.assistantId, assistantId, state));
+    if (assistantChunks.length === 0 && isCloudDbConfigured()) {
+      state = await ensureInitialized(true);
+      assistantChunks = (state.chunks || []).filter((c) => matchesAssistant(c.assistantId, assistantId, state));
+    }
     if (assistantChunks.length === 0) return [];
 
     // 1. Dense Vector Cosine Similarity (require minimum 0.38 similarity for relevance)
