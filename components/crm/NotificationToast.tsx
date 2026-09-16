@@ -16,6 +16,7 @@ interface NotificationToastProps {
   onDismiss: () => void;
   setIsNotifOpen: (open: boolean) => void;
   setActiveTab?: (tab: any) => void;
+  onOpenConversation?: (convId?: string) => void;
 }
 
 const AUTO_DISMISS_MS = 5000;
@@ -25,6 +26,7 @@ export function NotificationToast({
   onDismiss,
   setIsNotifOpen,
   setActiveTab,
+  onOpenConversation,
 }: NotificationToastProps) {
   const incomingToast = toastQueue[0] || null;
   const onDismissRef = useRef(onDismiss);
@@ -78,12 +80,17 @@ export function NotificationToast({
         </div>
         <p className="text-xs text-slate-600 dark:text-slate-300 mt-0.5 line-clamp-2">{incomingToast.message}</p>
         <div className="mt-2 flex items-center gap-2">
-          {isChatNotif && setActiveTab ? (
+          {isChatNotif && (setActiveTab || onOpenConversation) ? (
             <button
               type="button"
               onClick={() => {
+                const convId = incomingToast.metadata?.conversationId;
                 onDismiss();
-                setActiveTab('history');
+                if (onOpenConversation) {
+                  onOpenConversation(convId);
+                } else if (setActiveTab) {
+                  setActiveTab('history');
+                }
               }}
               className={`text-[11px] font-bold hover:underline cursor-pointer ${
                 isEscalation

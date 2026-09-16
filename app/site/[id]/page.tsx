@@ -370,13 +370,15 @@ export default function HostedBusinessSite({ params }: SitePageProps) {
     }
   }, [identifier]);
 
+  const currentSiteConvIdRef = useRef<string | null>(null);
+
   // Real-time synchronization with Live Agent Takeover in Admin Panel.
-  // /api/conversations requires either an admin session or the per-conversation
-  // capability token issued by /api/chat, so polling only starts once a
-  // token has actually been received (i.e. after the first message).
   useEffect(() => {
     if (!conversationId || !conversationToken) return;
-    knownServerMessageCountRef.current = 0;
+    if (currentSiteConvIdRef.current !== conversationId) {
+      currentSiteConvIdRef.current = conversationId;
+      knownServerMessageCountRef.current = 0;
+    }
 
     const interval = setInterval(async () => {
       try {
@@ -406,7 +408,7 @@ export default function HostedBusinessSite({ params }: SitePageProps) {
         setChatMessages((prev) => {
           const prevIds = new Set(prev.map((m) => m.id).filter(Boolean));
           const newAgentMessages = incomingMessages.filter(
-            (m: any) => m.role === 'agent' && !prevIds.has(m.id)
+            (m: any) => m.role === 'agent' && (!m.id || !prevIds.has(m.id))
           );
 
           if (newAgentMessages.length === 0) return prev;
@@ -791,8 +793,11 @@ export default function HostedBusinessSite({ params }: SitePageProps) {
 
     setChatInput('');
     const updatedMessages = [...chatMessages, { role: 'user' as const, content: userText }];
-    // Append empty placeholder for real-time assistant streaming
-    setChatMessages([...updatedMessages, { role: 'assistant' as const, content: '' }]);
+    if (!isTakeoverActive) {
+      setChatMessages([...updatedMessages, { role: 'assistant' as const, content: '' }]);
+    } else {
+      setChatMessages(updatedMessages);
+    }
     setChatLoading(true);
     playChatSendSound();
 
@@ -818,7 +823,10 @@ export default function HostedBusinessSite({ params }: SitePageProps) {
         onToken: (acc) => {
           setChatMessages((prev) => {
             const copy = [...prev];
-            copy[copy.length - 1] = { role: 'assistant', content: acc };
+            const lastIdx = copy.length - 1;
+            if (lastIdx >= 0 && copy[lastIdx].role === 'assistant') {
+              copy[lastIdx] = { role: 'assistant', content: acc };
+            }
             return copy;
           });
         },
@@ -835,23 +843,29 @@ export default function HostedBusinessSite({ params }: SitePageProps) {
         },
       });
 
-      if (!accumulated.trim()) {
+      if (!isTakeoverActive && !accumulated.trim()) {
         setChatMessages((prev) => {
           const copy = [...prev];
-          copy[copy.length - 1] = {
-            role: 'assistant',
-            content: assistantData?.fallbackMessage || "I'm here to assist you! Would you like to schedule an appointment with our team?",
-          };
+          const lastIdx = copy.length - 1;
+          if (lastIdx >= 0 && copy[lastIdx].role === 'assistant') {
+            copy[lastIdx] = {
+              role: 'assistant',
+              content: assistantData?.fallbackMessage || "I'm here to assist you! Would you like to schedule an appointment with our team?",
+            };
+          }
           return copy;
         });
       }
     } catch {
       setChatMessages((prev) => {
         const copy = [...prev];
-        copy[copy.length - 1] = {
-          role: 'assistant',
-          content: 'Unable to reach the assistant right now. Please use the booking button to schedule directly.',
-        };
+        const lastIdx = copy.length - 1;
+        if (lastIdx >= 0 && copy[lastIdx].role === 'assistant') {
+          copy[lastIdx] = {
+            role: 'assistant',
+            content: 'Unable to reach the assistant right now. Please use the booking button to schedule directly.',
+          };
+        }
         return copy;
       });
     } finally {

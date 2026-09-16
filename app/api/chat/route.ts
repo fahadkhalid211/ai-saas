@@ -287,22 +287,19 @@ export async function POST(req: NextRequest) {
       const stream = new ReadableStream({
         start(controller) {
           const agentName = conv.assignedAgentName || 'Live Support Agent';
-          const notificationMsg = `data: ${JSON.stringify({
-            type: 'token',
-            token: `[Message delivered to ${agentName}. They will reply shortly.]`,
-          })}\n\n`;
           const takeoverEvent = `data: ${JSON.stringify({
             type: 'takeover_active',
             agentName,
             conversationId: conv.id,
             conversationToken: convToken,
+            messageDelivered: true,
           })}\n\n`;
           const doneEvent = `data: ${JSON.stringify({
             type: 'done',
             conversationId: conv.id,
             conversationToken: convToken,
+            messageDelivered: true,
           })}\n\n`;
-          controller.enqueue(encoder.encode(notificationMsg));
           controller.enqueue(encoder.encode(takeoverEvent));
           controller.enqueue(encoder.encode(doneEvent));
           controller.close();

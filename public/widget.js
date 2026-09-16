@@ -1316,6 +1316,8 @@
     }
     var liveSyncTimer = null;
     var knownMessageIds = {};
+    var conversationToken = null;
+    var isTakeoverActive = false;
 
     function renderTakeoverBanner(agentName) {
       if (!messagesBody) return;
@@ -1347,7 +1349,11 @@
       if (liveSyncTimer || !conversationId) return;
       liveSyncTimer = setInterval(function () {
         if (!conversationId || !isOpen) return;
-        fetch(config.backendUrl + '/api/conversations?id=' + encodeURIComponent(conversationId))
+        var syncUrl = config.backendUrl + '/api/conversations?id=' + encodeURIComponent(conversationId);
+        if (conversationToken) {
+          syncUrl += '&token=' + encodeURIComponent(conversationToken);
+        }
+        fetch(syncUrl)
           .then(function (res) { return res.json(); })
           .then(function (data) {
             if (!data || !data.conversation) return;
@@ -1355,8 +1361,10 @@
             var msgList = conv.messages || [];
 
             if (conv.isLiveTakeover) {
+              isTakeoverActive = true;
               renderTakeoverBanner(conv.assignedAgentName || 'Live Support Agent');
             } else {
+              isTakeoverActive = false;
               removeTakeoverBanner();
             }
 
@@ -2148,10 +2156,14 @@
                 }
 
                 if (!streamedText.trim()) {
-                  // If finished with zero tokens, display helpful message and offer support form
-                  var fallback = config.fallbackMessage || "I'm here to help! If you'd like to connect with our support team, please let us know below.";
-                  var fbEl = appendMessage('assistant', fallback);
-                  renderSupportQuickButton(fbEl, text);
+                  if (isTakeoverActive) {
+                    // In human takeover mode, visitor messages are delivered to the agent without bot fallback
+                  } else {
+                    // If finished with zero tokens, display helpful message and offer support form
+                    var fallback = config.fallbackMessage || "I'm here to help! If you'd like to connect with our support team, please let us know below.";
+                    var fbEl = appendMessage('assistant', fallback);
+                    renderSupportQuickButton(fbEl, text);
+                  }
                 } else {
                   messages.push({ role: 'assistant', content: streamedText });
                   // Attach citation pills strictly if a live external web search was executed
@@ -2211,18 +2223,19 @@
                         }
                       }
                     } else if (data.type === 'citations') {
-                      if (data.conversationId) {
-                        conversationId = data.conversationId;
-                        startLiveSync();
-                      }
+                      if (data.conversationId) conversationId = data.conversationId;
+                      if (data.conversationToken) conversationToken = data.conversationToken;
+                      if (conversationId) startLiveSync();
                       isCurrentWebSearch = Boolean(data.isWebSearch);
                       if (Array.isArray(data.citations)) {
                         currentCitations = data.citations;
                       }
                     } else if (data.type === 'takeover_active') {
                       if (data.conversationId) conversationId = data.conversationId;
+                      if (data.conversationToken) conversationToken = data.conversationToken;
+                      isTakeoverActive = true;
                       renderTakeoverBanner(data.agentName || 'Live Support Agent');
-                      startLiveSync();
+                      if (conversationId) startLiveSync();
                     } else if (data.type === 'token') {
                       // MOUNT BUBBLE ON FIRST TOKEN ONLY
                       if (!hasMountedBubble) {
@@ -2240,10 +2253,9 @@
                     } else if (data.type === 'error') {
                       throw new Error(data.error || 'Inference error');
                     } else if (data.type === 'done') {
-                      if (data.conversationId) {
-                        conversationId = data.conversationId;
-                        startLiveSync();
-                      }
+                      if (data.conversationId) conversationId = data.conversationId;
+                      if (data.conversationToken) conversationToken = data.conversationToken;
+                      if (conversationId) startLiveSync();
                     }
                   } catch (e) {
                     if (e.message && (e.message.indexOf('Inference') !== -1 || e.message.indexOf('error') !== -1)) {

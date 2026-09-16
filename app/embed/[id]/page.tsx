@@ -168,11 +168,15 @@ export default function EmbedChatPage({ params }: EmbedPageProps) {
   // Tracks how many messages (of ANY role) the server confirmed we've
   // already seen, so each poll only asks for what's new since then.
   const knownServerMessageCountRef = useRef(0);
+  const currentConvIdRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (!conversationId || !conversationToken) return;
-    // Reset the cursor whenever we start following a (new) conversation.
-    knownServerMessageCountRef.current = 0;
+    // Only reset cursor when conversation actually changes to a different ID
+    if (currentConvIdRef.current !== conversationId) {
+      currentConvIdRef.current = conversationId;
+      knownServerMessageCountRef.current = 0;
+    }
 
     const interval = setInterval(async () => {
       try {
@@ -200,7 +204,7 @@ export default function EmbedChatPage({ params }: EmbedPageProps) {
         setMessages((prev) => {
           const prevIds = new Set(prev.map((m) => m.id).filter(Boolean));
           const newAgentMessages = incomingMessages.filter(
-            (m: any) => m.role === 'agent' && !prevIds.has(m.id)
+            (m: any) => m.role === 'agent' && (!m.id || !prevIds.has(m.id))
           );
 
           if (newAgentMessages.length === 0) return prev;
@@ -298,12 +302,14 @@ export default function EmbedChatPage({ params }: EmbedPageProps) {
     setIsStreaming(true);
     setStreamingStatus(null);
 
-    const assistantPlaceholder = {
-      role: 'assistant' as const,
-      content: '',
-      citations: [],
-    };
-    setMessages([...newMessages, assistantPlaceholder]);
+    if (!isTakeoverActive) {
+      const assistantPlaceholder = {
+        role: 'assistant' as const,
+        content: '',
+        citations: [],
+      };
+      setMessages([...newMessages, assistantPlaceholder]);
+    }
 
     try {
       const res = await fetch('/api/chat', {

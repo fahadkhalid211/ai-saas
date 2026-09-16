@@ -146,6 +146,7 @@ export interface ConversationData {
   assignedAgentName?: string;
   status?: 'bot' | 'waiting_for_agent' | 'live_agent' | 'resolved';
   createdAt: string;
+  updatedAt?: string;
   messages?: MessageData[];
 }
 
@@ -1182,31 +1183,53 @@ export class Database {
   static async getConversations(assistantId?: string): Promise<ConversationData[]> {
     const state = await ensureInitialized(true);
     const allConvs = state.conversations || [];
-    if (!assistantId) {
-      return allConvs.map((c) => ({
-        ...c,
-        messages: (state.messages || []).filter((m) => m.conversationId === c.id),
-      }));
-    }
+    let matched: ConversationData[] = [];
 
-    let matched = allConvs.filter((c) => matchesAssistant(c.assistantId, assistantId, state));
-    if (matched.length === 0) {
-      const targetAst = (state.assistants || []).find((a) => a.id === assistantId);
-      const targetWs = targetAst?.workspaceId || 'default-workspace';
-      const workspaceConvs = allConvs.filter((c) => {
-        const cAst = (state.assistants || []).find((ast) => ast.id === c.assistantId);
-        const cWs = cAst?.workspaceId || 'default-workspace';
-        return cWs === targetWs;
-      });
-      if (workspaceConvs.length > 0) {
-        matched = workspaceConvs;
+    if (!assistantId) {
+      matched = allConvs;
+    } else {
+      matched = allConvs.filter((c) => matchesAssistant(c.assistantId, assistantId, state));
+      if (matched.length === 0) {
+        const targetAst = (state.assistants || []).find((a) => a.id === assistantId);
+        const targetWs = targetAst?.workspaceId || 'default-workspace';
+        const workspaceConvs = allConvs.filter((c) => {
+          const cAst = (state.assistants || []).find((ast) => ast.id === c.assistantId);
+          const cWs = cAst?.workspaceId || 'default-workspace';
+          return cWs === targetWs;
+        });
+        if (workspaceConvs.length > 0) {
+          matched = workspaceConvs;
+        }
       }
     }
 
-    return matched.map((c) => ({
+    const conversationsWithMessages = matched.map((c) => ({
       ...c,
       messages: (state.messages || []).filter((m) => m.conversationId === c.id),
     }));
+
+    // Sort descending by latest activity (last message time, updatedAt, or createdAt)
+    conversationsWithMessages.sort((a, b) => {
+      const aLastMsg = a.messages && a.messages.length > 0
+        ? new Date(a.messages[a.messages.length - 1].createdAt).getTime()
+        : 0;
+      const bLastMsg = b.messages && b.messages.length > 0
+        ? new Date(b.messages[b.messages.length - 1].createdAt).getTime()
+        : 0;
+      const aTime = Math.max(
+        aLastMsg,
+        a.updatedAt ? new Date(a.updatedAt).getTime() : 0,
+        a.createdAt ? new Date(a.createdAt).getTime() : 0
+      );
+      const bTime = Math.max(
+        bLastMsg,
+        b.updatedAt ? new Date(b.updatedAt).getTime() : 0,
+        b.createdAt ? new Date(b.createdAt).getTime() : 0
+      );
+      return bTime - aTime;
+    });
+
+    return conversationsWithMessages;
   }
 
   static async getOrCreateConversation(
@@ -1262,6 +1285,7 @@ export class Database {
       state.conversations[idx] = {
         ...state.conversations[idx],
         ...data,
+        updatedAt: new Date().toISOString(),
       };
       await saveState(state);
       return true;
@@ -1298,6 +1322,10 @@ export class Database {
     };
 
     state.messages.push(msg);
+    const convIdx = state.conversations.findIndex((c) => c.id === conversationId);
+    if (convIdx !== -1) {
+      state.conversations[convIdx].updatedAt = msg.createdAt;
+    }
     await saveState(state);
     return msg;
   }

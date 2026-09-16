@@ -120,6 +120,12 @@ export default function DashboardPage() {
   // Conversation History state
   const [conversations, setConversations] = useState<any[]>([]);
   const [isLoadingConversations, setIsLoadingConversations] = useState(false);
+  const [targetConversationId, setTargetConversationId] = useState<string | null>(null);
+
+  const handleOpenConversation = (convId?: string) => {
+    if (convId) setTargetConversationId(convId);
+    setActiveTab('history');
+  };
 
   // Template Marketplace state
   const [applyingTemplateId, setApplyingTemplateId] = useState<string | null>(null);
@@ -241,7 +247,10 @@ export default function DashboardPage() {
             if (freshUnread.length > 0) {
               playNotificationChime();
               setToastQueue((prev) => [...prev, ...freshUnread.slice().reverse()]);
-              if (freshUnread.some((n: any) => n.type === 'chat_escalated') && activeAssistant?.id) {
+              const hasChatActivity = freshUnread.some(
+                (n: any) => n.type === 'chat_escalated' || n.type === 'chat_new' || n.type === 'chat_message'
+              );
+              if (hasChatActivity && activeAssistant?.id) {
                 fetchConversations(activeAssistant.id);
               }
             }
@@ -580,7 +589,7 @@ export default function DashboardPage() {
     return () => clearInterval(interval);
   }, [isAuthenticated, activeAssistant?.id, activeTab]);
 
-  // Auto-refresh conversation list every 8 seconds while Chat History tab is open
+  // Auto-refresh conversation list every 3 seconds while Chat History tab is open
   // so new visitor messages (including escalations) appear without a manual refresh
   useEffect(() => {
     if (!isAuthenticated || !activeAssistant?.id || activeTab !== 'history') return;
@@ -588,7 +597,7 @@ export default function DashboardPage() {
     fetchConversations(activeAssistant.id);
     const interval = setInterval(() => {
       fetchConversations(activeAssistant.id);
-    }, 8000);
+    }, 3000);
     return () => clearInterval(interval);
   }, [isAuthenticated, activeAssistant?.id, activeTab]);
 
@@ -1013,6 +1022,8 @@ export default function DashboardPage() {
                 isLoadingConversations={isLoadingConversations}
                 fetchConversations={fetchConversations}
                 playNotificationChime={playNotificationChime}
+                targetConversationId={targetConversationId}
+                onClearTargetConversationId={() => setTargetConversationId(null)}
               />
             )}
 
@@ -1105,6 +1116,7 @@ export default function DashboardPage() {
           onDismiss={dismissFrontToast}
           setIsNotifOpen={setIsNotifOpen}
           setActiveTab={setActiveTab}
+          onOpenConversation={handleOpenConversation}
         />
       </div>
     </div>

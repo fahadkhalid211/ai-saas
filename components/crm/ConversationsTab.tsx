@@ -23,6 +23,8 @@ export interface ConversationsTabProps {
   isLoadingConversations: boolean;
   fetchConversations: (assistantId: string) => Promise<void>;
   playNotificationChime?: () => void;
+  targetConversationId?: string | null;
+  onClearTargetConversationId?: () => void;
 }
 
 export const ConversationsTab: React.FC<ConversationsTabProps> = ({
@@ -33,13 +35,41 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
   isLoadingConversations,
   fetchConversations,
   playNotificationChime,
+  targetConversationId,
+  onClearTargetConversationId,
 }) => {
   const [selectedConversation, setSelectedConversation] = useState<any | null>(null);
   const [conversationSentimentFilter, setConversationSentimentFilter] = useState<'all' | 'waiting' | 'urgent' | 'positive' | 'neutral'>('all');
-  const waitingCount = conversations.filter((c) => c.status === 'waiting_for_agent' && !c.isLiveTakeover).length;
   const [agentNameInput, setAgentNameInput] = useState<string>('Alex (Support)');
   const [agentReplyText, setAgentReplyText] = useState<string>('');
   const [isSendingAgentMessage, setIsSendingAgentMessage] = useState<boolean>(false);
+
+  // Maintain list sorted by most recent activity descending so latest chat is always at top
+  const sortedConversations = React.useMemo(() => {
+    const list = [...(conversations || [])];
+    list.sort((a, b) => {
+      const aLastMsg = a.messages && a.messages.length > 0
+        ? new Date(a.messages[a.messages.length - 1].createdAt).getTime()
+        : 0;
+      const bLastMsg = b.messages && b.messages.length > 0
+        ? new Date(b.messages[b.messages.length - 1].createdAt).getTime()
+        : 0;
+      const aTime = Math.max(
+        aLastMsg,
+        a.updatedAt ? new Date(a.updatedAt).getTime() : 0,
+        a.createdAt ? new Date(a.createdAt).getTime() : 0
+      );
+      const bTime = Math.max(
+        bLastMsg,
+        b.updatedAt ? new Date(b.updatedAt).getTime() : 0,
+        b.createdAt ? new Date(b.createdAt).getTime() : 0
+      );
+      return bTime - aTime;
+    });
+    return list;
+  }, [conversations]);
+
+  const waitingCount = sortedConversations.filter((c) => c.status === 'waiting_for_agent' && !c.isLiveTakeover).length;
 
   const handleToggleConversationStatus = async (convId: string, resolved: boolean) => {
     try {
@@ -119,8 +149,14 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
         const data = await res.json();
         setAgentReplyText('');
         if (data.message) {
+          // Immediately increment local count to prevent subsequent poll from fetching the message we just added
+          selectedConvKnownCountRef.current = (selectedConvKnownCountRef.current || 0) + 1;
           setSelectedConversation((prev: any) => {
             if (!prev) return prev;
+            const existingIds = new Set((prev.messages || []).map((m: any) => m.id).filter(Boolean));
+            if (data.message.id && existingIds.has(data.message.id)) {
+              return prev;
+            }
             return {
               ...prev,
               isLiveTakeover: true,
@@ -128,15 +164,19 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
             };
           });
           setConversations((prev) =>
-            prev.map((c) =>
-              c.id === selectedConversation.id
-                ? {
-                    ...c,
-                    isLiveTakeover: true,
-                    messages: [...(c.messages || []), data.message],
-                  }
-                : c
-            )
+            prev.map((c) => {
+              if (c.id !== selectedConversation.id) return c;
+              const existingIds = new Set((c.messages || []).map((m: any) => m.id).filter(Boolean));
+              if (data.message.id && existingIds.has(data.message.id)) {
+                return c;
+              }
+              return {
+                ...c,
+                isLiveTakeover: true,
+                updatedAt: new Date().toISOString(),
+                messages: [...(c.messages || []), data.message],
+              };
+            })
           );
         }
       }
@@ -181,21 +221,39 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
   const handleSelectConversation = async (conv: any) => {
     // Show immediately with what we have, then fetch fresh data
     setSelectedConversation(conv);
+    selectedConvKnownCountRef.current = conv.messages?.length || 0;
     try {
       const res = await fetch(`/api/conversations?id=${encodeURIComponent(conv.id)}`);
       if (res.ok) {
         const data = await res.json();
-        if (data.conversation) setSelectedConversation(data.conversation);
+        if (data.conversation) {
+          setSelectedConversation(data.conversation);
+          selectedConvKnownCountRef.current = data.conversation.messages?.length || 0;
+        }
       }
     } catch {
       // Keep stale data if fetch fails
     }
   };
 
+  // Auto-select conversation from notification target or default to topmost (latest) conversation
+  useEffect(() => {
+    if (targetConversationId && sortedConversations.length > 0) {
+      const target = sortedConversations.find((c) => c.id === targetConversationId);
+      if (target) {
+        handleSelectConversation(target);
+        if (onClearTargetConversationId) onClearTargetConversationId();
+        return;
+      }
+    }
+
+    if (!selectedConversation && sortedConversations.length > 0) {
+      handleSelectConversation(sortedConversations[0]);
+    }
+  }, [targetConversationId, sortedConversations]);
+
   // Live polling for selected conversation in Conversations tab.
-  // Fetches incrementally via sinceCount so each 2s poll only transfers
-  // messages the dashboard hasn't seen yet, instead of the full (and
-  // ever-growing) transcript every time.
+  // Fetches incrementally via sinceCount and deduplicates strictly by message ID
   const selectedConvKnownCountRef = useRef(0);
   useEffect(() => {
     if (!selectedConversation) return;
@@ -218,11 +276,14 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
 
             setSelectedConversation((prev: any) => {
               if (!prev || prev.id !== data.conversation.id) return prev;
-              if (incoming.length === 0 && prev.isLiveTakeover === data.conversation.isLiveTakeover) {
+              const existingIds = new Set((prev.messages || []).map((m: any) => m.id).filter(Boolean));
+              const trulyNew = incoming.filter((m: any) => !m.id || !existingIds.has(m.id));
+
+              if (trulyNew.length === 0 && prev.isLiveTakeover === data.conversation.isLiveTakeover) {
                 return prev;
               }
-              if (incoming.length > 0) {
-                const lastMsg = incoming[incoming.length - 1];
+              if (trulyNew.length > 0) {
+                const lastMsg = trulyNew[trulyNew.length - 1];
                 if (lastMsg && lastMsg.role === 'user' && playNotificationChime) {
                   playNotificationChime();
                 }
@@ -230,9 +291,24 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
               return {
                 ...prev,
                 ...data.conversation,
-                messages: [...(prev.messages || []), ...incoming],
+                messages: [...(prev.messages || []), ...trulyNew],
               };
             });
+
+            if (incoming.length > 0) {
+              setConversations((prev) =>
+                prev.map((c) => {
+                  if (c.id !== data.conversation.id) return c;
+                  const existingIds = new Set((c.messages || []).map((m: any) => m.id).filter(Boolean));
+                  const trulyNew = incoming.filter((m: any) => !m.id || !existingIds.has(m.id));
+                  return {
+                    ...c,
+                    ...data.conversation,
+                    messages: [...(c.messages || []), ...trulyNew],
+                  };
+                })
+              );
+            }
           }
         }
       } catch (e) {
@@ -265,7 +341,7 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
                   </button>
                 </div>
 
-                {conversations.length === 0 ? (
+                {sortedConversations.length === 0 ? (
                   <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-12 text-center shadow-xs space-y-3">
                     <div className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400">
                       <MessageSquare className="h-6 w-6" />
@@ -287,7 +363,7 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
                     <div className="lg:col-span-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden shadow-xs">
                       <div className="p-3.5 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40 flex items-center justify-between">
                         <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                          {conversations.length} Active Sessions
+                          {sortedConversations.length} Active Sessions
                         </span>
                         <select
                             value={conversationSentimentFilter}
@@ -302,7 +378,7 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
                           </select>
                       </div>
                       <div className="divide-y divide-slate-100 dark:divide-slate-800 max-h-[600px] overflow-y-auto">
-                        {conversations
+                        {sortedConversations
                           .filter((c) => {
                             if (conversationSentimentFilter === 'waiting') {
                               return c.status === 'waiting_for_agent' && !c.isLiveTakeover;
