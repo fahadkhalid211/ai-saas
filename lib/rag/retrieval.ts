@@ -57,6 +57,17 @@ export function isCountOrAggregationQuery(query: string): boolean {
 }
 
 /**
+ * Detect if user is asking an open-ended question about budgets, prices, rates, or services
+ */
+export function isBroadPricingOrBudgetQuery(query: string): boolean {
+  const clean = query.trim().toLowerCase();
+  return (
+    /\b(budget|budgets|pricing|prices|price|cost|costs|rate|rates|fee|fees|how much|menu|service list|services list|charge|charges)\b/i.test(clean) &&
+    (/\b(what|how|show|give|tell|list|any|the|all|menu|our|your)\b/i.test(clean) || clean.split(/\s+/).length <= 4)
+  );
+}
+
+/**
  * Retrieve relevant knowledge chunks using Hybrid Search (Vector + Keyword)
  */
 export async function retrieveRelevantContext(
@@ -68,13 +79,46 @@ export async function retrieveRelevantContext(
   const condensedQuery = condenseQuery(userMessage, history);
   const isOverview = isGlobalOverviewQuery(condensedQuery);
   const isCountQuery = isCountOrAggregationQuery(condensedQuery);
-  const effectiveTopK = isOverview ? Math.max(topK, 8) : isCountQuery ? 4 : topK;
+  const isBroadPricing = isBroadPricingOrBudgetQuery(condensedQuery);
+  const effectiveTopK = isOverview ? Math.max(topK, 8) : isBroadPricing ? Math.max(topK, 12) : isCountQuery ? 4 : topK;
   
   // 1. Generate 384-dimensional query embedding with local open-source embedder
   const queryEmbedding = await generateEmbedding(condensedQuery);
 
   // 2. Perform Hybrid Search
   let chunks = await Database.hybridSearch(assistantId, condensedQuery, queryEmbedding, effectiveTopK * 2);
+
+  // 2.5. Broad pricing or budget query: ensure all chunks containing pricing/budget info across projects/services are included
+  if (isBroadPricing) {
+    const assistantChunks = await Database.getChunksByAssistant(assistantId);
+    const pricingChunks = assistantChunks.filter((c) =>
+      /\b(budget|budgets|price|prices|pricing|cost|costs|rate|rates|fee|fees|\$|usd|eur|haircut|service|project)\b/i.test(
+        `${c.content} ${c.metadata?.sourceTitle || ''}`
+      )
+    );
+
+    if (pricingChunks.length > 0) {
+      const combined: SearchResultChunk[] = [...chunks];
+      const seen = new Set<string>(chunks.map((c) => c.id || `chunk_${c.chunkIndex}`));
+
+      for (const pc of pricingChunks) {
+        const pcId = pc.id || `chunk_${pc.chunkIndex}`;
+        if (!seen.has(pcId) && combined.length < effectiveTopK) {
+          combined.push({
+            id: pc.id,
+            content: pc.content,
+            chunkIndex: pc.chunkIndex,
+            tokenCount: pc.tokenCount,
+            metadata: pc.metadata as any,
+            knowledgeSourceId: pc.knowledgeSourceId,
+            similarity: 0.85,
+          });
+          seen.add(pcId);
+        }
+      }
+      chunks = combined;
+    }
+  }
 
   // 3. If count/aggregation query: prioritize Dataset Master Overview chunk(s)
   if (isCountQuery) {

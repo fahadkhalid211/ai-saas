@@ -781,18 +781,7 @@ function matchesAssistant(
       targetAssistantId === 'classic-barbershop';
 
     if (isRecordDemo || isTargetDemo) {
-      const targetSlugVal = targetAstObj?.landingPageConfig?.slug;
-      const recordSlugVal = recordAst?.landingPageConfig?.slug;
-      if (
-        !targetSlugVal ||
-        targetSlugVal === 'classic-barbershop' ||
-        targetSlugVal === 'barbershop' ||
-        !recordSlugVal ||
-        recordSlugVal === 'classic-barbershop' ||
-        recordSlugVal === 'barbershop'
-      ) {
-        return true;
-      }
+      return true;
     }
   }
 
@@ -1108,6 +1097,15 @@ export class Database {
       state = await ensureInitialized(true);
       chunks = (state.chunks || []).filter((c) => matchesAssistant(c.assistantId, assistantId, state));
     }
+    if (chunks.length === 0) {
+      const targetAst = (state.assistants || []).find((a) => a.id === assistantId || a.landingPageConfig?.slug === assistantId);
+      const targetWs = targetAst?.workspaceId || 'default-workspace';
+      chunks = (state.chunks || []).filter((c) => {
+        const cAst = (state.assistants || []).find((a) => a.id === c.assistantId);
+        const cWs = cAst?.workspaceId || 'default-workspace';
+        return cWs === targetWs;
+      });
+    }
     return chunks;
   }
 
@@ -1138,15 +1136,27 @@ export class Database {
       state = await ensureInitialized(true);
       assistantChunks = (state.chunks || []).filter((c) => matchesAssistant(c.assistantId, assistantId, state));
     }
+    if (assistantChunks.length === 0) {
+      const targetAst = (state.assistants || []).find((a) => a.id === assistantId || a.landingPageConfig?.slug === assistantId);
+      const targetWs = targetAst?.workspaceId || 'default-workspace';
+      const workspaceChunks = (state.chunks || []).filter((c) => {
+        const cAst = (state.assistants || []).find((a) => a.id === c.assistantId);
+        const cWs = cAst?.workspaceId || 'default-workspace';
+        return cWs === targetWs;
+      });
+      if (workspaceChunks.length > 0) {
+        assistantChunks = workspaceChunks;
+      }
+    }
     if (assistantChunks.length === 0) return [];
 
-    // 1. Dense Vector Cosine Similarity (require minimum 0.38 similarity for relevance)
+    // 1. Dense Vector Cosine Similarity (require minimum 0.25 similarity for relevance)
     const vectorScored = assistantChunks
       .map((chunk) => ({
         ...chunk,
         score: cosineSimilarity(queryEmbedding, chunk.embedding),
       }))
-      .filter((chunk) => chunk.score >= 0.38)
+      .filter((chunk) => chunk.score >= 0.25)
       .sort((a, b) => b.score - a.score)
       .slice(0, 15);
 

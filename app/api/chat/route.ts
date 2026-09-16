@@ -431,14 +431,11 @@ export async function POST(req: NextRequest) {
             topK
           );
 
-          // Smart fallback: If assistant has 0 chunks and is in default-workspace, check demo-assistant chunks
-          if (
-            retrieval.chunks.length === 0 &&
-            assistant.id !== 'demo-assistant' &&
-            (assistant.workspaceId || 'default-workspace') === 'default-workspace'
-          ) {
+          // Smart fallback: If assistant has 0 chunks, search across workspace concierges
+          if (retrieval.chunks.length === 0) {
+            const fallbackTarget = assistant.id === 'demo-assistant' ? 'default-workspace' : 'demo-assistant';
             const fallbackRetrieval = await retrieveRelevantContext(
-              'demo-assistant',
+              fallbackTarget,
               effectiveQuery,
               conversationHistory,
               topK
@@ -529,10 +526,18 @@ OFFICIAL OPERATING HOURS:
 ${hoursList || 'Regular business hours.'}
 
 INSTRUCTIONS FOR INQUIRIES:
-Answer visitor questions accurately and authoritatively using the verified knowledge base documentation and the official business catalog above.
-For a given service, the official catalog above is the source of truth for its current price/duration — use it by default when visitors inquire about prices, services, hours, or appointments. Always invite the user to schedule their appointment.
-PRICE/BUDGET CONFLICTS: If the knowledge base documentation states a different price, budget, or figure than the official catalog for what appears to be the SAME service or item, do NOT silently pick one number. Point out that you found two different figures, state both (and where each came from, e.g. "the current pricing catalog" vs. "a document titled X"), and ask the visitor a clarifying question (e.g. which package, tier, or scope they mean) before committing to a number. Only state a single confident figure when the sources agree or the visitor has clarified which one applies.
-When the user asks to book, schedule, or reserve an appointment, enthusiastically encourage them and ALWAYS include the token [ACTION:BOOKING_FORM] at the very end of your response so the interactive booking card is displayed.`;
+- Answer visitor questions accurately and authoritatively using the verified knowledge base documentation and the official business catalog above.
+- GENERAL PRICING INQUIRIES: When a visitor asks an open-ended question about prices, rates, or packages (e.g. "what is the price?", "how much do you charge?", "what are your prices?"):
+  1. If multiple services exist across the catalog and knowledge base, ask the visitor which specific service they want the price for.
+  2. ALWAYS proactively offer: "Would you like to see our complete service list and pricing menu?"
+- COMPLETE SERVICE LIST / MENU: If the visitor asks to see the full service list or menu, provide a comprehensive bulleted list of all services with their exact prices and descriptions from both the official catalog and the verified knowledge base.
+- UNLISTED SERVICES OR BUDGETS: If a service, package, price, or project budget is not listed in the official catalog above, but appears in the verified knowledge base (from uploaded documents, text entries, audio, or video), you MUST retrieve and provide that information authoritatively. Never claim that you lack information if it exists in any knowledge base fragment.
+- MULTI-PROJECT BUDGETS: If the visitor asks a general question about budget (e.g. "what is the budget?", "how much is the budget?"):
+  1. Inspect the verified knowledge base for all projects with budgets.
+  2. If multiple projects exist, list them by name (e.g. "We have budget information for: 1. The Students Help...") and confirm with the visitor which project they want to know about.
+  3. When the visitor clarifies (even with compound names, abbreviations, or synonyms like "studenthelp" for "The Students Help"), provide the exact budget and financial breakdown.
+- PRICE/BUDGET CONFLICTS: If the knowledge base documentation states a different price, budget, or figure than the official catalog for what appears to be the SAME service or item, do NOT silently pick one number. Point out that you found two different figures, state both (and where each came from, e.g. "the current pricing catalog" vs. "a document titled X"), and ask the visitor a clarifying question (e.g. which package, tier, or scope they mean) before committing to a number. Only state a single confident figure when the sources agree or the visitor has clarified which one applies.
+- When the user asks to book, schedule, or reserve an appointment, enthusiastically encourage them and ALWAYS include the token [ACTION:BOOKING_FORM] at the very end of your response so the interactive booking card is displayed.`;
 
             businessPrompt = `You are the friendly, professional AI representative for ${cfg.businessName}.
 Tagline: ${cfg.tagline || ''}
@@ -545,7 +550,10 @@ CRITICAL IDENTITY & BUSINESS SCOPE:
 - You answer questions accurately, politely, and authoritatively using the verified knowledge base and official business services catalog.
 - If the visitor asks questions covered in the knowledge base, provide clear, comprehensive answers using that knowledge.
 - When asked about prices, hours, or services, cite the exact services and prices from the official catalog by default.
-- If a knowledge base document quotes a different price/budget for what looks like the same service, don't guess which is right: mention both figures and their source, and ask the visitor to clarify (e.g. which package or scope) rather than confidently stating a single number.
+- If a service or price was added to the knowledge base (via doc, text, audio, video) but is absent from the catalog, authoritatively answer with the knowledge base price.
+- When the visitor asks generally about prices, ask which service they are interested in and offer to share the complete service list and pricing menu.
+- If asked generally about project budgets, list available projects and confirm which one they want to discuss.
+- If a knowledge base document quotes a different price/budget for what looks like the same service, don't guess which is right: mention both figures and their source, and ask the visitor to clarify rather than guessing.
 - When the visitor expresses interest in booking an appointment or reservation, confirm warmly and append [ACTION:BOOKING_FORM] at the end of your message.`;
           }
 

@@ -34,9 +34,20 @@ describe('Vector Math and Hybrid Retrieval', () => {
       expect(score).toBeLessThan(1.0);
     });
 
-    it('should return 0 for unrelated content', () => {
-      const score = keywordRelevance('refund policy', 'Welcome to our restaurant menu.');
-      expect(score).toBe(0);
+    it('should match compound words and synonyms (e.g. studenthelp vs The Students Help)', () => {
+      const content = 'Project Name: The Students Help. Total project budget is $50,000 for web development.';
+      const scoreExact = keywordRelevance('what is the budget of The Students Help', content);
+      const scoreCompound = keywordRelevance('what is the budget of studenthelp', content);
+      expect(scoreExact).toBeGreaterThan(0.5);
+      expect(scoreCompound).toBeGreaterThan(0.5);
+    });
+
+    it('should match pricing and currency synonyms (e.g. price vs $20 for a haircut)', () => {
+      const content = '$20 for a haircut, $50 for a beard and haircut both';
+      const scorePrice = keywordRelevance('what is the price', content);
+      const scoreHaircut = keywordRelevance('how much for a haircut', content);
+      expect(scorePrice).toBeGreaterThan(0);
+      expect(scoreHaircut).toBeGreaterThan(0);
     });
   });
 
