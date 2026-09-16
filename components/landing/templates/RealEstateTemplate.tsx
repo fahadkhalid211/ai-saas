@@ -29,13 +29,17 @@ import { IndustryTemplateProps } from '../types';
 import { ScrollProgress } from '../effects/ScrollProgress';
 import { TiltCard } from '../effects/TiltCard';
 import { KineticMarquee } from '../effects/KineticMarquee';
+import { getThemePalette } from '@/lib/landing/types';
 
 export const RealEstateTemplate: React.FC<IndustryTemplateProps> = ({
   config,
   isDark,
+  currentTheme,
   onOpenBooking,
   onOpenChat,
 }) => {
+  const palette = currentTheme || getThemePalette(config.themeColor, 'real_estate');
+
   const [propertyPrice, setPropertyPrice] = useState<number>(4500000);
   const [downPaymentPercent, setDownPaymentPercent] = useState<number>(20);
   const [interestRate, setInterestRate] = useState<number>(6.2);
@@ -143,51 +147,76 @@ export const RealEstateTemplate: React.FC<IndustryTemplateProps> = ({
 
       {/* 2. HERO: EDITORIAL LUXURY SHOWCASE */}
       <section className="relative pt-16 pb-20 md:pt-24 md:pb-28 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-        <div className="space-y-6 max-w-4xl text-left">
-          <div className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-serif tracking-wider uppercase border ${
-            isDark ? 'border-emerald-500/30 bg-emerald-950/40 text-emerald-300' : 'border-emerald-200 bg-emerald-50 text-emerald-900'
-          }`}>
-            <Sparkles className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
-            <span>{config.badgeText || 'Curated Prime Residential & Architectural Estates'}</span>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+          <div className="lg:col-span-7 space-y-6 text-left">
+            <div className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-serif tracking-wider uppercase border ${
+              isDark ? `${palette.accentBorder} ${palette.lightBg} ${palette.accentText}` : `${palette.accentBorder} ${palette.lightBg} ${palette.accentText}`
+            }`}>
+              <Sparkles className="h-3.5 w-3.5" />
+              <span>{config.badgeText || 'Curated Prime Residential & Architectural Estates'}</span>
+            </div>
+
+            <h1 className="text-4xl sm:text-6xl lg:text-7xl font-serif font-normal tracking-tight leading-[1.08]">
+              {config.heroHeadline || (
+                <>
+                  Exceptional Residences. <br />
+                  <span className={`italic ${palette.accentText}`}>
+                    Uncompromised Discretion.
+                  </span>
+                </>
+              )}
+            </h1>
+
+            <p className={`text-base sm:text-xl ${isDark ? 'text-slate-300' : 'text-slate-600'} font-light max-w-2xl leading-relaxed`}>
+              {config.heroSubheadline ||
+                'Access the world’s most coveted off-market estates, penthouses, and coastal properties through our private client advisory.'}
+            </p>
+
+            <div className="flex flex-wrap items-center gap-4 pt-2">
+              <button
+                onClick={() => onOpenBooking()}
+                className={`px-8 py-4 rounded-xl ${palette.btnBg} ${palette.btnHoverBg} ${palette.btnText} font-serif font-bold text-sm tracking-wide shadow-lg transition-all transform hover:-translate-y-0.5 flex items-center gap-2.5 cursor-pointer`}
+              >
+                <Calendar className="h-4 w-4" />
+                <span>{config.heroCtaText || 'Request Private Showing'}</span>
+                <ArrowRight className="h-4 w-4" />
+              </button>
+
+              <button
+                onClick={onOpenChat}
+                className={`px-6 py-4 rounded-xl border text-sm font-semibold transition-all flex items-center gap-2 cursor-pointer ${
+                  isDark
+                    ? 'border-slate-800 bg-slate-900 text-slate-200 hover:bg-slate-800'
+                    : 'border-slate-300 bg-white text-slate-800 hover:bg-slate-50 shadow-xs'
+                }`}
+              >
+                <MessageSquare className={`h-4 w-4 ${palette.accentText}`} />
+                <span>Inquire With Estate Advisor</span>
+              </button>
+            </div>
           </div>
 
-          <h1 className="text-4xl sm:text-6xl lg:text-7xl font-serif font-normal tracking-tight leading-[1.08]">
-            {config.heroHeadline || (
-              <>
-                Exceptional Residences. <br />
-                <span className="italic text-emerald-600 dark:text-emerald-400">
-                  Uncompromised Discretion.
-                </span>
-              </>
-            )}
-          </h1>
-
-          <p className={`text-base sm:text-xl ${isDark ? 'text-slate-300' : 'text-slate-600'} font-light max-w-2xl leading-relaxed`}>
-            {config.heroSubheadline ||
-              'Access the world’s most coveted off-market estates, penthouses, and coastal properties through our private client advisory.'}
-          </p>
-
-          <div className="flex flex-wrap items-center gap-4 pt-2">
-            <button
-              onClick={() => onOpenBooking()}
-              className="px-8 py-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-serif font-bold text-sm tracking-wide shadow-lg shadow-emerald-600/25 transition-all transform hover:-translate-y-0.5 flex items-center gap-2.5 cursor-pointer"
-            >
-              <Calendar className="h-4 w-4" />
-              <span>Request Private Showing</span>
-              <ArrowRight className="h-4 w-4" />
-            </button>
-
-            <button
-              onClick={onOpenChat}
-              className={`px-6 py-4 rounded-xl border text-sm font-semibold transition-all flex items-center gap-2 cursor-pointer ${
-                isDark
-                  ? 'border-slate-800 bg-slate-900 text-slate-200 hover:bg-slate-800'
-                  : 'border-slate-300 bg-white text-slate-800 hover:bg-slate-50 shadow-xs'
-              }`}
-            >
-              <MessageSquare className="h-4 w-4 text-emerald-600" />
-              <span>Inquire With Estate Advisor</span>
-            </button>
+          <div className="lg:col-span-5 relative">
+            <div className="relative rounded-3xl overflow-hidden border border-slate-700/60 shadow-2xl group">
+              <img
+                src={config.heroImageUrl || 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1000&q=80'}
+                alt={config.businessName || 'Luxury Estate'}
+                className="w-full h-96 sm:h-[420px] object-cover object-center group-hover:scale-102 transition duration-700"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+              <div className="absolute bottom-6 left-6 right-6 p-4 rounded-2xl backdrop-blur-md bg-black/60 border border-white/10 text-white flex items-center justify-between">
+                <div>
+                  <div className="text-xs font-mono uppercase tracking-wider text-emerald-400">Verified Prime Portfolio</div>
+                  <div className="text-base font-serif font-bold">$1.4B+ Volume Closed</div>
+                </div>
+                <button
+                  onClick={() => onOpenBooking()}
+                  className={`px-3.5 py-1.5 rounded-lg ${palette.btnBg} ${palette.btnText} text-xs font-bold transition cursor-pointer`}
+                >
+                  Tour Portfolio
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -352,14 +381,54 @@ export const RealEstateTemplate: React.FC<IndustryTemplateProps> = ({
         </div>
       </section>
 
+      {/* ABOUT US / HERITAGE & FIRM VALUES SECTION */}
+      {(config.aboutTitle || config.aboutText) && (
+        <section id="about" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+            <div className="lg:col-span-7 space-y-4">
+              <span className={`text-xs font-mono uppercase tracking-widest ${palette.accentText} font-bold`}>
+                {config.aboutSubtitle || 'Pedigree & Off-Market Intelligence'}
+              </span>
+              <h2 className="text-3xl sm:text-4xl font-serif font-bold text-slate-900 dark:text-white">
+                {config.aboutTitle || `About ${config.businessName}`}
+              </h2>
+              <p className={`text-sm leading-relaxed ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
+                {config.aboutText}
+              </p>
+              {config.founderName && (
+                <div className="pt-2 flex items-center gap-3">
+                  {config.founderImageUrl && (
+                    <img src={config.founderImageUrl} alt={config.founderName} className="w-12 h-12 rounded-full object-cover border border-slate-700" />
+                  )}
+                  <div>
+                    <div className="text-sm font-bold text-slate-900 dark:text-white">{config.founderName}</div>
+                    <div className="text-xs text-slate-500">{config.founderRole || 'Founder & Principal Broker'}</div>
+                  </div>
+                </div>
+              )}
+            </div>
+            {config.aboutImageUrl && (
+              <div className="lg:col-span-5 rounded-2xl overflow-hidden border border-slate-800">
+                <img src={config.aboutImageUrl} alt="About Us" className="w-full h-72 object-cover" />
+              </div>
+            )}
+          </div>
+        </section>
+      )}
+
       {/* 7. SERVICES & PRIVATE CONSULTATIONS (FROM CONFIG.SERVICES) */}
       <section id="services" className={`py-20 border-t ${isDark ? 'border-slate-800 bg-slate-950/60' : 'border-slate-200 bg-slate-50/60'}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-2xl mx-auto mb-14">
-            <span className="text-xs font-mono uppercase tracking-widest text-emerald-600 dark:text-emerald-400 font-bold">Advisory Tiers</span>
+            <span className={`text-xs font-mono uppercase tracking-widest ${palette.accentText} font-bold`}>Advisory Tiers</span>
             <h2 className="text-3xl sm:text-5xl font-serif font-bold tracking-tight mt-1 text-slate-900 dark:text-white">
-              Representation Services
+              {config.servicesTitle || 'Representation Services'}
             </h2>
+            {config.servicesSubtitle && (
+              <p className={`mt-2 text-xs sm:text-sm ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
+                {config.servicesSubtitle}
+              </p>
+            )}
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -510,17 +579,17 @@ export const RealEstateTemplate: React.FC<IndustryTemplateProps> = ({
       <section className={`py-20 border-t ${isDark ? 'border-slate-800 bg-slate-950 text-slate-100' : 'border-slate-200 bg-slate-50 text-slate-900'}`}>
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6">
           <h3 className={`text-3xl sm:text-5xl font-serif font-bold tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>
-            Schedule an Off-Market Consultation
+            {config.ctaHeadline || 'Schedule an Off-Market Consultation'}
           </h3>
           <p className={`text-sm sm:text-base ${isDark ? 'text-slate-400' : 'text-slate-600'} max-w-xl mx-auto`}>
-            Connect with our managing directors to review pocket listings in Manhattan, Beverly Hills, and Miami.
+            {config.ctaSubheadline || 'Connect with our managing directors to review pocket listings in Manhattan, Beverly Hills, and Miami.'}
           </p>
           <div className="pt-2 flex flex-wrap justify-center gap-4">
             <button
               onClick={() => onOpenBooking()}
-              className="px-8 py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-serif font-bold text-xs uppercase tracking-wider shadow-lg shadow-emerald-600/25 transition-all cursor-pointer"
+              className={`px-8 py-3.5 rounded-xl ${palette.btnBg} ${palette.btnHoverBg} ${palette.btnText} font-serif font-bold text-xs uppercase tracking-wider shadow-lg transition-all cursor-pointer`}
             >
-              Request Private Portfolio Access
+              {config.ctaButtonText || 'Request Private Portfolio Access'}
             </button>
             <button
               onClick={onOpenChat}
@@ -530,6 +599,11 @@ export const RealEstateTemplate: React.FC<IndustryTemplateProps> = ({
               <span>Direct Advisor Chat</span>
             </button>
           </div>
+          {config.footerText && (
+            <div className="pt-8 border-t border-slate-800/60 text-center text-xs text-slate-500">
+              {config.footerText}
+            </div>
+          )}
         </div>
       </section>
     </div>

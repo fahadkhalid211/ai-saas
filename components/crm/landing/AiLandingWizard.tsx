@@ -34,6 +34,7 @@ import {
   DesignArchetype,
   DEFAULT_BARBER_LANDING_CONFIG,
   getLandingConfigForSlugOrTemplate,
+  getArchetypesForIndustry,
 } from '@/lib/landing/types';
 
 interface AiLandingWizardProps {
@@ -169,7 +170,7 @@ export function AiLandingWizard({
 
   // Form State
   const [selectedIndustry, setSelectedIndustry] = useState<string>('barbershop');
-  const [selectedArchetype, setSelectedArchetype] = useState<string>('dark-luxury-glass');
+  const [selectedArchetype, setSelectedArchetype] = useState<string>('barber_classic');
 
   const [businessName, setBusinessName] = useState<string>('');
   const [slug, setSlug] = useState<string>('');
@@ -199,6 +200,10 @@ export function AiLandingWizard({
         setBusinessName(ind.name.split('&')[0].trim());
       }
       setServices(ind.defaultServices);
+      const industryArchs = getArchetypesForIndustry(selectedIndustry);
+      if (industryArchs.length > 0) {
+        setSelectedArchetype(industryArchs[0].id);
+      }
     }
   }, [selectedIndustry]);
 
@@ -239,7 +244,8 @@ export function AiLandingWizard({
     setGenerationError(null);
 
     const indObj = INDUSTRIES_LIST.find((i) => i.id === selectedIndustry) || INDUSTRIES_LIST[0];
-    const archObj = MODERN_DESIGN_ARCHETYPES.find((a) => a.id === selectedArchetype) || MODERN_DESIGN_ARCHETYPES[0];
+    const industryArchs = getArchetypesForIndustry(selectedIndustry);
+    const archObj = industryArchs.find((a) => a.id === selectedArchetype) || industryArchs[0] || MODERN_DESIGN_ARCHETYPES[0];
     const basePreset = getLandingConfigForSlugOrTemplate(indObj.presetSlug) || DEFAULT_BARBER_LANDING_CONFIG;
 
     const finalSlug = slug.trim() || 'site-' + Math.random().toString(36).substring(2, 7);
@@ -413,20 +419,20 @@ export function AiLandingWizard({
         </div>
       )}
 
-      {/* STEP 2: CHOOSE 4-5 MODERN DESIGN ARCHETYPES WITH SNAPSHOTS */}
+      {/* STEP 2: CHOOSE 3 INDUSTRY-SPECIFIC DESIGN ARCHETYPES WITH SNAPSHOTS */}
       {step === 2 && (
         <div className="space-y-6">
           <div className="space-y-1">
             <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
-              <span>Step 2: Choose AI Design Archetype &amp; Aesthetic</span>
+              <span>Step 2: Choose Design Archetype &amp; Aesthetic (3 Available)</span>
             </h3>
             <p className="text-xs text-slate-500 dark:text-slate-400">
-              Select the visual architectural framework for your site. Each archetype features custom layouts, typography, and responsive color palettes.
+              Select one of the 3 custom design archetypes crafted for {INDUSTRIES_LIST.find((i) => i.id === selectedIndustry)?.name || 'your industry'}. Each offers a distinct layout, typography scale, and aesthetic mood.
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {MODERN_DESIGN_ARCHETYPES.map((arch) => {
+            {getArchetypesForIndustry(selectedIndustry).map((arch) => {
               const isSelected = selectedArchetype === arch.id;
               return (
                 <div

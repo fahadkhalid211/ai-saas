@@ -23,20 +23,31 @@ import {
   XCircle,
   Building2,
   Lock,
+  Zap,
+  Gavel,
+  FileCheck,
 } from 'lucide-react';
 import { IndustryTemplateProps } from '../types';
 import { ScrollProgress } from '../effects/ScrollProgress';
 import { TiltCard } from '../effects/TiltCard';
 import { KineticMarquee } from '../effects/KineticMarquee';
+import { getThemePalette } from '@/lib/landing/types';
 
 export const LegalTemplate: React.FC<IndustryTemplateProps> = ({
   config,
   isDark,
+  currentTheme,
   onOpenBooking,
   onOpenChat,
 }) => {
   const [claimAmount, setClaimAmount] = useState<number>(2500000);
   const [activeFaq, setActiveFaq] = useState<number | null>(0);
+
+  // Dynamic theme palette ensuring NO amber bleed when blue, emerald, etc. is chosen
+  const palette = currentTheme || getThemePalette(config.themeColor, 'legal');
+
+  // Archetype variation: legal_prestige, legal_modern, legal_trial
+  const archetype = config.designArchetype || 'legal_prestige';
 
   const honors = [
     'CHAMBERS GLOBAL BAND 1: COMMERCIAL LITIGATION',
@@ -134,7 +145,7 @@ export const LegalTemplate: React.FC<IndustryTemplateProps> = ({
   return (
     <div className={`relative min-h-screen ${isDark ? 'bg-[#080B10] text-slate-100' : 'bg-[#FAFAF9] text-slate-900'} overflow-x-hidden font-sans transition-colors duration-200`}>
       {/* 1. SCROLL PROGRESS */}
-      <ScrollProgress color="bg-gradient-to-r from-blue-700 via-indigo-600 to-amber-600" />
+      <ScrollProgress color={palette.accentBg} />
 
       {/* 1. TOP HONORS & PRIVILEGE RIBBON */}
       <div className={`border-b py-2 px-4 text-xs font-serif ${
@@ -142,10 +153,16 @@ export const LegalTemplate: React.FC<IndustryTemplateProps> = ({
       }`}>
         <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <Scale className="w-3.5 h-3.5 text-blue-600" />
-            <span className="font-bold text-slate-900 dark:text-white">APEX LEGAL PARTNERS LLP</span>
+            <Scale className={`w-3.5 h-3.5 ${palette.accentText}`} />
+            <span className="font-bold text-slate-900 dark:text-white uppercase">{config.businessName || 'APEX LEGAL PARTNERS LLP'}</span>
             <span className="text-slate-300 dark:text-slate-700">|</span>
-            <span>Chambers Global Band 1 Litigation</span>
+            <span>
+              {archetype === 'legal_trial'
+                ? 'High-Impact Emergency Litigation Squad'
+                : archetype === 'legal_modern'
+                ? 'Corporate Governance & Tech Advisory'
+                : 'Chambers Global Band 1 Litigation'}
+            </span>
             <span className="text-slate-300 dark:text-slate-700 hidden sm:inline">|</span>
             <span className="hidden sm:inline">Attorney-Client Privilege Protected</span>
           </div>
@@ -156,41 +173,62 @@ export const LegalTemplate: React.FC<IndustryTemplateProps> = ({
         </div>
       </div>
 
-      {/* 2. HERO SECTION: AUTHORITATIVE ENTERPRISE COUNSEL */}
+      {/* 2. HERO SECTION */}
       <section className="relative pt-16 pb-20 md:pt-24 md:pb-28 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
           <div className="lg:col-span-7 space-y-6 text-left">
-            <div className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-serif tracking-wider uppercase border ${
-              isDark ? 'border-blue-500/30 bg-blue-950/40 text-blue-300' : 'border-blue-200 bg-blue-50 text-blue-900'
-            }`}>
-              <Shield className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
-              <span>{config.badgeText || 'Uncompromising Defense & Strategic Corporate Counsel'}</span>
+            <div className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-serif tracking-wider uppercase border ${palette.accentBorder} ${palette.lightBg} ${palette.accentText}`}>
+              <Shield className="w-3.5 h-3.5" />
+              <span>
+                {config.badgeText ||
+                  (archetype === 'legal_trial'
+                    ? 'Emergency Trial Squad & Asset Freezes'
+                    : archetype === 'legal_modern'
+                    ? 'Premier M&A & General Counsel Advisory'
+                    : 'Uncompromising Defense & Strategic Corporate Counsel')}
+              </span>
             </div>
 
             <h1 className="text-4xl sm:text-6xl lg:text-7xl font-serif font-black tracking-tight leading-[1.08]">
               {config.heroHeadline || (
-                <>
-                  Defending Capital. <br />
-                  <span className="italic text-blue-600 dark:text-blue-400">
-                    Securing Defining Outcomes.
-                  </span>
-                </>
+                archetype === 'legal_trial' ? (
+                  <>
+                    Courtroom Precision. <br />
+                    <span className={`italic ${palette.accentText}`}>
+                      Aggressive Verdict Recovery.
+                    </span>
+                  </>
+                ) : archetype === 'legal_modern' ? (
+                  <>
+                    Strategic Counsel. <br />
+                    <span className={`italic ${palette.accentText}`}>
+                      Built for Modern Enterprise.
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    Defending Capital. <br />
+                    <span className={`italic ${palette.accentText}`}>
+                      Securing Defining Outcomes.
+                    </span>
+                  </>
+                )
               )}
             </h1>
 
             <p className={`text-base sm:text-xl ${isDark ? 'text-slate-300' : 'text-slate-600'} font-light max-w-2xl leading-relaxed`}>
               {config.heroSubheadline ||
-                'Apex Legal Partners provides premier trial representation, cross-border M&A governance, and white-collar defense for market leaders and high-stakes innovators.'}
+                `${config.businessName || 'Apex Legal Partners'} provides premier trial representation, cross-border governance, and regulatory defense for market leaders and high-stakes innovators.`}
             </p>
 
             <div className="flex flex-wrap items-center gap-4 pt-2">
               <button
                 type="button"
                 onClick={() => onOpenBooking()}
-                className="px-8 py-4 rounded-xl bg-blue-700 hover:bg-blue-600 text-white font-serif font-bold text-sm tracking-wide shadow-lg shadow-blue-700/25 transition-all transform hover:-translate-y-0.5 flex items-center gap-2.5 cursor-pointer"
+                className={`px-8 py-4 rounded-xl ${palette.btnBg} ${palette.btnHoverBg} ${palette.btnText} font-serif font-bold text-sm tracking-wide shadow-lg transition-all transform hover:-translate-y-0.5 flex items-center gap-2.5 cursor-pointer`}
               >
                 <Lock className="w-4 h-4" />
-                <span>Confidential Case Evaluation</span>
+                <span>{config.heroCtaText || 'Confidential Case Evaluation'}</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
 
@@ -203,43 +241,80 @@ export const LegalTemplate: React.FC<IndustryTemplateProps> = ({
                     : 'border-slate-300 bg-white text-slate-800 hover:bg-slate-50 shadow-xs'
                 }`}
               >
-                <MessageSquare className="w-4 h-4 text-blue-600" />
+                <MessageSquare className={`w-4 h-4 ${palette.accentText}`} />
                 <span>Privileged Intake Chat</span>
               </button>
             </div>
+
+            {/* Quick trust metrics */}
+            <div className="pt-4 flex flex-wrap items-center gap-6 text-xs font-mono text-slate-500">
+              <div className="flex items-center gap-1.5">
+                <CheckCheck className={`w-4 h-4 ${palette.accentText}`} />
+                <span>Attorney-Client Privileged</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <Clock className={`w-4 h-4 ${palette.accentText}`} />
+                <span>2-Hour Rapid Intake Review</span>
+              </div>
+            </div>
           </div>
 
-          {/* Hero Credentials Card */}
+          {/* Hero Media / Image Column */}
           <div className="lg:col-span-5 relative">
-            <TiltCard
-              maxTilt={6}
-              className={`p-8 rounded-3xl border shadow-xl ${
-                isDark ? 'bg-slate-900/80 border-slate-800' : 'bg-white border-slate-200 shadow-slate-200'
-              }`}
-            >
-              <div className="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-slate-800">
-                <span className="text-xs font-mono font-bold uppercase text-slate-500">VERIFIED LITIGATION BENCH</span>
-                <span className="text-xs font-mono font-bold text-emerald-600 dark:text-emerald-400">98.4% Win Rate</span>
+            {config.heroImageUrl ? (
+              <div className="relative rounded-3xl overflow-hidden border border-slate-700/60 shadow-2xl group">
+                <img
+                  src={config.heroImageUrl}
+                  alt={config.businessName || 'Legal Firm'}
+                  className="w-full h-96 sm:h-[440px] object-cover object-center group-hover:scale-102 transition duration-700"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
+                
+                {/* Overlay Credentials Badge */}
+                <div className="absolute bottom-6 left-6 right-6 p-5 rounded-2xl backdrop-blur-md bg-black/60 border border-white/10 text-white space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-mono font-bold uppercase tracking-wider text-slate-300">
+                      {archetype === 'legal_trial' ? 'EMERGENCY TRIAL SQUAD' : 'VERIFIED LITIGATION BENCH'}
+                    </span>
+                    <span className="text-xs font-mono font-bold text-emerald-400">98.4% Win Rate</span>
+                  </div>
+                  <div className="text-lg font-serif font-bold">$850,000,000+ Recovered &amp; Defended</div>
+                  <p className="text-[11px] text-slate-300 leading-snug">
+                    Across Federal District Courts, Delaware Chancery, and international arbitration tribunals.
+                  </p>
+                </div>
               </div>
-
-              <div className="py-6 space-y-4">
-                <div className={`p-4 rounded-xl border ${isDark ? 'bg-slate-950 border-slate-800' : 'bg-slate-50 border-slate-200'}`}>
-                  <div className="text-xs font-mono text-slate-500 uppercase">Capital Recovered &amp; Defended</div>
-                  <div className="text-3xl font-serif font-bold text-slate-900 dark:text-white mt-0.5">$850,000,000+</div>
-                  <div className="text-xs text-slate-500 mt-1">Across federal, Delaware Chancery, and arbitration panels.</div>
+            ) : (
+              <TiltCard
+                maxTilt={6}
+                className={`p-8 rounded-3xl border shadow-xl ${
+                  isDark ? 'bg-slate-900/80 border-slate-800' : 'bg-white border-slate-200 shadow-slate-200'
+                }`}
+              >
+                <div className="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-slate-800">
+                  <span className="text-xs font-mono font-bold uppercase text-slate-500">VERIFIED LITIGATION BENCH</span>
+                  <span className="text-xs font-mono font-bold text-emerald-600 dark:text-emerald-400">98.4% Win Rate</span>
                 </div>
 
-                <div className={`p-4 rounded-xl border ${isDark ? 'bg-slate-950 border-slate-800' : 'bg-slate-50 border-slate-200'}`}>
-                  <div className="text-xs font-mono text-slate-500 uppercase">Judicial Injunction Response</div>
-                  <div className="text-2xl font-serif font-bold text-blue-600 dark:text-blue-400 mt-0.5">&lt; 18 Hours</div>
-                  <div className="text-xs text-slate-500 mt-1">Rapid emergency asset-freeze mobilization.</div>
-                </div>
-              </div>
+                <div className="py-6 space-y-4">
+                  <div className={`p-4 rounded-xl border ${isDark ? 'bg-slate-950 border-slate-800' : 'bg-slate-50 border-slate-200'}`}>
+                    <div className="text-xs font-mono text-slate-500 uppercase">Capital Recovered &amp; Defended</div>
+                    <div className="text-3xl font-serif font-bold text-slate-900 dark:text-white mt-0.5">$850,000,000+</div>
+                    <div className="text-xs text-slate-500 mt-1">Across federal, Delaware Chancery, and arbitration panels.</div>
+                  </div>
 
-              <div className="pt-2 text-xs font-mono text-slate-500 text-center">
-                All inquiries reviewed by partner within 2 hours.
-              </div>
-            </TiltCard>
+                  <div className={`p-4 rounded-xl border ${isDark ? 'bg-slate-950 border-slate-800' : 'bg-slate-50 border-slate-200'}`}>
+                    <div className="text-xs font-mono text-slate-500 uppercase">Judicial Injunction Response</div>
+                    <div className={`text-2xl font-serif font-bold ${palette.accentText} mt-0.5`}>&lt; 18 Hours</div>
+                    <div className="text-xs text-slate-500 mt-1">Rapid emergency asset-freeze mobilization.</div>
+                  </div>
+                </div>
+
+                <div className="pt-2 text-xs font-mono text-slate-500 text-center">
+                  All inquiries reviewed by partner within 2 hours.
+                </div>
+              </TiltCard>
+            )}
           </div>
         </div>
       </section>
@@ -253,7 +328,7 @@ export const LegalTemplate: React.FC<IndustryTemplateProps> = ({
             <div
               key={idx}
               className={`px-5 py-1.5 rounded-full border text-xs font-mono font-bold tracking-wider whitespace-nowrap ${
-                isDark ? 'border-slate-800 bg-slate-900 text-blue-300' : 'border-slate-200 bg-white text-blue-900 shadow-2xs'
+                isDark ? 'border-slate-800 bg-slate-900 text-slate-300' : 'border-slate-200 bg-white text-slate-800 shadow-2xs'
               }`}
             >
               {honor}
@@ -262,12 +337,51 @@ export const LegalTemplate: React.FC<IndustryTemplateProps> = ({
         </KineticMarquee>
       </section>
 
+      {/* ABOUT THE FIRM SECTION (IF CONFIGURED) */}
+      {(config.aboutTitle || config.aboutText) && (
+        <section className={`py-20 border-b ${isDark ? 'border-slate-800 bg-slate-950/40' : 'border-slate-200 bg-white'}`}>
+          <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
+              <div className="md:col-span-8 space-y-4">
+                <span className={`text-xs font-mono uppercase tracking-widest ${palette.accentText} font-bold`}>
+                  {config.aboutSubtitle || 'About Our Practice'}
+                </span>
+                <h2 className="text-3xl sm:text-4xl font-serif font-bold text-slate-900 dark:text-white">
+                  {config.aboutTitle || `About ${config.businessName}`}
+                </h2>
+                <p className={`text-sm sm:text-base leading-relaxed ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
+                  {config.aboutText}
+                </p>
+                {config.founderName && (
+                  <div className="pt-3 border-t border-slate-200 dark:border-slate-800 flex items-center gap-3">
+                    {config.founderImageUrl && (
+                      <img src={config.founderImageUrl} alt={config.founderName} className="w-12 h-12 rounded-full object-cover" />
+                    )}
+                    <div>
+                      <div className="text-sm font-bold text-slate-900 dark:text-white">{config.founderName}</div>
+                      <div className="text-xs text-slate-500 font-mono">{config.founderRole || 'Managing Partner'}</div>
+                    </div>
+                  </div>
+                )}
+              </div>
+              {config.aboutImageUrl && (
+                <div className="md:col-span-4">
+                  <img src={config.aboutImageUrl} alt={config.aboutTitle || 'About'} className="w-full h-64 object-cover rounded-2xl shadow-md border border-slate-700/40" />
+                </div>
+              )}
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* 4. FOUR CORE PRACTICE AREAS */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
         <div className="text-center max-w-2xl mx-auto mb-14">
-          <span className="text-xs font-mono uppercase tracking-widest text-blue-600 dark:text-blue-400 font-bold">Practice Groups</span>
+          <span className={`text-xs font-mono uppercase tracking-widest ${palette.accentText} font-bold`}>
+            {config.featuresSubtitle || 'Practice Groups'}
+          </span>
           <h2 className="text-3xl sm:text-5xl font-serif font-bold tracking-tight mt-1 text-slate-900 dark:text-white">
-            Core Areas of Distinction
+            {config.featuresTitle || 'Core Areas of Distinction'}
           </h2>
         </div>
 
@@ -280,7 +394,7 @@ export const LegalTemplate: React.FC<IndustryTemplateProps> = ({
               }`}
             >
               <div className="flex items-center justify-between mb-4">
-                <span className="text-xs font-mono text-blue-600 dark:text-blue-400 font-bold">{practice.badge}</span>
+                <span className={`text-xs font-mono font-bold ${palette.accentText}`}>{practice.badge}</span>
                 <span className="text-xs font-mono text-slate-400">PRACTICE 0{idx + 1}</span>
               </div>
               <h3 className="text-xl font-serif font-bold text-slate-900 dark:text-white mb-2">{practice.title}</h3>
@@ -296,7 +410,7 @@ export const LegalTemplate: React.FC<IndustryTemplateProps> = ({
       <section className={`py-20 border-t ${isDark ? 'border-slate-800 bg-slate-950/60' : 'border-slate-200 bg-slate-50/60'}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-2xl mx-auto mb-14">
-            <span className="text-xs font-mono uppercase tracking-widest text-blue-600 dark:text-blue-400 font-bold">Precedent Record</span>
+            <span className={`text-xs font-mono uppercase tracking-widest ${palette.accentText} font-bold`}>Precedent Record</span>
             <h2 className="text-3xl sm:text-4xl font-serif font-bold tracking-tight mt-1 text-slate-900 dark:text-white">
               Representative Case Precedents
             </h2>
@@ -325,7 +439,7 @@ export const LegalTemplate: React.FC<IndustryTemplateProps> = ({
       {/* 6. 5-PHASE LITIGATION ROADMAP */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
         <div className="text-center max-w-2xl mx-auto mb-14">
-          <span className="text-xs font-mono uppercase tracking-widest text-blue-600 dark:text-blue-400 font-bold">Litigation Strategy</span>
+          <span className={`text-xs font-mono uppercase tracking-widest ${palette.accentText} font-bold`}>Litigation Strategy</span>
           <h2 className="text-3xl sm:text-4xl font-serif font-bold tracking-tight mt-1 text-slate-900 dark:text-white">
             The 5-Phase Trial Lifecycle
           </h2>
@@ -345,7 +459,7 @@ export const LegalTemplate: React.FC<IndustryTemplateProps> = ({
                 isDark ? 'bg-slate-900/60 border-slate-800' : 'bg-white border-slate-200'
               }`}
             >
-              <div className="text-xl font-mono font-bold text-blue-600 dark:text-blue-400 mb-2">{item.num}</div>
+              <div className={`text-xl font-mono font-bold ${palette.accentText} mb-2`}>{item.num}</div>
               <h4 className="text-sm font-serif font-bold text-slate-900 dark:text-white mb-1.5">{item.name}</h4>
               <p className={`text-xs ${isDark ? 'text-slate-400' : 'text-slate-600'} leading-relaxed`}>{item.desc}</p>
             </div>
@@ -357,9 +471,11 @@ export const LegalTemplate: React.FC<IndustryTemplateProps> = ({
       <section id="services" className={`py-20 border-t ${isDark ? 'border-slate-800 bg-slate-950/60' : 'border-slate-200 bg-slate-50/60'}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-2xl mx-auto mb-14">
-            <span className="text-xs font-mono uppercase tracking-widest text-blue-600 dark:text-blue-400 font-bold">Retainer Schedules</span>
+            <span className={`text-xs font-mono uppercase tracking-widest ${palette.accentText} font-bold`}>
+              {config.servicesSubtitle || 'Retainer Schedules'}
+            </span>
             <h2 className="text-3xl sm:text-5xl font-serif font-bold tracking-tight mt-1 text-slate-900 dark:text-white">
-              Legal Retainers &amp; Consultations
+              {config.servicesTitle || 'Legal Retainers & Consultations'}
             </h2>
           </div>
 
@@ -370,8 +486,8 @@ export const LegalTemplate: React.FC<IndustryTemplateProps> = ({
                 className={`p-7 rounded-2xl border flex flex-col justify-between transition-all ${
                   service.popular
                     ? isDark
-                      ? 'bg-slate-900 border-blue-500/60 shadow-xl ring-1 ring-blue-500/30'
-                      : 'bg-white border-blue-500 shadow-md ring-1 ring-blue-500'
+                      ? `bg-slate-900 ${palette.accentBorder} shadow-xl ring-1 ring-blue-500/30`
+                      : `bg-white ${palette.accentBorder} shadow-md ring-1 ring-blue-500`
                     : isDark
                     ? 'bg-slate-900/60 border-slate-800 shadow-xs'
                     : 'bg-white border-slate-200/90 shadow-xs'
@@ -379,13 +495,13 @@ export const LegalTemplate: React.FC<IndustryTemplateProps> = ({
               >
                 <div>
                   {service.popular && (
-                    <span className="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider bg-blue-100 text-blue-900 dark:bg-blue-950 dark:text-blue-300 border border-blue-300 dark:border-blue-800 mb-3">
+                    <span className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider ${palette.lightBg} ${palette.accentText} border ${palette.accentBorder} mb-3`}>
                       Priority Representation
                     </span>
                   )}
                   <h3 className="text-xl font-serif font-bold text-slate-900 dark:text-white">{service.name}</h3>
                   <div className="mt-3 flex items-baseline gap-2">
-                    <span className="text-3xl font-mono font-bold text-blue-600 dark:text-blue-400">
+                    <span className={`text-3xl font-mono font-bold ${palette.accentText}`}>
                       {service.price === 0 ? 'Complimentary' : `$${service.price}`}
                     </span>
                     <span className="text-xs text-slate-500 font-mono">/ {service.durationMinutes} min</span>
@@ -400,7 +516,7 @@ export const LegalTemplate: React.FC<IndustryTemplateProps> = ({
                     onClick={() => onOpenBooking(service.id)}
                     className={`w-full py-2.5 rounded-xl font-mono text-xs font-bold uppercase tracking-wider transition flex items-center justify-center gap-2 cursor-pointer ${
                       service.popular
-                        ? 'bg-blue-700 hover:bg-blue-600 text-white shadow-sm'
+                        ? `${palette.btnBg} ${palette.btnHoverBg} ${palette.btnText} shadow-sm`
                         : isDark
                         ? 'bg-slate-800 hover:bg-slate-700 text-slate-200'
                         : 'bg-slate-100 hover:bg-slate-200 text-slate-800'
@@ -419,8 +535,10 @@ export const LegalTemplate: React.FC<IndustryTemplateProps> = ({
       {/* 8. COMPARISON TABLE */}
       <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
         <div className="text-center max-w-2xl mx-auto mb-12">
-          <span className="text-xs font-mono uppercase tracking-widest text-blue-600 dark:text-blue-400 font-bold">Standard of Excellence</span>
-          <h2 className="text-3xl sm:text-4xl font-serif font-bold mt-1 text-slate-900 dark:text-white">Apex Tier-1 vs Standard Law Firms</h2>
+          <span className={`text-xs font-mono uppercase tracking-widest ${palette.accentText} font-bold`}>Standard of Excellence</span>
+          <h2 className="text-3xl sm:text-4xl font-serif font-bold mt-1 text-slate-900 dark:text-white">
+            {config.businessName || 'Apex Tier-1'} vs Standard Law Firms
+          </h2>
         </div>
 
         <div className={`rounded-2xl border overflow-hidden ${isDark ? 'border-slate-800 bg-slate-900/40' : 'border-slate-200 bg-white shadow-sm'}`}>
@@ -429,7 +547,7 @@ export const LegalTemplate: React.FC<IndustryTemplateProps> = ({
               <thead>
                 <tr className={`border-b font-mono ${isDark ? 'border-slate-800 bg-slate-900 text-slate-400' : 'border-slate-200 bg-slate-50 text-slate-600'}`}>
                   <th className="p-4 sm:p-5 font-semibold">Litigation Metric</th>
-                  <th className="p-4 sm:p-5 font-bold text-blue-600 dark:text-blue-400">Apex Legal Partners</th>
+                  <th className={`p-4 sm:p-5 font-bold ${palette.accentText}`}>{config.businessName || 'Apex Legal Partners'}</th>
                   <th className="p-4 sm:p-5 font-semibold text-slate-500">Standard Billable Law Firms</th>
                 </tr>
               </thead>
@@ -453,7 +571,7 @@ export const LegalTemplate: React.FC<IndustryTemplateProps> = ({
                 ].map((row, idx) => (
                   <tr key={idx} className={isDark ? 'hover:bg-slate-800/40' : 'hover:bg-slate-50/80'}>
                     <td className="p-4 sm:p-5 font-medium text-slate-900 dark:text-white">{row.m}</td>
-                    <td className="p-4 sm:p-5 font-semibold text-blue-700 dark:text-blue-400 flex items-center gap-2">
+                    <td className={`p-4 sm:p-5 font-semibold ${palette.accentText} flex items-center gap-2`}>
                       <CheckCheck className="w-4 h-4 text-emerald-500 shrink-0" />
                       <span>{row.apex}</span>
                     </td>
@@ -475,7 +593,7 @@ export const LegalTemplate: React.FC<IndustryTemplateProps> = ({
       <section className={`py-20 border-t ${isDark ? 'border-slate-800 bg-slate-950/60' : 'border-slate-200 bg-slate-50/60'}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-2xl mx-auto mb-14">
-            <span className="text-xs font-mono uppercase tracking-widest text-blue-600 dark:text-blue-400 font-bold">Leadership</span>
+            <span className={`text-xs font-mono uppercase tracking-widest ${palette.accentText} font-bold`}>Leadership</span>
             <h2 className="text-3xl sm:text-4xl font-serif font-bold tracking-tight mt-1 text-slate-900 dark:text-white">
               Senior Trial Partners
             </h2>
@@ -490,7 +608,7 @@ export const LegalTemplate: React.FC<IndustryTemplateProps> = ({
                 }`}
               >
                 <div className="text-lg font-serif font-bold text-slate-900 dark:text-white">{partner.name}</div>
-                <div className="text-xs font-mono text-blue-600 dark:text-blue-400 mb-1">{partner.role}</div>
+                <div className={`text-xs font-mono ${palette.accentText} mb-1`}>{partner.role}</div>
                 <div className="text-xs text-slate-500 font-mono mb-3">{partner.cred}</div>
                 <p className={`text-xs ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
                   Specialization: {partner.focus}
@@ -504,7 +622,7 @@ export const LegalTemplate: React.FC<IndustryTemplateProps> = ({
       {/* 10. FAQ ACCORDION */}
       <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
         <div className="text-center mb-12">
-          <span className="text-xs font-mono uppercase tracking-widest text-blue-600 dark:text-blue-400 font-bold">Intake &amp; Ethics</span>
+          <span className={`text-xs font-mono uppercase tracking-widest ${palette.accentText} font-bold`}>Intake &amp; Ethics</span>
           <h2 className="text-3xl sm:text-4xl font-serif font-bold tracking-tight mt-1 text-slate-900 dark:text-white">Legal Consultation FAQ</h2>
         </div>
 
@@ -524,7 +642,7 @@ export const LegalTemplate: React.FC<IndustryTemplateProps> = ({
                   className="w-full px-5 py-4 text-left flex items-center justify-between gap-4 font-serif font-bold text-sm text-slate-900 dark:text-white cursor-pointer"
                 >
                   <span>{faq.q}</span>
-                  <ChevronDown className={`w-4 h-4 text-blue-500 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+                  <ChevronDown className={`w-4 h-4 ${palette.accentText} transition-transform ${isOpen ? 'rotate-180' : ''}`} />
                 </button>
                 {isOpen && (
                   <div className={`px-5 pb-4 text-xs sm:text-sm leading-relaxed ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
@@ -541,23 +659,23 @@ export const LegalTemplate: React.FC<IndustryTemplateProps> = ({
       <section className={`py-20 border-t ${isDark ? 'border-slate-800 bg-slate-950 text-slate-100' : 'border-slate-200 bg-slate-50 text-slate-900'}`}>
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6">
           <h3 className={`text-3xl sm:text-5xl font-serif font-bold tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>
-            Schedule a Confidential Case Evaluation
+            {config.ctaHeadline || 'Schedule a Confidential Case Evaluation'}
           </h3>
           <p className={`text-sm sm:text-base ${isDark ? 'text-slate-400' : 'text-slate-600'} max-w-xl mx-auto`}>
-            Discuss your dispute or corporate matter under full Attorney-Client Privilege protection.
+            {config.ctaSubheadline || 'Discuss your dispute or corporate matter under full Attorney-Client Privilege protection.'}
           </p>
           <div className="pt-2 flex flex-wrap justify-center gap-4">
             <button
               onClick={() => onOpenBooking()}
-              className="px-8 py-3.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-serif font-bold text-xs uppercase tracking-wider shadow-lg shadow-blue-600/25 transition-all cursor-pointer"
+              className={`px-8 py-3.5 rounded-xl ${palette.btnBg} ${palette.btnHoverBg} ${palette.btnText} font-serif font-bold text-xs uppercase tracking-wider shadow-lg transition-all cursor-pointer`}
             >
-              Request Partner Retainer Review
+              {config.ctaButtonText || 'Request Partner Retainer Review'}
             </button>
             <button
               onClick={onOpenChat}
               className={`px-6 py-3.5 rounded-xl ${isDark ? 'bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700' : 'bg-white hover:bg-slate-100 text-slate-800 border-slate-200 shadow-xs'} font-semibold text-xs tracking-wider uppercase border transition-colors flex items-center gap-2 cursor-pointer`}
             >
-              <MessageSquare className="w-3.5 h-3.5 text-blue-500" />
+              <MessageSquare className={`w-3.5 h-3.5 ${palette.accentText}`} />
               <span>Privileged Counsel Chat</span>
             </button>
           </div>

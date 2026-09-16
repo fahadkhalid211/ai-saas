@@ -28,6 +28,7 @@ import { IndustryTemplateProps } from '../types';
 import { ScrollProgress } from '../effects/ScrollProgress';
 import { TiltCard } from '../effects/TiltCard';
 import { KineticMarquee } from '../effects/KineticMarquee';
+import { getThemePalette } from '@/lib/landing/types';
 
 export const EcommerceTemplate: React.FC<IndustryTemplateProps> = ({
   config,
@@ -38,6 +39,8 @@ export const EcommerceTemplate: React.FC<IndustryTemplateProps> = ({
   const [activeCategory, setActiveCategory] = useState<'all' | 'apparel' | 'accessories' | 'home'>('all');
   const [likedItems, setLikedItems] = useState<Record<string, boolean>>({});
   const [cartCount, setCartCount] = useState<number>(2);
+  const palette = getThemePalette(config.themeColor, 'ecommerce');
+  const archetype = config.designArchetype || 'ecom_boutique';
   const [promoCopied, setPromoCopied] = useState<boolean>(false);
   const [activeFaq, setActiveFaq] = useState<number | null>(0);
 
@@ -293,8 +296,8 @@ export const EcommerceTemplate: React.FC<IndustryTemplateProps> = ({
           <div className="lg:col-span-6 relative">
             <div className="relative rounded-2xl overflow-hidden aspect-4/5 shadow-2xl">
               <img
-                src="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=1200&auto=format&fit=crop"
-                alt="Editorial Capsule Wardrobe"
+                src={config.heroImageUrl || 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=1200&auto=format&fit=crop'}
+                alt={config.businessName || 'Editorial Capsule Wardrobe'}
                 className="w-full h-full object-cover object-center"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
@@ -518,15 +521,50 @@ export const EcommerceTemplate: React.FC<IndustryTemplateProps> = ({
         </div>
       </section>
 
+      {/* ABOUT US / ATELIER HERITAGE SECTION */}
+      {(config.aboutTitle || config.aboutText) && (
+        <section id="about" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+            <div className="lg:col-span-7 space-y-4">
+              <span className={`text-xs font-mono uppercase tracking-widest ${palette.accentText} font-bold`}>
+                {config.aboutSubtitle || 'Atelier & Heritage Craft'}
+              </span>
+              <h2 className="text-3xl sm:text-4xl font-serif font-light text-neutral-900 dark:text-white">
+                {config.aboutTitle || `About ${config.businessName}`}
+              </h2>
+              <p className={`text-sm leading-relaxed ${isDark ? 'text-neutral-300' : 'text-neutral-600'}`}>
+                {config.aboutText}
+              </p>
+              {config.founderName && (
+                <div className="pt-2 flex items-center gap-3">
+                  {config.founderImageUrl && (
+                    <img src={config.founderImageUrl} alt={config.founderName} className="w-12 h-12 rounded-full object-cover border border-amber-500/40" />
+                  )}
+                  <div>
+                    <div className="text-sm font-bold text-neutral-900 dark:text-white">{config.founderName}</div>
+                    <div className="text-xs text-neutral-500">{config.founderRole || 'Founder & Creative Director'}</div>
+                  </div>
+                </div>
+              )}
+            </div>
+            {config.aboutImageUrl && (
+              <div className="lg:col-span-5 rounded-2xl overflow-hidden border border-neutral-800">
+                <img src={config.aboutImageUrl} alt="About Us" className="w-full h-72 object-cover" />
+              </div>
+            )}
+          </div>
+        </section>
+      )}
+
       {/* 7. BESPOKE STYLING & CONCIERGE SERVICES (FROM CONFIG.SERVICES) */}
       <section id="services" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
         <div className="text-center max-w-2xl mx-auto mb-14">
-          <span className="text-xs font-mono uppercase tracking-widest text-amber-600 dark:text-amber-400 font-bold">Atelier Services</span>
+          <span className={`text-xs font-mono uppercase tracking-widest ${palette.accentText} font-bold`}>Atelier Services</span>
           <h2 className="text-3xl sm:text-4xl font-serif font-light text-neutral-900 dark:text-white">
-            Tailoring &amp; Styling Sessions
+            {config.servicesTitle || 'Tailoring & Styling Sessions'}
           </h2>
           <p className={`mt-2 text-xs sm:text-sm ${isDark ? 'text-neutral-400' : 'text-neutral-600'}`}>
-            Schedule an in-showroom private fitting or 1-on-1 virtual styling session with our certified curators.
+            {config.servicesSubtitle || 'Schedule an in-showroom private fitting or 1-on-1 virtual styling session with our certified curators.'}
           </p>
         </div>
 
@@ -707,17 +745,17 @@ export const EcommerceTemplate: React.FC<IndustryTemplateProps> = ({
       <section className={`py-20 border-t ${isDark ? 'border-neutral-800 bg-neutral-950 text-neutral-100' : 'border-neutral-200 bg-neutral-50 text-neutral-900'}`}>
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6">
           <h3 className={`text-3xl sm:text-5xl font-serif font-light tracking-tight ${isDark ? 'text-white' : 'text-neutral-900'}`}>
-            Join The Private Capsule Registry
+            {config.ctaHeadline || 'Join The Private Capsule Registry'}
           </h3>
           <p className={`text-sm sm:text-base ${isDark ? 'text-neutral-400' : 'text-neutral-600'} max-w-xl mx-auto font-light`}>
-            Enjoy priority 24-hour access to limited seasonal runs and complimentary bespoke tailoring invitations.
+            {config.ctaSubheadline || 'Enjoy priority 24-hour access to limited seasonal runs and complimentary bespoke tailoring invitations.'}
           </p>
           <div className="pt-2 flex flex-wrap justify-center gap-4">
             <button
               onClick={() => onOpenBooking()}
-              className="px-8 py-3.5 rounded-full bg-amber-500 hover:bg-amber-400 text-neutral-950 font-bold text-xs uppercase tracking-wider shadow-lg shadow-amber-500/25 transition-all cursor-pointer"
+              className={`px-8 py-3.5 rounded-full ${palette.btnBg} ${palette.btnHoverBg} ${palette.btnText} font-bold text-xs uppercase tracking-wider shadow-lg transition-all cursor-pointer`}
             >
-              Book Private Showroom Fitting
+              {config.ctaButtonText || 'Book Private Showroom Fitting'}
             </button>
             <button
               onClick={onOpenChat}
@@ -727,6 +765,11 @@ export const EcommerceTemplate: React.FC<IndustryTemplateProps> = ({
               <span>Ask Styling Concierge</span>
             </button>
           </div>
+          {config.footerText && (
+            <div className="pt-8 border-t border-neutral-800 text-center text-xs text-neutral-500">
+              {config.footerText}
+            </div>
+          )}
         </div>
       </section>
     </div>

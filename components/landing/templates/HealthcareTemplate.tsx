@@ -26,13 +26,17 @@ import { IndustryTemplateProps } from '../types';
 import { ScrollProgress } from '../effects/ScrollProgress';
 import { TiltCard } from '../effects/TiltCard';
 import { KineticMarquee } from '../effects/KineticMarquee';
+import { getThemePalette } from '@/lib/landing/types';
 
 export const HealthcareTemplate: React.FC<IndustryTemplateProps> = ({
   config,
   isDark,
+  currentTheme,
   onOpenBooking,
   onOpenChat,
 }) => {
+  const palette = currentTheme || getThemePalette(config.themeColor, 'healthcare');
+
   const [selectedCare, setSelectedCare] = useState<'preventive' | 'cosmetic' | 'implants'>('cosmetic');
   const [activeFaq, setActiveFaq] = useState<number | null>(0);
 
@@ -204,35 +208,54 @@ export const HealthcareTemplate: React.FC<IndustryTemplateProps> = ({
 
           {/* Hero Media Card */}
           <div className="lg:col-span-5 relative">
-            <TiltCard
-              maxTilt={6}
-              className={`p-8 rounded-3xl border shadow-xl ${
-                isDark ? 'bg-slate-950/80 border-teal-950' : 'bg-white border-teal-200 shadow-teal-100'
-              }`}
-            >
-              <div className="flex items-center justify-between pb-4 border-b border-teal-100 dark:border-teal-950">
-                <span className="text-xs font-mono font-bold uppercase text-slate-500">CLINICAL EXCELLENCE</span>
-                <span className="text-xs font-mono font-bold text-teal-600 dark:text-teal-400">Zero-Anxiety Protocol</span>
-              </div>
-
-              <div className="py-6 space-y-4">
-                <div className={`p-4 rounded-xl border ${isDark ? 'bg-slate-900 border-teal-950' : 'bg-teal-50/60 border-teal-100'}`}>
-                  <div className="text-xs font-mono text-slate-500 uppercase">Hospital-Grade Air Purity</div>
-                  <div className="text-2xl font-serif font-bold text-slate-900 dark:text-white mt-0.5">8 Air Changes / Hr</div>
-                  <div className="text-xs text-slate-500 mt-1">Medical HEPA filtration in every private operatory.</div>
-                </div>
-
-                <div className={`p-4 rounded-xl border ${isDark ? 'bg-slate-900 border-teal-950' : 'bg-teal-50/60 border-teal-100'}`}>
-                  <div className="text-xs font-mono text-slate-500 uppercase">Digital Scanner Accuracy</div>
-                  <div className="text-2xl font-serif font-bold text-teal-600 dark:text-teal-400 mt-0.5">Sub-20 Microns</div>
-                  <div className="text-xs text-slate-500 mt-1">Zero gag-inducing putty impressions.</div>
+            {config.heroImageUrl ? (
+              <div className="relative rounded-3xl overflow-hidden border border-teal-800/40 shadow-2xl group">
+                <img
+                  src={config.heroImageUrl}
+                  alt={config.businessName || 'Clinical Care'}
+                  className="w-full h-96 sm:h-[440px] object-cover object-center group-hover:scale-102 transition duration-700"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent" />
+                <div className="absolute bottom-6 left-6 right-6 p-4 rounded-2xl backdrop-blur-md bg-black/60 border border-white/10 text-white space-y-1">
+                  <div className="flex items-center justify-between text-xs font-mono">
+                    <span className="text-teal-300 font-bold uppercase">Biological Standard</span>
+                    <span className="text-emerald-400">Zero-Anxiety Protocol</span>
+                  </div>
+                  <div className="text-base font-serif font-bold">State-of-the-Art Care Suite</div>
+                  <p className="text-[11px] text-slate-300">HEPA filtered operatories &amp; digital scanning.</p>
                 </div>
               </div>
+            ) : (
+              <TiltCard
+                maxTilt={6}
+                className={`p-8 rounded-3xl border shadow-xl ${
+                  isDark ? 'bg-slate-950/80 border-teal-950' : 'bg-white border-teal-200 shadow-teal-100'
+                }`}
+              >
+                <div className="flex items-center justify-between pb-4 border-b border-teal-100 dark:border-teal-950">
+                  <span className="text-xs font-mono font-bold uppercase text-slate-500">CLINICAL EXCELLENCE</span>
+                  <span className="text-xs font-mono font-bold text-teal-600 dark:text-teal-400">Zero-Anxiety Protocol</span>
+                </div>
 
-              <div className="pt-2 text-xs font-mono text-slate-500 text-center">
-                Insurance benefits verified prior to your visit.
-              </div>
-            </TiltCard>
+                <div className="py-6 space-y-4">
+                  <div className={`p-4 rounded-xl border ${isDark ? 'bg-slate-900 border-teal-950' : 'bg-teal-50/60 border-teal-100'}`}>
+                    <div className="text-xs font-mono text-slate-500 uppercase">Hospital-Grade Air Purity</div>
+                    <div className="text-2xl font-serif font-bold text-slate-900 dark:text-white mt-0.5">8 Air Changes / Hr</div>
+                    <div className="text-xs text-slate-500 mt-1">Medical HEPA filtration in every private operatory.</div>
+                  </div>
+
+                  <div className={`p-4 rounded-xl border ${isDark ? 'bg-slate-900 border-teal-950' : 'bg-teal-50/60 border-teal-100'}`}>
+                    <div className="text-xs font-mono text-slate-500 uppercase">Digital Scanner Accuracy</div>
+                    <div className="text-2xl font-serif font-bold text-teal-600 dark:text-teal-400 mt-0.5">Sub-20 Microns</div>
+                    <div className="text-xs text-slate-500 mt-1">Zero gag-inducing putty impressions.</div>
+                  </div>
+                </div>
+
+                <div className="pt-2 text-xs font-mono text-slate-500 text-center">
+                  Insurance benefits verified prior to your visit.
+                </div>
+              </TiltCard>
+            )}
           </div>
         </div>
       </section>
@@ -317,15 +340,50 @@ export const HealthcareTemplate: React.FC<IndustryTemplateProps> = ({
         </div>
       </section>
 
+      {/* ABOUT US / CLINICAL EXCELLENCE SECTION */}
+      {(config.aboutTitle || config.aboutText) && (
+        <section id="about" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+            <div className="lg:col-span-7 space-y-4">
+              <span className={`text-xs font-mono uppercase tracking-widest ${palette.accentText} font-bold`}>
+                {config.aboutSubtitle || 'Patient-First Clinical Excellence'}
+              </span>
+              <h2 className="text-3xl sm:text-4xl font-serif font-bold text-slate-900 dark:text-white">
+                {config.aboutTitle || `About ${config.businessName}`}
+              </h2>
+              <p className={`text-sm leading-relaxed ${isDark ? 'text-teal-100/80' : 'text-slate-600'}`}>
+                {config.aboutText}
+              </p>
+              {config.founderName && (
+                <div className="pt-2 flex items-center gap-3">
+                  {config.founderImageUrl && (
+                    <img src={config.founderImageUrl} alt={config.founderName} className="w-12 h-12 rounded-full object-cover border border-teal-500/40" />
+                  )}
+                  <div>
+                    <div className="text-sm font-bold text-slate-900 dark:text-white">{config.founderName}</div>
+                    <div className="text-xs text-slate-500">{config.founderRole || 'Lead Clinical Director'}</div>
+                  </div>
+                </div>
+              )}
+            </div>
+            {config.aboutImageUrl && (
+              <div className="lg:col-span-5 rounded-2xl overflow-hidden border border-teal-900/30">
+                <img src={config.aboutImageUrl} alt="About Us" className="w-full h-72 object-cover" />
+              </div>
+            )}
+          </div>
+        </section>
+      )}
+
       {/* 6. SERVICES & PATIENT CONSULTATIONS (FROM CONFIG.SERVICES) */}
       <section id="services" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
         <div className="text-center max-w-2xl mx-auto mb-14">
-          <span className="text-xs font-mono uppercase tracking-widest text-teal-600 dark:text-teal-400 font-bold">Treatment Menu</span>
+          <span className={`text-xs font-mono uppercase tracking-widest ${palette.accentText} font-bold`}>Treatment Menu</span>
           <h2 className="text-3xl sm:text-5xl font-serif font-bold tracking-tight mt-1 text-slate-900 dark:text-white">
-            Clinical Services &amp; Fees
+            {config.servicesTitle || 'Clinical Services & Fees'}
           </h2>
           <p className={`mt-2 text-xs sm:text-sm ${isDark ? 'text-teal-100/70' : 'text-slate-600'}`}>
-            Covered in part or full by participating PPO insurance carriers.
+            {config.servicesSubtitle || 'Covered in part or full by participating PPO insurance carriers.'}
           </p>
         </div>
 
@@ -506,17 +564,17 @@ export const HealthcareTemplate: React.FC<IndustryTemplateProps> = ({
       <section className={`py-20 border-t ${isDark ? 'border-teal-950 bg-slate-950 text-slate-100' : 'border-teal-200 bg-teal-50/60 text-slate-900'}`}>
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6">
           <h3 className={`text-3xl sm:text-5xl font-serif font-bold tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>
-            Begin Your Smile Health Journey
+            {config.ctaHeadline || 'Begin Your Smile Health Journey'}
           </h3>
           <p className={`text-sm sm:text-base ${isDark ? 'text-slate-400' : 'text-slate-600'} max-w-xl mx-auto font-light`}>
-            New patients welcome. Book your comprehensive exam and digital scan in under 60 seconds.
+            {config.ctaSubheadline || 'New patients welcome. Book your comprehensive exam and digital scan in under 60 seconds.'}
           </p>
           <div className="pt-2 flex flex-wrap justify-center gap-4">
             <button
               onClick={() => onOpenBooking()}
-              className="px-8 py-3.5 rounded-xl bg-teal-600 hover:bg-teal-500 text-white font-bold text-xs uppercase tracking-wider shadow-lg shadow-teal-600/25 transition-all cursor-pointer"
+              className={`px-8 py-3.5 rounded-xl ${palette.btnBg} ${palette.btnHoverBg} ${palette.btnText} font-bold text-xs uppercase tracking-wider shadow-lg transition-all cursor-pointer`}
             >
-              Schedule New Patient Visit
+              {config.ctaButtonText || 'Schedule New Patient Visit'}
             </button>
             <button
               onClick={onOpenChat}
@@ -526,6 +584,11 @@ export const HealthcareTemplate: React.FC<IndustryTemplateProps> = ({
               <span>Ask Insurance Questions</span>
             </button>
           </div>
+          {config.footerText && (
+            <div className="pt-8 border-t border-teal-950/40 text-center text-xs text-slate-500">
+              {config.footerText}
+            </div>
+          )}
         </div>
       </section>
     </div>

@@ -424,6 +424,11 @@ export const CustomSkeletonTemplate: React.FC<IndustryTemplateProps> = ({
             </button>
           </div>
         </div>
+        {config.footerText && (
+          <div className="pt-2 text-center text-xs text-slate-500">
+            {config.footerText}
+          </div>
+        )}
       </footer>
     </div>
   );

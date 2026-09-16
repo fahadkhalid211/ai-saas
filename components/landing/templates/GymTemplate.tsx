@@ -29,6 +29,7 @@ import { IndustryTemplateProps } from '../types';
 import { ScrollProgress } from '../effects/ScrollProgress';
 import { TiltCard } from '../effects/TiltCard';
 import { KineticMarquee } from '../effects/KineticMarquee';
+import { getThemePalette } from '@/lib/landing/types';
 
 export const GymTemplate: React.FC<IndustryTemplateProps> = ({
   config,
@@ -39,6 +40,8 @@ export const GymTemplate: React.FC<IndustryTemplateProps> = ({
   const [goal, setGoal] = useState<'strength' | 'hypertrophy' | 'endurance'>('strength');
   const [daysPerWeek, setDaysPerWeek] = useState<number>(4);
   const [activeFaq, setActiveFaq] = useState<number | null>(0);
+  const palette = getThemePalette(config.themeColor, 'gym');
+  const archetype = config.designArchetype || 'gym_hardcore';
 
   const tickerItems = [
     'ELEIKO OLYMPIC LIFTING BARS & BUMPERS',
@@ -185,10 +188,10 @@ export const GymTemplate: React.FC<IndustryTemplateProps> = ({
               <button
                 type="button"
                 onClick={() => onOpenBooking()}
-                className="px-8 py-4 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-sm shadow-lg shadow-rose-600/25 transition-all transform hover:-translate-y-0.5 flex items-center gap-2.5 cursor-pointer"
+                className={`px-8 py-4 rounded-xl ${palette.btnBg} ${palette.btnHoverBg} ${palette.btnText} font-bold text-sm shadow-lg transition-all transform hover:-translate-y-0.5 flex items-center gap-2.5 cursor-pointer`}
               >
                 <Calendar className="h-4 w-4" />
-                <span>Claim Free 1-Day Trial Pass</span>
+                <span>{config.heroCtaText || 'Claim Free 1-Day Trial Pass'}</span>
               </button>
 
               <button
@@ -341,15 +344,50 @@ export const GymTemplate: React.FC<IndustryTemplateProps> = ({
         </div>
       </section>
 
+      {/* ABOUT US / FACILITY PHILOSOPHY SECTION */}
+      {(config.aboutTitle || config.aboutText) && (
+        <section id="about" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+            <div className="lg:col-span-7 space-y-4">
+              <span className={`text-xs font-mono uppercase tracking-widest ${palette.accentText} font-bold`}>
+                {config.aboutSubtitle || 'The Facility Philosophy'}
+              </span>
+              <h2 className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white">
+                {config.aboutTitle || `About ${config.businessName}`}
+              </h2>
+              <p className={`text-sm leading-relaxed ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
+                {config.aboutText}
+              </p>
+              {config.founderName && (
+                <div className="pt-2 flex items-center gap-3">
+                  {config.founderImageUrl && (
+                    <img src={config.founderImageUrl} alt={config.founderName} className="w-12 h-12 rounded-full object-cover border border-slate-700" />
+                  )}
+                  <div>
+                    <div className="text-sm font-bold text-slate-900 dark:text-white">{config.founderName}</div>
+                    <div className="text-xs text-slate-500">{config.founderRole || 'Head Strength Coach & Founder'}</div>
+                  </div>
+                </div>
+              )}
+            </div>
+            {config.aboutImageUrl && (
+              <div className="lg:col-span-5 rounded-2xl overflow-hidden border border-slate-800">
+                <img src={config.aboutImageUrl} alt="About Us" className="w-full h-72 object-cover" />
+              </div>
+            )}
+          </div>
+        </section>
+      )}
+
       {/* 6. FULL MEMBERSHIP TIERS (FROM CONFIG.SERVICES) */}
-      <section id="pricing" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+      <section id="services" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
         <div className="text-center max-w-2xl mx-auto mb-14">
-          <span className="text-xs font-mono uppercase tracking-widest text-rose-600 dark:text-rose-400 font-bold">Membership Plans</span>
+          <span className={`text-xs font-mono uppercase tracking-widest ${palette.accentText} font-bold`}>Membership Plans</span>
           <h2 className="text-3xl sm:text-5xl font-black tracking-tight mt-1 text-slate-900 dark:text-white">
-            Transparent Membership Tiers
+            {config.servicesTitle || 'Transparent Membership Tiers'}
           </h2>
           <p className={`mt-2 text-xs sm:text-sm ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
-            No long-term contracts. 30-day cancellation notice on all plans.
+            {config.servicesSubtitle || 'No long-term contracts. 30-day cancellation notice on all plans.'}
           </p>
         </div>
 
@@ -566,17 +604,17 @@ export const GymTemplate: React.FC<IndustryTemplateProps> = ({
       <section className={`py-20 border-t ${isDark ? 'border-slate-800 bg-slate-950 text-slate-100' : 'border-slate-200 bg-slate-50 text-slate-900'}`}>
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6">
           <h3 className={`text-3xl sm:text-5xl font-black tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>
-            Ready to Redefine Your Potential?
+            {config.ctaHeadline || 'Ready to Redefine Your Potential?'}
           </h3>
           <p className={`text-sm sm:text-base ${isDark ? 'text-slate-400' : 'text-slate-600'} max-w-xl mx-auto`}>
-            Experience our Eleiko weightlifting floor and thermal contrast suite with a complimentary 1-day pass.
+            {config.ctaSubheadline || 'Experience our Eleiko weightlifting floor and thermal contrast suite with a complimentary 1-day pass.'}
           </p>
           <div className="pt-2 flex flex-wrap justify-center gap-4">
             <button
               onClick={() => onOpenBooking()}
-              className="px-8 py-3.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs uppercase tracking-wider shadow-lg shadow-rose-600/25 transition-all cursor-pointer"
+              className={`px-8 py-3.5 rounded-xl ${palette.btnBg} ${palette.btnHoverBg} ${palette.btnText} font-bold text-xs uppercase tracking-wider shadow-lg transition-all cursor-pointer`}
             >
-              Get Free 1-Day Trial Pass
+              {config.ctaButtonText || 'Get Free 1-Day Trial Pass'}
             </button>
             <button
               onClick={onOpenChat}
@@ -586,6 +624,11 @@ export const GymTemplate: React.FC<IndustryTemplateProps> = ({
               <span>Ask Coach Questions</span>
             </button>
           </div>
+          {config.footerText && (
+            <div className="pt-8 border-t border-slate-800/60 text-center text-xs text-slate-500">
+              {config.footerText}
+            </div>
+          )}
         </div>
       </section>
     </div>

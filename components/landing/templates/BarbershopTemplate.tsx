@@ -27,6 +27,7 @@ import { IndustryTemplateProps } from '../types';
 import { ScrollProgress } from '../effects/ScrollProgress';
 import { TiltCard } from '../effects/TiltCard';
 import { KineticMarquee } from '../effects/KineticMarquee';
+import { getThemePalette } from '@/lib/landing/types';
 
 export const BarbershopTemplate: React.FC<IndustryTemplateProps> = ({
   config,
@@ -36,6 +37,8 @@ export const BarbershopTemplate: React.FC<IndustryTemplateProps> = ({
 }) => {
   const [selectedStyle, setSelectedStyle] = useState<number>(0);
   const [activeFaq, setActiveFaq] = useState<number | null>(0);
+  const palette = getThemePalette(config.themeColor, 'barbershop');
+  const archetype = config.designArchetype || 'barber_classic';
 
   const marqueeBadges = [
     'MASTER CRAFTSMANSHIP SINCE 2018',
@@ -177,7 +180,7 @@ export const BarbershopTemplate: React.FC<IndustryTemplateProps> = ({
               <button
                 type="button"
                 onClick={() => onOpenBooking()}
-                className="px-7 py-3.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-sm shadow-lg shadow-amber-500/25 transition-all transform hover:-translate-y-0.5 flex items-center gap-2.5 cursor-pointer"
+                className={`px-7 py-3.5 rounded-xl ${palette.btnBg} ${palette.btnHoverBg} ${palette.btnText} font-bold text-sm shadow-lg transition-all transform hover:-translate-y-0.5 flex items-center gap-2.5 cursor-pointer`}
               >
                 <Calendar className="h-4 w-4" />
                 <span>{config.heroCtaText || 'Reserve Your Chair'}</span>
@@ -324,15 +327,50 @@ export const BarbershopTemplate: React.FC<IndustryTemplateProps> = ({
         </div>
       </section>
 
+      {/* ABOUT US / HERITAGE SECTION */}
+      {(config.aboutTitle || config.aboutText) && (
+        <section id="about" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+            <div className="lg:col-span-7 space-y-4">
+              <span className={`text-xs font-mono uppercase tracking-widest ${palette.accentText} font-bold`}>
+                {config.aboutSubtitle || 'Heritage & Craftsmanship'}
+              </span>
+              <h2 className="text-3xl sm:text-4xl font-serif font-bold text-slate-900 dark:text-white">
+                {config.aboutTitle || `About ${config.businessName}`}
+              </h2>
+              <p className={`text-sm leading-relaxed ${isDark ? 'text-amber-100/80' : 'text-slate-600'}`}>
+                {config.aboutText}
+              </p>
+              {config.founderName && (
+                <div className="pt-2 flex items-center gap-3">
+                  {config.founderImageUrl && (
+                    <img src={config.founderImageUrl} alt={config.founderName} className="w-12 h-12 rounded-full object-cover border border-amber-500/40" />
+                  )}
+                  <div>
+                    <div className="text-sm font-bold text-slate-900 dark:text-white">{config.founderName}</div>
+                    <div className="text-xs text-slate-500">{config.founderRole || 'Founder & Master Craftsman'}</div>
+                  </div>
+                </div>
+              )}
+            </div>
+            {config.aboutImageUrl && (
+              <div className="lg:col-span-5 rounded-2xl overflow-hidden border border-amber-900/30">
+                <img src={config.aboutImageUrl} alt="About Us" className="w-full h-72 object-cover" />
+              </div>
+            )}
+          </div>
+        </section>
+      )}
+
       {/* 6. FULL TRANSPARENT SERVICE LEDGER (FROM CONFIG.SERVICES) */}
       <section id="services" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
         <div className="text-center max-w-2xl mx-auto mb-14">
-          <span className="text-xs font-mono uppercase tracking-widest text-amber-600 dark:text-amber-400 font-bold">Grooming Menu</span>
+          <span className={`text-xs font-mono uppercase tracking-widest ${palette.accentText} font-bold`}>Grooming Menu</span>
           <h2 className="text-3xl sm:text-5xl font-serif font-bold tracking-tight mt-1 text-slate-900 dark:text-white">
-            Services &amp; Transparent Rates
+            {config.servicesTitle || 'Services & Transparent Rates'}
           </h2>
           <p className={`mt-2 text-xs sm:text-sm ${isDark ? 'text-amber-100/70' : 'text-slate-600'}`}>
-            Every service includes consultation, hot towel steam, and signature pomade finish.
+            {config.servicesSubtitle || 'Every service includes consultation, hot towel steam, and signature pomade finish.'}
           </p>
         </div>
 
@@ -551,17 +589,17 @@ export const BarbershopTemplate: React.FC<IndustryTemplateProps> = ({
       <section className={`py-20 border-t ${isDark ? 'border-amber-900/60 bg-[#0A0705] text-amber-50' : 'border-amber-200 bg-amber-50/70 text-slate-900'}`}>
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6">
           <h3 className={`text-3xl sm:text-5xl font-serif font-bold tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>
-            Reserve Your Chair Today
+            {config.ctaHeadline || 'Reserve Your Chair Today'}
           </h3>
           <p className={`text-sm sm:text-base ${isDark ? 'text-amber-200/70' : 'text-slate-600'} max-w-xl mx-auto`}>
-            Experience the gold standard in master grooming. Walk out confident.
+            {config.ctaSubheadline || 'Experience the gold standard in master grooming. Walk out confident.'}
           </p>
           <div className="pt-2 flex flex-wrap justify-center gap-4">
             <button
               onClick={() => onOpenBooking()}
-              className="px-8 py-3.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs uppercase tracking-wider shadow-lg shadow-amber-500/25 transition-all cursor-pointer"
+              className={`px-8 py-3.5 rounded-xl ${palette.btnBg} ${palette.btnHoverBg} ${palette.btnText} font-bold text-xs uppercase tracking-wider shadow-lg transition-all cursor-pointer`}
             >
-              Book Online In 60 Seconds
+              {config.ctaButtonText || 'Book Online In 60 Seconds'}
             </button>
             <button
               onClick={onOpenChat}
@@ -571,6 +609,11 @@ export const BarbershopTemplate: React.FC<IndustryTemplateProps> = ({
               <span>Ask Available Chairs</span>
             </button>
           </div>
+          {config.footerText && (
+            <div className="pt-8 border-t border-amber-900/20 text-center text-xs text-slate-500">
+              {config.footerText}
+            </div>
+          )}
         </div>
       </section>
     </div>

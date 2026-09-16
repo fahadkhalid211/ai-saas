@@ -33,11 +33,18 @@ import {
   Bot,
   ShieldCheck,
   ArrowLeft,
+  Menu,
+  FileText,
+  RotateCcw,
+  Layers,
+  Palette,
 } from 'lucide-react';
 import {
   LandingPageConfig,
   TEMPLATE_LANDING_CONFIGS,
   getLandingConfigForSlugOrTemplate,
+  getArchetypesForIndustry,
+  LandingPageMenuItem,
 } from '@/lib/landing/types';
 import { LandingPagesList } from './landing/LandingPagesList';
 import { AiLandingWizard } from './landing/AiLandingWizard';
@@ -321,7 +328,47 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
     }
   };
 
-  const [activeTab, setActiveTab] = React.useState<'identity' | 'hero' | 'services' | 'contact'>('identity');
+  const [activeTab, setActiveTab] = React.useState<'identity' | 'hero' | 'menu' | 'sections' | 'services' | 'contact'>('identity');
+  const [newMenuLabel, setNewMenuLabel] = React.useState('');
+  const [newMenuHref, setNewMenuHref] = React.useState('');
+
+  const handleAddMenuItem = () => {
+    if (!newMenuLabel.trim() || !newMenuHref.trim()) return;
+    const current = landingConfig.menuItems || [];
+    setLandingConfig({
+      ...landingConfig,
+      menuItems: [...current, { label: newMenuLabel.trim(), href: newMenuHref.trim() }],
+    });
+    setNewMenuLabel('');
+    setNewMenuHref('');
+  };
+
+  const handleRemoveMenuItem = (index: number) => {
+    const current = [...(landingConfig.menuItems || [])];
+    current.splice(index, 1);
+    setLandingConfig({
+      ...landingConfig,
+      menuItems: current,
+    });
+  };
+
+  const handleUpdateMenuItem = (index: number, field: 'label' | 'href', value: string) => {
+    const current = [...(landingConfig.menuItems || [])];
+    if (current[index]) {
+      current[index] = { ...current[index], [field]: value };
+      setLandingConfig({
+        ...landingConfig,
+        menuItems: current,
+      });
+    }
+  };
+
+  const handleResetMenuToDefault = () => {
+    setLandingConfig({
+      ...landingConfig,
+      menuItems: undefined,
+    });
+  };
   const [showTemplatesModal, setShowTemplatesModal] = React.useState(false);
   const [templateSearch, setTemplateSearch] = React.useState('');
   const [selectedCategory, setSelectedCategory] = React.useState('all');
@@ -661,24 +708,24 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
       )}
 
       {/* Settings Navigation Tabs */}
-      <div className="flex border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-2xl px-2 pt-2 shadow-xs">
+      <div className="flex border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-2xl px-2 pt-2 shadow-xs overflow-x-auto no-scrollbar">
         <button
           type="button"
           onClick={() => setActiveTab('identity')}
-          className={`flex items-center gap-2 px-4 py-3 text-xs font-bold border-b-2 transition cursor-pointer ${
+          className={`flex items-center gap-2 px-4 py-3 text-xs font-bold border-b-2 transition whitespace-nowrap shrink-0 cursor-pointer ${
             activeTab === 'identity'
               ? 'border-blue-600 text-blue-600 dark:text-blue-400'
               : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
           }`}
         >
           <Briefcase className="h-4 w-4" />
-          <span>Identity &amp; Branding</span>
+          <span>Identity &amp; Design</span>
         </button>
 
         <button
           type="button"
           onClick={() => setActiveTab('hero')}
-          className={`flex items-center gap-2 px-4 py-3 text-xs font-bold border-b-2 transition cursor-pointer ${
+          className={`flex items-center gap-2 px-4 py-3 text-xs font-bold border-b-2 transition whitespace-nowrap shrink-0 cursor-pointer ${
             activeTab === 'hero'
               ? 'border-blue-600 text-blue-600 dark:text-blue-400'
               : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
@@ -690,8 +737,37 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
 
         <button
           type="button"
+          onClick={() => setActiveTab('menu')}
+          className={`flex items-center gap-2 px-4 py-3 text-xs font-bold border-b-2 transition whitespace-nowrap shrink-0 cursor-pointer ${
+            activeTab === 'menu'
+              ? 'border-blue-600 text-blue-600 dark:text-blue-400'
+              : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+          }`}
+        >
+          <Menu className="h-4 w-4" />
+          <span>Navigation Menu</span>
+          <span className="ml-1 px-1.5 py-0.2 rounded-full text-[10px] bg-slate-100 dark:bg-slate-800 font-mono text-slate-600 dark:text-slate-300">
+            {(landingConfig.menuItems || []).length || 'Auto'}
+          </span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('sections')}
+          className={`flex items-center gap-2 px-4 py-3 text-xs font-bold border-b-2 transition whitespace-nowrap shrink-0 cursor-pointer ${
+            activeTab === 'sections'
+              ? 'border-blue-600 text-blue-600 dark:text-blue-400'
+              : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+          }`}
+        >
+          <FileText className="h-4 w-4" />
+          <span>Page Text Sections</span>
+        </button>
+
+        <button
+          type="button"
           onClick={() => setActiveTab('services')}
-          className={`flex items-center gap-2 px-4 py-3 text-xs font-bold border-b-2 transition cursor-pointer ${
+          className={`flex items-center gap-2 px-4 py-3 text-xs font-bold border-b-2 transition whitespace-nowrap shrink-0 cursor-pointer ${
             activeTab === 'services'
               ? 'border-blue-600 text-blue-600 dark:text-blue-400'
               : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
@@ -707,7 +783,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
         <button
           type="button"
           onClick={() => setActiveTab('contact')}
-          className={`flex items-center gap-2 px-4 py-3 text-xs font-bold border-b-2 transition cursor-pointer ${
+          className={`flex items-center gap-2 px-4 py-3 text-xs font-bold border-b-2 transition whitespace-nowrap shrink-0 cursor-pointer ${
             activeTab === 'contact'
               ? 'border-blue-600 text-blue-600 dark:text-blue-400'
               : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
@@ -956,6 +1032,95 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
                     <option value="teal">Sovereign Teal (Private Wealth / Fintech)</option>
                   </select>
                 </div>
+              </div>
+            </div>
+
+            {/* 3 Designs Per Page Type Selector */}
+            <div className="p-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                    <Layers className="h-4 w-4 text-blue-600" />
+                    <span>Visual Design Archetype ({getArchetypesForIndustry(landingConfig.industry).length} Styles Available)</span>
+                  </h2>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                    Choose from 3 tailored design archetypes specifically crafted for your industry.
+                  </p>
+                </div>
+                <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-900">
+                  Instant Preview
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-1">
+                {getArchetypesForIndustry(landingConfig.industry).map((arch) => {
+                  const isActive = landingConfig.designArchetype === arch.id ||
+                    (!landingConfig.designArchetype && arch.id.includes(landingConfig.industry || 'barber'));
+                  return (
+                    <div
+                      key={arch.id}
+                      onClick={() => {
+                        setLandingConfig({
+                          ...landingConfig,
+                          designArchetype: arch.id,
+                          themeColor: arch.themeColor || landingConfig.themeColor,
+                        });
+                      }}
+                      className={`rounded-2xl border overflow-hidden transition-all cursor-pointer flex flex-col justify-between ${
+                        isActive
+                          ? 'border-blue-600 dark:border-blue-500 bg-blue-50/20 dark:bg-blue-950/20 shadow-md ring-2 ring-blue-600/30'
+                          : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-slate-300 dark:hover:border-slate-700'
+                      }`}
+                    >
+                      <div className="h-32 w-full relative overflow-hidden bg-slate-100 dark:bg-slate-800">
+                        <img
+                          src={arch.previewImage}
+                          alt={arch.name}
+                          className="w-full h-full object-cover"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                        <div className="absolute top-2 left-2">
+                          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-black/70 backdrop-blur-md text-white border border-white/20">
+                            {arch.badge}
+                          </span>
+                        </div>
+                        {isActive && (
+                          <div className="absolute top-2 right-2 p-1 rounded-full bg-blue-600 text-white shadow-md">
+                            <Check className="h-3 w-3" />
+                          </div>
+                        )}
+                        <div className="absolute bottom-2 left-2.5 right-2.5">
+                          <div className="text-xs font-bold text-white truncate">{arch.name}</div>
+                          <div className="text-[10px] text-slate-300 truncate">{arch.aesthetic}</div>
+                        </div>
+                      </div>
+
+                      <div className="p-3.5 space-y-2.5 flex-1 flex flex-col justify-between">
+                        <p className="text-[11px] text-slate-600 dark:text-slate-300 leading-snug">
+                          {arch.tagline}
+                        </p>
+                        <div className="space-y-1">
+                          {arch.features.slice(0, 3).map((feat, fIdx) => (
+                            <div key={fIdx} className="flex items-center gap-1.5 text-[10.5px] text-slate-600 dark:text-slate-400 truncate">
+                              <CheckCircle2 className="h-3 w-3 text-blue-500 shrink-0" />
+                              <span className="truncate">{feat}</span>
+                            </div>
+                          ))}
+                        </div>
+                        <button
+                          type="button"
+                          className={`w-full py-1.5 rounded-lg text-xs font-semibold transition ${
+                            isActive
+                              ? 'bg-blue-600 text-white shadow-2xs'
+                              : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200'
+                          }`}
+                        >
+                          {isActive ? 'Active Design' : 'Select This Design'}
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
 
@@ -1242,6 +1407,524 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
                     className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white font-mono focus:outline-none focus:border-blue-500"
                   />
                 </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Tab: Navigation Menu */}
+        {activeTab === 'menu' && (
+          <div className="space-y-6 animate-in fade-in duration-150">
+            <div className="p-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-5">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-100 dark:border-slate-800">
+                <div>
+                  <h2 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                    <Menu className="h-4 w-4 text-blue-600" />
+                    <span>Navigation Menu Links</span>
+                  </h2>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                    Customize the top navigation links displayed in the header navbar of your live page.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleResetMenuToDefault}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs font-semibold transition cursor-pointer self-start sm:self-auto"
+                >
+                  <RotateCcw className="h-3.5 w-3.5" />
+                  <span>Restore Default Navigation</span>
+                </button>
+              </div>
+
+              {(!landingConfig.menuItems || landingConfig.menuItems.length === 0) ? (
+                <div className="p-4 rounded-xl border border-dashed border-blue-200 dark:border-blue-900/50 bg-blue-50/50 dark:bg-blue-950/20 text-xs text-blue-800 dark:text-blue-300 space-y-2">
+                  <div className="font-semibold flex items-center gap-2">
+                    <Info className="h-4 w-4 text-blue-600 shrink-0" />
+                    <span>Auto-Generated Default Menu Active</span>
+                  </div>
+                  <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
+                    Your site is currently displaying intelligent default navigation items (e.g. Services, About Us, Reviews, Book Appointment). You can define bespoke navigation items below to override the defaults with custom anchors or external URLs.
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <span className="text-xs font-semibold text-slate-700 dark:text-slate-300 block">
+                    Configured Menu Links ({landingConfig.menuItems.length})
+                  </span>
+                  <div className="space-y-2">
+                    {landingConfig.menuItems.map((item, idx) => (
+                      <div
+                        key={idx}
+                        className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50"
+                      >
+                        <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-2">
+                          <div>
+                            <label className="block text-[10px] font-semibold text-slate-400 mb-0.5">
+                              Link Label
+                            </label>
+                            <input
+                              type="text"
+                              value={item.label}
+                              onChange={(e) => handleUpdateMenuItem(idx, 'label', e.target.value)}
+                              placeholder="e.g. Practice Areas"
+                              className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-1.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[10px] font-semibold text-slate-400 mb-0.5">
+                              Target URL or Section Anchor
+                            </label>
+                            <input
+                              type="text"
+                              value={item.href}
+                              onChange={(e) => handleUpdateMenuItem(idx, 'href', e.target.value)}
+                              placeholder="e.g. #services or https://..."
+                              className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-1.5 text-xs text-slate-900 dark:text-white font-mono focus:outline-none focus:border-blue-500"
+                            />
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveMenuItem(idx)}
+                          className="p-2 rounded-lg text-rose-500 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition cursor-pointer self-end sm:self-center"
+                          title="Remove menu link"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Add New Menu Item Box */}
+              <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 space-y-3">
+                <span className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                  <Plus className="h-3.5 w-3.5 text-blue-600" />
+                  <span>Add Navigation Link</span>
+                </span>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                      Link Label
+                    </label>
+                    <input
+                      type="text"
+                      value={newMenuLabel}
+                      onChange={(e) => setNewMenuLabel(e.target.value)}
+                      placeholder="e.g. Case Studies, About, Instagram"
+                      className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                      Link URL or Anchor
+                    </label>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={newMenuHref}
+                        onChange={(e) => setNewMenuHref(e.target.value)}
+                        placeholder="e.g. #about or https://example.com"
+                        className="flex-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white font-mono focus:outline-none focus:border-blue-500"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleAddMenuItem}
+                        disabled={!newMenuLabel.trim() || !newMenuHref.trim()}
+                        className="px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white text-xs font-semibold transition cursor-pointer flex items-center gap-1 shrink-0"
+                      >
+                        <Plus className="h-3.5 w-3.5" />
+                        <span>Add</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Quick Presets */}
+                <div className="pt-2 flex flex-wrap items-center gap-1.5">
+                  <span className="text-[10px] font-semibold text-slate-400 mr-1">Quick Anchors:</span>
+                  {[
+                    { label: 'Services', href: '#services' },
+                    { label: 'About Us', href: '#about' },
+                    { label: 'Reviews', href: '#testimonials' },
+                    { label: 'Founder', href: '#founder' },
+                    { label: 'Gallery', href: '#gallery' },
+                    { label: 'Contact', href: '#contact' },
+                    { label: 'Book Now', href: '#booking' },
+                  ].map((preset) => (
+                    <button
+                      key={preset.label}
+                      type="button"
+                      onClick={() => {
+                        setNewMenuLabel(preset.label);
+                        setNewMenuHref(preset.href);
+                      }}
+                      className="px-2 py-0.5 rounded-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-[11px] text-slate-600 dark:text-slate-400 hover:border-blue-500 hover:text-blue-600 transition cursor-pointer"
+                    >
+                      {preset.label} ({preset.href})
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Tab: Page Text Sections */}
+        {activeTab === 'sections' && (
+          <div className="space-y-6 animate-in fade-in duration-150">
+            {/* About Us Section */}
+            <div className="p-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-4">
+              <div className="flex items-center justify-between">
+                <h2 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                  <FileText className="h-4 w-4 text-blue-600" />
+                  <span>About Us Section</span>
+                </h2>
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800">
+                  #about anchor
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                    About Section Title
+                  </label>
+                  <input
+                    type="text"
+                    value={landingConfig.aboutTitle || ''}
+                    onChange={(e) => setLandingConfig({ ...landingConfig, aboutTitle: e.target.value })}
+                    placeholder="e.g. About Our Firm, Our Heritage"
+                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                    About Section Subtitle / Tagline
+                  </label>
+                  <input
+                    type="text"
+                    value={landingConfig.aboutSubtitle || ''}
+                    onChange={(e) => setLandingConfig({ ...landingConfig, aboutSubtitle: e.target.value })}
+                    placeholder="e.g. Built on trust, excellence, and relentless advocacy"
+                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  About Body Narrative
+                </label>
+                <textarea
+                  rows={4}
+                  value={landingConfig.aboutText || ''}
+                  onChange={(e) => setLandingConfig({ ...landingConfig, aboutText: e.target.value })}
+                  placeholder="Detail your organization's mission, history, standards, or team background."
+                  className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 resize-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  About Section Feature Image URL
+                </label>
+                <input
+                  type="url"
+                  value={landingConfig.aboutImageUrl || ''}
+                  onChange={(e) => setLandingConfig({ ...landingConfig, aboutImageUrl: e.target.value })}
+                  placeholder="https://images.unsplash.com/..."
+                  className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white font-mono focus:outline-none focus:border-blue-500"
+                />
+                {landingConfig.aboutImageUrl && (
+                  <div className="mt-2 h-24 w-40 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700">
+                    <img
+                      src={landingConfig.aboutImageUrl}
+                      alt="About Preview"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Services Header Section */}
+            <div className="p-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-4">
+              <div className="flex items-center justify-between">
+                <h2 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                  <Scissors className="h-4 w-4 text-indigo-600" />
+                  <span>Services Section Header</span>
+                </h2>
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800">
+                  #services anchor
+                </span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                    Services Section Title
+                  </label>
+                  <input
+                    type="text"
+                    value={landingConfig.servicesTitle || ''}
+                    onChange={(e) => setLandingConfig({ ...landingConfig, servicesTitle: e.target.value })}
+                    placeholder="e.g. Our Practice Areas, Precision Grooming Menu"
+                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                    Services Section Subtitle
+                  </label>
+                  <input
+                    type="text"
+                    value={landingConfig.servicesSubtitle || ''}
+                    onChange={(e) => setLandingConfig({ ...landingConfig, servicesSubtitle: e.target.value })}
+                    placeholder="e.g. Bespoke counsel and comprehensive trial defense"
+                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
+                  />
+                </div>
+              </div>
+              <p className="text-[11px] text-slate-500 italic">
+                Note: Specific service cards, pricing tiers, and durations can be edited in the Services &amp; Pricing tab.
+              </p>
+            </div>
+
+            {/* Features & Why Choose Us Section */}
+            <div className="p-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-4">
+              <div className="flex items-center justify-between">
+                <h2 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                  <Sparkles className="h-4 w-4 text-emerald-600" />
+                  <span>Features &amp; Highlights Section Header</span>
+                </h2>
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
+                  Value Propositions
+                </span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                    Features Section Title
+                  </label>
+                  <input
+                    type="text"
+                    value={landingConfig.featuresTitle || ''}
+                    onChange={(e) => setLandingConfig({ ...landingConfig, featuresTitle: e.target.value })}
+                    placeholder="e.g. Why Discerning Clients Choose Our Chambers"
+                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                    Features Section Subtitle
+                  </label>
+                  <input
+                    type="text"
+                    value={landingConfig.featuresSubtitle || ''}
+                    onChange={(e) => setLandingConfig({ ...landingConfig, featuresSubtitle: e.target.value })}
+                    placeholder="e.g. Decades of trial-tested pedigree and dedicated advocate access"
+                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Founder Story / Leadership Section */}
+            <div className="p-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-4">
+              <div className="flex items-center justify-between">
+                <h2 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                  <Briefcase className="h-4 w-4 text-amber-600" />
+                  <span>Founder Story &amp; Leadership</span>
+                </h2>
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800">
+                  #founder anchor
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                    Founder / Principal Name
+                  </label>
+                  <input
+                    type="text"
+                    value={landingConfig.founderName || ''}
+                    onChange={(e) => setLandingConfig({ ...landingConfig, founderName: e.target.value })}
+                    placeholder="e.g. Arthur Pendelton, Esq."
+                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                    Founder Role / Title
+                  </label>
+                  <input
+                    type="text"
+                    value={landingConfig.founderRole || ''}
+                    onChange={(e) => setLandingConfig({ ...landingConfig, founderRole: e.target.value })}
+                    placeholder="e.g. Senior Managing Partner &amp; Lead Trial Litigator"
+                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  Founder Narrative / Bio
+                </label>
+                <textarea
+                  rows={3}
+                  value={landingConfig.founderStory || ''}
+                  onChange={(e) => setLandingConfig({ ...landingConfig, founderStory: e.target.value })}
+                  placeholder="Share the founder's ethos, career milestones, awards, or philosophy."
+                  className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 resize-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  Founder Portrait / Headshot URL
+                </label>
+                <input
+                  type="url"
+                  value={landingConfig.founderImageUrl || ''}
+                  onChange={(e) => setLandingConfig({ ...landingConfig, founderImageUrl: e.target.value })}
+                  placeholder="https://images.unsplash.com/..."
+                  className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white font-mono focus:outline-none focus:border-blue-500"
+                />
+                {landingConfig.founderImageUrl && (
+                  <div className="mt-2 h-20 w-20 rounded-full overflow-hidden border border-slate-200 dark:border-slate-700">
+                    <img
+                      src={landingConfig.founderImageUrl}
+                      alt="Founder Preview"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Testimonials & Gallery Headers */}
+            <div className="p-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-4">
+              <h2 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <MessageSquare className="h-4 w-4 text-violet-600" />
+                <span>Testimonials &amp; Gallery Headers</span>
+              </h2>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                    Testimonials Section Title
+                  </label>
+                  <input
+                    type="text"
+                    value={landingConfig.testimonialsTitle || ''}
+                    onChange={(e) => setLandingConfig({ ...landingConfig, testimonialsTitle: e.target.value })}
+                    placeholder="e.g. Client Endorsements &amp; Verdicts"
+                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                    Testimonials Section Subtitle
+                  </label>
+                  <input
+                    type="text"
+                    value={landingConfig.testimonialsSubtitle || ''}
+                    onChange={(e) => setLandingConfig({ ...landingConfig, testimonialsSubtitle: e.target.value })}
+                    placeholder="e.g. Read verified feedback from our clients and partners"
+                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-slate-100 dark:border-slate-800">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                    Gallery Section Title
+                  </label>
+                  <input
+                    type="text"
+                    value={landingConfig.galleryTitle || ''}
+                    onChange={(e) => setLandingConfig({ ...landingConfig, galleryTitle: e.target.value })}
+                    placeholder="e.g. Our Chambers &amp; Courtroom Presence"
+                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                    Gallery Section Subtitle
+                  </label>
+                  <input
+                    type="text"
+                    value={landingConfig.gallerySubtitle || ''}
+                    onChange={(e) => setLandingConfig({ ...landingConfig, gallerySubtitle: e.target.value })}
+                    placeholder="e.g. An inside look at our facilities and heritage"
+                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Call To Action Banner & Footer */}
+            <div className="p-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-4">
+              <h2 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <Sparkles className="h-4 w-4 text-amber-500" />
+                <span>Call To Action Banner &amp; Footer Copyright</span>
+              </h2>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                    CTA Banner Main Headline
+                  </label>
+                  <input
+                    type="text"
+                    value={landingConfig.ctaHeadline || ''}
+                    onChange={(e) => setLandingConfig({ ...landingConfig, ctaHeadline: e.target.value })}
+                    placeholder="e.g. Ready to Secure Senior Counsel?"
+                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                    CTA Button Text
+                  </label>
+                  <input
+                    type="text"
+                    value={landingConfig.ctaButtonText || ''}
+                    onChange={(e) => setLandingConfig({ ...landingConfig, ctaButtonText: e.target.value })}
+                    placeholder="e.g. Schedule Case Review"
+                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  CTA Banner Subheadline
+                </label>
+                <input
+                  type="text"
+                  value={landingConfig.ctaSubheadline || ''}
+                  onChange={(e) => setLandingConfig({ ...landingConfig, ctaSubheadline: e.target.value })}
+                  placeholder="e.g. All communications are protected by strict attorney-client privilege."
+                  className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
+                />
+              </div>
+
+              <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  Footer Legal &amp; Copyright Notice
+                </label>
+                <input
+                  type="text"
+                  value={landingConfig.footerText || ''}
+                  onChange={(e) => setLandingConfig({ ...landingConfig, footerText: e.target.value })}
+                  placeholder="e.g. (c) 2026 Pendelton Legal Group LLP. All rights reserved. Attorney Advertising."
+                  className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
+                />
               </div>
             </div>
           </div>

@@ -31,6 +31,7 @@ import { IndustryTemplateProps } from '../types';
 import { ScrollProgress } from '../effects/ScrollProgress';
 import { TiltCard } from '../effects/TiltCard';
 import { KineticMarquee } from '../effects/KineticMarquee';
+import { getThemePalette } from '@/lib/landing/types';
 
 export const SaasTemplate: React.FC<IndustryTemplateProps> = ({
   config,
@@ -42,6 +43,8 @@ export const SaasTemplate: React.FC<IndustryTemplateProps> = ({
   const [copiedCode, setCopiedCode] = useState(false);
   const [activeFaq, setActiveFaq] = useState<number | null>(0);
   const [monthlyNodes, setMonthlyNodes] = useState<number>(25);
+  const palette = getThemePalette(config.themeColor, 'saas');
+  const archetype = config.designArchetype || 'saas_dark';
 
   const integrationPartners = [
     'AMAZON WEB SERVICES (AWS)',
@@ -191,10 +194,10 @@ print(response.reply)`,
             <button
               type="button"
               onClick={() => onOpenBooking()}
-              className="px-8 py-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm tracking-wide shadow-lg shadow-blue-600/25 transition-all transform hover:-translate-y-0.5 flex items-center gap-2.5 cursor-pointer"
+              className={`px-8 py-4 rounded-xl ${palette.btnBg} ${palette.btnHoverBg} ${palette.btnText} font-bold text-sm tracking-wide shadow-lg transition-all transform hover:-translate-y-0.5 flex items-center gap-2.5 cursor-pointer`}
             >
               <Zap className="h-4 w-4" />
-              <span>Deploy Live Cluster</span>
+              <span>{config.heroCtaText || 'Deploy Live Cluster'}</span>
               <ArrowRight className="h-4 w-4" />
             </button>
 
@@ -211,6 +214,17 @@ print(response.reply)`,
               <span>Interactive Agent Demo</span>
             </button>
           </div>
+
+          {/* Hero Interface Screenshot */}
+          {config.heroImageUrl && (
+            <div className="mt-10 max-w-4xl mx-auto rounded-2xl overflow-hidden border border-slate-800 shadow-2xl">
+              <img
+                src={config.heroImageUrl}
+                alt={config.businessName || 'Platform Dashboard'}
+                className="w-full h-auto max-h-[460px] object-cover object-top"
+              />
+            </div>
+          )}
 
           {/* 3. INTERACTIVE CODE TERMINAL IN HERO */}
           <div className="mt-14 max-w-4xl mx-auto text-left">
@@ -351,13 +365,53 @@ print(response.reply)`,
         </div>
       </section>
 
+      {/* ABOUT US / ARCHITECTURE PHILOSOPHY SECTION */}
+      {(config.aboutTitle || config.aboutText) && (
+        <section id="about" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+            <div className="lg:col-span-7 space-y-4">
+              <span className={`text-xs font-mono uppercase tracking-widest ${palette.accentText} font-bold`}>
+                {config.aboutSubtitle || 'Engineering & Architecture'}
+              </span>
+              <h2 className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white">
+                {config.aboutTitle || `About ${config.businessName}`}
+              </h2>
+              <p className={`text-sm leading-relaxed ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
+                {config.aboutText}
+              </p>
+              {config.founderName && (
+                <div className="pt-2 flex items-center gap-3">
+                  {config.founderImageUrl && (
+                    <img src={config.founderImageUrl} alt={config.founderName} className="w-12 h-12 rounded-full object-cover border border-slate-700" />
+                  )}
+                  <div>
+                    <div className="text-sm font-bold text-slate-900 dark:text-white">{config.founderName}</div>
+                    <div className="text-xs text-slate-500">{config.founderRole || 'Founder & Chief Architect'}</div>
+                  </div>
+                </div>
+              )}
+            </div>
+            {config.aboutImageUrl && (
+              <div className="lg:col-span-5 rounded-2xl overflow-hidden border border-slate-800">
+                <img src={config.aboutImageUrl} alt="About Us" className="w-full h-72 object-cover" />
+              </div>
+            )}
+          </div>
+        </section>
+      )}
+
       {/* 7. SERVICES & DEPLOYMENT TIERS (FROM CONFIG.SERVICES) */}
-      <section id="pricing" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+      <section id="services" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
         <div className="text-center max-w-2xl mx-auto mb-14">
-          <span className="text-xs font-mono uppercase tracking-widest text-blue-600 dark:text-blue-400 font-bold">Cluster Tiers</span>
+          <span className={`text-xs font-mono uppercase tracking-widest ${palette.accentText} font-bold`}>Cluster Tiers</span>
           <h2 className="text-3xl sm:text-5xl font-black tracking-tight mt-1 text-slate-900 dark:text-white">
-            Plans &amp; Deployment Packages
+            {config.servicesTitle || 'Plans & Deployment Packages'}
           </h2>
+          {config.servicesSubtitle && (
+            <p className={`mt-2 text-xs sm:text-sm ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
+              {config.servicesSubtitle}
+            </p>
+          )}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -507,17 +561,17 @@ print(response.reply)`,
       <section className={`py-20 border-t ${isDark ? 'border-slate-800 bg-slate-950 text-slate-100' : 'border-slate-200 bg-slate-50 text-slate-900'}`}>
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6">
           <h3 className={`text-3xl sm:text-5xl font-black tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>
-            Ready to Automate Customer Support at Scale?
+            {config.ctaHeadline || 'Ready to Automate Customer Support at Scale?'}
           </h3>
           <p className={`text-sm sm:text-base ${isDark ? 'text-slate-400' : 'text-slate-600'} max-w-xl mx-auto`}>
-            Start your 14-day free cluster trial. No credit card required.
+            {config.ctaSubheadline || 'Start your 14-day free cluster trial. No credit card required.'}
           </p>
           <div className="pt-2 flex flex-wrap justify-center gap-4">
             <button
               onClick={() => onOpenBooking()}
-              className="px-8 py-3.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs uppercase tracking-wider shadow-lg shadow-blue-600/25 transition-all cursor-pointer"
+              className={`px-8 py-3.5 rounded-xl ${palette.btnBg} ${palette.btnHoverBg} ${palette.btnText} font-bold text-xs uppercase tracking-wider shadow-lg transition-all cursor-pointer`}
             >
-              Start Free Trial Cluster
+              {config.ctaButtonText || 'Start Free Trial Cluster'}
             </button>
             <button
               onClick={onOpenChat}
@@ -527,6 +581,11 @@ print(response.reply)`,
               <span>Talk to Solutions Engineer</span>
             </button>
           </div>
+          {config.footerText && (
+            <div className="pt-8 border-t border-slate-800/60 text-center text-xs text-slate-500">
+              {config.footerText}
+            </div>
+          )}
         </div>
       </section>
     </div>

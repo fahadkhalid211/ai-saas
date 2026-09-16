@@ -41,6 +41,18 @@ export interface LandingPageAnalyticsConfig {
   metaPixelId?: string; // e.g. 123456789012345
 }
 
+export interface LandingPageMenuItem {
+  label: string;
+  href: string;
+}
+
+export interface LandingPageFeatureItem {
+  title: string;
+  description: string;
+  badge?: string;
+  icon?: string;
+}
+
 export interface LandingPageConfig {
   id?: string;
   workspaceId?: string;
@@ -56,8 +68,16 @@ export interface LandingPageConfig {
   heroSubheadline: string;
   heroCtaText: string;
   heroImageUrl?: string;
+  menuItems?: LandingPageMenuItem[];
   aboutTitle?: string;
+  aboutSubtitle?: string;
   aboutText?: string;
+  aboutImageUrl?: string;
+  servicesTitle?: string;
+  servicesSubtitle?: string;
+  featuresTitle?: string;
+  featuresSubtitle?: string;
+  features?: LandingPageFeatureItem[];
   address?: string;
   phone?: string;
   email?: string;
@@ -68,7 +88,11 @@ export interface LandingPageConfig {
   starterQuestions?: string[];
   workingHours?: LandingPageWorkingHours[];
   services?: LandingPageServiceItem[];
+  galleryTitle?: string;
+  gallerySubtitle?: string;
   galleryImages?: LandingPageGalleryItem[];
+  testimonialsTitle?: string;
+  testimonialsSubtitle?: string;
   testimonials?: LandingPageTestimonialItem[];
   socialLinks?: {
     instagram?: string;
@@ -81,7 +105,13 @@ export interface LandingPageConfig {
   logoUrl?: string;
   founderName?: string;
   founderTitle?: string;
+  founderRole?: string;
   founderStory?: string;
+  founderImageUrl?: string;
+  ctaHeadline?: string;
+  ctaSubheadline?: string;
+  ctaButtonText?: string;
+  footerText?: string;
   designArchetype?: string;
   createdAt?: string;
   updatedAt?: string;
@@ -187,6 +217,643 @@ export const MODERN_DESIGN_ARCHETYPES: DesignArchetype[] = [
     recommendedFor: ['creative_agency', 'ecommerce', 'ai_tech', 'custom'],
   },
 ];
+
+export const INDUSTRY_DESIGN_ARCHETYPES: Record<string, DesignArchetype[]> = {
+  legal: [
+    {
+      id: 'legal_prestige',
+      name: 'Classic Prestige & Chambers Elite',
+      tagline: 'Traditional high-trust dark slate & gold, authoritative serif typography, landmark verdicts, and partner credentials.',
+      category: 'Corporate Litigation & Advisory',
+      aesthetic: 'Deep Navy Slate & Subtle Gold',
+      themeColor: '#1e3a8a',
+      previewImage: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=800&q=80',
+      badge: 'Chambers Band 1',
+      features: [
+        'Authoritative serif typography & credentials ticker',
+        'Five-phase litigation roadmap & landmark verdicts table',
+        'Partner roster & confidential case evaluation',
+        'Attorney-client privileged intake chat',
+      ],
+      recommendedFor: ['legal', 'law_firm'],
+    },
+    {
+      id: 'legal_modern',
+      name: 'Modern Corporate & Tech Counsel',
+      tagline: 'Clean architectural layout with hero image split, streamlined consultation intake, and dynamic practice areas.',
+      category: 'Boutique M&A & Venture Law',
+      aesthetic: 'Refined Slate & Royal Blue',
+      themeColor: '#2563eb',
+      previewImage: 'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=800&q=80',
+      badge: 'Corporate Standard',
+      features: [
+        'Prominent hero firm image with consultation card',
+        'Structured corporate retainer schedules',
+        'Client confidentiality verification',
+        'Direct calendar scheduler for general counsel',
+      ],
+      recommendedFor: ['legal', 'corporate'],
+    },
+    {
+      id: 'legal_trial',
+      name: 'High-Impact Trial & Litigation Squad',
+      tagline: 'Emergency injunction readiness, bold courtroom statistics, rapid asset freeze timeline, and 24/7 privileged intake.',
+      category: 'Emergency Litigation & Defense',
+      aesthetic: 'Obsidian & High-Contrast Blue',
+      themeColor: '#3b82f6',
+      previewImage: 'https://images.unsplash.com/photo-1505664194779-8beaceb93744?auto=format&fit=crop&w=800&q=80',
+      badge: 'Trial Squad',
+      features: [
+        'Sub-18 hour emergency TRO filing protocol',
+        'Aggressive capital recovered statistics ($850M+ defended)',
+        'Delaware Chancery & federal court track record',
+        'Instant emergency hotline booking',
+      ],
+      recommendedFor: ['legal', 'trial'],
+    },
+  ],
+  barbershop: [
+    {
+      id: 'barber_classic',
+      name: 'Vintage Artisan & Hot Towel Shave',
+      tagline: 'Classic dark obsidian, scissor tradition, hot lather edge up, and heritage gentleman grooming.',
+      category: 'Traditional Barber Craft',
+      aesthetic: 'Dark Obsidian & Amber Gold',
+      themeColor: '#f59e0b',
+      previewImage: 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=800&q=80',
+      badge: 'Artisan Heritage',
+      features: [
+        'Traditional scissor & straight razor service catalog',
+        'Heritage dark wood & warm amber styling',
+        'Master barber profiles and specialties',
+        'Real-time chair booking with SMS confirmations',
+      ],
+      recommendedFor: ['barbershop'],
+    },
+    {
+      id: 'barber_modern',
+      name: 'Urban Fade & Streetwear Studio',
+      tagline: 'High-contrast typography, chair booking speed, precision skin fades, and dynamic portfolio showcase.',
+      category: 'Modern Streetwear & Studio',
+      aesthetic: 'Matte Charcoal & Electric Amber',
+      themeColor: '#d97706',
+      previewImage: 'https://images.unsplash.com/photo-1585747860715-2ba37e788b70?auto=format&fit=crop&w=800&q=80',
+      badge: 'Urban High-Pace',
+      features: [
+        'High-velocity service menu with duration badges',
+        'Visual fade and beard gallery carousel',
+        'Walk-in queue estimator and online booking',
+        'Instagram portfolio integration',
+      ],
+      recommendedFor: ['barbershop', 'salon'],
+    },
+    {
+      id: 'barber_vip',
+      name: 'Executive Grooming & Private Lounge',
+      tagline: 'Minimalist luxury editorial, VIP suite packages, private bookings, and tailored whiskey bar ambience.',
+      category: 'Private Club & VIP Lounge',
+      aesthetic: 'Minimal Slate & Brushed Bronze',
+      themeColor: '#b45309',
+      previewImage: 'https://images.unsplash.com/photo-1622286342621-4bd786c2447c?auto=format&fit=crop&w=800&q=80',
+      badge: 'Executive Lounge',
+      features: [
+        'Exclusive private room VIP reservations',
+        'Curated beverage & hot towel experience',
+        'Tailored monthly grooming membership tiers',
+        'Concierge consultation for beard & scalp care',
+      ],
+      recommendedFor: ['barbershop', 'luxury'],
+    },
+  ],
+  gym: [
+    {
+      id: 'gym_power',
+      name: 'High-Intensity Athletic & Dark Neon',
+      tagline: 'Dark athletic canvas, high-energy rose accents, powerlifting zones, and live class calendar.',
+      category: 'Athletics & Strength',
+      aesthetic: 'Obsidian & Energetic Rose',
+      themeColor: '#e11d48',
+      previewImage: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=800&q=80',
+      badge: 'High-Intensity',
+      features: [
+        'Dynamic class schedule & instructor booking',
+        'Tiered membership cards with instant checkout',
+        'Heavy lifting platform & facility showcase',
+        'Free first session lead capture triage',
+      ],
+      recommendedFor: ['gym', 'fitness'],
+    },
+    {
+      id: 'gym_wellness',
+      name: 'Boutique Wellness & Mindful Sanctuary',
+      tagline: 'Calm natural tones, holistic yoga and recovery, cold plunge passes, and spa amenities.',
+      category: 'Holistic Wellness & Recovery',
+      aesthetic: 'Serene Sand & Forest Emerald',
+      themeColor: '#059669',
+      previewImage: 'https://images.unsplash.com/photo-1518611012118-696072aa579a?auto=format&fit=crop&w=800&q=80',
+      badge: 'Wellness Sanctuary',
+      features: [
+        'Infrared sauna, cold plunge & yoga passes',
+        'Gentle botanical aesthetic with spacious grids',
+        'Mindful recovery appointment triage',
+        'Holistic member testimonials & amenities guide',
+      ],
+      recommendedFor: ['gym', 'wellness', 'yoga'],
+    },
+    {
+      id: 'gym_performance',
+      name: 'Biometrics & Olympic Performance Lab',
+      tagline: 'Sport science telemetry, body composition audits, Olympic coaching, and athlete progression tracking.',
+      category: 'Sports Science & Analytics',
+      aesthetic: 'Deep Navy & Electric Cyan',
+      themeColor: '#0284c7',
+      previewImage: 'https://images.unsplash.com/photo-1574680096145-d05b474e2155?auto=format&fit=crop&w=800&q=80',
+      badge: 'Performance Lab',
+      features: [
+        'Biometric DEXA scan & VO2 max audit booking',
+        'Olympic lifting platforms & turf lane preview',
+        'Coach bio matrix with verified certifications',
+        'High-performance athlete protocol roadmap',
+      ],
+      recommendedFor: ['gym', 'performance'],
+    },
+  ],
+  real_estate: [
+    {
+      id: 're_luxury',
+      name: 'Luxury Estate & Architectural Showcase',
+      tagline: 'Full-bleed photography, prestige emerald accents, private property tours, and high-net-worth buyer intake.',
+      category: 'Prime Luxury Residences',
+      aesthetic: 'Prestige Emerald & Ivory',
+      themeColor: '#10b981',
+      previewImage: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=800&q=80',
+      badge: 'Architectural Digest',
+      features: [
+        'High-resolution architectural photography grid',
+        'Private estate walkthrough scheduler',
+        'Confidential off-market pocket listing inquiry',
+        'Mortgage & property valuation calculator',
+      ],
+      recommendedFor: ['real_estate', 'luxury'],
+    },
+    {
+      id: 're_urban',
+      name: 'Modern Urban Brokerage & Listings',
+      tagline: 'Clean property grid, interactive valuation estimation, neighborhood demographics, and buyer strategy.',
+      category: 'Urban Brokerage & Condos',
+      aesthetic: 'Clean Slate & Cobalt',
+      themeColor: '#2563eb',
+      previewImage: 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=800&q=80',
+      badge: 'Top Producer',
+      features: [
+        'Neighborhood school and transit score cards',
+        'Instant online home valuation request form',
+        'Buyer advisory consultation calendar',
+        'Filterable condo and multi-family listings',
+      ],
+      recommendedFor: ['real_estate', 'urban'],
+    },
+    {
+      id: 're_investment',
+      name: 'Commercial Advisory & Wealth Portfolios',
+      tagline: 'Institutional acquisitions, commercial cap rate models, NDA private listings, and multi-family assets.',
+      category: 'Commercial Capital & Portfolios',
+      aesthetic: 'Charcoal & Champagne Gold',
+      themeColor: '#d97706',
+      previewImage: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=800&q=80',
+      badge: 'Institutional Grade',
+      features: [
+        'Commercial asset yield & cap rate summaries',
+        'Accredited investor NDA download and intake',
+        'Direct acquisitions partner meeting scheduler',
+        'Industrial, retail & multi-family portfolio',
+      ],
+      recommendedFor: ['real_estate', 'commercial'],
+    },
+  ],
+  saas: [
+    {
+      id: 'saas_dark_glow',
+      name: 'Silicon Valley AI & Vector Platform',
+      tagline: 'Deep obsidian canvas with glowing indigo gradients, interactive API sandbox, and live cluster metrics.',
+      category: 'AI Infrastructure & Cloud',
+      aesthetic: 'Obsidian & Indigo Neon',
+      themeColor: '#6366f1',
+      previewImage: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80',
+      badge: 'AI Native 2026',
+      features: [
+        'Interactive live terminal with curl/Python tabs',
+        'Cluster latency and SOC-2 SLA ticker',
+        'Single-tenant VPC enterprise deployment request',
+        'Automated developer sandbox provisioning',
+      ],
+      recommendedFor: ['saas', 'ai_tech'],
+    },
+    {
+      id: 'saas_enterprise',
+      name: 'Clean B2B Enterprise & Workflow OS',
+      tagline: 'Structured enterprise feature matrix, SOC-2 compliance badges, multi-seat pricing tiers, and executive demo booking.',
+      category: 'Enterprise Workflow & Governance',
+      aesthetic: 'Light Slate & Royal Blue',
+      themeColor: '#2563eb',
+      previewImage: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=800&q=80',
+      badge: 'Enterprise Ready',
+      features: [
+        'Structured feature comparison table with competitors',
+        'Salesforce, HubSpot and Zendesk integration badges',
+        'Executive live product demonstration booking',
+        'Transparent tier-based seat pricing cards',
+      ],
+      recommendedFor: ['saas', 'enterprise'],
+    },
+    {
+      id: 'saas_developer',
+      name: 'Developer-First Infrastructure & APIs',
+      tagline: 'Terminal-inspired syntax highlighting, curl/SDK code toggle, latency benchmarks, and instant developer onboarding.',
+      category: 'Developer Tools & Cloud APIs',
+      aesthetic: 'Jet Black & Emerald Green',
+      themeColor: '#10b981',
+      previewImage: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=800&q=80',
+      badge: 'Dev Velocity',
+      features: [
+        'Zero-latency edge API code copy hooks',
+        'Interactive webhook and payload testing',
+        'Community Discord & GitHub contributor badges',
+        'API key registration triage flow',
+      ],
+      recommendedFor: ['saas', 'developer'],
+    },
+  ],
+  healthcare: [
+    {
+      id: 'health_clinical',
+      name: 'Clinical Serene & Comprehensive Care',
+      tagline: 'Gentle clinical blue, digital 3D imaging, pain-free sedation protocols, and transparent insurance acceptance.',
+      category: 'Family Dental & Diagnostics',
+      aesthetic: 'Calm Sky Blue & Pure White',
+      themeColor: '#0284c7',
+      previewImage: 'https://images.unsplash.com/photo-1629909613654-28e377c37b09?auto=format&fit=crop&w=800&q=80',
+      badge: 'Patient Trusted',
+      features: [
+        'Digital smile scanning and zero-putty imaging',
+        'Comprehensive family cleaning & exam packages',
+        'In-network insurance lookup and verification',
+        'Same-week appointment reservation flow',
+      ],
+      recommendedFor: ['healthcare', 'dental'],
+    },
+    {
+      id: 'health_cosmetic',
+      name: 'Luxury Cosmetic & Smile Architecture',
+      tagline: 'Boutique cosmetic studio, digital shade matching, laser whitening, and transformational smile galleries.',
+      category: 'Cosmetic Dentistry & Veneers',
+      aesthetic: 'Porcelain White & Teal',
+      themeColor: '#0d9488',
+      previewImage: 'https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?auto=format&fit=crop&w=800&q=80',
+      badge: 'Smile Studio',
+      features: [
+        'Before-and-after cosmetic smile transformation showcase',
+        'Porcelain veneer and clear aligner consultations',
+        'Complimentary virtual smile assessment',
+        'Private VIP operatory suite tours',
+      ],
+      recommendedFor: ['healthcare', 'cosmetic'],
+    },
+    {
+      id: 'health_urgent',
+      name: 'Rapid Urgent Care & Surgical Triage',
+      tagline: 'Same-day relief, emergency toothache hotline, rapid digital trauma triage, and zero-wait check-in.',
+      category: 'Emergency Oral Surgery & Care',
+      aesthetic: 'Clinical Teal & High-Contrast Slate',
+      themeColor: '#0f766e',
+      previewImage: 'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=800&q=80',
+      badge: 'Same-Day Triage',
+      features: [
+        '24/7 emergency toothache triage queue',
+        'Same-day pain relief procedure appointments',
+        'Transparent emergency pricing without surprises',
+        'Digital check-in to bypass waiting room delays',
+      ],
+      recommendedFor: ['healthcare', 'emergency'],
+    },
+  ],
+  ecommerce: [
+    {
+      id: 'ecom_editorial',
+      name: 'Curated Luxury Fashion & Lookbook',
+      tagline: 'Refined editorial lookbook grid, private styling consultations, and signature seasonal drops.',
+      category: 'Boutique Apparel & Lookbook',
+      aesthetic: 'Warm Monochrome & Neutral Cream',
+      themeColor: '#0f172a',
+      previewImage: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=800&q=80',
+      badge: 'Editorial Vogue',
+      features: [
+        'High-fashion lookbook grid with editorial styling',
+        '1-on-1 virtual stylist consultation bookings',
+        'Curated limited-quantity seasonal catalog',
+        'Bespoke tailoring and measurement requests',
+      ],
+      recommendedFor: ['ecommerce', 'fashion'],
+    },
+    {
+      id: 'ecom_d2c',
+      name: 'High-Growth Direct-to-Consumer Flagship',
+      tagline: 'Vibrant purple & electric accents, conversion-driven product matrix, limited countdowns, and social reviews.',
+      category: 'Direct-to-Consumer & Retail',
+      aesthetic: 'Vibrant Purple & Electric Violet',
+      themeColor: '#9333ea',
+      previewImage: 'https://images.unsplash.com/photo-1472851294608-062f824d29cc?auto=format&fit=crop&w=800&q=80',
+      badge: 'Top Velocity',
+      features: [
+        'Prominent product showcase with quick buy hooks',
+        'Customer photo reviews and rating carousel',
+        'Limited edition drops and flash sale highlights',
+        'Instant chat recommendation concierge',
+      ],
+      recommendedFor: ['ecommerce', 'retail'],
+    },
+    {
+      id: 'ecom_artisan',
+      name: 'Handcrafted & Sustainable Goods',
+      tagline: 'Artisanal heritage, founder craftsmanship story, sustainable sourcing highlights, and custom orders.',
+      category: 'Artisan Workshop & Sustainable',
+      aesthetic: 'Earthy Amber & Warm Terracotta',
+      themeColor: '#c2410c',
+      previewImage: 'https://images.unsplash.com/photo-1452860606245-08befc0ff44b?auto=format&fit=crop&w=800&q=80',
+      badge: 'Artisan Heritage',
+      features: [
+        'Behind-the-scenes workshop craftsmanship story',
+        'Ethical and sustainable materials transparency',
+        'Custom commission order consultation form',
+        'Artisan creator spotlight and guarantee',
+      ],
+      recommendedFor: ['ecommerce', 'artisan'],
+    },
+  ],
+  custom: [
+    {
+      id: 'custom_minimal',
+      name: 'Clean Minimalist Canvas',
+      tagline: 'Swiss grid typography, generous whitespace, and focused call to action.',
+      category: 'General Purpose & Agency',
+      aesthetic: 'Clean Slate & Charcoal',
+      themeColor: '#2563eb',
+      previewImage: 'https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?auto=format&fit=crop&w=800&q=80',
+      badge: 'Universal Fit',
+      features: [
+        'Clean modular content blocks',
+        'Universal service booking integration',
+        'Floating AI concierge',
+        'Responsive mobile layout',
+      ],
+      recommendedFor: ['custom'],
+    },
+    {
+      id: 'custom_dark_luxe',
+      name: 'Executive Dark Studio',
+      tagline: 'Deep obsidian theme with subtle glowing highlights and floating cards.',
+      category: 'Premium Service & Tech',
+      aesthetic: 'Obsidian & Deep Indigo',
+      themeColor: '#6366f1',
+      previewImage: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80',
+      badge: 'Executive Studio',
+      features: [
+        'Dark mode luxury styling',
+        'Luminous borders and tilt effects',
+        'Calendar slot reservation',
+        'Interactive AI chat intake',
+      ],
+      recommendedFor: ['custom'],
+    },
+    {
+      id: 'custom_vibrant',
+      name: 'High-Impact Vibrant Brand',
+      tagline: 'Bold headlines, high-energy accents, and conversion-optimized flow.',
+      category: 'High-Growth Business',
+      aesthetic: 'Vibrant Cobalt & Cyan',
+      themeColor: '#0284c7',
+      previewImage: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=800&q=80',
+      badge: 'High Energy',
+      features: [
+        'High-contrast call to actions',
+        'Review and social proof badges',
+        'Fast mobile appointment booking',
+        'Lead capture automation',
+      ],
+      recommendedFor: ['custom'],
+    },
+  ],
+};
+
+export function getArchetypesForIndustry(industry?: string): DesignArchetype[] {
+  const ind = (industry || 'barbershop').toLowerCase().trim();
+  if (ind.includes('legal') || ind.includes('law')) return INDUSTRY_DESIGN_ARCHETYPES.legal;
+  if (ind.includes('barber') || ind.includes('salon')) return INDUSTRY_DESIGN_ARCHETYPES.barbershop;
+  if (ind.includes('gym') || ind.includes('fitness')) return INDUSTRY_DESIGN_ARCHETYPES.gym;
+  if (ind.includes('estate') || ind.includes('property') || ind.includes('realt')) return INDUSTRY_DESIGN_ARCHETYPES.real_estate;
+  if (ind.includes('saas') || ind.includes('tech') || ind.includes('software')) return INDUSTRY_DESIGN_ARCHETYPES.saas;
+  if (ind.includes('health') || ind.includes('dental') || ind.includes('clinic')) return INDUSTRY_DESIGN_ARCHETYPES.healthcare;
+  if (ind.includes('ecom') || ind.includes('retail') || ind.includes('store')) return INDUSTRY_DESIGN_ARCHETYPES.ecommerce;
+  return INDUSTRY_DESIGN_ARCHETYPES[ind] || INDUSTRY_DESIGN_ARCHETYPES.custom;
+}
+
+export interface ThemePalette {
+  accentBg: string;
+  accentHoverBg: string;
+  accentText: string;
+  accentBorder: string;
+  badgeBg: string;
+  lightBg: string;
+  btnBg: string;
+  btnHoverBg: string;
+  btnText: string;
+  selectionBg: string;
+  focusRing: string;
+  colorHex: string;
+}
+
+export function getThemePalette(themeColor?: string, defaultIndustry?: string): ThemePalette {
+  const c = (themeColor || '').toLowerCase().trim();
+  const ind = (defaultIndustry || '').toLowerCase().trim();
+
+  // Blue / Cobalt
+  if (c === 'blue' || c === '#2563eb' || c === '#1d4ed8' || c === '#1e40af' || c === '#3b82f6' || c === '#1e3a8a') {
+    return {
+      accentBg: 'bg-blue-600',
+      accentHoverBg: 'hover:bg-blue-500',
+      accentText: 'text-blue-600 dark:text-blue-400',
+      accentBorder: 'border-blue-500/30',
+      badgeBg: 'bg-gradient-to-r from-blue-700 via-blue-600 to-blue-700 text-white',
+      lightBg: 'bg-blue-500/10',
+      btnBg: 'bg-blue-600',
+      btnHoverBg: 'hover:bg-blue-500',
+      btnText: 'text-white',
+      selectionBg: 'selection:bg-blue-500 selection:text-white',
+      focusRing: 'focus:border-blue-500 focus:ring-1 focus:ring-blue-500',
+      colorHex: '#2563eb',
+    };
+  }
+
+  // Rose / Red
+  if (c === 'rose' || c === 'red' || c === '#e11d48' || c === '#f43f5e' || c === '#dc2626') {
+    return {
+      accentBg: 'bg-rose-600',
+      accentHoverBg: 'hover:bg-rose-500',
+      accentText: 'text-rose-600 dark:text-rose-400',
+      accentBorder: 'border-rose-500/30',
+      badgeBg: 'bg-gradient-to-r from-rose-700 via-rose-600 to-rose-700 text-white',
+      lightBg: 'bg-rose-500/10',
+      btnBg: 'bg-rose-600',
+      btnHoverBg: 'hover:bg-rose-500',
+      btnText: 'text-white',
+      selectionBg: 'selection:bg-rose-500 selection:text-white',
+      focusRing: 'focus:border-rose-500 focus:ring-1 focus:ring-rose-500',
+      colorHex: '#e11d48',
+    };
+  }
+
+  // Emerald / Green
+  if (c === 'emerald' || c === 'green' || c === '#10b981' || c === '#059669' || c === '#047857') {
+    return {
+      accentBg: 'bg-emerald-600',
+      accentHoverBg: 'hover:bg-emerald-500',
+      accentText: 'text-emerald-600 dark:text-emerald-400',
+      accentBorder: 'border-emerald-500/30',
+      badgeBg: 'bg-gradient-to-r from-emerald-700 via-emerald-600 to-emerald-700 text-white',
+      lightBg: 'bg-emerald-500/10',
+      btnBg: 'bg-emerald-600',
+      btnHoverBg: 'hover:bg-emerald-500',
+      btnText: 'text-white',
+      selectionBg: 'selection:bg-emerald-500 selection:text-white',
+      focusRing: 'focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500',
+      colorHex: '#10b981',
+    };
+  }
+
+  // Purple / Violet
+  if (c === 'purple' || c === 'violet' || c === '#9333ea' || c === '#7c3aed' || c === '#8b5cf6') {
+    return {
+      accentBg: 'bg-purple-600',
+      accentHoverBg: 'hover:bg-purple-500',
+      accentText: 'text-purple-600 dark:text-purple-400',
+      accentBorder: 'border-purple-500/30',
+      badgeBg: 'bg-gradient-to-r from-purple-700 via-purple-600 to-purple-700 text-white',
+      lightBg: 'bg-purple-500/10',
+      btnBg: 'bg-purple-600',
+      btnHoverBg: 'hover:bg-purple-500',
+      btnText: 'text-white',
+      selectionBg: 'selection:bg-purple-500 selection:text-white',
+      focusRing: 'focus:border-purple-500 focus:ring-1 focus:ring-purple-500',
+      colorHex: '#9333ea',
+    };
+  }
+
+  // Indigo / AI Glow
+  if (c === 'indigo' || c === '#6366f1' || c === '#4f46e5') {
+    return {
+      accentBg: 'bg-indigo-600',
+      accentHoverBg: 'hover:bg-indigo-500',
+      accentText: 'text-indigo-600 dark:text-indigo-400',
+      accentBorder: 'border-indigo-500/30',
+      badgeBg: 'bg-gradient-to-r from-indigo-700 via-indigo-600 to-indigo-700 text-white',
+      lightBg: 'bg-indigo-500/10',
+      btnBg: 'bg-indigo-600',
+      btnHoverBg: 'hover:bg-indigo-500',
+      btnText: 'text-white',
+      selectionBg: 'selection:bg-indigo-500 selection:text-white',
+      focusRing: 'focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500',
+      colorHex: '#6366f1',
+    };
+  }
+
+  // Sky / Cyan
+  if (c === 'sky' || c === 'cyan' || c === '#0284c7' || c === '#0ea5e9' || c === '#06b6d4') {
+    return {
+      accentBg: 'bg-sky-600',
+      accentHoverBg: 'hover:bg-sky-500',
+      accentText: 'text-sky-600 dark:text-sky-400',
+      accentBorder: 'border-sky-500/30',
+      badgeBg: 'bg-gradient-to-r from-sky-700 via-sky-600 to-sky-700 text-white',
+      lightBg: 'bg-sky-500/10',
+      btnBg: 'bg-sky-600',
+      btnHoverBg: 'hover:bg-sky-500',
+      btnText: 'text-white',
+      selectionBg: 'selection:bg-sky-500 selection:text-white',
+      focusRing: 'focus:border-sky-500 focus:ring-1 focus:ring-sky-500',
+      colorHex: '#0284c7',
+    };
+  }
+
+  // Teal
+  if (c === 'teal' || c === '#0d9488' || c === '#14b8a6' || c === '#0f766e') {
+    return {
+      accentBg: 'bg-teal-600',
+      accentHoverBg: 'hover:bg-teal-500',
+      accentText: 'text-teal-600 dark:text-teal-400',
+      accentBorder: 'border-teal-500/30',
+      badgeBg: 'bg-gradient-to-r from-teal-700 via-teal-600 to-teal-700 text-white',
+      lightBg: 'bg-teal-500/10',
+      btnBg: 'bg-teal-600',
+      btnHoverBg: 'hover:bg-teal-500',
+      btnText: 'text-white',
+      selectionBg: 'selection:bg-teal-500 selection:text-white',
+      focusRing: 'focus:border-teal-500 focus:ring-1 focus:ring-teal-500',
+      colorHex: '#0d9488',
+    };
+  }
+
+  // Slate / Dark Executive
+  if (c === 'slate' || c === 'dark' || c === '#0f172a' || c === '#1e293b' || c === '#334155') {
+    return {
+      accentBg: 'bg-slate-900 dark:bg-slate-100',
+      accentHoverBg: 'hover:bg-slate-800 dark:hover:bg-white',
+      accentText: 'text-slate-900 dark:text-slate-100',
+      accentBorder: 'border-slate-400/30 dark:border-slate-600/40',
+      badgeBg: 'bg-slate-900 dark:bg-slate-800 text-white',
+      lightBg: 'bg-slate-500/10',
+      btnBg: 'bg-slate-900 dark:bg-slate-100',
+      btnHoverBg: 'hover:bg-slate-800 dark:hover:bg-white',
+      btnText: 'text-white dark:text-slate-950',
+      selectionBg: 'selection:bg-slate-800 selection:text-white',
+      focusRing: 'focus:border-slate-700 focus:ring-1 focus:ring-slate-700',
+      colorHex: '#0f172a',
+    };
+  }
+
+  // Amber / Warm Gold (Only when explicitly amber, or default for barbershop)
+  if (c === 'amber' || c === '#f59e0b' || c === '#d97706' || c === '#b45309' || ind.includes('barber')) {
+    return {
+      accentBg: 'bg-amber-500',
+      accentHoverBg: 'hover:bg-amber-400',
+      accentText: 'text-amber-500 dark:text-amber-400',
+      accentBorder: 'border-amber-500/30',
+      badgeBg: 'bg-gradient-to-r from-amber-600 via-amber-500 to-amber-600 text-slate-950',
+      lightBg: 'bg-amber-500/10',
+      btnBg: 'bg-amber-500',
+      btnHoverBg: 'hover:bg-amber-400',
+      btnText: 'text-slate-950',
+      selectionBg: 'selection:bg-amber-500 selection:text-black',
+      focusRing: 'focus:border-amber-500 focus:ring-1 focus:ring-amber-500',
+      colorHex: '#f59e0b',
+    };
+  }
+
+  // Default fallback to clean enterprise blue
+  return {
+    accentBg: 'bg-blue-600',
+    accentHoverBg: 'hover:bg-blue-500',
+    accentText: 'text-blue-600 dark:text-blue-400',
+    accentBorder: 'border-blue-500/30',
+    badgeBg: 'bg-gradient-to-r from-blue-700 via-blue-600 to-blue-700 text-white',
+    lightBg: 'bg-blue-500/10',
+    btnBg: 'bg-blue-600',
+    btnHoverBg: 'hover:bg-blue-500',
+    btnText: 'text-white',
+    selectionBg: 'selection:bg-blue-500 selection:text-white',
+    focusRing: 'focus:border-blue-500 focus:ring-1 focus:ring-blue-500',
+    colorHex: '#2563eb',
+  };
+}
 
 // 1. Classic Barbershop & Men's Grooming
 export const DEFAULT_BARBER_LANDING_CONFIG: LandingPageConfig = {
