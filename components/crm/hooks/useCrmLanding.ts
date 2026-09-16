@@ -52,6 +52,12 @@ export function useCrmLanding({
   const [newPageIndustry, setNewPageIndustry] = useState('barbershop');
   const [newPageAssistantId, setNewPageAssistantId] = useState('auto_create');
 
+  const [deletingPageId, setDeletingPageId] = useState<string | null>(null);
+  const [isDeletingLandingPage, setIsDeletingLandingPage] = useState(false);
+  const [deleteProgress, setDeleteProgress] = useState(0);
+  const [deleteStatusMessage, setDeleteStatusMessage] = useState('');
+  const [pagePendingDelete, setPagePendingDelete] = useState<LandingPageConfig | null>(null);
+
   const fetchAllLandingPages = async () => {
     try {
       const res = await fetch('/api/landing-page?all=true');
@@ -190,40 +196,82 @@ export function useCrmLanding({
     }
   };
 
-  const handleDeleteLandingPage = async (pageIdOrSlug?: string) => {
-    const target = pageIdOrSlug || landingConfig.id || landingConfig.slug;
-    if (!target) return;
-
-    if (allLandingPages.length <= 1) {
-      alert('You must have at least one landing page in your workspace. Create another page before deleting this one.');
+  const handleRequestDeleteLandingPage = (pageIdOrSlug?: string | LandingPageConfig) => {
+    if (!pageIdOrSlug) {
+      setPagePendingDelete(landingConfig);
       return;
     }
+    if (typeof pageIdOrSlug === 'object' && pageIdOrSlug !== null) {
+      setPagePendingDelete(pageIdOrSlug);
+      return;
+    }
+    const found = allLandingPages.find((p) => p.id === pageIdOrSlug || p.slug === pageIdOrSlug) || landingConfig;
+    setPagePendingDelete(found);
+  };
 
-    const pageToDelete = allLandingPages.find((p) => p.id === target || p.slug === target) || landingConfig;
-    const confirmed = typeof window !== 'undefined' ? window.confirm(`Are you sure you want to permanently delete the landing page "${pageToDelete.businessName}" (/site/${pageToDelete.slug})? This cannot be undone.`) : true;
-    if (!confirmed) return;
+  const handleConfirmDeleteLandingPage = async () => {
+    if (!pagePendingDelete) return;
+    const pageToDelete = pagePendingDelete;
+    const target = pageToDelete.id || pageToDelete.slug;
+    if (!target) return;
+
+    setIsDeletingLandingPage(true);
+    setDeletingPageId(target);
+    setDeleteProgress(15);
+    setDeleteStatusMessage(`Unbinding live route /site/${pageToDelete.slug}...`);
 
     try {
-      const res = await fetch(`/api/landing-page?id=${encodeURIComponent(pageToDelete.id || pageToDelete.slug)}`, {
+      await new Promise((r) => setTimeout(r, 220));
+      setDeleteProgress(40);
+      setDeleteStatusMessage('Disconnecting isolated AI concierge and booking catalog...');
+
+      const deletePromise = fetch(`/api/landing-page?id=${encodeURIComponent(target)}`, {
         method: 'DELETE',
       });
+
+      await new Promise((r) => setTimeout(r, 260));
+      setDeleteProgress(75);
+      setDeleteStatusMessage('Purging database records and cloud storage...');
+
+      const res = await deletePromise;
       const data = await res.json();
       if (!res.ok) {
         throw new Error(data.error || 'Failed to delete landing page');
       }
 
-      await fetchAllLandingPages();
-      const remaining = allLandingPages.filter((p) => (p.id || p.slug) !== (pageToDelete.id || pageToDelete.slug));
+      setDeleteProgress(100);
+      setDeleteStatusMessage(`Landing page "${pageToDelete.businessName}" deleted successfully!`);
+      await new Promise((r) => setTimeout(r, 350));
+
+      const remaining = allLandingPages.filter(
+        (p) => p.id !== target && p.slug !== target && (p.slug || '').toLowerCase() !== (pageToDelete.slug || '').toLowerCase()
+      );
+      setAllLandingPages(remaining);
+
       if (remaining.length > 0) {
         setLandingConfig(remaining[0]);
       } else {
         setLandingConfig(DEFAULT_BARBER_LANDING_CONFIG);
       }
+
       setPresetNotice(`Deleted landing page "${pageToDelete.businessName}".`);
       setTimeout(() => setPresetNotice(null), 4000);
+
+      // Re-sync with backend
+      fetchAllLandingPages();
     } catch (err: any) {
       alert(err.message || 'Failed to delete landing page');
+    } finally {
+      setIsDeletingLandingPage(false);
+      setDeletingPageId(null);
+      setPagePendingDelete(null);
+      setDeleteProgress(0);
+      setDeleteStatusMessage('');
     }
+  };
+
+  const handleDeleteLandingPage = (pageIdOrSlug?: string | LandingPageConfig) => {
+    handleRequestDeleteLandingPage(pageIdOrSlug);
   };
 
   const handleSelectPageForEdit = (page: LandingPageConfig) => {
@@ -349,6 +397,14 @@ export function useCrmLanding({
     handlePurchaseExtraLandingPage,
     handleCreateNewLandingPage,
     handleDeleteLandingPage,
+    deletingPageId,
+    isDeletingLandingPage,
+    deleteProgress,
+    deleteStatusMessage,
+    pagePendingDelete,
+    setPagePendingDelete,
+    handleRequestDeleteLandingPage,
+    handleConfirmDeleteLandingPage,
     fetchLandingConfig,
     handleSaveLandingConfig,
     handleSelectPageForEdit,

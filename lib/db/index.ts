@@ -347,6 +347,7 @@ interface DatabaseState {
   auditLogs?: AuditLogData[];
   notifications?: InAppNotificationData[];
   landingPages?: LandingPageConfig[];
+  landingPagesInitialized?: boolean;
   smtpSettings?: SmtpSettingsData;
   pageViews?: PageViewEventData[];
 }
@@ -2288,9 +2289,9 @@ export class Database {
       await saveState(state);
     }
 
-    // If default workspace has no page, initialize only the primary barbershop page
+    // If default workspace has never been initialized with a landing page, initialize once
     const defaultPages = state.landingPages.filter((p) => !p.workspaceId || p.workspaceId === 'default-workspace');
-    if (defaultPages.length === 0 && (workspaceId === 'default-workspace' || workspaceId === '*')) {
+    if (!state.landingPagesInitialized && defaultPages.length === 0 && (workspaceId === 'default-workspace' || workspaceId === '*')) {
       const barberPage: LandingPageConfig = {
         ...DEFAULT_BARBER_LANDING_CONFIG,
         id: 'lp_barbershop',
@@ -2298,6 +2299,7 @@ export class Database {
         assistantId: 'demo-assistant',
       };
       state.landingPages.unshift(barberPage);
+      state.landingPagesInitialized = true;
       await saveState(state);
     }
 
@@ -2769,13 +2771,21 @@ export class Database {
 
   static async deleteLandingPage(idOrSlug: string): Promise<boolean> {
     const state = await ensureInitialized();
-    if (!state.landingPages) return false;
+    state.landingPagesInitialized = true;
+    if (!state.landingPages) {
+      state.landingPages = [];
+      await saveState(state);
+      return true;
+    }
     const prevCount = state.landingPages.length;
-    state.landingPages = state.landingPages.filter(
-      (p) => p.id !== idOrSlug && p.slug.toLowerCase() !== idOrSlug.toLowerCase()
-    );
+    const targetClean = (idOrSlug || '').trim().toLowerCase();
+    state.landingPages = state.landingPages.filter((p) => {
+      const pId = (p.id || '').trim().toLowerCase();
+      const pSlug = (p.slug || '').trim().toLowerCase();
+      return pId !== targetClean && pSlug !== targetClean;
+    });
     await saveState(state);
-    return state.landingPages.length < prevCount;
+    return true;
   }
 
   // SMTP & Email Configuration

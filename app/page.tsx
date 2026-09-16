@@ -787,6 +787,13 @@ export default function DashboardPage() {
                 handleBackToList={landing.handleBackToList}
                 handleQuickUpdateKnowledgeBase={landing.handleQuickUpdateKnowledgeBase}
                 handleAIGenerateLandingPage={landing.handleAIGenerateLandingPage}
+                deletingPageId={landing.deletingPageId}
+                isDeletingLandingPage={landing.isDeletingLandingPage}
+                deleteProgress={landing.deleteProgress}
+                deleteStatusMessage={landing.deleteStatusMessage}
+                pagePendingDelete={landing.pagePendingDelete}
+                setPagePendingDelete={landing.setPagePendingDelete}
+                handleConfirmDeleteLandingPage={landing.handleConfirmDeleteLandingPage}
                 activeAssistant={activeAssistant}
                 assistants={assistants}
                 setActiveAssistant={setActiveAssistant}

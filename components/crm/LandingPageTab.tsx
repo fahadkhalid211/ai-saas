@@ -41,6 +41,7 @@ import {
 } from '@/lib/landing/types';
 import { LandingPagesList } from './landing/LandingPagesList';
 import { AiLandingWizard } from './landing/AiLandingWizard';
+import { DeleteLandingPageModal } from './landing/DeleteLandingPageModal';
 
 const Youtube = ({ className = 'h-4 w-4' }: { className?: string }) => (
   <svg className={className} viewBox="0 0 24 24" fill="currentColor">
@@ -228,7 +229,7 @@ export interface LandingPageTabProps {
   assistants?: any[];
   setActiveAssistant?: (ast: any) => void;
   setActiveTab?: (tab: any) => void;
-  handleDeleteLandingPage?: (pageIdOrSlug?: string) => Promise<void> | void;
+  handleDeleteLandingPage?: (pageIdOrSlug?: string | LandingPageConfig) => Promise<void> | void;
   appointments: any[];
   theme: string;
   viewMode?: 'list' | 'create_wizard' | 'editor';
@@ -241,6 +242,13 @@ export interface LandingPageTabProps {
     newConfig: LandingPageConfig,
     assistantOption?: 'auto_create' | 'none' | string
   ) => Promise<LandingPageConfig>;
+  deletingPageId?: string | null;
+  isDeletingLandingPage?: boolean;
+  deleteProgress?: number;
+  deleteStatusMessage?: string;
+  pagePendingDelete?: LandingPageConfig | null;
+  setPagePendingDelete?: (page: LandingPageConfig | null) => void;
+  handleConfirmDeleteLandingPage?: () => Promise<void> | void;
 }
 
 export const LandingPageTab: React.FC<LandingPageTabProps> = ({
@@ -276,6 +284,13 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
   handleBackToList: propHandleBackToList,
   handleQuickUpdateKnowledgeBase,
   handleAIGenerateLandingPage,
+  deletingPageId,
+  isDeletingLandingPage,
+  deleteProgress,
+  deleteStatusMessage,
+  pagePendingDelete,
+  setPagePendingDelete,
+  handleConfirmDeleteLandingPage,
 }) => {
   const [localViewMode, setLocalViewMode] = React.useState<'list' | 'create_wizard' | 'editor'>('list');
   const viewMode = propViewMode ?? localViewMode;
@@ -353,6 +368,13 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
         assistants={assistants}
         setActiveAssistant={setActiveAssistant}
         setActiveTab={setParentActiveTab}
+        deletingPageId={deletingPageId}
+        isDeletingLandingPage={isDeletingLandingPage}
+        deleteProgress={deleteProgress}
+        deleteStatusMessage={deleteStatusMessage}
+        pagePendingDelete={pagePendingDelete}
+        setPagePendingDelete={setPagePendingDelete}
+        handleConfirmDeleteLandingPage={handleConfirmDeleteLandingPage}
       />
     );
   }
@@ -536,15 +558,25 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
               <span>Create Page</span>
             </button>
 
-            {allLandingPages && allLandingPages.length > 1 && handleDeleteLandingPage && (
+            {handleDeleteLandingPage && (
               <button
                 type="button"
-                onClick={() => handleDeleteLandingPage(landingConfig.id || landingConfig.slug)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-red-200 dark:border-red-900/50 bg-red-50 hover:bg-red-100 dark:bg-red-950/40 text-red-600 dark:text-red-400 text-xs font-semibold transition cursor-pointer"
+                disabled={Boolean(deletingPageId)}
+                onClick={() => handleDeleteLandingPage(landingConfig)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-red-200 dark:border-red-900/50 bg-red-50 hover:bg-red-100 dark:bg-red-950/40 text-red-600 dark:text-red-400 text-xs font-semibold transition cursor-pointer disabled:opacity-50"
                 title="Delete this landing page"
               >
-                <Trash2 className="h-3.5 w-3.5" />
-                <span>Delete Page</span>
+                {deletingPageId && (deletingPageId === landingConfig.id || deletingPageId === landingConfig.slug) ? (
+                  <>
+                    <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+                    <span>Deleting ({deleteProgress || 0}%)...</span>
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="h-3.5 w-3.5" />
+                    <span>Delete Page</span>
+                  </>
+                )}
               </button>
             )}
           </div>
@@ -2007,6 +2039,17 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
           </div>
         </div>
       )}
+
+      {/* Interactive Delete Confirmation & Progress Modal for Editor */}
+      <DeleteLandingPageModal
+        isOpen={Boolean(pagePendingDelete)}
+        page={pagePendingDelete || null}
+        isDeleting={Boolean(isDeletingLandingPage)}
+        progress={deleteProgress || 0}
+        statusMessage={deleteStatusMessage || ''}
+        onClose={() => setPagePendingDelete?.(null)}
+        onConfirm={() => handleConfirmDeleteLandingPage?.()}
+      />
     </div>
   );
 };

@@ -27,6 +27,8 @@ import {
 } from 'lucide-react';
 import { LandingPageConfig } from '@/lib/landing/types';
 
+import { DeleteLandingPageModal } from './DeleteLandingPageModal';
+
 interface LandingPagesListProps {
   allLandingPages: LandingPageConfig[];
   landingPageLimits: {
@@ -40,11 +42,18 @@ interface LandingPagesListProps {
   handlePurchaseExtraLandingPage: () => Promise<void>;
   handleStartCreateWizard: () => void;
   handleSelectPageForEdit: (page: LandingPageConfig) => void;
-  handleDeleteLandingPage?: (pageIdOrSlug?: string) => Promise<void> | void;
+  handleDeleteLandingPage?: (pageIdOrSlug?: string | LandingPageConfig) => Promise<void> | void;
   handleQuickUpdateKnowledgeBase: (pageIdOrSlug: string, assistantId: string) => Promise<void>;
   assistants?: any[];
   setActiveAssistant?: (ast: any) => void;
   setActiveTab?: (tab: any) => void;
+  deletingPageId?: string | null;
+  isDeletingLandingPage?: boolean;
+  deleteProgress?: number;
+  deleteStatusMessage?: string;
+  pagePendingDelete?: LandingPageConfig | null;
+  setPagePendingDelete?: (page: LandingPageConfig | null) => void;
+  handleConfirmDeleteLandingPage?: () => Promise<void> | void;
 }
 
 function IndustryBadge({ industry }: { industry?: string }) {
@@ -103,6 +112,13 @@ export function LandingPagesList({
   assistants = [],
   setActiveAssistant,
   setActiveTab,
+  deletingPageId,
+  isDeletingLandingPage,
+  deleteProgress = 0,
+  deleteStatusMessage = '',
+  pagePendingDelete,
+  setPagePendingDelete,
+  handleConfirmDeleteLandingPage,
 }: LandingPagesListProps) {
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
@@ -371,19 +387,57 @@ export function LandingPagesList({
                   {handleDeleteLandingPage && (
                     <button
                       type="button"
-                      onClick={() => handleDeleteLandingPage(pageId)}
-                      className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 transition cursor-pointer"
+                      disabled={Boolean(deletingPageId)}
+                      onClick={() => handleDeleteLandingPage(page)}
+                      className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 transition cursor-pointer disabled:opacity-50"
                       title="Delete this landing page"
                     >
-                      <Trash2 className="h-3.5 w-3.5" />
+                      {deletingPageId && (deletingPageId === page.id || deletingPageId === page.slug) ? (
+                        <RefreshCw className="h-3.5 w-3.5 animate-spin text-rose-600" />
+                      ) : (
+                        <Trash2 className="h-3.5 w-3.5" />
+                      )}
                     </button>
                   )}
                 </div>
+
+                {/* Deleting Progress Overlay on Card */}
+                {deletingPageId && (deletingPageId === page.id || deletingPageId === page.slug) && (
+                  <div className="absolute inset-0 z-30 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xs flex flex-col items-center justify-center p-5 text-center animate-in fade-in duration-150">
+                    <RefreshCw className="h-7 w-7 text-rose-600 dark:text-rose-400 animate-spin mb-2" />
+                    <p className="text-xs font-bold text-slate-900 dark:text-white">
+                      Deleting Landing Page...
+                    </p>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 font-mono mt-0.5 max-w-[220px] truncate">
+                      {deleteStatusMessage || 'Unbinding routes...'}
+                    </p>
+                    <div className="w-48 h-2 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden mt-3 border border-slate-200 dark:border-slate-700">
+                      <div
+                        className="h-full bg-gradient-to-r from-red-600 via-rose-500 to-amber-500 rounded-full transition-all duration-300"
+                        style={{ width: `${Math.max(5, deleteProgress)}%` }}
+                      />
+                    </div>
+                    <span className="text-[11px] font-mono font-bold text-rose-600 dark:text-rose-400 mt-1">
+                      {deleteProgress}%
+                    </span>
+                  </div>
+                )}
               </div>
             );
           })}
         </div>
       )}
+
+      {/* Interactive Delete Confirmation & Progress Modal */}
+      <DeleteLandingPageModal
+        isOpen={Boolean(pagePendingDelete)}
+        page={pagePendingDelete || null}
+        isDeleting={Boolean(isDeletingLandingPage)}
+        progress={deleteProgress}
+        statusMessage={deleteStatusMessage}
+        onClose={() => setPagePendingDelete?.(null)}
+        onConfirm={() => handleConfirmDeleteLandingPage?.()}
+      />
     </div>
   );
 }
