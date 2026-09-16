@@ -4,6 +4,7 @@ import { parseMediaFile, TranscribeOptions, formatTimestamp } from './transcribe
 import { execFile } from 'child_process';
 import { promisify } from 'util';
 import { validateSafeExternalUrl } from '../security/ssrf';
+import https from 'node:https';
 
 const execFileAsync = promisify(execFile);
 
@@ -119,32 +120,126 @@ function parseTimedtextXml(
   return results;
 }
 
-async function fetchWithRetry(
-  url: string,
-  options: RequestInit = {},
-  retries: number = 3,
-  backoffMs: number = 600
-): Promise<Response> {
-  let lastError: any;
+const youtubeHttpsAgent = new https.Agent({
+  keepAlive: true,
+  maxSockets: 16,
+  timeout: 30000,
+});
+
+function httpsPostJson(
+  urlStr: string,
+  body: any,
+  userAgent: string,
+  timeoutMs: number = 15000
+): Promise<any> {
+  return new Promise((resolve, reject) => {
+    const url = new URL(urlStr);
+    const postData = JSON.stringify(body);
+    const req = https.request(
+      {
+        hostname: url.hostname,
+        port: 443,
+        path: url.pathname + url.search,
+        method: 'POST',
+        agent: youtubeHttpsAgent,
+        headers: {
+          'Content-Type': 'application/json',
+          'Content-Length': Buffer.byteLength(postData),
+          'User-Agent': userAgent,
+        },
+        timeout: timeoutMs,
+      },
+      (res) => {
+        let data = '';
+        res.on('data', (chunk) => (data += chunk));
+        res.on('end', () => {
+          if (res.statusCode && res.statusCode >= 200 && res.statusCode < 300) {
+            try {
+              resolve(JSON.parse(data));
+            } catch (err) {
+              reject(err);
+            }
+          } else {
+            reject(new Error(`HTTP ${res.statusCode}: ${data.slice(0, 200)}`));
+          }
+        });
+      }
+    );
+    req.on('timeout', () => req.destroy(new Error(`Request to ${url.hostname} timed out`)));
+    req.on('error', reject);
+    req.write(postData);
+    req.end();
+  });
+}
+
+function httpsGetBuffer(
+  urlStr: string,
+  userAgent?: string,
+  rangeHeader?: string,
+  timeoutMs: number = 30000
+): Promise<{ statusCode: number; data: Buffer }> {
+  return new Promise((resolve, reject) => {
+    const url = new URL(urlStr);
+    const headers: Record<string, string> = {};
+    if (userAgent) headers['User-Agent'] = userAgent;
+    if (rangeHeader) headers['Range'] = rangeHeader;
+
+    const req = https.request(
+      {
+        hostname: url.hostname,
+        port: 443,
+        path: url.pathname + url.search,
+        method: 'GET',
+        agent: youtubeHttpsAgent,
+        headers,
+        timeout: timeoutMs,
+      },
+      (res) => {
+        if (
+          res.statusCode &&
+          [301, 302, 303, 307, 308].includes(res.statusCode) &&
+          res.headers.location
+        ) {
+          const redirectUrl = res.headers.location.startsWith('http')
+            ? res.headers.location
+            : new URL(res.headers.location, urlStr).toString();
+          httpsGetBuffer(redirectUrl, userAgent, rangeHeader, timeoutMs).then(resolve, reject);
+          return;
+        }
+
+        const chunks: Buffer[] = [];
+        res.on('data', (c) => chunks.push(Buffer.isBuffer(c) ? c : Buffer.from(c)));
+        res.on('end', () => {
+          resolve({
+            statusCode: res.statusCode || 200,
+            data: Buffer.concat(chunks),
+          });
+        });
+      }
+    );
+    req.on('timeout', () => req.destroy(new Error(`GET request to ${url.hostname} timed out`)));
+    req.on('error', reject);
+    req.end();
+  });
+}
+
+async function queryHttpsWithRetry<T>(
+  fn: () => Promise<T>,
+  retries: number = 4,
+  backoffMs: number = 500
+): Promise<T> {
+  let lastErr: any;
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
-      const resp = await fetch(url, options);
-      if (resp.ok) return resp;
-      if (resp.status >= 500 || resp.status === 429) {
-        if (attempt < retries) {
-          await new Promise((r) => setTimeout(r, backoffMs * attempt));
-          continue;
-        }
-      }
-      return resp;
+      return await fn();
     } catch (err: any) {
-      lastError = err;
+      lastErr = err;
       if (attempt < retries) {
         await new Promise((r) => setTimeout(r, backoffMs * attempt));
       }
     }
   }
-  throw lastError || new Error(`Failed to fetch ${url} after ${retries} attempts`);
+  throw lastErr;
 }
 
 interface YouTubeCaptionTrack {
@@ -164,6 +259,7 @@ interface YouTubeInnerTubeData {
 }
 
 async function queryYouTubeInnerTube(videoId: string): Promise<YouTubeInnerTubeData> {
+  const hosts = ['youtubei.googleapis.com', 'www.youtube.com'];
   const clients = [
     {
       name: 'ANDROID',
@@ -171,65 +267,86 @@ async function queryYouTubeInnerTube(videoId: string): Promise<YouTubeInnerTubeD
       userAgent: 'com.google.android.youtube/20.10.38 (Linux; U; Android 14)',
     },
     {
+      name: 'WEB',
+      context: { client: { clientName: 'WEB', clientVersion: '2.20241115.01.00' } },
+      userAgent:
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+    },
+    {
       name: 'IOS',
       context: { client: { clientName: 'IOS', clientVersion: '19.45.4', deviceModel: 'iPhone16,2' } },
       userAgent: 'com.google.ios.youtube/19.45.4 (iPhone16,2; U; CPU iOS 18_1 like Mac OS X)',
     },
-    {
-      name: 'WEB',
-      context: { client: { clientName: 'WEB', clientVersion: '2.20241115.01.00' } },
-      userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
-    },
   ];
 
-  for (const client of clients) {
-    try {
-      const resp = await fetchWithRetry(
-        'https://www.youtube.com/youtubei/v1/player?prettyPrint=false',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'User-Agent': client.userAgent,
-          },
-          body: JSON.stringify({
-            context: client.context,
-            videoId,
-          }),
-          signal: AbortSignal.timeout(12000),
-        },
-        2,
-        500
-      );
+  let bestTitle: string | undefined;
+  let bestAuthor: string | undefined;
+  let bestCaptionTracks: YouTubeCaptionTrack[] = [];
+  let bestAudioStreamUrl: string | undefined;
 
-      if (!resp.ok) continue;
-
-      const data = await resp.json();
-      const title: string | undefined = data?.videoDetails?.title;
-      const author: string | undefined = data?.videoDetails?.author;
-      const captionTracks: YouTubeCaptionTrack[] =
-        data?.captions?.playerCaptionsTracklistRenderer?.captionTracks || [];
-      const adaptiveFormats = data?.streamingData?.adaptiveFormats;
-      let audioStreamUrl: string | undefined;
-
-      if (Array.isArray(adaptiveFormats)) {
-        const audioFormat = adaptiveFormats.find(
-          (f: any) => f.mimeType?.startsWith('audio/') && f.url
+  for (const host of hosts) {
+    for (const client of clients) {
+      try {
+        const data = await queryHttpsWithRetry(
+          () =>
+            httpsPostJson(
+              `https://${host}/youtubei/v1/player?prettyPrint=false`,
+              { context: client.context, videoId },
+              client.userAgent,
+              15000
+            ),
+          3,
+          500
         );
-        if (audioFormat?.url) {
-          audioStreamUrl = audioFormat.url;
-        }
-      }
 
-      if (captionTracks.length > 0 || audioStreamUrl || title) {
-        return { title, author, captionTracks, audioStreamUrl };
+        if (!data) continue;
+
+        if (!bestTitle && data?.videoDetails?.title) {
+          bestTitle = data.videoDetails.title;
+        }
+        if (!bestAuthor && data?.videoDetails?.author) {
+          bestAuthor = data.videoDetails.author;
+        }
+
+        const captionTracks: YouTubeCaptionTrack[] =
+          data?.captions?.playerCaptionsTracklistRenderer?.captionTracks || [];
+        if (captionTracks.length > 0 && bestCaptionTracks.length === 0) {
+          bestCaptionTracks = captionTracks;
+        }
+
+        const adaptiveFormats = data?.streamingData?.adaptiveFormats || [];
+        const formats = data?.streamingData?.formats || [];
+        const allFormats = [...adaptiveFormats, ...formats];
+        const audioFormat = allFormats.find(
+          (f: any) => (f.mimeType?.startsWith('audio/') || f.audioQuality) && f.url
+        );
+        if (audioFormat?.url && !bestAudioStreamUrl) {
+          bestAudioStreamUrl = audioFormat.url;
+        }
+
+        if (bestCaptionTracks.length > 0 && bestTitle && bestAudioStreamUrl) {
+          return {
+            title: bestTitle,
+            author: bestAuthor,
+            captionTracks: bestCaptionTracks,
+            audioStreamUrl: bestAudioStreamUrl,
+          };
+        }
+      } catch (err: any) {
+        console.warn(`[URLExtractor] InnerTube ${client.name} on ${host} failed for ${videoId}:`, err?.message || err);
       }
-    } catch (err: any) {
-      console.warn(`[URLExtractor] InnerTube ${client.name} attempt failed for ${videoId}:`, err?.message || err);
+    }
+    if (bestCaptionTracks.length > 0 && bestTitle) {
+      break;
     }
   }
 
-  return {};
+  return {
+    title: bestTitle,
+    author: bestAuthor,
+    captionTracks: bestCaptionTracks,
+    audioStreamUrl: bestAudioStreamUrl,
+  };
 }
 
 /**
@@ -246,7 +363,7 @@ export async function extractFromYouTube(
 
   const cleanUrl = `https://www.youtube.com/watch?v=${videoId}`;
   
-  // Strategy 1: Direct Multi-Client InnerTube Query with Automatic Retry
+  // Strategy 1: Direct Multi-Client InnerTube Query with Automatic Retry & Shared Connection Pool
   const innerTubeData = await queryYouTubeInnerTube(videoId);
 
   let metaTitle = innerTubeData.title;
@@ -271,20 +388,19 @@ export async function extractFromYouTube(
       tracks[0];
 
     try {
-      const tResp = await fetchWithRetry(
-        selectedTrack.baseUrl,
-        {
-          headers: {
-            'User-Agent':
-              'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
-          },
-          signal: AbortSignal.timeout(15000),
-        },
-        3,
+      const res = await queryHttpsWithRetry(
+        () =>
+          httpsGetBuffer(
+            selectedTrack.baseUrl,
+            'com.google.android.youtube/20.10.38 (Linux; U; Android 14)',
+            undefined,
+            20000
+          ),
+        4,
         600
       );
 
-      const xml = await tResp.text();
+      const xml = res.data.toString('utf-8');
       rawTranscript = parseTimedtextXml(xml, selectedTrack.languageCode);
     } catch (trackErr: any) {
       console.warn(
@@ -320,22 +436,19 @@ export async function extractFromYouTube(
   if (rawTranscript.length === 0 && innerTubeData.audioStreamUrl) {
     console.log(`[URLExtractor] Closed captions not found on video. Streaming audio directly for AI transcription...`);
     try {
-      const audioResp = await fetchWithRetry(
-        innerTubeData.audioStreamUrl,
-        {
-          headers: {
-            'User-Agent': 'com.google.android.youtube/20.10.38 (Linux; U; Android 14)',
-            // Download up to 15MB for fast transcription
-            'Range': 'bytes=0-15728640',
-          },
-          signal: AbortSignal.timeout(60000),
-        },
-        2,
+      const audioRes = await queryHttpsWithRetry(
+        () =>
+          httpsGetBuffer(
+            innerTubeData.audioStreamUrl!,
+            'com.google.android.youtube/20.10.38 (Linux; U; Android 14)',
+            'bytes=0-15728640',
+            60000
+          ),
+        3,
         1000
       );
 
-      const arrayBuffer = await audioResp.arrayBuffer();
-      const audioBuffer = Buffer.from(arrayBuffer);
+      const audioBuffer = audioRes.data;
 
       if (audioBuffer.length > 1000) {
         const filename = `${finalTitle.replace(/[^a-z0-9_-]/gi, '_').slice(0, 50)}.mp4`;

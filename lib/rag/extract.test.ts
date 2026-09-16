@@ -85,4 +85,16 @@ For emergencies after 6pm, please dial our emergency helpline directly.
     expect(doc.title).toContain('YouTube');
     expect(doc.sections?.length).toBeGreaterThan(0);
   }, 35000);
+
+  it('correctly extracts Google Head Office tour video transcript with resilient connection pool', async () => {
+    const { extractFromUrl } = await import('./url-extractor');
+    const testUrl = 'https://www.youtube.com/watch?v=OKsaF_AasDA';
+
+    const doc = await extractFromUrl(testUrl);
+    expect(doc).toBeDefined();
+    expect(doc.type).toBe('youtube');
+    expect(doc.title).toContain('Google Head Office');
+    expect(doc.content.length).toBeGreaterThan(1000);
+    expect(doc.sections?.length).toBeGreaterThan(0);
+  }, 35000);
 });
