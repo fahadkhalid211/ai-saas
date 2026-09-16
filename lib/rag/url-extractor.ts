@@ -687,12 +687,20 @@ export async function extractFromDirectMediaUrl(
   return await parseMediaFile(buffer, filename, options);
 }
 
-const REALISTIC_CHROME_HEADERS: Record<string, string> = {
+// Headers used for direct Node.js fetch: no Sec-Fetch-* or Sec-Ch-Ua headers because Node's TLS
+// fingerprint does not match Chrome's and anti-bot systems detect the mismatch immediately.
+const FETCH_SAFE_HEADERS: Record<string, string> = {
   'User-Agent':
     'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36',
   'Accept':
     'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
   'Accept-Language': 'en-US,en;q=0.9',
+  'Cache-Control': 'no-cache',
+};
+
+// Keep full Sec-* headers only for curl, which has its own native TLS stack that matches Chrome's fingerprint.
+const REALISTIC_CHROME_HEADERS: Record<string, string> = {
+  ...FETCH_SAFE_HEADERS,
   'Sec-Ch-Ua': '"Not(A:Brand";v="99", "Google Chrome";v="133", "Chromium";v="133"',
   'Sec-Ch-Ua-Mobile': '?0',
   'Sec-Ch-Ua-Platform': '"Windows"',
@@ -701,20 +709,38 @@ const REALISTIC_CHROME_HEADERS: Record<string, string> = {
   'Sec-Fetch-Site': 'none',
   'Sec-Fetch-User': '?1',
   'Upgrade-Insecure-Requests': '1',
-  'Cache-Control': 'max-age=0',
 };
 
-function isCloudflareChallenge(html: string): boolean {
+function isBlockedResponse(html: string): boolean {
   if (!html) return true;
-  return (
+  // Cloudflare challenge pages
+  if (
     html.includes('Just a moment...') ||
     html.includes('cf-browser-verification') ||
     html.includes('Attention Required! | Cloudflare') ||
     html.includes('challenge-running') ||
     html.includes('cf-chl-widget') ||
     (html.includes('Cloudflare Ray ID') && html.length < 5000)
-  );
+  ) return true;
+  // Anti-robot / anti-scraper pages from other systems
+  if (
+    html.includes('Are you a robot?') ||
+    html.includes('are you a robot') ||
+    html.includes('Please verify you are a human') ||
+    html.includes('verify you are a human') ||
+    html.includes('Enable JavaScript and cookies') ||
+    html.includes('Access Denied') ||
+    html.includes('403 Forbidden') ||
+    html.includes('Robot Check') ||
+    html.includes('robot-check') ||
+    html.includes('Press & Hold to confirm you are a human') ||
+    html.includes('Pardon Our Interruption')
+  ) return true;
+  return false;
 }
+
+// Keep backward-compatible alias
+const isCloudflareChallenge = isBlockedResponse;
 
 function cleanHtmlToStructuredText(html: string, url: string): { title: string; metaDesc?: string; text: string } {
   // Extract page title: Check og:title, twitter:title, h1, then <title>
@@ -773,10 +799,11 @@ function cleanHtmlToStructuredText(html: string, url: string): { title: string; 
 }
 
 /**
- * Scrapes standard webpage HTML using a resilient 3-tier waterfall:
- * 1. Direct Browser-Emulated Fetch (Chrome 133 headers, avoids bot 403 blocks)
- * 2. Native System Curl (bypasses Cloudflare / TLS fingerprint restrictions)
- * 3. Jina AI Reader Engine (bypasses dynamic JS rendering & strict anti-scraping walls)
+ * Scrapes standard webpage HTML using a resilient 4-tier waterfall:
+ * 1. Direct Node fetch with clean UA headers (no Sec-* to avoid TLS fingerprint mismatch)
+ * 2. Native curl.exe (own TLS stack, bypasses most Cloudflare and anti-bot challenges)
+ * 3. Jina AI Reader Engine (cloud-based reader that bypasses JS rendering and paywalls)
+ * 4. Google Web Cache (for news articles and public pages that have been indexed)
  */
 export async function extractFromWebpage(url: string): Promise<ExtractedDocument> {
   const ssrfCheck = await validateSafeExternalUrl(url);
@@ -789,17 +816,22 @@ export async function extractFromWebpage(url: string): Promise<ExtractedDocument
   let isMarkdown = false;
   let extractionTier = 'direct';
 
-  // --- Tier 1: Direct Fetch with Realistic Chrome Headers ---
+  // --- Tier 1: Direct Fetch using fetch-safe headers (no Sec-* headers) ---
+  // Sec-Fetch-* and Sec-Ch-Ua-* headers are only trustworthy when coming from a real Chrome TLS
+  // session. Node.js uses a different TLS fingerprint (JA3/JA4), so anti-bot systems catch the
+  // mismatch and return 403. Removing those headers avoids triggering that check.
   try {
     const res = await fetch(url, {
-      headers: REALISTIC_CHROME_HEADERS,
+      headers: FETCH_SAFE_HEADERS,
       signal: AbortSignal.timeout(12000),
     });
     if (res.ok) {
       const html = await res.text();
-      if (html && html.length > 200 && !isCloudflareChallenge(html)) {
+      if (html && html.length > 200 && !isBlockedResponse(html)) {
         rawContent = html;
         extractionTier = 'direct';
+      } else if (html && isBlockedResponse(html)) {
+        console.warn(`[URLExtractor] Tier 1 returned a blocked/challenge page (${html.length} bytes), trying Tier 2 (curl)...`);
       }
     } else {
       console.warn(`[URLExtractor] Direct fetch returned status ${res.status} ${res.statusText}, trying Tier 2 (curl)...`);
@@ -808,10 +840,12 @@ export async function extractFromWebpage(url: string): Promise<ExtractedDocument
     console.warn(`[URLExtractor] Tier 1 (direct fetch) error:`, err?.message);
   }
 
-  // --- Tier 2: Native Curl (bypasses TLS fingerprint and Cloudflare challenge blocks) ---
+  // --- Tier 2: Native curl.exe (has its own TLS stack matching Chrome's fingerprint) ---
   if (!rawContent) {
+    // Determine the curl binary name: on Windows use curl.exe to avoid PowerShell alias collision
+    const curlBin = process.platform === 'win32' ? 'curl.exe' : 'curl';
     try {
-      console.log(`[URLExtractor] Tier 2: Invoking native curl for ${url}...`);
+      console.log(`[URLExtractor] Tier 2: Invoking ${curlBin} for ${url}...`);
       const curlArgs = [
         '-s',
         '-L',
@@ -826,18 +860,20 @@ export async function extractFromWebpage(url: string): Promise<ExtractedDocument
         '-H', 'Upgrade-Insecure-Requests: 1',
         url,
       ];
-      const { stdout } = await execFileAsync('curl', curlArgs, { maxBuffer: 15 * 1024 * 1024 });
-      if (stdout && stdout.length > 200 && !isCloudflareChallenge(stdout)) {
+      const { stdout } = await execFileAsync(curlBin, curlArgs, { maxBuffer: 15 * 1024 * 1024 });
+      if (stdout && stdout.length > 200 && !isBlockedResponse(stdout)) {
         rawContent = stdout;
         extractionTier = 'curl';
         console.log(`[URLExtractor] Tier 2 (curl) succeeded with ${stdout.length} bytes.`);
+      } else if (stdout && isBlockedResponse(stdout)) {
+        console.warn(`[URLExtractor] Tier 2 (curl) returned a blocked/challenge page, trying Tier 3 (Jina)...`);
       }
     } catch (curlErr: any) {
       console.warn(`[URLExtractor] Tier 2 (curl) failed:`, curlErr?.message);
     }
   }
 
-  // --- Tier 3: Jina AI Reader Engine (Free LLM-oriented reader proxy) ---
+  // --- Tier 3: Jina AI Reader Engine (free cloud-based article reader) ---
   if (!rawContent) {
     try {
       console.log(`[URLExtractor] Tier 3: Invoking Jina Reader for ${url}...`);
@@ -845,27 +881,66 @@ export async function extractFromWebpage(url: string): Promise<ExtractedDocument
       const jinaRes = await fetch(jinaUrl, {
         headers: {
           'Accept': 'text/plain, text/markdown',
-          'User-Agent': REALISTIC_CHROME_HEADERS['User-Agent'],
+          'User-Agent': FETCH_SAFE_HEADERS['User-Agent'],
+          'X-Timeout': '20',
         },
-        signal: AbortSignal.timeout(18000),
+        signal: AbortSignal.timeout(22000),
       });
       if (jinaRes.ok) {
         const jinaText = await jinaRes.text();
-        if (jinaText && jinaText.length > 200 && !jinaText.includes('Just a moment...') && !jinaText.includes('CAPTCHA')) {
+        if (
+          jinaText &&
+          jinaText.length > 200 &&
+          !jinaText.includes('Just a moment...') &&
+          !jinaText.includes('CAPTCHA') &&
+          !jinaText.includes('Are you a robot?')
+        ) {
           rawContent = jinaText;
           isMarkdown = true;
           extractionTier = 'jina';
           console.log(`[URLExtractor] Tier 3 (Jina) succeeded with ${jinaText.length} characters.`);
         }
+      } else {
+        console.warn(`[URLExtractor] Tier 3 (Jina) returned status ${jinaRes.status}, trying Tier 4 (Google Cache)...`);
       }
     } catch (jinaErr: any) {
       console.warn(`[URLExtractor] Tier 3 (Jina) failed:`, jinaErr?.message);
     }
   }
 
+  // --- Tier 4: Google Web Cache (works for public news articles and blog posts) ---
   if (!rawContent) {
+    try {
+      const cacheUrl = `https://webcache.googleusercontent.com/search?q=cache:${encodeURIComponent(url)}`;
+      console.log(`[URLExtractor] Tier 4: Trying Google Web Cache for ${url}...`);
+      const cacheRes = await fetch(cacheUrl, {
+        headers: FETCH_SAFE_HEADERS,
+        signal: AbortSignal.timeout(12000),
+      });
+      if (cacheRes.ok) {
+        const cacheHtml = await cacheRes.text();
+        if (cacheHtml && cacheHtml.length > 500 && !isBlockedResponse(cacheHtml)) {
+          rawContent = cacheHtml;
+          extractionTier = 'google-cache';
+          console.log(`[URLExtractor] Tier 4 (Google Cache) succeeded with ${cacheHtml.length} bytes.`);
+        }
+      }
+    } catch (cacheErr: any) {
+      console.warn(`[URLExtractor] Tier 4 (Google Cache) failed:`, cacheErr?.message);
+    }
+  }
+
+  if (!rawContent) {
+    // Identify paywall/premium sites specifically to give a better error message
+    const paywallDomains = ['bloomberg.com', 'wsj.com', 'ft.com', 'nytimes.com', 'economist.com', 'washingtonpost.com', 'thetimes.co.uk'];
+    const isPaywall = paywallDomains.some((d) => url.includes(d));
+    if (isPaywall) {
+      throw new Error(
+        `The article from ${new URL(url).hostname} is behind a paywall or strict anti-bot verification. All 4 extraction methods were blocked. Please copy the article text directly and upload it as a TXT or DOC file.`
+      );
+    }
     throw new Error(
-      `Failed to extract content from ${url}. The website rejected automated web access (HTTP 403 Forbidden / Anti-Bot Verification). Please copy the article text or save as PDF and upload it directly.`
+      `Failed to extract content from ${url}. The website blocked all automated access attempts (Cloudflare / Anti-Bot / 403 Forbidden). Please copy the article text or save as PDF and upload it directly.`
     );
   }
 

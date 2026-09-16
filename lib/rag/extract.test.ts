@@ -84,7 +84,7 @@ For emergencies after 6pm, please dial our emergency helpline directly.
     expect(doc.content.length).toBeGreaterThan(500);
     expect(doc.title).toContain('YouTube');
     expect(doc.sections?.length).toBeGreaterThan(0);
-  }, 35000);
+  }, 90000); // audio-only fallback via Whisper can take up to 60s
 
   it('correctly extracts Google Head Office tour video transcript with resilient connection pool', async () => {
     const { extractFromUrl } = await import('./url-extractor');
@@ -96,5 +96,5 @@ For emergencies after 6pm, please dial our emergency helpline directly.
     expect(doc.title).toContain('Google Head Office');
     expect(doc.content.length).toBeGreaterThan(1000);
     expect(doc.sections?.length).toBeGreaterThan(0);
-  }, 35000);
+  }, 60000); // YouTube InnerTube + caption fetch can take up to 30s on slow connections
 });
