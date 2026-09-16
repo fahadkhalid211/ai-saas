@@ -20,6 +20,7 @@ export function useCrmLanding({
   fetchBilling,
   fetchNotifications,
 }: UseCrmLandingOptions) {
+  const [viewMode, setViewMode] = useState<'list' | 'create_wizard' | 'editor'>('list');
   const [landingConfig, setLandingConfig] = useState<LandingPageConfig>(DEFAULT_BARBER_LANDING_CONFIG);
   const [isSavingLanding, setIsSavingLanding] = useState(false);
   const [saveLandingSuccess, setSaveLandingSuccess] = useState(false);
@@ -225,7 +226,99 @@ export function useCrmLanding({
     }
   };
 
+  const handleSelectPageForEdit = (page: LandingPageConfig) => {
+    setLandingConfig({ ...page });
+    setViewMode('editor');
+  };
+
+  const handleStartCreateWizard = () => {
+    setViewMode('create_wizard');
+  };
+
+  const handleBackToList = async () => {
+    await fetchAllLandingPages();
+    setViewMode('list');
+  };
+
+  const handleQuickUpdateKnowledgeBase = async (pageIdOrSlug: string, assistantId: string) => {
+    const page = allLandingPages.find((p) => p.id === pageIdOrSlug || p.slug === pageIdOrSlug);
+    if (!page) return;
+
+    const updatedConfig: LandingPageConfig = {
+      ...page,
+      assistantId: assistantId || '',
+    };
+
+    try {
+      const res = await fetch('/api/landing-page', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          assistantId: assistantId || '',
+          config: updatedConfig,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to update knowledge base');
+      }
+
+      setAllLandingPages((prev) =>
+        prev.map((p) => (p.id === page.id || p.slug === page.slug ? { ...p, assistantId: assistantId || '' } : p))
+      );
+
+      if (landingConfig.id === page.id || landingConfig.slug === page.slug) {
+        setLandingConfig((prev) => ({ ...prev, assistantId: assistantId || '' }));
+      }
+
+      setPresetNotice(
+        assistantId
+          ? `Connected knowledge base to "${page.businessName}".`
+          : `Disconnected knowledge base from "${page.businessName}".`
+      );
+      setTimeout(() => setPresetNotice(null), 4000);
+    } catch (err: any) {
+      alert(err.message || 'Failed to update knowledge base');
+    }
+  };
+
+  const handleAIGenerateLandingPage = async (
+    newConfig: LandingPageConfig,
+    assistantOption: 'auto_create' | 'none' | string = 'auto_create'
+  ) => {
+    try {
+      const isAutoCreate = assistantOption === 'auto_create';
+      const targetAssistantId = isAutoCreate ? undefined : (assistantOption === 'none' ? '' : assistantOption);
+
+      const res = await fetch('/api/landing-page', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          assistantId: targetAssistantId,
+          createDedicatedAssistant: isAutoCreate,
+          config: newConfig,
+          isNewPage: true,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to generate landing page with AI');
+      }
+
+      const saved = data.config || newConfig;
+      await fetchAllLandingPages();
+      setLandingConfig(saved);
+      playNotificationChime();
+      return saved;
+    } catch (err: any) {
+      throw err;
+    }
+  };
+
   return {
+    viewMode,
+    setViewMode,
     landingConfig,
     setLandingConfig,
     isSavingLanding,
@@ -258,5 +351,10 @@ export function useCrmLanding({
     handleDeleteLandingPage,
     fetchLandingConfig,
     handleSaveLandingConfig,
+    handleSelectPageForEdit,
+    handleStartCreateWizard,
+    handleBackToList,
+    handleQuickUpdateKnowledgeBase,
+    handleAIGenerateLandingPage,
   };
 }

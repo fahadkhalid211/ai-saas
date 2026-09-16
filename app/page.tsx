@@ -709,6 +709,7 @@ export default function DashboardPage() {
             appointmentsCount={appointments.length}
             conversationsCount={conversations.length}
             waitingConversationsCount={conversations.filter((c) => c.status === 'waiting_for_agent' && !c.isLiveTakeover).length}
+            landingPagesCount={landing.allLandingPages.length}
           />
 
           {/* Main Content Workspace */}
@@ -779,6 +780,13 @@ export default function DashboardPage() {
                 handlePurchaseExtraLandingPage={landing.handlePurchaseExtraLandingPage}
                 handleSaveLandingConfig={landing.handleSaveLandingConfig}
                 handleDeleteLandingPage={landing.handleDeleteLandingPage}
+                viewMode={landing.viewMode}
+                setViewMode={landing.setViewMode}
+                handleSelectPageForEdit={landing.handleSelectPageForEdit}
+                handleStartCreateWizard={landing.handleStartCreateWizard}
+                handleBackToList={landing.handleBackToList}
+                handleQuickUpdateKnowledgeBase={landing.handleQuickUpdateKnowledgeBase}
+                handleAIGenerateLandingPage={landing.handleAIGenerateLandingPage}
                 activeAssistant={activeAssistant}
                 assistants={assistants}
                 setActiveAssistant={setActiveAssistant}

@@ -78,9 +78,115 @@ export interface LandingPageConfig {
     youtube?: string;
     tiktok?: string;
   };
+  logoUrl?: string;
+  founderName?: string;
+  founderTitle?: string;
+  founderStory?: string;
+  designArchetype?: string;
   createdAt?: string;
   updatedAt?: string;
 }
+
+export interface DesignArchetype {
+  id: string;
+  name: string;
+  tagline: string;
+  category: string;
+  aesthetic: string;
+  themeColor: string;
+  previewImage: string;
+  badge: string;
+  features: string[];
+  recommendedFor: string[];
+}
+
+export const MODERN_DESIGN_ARCHETYPES: DesignArchetype[] = [
+  {
+    id: 'dark-luxury-glass',
+    name: 'Ultra-Modern Dark Glass',
+    tagline: 'Deep obsidian canvas with luminous frosted glass cards and neon accents.',
+    category: 'High-End Luxury & Modern Tech',
+    aesthetic: 'Dark Obsidian & Frosted Glass',
+    themeColor: '#6366f1',
+    previewImage: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80',
+    badge: 'Aesthetic Trend 2026',
+    features: [
+      'Backdrop blur frosted cards',
+      'High-contrast glowing CTA buttons',
+      'Integrated floating AI concierge',
+      'Instant calendar time-slot triage',
+    ],
+    recommendedFor: ['saas', 'ai_tech', 'barbershop', 'gym', 'creative_agency'],
+  },
+  {
+    id: 'minimal-editorial',
+    name: 'Minimalist Editorial Luxury',
+    tagline: 'Refined Swiss whitespace, sharp typography, and understated prestige.',
+    category: 'Editorial & Luxury Boutique',
+    aesthetic: 'Clean White & Warm Charcoal',
+    themeColor: '#0f172a',
+    previewImage: 'https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?auto=format&fit=crop&w=800&q=80',
+    badge: 'Editorial Excellence',
+    features: [
+      'Elegant serif headlines & clean grid',
+      'Spacious high-ticket service menu',
+      'Client trust badges & review carousel',
+      'Distraction-free booking flow',
+    ],
+    recommendedFor: ['real_estate', 'legal', 'healthcare', 'fintech', 'custom'],
+  },
+  {
+    id: 'high-conversion-bold',
+    name: 'Dynamic High-Conversion',
+    tagline: 'Built for velocity with prominent booking badges and vibrant gradients.',
+    category: 'High-Growth & Direct Response',
+    aesthetic: 'Vibrant Dynamic & High Impact',
+    themeColor: '#2563eb',
+    previewImage: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=800&q=80',
+    badge: 'Top Conversion Rate',
+    features: [
+      'Sticky booking call-to-actions',
+      'Interactive pricing matrix with highlights',
+      'Customer review social proof badges',
+      'Immediate SMS / Email confirmation hook',
+    ],
+    recommendedFor: ['gym', 'barbershop', 'ecommerce', 'saas', 'healthcare'],
+  },
+  {
+    id: 'executive-authority',
+    name: 'Bespoke Executive Authority',
+    tagline: 'Authoritative structure designed for corporate trust, NDAs, and retainers.',
+    category: 'Corporate & Professional Advisory',
+    aesthetic: 'Deep Navy & Brushed Gold',
+    themeColor: '#d97706',
+    previewImage: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=800&q=80',
+    badge: 'Enterprise Grade',
+    features: [
+      'Structured legal / advisory intake triage',
+      'Strict confidentiality & SLA badges',
+      'Attorney / Specialist credentials display',
+      'Multi-tier consultation booking forms',
+    ],
+    recommendedFor: ['legal', 'fintech', 'real_estate', 'custom'],
+  },
+  {
+    id: 'creative-studio',
+    name: 'Avant-Garde Creative Studio',
+    tagline: 'Bold asymmetrical typography, immersive media showcase, and design flair.',
+    category: 'Design & Digital Innovation',
+    aesthetic: 'Fuchsia Neon & Deep Charcoal',
+    themeColor: '#d946ef',
+    previewImage: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=800&q=80',
+    badge: 'Design Award Winner',
+    features: [
+      'High-impact visual portfolio grid',
+      'Interactive service scope estimator',
+      'Direct founder discovery call triage',
+      'Dynamic social video embeds',
+    ],
+    recommendedFor: ['creative_agency', 'ecommerce', 'ai_tech', 'custom'],
+  },
+];
 
 // 1. Classic Barbershop & Men's Grooming
 export const DEFAULT_BARBER_LANDING_CONFIG: LandingPageConfig = {

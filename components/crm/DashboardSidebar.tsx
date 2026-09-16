@@ -33,6 +33,7 @@ interface DashboardSidebarProps {
   appointmentsCount: number;
   conversationsCount: number;
   waitingConversationsCount?: number;
+  landingPagesCount?: number;
 }
 
 export function DashboardSidebar({
@@ -45,13 +46,14 @@ export function DashboardSidebar({
   appointmentsCount,
   conversationsCount,
   waitingConversationsCount = 0,
+  landingPagesCount,
 }: DashboardSidebarProps) {
   const tabs = [
     { id: 'overview', label: 'Overview', icon: FileCheck },
     { id: 'profile', label: 'My Profile', icon: UserCircle },
     { id: 'analytics', label: 'Analytics & KPIs', icon: BarChart3 },
     { id: 'billing', label: 'Plans & Billing', icon: CreditCard },
-    { id: 'landing_page', label: 'Landing Page', icon: Globe },
+    { id: 'landing_page', label: 'Landing Pages', icon: Globe, count: landingPagesCount },
     { id: 'team', label: 'Team & RBAC', icon: UserCheck, count: teamCount },
     { id: 'security', label: 'Security & 2FA', icon: ShieldCheck },
     { id: 'audit', label: 'Audit Trail', icon: ClipboardList, count: auditCount },

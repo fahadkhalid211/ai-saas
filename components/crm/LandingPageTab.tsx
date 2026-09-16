@@ -32,12 +32,15 @@ import {
   X,
   Bot,
   ShieldCheck,
+  ArrowLeft,
 } from 'lucide-react';
 import {
   LandingPageConfig,
   TEMPLATE_LANDING_CONFIGS,
   getLandingConfigForSlugOrTemplate,
 } from '@/lib/landing/types';
+import { LandingPagesList } from './landing/LandingPagesList';
+import { AiLandingWizard } from './landing/AiLandingWizard';
 
 const Youtube = ({ className = 'h-4 w-4' }: { className?: string }) => (
   <svg className={className} viewBox="0 0 24 24" fill="currentColor">
@@ -228,6 +231,16 @@ export interface LandingPageTabProps {
   handleDeleteLandingPage?: (pageIdOrSlug?: string) => Promise<void> | void;
   appointments: any[];
   theme: string;
+  viewMode?: 'list' | 'create_wizard' | 'editor';
+  setViewMode?: (mode: 'list' | 'create_wizard' | 'editor') => void;
+  handleSelectPageForEdit?: (page: any) => void;
+  handleStartCreateWizard?: () => void;
+  handleBackToList?: () => void;
+  handleQuickUpdateKnowledgeBase?: (pageIdOrSlug: string, assistantId: string) => Promise<void>;
+  handleAIGenerateLandingPage?: (
+    newConfig: LandingPageConfig,
+    assistantOption?: 'auto_create' | 'none' | string
+  ) => Promise<LandingPageConfig>;
 }
 
 export const LandingPageTab: React.FC<LandingPageTabProps> = ({
@@ -256,7 +269,43 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
   setActiveTab: setParentActiveTab,
   appointments,
   theme,
+  viewMode: propViewMode,
+  setViewMode: propSetViewMode,
+  handleSelectPageForEdit: propHandleSelectPageForEdit,
+  handleStartCreateWizard: propHandleStartCreateWizard,
+  handleBackToList: propHandleBackToList,
+  handleQuickUpdateKnowledgeBase,
+  handleAIGenerateLandingPage,
 }) => {
+  const [localViewMode, setLocalViewMode] = React.useState<'list' | 'create_wizard' | 'editor'>('list');
+  const viewMode = propViewMode ?? localViewMode;
+  const setViewMode = propSetViewMode ?? setLocalViewMode;
+
+  const handleStartCreateWizard = () => {
+    if (propHandleStartCreateWizard) {
+      propHandleStartCreateWizard();
+    } else {
+      setViewMode('create_wizard');
+    }
+  };
+
+  const handleBackToList = () => {
+    if (propHandleBackToList) {
+      propHandleBackToList();
+    } else {
+      setViewMode('list');
+    }
+  };
+
+  const handleSelectPageForEdit = (page: LandingPageConfig) => {
+    if (propHandleSelectPageForEdit) {
+      propHandleSelectPageForEdit(page);
+    } else {
+      setLandingConfig(page);
+      setViewMode('editor');
+    }
+  };
+
   const [activeTab, setActiveTab] = React.useState<'identity' | 'hero' | 'services' | 'contact'>('identity');
   const [showTemplatesModal, setShowTemplatesModal] = React.useState(false);
   const [templateSearch, setTemplateSearch] = React.useState('');
@@ -277,12 +326,98 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
     });
   }, [templateSearch, selectedCategory]);
 
+  if (viewMode === 'list') {
+    return (
+      <LandingPagesList
+        allLandingPages={allLandingPages}
+        landingPageLimits={landingPageLimits}
+        isPurchasingAddon={isPurchasingAddon}
+        handlePurchaseExtraLandingPage={handlePurchaseExtraLandingPage}
+        handleStartCreateWizard={handleStartCreateWizard}
+        handleSelectPageForEdit={handleSelectPageForEdit}
+        handleDeleteLandingPage={handleDeleteLandingPage}
+        handleQuickUpdateKnowledgeBase={
+          handleQuickUpdateKnowledgeBase ||
+          (async (pageIdOrSlug: string, assistantId: string) => {
+            const page = allLandingPages.find((p) => p.id === pageIdOrSlug || p.slug === pageIdOrSlug);
+            if (!page) return;
+            const updated = { ...page, assistantId };
+            await fetch('/api/landing-page', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ assistantId, config: updated }),
+            });
+            setLandingConfig((prev) => (prev.id === page.id || prev.slug === page.slug ? { ...prev, assistantId } : prev));
+          })
+        }
+        assistants={assistants}
+        setActiveAssistant={setActiveAssistant}
+        setActiveTab={setParentActiveTab}
+      />
+    );
+  }
+
+  if (viewMode === 'create_wizard') {
+    return (
+      <AiLandingWizard
+        onBackToList={handleBackToList}
+        onOpenEditor={(newConfig) => {
+          setLandingConfig(newConfig);
+          setViewMode('editor');
+        }}
+        onSaveLandingPage={
+          handleAIGenerateLandingPage ||
+          (async (newConfig, assistantOption) => {
+            const isAutoCreate = assistantOption === 'auto_create';
+            const targetAssistantId = isAutoCreate ? undefined : (assistantOption === 'none' ? '' : assistantOption);
+            const res = await fetch('/api/landing-page', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                assistantId: targetAssistantId,
+                createDedicatedAssistant: isAutoCreate,
+                config: newConfig,
+                isNewPage: true,
+              }),
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Failed to generate landing page');
+            return data.config || newConfig;
+          })
+        }
+        assistants={assistants}
+      />
+    );
+  }
+
   const liveSiteUrl = typeof window !== 'undefined'
     ? `${window.location.origin}/site/${landingConfig.slug || activeAssistant?.id || 'demo-assistant'}`
     : `/site/${landingConfig.slug || 'demo-assistant'}`;
 
   return (
     <div className="max-w-5xl space-y-6 mx-auto pb-16">
+      {/* Back to All Landing Pages & Active Editor Breadcrumb */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs">
+        <button
+          type="button"
+          onClick={handleBackToList}
+          className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-750 text-xs font-semibold text-slate-700 dark:text-slate-200 transition cursor-pointer self-start sm:self-auto"
+        >
+          <ArrowLeft className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+          <span>Back to All Landing Pages</span>
+        </button>
+
+        <div className="flex items-center gap-2.5 text-xs text-slate-500 dark:text-slate-400">
+          <span>Editing:</span>
+          <span className="font-bold text-slate-900 dark:text-white truncate max-w-[200px]">
+            {landingConfig.businessName || 'Business Website'}
+          </span>
+          <span className="px-2 py-0.5 rounded font-mono text-[11px] bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300">
+            /site/{landingConfig.slug}
+          </span>
+        </div>
+      </div>
+
       {/* Studio Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -393,7 +528,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
                   alert(`You have reached your plan limit of ${landingPageLimits.totalAllowed} landing page(s). Click "+ Extra Slot ($100)" to add another landing page.`);
                   return;
                 }
-                setShowNewPageModal(true);
+                handleStartCreateWizard();
               }}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold transition cursor-pointer"
             >
@@ -688,6 +823,33 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
                       })
                     }
                     className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white font-mono focus:outline-none focus:border-blue-500"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                    Brand Logo URL
+                  </label>
+                  <input
+                    type="url"
+                    value={landingConfig.logoUrl || ''}
+                    onChange={(e) => setLandingConfig({ ...landingConfig, logoUrl: e.target.value })}
+                    placeholder="https://images.unsplash.com/photo-... or your logo URL"
+                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                    Founder / Lead Practitioner Name
+                  </label>
+                  <input
+                    type="text"
+                    value={landingConfig.founderName || ''}
+                    onChange={(e) => setLandingConfig({ ...landingConfig, founderName: e.target.value })}
+                    placeholder="e.g. Marcus Vance"
+                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
                   />
                 </div>
               </div>
