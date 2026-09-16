@@ -303,6 +303,89 @@ interface YouTubeInnerTubeData {
   audioStreamUrl?: string;
 }
 
+/**
+ * Strategy 0: Scrape ytInitialPlayerResponse from the YouTube watch page HTML.
+ * This is a plain browser GET request to youtube.com — served by YouTube's CDN to all IPs,
+ * including Vercel / AWS datacenter IPs where the InnerTube JSON API is often blocked.
+ * Caption track baseUrls from ytInitialPlayerResponse are CDN URLs with no IP restriction.
+ * Uses the shared https.Agent (Node native) to avoid IPv6 TLS failures in some environments.
+ */
+async function scrapeYouTubeWatchPage(videoId: string): Promise<YouTubeInnerTubeData> {
+  const watchUrl = `https://www.youtube.com/watch?v=${videoId}`;
+  const userAgents = [
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36',
+    'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36',
+    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36',
+  ];
+
+  for (const ua of userAgents) {
+    try {
+      // Use httpsGetBuffer (Node native https module) — reliable on both Linux (Vercel) and Windows
+      const res = await queryHttpsWithRetry(
+        () => httpsGetBuffer(watchUrl, ua, undefined, 15000),
+        2,
+        500
+      );
+
+      if (res.statusCode < 200 || res.statusCode >= 300) {
+        console.warn(`[URLExtractor] Watch page GET ${res.statusCode} for ${videoId}, trying next UA...`);
+        continue;
+      }
+
+      const html = res.data.toString('utf-8');
+      if (!html || html.length < 1000) continue;
+
+      // ytInitialPlayerResponse is embedded as an inline JSON assignment in a <script> tag.
+      // It may span multiple lines — match up to the first statement boundary.
+      const iprMatch = html.match(/ytInitialPlayerResponse\s*=\s*(\{[\s\S]*?\});\s*(?:var |const |let |<\/script>|if\s*\()/);
+      if (!iprMatch) {
+        // Check if we got a bot-check page instead
+        if (html.includes('enable JavaScript') || html.includes('Are you a robot')) {
+          console.warn(`[URLExtractor] Watch page returned bot-check for ${videoId}, trying next UA...`);
+        } else {
+          console.warn(`[URLExtractor] ytInitialPlayerResponse not found in watch page for ${videoId} (html len=${html.length})`);
+        }
+        continue;
+      }
+
+      let data: any;
+      try {
+        data = JSON.parse(iprMatch[1]);
+      } catch {
+        console.warn(`[URLExtractor] Failed to parse ytInitialPlayerResponse JSON for ${videoId}`);
+        continue;
+      }
+
+      const captionTracks: YouTubeCaptionTrack[] =
+        data?.captions?.playerCaptionsTracklistRenderer?.captionTracks || [];
+      const title: string | undefined = data?.videoDetails?.title;
+      const author: string | undefined = data?.videoDetails?.author;
+
+      // Extract audio stream URL (may be absent on some datacenter IPs — acceptable)
+      const adaptiveFormats: any[] = data?.streamingData?.adaptiveFormats || [];
+      const formats: any[] = data?.streamingData?.formats || [];
+      const audioFormat = [...adaptiveFormats, ...formats].find(
+        (f: any) => (f.mimeType?.startsWith('audio/') || f.audioQuality) && f.url
+      );
+
+      console.log(
+        `[URLExtractor] Watch page scrape OK for ${videoId}: title="${title}", captions=${captionTracks.length}, audio=${audioFormat ? 'yes' : 'no'}`
+      );
+
+      return {
+        title,
+        author,
+        captionTracks,
+        audioStreamUrl: audioFormat?.url,
+      };
+    } catch (err: any) {
+      console.warn(`[URLExtractor] Watch page scrape failed for ${videoId} UA[${ua.slice(0, 30)}]:`, err?.message);
+    }
+  }
+
+  return {};
+}
+
 async function queryYouTubeInnerTube(videoId: string): Promise<YouTubeInnerTubeData> {
   const hosts = ['youtubei.googleapis.com', 'www.youtube.com'];
   const clients = [
@@ -394,6 +477,75 @@ async function queryYouTubeInnerTube(videoId: string): Promise<YouTubeInnerTubeD
   };
 }
 
+interface PublicTranscriptResult {
+  title?: string;
+  language?: string;
+  transcript: Array<{ text: string; duration: number; offset: number; lang?: string }>;
+}
+
+/**
+ * Strategy 1 (Cloud-resilient): Fetch transcript via dedicated transcript service.
+ * Standard YouTube internal endpoints block AWS / Vercel datacenter IPs.
+ * This service runs on proxy-rotated infrastructure and reliably extracts transcripts
+ * with timestamps and titles within 1-2 seconds without datacenter IP blocks.
+ */
+async function fetchTranscriptFromPublicService(videoId: string): Promise<PublicTranscriptResult | null> {
+  try {
+    const res = await fetch(`https://youtube-transcript.ai/transcript/${videoId}.txt`, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36',
+        'Accept': 'text/plain, text/markdown, */*',
+      },
+      signal: AbortSignal.timeout(12000),
+    });
+
+    if (!res.ok) return null;
+
+    const text = await res.text();
+    if (!text || text.length < 50 || !text.includes('# Transcript:')) return null;
+
+    const lines = text.split('\n');
+    let title: string | undefined;
+    let language = 'en';
+    const transcript: Array<{ text: string; offset: number; duration: number; lang?: string }> = [];
+
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (trimmed.startsWith('# Transcript:')) {
+        title = trimmed.replace('# Transcript:', '').trim();
+      } else if (trimmed.startsWith('Language:')) {
+        const langMatch = trimmed.match(/Language:\s*([a-zA-Z0-9_-]+)/);
+        if (langMatch) language = langMatch[1];
+      } else {
+        const match = trimmed.match(/^\[(\d+(?::\d+)+)\]\s*(.*)$/);
+        if (match) {
+          const timeParts = match[1].split(':').map(Number);
+          let seconds = 0;
+          if (timeParts.length === 2) seconds = timeParts[0] * 60 + timeParts[1];
+          else if (timeParts.length === 3) seconds = timeParts[0] * 3600 + timeParts[1] * 60 + timeParts[2];
+          const content = match[2].trim();
+          if (content) {
+            transcript.push({
+              text: content,
+              offset: seconds * 1000,
+              duration: 5000,
+              lang: language,
+            });
+          }
+        }
+      }
+    }
+
+    if (transcript.length > 0) {
+      console.log(`[URLExtractor] Public transcript service succeeded for ${videoId}: ${transcript.length} segments, title="${title}"`);
+      return { title, language, transcript };
+    }
+  } catch (err: any) {
+    console.warn(`[URLExtractor] Public transcript service failed for ${videoId}:`, err?.message);
+  }
+  return null;
+}
+
 /**
  * Extracts transcript and structured knowledge from YouTube videos
  */
@@ -407,26 +559,58 @@ export async function extractFromYouTube(
   }
 
   const cleanUrl = `https://www.youtube.com/watch?v=${videoId}`;
-  
-  // Strategy 1: Direct Multi-Client InnerTube Query with Automatic Retry & Shared Connection Pool
-  const innerTubeData = await queryYouTubeInnerTube(videoId);
+  let rawTranscript: Array<{ text: string; duration: number; offset: number; lang?: string }> = [];
+  let finalTitle = 'YouTube Video';
+  let finalAuthor = 'YouTube';
 
-  let metaTitle = innerTubeData.title;
-  let metaAuthor = innerTubeData.author;
-
-  if (!metaTitle) {
-    const meta = await fetchYouTubeMetadata(cleanUrl);
-    metaTitle = meta.title;
-    metaAuthor = meta.authorName;
+  // Strategy 1 (Cloud-Primary): Dedicated transcript service that bypasses Vercel/AWS datacenter IP blocks
+  const publicResult = await fetchTranscriptFromPublicService(videoId);
+  if (publicResult && publicResult.transcript.length > 0) {
+    rawTranscript = publicResult.transcript;
+    if (publicResult.title) finalTitle = publicResult.title;
   }
 
-  const finalTitle = metaTitle || 'YouTube Video';
-  const finalAuthor = metaAuthor || 'YouTube';
+  // Strategy 2: Direct Watch Page Scrape + Multi-Client InnerTube Query (fallback if Strategy 1 fails)
+  let innerTubeDataForStrategies: YouTubeInnerTubeData = {};
+  if (rawTranscript.length === 0) {
+    const [watchPageData, innerTubeData] = await Promise.allSettled([
+      scrapeYouTubeWatchPage(videoId),
+      queryYouTubeInnerTube(videoId),
+    ]);
 
-  let rawTranscript: Array<{ text: string; duration: number; offset: number; lang?: string }> = [];
+    const watchData = watchPageData.status === 'fulfilled' ? watchPageData.value : {};
+    const itData = innerTubeData.status === 'fulfilled' ? innerTubeData.value : {};
 
-  if (innerTubeData.captionTracks && innerTubeData.captionTracks.length > 0) {
-    const tracks = innerTubeData.captionTracks;
+    const mergedCaptionTracks = (
+      (watchData.captionTracks && watchData.captionTracks.length > 0)
+        ? watchData.captionTracks
+        : (itData.captionTracks || [])
+    );
+    const mergedTitle = watchData.title || itData.title;
+    const mergedAuthor = watchData.author || itData.author;
+    const mergedAudioUrl = watchData.audioStreamUrl || itData.audioStreamUrl;
+
+    innerTubeDataForStrategies = {
+      title: mergedTitle,
+      author: mergedAuthor,
+      captionTracks: mergedCaptionTracks,
+      audioStreamUrl: mergedAudioUrl,
+    };
+
+    let metaTitle = innerTubeDataForStrategies.title;
+    let metaAuthor = innerTubeDataForStrategies.author;
+
+    if (!metaTitle) {
+      const meta = await fetchYouTubeMetadata(cleanUrl);
+      metaTitle = meta.title;
+      metaAuthor = meta.authorName;
+    }
+
+    if (metaTitle) finalTitle = metaTitle;
+    if (metaAuthor) finalAuthor = metaAuthor;
+
+    if (innerTubeDataForStrategies.captionTracks && innerTubeDataForStrategies.captionTracks.length > 0) {
+      const tracks = innerTubeDataForStrategies.captionTracks;
     // Prefer English if available, then other languages
     const sortedTracks = [...tracks].sort((a, b) => {
       const aIsEn = a.languageCode === 'en' || a.languageCode.startsWith('en-');
@@ -442,7 +626,7 @@ export async function extractFromYouTube(
           () =>
             httpsGetBuffer(
               selectedTrack.baseUrl,
-              'com.google.android.youtube/20.10.38 (Linux; U; Android 14)',
+              'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36',
               undefined,
               20000
             ),
@@ -464,8 +648,9 @@ export async function extractFromYouTube(
       }
     }
   }
+}
 
-  // Strategy 2: Fallback to youtube-transcript library with dynamic language detection
+  // Strategy 3: Fallback to youtube-transcript library with dynamic language detection
   if (rawTranscript.length === 0) {
     try {
       rawTranscript = await YoutubeTranscript.fetchTranscript(videoId);
@@ -490,14 +675,14 @@ export async function extractFromYouTube(
   let audioFallbackError: string | undefined;
 
   // Strategy 3: If closed captions are absent/disabled, stream audio directly for AI transcription
-  if (rawTranscript.length === 0 && innerTubeData.audioStreamUrl) {
+  if (rawTranscript.length === 0 && innerTubeDataForStrategies.audioStreamUrl) {
     console.log(`[URLExtractor] Closed captions not found on video. Streaming audio directly for AI transcription...`);
     try {
       const audioRes = await queryHttpsWithRetry(
         () =>
           httpsGetBuffer(
-            innerTubeData.audioStreamUrl!,
-            'com.google.android.youtube/20.10.38 (Linux; U; Android 14)',
+            innerTubeDataForStrategies.audioStreamUrl!,
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36',
             'bytes=0-15728640',
             60000
           ),
@@ -816,14 +1001,11 @@ export async function extractFromWebpage(url: string): Promise<ExtractedDocument
   let isMarkdown = false;
   let extractionTier = 'direct';
 
-  // --- Tier 1: Direct Fetch using fetch-safe headers (no Sec-* headers) ---
-  // Sec-Fetch-* and Sec-Ch-Ua-* headers are only trustworthy when coming from a real Chrome TLS
-  // session. Node.js uses a different TLS fingerprint (JA3/JA4), so anti-bot systems catch the
-  // mismatch and return 403. Removing those headers avoids triggering that check.
+  // --- Tier 1: Direct Fetch using fetch-safe headers (fast 5s timeout) ---
   try {
     const res = await fetch(url, {
       headers: FETCH_SAFE_HEADERS,
-      signal: AbortSignal.timeout(12000),
+      signal: AbortSignal.timeout(5000),
     });
     if (res.ok) {
       const html = await res.text();
@@ -831,26 +1013,60 @@ export async function extractFromWebpage(url: string): Promise<ExtractedDocument
         rawContent = html;
         extractionTier = 'direct';
       } else if (html && isBlockedResponse(html)) {
-        console.warn(`[URLExtractor] Tier 1 returned a blocked/challenge page (${html.length} bytes), trying Tier 2 (curl)...`);
+        console.warn(`[URLExtractor] Tier 1 returned a blocked/challenge page (${html.length} bytes), trying Tier 2 (Jina)...`);
       }
     } else {
-      console.warn(`[URLExtractor] Direct fetch returned status ${res.status} ${res.statusText}, trying Tier 2 (curl)...`);
+      console.warn(`[URLExtractor] Direct fetch returned status ${res.status} ${res.statusText}, trying Tier 2 (Jina)...`);
     }
   } catch (err: any) {
     console.warn(`[URLExtractor] Tier 1 (direct fetch) error:`, err?.message);
   }
 
-  // --- Tier 2: Native curl.exe (has its own TLS stack matching Chrome's fingerprint) ---
+  // --- Tier 2: Jina AI Reader Engine (cloud-based proxy that bypasses Cloudflare, paywalls & bot walls) ---
   if (!rawContent) {
-    // Determine the curl binary name: on Windows use curl.exe to avoid PowerShell alias collision
+    try {
+      console.log(`[URLExtractor] Tier 2: Invoking Jina Reader for ${url}...`);
+      const jinaUrl = 'https://r.jina.ai/' + url;
+      const jinaRes = await fetch(jinaUrl, {
+        headers: {
+          'Accept': 'text/plain, text/markdown',
+          'X-Timeout': '10',
+        },
+        signal: AbortSignal.timeout(12000),
+      });
+      if (jinaRes.ok) {
+        const jinaText = await jinaRes.text();
+        if (
+          jinaText &&
+          jinaText.length > 200 &&
+          !jinaText.includes('Just a moment...') &&
+          !jinaText.includes('CAPTCHA') &&
+          !jinaText.includes('Are you a robot?') &&
+          !isBlockedResponse(jinaText)
+        ) {
+          rawContent = jinaText;
+          isMarkdown = true;
+          extractionTier = 'jina';
+          console.log(`[URLExtractor] Tier 2 (Jina) succeeded with ${jinaText.length} characters.`);
+        }
+      } else {
+        console.warn(`[URLExtractor] Tier 2 (Jina) returned status ${jinaRes.status}, trying Tier 3 (curl)...`);
+      }
+    } catch (jinaErr: any) {
+      console.warn(`[URLExtractor] Tier 2 (Jina) failed:`, jinaErr?.message);
+    }
+  }
+
+  // --- Tier 3: Native curl / curl.exe (with realistic Chrome headers, 6s timeout) ---
+  if (!rawContent) {
     const curlBin = process.platform === 'win32' ? 'curl.exe' : 'curl';
     try {
-      console.log(`[URLExtractor] Tier 2: Invoking ${curlBin} for ${url}...`);
+      console.log(`[URLExtractor] Tier 3: Invoking ${curlBin} for ${url}...`);
       const curlArgs = [
         '-s',
         '-L',
         '--compressed',
-        '--max-time', '15',
+        '--max-time', '6',
         '-H', `User-Agent: ${REALISTIC_CHROME_HEADERS['User-Agent']}`,
         '-H', `Accept: ${REALISTIC_CHROME_HEADERS['Accept']}`,
         '-H', `Accept-Language: ${REALISTIC_CHROME_HEADERS['Accept-Language']}`,
@@ -864,69 +1080,10 @@ export async function extractFromWebpage(url: string): Promise<ExtractedDocument
       if (stdout && stdout.length > 200 && !isBlockedResponse(stdout)) {
         rawContent = stdout;
         extractionTier = 'curl';
-        console.log(`[URLExtractor] Tier 2 (curl) succeeded with ${stdout.length} bytes.`);
-      } else if (stdout && isBlockedResponse(stdout)) {
-        console.warn(`[URLExtractor] Tier 2 (curl) returned a blocked/challenge page, trying Tier 3 (Jina)...`);
+        console.log(`[URLExtractor] Tier 3 (curl) succeeded with ${stdout.length} bytes.`);
       }
     } catch (curlErr: any) {
-      console.warn(`[URLExtractor] Tier 2 (curl) failed:`, curlErr?.message);
-    }
-  }
-
-  // --- Tier 3: Jina AI Reader Engine (free cloud-based article reader) ---
-  if (!rawContent) {
-    try {
-      console.log(`[URLExtractor] Tier 3: Invoking Jina Reader for ${url}...`);
-      const jinaUrl = 'https://r.jina.ai/' + url;
-      const jinaRes = await fetch(jinaUrl, {
-        headers: {
-          'Accept': 'text/plain, text/markdown',
-          'User-Agent': FETCH_SAFE_HEADERS['User-Agent'],
-          'X-Timeout': '20',
-        },
-        signal: AbortSignal.timeout(22000),
-      });
-      if (jinaRes.ok) {
-        const jinaText = await jinaRes.text();
-        if (
-          jinaText &&
-          jinaText.length > 200 &&
-          !jinaText.includes('Just a moment...') &&
-          !jinaText.includes('CAPTCHA') &&
-          !jinaText.includes('Are you a robot?')
-        ) {
-          rawContent = jinaText;
-          isMarkdown = true;
-          extractionTier = 'jina';
-          console.log(`[URLExtractor] Tier 3 (Jina) succeeded with ${jinaText.length} characters.`);
-        }
-      } else {
-        console.warn(`[URLExtractor] Tier 3 (Jina) returned status ${jinaRes.status}, trying Tier 4 (Google Cache)...`);
-      }
-    } catch (jinaErr: any) {
-      console.warn(`[URLExtractor] Tier 3 (Jina) failed:`, jinaErr?.message);
-    }
-  }
-
-  // --- Tier 4: Google Web Cache (works for public news articles and blog posts) ---
-  if (!rawContent) {
-    try {
-      const cacheUrl = `https://webcache.googleusercontent.com/search?q=cache:${encodeURIComponent(url)}`;
-      console.log(`[URLExtractor] Tier 4: Trying Google Web Cache for ${url}...`);
-      const cacheRes = await fetch(cacheUrl, {
-        headers: FETCH_SAFE_HEADERS,
-        signal: AbortSignal.timeout(12000),
-      });
-      if (cacheRes.ok) {
-        const cacheHtml = await cacheRes.text();
-        if (cacheHtml && cacheHtml.length > 500 && !isBlockedResponse(cacheHtml)) {
-          rawContent = cacheHtml;
-          extractionTier = 'google-cache';
-          console.log(`[URLExtractor] Tier 4 (Google Cache) succeeded with ${cacheHtml.length} bytes.`);
-        }
-      }
-    } catch (cacheErr: any) {
-      console.warn(`[URLExtractor] Tier 4 (Google Cache) failed:`, cacheErr?.message);
+      console.warn(`[URLExtractor] Tier 3 (curl) failed:`, curlErr?.message);
     }
   }
 

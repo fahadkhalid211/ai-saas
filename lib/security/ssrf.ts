@@ -103,7 +103,24 @@ export async function validateSafeExternalUrl(rawUrl: string): Promise<{ safe: b
 
   // 4. Resolve DNS records and verify all destination IPs
   try {
-    const results = await lookupAsync(hostname, { all: true });
+    let results: Array<{ address: string; family: number }> = [];
+    try {
+      results = (await lookupAsync(hostname, { all: true })) as any;
+    } catch (firstErr: any) {
+      // If OS getaddrinfo encountered transient DNS timeout (EAI_AGAIN), retry once or fallback to resolve4
+      await new Promise((r) => setTimeout(r, 200));
+      try {
+        results = (await lookupAsync(hostname, { all: true })) as any;
+      } catch {
+        const v4s = await dns.promises.resolve4(hostname).catch(() => []);
+        if (v4s.length > 0) {
+          results = v4s.map((addr) => ({ address: addr, family: 4 }));
+        } else {
+          throw firstErr;
+        }
+      }
+    }
+
     if (!results || results.length === 0) {
       return { safe: false, error: 'Hostname could not be resolved' };
     }
