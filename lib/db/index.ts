@@ -368,18 +368,31 @@ function atomicWriteFileSync(filePath: string, data: string): void {
 let cachedState: DatabaseState | null = null;
 let cachedChunks: ChunkRecord[] | null = null;
 let assistantChunksIndex: Map<string, ChunkRecord[]> = new Map();
+let sourceChunksIndex: Map<string, ChunkRecord[]> = new Map();
 
 function rebuildChunkIndex(chunks: ChunkRecord[]): void {
-  const map = new Map<string, ChunkRecord[]>();
+  const astMap = new Map<string, ChunkRecord[]>();
+  const srcMap = new Map<string, ChunkRecord[]>();
   for (const c of chunks) {
-    let list = map.get(c.assistantId);
-    if (!list) {
-      list = [];
-      map.set(c.assistantId, list);
+    if (c.assistantId) {
+      let astList = astMap.get(c.assistantId);
+      if (!astList) {
+        astList = [];
+        astMap.set(c.assistantId, astList);
+      }
+      astList.push(c);
     }
-    list.push(c);
+    if (c.knowledgeSourceId) {
+      let srcList = srcMap.get(c.knowledgeSourceId);
+      if (!srcList) {
+        srcList = [];
+        srcMap.set(c.knowledgeSourceId, srcList);
+      }
+      srcList.push(c);
+    }
   }
-  assistantChunksIndex = map;
+  assistantChunksIndex = astMap;
+  sourceChunksIndex = srcMap;
 }
 
 function loadChunksState(): ChunkRecord[] {
@@ -765,6 +778,24 @@ function matchesAssistant(
   return false;
 }
 
+function getIndexedAssistantChunks(assistantId: string, state: DatabaseState): ChunkRecord[] {
+  if (assistantChunksIndex.size === 0 && (state.chunks || []).length > 0) {
+    rebuildChunkIndex(state.chunks);
+  }
+
+  const direct = assistantChunksIndex.get(assistantId);
+  const matchingChunks: ChunkRecord[] = direct && direct.length > 0 ? [...direct] : [];
+
+  // Check if any alias keys in assistantChunksIndex match this assistant
+  for (const [indexedId, chunks] of assistantChunksIndex.entries()) {
+    if (indexedId !== assistantId && matchesAssistant(indexedId, assistantId, state)) {
+      matchingChunks.push(...chunks);
+    }
+  }
+
+  return matchingChunks;
+}
+
 /**
  * Universal Database Layer
  */
@@ -1079,6 +1110,9 @@ export class Database {
     chunkCount: number;
   }> {
     const state = await ensureInitialized();
+    if (sourceChunksIndex.size === 0 && (state.chunks || []).length > 0) {
+      rebuildChunkIndex(state.chunks);
+    }
     const ws = (!workspaceId || workspaceId === '*') ? null : workspaceId;
     const wsAssistants = ws ? (state.assistants || []).filter((a) => (a.workspaceId || 'default-workspace') === ws) : (state.assistants || []);
     const assistantIds = new Set(wsAssistants.map((a) => a.id));
@@ -1091,21 +1125,27 @@ export class Database {
     for (const source of sources) {
       let bytes = source.fileSizeBytes || 0;
       if (!bytes) {
-        const sourceChunks = (state.chunks || []).filter((c) => c.knowledgeSourceId === source.id);
+        const sourceChunks = sourceChunksIndex.get(source.id) || [];
         bytes = sourceChunks.reduce((acc, c) => acc + Buffer.byteLength(c.content || '', 'utf-8'), 0);
       }
       totalBytes += bytes;
     }
 
-    const wsChunks = (state.chunks || []).filter((c) =>
-      ws ? assistantIds.has(c.assistantId) : true
-    );
+    let chunkCount = 0;
+    if (ws) {
+      for (const ast of wsAssistants) {
+        const chunks = getIndexedAssistantChunks(ast.id, state);
+        chunkCount += chunks.length;
+      }
+    } else {
+      chunkCount = state.chunks ? state.chunks.length : 0;
+    }
 
     return {
       totalBytes,
       totalMb: Number((totalBytes / (1024 * 1024)).toFixed(2)),
       sourceCount: sources.length,
-      chunkCount: wsChunks.length,
+      chunkCount,
     };
   }
 
@@ -1137,26 +1177,25 @@ export class Database {
 
   static async getChunksByAssistant(assistantId: string): Promise<ChunkRecord[]> {
     let state = await ensureInitialized();
-    let chunks = (state.chunks || []).filter((c) => matchesAssistant(c.assistantId, assistantId, state));
+    let chunks = getIndexedAssistantChunks(assistantId, state);
     if (chunks.length === 0 && isCloudDbConfigured()) {
       state = await ensureInitialized(true);
-      chunks = (state.chunks || []).filter((c) => matchesAssistant(c.assistantId, assistantId, state));
+      chunks = getIndexedAssistantChunks(assistantId, state);
     }
     return chunks;
   }
 
   static async getChunksBySource(sourceId: string): Promise<ChunkRecord[]> {
     let state = await ensureInitialized();
-    let chunks = (state.chunks || [])
-      .filter((c) => c.knowledgeSourceId === sourceId)
-      .sort((a, b) => a.chunkIndex - b.chunkIndex);
+    if (sourceChunksIndex.size === 0 && (state.chunks || []).length > 0) {
+      rebuildChunkIndex(state.chunks);
+    }
+    let chunks = sourceChunksIndex.get(sourceId) || [];
     if (chunks.length === 0 && isCloudDbConfigured()) {
       state = await ensureInitialized(true);
-      chunks = (state.chunks || [])
-        .filter((c) => c.knowledgeSourceId === sourceId)
-        .sort((a, b) => a.chunkIndex - b.chunkIndex);
+      chunks = sourceChunksIndex.get(sourceId) || [];
     }
-    return chunks;
+    return [...chunks].sort((a, b) => a.chunkIndex - b.chunkIndex);
   }
 
   // Hybrid Vector + Full-Text Search
@@ -1167,10 +1206,10 @@ export class Database {
     topK: number = 6
   ): Promise<SearchResultChunk[]> {
     let state = await ensureInitialized();
-    let assistantChunks = (state.chunks || []).filter((c) => matchesAssistant(c.assistantId, assistantId, state));
+    let assistantChunks = getIndexedAssistantChunks(assistantId, state);
     if (assistantChunks.length === 0 && isCloudDbConfigured()) {
       state = await ensureInitialized(true);
-      assistantChunks = (state.chunks || []).filter((c) => matchesAssistant(c.assistantId, assistantId, state));
+      assistantChunks = getIndexedAssistantChunks(assistantId, state);
     }
     // Strict isolation: if assistant has no chunks, never pull other assistants' chunks.
     if (assistantChunks.length === 0) return [];

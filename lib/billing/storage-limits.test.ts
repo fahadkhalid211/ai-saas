@@ -107,4 +107,63 @@ describe('Knowledge Base Storage Limits & Plan Quotas', () => {
     const percentUsed = Math.min(100, Math.round((currentBytes / starterLimitBytes) * 100));
     expect(percentUsed).toBe(98);
   });
+
+  it('should leverage indexed chunks for assistant and source lookup and fallback storage calculation', async () => {
+    const astId = `index-ast-${Date.now()}`;
+    const wsId = `index-ws-${Date.now()}`;
+
+    await Database.createAssistant({
+      id: astId,
+      workspaceId: wsId,
+      name: 'Index Test Bot',
+      systemPrompt: 'Testing indexed chunks',
+    });
+
+    try {
+      const source = await Database.createKnowledgeSource({
+        assistantId: astId,
+        title: 'unmetered-faq.txt',
+        type: 'txt',
+        // fileSizeBytes deliberately omitted to test sourceChunksIndex fallback
+        status: 'ready',
+      });
+
+      const chunkContent = 'This is a sample business text for fast indexed lookup.';
+      await Database.saveChunks([
+        {
+          assistantId: astId,
+          knowledgeSourceId: source.id,
+          content: chunkContent,
+          chunkIndex: 0,
+          tokenCount: 12,
+          metadata: { sourceTitle: 'unmetered-faq.txt' },
+          embedding: new Array(384).fill(0.05),
+        },
+      ]);
+
+      // 1. Verify getChunksByAssistant uses index
+      const astChunks = await Database.getChunksByAssistant(astId);
+      expect(astChunks.length).toBe(1);
+      expect(astChunks[0].content).toBe(chunkContent);
+
+      // 2. Verify getChunksBySource uses index
+      const srcChunks = await Database.getChunksBySource(source.id);
+      expect(srcChunks.length).toBe(1);
+      expect(srcChunks[0].knowledgeSourceId).toBe(source.id);
+
+      // 3. Verify getWorkspaceKnowledgeStorage correctly computes fallback bytes from sourceChunksIndex
+      const storage = await Database.getWorkspaceKnowledgeStorage(wsId);
+      const expectedBytes = Buffer.byteLength(chunkContent, 'utf-8');
+      expect(storage.totalBytes).toBe(expectedBytes);
+      expect(storage.chunkCount).toBe(1);
+
+      // 4. Cleanup
+      await Database.deleteKnowledgeSource(source.id, wsId);
+      const postCleanup = await Database.getWorkspaceKnowledgeStorage(wsId);
+      expect(postCleanup.totalBytes).toBe(0);
+      expect(postCleanup.chunkCount).toBe(0);
+    } finally {
+      await Database.deleteAssistant(astId, wsId);
+    }
+  });
 });
