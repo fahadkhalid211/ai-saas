@@ -34,7 +34,27 @@ import {
   persistCloudChunks,
 } from './cloud';
 import { isSupabaseConfigured } from './supabase';
+import { isPostgresConfigured } from './postgres';
+import * as Relational from './relational';
 export { isCloudDbConfigured, getCloudDbProvider, isSupabaseConfigured };
+
+/**
+ * Relational mode: when true, the 6 high-frequency transactional collections
+ * (messages, conversations, leads, appointments, notifications, unansweredQueries)
+ * write to dedicated Postgres tables instead of the monolithic JSON blob.
+ *
+ * DEFAULT: false (blob remains authoritative until you validate in production).
+ *
+ * Sunset plan:
+ *   Phase A (now): dual-write, blob stays authoritative, flag OFF.
+ *   Phase B: set DB_RELATIONAL_MODE=true in production env after running
+ *             supabase/schema-relational-v2.sql and verifying reads match.
+ *   Phase C: remove all blob-write paths for the 6 collections in a follow-up
+ *             PR and delete this function (strangler-fig cleanup).
+ */
+function isRelationalModeEnabled(): boolean {
+  return process.env.DB_RELATIONAL_MODE === 'true' && isPostgresConfigured();
+}
 
 // Types matching the Prisma model
 export interface AssistantData {
@@ -652,7 +672,7 @@ async function saveState(state: DatabaseState, options?: PersistCloudStateOption
 }
 
 let lastCloudFetchTime = 0;
-const CLOUD_CACHE_TTL_MS = 2500;
+const CLOUD_CACHE_TTL_MS = 30_000;
 let cloudSyncPromise: Promise<void> | null = null;
 
 async function ensureInitialized(forceFresh = false): Promise<DatabaseState> {
@@ -1255,7 +1275,20 @@ export class Database {
 
   // Conversations & Messages
   static async getConversations(assistantId?: string, workspaceId?: string): Promise<ConversationData[]> {
-    const state = await ensureInitialized(true);
+    if (isRelationalModeEnabled()) {
+      const relConvs = await Relational.relationalGetConversations(assistantId);
+      if (relConvs.length > 0) {
+        const withMsgs = await Promise.all(
+          relConvs.map(async (c) => ({
+            ...c,
+            messages: await Relational.relationalGetMessagesByConversation(c.id),
+          }))
+        );
+        return withMsgs;
+      }
+    }
+
+    const state = await ensureInitialized();
     const allConvs = state.conversations || [];
     let matched: ConversationData[] = [];
 
@@ -1330,6 +1363,39 @@ export class Database {
     visitorId?: string,
     conversationId?: string
   ): Promise<ConversationData> {
+    if (isRelationalModeEnabled()) {
+      // Fast path: single row lookup, no blob fetch
+      if (conversationId) {
+        const existing = await Relational.relationalGetConversationById(conversationId);
+        if (existing) {
+          if (assistantId && existing.assistantId !== assistantId) {
+            await Relational.relationalUpdateConversation(conversationId, { assistantId });
+            existing.assistantId = assistantId;
+          }
+          existing.messages = await Relational.relationalGetMessagesByConversation(existing.id);
+          return existing;
+        }
+      }
+      const id = conversationId || 'conv_' + Math.random().toString(36).substring(2, 10);
+      const newConv: ConversationData = {
+        id,
+        assistantId,
+        visitorId: visitorId || 'anon_' + Math.random().toString(36).substring(2, 8),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        status: 'bot',
+      };
+      await Relational.relationalUpsertConversation(newConv);
+      // Mirror to in-memory cache only (no blob write)
+      const state = await ensureInitialized();
+      if (!state.conversations.find((c) => c.id === id)) {
+        state.conversations.unshift(newConv);
+        cachedState = state;
+      }
+      return { ...newConv, messages: [] };
+    }
+
+    // Blob fallback path
     const state = await ensureInitialized(true);
     if (conversationId) {
       const existing = state.conversations.find((c) => c.id === conversationId);
@@ -1359,6 +1425,13 @@ export class Database {
   }
 
   static async getConversationById(id: string): Promise<ConversationData | null> {
+    if (isRelationalModeEnabled()) {
+      const relConv = await Relational.relationalGetConversationById(id);
+      if (relConv) {
+        relConv.messages = await Relational.relationalGetMessagesByConversation(id);
+        return relConv;
+      }
+    }
     const state = await ensureInitialized();
     const conv = state.conversations.find((c) => c.id === id);
     if (!conv) return null;
@@ -1372,6 +1445,21 @@ export class Database {
     id: string,
     data: Partial<ConversationData>
   ): Promise<boolean> {
+    if (isRelationalModeEnabled()) {
+      await Relational.relationalUpdateConversation(id, data);
+      const state = await ensureInitialized();
+      const idx = state.conversations.findIndex((c) => c.id === id);
+      if (idx !== -1) {
+        state.conversations[idx] = {
+          ...state.conversations[idx],
+          ...data,
+          updatedAt: new Date().toISOString(),
+        };
+        cachedState = state;
+      }
+      return true;
+    }
+
     const state = await ensureInitialized(true);
     const idx = state.conversations.findIndex((c) => c.id === id);
     if (idx !== -1) {
@@ -1401,7 +1489,6 @@ export class Database {
     },
     senderName?: string
   ): Promise<MessageData> {
-    const state = await ensureInitialized(true);
     const msg: MessageData = {
       id: 'msg_' + Math.random().toString(36).substring(2, 10),
       conversationId,
@@ -1414,6 +1501,19 @@ export class Database {
       createdAt: new Date().toISOString(),
     };
 
+    if (isRelationalModeEnabled()) {
+      await Relational.relationalInsertMessage(msg);
+      const state = await ensureInitialized();
+      state.messages.push(msg);
+      const convIdx = state.conversations.findIndex((c) => c.id === conversationId);
+      if (convIdx !== -1) {
+        state.conversations[convIdx].updatedAt = msg.createdAt;
+      }
+      cachedState = state;
+      return msg;
+    }
+
+    const state = await ensureInitialized(true);
     state.messages.push(msg);
     const convIdx = state.conversations.findIndex((c) => c.id === conversationId);
     if (convIdx !== -1) {
@@ -1432,7 +1532,6 @@ export class Database {
     notes?: string;
     customData?: Record<string, any>;
   }): Promise<LeadData> {
-    const state = await ensureInitialized(true);
     const lead: LeadData = {
       id: 'lead_' + Math.random().toString(36).substring(2, 10),
       assistantId: data.assistantId,
@@ -1444,13 +1543,29 @@ export class Database {
       createdAt: new Date().toISOString(),
     };
 
+    if (isRelationalModeEnabled()) {
+      await Relational.relationalInsertLead(lead);
+      const state = await ensureInitialized();
+      state.leads.unshift(lead);
+      cachedState = state;
+      return lead;
+    }
+
+    const state = await ensureInitialized(true);
     state.leads.unshift(lead);
     await saveState(state);
     return lead;
   }
 
   static async getLeads(assistantId?: string): Promise<LeadData[]> {
-    const state = await ensureInitialized(true);
+    if (isRelationalModeEnabled()) {
+      const relLeads = await Relational.relationalGetLeads(assistantId);
+      if (relLeads.length > 0) {
+        return relLeads;
+      }
+    }
+
+    const state = await ensureInitialized();
     const allLeads = state.leads || [];
     if (!assistantId) return allLeads;
 
@@ -1487,6 +1602,16 @@ export class Database {
       resolved: false,
     };
 
+    if (isRelationalModeEnabled()) {
+      await Relational.relationalInsertUnansweredQuery(record);
+      state.unansweredQueries.unshift(record);
+      if (state.unansweredQueries.length > 500) {
+        state.unansweredQueries = state.unansweredQueries.slice(0, 500);
+      }
+      cachedState = state;
+      return record;
+    }
+
     state.unansweredQueries.unshift(record);
     if (state.unansweredQueries.length > 500) {
       state.unansweredQueries = state.unansweredQueries.slice(0, 500);
@@ -1496,11 +1621,29 @@ export class Database {
   }
 
   static async getUnansweredQueries(assistantId: string): Promise<UnansweredQueryData[]> {
+    if (isRelationalModeEnabled()) {
+      const relQueries = await Relational.relationalGetUnansweredQueries(assistantId);
+      if (relQueries.length > 0) return relQueries;
+    }
     const state = await ensureInitialized();
     return (state.unansweredQueries || []).filter((q) => q.assistantId === assistantId);
   }
 
   static async resolveUnansweredQuery(id: string, answer?: string): Promise<boolean> {
+    if (isRelationalModeEnabled()) {
+      await Relational.relationalResolveUnansweredQuery(id, answer);
+      const state = await ensureInitialized();
+      if (state.unansweredQueries) {
+        const item = state.unansweredQueries.find((q) => q.id === id);
+        if (item) {
+          item.resolved = true;
+          if (answer) item.suggestedAnswer = answer;
+          cachedState = state;
+        }
+      }
+      return true;
+    }
+
     const state = await ensureInitialized();
     if (!state.unansweredQueries) return false;
     const item = state.unansweredQueries.find((q) => q.id === id);
@@ -1512,6 +1655,16 @@ export class Database {
   }
 
   static async deleteUnansweredQuery(id: string): Promise<boolean> {
+    if (isRelationalModeEnabled()) {
+      await Relational.relationalDeleteUnansweredQuery(id);
+      const state = await ensureInitialized();
+      if (state.unansweredQueries) {
+        state.unansweredQueries = state.unansweredQueries.filter((q) => q.id !== id);
+        cachedState = state;
+      }
+      return true;
+    }
+
     const state = await ensureInitialized();
     if (!state.unansweredQueries) return false;
     state.unansweredQueries = state.unansweredQueries.filter((q) => q.id !== id);
@@ -1535,9 +1688,6 @@ export class Database {
     landingPageName?: string;
     landingPageSlug?: string;
   }): Promise<AppointmentData> {
-    const state = await ensureInitialized();
-    if (!state.appointments) state.appointments = [];
-
     const manageToken = crypto.randomBytes(16).toString('hex');
 
     const apt: AppointmentData = {
@@ -1565,6 +1715,17 @@ export class Database {
       updatedAt: new Date().toISOString(),
     };
 
+    if (isRelationalModeEnabled()) {
+      await Relational.relationalUpsertAppointment(apt);
+      const state = await ensureInitialized();
+      if (!state.appointments) state.appointments = [];
+      state.appointments.unshift(apt);
+      cachedState = state;
+      return apt;
+    }
+
+    const state = await ensureInitialized();
+    if (!state.appointments) state.appointments = [];
     state.appointments.unshift(apt);
     await saveState(state);
     return apt;
@@ -1575,7 +1736,12 @@ export class Database {
   }
 
   static async getAppointments(assistantId?: string): Promise<AppointmentData[]> {
-    const state = await ensureInitialized(true);
+    if (isRelationalModeEnabled()) {
+      const relApts = await Relational.relationalGetAppointments(assistantId);
+      if (relApts.length > 0) return relApts;
+    }
+
+    const state = await ensureInitialized();
     const all = state.appointments || [];
 
     if (!assistantId) return all;
@@ -1604,13 +1770,21 @@ export class Database {
   }
 
   static async getAppointmentById(id: string): Promise<AppointmentData | null> {
-    const state = await ensureInitialized(true);
+    if (isRelationalModeEnabled()) {
+      const relApt = await Relational.relationalGetAppointmentById(id);
+      if (relApt) return relApt;
+    }
+    const state = await ensureInitialized();
     const apt = (state.appointments || []).find((a) => a.id === id);
     return apt || null;
   }
 
   static async getAppointmentByManageToken(token: string): Promise<AppointmentData | null> {
-    const state = await ensureInitialized(true);
+    if (isRelationalModeEnabled()) {
+      const relApt = await Relational.relationalGetAppointmentByToken(token);
+      if (relApt) return relApt;
+    }
+    const state = await ensureInitialized();
     const apt = (state.appointments || []).find((a) => a.manageToken === token);
     return apt || null;
   }
@@ -1619,6 +1793,20 @@ export class Database {
     id: string,
     updates: Partial<AppointmentData>
   ): Promise<AppointmentData | null> {
+    if (isRelationalModeEnabled()) {
+      await Relational.relationalUpdateAppointment(id, updates);
+      const state = await ensureInitialized();
+      if (state.appointments) {
+        const apt = state.appointments.find((a) => a.id === id);
+        if (apt) {
+          Object.assign(apt, updates, { updatedAt: new Date().toISOString() });
+          cachedState = state;
+          return apt;
+        }
+      }
+      return Relational.relationalGetAppointmentById(id);
+    }
+
     const state = await ensureInitialized(true);
     if (!state.appointments) return null;
     const apt = state.appointments.find((a) => a.id === id);
@@ -1633,6 +1821,21 @@ export class Database {
     status: AppointmentData['status'],
     cancellationReason?: string
   ): Promise<boolean> {
+    if (isRelationalModeEnabled()) {
+      await Relational.relationalUpdateAppointment(id, { status, cancellationReason });
+      const state = await ensureInitialized();
+      if (state.appointments) {
+        const apt = state.appointments.find((a) => a.id === id);
+        if (apt) {
+          apt.status = status;
+          if (cancellationReason) apt.cancellationReason = cancellationReason;
+          apt.updatedAt = new Date().toISOString();
+          cachedState = state;
+        }
+      }
+      return true;
+    }
+
     const state = await ensureInitialized(true);
     if (!state.appointments) return false;
     const apt = state.appointments.find((a) => a.id === id);
@@ -1645,7 +1848,7 @@ export class Database {
   }
 
   static async deleteAppointment(id: string, workspaceId?: string): Promise<boolean> {
-    const state = await ensureInitialized(true);
+    const state = await ensureInitialized();
     if (!state.appointments) return false;
     const apt = state.appointments.find((a) => a.id === id);
     if (!apt) return false;
@@ -1657,18 +1860,29 @@ export class Database {
       }
     }
 
+    if (isRelationalModeEnabled()) {
+      await Relational.relationalDeleteAppointment(id);
+      state.appointments = state.appointments.filter((a) => a.id !== id);
+      cachedState = state;
+      return true;
+    }
+
     state.appointments = state.appointments.filter((a) => a.id !== id);
     await saveState(state);
     return true;
   }
 
   static async getUpcomingAppointmentsForReminders(): Promise<AppointmentData[]> {
-    const state = await ensureInitialized(true);
+    if (isRelationalModeEnabled()) {
+      const relApts = await Relational.relationalGetUpcomingConfirmedAppointments();
+      if (relApts.length > 0) return relApts;
+    }
+    const state = await ensureInitialized();
     return (state.appointments || []).filter((a) => a.status === 'confirmed');
   }
 
   static async markReminderSent(id: string, type: '24h' | '1h'): Promise<boolean> {
-    const state = await ensureInitialized(true);
+    const state = await ensureInitialized();
     if (!state.appointments) return false;
     const apt = state.appointments.find((a) => a.id === id);
     if (!apt) return false;
@@ -1683,6 +1897,13 @@ export class Database {
       apt.remindersSent.reminder1hSentAt = new Date().toISOString();
     }
     apt.updatedAt = new Date().toISOString();
+
+    if (isRelationalModeEnabled()) {
+      await Relational.relationalUpdateAppointment(id, { remindersSent: apt.remindersSent });
+      cachedState = state;
+      return true;
+    }
+
     await saveState(state);
     return true;
   }
@@ -2039,6 +2260,10 @@ export class Database {
 
   // Real-time In-App Notifications
   static async getNotifications(assistantId?: string, limit: number = 50): Promise<InAppNotificationData[]> {
+    if (isRelationalModeEnabled()) {
+      const relNotifs = await Relational.relationalGetNotifications(assistantId, limit);
+      if (relNotifs.length > 0) return relNotifs;
+    }
     const state = await ensureInitialized();
     let notifs = state.notifications || [];
     if (assistantId) {
@@ -2050,14 +2275,27 @@ export class Database {
   static async addNotification(
     data: Omit<InAppNotificationData, 'id' | 'createdAt' | 'read'>
   ): Promise<InAppNotificationData> {
-    const state = await ensureInitialized();
-    if (!state.notifications) state.notifications = [];
     const notif: InAppNotificationData = {
       id: 'notif_' + Math.random().toString(36).substring(2, 10),
       createdAt: new Date().toISOString(),
       read: false,
       ...data,
     };
+
+    if (isRelationalModeEnabled()) {
+      await Relational.relationalInsertNotification(notif);
+      const state = await ensureInitialized();
+      if (!state.notifications) state.notifications = [];
+      state.notifications.unshift(notif);
+      if (state.notifications.length > 200) {
+        state.notifications = state.notifications.slice(0, 200);
+      }
+      cachedState = state;
+      return notif;
+    }
+
+    const state = await ensureInitialized();
+    if (!state.notifications) state.notifications = [];
     state.notifications.unshift(notif);
     if (state.notifications.length > 200) {
       state.notifications = state.notifications.slice(0, 200);
@@ -2067,6 +2305,17 @@ export class Database {
   }
 
   static async markNotificationAsRead(id: string): Promise<boolean> {
+    if (isRelationalModeEnabled()) {
+      await Relational.relationalMarkNotificationRead(id);
+      const state = await ensureInitialized();
+      if (state.notifications) {
+        const item = state.notifications.find((n) => n.id === id);
+        if (item) item.read = true;
+        cachedState = state;
+      }
+      return true;
+    }
+
     const state = await ensureInitialized();
     if (!state.notifications) return false;
     const item = state.notifications.find((n) => n.id === id);
@@ -2077,6 +2326,20 @@ export class Database {
   }
 
   static async markAllNotificationsAsRead(assistantId?: string): Promise<boolean> {
+    if (isRelationalModeEnabled()) {
+      await Relational.relationalMarkAllNotificationsRead(assistantId);
+      const state = await ensureInitialized();
+      if (state.notifications) {
+        for (const item of state.notifications) {
+          if (!assistantId || !item.assistantId || item.assistantId === assistantId) {
+            item.read = true;
+          }
+        }
+        cachedState = state;
+      }
+      return true;
+    }
+
     const state = await ensureInitialized();
     if (!state.notifications) return false;
     for (const item of state.notifications) {

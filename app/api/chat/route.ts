@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse, after } from 'next/server';
 import { Database, getLandingConfigForSlugOrTemplate } from '@/lib/db';
 import { retrieveRelevantContext } from '@/lib/rag/retrieval';
 import { buildSystemPrompt, streamChatResponse } from '@/lib/ai/providers';
@@ -255,45 +255,45 @@ export async function POST(req: NextRequest) {
       ? 'waiting_for_agent'
       : conv.status || 'bot';
 
-    await Database.updateConversation(conv.id, {
-      assistantId: assistant.id,
-      sentiment: detectedSentiment,
-      status: nextStatus,
-      ...(isEscalation ? { escalated: true } : {}),
-    });
+    // Post-response background tasks: conversation status update and notifications
+    // Scheduled via Next.js after() so LLM streaming can start immediately
+    const shouldNotifyEscalation = isEscalation && !conv.isLiveTakeover && (!conv.escalated || asksForHuman);
+    after(async () => {
+      try {
+        await Database.updateConversation(conv.id, {
+          assistantId: assistant.id,
+          sentiment: detectedSentiment,
+          status: nextStatus,
+          ...(isEscalation ? { escalated: true } : {}),
+        });
 
-    // Notify dashboard for new chats, escalations, or messages.
-    // When a visitor explicitly asks for human support, always dispatch an alert
-    // to the operator console even if the conversation was previously flagged,
-    // ensuring customer follow-up requests are never silently ignored.
-    try {
-      const shouldNotifyEscalation = isEscalation && !conv.isLiveTakeover && (!conv.escalated || asksForHuman);
-      if (shouldNotifyEscalation) {
-        await Database.addNotification({
-          assistantId: assistant.id || assistantId,
-          title: asksForHuman ? 'Live Agent Requested' : 'Chat Escalation (Urgent)',
-          message: `Visitor requested human assistance: "${latestUserMsg.slice(0, 75)}"`,
-          type: 'chat_escalated',
-          metadata: { conversationId: conv.id, assistantId: assistant.id || assistantId, sentiment: detectedSentiment },
-        });
-      } else if (isFirstMessage) {
-        await Database.addNotification({
-          title: 'New Live Visitor Chat',
-          message: `A new visitor started a chat: "${latestUserMsg.slice(0, 75)}"`,
-          type: 'chat_new',
-          metadata: { conversationId: conv.id, assistantId },
-        });
-      } else if (conv.isLiveTakeover) {
-        await Database.addNotification({
-          title: 'Live Chat Visitor Message',
-          message: `Incoming visitor message in active takeover: "${latestUserMsg.slice(0, 75)}"`,
-          type: 'chat_message',
-          metadata: { conversationId: conv.id, assistantId },
-        });
+        if (shouldNotifyEscalation) {
+          await Database.addNotification({
+            assistantId: assistant.id || assistantId,
+            title: asksForHuman ? 'Live Agent Requested' : 'Chat Escalation (Urgent)',
+            message: `Visitor requested human assistance: "${latestUserMsg.slice(0, 75)}"`,
+            type: 'chat_escalated',
+            metadata: { conversationId: conv.id, assistantId: assistant.id || assistantId, sentiment: detectedSentiment },
+          });
+        } else if (isFirstMessage) {
+          await Database.addNotification({
+            title: 'New Live Visitor Chat',
+            message: `A new visitor started a chat: "${latestUserMsg.slice(0, 75)}"`,
+            type: 'chat_new',
+            metadata: { conversationId: conv.id, assistantId },
+          });
+        } else if (conv.isLiveTakeover) {
+          await Database.addNotification({
+            title: 'Live Chat Visitor Message',
+            message: `Incoming visitor message in active takeover: "${latestUserMsg.slice(0, 75)}"`,
+            type: 'chat_message',
+            metadata: { conversationId: conv.id, assistantId },
+          });
+        }
+      } catch (postStreamErr) {
+        console.warn('[ChatRoute] Deferred task error:', postStreamErr);
       }
-    } catch (notifErr) {
-      console.warn('[ChatRoute] Notification error:', notifErr);
-    }
+    });
 
     // 2. If Human Agent Takeover is active, pause AI bot auto-reply
     if (conv.isLiveTakeover) {

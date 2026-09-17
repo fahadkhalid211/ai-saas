@@ -294,6 +294,121 @@ describe('Database Layer & Decoupled Storage', () => {
     const lookup = await Database.getLandingPageBySlugOrDomain(testSlug);
     expect(lookup).toBeNull();
   });
+
+  describe('Transactional Operations & Dual-Write Layer', () => {
+    it('should create conversation, save message, and retrieve conversation with messages', async () => {
+      const conv = await Database.getOrCreateConversation('demo-assistant', 'visitor_test_1');
+      expect(conv.id).toBeDefined();
+      expect(conv.assistantId).toBe('demo-assistant');
+
+      const msg = await Database.saveMessage(conv.id, 'user', 'Hello from vitest');
+      expect(msg.id).toBeDefined();
+      expect(msg.content).toBe('Hello from vitest');
+
+      const foundConv = await Database.getConversationById(conv.id);
+      expect(foundConv).not.toBeNull();
+      expect(foundConv?.messages?.some((m) => m.id === msg.id)).toBe(true);
+    });
+
+    it('should capture and retrieve leads', async () => {
+      const uniqueEmail = `lead_${Date.now()}@example.com`;
+      const lead = await Database.saveLead({
+        assistantId: 'demo-assistant',
+        email: uniqueEmail,
+        name: 'Test Lead',
+        phone: '+1234567890',
+        notes: 'Interested in enterprise plan',
+      });
+
+      expect(lead.id).toBeDefined();
+      expect(lead.email).toBe(uniqueEmail);
+
+      const leads = await Database.getLeads('demo-assistant');
+      expect(leads.some((l) => l.id === lead.id)).toBe(true);
+    });
+
+    it('should save, retrieve, and update appointments', async () => {
+      const uniqueEmail = `appointment_${Date.now()}@example.com`;
+      const apt = await Database.saveAppointment({
+        assistantId: 'demo-assistant',
+        name: 'Jane Doe',
+        email: uniqueEmail,
+        date: '2026-10-15',
+        timeSlot: '14:00',
+        durationMinutes: 45,
+        serviceName: 'Haircut & Styling',
+        price: 45,
+      });
+
+      expect(apt.id).toBeDefined();
+      expect(apt.status).toBe('confirmed');
+      expect(apt.manageToken).toBeDefined();
+
+      const byToken = await Database.getAppointmentByManageToken(apt.manageToken!);
+      expect(byToken).not.toBeNull();
+      expect(byToken?.id).toBe(apt.id);
+
+      const updated = await Database.updateAppointment(apt.id, { notes: 'VIP client' });
+      expect(updated?.notes).toBe('VIP client');
+    });
+
+    it('should create and mark notifications as read', async () => {
+      const notif = await Database.addNotification({
+        title: 'Vitest Test Notification',
+        message: 'This is a test notification',
+        type: 'chat_new',
+        assistantId: 'demo-assistant',
+      });
+
+      expect(notif.id).toBeDefined();
+      expect(notif.read).toBe(false);
+
+      const notifs = await Database.getNotifications('demo-assistant');
+      expect(notifs.some((n) => n.id === notif.id)).toBe(true);
+
+      const marked = await Database.markNotificationAsRead(notif.id);
+      expect(marked).toBe(true);
+    });
+
+    it('should record, retrieve, and resolve unanswered queries', async () => {
+      const uniqueQuery = `What is your refund policy test query ${Date.now()}`;
+      const record = await Database.recordUnansweredQuery('demo-assistant', uniqueQuery, 'vis_123');
+      expect(record.id).toBeDefined();
+      expect(record.resolved).toBe(false);
+
+      const queries = await Database.getUnansweredQueries('demo-assistant');
+      expect(queries.some((q) => q.id === record.id)).toBe(true);
+
+      const resolved = await Database.resolveUnansweredQuery(record.id, 'Our refund policy is 30 days.');
+      expect(resolved).toBe(true);
+    });
+
+    it('should export all relational CRUD functions from lib/db/relational', async () => {
+      const relational = await import('./relational');
+      expect(typeof relational.relationalInsertMessage).toBe('function');
+      expect(typeof relational.relationalGetMessagesByConversation).toBe('function');
+      expect(typeof relational.relationalUpsertConversation).toBe('function');
+      expect(typeof relational.relationalUpdateConversation).toBe('function');
+      expect(typeof relational.relationalGetConversations).toBe('function');
+      expect(typeof relational.relationalGetConversationById).toBe('function');
+      expect(typeof relational.relationalInsertLead).toBe('function');
+      expect(typeof relational.relationalGetLeads).toBe('function');
+      expect(typeof relational.relationalUpsertAppointment).toBe('function');
+      expect(typeof relational.relationalUpdateAppointment).toBe('function');
+      expect(typeof relational.relationalGetAppointments).toBe('function');
+      expect(typeof relational.relationalGetAppointmentById).toBe('function');
+      expect(typeof relational.relationalGetAppointmentByToken).toBe('function');
+      expect(typeof relational.relationalDeleteAppointment).toBe('function');
+      expect(typeof relational.relationalInsertNotification).toBe('function');
+      expect(typeof relational.relationalGetNotifications).toBe('function');
+      expect(typeof relational.relationalMarkNotificationRead).toBe('function');
+      expect(typeof relational.relationalMarkAllNotificationsRead).toBe('function');
+      expect(typeof relational.relationalInsertUnansweredQuery).toBe('function');
+      expect(typeof relational.relationalGetUnansweredQueries).toBe('function');
+      expect(typeof relational.relationalResolveUnansweredQuery).toBe('function');
+      expect(typeof relational.relationalDeleteUnansweredQuery).toBe('function');
+    });
+  });
 });
 
 

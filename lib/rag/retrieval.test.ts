@@ -70,4 +70,22 @@ describe('Vector Math and Hybrid Retrieval', () => {
       expect(fused[0].rrfScore).toBeGreaterThan(fused[1].rrfScore);
     });
   });
+
+  describe('Embedding LRU Cache', () => {
+    it('should cache and retrieve embeddings with normalized queries', async () => {
+      const { getCachedEmbedding, setCachedEmbedding, clearEmbeddingCache } = await import('./retrieval');
+      clearEmbeddingCache();
+
+      const query = '  What Are   Your Prices? ';
+      const dummyVec = [0.1, 0.2, 0.3];
+
+      expect(getCachedEmbedding(query)).toBeNull();
+
+      setCachedEmbedding(query, dummyVec);
+
+      // Same query with different whitespace/casing should hit the cache
+      const cached = getCachedEmbedding('what are your prices?');
+      expect(cached).toEqual(dummyVec);
+    });
+  });
 });

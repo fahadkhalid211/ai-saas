@@ -9,6 +9,29 @@ export interface RetrievalResult {
   citations: Citation[];
 }
 
+const EMBEDDING_CACHE_MAX = 2000;
+const embeddingCache = new Map<string, number[]>();
+
+export function getCachedEmbedding(query: string): number[] | null {
+  const key = query.trim().toLowerCase().replace(/\s+/g, ' ').slice(0, 200);
+  return embeddingCache.get(key) ?? null;
+}
+
+export function setCachedEmbedding(query: string, vec: number[]): void {
+  const key = query.trim().toLowerCase().replace(/\s+/g, ' ').slice(0, 200);
+  if (embeddingCache.size >= EMBEDDING_CACHE_MAX) {
+    const oldestKey = embeddingCache.keys().next().value;
+    if (oldestKey !== undefined) {
+      embeddingCache.delete(oldestKey);
+    }
+  }
+  embeddingCache.set(key, vec);
+}
+
+export function clearEmbeddingCache(): void {
+  embeddingCache.clear();
+}
+
 /**
  * Condense multi-turn query if history is present.
  * Keeps it fast and lightweight without adding unnecessary latency.
@@ -82,8 +105,12 @@ export async function retrieveRelevantContext(
   const isBroadPricing = isBroadPricingOrBudgetQuery(condensedQuery);
   const effectiveTopK = isOverview ? Math.max(topK, 8) : isBroadPricing ? Math.max(topK, 12) : isCountQuery ? 4 : topK;
   
-  // 1. Generate 384-dimensional query embedding with local open-source embedder
-  const queryEmbedding = await generateEmbedding(condensedQuery);
+  // 1. Generate 384-dimensional query embedding with local open-source embedder (cached)
+  let queryEmbedding = getCachedEmbedding(condensedQuery);
+  if (!queryEmbedding) {
+    queryEmbedding = await generateEmbedding(condensedQuery);
+    setCachedEmbedding(condensedQuery, queryEmbedding);
+  }
 
   // 2. Perform Hybrid Search
   let chunks = await Database.hybridSearch(assistantId, condensedQuery, queryEmbedding, effectiveTopK * 2);
