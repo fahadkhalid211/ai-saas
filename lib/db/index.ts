@@ -34,9 +34,37 @@ import {
   persistCloudChunks,
 } from './cloud';
 import { isSupabaseConfigured } from './supabase';
-import { isPostgresConfigured } from './postgres';
+import { isPostgresConfigured, disablePostgresTemporarily } from './postgres';
 import * as Relational from './relational';
 export { isCloudDbConfigured, getCloudDbProvider, isSupabaseConfigured };
+
+/**
+ * Schedules non-blocking deferred blob persistence for canary rollback safety.
+ * When running inside a Next.js serverless request lifecycle, uses after() from next/server
+ * to ensure the runtime does not freeze/terminate the function before the blob is saved.
+ * Falls back to background promise execution outside Next.js request lifecycle (e.g. tests, scripts).
+ */
+function scheduleDeferredBlobSync(state: DatabaseState): void {
+  try {
+    const { after } = require('next/server');
+    if (typeof after === 'function') {
+      after(async () => {
+        try {
+          await saveState(state);
+        } catch (err) {
+          console.warn('[BlobSync] Deferred sync failed:', err);
+        }
+      });
+      return;
+    }
+  } catch {
+    // Outside Next.js request context
+  }
+
+  saveState(state).catch((err) => {
+    console.warn('[BlobSync] Background sync failed:', err);
+  });
+}
 
 /**
  * Relational mode: when true, the 6 high-frequency transactional collections
@@ -1276,15 +1304,20 @@ export class Database {
   // Conversations & Messages
   static async getConversations(assistantId?: string, workspaceId?: string): Promise<ConversationData[]> {
     if (isRelationalModeEnabled()) {
-      const relConvs = await Relational.relationalGetConversations(assistantId);
-      if (relConvs.length > 0) {
-        const withMsgs = await Promise.all(
-          relConvs.map(async (c) => ({
-            ...c,
-            messages: await Relational.relationalGetMessagesByConversation(c.id),
-          }))
-        );
-        return withMsgs;
+      try {
+        const relConvs = await Relational.relationalGetConversations(assistantId);
+        if (relConvs.length > 0) {
+          const withMsgs = await Promise.all(
+            relConvs.map(async (c) => ({
+              ...c,
+              messages: await Relational.relationalGetMessagesByConversation(c.id),
+            }))
+          );
+          return withMsgs;
+        }
+      } catch (err) {
+        console.warn('[Relational] getConversations failed, disabling postgres:', err);
+        disablePostgresTemporarily();
       }
     }
 
@@ -1364,35 +1397,53 @@ export class Database {
     conversationId?: string
   ): Promise<ConversationData> {
     if (isRelationalModeEnabled()) {
-      // Fast path: single row lookup, no blob fetch
-      if (conversationId) {
-        const existing = await Relational.relationalGetConversationById(conversationId);
-        if (existing) {
-          if (assistantId && existing.assistantId !== assistantId) {
-            await Relational.relationalUpdateConversation(conversationId, { assistantId });
-            existing.assistantId = assistantId;
+      try {
+        if (conversationId) {
+          let existing = await Relational.relationalGetConversationById(conversationId);
+          if (!existing) {
+            // Lazy hydration: check if blob state already has this conversation and messages
+            const state = await ensureInitialized();
+            const blobConv = state.conversations.find((c) => c.id === conversationId);
+            if (blobConv) {
+              await Relational.relationalUpsertConversation(blobConv);
+              const blobMsgs = (state.messages || []).filter((m) => m.conversationId === conversationId);
+              for (const m of blobMsgs) {
+                await Relational.relationalInsertMessage(m);
+              }
+              existing = { ...blobConv };
+            }
           }
-          existing.messages = await Relational.relationalGetMessagesByConversation(existing.id);
-          return existing;
+          if (existing) {
+            if (assistantId && existing.assistantId !== assistantId) {
+              await Relational.relationalUpdateConversation(conversationId, { assistantId });
+              existing.assistantId = assistantId;
+            }
+            existing.messages = await Relational.relationalGetMessagesByConversation(existing.id);
+            return existing;
+          }
         }
+        const id = conversationId || 'conv_' + Math.random().toString(36).substring(2, 10);
+        const newConv: ConversationData = {
+          id,
+          assistantId,
+          visitorId: visitorId || 'anon_' + Math.random().toString(36).substring(2, 8),
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          status: 'bot',
+        };
+        await Relational.relationalUpsertConversation(newConv);
+        // Mirror to in-memory cache and schedule non-blocking deferred blob persistence
+        const state = await ensureInitialized();
+        if (!state.conversations.find((c) => c.id === id)) {
+          state.conversations.unshift(newConv);
+          cachedState = state;
+          scheduleDeferredBlobSync(state);
+        }
+        return { ...newConv, messages: [] };
+      } catch (err) {
+        console.warn('[Relational] getOrCreateConversation failed, disabling postgres:', err);
+        disablePostgresTemporarily();
       }
-      const id = conversationId || 'conv_' + Math.random().toString(36).substring(2, 10);
-      const newConv: ConversationData = {
-        id,
-        assistantId,
-        visitorId: visitorId || 'anon_' + Math.random().toString(36).substring(2, 8),
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        status: 'bot',
-      };
-      await Relational.relationalUpsertConversation(newConv);
-      // Mirror to in-memory cache only (no blob write)
-      const state = await ensureInitialized();
-      if (!state.conversations.find((c) => c.id === id)) {
-        state.conversations.unshift(newConv);
-        cachedState = state;
-      }
-      return { ...newConv, messages: [] };
     }
 
     // Blob fallback path
@@ -1426,10 +1477,28 @@ export class Database {
 
   static async getConversationById(id: string): Promise<ConversationData | null> {
     if (isRelationalModeEnabled()) {
-      const relConv = await Relational.relationalGetConversationById(id);
-      if (relConv) {
-        relConv.messages = await Relational.relationalGetMessagesByConversation(id);
-        return relConv;
+      try {
+        let relConv = await Relational.relationalGetConversationById(id);
+        if (!relConv) {
+          // Lazy hydration: check if blob state has this conversation
+          const state = await ensureInitialized();
+          const blobConv = state.conversations.find((c) => c.id === id);
+          if (blobConv) {
+            await Relational.relationalUpsertConversation(blobConv);
+            const blobMsgs = (state.messages || []).filter((m) => m.conversationId === id);
+            for (const m of blobMsgs) {
+              await Relational.relationalInsertMessage(m);
+            }
+            relConv = { ...blobConv };
+          }
+        }
+        if (relConv) {
+          relConv.messages = await Relational.relationalGetMessagesByConversation(id);
+          return relConv;
+        }
+      } catch (err) {
+        console.warn('[Relational] getConversationById failed, disabling postgres:', err);
+        disablePostgresTemporarily();
       }
     }
     const state = await ensureInitialized();
@@ -1446,18 +1515,49 @@ export class Database {
     data: Partial<ConversationData>
   ): Promise<boolean> {
     if (isRelationalModeEnabled()) {
-      await Relational.relationalUpdateConversation(id, data);
-      const state = await ensureInitialized();
-      const idx = state.conversations.findIndex((c) => c.id === id);
-      if (idx !== -1) {
-        state.conversations[idx] = {
-          ...state.conversations[idx],
-          ...data,
-          updatedAt: new Date().toISOString(),
-        };
-        cachedState = state;
+      try {
+        const updated = await Relational.relationalUpdateConversation(id, data);
+        if (!updated) {
+          // Not found in relational: lazy hydrate from blob if exists
+          const state = await ensureInitialized();
+          const blobConv = state.conversations.find((c) => c.id === id);
+          if (blobConv) {
+            const updatedConv = {
+              ...blobConv,
+              ...data,
+              updatedAt: new Date().toISOString(),
+            };
+            await Relational.relationalUpsertConversation(updatedConv);
+            const blobMsgs = (state.messages || []).filter((m) => m.conversationId === id);
+            for (const m of blobMsgs) {
+              await Relational.relationalInsertMessage(m);
+            }
+            const idx = state.conversations.findIndex((c) => c.id === id);
+            if (idx !== -1) {
+              state.conversations[idx] = updatedConv;
+              cachedState = state;
+            }
+            scheduleDeferredBlobSync(state);
+            return true;
+          }
+        } else {
+          const state = await ensureInitialized();
+          const idx = state.conversations.findIndex((c) => c.id === id);
+          if (idx !== -1) {
+            state.conversations[idx] = {
+              ...state.conversations[idx],
+              ...data,
+              updatedAt: new Date().toISOString(),
+            };
+            cachedState = state;
+          }
+          scheduleDeferredBlobSync(state);
+          return true;
+        }
+      } catch (err) {
+        console.warn('[Relational] updateConversation failed, disabling postgres:', err);
+        disablePostgresTemporarily();
       }
-      return true;
     }
 
     const state = await ensureInitialized(true);
@@ -1502,15 +1602,29 @@ export class Database {
     };
 
     if (isRelationalModeEnabled()) {
-      await Relational.relationalInsertMessage(msg);
-      const state = await ensureInitialized();
-      state.messages.push(msg);
-      const convIdx = state.conversations.findIndex((c) => c.id === conversationId);
-      if (convIdx !== -1) {
-        state.conversations[convIdx].updatedAt = msg.createdAt;
+      try {
+        const convExists = await Relational.relationalGetConversationById(conversationId);
+        if (!convExists) {
+          const state = await ensureInitialized();
+          const blobConv = state.conversations.find((c) => c.id === conversationId);
+          if (blobConv) {
+            await Relational.relationalUpsertConversation(blobConv);
+          }
+        }
+        await Relational.relationalInsertMessage(msg);
+        const state = await ensureInitialized();
+        state.messages.push(msg);
+        const convIdx = state.conversations.findIndex((c) => c.id === conversationId);
+        if (convIdx !== -1) {
+          state.conversations[convIdx].updatedAt = msg.createdAt;
+        }
+        cachedState = state;
+        scheduleDeferredBlobSync(state);
+        return msg;
+      } catch (err) {
+        console.warn('[Relational] saveMessage failed, disabling postgres:', err);
+        disablePostgresTemporarily();
       }
-      cachedState = state;
-      return msg;
     }
 
     const state = await ensureInitialized(true);
@@ -1544,11 +1658,17 @@ export class Database {
     };
 
     if (isRelationalModeEnabled()) {
-      await Relational.relationalInsertLead(lead);
-      const state = await ensureInitialized();
-      state.leads.unshift(lead);
-      cachedState = state;
-      return lead;
+      try {
+        await Relational.relationalInsertLead(lead);
+        const state = await ensureInitialized();
+        state.leads.unshift(lead);
+        cachedState = state;
+        scheduleDeferredBlobSync(state);
+        return lead;
+      } catch (err) {
+        console.warn('[Relational] saveLead failed, disabling postgres:', err);
+        disablePostgresTemporarily();
+      }
     }
 
     const state = await ensureInitialized(true);
@@ -1559,9 +1679,14 @@ export class Database {
 
   static async getLeads(assistantId?: string): Promise<LeadData[]> {
     if (isRelationalModeEnabled()) {
-      const relLeads = await Relational.relationalGetLeads(assistantId);
-      if (relLeads.length > 0) {
-        return relLeads;
+      try {
+        const relLeads = await Relational.relationalGetLeads(assistantId);
+        if (relLeads.length > 0) {
+          return relLeads;
+        }
+      } catch (err) {
+        console.warn('[Relational] getLeads failed, disabling postgres:', err);
+        disablePostgresTemporarily();
       }
     }
 
@@ -1603,13 +1728,19 @@ export class Database {
     };
 
     if (isRelationalModeEnabled()) {
-      await Relational.relationalInsertUnansweredQuery(record);
-      state.unansweredQueries.unshift(record);
-      if (state.unansweredQueries.length > 500) {
-        state.unansweredQueries = state.unansweredQueries.slice(0, 500);
+      try {
+        await Relational.relationalInsertUnansweredQuery(record);
+        state.unansweredQueries.unshift(record);
+        if (state.unansweredQueries.length > 500) {
+          state.unansweredQueries = state.unansweredQueries.slice(0, 500);
+        }
+        cachedState = state;
+        scheduleDeferredBlobSync(state);
+        return record;
+      } catch (err) {
+        console.warn('[Relational] recordUnansweredQuery failed, disabling postgres:', err);
+        disablePostgresTemporarily();
       }
-      cachedState = state;
-      return record;
     }
 
     state.unansweredQueries.unshift(record);
@@ -1622,8 +1753,13 @@ export class Database {
 
   static async getUnansweredQueries(assistantId: string): Promise<UnansweredQueryData[]> {
     if (isRelationalModeEnabled()) {
-      const relQueries = await Relational.relationalGetUnansweredQueries(assistantId);
-      if (relQueries.length > 0) return relQueries;
+      try {
+        const relQueries = await Relational.relationalGetUnansweredQueries(assistantId);
+        if (relQueries.length > 0) return relQueries;
+      } catch (err) {
+        console.warn('[Relational] getUnansweredQueries failed, disabling postgres:', err);
+        disablePostgresTemporarily();
+      }
     }
     const state = await ensureInitialized();
     return (state.unansweredQueries || []).filter((q) => q.assistantId === assistantId);
@@ -1631,17 +1767,23 @@ export class Database {
 
   static async resolveUnansweredQuery(id: string, answer?: string): Promise<boolean> {
     if (isRelationalModeEnabled()) {
-      await Relational.relationalResolveUnansweredQuery(id, answer);
-      const state = await ensureInitialized();
-      if (state.unansweredQueries) {
-        const item = state.unansweredQueries.find((q) => q.id === id);
-        if (item) {
-          item.resolved = true;
-          if (answer) item.suggestedAnswer = answer;
-          cachedState = state;
+      try {
+        await Relational.relationalResolveUnansweredQuery(id, answer);
+        const state = await ensureInitialized();
+        if (state.unansweredQueries) {
+          const item = state.unansweredQueries.find((q) => q.id === id);
+          if (item) {
+            item.resolved = true;
+            if (answer) item.suggestedAnswer = answer;
+            cachedState = state;
+          }
         }
+        scheduleDeferredBlobSync(state);
+        return true;
+      } catch (err) {
+        console.warn('[Relational] resolveUnansweredQuery failed, disabling postgres:', err);
+        disablePostgresTemporarily();
       }
-      return true;
     }
 
     const state = await ensureInitialized();
@@ -1656,13 +1798,19 @@ export class Database {
 
   static async deleteUnansweredQuery(id: string): Promise<boolean> {
     if (isRelationalModeEnabled()) {
-      await Relational.relationalDeleteUnansweredQuery(id);
-      const state = await ensureInitialized();
-      if (state.unansweredQueries) {
-        state.unansweredQueries = state.unansweredQueries.filter((q) => q.id !== id);
-        cachedState = state;
+      try {
+        await Relational.relationalDeleteUnansweredQuery(id);
+        const state = await ensureInitialized();
+        if (state.unansweredQueries) {
+          state.unansweredQueries = state.unansweredQueries.filter((q) => q.id !== id);
+          cachedState = state;
+        }
+        scheduleDeferredBlobSync(state);
+        return true;
+      } catch (err) {
+        console.warn('[Relational] deleteUnansweredQuery failed, disabling postgres:', err);
+        disablePostgresTemporarily();
       }
-      return true;
     }
 
     const state = await ensureInitialized();
@@ -1716,12 +1864,18 @@ export class Database {
     };
 
     if (isRelationalModeEnabled()) {
-      await Relational.relationalUpsertAppointment(apt);
-      const state = await ensureInitialized();
-      if (!state.appointments) state.appointments = [];
-      state.appointments.unshift(apt);
-      cachedState = state;
-      return apt;
+      try {
+        await Relational.relationalUpsertAppointment(apt);
+        const state = await ensureInitialized();
+        if (!state.appointments) state.appointments = [];
+        state.appointments.unshift(apt);
+        cachedState = state;
+        scheduleDeferredBlobSync(state);
+        return apt;
+      } catch (err) {
+        console.warn('[Relational] saveAppointment failed, disabling postgres:', err);
+        disablePostgresTemporarily();
+      }
     }
 
     const state = await ensureInitialized();
@@ -1737,8 +1891,13 @@ export class Database {
 
   static async getAppointments(assistantId?: string): Promise<AppointmentData[]> {
     if (isRelationalModeEnabled()) {
-      const relApts = await Relational.relationalGetAppointments(assistantId);
-      if (relApts.length > 0) return relApts;
+      try {
+        const relApts = await Relational.relationalGetAppointments(assistantId);
+        if (relApts.length > 0) return relApts;
+      } catch (err) {
+        console.warn('[Relational] getAppointments failed, disabling postgres:', err);
+        disablePostgresTemporarily();
+      }
     }
 
     const state = await ensureInitialized();
@@ -1771,8 +1930,13 @@ export class Database {
 
   static async getAppointmentById(id: string): Promise<AppointmentData | null> {
     if (isRelationalModeEnabled()) {
-      const relApt = await Relational.relationalGetAppointmentById(id);
-      if (relApt) return relApt;
+      try {
+        const relApt = await Relational.relationalGetAppointmentById(id);
+        if (relApt) return relApt;
+      } catch (err) {
+        console.warn('[Relational] getAppointmentById failed, disabling postgres:', err);
+        disablePostgresTemporarily();
+      }
     }
     const state = await ensureInitialized();
     const apt = (state.appointments || []).find((a) => a.id === id);
@@ -1781,8 +1945,13 @@ export class Database {
 
   static async getAppointmentByManageToken(token: string): Promise<AppointmentData | null> {
     if (isRelationalModeEnabled()) {
-      const relApt = await Relational.relationalGetAppointmentByToken(token);
-      if (relApt) return relApt;
+      try {
+        const relApt = await Relational.relationalGetAppointmentByToken(token);
+        if (relApt) return relApt;
+      } catch (err) {
+        console.warn('[Relational] getAppointmentByManageToken failed, disabling postgres:', err);
+        disablePostgresTemporarily();
+      }
     }
     const state = await ensureInitialized();
     const apt = (state.appointments || []).find((a) => a.manageToken === token);
@@ -1794,17 +1963,24 @@ export class Database {
     updates: Partial<AppointmentData>
   ): Promise<AppointmentData | null> {
     if (isRelationalModeEnabled()) {
-      await Relational.relationalUpdateAppointment(id, updates);
-      const state = await ensureInitialized();
-      if (state.appointments) {
-        const apt = state.appointments.find((a) => a.id === id);
-        if (apt) {
-          Object.assign(apt, updates, { updatedAt: new Date().toISOString() });
-          cachedState = state;
-          return apt;
+      try {
+        await Relational.relationalUpdateAppointment(id, updates);
+        const state = await ensureInitialized();
+        if (state.appointments) {
+          const apt = state.appointments.find((a) => a.id === id);
+          if (apt) {
+            Object.assign(apt, updates, { updatedAt: new Date().toISOString() });
+            cachedState = state;
+            scheduleDeferredBlobSync(state);
+            return apt;
+          }
         }
+        scheduleDeferredBlobSync(state);
+        return Relational.relationalGetAppointmentById(id);
+      } catch (err) {
+        console.warn('[Relational] updateAppointment failed, disabling postgres:', err);
+        disablePostgresTemporarily();
       }
-      return Relational.relationalGetAppointmentById(id);
     }
 
     const state = await ensureInitialized(true);
@@ -1822,18 +1998,24 @@ export class Database {
     cancellationReason?: string
   ): Promise<boolean> {
     if (isRelationalModeEnabled()) {
-      await Relational.relationalUpdateAppointment(id, { status, cancellationReason });
-      const state = await ensureInitialized();
-      if (state.appointments) {
-        const apt = state.appointments.find((a) => a.id === id);
-        if (apt) {
-          apt.status = status;
-          if (cancellationReason) apt.cancellationReason = cancellationReason;
-          apt.updatedAt = new Date().toISOString();
-          cachedState = state;
+      try {
+        await Relational.relationalUpdateAppointment(id, { status, cancellationReason });
+        const state = await ensureInitialized();
+        if (state.appointments) {
+          const apt = state.appointments.find((a) => a.id === id);
+          if (apt) {
+            apt.status = status;
+            if (cancellationReason) apt.cancellationReason = cancellationReason;
+            apt.updatedAt = new Date().toISOString();
+            cachedState = state;
+          }
         }
+        scheduleDeferredBlobSync(state);
+        return true;
+      } catch (err) {
+        console.warn('[Relational] updateAppointmentStatus failed, disabling postgres:', err);
+        disablePostgresTemporarily();
       }
-      return true;
     }
 
     const state = await ensureInitialized(true);
@@ -1861,10 +2043,16 @@ export class Database {
     }
 
     if (isRelationalModeEnabled()) {
-      await Relational.relationalDeleteAppointment(id);
-      state.appointments = state.appointments.filter((a) => a.id !== id);
-      cachedState = state;
-      return true;
+      try {
+        await Relational.relationalDeleteAppointment(id);
+        state.appointments = state.appointments.filter((a) => a.id !== id);
+        cachedState = state;
+        scheduleDeferredBlobSync(state);
+        return true;
+      } catch (err) {
+        console.warn('[Relational] deleteAppointment failed, disabling postgres:', err);
+        disablePostgresTemporarily();
+      }
     }
 
     state.appointments = state.appointments.filter((a) => a.id !== id);
@@ -1874,8 +2062,13 @@ export class Database {
 
   static async getUpcomingAppointmentsForReminders(): Promise<AppointmentData[]> {
     if (isRelationalModeEnabled()) {
-      const relApts = await Relational.relationalGetUpcomingConfirmedAppointments();
-      if (relApts.length > 0) return relApts;
+      try {
+        const relApts = await Relational.relationalGetUpcomingConfirmedAppointments();
+        if (relApts.length > 0) return relApts;
+      } catch (err) {
+        console.warn('[Relational] getUpcomingAppointmentsForReminders failed, disabling postgres:', err);
+        disablePostgresTemporarily();
+      }
     }
     const state = await ensureInitialized();
     return (state.appointments || []).filter((a) => a.status === 'confirmed');
@@ -1899,9 +2092,15 @@ export class Database {
     apt.updatedAt = new Date().toISOString();
 
     if (isRelationalModeEnabled()) {
-      await Relational.relationalUpdateAppointment(id, { remindersSent: apt.remindersSent });
-      cachedState = state;
-      return true;
+      try {
+        await Relational.relationalUpdateAppointment(id, { remindersSent: apt.remindersSent });
+        cachedState = state;
+        scheduleDeferredBlobSync(state);
+        return true;
+      } catch (err) {
+        console.warn('[Relational] markReminderSent failed, disabling postgres:', err);
+        disablePostgresTemporarily();
+      }
     }
 
     await saveState(state);
@@ -2261,8 +2460,13 @@ export class Database {
   // Real-time In-App Notifications
   static async getNotifications(assistantId?: string, limit: number = 50): Promise<InAppNotificationData[]> {
     if (isRelationalModeEnabled()) {
-      const relNotifs = await Relational.relationalGetNotifications(assistantId, limit);
-      if (relNotifs.length > 0) return relNotifs;
+      try {
+        const relNotifs = await Relational.relationalGetNotifications(assistantId, limit);
+        if (relNotifs.length > 0) return relNotifs;
+      } catch (err) {
+        console.warn('[Relational] getNotifications failed, disabling postgres:', err);
+        disablePostgresTemporarily();
+      }
     }
     const state = await ensureInitialized();
     let notifs = state.notifications || [];
@@ -2283,15 +2487,21 @@ export class Database {
     };
 
     if (isRelationalModeEnabled()) {
-      await Relational.relationalInsertNotification(notif);
-      const state = await ensureInitialized();
-      if (!state.notifications) state.notifications = [];
-      state.notifications.unshift(notif);
-      if (state.notifications.length > 200) {
-        state.notifications = state.notifications.slice(0, 200);
+      try {
+        await Relational.relationalInsertNotification(notif);
+        const state = await ensureInitialized();
+        if (!state.notifications) state.notifications = [];
+        state.notifications.unshift(notif);
+        if (state.notifications.length > 200) {
+          state.notifications = state.notifications.slice(0, 200);
+        }
+        cachedState = state;
+        scheduleDeferredBlobSync(state);
+        return notif;
+      } catch (err) {
+        console.warn('[Relational] addNotification failed, disabling postgres:', err);
+        disablePostgresTemporarily();
       }
-      cachedState = state;
-      return notif;
     }
 
     const state = await ensureInitialized();
@@ -2306,14 +2516,20 @@ export class Database {
 
   static async markNotificationAsRead(id: string): Promise<boolean> {
     if (isRelationalModeEnabled()) {
-      await Relational.relationalMarkNotificationRead(id);
-      const state = await ensureInitialized();
-      if (state.notifications) {
-        const item = state.notifications.find((n) => n.id === id);
-        if (item) item.read = true;
-        cachedState = state;
+      try {
+        await Relational.relationalMarkNotificationRead(id);
+        const state = await ensureInitialized();
+        if (state.notifications) {
+          const item = state.notifications.find((n) => n.id === id);
+          if (item) item.read = true;
+          cachedState = state;
+        }
+        scheduleDeferredBlobSync(state);
+        return true;
+      } catch (err) {
+        console.warn('[Relational] markNotificationAsRead failed, disabling postgres:', err);
+        disablePostgresTemporarily();
       }
-      return true;
     }
 
     const state = await ensureInitialized();
@@ -2327,17 +2543,23 @@ export class Database {
 
   static async markAllNotificationsAsRead(assistantId?: string): Promise<boolean> {
     if (isRelationalModeEnabled()) {
-      await Relational.relationalMarkAllNotificationsRead(assistantId);
-      const state = await ensureInitialized();
-      if (state.notifications) {
-        for (const item of state.notifications) {
-          if (!assistantId || !item.assistantId || item.assistantId === assistantId) {
-            item.read = true;
+      try {
+        await Relational.relationalMarkAllNotificationsRead(assistantId);
+        const state = await ensureInitialized();
+        if (state.notifications) {
+          for (const item of state.notifications) {
+            if (!assistantId || !item.assistantId || item.assistantId === assistantId) {
+              item.read = true;
+            }
           }
+          cachedState = state;
         }
-        cachedState = state;
+        scheduleDeferredBlobSync(state);
+        return true;
+      } catch (err) {
+        console.warn('[Relational] markAllNotificationsAsRead failed, disabling postgres:', err);
+        disablePostgresTemporarily();
       }
-      return true;
     }
 
     const state = await ensureInitialized();

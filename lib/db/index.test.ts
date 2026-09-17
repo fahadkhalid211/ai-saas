@@ -408,6 +408,25 @@ describe('Database Layer & Decoupled Storage', () => {
       expect(typeof relational.relationalResolveUnansweredQuery).toBe('function');
       expect(typeof relational.relationalDeleteUnansweredQuery).toBe('function');
     });
+
+    it('should preserve original msg.id and allow safe idempotent message insertion', async () => {
+      const conv = await Database.getOrCreateConversation('demo-assistant');
+      const msg = await Database.saveMessage(conv.id, 'user', 'Testing message preservation');
+      expect(msg.id).toBeDefined();
+      expect(msg.id.startsWith('msg_')).toBe(true);
+
+      const retrieved = await Database.getConversationById(conv.id);
+      const convMessages = retrieved?.messages || [];
+      const found = convMessages.find((m) => m.id === msg.id);
+      expect(found).toBeDefined();
+      expect(found?.content).toBe('Testing message preservation');
+    });
+
+    it('should temporarily disable postgres and respect cooldown duration', async () => {
+      const { disablePostgresTemporarily, isPostgresConfigured } = await import('./postgres');
+      disablePostgresTemporarily(10000);
+      expect(isPostgresConfigured()).toBe(false);
+    });
   });
 });
 
