@@ -101,6 +101,13 @@ export function useCrmLanding({
       }
       setAddonSuccessMsg('Extra Landing Page slot unlocked for $100! Your workspace limit has been updated.');
       playNotificationChime();
+      if (data.totalAllowed) {
+        setLandingPageLimits((prev) => ({
+          ...prev,
+          extraSlots: data.newSlotCount ?? (prev.extraSlots + 1),
+          totalAllowed: data.totalAllowed,
+        }));
+      }
       await fetchAllLandingPages();
       await fetchBilling();
       await fetchNotifications();

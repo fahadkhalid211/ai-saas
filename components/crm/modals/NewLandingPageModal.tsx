@@ -16,6 +16,7 @@ export interface NewLandingPageModalProps {
   assistants?: any[];
   newPageAssistantId?: string;
   setNewPageAssistantId?: (id: string) => void;
+  existingPagesCount?: number;
 }
 
 export const NewLandingPageModal: React.FC<NewLandingPageModalProps> = ({
@@ -29,10 +30,15 @@ export const NewLandingPageModal: React.FC<NewLandingPageModalProps> = ({
   newPageIndustry,
   setNewPageIndustry,
   assistants = [],
-  newPageAssistantId = 'auto_create',
+  newPageAssistantId,
   setNewPageAssistantId,
+  existingPagesCount = 0,
 }) => {
   if (!isOpen) return null;
+
+  const defaultAstId = assistants[0]?.id || 'demo-assistant';
+  const selectedAstId = newPageAssistantId || defaultAstId;
+  const isFirstPage = existingPagesCount === 0;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-xs p-4">
@@ -112,21 +118,30 @@ export const NewLandingPageModal: React.FC<NewLandingPageModalProps> = ({
               AI Chatbot &amp; Knowledge Base
             </label>
             <select
-              value={newPageAssistantId}
+              value={selectedAstId}
               onChange={(e) => setNewPageAssistantId?.(e.target.value)}
               className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 cursor-pointer"
             >
-              <option value="auto_create">
-                Auto-create dedicated bot for this page (Recommended - isolated knowledge)
-              </option>
               {assistants && assistants.map((ast) => (
                 <option key={ast.id} value={ast.id}>
-                  Connect existing bot: {ast.name} ({ast.id})
+                  {isFirstPage ? 'Connect default knowledge base: ' : 'Use existing knowledge base: '}{ast.name} ({ast.id})
                 </option>
               ))}
+              {!isFirstPage && (
+                <option value="auto_create">
+                  Create new knowledge base (dedicated bot for this page)
+                </option>
+              )}
+              <option value="none">
+                No chatbot (website only)
+              </option>
             </select>
             <p className="text-[10.5px] text-slate-500 dark:text-slate-400 mt-1">
-              Auto-creating a dedicated bot ensures its knowledge base remains strictly isolated from your other landing pages and bots.
+              {isFirstPage
+                ? 'Your first landing page connects to your default knowledge base so your trained documents and FAQs are immediately used.'
+                : selectedAstId === 'auto_create'
+                ? 'A new dedicated assistant will be created with an isolated knowledge base exclusively for this page.'
+                : 'Reuses documents and training data from your selected assistant without creating extra bots.'}
             </p>
           </div>
 

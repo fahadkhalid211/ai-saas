@@ -323,9 +323,8 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
     }
     if (propHandleStartCreateWizard) {
       propHandleStartCreateWizard();
-    } else {
-      setViewMode('create_wizard');
     }
+    setViewMode('create_wizard');
   };
 
   const handleBackToList = () => {
@@ -405,83 +404,83 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
     });
   }, [templateSearch, selectedCategory]);
 
-  if (viewMode === 'list') {
-    return (
-      <LandingPagesList
-        allLandingPages={allLandingPages}
-        landingPageLimits={landingPageLimits}
-        isPurchasingAddon={isPurchasingAddon}
-        handlePurchaseExtraLandingPage={handlePurchaseExtraLandingPage}
-        handleStartCreateWizard={handleStartCreateWizard}
-        handleSelectPageForEdit={handleSelectPageForEdit}
-        handleDeleteLandingPage={handleDeleteLandingPage}
-        handleQuickUpdateKnowledgeBase={
-          handleQuickUpdateKnowledgeBase ||
-          (async (pageIdOrSlug: string, assistantId: string) => {
-            const page = allLandingPages.find((p) => p.id === pageIdOrSlug || p.slug === pageIdOrSlug);
-            if (!page) return;
-            const updated = { ...page, assistantId };
-            await fetch('/api/landing-page', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ assistantId, config: updated }),
-            });
-            setLandingConfig((prev) => (prev.id === page.id || prev.slug === page.slug ? { ...prev, assistantId } : prev));
-          })
-        }
-        assistants={assistants}
-        setActiveAssistant={setActiveAssistant}
-        setActiveTab={setParentActiveTab}
-        deletingPageId={deletingPageId}
-        isDeletingLandingPage={isDeletingLandingPage}
-        deleteProgress={deleteProgress}
-        deleteStatusMessage={deleteStatusMessage}
-        pagePendingDelete={pagePendingDelete}
-        setPagePendingDelete={setPagePendingDelete}
-        handleConfirmDeleteLandingPage={handleConfirmDeleteLandingPage}
-      />
-    );
-  }
-
-  if (viewMode === 'create_wizard') {
-    return (
-      <AiLandingWizard
-        onBackToList={handleBackToList}
-        onOpenEditor={(newConfig) => {
-          setLandingConfig(newConfig);
-          setViewMode('editor');
-        }}
-        onSaveLandingPage={
-          handleAIGenerateLandingPage ||
-          (async (newConfig, assistantOption) => {
-            const isAutoCreate = assistantOption === 'auto_create';
-            const targetAssistantId = isAutoCreate ? undefined : (assistantOption === 'none' ? '' : assistantOption);
-            const res = await fetch('/api/landing-page', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                assistantId: targetAssistantId,
-                createDedicatedAssistant: isAutoCreate,
-                config: newConfig,
-                isNewPage: true,
-              }),
-            });
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.error || 'Failed to generate landing page');
-            return data.config || newConfig;
-          })
-        }
-        assistants={assistants}
-      />
-    );
-  }
-
   const liveSiteUrl = typeof window !== 'undefined'
     ? `${window.location.origin}/site/${landingConfig.slug || activeAssistant?.id || 'demo-assistant'}`
     : `/site/${landingConfig.slug || 'demo-assistant'}`;
 
   return (
-    <div className="max-w-5xl space-y-6 mx-auto pb-16">
+    <>
+      {viewMode === 'list' && (
+        <LandingPagesList
+          allLandingPages={allLandingPages}
+          landingPageLimits={landingPageLimits}
+          isPurchasingAddon={isPurchasingAddon}
+          handlePurchaseExtraLandingPage={handlePurchaseExtraLandingPage}
+          handleStartCreateWizard={handleStartCreateWizard}
+          handleSelectPageForEdit={handleSelectPageForEdit}
+          handleDeleteLandingPage={handleDeleteLandingPage}
+          handleQuickUpdateKnowledgeBase={
+            handleQuickUpdateKnowledgeBase ||
+            (async (pageIdOrSlug: string, assistantId: string) => {
+              const page = allLandingPages.find((p) => p.id === pageIdOrSlug || p.slug === pageIdOrSlug);
+              if (!page) return;
+              const updated = { ...page, assistantId };
+              await fetch('/api/landing-page', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ assistantId, config: updated }),
+              });
+              setLandingConfig((prev) => (prev.id === page.id || prev.slug === page.slug ? { ...prev, assistantId } : prev));
+            })
+          }
+          assistants={assistants}
+          setActiveAssistant={setActiveAssistant}
+          setActiveTab={setParentActiveTab}
+          deletingPageId={deletingPageId}
+          isDeletingLandingPage={isDeletingLandingPage}
+          deleteProgress={deleteProgress}
+          deleteStatusMessage={deleteStatusMessage}
+          pagePendingDelete={pagePendingDelete}
+          setPagePendingDelete={setPagePendingDelete}
+          handleConfirmDeleteLandingPage={handleConfirmDeleteLandingPage}
+        />
+      )}
+
+      {viewMode === 'create_wizard' && (
+        <AiLandingWizard
+          onBackToList={handleBackToList}
+          onOpenEditor={(newConfig) => {
+            setLandingConfig(newConfig);
+            setViewMode('editor');
+          }}
+          onSaveLandingPage={
+            handleAIGenerateLandingPage ||
+            (async (newConfig, assistantOption) => {
+              const isAutoCreate = assistantOption === 'auto_create';
+              const targetAssistantId = isAutoCreate ? undefined : (assistantOption === 'none' ? '' : assistantOption);
+              const res = await fetch('/api/landing-page', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  assistantId: targetAssistantId,
+                  createDedicatedAssistant: isAutoCreate,
+                  config: newConfig,
+                  isNewPage: true,
+                }),
+              });
+              const data = await res.json();
+              if (!res.ok) throw new Error(data.error || 'Failed to generate landing page');
+              return data.config || newConfig;
+            })
+          }
+          assistants={assistants}
+          allLandingPages={allLandingPages}
+          activeAssistant={activeAssistant}
+        />
+      )}
+
+      {viewMode === 'editor' && (
+        <div className="max-w-5xl space-y-6 mx-auto pb-16">
       {/* Back to All Landing Pages & Active Editor Breadcrumb */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs">
         <button
@@ -2757,18 +2756,6 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
         onConfirm={() => handleConfirmDeleteLandingPage?.()}
       />
 
-      {/* In-App Quota Exceeded Modal with Instant Upgrade CTAs */}
-      <LandingPageQuotaModal
-        isOpen={showQuotaModal}
-        onClose={() => setShowQuotaModal(false)}
-        currentCount={landingPageLimits?.currentCount || 0}
-        totalAllowed={landingPageLimits?.totalAllowed || 1}
-        planTier={landingPageLimits?.planTier || 'Starter'}
-        onPurchaseExtraSlot={handlePurchaseExtraLandingPage}
-        isPurchasingSlot={isPurchasingAddon}
-        onUpgradePlan={setParentActiveTab ? () => setParentActiveTab('billing') : undefined}
-      />
-
       {/* Interactive Full Design Archetype Preview Modal */}
       <DesignPreviewModal
         isOpen={Boolean(editorPreviewArch)}
@@ -2783,6 +2770,20 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
           });
         }}
       />
-    </div>
+        </div>
+      )}
+
+      {/* In-App Quota Exceeded Modal with Instant Upgrade CTAs (Mounted in all view modes) */}
+      <LandingPageQuotaModal
+        isOpen={showQuotaModal}
+        onClose={() => setShowQuotaModal(false)}
+        currentCount={landingPageLimits?.currentCount || 0}
+        totalAllowed={landingPageLimits?.totalAllowed || 1}
+        planTier={landingPageLimits?.planTier || 'Starter'}
+        onPurchaseExtraSlot={handlePurchaseExtraLandingPage}
+        isPurchasingSlot={isPurchasingAddon}
+        onUpgradePlan={setParentActiveTab ? () => setParentActiveTab('billing') : undefined}
+      />
+    </>
   );
 };

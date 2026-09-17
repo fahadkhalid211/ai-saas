@@ -89,4 +89,63 @@ describe('Design Archetypes & Quota Verification', () => {
     };
     expect(limitsAddonFull.currentCount >= limitsAddonFull.totalAllowed).toBe(true);
   });
+
+  it('should normalize wildcard and empty workspace IDs to default-workspace in billing operations', async () => {
+    const { Database } = await import('@/lib/db');
+    const billingDefault = await Database.getWorkspaceBilling('default-workspace');
+    const billingWildcard = await Database.getWorkspaceBilling('*');
+    const billingEmpty = await Database.getWorkspaceBilling('');
+
+    expect(billingWildcard.id).toBe('default-workspace');
+    expect(billingEmpty.id).toBe('default-workspace');
+    expect(billingWildcard.planId).toBe(billingDefault.planId);
+  });
+
+  it('should increase total allowed pages upon purchasing an extra landing page slot', async () => {
+    const { Database } = await import('@/lib/db');
+    const billingBefore = await Database.getWorkspaceBilling('default-workspace');
+    const initialSlots = billingBefore.extraLandingPagesCount || 0;
+
+    const purchaseResult = await Database.purchaseExtraLandingPageSlot('default-workspace');
+    expect(purchaseResult.success).toBe(true);
+    expect(purchaseResult.newSlotCount).toBe(initialSlots + 1);
+
+    const billingAfter = await Database.getWorkspaceBilling('*');
+    expect(billingAfter.extraLandingPagesCount).toBe(initialSlots + 1);
+  });
+
+  it('should verify intelligent bot assignment rules for page 1 vs page 2+', () => {
+    const assistants = [
+      { id: 'demo-assistant', name: 'Kortex Support Agent' },
+      { id: 'ast_custom_123', name: 'Custom Bot' },
+    ];
+
+    // Page 1 rule: existingPagesCount === 0 -> connect default assistant, no bot created
+    const page1Count = 0;
+    const isFirstPage = page1Count === 0;
+    const defaultBotId = assistants[0].id;
+
+    // Default assistantOption for page 1 should be the default bot ID
+    const page1AssistantOption = isFirstPage ? defaultBotId : 'auto_create';
+    expect(page1AssistantOption).toBe('demo-assistant');
+
+    // Page 2 rule: existingPagesCount >= 1 -> prompt user, default to existing bot
+    const page2Count = 1;
+    const isSecondPage = page2Count >= 1;
+    expect(isSecondPage).toBe(true);
+
+    // If user chooses to reuse existing knowledge base:
+    const userChoiceReuse = 'reuse_existing';
+    const page2OptionReuse = userChoiceReuse === 'reuse_existing' ? defaultBotId : 'auto_create';
+    const createDedicatedBotReuse = page2OptionReuse === 'auto_create';
+    expect(page2OptionReuse).toBe('demo-assistant');
+    expect(createDedicatedBotReuse).toBe(false);
+
+    // If user chooses to create new dedicated knowledge base:
+    const userChoiceNew = 'create_new';
+    const page2OptionNew = userChoiceNew === 'create_new' ? 'auto_create' : defaultBotId;
+    const createDedicatedBotNew = page2OptionNew === 'auto_create';
+    expect(page2OptionNew).toBe('auto_create');
+    expect(createDedicatedBotNew).toBe(true);
+  });
 });

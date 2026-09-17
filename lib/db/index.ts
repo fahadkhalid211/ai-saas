@@ -2089,14 +2089,15 @@ export class Database {
   }
   // Workspace & Chat-Based Billing
   static async getWorkspaceBilling(workspaceId: string = 'default-workspace'): Promise<WorkspaceBillingData> {
+    const targetWsId = (!workspaceId || workspaceId === '*') ? 'default-workspace' : workspaceId;
     const state = await ensureInitialized();
-    let ws = state.workspaces.find((w) => w.id === workspaceId);
+    let ws = state.workspaces.find((w) => w.id === targetWsId);
     const startOfCurrentMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString();
     const endOfCurrentMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 1).toISOString();
 
     if (!ws) {
       ws = {
-        id: workspaceId,
+        id: targetWsId,
         name: 'My Workspace',
         planId: 'starter',
         planName: 'Starter',
@@ -2171,11 +2172,12 @@ export class Database {
     workspaceId: string = 'default-workspace',
     updates: Partial<WorkspaceBillingData>
   ): Promise<WorkspaceBillingData> {
+    const targetWsId = (!workspaceId || workspaceId === '*') ? 'default-workspace' : workspaceId;
     const state = await ensureInitialized();
-    let ws = state.workspaces.find((w) => w.id === workspaceId);
+    let ws = state.workspaces.find((w) => w.id === targetWsId);
     if (!ws) {
-      await Database.getWorkspaceBilling(workspaceId);
-      ws = state.workspaces.find((w) => w.id === workspaceId);
+      await Database.getWorkspaceBilling(targetWsId);
+      ws = state.workspaces.find((w) => w.id === targetWsId);
     }
     if (ws) {
       Object.assign(ws, updates);
@@ -2187,11 +2189,12 @@ export class Database {
   static async purchaseExtraLandingPageSlot(
     workspaceId: string = 'default-workspace'
   ): Promise<{ success: boolean; newSlotCount: number; invoice: InvoiceRecord }> {
+    const targetWsId = (!workspaceId || workspaceId === '*') ? 'default-workspace' : workspaceId;
     const state = await ensureInitialized();
-    let ws = state.workspaces.find((w) => w.id === workspaceId);
+    let ws = state.workspaces.find((w) => w.id === targetWsId);
     if (!ws) {
-      await Database.getWorkspaceBilling(workspaceId);
-      ws = state.workspaces.find((w) => w.id === workspaceId);
+      await Database.getWorkspaceBilling(targetWsId);
+      ws = state.workspaces.find((w) => w.id === targetWsId);
     }
     if (!ws) throw new Error('Workspace not found');
 

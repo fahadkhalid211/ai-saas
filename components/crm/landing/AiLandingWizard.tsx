@@ -48,6 +48,8 @@ interface AiLandingWizardProps {
     assistantOption: 'auto_create' | 'none' | string
   ) => Promise<LandingPageConfig>;
   assistants?: any[];
+  allLandingPages?: LandingPageConfig[];
+  activeAssistant?: any;
 }
 
 const INDUSTRIES_LIST = [
@@ -210,8 +212,18 @@ export function AiLandingWizard({
   onOpenEditor,
   onSaveLandingPage,
   assistants = [],
+  allLandingPages = [],
+  activeAssistant,
 }: AiLandingWizardProps) {
   const [step, setStep] = useState<1 | 2 | 3 | 4 | 5>(1);
+
+  const existingPagesCount = allLandingPages?.length || 0;
+  const isFirstPage = existingPagesCount === 0;
+
+  const defaultAssistant =
+    activeAssistant ||
+    (assistants.length > 0 ? assistants[0] : null);
+  const defaultAssistantId = defaultAssistant?.id || (assistants[0]?.id || 'demo-assistant');
 
   // Form State
   const [selectedIndustry, setSelectedIndustry] = useState<string>('barbershop');
@@ -230,7 +242,14 @@ export function AiLandingWizard({
   const [services, setServices] = useState<LandingPageServiceItem[]>([]);
   const [newServiceName, setNewServiceName] = useState('');
   const [newServicePrice, setNewServicePrice] = useState('45');
-  const [assistantOption, setAssistantOption] = useState<'auto_create' | 'none' | string>('auto_create');
+  const [assistantOption, setAssistantOption] = useState<'auto_create' | 'none' | string>(defaultAssistantId);
+
+  // Sync assistantOption if default assistant becomes available
+  useEffect(() => {
+    if (assistantOption === 'auto_create' && isFirstPage) {
+      setAssistantOption(defaultAssistantId);
+    }
+  }, [defaultAssistantId, isFirstPage]);
 
   // AI Generator Progress State
   const [generationProgress, setGenerationProgress] = useState(0);
@@ -335,7 +354,11 @@ export function AiLandingWizard({
       { progress: 20, msg: `Analyzing business narrative and purpose for "${finalBusinessName}"...` },
       { progress: 45, msg: `Architecting ${archObj.name} layout and conversion hierarchy...` },
       { progress: 68, msg: `Synthesizing ${services.length} bespoke service pricing items & booking slots...` },
-      { progress: 85, msg: `Deploying isolated AI Concierge and indexing brand knowledge base...` },
+      { progress: 85, msg: assistantOption === 'auto_create'
+          ? `Deploying dedicated AI Concierge and initializing new knowledge base...`
+          : (assistantOption === 'none'
+              ? `Configuring conversion architecture without live chatbot...`
+              : `Connecting to existing AI Concierge knowledge base...`) },
       { progress: 95, msg: `Generating SEO meta headers, JSON-LD schema, and live preview...` },
     ];
 
@@ -724,81 +747,182 @@ export function AiLandingWizard({
                 </div>
               </div>
 
-              {/* Dedicated Knowledge Base & AI Concierge Option */}
-              <div className="p-5 rounded-2xl border border-blue-200 dark:border-blue-900/60 bg-blue-50/30 dark:bg-blue-950/20 shadow-xs space-y-2.5">
-                <div className="flex items-center gap-2">
-                  <Bot className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                  <span className="text-xs font-bold text-slate-900 dark:text-white">AI Concierge &amp; Knowledge Base</span>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="flex items-start gap-2.5 cursor-pointer">
-                    <input
-                      type="radio"
-                      name="assistantOption"
-                      checked={assistantOption === 'auto_create'}
-                      onChange={() => setAssistantOption('auto_create')}
-                      className="mt-0.5 text-blue-600"
-                    />
-                    <div>
-                      <span className="text-xs font-semibold text-slate-800 dark:text-slate-200 block">
-                        Auto-create Dedicated AI Concierge (Recommended)
-                      </span>
-                      <span className="text-[11px] text-slate-500 dark:text-slate-400">
-                        Creates an exclusive bot isolated strictly to this landing page. Queries will never mix with other businesses.
-                      </span>
+              {/* Knowledge Base & AI Concierge Option */}
+              {isFirstPage ? (
+                /* First Landing Page: Connects directly to Default Knowledge Base */
+                <div className="p-5 rounded-2xl border border-blue-200 dark:border-blue-900/60 bg-blue-50/30 dark:bg-blue-950/20 shadow-xs space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Bot className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                      <span className="text-xs font-bold text-slate-900 dark:text-white">AI Concierge &amp; Knowledge Base</span>
                     </div>
-                  </label>
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 dark:bg-blue-900/70 text-blue-800 dark:text-blue-200 border border-blue-200 dark:border-blue-800">
+                      <CheckCircle2 className="h-3 w-3 text-blue-600 dark:text-blue-400" />
+                      <span>Default Knowledge Base</span>
+                    </span>
+                  </div>
 
-                  {assistants.length > 0 && (
+                  <p className="text-[11px] text-slate-600 dark:text-slate-300 leading-relaxed">
+                    This landing page will automatically use your default AI knowledge base (<strong>{defaultAssistant?.name || 'Primary Assistant'}</strong>).
+                    All documents, FAQs, and files you train in your workspace will immediately power your site&apos;s AI chatbot.
+                  </p>
+
+                  <div className="space-y-2 pt-1 border-t border-blue-100 dark:border-blue-900/40">
                     <label className="flex items-start gap-2.5 cursor-pointer">
                       <input
                         type="radio"
                         name="assistantOption"
-                        checked={assistantOption !== 'auto_create' && assistantOption !== 'none'}
-                        onChange={() => setAssistantOption(assistants[0].id)}
+                        checked={assistantOption !== 'none'}
+                        onChange={() => setAssistantOption(defaultAssistantId)}
                         className="mt-0.5 text-blue-600"
                       />
-                      <div className="flex-1">
+                      <div>
                         <span className="text-xs font-semibold text-slate-800 dark:text-slate-200 block">
-                          Link to Existing AI Assistant
+                          Connect Default Knowledge Base ({defaultAssistant?.name || 'Primary Assistant'})
                         </span>
-                        {assistantOption !== 'auto_create' && assistantOption !== 'none' && (
-                          <select
-                            value={assistantOption}
-                            onChange={(e) => setAssistantOption(e.target.value)}
-                            className="mt-1 w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-2.5 py-1.5 text-xs text-slate-900 dark:text-white"
-                          >
-                            {assistants.map((ast) => (
-                              <option key={ast.id} value={ast.id}>
-                                {ast.name} ({ast.id})
-                              </option>
-                            ))}
-                          </select>
+                        <span className="text-[11px] text-slate-500 dark:text-slate-400">
+                          Visitor inquiries and appointment bookings are handled using your existing trained knowledge.
+                        </span>
+                      </div>
+                    </label>
+
+                    <label className="flex items-start gap-2.5 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="assistantOption"
+                        checked={assistantOption === 'none'}
+                        onChange={() => setAssistantOption('none')}
+                        className="mt-0.5 text-blue-600"
+                      />
+                      <div>
+                        <span className="text-xs font-semibold text-slate-800 dark:text-slate-200 block">
+                          No Chatbot (Website Only)
+                        </span>
+                        <span className="text-[11px] text-slate-500 dark:text-slate-400">
+                          The live site will operate without a floating chatbot widget.
+                        </span>
+                      </div>
+                    </label>
+                  </div>
+                </div>
+              ) : (
+                /* Subsequent Landing Pages: Prompt user to reuse existing or create new dedicated knowledge base */
+                <div className="p-5 rounded-2xl border border-blue-200 dark:border-blue-900/60 bg-blue-50/30 dark:bg-blue-950/20 shadow-xs space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Bot className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                      <span className="text-xs font-bold text-slate-900 dark:text-white">AI Concierge &amp; Knowledge Base</span>
+                    </div>
+                    <span className="text-[10.5px] font-semibold text-slate-500 dark:text-slate-400">
+                      Page #{existingPagesCount + 1}
+                    </span>
+                  </div>
+
+                  <p className="text-xs text-slate-700 dark:text-slate-300 font-medium">
+                    Would you like this new page to use your previous knowledge base or create a new dedicated one?
+                  </p>
+
+                  <div className="space-y-2.5">
+                    {/* Option 1: Use Previous / Existing Knowledge Base (Default) */}
+                    <label className={`flex items-start gap-2.5 p-3 rounded-xl border transition cursor-pointer ${
+                      assistantOption !== 'auto_create' && assistantOption !== 'none'
+                        ? 'border-blue-500 bg-white dark:bg-slate-900 shadow-2xs'
+                        : 'border-slate-200 dark:border-slate-800 bg-white/60 dark:bg-slate-900/60 hover:border-slate-300'
+                    }`}>
+                      <input
+                        type="radio"
+                        name="assistantOption"
+                        checked={assistantOption !== 'auto_create' && assistantOption !== 'none'}
+                        onChange={() => setAssistantOption(defaultAssistantId)}
+                        className="mt-1 text-blue-600"
+                      />
+                      <div className="flex-1 space-y-1">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-bold text-slate-900 dark:text-white">
+                            Use Previous / Existing Knowledge Base (Recommended)
+                          </span>
+                          <span className="text-[10px] font-semibold px-2 py-0.2 rounded bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                            Reuses Documents
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
+                          Shares documents, FAQs, and business training data from an existing assistant so you do not need to re-upload files.
+                        </p>
+
+                        {assistantOption !== 'auto_create' && assistantOption !== 'none' && assistants.length > 0 && (
+                          <div className="pt-2">
+                            <label className="block text-[10.5px] font-semibold text-slate-600 dark:text-slate-300 mb-1">
+                              Select Assistant / Knowledge Base:
+                            </label>
+                            <select
+                              value={assistantOption}
+                              onChange={(e) => setAssistantOption(e.target.value)}
+                              className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-2.5 py-1.5 text-xs text-slate-900 dark:text-white font-medium focus:outline-none focus:border-blue-500"
+                            >
+                              {assistants.map((ast) => (
+                                <option key={ast.id} value={ast.id}>
+                                  {ast.name} ({ast.id})
+                                </option>
+                              ))}
+                            </select>
+                          </div>
                         )}
                       </div>
                     </label>
-                  )}
 
-                  <label className="flex items-start gap-2.5 cursor-pointer">
-                    <input
-                      type="radio"
-                      name="assistantOption"
-                      checked={assistantOption === 'none'}
-                      onChange={() => setAssistantOption('none')}
-                      className="mt-0.5 text-blue-600"
-                    />
-                    <div>
-                      <span className="text-xs font-semibold text-slate-800 dark:text-slate-200 block">
-                        No Chatbot (Website Only)
-                      </span>
-                      <span className="text-[11px] text-slate-500 dark:text-slate-400">
-                        The live site will operate without a floating chatbot widget.
-                      </span>
-                    </div>
-                  </label>
+                    {/* Option 2: Create a New Knowledge Base & Dedicated Bot */}
+                    <label className={`flex items-start gap-2.5 p-3 rounded-xl border transition cursor-pointer ${
+                      assistantOption === 'auto_create'
+                        ? 'border-blue-500 bg-white dark:bg-slate-900 shadow-2xs'
+                        : 'border-slate-200 dark:border-slate-800 bg-white/60 dark:bg-slate-900/60 hover:border-slate-300'
+                    }`}>
+                      <input
+                        type="radio"
+                        name="assistantOption"
+                        checked={assistantOption === 'auto_create'}
+                        onChange={() => setAssistantOption('auto_create')}
+                        className="mt-1 text-blue-600"
+                      />
+                      <div className="flex-1 space-y-0.5">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-bold text-slate-900 dark:text-white">
+                            Create a New Knowledge Base for This Page
+                          </span>
+                          <span className="text-[10px] font-semibold px-2 py-0.2 rounded bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-900">
+                            Creates New Bot
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
+                          Spins up a brand-new, dedicated AI bot with an isolated knowledge base. Recommended if this website is for a completely different brand, company, or vertical.
+                        </p>
+                      </div>
+                    </label>
+
+                    {/* Option 3: No Chatbot */}
+                    <label className={`flex items-start gap-2.5 p-2.5 rounded-xl border transition cursor-pointer ${
+                      assistantOption === 'none'
+                        ? 'border-blue-500 bg-white dark:bg-slate-900 shadow-2xs'
+                        : 'border-slate-200 dark:border-slate-800 bg-white/60 dark:bg-slate-900/60 hover:border-slate-300'
+                    }`}>
+                      <input
+                        type="radio"
+                        name="assistantOption"
+                        checked={assistantOption === 'none'}
+                        onChange={() => setAssistantOption('none')}
+                        className="mt-0.5 text-blue-600"
+                      />
+                      <div>
+                        <span className="text-xs font-semibold text-slate-800 dark:text-slate-200 block">
+                          No Chatbot (Website Only)
+                        </span>
+                        <span className="text-[11px] text-slate-500 dark:text-slate-400">
+                          The live site will operate without a floating chatbot widget.
+                        </span>
+                      </div>
+                    </label>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
 
@@ -976,7 +1100,11 @@ export function AiLandingWizard({
             <div className="flex items-center justify-between text-xs">
               <span className="text-slate-500">Connected AI Concierge:</span>
               <span className="font-semibold text-slate-800 dark:text-slate-200">
-                {createdConfig.assistantId ? `Dedicated (${createdConfig.assistantId})` : 'None / Disabled'}
+                {createdConfig.assistantId ? (
+                  assistantOption === 'auto_create'
+                    ? `Dedicated Bot (${createdConfig.assistantId})`
+                    : `Existing Knowledge Base (${assistants.find((a) => a.id === createdConfig.assistantId)?.name || createdConfig.assistantId})`
+                ) : 'None / Disabled'}
               </span>
             </div>
             <div className="flex items-center justify-between text-xs">

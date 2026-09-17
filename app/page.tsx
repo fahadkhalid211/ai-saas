@@ -602,6 +602,12 @@ export default function DashboardPage() {
     return () => clearInterval(interval);
   }, [isAuthenticated, activeAssistant?.id, activeTab]);
 
+  // Auto-sync landing pages and quota limits immediately when Landing Page tab opens
+  useEffect(() => {
+    if (!isAuthenticated || activeTab !== 'landing_page') return;
+    landing.fetchAllLandingPages();
+  }, [isAuthenticated, activeTab]);
+
   const totalChunks = knowledge.sources.reduce((sum, s) => sum + (s.chunkCount || 0), 0);
 
   if (isAuthChecking) {
@@ -1143,6 +1149,7 @@ export default function DashboardPage() {
           assistants={assistants}
           newPageAssistantId={landing.newPageAssistantId}
           setNewPageAssistantId={landing.setNewPageAssistantId}
+          existingPagesCount={landing.allLandingPages?.length || 0}
         />
 
         <CounterQrModal

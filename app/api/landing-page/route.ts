@@ -43,42 +43,22 @@ async function resolveAssistantForLandingPage(page: LandingPageConfig): Promise<
     if (demo) return demo.id;
   }
 
-  // 3. Auto-create a dedicated assistant for this landing page to keep its knowledge base completely isolated
-  try {
-    const newBotId = 'ast_' + (page.slug || 'site').replace(/[^a-z0-9]/g, '_') + '_' + Math.random().toString(36).substring(2, 6);
-    const created = await Database.createAssistant({
-      id: newBotId,
-      workspaceId: wsId,
-      name: `${page.businessName || 'Business'} Concierge`,
-      description: `Dedicated AI assistant and booking concierge for ${page.businessName || 'this business'}.`,
-      systemPrompt: `You are the exclusive AI assistant for ${page.businessName || 'this business'}. You answer questions, help clients book services, and provide accurate details based solely on this business's knowledge base and service catalog. Never discuss or confuse details from other businesses or industries.`,
-      welcomeMessage: `Welcome to ${page.businessName || 'our business'}! How can I assist you today?`,
-      fallbackMessage: `I do not have that specific information in the knowledge base. Would you like to schedule an appointment or speak with our staff?`,
-      primaryColor: page.themeColor || '#2563eb',
-      starterQuestions: page.starterQuestions && page.starterQuestions.length > 0
-        ? page.starterQuestions
-        : [
-            `What services does ${page.businessName || 'this business'} offer?`,
-            `How can I book an appointment?`,
-            `What are your hours and location?`,
-          ],
-      collectLeadEmail: true,
-      bookingEnabled: true,
-      bookingProvider: 'direct',
-      bookingPromptText: 'Schedule an Appointment',
-    });
-    page.assistantId = created.id;
-    await Database.saveLandingPage(page);
-    return created.id;
-  } catch (err) {
-    console.warn('[LandingPage] Failed to auto-create dedicated assistant:', err);
-  }
-
+  // 3. Fall back to existing assistants in workspace if available
   if (wsAssistants.length > 0) {
+    page.assistantId = wsAssistants[0].id;
+    try {
+      await Database.saveLandingPage(page);
+    } catch (saveErr) {}
     return wsAssistants[0].id;
   }
 
-  return page.assistantId || 'demo-assistant';
+  const demo = await Database.getAssistantById('demo-assistant');
+  if (demo) {
+    page.assistantId = demo.id;
+    return demo.id;
+  }
+
+  return page.assistantId || null;
 }
 
 async function getPublicAssistantConfig(assistantId: string, fallbackName?: string) {
@@ -146,8 +126,9 @@ export async function GET(req: NextRequest) {
         return NextResponse.json({ error: 'Unauthorized: Admin access required' }, { status: 401 });
       }
 
-      const landingPages = await Database.getLandingPages(ctx.workspaceId);
-      const billing = await Database.getWorkspaceBilling(ctx.workspaceId);
+      const targetWsId = (!ctx.workspaceId || ctx.workspaceId === '*') ? 'default-workspace' : ctx.workspaceId;
+      const landingPages = await Database.getLandingPages(targetWsId);
+      const billing = await Database.getWorkspaceBilling(targetWsId);
       const plan = BILLING_PLANS.find((p) => p.id === billing.planId) || BILLING_PLANS[0];
       const planLimit = plan.landingPageLimit || 1;
       const extraSlots = billing.extraLandingPagesCount || 0;
@@ -282,10 +263,14 @@ export async function POST(req: NextRequest) {
 
     const config = validation.sanitized;
 
+    const targetWorkspaceId = (ctx.memberId === 'master-admin' && config.workspaceId)
+      ? config.workspaceId
+      : (ctx.workspaceId && ctx.workspaceId !== '*' ? ctx.workspaceId : (config.workspaceId || 'default-workspace'));
+
     // Quota validation if creating a new landing page
     if (isNewPage) {
-      const existingPages = await Database.getLandingPages(ctx.workspaceId);
-      const billing = await Database.getWorkspaceBilling(ctx.workspaceId);
+      const existingPages = await Database.getLandingPages(targetWorkspaceId);
+      const billing = await Database.getWorkspaceBilling(targetWorkspaceId);
       const plan = BILLING_PLANS.find((p) => p.id === billing.planId) || BILLING_PLANS[0];
       const maxAllowed = (plan.landingPageLimit || 1) + (billing.extraLandingPagesCount || 0);
 
@@ -301,14 +286,14 @@ export async function POST(req: NextRequest) {
 
     let finalAssistantId = config.assistantId !== undefined ? config.assistantId : assistantId;
 
-    // Auto-create a dedicated assistant for this new landing page to guarantee isolated knowledge bases
-    if (isNewPage && finalAssistantId !== '' && (createDedicatedAssistant || (!finalAssistantId && config.slug !== 'classic-barbershop'))) {
+    // Only auto-create a dedicated assistant for this new landing page if explicitly requested
+    if (isNewPage && createDedicatedAssistant === true) {
       try {
         const newBotId = 'ast_' + config.slug.replace(/[^a-z0-9]/g, '_') + '_' + Math.random().toString(36).substring(2, 6);
         const industryLabel = config.industry || 'services';
         const createdAssistant = await Database.createAssistant({
           id: newBotId,
-          workspaceId: ctx.workspaceId,
+          workspaceId: targetWorkspaceId,
           name: `${config.businessName} Concierge`,
           description: `Dedicated AI assistant and booking concierge for ${config.businessName} (${industryLabel}).`,
           systemPrompt: `You are the exclusive AI assistant for ${config.businessName}. You answer questions, help clients book services, and provide accurate details based solely on ${config.businessName}'s knowledge base and service catalog. Never discuss or confuse details from other businesses or industries.`,
@@ -331,11 +316,18 @@ export async function POST(req: NextRequest) {
       } catch (err) {
         console.warn('[LandingPage POST] Failed to create dedicated assistant:', err);
       }
+    } else if (isNewPage && (finalAssistantId === undefined || finalAssistantId === '')) {
+      // Connect to the workspace's default knowledge base/assistant for page 1 or when no assistant is passed
+      const wsAssistants = await Database.getAssistants(targetWorkspaceId);
+      if (wsAssistants.length > 0) {
+        finalAssistantId = wsAssistants[0].id;
+      } else {
+        const demo = await Database.getAssistantById('demo-assistant');
+        finalAssistantId = demo ? demo.id : 'demo-assistant';
+      }
+    } else if (finalAssistantId === 'none') {
+      finalAssistantId = '';
     }
-
-    const targetWorkspaceId = (ctx.memberId === 'master-admin' && config.workspaceId)
-      ? config.workspaceId
-      : (ctx.workspaceId && ctx.workspaceId !== '*' ? ctx.workspaceId : (config.workspaceId || 'default-workspace'));
 
     const savedConfig = await Database.saveLandingPage({
       ...config,
