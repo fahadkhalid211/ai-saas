@@ -1148,6 +1148,14 @@ export class Database {
     const remainingChunks = state.chunks.filter((c) => c.knowledgeSourceId !== id);
     await saveChunksState(remainingChunks, true);
     await saveState(state, { deletedSourceId: id });
+
+    if (isPostgresConfigured()) {
+      try {
+        await Relational.relationalDeleteChunksBySource(id);
+      } catch (err) {
+        console.warn('[Relational] deleteKnowledgeSource relational chunk cleanup failed:', err);
+      }
+    }
     return true;
   }
 
@@ -1208,6 +1216,14 @@ export class Database {
 
     const updated = [...state.chunks, ...newRecords];
     await saveChunksState(updated);
+
+    if (isPostgresConfigured()) {
+      try {
+        await Relational.relationalUpsertChunks(newRecords);
+      } catch (err) {
+        console.warn('[Relational] saveChunks upsert failed:', err);
+      }
+    }
   }
 
   static async updateChunks(updatedChunks: ChunkRecord[]): Promise<void> {
@@ -1215,12 +1231,28 @@ export class Database {
     const map = new Map<string, ChunkRecord>(updatedChunks.map((c) => [c.id, c]));
     const updated = state.chunks.map((c) => map.get(c.id) || c);
     await saveChunksState(updated);
+
+    if (isPostgresConfigured()) {
+      try {
+        await Relational.relationalUpsertChunks(updatedChunks);
+      } catch (err) {
+        console.warn('[Relational] updateChunks upsert failed:', err);
+      }
+    }
   }
 
   static async deleteChunksBySource(sourceId: string): Promise<void> {
     const state = await ensureInitialized();
     const remaining = state.chunks.filter((c) => c.knowledgeSourceId !== sourceId);
     await saveChunksState(remaining, true);
+
+    if (isPostgresConfigured()) {
+      try {
+        await Relational.relationalDeleteChunksBySource(sourceId);
+      } catch (err) {
+        console.warn('[Relational] deleteChunksBySource failed:', err);
+      }
+    }
   }
 
   static async getChunksByAssistant(assistantId: string): Promise<ChunkRecord[]> {
@@ -1246,6 +1278,37 @@ export class Database {
     return [...chunks].sort((a, b) => a.chunkIndex - b.chunkIndex);
   }
 
+  static async getPricingChunks(assistantId: string, limit: number = 12): Promise<SearchResultChunk[]> {
+    if (isPostgresConfigured()) {
+      try {
+        const relPricing = await Relational.relationalGetPricingChunks(assistantId, limit);
+        if (relPricing.length > 0) {
+          return relPricing;
+        }
+      } catch (err) {
+        console.warn('[Relational] getPricingChunks failed, falling back to in-memory:', err);
+      }
+    }
+
+    const assistantChunks = await Database.getChunksByAssistant(assistantId);
+    return assistantChunks
+      .filter((c) =>
+        /\b(budget|budgets|price|prices|pricing|cost|costs|rate|rates|fee|fees|\$|usd|eur|haircut|service|project)\b/i.test(
+          `${c.content} ${c.metadata?.sourceTitle || ''}`
+        )
+      )
+      .slice(0, limit)
+      .map((c) => ({
+        id: c.id,
+        content: c.content,
+        chunkIndex: c.chunkIndex,
+        tokenCount: c.tokenCount,
+        metadata: c.metadata as any,
+        knowledgeSourceId: c.knowledgeSourceId,
+        similarity: 0.85,
+      }));
+  }
+
   // Hybrid Vector + Full-Text Search
   static async hybridSearch(
     assistantId: string,
@@ -1253,6 +1316,24 @@ export class Database {
     queryEmbedding: number[],
     topK: number = 6
   ): Promise<SearchResultChunk[]> {
+    // 1. Try fast database-native HNSW vector + FTS hybrid search if Postgres is active
+    if (isPostgresConfigured()) {
+      try {
+        const relResults = await Relational.relationalHybridSearch(
+          assistantId,
+          query,
+          queryEmbedding,
+          topK
+        );
+        if (relResults.length > 0) {
+          return relResults;
+        }
+      } catch (err) {
+        console.warn('[Relational] hybridSearch failed, falling back to in-memory:', err);
+      }
+    }
+
+    // 2. In-memory fallback path (for test environments, local files, or unmigrated chunks)
     let state = await ensureInitialized();
     let assistantChunks = getIndexedAssistantChunks(assistantId, state);
     if (assistantChunks.length === 0 && isCloudDbConfigured()) {
@@ -1262,7 +1343,7 @@ export class Database {
     // Strict isolation: if assistant has no chunks, never pull other assistants' chunks.
     if (assistantChunks.length === 0) return [];
 
-    // 1. Dense Vector Cosine Similarity (require minimum 0.25 similarity for relevance)
+    // Dense Vector Cosine Similarity (require minimum 0.25 similarity for relevance)
     const vectorScored = assistantChunks
       .map((chunk) => ({
         ...chunk,
@@ -1272,7 +1353,7 @@ export class Database {
       .sort((a, b) => b.score - a.score)
       .slice(0, 15);
 
-    // 2. Sparse Keyword Matching (BM25 / Multilingual full-text - require at least 1 keyword match)
+    // Sparse Keyword Matching (BM25 / Multilingual full-text - require at least 1 keyword match)
     const keywordScored = assistantChunks
       .map((chunk) => ({
         ...chunk,
@@ -1287,7 +1368,7 @@ export class Database {
       return [];
     }
 
-    // 3. Reciprocal Rank Fusion
+    // Reciprocal Rank Fusion
     const fused = reciprocalRankFusion(vectorScored, keywordScored);
 
     return fused.slice(0, topK).map((item) => ({

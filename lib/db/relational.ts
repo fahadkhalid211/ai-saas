@@ -17,7 +17,9 @@ import type {
   AppointmentData,
   InAppNotificationData,
   UnansweredQueryData,
+  ChunkRecord,
 } from './index';
+import type { SearchResultChunk } from '../rag/types';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -623,4 +625,206 @@ export async function relationalDeleteUnansweredQuery(id: string): Promise<boole
     return (res.rowCount ?? 0) > 0;
   });
   return result === true;
+}
+
+// ---------------------------------------------------------------------------
+// Chunks & Hybrid Search (pgvector HNSW + GIN FTS)
+// ---------------------------------------------------------------------------
+
+export async function relationalUpsertChunks(chunks: ChunkRecord[]): Promise<boolean> {
+  if (chunks.length === 0) return true;
+  const result = await withPool(async (client) => {
+    const batchSize = 50;
+    for (let i = 0; i < chunks.length; i += batchSize) {
+      const batch = chunks.slice(i, i + batchSize);
+      const values: any[] = [];
+      const rowPlaceholders: string[] = [];
+      let paramIdx = 1;
+
+      for (const chunk of batch) {
+        rowPlaceholders.push(
+          `($${paramIdx++}, $${paramIdx++}, $${paramIdx++}, $${paramIdx++}, $${paramIdx++}, $${paramIdx++}, $${paramIdx++}, $${paramIdx++}::vector, $${paramIdx++})`
+        );
+        values.push(
+          chunk.id,
+          chunk.assistantId,
+          chunk.knowledgeSourceId,
+          chunk.metadata?.sourceTitle || chunk.metadata?.title || 'Knowledge Chunk',
+          chunk.content,
+          chunk.tokenCount || 0,
+          JSON.stringify(chunk.metadata || {}),
+          chunk.embedding ? JSON.stringify(chunk.embedding) : null,
+          chunk.chunkIndex ?? 0
+        );
+      }
+
+      await client.query(
+        `INSERT INTO kortex_chunks
+           (id, assistant_id, source_id, title, content, tokens, metadata, embedding, chunk_index)
+         VALUES ${rowPlaceholders.join(', ')}
+         ON CONFLICT (id) DO UPDATE SET
+           title = EXCLUDED.title,
+           content = EXCLUDED.content,
+           tokens = EXCLUDED.tokens,
+           metadata = EXCLUDED.metadata,
+           embedding = EXCLUDED.embedding,
+           chunk_index = EXCLUDED.chunk_index`,
+        values
+      );
+    }
+    return true;
+  });
+  return result === true;
+}
+
+export async function relationalDeleteChunksBySource(sourceId: string): Promise<boolean> {
+  const result = await withPool(async (client) => {
+    const res = await client.query(
+      `DELETE FROM kortex_chunks WHERE source_id = $1`,
+      [sourceId]
+    );
+    return (res.rowCount ?? 0) > 0;
+  });
+  return result === true;
+}
+
+export async function relationalDeleteChunksByAssistant(assistantId: string): Promise<boolean> {
+  const result = await withPool(async (client) => {
+    const res = await client.query(
+      `DELETE FROM kortex_chunks WHERE assistant_id = $1`,
+      [assistantId]
+    );
+    return (res.rowCount ?? 0) > 0;
+  });
+  return result === true;
+}
+
+export async function relationalGetPricingChunks(
+  assistantId: string,
+  limit: number = 12
+): Promise<SearchResultChunk[]> {
+  const result = await withPool(async (client) => {
+    const { rows } = await client.query<{
+      id: string;
+      content: string;
+      tokens: number;
+      metadata: any;
+      source_id: string;
+      title: string;
+      chunk_index: number;
+    }>(
+      `SELECT id, content, tokens, metadata, source_id, title, chunk_index
+       FROM kortex_chunks
+       WHERE assistant_id = $1
+         AND (
+           content ~* '\\y(budget|budgets|price|prices|pricing|cost|costs|rate|rates|fee|fees|\\$|usd|eur|haircut|service|project)\\y'
+           OR title ~* '\\y(budget|budgets|price|prices|pricing|cost|costs|rate|rates|fee|fees)\\y'
+         )
+       ORDER BY chunk_index ASC
+       LIMIT $2`,
+      [assistantId, limit]
+    );
+
+    return rows.map((r) => ({
+      id: r.id,
+      content: r.content,
+      chunkIndex: r.chunk_index ?? (r.metadata?.chunkIndex ?? 0),
+      tokenCount: r.tokens ?? 0,
+      metadata: typeof r.metadata === 'object' && r.metadata !== null ? r.metadata : {},
+      knowledgeSourceId: r.source_id,
+      similarity: 0.85,
+    }));
+  });
+  return result ?? [];
+}
+
+export async function relationalHybridSearch(
+  assistantId: string,
+  query: string,
+  queryEmbedding: number[],
+  topK: number = 6
+): Promise<SearchResultChunk[]> {
+  const cleanQuery = query.trim();
+  const vectorStr = JSON.stringify(queryEmbedding);
+
+  const result = await withPool(async (client) => {
+    const querySql = cleanQuery.length > 0
+      ? `WITH vector_matches AS (
+           SELECT 
+             id, content, tokens, metadata, source_id, title, chunk_index,
+             1 - (embedding <=> $1::vector) AS vector_similarity,
+             ROW_NUMBER() OVER (ORDER BY embedding <=> $1::vector ASC) AS vector_rank
+           FROM kortex_chunks
+           WHERE assistant_id = $2
+             AND embedding IS NOT NULL
+           ORDER BY embedding <=> $1::vector ASC
+           LIMIT 25
+         ),
+         keyword_matches AS (
+           SELECT 
+             id, content, tokens, metadata, source_id, title, chunk_index,
+             ts_rank_cd(to_tsvector('english', content), plainto_tsquery('english', $3)) AS text_rank,
+             ROW_NUMBER() OVER (
+               ORDER BY ts_rank_cd(to_tsvector('english', content), plainto_tsquery('english', $3)) DESC
+             ) AS keyword_rank
+           FROM kortex_chunks
+           WHERE assistant_id = $2
+             AND to_tsvector('english', content) @@ plainto_tsquery('english', $3)
+           LIMIT 25
+         )
+         SELECT 
+           COALESCE(v.id, k.id) AS id,
+           COALESCE(v.content, k.content) AS content,
+           COALESCE(v.tokens, k.tokens, 0) AS tokens,
+           COALESCE(v.metadata, k.metadata) AS metadata,
+           COALESCE(v.source_id, k.source_id) AS source_id,
+           COALESCE(v.title, k.title) AS title,
+           COALESCE(v.chunk_index, k.chunk_index, 0) AS chunk_index,
+           COALESCE(v.vector_similarity, 0.0) AS vector_similarity,
+           (
+             COALESCE(1.0 / (60.0 + v.vector_rank), 0.0) +
+             COALESCE(1.0 / (60.0 + k.keyword_rank), 0.0)
+           ) AS rrf_score
+         FROM vector_matches v
+         FULL OUTER JOIN keyword_matches k ON v.id = k.id
+         ORDER BY rrf_score DESC
+         LIMIT $4`
+      : `SELECT 
+           id, content, tokens, metadata, source_id, title, chunk_index,
+           1 - (embedding <=> $1::vector) AS vector_similarity,
+           1 - (embedding <=> $1::vector) AS rrf_score
+         FROM kortex_chunks
+         WHERE assistant_id = $2
+           AND embedding IS NOT NULL
+         ORDER BY embedding <=> $1::vector ASC
+         LIMIT $3`;
+
+    const params = cleanQuery.length > 0
+      ? [vectorStr, assistantId, cleanQuery, topK]
+      : [vectorStr, assistantId, topK];
+
+    const { rows } = await client.query<{
+      id: string;
+      content: string;
+      tokens: number;
+      metadata: any;
+      source_id: string;
+      title: string;
+      chunk_index: number;
+      vector_similarity: number;
+      rrf_score: number;
+    }>(querySql, params);
+
+    return rows.map((r) => ({
+      id: r.id,
+      content: r.content,
+      chunkIndex: r.chunk_index ?? (r.metadata?.chunkIndex ?? 0),
+      tokenCount: r.tokens ?? 0,
+      metadata: typeof r.metadata === 'object' && r.metadata !== null ? r.metadata : {},
+      knowledgeSourceId: r.source_id,
+      similarity: Number(r.vector_similarity) || Number(r.rrf_score) || 0,
+    }));
+  });
+
+  return result ?? [];
 }

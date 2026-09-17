@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse, after } from 'next/server';
 import { Database, getLandingConfigForSlugOrTemplate } from '@/lib/db';
-import { retrieveRelevantContext } from '@/lib/rag/retrieval';
+import { retrieveRelevantContext, isPurelyConversationalTurn, RetrievalResult } from '@/lib/rag/retrieval';
 import { buildSystemPrompt, streamChatResponse } from '@/lib/ai/providers';
 import { ChatMessage } from '@/lib/ai/types';
 import { isWebSearchIntent, extractSearchQuery, executeWebSearch } from '@/lib/rag/web-search';
@@ -432,31 +432,43 @@ export async function POST(req: NextRequest) {
             }
           }
 
-          // 2. Hybrid Context Retrieval
+          // 2. Hybrid Context Retrieval with Tier 0 Conversational Gating
           const isGroq = (assistant.provider || '').toLowerCase() === 'groq';
           const configuredChunks = assistant.contextChunks || 5;
           const topK = isGroq ? Math.min(configuredChunks, 5) : configuredChunks;
           const effectiveQuery = webSearchQuery || latestUserMsg;
 
-          const retrieval = await retrieveRelevantContext(
-            assistant.id,
-            effectiveQuery,
-            conversationHistory,
-            topK
-          );
+          let retrieval: RetrievalResult;
 
-          // Smart fallback: If assistant has 0 chunks, search across workspace concierges
-          if (retrieval.chunks.length === 0) {
-            const fallbackTarget = assistant.id === 'demo-assistant' ? 'default-workspace' : 'demo-assistant';
-            const fallbackRetrieval = await retrieveRelevantContext(
-              fallbackTarget,
+          // Tier 0 Gating: Skip retrieval on pure greetings, pleasantries, acknowledgments, or slot-filling
+          if (!isWebSearchUsed && isPurelyConversationalTurn(latestUserMsg, conversationHistory)) {
+            retrieval = {
+              condensedQuery: latestUserMsg,
+              chunks: [],
+              contextText: '',
+              citations: [],
+            };
+          } else {
+            retrieval = await retrieveRelevantContext(
+              assistant.id,
               effectiveQuery,
               conversationHistory,
               topK
             );
-            if (fallbackRetrieval.chunks.length > 0) {
-              retrieval.chunks = fallbackRetrieval.chunks;
-              retrieval.contextText = fallbackRetrieval.contextText;
+
+            // Smart fallback: If assistant has 0 chunks, search across workspace concierges
+            if (retrieval.chunks.length === 0) {
+              const fallbackTarget = assistant.id === 'demo-assistant' ? 'default-workspace' : 'demo-assistant';
+              const fallbackRetrieval = await retrieveRelevantContext(
+                fallbackTarget,
+                effectiveQuery,
+                conversationHistory,
+                topK
+              );
+              if (fallbackRetrieval.chunks.length > 0) {
+                retrieval.chunks = fallbackRetrieval.chunks;
+                retrieval.contextText = fallbackRetrieval.contextText;
+              }
             }
           }
 

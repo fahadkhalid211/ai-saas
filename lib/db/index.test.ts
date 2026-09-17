@@ -407,6 +407,16 @@ describe('Database Layer & Decoupled Storage', () => {
       expect(typeof relational.relationalGetUnansweredQueries).toBe('function');
       expect(typeof relational.relationalResolveUnansweredQuery).toBe('function');
       expect(typeof relational.relationalDeleteUnansweredQuery).toBe('function');
+      expect(typeof relational.relationalUpsertChunks).toBe('function');
+      expect(typeof relational.relationalDeleteChunksBySource).toBe('function');
+      expect(typeof relational.relationalDeleteChunksByAssistant).toBe('function');
+      expect(typeof relational.relationalGetPricingChunks).toBe('function');
+      expect(typeof relational.relationalHybridSearch).toBe('function');
+    });
+
+    it('should query pricing chunks via Database.getPricingChunks with fallback', async () => {
+      const pricingChunks = await Database.getPricingChunks('demo-assistant', 5);
+      expect(Array.isArray(pricingChunks)).toBe(true);
     });
 
     it('should preserve original msg.id and allow safe idempotent message insertion', async () => {

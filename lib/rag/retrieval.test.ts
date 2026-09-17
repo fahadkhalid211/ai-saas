@@ -110,4 +110,84 @@ describe('Vector Math and Hybrid Retrieval', () => {
       expect(cached).toEqual(dummyVec);
     });
   });
+
+  describe('Retrieval Result Cache', () => {
+    it('should cache and retrieve retrieval results with normalized query and assistantId', async () => {
+      const { getCachedRetrieval, setCachedRetrieval, clearRetrievalCache } = await import('./retrieval');
+      clearRetrievalCache();
+
+      const assistantId = 'asst-123';
+      const query = 'What are your hours?';
+      const mockResult = {
+        condensedQuery: query,
+        chunks: [
+          {
+            id: 'chk-1',
+            knowledgeSourceId: 'src-1',
+            content: 'Open 9-5',
+            chunkIndex: 0,
+            tokenCount: 10,
+            metadata: { sourceTitle: 'Hours', sourceType: 'txt' },
+            similarity: 0.95,
+          },
+        ],
+        contextText: 'We are open 9am-5pm Monday to Friday.',
+        citations: [{ sourceTitle: 'Hours', sourceType: 'txt', chunkIndex: 0, preview: 'Open 9-5' }],
+      };
+
+      expect(getCachedRetrieval(assistantId, query)).toBeNull();
+
+      setCachedRetrieval(assistantId, query, mockResult);
+
+      // Same query with whitespace/casing should hit cache
+      const cached = getCachedRetrieval(assistantId, '  what are your HOURS?  ');
+      expect(cached).not.toBeNull();
+      expect(cached?.contextText).toBe(mockResult.contextText);
+      expect(cached?.chunks.length).toBe(1);
+
+      // Different assistant or query should miss cache
+      expect(getCachedRetrieval('different-asst', query)).toBeNull();
+      expect(getCachedRetrieval(assistantId, 'what are your prices?')).toBeNull();
+    });
+  });
+
+  describe('Conversational Retrieval Gating', () => {
+    it('should identify greetings, farewells, acknowledgments, and booking slot-filling as purely conversational', async () => {
+      const { isPurelyConversationalTurn } = await import('./retrieval');
+
+      // Greetings
+      expect(isPurelyConversationalTurn('hello')).toBe(true);
+      expect(isPurelyConversationalTurn('Hi there!')).toBe(true);
+      expect(isPurelyConversationalTurn('Good morning')).toBe(true);
+      expect(isPurelyConversationalTurn('Hey')).toBe(true);
+
+      // Closings & Thanks
+      expect(isPurelyConversationalTurn('Thank you so much!')).toBe(true);
+      expect(isPurelyConversationalTurn('thanks')).toBe(true);
+      expect(isPurelyConversationalTurn('have a great day')).toBe(true);
+      expect(isPurelyConversationalTurn('bye')).toBe(true);
+
+      // Acknowledgments
+      expect(isPurelyConversationalTurn('ok got it')).toBe(true);
+      expect(isPurelyConversationalTurn('sure')).toBe(true);
+      expect(isPurelyConversationalTurn('sounds good')).toBe(true);
+      expect(isPurelyConversationalTurn('yes')).toBe(true);
+      expect(isPurelyConversationalTurn('no problem')).toBe(true);
+
+      // Slot filling (email, phone, dates)
+      expect(isPurelyConversationalTurn('john.doe@example.com')).toBe(true);
+      expect(isPurelyConversationalTurn('+1 (555) 234-5678')).toBe(true);
+      expect(isPurelyConversationalTurn('tomorrow at 3pm')).toBe(true);
+    });
+
+    it('should identify substantive knowledge queries as NOT purely conversational', async () => {
+      const { isPurelyConversationalTurn } = await import('./retrieval');
+
+      expect(isPurelyConversationalTurn('What are your pricing plans?')).toBe(false);
+      expect(isPurelyConversationalTurn('How much does teeth whitening cost?')).toBe(false);
+      expect(isPurelyConversationalTurn('Where is your office located?')).toBe(false);
+      expect(isPurelyConversationalTurn('Do you provide corporate legal consulting?')).toBe(false);
+      expect(isPurelyConversationalTurn('Explain your refund policy')).toBe(false);
+    });
+  });
 });

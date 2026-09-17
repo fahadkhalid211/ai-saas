@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run --fileParallelism=false",
-    "db:backfill": "npx tsx scripts/backfill-relational.ts"
+    "db:backfill": "npx tsx scripts/backfill-relational.ts",
+    "db:backfill-chunks": "npx tsx scripts/backfill-chunks.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.116.0",

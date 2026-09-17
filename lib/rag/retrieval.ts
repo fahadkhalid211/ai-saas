@@ -33,6 +33,57 @@ export function clearEmbeddingCache(): void {
   embeddingCache.clear();
 }
 
+// ---------------------------------------------------------------------------
+// Retrieval Result Cache (Short-TTL / LRU for Sub-1ms Repeat Queries)
+// ---------------------------------------------------------------------------
+
+interface CachedRetrieval {
+  result: RetrievalResult;
+  expiresAt: number;
+}
+
+const RETRIEVAL_CACHE_MAX = 500;
+const RETRIEVAL_CACHE_TTL_MS = 90 * 1000; // 90 seconds TTL
+const retrievalResultCache = new Map<string, CachedRetrieval>();
+
+export function getCachedRetrieval(assistantId: string, query: string): RetrievalResult | null {
+  const key = `${assistantId}:${query.trim().toLowerCase().replace(/\s+/g, ' ').slice(0, 150)}`;
+  const entry = retrievalResultCache.get(key);
+  if (!entry) return null;
+  if (Date.now() > entry.expiresAt) {
+    retrievalResultCache.delete(key);
+    return null;
+  }
+  return entry.result;
+}
+
+export function setCachedRetrieval(assistantId: string, query: string, result: RetrievalResult): void {
+  const key = `${assistantId}:${query.trim().toLowerCase().replace(/\s+/g, ' ').slice(0, 150)}`;
+  if (retrievalResultCache.size >= RETRIEVAL_CACHE_MAX) {
+    const oldestKey = retrievalResultCache.keys().next().value;
+    if (oldestKey !== undefined) {
+      retrievalResultCache.delete(oldestKey);
+    }
+  }
+  retrievalResultCache.set(key, {
+    result,
+    expiresAt: Date.now() + RETRIEVAL_CACHE_TTL_MS,
+  });
+}
+
+export function clearRetrievalCache(assistantId?: string): void {
+  if (!assistantId) {
+    retrievalResultCache.clear();
+    return;
+  }
+  const prefix = `${assistantId}:`;
+  for (const key of retrievalResultCache.keys()) {
+    if (key.startsWith(prefix)) {
+      retrievalResultCache.delete(key);
+    }
+  }
+}
+
 /**
  * Condense multi-turn query if history is present.
  * Keeps it fast and lightweight without adding unnecessary latency.
@@ -92,6 +143,42 @@ export function isBroadPricingOrBudgetQuery(query: string): boolean {
 }
 
 /**
+ * Detect if user turn is purely conversational (greeting, thanks, acknowledgment, or slot-filling),
+ * allowing Tier 0 retrieval gating to bypass RAG vector/FTS search and respond with sub-1ms overhead.
+ */
+export function isPurelyConversationalTurn(
+  message: string,
+  history: { role: string; content: string }[] = []
+): boolean {
+  // Strip outer punctuation and whitespace
+  const clean = message.trim().toLowerCase().replace(/^[^\w@+]+|[^\w@+]+$/g, '').trim();
+  if (clean.length === 0) return true;
+
+  // 1. Common greetings and basic conversational openers
+  const greetingPattern = /^(hi|hello|hey|heya|howdy|greetings|hi\s+there|hello\s+there|hey\s+there|good\s+(morning|afternoon|evening|day)|how\s+are\s+you|how\s+are\s+you\s+doing|how's\s+it\s+going|yo)$/i;
+  if (greetingPattern.test(clean)) return true;
+
+  // 2. Common thanks, closings, acknowledgments
+  const closingPattern = /^(thanks|thank\s+you|thanks\s+a\s+lot|thank\s+you\s+so\s+much|ok\s+thanks|okay\s+thanks|bye|goodbye|see\s+you|see\s+ya|have\s+a\s+(good|great)\s+day)$/i;
+  if (closingPattern.test(clean)) return true;
+
+  // 3. Simple acknowledgments or short confirmations
+  const ackPattern = /^(yes|no|yep|nope|sure|ok|okay|sounds\s+good|perfect|great|cool|awesome|got\s+it|ok\s+got\s+it|okay\s+got\s+it|understood|no\s+problem|alright)$/i;
+  if (ackPattern.test(clean)) return true;
+
+  // 4. Standalone email or phone submissions (lead capture turns)
+  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const phonePattern = /^(\+?\d{1,3}[-.\s]?)?(\(?\d{3}\)?[-.\s]?)?\d{3}[-.\s]?\d{4}$/;
+  if (emailPattern.test(clean) || phonePattern.test(clean)) return true;
+
+  // 5. Short appointment slot specifications (e.g. "tomorrow at 3pm", "monday 10am")
+  const slotPattern = /^(tomorrow|today|yesterday|(next\s+)?(monday|tuesday|wednesday|thursday|friday|saturday|sunday))(\s+(at\s+)?\d{1,2}(:\d{2})?\s*(am|pm)?)?$/i;
+  if (slotPattern.test(clean)) return true;
+
+  return false;
+}
+
+/**
  * Retrieve relevant knowledge chunks using Hybrid Search (Vector + Keyword)
  */
 export async function retrieveRelevantContext(
@@ -101,6 +188,13 @@ export async function retrieveRelevantContext(
   topK: number = 5
 ): Promise<RetrievalResult> {
   const condensedQuery = condenseQuery(userMessage, history);
+
+  // Fast Path: Check retrieval result cache for repeat queries (sub-1ms response)
+  const cachedRetrieval = getCachedRetrieval(assistantId, condensedQuery);
+  if (cachedRetrieval) {
+    return cachedRetrieval;
+  }
+
   const isOverview = isGlobalOverviewQuery(condensedQuery);
   const isCountQuery = isCountOrAggregationQuery(condensedQuery);
   const isBroadPricing = isBroadPricingOrBudgetQuery(condensedQuery);
@@ -116,15 +210,9 @@ export async function retrieveRelevantContext(
   // 2. Perform Hybrid Search
   let chunks = await Database.hybridSearch(assistantId, condensedQuery, queryEmbedding, effectiveTopK * 2);
 
-  // 2.5. Broad pricing or budget query: ensure all chunks containing pricing/budget info across projects/services are included
+  // 2.5. Broad pricing or budget query: ensure pricing chunks are pulled via scoped query
   if (isBroadPricing) {
-    const assistantChunks = await Database.getChunksByAssistant(assistantId);
-    const pricingChunks = assistantChunks.filter((c) =>
-      /\b(budget|budgets|price|prices|pricing|cost|costs|rate|rates|fee|fees|\$|usd|eur|haircut|service|project)\b/i.test(
-        `${c.content} ${c.metadata?.sourceTitle || ''}`
-      )
-    );
-
+    const pricingChunks = await Database.getPricingChunks(assistantId, effectiveTopK);
     if (pricingChunks.length > 0) {
       const combined: SearchResultChunk[] = [...chunks];
       const seen = new Set<string>(chunks.map((c) => c.id || `chunk_${c.chunkIndex}`));
@@ -132,15 +220,7 @@ export async function retrieveRelevantContext(
       for (const pc of pricingChunks) {
         const pcId = pc.id || `chunk_${pc.chunkIndex}`;
         if (!seen.has(pcId) && combined.length < effectiveTopK) {
-          combined.push({
-            id: pc.id,
-            content: pc.content,
-            chunkIndex: pc.chunkIndex,
-            tokenCount: pc.tokenCount,
-            metadata: pc.metadata as any,
-            knowledgeSourceId: pc.knowledgeSourceId,
-            similarity: 0.85,
-          });
+          combined.push(pc);
           seen.add(pcId);
         }
       }
@@ -270,12 +350,14 @@ export async function retrieveRelevantContext(
 
   // 5. Format context block for LLM prompt
   if (chunks.length === 0) {
-    return {
+    const emptyResult: RetrievalResult = {
       condensedQuery,
       chunks: [],
       contextText: 'No relevant business documentation was found in the knowledge base.',
       citations: [],
     };
+    setCachedRetrieval(assistantId, condensedQuery, emptyResult);
+    return emptyResult;
   }
 
   const contextText = chunks
@@ -286,10 +368,12 @@ export async function retrieveRelevantContext(
     })
     .join('\n\n');
 
-  return {
+  const finalResult: RetrievalResult = {
     condensedQuery,
     chunks,
     contextText,
     citations: [],
   };
+  setCachedRetrieval(assistantId, condensedQuery, finalResult);
+  return finalResult;
 }
