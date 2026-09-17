@@ -26,13 +26,46 @@ const STOP_WORDS = new Set([
 ]);
 
 const SYNONYM_GROUPS: string[][] = [
+  // Financial & Pricing
   ['budget', 'budgets', 'cost', 'costs', 'pricing', 'price', 'fee', 'fees', 'rate', 'rates', 'quote', 'financial', 'allocation', 'fund', 'funds', '$', 'usd', 'eur'],
   ['price', 'prices', 'pricing', 'cost', 'costs', 'fee', 'fees', 'rate', 'rates', 'charge', 'charges', 'quote', 'package', 'packages', 'tier', 'tiers', '$', 'usd', 'eur'],
-  ['service', 'services', 'offering', 'offerings', 'package', 'packages', 'menu', 'treatment', 'treatments', 'options'],
-  ['haircut', 'cut', 'hair', 'trim', 'fade', 'beard', 'shave', 'styling', 'barber'],
-  ['appointment', 'booking', 'reserve', 'reservation', 'schedule', 'slot', 'book'],
-  ['hour', 'hours', 'timing', 'schedule', 'open', 'opening', 'close', 'closing', 'time', 'days'],
-  ['location', 'address', 'directions', 'where', 'place', 'street', 'city'],
+
+  // Services & Offerings
+  ['service', 'services', 'offering', 'offerings', 'package', 'packages', 'menu', 'treatment', 'treatments', 'options', 'catalog'],
+
+  // Scheduling & Appointments
+  ['appointment', 'booking', 'reserve', 'reservation', 'schedule', 'slot', 'book', 'session', 'consultation'],
+
+  // Operating Hours
+  ['hour', 'hours', 'timing', 'schedule', 'open', 'opening', 'close', 'closing', 'time', 'days', 'availability'],
+
+  // Location & Contact
+  ['location', 'address', 'directions', 'where', 'place', 'street', 'city', 'office', 'facility'],
+  ['contact', 'phone', 'email', 'call', 'reach', 'message', 'support'],
+
+  // Industry: Barbershop & Salon
+  ['haircut', 'cut', 'hair', 'trim', 'fade', 'beard', 'shave', 'styling', 'barber', 'salon', 'grooming'],
+
+  // Industry: Healthcare, Medical & Dental
+  ['doctor', 'physician', 'practitioner', 'specialist', 'dentist', 'clinic', 'hospital'],
+  ['dental', 'dentist', 'teeth', 'tooth', 'cleaning', 'whitening', 'cavity', 'filling', 'crown', 'implant', 'braces', 'extraction'],
+  ['health', 'medical', 'therapy', 'patient', 'diagnosis', 'treatment', 'prescription', 'checkup', 'exam', 'examination'],
+
+  // Industry: Legal & Professional Services
+  ['legal', 'lawyer', 'attorney', 'counsel', 'litigation', 'lawsuit', 'advocate', 'counselor'],
+  ['contract', 'agreement', 'clause', 'settlement', 'dispute', 'compliance', 'case', 'retainer'],
+
+  // Industry: Real Estate & Property
+  ['property', 'listing', 'listings', 'home', 'homes', 'house', 'houses', 'apartment', 'apartments', 'condo', 'realtor', 'broker', 'lease', 'rent', 'rental', 'mortgage'],
+
+  // Industry: Fitness & Gym
+  ['gym', 'fitness', 'workout', 'exercise', 'training', 'trainer', 'coach', 'membership', 'cardio', 'weight', 'class', 'classes'],
+
+  // Industry: SaaS & Software
+  ['software', 'saas', 'platform', 'app', 'application', 'feature', 'features', 'integration', 'integrations', 'api', 'webhook', 'subscription', 'upgrade'],
+
+  // Industry: E-Commerce & Retail
+  ['product', 'products', 'item', 'items', 'order', 'orders', 'shipping', 'delivery', 'return', 'returns', 'refund', 'refunds', 'cart', 'checkout', 'inventory', 'stock'],
 ];
 
 function stemWord(word: string): string {

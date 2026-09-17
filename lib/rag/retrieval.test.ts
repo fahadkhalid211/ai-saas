@@ -49,6 +49,28 @@ describe('Vector Math and Hybrid Retrieval', () => {
       expect(scorePrice).toBeGreaterThan(0);
       expect(scoreHaircut).toBeGreaterThan(0);
     });
+
+    it('should match multi-industry synonyms across healthcare, legal, real estate, and saas', () => {
+      // Healthcare & Dental
+      const dentalContent = 'We offer teeth cleaning, cavity treatment, and dental crowns.';
+      expect(keywordRelevance('dentist appointment', dentalContent)).toBeGreaterThan(0);
+
+      // Legal
+      const legalContent = 'Our law firm handles contract disputes, litigation, and attorney counsel.';
+      expect(keywordRelevance('lawyer consultation', legalContent)).toBeGreaterThan(0);
+
+      // Real Estate
+      const realEstateContent = 'Browse luxury homes, condos, and apartment listings for lease.';
+      expect(keywordRelevance('property for rent', realEstateContent)).toBeGreaterThan(0);
+
+      // Fitness & Gym
+      const gymContent = 'Daily fitness classes with a certified personal trainer.';
+      expect(keywordRelevance('workout coach', gymContent)).toBeGreaterThan(0);
+
+      // SaaS
+      const saasContent = 'Enterprise software platform with webhook and api integrations.';
+      expect(keywordRelevance('app subscription features', saasContent)).toBeGreaterThan(0);
+    });
   });
 
   describe('reciprocalRankFusion (RRF)', () => {

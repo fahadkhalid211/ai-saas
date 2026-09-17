@@ -29,7 +29,7 @@ export async function extractWithVisionAI(
     '2. Describe what this product, graphic, icon, or diagram represents, noting key visual elements (e.g. logos, badges, messaging channels, charts).\n' +
     'Format clearly under "### Transcribed Text:" and "### Visual Description:". Output only the factual information.';
 
-  // 1. Try Groq with qwen/qwen3.8-27b (Fastest, highest accuracy, zero reasoning overhead)
+  // 1. Try Groq with llama-3.2-11b-vision-preview (Fast multimodal inference)
   const groqKey = options?.apiKey || process.env.GROQ_API_KEY;
   const isGroq = (options?.provider || 'groq').toLowerCase() === 'groq' || groqKey?.startsWith('gsk_');
 
@@ -42,7 +42,7 @@ export async function extractWithVisionAI(
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: 'qwen/qwen3.8-27b',
+          model: 'llama-3.2-11b-vision-preview',
           max_tokens: 600,
           messages: [
             {
@@ -110,42 +110,48 @@ export async function extractWithVisionAI(
     }
   }
 
-  // 3. Try Gemini with gemini-3.6-flash
+  // 3. Try Gemini with gemini-2.0-flash (fallback to gemini-1.5-flash)
   const geminiKey = options?.apiKey || process.env.GEMINI_API_KEY;
   const isGemini = (options?.provider || '').toLowerCase() === 'gemini' || geminiKey?.startsWith('AIza');
 
   if (geminiKey && isGemini) {
-    try {
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${geminiKey}`;
-      const res = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [
-            {
-              parts: [
-                { text: prompt },
-                {
-                  inlineData: {
-                    mimeType,
-                    data: base64Data,
+    const modelsToTry = ['gemini-2.0-flash', 'gemini-1.5-flash'];
+    for (const geminiModel of modelsToTry) {
+      try {
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/${geminiModel}:generateContent?key=${geminiKey}`;
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [
+              {
+                parts: [
+                  { text: prompt },
+                  {
+                    inlineData: {
+                      mimeType,
+                      data: base64Data,
+                    },
                   },
-                },
-              ],
-            },
-          ],
-        }),
-      });
+                ],
+              },
+            ],
+          }),
+        });
 
-      if (res.ok) {
-        const data = await res.json();
-        const content = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
-        if (content && content.length > 10) {
-          return { text: content, source: 'gemini' };
+        if (res.ok) {
+          const data = await res.json();
+          const content = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+          if (content && content.length > 10) {
+            return { text: content, source: 'gemini' };
+          }
+        } else {
+          const errJson = await res.json().catch(() => null);
+          console.warn(`Gemini vision API error (${geminiModel}):`, errJson?.error?.message || res.statusText);
         }
+      } catch (geminiErr) {
+        console.warn(`Failed Gemini vision call (${geminiModel}):`, geminiErr);
       }
-    } catch (geminiErr) {
-      console.warn('Failed Gemini vision call:', geminiErr);
     }
   }
 

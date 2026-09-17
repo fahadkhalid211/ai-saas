@@ -14,7 +14,8 @@ process.stdin.on('end', async () => {
   try {
     const buffer = Buffer.concat(input);
     const mod = Tesseract.default || Tesseract;
-    const ret = await mod.recognize(buffer, 'eng');
+    const lang = process.env.OCR_LANG || 'eng';
+    const ret = await mod.recognize(buffer, lang);
     const out = {
       text: (ret && ret.data && ret.data.text) ? ret.data.text : '',
       confidence: (ret && ret.data && ret.data.confidence) ? ret.data.confidence : 0,
@@ -32,20 +33,23 @@ import sharp from 'sharp';
 
 /**
  * Extracts text from an image buffer using Tesseract OCR in a standalone Node subprocess.
- * Preprocesses low-resolution images with Sharp (lanczos3 upscaling and sharpening)
- * for significantly improved character recognition.
+ * Preprocesses noisy/low-resolution images with Sharp (grayscale conversion, contrast
+ * normalisation, lanczos3 upscaling, and sharpening) for significantly improved character recognition.
  */
 export async function extractTextFromImage(rawBuffer: Buffer, timeoutMs = 15000): Promise<OcrResult> {
   let buffer = rawBuffer;
   try {
-    const meta = await sharp(rawBuffer).metadata();
+    let pipeline = sharp(rawBuffer);
+    const meta = await pipeline.metadata();
+
+    // Convert to grayscale and normalise contrast for binarization and cleaner text edge detection
+    pipeline = pipeline.grayscale().normalise().sharpen();
+
     if (meta.width && meta.height && (meta.width < 900 || meta.height < 900)) {
       const scale = Math.min(4, Math.max(2, Math.ceil(900 / Math.max(meta.width, meta.height))));
-      buffer = await sharp(rawBuffer)
-        .resize({ width: meta.width * scale, height: meta.height * scale, kernel: 'lanczos3' })
-        .sharpen()
-        .toBuffer();
+      pipeline = pipeline.resize({ width: meta.width * scale, height: meta.height * scale, kernel: 'lanczos3' });
     }
+    buffer = await pipeline.toBuffer();
   } catch {
     // If sharp fails or format unsupported, use original buffer
     buffer = rawBuffer;

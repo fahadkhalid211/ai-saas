@@ -1,6 +1,7 @@
 import { Database } from '../db';
 import { generateEmbedding } from './embedder';
 import { Citation, SearchResultChunk } from './types';
+import { rerankCandidates, deduplicateChunks } from './rerank';
 
 export interface RetrievalResult {
   condensedQuery: string;
@@ -253,7 +254,14 @@ export async function retrieveRelevantContext(
       chunks = chunks.slice(0, effectiveTopK);
     }
   } else {
-    chunks = chunks.slice(0, topK);
+    chunks = chunks.slice(0, topK * 2);
+  }
+
+  // 3.8. Semantic Reranking & Near-Duplicate Deduplication
+  if (chunks.length > 1 && !isOverview && !isCountQuery) {
+    chunks = rerankCandidates(condensedQuery, chunks, effectiveTopK);
+  } else if (chunks.length > 1) {
+    chunks = deduplicateChunks(chunks);
   }
 
   // 4. Internal Knowledge Base Citations - Strictly disabled for internal knowledge base

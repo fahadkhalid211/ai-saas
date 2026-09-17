@@ -128,6 +128,57 @@ export function chunkDocument(
   }
 
   // Case 2: Standard unstructured text (PDF, DOCX, TXT, Description)
+  // Check if document contains Markdown headings or clear section delimiters
+  const structuralSections = extractStructuralSections(doc.content);
+  if (structuralSections.length > 0) {
+    // Structure-aware: keep headings with their content
+    for (let sIdx = 0; sIdx < structuralSections.length; sIdx++) {
+      const sec = structuralSections[sIdx];
+      const trimmedText = (sec.text || '').trim();
+      if (!trimmedText) continue;
+
+      const secHeading = sec.heading ? sec.heading.trim() : undefined;
+      const secText = secHeading ? `### ${secHeading}\n\n${trimmedText}` : trimmedText;
+
+      if (secText.length <= maxChars) {
+        chunks.push({
+          content: secText,
+          chunkIndex: chunks.length,
+          tokenCount: Math.ceil(secText.length / 4),
+          metadata: {
+            sourceTitle: doc.title,
+            sourceType: doc.type,
+            section: secHeading || `Section ${sIdx + 1}`,
+            ...doc.metadata,
+          },
+        });
+      } else {
+        const headerReserve = secHeading ? secHeading.length + 30 : 0;
+        const subChunks = splitTextByDelimiters(trimmedText, maxChars - headerReserve, overlap);
+        subChunks.forEach((sub, subIdx) => {
+          const subContent = secHeading
+            ? `### ${secHeading}${subChunks.length > 1 ? ` (Part ${subIdx + 1})` : ''}\n\n${sub}`
+            : sub;
+          chunks.push({
+            content: subContent,
+            chunkIndex: chunks.length,
+            tokenCount: Math.ceil(subContent.length / 4),
+            metadata: {
+              sourceTitle: doc.title,
+              sourceType: doc.type,
+              section: secHeading || `Section ${sIdx + 1}`,
+              ...doc.metadata,
+            },
+          });
+        });
+      }
+    }
+    if (chunks.length > 0) {
+      return chunks;
+    }
+  }
+
+  // Fallback: Standard unstructured text splitting
   const rawChunks = splitTextByDelimiters(doc.content, maxChars, overlap);
   rawChunks.forEach((chunkText, idx) => {
     chunks.push({
@@ -143,6 +194,60 @@ export function chunkDocument(
   });
 
   return chunks;
+}
+
+/**
+ * Extracts structural sections from markdown or formatted document text
+ * based on headings (#, ##, ###), Q&A prefixes, or uppercase section titles.
+ */
+export function extractStructuralSections(text: string): { heading?: string; text: string }[] {
+  if (!text || !text.trim()) return [];
+  const lines = text.split('\n');
+  const sections: { heading?: string; text: string }[] = [];
+  let currentHeading: string | undefined;
+  let currentLines: string[] = [];
+
+  const flush = (nextHeading?: string) => {
+    const joined = currentLines.join('\n').trim();
+    if (joined) {
+      sections.push({
+        heading: currentHeading,
+        text: joined,
+      });
+      currentHeading = nextHeading;
+    } else if (currentHeading && nextHeading) {
+      currentHeading = `${currentHeading}: ${nextHeading}`;
+    } else if (nextHeading) {
+      currentHeading = nextHeading;
+    }
+    currentLines = [];
+  };
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const trimmed = line.trim();
+
+    // Match Markdown headings (# Title, ## Section, ### Sub)
+    const mdMatch = trimmed.match(/^(#{1,4})\s+(.+)$/);
+    // Match Q&A patterns (Q: ... or Question: ...)
+    const qaMatch = trimmed.match(/^(Q(?:uestion)?:\s*.+)$/i);
+    // Match All-Caps section headers (e.g. "PRICING & PACKAGES", "TERMS OF SERVICE:")
+    const allCapsMatch =
+      trimmed.length >= 4 &&
+      trimmed.length <= 60 &&
+      /^[A-Z0-9\s:_\-–&]{4,60}:?$/.test(trimmed) &&
+      /[A-Z]/.test(trimmed);
+
+    if (mdMatch || qaMatch || allCapsMatch) {
+      const detected = mdMatch ? mdMatch[2].trim() : trimmed.replace(/:$/, '');
+      flush(detected);
+    } else {
+      currentLines.push(line);
+    }
+  }
+
+  flush();
+  return sections;
 }
 
 function splitTextByDelimiters(text: string, maxChars: number, overlap: number): string[] {
