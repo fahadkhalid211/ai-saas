@@ -777,6 +777,8 @@ export default function DashboardPage() {
                 addonSuccessMsg={landing.addonSuccessMsg}
                 addonErrorMsg={landing.addonErrorMsg}
                 setShowNewPageModal={landing.setShowNewPageModal}
+                showQuotaModal={landing.showQuotaModal}
+                setShowQuotaModal={landing.setShowQuotaModal}
                 handlePurchaseExtraLandingPage={landing.handlePurchaseExtraLandingPage}
                 handleSaveLandingConfig={landing.handleSaveLandingConfig}
                 handleDeleteLandingPage={landing.handleDeleteLandingPage}

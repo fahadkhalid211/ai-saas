@@ -7,6 +7,7 @@ import { isWebSearchIntent, extractSearchQuery, executeWebSearch } from '@/lib/r
 import { parseFileOrText } from '@/lib/rag/parsers';
 import { enforceRateLimit, enforceGlobalRateLimit, enforceRateLimitByKey } from '@/lib/security/rate-limit';
 import { generateConversationAccessToken } from '@/lib/security/auth';
+import { validateChatPayload } from '@/lib/security/validation';
 
 // Streamed responses (token-by-token LLM output, plus an optional live web
 // search round-trip) can run well past a short default function timeout.
@@ -41,15 +42,22 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { assistantId, messages, visitorId, conversationId, preferredLanguage, attachment, landingPageSlug } = body;
 
-    if (!assistantId) {
-      return NextResponse.json({ error: 'assistantId is required' }, { status: 400 });
+    const validation = validateChatPayload(body);
+    if (!validation.valid || !validation.sanitized) {
+      const firstError = Object.values(validation.errors)[0] || 'Invalid chat payload';
+      return NextResponse.json({ error: firstError, errors: validation.errors }, { status: 400 });
     }
 
-    if (!messages || !Array.isArray(messages) || messages.length === 0) {
-      return NextResponse.json({ error: 'messages array is required' }, { status: 400 });
-    }
+    const {
+      assistantId,
+      messages,
+      visitorId,
+      conversationId,
+      preferredLanguage,
+      landingPageSlug,
+    } = validation.sanitized;
+    const attachment = body?.attachment;
 
     let assistant = await Database.getAssistantById(assistantId);
     if (!assistant) {

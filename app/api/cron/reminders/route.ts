@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { processScheduledReminders } from '@/lib/reminders';
 import { getAdminKey, verifyAdminRequest } from '@/lib/security/auth';
+import { timingSafeStringEqual } from '@/lib/security/password';
 
 export const dynamic = 'force-dynamic';
 
@@ -15,7 +16,7 @@ export async function GET(request: NextRequest) {
     const token = authHeader?.replace(/^Bearer\s+/i, '') || secretHeader || queryKey;
     const isSessionAuthed = await verifyAdminRequest(request);
 
-    if (!isSessionAuthed && (!token || token !== expectedKey)) {
+    if (!isSessionAuthed && (!token || !timingSafeStringEqual(token, expectedKey))) {
       return NextResponse.json({ error: 'Unauthorized cron access' }, { status: 401 });
     }
 

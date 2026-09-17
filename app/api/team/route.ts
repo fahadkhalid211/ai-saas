@@ -1,14 +1,18 @@
 import { NextResponse } from 'next/server';
 import { Database, sanitizeTeamMember } from '@/lib/db';
-import { withAdminAuth } from '@/lib/security/auth';
+import { withAdminAuth, getAuthContext } from '@/lib/security/auth';
 import { getClientIp } from '@/lib/security/rate-limit';
 
 export const dynamic = 'force-dynamic';
 
 export const GET = withAdminAuth(async (req: Request) => {
   try {
+    const ctx = await getAuthContext(req);
     const { searchParams } = new URL(req.url);
-    const workspaceId = searchParams.get('workspaceId') || 'default-workspace';
+    const requestedWs = searchParams.get('workspaceId');
+    const workspaceId = (ctx.memberId === 'master-admin' && requestedWs)
+      ? requestedWs
+      : (ctx.workspaceId && ctx.workspaceId !== '*' ? ctx.workspaceId : (requestedWs || 'default-workspace'));
 
     const members = await Database.getTeamMembers(workspaceId);
     return NextResponse.json({ members: members.map(sanitizeTeamMember) });
@@ -19,8 +23,9 @@ export const GET = withAdminAuth(async (req: Request) => {
 
 export const POST = withAdminAuth(async (req: Request) => {
   try {
+    const ctx = await getAuthContext(req);
     const body = await req.json();
-    const { name, email, role = 'support_agent', workspaceId = 'default-workspace' } = body;
+    const { name, email, role = 'support_agent', workspaceId: requestedWs } = body;
 
     if (!name || !name.trim() || !email || !email.trim() || !email.includes('@')) {
       return NextResponse.json({ error: 'Valid name and email address are required' }, { status: 400 });
@@ -31,8 +36,12 @@ export const POST = withAdminAuth(async (req: Request) => {
       return NextResponse.json({ error: 'A team member with this email already exists' }, { status: 400 });
     }
 
+    const targetWorkspaceId = (ctx.memberId === 'master-admin' && requestedWs)
+      ? requestedWs
+      : (ctx.workspaceId && ctx.workspaceId !== '*' ? ctx.workspaceId : (requestedWs || 'default-workspace'));
+
     const member = await Database.addTeamMember({
-      workspaceId,
+      workspaceId: targetWorkspaceId,
       name: name.trim(),
       email: email.trim().toLowerCase(),
       role,
@@ -41,7 +50,7 @@ export const POST = withAdminAuth(async (req: Request) => {
 
     const ip = getClientIp(req);
     await Database.addAuditLog({
-      actor: { id: 'admin', name: 'Master Admin', ip },
+      actor: { id: ctx.memberId || 'admin', name: ctx.role || 'Master Admin', ip },
       action: 'team.member_invited',
       targetType: 'team_member',
       targetId: member.id,
@@ -65,11 +74,20 @@ export const POST = withAdminAuth(async (req: Request) => {
 
 export const PUT = withAdminAuth(async (req: Request) => {
   try {
+    const ctx = await getAuthContext(req);
     const body = await req.json();
     const { id, role, status, name } = body;
 
     if (!id) {
       return NextResponse.json({ error: 'Member ID required' }, { status: 400 });
+    }
+
+    if (ctx.workspaceId !== '*') {
+      const members = await Database.getTeamMembers(ctx.workspaceId);
+      const member = members.find((m) => m.id === id);
+      if (!member) {
+        return NextResponse.json({ error: 'Team member not found or forbidden' }, { status: 404 });
+      }
     }
 
     const updated = await Database.updateTeamMember(id, {
@@ -84,7 +102,7 @@ export const PUT = withAdminAuth(async (req: Request) => {
 
     const ip = getClientIp(req);
     await Database.addAuditLog({
-      actor: { id: 'admin', name: 'Master Admin', ip },
+      actor: { id: ctx.memberId || 'admin', name: ctx.role || 'Master Admin', ip },
       action: 'team.member_updated',
       targetType: 'team_member',
       targetId: id,
@@ -99,6 +117,7 @@ export const PUT = withAdminAuth(async (req: Request) => {
 
 export const DELETE = withAdminAuth(async (req: Request) => {
   try {
+    const ctx = await getAuthContext(req);
     const { searchParams } = new URL(req.url);
     const id = searchParams.get('id');
 
@@ -106,8 +125,12 @@ export const DELETE = withAdminAuth(async (req: Request) => {
       return NextResponse.json({ error: 'id query parameter required' }, { status: 400 });
     }
 
-    const members = await Database.getTeamMembers();
+    const members = await Database.getTeamMembers(ctx.workspaceId !== '*' ? ctx.workspaceId : undefined);
     const member = members.find((m) => m.id === id);
+
+    if (!member) {
+      return NextResponse.json({ error: 'Team member not found or forbidden' }, { status: 404 });
+    }
 
     if (member?.role === 'owner') {
       const ownerCount = members.filter((m) => m.role === 'owner').length;
@@ -123,7 +146,7 @@ export const DELETE = withAdminAuth(async (req: Request) => {
 
     const ip = getClientIp(req);
     await Database.addAuditLog({
-      actor: { id: 'admin', name: 'Master Admin', ip },
+      actor: { id: ctx.memberId || 'admin', name: ctx.role || 'Master Admin', ip },
       action: 'team.member_removed',
       targetType: 'team_member',
       targetId: id,

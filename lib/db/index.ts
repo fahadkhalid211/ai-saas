@@ -788,10 +788,13 @@ export class Database {
     }));
   }
 
-  static async getAssistantById(id: string): Promise<AssistantData | null> {
+  static async getAssistantById(id: string, workspaceId?: string): Promise<AssistantData | null> {
     const state = await ensureInitialized();
     const a = state.assistants.find((ast) => ast.id === id);
     if (!a) return null;
+    if (workspaceId && workspaceId !== '*' && (a.workspaceId || 'default-workspace') !== workspaceId) {
+      return null;
+    }
     return {
       ...a,
       apiKeyEncrypted: decryptSecret(a.apiKeyEncrypted || ''),
@@ -856,13 +859,20 @@ export class Database {
     };
   }
 
-  static async updateAssistant(id: string, data: Partial<AssistantData>): Promise<AssistantData | null> {
+  static async updateAssistant(id: string, data: Partial<AssistantData>, workspaceId?: string): Promise<AssistantData | null> {
     const state = await ensureInitialized();
     const idx = state.assistants.findIndex((a) => a.id === id);
     if (idx === -1) return null;
 
     const current = state.assistants[idx];
+    if (workspaceId && workspaceId !== '*' && (current.workspaceId || 'default-workspace') !== workspaceId) {
+      return null;
+    }
+
     const updates = { ...data };
+    if (workspaceId && workspaceId !== '*') {
+      delete updates.workspaceId;
+    }
 
     // Handle encrypted fields: Only update if a new unmasked value was provided
     if (updates.apiKeyEncrypted !== undefined) {
@@ -911,8 +921,14 @@ export class Database {
     };
   }
 
-  static async deleteAssistant(id: string): Promise<boolean> {
+  static async deleteAssistant(id: string, workspaceId?: string): Promise<boolean> {
     const state = await ensureInitialized();
+    const existing = state.assistants.find((a) => a.id === id);
+    if (!existing) return false;
+    if (workspaceId && workspaceId !== '*' && (existing.workspaceId || 'default-workspace') !== workspaceId) {
+      return false;
+    }
+
     state.assistants = state.assistants.filter((a) => a.id !== id);
     state.knowledgeSources = state.knowledgeSources.filter((k) => k.assistantId !== id);
     const remainingChunks = state.chunks.filter((c) => c.assistantId !== id);
@@ -1032,8 +1048,23 @@ export class Database {
     return source;
   }
 
-  static async deleteKnowledgeSource(id: string): Promise<boolean> {
-    const state = await ensureInitialized();
+  static async deleteKnowledgeSource(id: string, workspaceId?: string): Promise<boolean> {
+    let state = await ensureInitialized();
+    let source = (state.knowledgeSources || []).find((k) => k.id === id);
+    if (!source) {
+      state = await ensureInitialized(true);
+      source = (state.knowledgeSources || []).find((k) => k.id === id);
+    }
+    if (!source) return false;
+
+    if (workspaceId && workspaceId !== '*') {
+      const ast = (state.assistants || []).find((a) => a.id === source.assistantId);
+      const sourceWs = ast ? (ast.workspaceId || 'default-workspace') : null;
+      if (!sourceWs || sourceWs !== workspaceId) {
+        return false;
+      }
+    }
+
     state.knowledgeSources = state.knowledgeSources.filter((k) => k.id !== id);
     const remainingChunks = state.chunks.filter((c) => c.knowledgeSourceId !== id);
     await saveChunksState(remainingChunks, true);
@@ -1147,25 +1178,44 @@ export class Database {
   }
 
   // Conversations & Messages
-  static async getConversations(assistantId?: string): Promise<ConversationData[]> {
+  static async getConversations(assistantId?: string, workspaceId?: string): Promise<ConversationData[]> {
     const state = await ensureInitialized(true);
     const allConvs = state.conversations || [];
     let matched: ConversationData[] = [];
 
-    if (!assistantId) {
-      matched = allConvs;
-    } else {
-      matched = allConvs.filter((c) => matchesAssistant(c.assistantId, assistantId, state));
-      if (matched.length === 0) {
+    if (workspaceId && workspaceId !== '*') {
+      const wsAssistantIds = new Set(
+        (state.assistants || [])
+          .filter((a) => (a.workspaceId || 'default-workspace') === workspaceId)
+          .map((a) => a.id)
+      );
+
+      if (!assistantId) {
+        matched = allConvs.filter((c) => wsAssistantIds.has(c.assistantId));
+      } else {
         const targetAst = (state.assistants || []).find((a) => a.id === assistantId);
-        const targetWs = targetAst?.workspaceId || 'default-workspace';
-        const workspaceConvs = allConvs.filter((c) => {
-          const cAst = (state.assistants || []).find((ast) => ast.id === c.assistantId);
-          const cWs = cAst?.workspaceId || 'default-workspace';
-          return cWs === targetWs;
-        });
-        if (workspaceConvs.length > 0) {
-          matched = workspaceConvs;
+        if (targetAst && (targetAst.workspaceId || 'default-workspace') !== workspaceId) {
+          matched = [];
+        } else {
+          matched = allConvs.filter((c) => matchesAssistant(c.assistantId, assistantId, state) && wsAssistantIds.has(c.assistantId));
+        }
+      }
+    } else {
+      if (!assistantId) {
+        matched = allConvs;
+      } else {
+        matched = allConvs.filter((c) => matchesAssistant(c.assistantId, assistantId, state));
+        if (matched.length === 0) {
+          const targetAst = (state.assistants || []).find((a) => a.id === assistantId);
+          const targetWs = targetAst?.workspaceId || 'default-workspace';
+          const workspaceConvs = allConvs.filter((c) => {
+            const cAst = (state.assistants || []).find((ast) => ast.id === c.assistantId);
+            const cWs = cAst?.workspaceId || 'default-workspace';
+            return cWs === targetWs;
+          });
+          if (workspaceConvs.length > 0) {
+            matched = workspaceConvs;
+          }
         }
       }
     }
@@ -1518,9 +1568,19 @@ export class Database {
     return true;
   }
 
-  static async deleteAppointment(id: string): Promise<boolean> {
+  static async deleteAppointment(id: string, workspaceId?: string): Promise<boolean> {
     const state = await ensureInitialized(true);
     if (!state.appointments) return false;
+    const apt = state.appointments.find((a) => a.id === id);
+    if (!apt) return false;
+
+    if (workspaceId && workspaceId !== '*') {
+      const ast = (state.assistants || []).find((a) => a.id === apt.assistantId);
+      if (ast && (ast.workspaceId || 'default-workspace') !== workspaceId) {
+        return false;
+      }
+    }
+
     state.appointments = state.appointments.filter((a) => a.id !== id);
     await saveState(state);
     return true;
@@ -2771,7 +2831,7 @@ export class Database {
     };
   }
 
-  static async deleteLandingPage(idOrSlug: string, optionalSlug?: string): Promise<boolean> {
+  static async deleteLandingPage(idOrSlug: string, optionalSlug?: string, workspaceId?: string): Promise<boolean> {
     const state = await ensureInitialized(true);
     state.landingPagesInitialized = true;
     if (!state.landingPages) {
@@ -2780,6 +2840,27 @@ export class Database {
 
     const targetClean = (idOrSlug || '').trim().toLowerCase();
     const slugClean = (optionalSlug || '').trim().toLowerCase();
+
+    if (workspaceId && workspaceId !== '*') {
+      const page = (state.landingPages || []).find((p) => {
+        const pId = (p.id || '').trim().toLowerCase();
+        const pSlug = (p.slug || '').trim().toLowerCase();
+        return (targetClean && (pId === targetClean || pSlug === targetClean)) ||
+               (slugClean && (pId === slugClean || pSlug === slugClean));
+      });
+
+      if (page) {
+        let pageWs = page.workspaceId;
+        if (!pageWs && page.assistantId) {
+          const ast = (state.assistants || []).find((a) => a.id === page.assistantId);
+          pageWs = ast?.workspaceId;
+        }
+        pageWs = pageWs || 'default-workspace';
+        if (pageWs !== workspaceId) {
+          return false;
+        }
+      }
+    }
 
     const targets = new Set<string>();
     if (targetClean) targets.add(targetClean);

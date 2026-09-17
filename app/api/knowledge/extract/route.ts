@@ -3,7 +3,7 @@ import { Database } from '@/lib/db';
 import { parseFileOrText, isMediaFile, isVideoFile, isAudioFile } from '@/lib/rag/parsers';
 import { extractFromUrl } from '@/lib/rag/url-extractor';
 import { diagnoseKnowledgeFailure } from '@/lib/rag/diagnostics';
-import { withAdminAuth } from '@/lib/security/auth';
+import { withAdminAuth, getAuthContext } from '@/lib/security/auth';
 import { validateSafeExternalUrl } from '@/lib/security/ssrf';
 
 export const dynamic = 'force-dynamic';
@@ -15,6 +15,7 @@ export const POST = withAdminAuth(async (req: Request) => {
   let activeFileSize = 0;
 
   try {
+    const ctx = await getAuthContext(req);
     const contentType = req.headers.get('content-type') || '';
     let assistantId = '';
     let file: File | null = null;
@@ -35,9 +36,9 @@ export const POST = withAdminAuth(async (req: Request) => {
       return NextResponse.json({ success: false, error: 'assistantId is required' }, { status: 400 });
     }
 
-    const assistant = await Database.getAssistantById(assistantId);
+    const assistant = await Database.getAssistantById(assistantId, ctx.workspaceId);
     if (!assistant) {
-      return NextResponse.json({ success: false, error: 'Assistant not found' }, { status: 404 });
+      return NextResponse.json({ success: false, error: 'Assistant not found or forbidden' }, { status: 404 });
     }
 
     // Extraction Mode 1: File Extraction (PDF, DOCX, CSV, Image, Audio, Video)

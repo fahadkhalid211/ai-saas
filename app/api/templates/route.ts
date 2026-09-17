@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { Database } from '@/lib/db';
-import { BOT_TEMPLATES } from '@/lib/templates';
+import { BOT_TEMPLATES, findBotTemplate } from '@/lib/templates';
 import { parseFileOrText } from '@/lib/rag/parsers';
 import { chunkDocument } from '@/lib/rag/chunker';
 import { generateEmbeddingsBatch } from '@/lib/rag/embedder';
@@ -16,7 +16,7 @@ export const POST = withAdminAuth(async (req: Request) => {
     const body = await req.json();
     const { templateId, assistantId, seedKnowledge = true } = body;
 
-    const template = BOT_TEMPLATES.find((t) => t.id === templateId);
+    const template = findBotTemplate(templateId) || BOT_TEMPLATES.find((t) => t.id === templateId);
     if (!template) {
       return NextResponse.json({ error: 'Template not found' }, { status: 404 });
     }

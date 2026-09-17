@@ -4,7 +4,7 @@ import { extractFromUrl } from '@/lib/rag/url-extractor';
 import { chunkDocument } from '@/lib/rag/chunker';
 import { generateEmbeddingsBatch } from '@/lib/rag/embedder';
 import { diagnoseKnowledgeFailure } from '@/lib/rag/diagnostics';
-import { withAdminAuth } from '@/lib/security/auth';
+import { withAdminAuth, getAuthContext } from '@/lib/security/auth';
 import { validateSafeExternalUrl } from '@/lib/security/ssrf';
 
 // Webpage scraping falls back through up to three tiers (direct fetch, curl,
@@ -14,6 +14,7 @@ export const maxDuration = 300;
 
 export const POST = withAdminAuth(async (req: Request) => {
   try {
+    const ctx = await getAuthContext(req);
     const body = await req.json();
     const { assistantId, url, customTitle } = body;
 
@@ -36,9 +37,9 @@ export const POST = withAdminAuth(async (req: Request) => {
       );
     }
 
-    const assistant = await Database.getAssistantById(assistantId);
+    const assistant = await Database.getAssistantById(assistantId, ctx.workspaceId);
     if (!assistant) {
-      return NextResponse.json({ error: 'Assistant not found' }, { status: 404 });
+      return NextResponse.json({ error: 'Assistant not found or forbidden' }, { status: 404 });
     }
 
     // 1. Create Knowledge Source in DB

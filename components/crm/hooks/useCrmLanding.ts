@@ -47,6 +47,7 @@ export function useCrmLanding({
   const [addonSuccessMsg, setAddonSuccessMsg] = useState<string | null>(null);
   const [addonErrorMsg, setAddonErrorMsg] = useState<string | null>(null);
   const [showNewPageModal, setShowNewPageModal] = useState(false);
+  const [showQuotaModal, setShowQuotaModal] = useState(false);
   const [newPageName, setNewPageName] = useState('');
   const [newPageSlug, setNewPageSlug] = useState('');
   const [newPageIndustry, setNewPageIndustry] = useState('barbershop');
@@ -103,6 +104,7 @@ export function useCrmLanding({
       await fetchAllLandingPages();
       await fetchBilling();
       await fetchNotifications();
+      setShowQuotaModal(false);
       setTimeout(() => setAddonSuccessMsg(null), 5000);
     } catch (err: any) {
       setAddonErrorMsg(err.message);
@@ -139,6 +141,11 @@ export function useCrmLanding({
 
       const data = await res.json();
       if (!res.ok) {
+        if (res.status === 403 || data.quotaReached || data.error?.toLowerCase().includes('quota')) {
+          setShowQuotaModal(true);
+          setShowNewPageModal(false);
+          return;
+        }
         throw new Error(data.error || 'Failed to create new landing page');
       }
 
@@ -151,7 +158,12 @@ export function useCrmLanding({
       setPresetNotice('Created new landing page: ' + newConfig.businessName);
       setTimeout(() => setPresetNotice(null), 4000);
     } catch (err: any) {
-      alert(err.message);
+      if (err.message?.toLowerCase().includes('quota') || err.message?.toLowerCase().includes('slot') || err.message?.toLowerCase().includes('limit')) {
+        setShowQuotaModal(true);
+        setShowNewPageModal(false);
+      } else {
+        setSaveLandingError(err.message || 'Failed to create new landing page');
+      }
     }
   };
 
@@ -265,7 +277,7 @@ export function useCrmLanding({
       // Re-sync with backend
       await fetchAllLandingPages();
     } catch (err: any) {
-      alert(err.message || 'Failed to delete landing page');
+      setSaveLandingError(err.message || 'Failed to delete landing page');
     } finally {
       setIsDeletingLandingPage(false);
       setDeletingPageId(null);
@@ -285,6 +297,10 @@ export function useCrmLanding({
   };
 
   const handleStartCreateWizard = () => {
+    if (landingPageLimits.currentCount >= landingPageLimits.totalAllowed) {
+      setShowQuotaModal(true);
+      return;
+    }
     setViewMode('create_wizard');
   };
 
@@ -315,23 +331,12 @@ export function useCrmLanding({
       if (!res.ok) {
         throw new Error(data.error || 'Failed to update knowledge base');
       }
-
-      setAllLandingPages((prev) =>
-        prev.map((p) => (p.id === page.id || p.slug === page.slug ? { ...p, assistantId: assistantId || '' } : p))
-      );
-
-      if (landingConfig.id === page.id || landingConfig.slug === page.slug) {
-        setLandingConfig((prev) => ({ ...prev, assistantId: assistantId || '' }));
-      }
-
-      setPresetNotice(
-        assistantId
-          ? `Connected knowledge base to "${page.businessName}".`
-          : `Disconnected knowledge base from "${page.businessName}".`
-      );
-      setTimeout(() => setPresetNotice(null), 4000);
+      await fetchAllLandingPages();
+      setLandingConfig(data.config || updatedConfig);
+      setPresetNotice('Knowledge base updated.');
+      setTimeout(() => setPresetNotice(null), 3000);
     } catch (err: any) {
-      alert(err.message || 'Failed to update knowledge base');
+      setSaveLandingError(err.message || 'Failed to update knowledge base');
     }
   };
 
@@ -356,6 +361,9 @@ export function useCrmLanding({
 
       const data = await res.json();
       if (!res.ok) {
+        if (res.status === 403 || data.quotaReached || data.error?.toLowerCase().includes('quota')) {
+          setShowQuotaModal(true);
+        }
         throw new Error(data.error || 'Failed to generate landing page with AI');
       }
 
@@ -365,6 +373,9 @@ export function useCrmLanding({
       playNotificationChime();
       return saved;
     } catch (err: any) {
+      if (err.message?.toLowerCase().includes('quota') || err.message?.toLowerCase().includes('slot') || err.message?.toLowerCase().includes('limit')) {
+        setShowQuotaModal(true);
+      }
       throw err;
     }
   };
@@ -381,6 +392,8 @@ export function useCrmLanding({
     setCopiedLandingUrl,
     showCounterQrModal,
     setShowCounterQrModal,
+    showQuotaModal,
+    setShowQuotaModal,
     presetNotice,
     setPresetNotice,
     allLandingPages,

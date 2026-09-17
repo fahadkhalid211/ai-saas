@@ -2,6 +2,7 @@ import { SupportCustomField } from './db';
 
 export interface BotTemplate {
   id: string;
+  aliases?: string[];
   name: string;
   industry: string;
   icon: string;
@@ -25,7 +26,58 @@ export interface BotTemplate {
 
 export const BOT_TEMPLATES: BotTemplate[] = [
   {
-    id: 'template_gym',
+    id: 'classic-barbershop',
+    aliases: ['template_barbershop', 'template_barber', 'barbershop'],
+    name: 'Barbershop & Grooming Salon Bot',
+    industry: 'Barbershop & Grooming',
+    icon: 'Scissors',
+    tagline: 'Book haircuts, beard trims, and hot towel shaves 24/7',
+    description: 'Specialized for barbershops, hair salons, and men grooming studios. Handles appointment slots, pricing, style questions, and automated reminder triage.',
+    primaryColor: '#f59e0b',
+    systemPrompt: `You are the digital front-desk concierge for an artisanal barbershop and grooming studio. Your mission is to greet clients warmly, answer questions about haircuts, skin fades, hot towel shaves, beard trims, and styling products, and guide clients to schedule their appointment. Keep answers stylish, concise, and helpful.`,
+    welcomeMessage: `Welcome! Looking for a clean fade, beard sculpt, or hot towel shave? How can I assist you today?`,
+    fallbackMessage: `I want to make sure you get the best chair and service. Let me connect you with our shop manager:`,
+    starterQuestions: [
+      'What services and haircuts do you offer?',
+      'What are your prices and duration?',
+      'How do I book an appointment?',
+      'Where are you located and what are your hours?',
+    ],
+    collectLeadEmail: true,
+    proactiveMessageEnabled: true,
+    proactiveMessageText: 'Ready for a fresh cut? Book your chair online in under 60 seconds.',
+    proactiveMessageDelay: 5,
+    bookingEnabled: true,
+    bookingProvider: 'direct',
+    bookingPromptText: 'Schedule a Haircut or Beard Grooming',
+    supportCustomFields: [
+      { id: 'barber_pref', label: 'Preferred Barber', type: 'select', required: false, options: ['Any Available Master Barber', 'Senior Stylist', 'Shop Owner'] },
+      { id: 'barber_service', label: 'Service Requested', type: 'select', required: true, options: ['Precision Haircut & Skin Fade', 'Beard Sculpt & Razor Lineup', 'Executive Package (Haircut + Shave)', 'Kids Haircut'] },
+    ],
+    sampleKnowledge: [
+      {
+        title: 'Barbershop Services, Menu & Pricing',
+        content: `Services & Pricing:
+1. Precision Haircut & Skin Fade ($40, 45 min): Tailored scissor work, foil skin fade, and hot lather neck shave.
+2. Beard Sculpt & Razor Lineup ($25, 30 min): Precision clipper trimming, hot towel conditioning, and straight razor edge.
+3. Executive Package ($60, 75 min): Full precision haircut, beard sculpt, hot towel aroma treatment, and styling balm.
+4. Kids Haircut ($30, 30 min): Ages 12 and under.
+Walk-ins are welcomed subject to chair availability, but online appointments take priority.`,
+      },
+      {
+        title: 'Shop Hours, Location & Policies',
+        content: `Hours of Operation:
+Tuesday - Friday: 9:00 AM - 7:00 PM
+Saturday: 8:30 AM - 6:00 PM
+Sunday: 10:00 AM - 4:00 PM
+Monday: Closed for deep sanitization.
+Cancellation Policy: Appointments can be rescheduled or cancelled up to 2 hours before the scheduled time with no penalty.`,
+      },
+    ],
+  },
+  {
+    id: 'fitness-gym',
+    aliases: ['template_gym', 'gym'],
     name: 'Fitness & Gym Membership Bot',
     industry: 'Fitness & Wellness',
     icon: 'Dumbbell',
@@ -72,7 +124,8 @@ Group classes run daily starting at 6:00 AM, with evening slots at 5:30 PM and 6
     ],
   },
   {
-    id: 'template_real_estate',
+    id: 'real-estate',
+    aliases: ['template_real_estate', 'real_estate'],
     name: 'Real Estate & Property Lead Bot',
     industry: 'Real Estate',
     icon: 'Home',
@@ -112,7 +165,8 @@ Seller Services: Free comprehensive home valuation, 4K professional photography,
     ],
   },
   {
-    id: 'template_ecommerce',
+    id: 'ecommerce-store',
+    aliases: ['template_ecommerce', 'ecommerce'],
     name: 'E-Commerce & Online Store Bot',
     industry: 'Retail & E-Commerce',
     icon: 'ShoppingBag',
@@ -154,7 +208,8 @@ Returns & Exchanges:
     ],
   },
   {
-    id: 'template_saas',
+    id: 'b2b-saas',
+    aliases: ['template_saas', 'saas', 'saas-landing'],
     name: 'B2B SaaS & Software Sales Bot',
     industry: 'Technology & SaaS',
     icon: 'Briefcase',
@@ -194,7 +249,8 @@ Security: SOC-2 Type II certified, fully GDPR compliant, AES-256 encryption at r
     ],
   },
   {
-    id: 'template_legal',
+    id: 'legal-law-firm',
+    aliases: ['template_legal', 'legal-firm', 'legal', 'law-firm'],
     name: 'Law Firm & Legal Intake Bot',
     industry: 'Legal Services',
     icon: 'Scale',
@@ -233,7 +289,8 @@ Consultation Details:
     ],
   },
   {
-    id: 'template_healthcare',
+    id: 'dental-clinic',
+    aliases: ['template_healthcare', 'clinic', 'healthcare', 'dental'],
     name: 'Dental & Healthcare Clinic Bot',
     industry: 'Healthcare & Medical',
     icon: 'Activity',
@@ -270,4 +327,171 @@ Emergency Policy: Same-day emergency appointments reserved daily for toothaches,
       },
     ],
   },
+  {
+    id: 'nexus-ai',
+    aliases: ['template_nexus_ai', 'nexus_ai', 'ai_tech'],
+    name: 'Nexus AI Technology Platform Bot',
+    industry: 'AI & Neural Systems',
+    icon: 'Sparkles',
+    tagline: 'Qualify enterprise AI buyers, schedule architecture calls, and demo autonomous agents',
+    description: 'Built for artificial intelligence startups, neural API providers, and autonomous agent platforms. Explains vector retrieval, inference latencies, fine-tuning sprints, and books enterprise demos.',
+    primaryColor: '#6366f1',
+    systemPrompt: `You are the chief AI technical concierge for Nexus AI, a next-generation neural inference and autonomous agent orchestration platform. You explain vector architectures, model fine-tuning, latency SLAs, and enterprise security compliance. Help developers and CTOs explore capabilities and schedule live interactive product demonstrations.`,
+    welcomeMessage: `Welcome to Nexus AI. Ready to deploy autonomous agents and neural inference pipelines? How can I assist you?`,
+    fallbackMessage: `For custom neural fine-tuning and enterprise SLAs, our solutions architecture team is ready to connect with you:`,
+    starterQuestions: [
+      'What models and inference speeds do you support?',
+      'How does agent vector retrieval work?',
+      'Can I book a live technical demo?',
+      'What enterprise security standards do you meet?',
+    ],
+    collectLeadEmail: true,
+    proactiveMessageEnabled: true,
+    proactiveMessageText: 'Deploying custom AI agents? Ask for a live architecture walkthrough!',
+    proactiveMessageDelay: 5,
+    bookingEnabled: true,
+    bookingProvider: 'direct',
+    bookingPromptText: 'Schedule a Live Agent Architecture Demo',
+    supportCustomFields: [
+      { id: 'tech_stack', label: 'Current Tech Stack / Framework', type: 'select', required: true, options: ['Python / LangChain / LlamaIndex', 'TypeScript / Node.js / Next.js', 'Go / Rust microservices', 'Enterprise Java / C#'] },
+      { id: 'volume', label: 'Expected Monthly Token Volume', type: 'select', required: true, options: ['Under 10M tokens', '10M - 100M tokens', '100M - 1B tokens', '1B+ tokens / Dedicated Cluster'] },
+    ],
+    sampleKnowledge: [
+      {
+        title: 'Nexus AI Architecture & Inference Benchmarks',
+        content: `Nexus AI Infrastructure:
+- Sub-15ms time-to-first-token neural inference across Llama-3.3, DeepSeek, and custom fine-tuned weights.
+- Multi-tenant vector memory with reciprocal rank fusion (RRF) and hybrid keyword search.
+- Zero data retention policy for enterprise tier. SOC-2 Type II certified and HIPAA BAA available.`,
+      },
+    ],
+  },
+  {
+    id: 'hyperion-agency',
+    aliases: ['template_hyperion_agency', 'hyperion_agency', 'creative_agency', 'design_agency', 'agency'],
+    name: 'Hyperion Creative Agency Bot',
+    industry: 'Design & Creative Agency',
+    icon: 'Palette',
+    tagline: 'Capture brand, 3D motion, and digital design leads seamlessly',
+    description: 'Tailored for boutique design agencies, 3D studios, and branding consultancies. Explains design sprints, motion reels, deliverables, and schedules discovery calls.',
+    primaryColor: '#d946ef',
+    systemPrompt: `You are the creative concierge for Hyperion Studio, an award-winning digital design, 3D motion, and brand strategy agency. You assist prospective clients in understanding our creative processes, sprint timelines, pricing ranges, and portfolio case studies. Guide visitors to book an initial creative discovery call.`,
+    welcomeMessage: `Welcome to Hyperion Studio. Looking to elevate your brand identity or craft immersive 3D motion? Let us discuss your vision.`,
+    fallbackMessage: `Every bespoke creative project begins with an alignment call. Please share your project details and our design directors will reach out:`,
+    starterQuestions: [
+      'What creative and branding services do you provide?',
+      'What is your typical project timeline and budget?',
+      'Can I schedule a creative discovery consultation?',
+      'Where can I view your recent portfolio reels?',
+    ],
+    collectLeadEmail: true,
+    proactiveMessageEnabled: true,
+    proactiveMessageText: 'Ready to bring your brand to life? Schedule a 30-min creative scoping call.',
+    proactiveMessageDelay: 5,
+    bookingEnabled: true,
+    bookingProvider: 'direct',
+    bookingPromptText: 'Schedule a Creative Discovery Consultation',
+    supportCustomFields: [
+      { id: 'project_type', label: 'Creative Scope', type: 'select', required: true, options: ['Full Brand Identity & Guidelines', '3D Motion Design & WebGL', 'Product UI/UX Design System', 'Comprehensive Digital Launch'] },
+      { id: 'budget_range', label: 'Estimated Project Budget', type: 'select', required: true, options: ['$5k - $15k', '$15k - $35k', '$35k - $75k', '$75k+'] },
+    ],
+    sampleKnowledge: [
+      {
+        title: 'Hyperion Studio Creative Process & Pricing',
+        content: `Creative Sprints:
+1. Brand Sprint ($3,500, 2 weeks): Visual identity, typography, color palette, logo lockups.
+2. 3D Motion Reel ($7,500, 3-4 weeks): 30-second cinema-grade product animation.
+3. Full Digital Experience ($15,000+, 6-8 weeks): Custom design system, interactive prototyping, WebGL implementation.`,
+      },
+    ],
+  },
+  {
+    id: 'aether-finance',
+    aliases: ['template_aether_finance', 'aether_finance', 'fintech', 'finance'],
+    name: 'Aether Finance & Wealth Management Bot',
+    industry: 'Financial Services & Wealth',
+    icon: 'TrendingUp',
+    tagline: 'Onboard sovereign treasury, family office, and private wealth clients',
+    description: 'Designed for wealth management firms, private family offices, and quantitative asset managers. Answers questions regarding discretionary mandates, custody, and schedules confidential reviews.',
+    primaryColor: '#14b8a6',
+    systemPrompt: `You are the discreet, knowledgeable client intake advisor for Aether Capital, a boutique private wealth and algorithmic treasury firm. You assist accredited investors, family offices, and institutions by providing high-level information regarding asset protection, MPC custody, and treasury review consultations. Maintain strict confidentiality and professionalism at all times.`,
+    welcomeMessage: `Welcome to Aether Capital. How may we assist with your institutional treasury or private wealth management needs today?`,
+    fallbackMessage: `For confidential treasury allocation and discretionary mandates, our senior partners are available for a private consultation:`,
+    starterQuestions: [
+      'What wealth management strategies do you provide?',
+      'What are your minimum capital requirements?',
+      'How do you structure institutional custody & security?',
+      'How do I book a confidential portfolio review?',
+    ],
+    collectLeadEmail: true,
+    proactiveMessageEnabled: false,
+    proactiveMessageText: '',
+    proactiveMessageDelay: 6,
+    bookingEnabled: true,
+    bookingProvider: 'direct',
+    bookingPromptText: 'Schedule a Confidential Portfolio Consultation',
+    supportCustomFields: [
+      { id: 'investor_type', label: 'Investor Classification', type: 'select', required: true, options: ['Individual Accredited Investor', 'Family Office / Multi-Family Office', 'Corporate Treasury / Enterprise', 'Institutional Fund'] },
+      { id: 'aum_tier', label: 'Target Portfolio Allocation', type: 'select', required: true, options: ['$500k - $2M', '$2M - $10M', '$10M - $50M', '$50M+'] },
+    ],
+    sampleKnowledge: [
+      {
+        title: 'Aether Capital Advisory Tiers & Custody Standards',
+        content: `Mandate Offerings:
+- Sovereign Treasury Allocation: Multi-jurisdiction treasury structuring with automated cash-sweep yield optimization.
+- Multi-Party Computation (MPC) Custody Setup: Hardware security module (HSM) air-gapped key shards for multi-signature governance.
+- Algorithmic Arbitrage Yield Routing: Institutional gateway into regulated low-latency liquidity pools with real-time on-chain proof of reserves.
+Security: SOC-2 Type II certified and ISO 27001 audited.`,
+      },
+    ],
+  },
+  {
+    id: 'custom',
+    aliases: ['template_custom', 'custom-template', 'skeleton'],
+    name: 'Custom Blank Canvas Modular Skeleton',
+    industry: 'Custom & Bespoke Business',
+    icon: 'Layers',
+    tagline: 'Modular starter blueprint ready to adapt to any industry or service',
+    description: 'A clean, modular starter bot with flexible custom fields and starter prompts. Easily customized for consultants, agencies, coaches, or any bespoke business model.',
+    primaryColor: '#6366f1',
+    systemPrompt: `You are the professional digital concierge for our business. Your goal is to welcome visitors, answer inquiries about our services, pricing, and availability, and guide qualified leads to schedule a consultation. Maintain a helpful, courteous, and efficient tone.`,
+    welcomeMessage: `Hello! Welcome to our website. How can I assist you today?`,
+    fallbackMessage: `I would be happy to connect you with our team directly. Please leave your contact information below:`,
+    starterQuestions: [
+      'What services do you provide?',
+      'What are your pricing packages and terms?',
+      'How do I schedule an appointment or consultation?',
+      'What are your business hours?',
+    ],
+    collectLeadEmail: true,
+    proactiveMessageEnabled: true,
+    proactiveMessageText: 'Have questions about our custom services? Ask me anything!',
+    proactiveMessageDelay: 5,
+    bookingEnabled: true,
+    bookingProvider: 'direct',
+    bookingPromptText: 'Schedule a Custom Consultation',
+    supportCustomFields: [
+      { id: 'custom_inquiry', label: 'Inquiry Subject', type: 'select', required: true, options: ['Service Consultation', 'Pricing & Proposal Request', 'Partnership / Collaboration', 'General Support'] },
+      { id: 'custom_pref', label: 'Preferred Contact Method', type: 'select', required: false, options: ['Email', 'Phone Call', 'Virtual Video Meeting'] },
+    ],
+    sampleKnowledge: [
+      {
+        title: 'General Business Policies & Consultations',
+        content: `Business Overview:
+We offer custom consulting and service tiers tailored to individual and organizational needs.
+Initial 30-minute discovery sessions are available Monday through Friday.
+All engagements include dedicated account support and milestones.`,
+      },
+    ],
+  },
 ];
+
+export function findBotTemplate(idOrSlug: string): BotTemplate | undefined {
+  if (!idOrSlug) return undefined;
+  const clean = idOrSlug.trim().toLowerCase();
+  return BOT_TEMPLATES.find(
+    (t) =>
+      t.id.toLowerCase() === clean ||
+      (t.aliases && t.aliases.some((a) => a.toLowerCase() === clean))
+  );
+}

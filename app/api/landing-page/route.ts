@@ -4,6 +4,7 @@ import { BILLING_PLANS } from '@/lib/billing/plans';
 import { verifyAdminRequest, getAuthContext } from '@/lib/security/auth';
 import { getClientIp } from '@/lib/security/rate-limit';
 import { LandingPageConfig } from '@/lib/landing/types';
+import { validateLandingPagePayload } from '@/lib/security/validation';
 
 export const dynamic = 'force-dynamic';
 
@@ -271,11 +272,15 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { assistantId, config, isNewPage, createDedicatedAssistant } = body;
+    const { assistantId, config: rawConfig, isNewPage, createDedicatedAssistant } = body;
 
-    if (!config || !config.businessName || !config.slug) {
-      return NextResponse.json({ error: 'businessName and slug are required' }, { status: 400 });
+    const validation = validateLandingPagePayload(rawConfig);
+    if (!validation.valid || !validation.sanitized) {
+      const firstError = Object.values(validation.errors)[0] || 'Invalid landing page configuration';
+      return NextResponse.json({ error: firstError, errors: validation.errors }, { status: 400 });
     }
+
+    const config = validation.sanitized;
 
     // Quota validation if creating a new landing page
     if (isNewPage) {
@@ -328,9 +333,13 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    const targetWorkspaceId = (ctx.memberId === 'master-admin' && config.workspaceId)
+      ? config.workspaceId
+      : (ctx.workspaceId && ctx.workspaceId !== '*' ? ctx.workspaceId : (config.workspaceId || 'default-workspace'));
+
     const savedConfig = await Database.saveLandingPage({
       ...config,
-      workspaceId: config.workspaceId || ctx.workspaceId,
+      workspaceId: targetWorkspaceId,
       assistantId: finalAssistantId,
     });
 
@@ -356,7 +365,8 @@ export async function POST(req: NextRequest) {
 
 export async function DELETE(req: NextRequest) {
   try {
-    if (!(await verifyAdminRequest(req))) {
+    const ctx = await getAuthContext(req);
+    if (!ctx.authenticated) {
       return NextResponse.json({ error: 'Unauthorized: Admin access required' }, { status: 401 });
     }
 
@@ -368,14 +378,14 @@ export async function DELETE(req: NextRequest) {
     }
 
     const targetId = id || slug || '';
-    const deleted = await Database.deleteLandingPage(targetId, slug || undefined);
+    const deleted = await Database.deleteLandingPage(targetId, slug || undefined, ctx.workspaceId);
     if (!deleted) {
-      return NextResponse.json({ error: 'Landing page not found' }, { status: 404 });
+      return NextResponse.json({ error: 'Landing page not found or forbidden' }, { status: 404 });
     }
 
     const ip = getClientIp(req);
     await Database.addAuditLog({
-      actor: { id: 'admin', name: 'Master Admin', ip },
+      actor: { id: ctx.memberId || 'admin', name: ctx.role || 'Master Admin', ip },
       action: 'landing_page.deleted',
       targetType: 'landing_page',
       targetId: targetId,

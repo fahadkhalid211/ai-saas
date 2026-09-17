@@ -111,12 +111,14 @@ export function enforceRateLimit(
   const limit = checkRateLimit(`${prefix}:${ip}`, options);
 
   if (!limit.allowed) {
+    const retryAfterSec = Math.max(1, Math.ceil((limit.resetTime - Date.now()) / 1000));
     return {
       errorResponse: NextResponse.json(
-        { error: 'Too many requests. Please try again later.' },
+        { error: 'Too many requests. Please try again later.', retryAfter: retryAfterSec },
         {
           status: 429,
           headers: {
+            'Retry-After': String(retryAfterSec),
             'X-RateLimit-Limit': String(options.max),
             'X-RateLimit-Remaining': '0',
             'X-RateLimit-Reset': String(limit.resetTime),
@@ -149,12 +151,14 @@ export function enforceRateLimitByKey(
 ): { errorResponse: NextResponse | null; remaining: number; resetTime: number } {
   const limit = checkRateLimit(key, options);
   if (!limit.allowed) {
+    const retryAfterSec = Math.max(1, Math.ceil((limit.resetTime - Date.now()) / 1000));
     return {
       errorResponse: NextResponse.json(
-        { error: 'Too many requests. Please try again later.' },
+        { error: 'Too many requests. Please try again later.', retryAfter: retryAfterSec },
         {
           status: 429,
           headers: {
+            'Retry-After': String(retryAfterSec),
             'X-RateLimit-Limit': String(options.max),
             'X-RateLimit-Remaining': '0',
             'X-RateLimit-Reset': String(limit.resetTime),

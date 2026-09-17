@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { Database } from '@/lib/db';
-import { verifyAdminRequest, verifyConversationAccessToken } from '@/lib/security/auth';
+import { verifyAdminRequest, verifyConversationAccessToken, getAuthContext } from '@/lib/security/auth';
 
 export async function GET(req: Request) {
   try {
@@ -45,18 +45,19 @@ export async function GET(req: Request) {
     }
 
     // Listing conversations across an assistant or workspace strictly requires admin auth
-    if (!(await verifyAdminRequest(req))) {
+    const ctx = await getAuthContext(req);
+    if (!ctx.authenticated) {
       return NextResponse.json({ error: 'Unauthorized: Admin authentication required' }, { status: 401 });
     }
 
     // Assistant-specific conversations lookup
     if (assistantId) {
-      const conversations = await Database.getConversations(assistantId);
+      const conversations = await Database.getConversations(assistantId, ctx.workspaceId);
       return NextResponse.json({ conversations });
     }
 
     // Workspace-wide conversations lookup
-    const conversations = await Database.getConversations();
+    const conversations = await Database.getConversations(undefined, ctx.workspaceId);
     return NextResponse.json({ conversations });
   } catch (error: any) {
     return NextResponse.json({ error: error?.message || 'Failed to fetch conversations' }, { status: 500 });
@@ -66,7 +67,8 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   try {
     // Only authenticated human operators can send operator messages
-    if (!(await verifyAdminRequest(req))) {
+    const ctx = await getAuthContext(req);
+    if (!ctx.authenticated) {
       return NextResponse.json({ error: 'Unauthorized: Admin authentication required' }, { status: 401 });
     }
 
@@ -80,6 +82,13 @@ export async function POST(req: Request) {
     const conv = await Database.getConversationById(conversationId);
     if (!conv) {
       return NextResponse.json({ error: 'Conversation not found' }, { status: 404 });
+    }
+
+    if (ctx.workspaceId !== '*') {
+      const ast = await Database.getAssistantById(conv.assistantId);
+      if (ast && (ast.workspaceId || 'default-workspace') !== ctx.workspaceId) {
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+      }
     }
 
     const cleanName = (agentName && typeof agentName === 'string' && agentName.trim())
@@ -120,7 +129,8 @@ export async function POST(req: Request) {
 export async function PATCH(req: Request) {
   try {
     // Only authenticated admins/operators can patch conversation status
-    if (!(await verifyAdminRequest(req))) {
+    const ctx = await getAuthContext(req);
+    if (!ctx.authenticated) {
       return NextResponse.json({ error: 'Unauthorized: Admin authentication required' }, { status: 401 });
     }
 
@@ -129,6 +139,18 @@ export async function PATCH(req: Request) {
 
     if (!id) {
       return NextResponse.json({ error: 'Conversation id is required' }, { status: 400 });
+    }
+
+    const conv = await Database.getConversationById(id);
+    if (!conv) {
+      return NextResponse.json({ error: 'Conversation not found' }, { status: 404 });
+    }
+
+    if (ctx.workspaceId !== '*') {
+      const ast = await Database.getAssistantById(conv.assistantId);
+      if (ast && (ast.workspaceId || 'default-workspace') !== ctx.workspaceId) {
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+      }
     }
 
     const updated = await Database.updateConversation(id, {

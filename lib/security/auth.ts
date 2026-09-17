@@ -28,9 +28,15 @@ export function getAdminKey(): string {
     return process.env.ADMIN_PASSWORD.trim().replace(/^["']|["']$/g, '');
   }
 
-  // If deployed to serverless (Vercel) without explicit key configured,
-  // use the default fallback so multiple lambda instances don't generate
-  // divergent keys and invalidate user sessions/capability tokens.
+  // Reject fallback keys in production environments
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error(
+      '[Security] Fatal: Running in production without ADMIN_API_KEY or ADMIN_PASSWORD configured. Insecure fallback credentials are disabled.'
+    );
+  }
+
+  // If deployed to serverless (Vercel) in non-production without explicit key configured,
+  // use the default fallback so multiple lambda instances don't generate divergent keys.
   if (process.env.VERCEL || process.env.VERCEL_ENV) {
     return DEFAULT_FALLBACK_ADMIN_KEY;
   }
@@ -168,7 +174,7 @@ export async function getAuthContext(req: Request): Promise<{
   if (authHeader) {
     const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : authHeader.trim();
     if (timingSafeStringEqual(token, masterKey)) {
-      return { authenticated: true, role: 'admin', memberId: 'master-admin', workspaceId: 'default-workspace' };
+      return { authenticated: true, role: 'admin', memberId: 'master-admin', workspaceId: '*' };
     }
     const session = getSessionPayload(token);
     if (session) {

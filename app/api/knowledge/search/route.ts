@@ -1,10 +1,11 @@
 import { NextResponse } from 'next/server';
 import { Database } from '@/lib/db';
 import { executeWebSearch, ingestWebSearchResults } from '@/lib/rag/web-search';
-import { withAdminAuth } from '@/lib/security/auth';
+import { withAdminAuth, getAuthContext } from '@/lib/security/auth';
 
 export const POST = withAdminAuth(async (req: Request) => {
   try {
+    const ctx = await getAuthContext(req);
     const body = await req.json();
     const { assistantId, query } = body;
 
@@ -16,9 +17,9 @@ export const POST = withAdminAuth(async (req: Request) => {
       return NextResponse.json({ error: 'Search query is required' }, { status: 400 });
     }
 
-    const assistant = await Database.getAssistantById(assistantId);
+    const assistant = await Database.getAssistantById(assistantId, ctx.workspaceId);
     if (!assistant) {
-      return NextResponse.json({ error: 'Assistant not found' }, { status: 404 });
+      return NextResponse.json({ error: 'Assistant not found or forbidden' }, { status: 404 });
     }
 
     const cleanQuery = query.trim();

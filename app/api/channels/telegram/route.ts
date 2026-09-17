@@ -30,19 +30,20 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Telegram bot not enabled or configured for this assistant' }, { status: 403 });
     }
 
-    // Verify Telegram Webhook Secret Token if sent by Telegram
+    // Verify Telegram Webhook Secret Token
     const secretTokenHeader = req.headers.get('x-telegram-bot-api-secret-token');
-    const expectedSecretToken = getTelegramSecretToken(assistant.id, assistant.telegramBotToken);
+    if (!secretTokenHeader) {
+      return NextResponse.json({ error: 'Missing x-telegram-bot-api-secret-token header' }, { status: 401 });
+    }
 
-    if (secretTokenHeader) {
-      const headerBuf = Buffer.from(secretTokenHeader);
-      const expectedBuf = Buffer.from(expectedSecretToken);
-      if (
-        headerBuf.length !== expectedBuf.length ||
-        !crypto.timingSafeEqual(headerBuf, expectedBuf)
-      ) {
-        return NextResponse.json({ error: 'Invalid secret token' }, { status: 403 });
-      }
+    const expectedSecretToken = getTelegramSecretToken(assistant.id, assistant.telegramBotToken);
+    const headerBuf = Buffer.from(secretTokenHeader);
+    const expectedBuf = Buffer.from(expectedSecretToken);
+    if (
+      headerBuf.length !== expectedBuf.length ||
+      !crypto.timingSafeEqual(headerBuf, expectedBuf)
+    ) {
+      return NextResponse.json({ error: 'Invalid secret token' }, { status: 403 });
     }
 
     const update = await req.json();

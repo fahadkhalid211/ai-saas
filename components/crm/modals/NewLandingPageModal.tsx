@@ -93,13 +93,17 @@ export const NewLandingPageModal: React.FC<NewLandingPageModalProps> = ({
               onChange={(e) => setNewPageIndustry(e.target.value)}
               className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 cursor-pointer"
             >
-              <option value="barbershop">Barbershop &amp; Men's Grooming</option>
-              <option value="gym">Gym &amp; Fitness Athletics</option>
-              <option value="real_estate">Real Estate &amp; Properties</option>
-              <option value="ecommerce">E-Commerce &amp; Retail</option>
-              <option value="saas">B2B SaaS &amp; Tech</option>
-              <option value="legal">Legal &amp; Law Firm</option>
-              <option value="healthcare">Dental &amp; Healthcare</option>
+              <option value="barbershop">Barbershop &amp; Grooming Salon</option>
+              <option value="gym">Fitness &amp; Athletics Gym</option>
+              <option value="real_estate">Prestige Living Real Estate</option>
+              <option value="ecommerce">LuxeLiving Retail E-Commerce</option>
+              <option value="saas">CloudScale B2B SaaS</option>
+              <option value="legal">Sterling &amp; Vance Legal Counsel</option>
+              <option value="healthcare">Beacon Family Dental Clinic</option>
+              <option value="nexus-ai">Nexus AI Technology Platform</option>
+              <option value="hyperion-agency">Hyperion Creative Agency</option>
+              <option value="aether-finance">Aether Finance &amp; Wealth Management</option>
+              <option value="custom">Custom Blank Canvas (Modular Skeleton)</option>
             </select>
           </div>
 

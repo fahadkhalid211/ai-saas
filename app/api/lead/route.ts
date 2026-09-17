@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { Database } from '@/lib/db';
 import { sendSupportLeadEmail } from '@/lib/email';
 import { dispatchWebhook } from '@/lib/webhook';
-import { verifyAdminRequest } from '@/lib/security/auth';
+import { verifyAdminRequest, getAuthContext } from '@/lib/security/auth';
 import { enforceRateLimit } from '@/lib/security/rate-limit';
 
 export async function OPTIONS() {
@@ -129,7 +129,8 @@ export async function POST(req: Request) {
 export async function GET(req: Request) {
   try {
     // Only authenticated admins can view customer leads
-    if (!(await verifyAdminRequest(req))) {
+    const ctx = await getAuthContext(req);
+    if (!ctx.authenticated) {
       return NextResponse.json({ error: 'Unauthorized: Admin authentication required' }, { status: 401 });
     }
 
@@ -138,6 +139,13 @@ export async function GET(req: Request) {
 
     if (!assistantId) {
       return NextResponse.json({ error: 'assistantId parameter required' }, { status: 400 });
+    }
+
+    if (ctx.workspaceId !== '*') {
+      const assistant = await Database.getAssistantById(assistantId, ctx.workspaceId);
+      if (!assistant) {
+        return NextResponse.json({ error: 'Assistant not found or forbidden' }, { status: 404 });
+      }
     }
 
     const leads = await Database.getLeads(assistantId);

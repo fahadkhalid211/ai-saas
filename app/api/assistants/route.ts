@@ -32,9 +32,13 @@ export const POST = withAdminAuth(async (req: Request) => {
       return NextResponse.json({ error: 'Assistant name is required' }, { status: 400 });
     }
 
+    const targetWorkspaceId = (ctx.memberId === 'master-admin' && body.workspaceId)
+      ? body.workspaceId
+      : (ctx.workspaceId && ctx.workspaceId !== '*' ? ctx.workspaceId : (body.workspaceId || 'default-workspace'));
+
     const assistant = await Database.createAssistant({
       ...body,
-      workspaceId: body.workspaceId || ctx.workspaceId,
+      workspaceId: targetWorkspaceId,
     });
     const sanitized = {
       ...assistant,

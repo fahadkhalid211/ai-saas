@@ -8,12 +8,17 @@ import {
   Users,
   RefreshCw,
   Check,
+  Scissors,
   Dumbbell,
   Home,
   ShoppingBag,
   Briefcase,
   Scale,
   Activity,
+  Sparkles,
+  Palette,
+  TrendingUp,
+  Layers,
   Bot,
 } from 'lucide-react';
 import { BOT_TEMPLATES } from '@/lib/templates';
@@ -31,6 +36,8 @@ export const TemplatesTab: React.FC<TemplatesTabProps> = ({
 }) => {
   const renderTemplateIcon = (iconName: string) => {
     switch (iconName) {
+      case 'Scissors':
+        return <Scissors className="h-5 w-5 text-amber-500" />;
       case 'Dumbbell':
         return <Dumbbell className="h-5 w-5 text-rose-500" />;
       case 'Home':
@@ -43,6 +50,14 @@ export const TemplatesTab: React.FC<TemplatesTabProps> = ({
         return <Scale className="h-5 w-5 text-slate-700 dark:text-slate-300" />;
       case 'Activity':
         return <Activity className="h-5 w-5 text-sky-500" />;
+      case 'Sparkles':
+        return <Sparkles className="h-5 w-5 text-indigo-500" />;
+      case 'Palette':
+        return <Palette className="h-5 w-5 text-fuchsia-500" />;
+      case 'TrendingUp':
+        return <TrendingUp className="h-5 w-5 text-teal-500" />;
+      case 'Layers':
+        return <Layers className="h-5 w-5 text-indigo-500" />;
       default:
         return <Bot className="h-5 w-5 text-blue-500" />;
     }

@@ -18,10 +18,16 @@ import {
   ExternalLink,
   QrCode,
   AlertCircle,
+  Copy,
+  ChevronDown,
   CalendarCheck,
   CalendarX,
   RefreshCw,
+  Eye,
   Send,
+  User,
+  Headphones,
+  Building2,
   Dumbbell,
   Home,
   ShoppingBag,
@@ -33,6 +39,7 @@ import {
   Moon,
   Download,
 } from 'lucide-react';
+import { validateAppointmentPayload } from '@/lib/security/validation';
 import { generateGoogleCalendarUrl, generateOutlookCalendarUrl, generateSingleIcs } from '@/lib/calendar/ical';
 import {
   LandingPageConfig,
@@ -561,8 +568,27 @@ export default function HostedBusinessSiteClient({
 
   const handleBookingSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!clientName || !clientEmail || !bookingDate || !bookingTime) {
-      setBookingError('Please complete all required fields.');
+
+    const appointmentPayload = {
+      assistantId: assistantId || 'demo-assistant',
+      name: clientName,
+      email: clientEmail,
+      phone: clientPhone,
+      date: bookingDate,
+      timeSlot: bookingTime,
+      durationMinutes: selectedService?.durationMinutes || 40,
+      serviceId: selectedService?.id,
+      serviceName: selectedService?.name || 'Appointment',
+      price: selectedService?.price || 45,
+      notes: bookingNotes,
+      landingPageName: landingConfig?.businessName || 'Landing Page',
+      landingPageSlug: landingConfig?.slug || identifier || 'default',
+    };
+
+    const validation = validateAppointmentPayload(appointmentPayload);
+    if (!validation.valid) {
+      const firstError = Object.values(validation.errors)[0] || 'Please complete all required fields properly.';
+      setBookingError(firstError);
       return;
     }
 
@@ -573,21 +599,7 @@ export default function HostedBusinessSiteClient({
       const res = await fetch('/api/appointments', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          assistantId: assistantId || 'demo-assistant',
-          name: clientName,
-          email: clientEmail,
-          phone: clientPhone,
-          date: bookingDate,
-          timeSlot: bookingTime,
-          durationMinutes: selectedService?.durationMinutes || 40,
-          serviceId: selectedService?.id,
-          serviceName: selectedService?.name || 'Appointment',
-          price: selectedService?.price || 45,
-          notes: bookingNotes,
-          landingPageName: landingConfig?.businessName || 'Landing Page',
-          landingPageSlug: landingConfig?.slug || identifier || 'default',
-        }),
+        body: JSON.stringify(validation.sanitized || appointmentPayload),
       });
 
       const data = await res.json();

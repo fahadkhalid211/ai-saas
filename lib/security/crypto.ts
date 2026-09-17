@@ -24,7 +24,14 @@ function getEncryptionSecret(): string {
     return process.env.ADMIN_API_KEY.trim();
   }
 
-  // If deployed to Vercel/serverless without explicit keys, use the stable default
+  // Reject fallback keys in production environments
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error(
+      '[Security] Fatal: Running in production without ENCRYPTION_SECRET or ADMIN_API_KEY configured. Insecure fallback encryption secrets are disabled.'
+    );
+  }
+
+  // If deployed to Vercel/serverless in non-production without explicit keys, use the stable default
   // so concurrent lambdas don't generate divergent keys and break decryption.
   if (process.env.VERCEL || process.env.VERCEL_ENV) {
     return DEFAULT_FALLBACK_ENCRYPTION_SECRET;

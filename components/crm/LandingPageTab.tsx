@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Globe,
   QrCode,
@@ -45,10 +45,14 @@ import {
   getLandingConfigForSlugOrTemplate,
   getArchetypesForIndustry,
   LandingPageMenuItem,
+  DesignArchetype,
 } from '@/lib/landing/types';
 import { LandingPagesList } from './landing/LandingPagesList';
 import { AiLandingWizard } from './landing/AiLandingWizard';
 import { DeleteLandingPageModal } from './landing/DeleteLandingPageModal';
+import { LandingPageQuotaModal } from './landing/LandingPageQuotaModal';
+import { ArchetypeDesignPreview } from './landing/ArchetypeDesignPreview';
+import { DesignPreviewModal } from './landing/DesignPreviewModal';
 
 const Youtube = ({ className = 'h-4 w-4' }: { className?: string }) => (
   <svg className={className} viewBox="0 0 24 24" fill="currentColor">
@@ -256,6 +260,8 @@ export interface LandingPageTabProps {
   pagePendingDelete?: LandingPageConfig | null;
   setPagePendingDelete?: (page: LandingPageConfig | null) => void;
   handleConfirmDeleteLandingPage?: () => Promise<void> | void;
+  showQuotaModal?: boolean;
+  setShowQuotaModal?: (show: boolean) => void;
 }
 
 export const LandingPageTab: React.FC<LandingPageTabProps> = ({
@@ -298,12 +304,23 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
   pagePendingDelete,
   setPagePendingDelete,
   handleConfirmDeleteLandingPage,
+  showQuotaModal: propShowQuotaModal,
+  setShowQuotaModal: propSetShowQuotaModal,
 }) => {
   const [localViewMode, setLocalViewMode] = React.useState<'list' | 'create_wizard' | 'editor'>('list');
   const viewMode = propViewMode ?? localViewMode;
   const setViewMode = propSetViewMode ?? setLocalViewMode;
 
+  const [internalShowQuotaModal, setInternalShowQuotaModal] = useState(false);
+  const showQuotaModal = propShowQuotaModal !== undefined ? propShowQuotaModal : internalShowQuotaModal;
+  const setShowQuotaModal = propSetShowQuotaModal || setInternalShowQuotaModal;
+  const [editorPreviewArch, setEditorPreviewArch] = useState<DesignArchetype | null>(null);
+
   const handleStartCreateWizard = () => {
+    if (landingPageLimits?.currentCount >= landingPageLimits?.totalAllowed) {
+      setShowQuotaModal(true);
+      return;
+    }
     if (propHandleStartCreateWizard) {
       propHandleStartCreateWizard();
     } else {
@@ -594,7 +611,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
               type="button"
               onClick={() => {
                 if (landingPageLimits.currentCount >= landingPageLimits.totalAllowed) {
-                  alert(`You have reached your plan limit of ${landingPageLimits.totalAllowed} landing page(s). Click "+ Extra Slot ($100)" to add another landing page.`);
+                  setShowQuotaModal(true);
                   return;
                 }
                 handleStartCreateWizard();
@@ -1072,33 +1089,25 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
                           : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-slate-300 dark:hover:border-slate-700'
                       }`}
                     >
-                      <div className="h-32 w-full relative overflow-hidden bg-slate-100 dark:bg-slate-800">
-                        <img
-                          src={arch.previewImage}
-                          alt={arch.name}
-                          className="w-full h-full object-cover"
+                      {/* Webpage Layout Design Preview Frame */}
+                      <div className="p-2 pb-0">
+                        <ArchetypeDesignPreview
+                          archetype={arch}
+                          isSelected={isActive}
+                          onPreviewClick={(targetArch) => setEditorPreviewArch(targetArch)}
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                        <div className="absolute top-2 left-2">
-                          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-black/70 backdrop-blur-md text-white border border-white/20">
-                            {arch.badge}
-                          </span>
-                        </div>
-                        {isActive && (
-                          <div className="absolute top-2 right-2 p-1 rounded-full bg-blue-600 text-white shadow-md">
-                            <Check className="h-3 w-3" />
-                          </div>
-                        )}
-                        <div className="absolute bottom-2 left-2.5 right-2.5">
-                          <div className="text-xs font-bold text-white truncate">{arch.name}</div>
-                          <div className="text-[10px] text-slate-300 truncate">{arch.aesthetic}</div>
-                        </div>
                       </div>
 
                       <div className="p-3.5 space-y-2.5 flex-1 flex flex-col justify-between">
-                        <p className="text-[11px] text-slate-600 dark:text-slate-300 leading-snug">
-                          {arch.tagline}
-                        </p>
+                        <div>
+                          <div className="text-xs font-bold text-slate-900 dark:text-white mb-0.5 truncate">
+                            {arch.name}
+                          </div>
+                          <p className="text-[11px] text-slate-600 dark:text-slate-300 leading-snug line-clamp-2">
+                            {arch.tagline}
+                          </p>
+                        </div>
+
                         <div className="space-y-1">
                           {arch.features.slice(0, 3).map((feat, fIdx) => (
                             <div key={fIdx} className="flex items-center gap-1.5 text-[10.5px] text-slate-600 dark:text-slate-400 truncate">
@@ -1107,16 +1116,30 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
                             </div>
                           ))}
                         </div>
-                        <button
-                          type="button"
-                          className={`w-full py-1.5 rounded-lg text-xs font-semibold transition ${
-                            isActive
-                              ? 'bg-blue-600 text-white shadow-2xs'
-                              : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200'
-                          }`}
-                        >
-                          {isActive ? 'Active Design' : 'Select This Design'}
-                        </button>
+
+                        <div className="flex items-center gap-2 pt-1">
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setEditorPreviewArch(arch);
+                            }}
+                            className="flex-1 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition flex items-center justify-center gap-1 cursor-pointer"
+                          >
+                            <Eye className="w-3.5 h-3.5" />
+                            <span>Preview</span>
+                          </button>
+                          <button
+                            type="button"
+                            className={`flex-1 py-1.5 rounded-lg text-xs font-semibold transition ${
+                              isActive
+                                ? 'bg-blue-600 text-white shadow-2xs'
+                                : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200'
+                            }`}
+                          >
+                            {isActive ? 'Active' : 'Apply'}
+                          </button>
+                        </div>
                       </div>
                     </div>
                   );
@@ -2732,6 +2755,33 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
         statusMessage={deleteStatusMessage || ''}
         onClose={() => setPagePendingDelete?.(null)}
         onConfirm={() => handleConfirmDeleteLandingPage?.()}
+      />
+
+      {/* In-App Quota Exceeded Modal with Instant Upgrade CTAs */}
+      <LandingPageQuotaModal
+        isOpen={showQuotaModal}
+        onClose={() => setShowQuotaModal(false)}
+        currentCount={landingPageLimits?.currentCount || 0}
+        totalAllowed={landingPageLimits?.totalAllowed || 1}
+        planTier={landingPageLimits?.planTier || 'Starter'}
+        onPurchaseExtraSlot={handlePurchaseExtraLandingPage}
+        isPurchasingSlot={isPurchasingAddon}
+        onUpgradePlan={setParentActiveTab ? () => setParentActiveTab('billing') : undefined}
+      />
+
+      {/* Interactive Full Design Archetype Preview Modal */}
+      <DesignPreviewModal
+        isOpen={Boolean(editorPreviewArch)}
+        onClose={() => setEditorPreviewArch(null)}
+        archetype={editorPreviewArch}
+        industryName={landingConfig.industry}
+        onSelectArchetype={(archId) => {
+          setLandingConfig({
+            ...landingConfig,
+            designArchetype: archId,
+            themeColor: editorPreviewArch?.themeColor || landingConfig.themeColor,
+          });
+        }}
       />
     </div>
   );

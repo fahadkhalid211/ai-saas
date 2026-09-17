@@ -61,7 +61,10 @@ export async function POST(req: NextRequest) {
     // Verify Meta x-hub-signature-256 if app secret or verify token configured
     const signature = req.headers.get('x-hub-signature-256');
     const appSecret = process.env.WHATSAPP_APP_SECRET || assistant.whatsappVerifyToken;
-    if (appSecret && signature) {
+    if (appSecret) {
+      if (!signature) {
+        return NextResponse.json({ error: 'Missing x-hub-signature-256 signature header' }, { status: 401 });
+      }
       const expectedSig = 'sha256=' + crypto.createHmac('sha256', appSecret).update(rawBody).digest('hex');
       const sigBuf = Buffer.from(signature);
       const expectedBuf = Buffer.from(expectedSig);

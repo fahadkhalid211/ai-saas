@@ -24,6 +24,7 @@ import {
   Cpu,
   Layers,
   Palette,
+  TrendingUp,
   Eye,
   CheckCircle2,
 } from 'lucide-react';
@@ -36,6 +37,8 @@ import {
   getLandingConfigForSlugOrTemplate,
   getArchetypesForIndustry,
 } from '@/lib/landing/types';
+import { ArchetypeDesignPreview } from './ArchetypeDesignPreview';
+import { DesignPreviewModal } from './DesignPreviewModal';
 
 interface AiLandingWizardProps {
   onBackToList: () => void;
@@ -146,6 +149,48 @@ const INDUSTRIES_LIST = [
     ],
   },
   {
+    id: 'ai_tech',
+    name: 'Silicon Valley AI Platform',
+    description: 'Autonomous neural agents, enterprise LLM orchestration, and vector pipeline audits.',
+    icon: Sparkles,
+    color: '#6366f1',
+    presetSlug: 'nexus-ai',
+    heroImage: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=80',
+    defaultServices: [
+      { id: 's1', name: 'Live Interactive Agent Demo', price: 0, durationMinutes: 30, description: 'Hands-on architectural walkthrough and prompt testing.' },
+      { id: 's2', name: 'Custom Vector Retrieval Tuning', price: 500, durationMinutes: 60, description: 'Evaluation of embedding precision and latency benchmarks.' },
+      { id: 's3', name: 'Turnkey Enterprise Sandbox', price: 3500, durationMinutes: 120, description: 'Full dedicated pipeline deployment with HIPAA/SOC-2 guardrails.' },
+    ],
+  },
+  {
+    id: 'creative_agency',
+    name: 'Creative & Motion Design Agency',
+    description: 'Brand identity, 3D motion design, immersive WebGL direction, and sprint intake.',
+    icon: Palette,
+    color: '#d946ef',
+    presetSlug: 'hyperion-agency',
+    heroImage: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=1200&q=80',
+    defaultServices: [
+      { id: 's1', name: 'Creative Discovery Consultation', price: 0, durationMinutes: 30, description: 'Scope discussion and brand alignment session.' },
+      { id: 's2', name: '2-Week Brand Identity Sprint', price: 3500, durationMinutes: 60, description: 'Comprehensive visual language, typography, and color systems.' },
+      { id: 's3', name: '3D Motion Reel Production', price: 7500, durationMinutes: 90, description: 'Cinema-grade 30-second product animation.' },
+    ],
+  },
+  {
+    id: 'fintech',
+    name: 'Private Wealth & Sovereign Capital',
+    description: 'Discretionary portfolio management, algorithmic yield strategies, family office advisory.',
+    icon: TrendingUp,
+    color: '#14b8a6',
+    presetSlug: 'aether-finance',
+    heroImage: 'https://images.unsplash.com/photo-1639762681485-074b7f938ba0?auto=format&fit=crop&w=1200&q=80',
+    defaultServices: [
+      { id: 's1', name: 'Sovereign Treasury Allocation Review', price: 0, durationMinutes: 45, description: 'Institutional liquidity and yield routing audit.' },
+      { id: 's2', name: 'MPC Custody Architecture Setup', price: 750, durationMinutes: 60, description: 'HSM air-gapped key shards for multi-signature governance.' },
+      { id: 's3', name: 'Algorithmic Arbitrage Onboarding', price: 2000, durationMinutes: 90, description: 'Direct institutional gateway to automated liquidity pools.' },
+    ],
+  },
+  {
     id: 'custom',
     name: 'Custom / Bespoke Canvas',
     description: 'Modular blueprint for any bespoke agency, consulting firm, or service company.',
@@ -171,6 +216,7 @@ export function AiLandingWizard({
   // Form State
   const [selectedIndustry, setSelectedIndustry] = useState<string>('barbershop');
   const [selectedArchetype, setSelectedArchetype] = useState<string>('barber_classic');
+  const [previewModalArch, setPreviewModalArch] = useState<DesignArchetype | null>(null);
 
   const [businessName, setBusinessName] = useState<string>('');
   const [slug, setSlug] = useState<string>('');
@@ -444,35 +490,33 @@ export function AiLandingWizard({
                       : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-slate-300 dark:hover:border-slate-700'
                   }`}
                 >
-                  {/* Snapshot Preview Image */}
-                  <div className="h-40 w-full relative overflow-hidden bg-slate-100 dark:bg-slate-800">
-                    <img
-                      src={arch.previewImage}
-                      alt={arch.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
+                  {/* Webpage Layout Design Preview Frame */}
+                  <div className="p-3 pb-0">
+                    <ArchetypeDesignPreview
+                      archetype={arch}
+                      isSelected={isSelected}
+                      onPreviewClick={(targetArch) => setPreviewModalArch(targetArch)}
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                    <div className="absolute top-2.5 left-2.5">
-                      <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-black/70 backdrop-blur-md text-white border border-white/20">
-                        {arch.badge}
-                      </span>
-                    </div>
-                    {isSelected && (
-                      <div className="absolute top-2.5 right-2.5 p-1 rounded-full bg-blue-600 text-white shadow-md">
-                        <Check className="h-3.5 w-3.5" />
-                      </div>
-                    )}
-                    <div className="absolute bottom-2.5 left-3 right-3">
-                      <div className="text-xs font-bold text-white drop-shadow-sm">{arch.name}</div>
-                      <div className="text-[10.5px] text-slate-200 opacity-90 truncate">{arch.category}</div>
-                    </div>
                   </div>
 
                   {/* Body Specs */}
                   <div className="p-4 space-y-3 flex-1 flex flex-col justify-between">
-                    <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-                      {arch.tagline}
-                    </p>
+                    <div>
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-xs font-bold text-slate-900 dark:text-white">
+                          {arch.name}
+                        </span>
+                        {isSelected && (
+                          <span className="inline-flex items-center gap-1 text-[10.5px] font-bold text-blue-600 dark:text-blue-400">
+                            <Check className="w-3 h-3" />
+                            <span>Selected</span>
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                        {arch.tagline}
+                      </p>
+                    </div>
 
                     <div className="space-y-1.5 pt-1">
                       <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
@@ -489,8 +533,21 @@ export function AiLandingWizard({
                     </div>
 
                     <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-[10.5px]">
-                      <span className="text-slate-400">Color Aesthetic</span>
-                      <span className="font-semibold text-slate-800 dark:text-slate-200">{arch.aesthetic}</span>
+                      <div>
+                        <span className="text-slate-400 block text-[9.5px]">Color Aesthetic</span>
+                        <span className="font-semibold text-slate-800 dark:text-slate-200">{arch.aesthetic}</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setPreviewModalArch(arch);
+                        }}
+                        className="inline-flex items-center gap-1 text-[11px] font-bold text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
+                      >
+                        <Eye className="w-3.5 h-3.5" />
+                        <span>Preview Design</span>
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -961,6 +1018,15 @@ export function AiLandingWizard({
           </button>
         </div>
       )}
+
+      {/* Design Archetype Full Sample Preview Modal */}
+      <DesignPreviewModal
+        isOpen={Boolean(previewModalArch)}
+        onClose={() => setPreviewModalArch(null)}
+        archetype={previewModalArch}
+        industryName={INDUSTRIES_LIST.find((i) => i.id === selectedIndustry)?.name}
+        onSelectArchetype={(archId) => setSelectedArchetype(archId)}
+      />
     </div>
   );
 }

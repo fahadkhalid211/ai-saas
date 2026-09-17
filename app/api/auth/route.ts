@@ -11,6 +11,7 @@ import {
 import { checkRateLimit, getClientIp } from '@/lib/security/rate-limit';
 import { timingSafeStringEqual } from '@/lib/security/password';
 import { Database, sanitizeTeamMember } from '@/lib/db';
+import { validateRegistrationPayload, validateEmail, sanitizeInput } from '@/lib/security/validation';
 
 export async function GET(req: Request) {
   try {
@@ -65,24 +66,16 @@ export async function POST(req: Request) {
 
     // 1. Self-Serve Business Account Registration
     if (mode === 'register') {
-      const businessName = (body?.businessName || '').trim();
-      const email = (body?.email || '').toLowerCase().trim();
-      const password = (body?.password || '').trim();
-      const industryTemplateSlug = body?.industryTemplateSlug || 'classic-barbershop';
-
-      if (!businessName || !email) {
+      const regValidation = validateRegistrationPayload(body);
+      if (!regValidation.valid || !regValidation.sanitized) {
+        const firstError = Object.values(regValidation.errors)[0] || 'Invalid registration details';
         return NextResponse.json(
-          { error: 'Business Name and Work Email are required to create an account' },
+          { error: firstError, errors: regValidation.errors },
           { status: 400 }
         );
       }
 
-      if (password && password.length < 6) {
-        return NextResponse.json(
-          { error: 'Password must be at least 6 characters' },
-          { status: 400 }
-        );
-      }
+      const { businessName, email, password, industryTemplateSlug } = regValidation.sanitized;
 
       const tenantResult = await Database.createTenantWorkspace({
         businessName,
@@ -131,12 +124,20 @@ export async function POST(req: Request) {
 
     // 2. Staff / Tenant Credentials Login
     if (mode === 'staff' || (body?.email && (body?.password || body?.accessCode))) {
-      const email = body?.email?.trim();
+      const emailValidation = validateEmail(body?.email);
+      if (!emailValidation.valid || !emailValidation.value) {
+        return NextResponse.json(
+          { error: emailValidation.error || 'A valid email address is required' },
+          { status: 400 }
+        );
+      }
+
+      const email = emailValidation.value;
       const passwordOrCode = (body?.password || body?.accessCode || '').trim();
 
-      if (!email || !passwordOrCode) {
+      if (!passwordOrCode) {
         return NextResponse.json(
-          { error: 'Email and password/access code are required' },
+          { error: 'Password or access code is required' },
           { status: 400 }
         );
       }

@@ -12,6 +12,7 @@ import {
   Sparkles,
   Building2,
 } from 'lucide-react';
+import { EMAIL_REGEX } from '@/lib/security/validation';
 
 interface AdminLoginScreenProps {
   theme: 'light' | 'dark';
@@ -64,11 +65,23 @@ export function AdminLoginScreen({
   isLoggingIn,
   handleLogin,
 }: AdminLoginScreenProps) {
+  const isRegEmailValid = !regEmailInput || EMAIL_REGEX.test(regEmailInput.trim());
+  const isRegPasswordValid = !regPasswordInput || regPasswordInput.trim().length >= 6;
+  const isRegBusinessNameValid = !regBusinessNameInput || regBusinessNameInput.trim().length >= 2;
+  const isStaffEmailValid = !staffEmailInput || EMAIL_REGEX.test(staffEmailInput.trim());
+
   const isSubmitDisabled =
     isLoggingIn ||
     (authLoginMode === 'admin' && !authApiKeyInput.trim()) ||
-    (authLoginMode === 'staff' && (!staffEmailInput.trim() || !staffPasswordInput.trim())) ||
-    (authLoginMode === 'register' && (!regBusinessNameInput.trim() || !regEmailInput.trim() || !regPasswordInput.trim()));
+    (authLoginMode === 'staff' && (!staffEmailInput.trim() || !staffPasswordInput.trim() || !isStaffEmailValid)) ||
+    (authLoginMode === 'register' && (
+      !regBusinessNameInput.trim() ||
+      !isRegBusinessNameValid ||
+      !regEmailInput.trim() ||
+      !isRegEmailValid ||
+      !regPasswordInput.trim() ||
+      !isRegPasswordValid
+    ));
 
   return (
     <div className={`${theme === 'dark' ? 'dark' : ''} min-h-screen w-full flex items-center justify-center bg-slate-950 font-sans p-4 relative overflow-hidden`}>
@@ -145,10 +158,17 @@ export function AdminLoginScreen({
                   value={regBusinessNameInput}
                   onChange={(e) => setRegBusinessNameInput(e.target.value)}
                   placeholder="e.g. Apex Health Clinic"
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white text-xs placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                  className={`w-full px-3.5 py-2.5 rounded-xl border ${
+                    !isRegBusinessNameValid
+                      ? 'border-rose-400 dark:border-rose-600 focus:ring-rose-500'
+                      : 'border-slate-200 dark:border-slate-700 focus:ring-blue-500'
+                  } bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white text-xs placeholder:text-slate-400 focus:outline-none focus:ring-2 transition`}
                   autoFocus
                   required
                 />
+                {!isRegBusinessNameValid && (
+                  <p className="text-[10.5px] text-rose-500 font-medium">Business name must be at least 2 characters.</p>
+                )}
               </div>
 
               <div className="space-y-1">
@@ -158,9 +178,16 @@ export function AdminLoginScreen({
                   value={regEmailInput}
                   onChange={(e) => setRegEmailInput(e.target.value)}
                   placeholder="owner@company.com"
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white text-xs placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                  className={`w-full px-3.5 py-2.5 rounded-xl border ${
+                    !isRegEmailValid
+                      ? 'border-rose-400 dark:border-rose-600 focus:ring-rose-500'
+                      : 'border-slate-200 dark:border-slate-700 focus:ring-blue-500'
+                  } bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white text-xs placeholder:text-slate-400 focus:outline-none focus:ring-2 transition`}
                   required
                 />
+                {!isRegEmailValid && (
+                  <p className="text-[10.5px] text-rose-500 font-medium">Please enter a valid email address.</p>
+                )}
               </div>
 
               <div className="space-y-1">
@@ -170,9 +197,16 @@ export function AdminLoginScreen({
                   value={regPasswordInput}
                   onChange={(e) => setRegPasswordInput(e.target.value)}
                   placeholder="At least 6 characters..."
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white text-xs placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                  className={`w-full px-3.5 py-2.5 rounded-xl border ${
+                    !isRegPasswordValid
+                      ? 'border-rose-400 dark:border-rose-600 focus:ring-rose-500'
+                      : 'border-slate-200 dark:border-slate-700 focus:ring-blue-500'
+                  } bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white text-xs placeholder:text-slate-400 focus:outline-none focus:ring-2 transition`}
                   required
                 />
+                {!isRegPasswordValid && (
+                  <p className="text-[10.5px] text-rose-500 font-medium">Password must be at least 6 characters.</p>
+                )}
               </div>
 
               <div className="space-y-1">
@@ -236,10 +270,17 @@ export function AdminLoginScreen({
                   value={staffEmailInput}
                   onChange={(e) => setStaffEmailInput(e.target.value)}
                   placeholder="owner@company.com or staff@kortexai.com"
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white text-xs placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                  className={`w-full px-3.5 py-2.5 rounded-xl border ${
+                    !isStaffEmailValid
+                      ? 'border-rose-400 dark:border-rose-600 focus:ring-rose-500'
+                      : 'border-slate-200 dark:border-slate-700 focus:ring-blue-500'
+                  } bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white text-xs placeholder:text-slate-400 focus:outline-none focus:ring-2 transition`}
                   autoFocus
                   required
                 />
+                {!isStaffEmailValid && (
+                  <p className="text-[10.5px] text-rose-500 font-medium">Please enter a valid email address.</p>
+                )}
               </div>
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center justify-between">

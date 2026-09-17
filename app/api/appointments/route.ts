@@ -2,8 +2,9 @@ import { NextResponse } from 'next/server';
 import { Database, DEFAULT_BARBER_LANDING_CONFIG } from '@/lib/db';
 import { sendSupportLeadEmail, sendAppointmentConfirmationEmail } from '@/lib/email';
 import { dispatchWebhook } from '@/lib/webhook';
-import { verifyAdminRequest } from '@/lib/security/auth';
+import { verifyAdminRequest, getAuthContext } from '@/lib/security/auth';
 import { enforceRateLimit } from '@/lib/security/rate-limit';
+import { validateAppointmentPayload } from '@/lib/security/validation';
 
 export async function OPTIONS() {
   return new NextResponse(null, {
@@ -47,7 +48,8 @@ export async function GET(req: Request) {
     }
 
     // Only authenticated admins can view list of booked appointments
-    if (!(await verifyAdminRequest(req))) {
+    const ctx = await getAuthContext(req);
+    if (!ctx.authenticated) {
       return NextResponse.json({ error: 'Unauthorized: Admin authentication required' }, { status: 401 });
     }
 
@@ -56,6 +58,13 @@ export async function GET(req: Request) {
         { error: 'assistantId parameter is required' },
         { status: 400 }
       );
+    }
+
+    if (ctx.workspaceId !== '*') {
+      const assistant = await Database.getAssistantById(assistantId, ctx.workspaceId);
+      if (!assistant) {
+        return NextResponse.json({ error: 'Assistant not found or forbidden' }, { status: 404 });
+      }
     }
 
     const appointments = await Database.getAppointments(assistantId);
@@ -144,6 +153,15 @@ export async function POST(req: Request) {
     }
     const ip = rateLimit.clientIp;
 
+    const validation = validateAppointmentPayload(body);
+    if (!validation.valid || !validation.sanitized) {
+      const firstError = Object.values(validation.errors)[0] || 'Invalid appointment details';
+      return NextResponse.json(
+        { error: firstError, errors: validation.errors },
+        { status: 400, headers: { 'Access-Control-Allow-Origin': '*' } }
+      );
+    }
+
     const {
       assistantId,
       name,
@@ -158,42 +176,7 @@ export async function POST(req: Request) {
       price,
       landingPageName,
       landingPageSlug,
-    } = body;
-
-    if (!assistantId) {
-      return NextResponse.json(
-        { error: 'assistantId is required' },
-        { status: 400, headers: { 'Access-Control-Allow-Origin': '*' } }
-      );
-    }
-
-    if (!name || !name.trim()) {
-      return NextResponse.json(
-        { error: 'Name is required' },
-        { status: 400, headers: { 'Access-Control-Allow-Origin': '*' } }
-      );
-    }
-
-    if (!email || !email.trim() || !email.includes('@')) {
-      return NextResponse.json(
-        { error: 'A valid email address is required' },
-        { status: 400, headers: { 'Access-Control-Allow-Origin': '*' } }
-      );
-    }
-
-    if (!date || !date.trim()) {
-      return NextResponse.json(
-        { error: 'Appointment date is required' },
-        { status: 400, headers: { 'Access-Control-Allow-Origin': '*' } }
-      );
-    }
-
-    if (!timeSlot || !timeSlot.trim()) {
-      return NextResponse.json(
-        { error: 'Appointment time slot is required' },
-        { status: 400, headers: { 'Access-Control-Allow-Origin': '*' } }
-      );
-    }
+    } = validation.sanitized;
 
     let assistant = await Database.getAssistantById(assistantId);
     if (!assistant) {
@@ -392,7 +375,8 @@ export async function POST(req: Request) {
 
 export async function DELETE(req: Request) {
   try {
-    if (!(await verifyAdminRequest(req))) {
+    const ctx = await getAuthContext(req);
+    if (!ctx.authenticated) {
       return NextResponse.json({ error: 'Unauthorized: Admin authentication required' }, { status: 401 });
     }
 
@@ -403,7 +387,7 @@ export async function DELETE(req: Request) {
       return NextResponse.json({ error: 'id query parameter required' }, { status: 400 });
     }
 
-    const deleted = await Database.deleteAppointment(id);
+    const deleted = await Database.deleteAppointment(id, ctx.workspaceId);
     if (!deleted) {
       return NextResponse.json({ error: 'Appointment not found' }, { status: 404 });
     }
