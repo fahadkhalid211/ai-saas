@@ -889,6 +889,7 @@ export default function DashboardPage() {
                 setSelectedFiles={knowledge.setSelectedFiles}
                 fileInputRef={knowledge.fileInputRef}
                 resetUploaderFiles={knowledge.resetUploaderFiles}
+                storageUsage={knowledge.storageUsage}
                 uploadTextTitle={knowledge.uploadTextTitle}
                 setUploadTextTitle={knowledge.setUploadTextTitle}
                 uploadText={knowledge.uploadText}

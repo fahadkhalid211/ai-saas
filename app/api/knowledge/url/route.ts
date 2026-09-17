@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { Database } from '@/lib/db';
+import { BILLING_PLANS } from '@/lib/billing/plans';
 import { extractFromUrl } from '@/lib/rag/url-extractor';
 import { chunkDocument } from '@/lib/rag/chunker';
 import { generateEmbeddingsBatch } from '@/lib/rag/embedder';
@@ -42,6 +43,29 @@ export const POST = withAdminAuth(async (req: Request) => {
       return NextResponse.json({ error: 'Assistant not found or forbidden' }, { status: 404 });
     }
 
+    // Storage Quota Enforcement (Pre-Extraction Check)
+    const targetWorkspaceId = assistant.workspaceId || (ctx.workspaceId !== '*' ? ctx.workspaceId : 'default-workspace');
+    const wsBilling = await Database.getWorkspaceBilling(targetWorkspaceId);
+    const plan = BILLING_PLANS.find((p) => p.id === wsBilling.planId) || BILLING_PLANS[0];
+    const storageLimitMb = plan.knowledgeStorageLimitMb;
+    const storageLimitBytes = storageLimitMb * 1024 * 1024;
+    const currentStorage = await Database.getWorkspaceKnowledgeStorage(targetWorkspaceId);
+
+    if (currentStorage.totalBytes >= storageLimitBytes) {
+      return NextResponse.json(
+        {
+          success: false,
+          storageLimitReached: true,
+          error: `Knowledge Base storage limit reached. Your ${plan.name} plan includes ${storageLimitMb} MB of knowledge storage (Current: ${currentStorage.totalMb} MB used). Upgrade your plan to index additional content.`,
+          currentStorageMb: currentStorage.totalMb,
+          limitMb: storageLimitMb,
+          planName: plan.name,
+          planId: plan.id,
+        },
+        { status: 403 }
+      );
+    }
+
     // 1. Create Knowledge Source in DB
     const isYouTube = /(?:youtube\.com|youtu\.be)/i.test(cleanUrl);
     const initialType = isYouTube ? 'youtube' : 'web';
@@ -61,6 +85,26 @@ export const POST = withAdminAuth(async (req: Request) => {
         apiKey: assistant.apiKeyEncrypted,
         provider: assistant.provider,
       });
+
+      const docByteSize = Buffer.byteLength(doc.content || '', 'utf-8');
+      if (currentStorage.totalBytes + docByteSize > storageLimitBytes) {
+        await Database.deleteKnowledgeSource(source.id, ctx.workspaceId);
+        const currentMb = currentStorage.totalMb;
+        const incomingMb = Number((docByteSize / (1024 * 1024)).toFixed(2));
+        return NextResponse.json(
+          {
+            success: false,
+            storageLimitReached: true,
+            error: `Knowledge Base storage limit exceeded by extracted URL content (${incomingMb} MB). Your ${plan.name} plan includes ${storageLimitMb} MB of knowledge storage (Current: ${currentMb} MB used). Upgrade your plan to index this content.`,
+            currentStorageMb: currentMb,
+            limitMb: storageLimitMb,
+            incomingMb,
+            planName: plan.name,
+            planId: plan.id,
+          },
+          { status: 403 }
+        );
+      }
 
       // 3. Chunk document
       const rawChunks = chunkDocument(doc);
@@ -90,10 +134,11 @@ export const POST = withAdminAuth(async (req: Request) => {
 
       await Database.saveChunks(chunkRecords);
 
-      // 6. Update Knowledge Source with official title, type and chunk count
+      // 6. Update Knowledge Source with official title, type, fileSizeBytes and chunk count
       await Database.updateKnowledgeSource(source.id, {
         title: customTitle?.trim() || doc.title,
         type: doc.type,
+        fileSizeBytes: docByteSize,
         status: 'ready',
         chunkCount: chunkRecords.length,
       });

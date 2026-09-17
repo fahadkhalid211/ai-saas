@@ -28,6 +28,12 @@ export const GET = withAdminAuth(async (req: Request) => {
     const estimatedHoursSaved = (chatsUsed * 0.3).toFixed(1);
     const estimatedDollarSavings = Math.round(Number(estimatedHoursSaved) * 20);
 
+    const storageUsage = await Database.getWorkspaceKnowledgeStorage(ws.id || 'default-workspace');
+    const currentPlan = BILLING_PLANS.find((p) => p.id === ws.planId) || BILLING_PLANS[0];
+    const storageLimitMb = currentPlan.knowledgeStorageLimitMb;
+    const storageLimitBytes = storageLimitMb * 1024 * 1024;
+    const storagePercentUsed = Math.min(100, Math.round((storageUsage.totalBytes / storageLimitBytes) * 100));
+
     return NextResponse.json({
       workspaceId: ws.id,
       name: ws.name,
@@ -45,6 +51,12 @@ export const GET = withAdminAuth(async (req: Request) => {
       currentPeriodEnd: ws.currentPeriodEnd,
       estimatedHoursSaved: parseFloat(estimatedHoursSaved),
       estimatedDollarSavings,
+      knowledgeStorage: {
+        usedBytes: storageUsage.totalBytes,
+        usedMb: storageUsage.totalMb,
+        limitMb: storageLimitMb,
+        percentUsed: storagePercentUsed,
+      },
       paymentMethod: ws.paymentMethod || {
         brand: 'Visa',
         last4: '4242',

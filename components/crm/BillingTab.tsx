@@ -9,6 +9,7 @@ import {
   TrendingUp,
   Check,
   Download,
+  HardDrive,
 } from 'lucide-react';
 import { BILLING_PLANS, PlanTier } from '@/lib/billing/plans';
 
@@ -105,8 +106,8 @@ export const BillingTab: React.FC<BillingTabProps> = ({
         </div>
       )}
 
-      {/* Top 4 KPI & Quota Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* Top 5 KPI & Quota Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         {/* Card 1: Active Subscription */}
         <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-2">
           <div className="flex items-center justify-between text-xs text-slate-500">
@@ -158,7 +159,47 @@ export const BillingTab: React.FC<BillingTabProps> = ({
           </div>
         </div>
 
-        {/* Card 3: Overages & Unit Rate */}
+        {/* Card 3: Knowledge Base Storage Meter */}
+        <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-2">
+          <div className="flex items-center justify-between text-xs text-slate-500">
+            <span>Knowledge Storage</span>
+            <HardDrive className="h-4 w-4 text-purple-500" />
+          </div>
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-xl font-bold text-slate-900 dark:text-white font-mono">
+              {billingData?.knowledgeStorage?.usedMb ?? 0}
+            </span>
+            <span className="text-xs text-slate-400 font-mono">
+              / {billingData?.knowledgeStorage?.limitMb ?? 50} MB
+            </span>
+          </div>
+          <div className="space-y-1">
+            <div className="h-2 w-full rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
+              <div
+                style={{ width: `${billingData?.knowledgeStorage?.percentUsed ?? 0}%` }}
+                className={`h-full transition-all duration-500 ${
+                  (billingData?.knowledgeStorage?.percentUsed ?? 0) >= 100
+                    ? 'bg-rose-500'
+                    : (billingData?.knowledgeStorage?.percentUsed ?? 0) > 80
+                    ? 'bg-amber-500'
+                    : 'bg-purple-600'
+                }`}
+              />
+            </div>
+            <div className="flex justify-between text-[10px] text-slate-400 font-mono">
+              <span>{billingData?.knowledgeStorage?.percentUsed ?? 0}% used</span>
+              <span>
+                {Math.max(
+                  0,
+                  (billingData?.knowledgeStorage?.limitMb ?? 50) - (billingData?.knowledgeStorage?.usedMb ?? 0)
+                ).toFixed(1)}{' '}
+                MB free
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Card 4: Overages & Unit Rate */}
         <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-2">
           <div className="flex items-center justify-between text-xs text-slate-500">
             <span>Overage Protection</span>
@@ -175,7 +216,7 @@ export const BillingTab: React.FC<BillingTabProps> = ({
           </div>
         </div>
 
-        {/* Card 4: Value Delivered / ROI */}
+        {/* Card 5: Value Delivered / ROI */}
         <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-2">
           <div className="flex items-center justify-between text-xs text-slate-500">
             <span>Value Delivered</span>
@@ -274,6 +315,15 @@ export const BillingTab: React.FC<BillingTabProps> = ({
                     {billingInterval === 'annual'
                       ? `Billed $${price * 12}/year (${plan.chatSessionsLimit.toLocaleString()} chats included)`
                       : `${plan.chatSessionsLimit.toLocaleString()} chat sessions included / month`}
+                  </div>
+                  <div className="flex items-center gap-1.5 text-[11.5px] text-blue-600 dark:text-blue-400 font-semibold mt-1.5">
+                    <HardDrive className="h-3.5 w-3.5 shrink-0" />
+                    <span>
+                      {plan.knowledgeStorageLimitMb >= 1000
+                        ? `${plan.knowledgeStorageLimitMb / 1000} GB`
+                        : `${plan.knowledgeStorageLimitMb} MB`}{' '}
+                      Knowledge Storage Included
+                    </span>
                   </div>
                 </div>
 

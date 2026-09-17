@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { Database } from '@/lib/db';
+import { BILLING_PLANS } from '@/lib/billing/plans';
 import { parseFileOrText, isMediaFile, isVideoFile, isAudioFile } from '@/lib/rag/parsers';
 import { extractFromUrl } from '@/lib/rag/url-extractor';
 import { diagnoseKnowledgeFailure } from '@/lib/rag/diagnostics';
@@ -41,8 +42,48 @@ export const POST = withAdminAuth(async (req: Request) => {
       return NextResponse.json({ success: false, error: 'Assistant not found or forbidden' }, { status: 404 });
     }
 
+    // Storage Quota Enforcement
+    const targetWorkspaceId = assistant.workspaceId || (ctx.workspaceId !== '*' ? ctx.workspaceId : 'default-workspace');
+    const wsBilling = await Database.getWorkspaceBilling(targetWorkspaceId);
+    const plan = BILLING_PLANS.find((p) => p.id === wsBilling.planId) || BILLING_PLANS[0];
+    const storageLimitMb = plan.knowledgeStorageLimitMb;
+    const storageLimitBytes = storageLimitMb * 1024 * 1024;
+    const currentStorage = await Database.getWorkspaceKnowledgeStorage(targetWorkspaceId);
+
+    if (currentStorage.totalBytes >= storageLimitBytes) {
+      return NextResponse.json(
+        {
+          success: false,
+          storageLimitReached: true,
+          error: `Knowledge Base storage limit reached. Your ${plan.name} plan includes ${storageLimitMb} MB of knowledge storage (Current: ${currentStorage.totalMb} MB used). Upgrade your plan to extract and index new knowledge.`,
+          currentStorageMb: currentStorage.totalMb,
+          limitMb: storageLimitMb,
+          planName: plan.name,
+          planId: plan.id,
+        },
+        { status: 403 }
+      );
+    }
+
     // Extraction Mode 1: File Extraction (PDF, DOCX, CSV, Image, Audio, Video)
     if (file && file.size > 0) {
+      if (currentStorage.totalBytes + file.size > storageLimitBytes) {
+        const currentMb = currentStorage.totalMb;
+        const incomingMb = Number((file.size / (1024 * 1024)).toFixed(2));
+        return NextResponse.json(
+          {
+            success: false,
+            storageLimitReached: true,
+            error: `File size (${incomingMb} MB) exceeds remaining Knowledge Base storage. Your ${plan.name} plan includes ${storageLimitMb} MB of storage (Current: ${currentMb} MB used). Upgrade your plan to increase capacity.`,
+            currentStorageMb: currentMb,
+            limitMb: storageLimitMb,
+            incomingMb,
+            planName: plan.name,
+            planId: plan.id,
+          },
+          { status: 403 }
+        );
+      }
       activeFilename = file.name;
       activeFileSize = file.size;
       const ext = activeFilename.split('.').pop()?.toLowerCase() || 'txt';

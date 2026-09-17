@@ -1072,6 +1072,43 @@ export class Database {
     return true;
   }
 
+  static async getWorkspaceKnowledgeStorage(workspaceId: string = 'default-workspace'): Promise<{
+    totalBytes: number;
+    totalMb: number;
+    sourceCount: number;
+    chunkCount: number;
+  }> {
+    const state = await ensureInitialized();
+    const ws = (!workspaceId || workspaceId === '*') ? null : workspaceId;
+    const wsAssistants = ws ? (state.assistants || []).filter((a) => (a.workspaceId || 'default-workspace') === ws) : (state.assistants || []);
+    const assistantIds = new Set(wsAssistants.map((a) => a.id));
+
+    let totalBytes = 0;
+    const sources = (state.knowledgeSources || []).filter((k) =>
+      ws ? assistantIds.has(k.assistantId) : true
+    );
+
+    for (const source of sources) {
+      let bytes = source.fileSizeBytes || 0;
+      if (!bytes) {
+        const sourceChunks = (state.chunks || []).filter((c) => c.knowledgeSourceId === source.id);
+        bytes = sourceChunks.reduce((acc, c) => acc + Buffer.byteLength(c.content || '', 'utf-8'), 0);
+      }
+      totalBytes += bytes;
+    }
+
+    const wsChunks = (state.chunks || []).filter((c) =>
+      ws ? assistantIds.has(c.assistantId) : true
+    );
+
+    return {
+      totalBytes,
+      totalMb: Number((totalBytes / (1024 * 1024)).toFixed(2)),
+      sourceCount: sources.length,
+      chunkCount: wsChunks.length,
+    };
+  }
+
   // Chunks
   static async saveChunks(chunks: Omit<ChunkRecord, 'id' | 'createdAt'>[]): Promise<void> {
     const state = await ensureInitialized();

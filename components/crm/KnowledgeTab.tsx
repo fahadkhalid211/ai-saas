@@ -16,8 +16,9 @@ import {
   Bot,
   ShieldCheck,
   Plus,
+  HardDrive,
 } from 'lucide-react';
-import type { KnowledgeReviewDraft } from './hooks/useCrmKnowledge';
+import type { KnowledgeReviewDraft, KnowledgeStorageUsage } from './hooks/useCrmKnowledge';
 
 export interface KnowledgeSource {
   id: string;
@@ -90,6 +91,7 @@ export interface KnowledgeTabProps {
   handleSaveReviewDraft?: () => Promise<void>;
   handleDiscardReviewDraft?: () => void;
   handleExtractUrl?: (e?: React.FormEvent) => Promise<void>;
+  storageUsage?: KnowledgeStorageUsage | null;
 }
 
 export const KnowledgeTab: React.FC<KnowledgeTabProps> = ({
@@ -106,6 +108,7 @@ export const KnowledgeTab: React.FC<KnowledgeTabProps> = ({
   setSelectedFiles,
   fileInputRef,
   resetUploaderFiles,
+  storageUsage,
   uploadTextTitle,
   setUploadTextTitle,
   uploadText,
@@ -252,7 +255,7 @@ export const KnowledgeTab: React.FC<KnowledgeTabProps> = ({
                 </div>
 
                 {/* Metric Stat Cards (Balanced Typography) */}
-                <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5">
                   <div className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs">
                     <div className="text-[11px] font-medium text-slate-500 dark:text-slate-400">Total Articles</div>
                     <div className="text-base font-semibold text-slate-900 dark:text-white mt-0.5">
@@ -277,6 +280,37 @@ export const KnowledgeTab: React.FC<KnowledgeTabProps> = ({
                       {totalChunks} Chunks
                     </div>
                     <div className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5 font-mono">384-dim BGE-Small</div>
+                  </div>
+
+                  <div className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-1">
+                    <div className="flex items-center justify-between text-[11px] font-medium text-slate-500 dark:text-slate-400">
+                      <span>Storage Quota</span>
+                      <HardDrive className="h-3.5 w-3.5 text-blue-500" />
+                    </div>
+                    <div className="text-base font-semibold text-slate-900 dark:text-white mt-0.5 font-mono">
+                      {storageUsage ? `${storageUsage.usedMb} MB` : '0 MB'}
+                      <span className="text-[11px] font-normal text-slate-400 font-sans">
+                        {' '}/ {storageUsage ? `${storageUsage.limitMb} MB` : '50 MB'}
+                      </span>
+                    </div>
+                    <div className="space-y-0.5">
+                      <div className="h-1.5 w-full rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
+                        <div
+                          style={{ width: `${Math.min(100, storageUsage?.percentUsed ?? 0)}%` }}
+                          className={`h-full transition-all duration-500 ${
+                            (storageUsage?.percentUsed ?? 0) >= 100
+                              ? 'bg-rose-500'
+                              : (storageUsage?.percentUsed ?? 0) > 80
+                              ? 'bg-amber-500'
+                              : 'bg-blue-600'
+                          }`}
+                        />
+                      </div>
+                      <div className="text-[10px] text-slate-400 flex justify-between font-mono">
+                        <span>{storageUsage?.percentUsed ?? 0}% used</span>
+                        <span>{storageUsage?.planName || 'Plan'}</span>
+                      </div>
+                    </div>
                   </div>
 
                   <div className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs">
@@ -358,6 +392,23 @@ export const KnowledgeTab: React.FC<KnowledgeTabProps> = ({
                         Supports PDF, CSV tables, JSON catalogues, Word DOCX, TXT, Images, &amp; Video/Audio (MP4, MP3, WAV, M4A, WEBM)
                       </p>
                     </div>
+                    {storageUsage && (
+                      <div className="inline-flex items-center gap-2 text-xs text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-800/80 px-3 py-1 rounded-full border border-slate-200 dark:border-slate-700">
+                        <HardDrive className="h-3.5 w-3.5 text-blue-500 shrink-0" />
+                        <span>
+                          Storage: <strong>{storageUsage.usedMb} MB</strong> / <strong>{storageUsage.limitMb} MB</strong> ({storageUsage.percentUsed}% used)
+                        </span>
+                        {storageUsage.isAtLimit ? (
+                          <span className="px-1.5 py-0.2 rounded text-[10px] font-bold bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-300">
+                            Limit Reached
+                          </span>
+                        ) : (
+                          <span className="text-[11px] text-slate-400">
+                            • {Math.max(0, storageUsage.limitMb - storageUsage.usedMb).toFixed(1)} MB available
+                          </span>
+                        )}
+                      </div>
+                    )}
                     <input
                       ref={fileInputRef}
                       type="file"

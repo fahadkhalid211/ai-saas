@@ -32,12 +32,22 @@ export interface KnowledgeReviewDraft {
   isEdited?: boolean;
 }
 
+export interface KnowledgeStorageUsage {
+  usedBytes: number;
+  usedMb: number;
+  limitMb: number;
+  percentUsed: number;
+  isAtLimit: boolean;
+  planName?: string;
+}
+
 interface UseCrmKnowledgeOptions {
   activeAssistant: any;
 }
 
 export function useCrmKnowledge({ activeAssistant }: UseCrmKnowledgeOptions) {
   const [sources, setSources] = useState<KnowledgeSource[]>([]);
+  const [storageUsage, setStorageUsage] = useState<KnowledgeStorageUsage | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadStatusText, setUploadStatusText] = useState<string | null>(null);
   const [uploadText, setUploadText] = useState('');
@@ -94,6 +104,9 @@ export function useCrmKnowledge({ activeAssistant }: UseCrmKnowledgeOptions) {
     try {
       const res = await fetch(`/api/knowledge?assistantId=${assistantId}`);
       const data = await res.json();
+      if (data.storage) {
+        setStorageUsage(data.storage);
+      }
       if (data.sources) {
         setSources((prev) => {
           if (
@@ -119,6 +132,7 @@ export function useCrmKnowledge({ activeAssistant }: UseCrmKnowledgeOptions) {
   useEffect(() => {
     if (activeAssistant?.id) {
       setSources([]);
+      setStorageUsage(null);
       setReviewDraft(null);
       setUploadFailureAlert(null);
       setUrlFeedback(null);
@@ -182,6 +196,9 @@ export function useCrmKnowledge({ activeAssistant }: UseCrmKnowledgeOptions) {
         try {
           const errData = await res.json();
           if (errData.error) errorMsg = errData.error;
+          if (res.status === 403 || errData.storageLimitReached) {
+            whatToDo = 'Navigate to the Billing tab to upgrade your plan and increase your Knowledge Base storage capacity.';
+          }
         } catch {
           const text = await res.text().catch(() => '');
           if (res.status === 413 || text.includes('FUNCTION_PAYLOAD_TOO_LARGE')) {
@@ -197,6 +214,10 @@ export function useCrmKnowledge({ activeAssistant }: UseCrmKnowledgeOptions) {
           } else if (text) {
             errorMsg = text.slice(0, 200);
           }
+        }
+
+        if (activeAssistant?.id) {
+          fetchKnowledge(activeAssistant.id);
         }
 
         setUploadFailureAlert({
@@ -340,7 +361,9 @@ export function useCrmKnowledge({ activeAssistant }: UseCrmKnowledgeOptions) {
           const reason = data?.error || `Extraction server returned status ${res.status}`;
           const nextStep =
             data?.whatToDoNext ||
-            (res.status === 413
+            (res.status === 403 || data?.storageLimitReached
+              ? 'Navigate to the Billing tab to upgrade your plan and expand your Knowledge Base storage quota.'
+              : res.status === 413
               ? 'File exceeds upload limit. Please export a smaller segment and try again.'
               : 'Please verify document format or check server AI settings.');
 
@@ -349,6 +372,9 @@ export function useCrmKnowledge({ activeAssistant }: UseCrmKnowledgeOptions) {
             reason,
             whatToDoNext: nextStep,
           });
+          if (activeAssistant?.id) {
+            fetchKnowledge(activeAssistant.id);
+          }
           setIsExtracting(false);
           setExtractionStatusText(null);
           return;
@@ -418,12 +444,21 @@ export function useCrmKnowledge({ activeAssistant }: UseCrmKnowledgeOptions) {
 
       if (!res.ok || !data?.success) {
         const firstFailed = data?.sources?.find((s: any) => s.status === 'failed');
+        const reason = firstFailed?.error || data?.error || `Failed to index knowledge into database (Status: ${res.status}).`;
+        const whatToDo =
+          firstFailed?.whatToDoNext ||
+          (res.status === 403 || data?.storageLimitReached
+            ? 'Navigate to the Billing tab to upgrade your plan and expand your Knowledge Base storage quota.'
+            : 'Please check database connectivity or try saving again.');
+
         setUploadFailureAlert({
           title: reviewDraft.title,
-          reason: firstFailed?.error || data?.error || 'Failed to index knowledge into database.',
-          whatToDoNext:
-            firstFailed?.whatToDoNext || 'Please check database connectivity or try saving again.',
+          reason,
+          whatToDoNext: whatToDo,
         });
+        if (activeAssistant?.id) {
+          fetchKnowledge(activeAssistant.id);
+        }
         return;
       }
 
@@ -475,6 +510,16 @@ export function useCrmKnowledge({ activeAssistant }: UseCrmKnowledgeOptions) {
           type: 'error',
           message: data?.error || 'Failed to extract content from this URL.',
         });
+        if (res.status === 403 || data?.storageLimitReached) {
+          setUploadFailureAlert({
+            title: urlCustomTitle.trim() || urlInput.trim(),
+            reason: data?.error || 'Knowledge storage quota exceeded.',
+            whatToDoNext: 'Navigate to the Billing tab to upgrade your plan and expand your Knowledge Base storage quota.',
+          });
+          if (activeAssistant?.id) {
+            fetchKnowledge(activeAssistant.id);
+          }
+        }
         return;
       }
 
@@ -537,7 +582,13 @@ export function useCrmKnowledge({ activeAssistant }: UseCrmKnowledgeOptions) {
           type: 'error',
           message: data.error || 'Failed to extract knowledge from this URL.',
         });
-        if (data.source) {
+        if (res.status === 403 || data.storageLimitReached) {
+          setUploadFailureAlert({
+            title: urlCustomTitle.trim() || urlInput.trim(),
+            reason: data.error || 'Knowledge storage quota exceeded.',
+            whatToDoNext: 'Navigate to the Billing tab to upgrade your plan and expand your Knowledge Base storage quota.',
+          });
+        } else if (data.source) {
           setUploadFailureAlert({
             title: data.source.title,
             reason: data.error,
@@ -678,6 +729,7 @@ export function useCrmKnowledge({ activeAssistant }: UseCrmKnowledgeOptions) {
     setSelectedFiles,
     fileInputRef,
     resetUploaderFiles,
+    storageUsage,
     sourceFilter,
     setSourceFilter,
     failedSourceModal,

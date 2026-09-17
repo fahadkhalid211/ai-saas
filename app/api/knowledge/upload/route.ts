@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { Database } from '@/lib/db';
+import { BILLING_PLANS } from '@/lib/billing/plans';
 import { parseFileOrText } from '@/lib/rag/parsers';
 import { chunkDocument } from '@/lib/rag/chunker';
 import { generateEmbeddingsBatch } from '@/lib/rag/embedder';
@@ -34,6 +35,41 @@ export const POST = withAdminAuth(async (req: Request) => {
     const sourceType = (formData.get('sourceType') as string) || 'description';
     const rawFileSizeBytes = formData.get('fileSizeBytes');
     const fileSizeBytes = rawFileSizeBytes ? Number(rawFileSizeBytes) : Buffer.byteLength(rawText || '', 'utf-8');
+
+    // Storage Quota Enforcement
+    const targetWorkspaceId = assistant.workspaceId || (ctx.workspaceId !== '*' ? ctx.workspaceId : 'default-workspace');
+    const wsBilling = await Database.getWorkspaceBilling(targetWorkspaceId);
+    const plan = BILLING_PLANS.find((p) => p.id === wsBilling.planId) || BILLING_PLANS[0];
+    const storageLimitMb = plan.knowledgeStorageLimitMb;
+    const storageLimitBytes = storageLimitMb * 1024 * 1024;
+    const currentStorage = await Database.getWorkspaceKnowledgeStorage(targetWorkspaceId);
+
+    let incomingBytes = 0;
+    if (files && files.length > 0) {
+      for (const f of files) {
+        if (f && f.size) incomingBytes += f.size;
+      }
+    } else if (rawText && rawText.trim().length > 0) {
+      incomingBytes = isNaN(fileSizeBytes) ? Buffer.byteLength(rawText, 'utf-8') : fileSizeBytes;
+    }
+
+    if (currentStorage.totalBytes + incomingBytes > storageLimitBytes) {
+      const currentMb = currentStorage.totalMb;
+      const incomingMb = Number((incomingBytes / (1024 * 1024)).toFixed(2));
+      return NextResponse.json(
+        {
+          success: false,
+          storageLimitReached: true,
+          error: `Knowledge Base storage limit exceeded. Your ${plan.name} plan includes ${storageLimitMb} MB of knowledge storage (Current: ${currentMb} MB used, Incoming: ${incomingMb} MB). Upgrade your plan to increase your storage capacity.`,
+          currentStorageMb: currentMb,
+          limitMb: storageLimitMb,
+          incomingMb,
+          planName: plan.name,
+          planId: plan.id,
+        },
+        { status: 403 }
+      );
+    }
 
     const processedSources = [];
 
