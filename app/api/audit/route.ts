@@ -9,7 +9,10 @@ export const GET = withAdminAuth(async (req: Request) => {
     const { searchParams } = new URL(req.url);
     const limit = parseInt(searchParams.get('limit') || '100', 10);
 
-    const logs = await Database.getAuditLogs(limit);
+    const rawLogs = await Database.getAuditLogs(limit);
+    const logs = [...rawLogs].sort(
+      (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+    );
     return NextResponse.json({ logs });
   } catch (error: any) {
     return NextResponse.json({ error: error?.message || 'Failed to fetch audit trail' }, { status: 500 });

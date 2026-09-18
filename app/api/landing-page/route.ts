@@ -126,7 +126,10 @@ export async function GET(req: NextRequest) {
         return NextResponse.json({ error: 'Unauthorized: Admin access required' }, { status: 401 });
       }
 
-      const targetWsId = (!ctx.workspaceId || ctx.workspaceId === '*') ? 'default-workspace' : ctx.workspaceId;
+      const queryWs = searchParams.get('workspaceId');
+      const targetWsId = (queryWs && (ctx.memberId === 'master-admin' || ctx.workspaceId === '*' || ctx.workspaceId === queryWs))
+        ? queryWs
+        : ((!ctx.workspaceId || ctx.workspaceId === '*') ? 'default-workspace' : ctx.workspaceId);
       const landingPages = await Database.getLandingPages(targetWsId);
       const billing = await Database.getWorkspaceBilling(targetWsId);
       const plan = BILLING_PLANS.find((p) => p.id === billing.planId) || BILLING_PLANS[0];

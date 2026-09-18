@@ -61,7 +61,10 @@ export function useCrmLanding({
 
   const fetchAllLandingPages = async () => {
     try {
-      const res = await fetch('/api/landing-page?all=true');
+      const url = activeAssistant?.workspaceId
+        ? `/api/landing-page?all=true&workspaceId=${encodeURIComponent(activeAssistant.workspaceId)}`
+        : '/api/landing-page?all=true';
+      const res = await fetch(url);
       if (res.ok) {
         const data = await res.json();
         const pagesList = data.landingPages || data.pages;
@@ -93,7 +96,10 @@ export function useCrmLanding({
       const res = await fetch('/api/billing/addon', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ addonType: 'extra_landing_page' }),
+        body: JSON.stringify({
+          addonType: 'extra_landing_page',
+          workspaceId: activeAssistant?.workspaceId,
+        }),
       });
       const data = await res.json();
       if (!res.ok) {

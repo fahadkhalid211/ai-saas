@@ -44,6 +44,7 @@ import { useCrmTeamSecurity } from '@/components/crm/hooks/useCrmTeamSecurity';
 import { useCrmKnowledge } from '@/components/crm/hooks/useCrmKnowledge';
 import { useCrmPlayground } from '@/components/crm/hooks/useCrmPlayground';
 import { Lead } from '@/types/crm';
+import { BILLING_PLANS } from '@/lib/billing/plans';
 
 export default function DashboardPage() {
   // Theme state: default light, persisted in localStorage
@@ -1054,6 +1055,17 @@ export default function DashboardPage() {
                 templateSuccessMsg={templateSuccessMsg}
                 applyingTemplateId={applyingTemplateId}
                 handleApplyTemplate={handleApplyTemplate}
+                assistants={assistants}
+                activeAssistant={activeAssistant}
+                allLandingPages={landing.allLandingPages}
+                onSaveLandingPage={landing.handleAIGenerateLandingPage}
+                onOpenEditor={(cfg) => {
+                  landing.setLandingConfig(cfg);
+                  landing.setViewMode('editor');
+                  setActiveTab('landing_page');
+                }}
+                onBackToList={() => setActiveTab('landing_page')}
+                setActiveTab={(tab: any) => setActiveTab(tab)}
               />
             )}
 
@@ -1076,13 +1088,28 @@ export default function DashboardPage() {
         </div>
 
         {/* MODALS */}
-        <NewAssistantModal
-          isOpen={showNewModal}
-          onClose={() => setShowNewModal(false)}
-          onSubmit={handleCreateAssistant}
-          newAssistantName={newAssistantName}
-          setNewAssistantName={setNewAssistantName}
-        />
+        {(() => {
+          const currentPlan = BILLING_PLANS.find((p) => p.id === billing.billingData?.planId) || BILLING_PLANS[0];
+          const botLimit = currentPlan.botLimit;
+          const isAtBotQuota = botLimit !== 'Unlimited' && assistants.length >= botLimit;
+          return (
+            <NewAssistantModal
+              isOpen={showNewModal}
+              onClose={() => setShowNewModal(false)}
+              onSubmit={handleCreateAssistant}
+              newAssistantName={newAssistantName}
+              setNewAssistantName={setNewAssistantName}
+              isAtQuota={isAtBotQuota}
+              currentCount={assistants.length}
+              botLimit={botLimit}
+              planName={currentPlan.name}
+              onUpgradePlan={() => {
+                setShowNewModal(false);
+                setActiveTab('billing');
+              }}
+            />
+          );
+        })()}
 
         <DiagnosticModal
           failedSource={knowledge.failedSourceModal}

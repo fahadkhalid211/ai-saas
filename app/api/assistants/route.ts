@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { Database } from '@/lib/db';
 import { withAdminAuth, getAuthContext } from '@/lib/security/auth';
 import { maskSecret } from '@/lib/security/crypto';
+import { BILLING_PLANS } from '@/lib/billing/plans';
 
 export const GET = withAdminAuth(async (req: Request) => {
   try {
@@ -35,6 +36,24 @@ export const POST = withAdminAuth(async (req: Request) => {
     const targetWorkspaceId = (ctx.memberId === 'master-admin' && body.workspaceId)
       ? body.workspaceId
       : (ctx.workspaceId && ctx.workspaceId !== '*' ? ctx.workspaceId : (body.workspaceId || 'default-workspace'));
+
+    // Enforce subscription plan bot limits
+    const existingAssistants = await Database.getAssistants(targetWorkspaceId);
+    const billing = await Database.getWorkspaceBilling(targetWorkspaceId);
+    const plan = BILLING_PLANS.find((p) => p.id === billing.planId) || BILLING_PLANS[0];
+
+    if (plan.botLimit !== 'Unlimited' && existingAssistants.length >= plan.botLimit) {
+      return NextResponse.json(
+        {
+          error: `AI Assistant bot limit reached for ${plan.name} plan (${existingAssistants.length} of ${plan.botLimit} bots used). Please upgrade to Growth or Scale plan to add more bots.`,
+          quotaReached: true,
+          planLimit: plan.botLimit,
+          currentCount: existingAssistants.length,
+          planName: plan.name,
+        },
+        { status: 403 }
+      );
+    }
 
     const assistant = await Database.createAssistant({
       ...body,

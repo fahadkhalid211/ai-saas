@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   Sparkles,
   ArrowRight,
@@ -230,6 +230,11 @@ export function AiLandingWizard({
   const [selectedArchetype, setSelectedArchetype] = useState<string>('barber_classic');
   const [previewModalArch, setPreviewModalArch] = useState<DesignArchetype | null>(null);
 
+  const selectedArchObj = useMemo(() => {
+    const industryArchs = getArchetypesForIndustry(selectedIndustry);
+    return industryArchs.find((a) => a.id === selectedArchetype) || industryArchs[0] || MODERN_DESIGN_ARCHETYPES[0];
+  }, [selectedIndustry, selectedArchetype]);
+
   const [businessName, setBusinessName] = useState<string>('');
   const [slug, setSlug] = useState<string>('');
   const [purposeStory, setPurposeStory] = useState<string>('');
@@ -351,15 +356,10 @@ export function AiLandingWizard({
 
     // AI Progress Simulation & Copywriting Messages
     const aiSteps = [
-      { progress: 20, msg: `Analyzing business narrative and purpose for "${finalBusinessName}"...` },
-      { progress: 45, msg: `Architecting ${archObj.name} layout and conversion hierarchy...` },
-      { progress: 68, msg: `Synthesizing ${services.length} bespoke service pricing items & booking slots...` },
-      { progress: 85, msg: assistantOption === 'auto_create'
-          ? `Deploying dedicated AI Concierge and initializing new knowledge base...`
-          : (assistantOption === 'none'
-              ? `Configuring conversion architecture without live chatbot...`
-              : `Connecting to existing AI Concierge knowledge base...`) },
-      { progress: 95, msg: `Generating SEO meta headers, JSON-LD schema, and live preview...` },
+      { progress: 25, msg: `Analyzing brand narrative, market positioning, and target clientele for "${finalBusinessName}"...` },
+      { progress: 50, msg: `Synthesizing custom typography, color systems, and conversion-optimized hierarchy...` },
+      { progress: 75, msg: `Structuring bespoke service packages, pricing tables, and appointment booking calendar...` },
+      { progress: 95, msg: `Optimizing responsive layout, SEO metadata schemas, and deploying live production site...` },
     ];
 
     try {
@@ -435,17 +435,30 @@ export function AiLandingWizard({
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             {INDUSTRIES_LIST.map((ind) => {
               const isSelected = selectedIndustry === ind.id;
+              const isCustom = ind.id === 'custom';
               const Icon = ind.icon;
               return (
                 <div
                   key={ind.id}
                   onClick={() => setSelectedIndustry(ind.id)}
-                  className={`p-4 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between space-y-3 ${
-                    isSelected
+                  className={`relative p-4 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between space-y-3 ${
+                    isCustom
+                      ? isSelected
+                        ? 'border-indigo-600 dark:border-indigo-500 bg-indigo-50/50 dark:bg-indigo-950/40 shadow-lg ring-2 ring-indigo-600/30'
+                        : 'border-indigo-400 dark:border-indigo-500/80 bg-indigo-50/30 dark:bg-indigo-950/25 shadow-sm ring-2 ring-indigo-500/30 hover:border-indigo-500'
+                      : isSelected
                       ? 'border-blue-600 dark:border-blue-500 bg-blue-50/40 dark:bg-blue-950/30 shadow-md ring-2 ring-blue-600/20'
                       : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-slate-300 dark:hover:border-slate-700'
                   }`}
                 >
+                  {isCustom && (
+                    <div className="absolute -top-2.5 right-3 z-10">
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-indigo-600 text-white shadow-xs">
+                        <Sparkles className="h-3 w-3 text-amber-300" />
+                        <span>Custom Canvas</span>
+                      </span>
+                    </div>
+                  )}
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
                       <div
@@ -454,13 +467,19 @@ export function AiLandingWizard({
                       >
                         <Icon className="h-4 w-4" />
                       </div>
-                      {isSelected && (
+                      {isSelected ? (
                         <span className="p-1 rounded-full bg-blue-600 text-white">
                           <Check className="h-3 w-3" />
                         </span>
-                      )}
+                      ) : isCustom ? (
+                        <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 px-1.5 py-0.5 rounded bg-indigo-100/60 dark:bg-indigo-900/50">
+                          Highlighted
+                        </span>
+                      ) : null}
                     </div>
-                    <div className="text-xs font-bold text-slate-900 dark:text-white">{ind.name}</div>
+                    <div className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                      <span>{ind.name}</span>
+                    </div>
                     <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
                       {ind.description}
                     </p>
@@ -468,7 +487,9 @@ export function AiLandingWizard({
 
                   <div className="pt-2 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between text-[10px] text-slate-500">
                     <span>{ind.defaultServices.length} default services</span>
-                    <span className="font-semibold text-blue-600 dark:text-blue-400">Auto-configured</span>
+                    <span className={`font-semibold ${isCustom ? 'text-indigo-600 dark:text-indigo-400' : 'text-blue-600 dark:text-blue-400'}`}>
+                      {isCustom ? 'Fully Modular' : 'Auto-configured'}
+                    </span>
                   </div>
                 </div>
               );
@@ -1008,10 +1029,10 @@ export function AiLandingWizard({
               type="button"
               onClick={handleStartGeneration}
               disabled={!businessName.trim()}
-              className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 hover:from-blue-700 hover:to-indigo-700 text-white text-xs font-bold shadow-lg shadow-blue-600/30 transition cursor-pointer disabled:opacity-50"
+              className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 dark:text-slate-900 text-white text-xs font-bold shadow-md transition cursor-pointer disabled:opacity-50"
             >
-              <Sparkles className="h-4 w-4" />
-              <span>Architect &amp; Deploy AI Website Now</span>
+              <Sparkles className="h-4 w-4 text-amber-400" />
+              <span>Architect &amp; Deploy Website Now</span>
             </button>
           </div>
         </div>
@@ -1021,31 +1042,41 @@ export function AiLandingWizard({
       {step === 4 && (
         <div className="py-16 px-4 max-w-xl mx-auto text-center space-y-6">
           <div className="relative inline-flex items-center justify-center">
-            <div className="h-20 w-20 rounded-3xl bg-blue-600/10 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 flex items-center justify-center animate-pulse">
+            <div
+              className="h-20 w-20 rounded-3xl flex items-center justify-center animate-pulse transition-colors"
+              style={{
+                backgroundColor: `${selectedArchObj.themeColor || '#2563eb'}18`,
+                color: selectedArchObj.themeColor || '#2563eb',
+                border: `1px solid ${selectedArchObj.themeColor || '#2563eb'}30`,
+              }}
+            >
               <Cpu className="h-10 w-10" />
             </div>
           </div>
 
           <div className="space-y-2">
             <h3 className="text-xl font-bold text-slate-900 dark:text-white">
-              AI is Designing Your Website
+              Crafting Your Bespoke Digital Experience
             </h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400 font-mono transition-all duration-300">
-              {currentAiStepMsg || 'Synthesizing layout and customer booking triggers...'}
+            <p className="text-xs font-medium text-slate-600 dark:text-slate-300 min-h-[40px] flex items-center justify-center px-4 transition-all duration-300">
+              {currentAiStepMsg || `Analyzing brand narrative and target clientele for "${businessName || 'your business'}"...`}
             </p>
           </div>
 
-          {/* Progress Bar with Gradient Glow */}
+          {/* Progress Bar with Brand Accent Color */}
           <div className="space-y-2">
-            <div className="w-full bg-slate-100 dark:bg-slate-800 h-3 rounded-full overflow-hidden p-0.5 shadow-inner">
+            <div className="w-full bg-slate-100 dark:bg-slate-800 h-2.5 rounded-full overflow-hidden p-0.5 border border-slate-200/60 dark:border-slate-700/60">
               <div
-                className="h-full bg-gradient-to-r from-blue-600 via-indigo-500 to-emerald-500 rounded-full transition-all duration-500 ease-out"
-                style={{ width: `${generationProgress}%` }}
+                className="h-full rounded-full transition-all duration-500 ease-out"
+                style={{
+                  width: `${generationProgress}%`,
+                  backgroundColor: selectedArchObj.themeColor || '#2563eb',
+                }}
               />
             </div>
             <div className="flex justify-between text-[11px] font-mono text-slate-400">
-              <span>Architecting</span>
-              <span>{generationProgress}%</span>
+              <span>Architecting Digital System</span>
+              <span className="font-semibold text-slate-700 dark:text-slate-300">{generationProgress}%</span>
             </div>
           </div>
 

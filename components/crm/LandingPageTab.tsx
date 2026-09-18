@@ -517,11 +517,11 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
         <div className="flex items-center gap-2.5">
           <button
             type="button"
-            onClick={() => setShowTemplatesModal(true)}
+            onClick={handleStartCreateWizard}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-blue-200 dark:border-blue-900/50 bg-blue-50 dark:bg-blue-950/40 text-xs font-semibold text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/60 transition shadow-2xs cursor-pointer"
           >
             <LayoutTemplate className="h-3.5 w-3.5" />
-            <span>Browse Templates (11)</span>
+            <span>Browse Templates</span>
           </button>
           <button
             type="button"

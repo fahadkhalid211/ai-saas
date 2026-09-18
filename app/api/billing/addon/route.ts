@@ -1,19 +1,23 @@
 import { NextResponse } from 'next/server';
 import { Database } from '@/lib/db';
 import { BILLING_PLANS, EXTRA_LANDING_PAGE_ADDON_PRICE } from '@/lib/billing/plans';
-import { withAdminAuth } from '@/lib/security/auth';
+import { withAdminAuth, getAuthContext } from '@/lib/security/auth';
 
 export const POST = withAdminAuth(async (req: Request) => {
   try {
+    const ctx = await getAuthContext(req);
     const body = await req.json();
-    const { workspaceId = 'default-workspace', addonType } = body;
+    const { addonType } = body;
+    const targetWsId = (body.workspaceId && body.workspaceId !== '*')
+      ? body.workspaceId
+      : (ctx.workspaceId && ctx.workspaceId !== '*' ? ctx.workspaceId : 'default-workspace');
 
     if (addonType !== 'extra_landing_page') {
       return NextResponse.json({ success: false, error: 'Unsupported addon type' }, { status: 400 });
     }
 
-    const result = await Database.purchaseExtraLandingPageSlot(workspaceId);
-    const billing = await Database.getWorkspaceBilling(workspaceId);
+    const result = await Database.purchaseExtraLandingPageSlot(targetWsId);
+    const billing = await Database.getWorkspaceBilling(targetWsId);
     const plan = BILLING_PLANS.find((p) => p.id === billing.planId) || BILLING_PLANS[0];
     const totalAllowed = (plan.landingPageLimit || 1) + (billing.extraLandingPagesCount || 0);
 

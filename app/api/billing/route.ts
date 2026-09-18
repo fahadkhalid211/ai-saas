@@ -1,12 +1,17 @@
 import { NextResponse } from 'next/server';
 import { Database, InvoiceRecord } from '@/lib/db';
 import { BILLING_PLANS } from '@/lib/billing/plans';
-import { withAdminAuth } from '@/lib/security/auth';
+import { withAdminAuth, getAuthContext } from '@/lib/security/auth';
 
 export const GET = withAdminAuth(async (req: Request) => {
   try {
-    const ws = await Database.getWorkspaceBilling('default-workspace');
-    const convs = await Database.getConversations();
+    const ctx = await getAuthContext(req);
+    const { searchParams } = new URL(req.url);
+    const queryWs = searchParams.get('workspaceId');
+    const targetWsId = queryWs || (ctx.workspaceId && ctx.workspaceId !== '*' ? ctx.workspaceId : 'default-workspace');
+
+    const ws = await Database.getWorkspaceBilling(targetWsId);
+    const convs = await Database.getConversations(targetWsId);
 
     // Calculate chats used in current billing period
     const periodStart = new Date(ws.currentPeriodStart).getTime();
@@ -28,7 +33,7 @@ export const GET = withAdminAuth(async (req: Request) => {
     const estimatedHoursSaved = (chatsUsed * 0.3).toFixed(1);
     const estimatedDollarSavings = Math.round(Number(estimatedHoursSaved) * 20);
 
-    const storageUsage = await Database.getWorkspaceKnowledgeStorage(ws.id || 'default-workspace');
+    const storageUsage = await Database.getWorkspaceKnowledgeStorage(ws.id || targetWsId);
     const currentPlan = BILLING_PLANS.find((p) => p.id === ws.planId) || BILLING_PLANS[0];
     const storageLimitMb = currentPlan.knowledgeStorageLimitMb;
     const storageLimitBytes = storageLimitMb * 1024 * 1024;
@@ -75,8 +80,12 @@ export const GET = withAdminAuth(async (req: Request) => {
 
 export const POST = withAdminAuth(async (req: Request) => {
   try {
+    const ctx = await getAuthContext(req);
     const body = await req.json();
     const { action, planId, billingInterval } = body;
+    const targetWsId = (body.workspaceId && body.workspaceId !== '*')
+      ? body.workspaceId
+      : (ctx.workspaceId && ctx.workspaceId !== '*' ? ctx.workspaceId : 'default-workspace');
 
     if (action === 'change_plan') {
       const targetPlan = BILLING_PLANS.find((p) => p.id === planId);
@@ -84,7 +93,7 @@ export const POST = withAdminAuth(async (req: Request) => {
         return NextResponse.json({ error: 'Invalid plan selected' }, { status: 400 });
       }
 
-      const ws = await Database.getWorkspaceBilling('default-workspace');
+      const ws = await Database.getWorkspaceBilling(targetWsId);
       const interval = billingInterval === 'annual' ? 'annual' : 'monthly';
       const amount = interval === 'annual' ? targetPlan.annualMonthlyPrice * 12 : targetPlan.monthlyPrice;
 
@@ -98,12 +107,13 @@ export const POST = withAdminAuth(async (req: Request) => {
 
       const updatedInvoices = [newInvoice, ...(ws.invoices || [])];
 
-      const updated = await Database.updateWorkspaceBilling('default-workspace', {
+      const updated = await Database.updateWorkspaceBilling(targetWsId, {
         planId: targetPlan.id,
         planName: targetPlan.name,
         billingInterval: interval,
         monthlyChatLimit: targetPlan.chatSessionsLimit,
         overageRatePerChat: targetPlan.overageRate,
+        landingPageLimit: targetPlan.landingPageLimit,
         invoices: updatedInvoices,
       });
 
@@ -123,14 +133,18 @@ export const POST = withAdminAuth(async (req: Request) => {
 
 export const PATCH = withAdminAuth(async (req: Request) => {
   try {
+    const ctx = await getAuthContext(req);
     const body = await req.json();
     const { paymentMethod, billingEmail } = body;
+    const targetWsId = (body.workspaceId && body.workspaceId !== '*')
+      ? body.workspaceId
+      : (ctx.workspaceId && ctx.workspaceId !== '*' ? ctx.workspaceId : 'default-workspace');
 
     const updates: any = {};
     if (paymentMethod) updates.paymentMethod = paymentMethod;
     if (billingEmail) updates.billingEmail = billingEmail;
 
-    const updated = await Database.updateWorkspaceBilling('default-workspace', updates);
+    const updated = await Database.updateWorkspaceBilling(targetWsId, updates);
 
     return NextResponse.json({
       success: true,

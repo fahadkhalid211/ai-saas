@@ -24,6 +24,7 @@ import {
   Activity,
   X,
   Eye,
+  LayoutTemplate,
 } from 'lucide-react';
 import { LandingPageConfig } from '@/lib/landing/types';
 
@@ -156,11 +157,19 @@ export function LandingPagesList({
         </div>
 
         {/* Primary CTA */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5">
           <button
             type="button"
             onClick={handleStartCreateWizard}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 hover:from-blue-700 hover:to-indigo-700 text-white text-xs font-bold shadow-md shadow-blue-600/20 transition cursor-pointer"
+            className="flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition shadow-xs cursor-pointer"
+          >
+            <LayoutTemplate className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+            <span>Browse Templates</span>
+          </button>
+          <button
+            type="button"
+            onClick={handleStartCreateWizard}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-md shadow-blue-600/20 transition cursor-pointer"
           >
             <Sparkles className="h-4 w-4" />
             <span>+ Create Landing Page with AI</span>
