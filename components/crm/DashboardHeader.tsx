@@ -15,6 +15,7 @@ import {
   Trash2,
   User,
   ShieldCheck,
+  Compass,
 } from 'lucide-react';
 
 interface NotificationItem {
@@ -48,6 +49,7 @@ interface DashboardHeaderProps {
     isServerless: boolean;
     message?: string;
   } | null;
+  onOpenTour?: () => void;
 }
 
 export function DashboardHeader({
@@ -68,6 +70,7 @@ export function DashboardHeader({
   handleDeleteAssistant,
   currentUser,
   dbStatus,
+  onOpenTour,
 }: DashboardHeaderProps) {
   const [isAssistantMenuOpen, setIsAssistantMenuOpen] = useState(false);
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
@@ -242,6 +245,19 @@ export function DashboardHeader({
             {activeAssistant?.provider || 'GEMINI'}
           </span>
         </div>
+
+        {/* Tour Guide Button */}
+        {onOpenTour && (
+          <button
+            type="button"
+            onClick={onOpenTour}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-slate-800/80 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold shadow-2xs transition cursor-pointer"
+            title="Product Tour"
+          >
+            <Compass className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">Tour</span>
+          </button>
+        )}
 
         {/* Deploy & Embed Widget Button */}
         <button

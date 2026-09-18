@@ -32,10 +32,10 @@ export const LeadsTab: React.FC<LeadsTabProps> = ({
     <div className="max-w-6xl space-y-6 mx-auto">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Captured Leads &amp; Support Requests</h1>
+                    <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Leads</h1>
                     <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                      Inquiries, contact info, and custom field data submitted by visitors via the chat widget.
-                    </p>
+                       View contact details and inquiries automatically captured by your assistant.
+                     </p>
                   </div>
                   <div className="flex items-center gap-2">
                     <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800 text-[11px] text-emerald-700 dark:text-emerald-300 font-medium">

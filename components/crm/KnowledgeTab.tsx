@@ -163,8 +163,8 @@ export const KnowledgeTab: React.FC<KnowledgeTabProps> = ({
                   <div>
                     <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Knowledge Base</h1>
                     <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                      Upload PDF, CSV, JSON, DOCX, and TXT files. Tabular files are converted into row-aware representations for exact price and detail matching.
-                    </p>
+                       Train your assistant by uploading business documents, website links, or FAQs so it can answer customer questions accurately.
+                     </p>
                   </div>
                   <button
                     onClick={() => {

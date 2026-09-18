@@ -84,7 +84,7 @@ export const WidgetTab: React.FC<WidgetTabProps> = ({
                   <div>
                     <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Widget &amp; Branding</h1>
                     <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                      Customize the chat launcher, brand colors, position, and lead capture settings for your website or WordPress plugin.
+                      Change how the chat button looks on your website — colors, position, greeting, and logo.
                     </p>
                   </div>
                   <button

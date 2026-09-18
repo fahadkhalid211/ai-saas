@@ -102,7 +102,7 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({
                     <div className="flex items-center gap-2.5">
                       <BarChart3 className="h-6 w-6 text-blue-600 dark:text-blue-400" />
                       <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
-                        Analytics &amp; Performance Intelligence
+                        Analytics
                       </h1>
                       <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-[11px] font-semibold text-emerald-700 dark:text-emerald-300">
                         <span className="relative flex h-2 w-2">
@@ -113,7 +113,7 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({
                       </div>
                     </div>
                     <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                      Google-grade web traffic pageviews, real-time visitors, multi-channel acquisition, customer LTV, and appointment conversion analytics.
+                      See how many visitors your assistant is engaging, where they come from, and how many become leads or bookings.
                     </p>
                   </div>
 

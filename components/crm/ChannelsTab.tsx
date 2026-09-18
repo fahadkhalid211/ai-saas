@@ -201,7 +201,7 @@ export const ChannelsTab: React.FC<ChannelsTabProps> = ({
                       </span>
                     </div>
                     <p className="text-xs text-slate-500 dark:text-slate-400 mt-1.5">
-                      Deploy your RAG AI Assistant across web, Telegram, WhatsApp, and dispatch real-time events to Zapier, Make.com, or custom CRMs.
+                      Connect your assistant to Telegram, WhatsApp, and other platforms, or send real-time alerts to tools like Zapier or your CRM.
                     </p>
                   </div>
 

@@ -36,10 +36,10 @@ export const SecurityTab: React.FC<SecurityTabProps> = ({
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2.5">
             <ShieldCheck className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-            <span>Security Posture &amp; Two-Factor Authentication</span>
+            <span>Security</span>
           </h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-            Protect your admin dashboard with hardware-grade TOTP multi-factor authentication and AES-256 encryption.
+            Protect your account with two-factor authentication and review login activity.
           </p>
         </div>
       </div>

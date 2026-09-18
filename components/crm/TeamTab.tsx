@@ -65,10 +65,10 @@ export const TeamTab: React.FC<TeamTabProps> = ({
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2.5">
             <UserCheck className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-            <span>Team Members &amp; Role-Based Access</span>
+            <span>Team</span>
           </h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-            Manage workspace collaborators, assign specific role privileges, and enforce two-factor authentication.
+            Invite team members and manage their access to the dashboard.
           </p>
         </div>
         <button

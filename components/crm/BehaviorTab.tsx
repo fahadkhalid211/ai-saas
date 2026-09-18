@@ -25,7 +25,7 @@ export const BehaviorTab: React.FC<BehaviorTabProps> = ({
                 <div>
                   <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Behavior &amp; Guardrails</h1>
                   <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                    Define how your assistant represents the business, its personality tone, and what it says when information is missing.
+                    Set your assistant's name, personality, and what it says when it does not know an answer.
                   </p>
                 </div>
 

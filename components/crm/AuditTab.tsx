@@ -46,10 +46,10 @@ export const AuditTab: React.FC<AuditTabProps> = ({
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2.5">
             <ClipboardList className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-            <span>Security Audit Trail &amp; Activity Log</span>
+            <span>Audit Trail</span>
           </h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-            Immutable chronological record of administrative actions, logins, plan modifications, and system events.
+            A complete log of every action taken in your workspace — logins, settings changes, and plan updates.
           </p>
         </div>
         <div className="flex items-center gap-2">

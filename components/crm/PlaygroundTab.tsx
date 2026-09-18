@@ -61,10 +61,10 @@ export const PlaygroundTab: React.FC<PlaygroundTabProps> = ({
     <div className="h-full flex flex-col max-w-6xl space-y-4 mx-auto">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Testing Studio</h1>
+                    <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Test Your Assistant</h1>
                     <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                      Verify assistant responses and inspect retrieved knowledge chunks in real time.
-                    </p>
+                       Chat with your assistant in real time to test answers before your customers see them.
+                     </p>
                   </div>
                   <button
                     onClick={() =>

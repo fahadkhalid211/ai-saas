@@ -35,6 +35,9 @@ import { LandingPageTab } from '@/components/crm/LandingPageTab';
 import { WidgetTab } from '@/components/crm/WidgetTab';
 import { AppointmentsTab } from '@/components/crm/AppointmentsTab';
 import { ProfileTab } from '@/components/crm/ProfileTab';
+import { OnboardingWizardModal } from '@/components/crm/onboarding/OnboardingWizardModal';
+import { TourGuideModal } from '@/components/crm/tour/TourGuideModal';
+import { TOUR_STEPS } from '@/components/crm/tour/tourData';
 
 import { useCrmAssistants } from '@/components/crm/hooks/useCrmAssistants';
 import { useCrmBilling } from '@/components/crm/hooks/useCrmBilling';
@@ -55,6 +58,11 @@ export default function DashboardPage() {
     if (saved) {
       setTheme(saved);
       if (saved === 'dark') document.documentElement.classList.add('dark');
+    }
+    // Show onboarding wizard for first-time users
+    const onboardingDone = localStorage.getItem('kortex_onboarding_completed');
+    if (!onboardingDone) {
+      setShowOnboarding(true);
     }
   }, []);
 
@@ -158,6 +166,44 @@ export default function DashboardPage() {
   const [showEmbedModal, setShowEmbedModal] = useState(false);
   const [copiedCode, setCopiedCode] = useState(false);
   const [customEmbedHost, setCustomEmbedHost] = useState('');
+
+  // Onboarding Wizard — show on first login
+  const [showOnboarding, setShowOnboarding] = useState(false);
+
+  // Product Tour
+  const [isTourOpen, setIsTourOpen] = useState(false);
+  const [tourStepIndex, setTourStepIndex] = useState(0);
+
+  const handleOpenTour = () => {
+    setTourStepIndex(0);
+    setIsTourOpen(true);
+  };
+
+  const handleTourNext = () => {
+    const next = tourStepIndex + 1;
+    if (next < TOUR_STEPS.length) {
+      const step = TOUR_STEPS[next];
+      if (step.tab) setActiveTab(step.tab as any);
+      setTourStepIndex(next);
+    } else {
+      setIsTourOpen(false);
+    }
+  };
+
+  const handleTourPrev = () => {
+    const prev = tourStepIndex - 1;
+    if (prev >= 0) {
+      const step = TOUR_STEPS[prev];
+      if (step.tab) setActiveTab(step.tab as any);
+      setTourStepIndex(prev);
+    }
+  };
+
+  const handleTourGoToStep = (index: number) => {
+    const step = TOUR_STEPS[index];
+    if (step.tab) setActiveTab(step.tab as any);
+    setTourStepIndex(index);
+  };
 
   // Database Connectivity Status
   const [dbStatus, setDbStatus] = useState<{
@@ -688,6 +734,7 @@ export default function DashboardPage() {
           handleDeleteAssistant={handleDeleteAssistant}
           currentUser={currentUser}
           dbStatus={dbStatus}
+          onOpenTour={handleOpenTour}
         />
 
         {/* Cloud Persistence Notice Banner */}
@@ -727,6 +774,7 @@ export default function DashboardPage() {
             landingPagesCount={landing.allLandingPages.length}
             isMasterAdmin={isMasterAdmin}
             isOwner={currentUser?.role === 'owner' || isMasterAdmin}
+            onOpenTour={handleOpenTour}
           />
 
           {/* Main Content Workspace */}
@@ -1204,6 +1252,28 @@ export default function DashboardPage() {
           setIsNotifOpen={setIsNotifOpen}
           setActiveTab={setActiveTab}
           onOpenConversation={handleOpenConversation}
+        />
+
+        {/* First-Run Onboarding Wizard */}
+        <OnboardingWizardModal
+          isOpen={showOnboarding}
+          onClose={() => {
+            setShowOnboarding(false);
+            localStorage.setItem('kortex_onboarding_completed', '1');
+          }}
+          assistantName={activeAssistant?.name}
+          onGoToTab={(tab) => setActiveTab(tab as any)}
+          onOpenEmbed={() => setShowEmbedModal(true)}
+        />
+
+        {/* Interactive Product Tour */}
+        <TourGuideModal
+          isOpen={isTourOpen}
+          stepIndex={tourStepIndex}
+          onNext={handleTourNext}
+          onPrev={handleTourPrev}
+          onClose={() => setIsTourOpen(false)}
+          onGoToStep={handleTourGoToStep}
         />
       </div>
     </div>

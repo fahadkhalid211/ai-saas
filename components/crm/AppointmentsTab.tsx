@@ -65,10 +65,10 @@ export const AppointmentsTab: React.FC<AppointmentsTabProps> = ({
                   <div>
                     <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2.5">
                       <Calendar className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
-                      <span>Booked Appointments &amp; Meetings</span>
+                      <span>Appointments</span>
                     </h1>
                     <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                      Manage client booking slots, track meeting status, and review consultation notes submitted via your AI widget.
+                      View and manage bookings made by customers through your assistant.
                     </p>
                   </div>
                   <div className="flex items-center gap-2 flex-wrap">
