@@ -9,10 +9,10 @@ export const GET = withAdminAuth(async (req: Request) => {
     const ctx = await getAuthContext(req);
     const { searchParams } = new URL(req.url);
     const queryWs = searchParams.get('workspaceId');
-    const targetWsId = queryWs || (ctx.workspaceId && ctx.workspaceId !== '*' ? ctx.workspaceId : 'default-workspace');
+    const targetWsId = ctx.isMasterAdmin && queryWs ? queryWs : (ctx.workspaceId && ctx.workspaceId !== '*' ? ctx.workspaceId : 'default-workspace');
 
     const ws = await Database.getWorkspaceBilling(targetWsId);
-    const convs = await Database.getConversations(targetWsId);
+    const convs = await Database.getConversations(undefined, targetWsId);
 
     // Calculate chats used in current billing period
     const periodStart = new Date(ws.currentPeriodStart).getTime();
@@ -84,7 +84,7 @@ export const POST = withRoleAuth(['owner', 'admin', 'billing_manager'], async (r
     const ctx = await getAuthContext(req);
     const body = await req.json();
     const { action, planId, billingInterval } = body;
-    const targetWsId = (body.workspaceId && body.workspaceId !== '*')
+    const targetWsId = ctx.isMasterAdmin && body.workspaceId
       ? body.workspaceId
       : (ctx.workspaceId && ctx.workspaceId !== '*' ? ctx.workspaceId : 'default-workspace');
 
@@ -154,7 +154,7 @@ export const PATCH = withRoleAuth(['owner', 'admin', 'billing_manager'], async (
     const ctx = await getAuthContext(req);
     const body = await req.json();
     const { paymentMethod, billingEmail } = body;
-    const targetWsId = (body.workspaceId && body.workspaceId !== '*')
+    const targetWsId = ctx.isMasterAdmin && body.workspaceId
       ? body.workspaceId
       : (ctx.workspaceId && ctx.workspaceId !== '*' ? ctx.workspaceId : 'default-workspace');
 

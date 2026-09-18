@@ -221,14 +221,23 @@ export async function relationalGetConversationById(
 
 export async function relationalGetConversations(
   assistantId?: string,
-  limit = 500
+  limit = 500,
+  assistantIds?: string[]
 ): Promise<ConversationData[]> {
+  if (assistantIds !== undefined) {
+    if (assistantIds.length === 0) return [];
+    if (assistantId && !assistantIds.includes(assistantId)) return [];
+  }
+
   const result = await withPool(async (client) => {
     let query: string;
     let params: any[];
     if (assistantId) {
       query = `SELECT * FROM kortex_conversations WHERE assistant_id = $1 ORDER BY updated_at DESC LIMIT $2`;
       params = [assistantId, limit];
+    } else if (assistantIds !== undefined) {
+      query = `SELECT * FROM kortex_conversations WHERE assistant_id = ANY($1::text[]) ORDER BY updated_at DESC LIMIT $2`;
+      params = [assistantIds, limit];
     } else {
       query = `SELECT * FROM kortex_conversations ORDER BY updated_at DESC LIMIT $1`;
       params = [limit];
@@ -265,13 +274,24 @@ export async function relationalInsertLead(lead: LeadData): Promise<boolean> {
   return result === true;
 }
 
-export async function relationalGetLeads(assistantId?: string): Promise<LeadData[]> {
+export async function relationalGetLeads(
+  assistantId?: string,
+  assistantIds?: string[]
+): Promise<LeadData[]> {
+  if (assistantIds !== undefined) {
+    if (assistantIds.length === 0) return [];
+    if (assistantId && !assistantIds.includes(assistantId)) return [];
+  }
+
   const result = await withPool(async (client) => {
     let query: string;
     let params: any[];
     if (assistantId) {
       query = `SELECT * FROM kortex_leads WHERE assistant_id = $1 ORDER BY created_at DESC`;
       params = [assistantId];
+    } else if (assistantIds !== undefined) {
+      query = `SELECT * FROM kortex_leads WHERE assistant_id = ANY($1::text[]) ORDER BY created_at DESC`;
+      params = [assistantIds];
     } else {
       query = `SELECT * FROM kortex_leads ORDER BY created_at DESC`;
       params = [];
@@ -407,13 +427,24 @@ export async function relationalUpdateAppointment(
   return result === true;
 }
 
-export async function relationalGetAppointments(assistantId?: string): Promise<AppointmentData[]> {
+export async function relationalGetAppointments(
+  assistantId?: string,
+  assistantIds?: string[]
+): Promise<AppointmentData[]> {
+  if (assistantIds !== undefined) {
+    if (assistantIds.length === 0) return [];
+    if (assistantId && !assistantIds.includes(assistantId)) return [];
+  }
+
   const result = await withPool(async (client) => {
     let query: string;
     let params: any[];
     if (assistantId) {
       query = `SELECT * FROM kortex_appointments WHERE assistant_id = $1 ORDER BY created_at DESC`;
       params = [assistantId];
+    } else if (assistantIds !== undefined) {
+      query = `SELECT * FROM kortex_appointments WHERE assistant_id = ANY($1::text[]) ORDER BY created_at DESC`;
+      params = [assistantIds];
     } else {
       query = `SELECT * FROM kortex_appointments ORDER BY created_at DESC`;
       params = [];
@@ -500,8 +531,13 @@ export async function relationalInsertNotification(
 
 export async function relationalGetNotifications(
   assistantId?: string,
-  limit = 50
+  limit = 50,
+  assistantIds?: string[]
 ): Promise<InAppNotificationData[]> {
+  if (assistantIds !== undefined && assistantId && !assistantIds.includes(assistantId)) {
+    return [];
+  }
+
   const result = await withPool(async (client) => {
     let query: string;
     let params: any[];
@@ -510,6 +546,18 @@ export async function relationalGetNotifications(
                WHERE assistant_id = $1 OR assistant_id IS NULL
                ORDER BY created_at DESC LIMIT $2`;
       params = [assistantId, limit];
+    } else if (assistantIds !== undefined) {
+      if (assistantIds.length === 0) {
+        query = `SELECT * FROM kortex_notifications
+                 WHERE assistant_id IS NULL
+                 ORDER BY created_at DESC LIMIT $1`;
+        params = [limit];
+      } else {
+        query = `SELECT * FROM kortex_notifications
+                 WHERE assistant_id = ANY($1::text[]) OR assistant_id IS NULL
+                 ORDER BY created_at DESC LIMIT $2`;
+        params = [assistantIds, limit];
+      }
     } else {
       query = `SELECT * FROM kortex_notifications ORDER BY created_at DESC LIMIT $1`;
       params = [limit];

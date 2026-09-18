@@ -169,7 +169,7 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: 'Assistant not found or forbidden' }, { status: 404 });
     }
 
-    const leads = await Database.getLeads(assistantId);
+    const leads = await Database.getLeads(assistantId, ctx.workspaceId);
     return NextResponse.json({ leads });
   } catch (error: any) {
     return NextResponse.json({ error: error?.message || 'Failed to fetch leads' }, { status: 500 });

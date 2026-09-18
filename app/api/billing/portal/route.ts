@@ -17,7 +17,9 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json().catch(() => ({}));
-    const workspaceId = body.workspaceId || 'default-workspace';
+    const workspaceId = ctx.isMasterAdmin && body.workspaceId
+      ? body.workspaceId
+      : (ctx.workspaceId && ctx.workspaceId !== '*' ? ctx.workspaceId : 'default-workspace');
     const ws = await Database.getWorkspaceBilling(workspaceId);
 
     const customerId = (ws as any).stripeCustomerId;

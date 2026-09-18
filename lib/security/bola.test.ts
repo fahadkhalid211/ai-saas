@@ -425,5 +425,115 @@ describe('Multi-Tenant Isolation & BOLA/IDOR Security', () => {
     // createKnowledgeSource triggers clearRetrievalCache
     expect(getCachedRetrieval(cacheBot.id, 'what are your prices')).toBeNull();
   });
+
+  it('should isolate leads and appointments across tenant workspaces', async () => {
+    const leadBotA = await Database.createAssistant({ name: 'Lead Bot A', workspaceId: wsA });
+    const leadBotB = await Database.createAssistant({ name: 'Lead Bot B', workspaceId: wsB });
+
+    await Database.saveLead({
+      assistantId: leadBotA.id,
+      email: 'lead_a@example.com',
+      name: 'Lead Alpha',
+    });
+
+    await Database.saveLead({
+      assistantId: leadBotB.id,
+      email: 'lead_b@example.com',
+      name: 'Lead Beta',
+    });
+
+    const leadsA = await Database.getLeads(undefined, wsA);
+    const leadEmailsA = leadsA.map((l) => l.email);
+    expect(leadEmailsA).toContain('lead_a@example.com');
+    expect(leadEmailsA).not.toContain('lead_b@example.com');
+
+    const leadsB = await Database.getLeads(undefined, wsB);
+    const leadEmailsB = leadsB.map((l) => l.email);
+    expect(leadEmailsB).toContain('lead_b@example.com');
+    expect(leadEmailsB).not.toContain('lead_a@example.com');
+
+    const aptA = await Database.saveAppointment({
+      assistantId: leadBotA.id,
+      name: 'Client Alpha',
+      email: 'client_a@example.com',
+      date: '2026-10-01',
+      timeSlot: '10:00',
+      durationMinutes: 30,
+    });
+
+    const aptB = await Database.saveAppointment({
+      assistantId: leadBotB.id,
+      name: 'Client Beta',
+      email: 'client_b@example.com',
+      date: '2026-10-01',
+      timeSlot: '11:00',
+      durationMinutes: 30,
+    });
+
+    const aptsA = await Database.getAppointments(undefined, wsA);
+    const aptIdsA = aptsA.map((a) => a.id);
+    expect(aptIdsA).toContain(aptA.id);
+    expect(aptIdsA).not.toContain(aptB.id);
+
+    const aptsB = await Database.getAppointments(undefined, wsB);
+    const aptIdsB = aptsB.map((a) => a.id);
+    expect(aptIdsB).toContain(aptB.id);
+    expect(aptIdsB).not.toContain(aptA.id);
+  });
+
+  it('should prevent cross-tenant appointment status updates', async () => {
+    const aptBotA = await Database.createAssistant({ name: 'Apt Bot A', workspaceId: wsA });
+    const aptA = await Database.saveAppointment({
+      assistantId: aptBotA.id,
+      name: 'Status Target Client',
+      email: 'target@example.com',
+      date: '2026-10-05',
+      timeSlot: '14:00',
+      durationMinutes: 30,
+    });
+
+    // Tenant B attempts to cancel Tenant A appointment
+    const crossUpdate = await Database.updateAppointmentStatus(aptA.id, 'cancelled', 'Malicious cancellation', wsB);
+    expect(crossUpdate).toBe(false);
+
+    // Verify appointment status was untouched
+    const freshApt = await Database.getAppointmentById(aptA.id);
+    expect(freshApt?.status).not.toBe('cancelled');
+
+    // Tenant A legitimately updates status
+    const legitUpdate = await Database.updateAppointmentStatus(aptA.id, 'cancelled', 'Client request', wsA);
+    expect(legitUpdate).toBe(true);
+
+    const cancelledApt = await Database.getAppointmentById(aptA.id);
+    expect(cancelledApt?.status).toBe('cancelled');
+  });
+
+  it('should isolate relational-mode queries by workspace assistant IDs when Postgres is enabled', async () => {
+    const { isPostgresConfigured } = await import('../db/postgres');
+    if (!isPostgresConfigured()) {
+      return; // Gracefully skipped when Postgres is not available in test environment
+    }
+
+    const {
+      relationalGetConversations,
+      relationalGetLeads,
+      relationalGetAppointments,
+      relationalGetNotifications,
+    } = await import('../db/relational');
+
+    // Empty assistantIds array must immediately return empty array without querying
+    const emptyConvs = await relationalGetConversations(undefined, 50, []);
+    expect(emptyConvs).toEqual([]);
+
+    const emptyLeads = await relationalGetLeads(undefined, []);
+    expect(emptyLeads).toEqual([]);
+
+    const emptyApts = await relationalGetAppointments(undefined, []);
+    expect(emptyApts).toEqual([]);
+
+    const notifs = await relationalGetNotifications(undefined, 50, []);
+    // Only system notifications (assistantId is null) may be returned when assistantIds is empty
+    expect(notifs.every((n) => !n.assistantId)).toBe(true);
+  });
 });
 

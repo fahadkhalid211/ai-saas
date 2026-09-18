@@ -1431,10 +1431,18 @@ export class Database {
 
   // Conversations & Messages
   static async getConversations(assistantId?: string, workspaceId?: string): Promise<ConversationData[]> {
+    let wsAssistantIds: string[] | undefined;
+    if (workspaceId && workspaceId !== '*') {
+      const state = await ensureInitialized();
+      wsAssistantIds = (state.assistants || [])
+        .filter((a) => (a.workspaceId || 'default-workspace') === workspaceId)
+        .map((a) => a.id);
+    }
+
     if (isRelationalModeEnabled()) {
       try {
-        const relConvs = await Relational.relationalGetConversations(assistantId);
-        if (relConvs.length > 0) {
+        const relConvs = await Relational.relationalGetConversations(assistantId, 500, wsAssistantIds);
+        if (relConvs.length > 0 || wsAssistantIds !== undefined) {
           const withMsgs = await Promise.all(
             relConvs.map(async (c) => ({
               ...c,
@@ -1805,11 +1813,19 @@ export class Database {
     return lead;
   }
 
-  static async getLeads(assistantId?: string): Promise<LeadData[]> {
+  static async getLeads(assistantId?: string, workspaceId?: string): Promise<LeadData[]> {
+    let wsAssistantIds: string[] | undefined;
+    if (workspaceId && workspaceId !== '*') {
+      const state = await ensureInitialized();
+      wsAssistantIds = (state.assistants || [])
+        .filter((a) => (a.workspaceId || 'default-workspace') === workspaceId)
+        .map((a) => a.id);
+    }
+
     if (isRelationalModeEnabled()) {
       try {
-        const relLeads = await Relational.relationalGetLeads(assistantId);
-        if (relLeads.length > 0) {
+        const relLeads = await Relational.relationalGetLeads(assistantId, wsAssistantIds);
+        if (relLeads.length > 0 || wsAssistantIds !== undefined) {
           return relLeads;
         }
       } catch (err) {
@@ -1819,7 +1835,13 @@ export class Database {
     }
 
     const state = await ensureInitialized();
-    const allLeads = state.leads || [];
+    let allLeads = state.leads || [];
+
+    if (wsAssistantIds !== undefined) {
+      const wsSet = new Set(wsAssistantIds);
+      allLeads = allLeads.filter((l) => wsSet.has(l.assistantId));
+    }
+
     if (!assistantId) return allLeads;
 
     let matched = allLeads.filter((l) => matchesAssistant(l.assistantId, assistantId, state));
@@ -2031,11 +2053,19 @@ export class Database {
     return Database.saveAppointment(data);
   }
 
-  static async getAppointments(assistantId?: string): Promise<AppointmentData[]> {
+  static async getAppointments(assistantId?: string, workspaceId?: string): Promise<AppointmentData[]> {
+    let wsAssistantIds: string[] | undefined;
+    if (workspaceId && workspaceId !== '*') {
+      const state = await ensureInitialized();
+      wsAssistantIds = (state.assistants || [])
+        .filter((a) => (a.workspaceId || 'default-workspace') === workspaceId)
+        .map((a) => a.id);
+    }
+
     if (isRelationalModeEnabled()) {
       try {
-        const relApts = await Relational.relationalGetAppointments(assistantId);
-        if (relApts.length > 0) return relApts;
+        const relApts = await Relational.relationalGetAppointments(assistantId, wsAssistantIds);
+        if (relApts.length > 0 || wsAssistantIds !== undefined) return relApts;
       } catch (err) {
         console.warn('[Relational] getAppointments failed, disabling postgres:', err);
         disablePostgresTemporarily();
@@ -2043,7 +2073,12 @@ export class Database {
     }
 
     const state = await ensureInitialized();
-    const all = state.appointments || [];
+    let all = state.appointments || [];
+
+    if (wsAssistantIds !== undefined) {
+      const wsSet = new Set(wsAssistantIds);
+      all = all.filter((a) => wsSet.has(a.assistantId));
+    }
 
     if (!assistantId) return all;
 
@@ -2057,6 +2092,9 @@ export class Database {
     // Fallback: Check if there are appointments in the same workspace
     const targetAst = (state.assistants || []).find((a) => a.id === assistantId);
     const targetWs = targetAst?.workspaceId || 'default-workspace';
+    if (workspaceId && workspaceId !== '*' && targetWs !== workspaceId) {
+      return [];
+    }
     const workspaceAppointments = all.filter((a) => {
       const aAst = (state.assistants || []).find((ast) => ast.id === a.assistantId);
       const aWs = aAst?.workspaceId || 'default-workspace';
@@ -2137,8 +2175,22 @@ export class Database {
   static async updateAppointmentStatus(
     id: string,
     status: AppointmentData['status'],
-    cancellationReason?: string
+    cancellationReason?: string,
+    workspaceId?: string
   ): Promise<boolean> {
+    if (workspaceId && workspaceId !== '*') {
+      const state = await ensureInitialized();
+      const existingApt = isRelationalModeEnabled()
+        ? await Relational.relationalGetAppointmentById(id)
+        : (state.appointments || []).find((a) => a.id === id);
+      if (!existingApt) return false;
+      const ast = (state.assistants || []).find((a) => a.id === existingApt.assistantId);
+      const aptWs = ast?.workspaceId || 'default-workspace';
+      if (aptWs !== workspaceId) {
+        return false;
+      }
+    }
+
     if (isRelationalModeEnabled()) {
       try {
         await Relational.relationalUpdateAppointment(id, { status, cancellationReason });
@@ -2609,11 +2661,23 @@ export class Database {
   }
 
   // Real-time In-App Notifications
-  static async getNotifications(assistantId?: string, limit: number = 50): Promise<InAppNotificationData[]> {
+  static async getNotifications(
+    assistantId?: string,
+    limit: number = 50,
+    workspaceId?: string
+  ): Promise<InAppNotificationData[]> {
+    let wsAssistantIds: string[] | undefined;
+    if (workspaceId && workspaceId !== '*') {
+      const state = await ensureInitialized();
+      wsAssistantIds = (state.assistants || [])
+        .filter((a) => (a.workspaceId || 'default-workspace') === workspaceId)
+        .map((a) => a.id);
+    }
+
     if (isRelationalModeEnabled()) {
       try {
-        const relNotifs = await Relational.relationalGetNotifications(assistantId, limit);
-        if (relNotifs.length > 0) return relNotifs;
+        const relNotifs = await Relational.relationalGetNotifications(assistantId, limit, wsAssistantIds);
+        if (relNotifs.length > 0 || wsAssistantIds !== undefined) return relNotifs;
       } catch (err) {
         console.warn('[Relational] getNotifications failed, disabling postgres:', err);
         disablePostgresTemporarily();
@@ -2621,6 +2685,10 @@ export class Database {
     }
     const state = await ensureInitialized();
     let notifs = state.notifications || [];
+    if (wsAssistantIds !== undefined) {
+      const wsSet = new Set(wsAssistantIds);
+      notifs = notifs.filter((n) => !n.assistantId || wsSet.has(n.assistantId));
+    }
     if (assistantId) {
       notifs = notifs.filter((n) => !n.assistantId || n.assistantId === assistantId);
     }

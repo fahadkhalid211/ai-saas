@@ -1,16 +1,17 @@
 import { NextResponse } from 'next/server';
 import { Database } from '@/lib/db';
-import { withAdminAuth } from '@/lib/security/auth';
+import { withAdminAuth, getAuthContext } from '@/lib/security/auth';
 
 export const dynamic = 'force-dynamic';
 
 export const GET = withAdminAuth(async (req: Request) => {
   try {
+    const ctx = await getAuthContext(req);
     const { searchParams } = new URL(req.url);
     const assistantId = searchParams.get('assistantId') || undefined;
     const limit = parseInt(searchParams.get('limit') || '50', 10);
 
-    const notifications = await Database.getNotifications(assistantId, limit);
+    const notifications = await Database.getNotifications(assistantId, limit, ctx.workspaceId);
     const unreadCount = notifications.filter((n) => !n.read).length;
 
     return NextResponse.json({ notifications, unreadCount });

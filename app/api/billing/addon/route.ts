@@ -9,7 +9,7 @@ export const POST = withRoleAuth(['owner', 'admin', 'billing_manager'], async (r
     const ctx = await getAuthContext(req);
     const body = await req.json().catch(() => ({}));
     const { addonType } = body;
-    const targetWsId = (body.workspaceId && body.workspaceId !== '*')
+    const targetWsId = ctx.isMasterAdmin && body.workspaceId
       ? body.workspaceId
       : (ctx.workspaceId && ctx.workspaceId !== '*' ? ctx.workspaceId : 'default-workspace');
 

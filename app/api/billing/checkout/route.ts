@@ -20,7 +20,9 @@ export async function POST(req: NextRequest) {
 
     const body = await req.json().catch(() => ({}));
     const { planId, billingInterval = 'monthly', addonType } = body;
-    const workspaceId = body.workspaceId || 'default-workspace';
+    const workspaceId = ctx.isMasterAdmin && body.workspaceId
+      ? body.workspaceId
+      : (ctx.workspaceId && ctx.workspaceId !== '*' ? ctx.workspaceId : 'default-workspace');
 
     const origin = req.nextUrl.origin || process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
     const successUrl = `${origin}/?billing_success=true&session_id={CHECKOUT_SESSION_ID}`;

@@ -68,7 +68,7 @@ export async function GET(req: Request) {
       }
     }
 
-    const appointments = await Database.getAppointments(assistantId);
+    const appointments = await Database.getAppointments(assistantId, ctx.workspaceId);
     return NextResponse.json({ appointments });
   } catch (error: any) {
     return NextResponse.json(
@@ -112,16 +112,39 @@ export async function POST(req: Request) {
       if (!apt) {
         return NextResponse.json({ error: 'Appointment not found' }, { status: 404 });
       }
-      const updated = await Database.updateAppointment(apt.id, {
-        date: newDate,
-        timeSlot: newTimeSlot,
-        status: 'confirmed',
-        remindersSent: { reminder24h: false, reminder1h: false },
-      });
+
+      const releaseLock = await acquireBookingLock(apt.assistantId, newDate.trim(), newTimeSlot.trim());
+      let updated;
+      try {
+        const existingAppointments = await Database.getAppointments(apt.assistantId);
+        const conflict = existingAppointments.find(
+          (a) =>
+            a.id !== apt.id &&
+            a.date === newDate.trim() &&
+            a.timeSlot === newTimeSlot.trim() &&
+            a.status !== 'cancelled'
+        );
+        if (conflict) {
+          return NextResponse.json(
+            { error: `The time slot "${newTimeSlot.trim()}" on ${newDate.trim()} has already been booked. Please select another time.` },
+            { status: 409 }
+          );
+        }
+
+        updated = await Database.updateAppointment(apt.id, {
+          date: newDate.trim(),
+          timeSlot: newTimeSlot.trim(),
+          status: 'confirmed',
+          remindersSent: { reminder24h: false, reminder1h: false },
+        });
+      } finally {
+        releaseLock();
+      }
+
       await Database.addNotification({
         assistantId: apt.assistantId,
         title: 'Appointment Rescheduled',
-        message: `${apt.name} rescheduled their appointment to ${newDate} at ${newTimeSlot}.`,
+        message: `${apt.name} rescheduled their appointment to ${newDate.trim()} at ${newTimeSlot.trim()}.`,
         type: 'appointment_booked',
       });
       return NextResponse.json({ success: true, appointment: updated });
@@ -129,7 +152,8 @@ export async function POST(req: Request) {
 
     // Check if this is a status update (Requires Admin Authentication)
     if (body.action === 'update_status') {
-      if (!(await verifyAdminRequest(req))) {
+      const ctx = await getAuthContext(req);
+      if (!ctx.authenticated) {
         return NextResponse.json({ error: 'Unauthorized: Admin authentication required' }, { status: 401 });
       }
 
@@ -143,7 +167,14 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: 'Appointment not found' }, { status: 404 });
       }
 
-      const updated = await Database.updateAppointmentStatus(id, status, cancellationReason);
+      if (ctx.workspaceId !== '*') {
+        const ast = existingApt.assistantId ? await Database.getAssistantById(existingApt.assistantId, ctx.workspaceId) : null;
+        if (!ast) {
+          return NextResponse.json({ error: 'Appointment not found' }, { status: 404 });
+        }
+      }
+
+      const updated = await Database.updateAppointmentStatus(id, status, cancellationReason, ctx.workspaceId);
       if (!updated) {
         return NextResponse.json({ error: 'Appointment not found' }, { status: 404 });
       }
@@ -151,10 +182,10 @@ export async function POST(req: Request) {
       const ast = existingApt.assistantId ? await Database.getAssistantById(existingApt.assistantId) : null;
 
       await Database.addAuditLog({
-        workspaceId: ast?.workspaceId || 'default-workspace',
+        workspaceId: ctx.workspaceId !== '*' ? ctx.workspaceId : (ast?.workspaceId || 'default-workspace'),
         actor: {
-          id: 'admin',
-          name: 'Admin User',
+          id: ctx.memberId || 'admin',
+          name: ctx.role === 'owner' ? 'Workspace Owner' : 'Admin User',
           ip: getClientIp(req),
         },
         action: 'appointment.status_updated',
