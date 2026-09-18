@@ -24,7 +24,7 @@ export const LandingPageQuotaModal: React.FC<LandingPageQuotaModalProps> = ({
   isPurchasingSlot,
   onUpgradePlan,
 }) => {
-  if (!isOpen) return null;
+  if (!isOpen || currentCount < totalAllowed) return null;
 
   const percentage = Math.min(100, Math.round((currentCount / Math.max(1, totalAllowed)) * 100));
 

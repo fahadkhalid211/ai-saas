@@ -324,6 +324,7 @@ export function AiLandingWizard({
     const constructedConfig: LandingPageConfig = {
       ...basePreset,
       id: 'lp_' + finalSlug,
+      workspaceId: activeAssistant?.workspaceId || (assistants && assistants[0]?.workspaceId) || 'default-workspace',
       businessName: finalBusinessName,
       slug: finalSlug,
       industry: selectedIndustry,

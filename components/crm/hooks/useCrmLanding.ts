@@ -139,22 +139,25 @@ export function useCrmLanding({
         businessName: newPageName,
         slug: cleanSlug,
         industry: newPageIndustry,
+        workspaceId: activeAssistant?.workspaceId || 'default-workspace',
       };
 
+      const wsId = activeAssistant?.workspaceId || 'default-workspace';
       const res = await fetch('/api/landing-page', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          workspaceId: wsId,
           assistantId: newPageAssistantId === 'auto_create' ? undefined : newPageAssistantId,
           createDedicatedAssistant: newPageAssistantId === 'auto_create',
-          config: newConfig,
+          config: { ...newConfig, workspaceId: wsId },
           isNewPage: true,
         }),
       });
 
       const data = await res.json();
       if (!res.ok) {
-        if (res.status === 403 || data.quotaReached || data.error?.toLowerCase().includes('quota')) {
+        if ((res.status === 403 || data.quotaReached) && (data.currentCount >= data.maxAllowed || landingPageLimits.currentCount >= landingPageLimits.totalAllowed)) {
           setShowQuotaModal(true);
           setShowNewPageModal(false);
           return;
@@ -171,7 +174,7 @@ export function useCrmLanding({
       setPresetNotice('Created new landing page: ' + newConfig.businessName);
       setTimeout(() => setPresetNotice(null), 4000);
     } catch (err: any) {
-      if (err.message?.toLowerCase().includes('quota') || err.message?.toLowerCase().includes('slot') || err.message?.toLowerCase().includes('limit')) {
+      if ((err.message?.toLowerCase().includes('quota') || err.message?.toLowerCase().includes('slot') || err.message?.toLowerCase().includes('limit')) && landingPageLimits.currentCount >= landingPageLimits.totalAllowed) {
         setShowQuotaModal(true);
         setShowNewPageModal(false);
       } else {
@@ -360,21 +363,23 @@ export function useCrmLanding({
     try {
       const isAutoCreate = assistantOption === 'auto_create';
       const targetAssistantId = isAutoCreate ? undefined : (assistantOption === 'none' ? '' : assistantOption);
+      const wsId = activeAssistant?.workspaceId || newConfig.workspaceId || 'default-workspace';
 
       const res = await fetch('/api/landing-page', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          workspaceId: wsId,
           assistantId: targetAssistantId,
           createDedicatedAssistant: isAutoCreate,
-          config: newConfig,
+          config: { ...newConfig, workspaceId: wsId },
           isNewPage: true,
         }),
       });
 
       const data = await res.json();
       if (!res.ok) {
-        if (res.status === 403 || data.quotaReached || data.error?.toLowerCase().includes('quota')) {
+        if ((res.status === 403 || data.quotaReached) && (data.currentCount >= data.maxAllowed || landingPageLimits.currentCount >= landingPageLimits.totalAllowed)) {
           setShowQuotaModal(true);
         }
         throw new Error(data.error || 'Failed to generate landing page with AI');
@@ -386,7 +391,7 @@ export function useCrmLanding({
       playNotificationChime();
       return saved;
     } catch (err: any) {
-      if (err.message?.toLowerCase().includes('quota') || err.message?.toLowerCase().includes('slot') || err.message?.toLowerCase().includes('limit')) {
+      if ((err.message?.toLowerCase().includes('quota') || err.message?.toLowerCase().includes('slot') || err.message?.toLowerCase().includes('limit')) && landingPageLimits.currentCount >= landingPageLimits.totalAllowed) {
         setShowQuotaModal(true);
       }
       throw err;

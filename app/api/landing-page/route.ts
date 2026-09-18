@@ -266,9 +266,13 @@ export async function POST(req: NextRequest) {
 
     const config = validation.sanitized;
 
-    const targetWorkspaceId = (ctx.memberId === 'master-admin' && config.workspaceId)
-      ? config.workspaceId
-      : (ctx.workspaceId && ctx.workspaceId !== '*' ? ctx.workspaceId : (config.workspaceId || 'default-workspace'));
+    const effectiveAssistantId = config.assistantId !== undefined ? config.assistantId : assistantId;
+    const resolvedAssistant = effectiveAssistantId ? await Database.getAssistantById(effectiveAssistantId) : null;
+    const callerWs = body.workspaceId || config.workspaceId || resolvedAssistant?.workspaceId;
+
+    const targetWorkspaceId = (callerWs && (ctx.memberId === 'master-admin' || ctx.workspaceId === '*' || ctx.workspaceId === callerWs))
+      ? callerWs
+      : ((!ctx.workspaceId || ctx.workspaceId === '*') ? (callerWs || 'default-workspace') : ctx.workspaceId);
 
     // Quota validation if creating a new landing page
     if (isNewPage) {
