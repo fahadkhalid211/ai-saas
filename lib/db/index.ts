@@ -29,6 +29,7 @@ import {
   isCloudDbConfigured,
   getCloudDbProvider,
   fetchCloudState,
+  fetchCloudStateUpdatedAt,
   persistCloudState,
   PersistCloudStateOptions,
   fetchCloudChunks,
@@ -703,6 +704,7 @@ async function saveState(state: DatabaseState, options?: PersistCloudStateOption
     try {
       await persistCloudState(state, options);
       lastCloudFetchTime = Date.now();
+      lastKnownCloudUpdatedAt = new Date().toISOString();
     } catch (err) {
       console.warn('[Database] Failed to sync state to Cloud DB:', err);
     }
@@ -710,7 +712,8 @@ async function saveState(state: DatabaseState, options?: PersistCloudStateOption
 }
 
 let lastCloudFetchTime = 0;
-const CLOUD_CACHE_TTL_MS = 30_000;
+let lastKnownCloudUpdatedAt: string | null = null;
+const CLOUD_CACHE_TTL_MS = 60_000;
 let cloudSyncPromise: Promise<void> | null = null;
 
 async function ensureInitialized(forceFresh = false): Promise<DatabaseState> {
@@ -729,42 +732,66 @@ async function ensureInitialized(forceFresh = false): Promise<DatabaseState> {
   if (!cloudSyncPromise) {
     cloudSyncPromise = (async () => {
       try {
-        const remoteState = await fetchCloudState();
-        if (remoteState && typeof remoteState === 'object' && Array.isArray(remoteState.workspaces)) {
-          cachedState = {
-            workspaces: Array.isArray(remoteState.workspaces) ? remoteState.workspaces : [],
-            assistants: Array.isArray(remoteState.assistants) ? remoteState.assistants : [],
-            knowledgeSources: Array.isArray(remoteState.knowledgeSources) ? remoteState.knowledgeSources : [],
-            chunks: Array.isArray(remoteState.chunks) ? remoteState.chunks : [],
-            conversations: Array.isArray(remoteState.conversations) ? remoteState.conversations : [],
-            messages: Array.isArray(remoteState.messages) ? remoteState.messages : [],
-            leads: Array.isArray(remoteState.leads) ? remoteState.leads : [],
-            unansweredQueries: Array.isArray(remoteState.unansweredQueries) ? remoteState.unansweredQueries : [],
-            appointments: Array.isArray(remoteState.appointments) ? remoteState.appointments : [],
-            teamMembers: Array.isArray(remoteState.teamMembers) ? remoteState.teamMembers : [],
-            auditLogs: Array.isArray(remoteState.auditLogs) ? remoteState.auditLogs : [],
-            notifications: Array.isArray(remoteState.notifications) ? remoteState.notifications : [],
-            landingPages: Array.isArray(remoteState.landingPages) ? remoteState.landingPages : [],
-            landingPagesInitialized: remoteState.landingPagesInitialized !== undefined ? remoteState.landingPagesInitialized : true,
-            smtpSettings: remoteState.smtpSettings,
-            pageViews: Array.isArray(remoteState.pageViews) ? remoteState.pageViews : [],
-          };
-        } else {
-          const localState = loadState();
-          await persistCloudState(localState);
-          cachedState = localState;
+        let remoteNeedsFetch = true;
+        if (cachedState !== null && !forceFresh) {
+          // Lightweight ~30 byte query instead of downloading the multi-megabyte data column
+          const remoteUpdatedAt = await fetchCloudStateUpdatedAt();
+          if (remoteUpdatedAt && lastKnownCloudUpdatedAt && remoteUpdatedAt === lastKnownCloudUpdatedAt) {
+            remoteNeedsFetch = false;
+          } else if (remoteUpdatedAt) {
+            lastKnownCloudUpdatedAt = remoteUpdatedAt;
+          }
         }
 
-        const remoteChunks = await fetchCloudChunks();
-        if (remoteChunks && Array.isArray(remoteChunks)) {
-          cachedChunks = remoteChunks;
-          if (cachedState) {
-            cachedState.chunks = remoteChunks;
+        if (remoteNeedsFetch) {
+          const remoteState = await fetchCloudState();
+          if (remoteState && typeof remoteState === 'object' && Array.isArray(remoteState.workspaces)) {
+            cachedState = {
+              workspaces: Array.isArray(remoteState.workspaces) ? remoteState.workspaces : [],
+              assistants: Array.isArray(remoteState.assistants) ? remoteState.assistants : [],
+              knowledgeSources: Array.isArray(remoteState.knowledgeSources) ? remoteState.knowledgeSources : [],
+              chunks: Array.isArray(remoteState.chunks) ? remoteState.chunks : [],
+              conversations: Array.isArray(remoteState.conversations) ? remoteState.conversations : [],
+              messages: Array.isArray(remoteState.messages) ? remoteState.messages : [],
+              leads: Array.isArray(remoteState.leads) ? remoteState.leads : [],
+              unansweredQueries: Array.isArray(remoteState.unansweredQueries) ? remoteState.unansweredQueries : [],
+              appointments: Array.isArray(remoteState.appointments) ? remoteState.appointments : [],
+              teamMembers: Array.isArray(remoteState.teamMembers) ? remoteState.teamMembers : [],
+              auditLogs: Array.isArray(remoteState.auditLogs) ? remoteState.auditLogs : [],
+              notifications: Array.isArray(remoteState.notifications) ? remoteState.notifications : [],
+              landingPages: Array.isArray(remoteState.landingPages) ? remoteState.landingPages : [],
+              landingPagesInitialized: remoteState.landingPagesInitialized !== undefined ? remoteState.landingPagesInitialized : true,
+              smtpSettings: remoteState.smtpSettings,
+              pageViews: Array.isArray(remoteState.pageViews) ? remoteState.pageViews : (cachedState?.pageViews || []),
+            };
+          } else {
+            const localState = loadState();
+            await persistCloudState(localState);
+            cachedState = localState;
           }
-          rebuildChunkIndex(remoteChunks);
-        } else if (cachedState && (!cachedState.chunks || cachedState.chunks.length === 0)) {
+        }
+
+        // Only download chunks if memory and local disk .data/vectors.json are completely empty
+        if (!cachedChunks || cachedChunks.length === 0) {
           const localChunks = loadChunksState();
-          cachedState.chunks = localChunks;
+          if (localChunks && localChunks.length > 0) {
+            cachedChunks = localChunks;
+            if (cachedState) {
+              cachedState.chunks = localChunks;
+            }
+            rebuildChunkIndex(localChunks);
+          } else {
+            const remoteChunks = await fetchCloudChunks();
+            if (remoteChunks && Array.isArray(remoteChunks) && remoteChunks.length > 0) {
+              cachedChunks = remoteChunks;
+              if (cachedState) {
+                cachedState.chunks = remoteChunks;
+              }
+              rebuildChunkIndex(remoteChunks);
+            }
+          }
+        } else if (cachedState && (!cachedState.chunks || cachedState.chunks.length === 0)) {
+          cachedState.chunks = cachedChunks;
         }
         lastCloudFetchTime = Date.now();
       } catch (err) {
@@ -1797,6 +1824,17 @@ export class Database {
 
     let matched = allLeads.filter((l) => matchesAssistant(l.assistantId, assistantId, state));
     return matched;
+  }
+
+  static async deleteLead(id: string, workspaceId?: string): Promise<boolean> {
+    const state = await ensureInitialized(true);
+    const initialLen = state.leads.length;
+    state.leads = state.leads.filter((l) => l.id !== id);
+    if (state.leads.length !== initialLen) {
+      await saveState(state);
+      return true;
+    }
+    return false;
   }
 
   // Knowledge Gap & Unanswered Queries Engine
@@ -3216,11 +3254,12 @@ export class Database {
     };
 
     state.pageViews.unshift(record);
-    // Keep max 5000 events
+    // Keep max 5000 events locally
     if (state.pageViews.length > 5000) {
       state.pageViews = state.pageViews.slice(0, 5000);
     }
-    await saveState(state);
+    // Save to local disk without triggering cloud database sync on every visitor click
+    saveLocalStateSync(state);
     return record;
   }
 

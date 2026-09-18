@@ -4,6 +4,7 @@ import { generateEmbeddingsBatch } from '@/lib/rag/embedder';
 import { chunkDocument } from '@/lib/rag/chunker';
 import { withAdminAuth, withRoleAuth, getAuthContext, requireWorkspaceAssistant } from '@/lib/security/auth';
 import { clearRetrievalCache } from '@/lib/rag/cache';
+import { getClientIp } from '@/lib/security/rate-limit';
 
 export const GET = withAdminAuth(async (req: Request) => {
   try {
@@ -138,6 +139,24 @@ export const POST = withRoleAuth(['owner', 'admin'], async (req: Request) => {
 
       clearRetrievalCache(source.assistantId);
 
+      await Database.addAuditLog({
+        workspaceId: assistant.workspaceId || ctx.workspaceId,
+        actor: {
+          id: ctx.memberId,
+          name: ctx.role === 'owner' ? 'Workspace Owner' : 'Admin User',
+          ip: getClientIp(req),
+        },
+        action: 'knowledge.corrected',
+        targetType: 'knowledge_source',
+        targetId: source.id,
+        details: {
+          action: 'find_replace',
+          findText,
+          replaceText,
+          totalReplacements,
+        },
+      });
+
       return NextResponse.json({
         success: true,
         totalReplacements,
@@ -199,6 +218,22 @@ export const POST = withRoleAuth(['owner', 'admin'], async (req: Request) => {
 
       clearRetrievalCache(source.assistantId);
 
+      await Database.addAuditLog({
+        workspaceId: assistant.workspaceId || ctx.workspaceId,
+        actor: {
+          id: ctx.memberId,
+          name: ctx.role === 'owner' ? 'Workspace Owner' : 'Admin User',
+          ip: getClientIp(req),
+        },
+        action: 'knowledge.corrected',
+        targetType: 'knowledge_source',
+        targetId: source.id,
+        details: {
+          action: 'add_note',
+          note: trimmedNote,
+        },
+      });
+
       return NextResponse.json({
         success: true,
         message: 'Override note added and vector embeddings updated.',
@@ -257,6 +292,22 @@ export const POST = withRoleAuth(['owner', 'admin'], async (req: Request) => {
       });
 
       clearRetrievalCache(source.assistantId);
+
+      await Database.addAuditLog({
+        workspaceId: assistant.workspaceId || ctx.workspaceId,
+        actor: {
+          id: ctx.memberId,
+          name: ctx.role === 'owner' ? 'Workspace Owner' : 'Admin User',
+          ip: getClientIp(req),
+        },
+        action: 'knowledge.corrected',
+        targetType: 'knowledge_source',
+        targetId: source.id,
+        details: {
+          action: 'edit_content',
+          newChunkCount: newChunks.length,
+        },
+      });
 
       return NextResponse.json({
         success: true,

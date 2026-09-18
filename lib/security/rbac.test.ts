@@ -148,18 +148,28 @@ describe('Sprint 2: Role-Based Access Control (RBAC) & Audit Lockdown', () => {
     expect(staffCtx.isMasterAdmin).toBe(false);
   });
 
-  it('audit trail route should reject tenant owners and staff, and only allow master admin', async () => {
+  it('audit trail route should allow workspace owner and master admin, but reject all other staff roles', async () => {
     const { GET: auditHandler } = await import('../../app/api/audit/route');
 
-    // Tenant owner -> 403 Forbidden
-    const tenantToken = generateSessionToken('owner', 'tm_tenant_owner_1', 'ws_custom_123');
-    const tenantReq = new Request('http://localhost:3000/api/audit', {
-      headers: { Authorization: `Bearer ${tenantToken}` },
+    // Tenant owner -> 200 OK
+    const ownerToken = generateSessionToken('owner', 'tm_tenant_owner_1', 'ws_custom_123');
+    const ownerReq = new Request('http://localhost:3000/api/audit', {
+      headers: { Authorization: `Bearer ${ownerToken}` },
     });
-    const tenantRes = await auditHandler(tenantReq);
-    expect(tenantRes.status).toBe(403);
-    const tenantData = await tenantRes.json();
-    expect(tenantData.error).toContain('restricted exclusively to master administrator');
+    const ownerRes = await auditHandler(ownerReq);
+    expect(ownerRes.status).toBe(200);
+    const ownerData = await ownerRes.json();
+    expect(Array.isArray(ownerData.logs)).toBe(true);
+
+    // Regular admin -> 403 Forbidden
+    const adminToken = generateSessionToken('admin', 'tm_admin_1', 'ws_custom_123');
+    const adminReq = new Request('http://localhost:3000/api/audit', {
+      headers: { Authorization: `Bearer ${adminToken}` },
+    });
+    const adminRes = await auditHandler(adminReq);
+    expect(adminRes.status).toBe(403);
+    const adminData = await adminRes.json();
+    expect(adminData.error).toContain('restricted exclusively to workspace owner and master administrator');
 
     // Support agent -> 403 Forbidden
     const staffToken = generateSessionToken('support_agent', 'tm_staff_1', 'ws_custom_123');
@@ -168,6 +178,14 @@ describe('Sprint 2: Role-Based Access Control (RBAC) & Audit Lockdown', () => {
     });
     const staffRes = await auditHandler(staffReq);
     expect(staffRes.status).toBe(403);
+
+    // Viewer -> 403 Forbidden
+    const viewerToken = generateSessionToken('viewer', 'tm_viewer_1', 'ws_custom_123');
+    const viewerReq = new Request('http://localhost:3000/api/audit', {
+      headers: { Authorization: `Bearer ${viewerToken}` },
+    });
+    const viewerRes = await auditHandler(viewerReq);
+    expect(viewerRes.status).toBe(403);
 
     // Master admin key -> 200 OK
     const masterReq = new Request('http://localhost:3000/api/audit', {

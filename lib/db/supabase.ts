@@ -35,6 +35,11 @@ export function getSupabaseClient(): SupabaseClient | null {
       persistSession: false,
       autoRefreshToken: false,
     },
+    global: {
+      headers: {
+        'Accept-Encoding': 'gzip, deflate, br',
+      },
+    },
   });
 
   return supabaseClientInstance;
@@ -45,6 +50,29 @@ export interface SupabaseAppStateRow {
   data: any;
   chunks?: any;
   updated_at: string;
+}
+
+/**
+ * Fetches the lightweight updated_at timestamp from kortex_app_state.
+ * Transfers only ~30 bytes of egress instead of downloading the multi-megabyte data column.
+ */
+export async function fetchSupabaseStateUpdatedAt(): Promise<string | null> {
+  const client = getSupabaseClient();
+  if (!client) return null;
+
+  try {
+    const { data, error } = await client
+      .from('kortex_app_state')
+      .select('updated_at')
+      .eq('id', 'default')
+      .maybeSingle();
+
+    if (error || !data) return null;
+    return data.updated_at || null;
+  } catch (err: any) {
+    console.warn('[Supabase] Exception fetching state updated_at:', err?.message);
+    return null;
+  }
 }
 
 /**
@@ -82,10 +110,15 @@ export async function persistSupabaseState(state: any): Promise<boolean> {
   if (!client) return false;
 
   try {
-    const { chunks: _chunks, ...transactional } = state;
+    const { chunks: _chunks, pageViews: rawPageViews, ...transactional } = state;
+    // Cap pageViews in cloud payload to at most 50 recent items so the blob never bloats to megabytes
+    const cloudPageViews = Array.isArray(rawPageViews) ? rawPageViews.slice(0, 50) : [];
     const payload = {
       id: 'default',
-      data: transactional,
+      data: {
+        ...transactional,
+        pageViews: cloudPageViews,
+      },
       updated_at: new Date().toISOString(),
     };
 

@@ -2,8 +2,8 @@ import { NextResponse } from 'next/server';
 import { Database } from '@/lib/db';
 import { sendSupportLeadEmail } from '@/lib/email';
 import { dispatchWebhook } from '@/lib/webhook';
-import { verifyAdminRequest, getAuthContext, requireWorkspaceAssistant } from '@/lib/security/auth';
-import { enforceRateLimit } from '@/lib/security/rate-limit';
+import { verifyAdminRequest, getAuthContext, requireWorkspaceAssistant, withRoleAuth } from '@/lib/security/auth';
+import { enforceRateLimit, getClientIp } from '@/lib/security/rate-limit';
 
 export async function OPTIONS() {
   return new NextResponse(null, {
@@ -110,6 +110,29 @@ export async function POST(req: Request) {
       });
     }
 
+    // Security Audit Log
+    try {
+      await Database.addAuditLog({
+        workspaceId: assistant.workspaceId || 'default-workspace',
+        actor: {
+          id: 'visitor',
+          name: lead.name || 'Visitor',
+          email: lead.email,
+          ip: rateLimit.clientIp,
+        },
+        action: 'lead.captured',
+        targetType: 'lead',
+        targetId: lead.id,
+        details: {
+          assistantId,
+          email: lead.email,
+          name: lead.name,
+        },
+      });
+    } catch (auditErr: any) {
+      console.warn('[LeadAPI] Audit log error:', auditErr?.message);
+    }
+
     return NextResponse.json(
       { success: true, lead },
       {
@@ -152,3 +175,39 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: error?.message || 'Failed to fetch leads' }, { status: 500 });
   }
 }
+
+export const DELETE = withRoleAuth(['owner', 'admin'], async (req: Request) => {
+  try {
+    const ctx = await getAuthContext(req);
+    const { searchParams } = new URL(req.url);
+    const id = searchParams.get('id');
+
+    if (!id) {
+      return NextResponse.json({ error: 'id parameter required' }, { status: 400 });
+    }
+
+    const deleted = await Database.deleteLead(id, ctx.workspaceId);
+    if (!deleted) {
+      return NextResponse.json({ error: 'Lead not found' }, { status: 404 });
+    }
+
+    await Database.addAuditLog({
+      workspaceId: ctx.workspaceId,
+      actor: {
+        id: ctx.memberId,
+        name: ctx.role === 'owner' ? 'Workspace Owner' : 'Admin User',
+        ip: getClientIp(req),
+      },
+      action: 'lead.deleted',
+      targetType: 'lead',
+      targetId: id,
+      details: {
+        leadId: id,
+      },
+    });
+
+    return NextResponse.json({ success: true });
+  } catch (error: any) {
+    return NextResponse.json({ error: error?.message || 'Failed to delete lead' }, { status: 500 });
+  }
+});

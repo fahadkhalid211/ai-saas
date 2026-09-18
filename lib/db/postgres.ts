@@ -88,6 +88,27 @@ export async function ensurePostgresSchema(): Promise<boolean> {
   }
 }
 
+export async function fetchPostgresStateUpdatedAt(): Promise<string | null> {
+  const pool = getPostgresPool();
+  if (!pool) return null;
+
+  try {
+    const initialized = await ensurePostgresSchema();
+    if (!initialized) return null;
+    const result = await pool.query(
+      'SELECT updated_at FROM kortex_app_state WHERE id = $1 LIMIT 1',
+      ['default']
+    );
+    if (result.rows.length === 0) return null;
+    const row = result.rows[0];
+    return row.updated_at ? new Date(row.updated_at).toISOString() : null;
+  } catch (err: any) {
+    console.warn('[Postgres] Exception fetching state updated_at:', err?.message || err);
+    disablePostgresTemporarily();
+    return null;
+  }
+}
+
 export async function fetchPostgresState(): Promise<any | null> {
   const pool = getPostgresPool();
   if (!pool) return null;
@@ -115,13 +136,14 @@ export async function persistPostgresState(state: any): Promise<boolean> {
   try {
     const initialized = await ensurePostgresSchema();
     if (!initialized) return false;
-    const { chunks: _chunks, ...transactional } = state;
+    const { chunks: _chunks, pageViews: rawPageViews, ...transactional } = state;
+    const cloudPageViews = Array.isArray(rawPageViews) ? rawPageViews.slice(0, 50) : [];
     await pool.query(
       `INSERT INTO kortex_app_state (id, data, updated_at)
        VALUES ($1, $2, NOW())
        ON CONFLICT (id) DO UPDATE
        SET data = EXCLUDED.data, updated_at = NOW()`,
-      ['default', JSON.stringify(transactional)]
+      ['default', JSON.stringify({ ...transactional, pageViews: cloudPageViews })]
     );
     return true;
   } catch (err: any) {

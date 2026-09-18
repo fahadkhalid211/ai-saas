@@ -7,6 +7,7 @@ import { generateEmbeddingsBatch } from '@/lib/rag/embedder';
 import { diagnoseKnowledgeFailure } from '@/lib/rag/diagnostics';
 import { withRoleAuth, getAuthContext, requireWorkspaceAssistant } from '@/lib/security/auth';
 import { clearRetrievalCache } from '@/lib/rag/cache';
+import { getClientIp } from '@/lib/security/rate-limit';
 
 // Audio/video transcription (+ optional translation) followed by embedding
 // hundreds of chunks can legitimately take well over a minute; let the
@@ -276,6 +277,25 @@ export const POST = withRoleAuth(['owner', 'admin'], async (req: Request) => {
     }
 
     clearRetrievalCache(assistantId);
+
+    if (processedSources.length > 0) {
+      await Database.addAuditLog({
+        workspaceId: targetWorkspaceId,
+        actor: {
+          id: ctx.memberId,
+          name: ctx.role === 'owner' ? 'Workspace Owner' : 'Admin User',
+          ip: getClientIp(req),
+        },
+        action: 'knowledge.uploaded',
+        targetType: 'assistant',
+        targetId: assistantId,
+        details: {
+          sourcesCount: processedSources.length,
+          totalChunks: processedSources.reduce((acc, s) => acc + (s.chunks || 0), 0),
+          titles: processedSources.map((s) => s.title),
+        },
+      });
+    }
 
     return NextResponse.json({
       success: true,

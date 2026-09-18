@@ -57,14 +57,25 @@ describe('Sprint 2: Appointment Concurrency Mutex', () => {
 
   it('should successfully book an appointment using time range formats like 10:00 AM - 10:30 AM', async () => {
     const { POST: appointmentsHandler } = await import('../../app/api/appointments/route');
-    const testDate = `2028-11-${String((Date.now() % 25) + 1).padStart(2, '0')}`;
+    const { Database } = await import('../db');
+    const testDate = `2099-11-${String((Date.now() % 25) + 1).padStart(2, '0')}`;
+    const testSlot = '10:00 AM - 10:30 AM';
+
+    // Clean up any existing appointment from prior runs to ensure test idempotency
+    const existing = await Database.getAppointments('demo-assistant');
+    for (const a of existing) {
+      if (a.date === testDate && a.timeSlot === testSlot) {
+        await Database.deleteAppointment(a.id);
+      }
+    }
+
     const payload = {
       assistantId: 'demo-assistant',
       name: 'Jane Customer',
       email: 'jane.cust@example.com',
       phone: '+1 555-456-7890',
       date: testDate,
-      timeSlot: '10:00 AM - 10:30 AM',
+      timeSlot: testSlot,
       notes: 'Consultation request',
     };
 

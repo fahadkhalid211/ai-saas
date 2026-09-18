@@ -3,6 +3,7 @@ import { Database } from '@/lib/db';
 import { createCheckoutSession, isStripeConfigured } from '@/lib/billing/stripe';
 import { BILLING_PLANS } from '@/lib/billing/plans';
 import { getAuthContext, requireRole } from '@/lib/security/auth';
+import { getClientIp } from '@/lib/security/rate-limit';
 
 export async function POST(req: NextRequest) {
   try {
@@ -37,6 +38,24 @@ export async function POST(req: NextRequest) {
       addonType,
       successUrl,
       cancelUrl,
+    });
+
+    await Database.addAuditLog({
+      workspaceId: ws.id,
+      actor: {
+        id: ctx.memberId,
+        name: ctx.role === 'owner' ? 'Workspace Owner' : 'Billing Manager',
+        ip: getClientIp(req),
+      },
+      action: 'billing.checkout_initiated',
+      targetType: 'checkout_session',
+      targetId: result.sessionId || 'sandbox',
+      details: {
+        planId,
+        billingInterval,
+        addonType,
+        isSandbox: result.isSandbox,
+      },
     });
 
     // If Stripe is configured and session URL generated, return redirect URL

@@ -8,6 +8,7 @@ import { diagnoseKnowledgeFailure } from '@/lib/rag/diagnostics';
 import { withRoleAuth, getAuthContext, requireWorkspaceAssistant } from '@/lib/security/auth';
 import { validateSafeExternalUrl } from '@/lib/security/ssrf';
 import { clearRetrievalCache } from '@/lib/rag/cache';
+import { getClientIp } from '@/lib/security/rate-limit';
 
 // Webpage scraping falls back through up to three tiers (direct fetch, curl,
 // Jina reader) and YouTube/media extraction can involve transcription, so
@@ -145,6 +146,24 @@ export const POST = withRoleAuth(['owner', 'admin'], async (req: Request) => {
       });
 
       clearRetrievalCache(assistantId);
+
+      await Database.addAuditLog({
+        workspaceId: targetWorkspaceId,
+        actor: {
+          id: ctx.memberId,
+          name: ctx.role === 'owner' ? 'Workspace Owner' : 'Admin User',
+          ip: getClientIp(req),
+        },
+        action: 'knowledge.scraped',
+        targetType: 'assistant',
+        targetId: assistantId,
+        details: {
+          url: cleanUrl,
+          title: customTitle?.trim() || doc.title,
+          chunkCount: chunkRecords.length,
+          type: doc.type,
+        },
+      });
 
       return NextResponse.json({
         success: true,

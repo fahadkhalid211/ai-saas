@@ -7,9 +7,9 @@ export const dynamic = 'force-dynamic';
 export const GET = withAdminAuth(async (req: Request) => {
   try {
     const ctx = await getAuthContext(req);
-    if (!ctx.isMasterAdmin) {
+    if (ctx.role !== 'owner' && !ctx.isMasterAdmin) {
       return NextResponse.json(
-        { error: 'Forbidden: Audit trail is restricted exclusively to master administrator' },
+        { error: 'Forbidden: Audit trail is restricted exclusively to workspace owner and master administrator' },
         { status: 403 }
       );
     }
@@ -17,7 +17,7 @@ export const GET = withAdminAuth(async (req: Request) => {
     const { searchParams } = new URL(req.url);
     const limit = parseInt(searchParams.get('limit') || '100', 10);
 
-    const rawLogs = await Database.getAuditLogs(limit, ctx.workspaceId);
+    const rawLogs = await Database.getAuditLogs(limit, ctx.isMasterAdmin ? undefined : ctx.workspaceId);
     const logs = [...rawLogs].sort(
       (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
     );

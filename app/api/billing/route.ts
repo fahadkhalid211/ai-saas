@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { Database, InvoiceRecord } from '@/lib/db';
 import { BILLING_PLANS } from '@/lib/billing/plans';
 import { withAdminAuth, withRoleAuth, getAuthContext } from '@/lib/security/auth';
+import { getClientIp } from '@/lib/security/rate-limit';
 
 export const GET = withAdminAuth(async (req: Request) => {
   try {
@@ -117,6 +118,23 @@ export const POST = withRoleAuth(['owner', 'admin', 'billing_manager'], async (r
         invoices: updatedInvoices,
       });
 
+      await Database.addAuditLog({
+        workspaceId: targetWsId,
+        actor: {
+          id: ctx.memberId,
+          name: ctx.role === 'owner' ? 'Workspace Owner' : 'Billing Manager',
+          ip: getClientIp(req),
+        },
+        action: 'billing.plan_changed',
+        targetType: 'workspace_billing',
+        targetId: targetWsId,
+        details: {
+          newPlanId: targetPlan.id,
+          newPlanName: targetPlan.name,
+          interval,
+        },
+      });
+
       return NextResponse.json({
         success: true,
         message: `Successfully changed plan to ${targetPlan.name}`,
@@ -145,6 +163,22 @@ export const PATCH = withRoleAuth(['owner', 'admin', 'billing_manager'], async (
     if (billingEmail) updates.billingEmail = billingEmail;
 
     const updated = await Database.updateWorkspaceBilling(targetWsId, updates);
+
+    await Database.addAuditLog({
+      workspaceId: targetWsId,
+      actor: {
+        id: ctx.memberId,
+        name: ctx.role === 'owner' ? 'Workspace Owner' : 'Billing Manager',
+        ip: getClientIp(req),
+      },
+      action: 'billing.info_updated',
+      targetType: 'workspace_billing',
+      targetId: targetWsId,
+      details: {
+        hasPaymentMethod: Boolean(paymentMethod),
+        billingEmail,
+      },
+    });
 
     return NextResponse.json({
       success: true,

@@ -4,6 +4,8 @@ import { withAdminAuth, withRoleAuth, getAuthContext, generateCalendarFeedToken 
 import { maskSecret } from '@/lib/security/crypto';
 import { BILLING_PLANS } from '@/lib/billing/plans';
 
+import { getClientIp } from '@/lib/security/rate-limit';
+
 export const GET = withAdminAuth(async (req: Request) => {
   try {
     const ctx = await getAuthContext(req);
@@ -68,6 +70,23 @@ export const POST = withRoleAuth(['owner', 'admin'], async (req: Request) => {
       webhookSecret: assistant.webhookSecret ? maskSecret(assistant.webhookSecret) : '',
       calendarFeedToken: generateCalendarFeedToken(assistant.id),
     };
+
+    await Database.addAuditLog({
+      workspaceId: targetWorkspaceId,
+      actor: {
+        id: ctx.memberId,
+        name: ctx.role === 'owner' ? 'Workspace Owner' : 'Admin User',
+        ip: getClientIp(req),
+      },
+      action: 'assistant.created',
+      targetType: 'assistant',
+      targetId: assistant.id,
+      details: {
+        name: assistant.name,
+        provider: assistant.provider,
+        modelName: assistant.modelName,
+      },
+    });
 
     return NextResponse.json({ assistant: sanitized }, { status: 201 });
   } catch (error: any) {

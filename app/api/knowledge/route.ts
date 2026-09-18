@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { Database } from '@/lib/db';
 import { BILLING_PLANS } from '@/lib/billing/plans';
 import { withAdminAuth, withRoleAuth, getAuthContext, requireWorkspaceAssistant } from '@/lib/security/auth';
+import { getClientIp } from '@/lib/security/rate-limit';
 
 export const dynamic = 'force-dynamic';
 
@@ -64,6 +65,21 @@ export const DELETE = withRoleAuth(['owner', 'admin'], async (req: Request) => {
     if (!deleted) {
       return NextResponse.json({ error: 'Knowledge source not found or forbidden' }, { status: 404 });
     }
+
+    await Database.addAuditLog({
+      workspaceId: ctx.workspaceId,
+      actor: {
+        id: ctx.memberId,
+        name: ctx.role === 'owner' ? 'Workspace Owner' : 'Admin User',
+        ip: getClientIp(req),
+      },
+      action: 'knowledge.deleted',
+      targetType: 'knowledge_source',
+      targetId: id,
+      details: {
+        sourceId: id,
+      },
+    });
 
     return NextResponse.json({ success: true });
   } catch (error: any) {

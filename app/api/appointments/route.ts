@@ -3,7 +3,7 @@ import { Database, DEFAULT_BARBER_LANDING_CONFIG } from '@/lib/db';
 import { sendSupportLeadEmail, sendAppointmentConfirmationEmail } from '@/lib/email';
 import { dispatchWebhook } from '@/lib/webhook';
 import { verifyAdminRequest, getAuthContext } from '@/lib/security/auth';
-import { enforceRateLimit } from '@/lib/security/rate-limit';
+import { enforceRateLimit, getClientIp } from '@/lib/security/rate-limit';
 import { validateAppointmentPayload } from '@/lib/security/validation';
 import { acquireBookingLock } from '@/lib/appointments/booking-lock';
 
@@ -138,10 +138,36 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: 'id and status are required' }, { status: 400 });
       }
 
+      const existingApt = await Database.getAppointmentById(id);
+      if (!existingApt) {
+        return NextResponse.json({ error: 'Appointment not found' }, { status: 404 });
+      }
+
       const updated = await Database.updateAppointmentStatus(id, status, cancellationReason);
       if (!updated) {
         return NextResponse.json({ error: 'Appointment not found' }, { status: 404 });
       }
+
+      const ast = existingApt.assistantId ? await Database.getAssistantById(existingApt.assistantId) : null;
+
+      await Database.addAuditLog({
+        workspaceId: ast?.workspaceId || 'default-workspace',
+        actor: {
+          id: 'admin',
+          name: 'Admin User',
+          ip: getClientIp(req),
+        },
+        action: 'appointment.status_updated',
+        targetType: 'appointment',
+        targetId: id,
+        details: {
+          status,
+          cancellationReason,
+          clientName: existingApt.name,
+          date: existingApt.date,
+          timeSlot: existingApt.timeSlot,
+        },
+      });
 
       return NextResponse.json({ success: true });
     }
@@ -285,6 +311,7 @@ export async function POST(req: Request) {
     // Security Audit Log
     try {
       await Database.addAuditLog({
+        workspaceId: assistant.workspaceId || 'default-workspace',
         actor: { id: 'client', name: appointment.name, email: appointment.email, ip },
         action: 'appointment.created',
         targetType: 'appointment',
@@ -399,6 +426,21 @@ export async function DELETE(req: Request) {
     if (!deleted) {
       return NextResponse.json({ error: 'Appointment not found' }, { status: 404 });
     }
+
+    await Database.addAuditLog({
+      workspaceId: ctx.workspaceId,
+      actor: {
+        id: ctx.memberId,
+        name: ctx.role === 'owner' ? 'Workspace Owner' : 'Admin User',
+        ip: getClientIp(req),
+      },
+      action: 'appointment.deleted',
+      targetType: 'appointment',
+      targetId: id,
+      details: {
+        appointmentId: id,
+      },
+    });
 
     return NextResponse.json({ success: true });
   } catch (error: any) {

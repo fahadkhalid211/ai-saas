@@ -35,6 +35,7 @@ interface DashboardSidebarProps {
   waitingConversationsCount?: number;
   landingPagesCount?: number;
   isMasterAdmin?: boolean;
+  isOwner?: boolean;
 }
 
 export function DashboardSidebar({
@@ -49,7 +50,9 @@ export function DashboardSidebar({
   waitingConversationsCount = 0,
   landingPagesCount,
   isMasterAdmin = false,
+  isOwner = false,
 }: DashboardSidebarProps) {
+  const canViewAudit = Boolean(isOwner || isMasterAdmin);
   const allTabs = [
     { id: 'overview', label: 'Overview', icon: FileCheck },
     { id: 'profile', label: 'My Profile', icon: UserCircle },
@@ -58,7 +61,7 @@ export function DashboardSidebar({
     { id: 'landing_page', label: 'Landing Pages', icon: Globe, count: landingPagesCount },
     { id: 'team', label: 'Team & RBAC', icon: UserCheck, count: teamCount },
     { id: 'security', label: 'Security & 2FA', icon: ShieldCheck },
-    ...(isMasterAdmin ? [{ id: 'audit', label: 'Audit Trail', icon: ClipboardList, count: auditCount }] : []),
+    ...(canViewAudit ? [{ id: 'audit', label: 'Audit Trail', icon: ClipboardList, count: auditCount }] : []),
     { id: 'knowledge', label: 'Knowledge Base', icon: Upload, count: sourcesCount },
     { id: 'playground', label: 'Testing Studio', icon: MessageSquare },
     { id: 'channels', label: 'Channels & Integrations', icon: Share2 },

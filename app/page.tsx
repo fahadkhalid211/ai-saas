@@ -726,6 +726,7 @@ export default function DashboardPage() {
             waitingConversationsCount={conversations.filter((c) => c.status === 'waiting_for_agent' && !c.isLiveTakeover).length}
             landingPagesCount={landing.allLandingPages.length}
             isMasterAdmin={isMasterAdmin}
+            isOwner={currentUser?.role === 'owner' || isMasterAdmin}
           />
 
           {/* Main Content Workspace */}
@@ -860,7 +861,7 @@ export default function DashboardPage() {
             )}
 
             {/* TAB: AUDIT TRAIL */}
-            {activeTab === 'audit' && isMasterAdmin && (
+            {activeTab === 'audit' && (currentUser?.role === 'owner' || isMasterAdmin) && (
               <AuditTab
                 auditLogs={teamSecurity.auditLogs}
                 isSyncingAudit={teamSecurity.isSyncingAudit}
