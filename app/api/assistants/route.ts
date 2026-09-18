@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { Database } from '@/lib/db';
-import { withAdminAuth, getAuthContext } from '@/lib/security/auth';
+import { withAdminAuth, getAuthContext, generateCalendarFeedToken } from '@/lib/security/auth';
 import { maskSecret } from '@/lib/security/crypto';
 import { BILLING_PLANS } from '@/lib/billing/plans';
 
@@ -14,6 +14,7 @@ export const GET = withAdminAuth(async (req: Request) => {
       telegramBotToken: a.telegramBotToken ? maskSecret(a.telegramBotToken) : '',
       whatsappAccessToken: a.whatsappAccessToken ? maskSecret(a.whatsappAccessToken) : '',
       webhookSecret: a.webhookSecret ? maskSecret(a.webhookSecret) : '',
+      calendarFeedToken: generateCalendarFeedToken(a.id),
     }));
 
     return NextResponse.json({ assistants: sanitized });
@@ -65,6 +66,7 @@ export const POST = withAdminAuth(async (req: Request) => {
       telegramBotToken: assistant.telegramBotToken ? maskSecret(assistant.telegramBotToken) : '',
       whatsappAccessToken: assistant.whatsappAccessToken ? maskSecret(assistant.whatsappAccessToken) : '',
       webhookSecret: assistant.webhookSecret ? maskSecret(assistant.webhookSecret) : '',
+      calendarFeedToken: generateCalendarFeedToken(assistant.id),
     };
 
     return NextResponse.json({ assistant: sanitized }, { status: 201 });

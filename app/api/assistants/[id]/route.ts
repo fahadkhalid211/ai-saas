@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { Database } from '@/lib/db';
-import { withAdminAuth, getAuthContext } from '@/lib/security/auth';
+import { withAdminAuth, getAuthContext, requireWorkspaceAssistant, generateCalendarFeedToken } from '@/lib/security/auth';
 import { maskSecret } from '@/lib/security/crypto';
 
 export const GET = withAdminAuth(async (
@@ -10,7 +10,7 @@ export const GET = withAdminAuth(async (
   try {
     const ctx = await getAuthContext(req);
     const { id } = await params;
-    const assistant = await Database.getAssistantById(id, ctx.workspaceId);
+    const assistant = await requireWorkspaceAssistant(ctx, id);
     if (!assistant) {
       return NextResponse.json({ error: 'Assistant not found' }, { status: 404 });
     }
@@ -21,6 +21,7 @@ export const GET = withAdminAuth(async (
       telegramBotToken: assistant.telegramBotToken ? maskSecret(assistant.telegramBotToken) : '',
       whatsappAccessToken: assistant.whatsappAccessToken ? maskSecret(assistant.whatsappAccessToken) : '',
       webhookSecret: assistant.webhookSecret ? maskSecret(assistant.webhookSecret) : '',
+      calendarFeedToken: generateCalendarFeedToken(assistant.id),
     };
 
     return NextResponse.json({ assistant: sanitized });
@@ -36,6 +37,11 @@ export const PUT = withAdminAuth(async (
   try {
     const ctx = await getAuthContext(req);
     const { id } = await params;
+    const existing = await requireWorkspaceAssistant(ctx, id);
+    if (!existing) {
+      return NextResponse.json({ error: 'Assistant not found' }, { status: 404 });
+    }
+
     const body = await req.json();
     const updated = await Database.updateAssistant(id, body, ctx.workspaceId);
     if (!updated) {
@@ -48,6 +54,7 @@ export const PUT = withAdminAuth(async (
       telegramBotToken: updated.telegramBotToken ? maskSecret(updated.telegramBotToken) : '',
       whatsappAccessToken: updated.whatsappAccessToken ? maskSecret(updated.whatsappAccessToken) : '',
       webhookSecret: updated.webhookSecret ? maskSecret(updated.webhookSecret) : '',
+      calendarFeedToken: generateCalendarFeedToken(updated.id),
     };
 
     return NextResponse.json({ assistant: sanitized });
@@ -63,6 +70,11 @@ export const DELETE = withAdminAuth(async (
   try {
     const ctx = await getAuthContext(req);
     const { id } = await params;
+    const existing = await requireWorkspaceAssistant(ctx, id);
+    if (!existing) {
+      return NextResponse.json({ error: 'Assistant not found' }, { status: 404 });
+    }
+
     const deleted = await Database.deleteAssistant(id, ctx.workspaceId);
     if (!deleted) {
       return NextResponse.json({ error: 'Assistant not found' }, { status: 404 });

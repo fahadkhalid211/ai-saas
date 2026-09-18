@@ -5,7 +5,8 @@ import { parseFileOrText } from '@/lib/rag/parsers';
 import { chunkDocument } from '@/lib/rag/chunker';
 import { generateEmbeddingsBatch } from '@/lib/rag/embedder';
 import { diagnoseKnowledgeFailure } from '@/lib/rag/diagnostics';
-import { withAdminAuth, getAuthContext } from '@/lib/security/auth';
+import { withAdminAuth, getAuthContext, requireWorkspaceAssistant } from '@/lib/security/auth';
+import { clearRetrievalCache } from '@/lib/rag/cache';
 
 // Audio/video transcription (+ optional translation) followed by embedding
 // hundreds of chunks can legitimately take well over a minute; let the
@@ -24,7 +25,7 @@ export const POST = withAdminAuth(async (req: Request) => {
       return NextResponse.json({ success: false, error: 'assistantId is required' }, { status: 400 });
     }
 
-    const assistant = await Database.getAssistantById(assistantId, ctx.workspaceId);
+    const assistant = await requireWorkspaceAssistant(ctx, assistantId);
     if (!assistant) {
       return NextResponse.json({ success: false, error: 'Assistant not found or forbidden' }, { status: 404 });
     }
@@ -273,6 +274,8 @@ export const POST = withAdminAuth(async (req: Request) => {
         });
       }
     }
+
+    clearRetrievalCache(assistantId);
 
     return NextResponse.json({
       success: true,

@@ -1,15 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Database } from '@/lib/db';
-import { withAdminAuth } from '@/lib/security/auth';
+import { withAdminAuth, getAuthContext } from '@/lib/security/auth';
 
 export const dynamic = 'force-dynamic';
 
 export const GET = withAdminAuth(async (req: Request) => {
   try {
+    const ctx = await getAuthContext(req);
     const { searchParams } = new URL(req.url);
     const limit = parseInt(searchParams.get('limit') || '100', 10);
 
-    const rawLogs = await Database.getAuditLogs(limit);
+    const rawLogs = await Database.getAuditLogs(limit, ctx.workspaceId);
     const logs = [...rawLogs].sort(
       (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
     );

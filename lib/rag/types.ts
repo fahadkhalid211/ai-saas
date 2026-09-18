@@ -60,3 +60,10 @@ export interface Citation {
   page?: number;
   row?: number;
 }
+
+export interface RetrievalResult {
+  condensedQuery: string;
+  chunks: SearchResultChunk[];
+  contextText: string;
+  citations: Citation[];
+}

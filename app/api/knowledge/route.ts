@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { Database } from '@/lib/db';
 import { BILLING_PLANS } from '@/lib/billing/plans';
-import { withAdminAuth, getAuthContext } from '@/lib/security/auth';
+import { withAdminAuth, getAuthContext, requireWorkspaceAssistant } from '@/lib/security/auth';
 
 export const dynamic = 'force-dynamic';
 
@@ -16,7 +16,7 @@ export const GET = withAdminAuth(async (req: Request) => {
       return NextResponse.json({ error: 'assistantId query parameter required' }, { status: 400 });
     }
 
-    const assistant = await Database.getAssistantById(assistantId, ctx.workspaceId);
+    const assistant = await requireWorkspaceAssistant(ctx, assistantId);
     if (!assistant) {
       return NextResponse.json({ error: 'Assistant not found or forbidden' }, { status: 404 });
     }

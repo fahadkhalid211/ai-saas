@@ -1,15 +1,20 @@
 import { NextResponse } from 'next/server';
 import { Database } from '@/lib/db';
-import { withAdminAuth } from '@/lib/security/auth';
+import { withAdminAuth, getAuthContext, requireWorkspaceAssistant } from '@/lib/security/auth';
 import { checkRateLimit, getClientIp } from '@/lib/security/rate-limit';
 
 export const GET = withAdminAuth(async (req: Request) => {
   try {
-
+    const ctx = await getAuthContext(req);
     const { searchParams } = new URL(req.url);
     const assistantId = searchParams.get('assistantId') || 'demo-assistant';
     const slug = searchParams.get('slug') || 'all';
     const days = parseInt(searchParams.get('days') || '30', 10);
+
+    const assistant = await requireWorkspaceAssistant(ctx, assistantId);
+    if (!assistant) {
+      return NextResponse.json({ error: 'Assistant not found or forbidden' }, { status: 404 });
+    }
 
     const convs = await Database.getConversations(assistantId);
     const leads = await Database.getLeads(assistantId);

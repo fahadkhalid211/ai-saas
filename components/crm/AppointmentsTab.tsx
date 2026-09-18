@@ -437,55 +437,64 @@ export const AppointmentsTab: React.FC<AppointmentsTabProps> = ({
                           <label className="text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider block mb-1.5">
                             Your Live Calendar Subscription Feed URL
                           </label>
-                          <div className="flex items-center gap-2">
-                            <input
-                              type="text"
-                              readOnly
-                              value={
-                                typeof window !== 'undefined'
-                                  ? `${window.location.origin}/api/appointments/calendar?assistantId=${activeAssistant?.id || 'demo-assistant'}`
-                                  : `/api/appointments/calendar?assistantId=${activeAssistant?.id || 'demo-assistant'}`
-                              }
-                              className="flex-1 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 font-mono text-xs text-slate-800 dark:text-slate-200 select-all outline-none"
-                            />
-                            <button
-                              type="button"
-                              onClick={() => {
-                                const feedUrl = `${window.location.origin}/api/appointments/calendar?assistantId=${activeAssistant?.id || 'demo-assistant'}`;
-                                navigator.clipboard.writeText(feedUrl);
-                                setCopiedFeedUrl(true);
-                                setTimeout(() => setCopiedFeedUrl(false), 2500);
-                              }}
-                              className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-semibold shadow-xs transition cursor-pointer shrink-0"
-                            >
-                              {copiedFeedUrl ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
-                              <span>{copiedFeedUrl ? 'Copied!' : 'Copy Feed'}</span>
-                            </button>
-                          </div>
-                        </div>
+                        {(() => {
+                          const feedTokenParam = activeAssistant?.calendarFeedToken
+                            ? `&token=${encodeURIComponent(activeAssistant.calendarFeedToken)}`
+                            : '';
+                          return (
+                            <>
+                              <div className="flex items-center gap-2">
+                                <input
+                                  type="text"
+                                  readOnly
+                                  value={
+                                    typeof window !== 'undefined'
+                                      ? `${window.location.origin}/api/appointments/calendar?assistantId=${activeAssistant?.id || 'demo-assistant'}${feedTokenParam}`
+                                      : `/api/appointments/calendar?assistantId=${activeAssistant?.id || 'demo-assistant'}${feedTokenParam}`
+                                  }
+                                  className="flex-1 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 font-mono text-xs text-slate-800 dark:text-slate-200 select-all outline-none"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const feedUrl = `${window.location.origin}/api/appointments/calendar?assistantId=${activeAssistant?.id || 'demo-assistant'}${feedTokenParam}`;
+                                    navigator.clipboard.writeText(feedUrl);
+                                    setCopiedFeedUrl(true);
+                                    setTimeout(() => setCopiedFeedUrl(false), 2500);
+                                  }}
+                                  className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-semibold shadow-xs transition cursor-pointer shrink-0"
+                                >
+                                  {copiedFeedUrl ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+                                  <span>{copiedFeedUrl ? 'Copied!' : 'Copy Feed'}</span>
+                                </button>
+                              </div>
 
-                        {/* Direct Actions */}
-                        <div className="flex flex-wrap items-center gap-2 pt-1">
-                          <a
-                            href={`/api/appointments/calendar?assistantId=${activeAssistant?.id || 'demo-assistant'}`}
-                            download="appointments.ics"
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold transition cursor-pointer"
-                          >
-                            <Download className="h-3.5 w-3.5 text-slate-500" />
-                            <span>Download Offline .ics</span>
-                          </a>
+                              {/* Direct Actions */}
+                              <div className="flex flex-wrap items-center gap-2 pt-1">
+                                <a
+                                  href={`/api/appointments/calendar?assistantId=${activeAssistant?.id || 'demo-assistant'}${feedTokenParam}`}
+                                  download="appointments.ics"
+                                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold transition cursor-pointer"
+                                >
+                                  <Download className="h-3.5 w-3.5 text-slate-500" />
+                                  <span>Download Offline .ics</span>
+                                </a>
 
-                          <a
-                            href={
-                              typeof window !== 'undefined'
-                                ? `webcal://${window.location.host}/api/appointments/calendar?assistantId=${activeAssistant?.id || 'demo-assistant'}`
-                                : '#'
-                            }
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 text-xs font-semibold transition cursor-pointer"
-                          >
-                            <Calendar className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
-                            <span>Subscribe in Apple / Outlook Calendar</span>
-                          </a>
+                                <a
+                                  href={
+                                    typeof window !== 'undefined'
+                                      ? `webcal://${window.location.host}/api/appointments/calendar?assistantId=${activeAssistant?.id || 'demo-assistant'}${feedTokenParam}`
+                                      : '#'
+                                  }
+                                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 text-xs font-semibold transition cursor-pointer"
+                                >
+                                  <Calendar className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+                                  <span>Subscribe in Apple / Outlook Calendar</span>
+                                </a>
+                              </div>
+                            </>
+                          );
+                        })()}
                         </div>
 
                         {/* Setup Instructions Cards */}

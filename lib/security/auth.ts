@@ -2,6 +2,7 @@ import crypto from 'crypto';
 import path from 'path';
 import { NextResponse } from 'next/server';
 import { resolveDataDir, ensureDirectory, safeReadFile, safeAtomicWrite } from '../db/storage';
+import { Database, AssistantData } from '../db';
 import { timingSafeStringEqual } from './password';
 
 const DATA_DIR = resolveDataDir();
@@ -260,5 +261,39 @@ export function withAdminAuth<T = any>(
     }
     return handler(req, context);
   };
+}
+
+/**
+ * Cross-Workspace IDOR / BOLA Prevention Guard
+ * Validates that an assistant exists and belongs to the caller's workspace.
+ * If ctx.workspaceId is '*' (Master Admin), access is granted to any valid assistant.
+ */
+export async function requireWorkspaceAssistant(
+  ctx: { workspaceId: string },
+  assistantId: string
+): Promise<AssistantData | null> {
+  if (!assistantId || typeof assistantId !== 'string') return null;
+  const assistant = await Database.getAssistantById(assistantId, ctx.workspaceId);
+  return assistant;
+}
+
+/**
+ * Generates an unguessable capability token scoping access to an assistant's
+ * appointment calendar feed (e.g. for iCal subscriptions in Apple/Google Calendar).
+ * Derived via HMAC from the server master key and assistantId.
+ */
+export function generateCalendarFeedToken(assistantId: string): string {
+  const masterKey = getAdminKey();
+  return crypto
+    .createHmac('sha256', masterKey)
+    .update(`calendar-feed:${assistantId}`)
+    .digest('hex')
+    .slice(0, 32);
+}
+
+export function verifyCalendarFeedToken(assistantId: string, token: string | null | undefined): boolean {
+  if (!token || typeof token !== 'string') return false;
+  const expected = generateCalendarFeedToken(assistantId);
+  return timingSafeStringEqual(token, expected);
 }
 

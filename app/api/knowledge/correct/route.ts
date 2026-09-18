@@ -2,10 +2,12 @@ import { NextResponse } from 'next/server';
 import { Database, ChunkRecord } from '@/lib/db';
 import { generateEmbeddingsBatch } from '@/lib/rag/embedder';
 import { chunkDocument } from '@/lib/rag/chunker';
-import { withAdminAuth } from '@/lib/security/auth';
+import { withAdminAuth, getAuthContext, requireWorkspaceAssistant } from '@/lib/security/auth';
+import { clearRetrievalCache } from '@/lib/rag/cache';
 
 export const GET = withAdminAuth(async (req: Request) => {
   try {
+    const ctx = await getAuthContext(req);
     const { searchParams } = new URL(req.url);
     const sourceId = searchParams.get('sourceId');
 
@@ -16,6 +18,11 @@ export const GET = withAdminAuth(async (req: Request) => {
     const source = await Database.getKnowledgeSourceById(sourceId);
     if (!source) {
       return NextResponse.json({ error: 'Knowledge source not found' }, { status: 404 });
+    }
+
+    const assistant = await requireWorkspaceAssistant(ctx, source.assistantId);
+    if (!assistant) {
+      return NextResponse.json({ error: 'Knowledge source not found or forbidden' }, { status: 404 });
     }
 
     const chunks = await Database.getChunksBySource(sourceId);
@@ -44,6 +51,7 @@ export const GET = withAdminAuth(async (req: Request) => {
 
 export const POST = withAdminAuth(async (req: Request) => {
   try {
+    const ctx = await getAuthContext(req);
     const body = await req.json();
     const { sourceId, action, findText, replaceText, note, fullText } = body;
 
@@ -54,6 +62,11 @@ export const POST = withAdminAuth(async (req: Request) => {
     const source = await Database.getKnowledgeSourceById(sourceId);
     if (!source) {
       return NextResponse.json({ error: 'Knowledge source not found' }, { status: 404 });
+    }
+
+    const assistant = await requireWorkspaceAssistant(ctx, source.assistantId);
+    if (!assistant) {
+      return NextResponse.json({ error: 'Knowledge source not found or forbidden' }, { status: 404 });
     }
 
     const existingCorrections = source.corrections || [];
@@ -123,6 +136,8 @@ export const POST = withAdminAuth(async (req: Request) => {
         updatedAt: new Date().toISOString(),
       });
 
+      clearRetrievalCache(source.assistantId);
+
       return NextResponse.json({
         success: true,
         totalReplacements,
@@ -182,6 +197,8 @@ export const POST = withAdminAuth(async (req: Request) => {
         updatedAt: new Date().toISOString(),
       });
 
+      clearRetrievalCache(source.assistantId);
+
       return NextResponse.json({
         success: true,
         message: 'Override note added and vector embeddings updated.',
@@ -238,6 +255,8 @@ export const POST = withAdminAuth(async (req: Request) => {
         corrections: updatedCorrections,
         updatedAt: new Date().toISOString(),
       });
+
+      clearRetrievalCache(source.assistantId);
 
       return NextResponse.json({
         success: true,

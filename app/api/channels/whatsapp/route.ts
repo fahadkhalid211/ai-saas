@@ -58,19 +58,28 @@ export async function POST(req: NextRequest) {
 
     const rawBody = await req.text();
 
-    // Verify Meta x-hub-signature-256 if app secret or verify token configured
+    // Mandatory Meta Webhook Signature Verification
     const signature = req.headers.get('x-hub-signature-256');
+    if (!signature) {
+      return NextResponse.json(
+        { error: 'Unauthorized: Missing mandatory x-hub-signature-256 header' },
+        { status: 401 }
+      );
+    }
+
     const appSecret = process.env.WHATSAPP_APP_SECRET || assistant.whatsappVerifyToken;
-    if (appSecret) {
-      if (!signature) {
-        return NextResponse.json({ error: 'Missing x-hub-signature-256 signature header' }, { status: 401 });
-      }
-      const expectedSig = 'sha256=' + crypto.createHmac('sha256', appSecret).update(rawBody).digest('hex');
-      const sigBuf = Buffer.from(signature);
-      const expectedBuf = Buffer.from(expectedSig);
-      if (sigBuf.length !== expectedBuf.length || !crypto.timingSafeEqual(sigBuf, expectedBuf)) {
-        return NextResponse.json({ error: 'Invalid webhook signature' }, { status: 403 });
-      }
+    if (!appSecret) {
+      return NextResponse.json(
+        { error: 'Forbidden: WhatsApp webhook secret is not configured' },
+        { status: 403 }
+      );
+    }
+
+    const expectedSig = 'sha256=' + crypto.createHmac('sha256', appSecret).update(rawBody).digest('hex');
+    const sigBuf = Buffer.from(signature);
+    const expectedBuf = Buffer.from(expectedSig);
+    if (sigBuf.length !== expectedBuf.length || !crypto.timingSafeEqual(sigBuf, expectedBuf)) {
+      return NextResponse.json({ error: 'Forbidden: Invalid webhook signature' }, { status: 403 });
     }
 
     const body = JSON.parse(rawBody);

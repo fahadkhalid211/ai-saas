@@ -5,8 +5,9 @@ import { extractFromUrl } from '@/lib/rag/url-extractor';
 import { chunkDocument } from '@/lib/rag/chunker';
 import { generateEmbeddingsBatch } from '@/lib/rag/embedder';
 import { diagnoseKnowledgeFailure } from '@/lib/rag/diagnostics';
-import { withAdminAuth, getAuthContext } from '@/lib/security/auth';
+import { withAdminAuth, getAuthContext, requireWorkspaceAssistant } from '@/lib/security/auth';
 import { validateSafeExternalUrl } from '@/lib/security/ssrf';
+import { clearRetrievalCache } from '@/lib/rag/cache';
 
 // Webpage scraping falls back through up to three tiers (direct fetch, curl,
 // Jina reader) and YouTube/media extraction can involve transcription, so
@@ -38,7 +39,7 @@ export const POST = withAdminAuth(async (req: Request) => {
       );
     }
 
-    const assistant = await Database.getAssistantById(assistantId, ctx.workspaceId);
+    const assistant = await requireWorkspaceAssistant(ctx, assistantId);
     if (!assistant) {
       return NextResponse.json({ error: 'Assistant not found or forbidden' }, { status: 404 });
     }
@@ -142,6 +143,8 @@ export const POST = withAdminAuth(async (req: Request) => {
         status: 'ready',
         chunkCount: chunkRecords.length,
       });
+
+      clearRetrievalCache(assistantId);
 
       return NextResponse.json({
         success: true,

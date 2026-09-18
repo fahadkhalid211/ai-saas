@@ -1,7 +1,17 @@
 import { describe, it, expect } from 'vitest';
 import { Database } from '../db';
-import { getAdminKey } from './auth';
+import {
+  getAdminKey,
+  requireWorkspaceAssistant,
+  generateCalendarFeedToken,
+  verifyCalendarFeedToken,
+} from './auth';
 import { timingSafeStringEqual } from './password';
+import {
+  getCachedRetrieval,
+  setCachedRetrieval,
+  clearRetrievalCache,
+} from '../rag/cache';
 
 describe('Multi-Tenant Isolation & BOLA/IDOR Security', () => {
   const wsA = 'ws_test_tenant_alpha_' + Math.random().toString(36).substring(2, 8);
@@ -323,4 +333,97 @@ describe('Multi-Tenant Isolation & BOLA/IDOR Security', () => {
     const resBadToken = await cronRoute(reqBadToken);
     expect(resBadToken.status).toBe(401);
   });
+
+  it('should enforce requireWorkspaceAssistant cross-workspace access control', async () => {
+    const targetBot = await Database.createAssistant({
+      name: 'Isolated Target Bot',
+      workspaceId: wsA,
+    });
+
+    // Tenant A accessing own bot -> Allowed
+    const allowed = await requireWorkspaceAssistant({ workspaceId: wsA }, targetBot.id);
+    expect(allowed).not.toBeNull();
+    expect(allowed?.id).toBe(targetBot.id);
+
+    // Tenant B accessing Tenant A bot -> Forbidden / Null
+    const forbidden = await requireWorkspaceAssistant({ workspaceId: wsB }, targetBot.id);
+    expect(forbidden).toBeNull();
+
+    // Master Admin accessing Tenant A bot -> Allowed
+    const masterAccess = await requireWorkspaceAssistant({ workspaceId: '*' }, targetBot.id);
+    expect(masterAccess).not.toBeNull();
+    expect(masterAccess?.id).toBe(targetBot.id);
+
+    // Non-existent assistant -> Null
+    const missing = await requireWorkspaceAssistant({ workspaceId: wsA }, 'non_existent_bot_id');
+    expect(missing).toBeNull();
+  });
+
+  it('should auth-gate the appointments calendar feed with per-assistant feed tokens', async () => {
+    const { GET: calendarRoute } = await import('../../app/api/appointments/calendar/route');
+    const { NextRequest } = await import('next/server');
+
+    const calBot = await Database.createAssistant({
+      name: 'Calendar Secured Bot',
+      workspaceId: wsA,
+    });
+
+    // 1. Unauthenticated request without token -> Rejected with 401
+    const unauthedReq = new NextRequest(`http://localhost/api/appointments/calendar?assistantId=${calBot.id}`);
+    const unauthedRes = await calendarRoute(unauthedReq);
+    expect(unauthedRes.status).toBe(401);
+
+    // 2. Request with invalid token -> Rejected with 401
+    const badTokenReq = new NextRequest(`http://localhost/api/appointments/calendar?assistantId=${calBot.id}&token=invalid_forged_token`);
+    const badTokenRes = await calendarRoute(badTokenReq);
+    expect(badTokenRes.status).toBe(401);
+
+    // 3. Request with valid per-assistant feed token -> 200 OK with iCal content
+    const validToken = generateCalendarFeedToken(calBot.id);
+    expect(verifyCalendarFeedToken(calBot.id, validToken)).toBe(true);
+    expect(verifyCalendarFeedToken(calBot.id, 'wrong-token')).toBe(false);
+
+    const validReq = new NextRequest(`http://localhost/api/appointments/calendar?assistantId=${calBot.id}&token=${validToken}`);
+    const validRes = await calendarRoute(validReq);
+    expect(validRes.status).toBe(200);
+    expect(validRes.headers.get('content-type')).toContain('text/calendar');
+    const bodyText = await validRes.text();
+    expect(bodyText).toContain('BEGIN:VCALENDAR');
+  });
+
+  it('should invalidate retrieval cache immediately when knowledge is updated or deleted', async () => {
+    const cacheBot = await Database.createAssistant({
+      name: 'Cache Test Bot',
+      workspaceId: wsA,
+    });
+
+    const testResult = {
+      condensedQuery: 'what are your prices',
+      chunks: [],
+      contextText: 'haircut is 25 dollars',
+      citations: [],
+    };
+
+    // Populate retrieval cache
+    setCachedRetrieval(cacheBot.id, 'what are your prices', testResult);
+    expect(getCachedRetrieval(cacheBot.id, 'what are your prices')).not.toBeNull();
+    expect(getCachedRetrieval(cacheBot.id, 'what are your prices')?.contextText).toBe('haircut is 25 dollars');
+
+    // Invalidate cache for this assistant
+    clearRetrievalCache(cacheBot.id);
+    expect(getCachedRetrieval(cacheBot.id, 'what are your prices')).toBeNull();
+
+    // Populate again and verify Database chunk mutation triggers invalidation
+    setCachedRetrieval(cacheBot.id, 'what are your prices', testResult);
+    expect(getCachedRetrieval(cacheBot.id, 'what are your prices')).not.toBeNull();
+
+    const src = await Database.createKnowledgeSource({
+      assistantId: cacheBot.id,
+      title: 'Price Sheet',
+    });
+
+    // createKnowledgeSource triggers clearRetrievalCache
+    expect(getCachedRetrieval(cacheBot.id, 'what are your prices')).toBeNull();
+  });
 });
+

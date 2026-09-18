@@ -3,6 +3,7 @@ import path from 'path';
 import crypto from 'crypto';
 import { cosineSimilarity, keywordRelevance, reciprocalRankFusion } from '../rag/vector-math';
 import { SearchResultChunk } from '../rag/types';
+import { clearRetrievalCache } from '../rag/cache';
 import { encryptSecret, decryptSecret } from '../security/crypto';
 import { hashPassword, verifyPassword, isHashedPassword, generateTempPassword } from '../security/password';
 import {
@@ -346,6 +347,7 @@ export interface PageViewEventData {
 export interface AuditLogData {
   id: string;
   timestamp: string;
+  workspaceId?: string;
   actor: {
     id: string;
     name: string;
@@ -493,6 +495,13 @@ async function saveChunksState(chunks: ChunkRecord[], overwrite: boolean = false
   }
   rebuildChunkIndex(chunks);
   atomicWriteFileSync(VECTORS_FILE, JSON.stringify(chunks, null, 2));
+
+  // Invalidate in-memory retrieval cache for all assistants whose knowledge was modified
+  const affectedAssistantIds = new Set(chunks.map((c) => c.assistantId).filter(Boolean));
+  affectedAssistantIds.forEach((astId) => clearRetrievalCache(astId));
+  if (affectedAssistantIds.size === 0) {
+    clearRetrievalCache();
+  }
 
   if (isCloudDbConfigured()) {
     try {
@@ -1097,6 +1106,9 @@ export class Database {
 
     state.knowledgeSources.push(newSource);
     await saveState(state);
+    if (newSource.assistantId) {
+      clearRetrievalCache(newSource.assistantId);
+    }
     return newSource;
   }
 
@@ -1108,12 +1120,16 @@ export class Database {
       idx = state.knowledgeSources.findIndex((k) => k.id === id);
     }
     if (idx !== -1) {
+      const astId = state.knowledgeSources[idx].assistantId;
       state.knowledgeSources[idx] = {
         ...state.knowledgeSources[idx],
         ...data,
         updatedAt: new Date().toISOString(),
       };
       await saveState(state);
+      if (astId) {
+        clearRetrievalCache(astId);
+      }
     }
   }
 
@@ -2536,9 +2552,18 @@ export class Database {
     return log;
   }
 
-  static async getAuditLogs(limit: number = 100): Promise<AuditLogData[]> {
+  static async getAuditLogs(limit: number = 100, workspaceId?: string): Promise<AuditLogData[]> {
     const state = await ensureInitialized();
-    return (state.auditLogs || []).slice(0, limit);
+    let logs = state.auditLogs || [];
+    if (workspaceId && workspaceId !== '*') {
+      logs = logs.filter(
+        (l) =>
+          l.workspaceId === workspaceId ||
+          l.details?.workspaceId === workspaceId ||
+          (l.targetType === 'workspace' && l.targetId === workspaceId)
+      );
+    }
+    return logs.slice(0, limit);
   }
 
   // Real-time In-App Notifications
