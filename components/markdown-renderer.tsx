@@ -14,42 +14,42 @@ export function MarkdownRenderer({ content, className = '' }: MarkdownRendererPr
   if (!content) return null;
 
   return (
-    <div className={`markdown-content text-xs leading-relaxed space-y-2 ${className}`}>
+    <div className={`markdown-content text-xs leading-relaxed space-y-2 text-inherit ${className}`}>
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         components={{
           h1: ({ children }) => (
-            <h1 className="text-base font-bold text-slate-900 dark:text-white mt-3.5 mb-2 border-b border-slate-200 dark:border-slate-800 pb-1">
+            <h1 className="text-base font-bold text-inherit mt-3.5 mb-2 border-b border-current/20 pb-1">
               {children}
             </h1>
           ),
           h2: ({ children }) => (
-            <h2 className="text-sm font-bold text-slate-900 dark:text-white mt-3 mb-1.5 flex items-center gap-1.5">
+            <h2 className="text-sm font-bold text-inherit mt-3 mb-1.5 flex items-center gap-1.5">
               {children}
             </h2>
           ),
           h3: ({ children }) => (
-            <h3 className="text-xs font-bold text-slate-800 dark:text-slate-100 mt-2.5 mb-1">
+            <h3 className="text-xs font-bold text-inherit mt-2.5 mb-1">
               {children}
             </h3>
           ),
           h4: ({ children }) => (
-            <h4 className="text-xs font-semibold text-slate-800 dark:text-slate-200 mt-2 mb-0.5">
+            <h4 className="text-xs font-semibold text-inherit mt-2 mb-0.5">
               {children}
             </h4>
           ),
           p: ({ children }) => (
-            <p className="my-1.5 text-slate-800 dark:text-slate-200 leading-normal">
+            <p className="my-1.5 text-inherit leading-normal">
               {children}
             </p>
           ),
           ul: ({ children }) => (
-            <ul className="list-disc pl-5 space-y-1 my-2 text-slate-800 dark:text-slate-200 marker:text-slate-400 dark:marker:text-slate-500">
+            <ul className="list-disc pl-5 space-y-1 my-2 text-inherit marker:text-current/60">
               {children}
             </ul>
           ),
           ol: ({ children }) => (
-            <ol className="list-decimal pl-5 space-y-1 my-2 text-slate-800 dark:text-slate-200 marker:font-semibold marker:text-slate-600 dark:marker:text-slate-400">
+            <ol className="list-decimal pl-5 space-y-1 my-2 text-inherit marker:font-semibold marker:text-current/60">
               {children}
             </ol>
           ),
@@ -57,20 +57,20 @@ export function MarkdownRenderer({ content, className = '' }: MarkdownRendererPr
             <li className="pl-0.5">{children}</li>
           ),
           blockquote: ({ children }) => (
-            <blockquote className="border-l-3 border-blue-500 dark:border-blue-400 bg-blue-50/60 dark:bg-blue-950/30 pl-3 py-1.5 my-2 rounded-r italic text-slate-700 dark:text-slate-300 text-[11.5px]">
+            <blockquote className="border-l-3 border-blue-500 dark:border-blue-400 bg-blue-50/60 dark:bg-blue-950/30 pl-3 py-1.5 my-2 rounded-r italic text-inherit text-[11.5px]">
               {children}
             </blockquote>
           ),
           hr: () => (
-            <hr className="my-3 border-slate-200 dark:border-slate-800" />
+            <hr className="my-3 border-current/20" />
           ),
           strong: ({ children }) => (
-            <strong className="font-semibold text-slate-900 dark:text-white">
+            <strong className="font-semibold text-inherit">
               {children}
             </strong>
           ),
           em: ({ children }) => (
-            <em className="italic text-slate-700 dark:text-slate-300">
+            <em className="italic text-inherit">
               {children}
             </em>
           ),

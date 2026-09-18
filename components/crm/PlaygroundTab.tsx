@@ -14,6 +14,7 @@ import {
   FileEdit,
 } from 'lucide-react';
 import { MarkdownRenderer } from '@/components/markdown-renderer';
+import { ChatBookingCard } from '@/components/chat/ChatBookingCard';
 
 const Youtube = ({ className = 'h-4 w-4' }: { className?: string }) => (
   <svg className={className} viewBox="0 0 24 24" fill="currentColor">
@@ -98,7 +99,21 @@ export const PlaygroundTab: React.FC<PlaygroundTabProps> = ({
                             }`}
                           >
                             {msg.role === 'assistant' ? (
-                              <MarkdownRenderer content={msg.content} />
+                              (() => {
+                                const hasBookingAction = msg.content.includes('[ACTION:BOOKING_FORM]');
+                                const cleanContent = msg.content.replace(/\[ACTION:BOOKING_FORM\]/g, '').trim();
+                                return (
+                                  <>
+                                    {cleanContent && <MarkdownRenderer content={cleanContent} />}
+                                    {hasBookingAction && (
+                                      <ChatBookingCard
+                                        assistantId={activeAssistant?.id}
+                                        businessName={activeAssistant?.name || 'Our Team'}
+                                      />
+                                    )}
+                                  </>
+                                );
+                              })()
                             ) : (
                               <div className="whitespace-pre-wrap">{msg.content}</div>
                             )}

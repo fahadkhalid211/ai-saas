@@ -20,6 +20,7 @@ import {
   Headphones,
 } from 'lucide-react';
 import { MarkdownRenderer } from '@/components/markdown-renderer';
+import { ChatBookingCard } from '@/components/chat/ChatBookingCard';
 import { consumeChatStream } from '@/lib/chat/stream';
 
 interface EmbedPageProps {
@@ -583,7 +584,22 @@ export default function EmbedChatPage({ params }: EmbedPageProps) {
                   <p className="whitespace-pre-wrap">{msg.content}</p>
                 ) : (
                   <div>
-                    <MarkdownRenderer content={msg.content} />
+                    {(() => {
+                      const hasBookingAction = msg.content.includes('[ACTION:BOOKING_FORM]');
+                      const cleanContent = msg.content.replace(/\[ACTION:BOOKING_FORM\]/g, '').trim();
+                      return (
+                        <>
+                          {cleanContent && <MarkdownRenderer content={cleanContent} />}
+                          {hasBookingAction && (
+                            <ChatBookingCard
+                              assistantId={assistantId}
+                              primaryColor={primaryColor}
+                              businessName={config?.name || 'Our Team'}
+                            />
+                          )}
+                        </>
+                      );
+                    })()}
                     {/* Web Sources Citations (Strictly for live web search - never internal knowledge base) */}
                     {(() => {
                       const isLive = Boolean(msg.isWebSearch || (msg.citations || []).some((c: any) => c.isLiveWebSearch));

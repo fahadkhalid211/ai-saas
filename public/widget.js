@@ -1401,11 +1401,17 @@
         msgEl.appendChild(agentHeader);
       }
 
+      var hasBookingAction = text && text.indexOf('[ACTION:BOOKING_FORM]') !== -1;
+      var cleanText = text ? text.replace(/\[ACTION:BOOKING_FORM\]/g, '').trim() : '';
+
       var textContainer = document.createElement('div');
-      textContainer.innerHTML = formatMarkdown(text);
+      textContainer.innerHTML = formatMarkdown(cleanText);
       msgEl.appendChild(textContainer);
 
       if (messagesBody) messagesBody.appendChild(msgEl);
+      if (hasBookingAction) {
+        renderBookingCard();
+      }
       if (isUser) {
         scrollToBottom();
       } else {
@@ -2164,16 +2170,22 @@
                     var fbEl = appendMessage('assistant', fallback);
                     renderSupportQuickButton(fbEl, text);
                   }
-                } else {
-                  messages.push({ role: 'assistant', content: streamedText });
+                  var hasActionBooking = streamedText.indexOf('[ACTION:BOOKING_FORM]') !== -1;
+                  var cleanContent = streamedText.replace(/\[ACTION:BOOKING_FORM\]/g, '').trim();
+                  if (assistantBubble) {
+                    assistantBubble.innerHTML = formatMarkdown(cleanContent);
+                  }
+                  messages.push({ role: 'assistant', content: cleanContent });
                   // Attach citation pills strictly if a live external web search was executed
                   if (assistantBubble && currentCitations.length > 0 && isCurrentWebSearch) {
                     renderWidgetCitations(assistantBubble, currentCitations, isCurrentWebSearch);
                   }
-                  // Check if bot suggested booking or support
-                  if (assistantBubble && config.bookingEnabled && isBookingIntent(streamedText)) {
+                  // Check if bot explicitly signaled booking form or suggested booking/support
+                  if (hasActionBooking) {
+                    renderBookingCard(text);
+                  } else if (assistantBubble && config.bookingEnabled && isBookingIntent(cleanContent)) {
                     renderBookingQuickButton(assistantBubble, text);
-                  } else if (assistantBubble && isSupportSuggested(streamedText)) {
+                  } else if (assistantBubble && isSupportSuggested(cleanContent)) {
                     renderSupportQuickButton(assistantBubble, text);
                   }
                   if (assistantBubble) {
@@ -2248,7 +2260,8 @@
                         hasMountedBubble = true;
                       }
                       streamedText += data.token;
-                      assistantBubble.innerHTML = formatMarkdown(streamedText);
+                      var cleanStreamed = streamedText.replace(/\[ACTION:BOOKING_FORM\]/g, '').trim();
+                      assistantBubble.innerHTML = formatMarkdown(cleanStreamed);
                       scrollToBottom();
                     } else if (data.type === 'error') {
                       throw new Error(data.error || 'Inference error');

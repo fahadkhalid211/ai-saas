@@ -689,15 +689,58 @@ Directly use the content of this attached document to assist the visitor, answer
           );
 
           // Automated Knowledge Gap Detection:
-          // Check if the reply fell back or no context was found for a real question
-          const isFallback =
-            (assistant.fallbackMessage && fullAssistantReply.includes(assistant.fallbackMessage.slice(0, 30))) ||
-            /don't have enough specific details|not mentioned in (the|my) knowledge base|connect you with our support team/i.test(fullAssistantReply) ||
+          // Check if the reply fell back, expressed uncertainty, or no context was found for a substantive question
+          const isUnknownAnswer =
+            /not sure about that|not sure|don't know|do not know|not certain|no information|not mentioned in (the|my) knowledge base|don't have enough specific details|not covered in (the|my) knowledge base|can't find information|cannot find information|outside (of )?(my|the) knowledge/i.test(fullAssistantReply);
+
+          const isHandoffPhrase =
+            /connect you with (our|my|the) team|connect you with support|transfer you to|speak with (our|a|the) team|someone from (our|the) team will|connect with our support team|reach out to our team/i.test(fullAssistantReply);
+
+          const isFallbackMsg = Boolean(
+            assistant.fallbackMessage &&
+            fullAssistantReply.toLowerCase().includes(assistant.fallbackMessage.slice(0, 25).toLowerCase())
+          );
+
+          const isKnowledgeGap =
+            isFallbackMsg ||
+            isUnknownAnswer ||
+            (isHandoffPhrase && isUnknownAnswer) ||
             (retrieval.chunks.length === 0 && latestUserMsg.length > 8);
 
-          if (isFallback) {
-            Database.recordUnansweredQuery(assistantId, latestUserMsg, visitorId).catch((err) =>
+          if (isKnowledgeGap) {
+            Database.recordUnansweredQuery(assistant.id || assistantId, latestUserMsg, visitorId).catch((err) =>
               console.warn('[ChatRoute] Failed to record unanswered query:', err?.message)
+            );
+          }
+
+          // Live Support Handoff Notification Alarm to Admin:
+          // When the bot indicates it is connecting the visitor to the team, notify the admin immediately
+          const isBotConnectingTeam =
+            isHandoffPhrase ||
+            fullAssistantReply.includes('[ACTION:HUMAN_ESCALATION]');
+
+          if (isBotConnectingTeam && !conv.isLiveTakeover) {
+            Database.updateConversation(conv.id, {
+              status: 'waiting_for_agent',
+              escalated: true,
+            }).catch((err) =>
+              console.warn('[ChatRoute] Failed to update conversation for handoff:', err?.message)
+            );
+
+            Database.addNotification({
+              assistantId: assistant.id || assistantId,
+              title: 'Live Support Handoff Requested',
+              message: `Bot connected visitor to team: "${latestUserMsg.slice(0, 75)}"`,
+              type: 'chat_escalated',
+              metadata: {
+                conversationId: conv.id,
+                assistantId: assistant.id || assistantId,
+                visitorId,
+                query: latestUserMsg,
+                isAlarm: true,
+              },
+            }).catch((err) =>
+              console.warn('[ChatRoute] Failed to create handoff notification:', err?.message)
             );
           }
 

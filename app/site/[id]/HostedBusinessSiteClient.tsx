@@ -60,6 +60,7 @@ import { FintechTemplate } from '@/components/landing/templates/FintechTemplate'
 import { CustomSkeletonTemplate } from '@/components/landing/templates/CustomSkeletonTemplate';
 import { consumeChatStream } from '@/lib/chat/stream';
 import { MarkdownRenderer } from '@/components/markdown-renderer';
+import { ChatBookingCard } from '@/components/chat/ChatBookingCard';
 
 function InstagramIcon({ className = 'w-4 h-4' }: { className?: string }) {
   return (
@@ -1617,13 +1618,27 @@ export default function HostedBusinessSiteClient({
                       <div
                         className={`max-w-[85%] rounded-2xl px-4 py-2.5 ${
                           isUser
-                            ? `${currentTheme.btnBg} ${currentTheme.btnText} font-medium`
+                            ? `${currentTheme.btnBg} !text-white font-medium`
                             : isDark
                             ? 'bg-slate-800 text-slate-100 border border-slate-700'
                             : 'bg-slate-100 text-slate-800 border border-slate-200'
                         }`}
                       >
-                        <MarkdownRenderer content={msg.content} />
+                        {(() => {
+                          const hasBookingAction = msg.content.includes('[ACTION:BOOKING_FORM]');
+                          const cleanContent = msg.content.replace(/\[ACTION:BOOKING_FORM\]/g, '').trim();
+                          return (
+                            <>
+                              {cleanContent && <MarkdownRenderer content={cleanContent} />}
+                              {hasBookingAction && (
+                                <ChatBookingCard
+                                  assistantId={activeConfig.assistantId || assistantId}
+                                  businessName={activeConfig.businessName || 'Our Business'}
+                                />
+                              )}
+                            </>
+                          );
+                        })()}
                       </div>
                     </div>
                   );
