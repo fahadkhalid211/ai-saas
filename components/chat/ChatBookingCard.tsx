@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { Calendar, Clock, Check, RefreshCw, ExternalLink } from 'lucide-react';
+import { generateGoogleCalendarUrl } from '@/lib/calendar/ical';
 
 interface ChatBookingCardProps {
   assistantId?: string;
@@ -93,11 +94,18 @@ export function ChatBookingCard({
   };
 
   if (successData) {
-    const googleCalUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(
-      'Appointment with ' + businessName
-    )}&dates=${date.replace(/-/g, '')}T090000Z/${date.replace(/-/g, '')}T093000Z&details=${encodeURIComponent(
-      'Scheduled meeting via AI assistant. Time: ' + (successData.timeSlot || timeSlot)
-    )}`;
+    const googleCalUrl = generateGoogleCalendarUrl(
+      {
+        name: successData.name || name,
+        email: successData.email || email,
+        phone: successData.phone || phone,
+        date: successData.date || date,
+        timeSlot: successData.timeSlot || timeSlot,
+        durationMinutes: 30,
+        notes: notes.trim(),
+      },
+      businessName
+    );
 
     return (
       <div className="mt-3 p-4 rounded-xl border border-emerald-200 dark:border-emerald-800/80 bg-emerald-50/70 dark:bg-emerald-950/40 text-slate-900 dark:text-slate-100 space-y-3 text-xs shadow-xs">

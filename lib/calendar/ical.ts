@@ -22,12 +22,26 @@ export function parseAppointmentDates(
   let minutes = 0;
 
   const cleanTime = (timeSlotStr || '').trim();
-  const match12h = cleanTime.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)?$/i);
+  const [startPart, endPart] = cleanTime.split(/\s*(?:-|–|—|to)\s*/);
+  const match12h = (startPart || cleanTime).match(/^(\d{1,2}):(\d{2})\s*(AM|PM)?$/i);
 
   if (match12h) {
     hours = parseInt(match12h[1], 10);
     minutes = parseInt(match12h[2], 10);
-    const meridiem = (match12h[3] || '').toUpperCase();
+    let meridiem = (match12h[3] || '').toUpperCase();
+
+    if (!meridiem && endPart) {
+      const endPartMatch = endPart.match(/\s*(AM|PM)$/i);
+      if (endPartMatch) {
+        const endMeridiem = endPartMatch[1].toUpperCase();
+        if (endMeridiem === 'AM') {
+          meridiem = 'AM';
+        } else if (endMeridiem === 'PM' && hours < 12 && hours < 8) {
+          meridiem = 'PM';
+        }
+      }
+    }
+
     if (meridiem === 'PM' && hours < 12) hours += 12;
     if (meridiem === 'AM' && hours === 12) hours = 0;
   }
@@ -38,7 +52,26 @@ export function parseAppointmentDates(
   const day = parseInt(dayStr, 10) || 1;
 
   const startDate = new Date(Date.UTC(year, month, day, hours, minutes, 0));
-  const endDate = new Date(startDate.getTime() + (durationMinutes || 30) * 60000);
+
+  let resolvedDuration = durationMinutes || 30;
+  if (endPart) {
+    const endMatch = endPart.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)?$/i);
+    if (endMatch) {
+      let endHours = parseInt(endMatch[1], 10);
+      const endMinutes = parseInt(endMatch[2], 10);
+      const endMeridiem = (endMatch[3] || '').toUpperCase();
+      if (endMeridiem === 'PM' && endHours < 12) endHours += 12;
+      if (endMeridiem === 'AM' && endHours === 12) endHours = 0;
+      if (!endMeridiem && hours >= 12 && endHours < 12) endHours += 12;
+
+      const diffMins = (endHours * 60 + endMinutes) - (hours * 60 + minutes);
+      if (diffMins > 0 && diffMins <= 480) {
+        resolvedDuration = diffMins;
+      }
+    }
+  }
+
+  const endDate = new Date(startDate.getTime() + resolvedDuration * 60000);
 
   return { startDate, endDate };
 }

@@ -38,6 +38,20 @@ describe('iCalendar Engine & Calendar Sync', () => {
     expect(morning.endDate.getUTCMinutes()).toBe(15);
   });
 
+  it('parses appointment dates correctly with time ranges like 10:00 AM - 10:30 AM', () => {
+    const range = parseAppointmentDates('2026-10-15', '10:00 AM - 10:30 AM');
+    expect(range.startDate.getUTCHours()).toBe(10);
+    expect(range.startDate.getUTCMinutes()).toBe(0);
+    expect(range.endDate.getUTCHours()).toBe(10);
+    expect(range.endDate.getUTCMinutes()).toBe(30);
+
+    const rangeEnDash = parseAppointmentDates('2026-10-15', '02:00 PM – 03:00 PM');
+    expect(rangeEnDash.startDate.getUTCHours()).toBe(14);
+    expect(rangeEnDash.startDate.getUTCMinutes()).toBe(0);
+    expect(rangeEnDash.endDate.getUTCHours()).toBe(15);
+    expect(rangeEnDash.endDate.getUTCMinutes()).toBe(0);
+  });
+
   it('formats dates in UTC iCalendar standard (YYYYMMDDTHHMMSSZ)', () => {
     const d = new Date(Date.UTC(2026, 9, 15, 14, 30, 0));
     expect(formatIcsUtc(d)).toBe('20261015T143000Z');

@@ -54,4 +54,31 @@ describe('Sprint 2: Appointment Concurrency Mutex', () => {
     // Since slots are distinct, they run concurrently in ~20-40ms instead of 60ms+
     expect(duration).toBeLessThan(100);
   });
+
+  it('should successfully book an appointment using time range formats like 10:00 AM - 10:30 AM', async () => {
+    const { POST: appointmentsHandler } = await import('../../app/api/appointments/route');
+    const testDate = `2028-11-${String((Date.now() % 25) + 1).padStart(2, '0')}`;
+    const payload = {
+      assistantId: 'demo-assistant',
+      name: 'Jane Customer',
+      email: 'jane.cust@example.com',
+      phone: '+1 555-456-7890',
+      date: testDate,
+      timeSlot: '10:00 AM - 10:30 AM',
+      notes: 'Consultation request',
+    };
+
+    const req = new Request('http://localhost:3000/api/appointments', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+
+    const res = await appointmentsHandler(req);
+    expect(res.status).toBe(201);
+    const data = await res.json();
+    expect(data.success).toBe(true);
+    expect(data.appointment).toBeDefined();
+    expect(data.appointment.timeSlot).toBe('10:00 AM - 10:30 AM');
+  });
 });

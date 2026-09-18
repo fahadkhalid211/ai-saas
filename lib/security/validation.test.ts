@@ -92,10 +92,20 @@ describe('Enterprise Validation & Sanitization Suite', () => {
       expect(validateTimeSlot('2:30 PM').valid).toBe(true);
     });
 
+    it('accepts valid time ranges used in chat booking card and widgets', () => {
+      expect(validateTimeSlot('10:00 AM - 10:30 AM').valid).toBe(true);
+      expect(validateTimeSlot('09:00 AM - 10:00 AM').valid).toBe(true);
+      expect(validateTimeSlot('10:00 - 10:30').valid).toBe(true);
+      expect(validateTimeSlot('10:00 AM – 10:30 AM').valid).toBe(true);
+      expect(validateTimeSlot('10:00 to 10:30').valid).toBe(true);
+      expect(validateTimeSlot('2:00 PM - 3:00 PM').valid).toBe(true);
+    });
+
     it('rejects invalid time slots', () => {
       expect(validateTimeSlot('25:00').valid).toBe(false);
       expect(validateTimeSlot('12:65').valid).toBe(false);
       expect(validateTimeSlot('noon').valid).toBe(false);
+      expect(validateTimeSlot('10:00 - 25:00').valid).toBe(false);
     });
   });
 

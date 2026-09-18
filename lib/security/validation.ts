@@ -15,7 +15,8 @@ export const HEX_COLOR_REGEX = /^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$/;
 
 export const DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/;
 
-export const TIME_SLOT_REGEX = /^(?:[01]?\d|2[0-3]):[0-5]\d(?:\s?(?:AM|PM|am|pm))?$/;
+export const TIME_SLOT_REGEX =
+  /^(?:(?:[01]?\d|2[0-3]):[0-5]\d(?:\s?(?:AM|PM|am|pm))?|(?:[1-9]|1[0-2])\s?(?:AM|PM|am|pm))(?:\s*(?:-|–|—|to)\s*(?:(?:[01]?\d|2[0-3]):[0-5]\d(?:\s?(?:AM|PM|am|pm))?|(?:[1-9]|1[0-2])\s?(?:AM|PM|am|pm)))?$/;
 
 export const KNOWN_INDUSTRY_TEMPLATES = [
   'classic-barbershop',
@@ -230,7 +231,7 @@ export function validateTimeSlot(timeStr: unknown): { valid: boolean; error?: st
   }
   const clean = timeStr.trim();
   if (!TIME_SLOT_REGEX.test(clean)) {
-    return { valid: false, error: 'Please select a valid time slot (e.g. 10:00 or 2:30 PM).' };
+    return { valid: false, error: 'Please select a valid time slot (e.g. 10:00 AM, 10:00 - 10:30, or 2:30 PM).' };
   }
   return { valid: true, value: clean };
 }
