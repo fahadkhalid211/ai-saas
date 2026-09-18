@@ -15,6 +15,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid webhook signature or missing secret' }, { status: 400 });
     }
 
+    // Webhook Idempotency: Deduplicate repeated events to prevent duplicate invoices or slot allocations
+    if (await Database.isWebhookProcessed(event.id)) {
+      console.log(`[Stripe Webhook] Duplicate event ignored: ${event.type} (${event.id})`);
+      return NextResponse.json({ received: true, duplicate: true });
+    }
+
     console.log(`[Stripe Webhook] Processing event: ${event.type} (${event.id})`);
 
     switch (event.type) {
@@ -68,8 +74,7 @@ export async function POST(req: NextRequest) {
         const subscription = event.data.object as any;
         const customerId = subscription.customer ? String(subscription.customer) : null;
         if (customerId) {
-          const state = await Database.getState();
-          const ws = state.workspaces.find((w: any) => w.stripeCustomerId === customerId);
+          const ws = await Database.findWorkspaceByStripeCustomer(customerId);
           if (ws) {
             const starterPlan = BILLING_PLANS[0];
             await Database.updateWorkspaceBilling(ws.id, {
@@ -90,8 +95,7 @@ export async function POST(req: NextRequest) {
         const invoice = event.data.object as any;
         const customerId = invoice.customer ? String(invoice.customer) : null;
         if (customerId && invoice.amount_paid > 0) {
-          const state = await Database.getState();
-          const ws = state.workspaces.find((w: any) => w.stripeCustomerId === customerId);
+          const ws = await Database.findWorkspaceByStripeCustomer(customerId);
           if (ws) {
             const currentInvoices = ws.invoices || [];
             const newInvoice = {
@@ -116,6 +120,7 @@ export async function POST(req: NextRequest) {
         break;
     }
 
+    await Database.recordProcessedWebhook(event.id);
     return NextResponse.json({ received: true });
   } catch (error: any) {
     console.error('[Stripe Webhook] Execution error:', error);

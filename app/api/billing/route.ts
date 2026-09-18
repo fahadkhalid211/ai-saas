@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { Database, InvoiceRecord } from '@/lib/db';
 import { BILLING_PLANS } from '@/lib/billing/plans';
-import { withAdminAuth, getAuthContext } from '@/lib/security/auth';
+import { withAdminAuth, withRoleAuth, getAuthContext } from '@/lib/security/auth';
 
 export const GET = withAdminAuth(async (req: Request) => {
   try {
@@ -78,7 +78,7 @@ export const GET = withAdminAuth(async (req: Request) => {
   }
 });
 
-export const POST = withAdminAuth(async (req: Request) => {
+export const POST = withRoleAuth(['owner', 'admin', 'billing_manager'], async (req: Request) => {
   try {
     const ctx = await getAuthContext(req);
     const body = await req.json();
@@ -131,7 +131,7 @@ export const POST = withAdminAuth(async (req: Request) => {
   }
 });
 
-export const PATCH = withAdminAuth(async (req: Request) => {
+export const PATCH = withRoleAuth(['owner', 'admin', 'billing_manager'], async (req: Request) => {
   try {
     const ctx = await getAuthContext(req);
     const body = await req.json();

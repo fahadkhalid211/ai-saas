@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { Database } from '@/lib/db';
-import { withAdminAuth, getAuthContext, generateCalendarFeedToken } from '@/lib/security/auth';
+import { withAdminAuth, withRoleAuth, getAuthContext, generateCalendarFeedToken } from '@/lib/security/auth';
 import { maskSecret } from '@/lib/security/crypto';
 import { BILLING_PLANS } from '@/lib/billing/plans';
 
@@ -26,7 +26,7 @@ export const GET = withAdminAuth(async (req: Request) => {
   }
 });
 
-export const POST = withAdminAuth(async (req: Request) => {
+export const POST = withRoleAuth(['owner', 'admin'], async (req: Request) => {
   try {
     const ctx = await getAuthContext(req);
     const body = await req.json();

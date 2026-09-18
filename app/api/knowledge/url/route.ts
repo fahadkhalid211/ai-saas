@@ -5,7 +5,7 @@ import { extractFromUrl } from '@/lib/rag/url-extractor';
 import { chunkDocument } from '@/lib/rag/chunker';
 import { generateEmbeddingsBatch } from '@/lib/rag/embedder';
 import { diagnoseKnowledgeFailure } from '@/lib/rag/diagnostics';
-import { withAdminAuth, getAuthContext, requireWorkspaceAssistant } from '@/lib/security/auth';
+import { withRoleAuth, getAuthContext, requireWorkspaceAssistant } from '@/lib/security/auth';
 import { validateSafeExternalUrl } from '@/lib/security/ssrf';
 import { clearRetrievalCache } from '@/lib/rag/cache';
 
@@ -14,7 +14,7 @@ import { clearRetrievalCache } from '@/lib/rag/cache';
 // this route needs more headroom than a typical short-lived API route.
 export const maxDuration = 300;
 
-export const POST = withAdminAuth(async (req: Request) => {
+export const POST = withRoleAuth(['owner', 'admin'], async (req: Request) => {
   try {
     const ctx = await getAuthContext(req);
     const body = await req.json();

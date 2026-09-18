@@ -6,7 +6,6 @@ import {
   getAuthContext,
   createSessionCookieHeader,
   createClearCookieHeader,
-  DEFAULT_FALLBACK_ADMIN_KEY,
 } from '@/lib/security/auth';
 import { checkRateLimit, getClientIp } from '@/lib/security/rate-limit';
 import { timingSafeStringEqual } from '@/lib/security/password';
@@ -28,6 +27,7 @@ export async function GET(req: Request) {
       role: ctx.role,
       memberId: ctx.memberId,
       workspaceId: ctx.workspaceId,
+      isMasterAdmin: ctx.isMasterAdmin,
       member: sanitizeTeamMember(member) || {
         id: ctx.memberId,
         workspaceId: ctx.workspaceId,
@@ -230,14 +230,12 @@ export async function POST(req: Request) {
 
     const key = rawKey.trim().replace(/^["']|["']$/g, '');
     const masterKey = getAdminKey();
-    const isMasterValid =
-      timingSafeStringEqual(key, masterKey) ||
-      (!process.env.ADMIN_API_KEY && !process.env.ADMIN_PASSWORD && timingSafeStringEqual(key, DEFAULT_FALLBACK_ADMIN_KEY));
+    const isMasterValid = timingSafeStringEqual(key, masterKey);
     if (!isMasterValid) {
       return NextResponse.json({ error: 'Invalid master admin access key' }, { status: 401 });
     }
 
-    const sessionToken = generateSessionToken();
+    const sessionToken = generateSessionToken('admin', 'master-admin', '*', true);
     const cookieHeader = createSessionCookieHeader(sessionToken);
 
     await Database.addAuditLog({

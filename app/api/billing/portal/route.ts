@@ -1,13 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Database } from '@/lib/db';
 import { createCustomerPortalSession } from '@/lib/billing/stripe';
-import { verifyAdminRequest } from '@/lib/security/auth';
+import { getAuthContext, requireRole } from '@/lib/security/auth';
 
 export async function POST(req: NextRequest) {
   try {
-    const isAuthed = await verifyAdminRequest(req);
-    if (!isAuthed) {
+    const ctx = await getAuthContext(req);
+    if (!ctx.authenticated) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    if (!requireRole(ctx, ['owner', 'admin', 'billing_manager'])) {
+      return NextResponse.json(
+        { error: `Forbidden: role '${ctx.role}' lacks permission for customer portal access` },
+        { status: 403 }
+      );
     }
 
     const body = await req.json().catch(() => ({}));

@@ -5,6 +5,7 @@ import { dispatchWebhook } from '@/lib/webhook';
 import { verifyAdminRequest, getAuthContext } from '@/lib/security/auth';
 import { enforceRateLimit } from '@/lib/security/rate-limit';
 import { validateAppointmentPayload } from '@/lib/security/validation';
+import { acquireBookingLock } from '@/lib/appointments/booking-lock';
 
 export async function OPTIONS() {
   return new NextResponse(null, {
@@ -205,33 +206,40 @@ export async function POST(req: Request) {
     const resolvedDuration = durationMinutes || assistant.bookingSlotDuration || 30;
     const landingConfig = assistant.landingPageConfig || DEFAULT_BARBER_LANDING_CONFIG;
 
-    // Live availability check: prevent double-booking
-    const existingAppointments = await Database.getAppointments(assistant.id);
-    const conflict = existingAppointments.find(
-      (a) => a.date === date.trim() && a.timeSlot === timeSlot.trim() && a.status !== 'cancelled'
-    );
-    if (conflict) {
-      return NextResponse.json(
-        { error: `The time slot "${timeSlot.trim()}" on ${date.trim()} has already been booked. Please select another time.` },
-        { status: 409, headers: { 'Access-Control-Allow-Origin': '*' } }
+    // Concurrency Lock: Prevent double-booking race condition during concurrent requests
+    const releaseLock = await acquireBookingLock(assistant.id, date, timeSlot);
+    let appointment;
+    try {
+      // Live availability check: prevent double-booking
+      const existingAppointments = await Database.getAppointments(assistant.id);
+      const conflict = existingAppointments.find(
+        (a) => a.date === date.trim() && a.timeSlot === timeSlot.trim() && a.status !== 'cancelled'
       );
-    }
+      if (conflict) {
+        return NextResponse.json(
+          { error: `The time slot "${timeSlot.trim()}" on ${date.trim()} has already been booked. Please select another time.` },
+          { status: 409, headers: { 'Access-Control-Allow-Origin': '*' } }
+        );
+      }
 
-    const appointment = await Database.saveAppointment({
-      assistantId: assistant.id,
-      name: name.trim(),
-      email: email.trim(),
-      phone: phone ? phone.trim() : undefined,
-      date: date.trim(),
-      timeSlot: timeSlot.trim(),
-      durationMinutes: resolvedDuration,
-      notes: notes?.trim() || undefined,
-      serviceId,
-      serviceName,
-      price: price ? Number(price) : undefined,
-      landingPageName: landingPageName || landingConfig.businessName,
-      landingPageSlug: landingPageSlug || landingConfig.slug,
-    });
+      appointment = await Database.saveAppointment({
+        assistantId: assistant.id,
+        name: name.trim(),
+        email: email.trim(),
+        phone: phone ? phone.trim() : undefined,
+        date: date.trim(),
+        timeSlot: timeSlot.trim(),
+        durationMinutes: resolvedDuration,
+        notes: notes?.trim() || undefined,
+        serviceId,
+        serviceName,
+        price: price ? Number(price) : undefined,
+        landingPageName: landingPageName || landingConfig.businessName,
+        landingPageSlug: landingPageSlug || landingConfig.slug,
+      });
+    } finally {
+      releaseLock();
+    }
     const businessName = landingConfig.businessName || assistant.name || 'Our Business';
     const businessAddress = landingConfig.address || 'In Shop';
     const businessPhone = landingConfig.phone || '';

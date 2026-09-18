@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { Database, ChunkRecord } from '@/lib/db';
 import { generateEmbeddingsBatch } from '@/lib/rag/embedder';
 import { chunkDocument } from '@/lib/rag/chunker';
-import { withAdminAuth, getAuthContext, requireWorkspaceAssistant } from '@/lib/security/auth';
+import { withAdminAuth, withRoleAuth, getAuthContext, requireWorkspaceAssistant } from '@/lib/security/auth';
 import { clearRetrievalCache } from '@/lib/rag/cache';
 
 export const GET = withAdminAuth(async (req: Request) => {
@@ -49,7 +49,7 @@ export const GET = withAdminAuth(async (req: Request) => {
   }
 });
 
-export const POST = withAdminAuth(async (req: Request) => {
+export const POST = withRoleAuth(['owner', 'admin'], async (req: Request) => {
   try {
     const ctx = await getAuthContext(req);
     const body = await req.json();

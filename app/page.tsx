@@ -89,6 +89,7 @@ export default function DashboardPage() {
   >('overview');
 
   const [currentUser, setCurrentUser] = useState<any | null>(null);
+  const [isMasterAdmin, setIsMasterAdmin] = useState<boolean>(false);
 
   // Assistants Hook
   const {
@@ -460,15 +461,18 @@ export default function DashboardPage() {
         const data = await res.json();
         if (data.authenticated) {
           setIsAuthenticated(true);
+          setIsMasterAdmin(Boolean(data.isMasterAdmin));
           if (data.member) {
             setCurrentUser(data.member);
           }
           await fetchAssistants();
         } else {
           setIsAuthenticated(false);
+          setIsMasterAdmin(false);
         }
       } catch {
         setIsAuthenticated(false);
+        setIsMasterAdmin(false);
       } finally {
         setIsAuthChecking(false);
       }
@@ -519,6 +523,7 @@ export default function DashboardPage() {
       const data = await res.json();
       if (res.ok && data.success) {
         setIsAuthenticated(true);
+        setIsMasterAdmin(Boolean(data.isMasterAdmin || (!data.isStaff && authLoginMode === 'admin')));
         if (data.member) {
           setCurrentUser(data.member);
         }
@@ -551,6 +556,7 @@ export default function DashboardPage() {
       await fetch('/api/auth', { method: 'DELETE' });
     } catch {}
     setIsAuthenticated(false);
+    setIsMasterAdmin(false);
   };
 
   useEffect(() => {
@@ -567,7 +573,9 @@ export default function DashboardPage() {
       landing.fetchAllLandingPages();
       teamSecurity.fetchTeamMembers();
       teamSecurity.fetch2faStatus();
-      teamSecurity.fetchAuditLogs();
+      if (isMasterAdmin) {
+        teamSecurity.fetchAuditLogs();
+      }
       fetchNotifications();
       channels.fetchSmtpSettings();
     }
@@ -717,6 +725,7 @@ export default function DashboardPage() {
             conversationsCount={conversations.length}
             waitingConversationsCount={conversations.filter((c) => c.status === 'waiting_for_agent' && !c.isLiveTakeover).length}
             landingPagesCount={landing.allLandingPages.length}
+            isMasterAdmin={isMasterAdmin}
           />
 
           {/* Main Content Workspace */}
@@ -851,7 +860,7 @@ export default function DashboardPage() {
             )}
 
             {/* TAB: AUDIT TRAIL */}
-            {activeTab === 'audit' && (
+            {activeTab === 'audit' && isMasterAdmin && (
               <AuditTab
                 auditLogs={teamSecurity.auditLogs}
                 isSyncingAudit={teamSecurity.isSyncingAudit}

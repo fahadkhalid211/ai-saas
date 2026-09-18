@@ -34,6 +34,7 @@ interface DashboardSidebarProps {
   conversationsCount: number;
   waitingConversationsCount?: number;
   landingPagesCount?: number;
+  isMasterAdmin?: boolean;
 }
 
 export function DashboardSidebar({
@@ -47,8 +48,9 @@ export function DashboardSidebar({
   conversationsCount,
   waitingConversationsCount = 0,
   landingPagesCount,
+  isMasterAdmin = false,
 }: DashboardSidebarProps) {
-  const tabs = [
+  const allTabs = [
     { id: 'overview', label: 'Overview', icon: FileCheck },
     { id: 'profile', label: 'My Profile', icon: UserCircle },
     { id: 'analytics', label: 'Analytics & KPIs', icon: BarChart3 },
@@ -56,7 +58,7 @@ export function DashboardSidebar({
     { id: 'landing_page', label: 'Landing Pages', icon: Globe, count: landingPagesCount },
     { id: 'team', label: 'Team & RBAC', icon: UserCheck, count: teamCount },
     { id: 'security', label: 'Security & 2FA', icon: ShieldCheck },
-    { id: 'audit', label: 'Audit Trail', icon: ClipboardList, count: auditCount },
+    ...(isMasterAdmin ? [{ id: 'audit', label: 'Audit Trail', icon: ClipboardList, count: auditCount }] : []),
     { id: 'knowledge', label: 'Knowledge Base', icon: Upload, count: sourcesCount },
     { id: 'playground', label: 'Testing Studio', icon: MessageSquare },
     { id: 'channels', label: 'Channels & Integrations', icon: Share2 },
@@ -69,6 +71,7 @@ export function DashboardSidebar({
     { id: 'templates', label: 'Bot Templates', icon: LayoutTemplate },
     { id: 'docs', label: 'Guides & Docs', icon: BookOpen },
   ];
+  const tabs = allTabs;
 
   return (
     <aside className="w-60 border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3 flex flex-col justify-between shrink-0 overflow-hidden">

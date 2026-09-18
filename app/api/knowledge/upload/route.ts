@@ -5,7 +5,7 @@ import { parseFileOrText } from '@/lib/rag/parsers';
 import { chunkDocument } from '@/lib/rag/chunker';
 import { generateEmbeddingsBatch } from '@/lib/rag/embedder';
 import { diagnoseKnowledgeFailure } from '@/lib/rag/diagnostics';
-import { withAdminAuth, getAuthContext, requireWorkspaceAssistant } from '@/lib/security/auth';
+import { withRoleAuth, getAuthContext, requireWorkspaceAssistant } from '@/lib/security/auth';
 import { clearRetrievalCache } from '@/lib/rag/cache';
 
 // Audio/video transcription (+ optional translation) followed by embedding
@@ -15,7 +15,7 @@ import { clearRetrievalCache } from '@/lib/rag/cache';
 export const dynamic = 'force-dynamic';
 export const maxDuration = 300;
 
-export const POST = withAdminAuth(async (req: Request) => {
+export const POST = withRoleAuth(['owner', 'admin'], async (req: Request) => {
   try {
     const ctx = await getAuthContext(req);
     const formData = await req.formData();

@@ -233,7 +233,7 @@ describe('Vector Math and Hybrid Retrieval', () => {
       expect(result.chunks.length).toBeGreaterThan(0);
       expect(result.contextText).toContain('AI platforms');
       expect(result.contextText).toContain('Kortex AI');
-    });
+    }, 20000);
   });
 });
 

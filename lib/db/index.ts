@@ -400,6 +400,7 @@ interface DatabaseState {
   landingPagesInitialized?: boolean;
   smtpSettings?: SmtpSettingsData;
   pageViews?: PageViewEventData[];
+  processedWebhookEvents?: string[];
 }
 
 const DATA_DIR = resolveDataDir();
@@ -1972,7 +1973,10 @@ export class Database {
         cachedState = state;
         scheduleDeferredBlobSync(state);
         return apt;
-      } catch (err) {
+      } catch (err: any) {
+        if (err?.code === 'SLOT_CONFLICT') {
+          throw err;
+        }
         console.warn('[Relational] saveAppointment failed, disabling postgres:', err);
         disablePostgresTemporarily();
       }
@@ -2830,6 +2834,49 @@ export class Database {
       newSlotCount: ws.extraLandingPagesCount,
       invoice,
     };
+  }
+
+  static async isWebhookProcessed(eventId: string): Promise<boolean> {
+    if (!eventId || typeof eventId !== 'string') return false;
+    const state = await ensureInitialized();
+    return (state.processedWebhookEvents || []).includes(eventId.trim());
+  }
+
+  static async recordProcessedWebhook(eventId: string): Promise<void> {
+    if (!eventId || typeof eventId !== 'string') return;
+    const state = await ensureInitialized();
+    if (!state.processedWebhookEvents) state.processedWebhookEvents = [];
+    const cleanId = eventId.trim();
+    if (!state.processedWebhookEvents.includes(cleanId)) {
+      state.processedWebhookEvents.push(cleanId);
+      if (state.processedWebhookEvents.length > 1000) {
+        state.processedWebhookEvents = state.processedWebhookEvents.slice(-1000);
+      }
+      await saveState(state);
+    }
+  }
+
+  static async clearProcessedWebhooksForTesting(): Promise<void> {
+    const state = await ensureInitialized();
+    state.processedWebhookEvents = [];
+    await saveState(state);
+  }
+
+  static async seedProcessedWebhooksForTesting(eventIds: string[]): Promise<void> {
+    const state = await ensureInitialized();
+    state.processedWebhookEvents = [...eventIds];
+    await saveState(state);
+  }
+
+  static async getProcessedWebhookCount(): Promise<number> {
+    const state = await ensureInitialized();
+    return (state.processedWebhookEvents || []).length;
+  }
+
+  static async findWorkspaceByStripeCustomer(customerId: string): Promise<WorkspaceBillingData | null> {
+    if (!customerId) return null;
+    const state = await ensureInitialized();
+    return (state.workspaces || []).find((w) => w.stripeCustomerId === customerId) || null;
   }
 
   // Multi-Tenant Workspace Registration & Auth

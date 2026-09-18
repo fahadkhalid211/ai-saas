@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { Database } from '@/lib/db';
-import { withAdminAuth, getAuthContext, requireWorkspaceAssistant, generateCalendarFeedToken } from '@/lib/security/auth';
+import { withAdminAuth, withRoleAuth, getAuthContext, requireWorkspaceAssistant, generateCalendarFeedToken } from '@/lib/security/auth';
 import { maskSecret } from '@/lib/security/crypto';
 
 export const GET = withAdminAuth(async (
@@ -11,6 +11,7 @@ export const GET = withAdminAuth(async (
     const ctx = await getAuthContext(req);
     const { id } = await params;
     const assistant = await requireWorkspaceAssistant(ctx, id);
+
     if (!assistant) {
       return NextResponse.json({ error: 'Assistant not found' }, { status: 404 });
     }
@@ -26,11 +27,11 @@ export const GET = withAdminAuth(async (
 
     return NextResponse.json({ assistant: sanitized });
   } catch (error: any) {
-    return NextResponse.json({ error: error?.message || 'Failed to get assistant' }, { status: 500 });
+    return NextResponse.json({ error: error?.message || 'Failed to fetch assistant' }, { status: 500 });
   }
 });
 
-export const PUT = withAdminAuth(async (
+export const PUT = withRoleAuth(['owner', 'admin'], async (
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) => {
@@ -63,7 +64,7 @@ export const PUT = withAdminAuth(async (
   }
 });
 
-export const DELETE = withAdminAuth(async (
+export const DELETE = withRoleAuth(['owner', 'admin'], async (
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) => {

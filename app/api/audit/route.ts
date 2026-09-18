@@ -7,6 +7,13 @@ export const dynamic = 'force-dynamic';
 export const GET = withAdminAuth(async (req: Request) => {
   try {
     const ctx = await getAuthContext(req);
+    if (!ctx.isMasterAdmin) {
+      return NextResponse.json(
+        { error: 'Forbidden: Audit trail is restricted exclusively to master administrator' },
+        { status: 403 }
+      );
+    }
+
     const { searchParams } = new URL(req.url);
     const limit = parseInt(searchParams.get('limit') || '100', 10);
 

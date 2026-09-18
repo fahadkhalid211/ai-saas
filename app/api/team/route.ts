@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { Database, sanitizeTeamMember } from '@/lib/db';
-import { withAdminAuth, getAuthContext } from '@/lib/security/auth';
+import { withAdminAuth, withRoleAuth, getAuthContext } from '@/lib/security/auth';
 import { getClientIp } from '@/lib/security/rate-limit';
 
 export const dynamic = 'force-dynamic';
@@ -21,7 +21,7 @@ export const GET = withAdminAuth(async (req: Request) => {
   }
 });
 
-export const POST = withAdminAuth(async (req: Request) => {
+export const POST = withRoleAuth(['owner', 'admin'], async (req: Request) => {
   try {
     const ctx = await getAuthContext(req);
     const body = await req.json();
@@ -72,7 +72,7 @@ export const POST = withAdminAuth(async (req: Request) => {
   }
 });
 
-export const PUT = withAdminAuth(async (req: Request) => {
+export const PUT = withRoleAuth(['owner', 'admin'], async (req: Request) => {
   try {
     const ctx = await getAuthContext(req);
     const body = await req.json();
@@ -115,7 +115,7 @@ export const PUT = withAdminAuth(async (req: Request) => {
   }
 });
 
-export const DELETE = withAdminAuth(async (req: Request) => {
+export const DELETE = withRoleAuth(['owner', 'admin'], async (req: Request) => {
   try {
     const ctx = await getAuthContext(req);
     const { searchParams } = new URL(req.url);

@@ -347,22 +347,31 @@ function rowToApt(r: Record<string, any>): AppointmentData {
 
 export async function relationalUpsertAppointment(apt: AppointmentData): Promise<boolean> {
   const result = await withPool(async (client) => {
-    await client.query(
-      `INSERT INTO kortex_appointments
-         (id, assistant_id, name, email, phone, date, time_slot, duration_minutes,
-          status, notes, service_id, service_name, price, manage_token,
-          cancellation_reason, landing_page_name, landing_page_slug,
-          reminders_sent, created_at, updated_at)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20)
-       ON CONFLICT (id) DO UPDATE SET
-         status              = EXCLUDED.status,
-         notes               = EXCLUDED.notes,
-         cancellation_reason = EXCLUDED.cancellation_reason,
-         reminders_sent      = EXCLUDED.reminders_sent,
-         updated_at          = EXCLUDED.updated_at`,
-      aptToRow(apt)
-    );
-    return true;
+    try {
+      await client.query(
+        `INSERT INTO kortex_appointments
+           (id, assistant_id, name, email, phone, date, time_slot, duration_minutes,
+            status, notes, service_id, service_name, price, manage_token,
+            cancellation_reason, landing_page_name, landing_page_slug,
+            reminders_sent, created_at, updated_at)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20)
+         ON CONFLICT (id) DO UPDATE SET
+           status              = EXCLUDED.status,
+           notes               = EXCLUDED.notes,
+           cancellation_reason = EXCLUDED.cancellation_reason,
+           reminders_sent      = EXCLUDED.reminders_sent,
+           updated_at          = EXCLUDED.updated_at`,
+        aptToRow(apt)
+      );
+      return true;
+    } catch (err: any) {
+      if (err?.code === '23505') {
+        const conflictErr = new Error(`Slot conflict: ${apt.timeSlot} on ${apt.date} has already been booked`);
+        (conflictErr as any).code = 'SLOT_CONFLICT';
+        throw conflictErr;
+      }
+      throw err;
+    }
   });
   return result === true;
 }

@@ -19,8 +19,6 @@ let inMemoryMasterKey: string | null = null;
  * is generated once and persisted to DATA_DIR so it stays stable across
  * restarts on the same instance/volume.
  */
-export const DEFAULT_FALLBACK_ADMIN_KEY = 'kortex_admin_secret_key_2026';
-
 export function getAdminKey(): string {
   if (process.env.ADMIN_API_KEY && process.env.ADMIN_API_KEY.trim()) {
     return process.env.ADMIN_API_KEY.trim().replace(/^["']|["']$/g, '');
@@ -34,12 +32,6 @@ export function getAdminKey(): string {
     throw new Error(
       '[Security] Fatal: Running in production without ADMIN_API_KEY or ADMIN_PASSWORD configured. Insecure fallback credentials are disabled.'
     );
-  }
-
-  // If deployed to serverless (Vercel) in non-production without explicit key configured,
-  // use the default fallback so multiple lambda instances don't generate divergent keys.
-  if (process.env.VERCEL || process.env.VERCEL_ENV) {
-    return DEFAULT_FALLBACK_ADMIN_KEY;
   }
 
   if (inMemoryMasterKey) {
@@ -72,7 +64,7 @@ export function getAdminKey(): string {
     return inMemoryMasterKey;
   } catch (err) {
     if (!inMemoryMasterKey) {
-      inMemoryMasterKey = DEFAULT_FALLBACK_ADMIN_KEY;
+      inMemoryMasterKey = crypto.randomBytes(32).toString('hex');
     }
     return inMemoryMasterKey;
   }
@@ -84,13 +76,20 @@ export function getAdminKey(): string {
 export function generateSessionToken(
   role: string = 'admin',
   memberId?: string,
-  workspaceId: string = 'default-workspace'
+  workspaceId: string = 'default-workspace',
+  isMasterAdmin?: boolean
 ): string {
   const masterKey = getAdminKey();
+  const computedIsMaster =
+    isMasterAdmin !== undefined
+      ? isMasterAdmin
+      : memberId === 'master-admin' || (role === 'admin' && workspaceId === '*');
+
   const payload = {
     role: role || 'admin',
     memberId: memberId || 'admin',
     workspaceId: workspaceId || 'default-workspace',
+    isMasterAdmin: computedIsMaster,
     iat: Date.now(),
     exp: Date.now() + 7 * 24 * 60 * 60 * 1000,
   };
@@ -142,32 +141,46 @@ export function verifySessionToken(token: string): boolean {
 /**
  * Extracts payload data from a signed session token.
  */
-export function getSessionPayload(token: string): { role: string; memberId: string; workspaceId: string } | null {
+export function getSessionPayload(token: string): {
+  role: string;
+  memberId: string;
+  workspaceId: string;
+  isMasterAdmin: boolean;
+} | null {
   if (!token || typeof token !== 'string') return null;
   const parts = token.split('.');
   if (parts.length !== 2) return null;
   if (!verifySessionToken(token)) return null;
   try {
     const payload = JSON.parse(Buffer.from(parts[0], 'base64url').toString('utf8'));
+    const isMaster = Boolean(
+      payload.isMasterAdmin ||
+        payload.memberId === 'master-admin' ||
+        (payload.role === 'admin' && payload.workspaceId === '*')
+    );
     return {
       role: payload.role || 'admin',
       memberId: payload.memberId || 'admin',
       workspaceId: payload.workspaceId || 'default-workspace',
+      isMasterAdmin: isMaster,
     };
   } catch {
     return null;
   }
 }
 
-/**
- * Resolves full auth context from request headers or cookie.
- */
-export async function getAuthContext(req: Request): Promise<{
+export interface AuthContext {
   authenticated: boolean;
   role: string;
   memberId: string;
   workspaceId: string;
-}> {
+  isMasterAdmin: boolean;
+}
+
+/**
+ * Resolves full auth context from request headers or cookie.
+ */
+export async function getAuthContext(req: Request): Promise<AuthContext> {
   const masterKey = getAdminKey();
 
   // 1. Check Authorization header
@@ -175,11 +188,17 @@ export async function getAuthContext(req: Request): Promise<{
   if (authHeader) {
     const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : authHeader.trim();
     if (timingSafeStringEqual(token, masterKey)) {
-      return { authenticated: true, role: 'admin', memberId: 'master-admin', workspaceId: '*' };
+      return { authenticated: true, role: 'admin', memberId: 'master-admin', workspaceId: '*', isMasterAdmin: true };
     }
     const session = getSessionPayload(token);
     if (session) {
-      return { authenticated: true, role: session.role, memberId: session.memberId, workspaceId: session.workspaceId };
+      return {
+        authenticated: true,
+        role: session.role,
+        memberId: session.memberId,
+        workspaceId: session.workspaceId,
+        isMasterAdmin: session.isMasterAdmin,
+      };
     }
   }
 
@@ -196,12 +215,18 @@ export async function getAuthContext(req: Request): Promise<{
     if (sessionCookie) {
       const session = getSessionPayload(sessionCookie);
       if (session) {
-        return { authenticated: true, role: session.role, memberId: session.memberId, workspaceId: session.workspaceId };
+        return {
+          authenticated: true,
+          role: session.role,
+          memberId: session.memberId,
+          workspaceId: session.workspaceId,
+          isMasterAdmin: session.isMasterAdmin,
+        };
       }
     }
   }
 
-  return { authenticated: false, role: 'guest', memberId: '', workspaceId: 'default-workspace' };
+  return { authenticated: false, role: 'guest', memberId: '', workspaceId: 'default-workspace', isMasterAdmin: false };
 }
 
 /**
@@ -213,6 +238,60 @@ export async function getAuthContext(req: Request): Promise<{
 export async function verifyAdminRequest(req: Request): Promise<boolean> {
   const ctx = await getAuthContext(req);
   return ctx.authenticated;
+}
+
+export type UserRole = 'owner' | 'admin' | 'billing_manager' | 'support_agent' | 'viewer';
+
+export function hasRole(userRole: string, allowedRoles: UserRole[]): boolean {
+  if (userRole === 'admin' || userRole === 'owner') return true;
+  return allowedRoles.includes(userRole as UserRole);
+}
+
+export function requireRole(
+  ctx: { role: string; isMasterAdmin?: boolean },
+  allowedRoles: UserRole[]
+): boolean {
+  if (ctx.isMasterAdmin) return true;
+  return hasRole(ctx.role, allowedRoles);
+}
+
+/**
+ * Higher-order API route wrapper that enforces administrator authentication.
+ * Returns HTTP 401 JSON if unauthorized; otherwise invokes the inner handler.
+ */
+export function withAdminAuth<T = any>(
+  handler: (req: Request, context: T) => Promise<Response>
+): (req: Request, context?: T) => Promise<Response> {
+  return async (req: Request, context?: T): Promise<Response> => {
+    const isAuthed = await verifyAdminRequest(req);
+    if (!isAuthed) {
+      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+    }
+    return handler(req, context as T);
+  };
+}
+
+/**
+ * Higher-order API route wrapper that enforces role-based access control.
+ * Returns HTTP 401 if unauthenticated, HTTP 403 if role lacks permission.
+ */
+export function withRoleAuth<T = any>(
+  allowedRoles: UserRole[],
+  handler: (req: Request, context: T) => Promise<Response>
+): (req: Request, context?: T) => Promise<Response> {
+  return async (req: Request, context?: T): Promise<Response> => {
+    const ctx = await getAuthContext(req);
+    if (!ctx.authenticated) {
+      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+    }
+    if (!requireRole(ctx, allowedRoles)) {
+      return NextResponse.json(
+        { success: false, error: `Forbidden: role '${ctx.role}' lacks required permissions` },
+        { status: 403 }
+      );
+    }
+    return handler(req, context as T);
+  };
 }
 
 /**
@@ -245,22 +324,6 @@ export function createSessionCookieHeader(token: string): string {
 export function createClearCookieHeader(): string {
   const isProd = process.env.NODE_ENV === 'production';
   return `kortex_admin_session=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0${isProd ? '; Secure' : ''}`;
-}
-
-/**
- * Higher-order API route wrapper that enforces administrator authentication.
- * Returns HTTP 401 JSON if unauthorized; otherwise invokes the inner handler.
- */
-export function withAdminAuth<T = any>(
-  handler: (req: Request, context: T) => Promise<Response>
-): (req: Request, context: T) => Promise<Response> {
-  return async (req: Request, context: T): Promise<Response> => {
-    const isAuthed = await verifyAdminRequest(req);
-    if (!isAuthed) {
-      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
-    }
-    return handler(req, context);
-  };
 }
 
 /**

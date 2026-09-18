@@ -105,7 +105,14 @@ export function useCrmLanding({
       if (!res.ok) {
         throw new Error(data.error || 'Failed to purchase add-on');
       }
-      setAddonSuccessMsg('Extra Landing Page slot unlocked for $100! Your workspace limit has been updated.');
+
+      // Real Stripe Checkout redirect
+      if (data.url) {
+        window.location.href = data.url;
+        return;
+      }
+
+      setAddonSuccessMsg(data.message || 'Extra Landing Page slot unlocked for $100! Your workspace limit has been updated.');
       playNotificationChime();
       if (data.totalAllowed) {
         setLandingPageLimits((prev) => ({

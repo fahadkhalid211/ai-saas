@@ -111,6 +111,11 @@ CREATE INDEX IF NOT EXISTS idx_kortex_appointments_manage_token
 CREATE INDEX IF NOT EXISTS idx_kortex_appointments_status
   ON kortex_appointments (status, date);
 
+-- Prevent double-booking race condition at database level
+CREATE UNIQUE INDEX IF NOT EXISTS idx_kortex_appointments_slot_unique
+  ON kortex_appointments (assistant_id, date, time_slot)
+  WHERE status != 'cancelled';
+
 -- 5. Notifications (in-app dashboard alerts)
 -- One row per notification. Replaces state.notifications[]. Max 200 kept (handled in app).
 CREATE TABLE IF NOT EXISTS kortex_notifications (
