@@ -1020,13 +1020,13 @@ export class Database {
   }
 
   // Knowledge Sources with auto-recovery for stalled processing jobs
-  static async getKnowledgeSources(assistantId: string): Promise<KnowledgeSourceData[]> {
-    let state = await ensureInitialized();
+  static async getKnowledgeSources(assistantId: string, forceFresh: boolean = false): Promise<KnowledgeSourceData[]> {
+    let state = await ensureInitialized(forceFresh);
     let sources = (state.knowledgeSources || []).filter((k) => matchesAssistant(k.assistantId, assistantId, state));
     
-    // If no sources or any source is in 'processing' state, do a fresh fetch from Cloud DB
+    // If forceFresh requested, no sources, or any source is in 'processing' state, do a fresh fetch from Cloud DB
     const hasProcessing = sources.some((s) => s.status === 'processing');
-    if ((sources.length === 0 || hasProcessing) && isCloudDbConfigured()) {
+    if ((forceFresh || sources.length === 0 || hasProcessing) && isCloudDbConfigured()) {
       state = await ensureInitialized(true);
       sources = (state.knowledgeSources || []).filter((k) => matchesAssistant(k.assistantId, assistantId, state));
     }
@@ -1343,23 +1343,26 @@ export class Database {
     // Strict isolation: if assistant has no chunks, never pull other assistants' chunks.
     if (assistantChunks.length === 0) return [];
 
-    // Dense Vector Cosine Similarity (require minimum 0.25 similarity for relevance)
-    const vectorScored = assistantChunks
-      .map((chunk) => ({
-        ...chunk,
-        score: cosineSimilarity(queryEmbedding, chunk.embedding),
-      }))
-      .filter((chunk) => chunk.score >= 0.25)
-      .sort((a, b) => b.score - a.score)
-      .slice(0, 15);
-
-    // Sparse Keyword Matching (BM25 / Multilingual full-text - require at least 1 keyword match)
+    // Sparse Keyword Matching (BM25 / Multilingual full-text - checks content and source title)
     const keywordScored = assistantChunks
       .map((chunk) => ({
         ...chunk,
         score: keywordRelevance(query, `${chunk.content} ${chunk.metadata?.sourceTitle || ''}`),
       }))
       .filter((chunk) => chunk.score > 0)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 15);
+
+    // Dense Vector Cosine Similarity (adaptive cutoff: 0.18 if keyword match exists, 0.22 otherwise)
+    const hasKeywordMatches = keywordScored.length > 0;
+    const minVectorCutoff = hasKeywordMatches ? 0.18 : 0.22;
+
+    const vectorScored = assistantChunks
+      .map((chunk) => ({
+        ...chunk,
+        score: cosineSimilarity(queryEmbedding, chunk.embedding),
+      }))
+      .filter((chunk) => chunk.score >= minVectorCutoff)
       .sort((a, b) => b.score - a.score)
       .slice(0, 15);
 

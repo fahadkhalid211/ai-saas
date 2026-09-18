@@ -190,4 +190,50 @@ describe('Vector Math and Hybrid Retrieval', () => {
       expect(isPurelyConversationalTurn('Explain your refund policy')).toBe(false);
     });
   });
+
+  describe('Automated Universal Synonym Retrieval', () => {
+    it('retrieves knowledge base chunks when user asks with look-alike synonym keywords like ai tech for AI platforms', async () => {
+      const { retrieveRelevantContext, clearRetrievalCache } = await import('./retrieval');
+      const { Database } = await import('../db');
+      clearRetrievalCache();
+
+      // Create an assistant and add knowledge source titled "AI platforms"
+      const asst = await Database.createAssistant({
+        name: 'Tech Advisor',
+        systemPrompt: 'You are an AI tech advisor.',
+      });
+
+      const source = await Database.createKnowledgeSource({
+        assistantId: asst.id,
+        title: 'AI platforms',
+        type: 'text',
+        chunkCount: 1,
+        status: 'ready',
+      });
+
+      const dummyEmbedding = new Array(384).fill(0.05);
+      await Database.saveChunks([
+        {
+          assistantId: asst.id,
+          knowledgeSourceId: source.id,
+          chunkIndex: 0,
+          content: 'The premier AI platforms include Kortex AI, OpenAI platform, and Anthropic Claude for building intelligent enterprise agents.',
+          tokenCount: 20,
+          metadata: {
+            sourceTitle: 'AI platforms',
+            sourceType: 'text',
+          },
+          embedding: dummyEmbedding,
+        },
+      ]);
+
+      // User asks "what are best ai tech" (synonymous terms: tech ~ platform, best ~ premier)
+      const result = await retrieveRelevantContext(asst.id, 'what are best ai tech');
+
+      expect(result.chunks.length).toBeGreaterThan(0);
+      expect(result.contextText).toContain('AI platforms');
+      expect(result.contextText).toContain('Kortex AI');
+    });
+  });
 });
+

@@ -889,6 +889,7 @@ export default function DashboardPage() {
                 handleDeleteAssistant={handleDeleteAssistant}
                 onOpenNewAssistantModal={() => setShowNewModal(true)}
                 fetchKnowledge={knowledge.fetchKnowledge}
+                isSyncingSources={knowledge.isSyncingSources}
                 uploadFailureAlert={knowledge.uploadFailureAlert}
                 setUploadFailureAlert={knowledge.setUploadFailureAlert}
                 handleUploadFiles={knowledge.handleUploadFiles}

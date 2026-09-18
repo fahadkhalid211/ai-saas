@@ -99,32 +99,26 @@ export function useCrmKnowledge({ activeAssistant }: UseCrmKnowledgeOptions) {
   const [extractionStatusText, setExtractionStatusText] = useState<string | null>(null);
   const [isSavingDraft, setIsSavingDraft] = useState(false);
   const [draftSaveSuccess, setDraftSaveSuccess] = useState<string | null>(null);
+  const [isSyncingSources, setIsSyncingSources] = useState(false);
 
-  const fetchKnowledge = async (assistantId: string) => {
+  const fetchKnowledge = async (assistantId: string, forceFresh: boolean = false) => {
     try {
-      const res = await fetch(`/api/knowledge?assistantId=${assistantId}`);
+      setIsSyncingSources(true);
+      const res = await fetch(
+        `/api/knowledge?assistantId=${encodeURIComponent(assistantId)}&forceFresh=${forceFresh ? 'true' : 'false'}&_t=${Date.now()}`,
+        { cache: 'no-store' }
+      );
       const data = await res.json();
       if (data.storage) {
         setStorageUsage(data.storage);
       }
-      if (data.sources) {
-        setSources((prev) => {
-          if (
-            prev.length === data.sources.length &&
-            prev.every(
-              (s, i) =>
-                s.id === data.sources[i]?.id &&
-                s.status === data.sources[i]?.status &&
-                s.chunkCount === data.sources[i]?.chunkCount
-            )
-          ) {
-            return prev;
-          }
-          return data.sources;
-        });
+      if (data.sources && Array.isArray(data.sources)) {
+        setSources(data.sources);
       }
     } catch (err) {
       console.error('Failed to fetch sources:', err);
+    } finally {
+      setIsSyncingSources(false);
     }
   };
 
@@ -220,8 +214,27 @@ export function useCrmKnowledge({ activeAssistant }: UseCrmKnowledgeOptions) {
           fetchKnowledge(activeAssistant.id);
         }
 
+        const failedItemTitle = selectedFiles?.[0]?.name || uploadTextTitle || 'Upload Failed';
+        setSources((prev) => [
+          {
+            id: 'fail_' + Date.now(),
+            title: failedItemTitle,
+            type: selectedFiles?.[0]?.name?.split('.').pop() || 'txt',
+            chunkCount: 0,
+            status: 'failed',
+            errorMessage: errorMsg,
+            errorResolution: whatToDo,
+            createdAt: new Date().toISOString(),
+          },
+          ...prev.filter((s) => s.title !== failedItemTitle),
+        ]);
+
+        if (activeAssistant?.id) {
+          fetchKnowledge(activeAssistant.id, true);
+        }
+
         setUploadFailureAlert({
-          title: selectedFiles?.[0]?.name || uploadTextTitle || 'Upload Failed',
+          title: failedItemTitle,
           reason: errorMsg,
           whatToDoNext: whatToDo,
         });
@@ -233,7 +246,33 @@ export function useCrmKnowledge({ activeAssistant }: UseCrmKnowledgeOptions) {
         setSelectedFiles(null);
         setUploadText('');
         setUploadTextTitle('');
-        await fetchKnowledge(activeAssistant.id);
+
+        if (data.sources && Array.isArray(data.sources)) {
+          setSources((prev) => {
+            const updated = [...prev];
+            for (const s of data.sources) {
+              const idx = updated.findIndex((item) => item.id === s.id || item.title === s.title);
+              const formatted: KnowledgeSource = {
+                id: s.id,
+                title: s.title,
+                type: s.type || 'txt',
+                chunkCount: s.chunks || 0,
+                status: s.status || 'ready',
+                errorMessage: s.error,
+                errorResolution: s.whatToDoNext,
+                createdAt: new Date().toISOString(),
+              };
+              if (idx >= 0) {
+                updated[idx] = { ...updated[idx], ...formatted };
+              } else {
+                updated.unshift(formatted);
+              }
+            }
+            return updated;
+          });
+        }
+
+        await fetchKnowledge(activeAssistant.id, true);
 
         const failedList = (data.sources || []).filter((s: any) => s.status === 'failed');
         if (failedList.length > 0) {
@@ -249,8 +288,23 @@ export function useCrmKnowledge({ activeAssistant }: UseCrmKnowledgeOptions) {
           setUploadFailureAlert(null);
         }
       } else {
+        const failedItemTitle = selectedFiles?.[0]?.name || uploadTextTitle || 'Upload Failed';
+        setSources((prev) => [
+          {
+            id: 'fail_' + Date.now(),
+            title: failedItemTitle,
+            type: selectedFiles?.[0]?.name?.split('.').pop() || 'txt',
+            chunkCount: 0,
+            status: 'failed',
+            errorMessage: data.error || 'Failed to process and index knowledge content.',
+            errorResolution: 'Please check your AI Engine settings and verify the file is readable.',
+            createdAt: new Date().toISOString(),
+          },
+          ...prev.filter((s) => s.title !== failedItemTitle),
+        ]);
+
         setUploadFailureAlert({
-          title: selectedFiles?.[0]?.name || uploadTextTitle || 'Upload Failed',
+          title: failedItemTitle,
           reason: data.error || 'Failed to process and index knowledge content.',
           whatToDoNext: 'Please check your AI Engine settings and verify the file is readable.',
         });
@@ -258,8 +312,22 @@ export function useCrmKnowledge({ activeAssistant }: UseCrmKnowledgeOptions) {
     } catch (err: unknown) {
       console.error('Upload error:', err);
       const errMsg = err instanceof Error ? err.message : String(err);
+      const failedItemTitle = selectedFiles?.[0]?.name || uploadTextTitle || 'Upload Error';
+      setSources((prev) => [
+        {
+          id: 'fail_' + Date.now(),
+          title: failedItemTitle,
+          type: selectedFiles?.[0]?.name?.split('.').pop() || 'txt',
+          chunkCount: 0,
+          status: 'failed',
+          errorMessage: errMsg || 'A network error occurred while uploading.',
+          errorResolution: 'Please check your network connection and server status, then try again.',
+          createdAt: new Date().toISOString(),
+        },
+        ...prev.filter((s) => s.title !== failedItemTitle),
+      ]);
       setUploadFailureAlert({
-        title: selectedFiles?.[0]?.name || uploadTextTitle || 'Upload Error',
+        title: failedItemTitle,
         reason: errMsg || 'A network error occurred while uploading.',
         whatToDoNext: 'Please check your network connection and server status, then try again.',
       });
@@ -451,24 +519,79 @@ export function useCrmKnowledge({ activeAssistant }: UseCrmKnowledgeOptions) {
             ? 'Navigate to the Billing tab to upgrade your plan and expand your Knowledge Base storage quota.'
             : 'Please check database connectivity or try saving again.');
 
+        setSources((prev) => [
+          {
+            id: 'fail_' + Date.now(),
+            title: reviewDraft.title,
+            type: reviewDraft.type || 'txt',
+            chunkCount: 0,
+            fileSizeBytes: reviewDraft.fileSizeBytes,
+            status: 'failed',
+            errorMessage: reason,
+            errorResolution: whatToDo,
+            createdAt: new Date().toISOString(),
+          },
+          ...prev.filter((s) => s.title !== reviewDraft.title),
+        ]);
+
         setUploadFailureAlert({
           title: reviewDraft.title,
           reason,
           whatToDoNext: whatToDo,
         });
         if (activeAssistant?.id) {
-          fetchKnowledge(activeAssistant.id);
+          fetchKnowledge(activeAssistant.id, true);
         }
         return;
       }
 
-      await fetchKnowledge(activeAssistant.id);
+      if (data?.sources && Array.isArray(data.sources)) {
+        setSources((prev) => {
+          const updated = [...prev];
+          for (const newS of data.sources) {
+            const idx = updated.findIndex((s) => s.id === newS.id || s.title === newS.title);
+            const formatted: KnowledgeSource = {
+              id: newS.id,
+              title: newS.title,
+              type: reviewDraft.type || 'txt',
+              chunkCount: newS.chunks || 0,
+              fileSizeBytes: reviewDraft.fileSizeBytes,
+              status: newS.status || 'ready',
+              errorMessage: newS.error,
+              errorResolution: newS.whatToDoNext,
+              createdAt: new Date().toISOString(),
+            };
+            if (idx >= 0) {
+              updated[idx] = { ...updated[idx], ...formatted };
+            } else {
+              updated.unshift(formatted);
+            }
+          }
+          return updated;
+        });
+      }
+
+      await fetchKnowledge(activeAssistant.id, true);
       setDraftSaveSuccess(`Successfully indexed "${reviewDraft.title}" into knowledge base!`);
       setTimeout(() => setDraftSaveSuccess(null), 6000);
       setReviewDraft(null);
     } catch (saveErr: unknown) {
       console.error('Save review draft error:', saveErr);
       const errMsg = saveErr instanceof Error ? saveErr.message : String(saveErr);
+      setSources((prev) => [
+        {
+          id: 'fail_' + Date.now(),
+          title: reviewDraft.title,
+          type: reviewDraft.type || 'txt',
+          chunkCount: 0,
+          fileSizeBytes: reviewDraft.fileSizeBytes,
+          status: 'failed',
+          errorMessage: errMsg || 'Network error while saving knowledge.',
+          errorResolution: 'Please verify server status and try again.',
+          createdAt: new Date().toISOString(),
+        },
+        ...prev.filter((s) => s.title !== reviewDraft.title),
+      ]);
       setUploadFailureAlert({
         title: reviewDraft.title,
         reason: errMsg || 'Network error while saving knowledge.',
@@ -569,15 +692,47 @@ export function useCrmKnowledge({ activeAssistant }: UseCrmKnowledgeOptions) {
 
       const data = await res.json();
       if (data.success) {
+        if (data.source) {
+          setSources((prev) => [
+            {
+              id: data.source.id,
+              title: data.source.title,
+              type: data.source.type || 'web',
+              chunkCount: data.source.chunks || 0,
+              status: data.source.status || 'ready',
+              errorMessage: data.source.error,
+              errorResolution: data.source.whatToDoNext,
+              createdAt: new Date().toISOString(),
+            },
+            ...prev.filter((s) => s.id !== data.source.id && s.title !== data.source.title),
+          ]);
+        }
+
         setUrlFeedback({
           type: 'success',
           message: `Successfully indexed "${data.source.title}" (${data.source.chunks} chunks generated)!`,
         });
         setUrlInput('');
         setUrlCustomTitle('');
-        await fetchKnowledge(activeAssistant.id);
+        await fetchKnowledge(activeAssistant.id, true);
         setTimeout(() => setUrlFeedback(null), 5000);
       } else {
+        if (data.source) {
+          setSources((prev) => [
+            {
+              id: data.source.id || ('fail_' + Date.now()),
+              title: data.source.title || urlCustomTitle.trim() || urlInput.trim(),
+              type: data.source.type || 'web',
+              chunkCount: 0,
+              status: 'failed',
+              errorMessage: data.error,
+              errorResolution: data.whatToDoNext,
+              createdAt: new Date().toISOString(),
+            },
+            ...prev.filter((s) => s.id !== data.source?.id && s.title !== (data.source?.title || urlCustomTitle.trim() || urlInput.trim())),
+          ]);
+        }
+
         setUrlFeedback({
           type: 'error',
           message: data.error || 'Failed to extract knowledge from this URL.',
@@ -595,7 +750,7 @@ export function useCrmKnowledge({ activeAssistant }: UseCrmKnowledgeOptions) {
             whatToDoNext: data.whatToDoNext,
           });
         }
-        fetchKnowledge(activeAssistant.id);
+        fetchKnowledge(activeAssistant.id, true);
       }
     } catch (err: any) {
       setUrlFeedback({
@@ -780,5 +935,6 @@ export function useCrmKnowledge({ activeAssistant }: UseCrmKnowledgeOptions) {
     handleSaveReviewDraft,
     handleDiscardReviewDraft,
     handleExtractUrl,
+    isSyncingSources,
   };
 }

@@ -763,13 +763,13 @@ export async function relationalHybridSearch(
          keyword_matches AS (
            SELECT 
              id, content, tokens, metadata, source_id, title, chunk_index,
-             ts_rank_cd(to_tsvector('english', content), plainto_tsquery('english', $3)) AS text_rank,
-             ROW_NUMBER() OVER (
-               ORDER BY ts_rank_cd(to_tsvector('english', content), plainto_tsquery('english', $3)) DESC
-             ) AS keyword_rank
-           FROM kortex_chunks
-           WHERE assistant_id = $2
-             AND to_tsvector('english', content) @@ plainto_tsquery('english', $3)
+              ts_rank_cd(to_tsvector('english', COALESCE(content, '') || ' ' || COALESCE(title, '')), plainto_tsquery('english', $3)) AS text_rank,
+              ROW_NUMBER() OVER (
+                ORDER BY ts_rank_cd(to_tsvector('english', COALESCE(content, '') || ' ' || COALESCE(title, '')), plainto_tsquery('english', $3)) DESC
+              ) AS keyword_rank
+            FROM kortex_chunks
+            WHERE assistant_id = $2
+              AND to_tsvector('english', COALESCE(content, '') || ' ' || COALESCE(title, '')) @@ plainto_tsquery('english', $3)
            LIMIT 25
          )
          SELECT 

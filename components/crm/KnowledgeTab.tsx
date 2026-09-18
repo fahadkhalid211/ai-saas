@@ -46,7 +46,8 @@ export interface KnowledgeTabProps {
   setActiveAssistant?: (assistant: any) => void;
   handleDeleteAssistant?: (assistantId: string) => Promise<void> | void;
   onOpenNewAssistantModal?: () => void;
-  fetchKnowledge: (assistantId: string) => Promise<void>;
+  fetchKnowledge: (assistantId: string, forceFresh?: boolean) => Promise<void>;
+  isSyncingSources?: boolean;
   uploadFailureAlert: any;
   setUploadFailureAlert: (alert: any) => void;
   handleUploadFiles: (e: React.FormEvent) => Promise<void>;
@@ -101,6 +102,7 @@ export const KnowledgeTab: React.FC<KnowledgeTabProps> = ({
   handleDeleteAssistant,
   onOpenNewAssistantModal,
   fetchKnowledge,
+  isSyncingSources = false,
   uploadFailureAlert,
   setUploadFailureAlert,
   handleUploadFiles,
@@ -166,12 +168,13 @@ export const KnowledgeTab: React.FC<KnowledgeTabProps> = ({
                   </div>
                   <button
                     onClick={() => {
-                      if (activeAssistant) fetchKnowledge(activeAssistant.id);
+                      if (activeAssistant) fetchKnowledge(activeAssistant.id, true);
                     }}
-                    className="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 transition shadow-xs flex items-center gap-1.5"
+                    disabled={isSyncingSources}
+                    className="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 transition shadow-xs flex items-center gap-1.5 disabled:opacity-60 disabled:cursor-not-allowed"
                   >
-                    <RefreshCw className="h-3.5 w-3.5 text-slate-500" />
-                    <span>Sync Sources</span>
+                    <RefreshCw className={`h-3.5 w-3.5 text-slate-500 ${isSyncingSources ? 'animate-spin text-blue-600' : ''}`} />
+                    <span>{isSyncingSources ? 'Syncing Sources...' : 'Sync Sources'}</span>
                   </button>
                 </div>
 

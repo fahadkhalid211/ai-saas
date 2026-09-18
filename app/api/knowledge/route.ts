@@ -3,11 +3,14 @@ import { Database } from '@/lib/db';
 import { BILLING_PLANS } from '@/lib/billing/plans';
 import { withAdminAuth, getAuthContext } from '@/lib/security/auth';
 
+export const dynamic = 'force-dynamic';
+
 export const GET = withAdminAuth(async (req: Request) => {
   try {
     const ctx = await getAuthContext(req);
     const { searchParams } = new URL(req.url);
     const assistantId = searchParams.get('assistantId');
+    const forceFresh = searchParams.get('forceFresh') === 'true';
 
     if (!assistantId) {
       return NextResponse.json({ error: 'assistantId query parameter required' }, { status: 400 });
@@ -18,7 +21,7 @@ export const GET = withAdminAuth(async (req: Request) => {
       return NextResponse.json({ error: 'Assistant not found or forbidden' }, { status: 404 });
     }
 
-    const sources = await Database.getKnowledgeSources(assistantId);
+    const sources = await Database.getKnowledgeSources(assistantId, forceFresh);
     const chunks = await Database.getChunksByAssistant(assistantId);
 
     const targetWorkspaceId = assistant.workspaceId || (ctx.workspaceId !== '*' ? ctx.workspaceId : 'default-workspace');

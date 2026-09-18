@@ -2,6 +2,7 @@ import { Database } from '../db';
 import { generateEmbedding } from './embedder';
 import { Citation, SearchResultChunk } from './types';
 import { rerankCandidates, deduplicateChunks } from './rerank';
+import { expandQueryWithSynonyms, areTermsSynonymous } from './synonyms';
 
 export interface RetrievalResult {
   condensedQuery: string;
@@ -199,16 +200,59 @@ export async function retrieveRelevantContext(
   const isCountQuery = isCountOrAggregationQuery(condensedQuery);
   const isBroadPricing = isBroadPricingOrBudgetQuery(condensedQuery);
   const effectiveTopK = isOverview ? Math.max(topK, 8) : isBroadPricing ? Math.max(topK, 12) : isCountQuery ? 4 : topK;
+
+  // 1. Fetch assistant knowledge sources for title context and synonym correlation
+  const knowledgeSources = await Database.getKnowledgeSources(assistantId);
+  const sourceTitles = knowledgeSources.map((s) => s.title).filter(Boolean);
+
+  // 2. Expand query with universal synonyms and knowledge base titles
+  const { expandedQuery, synonymKeywords } = expandQueryWithSynonyms(condensedQuery, sourceTitles);
   
-  // 1. Generate 384-dimensional query embedding with local open-source embedder (cached)
-  let queryEmbedding = getCachedEmbedding(condensedQuery);
+  // 3. Generate 384-dimensional query embedding with local open-source embedder (cached)
+  let queryEmbedding = getCachedEmbedding(expandedQuery);
   if (!queryEmbedding) {
-    queryEmbedding = await generateEmbedding(condensedQuery);
-    setCachedEmbedding(condensedQuery, queryEmbedding);
+    queryEmbedding = await generateEmbedding(expandedQuery);
+    setCachedEmbedding(expandedQuery, queryEmbedding);
   }
 
-  // 2. Perform Hybrid Search
-  let chunks = await Database.hybridSearch(assistantId, condensedQuery, queryEmbedding, effectiveTopK * 2);
+  // 4. Perform Hybrid Search with expanded query
+  let chunks = await Database.hybridSearch(assistantId, expandedQuery, queryEmbedding, effectiveTopK * 2);
+
+  // 4.1. Fallback to raw condensed query if expanded query returned no results
+  if (chunks.length === 0 && expandedQuery !== condensedQuery) {
+    let rawQueryEmbedding = getCachedEmbedding(condensedQuery);
+    if (!rawQueryEmbedding) {
+      rawQueryEmbedding = await generateEmbedding(condensedQuery);
+      setCachedEmbedding(condensedQuery, rawQueryEmbedding);
+    }
+    chunks = await Database.hybridSearch(assistantId, condensedQuery, rawQueryEmbedding, effectiveTopK * 2);
+  }
+
+  // 4.2. Dynamic Concept Fallback: If still 0 chunks, check if any knowledge source matches concept
+  if (chunks.length === 0 && knowledgeSources.length > 0) {
+    const matchedSource = knowledgeSources.find((s) => {
+      const titleLower = s.title.toLowerCase();
+      return (
+        areTermsSynonymous(condensedQuery, titleLower) ||
+        synonymKeywords.some((kw) => titleLower.includes(kw.toLowerCase()))
+      );
+    });
+
+    if (matchedSource) {
+      const sourceChunks = await Database.getChunksBySource(matchedSource.id);
+      if (sourceChunks.length > 0) {
+        chunks = sourceChunks.slice(0, effectiveTopK).map((c) => ({
+          id: c.id,
+          content: c.content,
+          chunkIndex: c.chunkIndex,
+          tokenCount: c.tokenCount,
+          metadata: c.metadata as any,
+          knowledgeSourceId: c.knowledgeSourceId,
+          similarity: 0.95,
+        }));
+      }
+    }
+  }
 
   // 2.5. Broad pricing or budget query: ensure pricing chunks are pulled via scoped query
   if (isBroadPricing) {
