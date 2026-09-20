@@ -53,6 +53,9 @@ export function SaaSMarketingHomepage({
     },
   ]);
   const [isDemoStreaming, setIsDemoStreaming] = useState(false);
+  const [sandboxTraceState, setSandboxTraceState] = useState<
+    'idle' | 'input' | 'intent' | 'rag' | 'brain' | 'firebreak' | 'action'
+  >('idle');
 
   const isLight = theme === 'light';
 
@@ -98,6 +101,14 @@ export function SaaSMarketingHomepage({
     setDemoMessages((prev) => [...prev, { role: 'user', text: userMsg }]);
     setIsDemoStreaming(true);
 
+    // Trigger visual architecture pipeline sequence
+    setSandboxTraceState('input');
+    setTimeout(() => setSandboxTraceState('intent'), 120);
+    setTimeout(() => setSandboxTraceState('rag'), 240);
+    setTimeout(() => setSandboxTraceState('brain'), 360);
+    setTimeout(() => setSandboxTraceState('firebreak'), 480);
+    setTimeout(() => setSandboxTraceState('action'), 600);
+
     setTimeout(() => {
       let reply = '';
       let hasBooking = false;
@@ -133,6 +144,7 @@ export function SaaSMarketingHomepage({
 
       setDemoMessages((prev) => [...prev, { role: 'assistant', text: reply, hasBooking }]);
       setIsDemoStreaming(false);
+      setTimeout(() => setSandboxTraceState('idle'), 3500);
     }, 600);
   };
 
@@ -580,6 +592,79 @@ export function SaaSMarketingHomepage({
                     }`}
                   >
                     Mutex Armed
+                  </span>
+                </div>
+              </div>
+
+              {/* Live Architecture System Trace Ribbon */}
+              <div
+                className={`px-4 py-2.5 border-b text-[10px] font-mono flex items-center justify-between overflow-x-auto no-scrollbar gap-2 transition-colors ${
+                  isLight ? 'bg-slate-50 border-slate-200' : 'bg-slate-950/90 border-slate-800'
+                }`}
+              >
+                <div className="flex items-center gap-1.5 shrink-0 text-slate-400 font-bold uppercase">
+                  <Activity className="h-3 w-3 text-cyan-500" />
+                  <span>Architecture Trace:</span>
+                </div>
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <span
+                    className={`px-2 py-0.5 rounded border transition-all ${
+                      sandboxTraceState === 'input'
+                        ? 'bg-cyan-500/20 text-cyan-400 border-cyan-400 font-bold shadow-[0_0_8px_#38bdf8]'
+                        : 'bg-slate-800/40 text-slate-500 border-slate-700/40'
+                    }`}
+                  >
+                    1. INPUT
+                  </span>
+                  <span className="text-slate-600">→</span>
+                  <span
+                    className={`px-2 py-0.5 rounded border transition-all ${
+                      sandboxTraceState === 'intent'
+                        ? 'bg-blue-500/20 text-blue-400 border-blue-400 font-bold shadow-[0_0_8px_#3b82f6]'
+                        : 'bg-slate-800/40 text-slate-500 border-slate-700/40'
+                    }`}
+                  >
+                    2. INTENT
+                  </span>
+                  <span className="text-slate-600">→</span>
+                  <span
+                    className={`px-2 py-0.5 rounded border transition-all ${
+                      sandboxTraceState === 'rag'
+                        ? 'bg-indigo-500/20 text-indigo-400 border-indigo-400 font-bold shadow-[0_0_8px_#818cf8]'
+                        : 'bg-slate-800/40 text-slate-500 border-slate-700/40'
+                    }`}
+                  >
+                    3. RAG MEMORY
+                  </span>
+                  <span className="text-slate-600">→</span>
+                  <span
+                    className={`px-2 py-0.5 rounded border transition-all ${
+                      sandboxTraceState === 'brain'
+                        ? 'bg-blue-500/20 text-blue-400 border-blue-400 font-bold shadow-[0_0_8px_#60a5fa]'
+                        : 'bg-slate-800/40 text-slate-500 border-slate-700/40'
+                    }`}
+                  >
+                    4. BRAIN CORE
+                  </span>
+                  <span className="text-slate-600">→</span>
+                  <span
+                    className={`px-2 py-0.5 rounded border transition-all ${
+                      sandboxTraceState === 'firebreak'
+                        ? 'bg-emerald-500/20 text-emerald-400 border-emerald-400 font-bold shadow-[0_0_8px_#10b981]'
+                        : 'bg-slate-800/40 text-slate-500 border-slate-700/40'
+                    }`}
+                  >
+                    5. FIREBREAK
+                  </span>
+                  <span className="text-slate-600">→</span>
+                  <span
+                    className={`px-2 py-0.5 rounded border transition-all ${
+                      sandboxTraceState === 'action'
+                        ? 'bg-emerald-500/30 text-emerald-300 border-emerald-400 font-bold shadow-[0_0_10px_#10b981]'
+                        : 'bg-slate-800/40 text-slate-500 border-slate-700/40'
+                    }`}
+                  >
+                    6. MUTEX ACTION
                   </span>
                 </div>
               </div>
