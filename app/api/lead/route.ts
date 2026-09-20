@@ -4,6 +4,7 @@ import { sendSupportLeadEmail } from '@/lib/email';
 import { dispatchWebhook } from '@/lib/webhook';
 import { verifyAdminRequest, getAuthContext, requireWorkspaceAssistant, withRoleAuth } from '@/lib/security/auth';
 import { enforceRateLimit, getClientIp } from '@/lib/security/rate-limit';
+import { resolveAttribution, attributionCustomData } from '@/lib/analytics/attribution';
 
 export async function OPTIONS() {
   return new NextResponse(null, {
@@ -78,6 +79,13 @@ export async function POST(req: Request) {
       }
     }
 
+    // Attribution: which conversation/source produced this lead. Stored in customData
+    // (JSONB in both DB modes). System keys are written last so they can't be spoofed
+    // through a business-defined custom field.
+    const attribution = await resolveAttribution(body, assistant.id);
+    const baseCustomData =
+      customData && typeof customData === 'object' && !Array.isArray(customData) ? customData : {};
+
     // Save lead into database
     const lead = await Database.saveLead({
       assistantId,
@@ -85,7 +93,7 @@ export async function POST(req: Request) {
       name: name.trim(),
       phone: phone.trim(),
       notes: notes?.trim() || undefined,
-      customData: customData || undefined,
+      customData: { ...baseCustomData, ...attributionCustomData(attribution) },
     });
 
     // Asynchronously dispatch email notification
@@ -127,6 +135,7 @@ export async function POST(req: Request) {
           assistantId,
           email: lead.email,
           name: lead.name,
+          source: attribution.source,
         },
       });
     } catch (auditErr: any) {

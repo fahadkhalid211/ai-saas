@@ -45,7 +45,15 @@ export const PUT = withRoleAuth(['owner', 'admin'], async (
     }
 
     const body = await req.json();
-    const updated = await Database.updateAssistant(id, body, ctx.workspaceId);
+    const {
+      id: _forbiddenId,
+      workspaceId: _forbiddenWs,
+      createdAt: _forbiddenCreatedAt,
+      updatedAt: _forbiddenUpdatedAt,
+      ...safeUpdates
+    } = body;
+
+    const updated = await Database.updateAssistant(id, safeUpdates, ctx.workspaceId);
     if (!updated) {
       return NextResponse.json({ error: 'Assistant not found' }, { status: 404 });
     }

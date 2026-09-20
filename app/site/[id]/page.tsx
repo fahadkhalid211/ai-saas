@@ -35,7 +35,31 @@ export default async function HostedBusinessSite({ params }: SitePageProps) {
 
   let initialAssistant: any = null;
   if (initialConfig?.assistantId && initialConfig.assistantId !== 'none') {
-    initialAssistant = await Database.getAssistantById(initialConfig.assistantId);
+    const rawAssistant = await Database.getAssistantById(initialConfig.assistantId);
+    if (rawAssistant) {
+      initialAssistant = {
+        id: rawAssistant.id,
+        name: rawAssistant.name,
+        welcomeMessage: rawAssistant.welcomeMessage,
+        starterQuestions: rawAssistant.starterQuestions || [],
+        fallbackMessage: rawAssistant.fallbackMessage || '',
+        primaryColor: rawAssistant.primaryColor || '#2563eb',
+        launcherPosition: rawAssistant.launcherPosition || 'bottom-right',
+        collectLeadEmail: rawAssistant.collectLeadEmail || false,
+        supportCustomFields: rawAssistant.supportCustomFields || [],
+        whiteLabelEnabled: rawAssistant.whiteLabelEnabled || false,
+        customBrandingText: rawAssistant.customBrandingText || '',
+        customBrandingUrl: rawAssistant.customBrandingUrl || '',
+        bookingEnabled: rawAssistant.bookingEnabled || false,
+        bookingProvider: rawAssistant.bookingProvider || 'direct',
+        bookingUrl: rawAssistant.bookingUrl || '',
+        bookingPromptText: rawAssistant.bookingPromptText || 'Schedule an Appointment',
+        bookingSlotDuration: rawAssistant.bookingSlotDuration || 30,
+        bookingStartHour: rawAssistant.bookingStartHour || '09:00',
+        bookingEndHour: rawAssistant.bookingEndHour || '17:00',
+        bookingAvailableDays: rawAssistant.bookingAvailableDays || ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
+      };
+    }
   }
 
   return (

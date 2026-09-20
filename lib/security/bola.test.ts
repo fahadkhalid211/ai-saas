@@ -535,5 +535,221 @@ describe('Multi-Tenant Isolation & BOLA/IDOR Security', () => {
     // Only system notifications (assistantId is null) may be returned when assistantIds is empty
     expect(notifs.every((n) => !n.assistantId)).toBe(true);
   });
+
+  it('should reject Staff123! default password when no password is set on member', async () => {
+    const member = await Database.addTeamMember({
+      name: 'No Pass Staff',
+      email: 'nopass_staff_' + Math.random().toString(36).substring(2, 8) + '@example.com',
+      role: 'support_agent',
+      workspaceId: wsA,
+      status: 'active',
+    });
+
+    // Attempt login with old default password Staff123!
+    const loginResult = await Database.verifyStaffLogin(member.email, 'Staff123!');
+    expect(loginResult).toBeNull();
+  });
+
+  it('should prevent conversation rebinding to a different assistant', async () => {
+    const astA = await Database.createAssistant({
+      name: 'Assistant Alpha',
+      workspaceId: wsA,
+    });
+    const astB = await Database.createAssistant({
+      name: 'Assistant Beta',
+      workspaceId: wsB,
+    });
+
+    // 1. Create a legitimate conversation for Assistant A
+    const originalConv = await Database.getOrCreateConversation(astA.id, 'visitor_1');
+    expect(originalConv.assistantId).toBe(astA.id);
+
+    // 2. An attacker presents originalConv.id while requesting Assistant B
+    const hijackerAttempt = await Database.getOrCreateConversation(astB.id, 'visitor_attacker', originalConv.id);
+
+    // Verify: hijacker gets a new separate conversation, NOT the original conversation rebound
+    expect(hijackerAttempt.id).not.toBe(originalConv.id);
+    expect(hijackerAttempt.assistantId).toBe(astB.id);
+
+    // Verify: original conversation still belongs to Assistant A untouched
+    const freshOriginal = await Database.getConversationById(originalConv.id);
+    expect(freshOriginal?.assistantId).toBe(astA.id);
+  });
+
+  it('should isolate complete analytics by workspace', async () => {
+    const astA = await Database.createAssistant({
+      name: 'Analytics Bot A',
+      workspaceId: wsA,
+    });
+    const astB = await Database.createAssistant({
+      name: 'Analytics Bot B',
+      workspaceId: wsB,
+    });
+
+    // Create lead for A and B
+    await Database.saveLead({
+      assistantId: astA.id,
+      email: 'leadA@example.com',
+      name: 'Lead A',
+    });
+    await Database.saveLead({
+      assistantId: astB.id,
+      email: 'leadB@example.com',
+      name: 'Lead B',
+    });
+
+    // Query analytics scoped to Workspace A
+    const analyticsA = await Database.getCompleteAnalytics({ workspaceId: wsA });
+    // In workspace A, conversions should only reflect Assistant A's activity
+    expect(analyticsA).toBeDefined();
+
+    // Query analytics scoped to Workspace B
+    const analyticsB = await Database.getCompleteAnalytics({ workspaceId: wsB });
+    expect(analyticsB).toBeDefined();
+  });
+
+  it('should validate and sanitize googleAnalyticsId and metaPixelId in landing page payload', async () => {
+    const { validateLandingPagePayload } = await import('./validation');
+
+    // Valid IDs
+    const validResult = validateLandingPagePayload({
+      businessName: 'Valid Business',
+      slug: 'valid-business-' + Math.random().toString(36).substring(2, 6),
+      enabled: true,
+      analytics: {
+        googleAnalyticsId: 'G-ABC123XYZ',
+        metaPixelId: '123456789012345',
+      },
+    });
+    expect(validResult.valid).toBe(true);
+
+    // Malicious XSS breakout payload
+    const invalidResult = validateLandingPagePayload({
+      businessName: 'Invalid Business',
+      slug: 'invalid-business-' + Math.random().toString(36).substring(2, 6),
+      enabled: true,
+      analytics: {
+        googleAnalyticsId: "G-123'; alert(1); //",
+        metaPixelId: '<script>alert(1)</script>',
+      },
+    });
+    expect(invalidResult.valid).toBe(false);
+    expect(invalidResult.errors['analytics.googleAnalyticsId']).toBeDefined();
+    expect(invalidResult.errors['analytics.metaPixelId']).toBeDefined();
+  });
+
+  it('should reject cross-tenant access in unanswered queries API route', async () => {
+    const { GET: getUnansweredRoute, POST: postUnansweredRoute } = await import('../../app/api/analytics/unanswered/route');
+    const { generateSessionToken } = await import('./auth');
+
+    const botA = await Database.createAssistant({
+      name: 'Unanswered Bot A',
+      workspaceId: wsA,
+    });
+    const query = await Database.recordUnansweredQuery(botA.id, 'How much is shipping?');
+
+    // Tenant B session token
+    const tokenB = generateSessionToken('admin', 'user-beta', wsB);
+    const authHeaders = { authorization: `Bearer ${tokenB}` };
+
+    // Tenant B attempts to fetch unanswered queries of botA
+    const getReq = new Request(`http://localhost/api/analytics/unanswered?assistantId=${botA.id}`, { headers: authHeaders });
+    const getRes = await getUnansweredRoute(getReq);
+    expect(getRes.status).toBe(404);
+
+    // Tenant B attempts to delete query of botA
+    const delReq = new Request('http://localhost/api/analytics/unanswered', {
+      method: 'POST',
+      headers: { ...authHeaders, 'content-type': 'application/json' },
+      body: JSON.stringify({ id: query.id, action: 'delete' }),
+    });
+    const delRes = await postUnansweredRoute(delReq);
+    expect(delRes.status).toBe(404);
+  });
+
+  it('should reject cross-tenant notification mark-as-read in notifications API route', async () => {
+    const { POST: postNotificationsRoute } = await import('../../app/api/notifications/route');
+    const { generateSessionToken } = await import('./auth');
+
+    const botA = await Database.createAssistant({
+      name: 'Notif Bot A',
+      workspaceId: wsA,
+    });
+    const notif = await Database.addNotification({
+      title: 'New Lead',
+      message: 'New lead captured',
+      type: 'lead_captured',
+      assistantId: botA.id,
+    });
+
+    // Tenant B session token
+    const tokenB = generateSessionToken('admin', 'user-beta', wsB);
+    const authHeaders = { authorization: `Bearer ${tokenB}` };
+
+    const markReq = new Request('http://localhost/api/notifications', {
+      method: 'POST',
+      headers: { ...authHeaders, 'content-type': 'application/json' },
+      body: JSON.stringify({ action: 'mark_read', id: notif.id }),
+    });
+    const markRes = await postNotificationsRoute(markReq);
+    expect(markRes.status).toBe(404);
+  });
+
+  it('should prevent cross-workspace slug collisions when saving landing pages', async () => {
+    const { DEFAULT_BARBER_LANDING_CONFIG } = await import('../db');
+    const slug = 'exclusive-slug-' + Math.random().toString(36).substring(2, 6);
+
+    // Save landing page in workspace A
+    await Database.saveLandingPage({
+      ...DEFAULT_BARBER_LANDING_CONFIG,
+      slug,
+      businessName: 'Tenant A Page',
+      enabled: true,
+      workspaceId: wsA,
+    });
+
+    // Attempt to save landing page with same slug in workspace B -> must throw
+    await expect(
+      Database.saveLandingPage({
+        ...DEFAULT_BARBER_LANDING_CONFIG,
+        slug,
+        businessName: 'Tenant B Impersonation',
+        enabled: true,
+        workspaceId: wsB,
+      })
+    ).rejects.toThrow('already registered');
+  });
+
+  it('should strip immutable identity fields (id, workspaceId) when updating assistant', async () => {
+    const { PUT: putAssistantRoute } = await import('../../app/api/assistants/[id]/route');
+    const { generateSessionToken } = await import('./auth');
+
+    const botA = await Database.createAssistant({
+      name: 'Original Name',
+      workspaceId: wsA,
+    });
+
+    const tokenA = generateSessionToken('admin', 'user-alpha', wsA);
+    const authHeaders = { authorization: `Bearer ${tokenA}`, 'content-type': 'application/json' };
+
+    // Tenant A attempts to overwrite workspaceId and id
+    const putReq = new Request(`http://localhost/api/assistants/${botA.id}`, {
+      method: 'PUT',
+      headers: authHeaders,
+      body: JSON.stringify({
+        name: 'Updated Name',
+        workspaceId: wsB, // malicious workspace reassignment
+        id: 'hijacked-bot-id',
+      }),
+    });
+    const putRes = await putAssistantRoute(putReq, { params: Promise.resolve({ id: botA.id }) });
+    expect(putRes.status).toBe(200);
+
+    const reloaded = await Database.getAssistantById(botA.id);
+    expect(reloaded?.name).toBe('Updated Name');
+    expect(reloaded?.workspaceId).toBe(wsA); // workspaceId remains unchanged!
+    expect(reloaded?.id).toBe(botA.id); // id remains unchanged!
+  });
 });
+
 

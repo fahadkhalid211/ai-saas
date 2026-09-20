@@ -71,10 +71,5 @@ CREATE POLICY "Service role has full access to chunks"
   USING (true)
   WITH CHECK (true);
 
--- Optional public read-only policy for anon key if public landing pages or embed widgets query directly
+-- Restrict kortex_app_state strictly to service role. Drop any legacy public read policy.
 DROP POLICY IF EXISTS "Public read access to state" ON kortex_app_state;
-CREATE POLICY "Public read access to state"
-  ON kortex_app_state
-  FOR SELECT
-  TO anon, authenticated
-  USING (true);

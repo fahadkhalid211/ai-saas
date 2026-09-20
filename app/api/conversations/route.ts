@@ -14,14 +14,23 @@ export async function GET(req: Request) {
     // existing session/cookie in place of a token.
     if (id) {
       const token = searchParams.get('token');
-      const isAdmin = await verifyAdminRequest(req);
-      if (!isAdmin && !verifyConversationAccessToken(id, token)) {
+      const hasValidToken = verifyConversationAccessToken(id, token);
+      const ctx = await getAuthContext(req);
+
+      if (!hasValidToken && !ctx.authenticated) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
       }
 
       const conversation = await Database.getConversationById(id);
       if (!conversation) {
         return NextResponse.json({ error: 'Conversation not found' }, { status: 404 });
+      }
+
+      if (!hasValidToken && ctx.authenticated && ctx.workspaceId !== '*') {
+        const ast = await Database.getAssistantById(conversation.assistantId);
+        if (!ast || (ast.workspaceId || 'default-workspace') !== ctx.workspaceId) {
+          return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+        }
       }
 
       // Incremental polling support: when the caller already has the first
@@ -86,7 +95,7 @@ export async function POST(req: Request) {
 
     if (ctx.workspaceId !== '*') {
       const ast = await Database.getAssistantById(conv.assistantId);
-      if (ast && (ast.workspaceId || 'default-workspace') !== ctx.workspaceId) {
+      if (!ast || (ast.workspaceId || 'default-workspace') !== ctx.workspaceId) {
         return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
       }
     }
@@ -148,7 +157,7 @@ export async function PATCH(req: Request) {
 
     if (ctx.workspaceId !== '*') {
       const ast = await Database.getAssistantById(conv.assistantId);
-      if (ast && (ast.workspaceId || 'default-workspace') !== ctx.workspaceId) {
+      if (!ast || (ast.workspaceId || 'default-workspace') !== ctx.workspaceId) {
         return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
       }
     }

@@ -311,6 +311,17 @@ export async function relationalGetLeads(
   return result ?? [];
 }
 
+export async function relationalDeleteLead(id: string): Promise<boolean> {
+  const result = await withPool(async (client) => {
+    const res = await client.query(
+      `DELETE FROM kortex_leads WHERE id = $1`,
+      [id]
+    );
+    return (res.rowCount ?? 0) > 0;
+  });
+  return result === true;
+}
+
 // ---------------------------------------------------------------------------
 // Appointments
 // ---------------------------------------------------------------------------
@@ -418,11 +429,20 @@ export async function relationalUpdateAppointment(
   if (sets.length === 0) return false;
 
   const result = await withPool(async (client) => {
-    const res = await client.query(
-      `UPDATE kortex_appointments SET ${sets.join(', ')} WHERE id = $${idx}`,
-      values
-    );
-    return (res.rowCount ?? 0) > 0;
+    try {
+      const res = await client.query(
+        `UPDATE kortex_appointments SET ${sets.join(', ')} WHERE id = $${idx}`,
+        values
+      );
+      return (res.rowCount ?? 0) > 0;
+    } catch (err: any) {
+      if (err?.code === '23505') {
+        const conflictErr = new Error(`Slot conflict: ${patch.timeSlot || 'slot'} on ${patch.date || 'date'} has already been booked`);
+        (conflictErr as any).code = 'SLOT_CONFLICT';
+        throw conflictErr;
+      }
+      throw err;
+    }
   });
   return result === true;
 }
@@ -885,3 +905,99 @@ export async function relationalHybridSearch(
 
   return result ?? [];
 }
+
+export async function relationalDeleteAssistantData(assistantId: string): Promise<boolean> {
+  const result = await withPool(async (client) => {
+    await client.query(
+      `DELETE FROM kortex_messages WHERE conversation_id IN (SELECT id FROM kortex_conversations WHERE assistant_id = $1)`,
+      [assistantId]
+    );
+    await client.query(`DELETE FROM kortex_conversations WHERE assistant_id = $1`, [assistantId]);
+    await client.query(`DELETE FROM kortex_leads WHERE assistant_id = $1`, [assistantId]);
+    await client.query(`DELETE FROM kortex_appointments WHERE assistant_id = $1`, [assistantId]);
+    await client.query(`DELETE FROM kortex_notifications WHERE assistant_id = $1`, [assistantId]);
+    await client.query(`DELETE FROM kortex_unanswered_queries WHERE assistant_id = $1`, [assistantId]);
+    await client.query(`DELETE FROM kortex_chunks WHERE assistant_id = $1`, [assistantId]);
+    return true;
+  });
+  return result === true;
+}
+
+// ---------------------------------------------------------------------------
+// Widget funnel events (optional table: supabase/schema-relational-v3-widget-events.sql)
+//
+// These functions deliberately catch and swallow every error. The table is
+// optional (manual SQL) and purely analytical, so a missing table or a failed
+// insert must never throw into a request handler, and must never trip the shared
+// Postgres kill switch that would take bookings and messages offline.
+// ---------------------------------------------------------------------------
+
+export type WidgetEventType = 'widget_loaded' | 'widget_opened';
+
+let widgetEventsWarned = false;
+function warnWidgetEventsOnce(err: any): void {
+  if (widgetEventsWarned) return;
+  widgetEventsWarned = true;
+  console.warn(
+    '[WidgetEvents] Could not use kortex_widget_events (has schema-relational-v3-widget-events.sql been run?):',
+    err?.message || err
+  );
+}
+
+export async function relationalInsertWidgetEvent(evt: {
+  id: string;
+  assistantId: string;
+  sessionId: string;
+  eventType: WidgetEventType;
+  createdAt: string;
+}): Promise<boolean> {
+  try {
+    const result = await withPool(async (client) => {
+      await client.query(
+        `INSERT INTO kortex_widget_events (id, assistant_id, session_id, event_type, created_at)
+         VALUES ($1, $2, $3, $4, $5)
+         ON CONFLICT (id) DO NOTHING`,
+        [evt.id, evt.assistantId, evt.sessionId, evt.eventType, evt.createdAt]
+      );
+      return true;
+    });
+    return result === true;
+  } catch (err) {
+    warnWidgetEventsOnce(err);
+    return false;
+  }
+}
+
+/**
+ * Distinct widget sessions per event type over the last `days` days.
+ * Returns null when tracking is unavailable (no pool or table missing) so callers
+ * can tell "not tracked" apart from a real zero.
+ */
+export async function relationalCountWidgetEvents(
+  assistantId: string,
+  days: number
+): Promise<{ loadedSessions: number; openedSessions: number } | null> {
+  try {
+    const safeDays = Number.isFinite(days) && days > 0 ? Math.min(Math.floor(days), 365) : 30;
+    return await withPool(async (client) => {
+      const { rows } = await client.query(
+        `SELECT event_type, COUNT(DISTINCT session_id)::int AS sessions
+           FROM kortex_widget_events
+          WHERE assistant_id = $1
+            AND created_at >= NOW() - ($2::int * INTERVAL '1 day')
+          GROUP BY event_type`,
+        [assistantId, safeDays]
+      );
+      const counts = { loadedSessions: 0, openedSessions: 0 };
+      for (const r of rows) {
+        if (r.event_type === 'widget_loaded') counts.loadedSessions = r.sessions;
+        if (r.event_type === 'widget_opened') counts.openedSessions = r.sessions;
+      }
+      return counts;
+    });
+  } catch (err) {
+    warnWidgetEventsOnce(err);
+    return null;
+  }
+}
+

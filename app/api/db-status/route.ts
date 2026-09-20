@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
-import { isCloudDbConfigured, getCloudDbProvider, fetchCloudState } from '@/lib/db/cloud';
+import { isCloudDbConfigured, getCloudDbProvider, pingCloudDb } from '@/lib/db/cloud';
 import { isSupabaseConfigured, getSupabaseClient, getSupabaseUrl } from '@/lib/db/supabase';
+import { isRedisConfigured, redisPing } from '@/lib/cache/redis';
 
 export const dynamic = 'force-dynamic';
 
@@ -44,24 +45,37 @@ export async function GET() {
       }
     }
 
+    const redisConfigured = isRedisConfigured();
+    let redisConnected = false;
+    if (redisConfigured) {
+      redisConnected = await redisPing();
+    }
+
     if (!configured) {
       return NextResponse.json({
         connected: false,
         provider: 'ephemeral',
         isServerless,
         supabase: supabaseDiagnostics,
+        redis: {
+          configured: redisConfigured,
+          connected: redisConnected,
+        },
         message: isServerless
           ? 'Cloud database is not configured. Serverless memory is ephemeral: booked appointments and active chats will reset across lambdas. Add DATABASE_URL or Supabase credentials in your Vercel Environment Variables.'
           : 'Local filesystem database active (.data/db.json).',
       });
     }
 
-    // Ping cloud database
+    // Ping cloud database with lightweight ping
     let reachable = false;
     let errMessage = '';
     try {
-      const state = await fetchCloudState();
-      reachable = state !== null;
+      const pingRes = await pingCloudDb();
+      reachable = pingRes.reachable;
+      if (!reachable && pingRes.error) {
+        errMessage = pingRes.error;
+      }
     } catch (e: any) {
       reachable = false;
       errMessage = e?.message || 'Connection failed';
@@ -81,6 +95,10 @@ export async function GET() {
       provider,
       isServerless,
       supabase: supabaseDiagnostics,
+      redis: {
+        configured: redisConfigured,
+        connected: redisConnected,
+      },
       message: statusMessage,
     });
   } catch (error: any) {

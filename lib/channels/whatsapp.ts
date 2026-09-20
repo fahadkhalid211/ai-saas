@@ -27,6 +27,7 @@ export async function sendWhatsAppMessage(
         type: 'text',
         text: { preview_url: false, body: text },
       }),
+      signal: AbortSignal.timeout(10_000),
     });
 
     const data = await res.json();
@@ -37,6 +38,25 @@ export async function sendWhatsAppMessage(
   } catch (err: any) {
     return { success: false, error: err?.message || 'WhatsApp network error' };
   }
+}
+
+const processedWhatsAppMsgIds = new Set<string>();
+const MAX_PROCESSED_WA_MSGS = 1000;
+
+function isDuplicateWhatsAppMsg(msgId: unknown): boolean {
+  if (!msgId) return false;
+  const key = String(msgId);
+  if (processedWhatsAppMsgIds.has(key)) {
+    return true;
+  }
+  if (processedWhatsAppMsgIds.size >= MAX_PROCESSED_WA_MSGS) {
+    const oldest = processedWhatsAppMsgIds.values().next().value;
+    if (oldest !== undefined) {
+      processedWhatsAppMsgIds.delete(oldest);
+    }
+  }
+  processedWhatsAppMsgIds.add(key);
+  return false;
 }
 
 /**
@@ -53,6 +73,10 @@ export async function processWhatsAppWebhook(
   if (!messages || !Array.isArray(messages) || messages.length === 0) return;
 
   const incomingMsg = messages[0];
+  if (incomingMsg.id && isDuplicateWhatsAppMsg(incomingMsg.id)) {
+    return;
+  }
+
   const from = incomingMsg.from; // Customer phone number
   const userText = incomingMsg.text?.body?.trim();
 
@@ -63,6 +87,11 @@ export async function processWhatsAppWebhook(
   const visitorId = `wa_${from}`;
   const conv = await Database.getOrCreateConversation(assistant.id, visitorId);
   await Database.saveMessage(conv.id, 'user', userText);
+
+  // If a human operator took over, do not auto-reply
+  if (conv.isLiveTakeover) {
+    return;
+  }
 
   // 2. Query RAG Knowledge Base
   const retrieved = await retrieveRelevantContext(

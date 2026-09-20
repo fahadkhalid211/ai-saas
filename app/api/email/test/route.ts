@@ -1,10 +1,17 @@
 import { NextResponse } from 'next/server';
 import { Database } from '@/lib/db';
 import { sendTestDiagnosticEmail } from '@/lib/email';
-import { withAdminAuth } from '@/lib/security/auth';
+import { withAdminAuth, getAuthContext } from '@/lib/security/auth';
+import { getClientIp } from '@/lib/security/rate-limit';
+import { validateSafeExternalUrl } from '@/lib/security/ssrf';
 
-export const GET = withAdminAuth(async (_req: Request) => {
+export const GET = withAdminAuth(async (req: Request) => {
   try {
+    const ctx = await getAuthContext(req);
+    if (!ctx.isMasterAdmin) {
+      return NextResponse.json({ error: 'Forbidden: only master admin may view global SMTP settings' }, { status: 403 });
+    }
+
     const settings = await Database.getSmtpSettings();
     return NextResponse.json({
       success: true,
@@ -23,12 +30,28 @@ export const GET = withAdminAuth(async (_req: Request) => {
 
 export const POST = withAdminAuth(async (req: Request) => {
   try {
+    const ctx = await getAuthContext(req);
+    if (!ctx.isMasterAdmin) {
+      return NextResponse.json({ error: 'Forbidden: only master admin may configure global SMTP' }, { status: 403 });
+    }
+
     const body = await req.json();
     const { action, to, config } = body;
+    const ip = getClientIp(req);
 
     if (action === 'save_settings') {
       const existing = await Database.getSmtpSettings();
       const updates: any = { ...config };
+
+      // Validate SMTP host against SSRF if provided
+      if (updates.host && typeof updates.host === 'string') {
+        const checkHost = updates.host.startsWith('http') ? updates.host : `http://${updates.host.trim()}`;
+        const validation = await validateSafeExternalUrl(checkHost);
+        if (!validation.safe) {
+          return NextResponse.json({ success: false, error: `Invalid SMTP host: ${validation.error}` }, { status: 400 });
+        }
+      }
+
       // Preserve existing password / API key if masked
       if (updates.pass && updates.pass.includes('••••')) {
         updates.pass = existing?.pass;
@@ -36,14 +59,22 @@ export const POST = withAdminAuth(async (req: Request) => {
       if (updates.resendApiKey && updates.resendApiKey.includes('••••')) {
         updates.resendApiKey = existing?.resendApiKey;
       }
+
       const saved = await Database.saveSmtpSettings(updates);
       await Database.addAuditLog({
-        actor: { id: 'admin', name: 'Master Admin', ip: '127.0.0.1' },
+        actor: { id: ctx.memberId || 'admin', name: ctx.role || 'Master Admin', ip },
         action: 'settings.smtp_updated',
         targetType: 'system_settings',
         details: { host: saved.host, port: saved.port, user: saved.user, from: saved.from },
       });
-      return NextResponse.json({ success: true, settings: saved });
+
+      // Never echo unmasked secrets in response
+      const maskedSettings = {
+        ...saved,
+        pass: saved.pass ? '••••••••' : undefined,
+        resendApiKey: saved.resendApiKey ? '••••••••' : undefined,
+      };
+      return NextResponse.json({ success: true, settings: maskedSettings });
     }
 
     if (action === 'test_send') {
@@ -53,6 +84,16 @@ export const POST = withAdminAuth(async (req: Request) => {
 
       const existing = await Database.getSmtpSettings();
       const resolvedConfig = config ? { ...config } : {};
+
+      // Validate SMTP host against SSRF if provided
+      if (resolvedConfig.host && typeof resolvedConfig.host === 'string') {
+        const checkHost = resolvedConfig.host.startsWith('http') ? resolvedConfig.host : `http://${resolvedConfig.host.trim()}`;
+        const validation = await validateSafeExternalUrl(checkHost);
+        if (!validation.safe) {
+          return NextResponse.json({ success: false, error: `Invalid SMTP host: ${validation.error}` }, { status: 400 });
+        }
+      }
+
       if (resolvedConfig.pass && resolvedConfig.pass.includes('••••')) {
         resolvedConfig.pass = existing?.pass;
       }

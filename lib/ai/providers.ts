@@ -8,6 +8,7 @@ function getClient(options: ProviderOptions): { client: OpenAI; model: string } 
   const provider = (options.provider || 'ollama').toLowerCase();
 
   switch (provider) {
+    case 'auto_free':
     case 'groq': {
       const apiKey = options.apiKey || process.env.GROQ_API_KEY || 'dummy-key';
       let model = options.modelName || 'openai/gpt-oss-120b';
@@ -180,6 +181,158 @@ async function* streamAnthropic(
 }
 
 /**
+ * Zero-Cost Cascading Inference Generator
+ * Tiers:
+ * 1. Groq Free Tier (sub-second Llama 3.3 / gpt-oss-120b, 14,400 requests/day at $0 cost)
+ * 2. Google Gemini Free Tier (Gemini 2.5/3.6 Flash, 15 RPM, 1M TPM at $0 cost)
+ * 3. Local Ollama (100% offline, local compute, $0 cost)
+ */
+async function* streamAutoFree(
+  messages: ChatMessage[],
+  options: ProviderOptions
+): AsyncGenerator<string, void, unknown> {
+  const groqKey = options.apiKey?.startsWith('gsk_')
+    ? options.apiKey
+    : (!options.apiKey?.startsWith('AIza') ? options.apiKey : '') || process.env.GROQ_API_KEY || '';
+  const geminiKey = options.apiKey?.startsWith('AIza')
+    ? options.apiKey
+    : (!options.apiKey?.startsWith('gsk_') ? options.apiKey : '') || process.env.GEMINI_API_KEY || '';
+
+  const candidates: Array<{
+    name: string;
+    canAttempt: () => boolean;
+    createClient: () => { client: OpenAI; model: string; safeMaxTokens: number; activeMessages: ChatMessage[] };
+  }> = [
+    {
+      name: 'groq',
+      canAttempt: () => Boolean(groqKey),
+      createClient: () => {
+        let model = options.modelName || 'openai/gpt-oss-120b';
+        const deprecatedGroq = [
+          'llama-3.3-70b-versatile',
+          'llama-3.1-8b-instant',
+          'llama3-70b-8192',
+          'llama3-8b-8192',
+          'llama-3.1-70b-versatile',
+          'mixtral-8x7b-32768',
+        ];
+        if (deprecatedGroq.includes(model)) model = 'openai/gpt-oss-120b';
+
+        let activeMessages = [...messages];
+        let promptChars = activeMessages.reduce((sum, m) => sum + (m.content?.length || 0), 0);
+        let estimatedPromptTokens = Math.ceil(promptChars / 2.5);
+        let safeMaxTokens = options.maxTokens || 2048;
+
+        if (estimatedPromptTokens > 3600) {
+          activeMessages = activeMessages.map((m) => {
+            if (m.role === 'system' && m.content && m.content.length > 8500) {
+              return {
+                ...m,
+                content:
+                  m.content.slice(0, 8500) +
+                  '\n\n...[Context condensed to stay within provider token budget]...\n================================',
+              };
+            }
+            return m;
+          });
+          promptChars = activeMessages.reduce((sum, m) => sum + (m.content?.length || 0), 0);
+          estimatedPromptTokens = Math.ceil(promptChars / 2.5);
+        }
+
+        const remainingBudget = 5500 - estimatedPromptTokens;
+        safeMaxTokens = Math.min(safeMaxTokens, Math.min(1200, Math.max(350, remainingBudget)));
+
+        return {
+          client: new OpenAI({
+            apiKey: groqKey,
+            baseURL: 'https://api.groq.com/openai/v1',
+          }),
+          model,
+          safeMaxTokens,
+          activeMessages,
+        };
+      },
+    },
+    {
+      name: 'gemini',
+      canAttempt: () => Boolean(geminiKey),
+      createClient: () => {
+        return {
+          client: new OpenAI({
+            apiKey: geminiKey,
+            baseURL: 'https://generativelanguage.googleapis.com/v1beta/openai/',
+          }),
+          model: 'gemini-3.6-flash',
+          safeMaxTokens: options.maxTokens || 2048,
+          activeMessages: [...messages],
+        };
+      },
+    },
+    {
+      name: 'ollama',
+      canAttempt: () => true,
+      createClient: () => {
+        const baseURL =
+          options.customBaseUrl ||
+          process.env.OLLAMA_BASE_URL ||
+          'http://localhost:11434/v1';
+        return {
+          client: new OpenAI({
+            apiKey: 'ollama',
+            baseURL,
+          }),
+          model: 'llama3.2',
+          safeMaxTokens: options.maxTokens || 2048,
+          activeMessages: [...messages],
+        };
+      },
+    },
+  ];
+
+  let didYieldAnyToken = false;
+
+  for (const candidate of candidates) {
+    if (!candidate.canAttempt()) continue;
+
+    try {
+      const { client, model, safeMaxTokens, activeMessages } = candidate.createClient();
+      const stream = await client.chat.completions.create({
+        model,
+        messages: activeMessages as any,
+        temperature: options.temperature ?? 0.3,
+        max_tokens: safeMaxTokens,
+        stream: true,
+      });
+
+      for await (const chunk of stream) {
+        const content = chunk.choices[0]?.delta?.content || '';
+        if (content) {
+          didYieldAnyToken = true;
+          yield content;
+        }
+      }
+
+      return;
+    } catch (err: any) {
+      console.warn(
+        `[Auto-Free Cascade] Provider ${candidate.name} failed:`,
+        err?.message || err
+      );
+
+      if (didYieldAnyToken) {
+        yield `\n\n*(Stream interrupted: ${err?.message || 'Connection lost'} during generation.)*`;
+        return;
+      }
+    }
+  }
+
+  yield `\n\n*(Notice: Zero-Cost Inference Engine could not connect to an active free provider.\n\n` +
+    `• Option 1 (Fastest Cloud - Groq Free Tier): Add a free Groq API key in Assistant Settings > AI Engine (console.groq.com/keys) for instant 500+ tok/s responses at $0 cost.\n` +
+    `• Option 2 (High Accuracy - Google Gemini Free Tier): Add a free Gemini API key in Assistant Settings > AI Engine (aistudio.google.com/app/apikey) at $0 cost.\n` +
+    `• Option 3 (100% Offline $0 - Local Ollama): Start Ollama on your computer with 'ollama run llama3.2'.)*`;
+}
+
+/**
  * Universal Streaming Chat Generator
  * Yields text tokens one by one as they arrive from the LLM.
  */
@@ -188,6 +341,12 @@ export async function* streamChatResponse(
   options: ProviderOptions
 ): AsyncGenerator<string, void, unknown> {
   const provider = (options.provider || 'ollama').toLowerCase();
+
+  // Zero-cost auto failover tier (Groq -> Gemini -> Ollama)
+  if (provider === 'auto_free') {
+    yield* streamAutoFree(messages, options);
+    return;
+  }
 
   // Anthropic native
   if (provider === 'anthropic') {
@@ -342,7 +501,10 @@ You are "${assistantName}", representing this business.
 === CRITICAL OPERATING GUIDELINES ===
 1. You must answer questions using the knowledge base documentation provided below.
 2. Multilingual Fluency: You are fully multilingual. The knowledge base contains information across multiple languages (including English, Chinese, Spanish, Arabic, French, German, etc.). Understand knowledge in all languages, and always respond in the exact same language the user asks their question in (e.g., if the user asks in Chinese, reply in Chinese; if in English, reply in English).
-3. If the user asks for information that is NOT covered in the knowledge base, do not invent facts, speculate, or make assumptions. Instead, politely provide this fallback: "${fallbackMessage}".
+3. Strict Hallucination Firebreak & Human Escalation Bridge: If the visitor asks for information, policies, pricing, or services that are NOT covered in the verified knowledge base or official catalog, you must NEVER invent facts, speculate, or make assumptions. Instead:
+   a. Clearly state the official fallback notice: "${fallbackMessage}".
+   b. Immediately offer a human escalation bridge: "Would you like me to connect you with our team directly? Please feel free to share your email or phone number right here, and a team member will follow up with you directly."
+   c. If the visitor subsequently provides their email, phone number, or name, warmly acknowledge receipt: "Thank you! I have passed your details directly to our team, and someone will reach out shortly."
 4. Comprehensive Summaries & Overviews: When the user asks for a complete explanation, walkthrough, or full summary of a video, audio, or document, synthesize the timeline milestones and chapters provided below into a rich, detailed, structured, in-depth breakdown. Never claim or complain that the video is missing or incomplete; present the full picture confidently using all provided timeline chapters.
 5. Always maintain a professional, helpful, and courteous tone.
 6. If the knowledge base includes product details, pricing, or instructions, be accurate and specific.

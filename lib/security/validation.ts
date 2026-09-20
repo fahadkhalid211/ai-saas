@@ -313,6 +313,37 @@ export function validateRegistrationPayload(data: any): {
 }
 
 /**
+ * Where a lead or booking came from. Recorded on the lead (customData) so
+ * pilots can measure how many leads/bookings the chat actually produced.
+ * `direct` is the server-side default when no valid conversation is supplied.
+ */
+export const ATTRIBUTION_SOURCES = ['chat', 'landing_form', 'admin', 'playground', 'direct'] as const;
+export type AttributionSource = (typeof ATTRIBUTION_SOURCES)[number];
+
+const CONVERSATION_ID_REGEX = /^[A-Za-z0-9_-]{1,64}$/;
+
+/**
+ * Extracts and sanitizes attribution fields from an untrusted request body.
+ * Invalid values are dropped rather than rejected, so a bad attribution field
+ * can never cause a real lead or booking to fail.
+ */
+export function sanitizeAttribution(data: any): { conversationId?: string; source?: AttributionSource } {
+  const out: { conversationId?: string; source?: AttributionSource } = {};
+
+  const rawConv = data?.conversationId;
+  if (typeof rawConv === 'string' && CONVERSATION_ID_REGEX.test(rawConv.trim())) {
+    out.conversationId = rawConv.trim();
+  }
+
+  const rawSource = typeof data?.source === 'string' ? data.source.trim().toLowerCase() : '';
+  if ((ATTRIBUTION_SOURCES as readonly string[]).includes(rawSource)) {
+    out.source = rawSource as AttributionSource;
+  }
+
+  return out;
+}
+
+/**
  * Validates new appointment booking submission payload.
  */
 export function validateAppointmentPayload(data: any): {
@@ -332,6 +363,8 @@ export function validateAppointmentPayload(data: any): {
     notes?: string;
     landingPageName?: string;
     landingPageSlug?: string;
+    conversationId?: string;
+    source?: AttributionSource;
   };
 } {
   const errors: Record<string, string> = {};
@@ -383,6 +416,7 @@ export function validateAppointmentPayload(data: any): {
       notes,
       landingPageName: data?.landingPageName ? sanitizeInput(String(data.landingPageName)) : undefined,
       landingPageSlug: data?.landingPageSlug ? sanitizeInput(String(data.landingPageSlug)) : undefined,
+      ...sanitizeAttribution(data),
     },
   };
 }
@@ -518,6 +552,24 @@ export function validateLandingPagePayload(config: any): {
     }
   }
 
+  const GA_REGEX = /^G-[A-Z0-9]+$/i;
+  const PIXEL_REGEX = /^\d{6,20}$/;
+
+  if (config.analytics && typeof config.analytics === 'object') {
+    if (config.analytics.googleAnalyticsId) {
+      const ga = String(config.analytics.googleAnalyticsId).trim();
+      if (ga && !GA_REGEX.test(ga)) {
+        errors['analytics.googleAnalyticsId'] = 'Google Analytics ID must match format G-XXXXXXXXXX.';
+      }
+    }
+    if (config.analytics.metaPixelId) {
+      const pixel = String(config.analytics.metaPixelId).trim();
+      if (pixel && !PIXEL_REGEX.test(pixel)) {
+        errors['analytics.metaPixelId'] = 'Meta Pixel ID must contain 6 to 20 digits.';
+      }
+    }
+  }
+
   if (Object.keys(errors).length > 0) {
     return { valid: false, errors };
   }
@@ -534,6 +586,10 @@ export function validateLandingPagePayload(config: any): {
       address: config.address ? sanitizeInput(String(config.address)).slice(0, 300) : undefined,
       phone: config.phone ? sanitizeInput(String(config.phone)).slice(0, 30) : undefined,
       email: config.email ? String(config.email).trim().toLowerCase().slice(0, 120) : undefined,
+      analytics: config.analytics ? {
+        googleAnalyticsId: config.analytics.googleAnalyticsId ? String(config.analytics.googleAnalyticsId).trim() : undefined,
+        metaPixelId: config.analytics.metaPixelId ? String(config.analytics.metaPixelId).trim() : undefined,
+      } : undefined,
     },
   };
 }

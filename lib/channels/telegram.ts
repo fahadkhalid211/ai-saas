@@ -21,7 +21,9 @@ export async function getTelegramBotInfo(
   }
 
   try {
-    const res = await fetch(`https://api.telegram.org/bot${token.trim()}/getMe`);
+    const res = await fetch(`https://api.telegram.org/bot${token.trim()}/getMe`, {
+      signal: AbortSignal.timeout(10_000),
+    });
     const data = await res.json();
     if (data.ok && data.result) {
       return { ok: true, bot: data.result };
@@ -49,12 +51,33 @@ export async function setTelegramWebhook(
     if (secretToken) {
       url += `&secret_token=${encodeURIComponent(secretToken.trim())}`;
     }
-    const res = await fetch(url);
+    const res = await fetch(url, {
+      signal: AbortSignal.timeout(10_000),
+    });
     const data = await res.json();
     return { ok: !!data.ok, description: data.description };
   } catch (err: any) {
     return { ok: false, description: err?.message || 'Failed to register webhook with Telegram' };
   }
+}
+
+const processedTelegramUpdateIds = new Set<string>();
+const MAX_PROCESSED_UPDATES = 1000;
+
+function isDuplicateTelegramUpdate(updateId: unknown): boolean {
+  if (updateId === undefined || updateId === null) return false;
+  const key = String(updateId);
+  if (processedTelegramUpdateIds.has(key)) {
+    return true;
+  }
+  if (processedTelegramUpdateIds.size >= MAX_PROCESSED_UPDATES) {
+    const oldest = processedTelegramUpdateIds.values().next().value;
+    if (oldest !== undefined) {
+      processedTelegramUpdateIds.delete(oldest);
+    }
+  }
+  processedTelegramUpdateIds.add(key);
+  return false;
 }
 
 /**
@@ -75,6 +98,7 @@ export async function sendTelegramMessage(
         text,
         parse_mode: 'Markdown',
       }),
+      signal: AbortSignal.timeout(10_000),
     });
 
     if (res.ok) return true;
@@ -87,6 +111,7 @@ export async function sendTelegramMessage(
         chat_id: chatId,
         text,
       }),
+      signal: AbortSignal.timeout(10_000),
     });
 
     return fallbackRes.ok;
@@ -103,6 +128,10 @@ export async function processTelegramUpdate(
   assistant: AssistantData,
   update: any
 ): Promise<void> {
+  if (update?.update_id !== undefined && isDuplicateTelegramUpdate(update.update_id)) {
+    return;
+  }
+
   const message = update?.message || update?.edited_message;
   if (!message || !message.text) return;
 
@@ -116,6 +145,11 @@ export async function processTelegramUpdate(
   const visitorId = `tg_${chatId}`;
   const conv = await Database.getOrCreateConversation(assistant.id, visitorId);
   await Database.saveMessage(conv.id, 'user', userText);
+
+  // If a human operator took over, do not auto-reply
+  if (conv.isLiveTakeover) {
+    return;
+  }
 
   // 2. Handle /start command
   if (userText === '/start') {

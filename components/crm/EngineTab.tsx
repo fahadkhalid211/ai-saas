@@ -65,25 +65,44 @@ export const EngineTab: React.FC<EngineTabProps> = ({
         </div>
       )}
 
+      {/* Zero-Markup BYOK Positioning Banner */}
+      <div className="rounded-xl border border-blue-200 dark:border-blue-800/60 bg-gradient-to-r from-blue-50/70 via-indigo-50/40 to-slate-50 dark:from-blue-950/30 dark:via-indigo-950/20 dark:to-slate-900/40 p-4 text-xs text-slate-700 dark:text-slate-300 shadow-xs">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <span className="font-bold text-slate-900 dark:text-white text-sm">Zero-Markup BYOK Architecture</span>
+              <span className="bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300 font-bold px-2 py-0.5 rounded text-[10px] border border-blue-200 dark:border-blue-700">
+                0% TOKEN MARKUP
+              </span>
+            </div>
+            <p className="text-[11.5px] text-slate-500 dark:text-slate-400 leading-relaxed">
+              Unlike competitors that mark up AI tokens by 300%+ with opaque credit burn, Kortex AI allows you to bring your own API key (BYOK) and pay wholesale rates directly to model providers with zero platform markup, or run on our Zero-Cost failover engine ($0 compute).
+            </p>
+          </div>
+        </div>
+      </div>
+
       {/* Provider Selection Cards */}
       <div className="space-y-3">
         <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Select AI Provider</label>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           {[
+            { id: 'auto_free', label: 'Zero-Cost Free Engine', tag: 'ZERO COST', desc: 'Auto failover across Groq, Gemini & Ollama ($0 compute)' },
             { id: 'groq', label: 'Groq Cloud', tag: 'FASTEST (FREE)', desc: 'Instant sub-second Llama 3.3 responses' },
-            { id: 'gemini', label: 'Google Gemini', tag: 'FREE TIER', desc: 'Gemini 2.5 Flash with deep context' },
-            { id: 'openai', label: 'OpenAI', tag: 'POPULAR', desc: 'GPT-4o & GPT-4o-mini' },
-            { id: 'anthropic', label: 'Anthropic Claude', tag: 'ADVANCED', desc: 'Claude 3.5 Sonnet & Haiku' },
-            { id: 'deepseek', label: 'DeepSeek', tag: 'HIGH ACCURACY', desc: 'DeepSeek-V3 & R1 reasoning' },
+            { id: 'gemini', label: 'Google Gemini', tag: '0% MARKUP (BYOK)', desc: 'Gemini 2.5 Flash with deep context' },
+            { id: 'openai', label: 'OpenAI', tag: '0% MARKUP (BYOK)', desc: 'GPT-4o & GPT-4o-mini wholesale rates' },
+            { id: 'anthropic', label: 'Anthropic Claude', tag: '0% MARKUP (BYOK)', desc: 'Claude 3.5 Sonnet & Haiku wholesale' },
+            { id: 'deepseek', label: 'DeepSeek', tag: '0% MARKUP (BYOK)', desc: 'DeepSeek-V3 & R1 reasoning at cost' },
             { id: 'ollama', label: 'Local Server (Ollama)', tag: 'OFFLINE', desc: 'Self-hosted model on your computer' },
           ].map((prov) => {
-            const isSelected = (formData.provider || 'groq') === prov.id;
+            const isSelected = (formData.provider || 'auto_free') === prov.id;
             return (
               <button
                 key={prov.id}
                 type="button"
                 onClick={() => {
                   const defaultModels: Record<string, string> = {
+                    auto_free: 'openai/gpt-oss-120b',
                     groq: 'openai/gpt-oss-120b',
                     gemini: 'gemini-3.6-flash',
                     openai: 'gpt-4o-mini',
@@ -123,6 +142,42 @@ export const EngineTab: React.FC<EngineTabProps> = ({
           })}
         </div>
       </div>
+
+      {/* Zero-Cost Free Engine Callout */}
+      {formData.provider === 'auto_free' && (
+        <div className="rounded-xl border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/30 p-4 text-xs text-emerald-800 dark:text-emerald-200 flex items-start gap-3">
+          <Zap className="h-5 w-5 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
+          <div className="space-y-1.5">
+            <p className="font-bold text-emerald-900 dark:text-emerald-200 flex items-center gap-2">
+              <span>Zero-Cost Inference Engine (Multi-Provider Failover)</span>
+              <span className="bg-emerald-100 dark:bg-emerald-900 text-emerald-800 dark:text-emerald-200 px-2 py-0.5 rounded text-[10px] font-bold">100% Free - $0 Compute</span>
+            </p>
+            <p className="text-slate-600 dark:text-slate-300 text-[11.5px] leading-relaxed">
+              Runs at zero cost with no credit card or server purchases required. Automatically routes requests to Groq Free Tier (sub-second Llama 3.3 70B), fails over to Google Gemini Flash Free Tier, and falls back to local Ollama on your computer.
+            </p>
+            <div className="flex flex-wrap gap-2 pt-1">
+              <a
+                href="https://console.groq.com/keys"
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-1.5 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 px-3 py-1.5 rounded-lg transition shadow-xs"
+              >
+                <span>Get Free Groq Key</span>
+                <ExternalLink className="h-3 w-3" />
+              </a>
+              <a
+                href="https://aistudio.google.com/app/apikey"
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-1.5 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 px-3 py-1.5 rounded-lg transition shadow-xs"
+              >
+                <span>Get Free Gemini Key</span>
+                <ExternalLink className="h-3 w-3" />
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Groq Callout */}
       {formData.provider === 'groq' && (
@@ -183,15 +238,28 @@ export const EngineTab: React.FC<EngineTabProps> = ({
         {/* API Key Input (if cloud provider) */}
         {formData.provider !== 'ollama' && (
           <div>
-            <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1.5">
-              {(formData.provider || 'Provider').toUpperCase()} API Key
+            <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center justify-between mb-1.5">
+              <span>
+                {formData.provider === 'auto_free'
+                  ? 'Free Tier API Key (Optional)'
+                  : `${(formData.provider || 'Provider').toUpperCase()} API Key`}
+              </span>
+              {formData.provider !== 'auto_free' && (
+                <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-200 dark:border-emerald-800">
+                  Wholesale Direct Billing (0% Platform Markup)
+                </span>
+              )}
             </label>
             <div className="relative">
               <input
                 type={showApiKey ? 'text' : 'password'}
                 value={formData.apiKeyEncrypted || ''}
                 onChange={(e) => setFormData({ ...formData, apiKeyEncrypted: e.target.value })}
-                placeholder="Paste your API key here..."
+                placeholder={
+                  formData.provider === 'auto_free'
+                    ? 'Paste your free Groq (gsk_...) or Gemini (AIza...) key, or leave blank...'
+                    : 'Paste your API key here...'
+                }
                 className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3 py-2 pr-10 text-xs text-slate-900 dark:text-slate-100 font-mono outline-none focus:border-blue-500"
               />
               <button
@@ -203,7 +271,9 @@ export const EngineTab: React.FC<EngineTabProps> = ({
               </button>
             </div>
             <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
-              Your API key is securely encrypted at rest and never shared.
+              {formData.provider === 'auto_free'
+                ? 'Zero-cost failover automatically tests your key with Groq, then Gemini, and falls back to local Ollama.'
+                : 'Your API key is securely encrypted at rest and never shared.'}
             </p>
           </div>
         )}
@@ -397,10 +467,10 @@ export const EngineTab: React.FC<EngineTabProps> = ({
                 />
               </div>
 
-              {formData.provider === 'ollama' && (
+              {(formData.provider === 'ollama' || formData.provider === 'auto_free') && (
                 <div>
                   <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1">
-                    Local Ollama Endpoint URL
+                    Local Ollama Endpoint URL (Fallback)
                   </label>
                   <input
                     type="text"

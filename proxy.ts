@@ -15,6 +15,7 @@ const ROUTE_RATE_LIMITS: RouteLimitConfig[] = [
   { prefix: '/api/landing-page', windowMs: 60 * 1000, max: 40 },
   { prefix: '/api/templates', windowMs: 60 * 1000, max: 60 },
   { prefix: '/api/lead', windowMs: 60 * 1000, max: 15 },
+  { prefix: '/api/widget-events', windowMs: 60 * 1000, max: 60 },
 ];
 
 const DEFAULT_API_LIMIT = { windowMs: 60 * 1000, max: 120 };

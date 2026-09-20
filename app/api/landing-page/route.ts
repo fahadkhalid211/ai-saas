@@ -274,6 +274,18 @@ export async function POST(req: NextRequest) {
       ? callerWs
       : ((!ctx.workspaceId || ctx.workspaceId === '*') ? (callerWs || 'default-workspace') : ctx.workspaceId);
 
+    // Verify slug uniqueness across workspaces and existing pages
+    const cleanSlug = (config.slug || 'business-page').toLowerCase().replace(/[^a-z0-9-]/g, '-');
+    const existingPageWithSlug = await Database.getLandingPageBySlugOrDomain(cleanSlug);
+    if (existingPageWithSlug && existingPageWithSlug.id !== config.id) {
+      const pageWs = existingPageWithSlug.workspaceId || 'default-workspace';
+      if (pageWs !== targetWorkspaceId || isNewPage) {
+        return NextResponse.json({
+          error: 'This URL slug is already registered. Please choose another slug.',
+        }, { status: 409 });
+      }
+    }
+
     // Quota validation if creating a new landing page
     if (isNewPage) {
       const existingPages = await Database.getLandingPages(targetWorkspaceId);

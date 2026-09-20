@@ -627,34 +627,56 @@ export default function DashboardPage() {
     }
   }, [activeAssistant?.id]);
 
+  // Background notification check - relaxed to 10s and paused when tab is hidden
   useEffect(() => {
     if (!isAuthenticated) return;
     const interval = setInterval(() => {
-      fetchNotifications();
-    }, 3500);
+      if (typeof document === 'undefined' || document.visibilityState !== 'hidden') {
+        fetchNotifications();
+      }
+    }, 10000);
     return () => clearInterval(interval);
   }, [isAuthenticated, activeAssistant?.id]);
 
-  // Auto-sync appointments immediately when Appointments tab opens & every 8 seconds while active
+  // Auto-sync appointments when Appointments tab is active - relaxed to 15s and paused when tab is hidden
   useEffect(() => {
     if (!isAuthenticated || !activeAssistant?.id || activeTab !== 'appointments') return;
     fetchAppointments(activeAssistant.id);
     const interval = setInterval(() => {
-      fetchAppointments(activeAssistant.id);
+      if (typeof document === 'undefined' || document.visibilityState !== 'hidden') {
+        fetchAppointments(activeAssistant.id);
+      }
+    }, 15000);
+    return () => clearInterval(interval);
+  }, [isAuthenticated, activeAssistant?.id, activeTab]);
+
+  // Auto-refresh conversation list when History tab is open - relaxed to 8s and paused when tab is hidden
+  useEffect(() => {
+    if (!isAuthenticated || !activeAssistant?.id || activeTab !== 'history') return;
+    fetchConversations(activeAssistant.id);
+    const interval = setInterval(() => {
+      if (typeof document === 'undefined' || document.visibilityState !== 'hidden') {
+        fetchConversations(activeAssistant.id);
+      }
     }, 8000);
     return () => clearInterval(interval);
   }, [isAuthenticated, activeAssistant?.id, activeTab]);
 
-  // Auto-refresh conversation list every 3 seconds while Chat History tab is open
-  // so new visitor messages (including escalations) appear without a manual refresh
+  // Immediate refresh when tab becomes visible again after being hidden
   useEffect(() => {
-    if (!isAuthenticated || !activeAssistant?.id || activeTab !== 'history') return;
-    // Immediate refresh when tab opens
-    fetchConversations(activeAssistant.id);
-    const interval = setInterval(() => {
-      fetchConversations(activeAssistant.id);
-    }, 3000);
-    return () => clearInterval(interval);
+    if (!isAuthenticated) return;
+    const onVisibilityChange = () => {
+      if (typeof document !== 'undefined' && document.visibilityState === 'visible') {
+        fetchNotifications();
+        if (activeTab === 'history' && activeAssistant?.id) {
+          fetchConversations(activeAssistant.id);
+        } else if (activeTab === 'appointments' && activeAssistant?.id) {
+          fetchAppointments(activeAssistant.id);
+        }
+      }
+    };
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', onVisibilityChange);
   }, [isAuthenticated, activeAssistant?.id, activeTab]);
 
   // Auto-sync landing pages and quota limits immediately when Landing Page tab opens

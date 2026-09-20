@@ -16,9 +16,9 @@ export const GET = withAdminAuth(async (req: Request) => {
       return NextResponse.json({ error: 'Assistant not found or forbidden' }, { status: 404 });
     }
 
-    const convs = await Database.getConversations(assistantId);
-    const leads = await Database.getLeads(assistantId);
-    const appointments = await Database.getAppointments(assistantId);
+    const convs = await Database.getConversations(assistantId, ctx.workspaceId);
+    const leads = await Database.getLeads(assistantId, ctx.workspaceId);
+    const appointments = await Database.getAppointments(assistantId, ctx.workspaceId);
     const sources = await Database.getKnowledgeSources(assistantId);
     const chunks = await Database.getChunksByAssistant(assistantId);
     const unanswered = await Database.getUnansweredQueries(assistantId);
@@ -65,9 +65,15 @@ export const GET = withAdminAuth(async (req: Request) => {
       assistantId,
       slug,
       days,
+      workspaceId: ctx.workspaceId,
     });
 
+    // Widget funnel (distinct sessions that loaded / opened the embeddable widget).
+    // `available: false` means not tracked, which is different from a real zero.
+    const widgetFunnel = await Database.getWidgetFunnel(assistant.id, Number.isFinite(days) ? days : 30);
+
     return NextResponse.json({
+      widgetFunnel,
       metrics: {
         totalConversations,
         totalMessages,

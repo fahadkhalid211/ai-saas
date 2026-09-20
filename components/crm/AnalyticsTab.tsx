@@ -258,7 +258,8 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({
                       ${(analyticsData?.webAnalytics?.overview?.totalPipelineRevenue ?? 0).toLocaleString()}
                     </div>
                     <div className="text-[10.5px] text-slate-400">
-                      Avg ${analyticsData?.webAnalytics?.overview?.avgBookingValue ?? 45}/order
+                      Avg ${analyticsData?.webAnalytics?.overview?.avgBookingValue ?? 0}/order
+                      {' '}({analyticsData?.webAnalytics?.overview?.appointmentsWithPrice ?? 0} priced)
                     </div>
                   </div>
 
@@ -362,14 +363,14 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({
 
                         const maxMetric = Math.max(
                           1,
-                          ...series.map((s: any) => (chartMetric === 'traffic' ? s.views : s.revenue || s.bookings * 45))
+                          ...series.map((s: any) => (chartMetric === 'traffic' ? s.views : s.revenue || 0))
                         );
 
                         return (
                           <div className="space-y-2">
                             <div className="flex items-end gap-1 sm:gap-2 h-48 pt-6 pb-2 px-1 overflow-x-auto">
                               {series.map((item: any, idx: number) => {
-                                const val = chartMetric === 'traffic' ? item.views : (item.revenue || item.bookings * 45);
+                                const val = chartMetric === 'traffic' ? item.views : (item.revenue || 0);
                                 const secondaryVal = chartMetric === 'traffic' ? item.visitors : item.bookings;
                                 const heightPct = Math.max(8, Math.round((val / maxMetric) * 100));
 

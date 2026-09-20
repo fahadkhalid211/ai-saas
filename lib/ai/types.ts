@@ -3,8 +3,18 @@ export interface ChatMessage {
   content: string;
 }
 
+export type AIProvider =
+  | 'auto_free'
+  | 'groq'
+  | 'gemini'
+  | 'ollama'
+  | 'openai'
+  | 'anthropic'
+  | 'deepseek'
+  | 'custom';
+
 export interface ProviderOptions {
-  provider: string; // 'ollama' | 'groq' | 'openai' | 'anthropic' | 'gemini' | 'deepseek' | 'custom'
+  provider: AIProvider | string; // 'auto_free' | 'ollama' | 'groq' | 'openai' | 'anthropic' | 'gemini' | 'deepseek' | 'custom'
   modelName: string;
   apiKey?: string;
   customBaseUrl?: string;

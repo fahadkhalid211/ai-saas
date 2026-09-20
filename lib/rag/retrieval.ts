@@ -5,6 +5,16 @@ import { rerankCandidates, deduplicateChunks } from './rerank';
 import { expandQueryWithSynonyms, areTermsSynonymous } from './synonyms';
 
 export { type RetrievalResult } from './types';
+import {
+  getCachedEmbedding,
+  setCachedEmbedding,
+  clearEmbeddingCache,
+  getCachedRetrieval,
+  setCachedRetrieval,
+  clearRetrievalCache,
+  getRedisCachedRetrieval,
+  setRedisCachedRetrieval,
+} from './cache';
 export {
   getCachedEmbedding,
   setCachedEmbedding,
@@ -12,14 +22,9 @@ export {
   getCachedRetrieval,
   setCachedRetrieval,
   clearRetrievalCache,
-} from './cache';
-import {
-  getCachedEmbedding,
-  setCachedEmbedding,
-  getCachedRetrieval,
-  setCachedRetrieval,
-  clearRetrievalCache,
-} from './cache';
+  getRedisCachedRetrieval,
+  setRedisCachedRetrieval,
+};
 import { RetrievalResult } from './types';
 
 /**
@@ -127,10 +132,17 @@ export async function retrieveRelevantContext(
 ): Promise<RetrievalResult> {
   const condensedQuery = condenseQuery(userMessage, history);
 
-  // Fast Path: Check retrieval result cache for repeat queries (sub-1ms response)
+  // Fast Path: Check L1 RAM retrieval result cache for repeat queries (sub-1ms response)
   const cachedRetrieval = getCachedRetrieval(assistantId, condensedQuery);
   if (cachedRetrieval) {
     return cachedRetrieval;
+  }
+
+  // Fast Path L2: Check Upstash Redis cache across serverless instances
+  const redisRetrieval = await getRedisCachedRetrieval(assistantId, condensedQuery);
+  if (redisRetrieval) {
+    setCachedRetrieval(assistantId, condensedQuery, redisRetrieval);
+    return redisRetrieval;
   }
 
   const isOverview = isGlobalOverviewQuery(condensedQuery);
@@ -145,24 +157,20 @@ export async function retrieveRelevantContext(
   // 2. Expand query with universal synonyms and knowledge base titles
   const { expandedQuery, synonymKeywords } = expandQueryWithSynonyms(condensedQuery, sourceTitles);
   
-  // 3. Generate 384-dimensional query embedding with local open-source embedder (cached)
-  let queryEmbedding = getCachedEmbedding(expandedQuery);
+  // 3. Generate 384-dimensional query embedding on the natural user query (condensedQuery),
+  // preserving natural semantic sentence structure rather than embedding artificial synonym keyword soup
+  let queryEmbedding = getCachedEmbedding(condensedQuery);
   if (!queryEmbedding) {
-    queryEmbedding = await generateEmbedding(expandedQuery);
-    setCachedEmbedding(expandedQuery, queryEmbedding);
+    queryEmbedding = await generateEmbedding(condensedQuery);
+    setCachedEmbedding(condensedQuery, queryEmbedding);
   }
 
-  // 4. Perform Hybrid Search with expanded query
+  // 4. Perform Hybrid Search: dense vector from condensedQuery + sparse keyword search from expandedQuery
   let chunks = await Database.hybridSearch(assistantId, expandedQuery, queryEmbedding, effectiveTopK * 2);
 
   // 4.1. Fallback to raw condensed query if expanded query returned no results
   if (chunks.length === 0 && expandedQuery !== condensedQuery) {
-    let rawQueryEmbedding = getCachedEmbedding(condensedQuery);
-    if (!rawQueryEmbedding) {
-      rawQueryEmbedding = await generateEmbedding(condensedQuery);
-      setCachedEmbedding(condensedQuery, rawQueryEmbedding);
-    }
-    chunks = await Database.hybridSearch(assistantId, condensedQuery, rawQueryEmbedding, effectiveTopK * 2);
+    chunks = await Database.hybridSearch(assistantId, condensedQuery, queryEmbedding, effectiveTopK * 2);
   }
 
   // 4.2. Dynamic Concept Fallback: If still 0 chunks, check if any knowledge source matches concept
@@ -356,5 +364,6 @@ export async function retrieveRelevantContext(
     citations: [],
   };
   setCachedRetrieval(assistantId, condensedQuery, finalResult);
+  setRedisCachedRetrieval(assistantId, condensedQuery, finalResult).catch(() => {});
   return finalResult;
 }

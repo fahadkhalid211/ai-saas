@@ -1,4 +1,5 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import type { CloudStateResult } from './postgres';
 
 let supabaseClientInstance: SupabaseClient | null = null;
 
@@ -77,11 +78,11 @@ export async function fetchSupabaseStateUpdatedAt(): Promise<string | null> {
 
 /**
  * Loads persisted app state from the Supabase `kortex_app_state` table.
- * Returns null if Supabase is not configured or if table/row does not exist yet.
+ * Distinguishes not_found from unexpected errors to prevent data-loss.
  */
-export async function fetchSupabaseState(): Promise<any | null> {
+export async function fetchSupabaseState(): Promise<CloudStateResult> {
   const client = getSupabaseClient();
-  if (!client) return null;
+  if (!client) return { status: 'error', error: 'Supabase client not configured' };
 
   try {
     const { data, error } = await client
@@ -92,34 +93,55 @@ export async function fetchSupabaseState(): Promise<any | null> {
 
     if (error) {
       console.warn('[Supabase] Could not fetch kortex_app_state:', error.message);
-      return null;
+      return { status: 'error', error: error.message };
     }
 
-    return data?.data || null;
+    if (!data) {
+      return { status: 'not_found' };
+    }
+
+    return { status: 'found', data: data.data || {} };
   } catch (err: any) {
     console.warn('[Supabase] Exception fetching state:', err?.message);
-    return null;
+    return { status: 'error', error: err?.message || String(err) };
   }
 }
 
 /**
  * Persists app state to the Supabase `kortex_app_state` table.
  */
-export async function persistSupabaseState(state: any): Promise<boolean> {
+export async function persistSupabaseState(state: any): Promise<{ ok: boolean; updatedAt?: string }> {
   const client = getSupabaseClient();
-  if (!client) return false;
+  if (!client) return { ok: false };
 
   try {
-    const { chunks: _chunks, pageViews: rawPageViews, ...transactional } = state;
-    // Cap pageViews in cloud payload to at most 50 recent items so the blob never bloats to megabytes
+    const {
+      chunks: _chunks,
+      pageViews: rawPageViews,
+      messages: rawMessages,
+      auditLogs: rawAuditLogs,
+      notifications: rawNotifications,
+      ...transactional
+    } = state;
+
+    // Strict cloud blob payload bounding to ensure egress stays well under 5GB quota:
+    // Cap high-frequency collections so kortex_app_state.data remains under 100 KB.
     const cloudPageViews = Array.isArray(rawPageViews) ? rawPageViews.slice(0, 50) : [];
+    const cloudMessages = Array.isArray(rawMessages) ? rawMessages.slice(-100) : [];
+    const cloudAuditLogs = Array.isArray(rawAuditLogs) ? rawAuditLogs.slice(-50) : [];
+    const cloudNotifications = Array.isArray(rawNotifications) ? rawNotifications.slice(-50) : [];
+
+    const timestamp = new Date().toISOString();
     const payload = {
       id: 'default',
       data: {
         ...transactional,
+        messages: cloudMessages,
+        auditLogs: cloudAuditLogs,
+        notifications: cloudNotifications,
         pageViews: cloudPageViews,
       },
-      updated_at: new Date().toISOString(),
+      updated_at: timestamp,
     };
 
     const { error } = await client
@@ -128,13 +150,13 @@ export async function persistSupabaseState(state: any): Promise<boolean> {
 
     if (error) {
       console.warn('[Supabase] Could not persist state:', error.message);
-      return false;
+      return { ok: false };
     }
 
-    return true;
+    return { ok: true, updatedAt: timestamp };
   } catch (err: any) {
     console.warn('[Supabase] Exception persisting state:', err?.message);
-    return false;
+    return { ok: false };
   }
 }
 

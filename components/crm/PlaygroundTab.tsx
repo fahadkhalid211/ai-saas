@@ -109,6 +109,7 @@ export const PlaygroundTab: React.FC<PlaygroundTabProps> = ({
                                       <ChatBookingCard
                                         assistantId={activeAssistant?.id}
                                         businessName={activeAssistant?.name || 'Our Team'}
+                                        source="playground"
                                       />
                                     )}
                                   </>

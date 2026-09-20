@@ -41,16 +41,23 @@ function stemWord(word: string): string {
   return word;
 }
 
+function hasWord(text: string, word: string): boolean {
+  if (word.length <= 4 && /^[a-z0-9]+$/i.test(word)) {
+    return new RegExp(`\\b${word}\\b`, 'i').test(text);
+  }
+  return text.includes(word);
+}
+
 function matchesTerm(
   term: string,
   contentLower: string,
   compactContent: string,
   dePluralContent: string
 ): boolean {
-  if (contentLower.includes(term)) return true;
+  if (hasWord(contentLower, term)) return true;
 
   const stemmed = stemWord(term);
-  if (stemmed !== term && contentLower.includes(stemmed)) return true;
+  if (stemmed !== term && hasWord(contentLower, stemmed)) return true;
 
   const compactTerm = term.replace(/[^a-z0-9]/g, '');
   if (compactTerm.length >= 3 && compactContent.includes(compactTerm)) return true;
@@ -75,7 +82,7 @@ function matchesTerm(
     const isTermInGroup = group.some((syn) => syn === term || stemWord(syn) === stemmed);
     if (isTermInGroup) {
       for (const syn of group) {
-        if (contentLower.includes(syn)) return true;
+        if (hasWord(contentLower, syn)) return true;
       }
     }
   }

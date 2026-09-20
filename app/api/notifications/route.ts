@@ -22,16 +22,23 @@ export const GET = withAdminAuth(async (req: Request) => {
 
 export const POST = withAdminAuth(async (req: Request) => {
   try {
+    const ctx = await getAuthContext(req);
     const body = await req.json();
     const { action, id, assistantId } = body;
 
     if (action === 'mark_read' && id) {
-      await Database.markNotificationAsRead(id);
+      const ok = await Database.markNotificationAsRead(id, ctx?.workspaceId);
+      if (!ok) {
+        return NextResponse.json({ error: 'Notification not found or forbidden' }, { status: 404 });
+      }
       return NextResponse.json({ success: true });
     }
 
     if (action === 'mark_all_read') {
-      await Database.markAllNotificationsAsRead(assistantId);
+      const ok = await Database.markAllNotificationsAsRead(assistantId, ctx?.workspaceId);
+      if (!ok) {
+        return NextResponse.json({ error: 'Failed or forbidden' }, { status: 403 });
+      }
       return NextResponse.json({ success: true });
     }
 

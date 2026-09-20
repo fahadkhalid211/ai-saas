@@ -21,6 +21,9 @@ export const GET = withAdminAuth(async (req: Request) => {
   }
 });
 
+const ALLOWED_ROLES = ['owner', 'admin', 'support_agent', 'billing_manager', 'viewer'] as const;
+type AllowedRole = typeof ALLOWED_ROLES[number];
+
 export const POST = withRoleAuth(['owner', 'admin'], async (req: Request) => {
   try {
     const ctx = await getAuthContext(req);
@@ -29,6 +32,14 @@ export const POST = withRoleAuth(['owner', 'admin'], async (req: Request) => {
 
     if (!name || !name.trim() || !email || !email.trim() || !email.includes('@')) {
       return NextResponse.json({ error: 'Valid name and email address are required' }, { status: 400 });
+    }
+
+    if (!ALLOWED_ROLES.includes(role as AllowedRole)) {
+      return NextResponse.json({ error: `Invalid role specified. Allowed roles: ${ALLOWED_ROLES.join(', ')}` }, { status: 400 });
+    }
+
+    if ((role === 'owner' || role === 'admin') && ctx.role !== 'owner' && !ctx.isMasterAdmin) {
+      return NextResponse.json({ error: 'Only workspace owners can grant owner or administrator privileges' }, { status: 403 });
     }
 
     const existing = await Database.getTeamMemberByEmail(email);
@@ -44,7 +55,7 @@ export const POST = withRoleAuth(['owner', 'admin'], async (req: Request) => {
       workspaceId: targetWorkspaceId,
       name: name.trim(),
       email: email.trim().toLowerCase(),
-      role,
+      role: role as AllowedRole,
       status: 'active',
     });
 
@@ -82,12 +93,22 @@ export const PUT = withRoleAuth(['owner', 'admin'], async (req: Request) => {
       return NextResponse.json({ error: 'Member ID required' }, { status: 400 });
     }
 
-    if (ctx.workspaceId !== '*') {
-      const members = await Database.getTeamMembers(ctx.workspaceId);
-      const member = members.find((m) => m.id === id);
-      if (!member) {
-        return NextResponse.json({ error: 'Team member not found or forbidden' }, { status: 404 });
-      }
+    if (role && !ALLOWED_ROLES.includes(role as AllowedRole)) {
+      return NextResponse.json({ error: `Invalid role specified. Allowed roles: ${ALLOWED_ROLES.join(', ')}` }, { status: 400 });
+    }
+
+    if (role && (role === 'owner' || role === 'admin') && ctx.role !== 'owner' && !ctx.isMasterAdmin) {
+      return NextResponse.json({ error: 'Only workspace owners can grant owner or administrator privileges' }, { status: 403 });
+    }
+
+    const members = await Database.getTeamMembers(ctx.workspaceId !== '*' ? ctx.workspaceId : undefined);
+    const member = members.find((m) => m.id === id);
+    if (!member) {
+      return NextResponse.json({ error: 'Team member not found or forbidden' }, { status: 404 });
+    }
+
+    if (member.role === 'owner' && ctx.role !== 'owner' && !ctx.isMasterAdmin) {
+      return NextResponse.json({ error: 'Only workspace owners can modify owner accounts' }, { status: 403 });
     }
 
     const updated = await Database.updateTeamMember(id, {
@@ -133,6 +154,9 @@ export const DELETE = withRoleAuth(['owner', 'admin'], async (req: Request) => {
     }
 
     if (member?.role === 'owner') {
+      if (ctx.role !== 'owner' && !ctx.isMasterAdmin) {
+        return NextResponse.json({ error: 'Only workspace owners can remove an owner account' }, { status: 403 });
+      }
       const ownerCount = members.filter((m) => m.role === 'owner').length;
       if (ownerCount <= 1) {
         return NextResponse.json({ error: 'Cannot remove the primary workspace owner' }, { status: 400 });

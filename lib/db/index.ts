@@ -36,8 +36,9 @@ import {
   persistCloudChunks,
 } from './cloud';
 import { isSupabaseConfigured } from './supabase';
-import { isPostgresConfigured, disablePostgresTemporarily } from './postgres';
+import { isPostgresConfigured, disablePostgresTemporarily, isConnectionError } from './postgres';
 import * as Relational from './relational';
+import { isRedisConfigured, redisGet, redisSet, CACHE_KEYS } from '../cache/redis';
 export { isCloudDbConfigured, getCloudDbProvider, isSupabaseConfigured };
 
 /**
@@ -702,12 +703,19 @@ async function saveState(state: DatabaseState, options?: PersistCloudStateOption
 
   if (isCloudDbConfigured()) {
     try {
-      await persistCloudState(state, options);
+      const res = await persistCloudState(state, options);
       lastCloudFetchTime = Date.now();
-      lastKnownCloudUpdatedAt = new Date().toISOString();
+      if (res && res.updatedAt) {
+        lastKnownCloudUpdatedAt = res.updatedAt;
+      }
+      if (isRedisConfigured()) {
+        redisSet(CACHE_KEYS.STATE, { state, updatedAt: lastKnownCloudUpdatedAt }, 300).catch(() => {});
+      }
     } catch (err) {
       console.warn('[Database] Failed to sync state to Cloud DB:', err);
     }
+  } else if (isRedisConfigured()) {
+    redisSet(CACHE_KEYS.STATE, { state, updatedAt: new Date().toISOString() }, 300).catch(() => {});
   }
 }
 
@@ -743,9 +751,26 @@ async function ensureInitialized(forceFresh = false): Promise<DatabaseState> {
           }
         }
 
+        // L2 Cache (Upstash Redis) - Bypasses Supabase on serverless cold starts
+        if (remoteNeedsFetch && !forceFresh && isRedisConfigured()) {
+          try {
+            const redisCached = await redisGet<{ state: DatabaseState; updatedAt?: string }>(CACHE_KEYS.STATE);
+            if (redisCached && redisCached.state && Array.isArray(redisCached.state.workspaces)) {
+              cachedState = redisCached.state;
+              if (redisCached.updatedAt) {
+                lastKnownCloudUpdatedAt = redisCached.updatedAt;
+              }
+              remoteNeedsFetch = false;
+            }
+          } catch (err) {
+            console.warn('[Database] L2 Redis cache check failed, falling back to cloud DB:', err);
+          }
+        }
+
         if (remoteNeedsFetch) {
-          const remoteState = await fetchCloudState();
-          if (remoteState && typeof remoteState === 'object' && Array.isArray(remoteState.workspaces)) {
+          const remoteRes = await fetchCloudState();
+          if (remoteRes.status === 'found' && remoteRes.data && typeof remoteRes.data === 'object' && Array.isArray(remoteRes.data.workspaces)) {
+            const remoteState = remoteRes.data;
             cachedState = {
               workspaces: Array.isArray(remoteState.workspaces) ? remoteState.workspaces : [],
               assistants: Array.isArray(remoteState.assistants) ? remoteState.assistants : [],
@@ -764,14 +789,29 @@ async function ensureInitialized(forceFresh = false): Promise<DatabaseState> {
               smtpSettings: remoteState.smtpSettings,
               pageViews: Array.isArray(remoteState.pageViews) ? remoteState.pageViews : (cachedState?.pageViews || []),
             };
-          } else {
+            if (isRedisConfigured() && cachedState) {
+              redisSet(CACHE_KEYS.STATE, { state: cachedState, updatedAt: lastKnownCloudUpdatedAt }, 300).catch(() => {});
+            }
+          } else if (remoteRes.status === 'not_found') {
             const localState = loadState();
-            await persistCloudState(localState);
+            const persistRes = await persistCloudState(localState);
+            if (persistRes && persistRes.updatedAt) {
+              lastKnownCloudUpdatedAt = persistRes.updatedAt;
+            }
             cachedState = localState;
+            if (isRedisConfigured() && cachedState) {
+              redisSet(CACHE_KEYS.STATE, { state: cachedState, updatedAt: lastKnownCloudUpdatedAt }, 300).catch(() => {});
+            }
+          } else {
+            const errDetail = remoteRes.status === 'error' ? remoteRes.error : 'Invalid remote state structure';
+            console.warn('[Database] Cloud DB fetch encountered an error; refusing to overwrite cloud with local state:', errDetail);
+            if (!cachedState) {
+              cachedState = loadState();
+            }
           }
         }
 
-        // Only download chunks if memory and local disk .data/vectors.json are completely empty
+        // Load chunks from local disk if memory is empty; do NOT download remote chunks eagerly on cold starts
         if (!cachedChunks || cachedChunks.length === 0) {
           const localChunks = loadChunksState();
           if (localChunks && localChunks.length > 0) {
@@ -780,15 +820,6 @@ async function ensureInitialized(forceFresh = false): Promise<DatabaseState> {
               cachedState.chunks = localChunks;
             }
             rebuildChunkIndex(localChunks);
-          } else {
-            const remoteChunks = await fetchCloudChunks();
-            if (remoteChunks && Array.isArray(remoteChunks) && remoteChunks.length > 0) {
-              cachedChunks = remoteChunks;
-              if (cachedState) {
-                cachedState.chunks = remoteChunks;
-              }
-              rebuildChunkIndex(remoteChunks);
-            }
           }
         } else if (cachedState && (!cachedState.chunks || cachedState.chunks.length === 0)) {
           cachedState.chunks = cachedChunks;
@@ -807,6 +838,42 @@ async function ensureInitialized(forceFresh = false): Promise<DatabaseState> {
 
   await cloudSyncPromise;
   return cachedState || loadState();
+}
+
+/**
+ * Lazily loads chunks into memory only when an in-memory vector/keyword operation
+ * specifically requires them and PostgreSQL relational chunks are not being used.
+ */
+async function ensureChunksLoaded(): Promise<ChunkRecord[]> {
+  if (cachedChunks && cachedChunks.length > 0) {
+    return cachedChunks;
+  }
+  const localChunks = loadChunksState();
+  if (localChunks && localChunks.length > 0) {
+    cachedChunks = localChunks;
+    if (cachedState) {
+      cachedState.chunks = localChunks;
+    }
+    rebuildChunkIndex(localChunks);
+    return cachedChunks;
+  }
+  if (isCloudDbConfigured()) {
+    try {
+      const remoteChunks = await fetchCloudChunks();
+      if (remoteChunks && Array.isArray(remoteChunks) && remoteChunks.length > 0) {
+        cachedChunks = remoteChunks;
+        if (cachedState) {
+          cachedState.chunks = remoteChunks;
+        }
+        rebuildChunkIndex(remoteChunks);
+        return cachedChunks;
+      }
+    } catch (err) {
+      console.warn('[Database] Lazy fetch of remote chunks failed:', err);
+    }
+  }
+  cachedChunks = [];
+  return cachedChunks;
 }
 
 function matchesAssistant(
@@ -1045,14 +1112,43 @@ export class Database {
       return false;
     }
 
+    const deletedConvIds = new Set(
+      state.conversations.filter((c) => c.assistantId === id).map((c) => c.id)
+    );
+
     state.assistants = state.assistants.filter((a) => a.id !== id);
     state.knowledgeSources = state.knowledgeSources.filter((k) => k.assistantId !== id);
     const remainingChunks = state.chunks.filter((c) => c.assistantId !== id);
     await saveChunksState(remainingChunks, true);
     state.conversations = state.conversations.filter((c) => c.assistantId !== id);
+    state.messages = (state.messages || []).filter((m) => !deletedConvIds.has(m.conversationId));
     state.leads = state.leads.filter((l) => l.assistantId !== id);
     state.appointments = (state.appointments || []).filter((a) => a.assistantId !== id);
+    state.notifications = (state.notifications || []).filter((n) => n.assistantId !== id);
+    state.unansweredQueries = (state.unansweredQueries || []).filter((q) => q.assistantId !== id);
+    const deletedLandingSlugs = new Set(
+      (state.landingPages || []).filter((lp) => lp.assistantId === id).map((lp) => lp.slug)
+    );
+    if (existing.landingPageConfig?.slug) {
+      deletedLandingSlugs.add(existing.landingPageConfig.slug);
+    }
+
+    state.landingPages = (state.landingPages || []).filter((lp) => lp.assistantId !== id);
+    state.pageViews = (state.pageViews || []).filter((pv) => !deletedLandingSlugs.has(pv.slug));
+
     await saveState(state, { deletedAssistantId: id });
+
+    if (isPostgresConfigured()) {
+      try {
+        await Relational.relationalDeleteAssistantData(id);
+      } catch (err) {
+        if (isConnectionError(err)) {
+          disablePostgresTemporarily();
+        }
+        console.warn('[Relational] Failed to cascade delete assistant data in Postgres:', err);
+      }
+    }
+
     return true;
   }
 
@@ -1300,23 +1396,23 @@ export class Database {
   }
 
   static async getChunksByAssistant(assistantId: string): Promise<ChunkRecord[]> {
-    let state = await ensureInitialized();
+    const state = await ensureInitialized();
     let chunks = getIndexedAssistantChunks(assistantId, state);
-    if (chunks.length === 0 && isCloudDbConfigured()) {
-      state = await ensureInitialized(true);
+    if (chunks.length === 0 && (!cachedChunks || cachedChunks.length === 0)) {
+      await ensureChunksLoaded();
       chunks = getIndexedAssistantChunks(assistantId, state);
     }
     return chunks;
   }
 
   static async getChunksBySource(sourceId: string): Promise<ChunkRecord[]> {
-    let state = await ensureInitialized();
+    const state = await ensureInitialized();
     if (sourceChunksIndex.size === 0 && (state.chunks || []).length > 0) {
       rebuildChunkIndex(state.chunks);
     }
     let chunks = sourceChunksIndex.get(sourceId) || [];
-    if (chunks.length === 0 && isCloudDbConfigured()) {
-      state = await ensureInitialized(true);
+    if (chunks.length === 0 && (!cachedChunks || cachedChunks.length === 0)) {
+      await ensureChunksLoaded();
       chunks = sourceChunksIndex.get(sourceId) || [];
     }
     return [...chunks].sort((a, b) => a.chunkIndex - b.chunkIndex);
@@ -1378,10 +1474,10 @@ export class Database {
     }
 
     // 2. In-memory fallback path (for test environments, local files, or unmigrated chunks)
-    let state = await ensureInitialized();
+    const state = await ensureInitialized();
     let assistantChunks = getIndexedAssistantChunks(assistantId, state);
-    if (assistantChunks.length === 0 && isCloudDbConfigured()) {
-      state = await ensureInitialized(true);
+    if (assistantChunks.length === 0 && (!cachedChunks || cachedChunks.length === 0)) {
+      await ensureChunksLoaded();
       assistantChunks = getIndexedAssistantChunks(assistantId, state);
     }
     // Strict isolation: if assistant has no chunks, never pull other assistants' chunks.
@@ -1452,8 +1548,10 @@ export class Database {
           return withMsgs;
         }
       } catch (err) {
-        console.warn('[Relational] getConversations failed, disabling postgres:', err);
-        disablePostgresTemporarily();
+        console.warn('[Relational] getConversations failed:', err);
+        if (isConnectionError(err)) {
+          disablePostgresTemporarily();
+        }
       }
     }
 
@@ -1550,19 +1648,20 @@ export class Database {
             }
           }
           if (existing) {
-            if (assistantId && existing.assistantId !== assistantId) {
-              await Relational.relationalUpdateConversation(conversationId, { assistantId });
-              existing.assistantId = assistantId;
+            // Security fix: never rebind an existing conversation to a different assistant
+            if (existing.assistantId && existing.assistantId !== assistantId) {
+              existing = null;
+            } else {
+              existing.messages = await Relational.relationalGetMessagesByConversation(existing.id);
+              return existing;
             }
-            existing.messages = await Relational.relationalGetMessagesByConversation(existing.id);
-            return existing;
           }
         }
-        const id = conversationId || 'conv_' + Math.random().toString(36).substring(2, 10);
+        const id = 'conv_' + crypto.randomUUID();
         const newConv: ConversationData = {
           id,
           assistantId,
-          visitorId: visitorId || 'anon_' + Math.random().toString(36).substring(2, 8),
+          visitorId: visitorId || 'anon_' + crypto.randomUUID().substring(0, 12),
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
           status: 'bot',
@@ -1587,23 +1686,24 @@ export class Database {
     if (conversationId) {
       const existing = state.conversations.find((c) => c.id === conversationId);
       if (existing) {
-        if (assistantId && existing.assistantId !== assistantId) {
-          existing.assistantId = assistantId;
-          await saveState(state);
+        // Security fix: never rebind an existing conversation to a different assistant
+        if (!existing.assistantId || existing.assistantId === assistantId) {
+          return {
+            ...existing,
+            messages: state.messages.filter((m) => m.conversationId === existing.id),
+          };
         }
-        return {
-          ...existing,
-          messages: state.messages.filter((m) => m.conversationId === existing.id),
-        };
       }
     }
 
-    const id = conversationId || 'conv_' + Math.random().toString(36).substring(2, 10);
+    const id = 'conv_' + crypto.randomUUID();
     const newConv: ConversationData = {
       id,
       assistantId,
-      visitorId: visitorId || 'anon_' + Math.random().toString(36).substring(2, 8),
+      visitorId: visitorId || 'anon_' + crypto.randomUUID().substring(0, 12),
       createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      status: 'bot',
     };
 
     state.conversations.unshift(newConv);
@@ -1850,13 +1950,32 @@ export class Database {
 
   static async deleteLead(id: string, workspaceId?: string): Promise<boolean> {
     const state = await ensureInitialized(true);
-    const initialLen = state.leads.length;
-    state.leads = state.leads.filter((l) => l.id !== id);
-    if (state.leads.length !== initialLen) {
-      await saveState(state);
-      return true;
+    const lead = state.leads.find((l) => l.id === id);
+    if (!lead) return false;
+
+    if (workspaceId && workspaceId !== '*') {
+      const ast = (state.assistants || []).find((a) => a.id === lead.assistantId);
+      const leadWsId = ast?.workspaceId || 'default-workspace';
+      if (leadWsId !== workspaceId) {
+        return false;
+      }
     }
-    return false;
+
+    state.leads = state.leads.filter((l) => l.id !== id);
+    await saveState(state);
+
+    if (isPostgresConfigured()) {
+      try {
+        await Relational.relationalDeleteLead(id);
+      } catch (err) {
+        if (isConnectionError(err)) {
+          disablePostgresTemporarily();
+        }
+        console.warn('[Relational] Failed to delete lead in Postgres:', err);
+      }
+    }
+
+    return true;
   }
 
   // Knowledge Gap & Unanswered Queries Engine
@@ -1918,64 +2037,84 @@ export class Database {
         const relQueries = await Relational.relationalGetUnansweredQueries(assistantId);
         if (relQueries.length > 0) return relQueries;
       } catch (err) {
-        console.warn('[Relational] getUnansweredQueries failed, disabling postgres:', err);
-        disablePostgresTemporarily();
+        console.warn('[Relational] getUnansweredQueries failed:', err);
+        if (isConnectionError(err)) {
+          disablePostgresTemporarily();
+        }
       }
     }
     const state = await ensureInitialized();
     return (state.unansweredQueries || []).filter((q) => q.assistantId === assistantId);
   }
 
-  static async resolveUnansweredQuery(id: string, answer?: string): Promise<boolean> {
-    if (isRelationalModeEnabled()) {
-      try {
-        await Relational.relationalResolveUnansweredQuery(id, answer);
-        const state = await ensureInitialized();
-        if (state.unansweredQueries) {
-          const item = state.unansweredQueries.find((q) => q.id === id);
-          if (item) {
-            item.resolved = true;
-            if (answer) item.suggestedAnswer = answer;
-            cachedState = state;
-          }
-        }
-        scheduleDeferredBlobSync(state);
-        return true;
-      } catch (err) {
-        console.warn('[Relational] resolveUnansweredQuery failed, disabling postgres:', err);
-        disablePostgresTemporarily();
-      }
-    }
+  static async getUnansweredQueryById(id: string): Promise<UnansweredQueryData | null> {
+    const state = await ensureInitialized();
+    return (state.unansweredQueries || []).find((q) => q.id === id) || null;
+  }
 
+  static async resolveUnansweredQuery(id: string, answer?: string, workspaceId?: string): Promise<boolean> {
     const state = await ensureInitialized();
     if (!state.unansweredQueries) return false;
     const item = state.unansweredQueries.find((q) => q.id === id);
     if (!item) return false;
+
+    if (workspaceId && workspaceId !== '*') {
+      const ast = state.assistants.find((a) => a.id === item.assistantId);
+      if (!ast || (ast.workspaceId || 'default-workspace') !== workspaceId) {
+        return false;
+      }
+    }
+
+    if (isRelationalModeEnabled()) {
+      try {
+        await Relational.relationalResolveUnansweredQuery(id, answer);
+        item.resolved = true;
+        if (answer) item.suggestedAnswer = answer;
+        cachedState = state;
+        scheduleDeferredBlobSync(state);
+        return true;
+      } catch (err) {
+        console.warn('[Relational] resolveUnansweredQuery failed:', err);
+        if (isConnectionError(err)) {
+          disablePostgresTemporarily();
+        }
+      }
+    }
+
     item.resolved = true;
     if (answer) item.suggestedAnswer = answer;
     await saveState(state);
     return true;
   }
 
-  static async deleteUnansweredQuery(id: string): Promise<boolean> {
-    if (isRelationalModeEnabled()) {
-      try {
-        await Relational.relationalDeleteUnansweredQuery(id);
-        const state = await ensureInitialized();
-        if (state.unansweredQueries) {
-          state.unansweredQueries = state.unansweredQueries.filter((q) => q.id !== id);
-          cachedState = state;
-        }
-        scheduleDeferredBlobSync(state);
-        return true;
-      } catch (err) {
-        console.warn('[Relational] deleteUnansweredQuery failed, disabling postgres:', err);
-        disablePostgresTemporarily();
+  static async deleteUnansweredQuery(id: string, workspaceId?: string): Promise<boolean> {
+    const state = await ensureInitialized();
+    if (!state.unansweredQueries) return false;
+    const item = state.unansweredQueries.find((q) => q.id === id);
+    if (!item) return false;
+
+    if (workspaceId && workspaceId !== '*') {
+      const ast = state.assistants.find((a) => a.id === item.assistantId);
+      if (!ast || (ast.workspaceId || 'default-workspace') !== workspaceId) {
+        return false;
       }
     }
 
-    const state = await ensureInitialized();
-    if (!state.unansweredQueries) return false;
+    if (isRelationalModeEnabled()) {
+      try {
+        await Relational.relationalDeleteUnansweredQuery(id);
+        state.unansweredQueries = state.unansweredQueries.filter((q) => q.id !== id);
+        cachedState = state;
+        scheduleDeferredBlobSync(state);
+        return true;
+      } catch (err) {
+        console.warn('[Relational] deleteUnansweredQuery failed:', err);
+        if (isConnectionError(err)) {
+          disablePostgresTemporarily();
+        }
+      }
+    }
+
     state.unansweredQueries = state.unansweredQueries.filter((q) => q.id !== id);
     await saveState(state);
     return true;
@@ -2456,7 +2595,8 @@ export class Database {
 
   static async verifyStaffLogin(
     email: string,
-    passwordOrCode: string
+    passwordOrCode: string,
+    workspaceId?: string
   ): Promise<TeamMemberData | null> {
     const state = await ensureInitialized();
     const cleanEmail = (email || '').toLowerCase().trim();
@@ -2464,19 +2604,16 @@ export class Database {
     if (!cleanEmail || !cleanSecret) return null;
 
     for (const tm of state.teamMembers || []) {
+      if (workspaceId && tm.workspaceId && tm.workspaceId !== workspaceId) continue;
       if (tm.email.toLowerCase().trim() !== cleanEmail) continue;
       if (tm.status && tm.status !== 'active') continue;
 
       const passMatch = Boolean(tm.password) && verifyPassword(cleanSecret, tm.password);
       const codeMatch = !passMatch && Boolean(tm.accessCode) && verifyPassword(cleanSecret.toLowerCase(), tm.accessCode);
-      const defaultPassMatch = !passMatch && !codeMatch && !tm.password && cleanSecret === 'Staff123!';
-      if (!passMatch && !codeMatch && !defaultPassMatch) continue;
+      if (!passMatch && !codeMatch) continue;
 
-      // Lazily migrate any legacy plaintext or default credential to hashed storage.
+      // Lazily migrate any legacy plaintext credential to hashed storage.
       if (passMatch && tm.password && !isHashedPassword(tm.password)) {
-        tm.password = hashPassword(cleanSecret);
-      }
-      if (defaultPassMatch) {
         tm.password = hashPassword(cleanSecret);
       }
       if (codeMatch && tm.accessCode && !isHashedPassword(tm.accessCode)) {
@@ -2733,58 +2870,90 @@ export class Database {
     return notif;
   }
 
-  static async markNotificationAsRead(id: string): Promise<boolean> {
-    if (isRelationalModeEnabled()) {
-      try {
-        await Relational.relationalMarkNotificationRead(id);
-        const state = await ensureInitialized();
-        if (state.notifications) {
-          const item = state.notifications.find((n) => n.id === id);
-          if (item) item.read = true;
-          cachedState = state;
-        }
-        scheduleDeferredBlobSync(state);
-        return true;
-      } catch (err) {
-        console.warn('[Relational] markNotificationAsRead failed, disabling postgres:', err);
-        disablePostgresTemporarily();
-      }
-    }
-
+  static async markNotificationAsRead(id: string, workspaceId?: string): Promise<boolean> {
     const state = await ensureInitialized();
     if (!state.notifications) return false;
     const item = state.notifications.find((n) => n.id === id);
     if (!item) return false;
+
+    if (workspaceId && workspaceId !== '*') {
+      if (item.assistantId) {
+        const ast = state.assistants.find((a) => a.id === item.assistantId);
+        if (ast && (ast.workspaceId || 'default-workspace') !== workspaceId) {
+          return false;
+        }
+      }
+    }
+
+    if (isRelationalModeEnabled()) {
+      try {
+        await Relational.relationalMarkNotificationRead(id);
+        item.read = true;
+        cachedState = state;
+        scheduleDeferredBlobSync(state);
+        return true;
+      } catch (err) {
+        console.warn('[Relational] markNotificationAsRead failed:', err);
+        if (isConnectionError(err)) {
+          disablePostgresTemporarily();
+        }
+      }
+    }
+
     item.read = true;
     await saveState(state);
     return true;
   }
 
-  static async markAllNotificationsAsRead(assistantId?: string): Promise<boolean> {
+  static async markAllNotificationsAsRead(assistantId?: string, workspaceId?: string): Promise<boolean> {
+    const state = await ensureInitialized();
+    if (!state.notifications) return false;
+
+    let allowedAssistantIds: Set<string> | null = null;
+    if (workspaceId && workspaceId !== '*') {
+      if (assistantId) {
+        const ast = state.assistants.find((a) => a.id === assistantId);
+        if (!ast || (ast.workspaceId || 'default-workspace') !== workspaceId) {
+          return false;
+        }
+        allowedAssistantIds = new Set([assistantId]);
+      } else {
+        const wsBots = state.assistants
+          .filter((a) => (a.workspaceId || 'default-workspace') === workspaceId)
+          .map((a) => a.id);
+        allowedAssistantIds = new Set(wsBots);
+      }
+    } else if (assistantId) {
+      allowedAssistantIds = new Set([assistantId]);
+    }
+
     if (isRelationalModeEnabled()) {
       try {
-        await Relational.relationalMarkAllNotificationsRead(assistantId);
-        const state = await ensureInitialized();
-        if (state.notifications) {
-          for (const item of state.notifications) {
-            if (!assistantId || !item.assistantId || item.assistantId === assistantId) {
-              item.read = true;
-            }
+        if (!allowedAssistantIds) {
+          await Relational.relationalMarkAllNotificationsRead();
+        } else {
+          for (const botId of allowedAssistantIds) {
+            await Relational.relationalMarkAllNotificationsRead(botId);
           }
-          cachedState = state;
         }
+        for (const item of state.notifications) {
+          if (!allowedAssistantIds || (item.assistantId && allowedAssistantIds.has(item.assistantId))) {
+            item.read = true;
+          }
+        }
+        cachedState = state;
         scheduleDeferredBlobSync(state);
         return true;
       } catch (err) {
-        console.warn('[Relational] markAllNotificationsAsRead failed, disabling postgres:', err);
-        disablePostgresTemporarily();
+        console.warn('[Relational] markAllNotificationsAsRead failed:', err);
+        if (isConnectionError(err)) {
+          disablePostgresTemporarily();
+        }
       }
     }
 
-    const state = await ensureInitialized();
-    if (!state.notifications) return false;
     for (const item of state.notifications) {
-      if (!assistantId || !item.assistantId || item.assistantId === assistantId) {
+      if (!allowedAssistantIds || (item.assistantId && allowedAssistantIds.has(item.assistantId))) {
         item.read = true;
       }
     }
@@ -3254,6 +3423,12 @@ export class Database {
 
     const existingIdx = state.landingPages.findIndex((p) => p.id === pageId || (p.slug && p.slug.toLowerCase() === cleanSlug));
     if (existingIdx !== -1) {
+      const existingPage = state.landingPages[existingIdx];
+      const existingWs = existingPage.workspaceId || 'default-workspace';
+      const targetWs = cleanConfig.workspaceId || 'default-workspace';
+      if (existingWs !== targetWs) {
+        throw new Error('This URL slug is already registered to another workspace.');
+      }
       state.landingPages[existingIdx] = cleanConfig;
     } else {
       state.landingPages.unshift(cleanConfig);
@@ -3331,29 +3506,109 @@ export class Database {
     return record;
   }
 
+  /**
+   * Records a widget funnel event (widget_loaded / widget_opened) for pilot measurement.
+   * Stored in its own relational table because page-view style events persisted via the
+   * blob are lossy on serverless. No-op unless relational mode is on. Never throws.
+   */
+  static async recordWidgetEvent(data: {
+    assistantId: string;
+    sessionId: string;
+    eventType: Relational.WidgetEventType;
+  }): Promise<boolean> {
+    if (!isRelationalModeEnabled()) return false;
+    return Relational.relationalInsertWidgetEvent({
+      id: 'wev_' + crypto.randomBytes(9).toString('hex'),
+      assistantId: data.assistantId,
+      sessionId: data.sessionId,
+      eventType: data.eventType,
+      createdAt: new Date().toISOString(),
+    });
+  }
+
+  /**
+   * Distinct widget sessions that loaded / opened the widget. `available: false` means
+   * events are not being tracked (relational mode off or the table missing), which is
+   * different from a real count of zero.
+   */
+  static async getWidgetFunnel(
+    assistantId: string,
+    days: number = 30
+  ): Promise<{ available: boolean; loadedSessions: number; openedSessions: number }> {
+    if (!isRelationalModeEnabled()) {
+      return { available: false, loadedSessions: 0, openedSessions: 0 };
+    }
+    const counts = await Relational.relationalCountWidgetEvents(assistantId, days);
+    if (!counts) return { available: false, loadedSessions: 0, openedSessions: 0 };
+    return { available: true, ...counts };
+  }
+
   static async getCompleteAnalytics(options: {
     assistantId?: string;
     slug?: string;
     days?: number;
+    workspaceId?: string;
   } = {}): Promise<any> {
     const state = await ensureInitialized();
     const days = options.days && options.days > 0 ? options.days : 30;
     const cutoff = new Date(Date.now() - days * 86400000).toISOString();
 
-    const allViews = state.pageViews || [];
+    let wsAssistantIds: string[] | undefined;
+    if (options.workspaceId && options.workspaceId !== '*') {
+      wsAssistantIds = (state.assistants || [])
+        .filter((a) => (a.workspaceId || 'default-workspace') === options.workspaceId)
+        .map((a) => a.id);
+    }
+
+    const wsSlugs = (state.landingPages || [])
+      .filter((lp) => {
+        if (wsAssistantIds !== undefined) {
+          return (lp.workspaceId && lp.workspaceId === options.workspaceId) ||
+                 (lp.assistantId && wsAssistantIds.includes(lp.assistantId));
+        }
+        if (options.assistantId) {
+          return lp.assistantId === options.assistantId;
+        }
+        return true;
+      })
+      .map((lp) => (lp.slug || '').toLowerCase());
+
+    const allViews = (state.pageViews || []).filter((v) => {
+      if (wsAssistantIds !== undefined || options.assistantId) {
+        if (!wsSlugs.includes((v.slug || '').toLowerCase())) return false;
+      }
+      return true;
+    });
+
     const filteredViews = allViews.filter((v) => {
       if (options.slug && options.slug !== 'all' && v.slug !== options.slug) return false;
       return v.timestamp >= cutoff;
     });
 
     const appointments = (state.appointments || []).filter((a) => {
+      if (wsAssistantIds !== undefined) {
+        const matchesWs = (a.assistantId && wsAssistantIds.includes(a.assistantId)) ||
+          (a.landingPageSlug && wsSlugs.includes(a.landingPageSlug.toLowerCase()));
+        if (!matchesWs) return false;
+      }
+      if (options.assistantId && a.assistantId && a.assistantId !== options.assistantId) {
+        return false;
+      }
       if (options.slug && options.slug !== 'all') {
         return (a.landingPageSlug === options.slug || a.notes?.toLowerCase().includes(options.slug.toLowerCase()));
       }
       return a.createdAt >= cutoff;
     });
 
-    const leads = (state.leads || []).filter((l) => l.createdAt >= cutoff);
+    const leads = (state.leads || []).filter((l) => {
+      if (wsAssistantIds !== undefined) {
+        if (l.assistantId && !wsAssistantIds.includes(l.assistantId)) return false;
+      }
+      if (options.assistantId && l.assistantId && l.assistantId !== options.assistantId) {
+        return false;
+      }
+      return l.createdAt >= cutoff;
+    });
 
     // 1. KPI Aggregates (100% genuine data)
     const totalPageViews = filteredViews.length;
@@ -3380,8 +3635,13 @@ export class Database {
       ? ((singleViewVisitors / uniqueVisitors) * 100).toFixed(1)
       : '0.0';
 
-    const totalPipelineRevenue = appointments.reduce((sum, a) => sum + (a.price || 45), 0);
-    const avgBookingValue = appointments.length > 0 ? Math.round(totalPipelineRevenue / appointments.length) : 0;
+    // Revenue counts only prices that were actually recorded. Appointments with no
+    // price contribute 0 (never a made-up default), and the average is taken over
+    // priced appointments only so unpriced bookings can't dilute or inflate it.
+    const totalPipelineRevenue = appointments.reduce((sum, a) => sum + (a.price ?? 0), 0);
+    const pricedAppointments = appointments.filter((a) => (a.price ?? 0) > 0);
+    const appointmentsWithPrice = pricedAppointments.length;
+    const avgBookingValue = appointmentsWithPrice > 0 ? Math.round(totalPipelineRevenue / appointmentsWithPrice) : 0;
 
     // 2. Daily Time Series (Pageviews, Visitors, Bookings, Revenue)
     const timeSeriesMap: Record<string, { date: string; label: string; views: number; visitors: Set<string>; bookings: number; revenue: number }> = {};
@@ -3412,7 +3672,7 @@ export class Database {
       const dayKey = a.createdAt.slice(0, 10);
       if (timeSeriesMap[dayKey]) {
         timeSeriesMap[dayKey].bookings++;
-        timeSeriesMap[dayKey].revenue += (a.price || 45);
+        timeSeriesMap[dayKey].revenue += (a.price ?? 0);
       }
     });
 
@@ -3539,7 +3799,7 @@ export class Database {
         };
       }
       customerMap[email].totalBookings++;
-      customerMap[email].totalSpend += (a.price || 45);
+      customerMap[email].totalSpend += (a.price ?? 0);
       if (a.createdAt < customerMap[email].firstSeen) customerMap[email].firstSeen = a.createdAt;
       if (a.createdAt > customerMap[email].lastBooking) customerMap[email].lastBooking = a.createdAt;
       if (a.serviceName) customerMap[email].preferredServices.add(a.serviceName);
@@ -3620,7 +3880,7 @@ export class Database {
       const slg = a.landingPageSlug || 'classic-barbershop';
       if (pageBreakdownMap[slg]) {
         pageBreakdownMap[slg].bookings++;
-        pageBreakdownMap[slg].revenue += (a.price || 45);
+        pageBreakdownMap[slg].revenue += (a.price ?? 0);
       }
     });
 
@@ -3644,6 +3904,7 @@ export class Database {
         avgDurationSeconds: totalPageViews > 0 ? 120 : 0,
         totalPipelineRevenue,
         avgBookingValue,
+        appointmentsWithPrice,
         totalCustomers: totalUniqueCustomers,
         repeatRate,
       },

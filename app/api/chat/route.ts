@@ -8,10 +8,43 @@ import { parseFileOrText } from '@/lib/rag/parsers';
 import { enforceRateLimit, enforceGlobalRateLimit, enforceRateLimitByKey } from '@/lib/security/rate-limit';
 import { generateConversationAccessToken } from '@/lib/security/auth';
 import { validateChatPayload } from '@/lib/security/validation';
+import { autoCaptureChatLead } from '@/lib/chat/lead-extraction';
 
 // Streamed responses (token-by-token LLM output, plus an optional live web
 // search round-trip) can run well past a short default function timeout.
 export const maxDuration = 120;
+
+function sanitizeClientErrorMessage(rawMessage?: string): string {
+  if (!rawMessage || typeof rawMessage !== 'string') {
+    return 'An error occurred while generating a response. Please try again.';
+  }
+  const lower = rawMessage.toLowerCase();
+  if (
+    lower.includes('api key') ||
+    lower.includes('unauthorized') ||
+    lower.includes('bearer') ||
+    lower.includes('sk-') ||
+    lower.includes('gsk_')
+  ) {
+    return 'The AI service is temporarily unavailable due to a configuration issue. Please contact support.';
+  }
+  if (lower.includes('rate limit') || lower.includes('quota') || lower.includes('429')) {
+    return 'The AI service is currently busy. Please try again in a few moments.';
+  }
+  if (
+    lower.includes('econnrefused') ||
+    lower.includes('enotfound') ||
+    lower.includes('fetch failed') ||
+    lower.includes('timeout') ||
+    lower.includes('timed out')
+  ) {
+    return 'Unable to reach the AI model provider. Please try again shortly.';
+  }
+  const sanitized = rawMessage
+    .replace(/(?:sk-|gsk_|AIza)[a-zA-Z0-9_-]{10,}/g, '[REDACTED]')
+    .replace(/https?:\/\/[^\s]+/g, '[REDACTED_URL]');
+  return sanitized.length > 200 ? sanitized.slice(0, 200) + '...' : sanitized;
+}
 
 // Handle CORS pre-flight
 export async function OPTIONS() {
@@ -87,13 +120,36 @@ export async function POST(req: NextRequest) {
         assistant = await Database.getAssistantBySlug(landingPageSlug);
       }
       // 3. Fallback to demo-assistant ONLY if explicitly requested or for classic barbershop
-      if (!assistant && (assistantId === 'demo-assistant' || landingPageSlug === 'classic-barbershop' || !landingPageSlug)) {
+      if (!assistant && (assistantId === 'demo-assistant' || landingPageSlug === 'classic-barbershop')) {
         assistant = await Database.getAssistantById('demo-assistant');
       }
     }
 
     if (!assistant) {
       return NextResponse.json({ error: 'Assistant not found' }, { status: 404 });
+    }
+
+    // Monthly chat quota validation per workspace
+    const wsId = assistant.workspaceId || 'default-workspace';
+    const billing = await Database.getWorkspaceBilling(wsId);
+    const convs = await Database.getConversations(undefined, wsId);
+    const periodStart = new Date(billing.currentPeriodStart).getTime();
+    const periodEnd = new Date(billing.currentPeriodEnd).getTime();
+    const periodConvs = convs.filter((c) => {
+      const cTime = new Date(c.createdAt).getTime();
+      return cTime >= periodStart && cTime <= periodEnd;
+    });
+
+    const isExistingConv = Boolean(conversationId && convs.some((c) => c.id === conversationId));
+    const limit = billing.monthlyChatLimit || 100;
+    if (!isExistingConv && periodConvs.length >= limit && !billing.paymentMethod) {
+      return NextResponse.json(
+        {
+          error: 'Monthly chat limit reached for this workspace. Please upgrade your plan or add a payment method for overages.',
+          quotaExceeded: true,
+        },
+        { status: 429 }
+      );
     }
 
     // Per-assistant cost/quota cap. The embed-domain allowlist below is
@@ -226,7 +282,8 @@ export async function POST(req: NextRequest) {
     let detectedSentiment: 'urgent' | 'positive' | 'neutral' = 'neutral';
     let isEscalation = false;
 
-    const humanAgentRegex = /\b(human|agent|person|representative|rep|manager|operator|specialist|support team|someone real|talk to a person|speak with someone|transfer me|talk to human|speak to human|live chat|real person|real human|customer service|help desk|support agent)\b/i;
+    const humanAgentRegex =
+      /\b(talk to (a |an )?(human|person|agent|representative|operator|manager)|speak (to|with) (a |an )?(human|person|agent|representative|operator|manager)|transfer (me )?to (a |an )?(human|agent|person|rep)|connect (me )?(with|to) (a |an )?(human|agent|person|representative)|human (please|agent|support|representative)|real (person|human)|live (agent|person|support|representative)|need (a )?(human|person|real person)|customer (service|support) agent|support (team|agent|representative))\b/i;
     const urgentRegex = /\b(cancel|refund|broken|horrible|terrible|frustrated|angry|scam|lawyer|sue|complaint|worst|unacceptable|stolen|emergency|help me now|urgent|dispute|chargeback)\b/i;
     const positiveRegex = /\b(thank|thanks|great|awesome|love|perfect|excellent|helpful|good job|amazing|kudos|appreciate)\b/i;
 
@@ -277,19 +334,28 @@ export async function POST(req: NextRequest) {
           });
         } else if (isFirstMessage) {
           await Database.addNotification({
+            assistantId: assistant.id || assistantId,
             title: 'New Live Visitor Chat',
             message: `A new visitor started a chat: "${latestUserMsg.slice(0, 75)}"`,
             type: 'chat_new',
-            metadata: { conversationId: conv.id, assistantId },
+            metadata: { conversationId: conv.id, assistantId: assistant.id || assistantId },
           });
         } else if (conv.isLiveTakeover) {
           await Database.addNotification({
+            assistantId: assistant.id || assistantId,
             title: 'Live Chat Visitor Message',
             message: `Incoming visitor message in active takeover: "${latestUserMsg.slice(0, 75)}"`,
             type: 'chat_message',
-            metadata: { conversationId: conv.id, assistantId },
+            metadata: { conversationId: conv.id, assistantId: assistant.id || assistantId },
           });
         }
+
+        // Auto-capture contact details (email/phone) provided in chat
+        await autoCaptureChatLead({
+          assistantId: assistant.id,
+          conversationId: conv.id,
+          userMessage: latestUserMsg,
+        });
       } catch (postStreamErr) {
         console.warn('[ChatRoute] Deferred task error:', postStreamErr);
       }
@@ -755,7 +821,7 @@ Directly use the content of this attached document to assist the visitor, answer
           console.error('Streaming error in chat route:', streamErr);
           const errorEvent = `data: ${JSON.stringify({
             type: 'error',
-            error: streamErr?.message || 'Inference failed',
+            error: sanitizeClientErrorMessage(streamErr?.message),
           })}\n\n`;
           controller.enqueue(encoder.encode(errorEvent));
         } finally {
@@ -777,7 +843,7 @@ Directly use the content of this attached document to assist the visitor, answer
   } catch (error: any) {
     console.error('Chat endpoint error:', error);
     return NextResponse.json(
-      { error: error?.message || 'Chat generation failed' },
+      { error: sanitizeClientErrorMessage(error?.message) },
       { status: 500, headers: { 'Access-Control-Allow-Origin': '*' } }
     );
   }

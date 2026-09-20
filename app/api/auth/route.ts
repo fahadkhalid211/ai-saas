@@ -180,7 +180,7 @@ export async function POST(req: Request) {
       }
 
       // Check staff team member login
-      const staffMember = await Database.verifyStaffLogin(email, passwordOrCode);
+      const staffMember = await Database.verifyStaffLogin(email, passwordOrCode, body?.workspaceId);
       if (!staffMember) {
         return NextResponse.json(
           { error: 'Invalid credentials or account inactive' },
@@ -188,7 +188,8 @@ export async function POST(req: Request) {
         );
       }
 
-      const sessionToken = generateSessionToken(staffMember.role, staffMember.id, 'default-workspace');
+      const staffWs = staffMember.workspaceId || 'default-workspace';
+      const sessionToken = generateSessionToken(staffMember.role, staffMember.id, staffWs);
       const cookieHeader = createSessionCookieHeader(sessionToken);
 
       await Database.addAuditLog({
@@ -196,7 +197,7 @@ export async function POST(req: Request) {
         action: 'auth.staff_login_success',
         targetType: 'session',
         targetId: staffMember.id,
-        details: { email: staffMember.email, role: staffMember.role },
+        details: { email: staffMember.email, role: staffMember.role, workspaceId: staffWs },
       });
 
       return NextResponse.json(
@@ -209,6 +210,7 @@ export async function POST(req: Request) {
             name: staffMember.name,
             email: staffMember.email,
             role: staffMember.role,
+            workspaceId: staffWs,
           },
           token: sessionToken,
         },

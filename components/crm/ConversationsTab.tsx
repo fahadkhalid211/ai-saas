@@ -259,7 +259,8 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
     if (!selectedConversation) return;
     selectedConvKnownCountRef.current = selectedConversation.messages?.length || 0;
 
-    const interval = setInterval(async () => {
+    const pollOnce = async () => {
+      if (typeof document !== 'undefined' && document.visibilityState === 'hidden') return;
       try {
         const params = new URLSearchParams({
           id: selectedConversation.id,
@@ -314,8 +315,20 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
       } catch (e) {
         // silent
       }
-    }, 2000);
-    return () => clearInterval(interval);
+    };
+
+    const interval = setInterval(pollOnce, 5000);
+    const onVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        pollOnce();
+      }
+    };
+    document.addEventListener('visibilitychange', onVisibilityChange);
+
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+    };
   }, [selectedConversation?.id, playNotificationChime]);
 
   return (

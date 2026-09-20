@@ -3,15 +3,23 @@ import { Database } from '@/lib/db';
 import { parseFileOrText } from '@/lib/rag/parsers';
 import { chunkDocument } from '@/lib/rag/chunker';
 import { generateEmbeddingsBatch } from '@/lib/rag/embedder';
-import { withAdminAuth } from '@/lib/security/auth';
+import { withAdminAuth, getAuthContext } from '@/lib/security/auth';
 
 export const GET = withAdminAuth(async (req: Request) => {
   try {
+    const ctx = await getAuthContext(req);
     const { searchParams } = new URL(req.url);
     const assistantId = searchParams.get('assistantId');
 
     if (!assistantId) {
       return NextResponse.json({ error: 'assistantId query param required' }, { status: 400 });
+    }
+
+    if (ctx && ctx.workspaceId && ctx.workspaceId !== '*') {
+      const ast = await Database.getAssistantById(assistantId);
+      if (!ast || (ast.workspaceId || 'default-workspace') !== ctx.workspaceId) {
+        return NextResponse.json({ error: 'Assistant not found or forbidden' }, { status: 404 });
+      }
     }
 
     const unanswered = await Database.getUnansweredQueries(assistantId);
@@ -23,6 +31,7 @@ export const GET = withAdminAuth(async (req: Request) => {
 
 export const POST = withAdminAuth(async (req: Request) => {
   try {
+    const ctx = await getAuthContext(req);
     const body = await req.json();
     const { id, assistantId, action, answer, query } = body;
 
@@ -31,18 +40,31 @@ export const POST = withAdminAuth(async (req: Request) => {
     }
 
     if (action === 'delete') {
-      await Database.deleteUnansweredQuery(id);
+      const deleted = await Database.deleteUnansweredQuery(id, ctx?.workspaceId);
+      if (!deleted) {
+        return NextResponse.json({ error: 'Query not found or forbidden' }, { status: 404 });
+      }
       return NextResponse.json({ success: true, action: 'delete' });
     }
 
     if (action === 'resolve') {
-      await Database.resolveUnansweredQuery(id, answer);
+      const resolved = await Database.resolveUnansweredQuery(id, answer, ctx?.workspaceId);
+      if (!resolved) {
+        return NextResponse.json({ error: 'Query not found or forbidden' }, { status: 404 });
+      }
       return NextResponse.json({ success: true, action: 'resolve' });
     }
 
     if (action === 'addKnowledge') {
       if (!assistantId || !answer) {
         return NextResponse.json({ error: 'assistantId and answer required to add knowledge' }, { status: 400 });
+      }
+
+      if (ctx && ctx.workspaceId && ctx.workspaceId !== '*') {
+        const ast = await Database.getAssistantById(assistantId);
+        if (!ast || (ast.workspaceId || 'default-workspace') !== ctx.workspaceId) {
+          return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+        }
       }
 
       const qText = query || 'Frequently Asked Question';
@@ -90,7 +112,7 @@ export const POST = withAdminAuth(async (req: Request) => {
       });
 
       // Mark the query as resolved
-      await Database.resolveUnansweredQuery(id, answer);
+      await Database.resolveUnansweredQuery(id, answer, ctx?.workspaceId);
 
       return NextResponse.json({
         success: true,

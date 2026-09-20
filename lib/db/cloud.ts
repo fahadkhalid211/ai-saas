@@ -5,6 +5,7 @@ import {
   fetchSupabaseChunks,
   persistSupabaseChunks,
   fetchSupabaseStateUpdatedAt,
+  getSupabaseClient,
 } from './supabase';
 import {
   isPostgresConfigured,
@@ -13,7 +14,11 @@ import {
   fetchPostgresChunks,
   persistPostgresChunks,
   fetchPostgresStateUpdatedAt,
+  getPostgresPool,
+  CloudStateResult,
 } from './postgres';
+
+export type { CloudStateResult };
 
 export function isCloudDbConfigured(): boolean {
   return isPostgresConfigured() || isSupabaseConfigured();
@@ -36,15 +41,52 @@ export async function fetchCloudStateUpdatedAt(): Promise<string | null> {
   return null;
 }
 
-export async function fetchCloudState(): Promise<any | null> {
+/**
+ * Pings cloud database with lightweight ~10 byte check without downloading
+ * the multi-megabyte application state blob.
+ */
+export async function pingCloudDb(): Promise<{ reachable: boolean; error?: string }> {
+  if (isPostgresConfigured()) {
+    try {
+      const updatedAt = await fetchPostgresStateUpdatedAt();
+      if (updatedAt !== null) return { reachable: true };
+      const pool = getPostgresPool();
+      if (pool) {
+        await pool.query('SELECT 1');
+        return { reachable: true };
+      }
+    } catch (err: any) {
+      return { reachable: false, error: err?.message || String(err) };
+    }
+  }
+  if (isSupabaseConfigured()) {
+    try {
+      const client = getSupabaseClient();
+      if (!client) return { reachable: false, error: 'Supabase client not configured' };
+      const { error } = await client.from('kortex_app_state').select('id').limit(1);
+      if (error) return { reachable: false, error: error.message };
+      return { reachable: true };
+    } catch (err: any) {
+      return { reachable: false, error: err?.message || String(err) };
+    }
+  }
+  return { reachable: false, error: 'No cloud database configured' };
+}
+
+export async function fetchCloudState(): Promise<CloudStateResult> {
   if (isPostgresConfigured()) {
     const pg = await fetchPostgresState();
-    if (pg) return pg;
+    if (pg.status === 'found') return pg;
+    if (pg.status === 'error' && isSupabaseConfigured()) {
+      console.warn('[Cloud DB] Postgres fetch failed, trying Supabase fallback:', pg.error);
+    } else {
+      return pg;
+    }
   }
   if (isSupabaseConfigured()) {
     return fetchSupabaseState();
   }
-  return null;
+  return { status: 'not_found' };
 }
 
 export interface PersistCloudStateOptions {
@@ -57,21 +99,21 @@ export interface PersistCloudStateOptions {
 export async function persistCloudState(
   state: any,
   _options?: PersistCloudStateOptions
-): Promise<boolean> {
-  if (!isCloudDbConfigured()) return false;
+): Promise<{ ok: boolean; updatedAt?: string }> {
+  if (!isCloudDbConfigured()) return { ok: false };
 
   try {
     if (isPostgresConfigured()) {
-      const ok = await persistPostgresState(state);
-      if (ok) return true;
+      const res = await persistPostgresState(state);
+      if (res.ok) return res;
     }
     if (isSupabaseConfigured()) {
       return await persistSupabaseState(state);
     }
-    return false;
+    return { ok: false };
   } catch (err: any) {
     console.warn('[Cloud DB] Exception during state persistence:', err?.message || err);
-    return false;
+    return { ok: false };
   }
 }
 

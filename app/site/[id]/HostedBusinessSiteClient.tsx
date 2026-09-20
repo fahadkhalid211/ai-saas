@@ -304,7 +304,8 @@ export default function HostedBusinessSiteClient({
       knownServerMessageCountRef.current = 0;
     }
 
-    const interval = setInterval(async () => {
+    const pollSiteConv = async () => {
+      if (typeof document !== 'undefined' && document.visibilityState === 'hidden') return;
       try {
         const params = new URLSearchParams({
           id: conversationId,
@@ -348,9 +349,20 @@ export default function HostedBusinessSiteClient({
           return [...prev, ...formatted];
         });
       } catch {}
-    }, 1000);
+    };
 
-    return () => clearInterval(interval);
+    const interval = setInterval(pollSiteConv, 6000);
+    const onVisibilityChange = () => {
+      if (typeof document !== 'undefined' && document.visibilityState === 'visible') {
+        pollSiteConv();
+      }
+    };
+    document.addEventListener('visibilitychange', onVisibilityChange);
+
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+    };
   }, [conversationId, conversationToken]);
 
   useEffect(() => {
@@ -425,7 +437,8 @@ export default function HostedBusinessSiteClient({
   useEffect(() => {
     if (typeof document === 'undefined' || !landingConfig) return;
     const gaId = landingConfig.analytics?.googleAnalyticsId;
-    if (gaId && !document.getElementById('ga-script')) {
+    const gaRegex = /^G-[A-Z0-9]+$/i;
+    if (gaId && gaRegex.test(gaId) && !document.getElementById('ga-script')) {
       const script1 = document.createElement('script');
       script1.id = 'ga-script';
       script1.async = true;
@@ -434,15 +447,16 @@ export default function HostedBusinessSiteClient({
 
       const script2 = document.createElement('script');
       script2.id = 'ga-init-script';
-      script2.innerHTML = "window.dataLayer = window.dataLayer || []; function gtag(){dataLayer.push(arguments);} gtag('js', new Date()); gtag('config', '" + gaId + "');";
+      script2.textContent = `window.dataLayer = window.dataLayer || []; function gtag(){dataLayer.push(arguments);} gtag('js', new Date()); gtag('config', ${JSON.stringify(gaId)});`;
       document.head.appendChild(script2);
     }
 
     const pixelId = landingConfig.analytics?.metaPixelId;
-    if (pixelId && !document.getElementById('meta-pixel-script')) {
+    const pixelRegex = /^\d{6,20}$/;
+    if (pixelId && pixelRegex.test(pixelId) && !document.getElementById('meta-pixel-script')) {
       const script = document.createElement('script');
       script.id = 'meta-pixel-script';
-      script.innerHTML = "!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window, document,'script','https://connect.facebook.net/en_US/fbevents.js'); fbq('init', '" + pixelId + "'); fbq('track', 'PageView');";
+      script.textContent = `!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window, document,'script','https://connect.facebook.net/en_US/fbevents.js'); fbq('init', ${JSON.stringify(pixelId)}); fbq('track', 'PageView');`;
       document.head.appendChild(script);
     }
   }, [landingConfig?.analytics]);
@@ -580,10 +594,11 @@ export default function HostedBusinessSiteClient({
       durationMinutes: selectedService?.durationMinutes || 40,
       serviceId: selectedService?.id,
       serviceName: selectedService?.name || 'Appointment',
-      price: selectedService?.price || 45,
+      price: selectedService?.price,
       notes: bookingNotes,
       landingPageName: landingConfig?.businessName || 'Landing Page',
       landingPageSlug: landingConfig?.slug || identifier || 'default',
+      source: 'landing_form',
     };
 
     const validation = validateAppointmentPayload(appointmentPayload);
@@ -1634,6 +1649,7 @@ export default function HostedBusinessSiteClient({
                                 <ChatBookingCard
                                   assistantId={activeConfig.assistantId || assistantId}
                                   businessName={activeConfig.businessName || 'Our Business'}
+                                  conversationId={conversationId || undefined}
                                 />
                               )}
                             </>

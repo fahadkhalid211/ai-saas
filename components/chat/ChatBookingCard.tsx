@@ -9,6 +9,10 @@ interface ChatBookingCardProps {
   primaryColor?: string;
   businessName?: string;
   onSuccess?: (appointment: any) => void;
+  /** Conversation that produced this booking, for attribution. */
+  conversationId?: string;
+  /** 'playground' marks test bookings so they can be excluded from pilot metrics. */
+  source?: 'chat' | 'playground';
 }
 
 export function ChatBookingCard({
@@ -16,6 +20,8 @@ export function ChatBookingCard({
   primaryColor = '#2563eb',
   businessName = 'Our Team',
   onSuccess,
+  conversationId,
+  source = 'chat',
 }: ChatBookingCardProps) {
   const tomorrow = new Date(Date.now() + 86400000).toISOString().slice(0, 10);
   const [date, setDate] = useState(tomorrow);
@@ -68,6 +74,8 @@ export function ChatBookingCard({
           timeSlot,
           durationMinutes: 30,
           notes: notes.trim(),
+          conversationId,
+          source,
         }),
       });
 

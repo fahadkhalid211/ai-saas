@@ -179,7 +179,8 @@ export default function EmbedChatPage({ params }: EmbedPageProps) {
       knownServerMessageCountRef.current = 0;
     }
 
-    const interval = setInterval(async () => {
+    const pollConv = async () => {
+      if (typeof document !== 'undefined' && document.visibilityState === 'hidden') return;
       try {
         const params = new URLSearchParams({
           id: conversationId,
@@ -222,9 +223,20 @@ export default function EmbedChatPage({ params }: EmbedPageProps) {
       } catch {
         // Silent polling error
       }
-    }, 1000);
+    };
 
-    return () => clearInterval(interval);
+    const interval = setInterval(pollConv, 6000);
+    const onVisibilityChange = () => {
+      if (typeof document !== 'undefined' && document.visibilityState === 'visible') {
+        pollConv();
+      }
+    };
+    document.addEventListener('visibilitychange', onVisibilityChange);
+
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+    };
   }, [conversationId, conversationToken]);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -595,6 +607,7 @@ export default function EmbedChatPage({ params }: EmbedPageProps) {
                               assistantId={assistantId}
                               primaryColor={primaryColor}
                               businessName={config?.name || 'Our Team'}
+                              conversationId={conversationId || undefined}
                             />
                           )}
                         </>

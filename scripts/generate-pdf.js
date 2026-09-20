@@ -1,0 +1,481 @@
+const fs = require('fs');
+const path = require('path');
+const { execSync } = require('child_process');
+
+const htmlContent = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Kortex AI - Platform Overview & Technical Whitepaper</title>
+  <style>
+    @page {
+      size: A4;
+      margin: 18mm 16mm 18mm 16mm;
+      @bottom-right {
+        content: counter(page);
+        font-size: 9pt;
+        color: #64748b;
+      }
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      color: #1e293b;
+      background-color: #ffffff;
+      line-height: 1.55;
+      font-size: 10pt;
+    }
+
+    .header-banner {
+      border-bottom: 2px solid #0f172a;
+      padding-bottom: 14px;
+      margin-bottom: 20px;
+    }
+
+    .doc-meta {
+      font-size: 8.5pt;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #64748b;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    h1 {
+      font-size: 22pt;
+      font-weight: 800;
+      color: #0f172a;
+      line-height: 1.2;
+      margin-bottom: 6px;
+      letter-spacing: -0.02em;
+    }
+
+    .subtitle {
+      font-size: 11pt;
+      color: #475569;
+      font-weight: 500;
+      margin-bottom: 12px;
+    }
+
+    .badge-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 3px 8px;
+      font-size: 7.5pt;
+      font-weight: 600;
+      border-radius: 4px;
+      background: #f1f5f9;
+      color: #334155;
+      border: 1px solid #e2e8f0;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .badge-primary {
+      background: #eff6ff;
+      color: #1d4ed8;
+      border-color: #bfdbfe;
+    }
+
+    h2 {
+      font-size: 13pt;
+      font-weight: 700;
+      color: #0f172a;
+      border-bottom: 1px solid #cbd5e1;
+      padding-bottom: 4px;
+      margin-top: 22px;
+      margin-bottom: 10px;
+      page-break-after: avoid;
+    }
+
+    h3 {
+      font-size: 10.5pt;
+      font-weight: 700;
+      color: #1e293b;
+      margin-top: 12px;
+      margin-bottom: 4px;
+      page-break-after: avoid;
+    }
+
+    p {
+      margin-bottom: 8px;
+      color: #334155;
+      text-align: justify;
+    }
+
+    ul, ol {
+      margin-left: 18px;
+      margin-bottom: 10px;
+    }
+
+    li {
+      margin-bottom: 4px;
+      color: #334155;
+    }
+
+    .section-block {
+      margin-bottom: 16px;
+    }
+
+    .card {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      padding: 10px 12px;
+      margin-bottom: 10px;
+      page-break-inside: avoid;
+    }
+
+    .card-title {
+      font-size: 9.5pt;
+      font-weight: 700;
+      color: #0f172a;
+      margin-bottom: 4px;
+    }
+
+    .card-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 10px;
+      page-break-inside: avoid;
+    }
+
+    pre {
+      background: #0f172a;
+      color: #f8fafc;
+      padding: 10px 12px;
+      border-radius: 6px;
+      font-family: 'Consolas', 'Courier New', Courier, monospace;
+      font-size: 7.5pt;
+      line-height: 1.35;
+      margin: 10px 0;
+      overflow-x: auto;
+      page-break-inside: avoid;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 8pt;
+      margin: 10px 0;
+      page-break-inside: avoid;
+    }
+
+    th, td {
+      border: 1px solid #cbd5e1;
+      padding: 6px 8px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background-color: #f1f5f9;
+      color: #0f172a;
+      font-weight: 700;
+    }
+
+    tr:nth-child(even) td {
+      background-color: #f8fafc;
+    }
+
+    .page-break {
+      page-break-before: always;
+    }
+
+    .callout {
+      border-left: 3px solid #2563eb;
+      background: #eff6ff;
+      padding: 8px 12px;
+      border-radius: 0 6px 6px 0;
+      margin: 10px 0;
+      font-size: 9pt;
+      page-break-inside: avoid;
+    }
+
+    .callout-title {
+      font-weight: 700;
+      color: #1e40af;
+      margin-bottom: 2px;
+    }
+
+    .footer-note {
+      margin-top: 30px;
+      padding-top: 10px;
+      border-top: 1px solid #e2e8f0;
+      font-size: 8pt;
+      color: #94a3b8;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header-banner">
+    <div class="doc-meta">Official Platform Documentation | Whitepaper</div>
+    <h1>Kortex AI</h1>
+    <div class="subtitle">Universal Business AI Chatbot, Autonomous Lead Generation & Multi-Tenant RAG Engine</div>
+    <div class="badge-row">
+      <span class="badge badge-primary">Next.js 16 App Router</span>
+      <span class="badge">Hybrid RAG</span>
+      <span class="badge">ONNX Local Embeddings</span>
+      <span class="badge">Multi-Tenant RBAC</span>
+      <span class="badge">WhatsApp & Telegram</span>
+      <span class="badge">Concurrency Booking Mutex</span>
+    </div>
+  </div>
+
+  <!-- SECTION 1: NON-TECHNICAL SUMMARY -->
+  <div class="section-block">
+    <h2>1. Executive Summary (Non-Technical)</h2>
+    
+    <p>
+      <strong>Kortex AI</strong> is an enterprise-grade customer engagement and workflow automation platform. It empowers businesses of any size to instantly transform their static documentation, product catalogs, service menus, and recorded media into an autonomous, 24/7 AI business assistant. The assistant interacts with prospective clients and existing customers naturally across web, mobile, WhatsApp, and Telegram.
+    </p>
+
+    <div class="callout">
+      <div class="callout-title">Core Business Value</div>
+      Kortex AI bridges the gap between generic AI models and proprietary corporate knowledge. It guarantees that automated customer conversations are strictly grounded in your actual business policies, verified pricing, and operational hours, while cutting ongoing platform software fees to near zero.
+    </div>
+
+    <h3>Key Business Problems Solved</h3>
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-title">Elimination of Support Backlogs</div>
+        <p>Answers repetitive customer inquiries instantly around the clock, handling peak volume without increasing staff overhead or sacrificing answer quality.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">Autonomous Lead Capture</div>
+        <p>Identifies high-intent prospective customers during conversation and collects names, emails, phone numbers, and service needs directly into a centralized CRM pipeline.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">Zero-Conflict Appointment Booking</div>
+        <p>Enables clients to schedule appointments directly inside the conversation with real-time double-booking prevention, calendar links, and automated email confirmations.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">Seamless Human-in-the-Loop Takeover</div>
+        <p>When customers ask for a human specialist, human agents can claim the conversation from a unified dashboard. The AI gracefully pauses its responses.</p>
+      </div>
+    </div>
+
+    <h3>Strategic Financial Advantages</h3>
+    <ul>
+      <li><strong>Zero Mandatory AI Subscription Cost:</strong> Local vector calculations run on-premise/on-server, eliminating monthly third-party vector database and embedding fees.</li>
+      <li><strong>Bring Your Own Key (BYOK) Flexibility:</strong> Use existing corporate accounts with OpenAI, Anthropic, Google Gemini, Groq, or self-hosted open-source models (Ollama).</li>
+      <li><strong>Rapid Deployment:</strong> Embed onto any website using a single copy-paste script tag or a one-click WordPress plugin.</li>
+    </ul>
+  </div>
+
+  <div class="page-break"></div>
+
+  <!-- SECTION 2: TECHNICAL ARCHITECTURE -->
+  <div class="section-block">
+    <h2>2. Technical Architecture & Engineering Specifications</h2>
+    
+    <p>
+      Kortex AI is constructed as a high-concurrency, multi-tenant application leveraging the Next.js 16 App Router architecture, TypeScript 5, React 19 Server Components, and a resilient dual-engine persistence layer backed by PostgreSQL and pgvector.
+    </p>
+
+    <h3>High-Level System Topology</h3>
+    <pre>
++-----------------------------------------------------------------------------------------+
+|                                    CLIENT TOUCHPOINTS                                   |
+|   * Web Chat Widget (Shadow DOM + SSE)           * Hosted Landing Pages (Dynamic SSR)   |
+|   * Meta WhatsApp Cloud API (Webhooks)           * Telegram Bot API (Webhooks)          |
++-----------------------------------------------------------------------------------------+
+                                             |
+                                             v
++-----------------------------------------------------------------------------------------+
+|                                 EDGE & API GATEWAY LAYER                                |
+|   * Role-Based Access Control (RBAC)             * Sliding-Window IP Rate Limiter       |
+|   * Visitor Capability Tokens (HMAC-SHA256)      * SSRF Network Egress Firewall         |
+|   * Multi-Tenant Workspace Boundary Isolation   * Request Deduplication Filters        |
++-----------------------------------------------------------------------------------------+
+                                             |
+                      +----------------------+----------------------+
+                      |                                             |
+                      v                                             v
++-------------------------------------------+ +-------------------------------------------+
+|          HYBRID RAG PIPELINE              | |         CORE APPLICATION SERVICES         |
+|  * Multi-Format Ingestion Engine          | |  * Appointment Mutex Engine (Postgres)    |
+|    (PDF, DOCX, CSV, JSON, OCR, YouTube)   | |  * Live Operator Takeover Controller      |
+|  * ONNX Local Embeddings (BGE-Small)      | |  * Stripe Billing & Quota Governor        |
+|  * Dense Cosine Similarity Search         | |  * Transactional Email (Resend/SMTP)      |
+|  * Sparse BM25 / Keyword Retrieval        | |  * In-Memory LRU Embeddings Cache         |
+|  * Reciprocal Rank Fusion (RRF)           | |  * Audit Logging Service (Owner-Only)     |
++-------------------------------------------+ +-------------------------------------------+
+                                             |
+                                             v
++-----------------------------------------------------------------------------------------+
+|                               DATA & PERSISTENCE LAYER                                  |
+|   * PostgreSQL (Relational Engine for Messages, Convs, Leads, Appointments, Chunks)     |
+|   * Supabase pgvector Extension (384-dimensional vector indexing)                       |
+|   * Resilient Tri-State Cloud Persistence & Fail-Closed Initialization Pipeline          |
+|   * AES-256-GCM BYOK Encrypted Secret Vault                                             |
++-----------------------------------------------------------------------------------------+
+    </pre>
+
+    <h3>1. Hybrid Retrieval-Augmented Generation (RAG)</h3>
+    <p>
+      To achieve maximum retrieval accuracy across arbitrary business domains without incurring external per-query API costs, Kortex AI employs a hybrid dense/sparse retrieval pipeline:
+    </p>
+    <ul>
+      <li><strong>Local ONNX Dense Embeddings:</strong> Generates 384-dimensional dense vector embeddings directly on CPU via <code>@xenova/transformers</code> using the <code>Xenova/bge-small-en-v1.5</code> model.</li>
+      <li><strong>Sparse Keyword Engine:</strong> Executes full-text search with morphological stemming, stop-word removal, and domain synonym clustering (pricing, scheduling, medical, SaaS terms). Short terms enforce word boundaries (<code>\b</code>) to eliminate false subword triggers (e.g. "fee" vs "coffee").</li>
+      <li><strong>Reciprocal Rank Fusion (RRF):</strong> Merges ranked vector candidate lists with sparse keyword candidate lists using standard RRF (constant <code>k=60</code>), ensuring exact SKU/name matches and conceptual semantic matches both receive high ranking.</li>
+      <li><strong>Dual-Query Gating:</strong> Conversational turns (greetings, confirmations, slot-filling) are classified via heuristics to skip unnecessary vector search. Multi-turn follow-ups are contextually condensed before embedding.</li>
+    </ul>
+
+    <h3>2. Multi-Format Extraction Engine</h3>
+    <ul>
+      <li><strong>PDF Documents:</strong> Extracted via <code>unpdf</code> with structure-aware text layout parsing.</li>
+      <li><strong>Microsoft Word:</strong> <code>mammoth</code> parses <code>.docx</code> archives while preserving document hierarchy and headings.</li>
+      <li><strong>Tabular Spreadsheets (CSV):</strong> Parsed with <code>csv-parse</code> into semantic record serialization (<code>[Record #N] Column: Value | ...</code>) so each row retains full context in vector space.</li>
+      <li><strong>Hierarchical JSON:</strong> Recursively flattened into structured key-value property paths.</li>
+      <li><strong>Optical Character Recognition:</strong> <code>tesseract.js</code> handles text extraction from uploaded images.</li>
+      <li><strong>YouTube Media:</strong> <code>youtube-transcript</code> extracts multi-lingual captions with streaming audio transcription fallback.</li>
+    </ul>
+
+    <div class="page-break"></div>
+
+    <h3>3. Security, Authorization & Multi-Tenant Isolation</h3>
+    <ul>
+      <li><strong>Workspace Boundary Enforcement:</strong> Every database query and cache partition is strictly scoped by <code>workspaceId</code>. Cross-tenant reads and mutations (BOLA/IDOR) return 403/404.</li>
+      <li><strong>Role-Based Access Control (RBAC):</strong> Hierarchical roles (<code>owner</code>, <code>admin</code>, <code>support_agent</code>, <code>billing_manager</code>, <code>viewer</code>). Audit trails and member elevation are restricted strictly to workspace owners.</li>
+      <li><strong>Visitor Capability Tokens:</strong> Public visitors communicate via signed HMAC tokens, preventing unauthorized eavesdropping or injection into stranger conversations.</li>
+      <li><strong>Cryptographic BYOK Vault:</strong> Third-party provider API keys are encrypted at rest using AES-256-GCM with authentication tags.</li>
+      <li><strong>SSRF Mitigation:</strong> Outbound webhook targets and SMTP servers are screened against private IP ranges and loopback addresses via <code>validateSafeExternalUrl</code>.</li>
+      <li><strong>Script Injection Defense:</strong> Third-party tracking tags (Google Analytics 4, Meta Pixel) undergo strict regex whitelisting and are injected via safe <code>textContent</code> nodes.</li>
+    </ul>
+
+    <h3>4. Omnichannel & Communication Pipeline</h3>
+    <ul>
+      <li><strong>Embeddable Web Widget (<code>widget.js</code>):</strong> Standalone zero-dependency bundle wrapped in a closed <strong>Shadow DOM</strong> to prevent host website CSS collision. Streams tokens via Server-Sent Events (SSE).</li>
+      <li><strong>Meta WhatsApp Cloud API:</strong> Processes incoming message webhooks with HMAC-SHA256 signature checks, deduplicates deliveries using <code>wamid</code> caches, and honors live human takeovers.</li>
+      <li><strong>Telegram Bot API:</strong> Validates webhook secret headers, deduplicates incoming <code>update_id</code> events, and suppresses bot auto-replies when a human agent is active.</li>
+      <li><strong>Concurrency Mutex Booking:</strong> Double-booking prevention via Postgres unique constraints and memory mutexes, with iCal feed generation and automated confirmation emails.</li>
+    </ul>
+  </div>
+
+  <!-- SECTION 3: TECH MATRIX TABLE -->
+  <div class="section-block">
+    <h2>3. Comprehensive Technology & Methodology Matrix</h2>
+    
+    <table>
+      <thead>
+        <tr>
+          <th style="width: 22%;">Layer / Domain</th>
+          <th style="width: 28%;">Technology / Library</th>
+          <th style="width: 50%;">Methodology & Purpose</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Core Framework</strong></td>
+          <td>Next.js 16 (App Router), React 19, TypeScript 5</td>
+          <td>Server components, streaming Server-Sent Events (SSE), API route handlers, static and dynamic rendering.</td>
+        </tr>
+        <tr>
+          <td><strong>Vector & Embeddings</strong></td>
+          <td>@xenova/transformers (ONNX), BGE-Small-EN-v1.5</td>
+          <td>Local 384-dimensional dense vector embeddings generated on CPU. 0 external API cost.</td>
+        </tr>
+        <tr>
+          <td><strong>RAG & Retrieval</strong></td>
+          <td>Custom Vector Math, Reciprocal Rank Fusion</td>
+          <td>Cosine similarity, sparse keyword search with stemming, universal synonym clusters, and RRF rank blending.</td>
+        </tr>
+        <tr>
+          <td><strong>AI Model Adapters</strong></td>
+          <td>OpenAI, Anthropic, Gemini, Groq, DeepSeek, Ollama</td>
+          <td>Unified provider abstraction with BYOK credential injection and custom base URL overrides.</td>
+        </tr>
+        <tr>
+          <td><strong>Database & Storage</strong></td>
+          <td>PostgreSQL 16, Supabase, pgvector</td>
+          <td>Dual relational/blob persistence, connection-aware circuit breaker, cascading tenant cleanup.</td>
+        </tr>
+        <tr>
+          <td><strong>Document Parsing</strong></td>
+          <td>unpdf, mammoth, csv-parse, tesseract.js, youtube-transcript</td>
+          <td>Extraction of PDF, DOCX, CSV (row-aware serialization), JSON, OCR images, and video transcripts.</td>
+        </tr>
+        <tr>
+          <td><strong>Security & Cryptography</strong></td>
+          <td>Node.js crypto (AES-256-GCM, HMAC-SHA256)</td>
+          <td>At-rest credential encryption, timing-safe string comparison, visitor capability tokens, rate limiting.</td>
+        </tr>
+        <tr>
+          <td><strong>Omnichannel Gateways</strong></td>
+          <td>WhatsApp Cloud API, Telegram Bot API, Shadow DOM</td>
+          <td>Webhook deduplication, signature authentication, live operator takeover suppression, isolated widget UI.</td>
+        </tr>
+        <tr>
+          <td><strong>Scheduling & Mutex</strong></td>
+          <td>PostgreSQL Constraints, iCal Generator</td>
+          <td>Double-booking prevention mutex, RFC 5545 iCalendar feed, Google/Apple/Outlook integration.</td>
+        </tr>
+        <tr>
+          <td><strong>Email & Communications</strong></td>
+          <td>Nodemailer, Resend API</td>
+          <td>Multi-transport transactional email dispatch for appointment confirmations and lead alerts.</td>
+        </tr>
+        <tr>
+          <td><strong>Monetization & Billing</strong></td>
+          <td>Stripe Node SDK</td>
+          <td>Subscription tiers, webhook idempotency, storage quotas, monthly chat volume governors.</td>
+        </tr>
+        <tr>
+          <td><strong>Automated Testing</strong></td>
+          <td>Vitest, tsc --noEmit</td>
+          <td>175 automated unit and integration tests across 21 test suites validating security, RAG, and concurrency.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="footer-note">
+    Kortex AI Platform Architecture Whitepaper &copy; 2026. All rights reserved.
+  </div>
+
+</body>
+</html>
+`;
+
+const htmlPath = path.join(__dirname, '..', 'kortex-ai-platform-overview.html');
+const pdfPath = path.join(__dirname, '..', 'kortex-ai-platform-overview.pdf');
+
+fs.writeFileSync(htmlPath, htmlContent, 'utf8');
+console.log('HTML written to:', htmlPath);
+
+const edgePath = 'C:\\\\Program Files (x86)\\\\Microsoft\\\\Edge\\\\Application\\\\msedge.exe';
+const userDataDir = path.join(process.env.TEMP || 'C:\\\\Temp', 'edge-pdf-profile-' + Date.now());
+
+try {
+  const cmd = `"${edgePath}" --headless --disable-gpu --user-data-dir="${userDataDir}" --print-to-pdf="${pdfPath}" "${htmlPath}"`;
+  console.log('Executing PDF compilation...');
+  execSync(cmd, { stdio: 'inherit' });
+
+  if (fs.existsSync(pdfPath)) {
+    const stats = fs.statSync(pdfPath);
+    console.log(`Successfully generated PDF at: ${pdfPath} (${stats.size} bytes)`);
+  } else {
+    console.error('PDF file was not found after execution.');
+    process.exit(1);
+  }
+} catch (err) {
+  console.error('Error generating PDF:', err.message);
+  process.exit(1);
+}

@@ -988,6 +988,39 @@
     var proactiveText = shadow.getElementById('proactive-text');
     var proactiveClose = shadow.getElementById('proactive-close');
 
+    // Funnel events for pilot measurement: at most one widget_loaded and one widget_opened
+    // per browser session. Fire-and-forget; must never affect the widget itself.
+    var widgetSessionId = '';
+    try {
+      widgetSessionId = sessionStorage.getItem('ai_ast_sid') || '';
+      if (!widgetSessionId) {
+        widgetSessionId = 'ws_' + Math.random().toString(36).substring(2, 12) + Date.now().toString(36);
+        sessionStorage.setItem('ai_ast_sid', widgetSessionId);
+      }
+    } catch (e) {
+      widgetSessionId = 'ws_' + Math.random().toString(36).substring(2, 12);
+    }
+    var sentWidgetEvents = {};
+    function sendWidgetEvent(type) {
+      if (sentWidgetEvents[type]) return;
+      sentWidgetEvents[type] = true;
+      try {
+        var evtKey = 'ai_ast_evt_' + assistantId + '_' + type;
+        if (sessionStorage.getItem(evtKey)) return;
+        sessionStorage.setItem(evtKey, '1');
+      } catch (e) {}
+      try {
+        // text/plain keeps this a "simple" cross-origin request (no CORS preflight).
+        fetch(hostUrl + '/api/widget-events', {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain' },
+          body: JSON.stringify({ assistantId: assistantId, type: type, sessionId: widgetSessionId }),
+          keepalive: true,
+          credentials: 'omit',
+        }).catch(function () {});
+      } catch (e) {}
+    }
+
     // Load Assistant Config
     fetch(hostUrl + '/api/widget/' + assistantId + '/config')
       .then(function (res) {
@@ -998,6 +1031,7 @@
         if (data && !data.error) {
           config = Object.assign({}, config, data);
           applyConfig();
+          sendWidgetEvent('widget_loaded');
         }
       })
       .catch(function (err) {
@@ -1104,6 +1138,7 @@
           isOpen = true;
           chatWindow.classList.add('open');
           chatInput.focus();
+          sendWidgetEvent('widget_opened');
         }
       });
     }
@@ -1125,6 +1160,7 @@
       if (isOpen) {
         chatWindow.classList.add('open');
         chatInput.focus();
+        sendWidgetEvent('widget_opened');
       } else {
         chatWindow.classList.remove('open');
       }
@@ -1348,7 +1384,7 @@
     function startLiveSync() {
       if (liveSyncTimer || !conversationId) return;
       liveSyncTimer = setInterval(function () {
-        if (!conversationId || !isOpen) return;
+        if (!conversationId || !isOpen || (typeof document !== 'undefined' && document.hidden)) return;
         var syncUrl = config.backendUrl + '/api/conversations?id=' + encodeURIComponent(conversationId);
         if (conversationToken) {
           syncUrl += '&token=' + encodeURIComponent(conversationToken);
@@ -1378,7 +1414,7 @@
             });
           })
           .catch(function () {});
-      }, 3500);
+      }, 10000);
     }
 
     function appendMessage(role, text, senderName) {
@@ -1727,6 +1763,7 @@
             notes: notesVal,
             customData: customData,
             conversationId: conversationId,
+            source: 'chat',
           }),
         })
           .then(function (res) {
@@ -1975,6 +2012,8 @@
               timeSlot: timeVal,
               durationMinutes: slotDuration,
               notes: payloadNotes,
+              conversationId: conversationId,
+              source: 'chat',
             }),
           })
             .then(function (res) {

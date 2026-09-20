@@ -14,9 +14,57 @@ import {
   validateAppointmentPayload,
   validateLandingPagePayload,
   validateChatPayload,
+  sanitizeAttribution,
+  ATTRIBUTION_SOURCES,
 } from './validation';
 
 describe('Enterprise Validation & Sanitization Suite', () => {
+  describe('Attribution (pilot measurement)', () => {
+    it('keeps a well-formed conversationId and allowlisted source', () => {
+      expect(sanitizeAttribution({ conversationId: 'conv_abc123', source: 'chat' })).toEqual({
+        conversationId: 'conv_abc123',
+        source: 'chat',
+      });
+      expect(sanitizeAttribution({ conversationId: '  conv_x-1  ', source: ' PLAYGROUND ' })).toEqual({
+        conversationId: 'conv_x-1',
+        source: 'playground',
+      });
+    });
+
+    it('drops malformed or hostile values instead of rejecting', () => {
+      expect(sanitizeAttribution({ conversationId: 'conv id with spaces', source: 'hacker' })).toEqual({});
+      expect(sanitizeAttribution({ conversationId: '<script>alert(1)</script>' })).toEqual({});
+      expect(sanitizeAttribution({ conversationId: 'a'.repeat(65) })).toEqual({});
+      expect(sanitizeAttribution({ conversationId: 123, source: { evil: true } })).toEqual({});
+      expect(sanitizeAttribution(undefined)).toEqual({});
+      expect(sanitizeAttribution(null)).toEqual({});
+    });
+
+    it('exposes the documented allowlist', () => {
+      expect([...ATTRIBUTION_SOURCES]).toEqual(['chat', 'landing_form', 'admin', 'playground', 'direct']);
+    });
+
+    it('passes attribution through the appointment validator without failing bookings on bad values', () => {
+      const base = {
+        assistantId: 'ast_123',
+        name: 'Jane Doe',
+        email: 'jane@example.com',
+        date: '2029-11-20',
+        timeSlot: '11:00 AM',
+      };
+
+      const good = validateAppointmentPayload({ ...base, conversationId: 'conv_abc123', source: 'chat' });
+      expect(good.valid).toBe(true);
+      expect(good.sanitized?.conversationId).toBe('conv_abc123');
+      expect(good.sanitized?.source).toBe('chat');
+
+      const bad = validateAppointmentPayload({ ...base, conversationId: 'not valid!!', source: 'bogus' });
+      expect(bad.valid).toBe(true);
+      expect(bad.sanitized?.conversationId).toBeUndefined();
+      expect(bad.sanitized?.source).toBeUndefined();
+    });
+  });
+
   describe('Email Validation', () => {
     it('accepts valid email addresses', () => {
       expect(validateEmail('test@example.com').valid).toBe(true);

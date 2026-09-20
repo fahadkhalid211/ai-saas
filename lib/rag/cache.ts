@@ -1,4 +1,6 @@
+import crypto from 'crypto';
 import { RetrievalResult } from './types';
+import { isRedisConfigured, redisGet, redisSet, CACHE_KEYS } from '../cache/redis';
 
 // ---------------------------------------------------------------------------
 // Embedding LRU Cache
@@ -81,3 +83,40 @@ export function clearRetrievalCache(assistantId?: string): void {
     }
   }
 }
+
+/**
+ * Safely retrieve cached RAG retrieval results from Redis L2 cache.
+ * Protects PostgreSQL and vector computation across serverless cold starts.
+ */
+export async function getRedisCachedRetrieval(
+  assistantId: string,
+  query: string
+): Promise<RetrievalResult | null> {
+  if (!isRedisConfigured()) return null;
+  const hash = crypto
+    .createHash('sha256')
+    .update(query.trim().toLowerCase().replace(/\s+/g, ' ').slice(0, 150))
+    .digest('hex')
+    .slice(0, 16);
+  const key = `${CACHE_KEYS.RAG_PREFIX}${assistantId}:${hash}`;
+  return redisGet<RetrievalResult>(key);
+}
+
+/**
+ * Safely write RAG retrieval results to Redis L2 cache with a 5-minute TTL.
+ */
+export async function setRedisCachedRetrieval(
+  assistantId: string,
+  query: string,
+  result: RetrievalResult
+): Promise<void> {
+  if (!isRedisConfigured()) return;
+  const hash = crypto
+    .createHash('sha256')
+    .update(query.trim().toLowerCase().replace(/\s+/g, ' ').slice(0, 150))
+    .digest('hex')
+    .slice(0, 16);
+  const key = `${CACHE_KEYS.RAG_PREFIX}${assistantId}:${hash}`;
+  await redisSet(key, result, 300);
+}
+

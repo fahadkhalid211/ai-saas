@@ -6,6 +6,7 @@ import { verifyAdminRequest, getAuthContext } from '@/lib/security/auth';
 import { enforceRateLimit, getClientIp } from '@/lib/security/rate-limit';
 import { validateAppointmentPayload } from '@/lib/security/validation';
 import { acquireBookingLock } from '@/lib/appointments/booking-lock';
+import { resolveAttribution, attributionCustomData } from '@/lib/analytics/attribution';
 
 export async function OPTIONS() {
   return new NextResponse(null, {
@@ -263,6 +264,10 @@ export async function POST(req: Request) {
     const resolvedDuration = durationMinutes || assistant.bookingSlotDuration || 30;
     const landingConfig = assistant.landingPageConfig || DEFAULT_BARBER_LANDING_CONFIG;
 
+    // Attribution (verified conversation + source) for pilot measurement. Lives on the
+    // paired lead below so it works in both blob and relational modes without a schema change.
+    const attribution = await resolveAttribution(validation.sanitized, assistant.id);
+
     // Concurrency Lock: Prevent double-booking race condition during concurrent requests
     const releaseLock = await acquireBookingLock(assistant.id, date, timeSlot);
     let appointment;
@@ -352,6 +357,7 @@ export async function POST(req: Request) {
           timeSlot: appointment.timeSlot,
           serviceName: appointment.serviceName,
           price: appointment.price,
+          source: attribution.source,
         },
       });
     } catch (auditErr: any) {
@@ -383,6 +389,7 @@ export async function POST(req: Request) {
           Price: appointment.price,
           Type: 'Calendar Booking',
           originalAssistantId: assistantId !== assistant.id ? assistantId : undefined,
+          ...attributionCustomData(attribution),
         },
       });
     } catch (leadErr) {
