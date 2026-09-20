@@ -65,9 +65,9 @@ export function SaaSMarketingHomepage({
         reply = 'I would be delighted to schedule a walkthrough for you! Select your preferred date and time below:';
         hasBooking = true;
       } else if (lower.includes('pricing') || lower.includes('cost') || lower.includes('price')) {
-        reply = 'Kortex AI offers transparent, flat-rate pricing starting at $29/month. Unlike Chatbase, which marks up token credits by 300%+, Kortex AI has 0% token markup. You can bring your own OpenAI/Anthropic key or use our zero-cost failover engine for $0 compute.';
-      } else if (lower.includes('chatbase') || lower.includes('alternative') || lower.includes('vs')) {
-        reply = 'Chatbase charges per-credit with heavy multipliers on smart models, and acts solely as a passive FAQ bot. Kortex AI is action-oriented: we natively book appointments, auto-capture leads from conversation text, and provide at-cost BYOK pricing with zero token tax.';
+        reply = 'Kortex AI offers transparent, flat-rate pricing starting at $29/month with 0% token markup. You can bring your own OpenAI/Anthropic key or use our built-in zero-cost failover engine for $0 compute.';
+      } else if (lower.includes('different') || lower.includes('compare') || lower.includes('vs') || lower.includes('conversion') || lower.includes('traditional')) {
+        reply = 'Traditional chatbots act as passive text-only lookup tools with credit burn limits. Kortex AI is action-oriented: we natively book appointments on your calendar, auto-capture leads directly from conversation, and provide at-cost BYOK pricing with zero token tax.';
       } else if (lower.includes('lead') || lower.includes('email') || lower.includes('phone')) {
         reply = 'When visitors leave their contact details anywhere in the chat, Kortex AI automatically detects the email and phone number, attributes the conversation, and pushes the lead to your CRM and email in real time.';
       } else {
@@ -93,16 +93,16 @@ export function SaaSMarketingHomepage({
 
   const faqs = [
     {
-      q: 'How is Kortex AI fundamentally different from Chatbase?',
-      a: 'Chatbase charges opaque credit multipliers (where 1 GPT-4 query burns 3 to 5 credits) and acts merely as a read-only FAQ bot. Kortex AI charges a flat, predictable monthly fee with zero token markups. You can bring your own API keys (BYOK) to pay wholesale model costs directly, or use our zero-cost free failover engine. Furthermore, Kortex AI natively schedules appointments and auto-extracts leads inside the chat stream.',
+      q: 'How does Kortex AI drive higher conversions than standard chatbots?',
+      a: 'Most chatbots act merely as passive FAQ widgets that leave visitors to navigate on their own. Kortex AI is action-oriented: it actively guides prospects to confirmed calendar bookings, extracts phone numbers and emails directly from natural conversation, and provides instant staff notifications for immediate follow-up.',
     },
     {
       q: 'What does Zero-Markup BYOK mean?',
-      a: 'BYOK stands for Bring Your Own Key. Instead of paying a SaaS vendor a 300% to 800% markup on OpenAI, Anthropic, or Google tokens, you paste your own API key. You pay the AI provider directly at raw wholesale prices ($0.15 per million tokens on Gemini 1.5 Flash), while Kortex AI simply charges a flat platform hosting fee.',
+      a: 'BYOK stands for Bring Your Own Key. Instead of paying inflated 300% to 800% markups on OpenAI, Anthropic, or Google tokens, you paste your own provider key. You pay the AI provider directly at raw wholesale prices ($0.15 per million tokens on Gemini 1.5 Flash), while Kortex AI simply charges a flat platform hosting fee.',
     },
     {
       q: 'Can I use Kortex AI without an OpenAI or Anthropic API key?',
-      a: 'Yes. Kortex AI includes a built-in Zero-Cost Inference Engine (auto_free). It cascades requests across Groq Free Tier (sub-second Llama 3.3 70B), Google Gemini Flash Free Tier, and local offline Ollama models for $0 compute cost.',
+      a: 'Yes. Kortex AI includes a built-in Zero-Cost Inference Engine (auto_free). It cascades requests across Groq Cloud (sub-second Llama 3.3 70B), Google Gemini Flash Free Tier, and local offline Ollama models for $0 compute cost.',
     },
     {
       q: 'How does in-chat appointment booking work?',
@@ -119,9 +119,9 @@ export function SaaSMarketingHomepage({
       {/* Top Announcement Bar */}
       <div className="bg-gradient-to-r from-blue-900/40 via-indigo-900/40 to-slate-900/40 border-b border-blue-800/40 px-4 py-2 text-center text-xs text-blue-200">
         <span className="font-bold text-white uppercase tracking-wider text-[10px] bg-blue-600/60 px-2 py-0.5 rounded mr-2 border border-blue-400/40">
-          The Anti-Chatbase Architecture
+          Action-Driven Conversion
         </span>
-        <span>0% Token Markup. Native Calendar Booking. Automatic In-Chat Lead Extraction.</span>
+        <span>Native Calendar Booking. 0% Token Markup. Automatic Lead Capture.</span>
       </div>
 
       {/* Navigation Bar */}
@@ -138,9 +138,9 @@ export function SaaSMarketingHomepage({
 
           <nav className="hidden md:flex items-center gap-7 text-xs font-medium text-slate-300">
             <a href="#features" className="hover:text-white transition">Features</a>
-            <a href="#comparison" className="hover:text-white transition">Anti-Chatbase</a>
             <a href="#templates" className="hover:text-white transition">Industry Templates</a>
             <a href="#pricing" className="hover:text-white transition">Pricing</a>
+            <a href="#comparison" className="hover:text-white transition">Comparison</a>
             <a href="#faq" className="hover:text-white transition">FAQ</a>
           </nav>
 
@@ -189,7 +189,7 @@ export function SaaSMarketingHomepage({
             </h1>
 
             <p className="text-base sm:text-lg text-slate-400 leading-relaxed max-w-2xl mx-auto">
-              Stop paying 300%+ markups on token credits for passive FAQ bots. Kortex AI connects directly to your calendar, extracts customer phone numbers and emails automatically in chat, and runs on your own API keys at zero markup.
+              Stop settling for passive chatbot widgets that merely answer FAQs. Kortex AI connects directly to your calendar, extracts customer phone numbers and emails automatically in chat, and runs on your own API keys at zero markup.
             </p>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
@@ -245,10 +245,10 @@ export function SaaSMarketingHomepage({
                 </button>
                 <button
                   type="button"
-                  onClick={() => handleDemoSend('How does Kortex AI compare to Chatbase?')}
+                  onClick={() => handleDemoSend('How does Kortex AI drive higher conversions?')}
                   className="text-[11px] bg-slate-800 hover:bg-slate-700 text-slate-300 px-2.5 py-0.5 rounded-full transition cursor-pointer hidden sm:inline-block"
                 >
-                  Anti-Chatbase
+                  Higher Conversions
                 </button>
               </div>
             </div>
@@ -327,74 +327,6 @@ export function SaaSMarketingHomepage({
                 Send
               </button>
             </form>
-          </div>
-        </div>
-      </section>
-
-      {/* Counter-Positioning Comparison Table */}
-      <section id="comparison" className="py-20 border-b border-slate-800/60 bg-slate-900/30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-3xl mx-auto mb-12 space-y-3">
-            <h2 className="text-xs font-bold uppercase tracking-widest text-blue-400">Why Businesses Switch</h2>
-            <p className="text-3xl sm:text-4xl font-extrabold text-white">
-              The Anti-Chatbase Architecture
-            </p>
-            <p className="text-sm text-slate-400">
-              Most chatbot companies resell AI tokens at 300% to 800% markups with complex credit burn penalties. We believe software should execute actions, not tax your growth.
-            </p>
-          </div>
-
-          <div className="max-w-4xl mx-auto rounded-2xl border border-slate-800 overflow-hidden shadow-2xl bg-slate-900">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs border-collapse">
-                <thead>
-                  <tr className="border-b border-slate-800 bg-slate-850 text-slate-300">
-                    <th className="p-4 font-semibold text-slate-400">Capability / Metric</th>
-                    <th className="p-4 font-semibold text-slate-400">Chatbase</th>
-                    <th className="p-4 font-semibold text-slate-400">Tidio (Lyro)</th>
-                    <th className="p-4 font-bold text-blue-400 bg-blue-950/40">Kortex AI</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-800/80">
-                  <tr>
-                    <td className="p-4 font-medium text-white">Pricing Model</td>
-                    <td className="p-4 text-rose-400">Opaque credit deductions (1 query = 3-5 credits)</td>
-                    <td className="p-4 text-slate-400">Base seat fee + per-AI conversation tax</td>
-                    <td className="p-4 font-semibold text-emerald-400 bg-blue-950/20">Flat predictable subscription ($29/mo)</td>
-                  </tr>
-                  <tr>
-                    <td className="p-4 font-medium text-white">Token Compute Markup</td>
-                    <td className="p-4 text-rose-400">Up to 800% margin on model tokens</td>
-                    <td className="p-4 text-rose-400">Proprietary token pricing tiers</td>
-                    <td className="p-4 font-semibold text-emerald-400 bg-blue-950/20">0% Markup (Wholesale at-cost on BYOK)</td>
-                  </tr>
-                  <tr>
-                    <td className="p-4 font-medium text-white">Native Appointment Booking</td>
-                    <td className="p-4 text-slate-400">None (Passive text link to Calendly)</td>
-                    <td className="p-4 text-slate-400">Basic external links</td>
-                    <td className="p-4 font-semibold text-emerald-400 bg-blue-950/20">Inline Interactive Calendar &amp; Mutex Lock</td>
-                  </tr>
-                  <tr>
-                    <td className="p-4 font-medium text-white">In-Chat Lead Auto-Extraction</td>
-                    <td className="p-4 text-slate-400">Trapped in raw transcripts</td>
-                    <td className="p-4 text-slate-400">Requires rigid manual form flow</td>
-                    <td className="p-4 font-semibold text-emerald-400 bg-blue-950/20">Auto-detects email/phone &amp; syncs to CRM</td>
-                  </tr>
-                  <tr>
-                    <td className="p-4 font-medium text-white">Zero-Cost Free Tier Engine</td>
-                    <td className="p-4 text-rose-400">No (Requires paid credit packs)</td>
-                    <td className="p-4 text-rose-400">No (Capped free trial)</td>
-                    <td className="p-4 font-semibold text-emerald-400 bg-blue-950/20">Yes (Groq, Gemini, &amp; Ollama failover)</td>
-                  </tr>
-                  <tr>
-                    <td className="p-4 font-medium text-white">Live Human Agent Takeover</td>
-                    <td className="p-4 text-slate-400">Limited / complex integration</td>
-                    <td className="p-4 text-slate-300">Live chat inbox included</td>
-                    <td className="p-4 font-semibold text-emerald-400 bg-blue-950/20">Real-time takeover with sound alerts</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
           </div>
         </div>
       </section>
@@ -669,6 +601,74 @@ export function SaaSMarketingHomepage({
         </div>
       </section>
 
+      {/* Platform Comparison Table */}
+      <section id="comparison" className="py-20 border-b border-slate-800/60 bg-slate-900/30">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-3xl mx-auto mb-12 space-y-3">
+            <h2 className="text-xs font-bold uppercase tracking-widest text-blue-400">Architectural Comparison</h2>
+            <p className="text-3xl sm:text-4xl font-extrabold text-white">
+              Built for Real Business Outcomes, Not Just Text Chat
+            </p>
+            <p className="text-sm text-slate-400">
+              See how Kortex AI compares to traditional FAQ widgets and live chat add-ons across conversion capabilities, automation, and overall ROI.
+            </p>
+          </div>
+
+          <div className="max-w-4xl mx-auto rounded-2xl border border-slate-800 overflow-hidden shadow-2xl bg-slate-900">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr className="border-b border-slate-800 bg-slate-850 text-slate-300">
+                    <th className="p-4 font-semibold text-slate-400">Key Capability</th>
+                    <th className="p-4 font-semibold text-slate-400">Traditional FAQ Bots</th>
+                    <th className="p-4 font-semibold text-slate-400">Basic Live Chat Widgets</th>
+                    <th className="p-4 font-bold text-blue-400 bg-blue-950/40">Kortex AI Platform</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-800/80">
+                  <tr>
+                    <td className="p-4 font-medium text-white">Pricing Model</td>
+                    <td className="p-4 text-slate-400">Opaque credit packs &amp; usage caps</td>
+                    <td className="p-4 text-slate-400">Per-seat license fees + per-message taxes</td>
+                    <td className="p-4 font-semibold text-emerald-400 bg-blue-950/20">Predictable flat subscription ($29/mo)</td>
+                  </tr>
+                  <tr>
+                    <td className="p-4 font-medium text-white">Token Compute Markup</td>
+                    <td className="p-4 text-slate-400">300% to 800% token resale margin</td>
+                    <td className="p-4 text-slate-400">Proprietary token pricing tiers &amp; overages</td>
+                    <td className="p-4 font-semibold text-emerald-400 bg-blue-950/20">0% Markup (Direct wholesale BYOK)</td>
+                  </tr>
+                  <tr>
+                    <td className="p-4 font-medium text-white">Native Appointment Booking</td>
+                    <td className="p-4 text-slate-400">External redirect links only</td>
+                    <td className="p-4 text-slate-400">Manual copy-paste calendar links</td>
+                    <td className="p-4 font-semibold text-emerald-400 bg-blue-950/20">Interactive in-chat calendar &amp; instant confirmation</td>
+                  </tr>
+                  <tr>
+                    <td className="p-4 font-medium text-white">Automated Lead Extraction</td>
+                    <td className="p-4 text-slate-400">Trapped inside raw message histories</td>
+                    <td className="p-4 text-slate-400">Requires rigid multi-step form fields</td>
+                    <td className="p-4 font-semibold text-emerald-400 bg-blue-950/20">Auto-detects email/phone &amp; pushes to CRM</td>
+                  </tr>
+                  <tr>
+                    <td className="p-4 font-medium text-white">Zero-Cost Inference Option</td>
+                    <td className="p-4 text-slate-400">Not supported (Paid credits required)</td>
+                    <td className="p-4 text-slate-400">Limited trial period then locked</td>
+                    <td className="p-4 font-semibold text-emerald-400 bg-blue-950/20">Included (Groq, Gemini Flash, &amp; Ollama failover)</td>
+                  </tr>
+                  <tr>
+                    <td className="p-4 font-medium text-white">Live Human Staff Takeover</td>
+                    <td className="p-4 text-slate-400">Complex or unsupported</td>
+                    <td className="p-4 text-slate-300">Basic inbox available</td>
+                    <td className="p-4 font-semibold text-emerald-400 bg-blue-950/20">1-Click takeover with real-time sound chimes</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* FAQ Accordion */}
       <section id="faq" className="py-20 border-b border-slate-800/60 bg-slate-900/30">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -717,7 +717,7 @@ export function SaaSMarketingHomepage({
           </div>
           <div className="flex items-center gap-6">
             <a href="#features" className="hover:text-slate-300 transition">Features</a>
-            <a href="#comparison" className="hover:text-slate-300 transition">Anti-Chatbase</a>
+            <a href="#comparison" className="hover:text-slate-300 transition">Comparison</a>
             <a href="#pricing" className="hover:text-slate-300 transition">Pricing</a>
             <button
               type="button"
