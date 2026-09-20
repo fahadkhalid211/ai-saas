@@ -17,13 +17,22 @@ export async function generateMetadata({ params }: SitePageProps): Promise<Metad
     (config?.businessName ? `${config.businessName} - Official Booking & Services` : 'Online Booking & Services');
   const description = config?.seo?.metaDescription || config?.heroSubheadline || '';
 
+  const ogImage = config?.seo?.ogImageUrl || config?.heroImageUrl;
+
   return {
     title,
     description,
     openGraph: {
       title,
       description,
-      images: config?.seo?.ogImageUrl || config?.heroImageUrl ? [config.seo?.ogImageUrl || config.heroImageUrl!] : undefined,
+      type: 'website',
+      images: ogImage ? [ogImage] : undefined,
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: ogImage ? [ogImage] : undefined,
     },
   };
 }

@@ -975,7 +975,7 @@ export default function HostedBusinessSiteClient({
   };
 
   return (
-    <div className={`min-h-screen ${isDark ? 'dark bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'} font-sans ${currentTheme.selectionBg} transition-colors duration-200`}>
+    <div className={`min-h-screen ${isDark ? 'dark bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'} font-sans ${currentTheme.selectionBg} transition-colors duration-200 overflow-x-hidden`}>
       {/* Top Announcement Bar */}
       <div className={`${currentTheme.badgeBg} py-2 px-4 text-center text-xs font-semibold tracking-wider uppercase flex items-center justify-center gap-2 shadow-xs`}>
         <Sparkles className="w-3.5 h-3.5" />
@@ -1584,17 +1584,17 @@ export default function HostedBusinessSiteClient({
 
       {/* Floating AI Concierge Chatbot Button & Drawer */}
       {activeConfig.assistantId !== '' && activeConfig.assistantId !== 'none' && (
-        <div className="fixed bottom-6 right-6 z-40">
+        <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-40 max-w-[calc(100vw-2rem)]">
           {!isChatOpen ? (
             <button
               onClick={() => setIsChatOpen(true)}
-              className={`flex items-center gap-2.5 px-5 py-3.5 ${currentTheme.btnBg} ${currentTheme.btnHoverBg} ${currentTheme.btnText} font-bold rounded-full shadow-2xl transition-all hover:scale-105 active:scale-95`}
+              className={`flex items-center gap-2.5 px-4 sm:px-5 py-3 sm:py-3.5 ${currentTheme.btnBg} ${currentTheme.btnHoverBg} ${currentTheme.btnText} font-bold rounded-full shadow-2xl transition-all hover:scale-105 active:scale-95`}
             >
-              <MessageSquare className="w-5 h-5" />
+              <MessageSquare className="w-5 h-5 shrink-0" />
               <span className="text-sm">Chat with {activeConfig.businessName.split(' ')[0]} AI</span>
             </button>
           ) : (
-            <div className={`w-[360px] sm:w-[400px] h-[520px] ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'} border rounded-3xl shadow-2xl flex flex-col overflow-hidden`}>
+            <div className={`w-[calc(100vw-2rem)] sm:w-[400px] max-w-[400px] h-[520px] max-h-[85vh] ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'} border rounded-3xl shadow-2xl flex flex-col overflow-hidden`}>
               {/* Chat Header */}
               <div className={`${isDark ? 'bg-slate-950 border-slate-800' : 'bg-slate-50 border-slate-200'} border-b p-4 flex items-center justify-between`}>
                 <div className="flex items-center gap-3">

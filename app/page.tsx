@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Bot, RefreshCw } from 'lucide-react';
 import { Appointment } from '@/components/crm/AppointmentsTab';
 import { AdminLoginScreen } from '@/components/crm/AdminLoginScreen';
+import { SaaSMarketingHomepage } from '@/components/landing/SaaSMarketingHomepage';
 import { DashboardHeader } from '@/components/crm/DashboardHeader';
 import { DashboardSidebar } from '@/components/crm/DashboardSidebar';
 import { NotificationToast } from '@/components/crm/NotificationToast';
@@ -59,10 +60,16 @@ export default function DashboardPage() {
       setTheme(saved);
       if (saved === 'dark') document.documentElement.classList.add('dark');
     }
-    // Show onboarding wizard for first-time users
-    const onboardingDone = localStorage.getItem('kortex_onboarding_completed');
-    if (!onboardingDone) {
-      setShowOnboarding(true);
+    // Check URL query parameters for direct login/register links
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const authParam = params.get('auth') || (params.get('register') ? 'register' : params.get('login') ? 'staff' : null);
+      if (authParam) {
+        if (authParam === 'admin' || authParam === 'staff' || authParam === 'register') {
+          setAuthLoginMode(authParam);
+        }
+        setShowAuthScreen(true);
+      }
     }
   }, []);
 
@@ -80,6 +87,7 @@ export default function DashboardPage() {
   // Enterprise Admin Authentication & Session state
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(true);
   const [isAuthChecking, setIsAuthChecking] = useState<boolean>(true);
+  const [showAuthScreen, setShowAuthScreen] = useState<boolean>(false);
   const [authApiKeyInput, setAuthApiKeyInput] = useState<string>('');
   const [showAuthPasscode, setShowAuthPasscode] = useState<boolean>(false);
   const [authError, setAuthError] = useState<string | null>(null);
@@ -704,31 +712,45 @@ export default function DashboardPage() {
   }
 
   if (!isAuthenticated) {
+    if (showAuthScreen) {
+      return (
+        <AdminLoginScreen
+          theme={theme}
+          authError={authError}
+          authLoginMode={authLoginMode}
+          setAuthLoginMode={setAuthLoginMode}
+          setAuthError={setAuthError}
+          authApiKeyInput={authApiKeyInput}
+          setAuthApiKeyInput={setAuthApiKeyInput}
+          showAuthPasscode={showAuthPasscode}
+          setShowAuthPasscode={setShowAuthPasscode}
+          staffEmailInput={staffEmailInput}
+          setStaffEmailInput={setStaffEmailInput}
+          staffPasswordInput={staffPasswordInput}
+          setStaffPasswordInput={setStaffPasswordInput}
+          regBusinessNameInput={regBusinessNameInput}
+          setRegBusinessNameInput={setRegBusinessNameInput}
+          regEmailInput={regEmailInput}
+          setRegEmailInput={setRegEmailInput}
+          regPasswordInput={regPasswordInput}
+          setRegPasswordInput={setRegPasswordInput}
+          regTemplateInput={regTemplateInput}
+          setRegTemplateInput={setRegTemplateInput}
+          isLoggingIn={isLoggingIn}
+          handleLogin={handleLogin}
+          onBackToHome={() => setShowAuthScreen(false)}
+        />
+      );
+    }
+
     return (
-      <AdminLoginScreen
+      <SaaSMarketingHomepage
         theme={theme}
-        authError={authError}
-        authLoginMode={authLoginMode}
-        setAuthLoginMode={setAuthLoginMode}
-        setAuthError={setAuthError}
-        authApiKeyInput={authApiKeyInput}
-        setAuthApiKeyInput={setAuthApiKeyInput}
-        showAuthPasscode={showAuthPasscode}
-        setShowAuthPasscode={setShowAuthPasscode}
-        staffEmailInput={staffEmailInput}
-        setStaffEmailInput={setStaffEmailInput}
-        staffPasswordInput={staffPasswordInput}
-        setStaffPasswordInput={setStaffPasswordInput}
-        regBusinessNameInput={regBusinessNameInput}
-        setRegBusinessNameInput={setRegBusinessNameInput}
-        regEmailInput={regEmailInput}
-        setRegEmailInput={setRegEmailInput}
-        regPasswordInput={regPasswordInput}
-        setRegPasswordInput={setRegPasswordInput}
-        regTemplateInput={regTemplateInput}
-        setRegTemplateInput={setRegTemplateInput}
-        isLoggingIn={isLoggingIn}
-        handleLogin={handleLogin}
+        onToggleTheme={toggleTheme}
+        onOpenAuth={(mode) => {
+          setAuthLoginMode(mode);
+          setShowAuthScreen(true);
+        }}
       />
     );
   }

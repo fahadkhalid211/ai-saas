@@ -38,6 +38,7 @@ interface AdminLoginScreenProps {
   setRegTemplateInput: (val: string) => void;
   isLoggingIn: boolean;
   handleLogin: (e: React.FormEvent) => void;
+  onBackToHome?: () => void;
 }
 
 export function AdminLoginScreen({
@@ -64,6 +65,7 @@ export function AdminLoginScreen({
   setRegTemplateInput,
   isLoggingIn,
   handleLogin,
+  onBackToHome,
 }: AdminLoginScreenProps) {
   const isRegEmailValid = !regEmailInput || EMAIL_REGEX.test(regEmailInput.trim());
   const isRegPasswordValid = !regPasswordInput || regPasswordInput.trim().length >= 6;
@@ -86,6 +88,15 @@ export function AdminLoginScreen({
   return (
     <div className={`${theme === 'dark' ? 'dark' : ''} min-h-screen w-full flex items-center justify-center bg-slate-950 font-sans p-4 relative overflow-hidden`}>
       <div className="w-full max-w-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl p-7 z-10 space-y-5">
+        {onBackToHome && (
+          <button
+            type="button"
+            onClick={onBackToHome}
+            className="text-xs font-semibold text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white flex items-center gap-1 transition cursor-pointer mb-1"
+          >
+            <span>&larr; Back to Homepage</span>
+          </button>
+        )}
         <div className="flex flex-col items-center text-center space-y-1.5">
           <div className="h-12 w-12 rounded-2xl bg-blue-600/10 dark:bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-600 dark:text-blue-400 mb-0.5">
             {authLoginMode === 'register' ? <Building2 className="h-6 w-6" /> : <ShieldCheck className="h-6 w-6" />}
