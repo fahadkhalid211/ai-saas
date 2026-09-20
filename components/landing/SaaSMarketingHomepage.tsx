@@ -23,8 +23,12 @@ import {
   Lock,
   Headphones,
   FileCheck,
+  Activity,
+  Cpu,
 } from 'lucide-react';
 import Link from 'next/link';
+import { ParallaxBackground } from './ParallaxBackground';
+import { NeuralBrainWorkflow } from './NeuralBrainWorkflow';
 
 interface SaaSMarketingHomepageProps {
   onOpenAuth: (mode: 'admin' | 'staff' | 'register') => void;
@@ -115,34 +119,41 @@ export function SaaSMarketingHomepage({
   ];
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans selection:bg-blue-600 selection:text-white">
-      {/* Top Announcement Bar */}
-      <div className="bg-gradient-to-r from-blue-900/40 via-indigo-900/40 to-slate-900/40 border-b border-blue-800/40 px-4 py-2 text-center text-xs text-blue-200">
-        <span className="font-bold text-white uppercase tracking-wider text-[10px] bg-blue-600/60 px-2 py-0.5 rounded mr-2 border border-blue-400/40">
-          Action-Driven Conversion
-        </span>
-        <span>Native Calendar Booking. 0% Token Markup. Automatic Lead Capture.</span>
-      </div>
+    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans selection:bg-blue-600 selection:text-white relative overflow-hidden">
+      <ParallaxBackground />
 
-      {/* Navigation Bar */}
-      <header className="sticky top-0 z-50 backdrop-blur-md bg-slate-950/80 border-b border-slate-800/80">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="h-9 w-9 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center text-white shadow-md shadow-blue-500/20">
-              <Bot className="h-5 w-5" />
+      <div className="relative z-10">
+        {/* Top Announcement Bar */}
+        <div className="bg-gradient-to-r from-blue-900/40 via-indigo-900/40 to-slate-900/40 border-b border-blue-800/40 px-4 py-2 text-center text-xs text-blue-200">
+          <span className="font-bold text-white uppercase tracking-wider text-[10px] bg-blue-600/60 px-2 py-0.5 rounded mr-2 border border-blue-400/40">
+            Action-Driven Conversion
+          </span>
+          <span>Native Calendar Booking. 0% Token Markup. Automatic Lead Capture.</span>
+        </div>
+
+        {/* Navigation Bar */}
+        <header className="sticky top-0 z-50 backdrop-blur-md bg-slate-950/80 border-b border-slate-800/80">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="h-9 w-9 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center text-white shadow-md shadow-blue-500/20">
+                <Bot className="h-5 w-5" />
+              </div>
+              <span className="font-bold text-lg tracking-tight text-white">
+                KORTEX<span className="text-blue-500">.AI</span>
+              </span>
             </div>
-            <span className="font-bold text-lg tracking-tight text-white">
-              KORTEX<span className="text-blue-500">.AI</span>
-            </span>
-          </div>
 
-          <nav className="hidden md:flex items-center gap-7 text-xs font-medium text-slate-300">
-            <a href="#features" className="hover:text-white transition">Features</a>
-            <a href="#templates" className="hover:text-white transition">Industry Templates</a>
-            <a href="#pricing" className="hover:text-white transition">Pricing</a>
-            <a href="#comparison" className="hover:text-white transition">Comparison</a>
-            <a href="#faq" className="hover:text-white transition">FAQ</a>
-          </nav>
+            <nav className="hidden md:flex items-center gap-7 text-xs font-medium text-slate-300">
+              <a href="#workflow" className="hover:text-white transition flex items-center gap-1.5">
+                <span className="h-1.5 w-1.5 rounded-full bg-blue-400 animate-pulse" />
+                <span>Live Brain</span>
+              </a>
+              <a href="#features" className="hover:text-white transition">Features</a>
+              <a href="#templates" className="hover:text-white transition">Templates</a>
+              <a href="#pricing" className="hover:text-white transition">Pricing</a>
+              <a href="#comparison" className="hover:text-white transition">Comparison</a>
+              <a href="#faq" className="hover:text-white transition">FAQ</a>
+            </nav>
 
           <div className="flex items-center gap-3">
             {onToggleTheme && (
@@ -331,6 +342,65 @@ export function SaaSMarketingHomepage({
         </div>
       </section>
 
+      {/* Live AI Brain Workflow Engine */}
+      <section id="workflow" className="py-20 border-b border-slate-800/80 bg-slate-950/40 relative">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-3xl mx-auto mb-14 space-y-3">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-950/80 border border-blue-800/80 text-blue-300 text-xs font-medium shadow-inner">
+              <Cpu className="h-3.5 w-3.5 text-blue-400" />
+              <span>Real-Time Cognitive Pipeline</span>
+            </div>
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight">
+              The Live AI Brain Behind Every Conversation
+            </h2>
+            <p className="text-sm sm:text-base text-slate-400 leading-relaxed max-w-2xl mx-auto">
+              Experience the 4-stage neural pipeline executing in real time: sensory multi-channel perception, local vector retrieval, cognitive reasoning with strict firebreaks, and physical calendar action.
+            </p>
+          </div>
+
+          <NeuralBrainWorkflow />
+        </div>
+      </section>
+
+      {/* Platform Telemetry & Conversion Proof Strip */}
+      <section className="py-12 border-b border-slate-800/60 bg-slate-900/30">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="p-5 rounded-2xl border border-slate-800 bg-slate-950/60 flex flex-col justify-between space-y-2">
+              <div className="text-3xl sm:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-sky-300 font-mono">
+                0%
+              </div>
+              <div className="text-xs font-bold text-white">Token Arbitrage Markup</div>
+              <p className="text-[11px] text-slate-400">Direct BYOK wholesale cost on OpenAI, Anthropic, Gemini, and DeepSeek.</p>
+            </div>
+
+            <div className="p-5 rounded-2xl border border-slate-800 bg-slate-950/60 flex flex-col justify-between space-y-2">
+              <div className="text-3xl sm:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-300 font-mono">
+                &lt; 400ms
+              </div>
+              <div className="text-xs font-bold text-white">Sub-Second Cognitive Latency</div>
+              <p className="text-[11px] text-slate-400">Powered by local vector search and high-speed cascading inference engines.</p>
+            </div>
+
+            <div className="p-5 rounded-2xl border border-slate-800 bg-slate-950/60 flex flex-col justify-between space-y-2">
+              <div className="text-3xl sm:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-300 font-mono">
+                100%
+              </div>
+              <div className="text-xs font-bold text-white">Double-Booking Immunity</div>
+              <p className="text-[11px] text-slate-400">Transactional mutex lock ensures calendar slots can never be double-booked.</p>
+            </div>
+
+            <div className="p-5 rounded-2xl border border-slate-800 bg-slate-950/60 flex flex-col justify-between space-y-2">
+              <div className="text-3xl sm:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-300 font-mono">
+                3.2x
+              </div>
+              <div className="text-xs font-bold text-white">Lead Capture Acceleration</div>
+              <p className="text-[11px] text-slate-400">Automatic in-chat email and phone extraction outperforms static lead forms.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Core Features Grid */}
       <section id="features" className="py-20 border-b border-slate-800/60">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -379,12 +449,13 @@ export function SaaSMarketingHomepage({
             ].map((feat, idx) => (
               <div
                 key={idx}
-                className="p-6 rounded-2xl border border-slate-800 bg-slate-900/60 hover:border-slate-700 transition space-y-3"
+                className="group relative p-6 rounded-2xl border border-slate-800 bg-slate-900/60 hover:bg-slate-900/95 hover:border-blue-500/50 hover:shadow-2xl hover:shadow-blue-500/10 transition-all duration-300 hover:-translate-y-1.5 space-y-3 overflow-hidden backdrop-blur-sm"
               >
-                <div className="h-10 w-10 rounded-xl bg-blue-950 border border-blue-800/60 text-blue-400 flex items-center justify-center">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 rounded-full blur-2xl group-hover:bg-blue-500/15 transition-all duration-500 pointer-events-none" />
+                <div className="h-10 w-10 rounded-xl bg-blue-950 border border-blue-800/60 text-blue-400 flex items-center justify-center group-hover:scale-110 group-hover:border-blue-500/80 transition-all duration-300">
                   <feat.icon className="h-5 w-5" />
                 </div>
-                <h3 className="text-base font-bold text-white">{feat.title}</h3>
+                <h3 className="text-base font-bold text-white group-hover:text-blue-200 transition-colors">{feat.title}</h3>
                 <p className="text-xs text-slate-400 leading-relaxed">{feat.desc}</p>
               </div>
             ))}
@@ -419,16 +490,17 @@ export function SaaSMarketingHomepage({
             {templates.map((tpl, i) => (
               <div
                 key={i}
-                className="rounded-2xl border border-slate-800 bg-slate-900 overflow-hidden hover:border-blue-500/50 transition flex flex-col justify-between p-5 space-y-4"
+                className="group relative rounded-2xl border border-slate-800 bg-slate-900/80 hover:bg-slate-900/95 hover:border-blue-500/60 hover:shadow-2xl hover:shadow-blue-500/15 transition-all duration-300 hover:-translate-y-1.5 flex flex-col justify-between p-5 space-y-4 overflow-hidden backdrop-blur-sm"
               >
-                <div className="space-y-2">
+                <div className="absolute top-0 right-0 w-28 h-28 bg-indigo-500/5 rounded-full blur-xl group-hover:bg-blue-500/15 transition-all duration-500 pointer-events-none" />
+                <div className="space-y-2 relative z-10">
                   <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-blue-400 bg-blue-950/80 px-2 py-0.5 rounded border border-blue-800/60">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-blue-400 bg-blue-950/80 px-2 py-0.5 rounded border border-blue-800/60 group-hover:border-blue-500 transition-colors">
                       {tpl.tag}
                     </span>
                     <span className="text-[11px] text-slate-500 font-mono">/site/{tpl.slug}</span>
                   </div>
-                  <h3 className="text-base font-bold text-white">{tpl.name}</h3>
+                  <h3 className="text-base font-bold text-white group-hover:text-blue-200 transition-colors">{tpl.name}</h3>
                   <p className="text-xs text-slate-400 leading-relaxed">{tpl.desc}</p>
                 </div>
 
@@ -436,10 +508,10 @@ export function SaaSMarketingHomepage({
                   href={`/site/${tpl.slug}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center gap-1.5 text-xs font-semibold text-slate-200 bg-slate-800 hover:bg-slate-700 py-2 rounded-xl transition border border-slate-700"
+                  className="relative z-10 inline-flex items-center justify-center gap-1.5 text-xs font-semibold text-slate-200 bg-slate-800/90 hover:bg-blue-600 hover:text-white py-2 rounded-xl transition-all duration-200 border border-slate-700 hover:border-blue-500"
                 >
                   <span>Preview Live Template</span>
-                  <ExternalLink className="h-3 w-3 text-slate-400" />
+                  <ExternalLink className="h-3 w-3 text-slate-400 group-hover:text-white" />
                 </a>
               </div>
             ))}
@@ -707,6 +779,39 @@ export function SaaSMarketingHomepage({
         </div>
       </section>
 
+      {/* Final High-Impact Conversion CTA Banner */}
+      <section className="py-20 border-b border-slate-800/80 bg-gradient-to-b from-slate-900/40 via-blue-950/20 to-slate-950 relative overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_50%_at_50%_50%,rgba(37,99,235,0.15),transparent)] pointer-events-none" />
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6 relative z-10">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-950/80 border border-blue-800/80 text-blue-300 text-xs font-medium">
+            <Sparkles className="h-3.5 w-3.5 text-blue-400" />
+            <span>Zero Token Tax • 14-Day Free Access</span>
+          </div>
+          <h2 className="text-3xl sm:text-5xl font-extrabold text-white tracking-tight">
+            Ready to Turn Casual Website Traffic into Confirmed Bookings?
+          </h2>
+          <p className="text-sm sm:text-base text-slate-400 max-w-2xl mx-auto leading-relaxed">
+            Deploy an autonomous AI representative trained on your verified documents in under 60 seconds. Connect your calendar, choose an industry template, and start capturing qualified leads today.
+          </p>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+            <button
+              type="button"
+              onClick={() => onOpenAuth('register')}
+              className="w-full sm:w-auto px-7 py-3.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-sm shadow-xl shadow-blue-600/30 transition flex items-center justify-center gap-2 cursor-pointer"
+            >
+              <span>Deploy Your Agent in 60 Seconds</span>
+              <ArrowRight className="h-4 w-4" />
+            </button>
+            <a
+              href="#workflow"
+              className="w-full sm:w-auto px-7 py-3.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-700 font-semibold text-sm transition flex items-center justify-center gap-2"
+            >
+              <span>Inspect Neural Brain Architecture</span>
+            </a>
+          </div>
+        </div>
+      </section>
+
       {/* Footer */}
       <footer className="py-12 bg-slate-950 text-slate-500 text-xs">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
@@ -729,6 +834,7 @@ export function SaaSMarketingHomepage({
           </div>
         </div>
       </footer>
+      </div>
     </div>
   );
 }
