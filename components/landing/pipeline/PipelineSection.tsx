@@ -1,15 +1,31 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import dynamic from 'next/dynamic';
-import { Cpu, Activity, ArrowRight, Play, CheckCircle2, RotateCcw } from 'lucide-react';
-import { PIPELINE_SCENARIOS, PipelineScenarioData } from './types';
+import {
+  Cpu,
+  Activity,
+  Layers,
+  Database,
+  Calendar,
+  Shield,
+  MessageSquare,
+  Terminal,
+  Radio,
+  Sparkles,
+} from 'lucide-react';
+import {
+  PIPELINE_SCENARIOS,
+  TOPOLOGY_NODES,
+  VECTOR_CLUSTERS,
+  TopologyNode,
+} from './types';
 import { PipelineFallbackSvg } from './PipelineFallbackSvg';
 
 // Dynamically import Three.js scene with ssr: false so Three.js stays out of initial bundle
 const PipelineScene = dynamic(() => import('./PipelineScene'), {
   ssr: false,
-  loading: () => <PipelineFallbackSvg stages={PIPELINE_SCENARIOS[0].stages} activeStageIndex={0} />,
+  loading: () => <PipelineFallbackSvg scenario={PIPELINE_SCENARIOS[0]} />,
 });
 
 interface PipelineSectionProps {
@@ -18,29 +34,13 @@ interface PipelineSectionProps {
 
 export function PipelineSection({ theme = 'dark' }: PipelineSectionProps) {
   const [activeScenarioIdx, setActiveScenarioIdx] = useState(0);
-  const [activeStageIdx, setActiveStageIdx] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(true);
+  const [selectedNodeId, setSelectedNodeId] = useState<string>('tool_mutex');
 
   const scenario = PIPELINE_SCENARIOS[activeScenarioIdx];
   const isLight = theme === 'light';
 
-  // Auto-advance through stages
-  useEffect(() => {
-    if (!isPlaying) return;
-
-    const interval = setInterval(() => {
-      setActiveStageIdx((prev) => (prev + 1) % scenario.stages.length);
-    }, 2800);
-
-    return () => clearInterval(interval);
-  }, [isPlaying, scenario.stages.length]);
-
-  const selectScenario = (idx: number) => {
-    setActiveScenarioIdx(idx);
-    setActiveStageIdx(0);
-  };
-
-  const activeStage = scenario.stages[activeStageIdx];
+  const selectedNode =
+    TOPOLOGY_NODES.find((n) => n.id === selectedNodeId) || TOPOLOGY_NODES[0];
 
   return (
     <div
@@ -49,7 +49,7 @@ export function PipelineSection({ theme = 'dark' }: PipelineSectionProps) {
           ? 'border-slate-200/90 bg-white/95 text-slate-900 shadow-slate-200/70'
           : 'border-slate-800/90 bg-slate-950/95 text-slate-100 shadow-[0_20px_50px_rgba(0,0,0,0.5)]'
       }`}
-      aria-label="Kortex AI Autonomous Processing Pipeline: 6-stage grounded execution flow"
+      aria-label="Kortex AI Autonomous Processing Systems Network: Wired & Freeflow Architecture Visualizer"
     >
       {/* Top Header & Telemetry Bar */}
       <div
@@ -70,7 +70,7 @@ export function PipelineSection({ theme = 'dark' }: PipelineSectionProps) {
           <div>
             <div className="flex items-center gap-2">
               <span className="text-sm font-bold tracking-tight uppercase">
-                Autonomous Systems Pipeline
+                Systems Architecture Network
               </span>
               <span
                 className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase border ${
@@ -80,50 +80,24 @@ export function PipelineSection({ theme = 'dark' }: PipelineSectionProps) {
                 }`}
               >
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                WebGL System Engine
+                Live Topology 60FPS
               </span>
             </div>
             <p className={`text-xs ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>
-              Hardware-accelerated visualization of local vector embeddings, hybrid RRF retrieval, factual grounding, and deterministic booking execution
+              Hardware-accelerated WebGL network topology: Ingress channels, 384-d vector particle clouds, reasoning core, and concurrency-locked tools
             </p>
           </div>
         </div>
 
-        {/* Play/Pause & Reset Controls */}
         <div className="flex items-center gap-2 self-stretch sm:self-auto justify-end">
-          <button
-            type="button"
-            onClick={() => setIsPlaying(!isPlaying)}
-            className={`text-xs px-3 py-1.5 rounded-xl border font-mono transition flex items-center gap-1.5 cursor-pointer ${
-              isLight
-                ? 'border-slate-200 bg-white hover:bg-slate-100 text-slate-700 shadow-xs'
-                : 'border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-slate-200'
+          <div
+            className={`px-3 py-1.5 rounded-xl border font-mono text-[11px] flex items-center gap-2 ${
+              isLight ? 'bg-white border-slate-200 text-slate-700' : 'bg-slate-900 border-slate-800 text-slate-300'
             }`}
           >
-            {isPlaying ? (
-              <>
-                <span className="h-2 w-2 rounded-xs bg-amber-400" />
-                <span>PAUSE</span>
-              </>
-            ) : (
-              <>
-                <Play className="h-3 w-3 text-emerald-400" />
-                <span>RESUME</span>
-              </>
-            )}
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveStageIdx(0)}
-            className={`p-2 rounded-xl border transition cursor-pointer ${
-              isLight
-                ? 'border-slate-200 bg-white hover:bg-slate-100 text-slate-700'
-                : 'border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-slate-200'
-            }`}
-            title="Restart Stages"
-          >
-            <RotateCcw className="h-3.5 w-3.5" />
-          </button>
+            <Radio className="h-3 w-3 text-cyan-500 animate-pulse" />
+            <span>Interactive Node Inspector Ready</span>
+          </div>
         </div>
       </div>
 
@@ -139,7 +113,7 @@ export function PipelineSection({ theme = 'dark' }: PipelineSectionProps) {
             <button
               key={sc.id}
               type="button"
-              onClick={() => selectScenario(idx)}
+              onClick={() => setActiveScenarioIdx(idx)}
               className={`px-4 py-2.5 rounded-t-xl text-xs font-semibold whitespace-nowrap transition cursor-pointer flex items-center gap-2 border-b-2 ${
                 isActive
                   ? isLight
@@ -186,118 +160,203 @@ export function PipelineSection({ theme = 'dark' }: PipelineSectionProps) {
                   : 'bg-cyan-950/80 border-cyan-800/80 text-cyan-300'
               }`}
             >
-              INCOMING SIGNAL
+              INBOUND SIGNAL
             </span>
-            <span className="italic truncate">&quot;{scenario.inputMessage}&quot;</span>
+            <span className="italic truncate">&quot;{scenario.inboundText}&quot;</span>
           </div>
 
           <div className="flex items-center gap-2 shrink-0 text-[11px] font-mono text-slate-400">
             <Activity className="h-3 w-3 text-cyan-500" />
-            <span>Active Stage: {activeStageIdx + 1} of {scenario.stages.length}</span>
+            <span>Click or hover any node in canvas to inspect telemetry</span>
           </div>
         </div>
 
-        {/* Dynamic Three.js WebGL Scene */}
+        {/* Dynamic Three.js WebGL Wired & Freeflow Scene */}
         <div
           className={`rounded-2xl border overflow-hidden relative ${
-            isLight ? 'border-slate-200 bg-slate-50/60' : 'border-slate-800/80 bg-slate-950/90'
+            isLight ? 'border-slate-200 bg-slate-950' : 'border-slate-800/80 bg-slate-950'
           }`}
         >
+          {/* Blueprint Overlay Header Tags */}
+          <div className="absolute top-3 left-4 z-10 pointer-events-none flex items-center gap-3 font-mono text-[10px] text-slate-400">
+            <span className="font-bold tracking-wider text-slate-300">WORKSPACE: ACME-PRODUCTION</span>
+            <span>·</span>
+            <span>TOPOLOGY: WIRED GRAPH + 3D PARTICLE NEBULAE</span>
+          </div>
+
+          <div className="absolute top-3 right-4 z-10 pointer-events-none flex items-center gap-2 font-mono text-[10px] text-cyan-400">
+            <span className="h-1.5 w-1.5 rounded-full bg-cyan-400 animate-ping" />
+            <span>PHOTON BUS STREAMING</span>
+          </div>
+
           <PipelineScene
-            stages={scenario.stages}
-            activeStageIndex={activeStageIdx}
+            scenario={scenario}
             theme={theme}
+            selectedNodeId={selectedNodeId}
+            onSelectNode={(id) => setSelectedNodeId(id)}
           />
+
+          {/* Blueprint Bottom Subsystem Labels Bar */}
+          <div className="p-3 border-t border-slate-900 bg-slate-950/90 flex flex-wrap items-center justify-between gap-3 text-[10px] font-mono text-slate-400">
+            <div className="flex items-center gap-4">
+              <span className="text-cyan-400 font-bold">INGRESS CHANNELS</span>
+              <span>→</span>
+              <span className="text-indigo-400 font-bold">384-D VECTOR NEBULAE</span>
+              <span>→</span>
+              <span className="text-purple-400 font-bold">ORCHESTRATION CORE</span>
+              <span>→</span>
+              <span className="text-emerald-400 font-bold">MUTEX CONTROLLERS</span>
+              <span>→</span>
+              <span className="text-blue-400 font-bold">EGRESS DELIVERABLES</span>
+            </div>
+            <div className="text-slate-500">
+              CLICK NODES TO INSPECT
+            </div>
+          </div>
         </div>
 
-        {/* HTML Accessible Overlay: Stage Step Navigation & Details */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
-          {scenario.stages.map((st, sIdx) => {
-            const isActive = sIdx === activeStageIdx;
-            const isPassed = sIdx < activeStageIdx;
+        {/* Subsystem Quick Nav Pills */}
+        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
+          <span className="text-[11px] font-mono text-slate-400 shrink-0 mr-1">Inspect Node:</span>
+          {TOPOLOGY_NODES.map((node) => {
+            const isSelected = node.id === selectedNodeId;
+            const isPathActive = scenario.primaryPath.includes(node.id);
 
             return (
               <button
-                key={st.id}
+                key={node.id}
                 type="button"
-                onClick={() => {
-                  setActiveStageIdx(sIdx);
-                  setIsPlaying(false);
-                }}
-                className={`p-3 rounded-2xl border text-left transition-all cursor-pointer flex flex-col justify-between space-y-1.5 ${
-                  isActive
+                onClick={() => setSelectedNodeId(node.id)}
+                className={`px-3 py-1 rounded-xl text-xs font-mono transition cursor-pointer whitespace-nowrap flex items-center gap-1.5 border ${
+                  isSelected
                     ? isLight
-                      ? 'border-blue-500 bg-blue-50/90 text-blue-950 shadow-sm ring-1 ring-blue-500/20'
-                      : 'border-cyan-400 bg-cyan-950/40 text-cyan-200 shadow-md shadow-cyan-500/10'
-                    : isPassed
+                      ? 'border-blue-600 bg-blue-50 text-blue-700 font-bold shadow-xs'
+                      : 'border-cyan-400 bg-cyan-950/60 text-cyan-200 font-bold'
+                    : isPathActive
                     ? isLight
-                      ? 'border-emerald-300 bg-emerald-50/40 text-slate-700'
-                      : 'border-emerald-500/30 bg-slate-900/60 text-slate-300'
+                      ? 'border-slate-300 bg-white text-slate-800'
+                      : 'border-slate-700 bg-slate-900/60 text-slate-300'
                     : isLight
-                    ? 'border-slate-200 bg-white/70 hover:border-slate-300 text-slate-500'
-                    : 'border-slate-800/80 bg-slate-950/40 hover:border-slate-700 text-slate-400'
+                    ? 'border-slate-200 bg-slate-50 text-slate-500 hover:bg-slate-100'
+                    : 'border-slate-800/80 bg-slate-950/40 text-slate-400 hover:bg-slate-900'
                 }`}
               >
-                <div className="flex items-center justify-between text-[10px] font-mono">
-                  <span className="font-bold">Stage {sIdx + 1}</span>
-                  {isActive ? (
-                    <span className="h-1.5 w-1.5 rounded-full bg-cyan-400 animate-ping" />
-                  ) : isPassed ? (
-                    <CheckCircle2 className="h-3 w-3 text-emerald-500" />
-                  ) : null}
-                </div>
-
-                <div className="font-bold text-xs leading-tight">
-                  {st.name}
-                </div>
-
-                <div className="text-[9px] font-mono text-slate-400 truncate">
-                  {st.badge}
-                </div>
+                <span
+                  className="h-1.5 w-1.5 rounded-full shrink-0"
+                  style={{ backgroundColor: node.color }}
+                />
+                <span>{node.label}</span>
               </button>
             );
           })}
         </div>
 
-        {/* Active Stage Detailed Architecture Card */}
+        {/* Selected Node Detailed Architecture Telemetry Card */}
         <div
-          className={`p-4 sm:p-5 rounded-2xl border flex flex-col md:flex-row items-start md:items-center justify-between gap-4 transition-all ${
+          className={`p-5 rounded-2xl border transition-all ${
             isLight
               ? 'border-slate-200 bg-white shadow-sm'
               : 'border-slate-800 bg-slate-900/70'
           }`}
         >
-          <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <span
-                className={`text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded border ${
-                  isLight
-                    ? 'bg-blue-100 text-blue-800 border-blue-200'
-                    : 'bg-cyan-950/80 text-cyan-300 border-cyan-800/80'
-                }`}
-              >
-                {activeStage.badge}
-              </span>
-              <h4 className="text-sm font-bold">{activeStage.name}</h4>
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-4 pb-4 border-b border-slate-200 dark:border-slate-800">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <span
+                  className={`text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded border ${
+                    isLight
+                      ? 'bg-blue-100 text-blue-800 border-blue-200'
+                      : 'bg-cyan-950/80 text-cyan-300 border-cyan-800/80'
+                  }`}
+                >
+                  {selectedNode.badge}
+                </span>
+                <span className="text-xs font-mono uppercase text-slate-400 tracking-wider">
+                  Category: {selectedNode.category.replace('_', ' ')}
+                </span>
+              </div>
+              <h4 className="text-base font-bold text-slate-900 dark:text-white">
+                {selectedNode.label}
+              </h4>
+              <p className={`text-xs ${isLight ? 'text-slate-600' : 'text-slate-300'}`}>
+                {selectedNode.description}
+              </p>
             </div>
-            <p className={`text-xs ${isLight ? 'text-slate-600' : 'text-slate-300'}`}>
-              {activeStage.description}
-            </p>
-            <p className="text-[11px] font-mono text-slate-400 pt-0.5">
-              {activeStage.detail}
-            </p>
+
+            {/* Metrics Chips */}
+            <div className="flex flex-wrap items-center gap-2 shrink-0">
+              {selectedNode.telemetryMetrics?.map((metric, mIdx) => (
+                <div
+                  key={mIdx}
+                  className={`px-3 py-1.5 rounded-xl border font-mono text-xs ${
+                    isLight ? 'bg-slate-50 border-slate-200' : 'bg-slate-950/80 border-slate-800'
+                  }`}
+                >
+                  <div className="text-[9px] text-slate-400 uppercase tracking-wider">
+                    {metric.label}
+                  </div>
+                  <div className="font-bold text-slate-800 dark:text-slate-200 mt-0.5">
+                    {metric.value}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2.5 shrink-0 text-xs font-mono">
+          {/* Technical Spec & Sample Payload */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-1">
+              <div className="text-[10px] font-mono font-bold uppercase text-slate-400 tracking-wider">
+                Technical Specification
+              </div>
+              <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                {selectedNode.technicalSpec}
+              </p>
+            </div>
+
+            <div className="space-y-1">
+              <div className="text-[10px] font-mono font-bold uppercase text-slate-400 tracking-wider flex items-center gap-1.5">
+                <Terminal className="h-3 w-3 text-cyan-500" />
+                <span>Live Event Payload</span>
+              </div>
+              <pre
+                className={`p-2.5 rounded-xl text-[11px] font-mono overflow-x-auto border ${
+                  isLight
+                    ? 'bg-slate-50 border-slate-200 text-slate-800'
+                    : 'bg-slate-950 border-slate-800/90 text-cyan-300'
+                }`}
+              >
+                <code>{selectedNode.samplePayload || '{}'}</code>
+              </pre>
+            </div>
+          </div>
+        </div>
+
+        {/* Current Scenario Outcome Banner */}
+        <div
+          className={`p-4 rounded-2xl border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 font-mono text-xs ${
+            isLight
+              ? 'border-emerald-200 bg-emerald-50/50 text-emerald-950'
+              : 'border-emerald-800/60 bg-emerald-950/30 text-emerald-200'
+          }`}
+        >
+          <div className="space-y-0.5">
+            <div className="font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider text-[10px]">
+              Verified Outcome: {scenario.outcome.title}
+            </div>
+            <p className="text-[11px] opacity-90">{scenario.outcome.summary}</p>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2 shrink-0">
             {scenario.outcome.metrics.map((m, mIdx) => (
               <div
                 key={mIdx}
-                className={`px-3 py-1.5 rounded-xl border ${
-                  isLight ? 'bg-slate-50 border-slate-200' : 'bg-slate-950/80 border-slate-800'
+                className={`px-2.5 py-1 rounded-lg border text-[10px] ${
+                  isLight ? 'bg-white border-emerald-200' : 'bg-slate-900 border-emerald-800/80'
                 }`}
               >
-                <div className="text-[9px] text-slate-400 uppercase tracking-wider">{m.label}</div>
-                <div className="text-xs font-bold mt-0.5">{m.value}</div>
+                <span className="text-slate-400 mr-1">{m.label}:</span>
+                <span className="font-bold">{m.value}</span>
               </div>
             ))}
           </div>

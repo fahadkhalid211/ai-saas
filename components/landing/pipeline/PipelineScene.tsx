@@ -2,19 +2,29 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
-import { PipelineStageInfo } from './types';
+import {
+  TopologyNode,
+  TopologyWire,
+  VectorClusterInfo,
+  TOPOLOGY_NODES,
+  VECTOR_CLUSTERS,
+  TOPOLOGY_WIRES,
+  PipelineScenarioData,
+} from './types';
 import { PipelineFallbackSvg } from './PipelineFallbackSvg';
 
 interface PipelineSceneProps {
-  stages: PipelineStageInfo[];
-  activeStageIndex: number;
+  scenario: PipelineScenarioData;
   theme?: 'light' | 'dark';
+  selectedNodeId?: string | null;
+  onSelectNode?: (nodeId: string) => void;
 }
 
 export default function PipelineScene({
-  stages,
-  activeStageIndex,
+  scenario,
   theme = 'dark',
+  selectedNodeId,
+  onSelectNode,
 }: PipelineSceneProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [webglFailed, setWebglFailed] = useState(false);
@@ -24,7 +34,7 @@ export default function PipelineScene({
     const container = containerRef.current;
     if (!container) return;
 
-    // Check WebGL availability
+    // WebGL capability check
     const canvasTest = document.createElement('canvas');
     const gl =
       canvasTest.getContext('webgl') || canvasTest.getContext('experimental-webgl');
@@ -33,17 +43,17 @@ export default function PipelineScene({
       return;
     }
 
-    const prefersReducedMotion = window.matchMedia(
-      '(prefers-reduced-motion: reduce)'
-    ).matches;
+    const prefersReducedMotion =
+      typeof window !== 'undefined' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     // Scene, Camera, Renderer
     const scene = new THREE.Scene();
-    const width = container.clientWidth || 800;
-    const height = container.clientHeight || 220;
+    const width = container.clientWidth || 900;
+    const height = container.clientHeight || 460;
 
     const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
-    camera.position.set(0, 0, 18);
+    camera.position.set(0, 0, 16);
 
     let renderer: THREE.WebGLRenderer;
     try {
@@ -63,270 +73,503 @@ export default function PipelineScene({
     container.appendChild(renderer.domElement);
 
     // Create Additive Glow Sprite Texture
-    const glowCanvas = document.createElement('canvas');
-    glowCanvas.width = 64;
-    glowCanvas.height = 64;
-    const glowCtx = glowCanvas.getContext('2d');
-    if (glowCtx) {
-      const grad = glowCtx.createRadialGradient(32, 32, 0, 32, 32, 32);
-      grad.addColorStop(0, 'rgba(255, 255, 255, 1)');
-      grad.addColorStop(0.3, isLight ? 'rgba(56, 189, 248, 0.8)' : 'rgba(56, 189, 248, 0.9)');
-      grad.addColorStop(0.7, isLight ? 'rgba(99, 102, 241, 0.3)' : 'rgba(99, 102, 241, 0.4)');
-      grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
-      glowCtx.fillStyle = grad;
-      glowCtx.fillRect(0, 0, 64, 64);
-    }
-    const glowTexture = new THREE.CanvasTexture(glowCanvas);
+    const createGlowTexture = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = 64;
+      canvas.height = 64;
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        const grad = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
+        grad.addColorStop(0, 'rgba(255, 255, 255, 1)');
+        grad.addColorStop(0.25, isLight ? 'rgba(56, 189, 248, 0.9)' : 'rgba(56, 189, 248, 0.95)');
+        grad.addColorStop(0.65, isLight ? 'rgba(99, 102, 241, 0.25)' : 'rgba(99, 102, 241, 0.35)');
+        grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, 64, 64);
+      }
+      return new THREE.CanvasTexture(canvas);
+    };
 
-    // Build Node Chain Coordinates along X axis (-10 to +10)
-    const nodeCount = stages.length;
-    const nodePositions: THREE.Vector3[] = [];
-    const span = 18;
-    const startX = -span / 2;
+    const glowTexture = createGlowTexture();
 
-    for (let i = 0; i < nodeCount; i++) {
-      const x = startX + (i / (nodeCount - 1)) * span;
-      // Slight smooth vertical wave for organic curve
-      const y = Math.sin((i / (nodeCount - 1)) * Math.PI) * 0.5;
-      nodePositions.push(new THREE.Vector3(x, y, 0));
-    }
-
-    // Connecting Curve
-    const curve = new THREE.CatmullRomCurve3(nodePositions);
-    const curvePoints = curve.getPoints(100);
-    const curveGeometry = new THREE.BufferGeometry().setFromPoints(curvePoints);
-    const curveMaterial = new THREE.LineBasicMaterial({
-      color: isLight ? 0x94a3b8 : 0x1e293b,
-      transparent: true,
-      opacity: 0.6,
-      linewidth: 1.5,
+    // Map Coordinates Lookup
+    const coordMap = new Map<string, THREE.Vector3>();
+    TOPOLOGY_NODES.forEach((n) => {
+      coordMap.set(n.id, new THREE.Vector3(n.x, n.y, n.z || 0));
     });
-    const curveLine = new THREE.Line(curveGeometry, curveMaterial);
-    scene.add(curveLine);
+    VECTOR_CLUSTERS.forEach((vc) => {
+      coordMap.set(vc.id, new THREE.Vector3(vc.x, vc.y, vc.z || 0));
+    });
 
-    // Glowing Node Meshes
-    const nodeMeshes: Array<{
-      group: THREE.Group;
-      core: THREE.Mesh;
-      ring: THREE.Mesh;
-      sprite: THREE.Sprite;
+    // 1. Construct Freeflow Vector Particle Nebulae
+    const particleClouds: Array<{
+      points: THREE.Points;
+      basePositions: Float32Array;
+      clusterId: string;
+      phase: number;
     }> = [];
 
-    const ringGeometry = new THREE.TorusGeometry(0.75, 0.04, 16, 32);
-    const sphereGeometry = new THREE.SphereGeometry(0.3, 16, 16);
+    VECTOR_CLUSTERS.forEach((cluster) => {
+      const particleCount = 96;
+      const positions = new Float32Array(particleCount * 3);
+      const basePositions = new Float32Array(particleCount * 3);
+      const colors = new Float32Array(particleCount * 3);
 
-    for (let i = 0; i < nodeCount; i++) {
-      const group = new THREE.Group();
-      group.position.copy(nodePositions[i]);
+      const baseColor = new THREE.Color(cluster.color);
 
-      const ringMaterial = new THREE.MeshBasicMaterial({
-        color: i === activeStageIndex ? (isLight ? 0x0284c7 : 0x38bdf8) : (isLight ? 0xcbd5e1 : 0x334155),
-        transparent: true,
-        opacity: 0.85,
-      });
-      const ring = new THREE.Mesh(ringGeometry, ringMaterial);
+      for (let i = 0; i < particleCount; i++) {
+        // Organic spherical dispersion with clustered density
+        const radius = Math.pow(Math.random(), 1.5) * 1.6;
+        const theta = Math.random() * Math.PI * 2;
+        const phi = Math.acos(2 * Math.random() - 1);
 
-      const coreMaterial = new THREE.MeshBasicMaterial({
-        color: i === activeStageIndex ? (isLight ? 0x0284c7 : 0x38bdf8) : (isLight ? 0x94a3b8 : 0x475569),
-      });
-      const core = new THREE.Mesh(sphereGeometry, coreMaterial);
+        const x = cluster.x + radius * Math.sin(phi) * Math.cos(theta);
+        const y = cluster.y + radius * Math.sin(phi) * Math.sin(theta) * 0.75;
+        const z = cluster.z + radius * Math.cos(phi) * 0.9;
 
-      const spriteMaterial = new THREE.SpriteMaterial({
+        positions[i * 3] = x;
+        positions[i * 3 + 1] = y;
+        positions[i * 3 + 2] = z;
+
+        basePositions[i * 3] = x;
+        basePositions[i * 3 + 1] = y;
+        basePositions[i * 3 + 2] = z;
+
+        // Slight color jitter
+        const tint = baseColor.clone().offsetHSL(
+          (Math.random() - 0.5) * 0.08,
+          0,
+          (Math.random() - 0.5) * 0.15
+        );
+        colors[i * 3] = tint.r;
+        colors[i * 3 + 1] = tint.g;
+        colors[i * 3 + 2] = tint.b;
+      }
+
+      const geometry = new THREE.BufferGeometry();
+      geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+      geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+      const material = new THREE.PointsMaterial({
+        size: isLight ? 0.35 : 0.42,
         map: glowTexture,
-        color: i === activeStageIndex ? 0x38bdf8 : 0x64748b,
+        vertexColors: true,
         transparent: true,
-        opacity: i === activeStageIndex ? 0.9 : 0.25,
+        opacity: isLight ? 0.8 : 0.9,
         blending: THREE.AdditiveBlending,
+        depthWrite: false,
       });
-      const sprite = new THREE.Sprite(spriteMaterial);
-      sprite.scale.set(3, 3, 1);
 
-      group.add(ring);
-      group.add(core);
-      group.add(sprite);
+      const points = new THREE.Points(geometry, material);
+      scene.add(points);
 
-      scene.add(group);
-      nodeMeshes.push({ group, core, ring, sprite });
-    }
-
-    // Instanced Particles along Curve (Low-power path for mobile)
-    const isMobile = width < 640;
-    const particleCount = isMobile ? 18 : 45;
-    const particleGeometry = new THREE.SphereGeometry(0.08, 8, 8);
-    const particleMaterial = new THREE.MeshBasicMaterial({
-      color: isLight ? 0x0284c7 : 0x38bdf8,
-      transparent: true,
-      opacity: 0.85,
+      particleClouds.push({
+        points,
+        basePositions,
+        clusterId: cluster.id,
+        phase: Math.random() * 10,
+      });
     });
-    const instancedParticles = new THREE.InstancedMesh(
-      particleGeometry,
-      particleMaterial,
-      particleCount
-    );
 
-    const dummy = new THREE.Object3D();
-    const particleOffsets: number[] = [];
-    for (let i = 0; i < particleCount; i++) {
-      particleOffsets.push(i / particleCount);
+    // 2. Build Curved Bus Wires & Splines
+    interface WireRuntime {
+      wire: TopologyWire;
+      curve: THREE.CatmullRomCurve3;
+      line: THREE.Line;
+      isActive: boolean;
     }
-    scene.add(instancedParticles);
 
-    // Pointer Parallax
+    const wireRuntimes: WireRuntime[] = [];
+
+    TOPOLOGY_WIRES.forEach((w) => {
+      const p1 = coordMap.get(w.sourceId);
+      const p2 = coordMap.get(w.targetId);
+      if (!p1 || !p2) return;
+
+      // Calculate midpoint with smooth vertical and depth arc
+      const mid = new THREE.Vector3().addVectors(p1, p2).multiplyScalar(0.5);
+      const isToolWire = p1.y < -1.5 || p2.y < -1.5;
+      mid.z += 0.4;
+      mid.y += isToolWire ? -0.35 : (p1.y > 1.5 && p2.y > 1.5 ? 0.35 : 0.1);
+
+      const curve = new THREE.CatmullRomCurve3([p1, mid, p2]);
+      const points = curve.getPoints(36);
+      const geom = new THREE.BufferGeometry().setFromPoints(points);
+
+      const isActive =
+        scenario.primaryPath.includes(w.sourceId) &&
+        scenario.primaryPath.includes(w.targetId);
+
+      const wireColor = w.color || (isActive ? '#38bdf8' : '#334155');
+
+      const mat = new THREE.LineBasicMaterial({
+        color: new THREE.Color(wireColor),
+        transparent: true,
+        opacity: isActive ? (isLight ? 0.75 : 0.85) : isLight ? 0.18 : 0.22,
+        linewidth: 1,
+      });
+
+      const line = new THREE.Line(geom, mat);
+      scene.add(line);
+
+      wireRuntimes.push({
+        wire: w,
+        curve,
+        line,
+        isActive,
+      });
+    });
+
+    // 3. Moving Photon Pulses along Wires
+    const activeWires = wireRuntimes.filter((w) => w.isActive);
+    const pulseCount = Math.max(activeWires.length * 3, 24);
+    const pulsePositions = new Float32Array(pulseCount * 3);
+    const pulseColors = new Float32Array(pulseCount * 3);
+
+    for (let i = 0; i < pulseCount; i++) {
+      pulsePositions[i * 3] = 0;
+      pulsePositions[i * 3 + 1] = 0;
+      pulsePositions[i * 3 + 2] = 0;
+
+      pulseColors[i * 3] = 1;
+      pulseColors[i * 3 + 1] = 1;
+      pulseColors[i * 3 + 2] = 1;
+    }
+
+    const pulseGeometry = new THREE.BufferGeometry();
+    pulseGeometry.setAttribute('position', new THREE.BufferAttribute(pulsePositions, 3));
+    pulseGeometry.setAttribute('color', new THREE.BufferAttribute(pulseColors, 3));
+
+    const pulseMaterial = new THREE.PointsMaterial({
+      size: isLight ? 0.65 : 0.8,
+      map: glowTexture,
+      vertexColors: true,
+      transparent: true,
+      opacity: 0.95,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+    });
+
+    const pulsePoints = new THREE.Points(pulseGeometry, pulseMaterial);
+    scene.add(pulsePoints);
+
+    // 4. Interactive Node Markers & Halos
+    const nodeMeshes: Array<{
+      nodeId: string;
+      mesh: THREE.Mesh;
+      halo: THREE.Mesh;
+      baseScale: number;
+    }> = [];
+
+    const sphereGeom = new THREE.SphereGeometry(0.24, 16, 16);
+    const ringGeom = new THREE.RingGeometry(0.34, 0.44, 24);
+
+    TOPOLOGY_NODES.forEach((node) => {
+      const pos = coordMap.get(node.id);
+      if (!pos) return;
+
+      const isPathActive = scenario.primaryPath.includes(node.id);
+      const isSelected = selectedNodeId === node.id;
+
+      // Inner glowing core
+      const sphereMat = new THREE.MeshBasicMaterial({
+        color: new THREE.Color(node.color),
+      });
+      const sphere = new THREE.Mesh(sphereGeom, sphereMat);
+      sphere.position.copy(pos);
+      scene.add(sphere);
+
+      // Outer concentric halo ring
+      const ringMat = new THREE.MeshBasicMaterial({
+        color: new THREE.Color(node.color),
+        side: THREE.DoubleSide,
+        transparent: true,
+        opacity: isPathActive || isSelected ? 0.85 : 0.25,
+      });
+      const ring = new THREE.Mesh(ringGeom, ringMat);
+      ring.position.copy(pos);
+      scene.add(ring);
+
+      nodeMeshes.push({
+        nodeId: node.id,
+        mesh: sphere,
+        halo: ring,
+        baseScale: isPathActive ? 1.2 : 1.0,
+      });
+    });
+
+    // 5. Central Cognitive Beacon Accent Ring
+    const beaconPos = coordMap.get('beacon_intent');
+    let beaconAccent: THREE.Mesh | null = null;
+    if (beaconPos) {
+      const beaconRingGeom = new THREE.RingGeometry(0.7, 0.82, 32);
+      const beaconRingMat = new THREE.MeshBasicMaterial({
+        color: new THREE.Color('#f59e0b'),
+        side: THREE.DoubleSide,
+        transparent: true,
+        opacity: 0.6,
+      });
+      beaconAccent = new THREE.Mesh(beaconRingGeom, beaconRingMat);
+      beaconAccent.position.copy(beaconPos);
+      scene.add(beaconAccent);
+    }
+
+    // 6. Camera Parallax & Mouse Raycasting
     let targetCameraX = 0;
     let targetCameraY = 0;
-    const handlePointerMove = (e: MouseEvent) => {
-      const rect = container.getBoundingClientRect();
-      const x = (e.clientX - rect.left) / rect.width - 0.5;
-      const y = (e.clientY - rect.top) / rect.height - 0.5;
-      targetCameraX = x * 1.5;
-      targetCameraY = -y * 0.8;
-    };
-    window.addEventListener('mousemove', handlePointerMove, { passive: true });
+    const raycaster = new THREE.Raycaster();
+    const mouse = new THREE.Vector2(-1000, -1000);
+    let hoveredNodeId: string | null = null;
 
-    // Resize handling
-    const resizeObserver = new ResizeObserver((entries) => {
-      for (const entry of entries) {
-        const newW = entry.contentRect.width;
-        const newH = entry.contentRect.height;
-        if (newW > 0 && newH > 0) {
-          camera.aspect = newW / newH;
-          camera.updateProjectionMatrix();
-          renderer.setSize(newW, newH);
-        }
+    const handleMouseMove = (e: MouseEvent) => {
+      const rect = container.getBoundingClientRect();
+      const clientX = e.clientX - rect.left;
+      const clientY = e.clientY - rect.top;
+
+      mouse.x = (clientX / rect.width) * 2 - 1;
+      mouse.y = -(clientY / rect.height) * 2 + 1;
+
+      targetCameraX = mouse.x * 0.8;
+      targetCameraY = mouse.y * 0.4;
+    };
+
+    const handleClick = () => {
+      if (hoveredNodeId && onSelectNode) {
+        onSelectNode(hoveredNodeId);
       }
-    });
+    };
+
+    container.addEventListener('mousemove', handleMouseMove, { passive: true });
+    container.addEventListener('click', handleClick);
+
+    // 7. Resize Observer
+    const handleResize = () => {
+      if (!container) return;
+      const w = container.clientWidth || 900;
+      const h = container.clientHeight || 460;
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+      renderer.setSize(w, h);
+    };
+
+    const resizeObserver = new ResizeObserver(handleResize);
     resizeObserver.observe(container);
 
-    // Animation Loop Control (Offscreen & Tab visibility pausing)
+    // 8. Visibility & Intersection Observers
     let isVisible = true;
-    let isIntersecting = true;
-    let animId: number;
-    let clock = new THREE.Clock();
+    let animationFrameId: number | null = null;
 
     const intersectionObserver = new IntersectionObserver(
-      (entries) => {
-        isIntersecting = entries[0].isIntersecting;
+      ([entry]) => {
+        isVisible = entry.isIntersecting;
+        if (isVisible && animationFrameId === null && !prefersReducedMotion) {
+          animationFrameId = requestAnimationFrame(animate);
+        }
       },
-      { threshold: 0.05 }
+      { threshold: 0.1 }
     );
     intersectionObserver.observe(container);
 
     const handleVisibilityChange = () => {
-      isVisible = document.visibilityState === 'visible';
+      if (document.hidden) {
+        isVisible = false;
+        if (animationFrameId !== null) {
+          cancelAnimationFrame(animationFrameId);
+          animationFrameId = null;
+        }
+      } else {
+        isVisible = true;
+        if (animationFrameId === null && !prefersReducedMotion) {
+          animationFrameId = requestAnimationFrame(animate);
+        }
+      }
     };
     document.addEventListener('visibilitychange', handleVisibilityChange);
 
-    // Static frame render if reduced motion
-    if (prefersReducedMotion) {
-      for (let i = 0; i < particleCount; i++) {
-        const pt = curve.getPointAt(particleOffsets[i]);
-        dummy.position.copy(pt);
-        dummy.updateMatrix();
-        instancedParticles.setMatrixAt(i, dummy.matrix);
-      }
-      instancedParticles.instanceMatrix.needsUpdate = true;
-      renderer.render(scene, camera);
-      return () => {
-        resizeObserver.disconnect();
-        intersectionObserver.disconnect();
-        document.removeEventListener('visibilitychange', handleVisibilityChange);
-        window.removeEventListener('mousemove', handlePointerMove);
-        renderer.dispose();
-      };
-    }
+    // 9. Main Animation Loop
+    let clock = 0;
 
-    // 60 FPS Render Loop
-    let particleProgress = 0;
     const animate = () => {
-      animId = requestAnimationFrame(animate);
+      if (!isVisible) return;
 
-      if (!isVisible || !isIntersecting) return;
+      clock += 0.016;
 
-      const delta = clock.getDelta();
-      particleProgress += delta * 0.12;
-
-      // Update Camera Parallax
+      // Smooth camera interpolation
       camera.position.x += (targetCameraX - camera.position.x) * 0.05;
       camera.position.y += (targetCameraY - camera.position.y) * 0.05;
       camera.lookAt(0, 0, 0);
 
-      // Rotate Stage Rings
-      nodeMeshes.forEach((mesh, idx) => {
-        const isActive = idx === activeStageIndex;
-        mesh.ring.rotation.z += delta * (isActive ? 1.5 : 0.3);
-        mesh.ring.rotation.x += delta * 0.2;
+      // A. Organic Freeflow Drift for Vector Particle Clouds
+      particleClouds.forEach(({ points, basePositions, phase }) => {
+        const posAttr = points.geometry.getAttribute('position') as THREE.BufferAttribute;
+        const arr = posAttr.array as Float32Array;
 
-        const targetScale = isActive ? 1.15 : 1.0;
-        mesh.group.scale.lerp(new THREE.Vector3(targetScale, targetScale, targetScale), 0.1);
+        for (let i = 0; i < arr.length / 3; i++) {
+          const bx = basePositions[i * 3];
+          const by = basePositions[i * 3 + 1];
+          const bz = basePositions[i * 3 + 2];
+
+          // Harmonic floating drift
+          const offset = i * 0.2 + phase;
+          arr[i * 3] = bx + Math.sin(clock * 0.8 + offset) * 0.12;
+          arr[i * 3 + 1] = by + Math.cos(clock * 0.9 + offset * 1.2) * 0.12;
+          arr[i * 3 + 2] = bz + Math.sin(clock * 0.6 + offset * 0.8) * 0.08;
+        }
+
+        posAttr.needsUpdate = true;
       });
 
-      // Update Particles Along Curve
-      for (let i = 0; i < particleCount; i++) {
-        const t = (particleOffsets[i] + particleProgress) % 1;
-        const pt = curve.getPointAt(t);
-        dummy.position.copy(pt);
+      // B. Update Moving Photon Pulses along Wires
+      if (activeWires.length > 0) {
+        const pulseAttr = pulseGeometry.getAttribute('position') as THREE.BufferAttribute;
+        const pArr = pulseAttr.array as Float32Array;
+        const colAttr = pulseGeometry.getAttribute('color') as THREE.BufferAttribute;
+        const cArr = colAttr.array as Float32Array;
 
-        // Subtly scale particle as it passes through active stage
-        const activeStageT = activeStageIndex / (nodeCount - 1);
-        const dist = Math.abs(t - activeStageT);
-        const scale = dist < 0.1 ? 1.4 : 1.0;
-        dummy.scale.set(scale, scale, scale);
+        const pulsesPerWire = Math.floor(pulseCount / activeWires.length);
 
-        dummy.updateMatrix();
-        instancedParticles.setMatrixAt(i, dummy.matrix);
+        activeWires.forEach((wireRuntime, wIdx) => {
+          const wireColor = new THREE.Color(wireRuntime.wire.color || '#38bdf8');
+
+          for (let p = 0; p < pulsesPerWire; p++) {
+            const idx = wIdx * pulsesPerWire + p;
+            if (idx >= pulseCount) break;
+
+            // Compute progress along curve
+            const speed = 0.28;
+            const progress = ((clock * speed + p / pulsesPerWire) % 1.0);
+
+            const pt = wireRuntime.curve.getPointAt(progress);
+            pArr[idx * 3] = pt.x;
+            pArr[idx * 3 + 1] = pt.y;
+            pArr[idx * 3 + 2] = pt.z;
+
+            cArr[idx * 3] = wireColor.r;
+            cArr[idx * 3 + 1] = wireColor.g;
+            cArr[idx * 3 + 2] = wireColor.b;
+          }
+        });
+
+        pulseAttr.needsUpdate = true;
+        colAttr.needsUpdate = true;
       }
-      instancedParticles.instanceMatrix.needsUpdate = true;
+
+      // C. Rotate and Pulse Concentric Halos
+      nodeMeshes.forEach(({ halo, baseScale }, i) => {
+        halo.rotation.z += 0.015;
+        const pulse = 1 + Math.sin(clock * 3 + i) * 0.08;
+        halo.scale.set(baseScale * pulse, baseScale * pulse, 1);
+      });
+
+      if (beaconAccent) {
+        beaconAccent.rotation.z -= 0.008;
+        const beaconPulse = 1 + Math.sin(clock * 2) * 0.06;
+        beaconAccent.scale.set(beaconPulse, beaconPulse, 1);
+      }
+
+      // D. Raycasting for Node Hover
+      raycaster.setFromCamera(mouse, camera);
+      const interactiveTargets = nodeMeshes.map((n) => n.mesh);
+      const intersects = raycaster.intersectObjects(interactiveTargets);
+
+      if (intersects.length > 0) {
+        const hitMesh = intersects[0].object as THREE.Mesh;
+        const hit = nodeMeshes.find((n) => n.mesh === hitMesh);
+        if (hit) {
+          hoveredNodeId = hit.nodeId;
+          container.style.cursor = 'pointer';
+        }
+      } else {
+        hoveredNodeId = null;
+        container.style.cursor = 'default';
+      }
 
       renderer.render(scene, camera);
+      animationFrameId = requestAnimationFrame(animate);
     };
 
-    animate();
+    if (prefersReducedMotion) {
+      renderer.render(scene, camera);
+    } else {
+      animationFrameId = requestAnimationFrame(animate);
+    }
 
-    // Cleanup & WebGL Memory Disposal on unmount
+    // Cleanup & Disposal
     return () => {
-      cancelAnimationFrame(animId);
+      if (animationFrameId !== null) {
+        cancelAnimationFrame(animationFrameId);
+      }
+      container.removeEventListener('mousemove', handleMouseMove);
+      container.removeEventListener('click', handleClick);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
       resizeObserver.disconnect();
       intersectionObserver.disconnect();
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-      window.removeEventListener('mousemove', handlePointerMove);
 
       // Dispose Three.js objects
-      curveGeometry.dispose();
-      curveMaterial.dispose();
-      ringGeometry.dispose();
-      sphereGeometry.dispose();
-      particleGeometry.dispose();
-      particleMaterial.dispose();
       glowTexture.dispose();
-
-      nodeMeshes.forEach((m) => {
-        (m.core.material as THREE.Material).dispose();
-        (m.ring.material as THREE.Material).dispose();
-        m.sprite.material.dispose();
+      particleClouds.forEach(({ points }) => {
+        points.geometry.dispose();
+        if (Array.isArray(points.material)) {
+          points.material.forEach((m) => m.dispose());
+        } else {
+          points.material.dispose();
+        }
       });
 
+      wireRuntimes.forEach(({ line }) => {
+        line.geometry.dispose();
+        if (Array.isArray(line.material)) {
+          line.material.forEach((m) => m.dispose());
+        } else {
+          line.material.dispose();
+        }
+      });
+
+      pulseGeometry.dispose();
+      pulseMaterial.dispose();
+      sphereGeom.dispose();
+      ringGeom.dispose();
+
+      nodeMeshes.forEach(({ mesh, halo }) => {
+        mesh.geometry.dispose();
+        if (Array.isArray(mesh.material)) {
+          mesh.material.forEach((m) => m.dispose());
+        } else {
+          mesh.material.dispose();
+        }
+        halo.geometry.dispose();
+        if (Array.isArray(halo.material)) {
+          halo.material.forEach((m) => m.dispose());
+        } else {
+          halo.material.dispose();
+        }
+      });
+
+      if (beaconAccent) {
+        beaconAccent.geometry.dispose();
+        if (Array.isArray(beaconAccent.material)) {
+          beaconAccent.material.forEach((m) => m.dispose());
+        } else {
+          beaconAccent.material.dispose();
+        }
+      }
+
       renderer.dispose();
-      if (renderer.domElement && container.contains(renderer.domElement)) {
+      if (container.contains(renderer.domElement)) {
         container.removeChild(renderer.domElement);
       }
     };
-  }, [activeStageIndex, isLight, stages.length]);
+  }, [scenario, theme, selectedNodeId, onSelectNode, isLight]);
 
   if (webglFailed) {
-    return (
-      <PipelineFallbackSvg
-        stages={stages}
-        activeStageIndex={activeStageIndex}
-        theme={theme}
-      />
-    );
+    return <PipelineFallbackSvg scenario={scenario} />;
   }
 
   return (
     <div
       ref={containerRef}
-      className="w-full h-48 sm:h-56 relative overflow-hidden flex items-center justify-center cursor-default"
-      aria-label="Interactive Three.js WebGL systems pipeline rendering active data flow across stages"
+      className="w-full h-[420px] sm:h-[480px] lg:h-[520px] relative overflow-hidden select-none"
+      aria-label="Kortex AI Autonomous Processing Systems Topology Visualizer"
     />
   );
 }
