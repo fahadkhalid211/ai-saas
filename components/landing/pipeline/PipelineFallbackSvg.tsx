@@ -13,161 +13,130 @@ interface PipelineFallbackSvgProps {
 }
 
 export function PipelineFallbackSvg({ scenario }: PipelineFallbackSvgProps) {
-  // Map internal coords (-10 to +10 X, -5 to +5 Y) into SVG viewBox 0 0 1000 500
-  const mapX = (x: number) => ((x + 10.5) / 21) * 960 + 20;
-  const mapY = (y: number) => ((-y + 4.5) / 9) * 440 + 30;
-
-  const coordLookup = new Map<string, { x: number; y: number }>();
-  TOPOLOGY_NODES.forEach((n) => {
-    coordLookup.set(n.id, { x: mapX(n.x), y: mapY(n.y) });
-  });
-  VECTOR_CLUSTERS.forEach((vc) => {
-    coordLookup.set(vc.id, { x: mapX(vc.x), y: mapY(vc.y) });
-  });
+  const coordMap = new Map<string, { x: number; y: number }>();
+  TOPOLOGY_NODES.forEach((n) => coordMap.set(n.id, { x: n.x, y: n.y }));
+  VECTOR_CLUSTERS.forEach((vc) => coordMap.set(vc.id, { x: vc.cx, y: vc.cy }));
 
   return (
     <div
-      className="w-full h-[420px] sm:h-[480px] lg:h-[520px] relative overflow-hidden bg-slate-950 p-4 rounded-2xl flex items-center justify-center border border-slate-800"
-      aria-label="Kortex AI Systems Topology Diagram"
+      className="w-full h-[460px] sm:h-[540px] lg:h-[620px] relative overflow-hidden bg-[#070b16] rounded-2xl"
+      aria-label="Kortex AI Systems Architecture Map"
     >
       <svg
-        viewBox="0 0 1000 500"
-        className="w-full h-full text-slate-100"
+        viewBox="0 0 1200 640"
+        className="w-full h-full absolute inset-0"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
       >
-        <defs>
-          <radialGradient id="beaconGlow" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor="#f59e0b" stopOpacity="0.6" />
-            <stop offset="100%" stopColor="#f59e0b" stopOpacity="0" />
-          </radialGradient>
-          <filter id="glowFilter" x="-20%" y="-20%" width="140%" height="140%">
-            <feGaussianBlur stdDeviation="3" result="blur" />
-            <feComposite in="SourceGraphic" in2="blur" operator="over" />
-          </filter>
-        </defs>
-
-        {/* Blueprint Framing Boxes */}
+        {/* Knowledge Bases Region */}
         <rect
-          x="20"
-          y="20"
-          width="960"
-          height="460"
-          rx="16"
+          x="300"
+          y="70"
+          width="260"
+          height="450"
+          rx="12"
           stroke="#1e293b"
           strokeDasharray="4 4"
-          fill="none"
-        />
-
-        {/* Knowledge Bases Bounding Region */}
-        <rect
-          x="220"
-          y="60"
-          width="210"
-          height="370"
-          rx="12"
-          stroke="#0f172a"
-          fill="#020617"
-          fillOpacity="0.4"
+          strokeWidth="1"
+          fill="#0a0f1d"
+          fillOpacity="0.3"
         />
         <text
-          x="235"
-          y="85"
+          x="320"
+          y="95"
           fill="#64748b"
           fontSize="10"
           fontFamily="monospace"
           fontWeight="bold"
-          letterSpacing="0.1em"
+          letterSpacing="0.12em"
         >
-          KNOWLEDGE VAULT · 384-D
+          KNOWLEDGE BASES · 384-D
         </text>
 
-        {/* Deterministic Tools Bounding Region */}
+        {/* Deterministic Controllers Region */}
         <rect
-          x="480"
-          y="310"
-          width="290"
-          height="140"
+          x="620"
+          y="460"
+          width="320"
+          height="120"
           rx="12"
           stroke="#064e3b"
-          strokeDasharray="3 3"
+          strokeDasharray="4 4"
+          strokeWidth="1"
           fill="#022c22"
           fillOpacity="0.2"
         />
         <text
-          x="495"
-          y="330"
+          x="640"
+          y="485"
           fill="#10b981"
-          fontSize="9"
+          fontSize="10"
           fontFamily="monospace"
           fontWeight="bold"
-          letterSpacing="0.1em"
+          letterSpacing="0.12em"
         >
-          DETERMINISTIC CONTROLLERS · MUTEX LOCKED
+          DETERMINISTIC TOOLS · MUTEX LOCKED
         </text>
 
         {/* Connecting Wires */}
         {TOPOLOGY_WIRES.map((w) => {
-          const p1 = coordLookup.get(w.sourceId);
-          const p2 = coordLookup.get(w.targetId);
+          const p1 = coordMap.get(w.sourceId);
+          const p2 = coordMap.get(w.targetId);
           if (!p1 || !p2) return null;
 
+          const cx = (p1.x + p2.x) / 2;
+          const cy = (p1.y + p2.y) / 2 + 10;
+          const pathData = `M ${p1.x} ${p1.y} Q ${cx} ${cy} ${p2.x} ${p2.y}`;
           const isActive =
             scenario.primaryPath.includes(w.sourceId) &&
             scenario.primaryPath.includes(w.targetId);
 
-          const midX = (p1.x + p2.x) / 2;
-          const midY = (p1.y + p2.y) / 2;
-          const curvePath = `M ${p1.x} ${p1.y} Q ${midX} ${midY + (p1.y > 250 ? 20 : -20)} ${p2.x} ${p2.y}`;
-
           return (
             <path
               key={w.id}
-              d={curvePath}
-              stroke={isActive ? w.color || '#38bdf8' : '#1e293b'}
-              strokeWidth={isActive ? 2 : 1}
-              strokeOpacity={isActive ? 0.85 : 0.4}
+              d={pathData}
+              stroke={w.color}
+              strokeWidth={isActive ? 1.8 : 0.8}
+              strokeOpacity={isActive ? 0.75 : 0.16}
               fill="none"
-              filter={isActive ? 'url(#glowFilter)' : undefined}
             />
           );
         })}
 
-        {/* Vector Clusters (Nebulae Clouds) */}
+        {/* Vector Clusters Label Anchors */}
         {VECTOR_CLUSTERS.map((vc) => {
-          const pt = coordLookup.get(vc.id);
-          if (!pt) return null;
-
+          const isClusterActive = scenario.primaryPath.includes(vc.id);
           return (
-            <g key={vc.id} transform={`translate(${pt.x}, ${pt.y})`}>
+            <g key={vc.id} transform={`translate(${vc.cx}, ${vc.cy})`}>
               <ellipse
-                rx="45"
-                ry="30"
-                fill={vc.color}
-                fillOpacity="0.08"
+                rx="62"
+                ry="40"
                 stroke={vc.color}
-                strokeOpacity="0.4"
-                strokeDasharray="2 2"
+                strokeWidth="1"
+                strokeDasharray="2 3"
+                strokeOpacity={isClusterActive ? 0.45 : 0.18}
+                fill={vc.color}
+                fillOpacity={isClusterActive ? 0.04 : 0.01}
               />
-              <circle r="4" fill={vc.color} />
               <text
                 x="0"
-                y="-14"
+                y="-18"
                 textAnchor="middle"
-                fill="#f8fafc"
-                fontSize="10"
+                fill={isClusterActive ? '#f8fafc' : '#94a3b8'}
+                fontSize="11"
                 fontFamily="sans-serif"
-                fontWeight="bold"
+                fontWeight={isClusterActive ? 'bold' : '600'}
               >
                 {vc.name}
               </text>
               <text
                 x="0"
-                y="18"
+                y="24"
                 textAnchor="middle"
-                fill="#94a3b8"
-                fontSize="8"
+                fill={vc.color}
+                fontSize="9"
                 fontFamily="monospace"
+                opacity={0.8}
               >
                 {vc.itemCount} · {vc.dimension}
               </text>
@@ -175,59 +144,46 @@ export function PipelineFallbackSvg({ scenario }: PipelineFallbackSvgProps) {
           );
         })}
 
-        {/* Intent Beacon Halo */}
-        {(() => {
-          const pt = coordLookup.get('beacon_intent');
-          if (!pt) return null;
-          return (
-            <g transform={`translate(${pt.x}, ${pt.y})`}>
-              <circle r="28" fill="url(#beaconGlow)" />
-              <circle r="16" stroke="#f59e0b" strokeWidth="1.5" strokeDasharray="3 2" fill="none" />
-              <circle r="6" fill="#f59e0b" />
-              <text
-                x="0"
-                y="-22"
-                textAnchor="middle"
-                fill="#fbbf24"
-                fontSize="9"
-                fontFamily="monospace"
-                fontWeight="bold"
-                letterSpacing="0.05em"
-              >
-                INTENT BEACON
-              </text>
-            </g>
-          );
-        })()}
-
         {/* Topology Nodes */}
         {TOPOLOGY_NODES.map((node) => {
-          if (node.id === 'beacon_intent') return null; // rendered specially above
-          const pt = coordLookup.get(node.id);
-          if (!pt) return null;
-
-          const isActive = scenario.primaryPath.includes(node.id);
+          const isPathActive = scenario.primaryPath.includes(node.id);
+          const isIngress = node.category === 'ingress';
+          const isEgress = node.category === 'egress';
+          const isTool = node.category === 'tools';
 
           return (
-            <g key={node.id} transform={`translate(${pt.x}, ${pt.y})`}>
+            <g key={node.id} transform={`translate(${node.x}, ${node.y})`}>
+              {node.radarArc && (
+                <g transform="translate(18, 0)">
+                  {[0.5, 0.75, 1.0].map((scale, sIdx) => (
+                    <circle
+                      key={sIdx}
+                      r="1.4"
+                      cx={Math.cos((sIdx - 1) * 0.5) * 8}
+                      cy={Math.sin((sIdx - 1) * 0.5) * 8}
+                      fill={node.color}
+                      opacity={0.6 + sIdx * 0.2}
+                    />
+                  ))}
+                </g>
+              )}
               <circle
-                r="10"
-                fill={isActive ? node.color : '#0f172a'}
-                fillOpacity={isActive ? 0.3 : 0.8}
+                r="11"
                 stroke={node.color}
-                strokeWidth={isActive ? 2 : 1}
+                strokeWidth={isPathActive ? 1.8 : 1.2}
+                strokeOpacity={isPathActive ? 0.9 : 0.4}
+                fill={isPathActive ? node.color : '#0a0f1d'}
+                fillOpacity={isPathActive ? 0.18 : 0.8}
               />
-              <circle r="4" fill={node.color} />
+              <circle r="3.5" fill={node.color} opacity={isPathActive ? 1 : 0.8} />
               <text
-                x={node.category === 'ingress' ? -16 : node.category === 'egress' ? 16 : 0}
-                y={node.category === 'tools' ? 22 : node.category === 'ingress' || node.category === 'egress' ? 4 : -16}
-                textAnchor={
-                  node.category === 'ingress' ? 'end' : node.category === 'egress' ? 'start' : 'middle'
-                }
-                fill={isActive ? '#f8fafc' : '#94a3b8'}
+                x={isIngress ? -18 : isEgress ? 20 : 0}
+                y={isTool ? 22 : isIngress || isEgress ? 4 : -18}
+                textAnchor={isIngress ? 'end' : isEgress ? 'start' : 'middle'}
+                fill={isPathActive ? '#f8fafc' : '#94a3b8'}
                 fontSize="10"
-                fontFamily="sans-serif"
-                fontWeight={isActive ? 'bold' : 'normal'}
+                fontFamily={isIngress || isEgress ? 'monospace' : 'sans-serif'}
+                fontWeight={isPathActive ? 'bold' : '500'}
               >
                 {node.label}
               </text>

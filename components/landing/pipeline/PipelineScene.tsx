@@ -1,7 +1,6 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
-import * as THREE from 'three';
+import React, { useEffect, useRef, useState, useMemo } from 'react';
 import {
   TopologyNode,
   TopologyWire,
@@ -11,7 +10,6 @@ import {
   TOPOLOGY_WIRES,
   PipelineScenarioData,
 } from './types';
-import { PipelineFallbackSvg } from './PipelineFallbackSvg';
 
 interface PipelineSceneProps {
   scenario: PipelineScenarioData;
@@ -26,344 +24,224 @@ export default function PipelineScene({
   selectedNodeId,
   onSelectNode,
 }: PipelineSceneProps) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const [webglFailed, setWebglFailed] = useState(false);
+  const [hoveredNodeId, setHoveredNodeId] = useState<string | null>(null);
   const isLight = theme === 'light';
 
-  useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
+  // Fast coordinate lookup
+  const coordMap = useMemo(() => {
+    const map = new Map<string, { x: number; y: number }>();
+    TOPOLOGY_NODES.forEach((n) => map.set(n.id, { x: n.x, y: n.y }));
+    VECTOR_CLUSTERS.forEach((vc) => map.set(vc.id, { x: vc.cx, y: vc.cy }));
+    return map;
+  }, []);
 
-    // WebGL capability check
-    const canvasTest = document.createElement('canvas');
-    const gl =
-      canvasTest.getContext('webgl') || canvasTest.getContext('experimental-webgl');
-    if (!gl) {
-      setWebglFailed(true);
-      return;
-    }
+  // Compute curved wire paths
+  const wirePaths = useMemo(() => {
+    return TOPOLOGY_WIRES.map((w) => {
+      const p1 = coordMap.get(w.sourceId);
+      const p2 = coordMap.get(w.targetId);
+      if (!p1 || !p2) return null;
+
+      const dx = p2.x - p1.x;
+      const dy = p2.y - p1.y;
+
+      // Arc calculation
+      let cx = (p1.x + p2.x) / 2;
+      let cy = (p1.y + p2.y) / 2;
+
+      if (w.targetId.startsWith('vc_') || w.sourceId.startsWith('vc_')) {
+        // Curve outwards slightly
+        cy += dy * 0.15;
+      } else if (w.targetId === 'beacon_intent') {
+        cy += (p1.y > 260 ? 15 : -15);
+      } else if (w.targetId.startsWith('tool_')) {
+        // Tool lines drop downwards
+        cy += 25;
+      } else {
+        cy += dy * 0.1;
+      }
+
+      const pathData = `M ${p1.x} ${p1.y} Q ${cx} ${cy} ${p2.x} ${p2.y}`;
+      const isActive =
+        scenario.primaryPath.includes(w.sourceId) &&
+        scenario.primaryPath.includes(w.targetId);
+
+      return {
+        ...w,
+        p1,
+        p2,
+        cx,
+        cy,
+        pathData,
+        isActive,
+      };
+    }).filter(Boolean);
+  }, [coordMap, scenario.primaryPath]);
+
+  // Canvas 2D Particle & Photon Animation Loop
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const container = containerRef.current;
+    if (!canvas || !container) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
 
     const prefersReducedMotion =
       typeof window !== 'undefined' &&
       window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    // Scene, Camera, Renderer
-    const scene = new THREE.Scene();
-    const width = container.clientWidth || 900;
-    const height = container.clientHeight || 460;
+    let animationFrameId: number | null = null;
+    let isVisible = true;
 
-    const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
-    camera.position.set(0, 0, 16);
-
-    let renderer: THREE.WebGLRenderer;
-    try {
-      renderer = new THREE.WebGLRenderer({
-        alpha: true,
-        antialias: true,
-        powerPreference: 'high-performance',
-      });
-    } catch {
-      setWebglFailed(true);
-      return;
-    }
-
-    renderer.setSize(width, height);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-    renderer.outputColorSpace = THREE.SRGBColorSpace;
-    container.appendChild(renderer.domElement);
-
-    // Create Additive Glow Sprite Texture
-    const createGlowTexture = () => {
-      const canvas = document.createElement('canvas');
-      canvas.width = 64;
-      canvas.height = 64;
-      const ctx = canvas.getContext('2d');
-      if (ctx) {
-        const grad = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
-        grad.addColorStop(0, 'rgba(255, 255, 255, 1)');
-        grad.addColorStop(0.25, isLight ? 'rgba(56, 189, 248, 0.9)' : 'rgba(56, 189, 248, 0.95)');
-        grad.addColorStop(0.65, isLight ? 'rgba(99, 102, 241, 0.25)' : 'rgba(99, 102, 241, 0.35)');
-        grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
-        ctx.fillStyle = grad;
-        ctx.fillRect(0, 0, 64, 64);
-      }
-      return new THREE.CanvasTexture(canvas);
-    };
-
-    const glowTexture = createGlowTexture();
-
-    // Map Coordinates Lookup
-    const coordMap = new Map<string, THREE.Vector3>();
-    TOPOLOGY_NODES.forEach((n) => {
-      coordMap.set(n.id, new THREE.Vector3(n.x, n.y, n.z || 0));
-    });
-    VECTOR_CLUSTERS.forEach((vc) => {
-      coordMap.set(vc.id, new THREE.Vector3(vc.x, vc.y, vc.z || 0));
-    });
-
-    // 1. Construct Freeflow Vector Particle Nebulae
-    const particleClouds: Array<{
-      points: THREE.Points;
-      basePositions: Float32Array;
-      clusterId: string;
-      phase: number;
-    }> = [];
-
-    VECTOR_CLUSTERS.forEach((cluster) => {
-      const particleCount = 96;
-      const positions = new Float32Array(particleCount * 3);
-      const basePositions = new Float32Array(particleCount * 3);
-      const colors = new Float32Array(particleCount * 3);
-
-      const baseColor = new THREE.Color(cluster.color);
-
-      for (let i = 0; i < particleCount; i++) {
-        // Organic spherical dispersion with clustered density
-        const radius = Math.pow(Math.random(), 1.5) * 1.6;
-        const theta = Math.random() * Math.PI * 2;
-        const phi = Math.acos(2 * Math.random() - 1);
-
-        const x = cluster.x + radius * Math.sin(phi) * Math.cos(theta);
-        const y = cluster.y + radius * Math.sin(phi) * Math.sin(theta) * 0.75;
-        const z = cluster.z + radius * Math.cos(phi) * 0.9;
-
-        positions[i * 3] = x;
-        positions[i * 3 + 1] = y;
-        positions[i * 3 + 2] = z;
-
-        basePositions[i * 3] = x;
-        basePositions[i * 3 + 1] = y;
-        basePositions[i * 3 + 2] = z;
-
-        // Slight color jitter
-        const tint = baseColor.clone().offsetHSL(
-          (Math.random() - 0.5) * 0.08,
-          0,
-          (Math.random() - 0.5) * 0.15
-        );
-        colors[i * 3] = tint.r;
-        colors[i * 3 + 1] = tint.g;
-        colors[i * 3 + 2] = tint.b;
-      }
-
-      const geometry = new THREE.BufferGeometry();
-      geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-      geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-
-      const material = new THREE.PointsMaterial({
-        size: isLight ? 0.35 : 0.42,
-        map: glowTexture,
-        vertexColors: true,
-        transparent: true,
-        opacity: isLight ? 0.8 : 0.9,
-        blending: THREE.AdditiveBlending,
-        depthWrite: false,
-      });
-
-      const points = new THREE.Points(geometry, material);
-      scene.add(points);
-
-      particleClouds.push({
-        points,
-        basePositions,
-        clusterId: cluster.id,
-        phase: Math.random() * 10,
-      });
-    });
-
-    // 2. Build Curved Bus Wires & Splines
-    interface WireRuntime {
-      wire: TopologyWire;
-      curve: THREE.CatmullRomCurve3;
-      line: THREE.Line;
-      isActive: boolean;
-    }
-
-    const wireRuntimes: WireRuntime[] = [];
-
-    TOPOLOGY_WIRES.forEach((w) => {
-      const p1 = coordMap.get(w.sourceId);
-      const p2 = coordMap.get(w.targetId);
-      if (!p1 || !p2) return;
-
-      // Calculate midpoint with smooth vertical and depth arc
-      const mid = new THREE.Vector3().addVectors(p1, p2).multiplyScalar(0.5);
-      const isToolWire = p1.y < -1.5 || p2.y < -1.5;
-      mid.z += 0.4;
-      mid.y += isToolWire ? -0.35 : (p1.y > 1.5 && p2.y > 1.5 ? 0.35 : 0.1);
-
-      const curve = new THREE.CatmullRomCurve3([p1, mid, p2]);
-      const points = curve.getPoints(36);
-      const geom = new THREE.BufferGeometry().setFromPoints(points);
-
-      const isActive =
-        scenario.primaryPath.includes(w.sourceId) &&
-        scenario.primaryPath.includes(w.targetId);
-
-      const wireColor = w.color || (isActive ? '#38bdf8' : '#334155');
-
-      const mat = new THREE.LineBasicMaterial({
-        color: new THREE.Color(wireColor),
-        transparent: true,
-        opacity: isActive ? (isLight ? 0.75 : 0.85) : isLight ? 0.18 : 0.22,
-        linewidth: 1,
-      });
-
-      const line = new THREE.Line(geom, mat);
-      scene.add(line);
-
-      wireRuntimes.push({
-        wire: w,
-        curve,
-        line,
-        isActive,
-      });
-    });
-
-    // 3. Moving Photon Pulses along Wires
-    const activeWires = wireRuntimes.filter((w) => w.isActive);
-    const pulseCount = Math.max(activeWires.length * 3, 24);
-    const pulsePositions = new Float32Array(pulseCount * 3);
-    const pulseColors = new Float32Array(pulseCount * 3);
-
-    for (let i = 0; i < pulseCount; i++) {
-      pulsePositions[i * 3] = 0;
-      pulsePositions[i * 3 + 1] = 0;
-      pulsePositions[i * 3 + 2] = 0;
-
-      pulseColors[i * 3] = 1;
-      pulseColors[i * 3 + 1] = 1;
-      pulseColors[i * 3 + 2] = 1;
-    }
-
-    const pulseGeometry = new THREE.BufferGeometry();
-    pulseGeometry.setAttribute('position', new THREE.BufferAttribute(pulsePositions, 3));
-    pulseGeometry.setAttribute('color', new THREE.BufferAttribute(pulseColors, 3));
-
-    const pulseMaterial = new THREE.PointsMaterial({
-      size: isLight ? 0.65 : 0.8,
-      map: glowTexture,
-      vertexColors: true,
-      transparent: true,
-      opacity: 0.95,
-      blending: THREE.AdditiveBlending,
-      depthWrite: false,
-    });
-
-    const pulsePoints = new THREE.Points(pulseGeometry, pulseMaterial);
-    scene.add(pulsePoints);
-
-    // 4. Interactive Node Markers & Halos
-    const nodeMeshes: Array<{
-      nodeId: string;
-      mesh: THREE.Mesh;
-      halo: THREE.Mesh;
-      baseScale: number;
-    }> = [];
-
-    const sphereGeom = new THREE.SphereGeometry(0.24, 16, 16);
-    const ringGeom = new THREE.RingGeometry(0.34, 0.44, 24);
-
-    TOPOLOGY_NODES.forEach((node) => {
-      const pos = coordMap.get(node.id);
-      if (!pos) return;
-
-      const isPathActive = scenario.primaryPath.includes(node.id);
-      const isSelected = selectedNodeId === node.id;
-
-      // Inner glowing core
-      const sphereMat = new THREE.MeshBasicMaterial({
-        color: new THREE.Color(node.color),
-      });
-      const sphere = new THREE.Mesh(sphereGeom, sphereMat);
-      sphere.position.copy(pos);
-      scene.add(sphere);
-
-      // Outer concentric halo ring
-      const ringMat = new THREE.MeshBasicMaterial({
-        color: new THREE.Color(node.color),
-        side: THREE.DoubleSide,
-        transparent: true,
-        opacity: isPathActive || isSelected ? 0.85 : 0.25,
-      });
-      const ring = new THREE.Mesh(ringGeom, ringMat);
-      ring.position.copy(pos);
-      scene.add(ring);
-
-      nodeMeshes.push({
-        nodeId: node.id,
-        mesh: sphere,
-        halo: ring,
-        baseScale: isPathActive ? 1.2 : 1.0,
-      });
-    });
-
-    // 5. Central Cognitive Beacon Accent Ring
-    const beaconPos = coordMap.get('beacon_intent');
-    let beaconAccent: THREE.Mesh | null = null;
-    if (beaconPos) {
-      const beaconRingGeom = new THREE.RingGeometry(0.7, 0.82, 32);
-      const beaconRingMat = new THREE.MeshBasicMaterial({
-        color: new THREE.Color('#f59e0b'),
-        side: THREE.DoubleSide,
-        transparent: true,
-        opacity: 0.6,
-      });
-      beaconAccent = new THREE.Mesh(beaconRingGeom, beaconRingMat);
-      beaconAccent.position.copy(beaconPos);
-      scene.add(beaconAccent);
-    }
-
-    // 6. Camera Parallax & Mouse Raycasting
-    let targetCameraX = 0;
-    let targetCameraY = 0;
-    const raycaster = new THREE.Raycaster();
-    const mouse = new THREE.Vector2(-1000, -1000);
-    let hoveredNodeId: string | null = null;
-
-    const handleMouseMove = (e: MouseEvent) => {
+    // Set canvas dimensions with high-DPI scaling
+    const updateCanvasSize = () => {
       const rect = container.getBoundingClientRect();
-      const clientX = e.clientX - rect.left;
-      const clientY = e.clientY - rect.top;
-
-      mouse.x = (clientX / rect.width) * 2 - 1;
-      mouse.y = -(clientY / rect.height) * 2 + 1;
-
-      targetCameraX = mouse.x * 0.8;
-      targetCameraY = mouse.y * 0.4;
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
+      ctx.scale(dpr, dpr);
     };
 
-    const handleClick = () => {
-      if (hoveredNodeId && onSelectNode) {
-        onSelectNode(hoveredNodeId);
-      }
-    };
-
-    container.addEventListener('mousemove', handleMouseMove, { passive: true });
-    container.addEventListener('click', handleClick);
-
-    // 7. Resize Observer
-    const handleResize = () => {
-      if (!container) return;
-      const w = container.clientWidth || 900;
-      const h = container.clientHeight || 460;
-      camera.aspect = w / h;
-      camera.updateProjectionMatrix();
-      renderer.setSize(w, h);
-    };
-
-    const resizeObserver = new ResizeObserver(handleResize);
+    updateCanvasSize();
+    const resizeObserver = new ResizeObserver(updateCanvasSize);
     resizeObserver.observe(container);
 
-    // 8. Visibility & Intersection Observers
-    let isVisible = true;
-    let animationFrameId: number | null = null;
+    // Initialize Vector Cluster Particles (Freeflow Nebulae)
+    interface ClusterParticle {
+      clusterId: string;
+      baseX: number;
+      baseY: number;
+      radius: number;
+      color: string;
+      speedX: number;
+      speedY: number;
+      phase: number;
+      size: number;
+      alpha: number;
+    }
 
+    const clusterParticles: ClusterParticle[] = [];
+
+    VECTOR_CLUSTERS.forEach((cluster) => {
+      const count = 36;
+      for (let i = 0; i < count; i++) {
+        // Clustered elliptical scatter
+        const angle = Math.random() * Math.PI * 2;
+        const dist = Math.pow(Math.random(), 1.6) * 65;
+        const baseX = cluster.cx + Math.cos(angle) * dist * 1.1;
+        const baseY = cluster.cy + Math.sin(angle) * dist * 0.75;
+
+        clusterParticles.push({
+          clusterId: cluster.id,
+          baseX,
+          baseY,
+          radius: dist,
+          color: cluster.color,
+          speedX: (Math.random() - 0.5) * 0.6,
+          speedY: (Math.random() - 0.5) * 0.6,
+          phase: Math.random() * Math.PI * 2,
+          size: Math.random() < 0.2 ? 3.2 : Math.random() < 0.6 ? 2.2 : 1.4,
+          alpha: 0.4 + Math.random() * 0.55,
+        });
+      }
+    });
+
+    let time = 0;
+
+    const render = () => {
+      if (!isVisible) return;
+
+      const rect = container.getBoundingClientRect();
+      ctx.clearRect(0, 0, rect.width, rect.height);
+
+      // Virtual viewBox 1200 x 640 scale factor
+      const scaleX = rect.width / 1200;
+      const scaleY = rect.height / 640;
+
+      ctx.save();
+      ctx.scale(scaleX, scaleY);
+
+      time += 0.018;
+
+      // 1. Render Freeflow Vector Particle Nebulae
+      clusterParticles.forEach((p, idx) => {
+        const isClusterActive = scenario.primaryPath.includes(p.clusterId);
+        const driftX = Math.sin(time * 0.8 + p.phase + idx * 0.1) * 6;
+        const driftY = Math.cos(time * 0.9 + p.phase * 1.2 + idx * 0.1) * 5;
+
+        const x = p.baseX + driftX;
+        const y = p.baseY + driftY;
+
+        ctx.beginPath();
+        ctx.arc(x, y, p.size * (isClusterActive ? 1.25 : 1.0), 0, Math.PI * 2);
+        ctx.fillStyle = p.color;
+        ctx.globalAlpha = isClusterActive ? p.alpha : p.alpha * 0.6;
+        ctx.shadowColor = p.color;
+        ctx.shadowBlur = isClusterActive ? 8 : 4;
+        ctx.fill();
+      });
+
+      // 2. Render Moving Photon Energy Pulses along Active Wires
+      ctx.shadowBlur = 0;
+      const activeWireList = wirePaths.filter((w) => w && w.isActive) as NonNullable<typeof wirePaths[0]>[];
+
+      activeWireList.forEach((w) => {
+        const pulseCount = 3;
+        for (let i = 0; i < pulseCount; i++) {
+          const t = ((time * 0.35 + i / pulseCount) % 1.0);
+          // Quadratic Bezier evaluation: B(t) = (1-t)^2*P0 + 2(1-t)t*P1 + t^2*P2
+          const invT = 1 - t;
+          const px = invT * invT * w.p1.x + 2 * invT * t * w.cx + t * t * w.p2.x;
+          const py = invT * invT * w.p1.y + 2 * invT * t * w.cy + t * t * w.p2.y;
+
+          // Photon outer halo
+          ctx.beginPath();
+          ctx.arc(px, py, 4.5, 0, Math.PI * 2);
+          ctx.fillStyle = w.color;
+          ctx.globalAlpha = 0.45;
+          ctx.shadowColor = w.color;
+          ctx.shadowBlur = 10;
+          ctx.fill();
+
+          // Photon bright core
+          ctx.beginPath();
+          ctx.arc(px, py, 2.2, 0, Math.PI * 2);
+          ctx.fillStyle = '#ffffff';
+          ctx.globalAlpha = 0.95;
+          ctx.fill();
+        }
+      });
+
+      // 3. Render Intent Beacon Golden Pulses
+      const beaconPos = coordMap.get('beacon_intent');
+      if (beaconPos) {
+        const pulseRadius = 16 + Math.sin(time * 3) * 3;
+        ctx.beginPath();
+        ctx.arc(beaconPos.x, beaconPos.y, pulseRadius, 0, Math.PI * 2);
+        ctx.strokeStyle = '#f59e0b';
+        ctx.globalAlpha = 0.35 + Math.sin(time * 3) * 0.15;
+        ctx.lineWidth = 1.5;
+        ctx.shadowColor = '#f59e0b';
+        ctx.shadowBlur = 12;
+        ctx.stroke();
+      }
+
+      ctx.restore();
+
+      if (!prefersReducedMotion) {
+        animationFrameId = requestAnimationFrame(render);
+      }
+    };
+
+    // Intersection & Visibility Observers
     const intersectionObserver = new IntersectionObserver(
       ([entry]) => {
         isVisible = entry.isIntersecting;
         if (isVisible && animationFrameId === null && !prefersReducedMotion) {
-          animationFrameId = requestAnimationFrame(animate);
+          animationFrameId = requestAnimationFrame(render);
         }
       },
       { threshold: 0.1 }
@@ -380,196 +258,324 @@ export default function PipelineScene({
       } else {
         isVisible = true;
         if (animationFrameId === null && !prefersReducedMotion) {
-          animationFrameId = requestAnimationFrame(animate);
+          animationFrameId = requestAnimationFrame(render);
         }
       }
     };
     document.addEventListener('visibilitychange', handleVisibilityChange);
 
-    // 9. Main Animation Loop
-    let clock = 0;
-
-    const animate = () => {
-      if (!isVisible) return;
-
-      clock += 0.016;
-
-      // Smooth camera interpolation
-      camera.position.x += (targetCameraX - camera.position.x) * 0.05;
-      camera.position.y += (targetCameraY - camera.position.y) * 0.05;
-      camera.lookAt(0, 0, 0);
-
-      // A. Organic Freeflow Drift for Vector Particle Clouds
-      particleClouds.forEach(({ points, basePositions, phase }) => {
-        const posAttr = points.geometry.getAttribute('position') as THREE.BufferAttribute;
-        const arr = posAttr.array as Float32Array;
-
-        for (let i = 0; i < arr.length / 3; i++) {
-          const bx = basePositions[i * 3];
-          const by = basePositions[i * 3 + 1];
-          const bz = basePositions[i * 3 + 2];
-
-          // Harmonic floating drift
-          const offset = i * 0.2 + phase;
-          arr[i * 3] = bx + Math.sin(clock * 0.8 + offset) * 0.12;
-          arr[i * 3 + 1] = by + Math.cos(clock * 0.9 + offset * 1.2) * 0.12;
-          arr[i * 3 + 2] = bz + Math.sin(clock * 0.6 + offset * 0.8) * 0.08;
-        }
-
-        posAttr.needsUpdate = true;
-      });
-
-      // B. Update Moving Photon Pulses along Wires
-      if (activeWires.length > 0) {
-        const pulseAttr = pulseGeometry.getAttribute('position') as THREE.BufferAttribute;
-        const pArr = pulseAttr.array as Float32Array;
-        const colAttr = pulseGeometry.getAttribute('color') as THREE.BufferAttribute;
-        const cArr = colAttr.array as Float32Array;
-
-        const pulsesPerWire = Math.floor(pulseCount / activeWires.length);
-
-        activeWires.forEach((wireRuntime, wIdx) => {
-          const wireColor = new THREE.Color(wireRuntime.wire.color || '#38bdf8');
-
-          for (let p = 0; p < pulsesPerWire; p++) {
-            const idx = wIdx * pulsesPerWire + p;
-            if (idx >= pulseCount) break;
-
-            // Compute progress along curve
-            const speed = 0.28;
-            const progress = ((clock * speed + p / pulsesPerWire) % 1.0);
-
-            const pt = wireRuntime.curve.getPointAt(progress);
-            pArr[idx * 3] = pt.x;
-            pArr[idx * 3 + 1] = pt.y;
-            pArr[idx * 3 + 2] = pt.z;
-
-            cArr[idx * 3] = wireColor.r;
-            cArr[idx * 3 + 1] = wireColor.g;
-            cArr[idx * 3 + 2] = wireColor.b;
-          }
-        });
-
-        pulseAttr.needsUpdate = true;
-        colAttr.needsUpdate = true;
-      }
-
-      // C. Rotate and Pulse Concentric Halos
-      nodeMeshes.forEach(({ halo, baseScale }, i) => {
-        halo.rotation.z += 0.015;
-        const pulse = 1 + Math.sin(clock * 3 + i) * 0.08;
-        halo.scale.set(baseScale * pulse, baseScale * pulse, 1);
-      });
-
-      if (beaconAccent) {
-        beaconAccent.rotation.z -= 0.008;
-        const beaconPulse = 1 + Math.sin(clock * 2) * 0.06;
-        beaconAccent.scale.set(beaconPulse, beaconPulse, 1);
-      }
-
-      // D. Raycasting for Node Hover
-      raycaster.setFromCamera(mouse, camera);
-      const interactiveTargets = nodeMeshes.map((n) => n.mesh);
-      const intersects = raycaster.intersectObjects(interactiveTargets);
-
-      if (intersects.length > 0) {
-        const hitMesh = intersects[0].object as THREE.Mesh;
-        const hit = nodeMeshes.find((n) => n.mesh === hitMesh);
-        if (hit) {
-          hoveredNodeId = hit.nodeId;
-          container.style.cursor = 'pointer';
-        }
-      } else {
-        hoveredNodeId = null;
-        container.style.cursor = 'default';
-      }
-
-      renderer.render(scene, camera);
-      animationFrameId = requestAnimationFrame(animate);
-    };
-
     if (prefersReducedMotion) {
-      renderer.render(scene, camera);
+      render();
     } else {
-      animationFrameId = requestAnimationFrame(animate);
+      animationFrameId = requestAnimationFrame(render);
     }
 
-    // Cleanup & Disposal
     return () => {
       if (animationFrameId !== null) {
         cancelAnimationFrame(animationFrameId);
       }
-      container.removeEventListener('mousemove', handleMouseMove);
-      container.removeEventListener('click', handleClick);
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
       resizeObserver.disconnect();
       intersectionObserver.disconnect();
-
-      // Dispose Three.js objects
-      glowTexture.dispose();
-      particleClouds.forEach(({ points }) => {
-        points.geometry.dispose();
-        if (Array.isArray(points.material)) {
-          points.material.forEach((m) => m.dispose());
-        } else {
-          points.material.dispose();
-        }
-      });
-
-      wireRuntimes.forEach(({ line }) => {
-        line.geometry.dispose();
-        if (Array.isArray(line.material)) {
-          line.material.forEach((m) => m.dispose());
-        } else {
-          line.material.dispose();
-        }
-      });
-
-      pulseGeometry.dispose();
-      pulseMaterial.dispose();
-      sphereGeom.dispose();
-      ringGeom.dispose();
-
-      nodeMeshes.forEach(({ mesh, halo }) => {
-        mesh.geometry.dispose();
-        if (Array.isArray(mesh.material)) {
-          mesh.material.forEach((m) => m.dispose());
-        } else {
-          mesh.material.dispose();
-        }
-        halo.geometry.dispose();
-        if (Array.isArray(halo.material)) {
-          halo.material.forEach((m) => m.dispose());
-        } else {
-          halo.material.dispose();
-        }
-      });
-
-      if (beaconAccent) {
-        beaconAccent.geometry.dispose();
-        if (Array.isArray(beaconAccent.material)) {
-          beaconAccent.material.forEach((m) => m.dispose());
-        } else {
-          beaconAccent.material.dispose();
-        }
-      }
-
-      renderer.dispose();
-      if (container.contains(renderer.domElement)) {
-        container.removeChild(renderer.domElement);
-      }
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, [scenario, theme, selectedNodeId, onSelectNode, isLight]);
-
-  if (webglFailed) {
-    return <PipelineFallbackSvg scenario={scenario} />;
-  }
+  }, [wirePaths, scenario.primaryPath, coordMap]);
 
   return (
     <div
       ref={containerRef}
-      className="w-full h-[420px] sm:h-[480px] lg:h-[520px] relative overflow-hidden select-none"
-      aria-label="Kortex AI Autonomous Processing Systems Topology Visualizer"
-    />
+      className="w-full h-[460px] sm:h-[540px] lg:h-[620px] relative overflow-hidden select-none bg-[#070b16] rounded-2xl"
+      aria-label="Kortex AI Systems Architecture Map"
+    >
+      {/* 1. Crisp Vector SVG Base Layer (Typography, Wires, Nodes, Radar Arcs, Blueprint Boxes) */}
+      <svg
+        viewBox="0 0 1200 640"
+        className="w-full h-full absolute inset-0 z-10"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <defs>
+          <filter id="nodeGlow" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="4" result="blur" />
+            <feComposite in="SourceGraphic" in2="blur" operator="over" />
+          </filter>
+          <linearGradient id="gridGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor="#0f172a" stopOpacity="0.4" />
+            <stop offset="100%" stopColor="#020617" stopOpacity="0.8" />
+          </linearGradient>
+        </defs>
+
+        {/* Blueprint Framing Dashed Boxes */}
+        {/* Knowledge Bases Region */}
+        <rect
+          x="300"
+          y="70"
+          width="260"
+          height="450"
+          rx="12"
+          stroke="#1e293b"
+          strokeDasharray="4 4"
+          strokeWidth="1"
+          fill="#0a0f1d"
+          fillOpacity="0.3"
+        />
+        <text
+          x="320"
+          y="95"
+          fill="#64748b"
+          fontSize="10"
+          fontFamily="monospace"
+          fontWeight="bold"
+          letterSpacing="0.12em"
+        >
+          KNOWLEDGE BASES · 384-D
+        </text>
+        <text
+          x="320"
+          y="109"
+          fill="#475569"
+          fontSize="8"
+          fontFamily="monospace"
+          letterSpacing="0.05em"
+        >
+          chunks · embeddings · graph · hybrid RRF
+        </text>
+
+        {/* Deterministic Controllers Region */}
+        <rect
+          x="620"
+          y="460"
+          width="320"
+          height="120"
+          rx="12"
+          stroke="#064e3b"
+          strokeDasharray="4 4"
+          strokeWidth="1"
+          fill="#022c22"
+          fillOpacity="0.2"
+        />
+        <text
+          x="640"
+          y="485"
+          fill="#10b981"
+          fontSize="10"
+          fontFamily="monospace"
+          fontWeight="bold"
+          letterSpacing="0.12em"
+        >
+          DETERMINISTIC TOOLS · MUTEX LOCKED
+        </text>
+        <text
+          x="640"
+          y="499"
+          fill="#059669"
+          fontSize="8"
+          fontFamily="monospace"
+          letterSpacing="0.05em"
+        >
+          tools only — not a knowledge source
+        </text>
+
+        {/* Connecting Wires */}
+        {wirePaths.map((w) => {
+          if (!w) return null;
+          return (
+            <path
+              key={w.id}
+              d={w.pathData}
+              stroke={w.color}
+              strokeWidth={w.isActive ? 1.8 : 0.8}
+              strokeOpacity={w.isActive ? 0.75 : 0.16}
+              fill="none"
+              filter={w.isActive ? 'url(#nodeGlow)' : undefined}
+            />
+          );
+        })}
+
+        {/* Vector Clusters Label Anchors */}
+        {VECTOR_CLUSTERS.map((vc) => {
+          const isClusterActive = scenario.primaryPath.includes(vc.id);
+          return (
+            <g key={vc.id} transform={`translate(${vc.cx}, ${vc.cy})`}>
+              <ellipse
+                rx="62"
+                ry="40"
+                stroke={vc.color}
+                strokeWidth="1"
+                strokeDasharray="2 3"
+                strokeOpacity={isClusterActive ? 0.45 : 0.18}
+                fill={vc.color}
+                fillOpacity={isClusterActive ? 0.04 : 0.01}
+              />
+              <text
+                x="0"
+                y="-18"
+                textAnchor="middle"
+                fill={isClusterActive ? '#f8fafc' : '#94a3b8'}
+                fontSize="11"
+                fontFamily="sans-serif"
+                fontWeight={isClusterActive ? 'bold' : '600'}
+              >
+                {vc.name}
+              </text>
+              <text
+                x="0"
+                y="24"
+                textAnchor="middle"
+                fill={vc.color}
+                fontSize="9"
+                fontFamily="monospace"
+                fontWeight="500"
+                opacity={0.8}
+              >
+                {vc.itemCount} · {vc.dimension}
+              </text>
+            </g>
+          );
+        })}
+
+        {/* Intent Radar Beacon Node */}
+        {(() => {
+          const node = TOPOLOGY_NODES.find((n) => n.id === 'beacon_intent');
+          if (!node) return null;
+          const isHovered = hoveredNodeId === node.id;
+          const isSelected = selectedNodeId === node.id;
+
+          return (
+            <g
+              transform={`translate(${node.x}, ${node.y})`}
+              className="cursor-pointer"
+              onMouseEnter={() => setHoveredNodeId(node.id)}
+              onMouseLeave={() => setHoveredNodeId(null)}
+              onClick={() => onSelectNode && onSelectNode(node.id)}
+            >
+              <circle
+                r="36"
+                stroke="#f59e0b"
+                strokeWidth="1.2"
+                strokeDasharray="3 3"
+                strokeOpacity="0.4"
+                fill="#f59e0b"
+                fillOpacity="0.03"
+              />
+              <circle
+                r="22"
+                stroke="#f59e0b"
+                strokeWidth="1.5"
+                fill="#0f172a"
+                fillOpacity="0.9"
+                filter="url(#nodeGlow)"
+              />
+              <circle r="6" fill="#f59e0b" />
+              <text
+                x="0"
+                y="-30"
+                textAnchor="middle"
+                fill="#fbbf24"
+                fontSize="10"
+                fontFamily="monospace"
+                fontWeight="bold"
+                letterSpacing="0.08em"
+              >
+                INTENT RADAR
+              </text>
+              <text
+                x="0"
+                y="34"
+                textAnchor="middle"
+                fill="#d97706"
+                fontSize="8"
+                fontFamily="monospace"
+              >
+                SIGNAL INGESTION
+              </text>
+            </g>
+          );
+        })()}
+
+        {/* Regular Topology Nodes */}
+        {TOPOLOGY_NODES.map((node) => {
+          if (node.id === 'beacon_intent') return null; // rendered specially above
+
+          const isPathActive = scenario.primaryPath.includes(node.id);
+          const isSelected = selectedNodeId === node.id;
+          const isHovered = hoveredNodeId === node.id;
+
+          const isIngress = node.category === 'ingress';
+          const isEgress = node.category === 'egress';
+          const isTool = node.category === 'tools';
+
+          return (
+            <g
+              key={node.id}
+              transform={`translate(${node.x}, ${node.y})`}
+              className="cursor-pointer transition-transform duration-200 group"
+              onMouseEnter={() => setHoveredNodeId(node.id)}
+              onMouseLeave={() => setHoveredNodeId(null)}
+              onClick={() => onSelectNode && onSelectNode(node.id)}
+            >
+              {/* Radar Satellite Arc for Ingress Channels */}
+              {node.radarArc && (
+                <g transform="translate(18, 0)">
+                  {[0.5, 0.75, 1.0].map((scale, sIdx) => (
+                    <circle
+                      key={sIdx}
+                      r="1.4"
+                      cx={Math.cos((sIdx - 1) * 0.5) * 8}
+                      cy={Math.sin((sIdx - 1) * 0.5) * 8}
+                      fill={node.color}
+                      opacity={0.6 + sIdx * 0.2}
+                    />
+                  ))}
+                </g>
+              )}
+
+              {/* Concentric Outer Ring */}
+              <circle
+                r={isSelected ? 16 : isHovered ? 14 : 11}
+                stroke={node.color}
+                strokeWidth={isPathActive || isSelected ? 1.8 : 1.2}
+                strokeOpacity={isPathActive || isSelected ? 0.9 : 0.4}
+                fill={isPathActive ? node.color : '#0a0f1d'}
+                fillOpacity={isPathActive ? 0.18 : 0.8}
+                filter={isPathActive || isSelected ? 'url(#nodeGlow)' : undefined}
+              />
+
+              {/* Inner Glowing Center Dot */}
+              <circle
+                r={isSelected ? 5 : 3.5}
+                fill={node.color}
+                opacity={isPathActive || isSelected ? 1 : 0.8}
+              />
+
+              {/* Node Text Label */}
+              <text
+                x={isIngress ? -18 : isEgress ? 20 : 0}
+                y={isTool ? 22 : isIngress || isEgress ? 4 : -18}
+                textAnchor={isIngress ? 'end' : isEgress ? 'start' : 'middle'}
+                fill={
+                  isSelected
+                    ? '#ffffff'
+                    : isPathActive
+                    ? '#f8fafc'
+                    : '#94a3b8'
+                }
+                fontSize={isSelected || isPathActive ? 11 : 10}
+                fontFamily={isIngress || isEgress ? 'monospace' : 'sans-serif'}
+                fontWeight={isSelected || isPathActive ? 'bold' : '500'}
+                letterSpacing={isIngress || isEgress ? '0.02em' : 'normal'}
+              >
+                {node.label}
+              </text>
+            </g>
+          );
+        })}
+      </svg>
+
+      {/* 2. Dynamic 2D Canvas Layer (60FPS Freeflow Particle Nebulae & Moving Photon Streams) */}
+      <canvas
+        ref={canvasRef}
+        className="w-full h-full absolute inset-0 z-20 pointer-events-none"
+      />
+    </div>
   );
 }

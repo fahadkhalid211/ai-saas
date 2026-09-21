@@ -178,15 +178,15 @@ export function PipelineSection({ theme = 'dark' }: PipelineSectionProps) {
           }`}
         >
           {/* Blueprint Overlay Header Tags */}
-          <div className="absolute top-3 left-4 z-10 pointer-events-none flex items-center gap-3 font-mono text-[10px] text-slate-400">
-            <span className="font-bold tracking-wider text-slate-300">WORKSPACE: ACME-PRODUCTION</span>
+          <div className="absolute top-3 left-4 z-30 pointer-events-none flex items-center gap-3 font-mono text-[10px] text-slate-400">
+            <span className="font-bold tracking-wider text-slate-300">WORKSPACE: KORTEX-PRODUCTION</span>
             <span>·</span>
-            <span>TOPOLOGY: WIRED GRAPH + 3D PARTICLE NEBULAE</span>
+            <span>TOPOLOGY: WIRED GRAPH + 384-D PARTICLE NEBULAE</span>
           </div>
 
-          <div className="absolute top-3 right-4 z-10 pointer-events-none flex items-center gap-2 font-mono text-[10px] text-cyan-400">
+          <div className="absolute top-3 right-4 z-30 pointer-events-none flex items-center gap-2 font-mono text-[10px] text-cyan-400">
             <span className="h-1.5 w-1.5 rounded-full bg-cyan-400 animate-ping" />
-            <span>PHOTON BUS STREAMING</span>
+            <span>PHOTON BUS ACTIVE</span>
           </div>
 
           <PipelineScene
@@ -197,20 +197,18 @@ export function PipelineSection({ theme = 'dark' }: PipelineSectionProps) {
           />
 
           {/* Blueprint Bottom Subsystem Labels Bar */}
-          <div className="p-3 border-t border-slate-900 bg-slate-950/90 flex flex-wrap items-center justify-between gap-3 text-[10px] font-mono text-slate-400">
-            <div className="flex items-center gap-4">
-              <span className="text-cyan-400 font-bold">INGRESS CHANNELS</span>
-              <span>→</span>
-              <span className="text-indigo-400 font-bold">384-D VECTOR NEBULAE</span>
-              <span>→</span>
-              <span className="text-purple-400 font-bold">ORCHESTRATION CORE</span>
-              <span>→</span>
-              <span className="text-emerald-400 font-bold">MUTEX CONTROLLERS</span>
-              <span>→</span>
-              <span className="text-blue-400 font-bold">EGRESS DELIVERABLES</span>
+          <div className="p-3 border-t border-slate-900 bg-slate-950/95 flex flex-wrap items-center justify-between gap-3 text-[10px] font-mono text-slate-400">
+            <div className="flex items-center gap-2 sm:gap-3 text-slate-400">
+              <span className="text-cyan-400 font-bold">6 INGRESS CHANNELS</span>
+              <span>·</span>
+              <span className="text-indigo-400 font-bold">3 VECTOR VAULTS</span>
+              <span>·</span>
+              <span className="text-purple-400 font-bold">3 COGNITIVE CORES</span>
+              <span>·</span>
+              <span className="text-emerald-400 font-bold">3 EXECUTION TOOLS</span>
             </div>
-            <div className="text-slate-500">
-              CLICK NODES TO INSPECT
+            <div className="text-slate-500 font-mono tracking-wider">
+              PER-INSTANCE MUTEX LOCK · STRICT GROUNDING
             </div>
           </div>
         </div>

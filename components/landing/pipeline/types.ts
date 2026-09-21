@@ -10,24 +10,14 @@ export interface TopologyNode {
   label: string;
   category: SubsystemCategory;
   badge: string;
-  // Normalized 2D/3D layout coordinates in scene space (-10 to +10 X, -5 to +5 Y)
   x: number;
   y: number;
-  z?: number;
   color: string;
   description: string;
   technicalSpec: string;
-  telemetryMetrics?: Array<{ label: string; value: string }>;
+  telemetryMetrics: Array<{ label: string; value: string }>;
   samplePayload?: string;
-}
-
-export interface TopologyWire {
-  id: string;
-  sourceId: string;
-  targetId: string;
-  color?: string;
-  pulseSpeed?: number;
-  activeInScenarios?: Array<'booking' | 'lead' | 'grounded_rag'>;
+  radarArc?: boolean;
 }
 
 export interface VectorClusterInfo {
@@ -35,11 +25,20 @@ export interface VectorClusterInfo {
   name: string;
   itemCount: string;
   dimension: string;
-  x: number;
-  y: number;
-  z: number;
+  cx: number;
+  cy: number;
   color: string;
   docs: string[];
+}
+
+export interface TopologyWire {
+  id: string;
+  sourceId: string;
+  targetId: string;
+  color: string;
+  pulseSpeed?: number;
+  curveType?: 'direct' | 'curved';
+  activeInScenarios?: Array<'booking' | 'lead' | 'grounded_rag'>;
 }
 
 export interface PipelineScenarioData {
@@ -47,9 +46,7 @@ export interface PipelineScenarioData {
   tabName: string;
   badge: string;
   inboundText: string;
-  primaryPath: string[]; // Node IDs activated along the flow
-  activeTools: string[]; // Tool node IDs activated
-  activeEgress: string[]; // Egress node IDs activated
+  primaryPath: string[]; // Active node/cluster IDs
   outcome: {
     title: string;
     summary: string;
@@ -57,18 +54,20 @@ export interface PipelineScenarioData {
   };
 }
 
+// Coordinated for 1200 x 640 blueprint viewport
 export const TOPOLOGY_NODES: TopologyNode[] = [
-  // Ingress Channels (Left: X = -9.5)
+  // Left: Ingress Channels (X = 140)
   {
     id: 'ing_widget',
     label: 'Website Widget',
     category: 'ingress',
     badge: 'Live Session',
-    x: -9.5,
-    y: 3.2,
+    x: 140,
+    y: 110,
     color: '#06b6d4',
+    radarArc: true,
     description: 'Embedded client floating messenger handling realtime visitor conversations.',
-    technicalSpec: 'Lightweight vanilla JS bundle (<42KB), postMessage iframe bridge, local session token.',
+    technicalSpec: 'Vanilla JS bundle (<42KB), postMessage iframe bridge, local session token.',
     telemetryMetrics: [
       { label: 'Transport', value: 'SSE / Stream' },
       { label: 'Avg TTFT', value: '380ms' },
@@ -80,9 +79,10 @@ export const TOPOLOGY_NODES: TopologyNode[] = [
     label: 'WhatsApp API',
     category: 'ingress',
     badge: 'Omnichannel',
-    x: -9.5,
-    y: 1.2,
+    x: 140,
+    y: 190,
     color: '#10b981',
+    radarArc: true,
     description: 'Cloud API webhook ingestion for inbound mobile customer inquiries.',
     technicalSpec: 'HMAC SHA-256 signature verification, idempotent deduplication buffer.',
     telemetryMetrics: [
@@ -96,9 +96,10 @@ export const TOPOLOGY_NODES: TopologyNode[] = [
     label: 'Telegram Bot',
     category: 'ingress',
     badge: 'Direct Bot',
-    x: -9.5,
-    y: -0.8,
+    x: 140,
+    y: 270,
     color: '#38bdf8',
+    radarArc: true,
     description: 'Instant bot dispatcher for customer service channels and escalations.',
     technicalSpec: 'X-Telegram-Bot-Api-Secret-Token validation, automatic duplicate filter.',
     telemetryMetrics: [
@@ -108,50 +109,85 @@ export const TOPOLOGY_NODES: TopologyNode[] = [
     samplePayload: '{"update_id": 982144, "message": {"chat": {"id": 4810294}}}',
   },
   {
-    id: 'ing_sources',
-    label: 'Knowledge Ingest',
+    id: 'ing_docs',
+    label: 'Document Upload',
     category: 'ingress',
-    badge: 'URL / PDF / OCR',
-    x: -9.5,
-    y: -2.8,
+    badge: 'PDF / DOCX',
+    x: 140,
+    y: 350,
     color: '#818cf8',
-    description: 'Continuous ingestion pipeline parsing scraped sites, PDFs, and YouTube audio transcripts.',
-    technicalSpec: 'Recursive chunking (500 tokens, 100 overlap), URL sanitization, Whisper/OCR extraction.',
+    radarArc: false,
+    description: 'Multi-document ingestion extracting text passages, policies, and schedules.',
+    technicalSpec: 'Recursive chunking (500 tokens, 100 overlap), URL sanitization.',
     telemetryMetrics: [
       { label: 'Chunk Size', value: '500 tokens' },
-      { label: 'Model', value: 'bge-small-en-v1.5' },
+      { label: 'Overlap', value: '100 tokens' },
     ],
     samplePayload: '{"source": "policies_2026.pdf", "chunks": 42, "checksum": "a7b8e1"}',
   },
+  {
+    id: 'ing_scraper',
+    label: 'Live Web Scraper',
+    category: 'ingress',
+    badge: 'URL Indexing',
+    x: 140,
+    y: 430,
+    color: '#a78bfa',
+    radarArc: false,
+    description: 'Automated crawler scraping public website pages, FAQs, and price lists.',
+    technicalSpec: 'DOM content extraction, Markdown normalization, change detection hash.',
+    telemetryMetrics: [
+      { label: 'Extraction', value: 'Semantic DOM' },
+      { label: 'Refresh', value: 'Auto-Sync' },
+    ],
+    samplePayload: '{"url": "https://acme.com/pricing", "status": 200, "pagesIndexed": 12}',
+  },
+  {
+    id: 'ing_youtube',
+    label: 'Audio Transcripts',
+    category: 'ingress',
+    badge: 'Whisper / OCR',
+    x: 140,
+    y: 510,
+    color: '#f43f5e',
+    radarArc: false,
+    description: 'Multimodal transcript pipeline converting YouTube video and audio into chunks.',
+    technicalSpec: 'Time-aligned subtitle parser, multi-language caption alignment.',
+    telemetryMetrics: [
+      { label: 'Model', value: 'Whisper Large' },
+      { label: 'Accuracy', value: 'High Fidelity' },
+    ],
+    samplePayload: '{"videoId": "OKsaF_AasDA", "segments": 38, "durationSec": 840}',
+  },
 
-  // Focus Intent Beacon (Center-Left: X = -0.5, Y = 1.0)
+  // Focus Query Beacon: INTENT RADAR (Center: X = 610, Y = 260)
   {
     id: 'beacon_intent',
-    label: "Visitor Intent Beacon",
+    label: "INTENT RADAR",
     category: 'cognitive_core',
-    badge: 'Signal Filter',
-    x: -0.6,
-    y: 1.2,
+    badge: 'Signal Ingestion',
+    x: 610,
+    y: 260,
     color: '#f59e0b',
-    description: 'Classifies inbound visitor intent into booking, lead capture, support, or pricing.',
-    technicalSpec: 'Low-latency classification layer extracting temporal entities, emails, and phone numbers.',
+    description: 'Real-time query normalization extracting booking times, phone numbers, and intent.',
+    technicalSpec: 'Low-latency classification layer extracting temporal entities and contact regex.',
     telemetryMetrics: [
-      { label: 'Extraction', value: 'Named Entity & Regex' },
+      { label: 'Entity Match', value: 'Named Entity & Regex' },
       { label: 'Confidence', value: '99.4%' },
     ],
     samplePayload: '{"intent": "APPOINTMENT_RESERVATION", "time": "10:00 AM", "date": "tomorrow"}',
   },
 
-  // Central Cognitive Hub & Satellites (Center-Right: X = 2.4)
+  // Center-Right: Cognitive Reasoning Hub & Satellites (X = 780, Y = 260)
   {
     id: 'core_reasoning',
     label: 'Orchestration Core',
     category: 'cognitive_core',
-    badge: 'Multi-LLM Engine',
-    x: 2.4,
-    y: 1.2,
+    badge: 'Multi-LLM Hub',
+    x: 780,
+    y: 260,
     color: '#a855f7',
-    description: 'Cognitive reasoning engine cascading across Groq, Gemini Flash, or wholesale BYOK providers.',
+    description: 'Cognitive reasoning engine cascading across Groq, Gemini Flash, or wholesale BYOK keys.',
     technicalSpec: 'Cascading failover with zero-markup BYOK; dynamic system prompt injection.',
     telemetryMetrics: [
       { label: 'Engine', value: 'Cascading Multi-Cloud' },
@@ -164,8 +200,8 @@ export const TOPOLOGY_NODES: TopologyNode[] = [
     label: 'Factual Firebreak',
     category: 'cognitive_core',
     badge: 'Anti-Hallucination',
-    x: 2.4,
-    y: 3.4,
+    x: 780,
+    y: 150,
     color: '#ec4899',
     description: 'Grounds every token strictly in retrieved document context, rejecting ungrounded speculation.',
     technicalSpec: 'Cross-encoder citation verification; prompts refusal if similarity is below threshold.',
@@ -179,9 +215,9 @@ export const TOPOLOGY_NODES: TopologyNode[] = [
     id: 'core_escalation',
     label: 'Escalation Radar',
     category: 'cognitive_core',
-    badge: 'Human Handoff',
-    x: 4.2,
-    y: 2.4,
+    badge: 'Live Takeover',
+    x: 870,
+    y: 200,
     color: '#3b82f6',
     description: 'Monitors user sentiment and complexity, bridging immediately to human operators when needed.',
     technicalSpec: 'Sentiment scoring, negative valence escalation, and staff alert triggering.',
@@ -191,15 +227,31 @@ export const TOPOLOGY_NODES: TopologyNode[] = [
     ],
     samplePayload: '{"sentiment": "neutral", "escalationNeeded": false}',
   },
+  {
+    id: 'core_byok',
+    label: 'BYOK Engine',
+    category: 'cognitive_core',
+    badge: 'Zero Markup',
+    x: 690,
+    y: 190,
+    color: '#06b6d4',
+    description: 'Allows businesses to bring raw API keys directly without platform compute surcharges.',
+    technicalSpec: 'AES-256 encrypted provider keys, direct proxy to OpenAI / Anthropic / Groq endpoints.',
+    telemetryMetrics: [
+      { label: 'Key Encryption', value: 'AES-256 GCM' },
+      { label: 'Platform Tax', value: '$0.00 / token' },
+    ],
+    samplePayload: '{"provider": "anthropic", "endpoint": "api.anthropic.com", "cost": "raw wholesale"}',
+  },
 
-  // Deterministic Execution Tools (Bottom: Y = -3.2, X = 0.5 to 4.5)
+  // Bottom Center: Deterministic Tools (Y = 520)
   {
     id: 'tool_mutex',
     label: 'Slot Lock Mutex',
     category: 'tools',
     badge: 'In-Memory Guard',
-    x: 0.8,
-    y: -3.2,
+    x: 680,
+    y: 520,
     color: '#10b981',
     description: 'Per-instance concurrency mutex holding appointment slots during confirmation flow.',
     technicalSpec: '5-minute auto-expiry timer, single-flight lock map, and database uniqueness check.',
@@ -214,8 +266,8 @@ export const TOPOLOGY_NODES: TopologyNode[] = [
     label: 'Postgres State Store',
     category: 'tools',
     badge: 'Relational & Audit',
-    x: 2.8,
-    y: -3.2,
+    x: 780,
+    y: 520,
     color: '#059669',
     description: 'Persistent database recording conversation history, leads, appointments, and audit events.',
     technicalSpec: 'Schema validation, multi-tenant workspace isolation, BOLA access control.',
@@ -230,10 +282,10 @@ export const TOPOLOGY_NODES: TopologyNode[] = [
     label: 'CRM & Webhooks',
     category: 'tools',
     badge: 'Lead Dispatch',
-    x: 4.8,
-    y: -3.2,
+    x: 880,
+    y: 520,
     color: '#14b8a6',
-    description: 'Outbound webhook dispatcher sending captured leads to HubSpot, Salesforce, or custom endpoints.',
+    description: 'Outbound webhook dispatcher sending captured leads to CRM endpoints with retry backoff.',
     technicalSpec: 'Exponential retry backoff, webhook secret signing, email notification dispatch.',
     telemetryMetrics: [
       { label: 'Dispatch', value: 'Instant Push' },
@@ -242,14 +294,14 @@ export const TOPOLOGY_NODES: TopologyNode[] = [
     samplePayload: '{"lead": {"name": "David Vance", "email": "david@acme.com", "phone": "555-0194"}}',
   },
 
-  // Egress Destinations (Right: X = 9.2)
+  // Right: Client Egress & Deliverables (X = 1060)
   {
     id: 'egr_calendar',
     label: 'Calendar Sync',
     category: 'egress',
     badge: 'Google / Outlook',
-    x: 9.2,
-    y: 3.2,
+    x: 1060,
+    y: 150,
     color: '#6366f1',
     description: 'Dispatches .ics calendar attachments, Google Calendar links, and email confirmations.',
     technicalSpec: 'RFC 5545 iCalendar standard generation, UTC timestamp normalization.',
@@ -264,8 +316,8 @@ export const TOPOLOGY_NODES: TopologyNode[] = [
     label: 'CRM Lead Record',
     category: 'egress',
     badge: 'Attributed Profile',
-    x: 9.2,
-    y: 1.2,
+    x: 1060,
+    y: 240,
     color: '#8b5cf6',
     description: 'Permanent lead record with full conversational transcript and attribution source.',
     technicalSpec: 'Session ID attribution, contact enrichment, and duplicate resolution.',
@@ -280,8 +332,8 @@ export const TOPOLOGY_NODES: TopologyNode[] = [
     label: 'Staff Live Console',
     category: 'egress',
     badge: 'Chime & Push',
-    x: 9.2,
-    y: -0.8,
+    x: 1060,
+    y: 330,
     color: '#a855f7',
     description: 'Real-time alert in operator console with audio chime and 1-click takeover button.',
     technicalSpec: 'Browser Web Audio API chime, server-sent events notification channel.',
@@ -296,8 +348,8 @@ export const TOPOLOGY_NODES: TopologyNode[] = [
     label: 'Response Stream',
     category: 'egress',
     badge: 'Sub-Second SSE',
-    x: 9.2,
-    y: -2.8,
+    x: 1060,
+    y: 420,
     color: '#06b6d4',
     description: 'Chunked text streaming response back to the active visitor widget.',
     technicalSpec: 'Server-Sent Events (SSE) readable stream with citation footnote attributes.',
@@ -315,9 +367,8 @@ export const VECTOR_CLUSTERS: VectorClusterInfo[] = [
     name: 'Policies & FAQs',
     itemCount: '124 chunks',
     dimension: '384-d',
-    x: -4.8,
-    y: 2.8,
-    z: 0.5,
+    cx: 410,
+    cy: 160,
     color: '#38bdf8',
     docs: ['Operating_Hours.md', 'Cancellation_Rules.pdf', 'Privacy_Policy.docx'],
   },
@@ -326,9 +377,8 @@ export const VECTOR_CLUSTERS: VectorClusterInfo[] = [
     name: 'Services & Catalog',
     itemCount: '86 chunks',
     dimension: '384-d',
-    x: -3.8,
-    y: 0.2,
-    z: -0.8,
+    cx: 470,
+    cy: 290,
     color: '#818cf8',
     docs: ['Service_Menu.xlsx', 'Pricing_Tiers.pdf', 'Package_Addons.md'],
   },
@@ -337,9 +387,8 @@ export const VECTOR_CLUSTERS: VectorClusterInfo[] = [
     name: 'Staff Rosters & Slots',
     itemCount: '48 chunks',
     dimension: '384-d',
-    x: -4.6,
-    y: -2.4,
-    z: 0.2,
+    cx: 390,
+    cy: 420,
     color: '#34d399',
     docs: ['Barber_Schedules.json', 'Doctor_Availability.ics', 'Room_Capacities.csv'],
   },
@@ -353,34 +402,37 @@ export const TOPOLOGY_WIRES: TopologyWire[] = [
   { id: 'w_in2_vc1', sourceId: 'ing_whatsapp', targetId: 'vc_policies', color: '#10b981' },
   { id: 'w_in2_vc3', sourceId: 'ing_whatsapp', targetId: 'vc_rosters', color: '#10b981' },
   { id: 'w_in3_vc1', sourceId: 'ing_telegram', targetId: 'vc_policies', color: '#38bdf8' },
-  { id: 'w_in4_vc2', sourceId: 'ing_sources', targetId: 'vc_services', color: '#818cf8' },
+  { id: 'w_in4_vc2', sourceId: 'ing_docs', targetId: 'vc_services', color: '#818cf8' },
+  { id: 'w_in5_vc1', sourceId: 'ing_scraper', targetId: 'vc_policies', color: '#a78bfa' },
+  { id: 'w_in6_vc2', sourceId: 'ing_youtube', targetId: 'vc_services', color: '#f43f5e' },
 
   // Vector Clusters -> Intent Beacon
   { id: 'w_vc1_beacon', sourceId: 'vc_policies', targetId: 'beacon_intent', color: '#38bdf8' },
   { id: 'w_vc2_beacon', sourceId: 'vc_services', targetId: 'beacon_intent', color: '#818cf8' },
   { id: 'w_vc3_beacon', sourceId: 'vc_rosters', targetId: 'beacon_intent', color: '#34d399' },
 
-  // Direct Ingress -> Intent Beacon shortcut bus
+  // Direct Ingress -> Intent Beacon Shortcut
   { id: 'w_in1_beacon', sourceId: 'ing_widget', targetId: 'beacon_intent', color: '#38bdf8' },
 
   // Intent Beacon -> Orchestration Core
   { id: 'w_beacon_core', sourceId: 'beacon_intent', targetId: 'core_reasoning', color: '#f59e0b' },
 
-  // Core Satellites
+  // Orchestration Core <-> Satellites
   { id: 'w_core_grounder', sourceId: 'core_reasoning', targetId: 'core_grounder', color: '#ec4899' },
   { id: 'w_core_escalate', sourceId: 'core_reasoning', targetId: 'core_escalation', color: '#3b82f6' },
+  { id: 'w_core_byok', sourceId: 'core_reasoning', targetId: 'core_byok', color: '#06b6d4' },
 
-  // Core -> Tools
+  // Orchestration Core -> Deterministic Tools
   { id: 'w_core_mutex', sourceId: 'core_reasoning', targetId: 'tool_mutex', color: '#10b981' },
   { id: 'w_core_db', sourceId: 'core_reasoning', targetId: 'tool_db', color: '#059669' },
   { id: 'w_core_crm', sourceId: 'core_reasoning', targetId: 'tool_crm', color: '#14b8a6' },
 
-  // Core / Tools -> Egress
+  // Tools / Core -> Client Deliverables (Egress)
   { id: 'w_tool_calendar', sourceId: 'tool_mutex', targetId: 'egr_calendar', color: '#6366f1' },
-  { id: 'w_tool_db_egr', sourceId: 'tool_db', targetId: 'egr_staff_console', color: '#a855f7' },
   { id: 'w_tool_crm_egr', sourceId: 'tool_crm', targetId: 'egr_lead_record', color: '#8b5cf6' },
-  { id: 'w_core_stream', sourceId: 'core_reasoning', targetId: 'egr_stream', color: '#06b6d4' },
+  { id: 'w_tool_db_staff', sourceId: 'tool_db', targetId: 'egr_staff_console', color: '#a855f7' },
   { id: 'w_core_calendar', sourceId: 'core_reasoning', targetId: 'egr_calendar', color: '#6366f1' },
+  { id: 'w_core_stream', sourceId: 'core_reasoning', targetId: 'egr_stream', color: '#06b6d4' },
   { id: 'w_core_staff', sourceId: 'core_escalation', targetId: 'egr_staff_console', color: '#a855f7' },
 ];
 
@@ -402,8 +454,6 @@ export const PIPELINE_SCENARIOS: PipelineScenarioData[] = [
       'egr_calendar',
       'egr_stream',
     ],
-    activeTools: ['tool_mutex', 'tool_db'],
-    activeEgress: ['egr_calendar', 'egr_stream'],
     outcome: {
       title: 'Appointment Confirmed & Mutex Secured',
       summary: 'Slot locked for 5 minutes in memory, written to Postgres DB, and calendar invites (.ics + Google) generated.',
@@ -429,8 +479,6 @@ export const PIPELINE_SCENARIOS: PipelineScenarioData[] = [
       'egr_staff_console',
       'egr_stream',
     ],
-    activeTools: ['tool_crm', 'tool_db'],
-    activeEgress: ['egr_lead_record', 'egr_staff_console', 'egr_stream'],
     outcome: {
       title: 'Contact Profile Created & Attributed',
       summary: 'NLP parser extracted email and phone from text without forms; dispatched to CRM with staff chime alert.',
@@ -455,8 +503,6 @@ export const PIPELINE_SCENARIOS: PipelineScenarioData[] = [
       'core_grounder',
       'egr_stream',
     ],
-    activeTools: ['tool_db'],
-    activeEgress: ['egr_stream'],
     outcome: {
       title: 'Grounded Response Streamed with Citations',
       summary: 'Answer grounded strictly in Policies_2026.pdf via 384-d vector embeddings; unverified hallucination rejected.',
