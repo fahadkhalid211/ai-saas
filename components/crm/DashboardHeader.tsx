@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
+import { BrandMark } from '@/components/brand/BrandMark';
 import {
   Bot,
   Plus,
@@ -102,12 +103,10 @@ export function DashboardHeader({
       <div className="flex items-center gap-4 sm:gap-6">
         {/* Brand Logo */}
         <div className="flex items-center gap-3 cursor-pointer" onClick={() => setActiveTab('landing')}>
-          <div className="h-9 w-9 rounded-xl bg-blue-600 flex items-center justify-center text-white font-bold shadow-xs">
-            <Bot className="h-5 w-5" />
-          </div>
+          <BrandMark size={34} showWord={false} />
           <div className="hidden sm:block">
             <div className="flex items-center gap-2">
-              <span className="font-bold text-slate-900 dark:text-white text-base tracking-tight">KORTEX AI</span>
+              <span className="kx-brand-word">Kortex</span>
               <span className="text-[10px] font-semibold bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800 px-1.5 py-0.5 rounded">
                 Enterprise
               </span>

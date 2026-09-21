@@ -1,7 +1,10 @@
 'use client';
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Bot, RefreshCw } from 'lucide-react';
+import { RefreshCw } from 'lucide-react';
+import './brand.css';
+import { brandFontClasses } from '@/lib/brand-fonts';
+import { BrandMark } from '@/components/brand/BrandMark';
 import { Appointment } from '@/components/crm/AppointmentsTab';
 import { AdminLoginScreen } from '@/components/crm/AdminLoginScreen';
 import { DashboardHeader } from '@/components/crm/DashboardHeader';
@@ -694,10 +697,10 @@ export default function DashboardPage() {
 
   if (isAuthChecking) {
     return (
-      <div className={`${theme === 'dark' ? 'dark' : ''} h-screen w-full flex items-center justify-center bg-slate-50 dark:bg-slate-950 font-sans`}>
+      <div className={`kx-app ${brandFontClasses} ${theme === 'dark' ? 'dark' : ''} h-screen w-full flex items-center justify-center bg-slate-50 dark:bg-slate-950 font-sans`}>
         <div className="flex flex-col items-center gap-3">
-          <div className="h-10 w-10 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-md animate-pulse">
-            <Bot className="h-6 w-6" />
+          <div className="animate-pulse">
+            <BrandMark size={44} showWord={false} />
           </div>
           <div className="flex items-center gap-2 text-xs font-medium text-slate-500 dark:text-slate-400">
             <RefreshCw className="h-3.5 w-3.5 animate-spin text-blue-600" />
@@ -739,7 +742,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className={`${theme === 'dark' ? 'dark' : ''} h-screen w-full flex flex-col font-sans transition-colors duration-150`}>
+    <div className={`kx-app ${brandFontClasses} ${theme === 'dark' ? 'dark' : ''} h-screen w-full flex flex-col font-sans transition-colors duration-150`}>
       <div className="flex h-screen w-full flex-col bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 overflow-hidden">
         
         {/* Top Enterprise Header */}

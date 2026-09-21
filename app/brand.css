@@ -1,0 +1,150 @@
+/* ===================== Kortex app brand layer =====================
+   Scoped to .kx-app so the public pages, hosted sites and embeds are untouched.
+   Tailwind v4 reads every colour from a CSS variable, so re-pointing the palette
+   here re-skins the whole dashboard without editing each component.
+   Palette: cream #fffeeb, deep green #08251a, lime #abff44, lavender #f0d7ff. */
+
+.kx-app {
+  --kx-cream: #fffeeb;
+  --kx-deep: #08251a;
+  --kx-lime: #abff44;
+  --kx-ink: #1a1a1a;
+  --font-sans: var(--font-kx-sans), ui-sans-serif, system-ui, sans-serif;
+  --kx-serif: var(--font-kx-serif), Georgia, "Times New Roman", serif;
+
+  /* Neutrals: cream in light mode, deep green in dark mode (same scale drives both) */
+  --color-slate-50: #fffeeb;
+  --color-slate-100: #f7f6dd;
+  --color-slate-200: #e9e8d2;
+  --color-slate-300: #d9d8bf;
+  --color-slate-400: #9a9a86;
+  --color-slate-500: #6b6b5c;
+  --color-slate-600: #4b5b51;
+  --color-slate-700: #24503c;
+  --color-slate-750: #1a4734;
+  --color-slate-800: #12402d;
+  --color-slate-850: #0d3323;
+  --color-slate-900: #0a2c1f;
+  --color-slate-950: #08251a;
+
+  /* Primary accent: brand teal-green (readable as text on cream and as a fill with white text) */
+  --color-blue-50: #e8f5f2;
+  --color-blue-100: #d3ece5;
+  --color-blue-200: #a9d9cb;
+  --color-blue-300: #79c0ad;
+  --color-blue-400: #4fbf9f;
+  --color-blue-500: #1c8a72;
+  --color-blue-600: #0f6e58;
+  --color-blue-700: #0a5946;
+  --color-blue-800: #0b4636;
+  --color-blue-900: #08251a;
+  --color-blue-950: #051a12;
+  --color-indigo-50: #e8f5f2;
+  --color-indigo-100: #d3ece5;
+  --color-indigo-200: #a9d9cb;
+  --color-indigo-300: #79c0ad;
+  --color-indigo-400: #4fbf9f;
+  --color-indigo-500: #1c8a72;
+  --color-indigo-600: #0f6e58;
+  --color-indigo-700: #0a5946;
+  --color-indigo-800: #0b4636;
+  --color-indigo-900: #08251a;
+  --color-indigo-950: #051a12;
+
+  /* Secondary accents: lavender and mint from the brand palette */
+  --color-purple-50: #f8efff;
+  --color-purple-100: #f0d7ff;
+  --color-purple-200: #e2b8fb;
+  --color-purple-300: #cf95f5;
+  --color-purple-400: #b96ce8;
+  --color-purple-500: #9d49d1;
+  --color-purple-600: #7f34ae;
+  --color-purple-700: #63288a;
+  --color-purple-800: #4b1f68;
+  --color-purple-900: #35164a;
+  --color-purple-950: #230e31;
+  --color-violet-50: #f8efff;
+  --color-violet-100: #f0d7ff;
+  --color-violet-200: #e2b8fb;
+  --color-violet-300: #cf95f5;
+  --color-violet-400: #b96ce8;
+  --color-violet-500: #9d49d1;
+  --color-violet-600: #7f34ae;
+  --color-violet-700: #63288a;
+  --color-violet-800: #4b1f68;
+  --color-violet-900: #35164a;
+  --color-violet-950: #230e31;
+  --color-fuchsia-100: #ffd6f6;
+  --color-fuchsia-300: #ffbcf2;
+  --color-fuchsia-500: #d65cc0;
+  --color-fuchsia-600: #b544a1;
+  --color-sky-50: #eefafa;
+  --color-sky-100: #d3f1f0;
+  --color-sky-200: #a9e3e2;
+  --color-sky-300: #91dbda;
+  --color-sky-400: #5cc3c2;
+  --color-sky-500: #2ea6a6;
+  --color-sky-600: #1d8585;
+  --color-sky-700: #176868;
+  --color-cyan-100: #d3f1f0;
+  --color-cyan-400: #5cc3c2;
+  --color-cyan-500: #2ea6a6;
+  --color-cyan-600: #1d8585;
+
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+body:has(.kx-app) { background-color: #fffeeb; color: #08251a; }
+body:has(.kx-app.dark) { background-color: #0a2c1f; color: #fffeeb; }
+
+/* Headings: editorial serif, as on the marketing site */
+.kx-app :where(h1, h2) { font-family: var(--kx-serif); letter-spacing: -0.02em; }
+.kx-app :where(h3[class*="text-xl"], h3[class*="text-2xl"], h3[class*="text-3xl"]) { font-family: var(--kx-serif); letter-spacing: -0.02em; }
+
+/* Primary buttons and links: lime with ink outline and a chunky offset shadow */
+.kx-app :is(button, a).bg-blue-600,
+.kx-app :is(button, a).bg-blue-500,
+.kx-app :is(button, a).bg-indigo-600,
+.kx-app :is(button, a).bg-blue-700 {
+  background-color: var(--kx-lime);
+  color: var(--kx-deep);
+  font-weight: 700;
+  box-shadow: 0 0 0 1.5px var(--kx-ink), 0 3px 0 1.5px var(--kx-ink);
+  transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.2s;
+}
+.kx-app :is(button, a).bg-blue-600 *,
+.kx-app :is(button, a).bg-blue-500 *,
+.kx-app :is(button, a).bg-indigo-600 *,
+.kx-app :is(button, a).bg-blue-700 * { color: inherit; }
+.kx-app :is(button, a).bg-blue-600:hover:not(:disabled),
+.kx-app :is(button, a).bg-blue-500:hover:not(:disabled),
+.kx-app :is(button, a).bg-indigo-600:hover:not(:disabled),
+.kx-app :is(button, a).bg-blue-700:hover:not(:disabled) {
+  background-color: var(--kx-lime);
+  transform: translateY(-1px);
+  box-shadow: 0 0 0 1.5px var(--kx-ink), 0 4px 0 1.5px var(--kx-ink);
+}
+.kx-app :is(button, a).bg-blue-600:active:not(:disabled) { transform: translateY(1px); box-shadow: 0 0 0 1.5px var(--kx-ink), 0 1px 0 1.5px var(--kx-ink); }
+.kx-app :is(button, a).bg-blue-600:disabled,
+.kx-app :is(button, a).bg-blue-500:disabled { opacity: 0.55; box-shadow: 0 0 0 1.5px rgba(26, 26, 26, 0.4); }
+/* On dark surfaces the outline is the cream, so the lime button still reads as a raised control */
+.kx-app.dark :is(button, a).bg-blue-600,
+.kx-app.dark :is(button, a).bg-blue-500,
+.kx-app.dark :is(button, a).bg-indigo-600 { box-shadow: 0 0 0 1.5px var(--kx-deep), 0 3px 0 1.5px var(--kx-deep); }
+
+/* Focus, selection, scrollbars */
+.kx-app :focus-visible { outline: 2px solid #0f6e58; outline-offset: 2px; }
+.kx-app.dark :focus-visible { outline-color: var(--kx-lime); }
+.kx-app ::selection { background: var(--kx-lime); color: var(--kx-deep); }
+.kx-app ::-webkit-scrollbar-thumb { background: rgba(8, 37, 26, 0.28); }
+.kx-app.dark ::-webkit-scrollbar-thumb { background: rgba(171, 255, 68, 0.28); }
+
+/* Inputs: a warmer border and a brand focus ring */
+.kx-app :is(input, textarea, select):focus { border-color: #0f6e58; --tw-ring-color: rgba(15, 110, 88, 0.25); }
+.kx-app.dark :is(input, textarea, select):focus { border-color: var(--kx-lime); --tw-ring-color: rgba(171, 255, 68, 0.25); }
+
+/* Brand mark */
+.kx-brand { display: inline-flex; align-items: center; gap: 10px; }
+.kx-brand-word { font-family: var(--kx-serif); font-size: 1.55rem; line-height: 1; letter-spacing: -0.01em; color: #08251a; }
+.kx-app.dark .kx-brand-word { color: #fffeeb; }

@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { EMAIL_REGEX } from '@/lib/security/validation';
 import Link from 'next/link';
+import { brandFontClasses } from '@/lib/brand-fonts';
 
 interface AdminLoginScreenProps {
   theme: 'light' | 'dark';
@@ -87,14 +88,14 @@ export function AdminLoginScreen({
     ));
 
   return (
-    <div className={`${theme === 'dark' ? 'dark' : ''} min-h-screen w-full flex items-center justify-center bg-slate-950 font-sans p-4 relative overflow-hidden`}>
+    <div className={`kx-app ${brandFontClasses} ${theme === 'dark' ? 'dark' : ''} min-h-screen w-full flex items-center justify-center bg-slate-950 font-sans p-4 relative overflow-hidden`}>
       <div className="w-full max-w-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl p-7 z-10 space-y-5">
         <div className="flex items-center justify-between w-full mb-1">
           <Link
-            href="/landing-page"
+            href="/welcome"
             className="text-xs font-semibold text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300 flex items-center gap-1 transition"
           >
-            <span>&larr; View Public Landing Page</span>
+            <span>&larr; View our website</span>
           </Link>
           {onBackToHome && (
             <button
