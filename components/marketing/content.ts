@@ -7,9 +7,27 @@ import { BILLING_PLANS } from '@/lib/billing/plans';
  * that has not been measured.
  */
 
+/**
+ * Absolute site origin for canonical/OG URLs. Tolerates a value without a scheme
+ * (e.g. "example.vercel.app") and never throws, so a misconfigured env var cannot break the build.
+ */
+function resolveSiteUrl(): string {
+  const candidates = [process.env.NEXT_PUBLIC_APP_URL, process.env.VERCEL_PROJECT_PRODUCTION_URL, process.env.VERCEL_URL];
+  for (const raw of candidates) {
+    const v = raw?.trim();
+    if (!v) continue;
+    try {
+      return new URL(/^https?:\/\//i.test(v) ? v : `https://${v}`).origin;
+    } catch {
+      continue;
+    }
+  }
+  return 'http://localhost:3000';
+}
+
 export const SITE = {
   name: 'Kortex AI',
-  url: process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
+  url: resolveSiteUrl(),
   path: '/welcome',
   description:
     'Kortex AI builds a website assistant from your own content. It answers visitor questions, books appointments, captures leads, and hands over to your team when a person is needed.',
