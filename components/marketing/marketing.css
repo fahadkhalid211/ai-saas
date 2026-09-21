@@ -125,14 +125,6 @@
 @keyframes mk-marquee { to { transform: translateX(-50%); } }
 
 /* Story */
-.mk-story-grid { position: relative; display: grid; grid-template-columns: 2px 1fr; gap: 28px; margin-bottom: 96px; }
-.mk-story-rail { background: var(--mk-line); border-radius: 2px; position: relative; overflow: hidden; }
-.mk-story-fill { position: absolute; inset: 0; background: var(--mk-accent); transform-origin: top; transform: scaleY(var(--mk-progress, 0)); }
-.mk-story-list { display: grid; gap: 40px; }
-.mk-story-item h3 { font-family: var(--mk-serif); font-weight: 400; font-size: clamp(1.5rem, 3vw, 2.1rem); line-height: 1.15; margin: 6px 0 8px; }
-.mk-story-item p { color: var(--mk-muted); max-width: 54ch; }
-.mk-story-num { font-size: 12px; letter-spacing: 0.14em; color: var(--mk-muted); }
-.mk-story-turn { margin-bottom: 40px; }
 .mk-cards { display: grid; gap: 16px; }
 @media (min-width: 860px) { .mk-cards { grid-template-columns: repeat(3, 1fr); } }
 .mk-card { padding: 28px; background: var(--mk-surface); border: 1px solid var(--mk-line); border-radius: var(--mk-radius); }

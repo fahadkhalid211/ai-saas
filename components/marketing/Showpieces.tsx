@@ -2,10 +2,10 @@
 
 import { useCallback, useEffect, useRef, useState, type PointerEvent } from 'react';
 import Link from 'next/link';
-import { AGENT_VIDEO, CAROUSEL, TOOLS } from './content-extra';
-import { EchoText, Eyebrow, Reveal } from './ui';
+import { BEHIND, CAROUSEL, TOOLS } from './content-extra';
+import { Eyebrow, Reveal } from './ui';
 import { Glyph, ToolArt } from './art';
-import { usePrefersReducedMotion } from './hooks';
+import { OrbitStage, type OrbitItem } from './OrbitStage';
 
 /* ------------------------------ Tools: three cards ------------------------------ */
 
@@ -18,7 +18,7 @@ export function Tools() {
           <h2 id="mk-tools-title" className="mk-h2 mk-h2-center">
             <span className="mk-block">{TOOLS.titleLines[0]}</span>
             <span className="mk-block">{TOOLS.titleLines[1]}</span>
-            <EchoText>{TOOLS.echo}</EchoText>
+            <span className="mk-block mk-em">{TOOLS.echo}</span>
           </h2>
         </Reveal>
 
@@ -51,97 +51,36 @@ export function Tools() {
   );
 }
 
-/* ------------------------------ Agent video ------------------------------ */
+/* ------------------------------ Behind the scenes ------------------------------ */
 
-export function AgentVideo() {
-  const wrapRef = useRef<HTMLDivElement>(null);
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const reduced = usePrefersReducedMotion();
-  const [loaded, setLoaded] = useState(false);
-  const [playing, setPlaying] = useState(false);
+const BEHIND_ITEMS: OrbitItem[] = [
+  ...BEHIND.features.map((label) => ({ id: label, label, ring: 'inner' as const })),
+  ...BEHIND.tech.map((label) => ({ id: label, label, ring: 'outer' as const })),
+];
 
-  // Load the source only when the block is near the viewport, and pause it when off-screen.
-  useEffect(() => {
-    const wrap = wrapRef.current;
-    const video = videoRef.current;
-    if (!wrap || !video) return;
-    const io = new IntersectionObserver(
-      (entries) => {
-        for (const e of entries) {
-          if (e.isIntersecting) {
-            setLoaded(true);
-            if (!reduced) video.play().catch(() => undefined);
-          } else {
-            video.pause();
-          }
-        }
-      },
-      { rootMargin: '300px 0px' }
-    );
-    io.observe(wrap);
-    return () => io.disconnect();
-  }, [reduced]);
-
-  useEffect(() => {
-    const v = videoRef.current;
-    if (!v) return;
-    const on = () => setPlaying(true);
-    const off = () => setPlaying(false);
-    v.addEventListener('play', on);
-    v.addEventListener('pause', off);
-    return () => {
-      v.removeEventListener('play', on);
-      v.removeEventListener('pause', off);
-    };
-  }, []);
-
+/** Features (inner ellipse, lime) and technologies (outer ellipse) around the assistant, scroll-driven. */
+export function BehindTheScenes() {
   return (
-    <section id="agent" className="mk-agent" aria-labelledby="mk-agent-title">
-      <div className="mk-wrap">
-        <Reveal className="mk-center-head mk-agent-head">
-          <Eyebrow>{AGENT_VIDEO.eyebrow}</Eyebrow>
-          <h2 id="mk-agent-title" className="mk-h2 mk-h2-center">
-            <span className="mk-block">{AGENT_VIDEO.titleLines[0]}</span>
-            <EchoText>{AGENT_VIDEO.echo}</EchoText>
+    <OrbitStage
+      id="agent"
+      titleId="mk-agent-title"
+      panel
+      items={BEHIND_ITEMS}
+      head={
+        <>
+          <Eyebrow>{BEHIND.eyebrow}</Eyebrow>
+          <h2 id="mk-agent-title" className="mk-h2 mk-h2-center mk-h2-oneline">
+            {BEHIND.titleLines[0]} <span className="mk-em">{BEHIND.titleLines[1]}</span>
           </h2>
-          <p className="mk-lead">{AGENT_VIDEO.body}</p>
-          <Link href={AGENT_VIDEO.ctaHref} className="mk-vbtn">
+          <p className="mk-lead">{BEHIND.body}</p>
+          <Link href={BEHIND.ctaHref} className="mk-vbtn">
             <span className="mk-vbtn-stroke" aria-hidden="true" />
-            <span className="mk-vbtn-label">{AGENT_VIDEO.cta}</span>
+            <span className="mk-vbtn-label">{BEHIND.cta}</span>
           </Link>
-        </Reveal>
-
-        <Reveal className="mk-video-wrap">
-          <div ref={wrapRef} className="mk-video-frame">
-            <video
-              ref={videoRef}
-              className="mk-video"
-              muted
-              loop
-              playsInline
-              preload="none"
-              aria-label="Animation of the assistant handling visitor questions, bookings and handovers"
-            >
-              {loaded ? <source src={AGENT_VIDEO.src} type="video/webm" /> : null}
-            </video>
-            {reduced ? (
-              <button
-                type="button"
-                className="mk-video-toggle"
-                onClick={() => {
-                  const v = videoRef.current;
-                  if (!v) return;
-                  if (v.paused) v.play().catch(() => undefined);
-                  else v.pause();
-                }}
-              >
-                {playing ? 'Pause animation' : 'Play animation'}
-              </button>
-            ) : null}
-          </div>
-        </Reveal>
-      </div>
-    </section>
+          <p className="mk-orbit-legend">{BEHIND.caption}</p>
+        </>
+      }
+    />
   );
 }
 

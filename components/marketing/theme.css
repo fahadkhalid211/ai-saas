@@ -107,8 +107,6 @@
 .mk-sec-item:nth-child(6n) { background: #ffd9d0; }
 .mk-sec-icon { background: var(--mk-surface); border: 1.5px solid var(--mk-ink); }
 .mk-card h3 { font-size: 1.9rem; }
-.mk-story-fill { background: var(--mk-lime); }
-.mk-story-rail { background: rgba(26, 26, 26, 0.15); }
 .mk-tabpanel { background: var(--mk-lime-soft); }
 .mk-mock { border: 1.5px solid var(--mk-ink); border-radius: 18px; background: var(--mk-surface); }
 .mk-mock-panel { border: 1px solid var(--mk-ink); border-radius: 14px; background: var(--mk-bg); }

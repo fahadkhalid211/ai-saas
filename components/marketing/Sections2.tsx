@@ -3,8 +3,9 @@
 import { useEffect, useRef, type CSSProperties } from 'react';
 import { INTEGRATIONS } from './content';
 import { COMPARE, DIAGONAL, PATHS, STORIES } from './content-extra';
-import { Check, EchoText, Eyebrow, Reveal } from './ui';
+import { Check, Eyebrow, Reveal } from './ui';
 import { FeatureVisual } from './mocks';
+import { OrbitStage } from './OrbitStage';
 import { usePrefersReducedMotion } from './hooks';
 
 /* ------------------------------ Diagonal scroll benefits ------------------------------ */
@@ -176,7 +177,7 @@ export function Paths() {
           <Eyebrow>{PATHS.eyebrow}</Eyebrow>
           <h2 id="mk-paths-title" className="mk-h2 mk-h2-center">
             <span className="mk-block">{PATHS.titleLines[0]}</span>
-            <EchoText>{PATHS.echo}</EchoText>
+            <span className="mk-block mk-em">{PATHS.echo}</span>
           </h2>
         </Reveal>
 
@@ -307,112 +308,21 @@ const ORBIT = [
   { id: 'youtube', label: 'YouTube', note: 'Video transcripts as knowledge' },
 ];
 
-/**
- * Pinned stage: items fly out from the centre as the section enters, hold with a gentle float,
- * then draw back in as it exits. One CSS variable (--e, 0 to 1) drives everything.
- */
 export function IntegrationsStage() {
-  const reduced = usePrefersReducedMotion();
-  const outerRef = useRef<HTMLDivElement>(null);
-  const stageRef = useRef<HTMLDivElement>(null);
-  const count = ORBIT.length;
-
-  useEffect(() => {
-    const outer = outerRef.current;
-    const stage = stageRef.current;
-    if (!outer || !stage || reduced) {
-      stage?.style.setProperty('--e', '1');
-      return;
-    }
-    let target = 0;
-    let cur = 0;
-    let raf = 0;
-    let running = false;
-    const smooth = (x: number) => x * x * (3 - 2 * x);
-    const measure = () => {
-      const r = outer.getBoundingClientRect();
-      const total = r.height - window.innerHeight;
-      const p = clamp(-r.top / Math.max(1, total), 0, 1);
-      // Enter as the block arrives (its top is still below the fold), hold, exit at the end.
-      const enter = clamp((window.innerHeight - r.top) / (window.innerHeight * 0.9), 0, 1);
-      const exit = 1 - smooth(clamp((p - 0.72) / 0.28, 0, 1));
-      target = smooth(enter) * exit;
-    };
-    const tick = () => {
-      cur += (target - cur) * 0.14;
-      if (Math.abs(target - cur) < 0.002) cur = target;
-      stage.style.setProperty('--e', cur.toFixed(4));
-      if (cur !== target) raf = requestAnimationFrame(tick);
-      else running = false;
-    };
-    const kick = () => {
-      measure();
-      if (!running) {
-        running = true;
-        raf = requestAnimationFrame(tick);
-      }
-    };
-    kick();
-    window.addEventListener('scroll', kick, { passive: true });
-    window.addEventListener('resize', kick);
-    return () => {
-      window.removeEventListener('scroll', kick);
-      window.removeEventListener('resize', kick);
-      cancelAnimationFrame(raf);
-    };
-  }, [reduced]);
-
   return (
-    <section id="integrations" className="mk-orbit-section" aria-labelledby="mk-int-title">
-      <div ref={outerRef} className="mk-orbit-outer">
-        <div ref={stageRef} className="mk-orbit-stage" style={{ ['--e' as string]: reduced ? 1 : 0 } as CSSProperties}>
-          <div className="mk-orbit-head">
-            <Eyebrow>{INTEGRATIONS.eyebrow}</Eyebrow>
-            <h2 id="mk-int-title" className="mk-h2 mk-h2-center">
-              {INTEGRATIONS.title}
-            </h2>
-            <p className="mk-lead">{INTEGRATIONS.intro}</p>
-          </div>
-
-          <div className="mk-orbit-field">
-            <div className="mk-orbit-core" aria-hidden="true">
-              <span className="mk-orbit-ring r1" />
-              <span className="mk-orbit-ring r2" />
-              <span className="mk-orbit-ring r3" />
-              <span className="mk-orbit-disc">Kortex</span>
-            </div>
-            <ul className="mk-orbit-items">
-              {ORBIT.map((it, i) => {
-                const a = (-90 + (360 / count) * i) * (Math.PI / 180);
-                return (
-                  <li
-                    key={it.id}
-                    className="mk-orbit-item"
-                    style={
-                      {
-                        '--tx': Math.cos(a).toFixed(4),
-                        '--ty': Math.sin(a).toFixed(4),
-                        '--d': (i / count) * 0.6,
-                        '--f': `${(i % 3) * 0.7}s`,
-                      } as CSSProperties
-                    }
-                  >
-                    <span className="mk-orbit-pill" data-i={i % 5} tabIndex={0}>
-                      <span className="mk-orbit-badge" aria-hidden="true">
-                        {it.label[0]}
-                      </span>
-                      <span>
-                        <b>{it.label}</b>
-                        <small>{it.note}</small>
-                      </span>
-                    </span>
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
-        </div>
-      </div>
-    </section>
+    <OrbitStage
+      id="integrations"
+      titleId="mk-int-title"
+      items={ORBIT}
+      head={
+        <>
+          <Eyebrow>{INTEGRATIONS.eyebrow}</Eyebrow>
+          <h2 id="mk-int-title" className="mk-h2 mk-h2-center">
+            {INTEGRATIONS.title}
+          </h2>
+          <p className="mk-lead">{INTEGRATIONS.intro}</p>
+        </>
+      }
+    />
   );
 }

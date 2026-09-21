@@ -116,13 +116,3 @@ export function Logo({ className = '' }: { className?: string }) {
     </span>
   );
 }
-
-/** Headline whose text repeats as two outlined trailing copies (CSS pseudo-elements) that fan out on scroll-in. */
-export function EchoText({ children, className = '' }: { children: string; className?: string }) {
-  const [ref, seen] = useInView<HTMLSpanElement>('0px 0px -8% 0px');
-  return (
-    <span ref={ref} data-text={children} className={`mk-echo-stack ${seen ? 'is-in' : ''} ${className}`}>
-      {children}
-    </span>
-  );
-}

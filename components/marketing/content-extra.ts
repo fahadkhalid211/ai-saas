@@ -51,16 +51,17 @@ export const TOOLS = {
   ] as ToolCard[],
 };
 
-/* ------------------------------ AI video ------------------------------ */
+/* ------------------------------ Behind the scenes ------------------------------ */
 
-export const AGENT_VIDEO = {
+export const BEHIND = {
   eyebrow: 'Always on',
   titleLines: ['An assistant that works', 'while you sleep'],
-  echo: 'while you sleep',
   body: 'It answers the first question, offers the next step, and hands the conversation to you with everything already written down.',
   cta: 'Try and stop me',
   ctaHref: '#playground',
-  src: '/videos/agent-platform.webm',
+  caption: 'Lime: what your visitors experience. Dark: what runs behind it.',
+  features: ['Grounded answers', 'Booking', 'Lead capture', 'Live takeover', 'Email reminders'],
+  tech: ['Hybrid search', 'Embeddings', 'Re-ranking', 'Related words', 'OCR and extraction', 'Streaming replies', 'Encrypted keys'],
 };
 
 /* ------------------------------ Feature carousel ------------------------------ */

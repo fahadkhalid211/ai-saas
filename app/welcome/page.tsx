@@ -4,7 +4,7 @@ import { Header } from '@/components/marketing/Header';
 import { Hero } from '@/components/marketing/Hero';
 import { LogoStrip } from '@/components/marketing/LogoStrip';
 import { ProblemSolution } from '@/components/marketing/ProblemSolution';
-import { AgentVideo, FeatureCarousel, Tools } from '@/components/marketing/Showpieces';
+import { BehindTheScenes, FeatureCarousel, Tools } from '@/components/marketing/Showpieces';
 import { Demo } from '@/components/marketing/Features';
 import { Playground } from '@/components/marketing/Playground';
 import { Compare, DiagonalBenefits, IntegrationsStage, Paths, Stories } from '@/components/marketing/Sections2';
@@ -78,7 +78,7 @@ export default function WelcomePage() {
         <LogoStrip />
         <ProblemSolution />
         <Tools />
-        <AgentVideo />
+        <BehindTheScenes />
         <FeatureCarousel />
         <Demo />
         <DiagonalBenefits />

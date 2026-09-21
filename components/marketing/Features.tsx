@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useRef, useState, type KeyboardEvent, type PointerEvent } from 'react';
+import { useCallback, useRef, useState, type CSSProperties, type KeyboardEvent, type PointerEvent } from 'react';
 import { DEMO } from './content';
 import { Reveal, SectionHead } from './ui';
 
@@ -38,6 +38,10 @@ export function Demo() {
     e.preventDefault();
   };
 
+  const bad = Math.min(1, Math.max(0, (pos - 72) / 20)); // generic reply fully showing
+  const good = Math.min(1, Math.max(0, (28 - pos) / 20)); // Kortex reply fully showing
+  const status = bad > 0.6 ? `Generic chatbot only. ${DEMO.bad.words.join('. ')}.` : good > 0.6 ? `Kortex only. ${DEMO.good.words.join('. ')}.` : '';
+
   return (
     <section id="demo" className="mk-section mk-section-tint" aria-labelledby="mk-demo-title">
       <div className="mk-wrap">
@@ -50,7 +54,7 @@ export function Demo() {
           <div
             ref={boxRef}
             className="mk-compare"
-            style={{ ['--mk-split' as string]: `${pos}%` }}
+            style={{ '--mk-split': `${pos}%`, '--bad': bad.toFixed(3), '--good': good.toFixed(3) } as CSSProperties}
             onPointerDown={onDown}
             onPointerMove={onMove}
             onPointerUp={onUp}
@@ -60,11 +64,41 @@ export function Demo() {
               <span className="mk-pill mk-pill-good">{DEMO.grounded.label}</span>
               <p>{DEMO.grounded.text}</p>
               <small>{DEMO.grounded.note}</small>
+              <div className="mk-react is-good" aria-hidden="true">
+                <span className="mk-react-icon">
+                  <svg viewBox="0 0 24 24" width="30" height="30">
+                    <path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </span>
+                <p className="mk-react-title">{DEMO.good.title}</p>
+                <ul>
+                  {DEMO.good.words.map((w, i) => (
+                    <li key={w} style={{ '--dl': `${i * -0.9}s`, '--d': `${4 + i * 0.7}s` } as CSSProperties}>
+                      {w}
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </div>
             <div className="mk-compare-pane mk-compare-generic" aria-hidden={pos < 8 ? 'true' : undefined}>
               <span className="mk-pill">{DEMO.generic.label}</span>
               <p>{DEMO.generic.text}</p>
               <small>{DEMO.generic.note}</small>
+              <div className="mk-react is-bad" aria-hidden="true">
+                <span className="mk-react-icon">
+                  <svg viewBox="0 0 24 24" width="30" height="30">
+                    <path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+                  </svg>
+                </span>
+                <p className="mk-react-title">{DEMO.bad.title}</p>
+                <ul>
+                  {DEMO.bad.words.map((w, i) => (
+                    <li key={w} style={{ '--dl': `${i * -0.9}s`, '--d': `${4.4 + i * 0.6}s` } as CSSProperties}>
+                      {w}
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </div>
             <div
               className="mk-handle"
@@ -80,6 +114,9 @@ export function Demo() {
               <span aria-hidden="true">⇆</span>
             </div>
           </div>
+          <p className="mk-sr" aria-live="polite">
+            {status}
+          </p>
         </Reveal>
       </div>
     </section>

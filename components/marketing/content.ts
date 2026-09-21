@@ -94,6 +94,10 @@ export const STORY = {
       title: 'The same answers, typed again and again',
       body: 'Opening hours, deposits, service areas. Your team repeats them all week instead of doing the work.',
     },
+    {
+      title: 'Details get lost between chats and inboxes',
+      body: 'Questions, names and phone numbers end up scattered across messages instead of in one place your team can act on.',
+    },
   ],
   afterEyebrow: 'The approach',
   afterTitle: 'A front desk that never closes, and knows when to step aside.',
@@ -124,6 +128,14 @@ export const DEMO = {
     label: 'Generic chatbot',
     text: 'Yes! We offer fast, high quality roof repairs at competitive prices. Contact us for a free quote today.',
     note: 'Sounds confident, commits to things nobody wrote down.',
+  },
+  bad: {
+    title: 'No engagement',
+    words: ['Never asks a follow-up', 'Leaves visitors guessing', 'Promises what it cannot check', 'The visitor leaves'],
+  },
+  good: {
+    title: 'Engaged and guided',
+    words: ['Asks the next step', 'Answers from your content', 'Offers a real booking', 'The visitor stays'],
   },
   grounded: {
     label: 'Kortex, from your content',

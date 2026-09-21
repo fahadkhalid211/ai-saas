@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { HERO, SIGNUP_HREF } from './content';
-import { ButtonLink, EchoText } from './ui';
+import { ButtonLink } from './ui';
 import { usePrefersReducedMotion } from './hooks';
 
 interface Turn {
@@ -177,7 +177,7 @@ export function Hero() {
             {HERO.title[0]}
           </span>
           <span className="mk-echo mk-echo-em" style={{ ['--mk-delay' as string]: '360ms' }}>
-            <EchoText>{HERO.title[1]}</EchoText>
+            {HERO.title[1]}
           </span>
         </h1>
         <p className="mk-lead mk-rise" style={{ ['--mk-delay' as string]: '520ms' }}>
