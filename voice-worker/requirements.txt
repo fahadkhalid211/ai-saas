@@ -1,0 +1,7 @@
+# Runtime
+websockets>=12.0
+httpx>=0.27
+numpy>=1.26
+# Speech models (CPU). Imported lazily, so tests and dry runs work without them.
+faster-whisper>=1.0
+piper-tts>=1.2

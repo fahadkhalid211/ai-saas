@@ -58,6 +58,10 @@ export const POST = withRoleAuth(['owner', 'admin'], async (req: Request) => {
       );
     }
 
+    // Phone numbers are provisioned by the platform admin through the update route, never at creation.
+    delete body.phoneNumber;
+    delete body.phoneEnabled;
+
     const assistant = await Database.createAssistant({
       ...body,
       workspaceId: targetWorkspaceId,

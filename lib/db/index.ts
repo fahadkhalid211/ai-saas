@@ -136,6 +136,20 @@ export interface AssistantData {
   bookingStartHour?: string;
   bookingEndHour?: string;
   bookingAvailableDays?: string[];
+  /** IANA timezone of the business, used for "today", opening hours and reminders. Defaults to UTC. */
+  timezone?: string;
+  // Phone channel (inbound AI calls)
+  phoneEnabled?: boolean;
+  /** E.164 number callers dial. Unique across assistants; assigned by the platform admin. */
+  phoneNumber?: string;
+  phoneGreeting?: string;
+  /** BCP-47 language for speech recognition and the voice, e.g. "en". */
+  phoneLanguage?: string;
+  phoneVoice?: string;
+  /** E.164 number to ring when the caller asks for a person, or when the AI service is unavailable. */
+  phoneTransferNumber?: string;
+  phoneAfterHours?: 'ai' | 'voicemail' | 'forward';
+  phoneMaxCallMinutes?: number;
   landingPageConfig?: LandingPageConfig;
   createdAt: string;
   updatedAt: string;
@@ -385,6 +399,20 @@ export interface SmtpSettingsData {
   updatedAt?: string;
 }
 
+export interface CallRecordData {
+  id: string;
+  assistantId: string;
+  conversationId?: string;
+  from: string;
+  to: string;
+  startedAt: string;
+  endedAt?: string;
+  durationSeconds?: number;
+  outcome?: 'answered' | 'booked' | 'transferred' | 'callback' | 'abandoned' | 'failed';
+  appointmentId?: string;
+  summary?: string;
+}
+
 interface DatabaseState {
   workspaces: any[];
   assistants: AssistantData[];
@@ -394,6 +422,7 @@ interface DatabaseState {
   messages: MessageData[];
   leads: LeadData[];
   unansweredQueries?: UnansweredQueryData[];
+  calls?: CallRecordData[];
   appointments?: AppointmentData[];
   teamMembers?: TeamMemberData[];
   auditLogs?: AuditLogData[];
@@ -613,6 +642,7 @@ function loadState(): DatabaseState {
       messages: [],
       leads: [],
       unansweredQueries: [],
+      calls: [],
       appointments: [],
       teamMembers: [
         {
@@ -637,6 +667,7 @@ function loadState(): DatabaseState {
   }
 
   if (!state.unansweredQueries) state.unansweredQueries = [];
+  if (!state.calls) state.calls = [];
   if (!state.leads) state.leads = [];
   if (!state.conversations) state.conversations = [];
   if (!state.messages) state.messages = [];
@@ -780,6 +811,7 @@ async function ensureInitialized(forceFresh = false): Promise<DatabaseState> {
               messages: Array.isArray(remoteState.messages) ? remoteState.messages : [],
               leads: Array.isArray(remoteState.leads) ? remoteState.leads : [],
               unansweredQueries: Array.isArray(remoteState.unansweredQueries) ? remoteState.unansweredQueries : [],
+              calls: Array.isArray(remoteState.calls) ? remoteState.calls : (cachedState?.calls || []),
               appointments: Array.isArray(remoteState.appointments) ? remoteState.appointments : [],
               teamMembers: Array.isArray(remoteState.teamMembers) ? remoteState.teamMembers : [],
               auditLogs: Array.isArray(remoteState.auditLogs) ? remoteState.auditLogs : [],
@@ -971,6 +1003,44 @@ export class Database {
     }));
   }
 
+  /** Finds the assistant that owns a dialled phone number (E.164). Only enabled assistants match. */
+  static async getAssistantByPhoneNumber(e164: string): Promise<AssistantData | null> {
+    const state = await ensureInitialized();
+    const a = state.assistants.find((ast) => ast.phoneEnabled && ast.phoneNumber === e164);
+    return a ? Database.getAssistantById(a.id) : null;
+  }
+
+  /** True when another assistant already holds this number (enabled or not), so numbers cannot be claimed twice. */
+  static async isPhoneNumberTaken(e164: string, exceptAssistantId?: string): Promise<boolean> {
+    const state = await ensureInitialized();
+    return state.assistants.some((ast) => ast.phoneNumber === e164 && ast.id !== exceptAssistantId);
+  }
+
+  static async saveCall(call: CallRecordData): Promise<CallRecordData> {
+    const state = await ensureInitialized();
+    if (!state.calls) state.calls = [];
+    const idx = state.calls.findIndex((c) => c.id === call.id);
+    if (idx >= 0) state.calls[idx] = { ...state.calls[idx], ...call };
+    else state.calls.unshift(call);
+    if (state.calls.length > 2000) state.calls = state.calls.slice(0, 2000);
+    await saveState(state);
+    return idx >= 0 ? state.calls[idx] : call;
+  }
+
+  static async getCalls(assistantId?: string, workspaceId?: string): Promise<CallRecordData[]> {
+    const state = await ensureInitialized();
+    let allowed: Set<string> | undefined;
+    if (workspaceId && workspaceId !== '*') {
+      allowed = new Set((state.assistants || []).filter((a) => (a.workspaceId || 'default-workspace') === workspaceId).map((a) => a.id));
+    }
+    return (state.calls || []).filter((c) => (!assistantId || c.assistantId === assistantId) && (!allowed || allowed.has(c.assistantId)));
+  }
+
+  static async getCallById(id: string): Promise<CallRecordData | null> {
+    const state = await ensureInitialized();
+    return (state.calls || []).find((c) => c.id === id) || null;
+  }
+
   static async getAssistantById(id: string, workspaceId?: string): Promise<AssistantData | null> {
     const state = await ensureInitialized();
     const a = state.assistants.find((ast) => ast.id === id);
@@ -1126,6 +1196,7 @@ export class Database {
     state.appointments = (state.appointments || []).filter((a) => a.assistantId !== id);
     state.notifications = (state.notifications || []).filter((n) => n.assistantId !== id);
     state.unansweredQueries = (state.unansweredQueries || []).filter((q) => q.assistantId !== id);
+    state.calls = (state.calls || []).filter((c) => c.assistantId !== id);
     const deletedLandingSlugs = new Set(
       (state.landingPages || []).filter((lp) => lp.assistantId === id).map((lp) => lp.slug)
     );

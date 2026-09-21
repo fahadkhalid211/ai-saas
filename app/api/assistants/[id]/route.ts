@@ -3,6 +3,7 @@ import { Database } from '@/lib/db';
 import { withAdminAuth, withRoleAuth, getAuthContext, requireWorkspaceAssistant, generateCalendarFeedToken } from '@/lib/security/auth';
 import { maskSecret } from '@/lib/security/crypto';
 import { getClientIp } from '@/lib/security/rate-limit';
+import { sanitizePhoneSettings } from '@/lib/voice/settings';
 
 export const GET = withAdminAuth(async (
   req: Request,
@@ -53,7 +54,17 @@ export const PUT = withRoleAuth(['owner', 'admin'], async (
       ...safeUpdates
     } = body;
 
-    const updated = await Database.updateAssistant(id, safeUpdates, ctx.workspaceId);
+    // Phone channel + timezone fields: validated, and only the platform admin can assign the dialled number.
+    const phoneCheck = await sanitizePhoneSettings(safeUpdates, {
+      isMasterAdmin: !!ctx.isMasterAdmin,
+      existingNumber: existing.phoneNumber,
+      isNumberTaken: (n) => Database.isPhoneNumberTaken(n, id),
+    });
+    if (!phoneCheck.ok) {
+      return NextResponse.json({ error: phoneCheck.error }, { status: phoneCheck.status });
+    }
+
+    const updated = await Database.updateAssistant(id, phoneCheck.updates, ctx.workspaceId);
     if (!updated) {
       return NextResponse.json({ error: 'Assistant not found' }, { status: 404 });
     }

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { PhoneChannelCard } from '@/components/crm/PhoneChannelCard';
 import {
   CheckCircle2,
   AlertTriangle,
@@ -43,9 +44,11 @@ export interface ChannelsTabProps {
   smtpTestResult: { success: boolean; message: string } | null;
   handleSaveSmtpSettings: () => Promise<void>;
   handleTestEmailSend: () => Promise<void>;
+  isMasterAdmin?: boolean;
 }
 
 export const ChannelsTab: React.FC<ChannelsTabProps> = ({
+  isMasterAdmin = false,
   activeAssistant,
   formData,
   setFormData,
@@ -483,6 +486,16 @@ export const ChannelsTab: React.FC<ChannelsTabProps> = ({
                     </div>
                   </div>
                 </div>
+
+                {/* CHANNEL: PHONE CALLS */}
+                <PhoneChannelCard
+                  activeAssistant={activeAssistant}
+                  formData={formData}
+                  setFormData={setFormData}
+                  handleSaveSettings={handleSaveSettings}
+                  isSaving={isSaving}
+                  isMasterAdmin={isMasterAdmin}
+                />
 
                 {/* CHANNEL 2: WHATSAPP CLOUD API */}
                 <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 sm:p-7 shadow-xs space-y-6">

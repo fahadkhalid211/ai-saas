@@ -41,7 +41,7 @@ describe('Enterprise Validation & Sanitization Suite', () => {
     });
 
     it('exposes the documented allowlist', () => {
-      expect([...ATTRIBUTION_SOURCES]).toEqual(['chat', 'landing_form', 'admin', 'playground', 'direct']);
+      expect([...ATTRIBUTION_SOURCES]).toEqual(['chat', 'landing_form', 'admin', 'playground', 'phone', 'direct']);
     });
 
     it('passes attribution through the appointment validator without failing bookings on bad values', () => {

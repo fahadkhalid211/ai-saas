@@ -1,0 +1,5 @@
+# Terminates TLS and forwards the carrier's wss:// media stream (and /healthz) to the worker.
+# Caddy obtains and renews the certificate automatically for VOICE_DOMAIN.
+{$VOICE_DOMAIN} {
+	reverse_proxy worker:8765
+}

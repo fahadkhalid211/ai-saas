@@ -16,6 +16,10 @@ const ROUTE_RATE_LIMITS: RouteLimitConfig[] = [
   { prefix: '/api/templates', windowMs: 60 * 1000, max: 60 },
   { prefix: '/api/lead', windowMs: 60 * 1000, max: 15 },
   { prefix: '/api/widget-events', windowMs: 60 * 1000, max: 60 },
+  // Voice: all calls share the worker's / carrier's addresses, so these are per-service ceilings, not per-caller.
+  // Per-caller and per-number limits are enforced inside the handlers.
+  { prefix: '/api/voice', windowMs: 60 * 1000, max: 900 },
+  { prefix: '/api/channels/voice', windowMs: 60 * 1000, max: 300 },
 ];
 
 const DEFAULT_API_LIMIT = { windowMs: 60 * 1000, max: 120 };

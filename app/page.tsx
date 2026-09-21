@@ -1105,6 +1105,7 @@ export default function DashboardPage() {
                 smtpTestResult={channels.smtpTestResult}
                 handleSaveSmtpSettings={channels.handleSaveSmtpSettings}
                 handleTestEmailSend={channels.handleTestEmailSend}
+                isMasterAdmin={isMasterAdmin}
               />
             )}
 

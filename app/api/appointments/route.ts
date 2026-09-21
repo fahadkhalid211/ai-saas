@@ -1,12 +1,11 @@
 import { NextResponse } from 'next/server';
-import { Database, DEFAULT_BARBER_LANDING_CONFIG } from '@/lib/db';
-import { sendSupportLeadEmail, sendAppointmentConfirmationEmail } from '@/lib/email';
-import { dispatchWebhook } from '@/lib/webhook';
+import { Database } from '@/lib/db';
 import { verifyAdminRequest, getAuthContext } from '@/lib/security/auth';
 import { enforceRateLimit, getClientIp } from '@/lib/security/rate-limit';
 import { validateAppointmentPayload } from '@/lib/security/validation';
 import { acquireBookingLock } from '@/lib/appointments/booking-lock';
-import { resolveAttribution, attributionCustomData } from '@/lib/analytics/attribution';
+import { resolveAttribution } from '@/lib/analytics/attribution';
+import { createAppointment } from '@/lib/appointments/create';
 
 export async function OPTIONS() {
   return new NextResponse(null, {
@@ -261,174 +260,21 @@ export async function POST(req: Request) {
       );
     }
 
-    const resolvedDuration = durationMinutes || assistant.bookingSlotDuration || 30;
-    const landingConfig = assistant.landingPageConfig || DEFAULT_BARBER_LANDING_CONFIG;
-
     // Attribution (verified conversation + source) for pilot measurement. Lives on the
-    // paired lead below so it works in both blob and relational modes without a schema change.
+    // paired lead so it works in both blob and relational modes without a schema change.
     const attribution = await resolveAttribution(validation.sanitized, assistant.id);
 
-    // Concurrency Lock: Prevent double-booking race condition during concurrent requests
-    const releaseLock = await acquireBookingLock(assistant.id, date, timeSlot);
-    let appointment;
-    try {
-      // Live availability check: prevent double-booking
-      const existingAppointments = await Database.getAppointments(assistant.id);
-      const conflict = existingAppointments.find(
-        (a) => a.date === date.trim() && a.timeSlot === timeSlot.trim() && a.status !== 'cancelled'
-      );
-      if (conflict) {
-        return NextResponse.json(
-          { error: `The time slot "${timeSlot.trim()}" on ${date.trim()} has already been booked. Please select another time.` },
-          { status: 409, headers: { 'Access-Control-Allow-Origin': '*' } }
-        );
-      }
-
-      appointment = await Database.saveAppointment({
-        assistantId: assistant.id,
-        name: name.trim(),
-        email: email.trim(),
-        phone: phone ? phone.trim() : undefined,
-        date: date.trim(),
-        timeSlot: timeSlot.trim(),
-        durationMinutes: resolvedDuration,
-        notes: notes?.trim() || undefined,
-        serviceId,
-        serviceName,
-        price: price ? Number(price) : undefined,
-        landingPageName: landingPageName || landingConfig.businessName,
-        landingPageSlug: landingPageSlug || landingConfig.slug,
-      });
-    } finally {
-      releaseLock();
+    const result = await createAppointment({
+      assistant,
+      input: { name, email, phone, date, timeSlot, durationMinutes, notes, serviceId, serviceName, price, landingPageName, landingPageSlug },
+      attribution,
+      ip,
+      originalAssistantId: assistantId,
+    });
+    if (!result.ok) {
+      return NextResponse.json({ error: result.error }, { status: result.status, headers: { 'Access-Control-Allow-Origin': '*' } });
     }
-    const businessName = landingConfig.businessName || assistant.name || 'Our Business';
-    const businessAddress = landingConfig.address || 'In Shop';
-    const businessPhone = landingConfig.phone || '';
-    const assistantSlug = landingConfig.slug || assistant.id;
-
-    // Send instant confirmation email to client with Google Calendar and manage link
-    try {
-      await sendAppointmentConfirmationEmail({
-        to: appointment.email,
-        clientName: appointment.name,
-        clientEmail: appointment.email,
-        clientPhone: appointment.phone,
-        serviceName: appointment.serviceName || 'Appointment',
-        price: appointment.price,
-        date: appointment.date,
-        timeSlot: appointment.timeSlot,
-        durationMinutes: appointment.durationMinutes,
-        notes: appointment.notes,
-        businessName,
-        businessAddress,
-        businessPhone,
-        manageToken: appointment.manageToken,
-        assistantSlug,
-        assistantId: assistant.id,
-        isAdminNotification: false,
-      });
-    } catch (confErr: any) {
-      console.warn('[AppointmentsAPI] Client confirmation email warning:', confErr?.message);
-    }
-
-    // In-App notification for business dashboard
-    try {
-      await Database.addNotification({
-        assistantId: assistant.id,
-        title: 'New Appointment Booked',
-        message: `${appointment.name} scheduled ${appointment.serviceName || 'an appointment'} on ${appointment.date} at ${appointment.timeSlot}.`,
-        type: 'appointment_booked',
-      });
-    } catch (notifErr: any) {
-      console.warn('[AppointmentsAPI] In-app notification warning:', notifErr?.message);
-    }
-
-    // Security Audit Log
-    try {
-      await Database.addAuditLog({
-        workspaceId: assistant.workspaceId || 'default-workspace',
-        actor: { id: 'client', name: appointment.name, email: appointment.email, ip },
-        action: 'appointment.created',
-        targetType: 'appointment',
-        targetId: appointment.id,
-        details: {
-          date: appointment.date,
-          timeSlot: appointment.timeSlot,
-          serviceName: appointment.serviceName,
-          price: appointment.price,
-          source: attribution.source,
-        },
-      });
-    } catch (auditErr: any) {
-      console.warn('[AppointmentsAPI] Audit log warning:', auditErr?.message);
-    }
-
-    // Also record as a Lead so admin has unified visibility
-    const durationLabel = resolvedDuration >= 60 
-      ? `${Math.floor(resolvedDuration / 60)}h${resolvedDuration % 60 > 0 ? ` ${resolvedDuration % 60}m` : ''}` 
-      : `${resolvedDuration}m`;
-
-    const leadNote = `Booked Appointment: ${date.trim()} at ${timeSlot.trim()} (${durationLabel})${
-      appointment.serviceName ? ` | Service: ${appointment.serviceName}` : ''
-    }${notes?.trim() ? ' | Notes: ' + notes.trim() : ''}`;
-
-    try {
-      await Database.saveLead({
-        assistantId: assistant.id,
-        email: email.trim(),
-        name: name.trim(),
-        phone: phone ? phone.trim() : undefined,
-        notes: leadNote,
-        customData: {
-          AppointmentId: appointment.id,
-          AppointmentDate: date.trim(),
-          AppointmentTime: timeSlot.trim(),
-          DurationMinutes: resolvedDuration,
-          Service: appointment.serviceName,
-          Price: appointment.price,
-          Type: 'Calendar Booking',
-          originalAssistantId: assistantId !== assistant.id ? assistantId : undefined,
-          ...attributionCustomData(attribution),
-        },
-      });
-    } catch (leadErr) {
-      console.warn('[AppointmentsAPI] Lead sync warning:', leadErr);
-    }
-
-    // Outbound Webhook dispatch
-    if (assistant.webhookUrl && assistant.webhookUrl.trim()) {
-      dispatchWebhook(assistant, 'appointment.created', appointment).catch((webhookErr) => {
-        console.warn('[AppointmentsAPI] Webhook dispatch warning:', webhookErr?.message);
-      });
-    }
-
-    // Email notification to Admin if configured
-    if (assistant.supportReceiverEmail && assistant.supportReceiverEmail.trim()) {
-      try {
-        await sendAppointmentConfirmationEmail({
-          to: assistant.supportReceiverEmail.trim(),
-          clientName: appointment.name,
-          clientEmail: appointment.email,
-          clientPhone: appointment.phone,
-          serviceName: appointment.serviceName || 'Appointment',
-          price: appointment.price,
-          date: appointment.date,
-          timeSlot: appointment.timeSlot,
-          durationMinutes: appointment.durationMinutes,
-          notes: appointment.notes,
-          businessName,
-          businessAddress,
-          businessPhone,
-          manageToken: appointment.manageToken,
-          assistantSlug,
-          assistantId: assistant.id,
-          isAdminNotification: true,
-        });
-      } catch (mailErr: any) {
-        console.warn('[AppointmentsAPI] Admin email notification warning:', mailErr?.message);
-      }
-    }
+    const appointment = result.appointment;
 
     return NextResponse.json(
       { success: true, appointment },

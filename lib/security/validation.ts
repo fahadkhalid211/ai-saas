@@ -317,7 +317,7 @@ export function validateRegistrationPayload(data: any): {
  * pilots can measure how many leads/bookings the chat actually produced.
  * `direct` is the server-side default when no valid conversation is supplied.
  */
-export const ATTRIBUTION_SOURCES = ['chat', 'landing_form', 'admin', 'playground', 'direct'] as const;
+export const ATTRIBUTION_SOURCES = ['chat', 'landing_form', 'admin', 'playground', 'phone', 'direct'] as const;
 export type AttributionSource = (typeof ATTRIBUTION_SOURCES)[number];
 
 const CONVERSATION_ID_REGEX = /^[A-Za-z0-9_-]{1,64}$/;
