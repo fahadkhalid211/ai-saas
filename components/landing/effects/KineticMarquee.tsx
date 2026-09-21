@@ -45,20 +45,7 @@ export const KineticMarquee: React.FC<KineticMarqueeProps> = ({
           animation: `marquee ${speed}s linear infinite ${animDirection}`,
         }}
         aria-hidden="true"
-      >
-        {children}
-      </div>
-
-      <style jsx>{`
-        @keyframes marquee {
-          from {
-            transform: translateX(0%);
-          }
-          to {
-            transform: translateX(-100%);
-          }
-        }
-      `}</style>
+      />
     </div>
   );
 };

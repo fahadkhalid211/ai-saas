@@ -28,7 +28,8 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { ParallaxBackground } from './ParallaxBackground';
-import { NeuralBrainWorkflow } from './NeuralBrainWorkflow';
+import { PipelineSection } from './pipeline';
+import { ScrambleText, SpotlightCard, CountUp } from './effects';
 
 interface SaaSMarketingHomepageProps {
   onOpenAuth: (mode: 'admin' | 'staff' | 'register') => void;
@@ -125,7 +126,7 @@ export function SaaSMarketingHomepage({
         hasBooking = true;
       } else if (lower.includes('pricing') || lower.includes('cost') || lower.includes('price')) {
         reply =
-          'Kortex AI offers transparent, flat-rate pricing starting at $29/month with 0% token markup. You can bring your own OpenAI/Anthropic key or use our built-in zero-cost failover engine for $0 compute.';
+          'Kortex AI offers transparent, flat-rate pricing starting at $49/month with 0% token markup. You can bring your own OpenAI/Anthropic key or use our built-in zero-cost failover engine for $0 compute.';
       } else if (
         lower.includes('different') ||
         lower.includes('compare') ||
@@ -139,7 +140,7 @@ export function SaaSMarketingHomepage({
         reply =
           'When visitors leave their contact details anywhere in the chat, Kortex AI automatically detects the email and phone number, attributes the conversation, and pushes the lead to your CRM and email in real time.';
       } else {
-        reply = `I understand you are asking about "${userMsg}". Kortex AI grounds all answers strictly in your verified knowledge documents with zero hallucinations. If an answer is outside the knowledge base, I automatically bridge to live human support.`;
+        reply = `I understand you are asking about "${userMsg}". Kortex AI grounds all answers strictly in your verified knowledge documents with hybrid vector and keyword retrieval. If an answer is outside the knowledge base, I automatically bridge to live human support.`;
       }
 
       setDemoMessages((prev) => [...prev, { role: 'assistant', text: reply, hasBooking }]);
@@ -372,7 +373,7 @@ export function SaaSMarketingHomepage({
                 }`}
               >
                 <Sparkles className="h-3.5 w-3.5 text-blue-500" />
-                <span>Next-Gen Autonomous Website Conversion</span>
+                <span><ScrambleText text="Next-Gen Autonomous Website Conversion" /></span>
               </div>
 
               <h1
@@ -443,12 +444,12 @@ export function SaaSMarketingHomepage({
                       : 'bg-slate-900/80 border-slate-800 text-slate-200'
                   }`}
                 >
-                  <div className="text-xl sm:text-2xl font-black text-emerald-600 dark:text-emerald-400">&lt;400ms</div>
+                  <div className="text-xl sm:text-2xl font-black text-emerald-600 dark:text-emerald-400">Stream</div>
                   <div className={`text-[11px] font-semibold mt-0.5 ${isLight ? 'text-slate-800' : 'text-slate-300'}`}>
-                    TTFT Latency
+                    Fast Response
                   </div>
                   <div className={`text-[10px] ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>
-                    Local embedding &amp; L2 cache
+                    Sub-second tokens &amp; local cache
                   </div>
                 </div>
 
@@ -459,12 +460,12 @@ export function SaaSMarketingHomepage({
                       : 'bg-slate-900/80 border-slate-800 text-slate-200'
                   }`}
                 >
-                  <div className="text-xl sm:text-2xl font-black text-indigo-600 dark:text-indigo-400">100%</div>
+                  <div className="text-xl sm:text-2xl font-black text-indigo-600 dark:text-indigo-400">Slot Lock</div>
                   <div className={`text-[11px] font-semibold mt-0.5 ${isLight ? 'text-slate-800' : 'text-slate-300'}`}>
-                    Mutex Integrity
+                    Per-Instance Mutex
                   </div>
                   <div className={`text-[10px] ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>
-                    Zero double-booking guarantee
+                    In-memory lock &amp; DB uniqueness
                   </div>
                 </div>
 
@@ -475,12 +476,14 @@ export function SaaSMarketingHomepage({
                       : 'bg-slate-900/80 border-slate-800 text-slate-200'
                   }`}
                 >
-                  <div className="text-xl sm:text-2xl font-black text-amber-600 dark:text-amber-400">3.2x</div>
+                  <div className="text-xl sm:text-2xl font-black text-amber-600 dark:text-amber-400">
+                    <CountUp end={11} />
+                  </div>
                   <div className={`text-[11px] font-semibold mt-0.5 ${isLight ? 'text-slate-800' : 'text-slate-300'}`}>
-                    Lead Capture Lift
+                    Production Archetypes
                   </div>
                   <div className={`text-[10px] ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>
-                    Autonomous in-chat extraction
+                    Pre-trained domain templates
                   </div>
                 </div>
               </div>
@@ -488,7 +491,7 @@ export function SaaSMarketingHomepage({
           </div>
         </section>
 
-        {/* Live Neural Brain Workflow Section */}
+        {/* Live Autonomous Pipeline Section */}
         <section
           id="workflow"
           className={`py-20 border-b scroll-reveal opacity-0 translate-y-8 transition-all duration-700 ease-out ${
@@ -505,22 +508,21 @@ export function SaaSMarketingHomepage({
                 }`}
               >
                 <Cpu className="h-3.5 w-3.5 text-blue-500" />
-                <span>Continuous Pipeline Architecture</span>
+                <span>Autonomous Systems Pipeline</span>
               </div>
               <h2
                 className={`text-3xl sm:text-4xl font-extrabold tracking-tight ${
                   isLight ? 'text-slate-950' : 'text-white'
                 }`}
               >
-                See the AI Cognitive Pipeline in Real Time
+                Inspect the Real Grounded Architecture
               </h2>
               <p className={`text-sm ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
-                Watch continuous 60fps data streams transform across Ingestion, RAG Knowledge
-                Memory, Cognitive Reasoning, and Concurrency-Locked Motor Execution.
+                Hardware-accelerated Three.js WebGL visualization of local embedding vectors, reciprocal rank fusion retrieval, grounded synthesis, and deterministic appointment locking.
               </p>
             </div>
 
-            <NeuralBrainWorkflow theme={theme} />
+            <PipelineSection theme={theme} />
           </div>
         </section>
 
@@ -582,7 +584,7 @@ export function SaaSMarketingHomepage({
                         : 'bg-slate-800 text-slate-300 border-slate-700'
                     }`}
                   >
-                    100% Grounded RAG
+                    Hybrid Grounded RAG
                   </span>
                   <span
                     className={`text-[10px] font-mono px-2 py-0.5 rounded border ${
@@ -872,62 +874,205 @@ export function SaaSMarketingHomepage({
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {[
-                {
-                  icon: Calendar,
-                  title: 'Native In-Chat Calendar Booking',
-                  desc: 'Visitors book appointments directly inside the conversation with real-time slot verification, concurrency mutex protection, and Google/Outlook calendar synchronization.',
-                },
-                {
-                  icon: MessageSquare,
-                  title: 'Zero-Form Lead Extraction',
-                  desc: 'Automatically extracts names, emails, and phone numbers directly from conversational text and writes qualified leads to your CRM in real time.',
-                },
-                {
-                  icon: Shield,
-                  title: 'Zero-Markup BYOK Architecture',
-                  desc: 'Bring your own OpenAI, Anthropic, Gemini, or DeepSeek API key and pay raw token cost directly to model providers. Stop paying massive markup premiums on tokens.',
-                },
-                {
-                  icon: Bot,
-                  title: 'Zero-Cost Free Engine Cascade',
-                  desc: 'Run completely free of compute charges using our automatic failover pipeline across high-speed multi-cloud inference engines and local offline edge models.',
-                },
-                {
-                  icon: Headphones,
-                  title: 'Live Agent Takeover & Audio Alerts',
-                  desc: 'Step into any live visitor chat from your management console with one click. AI automatically pauses, and sound alerts notify your staff instantly.',
-                },
-                {
-                  icon: Layers,
-                  title: '11 Industry Business Archetypes',
-                  desc: 'Pre-trained website templates for Barbershops, Gyms, Real Estate, SaaS, Clinics, Law Firms, Restaurants, and more, ready for 1-click deployment.',
-                },
-              ].map((feat, idx) => (
-                <div
-                  key={idx}
-                  className={`p-6 rounded-2xl border transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl ${
-                    isLight
-                      ? 'border-slate-200 bg-white hover:border-blue-300 shadow-sm text-slate-800'
-                      : 'border-slate-800/90 bg-slate-900/60 hover:border-slate-700 hover:shadow-blue-500/10 text-slate-200'
-                  }`}
-                >
-                  <div className="h-10 w-10 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-500 mb-4">
-                    <feat.icon className="h-5 w-5" />
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {/* Feature 1: Bento Col-span-2: Native In-Chat Calendar Booking */}
+              <SpotlightCard
+                theme={theme}
+                className={`md:col-span-2 p-6 sm:p-8 flex flex-col justify-between ${
+                  isLight
+                    ? 'border-slate-200 bg-white shadow-sm text-slate-800'
+                    : 'border-slate-800/90 bg-slate-900/60 text-slate-200'
+                }`}
+              >
+                <div>
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="h-11 w-11 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-500">
+                      <Calendar className="h-6 w-6" />
+                    </div>
+                    <span
+                      className={`text-[10px] font-mono font-bold uppercase tracking-wider px-2.5 py-1 rounded-full border ${
+                        isLight
+                          ? 'bg-blue-50 border-blue-200 text-blue-700'
+                          : 'bg-blue-950/80 border-blue-800/80 text-blue-300'
+                      }`}
+                    >
+                      Real-Time Concurrency
+                    </span>
                   </div>
-                  <h3
-                    className={`text-base font-bold mb-2 ${
-                      isLight ? 'text-slate-900' : 'text-white'
-                    }`}
-                  >
-                    {feat.title}
+                  <h3 className={`text-xl font-bold mb-2.5 ${isLight ? 'text-slate-900' : 'text-white'}`}>
+                    Native In-Chat Calendar Booking
                   </h3>
-                  <p className={`text-xs leading-relaxed ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
-                    {feat.desc}
+                  <p className={`text-xs sm:text-sm leading-relaxed max-w-xl ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
+                    Visitors pick and confirm appointments right inside the conversation stream. Concurrency lock validation prevents double-booking, and confirmation invites sync directly to Google Calendar, Outlook, and .ics.
                   </p>
                 </div>
-              ))}
+                <div
+                  className={`mt-6 p-3.5 rounded-xl border flex items-center justify-between font-mono text-xs ${
+                    isLight ? 'bg-slate-50 border-slate-200 text-slate-700' : 'bg-slate-950/80 border-slate-800 text-slate-300'
+                  }`}
+                >
+                  <span className="flex items-center gap-2">
+                    <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                    <span>In-Memory Slot Lock Active</span>
+                  </span>
+                  <span className="text-[11px] text-slate-400">Auto-Expiry: 5m</span>
+                </div>
+              </SpotlightCard>
+
+              {/* Feature 2: Bento Col-span-1: Zero-Form Lead Extraction */}
+              <SpotlightCard
+                theme={theme}
+                className={`p-6 sm:p-8 flex flex-col justify-between ${
+                  isLight
+                    ? 'border-slate-200 bg-white shadow-sm text-slate-800'
+                    : 'border-slate-800/90 bg-slate-900/60 text-slate-200'
+                }`}
+              >
+                <div>
+                  <div className="h-11 w-11 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-500 mb-4">
+                    <MessageSquare className="h-6 w-6" />
+                  </div>
+                  <h3 className={`text-lg font-bold mb-2 ${isLight ? 'text-slate-900' : 'text-white'}`}>
+                    Zero-Form Lead Extraction
+                  </h3>
+                  <p className={`text-xs leading-relaxed ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
+                    Detects emails, phone numbers, and visitor intent directly from unstructured conversational text. Pushes attributed leads to your CRM and staff inbox with zero extra friction.
+                  </p>
+                </div>
+                <div className="mt-4 flex items-center gap-2 text-[11px] font-mono text-indigo-500">
+                  <span>Intent Parsing &amp; Extraction</span>
+                </div>
+              </SpotlightCard>
+
+              {/* Feature 3: Bento Col-span-1: Zero-Markup BYOK Architecture */}
+              <SpotlightCard
+                theme={theme}
+                className={`p-6 sm:p-8 flex flex-col justify-between ${
+                  isLight
+                    ? 'border-slate-200 bg-white shadow-sm text-slate-800'
+                    : 'border-slate-800/90 bg-slate-900/60 text-slate-200'
+                }`}
+              >
+                <div>
+                  <div className="h-11 w-11 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-500 mb-4">
+                    <Shield className="h-6 w-6" />
+                  </div>
+                  <h3 className={`text-lg font-bold mb-2 ${isLight ? 'text-slate-900' : 'text-white'}`}>
+                    Zero-Markup BYOK
+                  </h3>
+                  <p className={`text-xs leading-relaxed ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
+                    Paste your own OpenAI, Anthropic, Gemini, or Groq API keys and pay wholesale token rates directly to model vendors without platform markups.
+                  </p>
+                </div>
+                <div className="mt-4 text-[11px] font-mono text-cyan-500">
+                  <span>Wholesale Raw Token Pricing</span>
+                </div>
+              </SpotlightCard>
+
+              {/* Feature 4: Bento Col-span-1: Zero-Cost Free Engine Cascade */}
+              <SpotlightCard
+                theme={theme}
+                className={`p-6 sm:p-8 flex flex-col justify-between ${
+                  isLight
+                    ? 'border-slate-200 bg-white shadow-sm text-slate-800'
+                    : 'border-slate-800/90 bg-slate-900/60 text-slate-200'
+                }`}
+              >
+                <div>
+                  <div className="h-11 w-11 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-500 mb-4">
+                    <Bot className="h-6 w-6" />
+                  </div>
+                  <h3 className={`text-lg font-bold mb-2 ${isLight ? 'text-slate-900' : 'text-white'}`}>
+                    Zero-Cost Cascade
+                  </h3>
+                  <p className={`text-xs leading-relaxed ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
+                    Run for $0 compute using our resilient multi-provider failover pipeline, cascading across high-speed free tier inference and local offline model layers.
+                  </p>
+                </div>
+                <div className="mt-4 text-[11px] font-mono text-emerald-500">
+                  <span>Multi-Engine Failover Stack</span>
+                </div>
+              </SpotlightCard>
+
+              {/* Feature 5: Bento Col-span-1: Live Agent Takeover & Audio Alerts */}
+              <SpotlightCard
+                theme={theme}
+                className={`p-6 sm:p-8 flex flex-col justify-between ${
+                  isLight
+                    ? 'border-slate-200 bg-white shadow-sm text-slate-800'
+                    : 'border-slate-800/90 bg-slate-900/60 text-slate-200'
+                }`}
+              >
+                <div>
+                  <div className="h-11 w-11 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-500 mb-4">
+                    <Headphones className="h-6 w-6" />
+                  </div>
+                  <h3 className={`text-lg font-bold mb-2 ${isLight ? 'text-slate-900' : 'text-white'}`}>
+                    Live Agent Takeover
+                  </h3>
+                  <p className={`text-xs leading-relaxed ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
+                    Step into any live visitor chat with a single click. AI pauses immediately, and audio chimes alert your team whenever high-intent prospects request assistance.
+                  </p>
+                </div>
+                <div className="mt-4 text-[11px] font-mono text-amber-500">
+                  <span>1-Click Human Escort</span>
+                </div>
+              </SpotlightCard>
+
+              {/* Feature 6: Bento Col-span-3: 11 Industry Business Archetypes */}
+              <SpotlightCard
+                theme={theme}
+                className={`md:col-span-3 p-6 sm:p-8 ${
+                  isLight
+                    ? 'border-slate-200 bg-white shadow-sm text-slate-800'
+                    : 'border-slate-800/90 bg-slate-900/60 text-slate-200'
+                }`}
+              >
+                <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
+                  <div>
+                    <div className="h-11 w-11 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-500 mb-4">
+                      <Layers className="h-6 w-6" />
+                    </div>
+                    <h3 className={`text-xl font-bold mb-1.5 ${isLight ? 'text-slate-900' : 'text-white'}`}>
+                      11 Pre-Trained Industry Archetypes
+                    </h3>
+                    <p className={`text-xs sm:text-sm ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
+                      Domain-specific conversation trees, booking schedules, and knowledge schemas ready to deploy in under 60 seconds.
+                    </p>
+                  </div>
+                  <a
+                    href="#templates"
+                    className={`px-4 py-2 rounded-xl text-xs font-semibold border transition shrink-0 flex items-center gap-1.5 ${
+                      isLight
+                        ? 'border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-800'
+                        : 'border-slate-700 bg-slate-800 hover:bg-slate-700 text-slate-200'
+                    }`}
+                  >
+                    <span>Browse All Templates</span>
+                    <ArrowRight className="h-3.5 w-3.5" />
+                  </a>
+                </div>
+
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2.5 pt-2">
+                  {[
+                    'Barbershop',
+                    'Fitness & Gym',
+                    'Real Estate',
+                    'SaaS Platform',
+                    'Healthcare Clinic',
+                    'Legal Counsel',
+                  ].map((archetype, aIdx) => (
+                    <div
+                      key={aIdx}
+                      className={`p-2.5 rounded-xl border text-center font-mono text-xs ${
+                        isLight ? 'bg-slate-50 border-slate-200 text-slate-700' : 'bg-slate-950/80 border-slate-800 text-slate-300'
+                      }`}
+                    >
+                      {archetype}
+                    </div>
+                  ))}
+                </div>
+              </SpotlightCard>
             </div>
           </div>
         </section>
@@ -1062,15 +1207,17 @@ export function SaaSMarketingHomepage({
               {[
                 {
                   name: 'Starter',
-                  price: '$29',
+                  price: '$49',
                   period: '/month',
-                  desc: 'Perfect for small local businesses getting started with automated booking.',
+                  desc: 'Ideal for small businesses getting started with automated AI customer support.',
                   features: [
-                    '1 Active AI Concierge',
+                    '100 Chat Sessions / month',
+                    '1 AI Assistant Bot',
+                    '1 Hosted Business Landing Page',
+                    '50 MB Knowledge Storage (~50,000 pages)',
                     'Native Calendar Booking Picker',
                     'Automatic In-Chat Lead Capture',
                     'Zero-Cost Inference Engine Included',
-                    'Google Calendar & .ics Sync',
                     'Standard Email Support',
                   ],
                   featured: false,
@@ -1078,32 +1225,36 @@ export function SaaSMarketingHomepage({
                 },
                 {
                   name: 'Growth',
-                  price: '$79',
+                  price: '$149',
                   period: '/month',
-                  desc: 'Designed for scaling businesses that need multiple sites and custom knowledge.',
+                  desc: 'For growing brands needing high-volume conversations and calendar booking.',
                   features: [
-                    '5 Active AI Concierges',
-                    'Zero-Markup BYOK Engine (OpenAI, Anthropic)',
+                    '500 Chat Sessions / month',
+                    '5 AI Assistant Bots',
+                    '3 Hosted Business Landing Pages',
+                    '500 MB Knowledge Storage',
+                    'Appointment Booking & Calendar Sync',
                     'Multi-Document RAG Knowledge Base',
                     '1-Click Live Human Staff Takeover',
                     'Audio Alerts & Real-Time Chimes',
-                    'Priority Support & SLA',
                   ],
                   featured: true,
                   cta: 'Deploy Growth Plan',
                 },
                 {
-                  name: 'Enterprise Agency',
-                  price: '$199',
+                  name: 'Agency / Scale',
+                  price: '$399',
                   period: '/month',
-                  desc: 'For digital agencies and high-volume operations managing multiple client brands.',
+                  desc: 'Enterprise-grade scale for digital agencies and high-volume operations.',
                   features: [
-                    'Unlimited Active AI Concierges',
+                    '2,000 Chat Sessions / month',
+                    'Unlimited AI Assistant Bots',
+                    '7 Hosted Business Landing Pages',
+                    '5 GB High-Capacity Knowledge Storage',
+                    'Omnichannel: WhatsApp & Telegram',
                     'All 11 Industry Archetypes',
-                    'Custom Domain & Brand Whitelabel',
-                    'Full Multi-Tenant Isolation (BOLA Certified)',
-                    'Multi-Agent Concurrency Mutex',
-                    'Dedicated Account Executive',
+                    'Custom Domain & Full White-Label',
+                    'Dedicated Account Manager & SLA',
                   ],
                   featured: false,
                   cta: 'Contact Enterprise Sales',
