@@ -57,7 +57,7 @@ export const SaasTemplate: React.FC<IndustryTemplateProps> = ({
   ];
 
   const codeSnippets = {
-    curl: `curl -X POST https://api.kortex.ai/v1/chat \\
+    curl: `curl -X POST https://api.crescelo.com/v1/chat \\
   -H "Authorization: Bearer sk_live_99214..." \\
   -H "Content-Type: application/json" \\
   -d '{
@@ -65,12 +65,12 @@ export const SaasTemplate: React.FC<IndustryTemplateProps> = ({
     "message": "Does your platform support custom SAML SSO?",
     "stream": true
   }'`,
-    ts: `import { KortexAI } from '@kortex/sdk';
+    ts: `import { CresceloAI } from '@crescelo/sdk';
 
-const kortex = new KortexAI({ apiKey: process.env.KORTEX_API_KEY });
+const crescelo = new CresceloAI({ apiKey: process.env.CRESCELO_API_KEY });
 
 // Stream real-time RAG response with zero latency
-const stream = await kortex.chat.stream({
+const stream = await crescelo.chat.stream({
   assistantId: 'ast_enterprise_support',
   messages: [{ role: 'user', content: 'What is your SOC-2 SLA?' }],
 });
@@ -78,9 +78,9 @@ const stream = await kortex.chat.stream({
 for await (const chunk of stream) {
   process.stdout.write(chunk.delta);
 }`,
-    python: `from kortex import KortexClient
+    python: `from crescelo import CresceloClient
 
-client = KortexClient(api_key="sk_live_99214...")
+client = CresceloClient(api_key="sk_live_99214...")
 
 # Execute hybrid semantic search & RAG generation
 response = client.chat.create(
@@ -130,11 +130,11 @@ print(response.reply)`,
       a: 'Yes. Enterprise tiers include a 99.999% uptime financial SLA, private Slack/Teams channels, and a named principal solutions architect.',
     },
     {
-      q: 'Can we self-host Kortex AI within our own AWS or Azure VPC?',
+      q: 'Can we self-host Crescelo within our own AWS or Azure VPC?',
       a: 'Yes. We provide certified Helm charts and Terraform modules for single-tenant air-gapped deployments on AWS EKS, GCP GKE, and Azure AKS.',
     },
     {
-      q: 'How does Kortex prevent hallucination on factual company policies?',
+      q: 'How does Crescelo prevent hallucination on factual company policies?',
       a: 'We enforce strict citation verification. The model only answers questions using verified snippets from your active knowledge base, complete with line-level source links.',
     },
   ];
@@ -171,7 +171,7 @@ print(response.reply)`,
             isDark ? 'border-blue-500/30 bg-blue-950/40 text-blue-300' : 'border-blue-200 bg-blue-50 text-blue-800'
           }`}>
             <Sparkles className="h-3.5 w-3.5 text-blue-500" />
-            <span>{config.badgeText || 'Kortex v2.4 Live · Real-Time Vector RAG & CRM Sync'}</span>
+            <span>{config.badgeText || 'Crescelo v2.4 Live · Real-Time Vector RAG & CRM Sync'}</span>
           </div>
 
           <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black tracking-tight leading-[1.08]">
@@ -234,7 +234,7 @@ print(response.reply)`,
                   <span className="w-3 h-3 rounded-full bg-rose-500" />
                   <span className="w-3 h-3 rounded-full bg-amber-500" />
                   <span className="w-3 h-3 rounded-full bg-emerald-500" />
-                  <span className="ml-2 font-mono text-xs text-slate-400 font-bold">kortex-sdk-example</span>
+                  <span className="ml-2 font-mono text-xs text-slate-400 font-bold">crescelo-sdk-example</span>
                 </div>
 
                 <div className="flex items-center gap-1.5">

@@ -44,7 +44,7 @@ export function NavHeader({ theme, onToggleTheme, onOpenAuth }: NavHeaderProps) 
               <Bot className="h-4.5 w-4.5" />
             </div>
             <span className="font-bold text-lg tracking-tight">
-              KORTEX<span className="text-blue-500">.AI</span>
+              CRESCELO<span className="text-blue-500">.AI</span>
             </span>
           </a>
 

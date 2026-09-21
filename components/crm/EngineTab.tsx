@@ -76,7 +76,7 @@ export const EngineTab: React.FC<EngineTabProps> = ({
               </span>
             </div>
             <p className="text-[11.5px] text-slate-500 dark:text-slate-400 leading-relaxed">
-              Unlike competitors that mark up AI tokens by 300%+ with opaque credit burn, Kortex AI allows you to bring your own API key (BYOK) and pay wholesale rates directly to model providers with zero platform markup, or run on our Zero-Cost failover engine ($0 compute).
+              Unlike competitors that mark up AI tokens by 300%+ with opaque credit burn, Crescelo allows you to bring your own API key (BYOK) and pay wholesale rates directly to model providers with zero platform markup, or run on our Zero-Cost failover engine ($0 compute).
             </p>
           </div>
         </div>

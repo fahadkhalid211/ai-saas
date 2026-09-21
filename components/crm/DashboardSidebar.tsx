@@ -192,7 +192,7 @@ export function DashboardSidebar({
             <span>Product Tour</span>
           </button>
         ) : (
-          <span className="text-slate-400 dark:text-slate-500 font-mono">KORTEX v2.0</span>
+          <span className="text-slate-400 dark:text-slate-500 font-mono">CRESCELO v2.0</span>
         )}
         <span className="text-slate-400 dark:text-slate-500 font-mono text-[10px]">Enterprise</span>
       </div>

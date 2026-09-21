@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getMasterEmail } from '@/lib/security/master';
 import { Database } from '@/lib/db';
 import { verifyAdminRequest, withAdminAuth, getAuthContext } from '@/lib/security/auth';
 import { enforceRateLimit } from '@/lib/security/rate-limit';
@@ -26,8 +27,8 @@ export const GET = withAdminAuth(async (req: Request) => {
       const secret = generateBase32Secret(20);
       const recoveryCodes = generateRecoveryCodes(8);
       const otpUrl = generateOtpAuthUrl({
-        issuer: 'Kortex AI Enterprise',
-        accountName: targetMember?.email || 'admin@kortexai.com',
+        issuer: 'Crescelo Enterprise',
+        accountName: targetMember?.email || getMasterEmail(),
         secret,
       });
 

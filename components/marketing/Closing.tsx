@@ -89,7 +89,7 @@ function Newsletter() {
     setError('');
     setSent(true);
     const subject = encodeURIComponent('Newsletter sign-up');
-    const body = encodeURIComponent(`Please add ${v} to the Kortex newsletter.`);
+    const body = encodeURIComponent(`Please add ${v} to the Crescelo newsletter.`);
     window.location.href = `mailto:${SITE.contactEmail}?subject=${subject}&body=${body}`;
   };
 
@@ -156,7 +156,7 @@ export function Footer() {
           <Newsletter />
         </div>
         <div className="mk-footer-bottom">
-          <span>© {new Date().getFullYear()} Kortex AI</span>
+          <span>© {new Date().getFullYear()} Crescelo</span>
           <span>{FOOTER.legalNote}</span>
         </div>
       </div>

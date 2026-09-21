@@ -110,12 +110,12 @@ export function escapeIcsText(str: string): string {
  */
 export function generateIcsFeed(
   appointments: AppointmentData[],
-  calendarName: string = 'Kortex AI Appointments'
+  calendarName: string = 'Crescelo Appointments'
 ): string {
   const lines: string[] = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
-    'PRODID:-//Kortex AI//Calendar Sync Engine//EN',
+    'PRODID:-//Crescelo//Calendar Sync Engine//EN',
     'CALSCALE:GREGORIAN',
     'METHOD:PUBLISH',
     `X-WR-CALNAME:${escapeIcsText(calendarName)}`,
@@ -189,7 +189,7 @@ export function generateSingleIcs(
   const lines: string[] = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
-    'PRODID:-//Kortex AI//Calendar Sync Engine//EN',
+    'PRODID:-//Crescelo//Calendar Sync Engine//EN',
     'CALSCALE:GREGORIAN',
     'METHOD:PUBLISH',
     'BEGIN:VEVENT',

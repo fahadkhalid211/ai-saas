@@ -50,7 +50,7 @@ export function SaaSMarketingHomepage({
   >([
     {
       role: 'assistant',
-      text: 'Hello! I am the Kortex AI representative. I answer customer questions, capture qualified leads, and book appointments directly on your calendar with zero token markup. What would you like to test?',
+      text: 'Hello! I am the Crescelo representative. I answer customer questions, capture qualified leads, and book appointments directly on your calendar with zero token markup. What would you like to test?',
     },
   ]);
   const [isDemoStreaming, setIsDemoStreaming] = useState(false);
@@ -126,7 +126,7 @@ export function SaaSMarketingHomepage({
         hasBooking = true;
       } else if (lower.includes('pricing') || lower.includes('cost') || lower.includes('price')) {
         reply =
-          'Kortex AI offers transparent, flat-rate pricing starting at $49/month with 0% token markup. You can bring your own OpenAI/Anthropic key or use our built-in zero-cost failover engine for $0 compute.';
+          'Crescelo offers transparent, flat-rate pricing starting at $49/month with 0% token markup. You can bring your own OpenAI/Anthropic key or use our built-in zero-cost failover engine for $0 compute.';
       } else if (
         lower.includes('different') ||
         lower.includes('compare') ||
@@ -135,12 +135,12 @@ export function SaaSMarketingHomepage({
         lower.includes('traditional')
       ) {
         reply =
-          'Traditional chatbots act as passive text-only lookup tools with credit burn limits. Kortex AI is action-oriented: we natively book appointments on your calendar, auto-capture leads directly from conversation, and provide at-cost BYOK pricing with zero token tax.';
+          'Traditional chatbots act as passive text-only lookup tools with credit burn limits. Crescelo is action-oriented: we natively book appointments on your calendar, auto-capture leads directly from conversation, and provide at-cost BYOK pricing with zero token tax.';
       } else if (lower.includes('lead') || lower.includes('email') || lower.includes('phone')) {
         reply =
-          'When visitors leave their contact details anywhere in the chat, Kortex AI automatically detects the email and phone number, attributes the conversation, and pushes the lead to your CRM and email in real time.';
+          'When visitors leave their contact details anywhere in the chat, Crescelo automatically detects the email and phone number, attributes the conversation, and pushes the lead to your CRM and email in real time.';
       } else {
-        reply = `I understand you are asking about "${userMsg}". Kortex AI grounds all answers strictly in your verified knowledge documents with hybrid vector and keyword retrieval. If an answer is outside the knowledge base, I automatically bridge to live human support.`;
+        reply = `I understand you are asking about "${userMsg}". Crescelo grounds all answers strictly in your verified knowledge documents with hybrid vector and keyword retrieval. If an answer is outside the knowledge base, I automatically bridge to live human support.`;
       }
 
       setDemoMessages((prev) => [...prev, { role: 'assistant', text: reply, hasBooking }]);
@@ -190,23 +190,23 @@ export function SaaSMarketingHomepage({
 
   const faqs = [
     {
-      q: 'How does Kortex AI drive higher conversions than standard chatbots?',
-      a: 'Most chatbots act merely as passive FAQ widgets that leave visitors to navigate on their own. Kortex AI is action-oriented: it actively guides prospects to confirmed calendar bookings, extracts phone numbers and emails directly from natural conversation, and provides instant staff notifications for immediate follow-up.',
+      q: 'How does Crescelo drive higher conversions than standard chatbots?',
+      a: 'Most chatbots act merely as passive FAQ widgets that leave visitors to navigate on their own. Crescelo is action-oriented: it actively guides prospects to confirmed calendar bookings, extracts phone numbers and emails directly from natural conversation, and provides instant staff notifications for immediate follow-up.',
     },
     {
       q: 'What does Zero-Markup BYOK mean?',
-      a: 'BYOK stands for Bring Your Own Key. Instead of paying inflated 300% to 800% markups on OpenAI, Anthropic, or Google tokens, you paste your own provider key. You pay the AI provider directly at raw wholesale prices ($0.15 per million tokens on Gemini 1.5 Flash), while Kortex AI simply charges a flat platform hosting fee.',
+      a: 'BYOK stands for Bring Your Own Key. Instead of paying inflated 300% to 800% markups on OpenAI, Anthropic, or Google tokens, you paste your own provider key. You pay the AI provider directly at raw wholesale prices ($0.15 per million tokens on Gemini 1.5 Flash), while Crescelo simply charges a flat platform hosting fee.',
     },
     {
-      q: 'Can I use Kortex AI without an OpenAI or Anthropic API key?',
-      a: 'Yes. Kortex AI includes a built-in Zero-Cost Inference Engine (auto_free). It cascades requests across high-speed multi-provider free inference pipelines and offline local model layers for $0 compute cost.',
+      q: 'Can I use Crescelo without an OpenAI or Anthropic API key?',
+      a: 'Yes. Crescelo includes a built-in Zero-Cost Inference Engine (auto_free). It cascades requests across high-speed multi-provider free inference pipelines and offline local model layers for $0 compute cost.',
     },
     {
       q: 'How does in-chat appointment booking work?',
-      a: 'When a visitor asks to book a consultation, tour, or service, the AI assistant detects booking intent and immediately embeds an interactive date and time picker directly in the conversation. Once the visitor selects a time, Kortex AI checks real-time slot availability, reserves the slot with concurrency lock protection, and sends instant Google Calendar, Outlook, and .ics confirmations.',
+      a: 'When a visitor asks to book a consultation, tour, or service, the AI assistant detects booking intent and immediately embeds an interactive date and time picker directly in the conversation. Once the visitor selects a time, Crescelo checks real-time slot availability, reserves the slot with concurrency lock protection, and sends instant Google Calendar, Outlook, and .ics confirmations.',
     },
     {
-      q: 'How do I install the Kortex AI widget on my website?',
+      q: 'How do I install the Crescelo widget on my website?',
       a: 'You paste a single line of JavaScript (<script src=".../widget.js" data-assistant-id="..."></script>) before the closing </body> tag of your website. It works seamlessly with WordPress, Webflow, Shopify, Wix, Squarespace, Framer, and custom HTML.',
     },
   ];
@@ -262,7 +262,7 @@ export function SaaSMarketingHomepage({
                 <Bot className="h-5 w-5" />
               </div>
               <span className="font-bold text-lg tracking-tight">
-                KORTEX<span className="text-blue-500">.AI</span>
+                CRESCELO<span className="text-blue-500">.AI</span>
               </span>
             </div>
 
@@ -554,7 +554,7 @@ export function SaaSMarketingHomepage({
               </h2>
               <p className={`text-sm max-w-xl mx-auto ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
                 Ask about pricing, test in-chat booking prompts, or leave an email to experience
-                how Kortex AI handles real-world customer interactions.
+                how Crescelo handles real-world customer interactions.
               </p>
             </div>
 
@@ -574,7 +574,7 @@ export function SaaSMarketingHomepage({
               >
                 <div className="flex items-center gap-3">
                   <div className="h-3 w-3 rounded-full bg-emerald-500 animate-ping" />
-                  <span className="text-xs font-semibold">Kortex AI Concierge • Live Sandbox</span>
+                  <span className="text-xs font-semibold">Crescelo Concierge • Live Sandbox</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <span
@@ -1361,7 +1361,7 @@ export function SaaSMarketingHomepage({
                 Built for High-Converting Business Outcomes
               </h2>
               <p className={`text-sm ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
-                See how Kortex AI’s autonomous action architecture delivers tangible appointment
+                See how Crescelo’s autonomous action architecture delivers tangible appointment
                 bookings and qualified leads compared to traditional chat solutions.
               </p>
             </div>
@@ -1389,7 +1389,7 @@ export function SaaSMarketingHomepage({
                           isLight ? 'text-blue-700 bg-blue-50/80' : 'text-blue-400 bg-blue-950/40'
                         }`}
                       >
-                        Kortex AI Platform
+                        Crescelo Platform
                       </th>
                     </tr>
                   </thead>
@@ -1607,7 +1607,7 @@ export function SaaSMarketingHomepage({
                   Ready to Turn Traffic Into Confirmed Calendar Bookings?
                 </h2>
                 <p className={`text-sm ${isLight ? 'text-blue-100' : 'text-slate-300'}`}>
-                  Join hundreds of businesses using Kortex AI to capture leads and schedule meetings
+                  Join hundreds of businesses using Crescelo to capture leads and schedule meetings
                   automatically with zero token tax.
                 </p>
                 <div className="pt-3 flex flex-wrap items-center justify-center gap-3">
@@ -1650,7 +1650,7 @@ export function SaaSMarketingHomepage({
             <div className="flex items-center gap-2">
               <Bot className="h-4 w-4 text-blue-500" />
               <span className={`font-semibold ${isLight ? 'text-slate-800' : 'text-slate-300'}`}>
-                Kortex AI Autonomous Platform
+                Crescelo Autonomous Platform
               </span>
             </div>
             <div className="flex items-center gap-6">
@@ -1671,7 +1671,7 @@ export function SaaSMarketingHomepage({
                 Staff Portal
               </button>
             </div>
-            <div>&copy; 2026 Kortex AI Inc. Zero Token Markup Guarantee.</div>
+            <div>&copy; 2026 Crescelo Inc. Zero Token Markup Guarantee.</div>
           </div>
         </footer>
       </div>

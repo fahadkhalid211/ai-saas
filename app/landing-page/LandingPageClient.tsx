@@ -34,7 +34,7 @@ export default function LandingPageClient() {
   };
 
   const handleOpenAuth = (mode: 'admin' | 'staff' | 'register') => {
-    router.push(`/?auth=${mode}`);
+    router.push(mode === 'register' ? '/login?mode=register' : '/login');
   };
 
   return (

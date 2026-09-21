@@ -1,4 +1,4 @@
-/* Kortex marketing page. Scoped under .mk so it cannot affect the app or /landing-page. */
+/* Crescelo marketing page. Scoped under .mk so it cannot affect the app or /landing-page. */
 .mk {
   --mk-bg: #fffeeb;
   --mk-bg-tint: #e8f5f2;

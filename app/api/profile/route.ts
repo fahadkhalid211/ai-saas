@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { getMasterEmail } from '@/lib/security/master';
 import { Database, TeamMemberData } from '@/lib/db';
 import { getAuthContext, getAdminKey } from '@/lib/security/auth';
 import { getClientIp } from '@/lib/security/rate-limit';
@@ -18,7 +19,7 @@ export async function GET(req: Request) {
       id: ctx.memberId,
       workspaceId: ctx.workspaceId,
       name: ctx.role === 'owner' ? (workspace?.name ? `${workspace.name} Owner` : 'Master Admin') : 'Staff Member',
-      email: (workspace as any)?.ownerEmail || workspace.billingEmail || 'admin@kortexai.com',
+      email: (workspace as any)?.ownerEmail || workspace.billingEmail || getMasterEmail(),
       role: (ctx.role as any) || 'owner',
       status: 'active',
       title: 'Administrator',

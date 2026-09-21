@@ -49,7 +49,7 @@ export function PipelineSection({ theme = 'dark' }: PipelineSectionProps) {
           ? 'border-slate-200/90 bg-white/95 text-slate-900 shadow-slate-200/70'
           : 'border-slate-800/90 bg-slate-950/95 text-slate-100 shadow-[0_20px_50px_rgba(0,0,0,0.5)]'
       }`}
-      aria-label="Kortex AI Autonomous Processing Systems Network: Wired & Freeflow Architecture Visualizer"
+      aria-label="Crescelo Autonomous Processing Systems Network: Wired & Freeflow Architecture Visualizer"
     >
       {/* Top Header & Telemetry Bar */}
       <div
@@ -179,7 +179,7 @@ export function PipelineSection({ theme = 'dark' }: PipelineSectionProps) {
         >
           {/* Blueprint Overlay Header Tags */}
           <div className="absolute top-3 left-4 z-30 pointer-events-none flex items-center gap-3 font-mono text-[10px] text-slate-400">
-            <span className="font-bold tracking-wider text-slate-300">WORKSPACE: KORTEX-PRODUCTION</span>
+            <span className="font-bold tracking-wider text-slate-300">WORKSPACE: CRESCELO-PRODUCTION</span>
             <span>·</span>
             <span>TOPOLOGY: WIRED GRAPH + 384-D PARTICLE NEBULAE</span>
           </div>

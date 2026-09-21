@@ -102,7 +102,7 @@ export const PhoneChannelCard: React.FC<PhoneChannelCardProps> = ({ activeAssist
             <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
               {isMasterAdmin
                 ? 'International format. Must match the number bought from the carrier. Each number belongs to one assistant.'
-                : 'Numbers are assigned by the Kortex team. Contact support to get one.'}
+                : 'Numbers are assigned by the Crescelo team. Contact support to get one.'}
             </p>
           </div>
 

@@ -9,7 +9,7 @@ import { SmoothScroll } from '@/components/marketing/SmoothScroll';
 const serif = EB_Garamond({ subsets: ['latin'], display: 'swap', variable: '--font-mk-serif' });
 const body = Figtree({ subsets: ['latin'], display: 'swap', variable: '--font-mk-body' });
 
-export default function WelcomeLayout({ children }: { children: ReactNode }) {
+export default function MarketingLayout({ children }: { children: ReactNode }) {
   return (
     <div className={`mk ${serif.variable} ${body.variable}`}>
       <noscript>

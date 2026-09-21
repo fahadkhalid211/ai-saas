@@ -96,7 +96,7 @@ describe('iCalendar Engine & Calendar Sync', () => {
 
     expect(ics).toContain('BEGIN:VCALENDAR');
     expect(ics).toContain('VERSION:2.0');
-    expect(ics).toContain('PRODID:-//Kortex AI//Calendar Sync Engine//EN');
+    expect(ics).toContain('PRODID:-//Crescelo//Calendar Sync Engine//EN');
     expect(ics).toContain('X-WR-CALNAME:Crown & Blade Calendar');
     expect(ics).toContain('BEGIN:VEVENT');
     expect(ics).toContain('UID:apt_test1@kortex-ai');

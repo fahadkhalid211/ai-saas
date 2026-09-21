@@ -309,7 +309,7 @@ export const TOPOLOGY_NODES: TopologyNode[] = [
       { label: 'Formats', value: '.ics, Google, Outlook' },
       { label: 'Sync Status', value: 'Instant' },
     ],
-    samplePayload: '{"calendarEvent": "Appointment at Kortex", "start": "2026-11-20T10:00:00Z"}',
+    samplePayload: '{"calendarEvent": "Appointment at Crescelo", "start": "2026-11-20T10:00:00Z"}',
   },
   {
     id: 'egr_lead_record',

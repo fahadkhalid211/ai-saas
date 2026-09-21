@@ -101,7 +101,7 @@ export async function POST(req: NextRequest) {
             const newInvoice = {
               id: `inv_${invoice.id.slice(-6)}`,
               date: new Date().toISOString().split('T')[0],
-              planName: ws.planName || 'Kortex AI Subscription',
+              planName: ws.planName || 'Crescelo Subscription',
               amount: invoice.amount_paid / 100,
               status: 'paid' as const,
               pdfUrl: invoice.hosted_invoice_url || invoice.invoice_pdf,

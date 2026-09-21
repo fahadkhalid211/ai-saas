@@ -68,8 +68,20 @@ describe('Server-Level Proxy, Rate Limiting & Security', () => {
     expect(res.status).toBe(200);
   });
 
+  it('sends signed-out visitors from /dashboard to /login, and lets a session cookie through', () => {
+    const anon = proxy(new NextRequest('http://localhost:3000/dashboard', { method: 'GET' }));
+    expect(anon.status).toBe(307);
+    expect(anon.headers.get('location')).toBe('http://localhost:3000/login');
+
+    const withCookie = proxy(
+      new NextRequest('http://localhost:3000/dashboard', { method: 'GET', headers: { cookie: 'kortex_admin_session=abc' } })
+    );
+    expect(withCookie.status).toBe(200);
+    expect(withCookie.headers.get('X-Robots-Tag')).toContain('noindex');
+  });
+
   it('applies SAMEORIGIN frame protection on regular pages', () => {
-    const req = new NextRequest('http://localhost:3000/dashboard', {
+    const req = new NextRequest('http://localhost:3000/login', {
       method: 'GET',
     });
 

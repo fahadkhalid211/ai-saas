@@ -4,10 +4,7 @@ import React from 'react';
 import {
   ShieldCheck,
   AlertCircle,
-  Key,
   Users,
-  Eye,
-  EyeOff,
   RefreshCw,
   Sparkles,
   Building2,
@@ -19,13 +16,9 @@ import { brandFontClasses } from '@/lib/brand-fonts';
 interface AdminLoginScreenProps {
   theme: 'light' | 'dark';
   authError: string | null;
-  authLoginMode: 'admin' | 'staff' | 'register';
-  setAuthLoginMode: (mode: 'admin' | 'staff' | 'register') => void;
+  authLoginMode: 'staff' | 'register';
+  setAuthLoginMode: (mode: 'staff' | 'register') => void;
   setAuthError: (err: string | null) => void;
-  authApiKeyInput: string;
-  setAuthApiKeyInput: (val: string) => void;
-  showAuthPasscode: boolean;
-  setShowAuthPasscode: (show: boolean) => void;
   staffEmailInput: string;
   setStaffEmailInput: (val: string) => void;
   staffPasswordInput: string;
@@ -49,10 +42,6 @@ export function AdminLoginScreen({
   authLoginMode,
   setAuthLoginMode,
   setAuthError,
-  authApiKeyInput,
-  setAuthApiKeyInput,
-  showAuthPasscode,
-  setShowAuthPasscode,
   staffEmailInput,
   setStaffEmailInput,
   staffPasswordInput,
@@ -76,7 +65,6 @@ export function AdminLoginScreen({
 
   const isSubmitDisabled =
     isLoggingIn ||
-    (authLoginMode === 'admin' && !authApiKeyInput.trim()) ||
     (authLoginMode === 'staff' && (!staffEmailInput.trim() || !staffPasswordInput.trim() || !isStaffEmailValid)) ||
     (authLoginMode === 'register' && (
       !regBusinessNameInput.trim() ||
@@ -92,7 +80,7 @@ export function AdminLoginScreen({
       <div className="w-full max-w-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl p-7 z-10 space-y-5">
         <div className="flex items-center justify-between w-full mb-1">
           <Link
-            href="/welcome"
+            href="/"
             className="text-xs font-semibold text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300 flex items-center gap-1 transition"
           >
             <span>&larr; View our website</span>
@@ -112,7 +100,7 @@ export function AdminLoginScreen({
             {authLoginMode === 'register' ? <Building2 className="h-6 w-6" /> : <ShieldCheck className="h-6 w-6" />}
           </div>
           <h2 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">
-            {authLoginMode === 'register' ? 'Create Business Account' : 'Kortex AI Management'}
+            {authLoginMode === 'register' ? 'Create Business Account' : 'Crescelo Management'}
           </h2>
           <p className="text-xs text-slate-500 dark:text-slate-400 max-w-xs leading-relaxed">
             {authLoginMode === 'register'
@@ -128,7 +116,7 @@ export function AdminLoginScreen({
           </div>
         )}
 
-        {/* 3 Authentication Tabs */}
+        {/* Register / sign-in tabs */}
         <div className="flex items-center p-1 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-semibold">
           <button
             type="button"
@@ -153,18 +141,6 @@ export function AdminLoginScreen({
           >
             <Users className="h-3 w-3" />
             <span>Sign In</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => { setAuthLoginMode('admin'); setAuthError(null); }}
-            className={`flex-1 py-1.5 rounded-lg transition cursor-pointer flex items-center justify-center gap-1 ${
-              authLoginMode === 'admin'
-                ? 'bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-xs'
-                : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-            }`}
-          >
-            <Key className="h-3 w-3" />
-            <span>Master Key</span>
           </button>
         </div>
 
@@ -253,34 +229,6 @@ export function AdminLoginScreen({
             </div>
           )}
 
-          {/* Form 2: Master Admin Key Login */}
-          {authLoginMode === 'admin' && (
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center justify-between">
-                <span>Master Admin Key / Passcode</span>
-                <span className="text-[10px] text-slate-400 font-normal">Set via the ADMIN_API_KEY environment variable</span>
-              </label>
-              <div className="relative">
-                <input
-                  type={showAuthPasscode ? 'text' : 'password'}
-                  value={authApiKeyInput}
-                  onChange={(e) => setAuthApiKeyInput(e.target.value)}
-                  placeholder="Enter your ADMIN_API_KEY"
-                  className="w-full pl-3.5 pr-10 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white text-xs font-mono placeholder:font-sans placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-                  autoFocus
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowAuthPasscode(!showAuthPasscode)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer"
-                >
-                  {showAuthPasscode ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
-              </div>
-            </div>
-          )}
-
           {/* Form 3: Staff & Tenant Login */}
           {authLoginMode === 'staff' && (
             <div className="space-y-3">
@@ -290,7 +238,7 @@ export function AdminLoginScreen({
                   type="email"
                   value={staffEmailInput}
                   onChange={(e) => setStaffEmailInput(e.target.value)}
-                  placeholder="owner@company.com or staff@kortexai.com"
+                  placeholder="owner@company.com or staff@crescelo.com"
                   className={`w-full px-3.5 py-2.5 rounded-xl border ${
                     !isStaffEmailValid
                       ? 'border-rose-400 dark:border-rose-600 focus:ring-rose-500'
@@ -332,14 +280,9 @@ export function AdminLoginScreen({
             ) : (
               <>
                 {authLoginMode === 'register' && <Sparkles className="h-3.5 w-3.5" />}
-                {authLoginMode === 'admin' && <Key className="h-3.5 w-3.5" />}
                 {authLoginMode === 'staff' && <Users className="h-3.5 w-3.5" />}
                 <span>
-                  {authLoginMode === 'register'
-                    ? 'Create Workspace & Launch AI'
-                    : authLoginMode === 'admin'
-                    ? 'Unlock Management Console'
-                    : 'Sign In to Workspace'}
+                  {authLoginMode === 'register' ? 'Create Workspace & Launch AI' : 'Sign In to Workspace'}
                 </span>
               </>
             )}
@@ -347,7 +290,7 @@ export function AdminLoginScreen({
         </form>
 
         <div className="pt-2 text-center text-[11px] text-slate-400 dark:text-slate-500 border-t border-slate-100 dark:border-slate-800">
-          Kortex AI Multi-Tenant SaaS · AES-256 GCM Security
+          Crescelo Multi-Tenant SaaS · AES-256 GCM Security
         </div>
       </div>
     </div>

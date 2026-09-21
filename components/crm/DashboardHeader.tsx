@@ -106,7 +106,7 @@ export function DashboardHeader({
           <BrandMark size={34} showWord={false} />
           <div className="hidden sm:block">
             <div className="flex items-center gap-2">
-              <span className="kx-brand-word">Kortex</span>
+              <span className="kx-brand-word">Crescelo</span>
               <span className="text-[10px] font-semibold bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800 px-1.5 py-0.5 rounded">
                 Enterprise
               </span>
@@ -375,7 +375,7 @@ export function DashboardHeader({
                   {currentUser?.name || 'Administrator'}
                 </div>
                 <div className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
-                  {currentUser?.email || 'admin@kortex.ai'}
+                  {currentUser?.email || 'admin@crescelo.com'}
                 </div>
                 <div className="mt-1 flex items-center gap-1.5">
                   <span className="px-1.5 py-0.5 rounded text-[9.5px] font-semibold bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300">

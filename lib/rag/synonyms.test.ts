@@ -35,7 +35,7 @@ describe('Universal Automated Synonym Engine', () => {
   });
 
   it('matches keyword relevance between look-alike query "what are best ai tech" and content containing "AI platforms"', () => {
-    const content = 'AI platforms overview: The top systems for machine learning and artificial intelligence include Kortex, OpenAI, and Anthropic.';
+    const content = 'AI platforms overview: The top systems for machine learning and artificial intelligence include Crescelo, OpenAI, and Anthropic.';
     const score = keywordRelevance('what are best ai tech', content);
     expect(score).toBeGreaterThan(0.5);
   });

@@ -324,7 +324,7 @@ export function ProfileTab({ currentUser, onProfileUpdated }: ProfileTabProps) {
                 {title || profile?.title || 'Professional Title Not Set'}
               </p>
               <p className="text-xs text-slate-500 dark:text-slate-400 font-mono">
-                {profile?.email || 'user@kortexai.com'}
+                {profile?.email || 'user@crescelo.com'}
               </p>
             </div>
 

@@ -752,7 +752,7 @@ export const ChannelsTab: React.FC<ChannelsTabProps> = ({
                           </button>
                         </div>
                         <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
-                          Included in the <code className="font-mono">X-Kortex-Signature</code> header as HMAC SHA-256 for payload verification.
+                          Included in the <code className="font-mono">X-Crescelo-Signature</code> header as HMAC SHA-256 for payload verification.
                         </p>
                       </div>
 
@@ -877,7 +877,7 @@ export const ChannelsTab: React.FC<ChannelsTabProps> = ({
                           </span>
                         </div>
                         <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                          Sell chatbots under your agency brand. Remove default "Powered by Kortex AI" or replace with your custom branding and backlink.
+                          Sell chatbots under your agency brand. Remove default "Powered by Crescelo" or replace with your custom branding and backlink.
                         </p>
                       </div>
                     </div>
@@ -983,7 +983,7 @@ export const ChannelsTab: React.FC<ChannelsTabProps> = ({
                             <span>
                               <Zap className="h-3 w-3 text-blue-500 inline mr-1" />Powered by{' '}
                               <span className="text-slate-600 dark:text-slate-300 font-medium underline">
-                                Kortex AI
+                                Crescelo
                               </span>
                             </span>
                           )}

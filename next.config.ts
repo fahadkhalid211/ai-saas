@@ -1,6 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  async redirects() {
+    // The marketing page moved from /welcome to the site root.
+    return [{ source: '/welcome', destination: '/', permanent: true }];
+  },
   async headers() {
     return [
       {

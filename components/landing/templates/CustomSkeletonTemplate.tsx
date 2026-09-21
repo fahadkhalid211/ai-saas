@@ -121,7 +121,7 @@ export const CustomSkeletonTemplate: React.FC<IndustryTemplateProps> = ({
                 <span className="w-3 h-3 rounded-full bg-amber-400 inline-block" />
                 <span className="w-3 h-3 rounded-full bg-emerald-400 inline-block" />
                 <span className="ml-2 text-xs font-mono text-slate-500 dark:text-slate-400">
-                  https://{config.slug || 'custom-page'}.kortex.site
+                  https://{config.slug || 'custom-page'}.crescelo.com
                 </span>
               </div>
               <div className="flex items-center gap-1.5 text-xs font-mono">
@@ -406,7 +406,7 @@ export const CustomSkeletonTemplate: React.FC<IndustryTemplateProps> = ({
             {config.businessName || 'Your Company Name'}
           </div>
           <div className="text-xs font-mono">
-            Powered by Kortex AI Enterprise Platform
+            Powered by Crescelo Enterprise Platform
           </div>
           <div className="flex items-center gap-3">
             <button

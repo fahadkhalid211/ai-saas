@@ -284,7 +284,7 @@ export default function PipelineScene({
     <div
       ref={containerRef}
       className="w-full h-[460px] sm:h-[540px] lg:h-[620px] relative overflow-hidden select-none bg-[#070b16] rounded-2xl"
-      aria-label="Kortex AI Systems Architecture Map"
+      aria-label="Crescelo Systems Architecture Map"
     >
       {/* 1. Crisp Vector SVG Base Layer (Typography, Wires, Nodes, Radar Arcs, Blueprint Boxes) */}
       <svg

@@ -1212,11 +1212,11 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
                     <div className="p-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-center justify-between">
                       <div>
                         <span className="text-slate-400 block text-[9.5px]">TARGET / VALUE</span>
-                        <span className="font-bold text-slate-900 dark:text-white truncate">domains.kortexai.com</span>
+                        <span className="font-bold text-slate-900 dark:text-white truncate">domains.crescelo.com</span>
                       </div>
                       <button
                         type="button"
-                        onClick={() => navigator.clipboard.writeText('domains.kortexai.com')}
+                        onClick={() => navigator.clipboard.writeText('domains.crescelo.com')}
                         className="text-blue-500 hover:text-blue-600 p-1"
                         title="Copy Target"
                       >
@@ -2273,7 +2273,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
                   </span>
                   <div className="p-3 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 space-y-1">
                     <div className="text-[11px] text-slate-500 dark:text-slate-400 font-mono">
-                      https://{landingConfig.customDomain || 'kortexai.com/site/' + (landingConfig.slug || 'business')}
+                      https://{landingConfig.customDomain || 'crescelo.com/site/' + (landingConfig.slug || 'business')}
                     </div>
                     <div className="text-sm font-medium text-blue-600 dark:text-blue-400 hover:underline">
                       {landingConfig.seo?.metaTitle || landingConfig.businessName || 'Your Business Name'} | Official Booking &amp; Services
@@ -2635,7 +2635,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
                     </span>
                   </h3>
                   <p className="text-[11px] text-slate-400 font-mono">
-                    site.kortex.ai/{inspectingSnapshot.slug}
+                    site.crescelo.com/{inspectingSnapshot.slug}
                   </p>
                 </div>
               </div>

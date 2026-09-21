@@ -26,11 +26,11 @@ function resolveSiteUrl(): string {
 }
 
 export const SITE = {
-  name: 'Kortex AI',
+  name: 'Crescelo',
   url: resolveSiteUrl(),
-  path: '/welcome',
+  path: '/',
   description:
-    'Kortex AI builds a website assistant from your own content. It answers visitor questions, books appointments, captures leads, and hands over to your team when a person is needed.',
+    'Crescelo builds a website assistant from your own content. It answers visitor questions, books appointments, captures leads, and hands over to your team when a person is needed.',
   // PLACEHOLDER: replace with real contact details and profiles before launch.
   contactEmail: 'hello@example.com',
   socials: [
@@ -40,8 +40,8 @@ export const SITE = {
   ],
 };
 
-export const LOGIN_HREF = '/?auth=admin';
-export const SIGNUP_HREF = '/?auth=register';
+export const LOGIN_HREF = '/login';
+export const SIGNUP_HREF = '/login?mode=register';
 
 export interface NavLink {
   label: string;
@@ -62,7 +62,7 @@ export const NAV: NavLink[] = [
 export const HERO = {
   eyebrow: 'Website assistant for service businesses',
   title: ['Answer every visitor.', 'Book the ones who are ready.'],
-  body: 'Kortex reads your services, prices and policies, then talks to visitors on your website. It answers from what you have written, books real appointments, and passes the conversation to your team when it should.',
+  body: 'Crescelo reads your services, prices and policies, then talks to visitors on your website. It answers from what you have written, books real appointments, and passes the conversation to your team when it should.',
   primaryCta: 'Create your assistant',
   secondaryCta: 'See how it works',
   trust: [
@@ -156,7 +156,7 @@ export const DEMO = {
     words: ['Asks the next step', 'Answers from your content', 'Offers a real booking', 'The visitor stays'],
   },
   grounded: {
-    label: 'Kortex, from your content',
+    label: 'Crescelo, from your content',
     text: 'Flat roof repairs are usually scheduled within 2 working days. Same-day visits are only offered for active leaks. Would you like to book an inspection?',
     note: 'Uses the policy page you uploaded (sample text) and offers a next step.',
   },
@@ -223,7 +223,7 @@ export const INTEGRATIONS = {
   eyebrow: 'Integrations',
   title: 'Connects to the tools you already use.',
   intro: 'Only integrations that exist in the product are listed.',
-  hub: 'Kortex',
+  hub: 'Crescelo',
   items: [
     { id: 'whatsapp', label: 'WhatsApp', note: 'Answer customers in WhatsApp' },
     { id: 'telegram', label: 'Telegram', note: 'Answer customers in Telegram' },
@@ -304,7 +304,7 @@ export const FAQ = {
     },
     {
       q: 'Do I need my own AI provider account?',
-      a: 'Yes. You add your own provider key, and usage is billed by that provider at their rates. Kortex does not add a markup on model usage.',
+      a: 'Yes. You add your own provider key, and usage is billed by that provider at their rates. Crescelo does not add a markup on model usage.',
     },
     {
       q: 'Can a person take over a conversation?',

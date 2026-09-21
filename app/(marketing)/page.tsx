@@ -13,7 +13,7 @@ import { Pricing } from '@/components/marketing/Pricing';
 import { Faq, FinalCta, Footer } from '@/components/marketing/Closing';
 import { FAQ, PLANS } from '@/components/marketing/content';
 
-const TITLE = 'Kortex AI: a website assistant that answers, books and hands over';
+const TITLE = 'Crescelo: a website assistant that answers, books and hands over';
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE.url),

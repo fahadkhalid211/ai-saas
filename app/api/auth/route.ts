@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import {
-  getAdminKey,
   generateSessionToken,
   verifyAdminRequest,
   getAuthContext,
@@ -8,7 +7,7 @@ import {
   createClearCookieHeader,
 } from '@/lib/security/auth';
 import { checkRateLimit, getClientIp } from '@/lib/security/rate-limit';
-import { timingSafeStringEqual } from '@/lib/security/password';
+import { getMasterEmail } from '@/lib/security/master';
 import { Database, sanitizeTeamMember } from '@/lib/db';
 import { validateRegistrationPayload, validateEmail, sanitizeInput } from '@/lib/security/validation';
 
@@ -32,7 +31,7 @@ export async function GET(req: Request) {
         id: ctx.memberId,
         workspaceId: ctx.workspaceId,
         name: ctx.role === 'owner' ? 'Master Admin' : 'Staff Member',
-        email: 'admin@kortexai.com',
+        email: getMasterEmail(),
         role: ctx.role,
         title: 'Master Administrator',
         avatarUrl: '',
@@ -62,7 +61,7 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const mode = body?.mode || (body?.email && !body?.businessName ? 'staff' : body?.businessName ? 'register' : 'admin');
+    const mode = body?.mode || (body?.email && !body?.businessName ? 'staff' : body?.businessName ? 'register' : 'staff');
 
     // 1. Self-Serve Business Account Registration
     if (mode === 'register') {
@@ -102,7 +101,7 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           success: true,
-          message: `Welcome to Kortex AI! Workspace "${businessName}" created successfully.`,
+          message: `Welcome to Crescelo! Workspace "${businessName}" created successfully.`,
           isStaff: false,
           isOwner: true,
           member: sanitizeTeamMember(tenantResult.owner),
@@ -223,51 +222,8 @@ export async function POST(req: Request) {
       );
     }
 
-    // 2. Master Admin Key / Passcode Login
-    const rawKey = body?.key || body?.apiKey || body?.passcode || body?.password;
-
-    if (!rawKey || typeof rawKey !== 'string' || !rawKey.trim()) {
-      return NextResponse.json({ error: 'Master Admin Key or Passcode is required' }, { status: 400 });
-    }
-
-    const key = rawKey.trim().replace(/^["']|["']$/g, '');
-    const masterKey = getAdminKey();
-    const isMasterValid = timingSafeStringEqual(key, masterKey);
-    if (!isMasterValid) {
-      return NextResponse.json({ error: 'Invalid master admin access key' }, { status: 401 });
-    }
-
-    const sessionToken = generateSessionToken('admin', 'master-admin', '*', true);
-    const cookieHeader = createSessionCookieHeader(sessionToken);
-
-    await Database.addAuditLog({
-      actor: { id: 'admin', name: 'Master Admin', ip },
-      action: 'auth.master_admin_login_success',
-      targetType: 'session',
-      targetId: 'admin',
-      details: { role: 'owner' },
-    });
-
-    return NextResponse.json(
-      {
-        success: true,
-        message: 'Authenticated successfully as Master Admin',
-        isStaff: false,
-        member: {
-          id: 'admin',
-          name: 'Master Admin',
-          email: 'admin@kortexai.com',
-          role: 'owner',
-        },
-        token: sessionToken,
-      },
-      {
-        status: 200,
-        headers: {
-          'Set-Cookie': cookieHeader,
-        },
-      }
-    );
+    // The master key is not accepted here. Platform-owner sign-in lives at /api/master/auth.
+    return NextResponse.json({ error: 'Email and password are required' }, { status: 400 });
   } catch (error: any) {
     return NextResponse.json({ error: error?.message || 'Login failed' }, { status: 500 });
   }

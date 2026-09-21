@@ -776,7 +776,7 @@ export default function EmbedChatPage({ params }: EmbedPageProps) {
           ) : (
             <>
               <Zap className="h-2.5 w-2.5 text-blue-500" />
-              <span>Powered by Kortex AI</span>
+              <span>Powered by Crescelo</span>
             </>
           )}
         </div>

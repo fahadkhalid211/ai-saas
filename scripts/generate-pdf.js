@@ -6,7 +6,7 @@ const htmlContent = `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Kortex AI - Platform Overview & Technical Whitepaper</title>
+  <title>Crescelo - Platform Overview & Technical Whitepaper</title>
   <style>
     @page {
       size: A4;
@@ -225,7 +225,7 @@ const htmlContent = `<!DOCTYPE html>
 
   <div class="header-banner">
     <div class="doc-meta">Official Platform Documentation | Whitepaper</div>
-    <h1>Kortex AI</h1>
+    <h1>Crescelo</h1>
     <div class="subtitle">Universal Business AI Chatbot, Autonomous Lead Generation & Multi-Tenant RAG Engine</div>
     <div class="badge-row">
       <span class="badge badge-primary">Next.js 16 App Router</span>
@@ -242,12 +242,12 @@ const htmlContent = `<!DOCTYPE html>
     <h2>1. Executive Summary (Non-Technical)</h2>
     
     <p>
-      <strong>Kortex AI</strong> is an enterprise-grade customer engagement and workflow automation platform. It empowers businesses of any size to instantly transform their static documentation, product catalogs, service menus, and recorded media into an autonomous, 24/7 AI business assistant. The assistant interacts with prospective clients and existing customers naturally across web, mobile, WhatsApp, and Telegram.
+      <strong>Crescelo</strong> is an enterprise-grade customer engagement and workflow automation platform. It empowers businesses of any size to instantly transform their static documentation, product catalogs, service menus, and recorded media into an autonomous, 24/7 AI business assistant. The assistant interacts with prospective clients and existing customers naturally across web, mobile, WhatsApp, and Telegram.
     </p>
 
     <div class="callout">
       <div class="callout-title">Core Business Value</div>
-      Kortex AI bridges the gap between generic AI models and proprietary corporate knowledge. It guarantees that automated customer conversations are strictly grounded in your actual business policies, verified pricing, and operational hours, while cutting ongoing platform software fees to near zero.
+      Crescelo bridges the gap between generic AI models and proprietary corporate knowledge. It guarantees that automated customer conversations are strictly grounded in your actual business policies, verified pricing, and operational hours, while cutting ongoing platform software fees to near zero.
     </div>
 
     <h3>Key Business Problems Solved</h3>
@@ -285,7 +285,7 @@ const htmlContent = `<!DOCTYPE html>
     <h2>2. Technical Architecture & Engineering Specifications</h2>
     
     <p>
-      Kortex AI is constructed as a high-concurrency, multi-tenant application leveraging the Next.js 16 App Router architecture, TypeScript 5, React 19 Server Components, and a resilient dual-engine persistence layer backed by PostgreSQL and pgvector.
+      Crescelo is constructed as a high-concurrency, multi-tenant application leveraging the Next.js 16 App Router architecture, TypeScript 5, React 19 Server Components, and a resilient dual-engine persistence layer backed by PostgreSQL and pgvector.
     </p>
 
     <h3>High-Level System Topology</h3>
@@ -329,7 +329,7 @@ const htmlContent = `<!DOCTYPE html>
 
     <h3>1. Hybrid Retrieval-Augmented Generation (RAG)</h3>
     <p>
-      To achieve maximum retrieval accuracy across arbitrary business domains without incurring external per-query API costs, Kortex AI employs a hybrid dense/sparse retrieval pipeline:
+      To achieve maximum retrieval accuracy across arbitrary business domains without incurring external per-query API costs, Crescelo employs a hybrid dense/sparse retrieval pipeline:
     </p>
     <ul>
       <li><strong>Local ONNX Dense Embeddings:</strong> Generates 384-dimensional dense vector embeddings directly on CPU via <code>@xenova/transformers</code> using the <code>Xenova/bge-small-en-v1.5</code> model.</li>
@@ -447,15 +447,15 @@ const htmlContent = `<!DOCTYPE html>
   </div>
 
   <div class="footer-note">
-    Kortex AI Platform Architecture Whitepaper &copy; 2026. All rights reserved.
+    Crescelo Platform Architecture Whitepaper &copy; 2026. All rights reserved.
   </div>
 
 </body>
 </html>
 `;
 
-const htmlPath = path.join(__dirname, '..', 'kortex-ai-platform-overview.html');
-const pdfPath = path.join(__dirname, '..', 'kortex-ai-platform-overview.pdf');
+const htmlPath = path.join(__dirname, '..', 'crescelo-platform-overview.html');
+const pdfPath = path.join(__dirname, '..', 'crescelo-platform-overview.pdf');
 
 fs.writeFileSync(htmlPath, htmlContent, 'utf8');
 console.log('HTML written to:', htmlPath);

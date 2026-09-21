@@ -138,7 +138,7 @@ export const PATHS = {
   titleLines: ['One assistant.', 'Four steps to live.'],
   echo: 'Four steps to live.',
   rows: [
-    { id: 'connect', step: '01', title: 'Connect', body: 'Add your documents, pages and links. Kortex reads and indexes them so answers come from your material.', cta: 'Add knowledge', href: '#carousel', tone: 'lav' },
+    { id: 'connect', step: '01', title: 'Connect', body: 'Add your documents, pages and links. Crescelo reads and indexes them so answers come from your material.', cta: 'Add knowledge', href: '#carousel', tone: 'lav' },
     { id: 'configure', step: '02', title: 'Configure', body: 'Set the assistant name, tone, services, opening hours and your own AI provider key.', cta: 'See the controls', href: '#playground', tone: 'mint' },
     { id: 'automate', step: '03', title: 'Automate', body: 'Embed the widget or publish the hosted page. Visitors start getting answers and bookings.', cta: 'Try the demo', href: '#playground', tone: 'lime' },
     { id: 'grow', step: '04', title: 'Grow', body: 'Review conversations, fill the gaps it could not answer, and add channels as you need them.', cta: 'See pricing', href: '#pricing', tone: 'pink' },
@@ -169,9 +169,9 @@ export const STORIES = {
  */
 export const COMPARE = {
   eyebrow: 'Compare',
-  title: 'How Kortex differs from other chatbot tools.',
+  title: 'How Crescelo differs from other chatbot tools.',
   intro: 'A summary of approach, not a benchmark. Competitor details come from public information and should be re-checked before you rely on them.',
-  columns: ['Kortex', 'Chatbase', 'Typical FAQ bot', 'Basic live-chat widget'],
+  columns: ['Crescelo', 'Chatbase', 'Typical FAQ bot', 'Basic live-chat widget'],
   rows: [
     { feature: 'Books appointments inside the chat', values: ['Yes, with open-slot picker', 'Via integrations or links', 'Link out to a form', 'A human arranges it'] },
     { feature: 'Checks a slot again before confirming', values: ['Yes', 'Depends on the integration', 'No', 'No'] },

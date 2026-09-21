@@ -41,7 +41,7 @@ export function isRedisConfigured(): boolean {
 }
 
 /**
- * Common cache key definitions for Kortex AI
+ * Common cache key definitions for Crescelo
  */
 export const CACHE_KEYS = {
   STATE: 'kortex:state:v1',

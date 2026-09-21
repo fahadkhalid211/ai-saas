@@ -272,7 +272,7 @@ export async function sendSupportLeadEmail(
       </div>
     </div>
     <div class="footer">
-      Sent automatically by Kortex AI Chatbot Engine · Assistant: ${assistantName}
+      Sent automatically by Crescelo Chatbot Engine · Assistant: ${assistantName}
     </div>
   </div>
 </body>
@@ -308,7 +308,7 @@ ${leadComments}
     try {
       const fromEmail = process.env.RESEND_FROM || 'onboarding@resend.dev';
       const payload: Record<string, any> = {
-        from: `Kortex AI <${fromEmail}>`,
+        from: `Crescelo <${fromEmail}>`,
         to: [recipient],
         subject,
         html: htmlContent,
@@ -345,7 +345,7 @@ ${leadComments}
   const smtpPass = process.env.SMTP_PASS;
   const smtpPort = parseInt(process.env.SMTP_PORT || '587', 10);
   const smtpSecure = process.env.SMTP_SECURE === 'true' || smtpPort === 465;
-  const smtpFrom = process.env.SMTP_FROM || smtpUser || `noreply@kortex-ai.com`;
+  const smtpFrom = process.env.SMTP_FROM || smtpUser || `noreply@crescelo.com`;
 
   if (smtpHost && smtpUser && smtpPass) {
     try {
@@ -360,7 +360,7 @@ ${leadComments}
       });
 
       const info = await transporter.sendMail({
-        from: `"Kortex AI Support" <${smtpFrom}>`,
+        from: `"Crescelo Support" <${smtpFrom}>`,
         to: recipient,
         cc: cleanCc.length > 0 ? cleanCc : undefined,
         subject,
@@ -511,7 +511,7 @@ async function sendEmailTransport(payload: {
   const smtpPass = dbSmtp?.pass || process.env.SMTP_PASS;
   const smtpPort = dbSmtp?.port || parseInt(process.env.SMTP_PORT || '587', 10);
   const smtpSecure = dbSmtp?.secure !== undefined ? dbSmtp.secure : (process.env.SMTP_SECURE === 'true' || smtpPort === 465);
-  const smtpFrom = dbSmtp?.from || process.env.SMTP_FROM || smtpUser || `noreply@kortex-ai.com`;
+  const smtpFrom = dbSmtp?.from || process.env.SMTP_FROM || smtpUser || `noreply@crescelo.com`;
 
   if (smtpHost && smtpUser && smtpPass) {
     try {
@@ -565,7 +565,7 @@ export async function sendTestDiagnosticEmail(
     resendFrom?: string;
   }
 ): Promise<EmailSendResult> {
-  const subject = `Kortex AI SMTP Test: Verification Succeeded`;
+  const subject = `Crescelo SMTP Test: Verification Succeeded`;
   const text = `Congratulations! Your email server settings are working correctly.\nDispatched at: ${new Date().toISOString()}\nTarget: ${to}\n`;
   const html = `
     <div style="font-family:sans-serif;max-width:500px;margin:20px auto;border:1px solid #e2e8f0;border-radius:12px;padding:24px;background:#ffffff;">
@@ -591,7 +591,7 @@ export async function sendTestDiagnosticEmail(
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          from: `Kortex AI <${fromEmail}>`,
+          from: `Crescelo <${fromEmail}>`,
           to: [to.trim()],
           subject,
           html,
@@ -618,7 +618,7 @@ export async function sendTestDiagnosticEmail(
       });
 
       const info = await transporter.sendMail({
-        from: `"Kortex AI Diagnostic" <${customConfig.from || customConfig.user}>`,
+        from: `"Crescelo Diagnostic" <${customConfig.from || customConfig.user}>`,
         to: to.trim(),
         subject,
         text,
@@ -636,7 +636,7 @@ export async function sendTestDiagnosticEmail(
     subject,
     text,
     html,
-    fromName: 'Kortex AI Diagnostic',
+    fromName: 'Crescelo Diagnostic',
   });
 }
 

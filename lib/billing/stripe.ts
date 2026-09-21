@@ -11,7 +11,7 @@ export function getStripeClient(): Stripe | null {
     stripeInstance = new Stripe(secretKey, {
       apiVersion: '2025-02-24.acacia' as any,
       appInfo: {
-        name: 'Kortex AI SaaS',
+        name: 'Crescelo SaaS',
         version: '0.1.0',
       },
     });
@@ -67,7 +67,7 @@ export async function createCheckoutSession(params: CreateCheckoutParams): Promi
             currency: 'usd',
             product_data: {
               name: 'Additional Hosted Landing Page Slot',
-              description: 'Permanent lifetime extra landing page allocation for your Kortex AI workspace.',
+              description: 'Permanent lifetime extra landing page allocation for your Crescelo workspace.',
             },
             unit_amount: EXTRA_LANDING_PAGE_ADDON_PRICE * 100, // in cents ($100.00)
           },
@@ -112,7 +112,7 @@ export async function createCheckoutSession(params: CreateCheckoutParams): Promi
         price_data: {
           currency: 'usd',
           product_data: {
-            name: `Kortex AI ${plan.name} Plan`,
+            name: `Crescelo ${plan.name} Plan`,
             description: `${plan.chatSessionsLimit} chat sessions/mo, ${plan.botLimit} bots, ${plan.landingPageLimit} landing pages (${plan.tagline})`,
           },
           unit_amount: priceDollars * 100,

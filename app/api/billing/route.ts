@@ -69,7 +69,7 @@ export const GET = withAdminAuth(async (req: Request) => {
         expMonth: 12,
         expYear: 2028,
       },
-      billingEmail: ws.billingEmail || 'billing@kortexai.com',
+      billingEmail: ws.billingEmail || 'billing@crescelo.com',
       invoices: ws.invoices || [],
       plans: BILLING_PLANS,
     });

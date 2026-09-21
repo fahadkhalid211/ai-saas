@@ -70,7 +70,7 @@ export function ProblemSolutionSection({ theme }: ProblemSolutionSectionProps) {
             </span>
           </h2>
           <p className={`mt-4 text-lg ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
-            Most AI chat solutions stop at Q&A. Kortex goes further — booking appointments,
+            Most AI chat solutions stop at Q&A. Crescelo goes further — booking appointments,
             capturing leads, and locking slots, all autonomously.
           </p>
         </div>
@@ -125,7 +125,7 @@ export function ProblemSolutionSection({ theme }: ProblemSolutionSectionProps) {
               }`}
             >
               <CheckCircle2 className="h-3.5 w-3.5" />
-              Kortex AI Platform
+              Crescelo Platform
             </div>
             <div className="space-y-5">
               {SOLUTIONS.map((item, idx) => (

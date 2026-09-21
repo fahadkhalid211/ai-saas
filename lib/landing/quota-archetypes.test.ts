@@ -116,7 +116,7 @@ describe('Design Archetypes & Quota Verification', () => {
 
   it('should verify intelligent bot assignment rules for page 1 vs page 2+', () => {
     const assistants = [
-      { id: 'demo-assistant', name: 'Kortex Support Agent' },
+      { id: 'demo-assistant', name: 'Crescelo Support Agent' },
       { id: 'ast_custom_123', name: 'Custom Bot' },
     ];
 

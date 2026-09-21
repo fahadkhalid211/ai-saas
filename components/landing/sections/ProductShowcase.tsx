@@ -76,7 +76,7 @@ export function ProductShowcase({
             Test It Right Now
           </h2>
           <p className={`mt-3 text-base max-w-xl mx-auto ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
-            Ask about pricing, test booking, or leave contact info to see how Kortex handles real customer interactions.
+            Ask about pricing, test booking, or leave contact info to see how Crescelo handles real customer interactions.
           </p>
         </div>
 
@@ -101,7 +101,7 @@ export function ProductShowcase({
                 <span className="h-3 w-3 rounded-full bg-emerald-400/80" />
               </div>
               <span className={`text-xs font-medium ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
-                Kortex AI Concierge
+                Crescelo Concierge
               </span>
               <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
             </div>

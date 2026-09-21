@@ -13,7 +13,7 @@ export function useCrmBilling() {
   const [cardLast4, setCardLast4] = useState('4242');
   const [cardExpMonth, setCardExpMonth] = useState('12');
   const [cardExpYear, setCardExpYear] = useState('2028');
-  const [billingEmailInput, setBillingEmailInput] = useState('billing@kortexai.com');
+  const [billingEmailInput, setBillingEmailInput] = useState('billing@crescelo.com');
   const [isUpdatingCard, setIsUpdatingCard] = useState(false);
 
   const fetchBilling = async () => {
@@ -127,7 +127,7 @@ export function useCrmBilling() {
 
   const handleDownloadInvoice = (inv: any) => {
     const text = `===========================================
-               KORTEX AI INVOICE
+               CRESCELO INVOICE
 ===========================================
 Invoice ID:      ${inv.id}
 Date:            ${inv.date}
@@ -135,11 +135,11 @@ Status:          ${inv.status.toUpperCase()}
 Plan:            ${inv.planName}
 Amount Paid:     ${inv.amount}.00 USD
 Payment Method:  ${billingData?.paymentMethod?.brand || 'Visa'} ending in •••• ${billingData?.paymentMethod?.last4 || '4242'}
-Billing Email:   ${billingData?.billingEmail || 'billing@kortexai.com'}
+Billing Email:   ${billingData?.billingEmail || 'billing@crescelo.com'}
 -------------------------------------------
 Chat-Session Based Billing Model
 No Per-Message Fees. Pure Customer Outcomes.
-Thank you for using Kortex AI Business Engine.
+Thank you for using Crescelo Business Engine.
 ===========================================`;
     const blob = new Blob([text], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);

@@ -6,6 +6,7 @@ import { SearchResultChunk } from '../rag/types';
 import { clearRetrievalCache } from '../rag/cache';
 import { encryptSecret, decryptSecret } from '../security/crypto';
 import { hashPassword, verifyPassword, isHashedPassword, generateTempPassword } from '../security/password';
+import { getMasterEmail } from '@/lib/security/master';
 import {
   LandingPageConfig,
   LandingPageServiceItem,
@@ -649,8 +650,7 @@ function loadState(): DatabaseState {
           id: 'tm_owner',
           workspaceId: 'default-workspace',
           name: 'Master Admin',
-          email: 'admin@kortexai.com',
-          password: hashPassword('Staff123!'),
+          email: getMasterEmail(),
           role: 'owner',
           status: 'active',
           createdAt: new Date().toISOString(),
@@ -689,12 +689,18 @@ function loadState(): DatabaseState {
     saveLocalStateSync(state);
   }
 
+  const legacyOwner = state.teamMembers.find((m) => m.id === 'tm_owner' && m.email === 'admin@kortexai.com');
+  if (legacyOwner) {
+    legacyOwner.email = getMasterEmail();
+    saveLocalStateSync(state);
+  }
+
   if (state.teamMembers.length === 0) {
     state.teamMembers.push({
       id: 'tm_owner',
       workspaceId: 'default-workspace',
       name: 'Master Admin',
-      email: 'admin@kortexai.com',
+      email: getMasterEmail(),
       role: 'owner',
       status: 'active',
       createdAt: new Date().toISOString(),
@@ -2724,7 +2730,7 @@ export class Database {
           id: 'tm_owner',
           workspaceId: workspaceId || 'default-workspace',
           name: 'Master Admin',
-          email: 'admin@kortexai.com',
+          email: getMasterEmail(),
           role: 'owner',
           status: 'active',
           title: 'Master Administrator',
@@ -2739,7 +2745,7 @@ export class Database {
       if (!member) {
         const ws = state.workspaces.find((w) => w.id === workspaceId);
         if (ws) {
-          const ownerEmail = (ws as any).ownerEmail || ws.billingEmail || 'owner@kortexai.com';
+          const ownerEmail = (ws as any).ownerEmail || ws.billingEmail || 'owner@crescelo.com';
           member = {
             id: `owner_${ws.id}`,
             workspaceId: ws.id,
@@ -2781,7 +2787,7 @@ export class Database {
           id: 'tm_owner',
           workspaceId: workspaceId || 'default-workspace',
           name: updates.name?.trim() || 'Master Admin',
-          email: 'admin@kortexai.com',
+          email: getMasterEmail(),
           role: 'owner',
           status: 'active',
           title: updates.title?.trim() || 'Master Administrator',
@@ -2803,7 +2809,7 @@ export class Database {
         id,
         workspaceId: targetWs?.id || workspaceId || 'default-workspace',
         name: updates.name?.trim() || targetWs?.name || 'User',
-        email: (targetWs as any)?.ownerEmail || (targetWs as any)?.billingEmail || 'user@kortexai.com',
+        email: (targetWs as any)?.ownerEmail || (targetWs as any)?.billingEmail || 'user@crescelo.com',
         role: 'owner',
         status: 'active',
         title: updates.title?.trim() || '',
@@ -3056,7 +3062,7 @@ export class Database {
           expMonth: 12,
           expYear: 2028,
         },
-        billingEmail: 'billing@kortexai.com',
+        billingEmail: 'billing@crescelo.com',
         invoices: [
           {
             id: 'inv_10928',
@@ -3090,7 +3096,7 @@ export class Database {
         expMonth: 12,
         expYear: 2028,
       };
-      ws.billingEmail = ws.billingEmail || 'billing@kortexai.com';
+      ws.billingEmail = ws.billingEmail || 'billing@crescelo.com';
       ws.invoices = ws.invoices || [
         {
           id: 'inv_10928',

@@ -24,7 +24,7 @@ export function OrbitStage({
   titleId,
   head,
   items,
-  core = 'Kortex',
+  core = 'Crescelo',
   panel = false,
 }: {
   id: string;

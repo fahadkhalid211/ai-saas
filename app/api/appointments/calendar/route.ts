@@ -27,7 +27,7 @@ export async function GET(req: Request) {
 
     if (!isTokenValid && !isAdminAuthed) {
       return new Response(
-        'BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Kortex AI//Unauthorized//EN\r\nERROR:Unauthorized: Missing or invalid calendar feed token\r\nEND:VCALENDAR',
+        'BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Crescelo//Unauthorized//EN\r\nERROR:Unauthorized: Missing or invalid calendar feed token\r\nEND:VCALENDAR',
         {
           status: 401,
           headers: {
@@ -41,7 +41,7 @@ export async function GET(req: Request) {
     const assistant = await Database.getAssistantById(assistantId);
     const calendarName = assistant
       ? `${assistant.name} Calendar`
-      : 'Kortex AI Appointments';
+      : 'Crescelo Appointments';
 
     const appointments = await Database.getAppointments(assistantId);
 
@@ -58,7 +58,7 @@ export async function GET(req: Request) {
     });
   } catch (error: any) {
     console.error('[CalendarFeed] Error generating iCal feed:', error);
-    return new Response('BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Kortex AI//Calendar Feed Error//EN\r\nEND:VCALENDAR', {
+    return new Response('BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Crescelo//Calendar Feed Error//EN\r\nEND:VCALENDAR', {
       status: 500,
       headers: {
         'Content-Type': 'text/calendar; charset=utf-8',

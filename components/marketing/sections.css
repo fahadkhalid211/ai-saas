@@ -137,12 +137,12 @@
 .mk-cmp th, .mk-cmp td { padding: 18px 20px; text-align: left; vertical-align: top; border-bottom: 1px solid var(--mk-line); }
 .mk-cmp thead th { font-family: var(--mk-serif); font-size: 1.35rem; font-weight: 500; background: var(--mk-bg); position: sticky; top: 0; }
 .mk-cmp tbody th { font-weight: 600; min-width: 220px; position: sticky; left: 0; background: var(--mk-surface); z-index: 1; }
-.mk-cmp .is-kortex { background: var(--mk-lime-soft); font-weight: 600; }
-.mk-cmp thead .is-kortex { background: var(--mk-lime); color: var(--mk-deep); }
-.mk-cmp td.is-kortex { display: table-cell; }
-.mk-cmp td.is-kortex .mk-check { display: inline-block; vertical-align: -3px; margin-right: 6px; color: var(--mk-deep); }
+.mk-cmp .is-crescelo { background: var(--mk-lime-soft); font-weight: 600; }
+.mk-cmp thead .is-crescelo { background: var(--mk-lime); color: var(--mk-deep); }
+.mk-cmp td.is-crescelo { display: table-cell; }
+.mk-cmp td.is-crescelo .mk-check { display: inline-block; vertical-align: -3px; margin-right: 6px; color: var(--mk-deep); }
 .mk-cmp tbody tr { transition: background-color 0.2s; }
-.mk-cmp tbody tr:hover td:not(.is-kortex), .mk-cmp tbody tr:hover th { background: var(--mk-bg-tint); }
+.mk-cmp tbody tr:hover td:not(.is-crescelo), .mk-cmp tbody tr:hover th { background: var(--mk-bg-tint); }
 .mk-cmp tbody tr:last-child th, .mk-cmp tbody tr:last-child td { border-bottom: 0; }
 .mk-cmp td { color: #3a3a33; }
 

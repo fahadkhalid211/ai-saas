@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "AI Business Assistant — Train Custom Knowledge Chatbots",
+  title: "Crescelo",
   description: "Enterprise chatbot engine to train AI on business PDFs, CSVs, JSON, and documents with zero API costs or BYOK.",
 };
 

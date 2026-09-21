@@ -452,7 +452,7 @@ export const BillingTab: React.FC<BillingTabProps> = ({
           <div className="text-xs space-y-1 pt-1">
             <div className="text-slate-500 dark:text-slate-400">Billing Email:</div>
             <div className="font-semibold text-slate-800 dark:text-slate-200 font-mono text-[11px]">
-              {billingData?.billingEmail || 'billing@kortexai.com'}
+              {billingData?.billingEmail || 'billing@crescelo.com'}
             </div>
           </div>
         </div>

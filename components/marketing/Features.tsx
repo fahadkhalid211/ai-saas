@@ -39,8 +39,8 @@ export function Demo() {
   };
 
   const bad = Math.min(1, Math.max(0, (pos - 72) / 20)); // generic reply fully showing
-  const good = Math.min(1, Math.max(0, (28 - pos) / 20)); // Kortex reply fully showing
-  const status = bad > 0.6 ? `Generic chatbot only. ${DEMO.bad.words.join('. ')}.` : good > 0.6 ? `Kortex only. ${DEMO.good.words.join('. ')}.` : '';
+  const good = Math.min(1, Math.max(0, (28 - pos) / 20)); // Crescelo reply fully showing
+  const status = bad > 0.6 ? `Generic chatbot only. ${DEMO.bad.words.join('. ')}.` : good > 0.6 ? `Crescelo only. ${DEMO.good.words.join('. ')}.` : '';
 
   return (
     <section id="demo" className="mk-section mk-section-tint" aria-labelledby="mk-demo-title">
@@ -104,7 +104,7 @@ export function Demo() {
               className="mk-handle"
               role="slider"
               tabIndex={0}
-              aria-label="Compare generic chatbot and Kortex answers"
+              aria-label="Compare generic chatbot and Crescelo answers"
               aria-valuemin={0}
               aria-valuemax={100}
               aria-valuenow={Math.round(pos)}

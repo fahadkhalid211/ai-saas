@@ -1,4 +1,4 @@
-"""Signed HTTP client for the Kortex app's /api/voice endpoints."""
+"""Signed HTTP client for the Crescelo app's /api/voice endpoints."""
 from __future__ import annotations
 
 import json

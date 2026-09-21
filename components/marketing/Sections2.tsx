@@ -266,12 +266,12 @@ export function Compare() {
         <Reveal>
           <div className="mk-cmp-wrap" role="region" aria-label="Feature comparison table" tabIndex={0}>
             <table className="mk-cmp">
-              <caption className="mk-sr">Kortex compared with Chatbase, typical FAQ bots and basic live-chat widgets</caption>
+              <caption className="mk-sr">Crescelo compared with Chatbase, typical FAQ bots and basic live-chat widgets</caption>
               <thead>
                 <tr>
                   <th scope="col">Capability</th>
                   {COMPARE.columns.map((c, i) => (
-                    <th key={c} scope="col" className={i === 0 ? 'is-kortex' : ''}>
+                    <th key={c} scope="col" className={i === 0 ? 'is-crescelo' : ''}>
                       {c}
                     </th>
                   ))}
@@ -282,7 +282,7 @@ export function Compare() {
                   <tr key={r.feature}>
                     <th scope="row">{r.feature}</th>
                     {r.values.map((v, i) => (
-                      <td key={i} className={i === 0 ? 'is-kortex' : ''}>
+                      <td key={i} className={i === 0 ? 'is-crescelo' : ''}>
                         {i === 0 && isYes(v) ? <Check /> : null}
                         <span>{v}</span>
                       </td>

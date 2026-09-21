@@ -240,9 +240,9 @@ export function makeIcs(opts: { name: string; start: Date; minutes: number; serv
   return [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
-    'PRODID:-//Kortex//Demo//EN',
+    'PRODID:-//Crescelo//Demo//EN',
     'BEGIN:VEVENT',
-    `UID:${hash(opts.start.toISOString() + opts.name)}@kortex-demo`,
+    `UID:${hash(opts.start.toISOString() + opts.name)}@crescelo-demo`,
     `DTSTAMP:${fmt(new Date())}`,
     `DTSTART:${fmt(opts.start)}`,
     `DTEND:${fmt(end)}`,

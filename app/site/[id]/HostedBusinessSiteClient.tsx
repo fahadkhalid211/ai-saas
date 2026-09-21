@@ -1180,7 +1180,7 @@ export default function HostedBusinessSiteClient({
           )}
 
           <p className={isDark ? 'text-slate-600' : 'text-slate-500'}>
-            {activeConfig.footerText || `Powered by Kortex AI Enterprise Platform \u2022 Real-time Booking, 24h/1h Reminders & Hosted Landing Pages`}
+            {activeConfig.footerText || `Powered by Crescelo Enterprise Platform \u2022 Real-time Booking, 24h/1h Reminders & Hosted Landing Pages`}
           </p>
         </div>
       </footer>

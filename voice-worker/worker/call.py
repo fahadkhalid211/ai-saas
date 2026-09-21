@@ -1,4 +1,4 @@
-"""One phone call: carrier media stream <-> speech models <-> the Kortex app.
+"""One phone call: carrier media stream <-> speech models <-> the Crescelo app.
 
 Protocol (Telnyx bidirectional media streaming): events `connected`, `start`, `media`, `dtmf`, `stop` arrive as
 JSON text frames; we reply with `{"event":"media","media":{"payload": base64 mu-law}}` and `{"event":"clear"}`

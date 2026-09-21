@@ -1,4 +1,4 @@
-# Kortex AI — Universal Business Chatbot & RAG Engine
+# Crescelo — Universal Business Chatbot & RAG Engine
 
 A production-ready, enterprise-grade AI chatbot platform that enables businesses of all sizes to train an intelligent assistant on their proprietary data (**PDF, CSV, JSON, DOCX, TXT, and Web descriptions**) and deploy it in seconds via an embeddable website widget or a 1-click WordPress plugin.
 

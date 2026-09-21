@@ -44,7 +44,7 @@ export function Header() {
         Skip to content
       </a>
       <div className="mk-wrap mk-header-row">
-        <Link href="/welcome" aria-label="Kortex home" className="mk-logo-link">
+        <Link href="/" aria-label="Crescelo home" className="mk-logo-link">
           <Logo />
         </Link>
 

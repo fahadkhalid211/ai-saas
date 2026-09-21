@@ -47,7 +47,7 @@ export async function dispatchWebhook(
   const bodyString = JSON.stringify(payload);
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
-    'User-Agent': 'Kortex-AI-Agent-Webhook/1.0',
+    'User-Agent': 'Crescelo-AI-Agent-Webhook/1.0',
   };
 
   if (assistant.webhookSecret && assistant.webhookSecret.trim()) {
@@ -55,7 +55,8 @@ export async function dispatchWebhook(
       .createHmac('sha256', assistant.webhookSecret.trim())
       .update(bodyString)
       .digest('hex');
-    headers['X-Kortex-Signature'] = signature;
+    headers['X-Crescelo-Signature'] = signature;
+    headers['X-Kortex-Signature'] = signature; // legacy header, kept so existing receivers keep verifying
   }
 
   try {
@@ -106,7 +107,7 @@ export async function testWebhookPing(
     assistantId: 'test_assistant',
     assistantName: 'Test Assistant Ping',
     data: {
-      message: 'This is a test notification from your Kortex AI Assistant.',
+      message: 'This is a test notification from your Crescelo Assistant.',
       sampleLead: {
         name: 'Jane Doe',
         email: 'jane@example.com',
@@ -119,14 +120,15 @@ export async function testWebhookPing(
   const bodyString = JSON.stringify(testPayload);
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
-    'User-Agent': 'Kortex-AI-Agent-Webhook/1.0',
+    'User-Agent': 'Crescelo-AI-Agent-Webhook/1.0',
   };
 
   if (secret && secret.trim()) {
-    headers['X-Kortex-Signature'] = crypto
+    headers['X-Crescelo-Signature'] = crypto
       .createHmac('sha256', secret.trim())
       .update(bodyString)
       .digest('hex');
+    headers['X-Kortex-Signature'] = headers['X-Crescelo-Signature'];
   }
 
   try {

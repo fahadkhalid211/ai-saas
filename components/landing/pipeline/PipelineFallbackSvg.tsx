@@ -20,7 +20,7 @@ export function PipelineFallbackSvg({ scenario }: PipelineFallbackSvgProps) {
   return (
     <div
       className="w-full h-[460px] sm:h-[540px] lg:h-[620px] relative overflow-hidden bg-[#070b16] rounded-2xl"
-      aria-label="Kortex AI Systems Architecture Map"
+      aria-label="Crescelo Systems Architecture Map"
     >
       <svg
         viewBox="0 0 1200 640"

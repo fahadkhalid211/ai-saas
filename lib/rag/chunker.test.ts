@@ -6,7 +6,7 @@ describe('Structure-Aware Document Chunking', () => {
   it('should extract sections based on markdown headings', () => {
     const text = `
 # Company Overview
-Kortex AI empowers businesses with conversational intelligence.
+Crescelo empowers businesses with conversational intelligence.
 
 ## Pricing Plans
 Starter plan is $29/mo. Pro plan is $79/mo. Enterprise is custom.

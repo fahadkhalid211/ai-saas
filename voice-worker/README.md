@@ -1,6 +1,6 @@
-# Kortex voice worker
+# Crescelo voice worker
 
-Answers inbound phone calls with the Kortex assistant and books appointments. This service only handles
+Answers inbound phone calls with the Crescelo assistant and books appointments. This service only handles
 **audio** (voice detection, speech-to-text, text-to-speech, interruptions). All business logic (knowledge answers,
 booking, leads, call log) stays in the Next.js app under `/api/voice/*`, so calls behave like web chat.
 

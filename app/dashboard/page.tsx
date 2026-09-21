@@ -2,11 +2,11 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { RefreshCw } from 'lucide-react';
-import './brand.css';
+import '../brand.css';
 import { brandFontClasses } from '@/lib/brand-fonts';
 import { BrandMark } from '@/components/brand/BrandMark';
 import { Appointment } from '@/components/crm/AppointmentsTab';
-import { AdminLoginScreen } from '@/components/crm/AdminLoginScreen';
+import { useRouter } from 'next/navigation';
 import { DashboardHeader } from '@/components/crm/DashboardHeader';
 import { DashboardSidebar } from '@/components/crm/DashboardSidebar';
 import { NotificationToast } from '@/components/crm/NotificationToast';
@@ -53,6 +53,7 @@ import { Lead } from '@/types/crm';
 import { BILLING_PLANS } from '@/lib/billing/plans';
 
 export default function DashboardPage() {
+  const router = useRouter();
   // Theme state: default light, persisted in localStorage
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
 
@@ -61,16 +62,6 @@ export default function DashboardPage() {
     if (saved) {
       setTheme(saved);
       if (saved === 'dark') document.documentElement.classList.add('dark');
-    }
-    // Check URL query parameters for direct login/register links
-    if (typeof window !== 'undefined') {
-      const params = new URLSearchParams(window.location.search);
-      const authParam = params.get('auth') || (params.get('register') ? 'register' : params.get('login') ? 'staff' : null);
-      if (authParam) {
-        if (authParam === 'admin' || authParam === 'staff' || authParam === 'register') {
-          setAuthLoginMode(authParam);
-        }
-      }
     }
   }, []);
 
@@ -88,17 +79,6 @@ export default function DashboardPage() {
   // Enterprise Admin Authentication & Session state
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(true);
   const [isAuthChecking, setIsAuthChecking] = useState<boolean>(true);
-  const [authApiKeyInput, setAuthApiKeyInput] = useState<string>('');
-  const [showAuthPasscode, setShowAuthPasscode] = useState<boolean>(false);
-  const [authError, setAuthError] = useState<string | null>(null);
-  const [isLoggingIn, setIsLoggingIn] = useState<boolean>(false);
-  const [authLoginMode, setAuthLoginMode] = useState<'admin' | 'staff' | 'register'>('register');
-  const [staffEmailInput, setStaffEmailInput] = useState<string>('');
-  const [staffPasswordInput, setStaffPasswordInput] = useState<string>('');
-  const [regBusinessNameInput, setRegBusinessNameInput] = useState<string>('');
-  const [regEmailInput, setRegEmailInput] = useState<string>('');
-  const [regPasswordInput, setRegPasswordInput] = useState<string>('');
-  const [regTemplateInput, setRegTemplateInput] = useState<string>('classic-barbershop');
 
   const [activeTab, setActiveTab] = useState<
     'overview' | 'profile' | 'analytics' | 'billing' | 'landing_page' | 'team' | 'security' | 'audit' | 'knowledge' | 'engine' | 'behavior' | 'widget' | 'channels' | 'playground' | 'leads' | 'appointments' | 'docs' | 'templates' | 'history'
@@ -523,10 +503,12 @@ export default function DashboardPage() {
         } else {
           setIsAuthenticated(false);
           setIsMasterAdmin(false);
+          router.replace('/login');
         }
       } catch {
         setIsAuthenticated(false);
         setIsMasterAdmin(false);
+        router.replace('/login');
       } finally {
         setIsAuthChecking(false);
       }
@@ -534,83 +516,13 @@ export default function DashboardPage() {
     checkAuth();
   }, []);
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (authLoginMode === 'admin') {
-      if (!authApiKeyInput.trim()) return;
-    } else if (authLoginMode === 'staff') {
-      if (!staffEmailInput.trim() || !staffPasswordInput.trim()) return;
-    } else {
-      if (!regBusinessNameInput.trim() || !regEmailInput.trim() || !regPasswordInput.trim()) return;
-    }
-    setIsLoggingIn(true);
-    setAuthError(null);
-    try {
-      let payload: any;
-      if (authLoginMode === 'admin') {
-        payload = {
-          mode: 'admin',
-          key: authApiKeyInput.trim(),
-          apiKey: authApiKeyInput.trim(),
-        };
-      } else if (authLoginMode === 'staff') {
-        payload = {
-          mode: 'staff',
-          email: staffEmailInput.trim(),
-          password: staffPasswordInput.trim(),
-        };
-      } else {
-        payload = {
-          mode: 'register',
-          businessName: regBusinessNameInput.trim(),
-          email: regEmailInput.trim(),
-          password: regPasswordInput.trim(),
-          industryTemplateSlug: regTemplateInput,
-        };
-      }
-
-      const res = await fetch('/api/auth', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-      const data = await res.json();
-      if (res.ok && data.success) {
-        setIsAuthenticated(true);
-        setIsMasterAdmin(Boolean(data.isMasterAdmin || (!data.isStaff && authLoginMode === 'admin')));
-        if (data.member) {
-          setCurrentUser(data.member);
-        }
-        setAuthApiKeyInput('');
-        setStaffEmailInput('');
-        setStaffPasswordInput('');
-        setRegBusinessNameInput('');
-        setRegEmailInput('');
-        setRegPasswordInput('');
-        if (data.assistant) {
-          setAssistants([data.assistant]);
-          setActiveAssistant(data.assistant);
-          setFormData(data.assistant);
-          await fetchAssistants(data.assistant.id);
-        } else {
-          await fetchAssistants();
-        }
-      } else {
-        setAuthError(data.error || (authLoginMode === 'admin' ? 'Invalid Admin Passcode or Key' : 'Authentication failed'));
-      }
-    } catch (err: any) {
-      setAuthError(err.message || 'Authentication failed');
-    } finally {
-      setIsLoggingIn(false);
-    }
-  };
-
   const handleLogout = async () => {
     try {
       await fetch('/api/auth', { method: 'DELETE' });
     } catch {}
     setIsAuthenticated(false);
     setIsMasterAdmin(false);
+    router.replace('/login');
   };
 
   useEffect(() => {
@@ -711,35 +623,8 @@ export default function DashboardPage() {
     );
   }
 
-  if (!isAuthenticated) {
-    return (
-      <AdminLoginScreen
-        theme={theme}
-        authError={authError}
-        authLoginMode={authLoginMode}
-        setAuthLoginMode={setAuthLoginMode}
-        setAuthError={setAuthError}
-        authApiKeyInput={authApiKeyInput}
-        setAuthApiKeyInput={setAuthApiKeyInput}
-        showAuthPasscode={showAuthPasscode}
-        setShowAuthPasscode={setShowAuthPasscode}
-        staffEmailInput={staffEmailInput}
-        setStaffEmailInput={setStaffEmailInput}
-        staffPasswordInput={staffPasswordInput}
-        setStaffPasswordInput={setStaffPasswordInput}
-        regBusinessNameInput={regBusinessNameInput}
-        setRegBusinessNameInput={setRegBusinessNameInput}
-        regEmailInput={regEmailInput}
-        setRegEmailInput={setRegEmailInput}
-        regPasswordInput={regPasswordInput}
-        setRegPasswordInput={setRegPasswordInput}
-        regTemplateInput={regTemplateInput}
-        setRegTemplateInput={setRegTemplateInput}
-        isLoggingIn={isLoggingIn}
-        handleLogin={handleLogin}
-      />
-    );
-  }
+  // Signed-out visitors are sent to /login by the session check above; render nothing meanwhile.
+  if (!isAuthenticated) return null;
 
   return (
     <div className={`kx-app ${brandFontClasses} ${theme === 'dark' ? 'dark' : ''} h-screen w-full flex flex-col font-sans transition-colors duration-150`}>

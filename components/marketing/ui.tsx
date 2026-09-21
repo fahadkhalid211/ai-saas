@@ -110,9 +110,9 @@ export function Logo({ className = '' }: { className?: string }) {
     <span className={`mk-logo ${className}`}>
       <svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true">
         <rect x="1" y="1" width="20" height="20" rx="6" fill="var(--mk-deep)" />
-        <path d="M7 6v10M7 11l6-5M8.5 10l5.5 6" stroke="var(--mk-lime)" strokeWidth="2" strokeLinecap="round" fill="none" />
+        <path d="M14.6 7.4A5 5 0 1 0 14.6 14.6" stroke="var(--mk-lime)" strokeWidth="2" strokeLinecap="round" fill="none" />
       </svg>
-      <span>Kortex</span>
+      <span>Crescelo</span>
     </span>
   );
 }

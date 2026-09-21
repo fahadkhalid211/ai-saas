@@ -1,4 +1,4 @@
-/* ===================== Kortex app brand layer =====================
+/* ===================== Crescelo app brand layer =====================
    Scoped to .kx-app so the public pages, hosted sites and embeds are untouched.
    Tailwind v4 reads every colour from a CSS variable, so re-pointing the palette
    here re-skins the whole dashboard without editing each component.

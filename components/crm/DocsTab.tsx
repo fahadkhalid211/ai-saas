@@ -28,7 +28,7 @@ export const DocsTab: React.FC = () => {
                     Guides &amp; Documentation
                   </h2>
                   <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-                    Step-by-step guides to set up integrations, train your AI, and get the most out of Kortex AI.
+                    Step-by-step guides to set up integrations, train your AI, and get the most out of Crescelo.
                   </p>
                 </div>
 
@@ -112,11 +112,11 @@ export const DocsTab: React.FC = () => {
                           'Go to Meta for Developers → create a new app → choose "Business" type.',
                           'Add the WhatsApp product to your app.',
                           'Under WhatsApp → Getting Started: copy your Phone Number ID and temporary Access Token.',
-                          'In Kortex → Channels & Integrations → WhatsApp, paste both values.',
-                          'Set the Verify Token to any string you choose (e.g. "kortex2024").',
-                          'In Meta Dashboard → WhatsApp → Configuration, set Webhook URL to the one shown in Kortex and use your same Verify Token.',
+                          'In Crescelo → Channels & Integrations → WhatsApp, paste both values.',
+                          'Set the Verify Token to any string you choose (e.g. "crescelo2024").',
+                          'In Meta Dashboard → WhatsApp → Configuration, set Webhook URL to the one shown in Crescelo and use your same Verify Token.',
                           'Subscribe to the "messages" webhook field and click Verify.',
-                          'Enable WhatsApp in Kortex and save.',
+                          'Enable WhatsApp in Crescelo and save.',
                         ],
                         tip: 'Use a permanent System User token for production instead of the temporary token which expires.',
                       },
@@ -128,9 +128,9 @@ export const DocsTab: React.FC = () => {
                           'Open Telegram and search for @BotFather.',
                           'Send /newbot and follow the prompts to name your bot.',
                           'BotFather gives you a Bot Token — copy it.',
-                          'Go to Kortex → Channels & Integrations → Telegram Bot.',
+                          'Go to Crescelo → Channels & Integrations → Telegram Bot.',
                           'Paste your Bot Token and click "Test Connection" to verify it works.',
-                          'Click "Set Webhook" — this connects Telegram to your Kortex assistant.',
+                          'Click "Set Webhook" — this connects Telegram to your Crescelo assistant.',
                           'Enable the bot and save. Users can now chat your AI via Telegram.',
                         ],
                         tip: 'Your Telegram bot is public by default. Consider setting /setprivacy with BotFather to control group access.',
@@ -147,7 +147,7 @@ export const DocsTab: React.FC = () => {
                           'Click "Send Test Ping" to verify your endpoint receives data.',
                           'Save. Every matching event will now POST JSON to your URL.',
                         ],
-                        tip: 'Verify the X-Kortex-Signature header on your receiving server to prevent spoofed requests.',
+                        tip: 'Verify the X-Crescelo-Signature header on your receiving server to prevent spoofed requests.',
                       },
                       {
                         title: 'White-Label / Agency Branding',
@@ -158,7 +158,7 @@ export const DocsTab: React.FC = () => {
                           'Toggle "Enable White-Label" to ON.',
                           'Enter your brand name (e.g. "Powered by Acme AI") in Custom Branding Text.',
                           'Enter your brand URL for the clickable link.',
-                          'Save — the widget footer now shows your brand instead of Kortex AI.',
+                          'Save — the widget footer now shows your brand instead of Crescelo.',
                         ],
                         tip: 'You can leave the URL blank to disable the link and just show your brand text.',
                       },

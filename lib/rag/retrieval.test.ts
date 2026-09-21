@@ -217,7 +217,7 @@ describe('Vector Math and Hybrid Retrieval', () => {
           assistantId: asst.id,
           knowledgeSourceId: source.id,
           chunkIndex: 0,
-          content: 'The premier AI platforms include Kortex AI, OpenAI platform, and Anthropic Claude for building intelligent enterprise agents.',
+          content: 'The premier AI platforms include Crescelo, OpenAI platform, and Anthropic Claude for building intelligent enterprise agents.',
           tokenCount: 20,
           metadata: {
             sourceTitle: 'AI platforms',
@@ -232,7 +232,7 @@ describe('Vector Math and Hybrid Retrieval', () => {
 
       expect(result.chunks.length).toBeGreaterThan(0);
       expect(result.contextText).toContain('AI platforms');
-      expect(result.contextText).toContain('Kortex AI');
+      expect(result.contextText).toContain('Crescelo');
     }, 20000);
   });
 });

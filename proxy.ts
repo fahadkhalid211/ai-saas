@@ -10,6 +10,7 @@ interface RouteLimitConfig {
 
 const ROUTE_RATE_LIMITS: RouteLimitConfig[] = [
   { prefix: '/api/auth', windowMs: 60 * 1000, max: 15 },
+  { prefix: '/api/master', windowMs: 60 * 1000, max: 10 },
   { prefix: '/api/chat', windowMs: 60 * 1000, max: 35 },
   { prefix: '/api/appointments', windowMs: 60 * 1000, max: 30 },
   { prefix: '/api/landing-page', windowMs: 60 * 1000, max: 40 },
@@ -84,6 +85,12 @@ function verifyOrigin(request: NextRequest, pathname: string): boolean {
 export function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
+  // The dashboard needs a session cookie; without one, go to sign-in. The API still verifies the
+  // token itself, so this only saves a round trip.
+  if ((pathname === '/dashboard' || pathname.startsWith('/dashboard/')) && !request.cookies.get('kortex_admin_session')) {
+    return NextResponse.redirect(new URL('/login', request.url));
+  }
+
   // 1. Verify Origin / CSRF on sensitive mutation endpoints
   if (pathname.startsWith('/api/')) {
     const originAllowed = verifyOrigin(request, pathname);
@@ -136,6 +143,9 @@ export function proxy(request: NextRequest) {
   response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
   if (!pathname.startsWith('/embed/')) {
     response.headers.set('X-Frame-Options', 'SAMEORIGIN');
+  }
+  if (pathname === '/master' || pathname.startsWith('/dashboard')) {
+    response.headers.set('X-Robots-Tag', 'noindex, nofollow');
   }
   return response;
 }
