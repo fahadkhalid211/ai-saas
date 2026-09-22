@@ -22,9 +22,23 @@
 .mk-section-tint { border: 0; }
 
 /* Header: floating bordered bar */
-.mk-header { background: transparent; padding: 10px 12px; border: 0; }
+.mk-header { background: transparent; padding: 12px 12px; border: 0; }
 .mk-header .mk-wrap { padding: 0; max-width: 1180px; }
-.mk-header-row { height: 64px; padding: 0 10px 0 18px; background: var(--mk-surface); border: 1.5px solid var(--mk-ink); border-radius: 18px; }
+.mk-header-row {
+  height: 66px;
+  padding: 0 20px 0 24px;
+  background: var(--mk-surface);
+  border: 1.5px solid var(--mk-ink);
+  border-radius: 20px;
+}
+@media (min-width: 960px) {
+  .mk-header-row {
+    padding: 0 28px 0 32px;
+  }
+  .mk-header-actions {
+    gap: 14px;
+  }
+}
 .mk-header.is-scrolled .mk-header-row { box-shadow: 0 4px 0 var(--mk-ink); }
 .mk-logo { font-family: var(--mk-display); font-size: 25px; letter-spacing: -0.01em; }
 .mk-nav-link:hover { background: var(--mk-lime-soft); }
