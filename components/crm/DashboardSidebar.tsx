@@ -109,7 +109,7 @@ export function DashboardSidebar({
   onOpenTour,
 }: DashboardSidebarProps) {
   const canViewAudit = Boolean(isOwner || isMasterAdmin);
-  const [isChannelsExpanded, setIsChannelsExpanded] = useState<boolean>(true);
+  const [isChannelsExpanded, setIsChannelsExpanded] = useState<boolean>(false);
 
   const sections: TabSection[] = [
     {
@@ -171,13 +171,17 @@ export function DashboardSidebar({
               {section.items.map((tab) => {
                 if (tab.id === 'channels') {
                   const isChannelsActive = activeTab === 'channels';
-                  const showSubMenu = isChannelsActive || isChannelsExpanded;
+                  const showSubMenu = isChannelsExpanded;
                   return (
                     <div key={tab.id} className="space-y-1">
-                      <div
+                      <button
+                        type="button"
                         onClick={() => {
-                          setActiveTab('channels');
-                          setIsChannelsExpanded(true);
+                          const nextExpanded = !isChannelsExpanded;
+                          setIsChannelsExpanded(nextExpanded);
+                          if (nextExpanded) {
+                            setActiveTab('channels');
+                          }
                         }}
                         className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-xs font-medium transition cursor-pointer select-none ${
                           isChannelsActive
@@ -189,20 +193,10 @@ export function DashboardSidebar({
                           <Share2 className={`h-4 w-4 ${isChannelsActive ? 'text-blue-600 dark:text-blue-400' : 'text-slate-500'}`} />
                           <span>{tab.label}</span>
                         </div>
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setIsChannelsExpanded(!isChannelsExpanded);
-                          }}
-                          className="p-0.5 rounded hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition cursor-pointer"
-                          title={showSubMenu ? 'Collapse Integrations' : 'Expand Integrations'}
-                        >
-                          <ChevronDown
-                            className={`h-3.5 w-3.5 transition-transform duration-200 ${showSubMenu ? 'rotate-0' : '-rotate-90'}`}
-                          />
-                        </button>
-                      </div>
+                        <ChevronDown
+                          className={`h-3.5 w-3.5 text-slate-400 transition-transform duration-200 ${showSubMenu ? 'rotate-0' : '-rotate-90'}`}
+                        />
+                      </button>
 
                       {/* Integrations Sub-List */}
                       {showSubMenu && (
