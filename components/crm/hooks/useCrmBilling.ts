@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 
 export function useCrmBilling() {
+  const isSubmittingPlanRef = useRef(false);
   const [billingData, setBillingData] = useState<any>(null);
   const [isLoadingBilling, setIsLoadingBilling] = useState(false);
   const [billingInterval, setBillingInterval] = useState<'monthly' | 'annual'>('monthly');
@@ -40,6 +41,8 @@ export function useCrmBilling() {
   };
 
   const handleSwitchPlan = async (targetPlanId: string) => {
+    if (isSubmittingPlanRef.current || changingPlanId) return;
+    isSubmittingPlanRef.current = true;
     setChangingPlanId(targetPlanId);
     setPlanChangeMsg(null);
     try {
@@ -71,6 +74,7 @@ export function useCrmBilling() {
       setPlanChangeMsg({ type: 'error', text: err.message || 'Network error updating plan' });
     } finally {
       setChangingPlanId(null);
+      isSubmittingPlanRef.current = false;
     }
   };
 
@@ -126,16 +130,26 @@ export function useCrmBilling() {
   };
 
   const handleDownloadInvoice = (inv: any) => {
+    if (!inv) return;
+    const invId = inv.id || `inv_${Date.now()}`;
+    const invDate = inv.date || new Date().toISOString().split('T')[0];
+    const invStatus = String(inv.status || 'paid').toUpperCase();
+    const invPlan = inv.planName || 'Crescelo Plan';
+    const invAmount = inv.amount !== undefined ? `${inv.amount}.00` : '0.00';
+    const brand = billingData?.paymentMethod?.brand || 'Visa';
+    const last4 = billingData?.paymentMethod?.last4 || '4242';
+    const email = billingData?.billingEmail || 'billing@crescelo.com';
+
     const text = `===========================================
                CRESCELO INVOICE
 ===========================================
-Invoice ID:      ${inv.id}
-Date:            ${inv.date}
-Status:          ${inv.status.toUpperCase()}
-Plan:            ${inv.planName}
-Amount Paid:     ${inv.amount}.00 USD
-Payment Method:  ${billingData?.paymentMethod?.brand || 'Visa'} ending in •••• ${billingData?.paymentMethod?.last4 || '4242'}
-Billing Email:   ${billingData?.billingEmail || 'billing@crescelo.com'}
+Invoice ID:      ${invId}
+Date:            ${invDate}
+Status:          ${invStatus}
+Plan:            ${invPlan}
+Amount Paid:     ${invAmount} USD
+Payment Method:  ${brand} ending in •••• ${last4}
+Billing Email:   ${email}
 -------------------------------------------
 Chat-Session Based Billing Model
 No Per-Message Fees. Pure Customer Outcomes.
@@ -145,7 +159,7 @@ Thank you for using Crescelo Business Engine.
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `${inv.id}.txt`;
+    a.download = `${invId}.txt`;
     a.click();
     URL.revokeObjectURL(url);
   };

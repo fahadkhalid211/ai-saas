@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "id": "1790092153787-e761",
+  "createdAt": 1790092153789,
+  "origin": "failed-assert",
+  "expected": "declared consequence",
+  "observed": "no element matched {\"text\":\"Successfully activated growth plan\"} — that text IS on the page, split across the children of generic — no single element's own text carries it, so no text query can match it; retry as {\"kind\":\"text\",\"contains\":\"Successfully activated growth plan\",\"scope\":\"e624\",\"self\":true}",
+  "steps": [
+    {
+      "tool": "reticle_act",
+      "anchor": {
+        "kind": "testid",
+        "value": "e761",
+        "source": {
+          "file": "components/crm/BillingTab.tsx",
+          "line": 348,
+          "column": 16
+        }
+      },
+      "action": "click"
+    }
+  ]
+}

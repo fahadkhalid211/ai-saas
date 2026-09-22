@@ -1,0 +1,45 @@
+{
+  "version": 1,
+  "name": "drive-s5cd213fe-c453-46b6-82a1-36ddd42568fc-dashboard",
+  "projectId": "ai-saas-60b14e9c",
+  "createdAt": 1790095130188,
+  "steps": [
+    {
+      "tool": "reticle_act",
+      "anchor": {
+        "kind": "role",
+        "role": "button",
+        "name": "Save Card"
+      },
+      "args": {},
+      "action": "click",
+      "expect": {
+        "element": {
+          "role": "heading",
+          "name": "Update Payment Details"
+        }
+      }
+    },
+    {
+      "tool": "reticle_act",
+      "anchor": {
+        "kind": "role",
+        "role": "button",
+        "name": "Receipt"
+      },
+      "args": {},
+      "action": "click"
+    },
+    {
+      "tool": "reticle_act",
+      "anchor": {
+        "kind": "role",
+        "role": "button",
+        "name": "Channels & Integrations"
+      },
+      "args": {},
+      "action": "click"
+    }
+  ],
+  "startPath": "/dashboard"
+}

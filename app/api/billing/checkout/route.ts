@@ -18,8 +18,48 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const body = await req.json().catch(() => ({}));
+    let body: any;
+    try {
+      body = await req.json();
+    } catch {
+      return NextResponse.json({ error: 'Malformed JSON payload' }, { status: 400 });
+    }
+
+    if (!body || typeof body !== 'object') {
+      return NextResponse.json({ error: 'Request body must be a JSON object' }, { status: 400 });
+    }
+
     const { planId, billingInterval = 'monthly', addonType } = body;
+
+    // Validate addonType if specified
+    if (addonType !== undefined) {
+      if (addonType !== 'extra_landing_page') {
+        return NextResponse.json(
+          { error: `Unsupported addonType '${addonType}'. Supported types: extra_landing_page` },
+          { status: 400 }
+        );
+      }
+    }
+
+    // Validate planId if addonType is not specified
+    const VALID_PLAN_IDS = BILLING_PLANS.map((p) => p.id);
+    if (!addonType) {
+      if (!planId || typeof planId !== 'string' || !VALID_PLAN_IDS.includes(planId as any)) {
+        return NextResponse.json(
+          { error: `Invalid or missing planId. Must be one of: ${VALID_PLAN_IDS.join(', ')}` },
+          { status: 400 }
+        );
+      }
+    }
+
+    // Validate billingInterval
+    if (billingInterval !== 'monthly' && billingInterval !== 'annual') {
+      return NextResponse.json(
+        { error: `Invalid billingInterval '${billingInterval}'. Must be 'monthly' or 'annual'` },
+        { status: 400 }
+      );
+    }
+
     const workspaceId = ctx.isMasterAdmin && body.workspaceId
       ? body.workspaceId
       : (ctx.workspaceId && ctx.workspaceId !== '*' ? ctx.workspaceId : 'default-workspace');
@@ -83,14 +123,27 @@ export async function POST(req: NextRequest) {
     }
 
     // Sandbox Plan Upgrade
-    const targetPlan = BILLING_PLANS.find((p) => p.id === planId) || BILLING_PLANS[0];
+    const targetPlan = BILLING_PLANS.find((p) => p.id === planId)!;
+    const interval = billingInterval as 'monthly' | 'annual';
+
+    // Prevent duplicate duplicate invoice if already on this exact plan and interval
+    if (ws.planId === targetPlan.id && ws.billingInterval === interval) {
+      return NextResponse.json({
+        success: true,
+        isSandbox: true,
+        message: `Workspace is already on the ${targetPlan.name} (${interval}) plan.`,
+        planId: targetPlan.id,
+        billingInterval: interval,
+      });
+    }
+
     const todayStr = new Date().toISOString().split('T')[0];
-    const price = billingInterval === 'annual' ? targetPlan.annualMonthlyPrice * 12 : targetPlan.monthlyPrice;
+    const price = interval === 'annual' ? targetPlan.annualMonthlyPrice * 12 : targetPlan.monthlyPrice;
 
     const newInvoice = {
       id: `inv_${Date.now().toString().slice(-6)}`,
       date: todayStr,
-      planName: `${targetPlan.name} (${billingInterval === 'annual' ? 'Annual' : 'Monthly'})`,
+      planName: `${targetPlan.name} (${interval === 'annual' ? 'Annual' : 'Monthly'})`,
       amount: price,
       status: 'paid' as const,
     };
@@ -100,7 +153,7 @@ export async function POST(req: NextRequest) {
     await Database.updateWorkspaceBilling(ws.id, {
       planId: targetPlan.id,
       planName: targetPlan.name,
-      billingInterval,
+      billingInterval: interval,
       monthlyChatLimit: targetPlan.chatSessionsLimit,
       overageRatePerChat: targetPlan.overageRate,
       landingPageLimit: targetPlan.landingPageLimit,
@@ -112,7 +165,7 @@ export async function POST(req: NextRequest) {
       isSandbox: true,
       message: `Sandbox: Successfully upgraded to ${targetPlan.name} plan with Google Pay / Card payment simulated!`,
       planId: targetPlan.id,
-      billingInterval,
+      billingInterval: interval,
     });
   } catch (error: any) {
     console.error('[Billing Checkout] Error creating checkout:', error);

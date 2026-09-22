@@ -1808,8 +1808,88 @@ export const DEFAULT_CUSTOM_SKELETON_CONFIG: LandingPageConfig = {
   },
 };
 
+// 12. Crescelo AI Website Assistant
+export const DEFAULT_CRESCELO_CONFIG: LandingPageConfig = {
+  enabled: true,
+  slug: 'crescelo',
+  businessName: 'Crescelo',
+  industry: 'crescelo',
+  themeColor: '#c9f31d',
+  tagline: 'Answer every visitor. Book the ones who are ready.',
+  badgeText: 'Website assistant for service businesses',
+  heroHeadline: 'Answer every visitor.',
+  heroSubheadline: 'Book the ones who are ready.',
+  heroCtaText: 'Book a consultation',
+  aboutTitle: 'About Crescelo',
+  aboutText: 'Crescelo builds a website assistant from your own content. It answers visitor questions, books appointments, captures leads, and hands over to your team when a person is needed.',
+  address: 'San Francisco, CA & Remote Worldwide',
+  email: 'hello@crescelo.com',
+  phone: '+1 (555) 019-2834',
+  starterQuestions: [
+    'What does Crescelo do?',
+    'How does in-chat appointment booking work?',
+    'Can I bring my own AI provider key?',
+    'How does live human handover work?',
+  ],
+  workingHours: [
+    { days: 'Monday – Friday', hours: '9:00 AM – 6:00 PM EST' },
+    { days: 'Saturday', hours: '10:00 AM – 4:00 PM EST' },
+    { days: 'Sunday', hours: '24/7 Automated AI Concierge' },
+  ],
+  services: [
+    {
+      id: 'cres_srv_1',
+      name: 'Starter Assistant Setup',
+      description: 'Single assistant grounded on your knowledge base, PDF/URL ingestion, web widget, and basic lead capture.',
+      durationMinutes: 30,
+      price: 49,
+    },
+    {
+      id: 'cres_srv_2',
+      name: 'Growth Booking & Messaging Suite',
+      description: 'Full calendar booking engine, multi-channel (Web, WhatsApp, Telegram), automated email confirmations, and live team takeover.',
+      durationMinutes: 45,
+      price: 149,
+      popular: true,
+    },
+    {
+      id: 'cres_srv_3',
+      name: 'Scale & Custom Enterprise Deployment',
+      description: 'Unlimited documents, hybrid search with re-ranking, dedicated account manager, custom API integrations, and SLA guarantees.',
+      durationMinutes: 60,
+      price: 399,
+    },
+  ],
+  testimonials: [
+    {
+      id: 'cres_test_1',
+      clientName: 'Jordan K.',
+      rating: 5,
+      comment: 'The AI answered questions at 11pm that I used to handle myself. Woke up to two booked appointments.',
+      clientRole: 'Barbershop Owner',
+    },
+    {
+      id: 'cres_test_2',
+      clientName: 'Priya M.',
+      rating: 5,
+      comment: 'Clients started booking without ever calling. The handover to my team is seamless — they see the whole chat history.',
+      clientRole: 'Dental Clinic Manager',
+    },
+  ],
+  socialLinks: {
+    linkedin: 'https://linkedin.com/company/crescelo',
+    twitter: 'https://x.com/crescelo',
+  },
+};
+
 // Preset mapping dictionary
 export const TEMPLATE_LANDING_CONFIGS: Record<string, LandingPageConfig> = {
+  // Crescelo AI Website Assistant
+  'crescelo': DEFAULT_CRESCELO_CONFIG,
+  'crescelo-template': DEFAULT_CRESCELO_CONFIG,
+  'template_crescelo': DEFAULT_CRESCELO_CONFIG,
+  'website_assistant': DEFAULT_CRESCELO_CONFIG,
+  'ai_assistant_saas': DEFAULT_CRESCELO_CONFIG,
   // Barbershop
   'classic-barbershop': DEFAULT_BARBER_LANDING_CONFIG,
   'template_barber': DEFAULT_BARBER_LANDING_CONFIG,

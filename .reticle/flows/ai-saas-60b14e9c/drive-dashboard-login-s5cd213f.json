@@ -1,0 +1,38 @@
+{
+  "version": 1,
+  "name": "drive-dashboard-login-s5cd213f",
+  "projectId": "ai-saas-60b14e9c",
+  "createdAt": 1790093192819,
+  "steps": [
+    {
+      "tool": "reticle_act",
+      "anchor": {
+        "kind": "component",
+        "component": "AdminLoginScreen",
+        "source": {
+          "file": "components/crm/AdminLoginScreen.tsx",
+          "line": 177,
+          "column": 12
+        }
+      },
+      "args": {},
+      "action": "click"
+    },
+    {
+      "tool": "reticle_act",
+      "anchor": {
+        "kind": "role",
+        "role": "button",
+        "name": "Okta"
+      },
+      "args": {},
+      "action": "click",
+      "expect": {
+        "route": {
+          "pathname": "/dashboard"
+        }
+      }
+    }
+  ],
+  "startPath": "/login"
+}

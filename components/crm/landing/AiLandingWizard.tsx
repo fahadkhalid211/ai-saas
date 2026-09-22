@@ -54,6 +54,20 @@ interface AiLandingWizardProps {
 
 const INDUSTRIES_LIST = [
   {
+    id: 'crescelo',
+    name: 'Crescelo AI Website Assistant',
+    description: 'Dark slate & electric lime theme matching crescelo.com with interactive demo, orbit diagrams, and feature carousel.',
+    icon: Bot,
+    color: '#c9f31d',
+    presetSlug: 'crescelo',
+    heroImage: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=80',
+    defaultServices: [
+      { id: 's1', name: 'Starter Assistant Setup', price: 49, durationMinutes: 30, description: 'Grounded knowledge base, web widget, and lead capture.' },
+      { id: 's2', name: 'Growth Booking Suite', price: 149, durationMinutes: 45, description: 'Calendar booking engine, multi-channel messaging, and live handover.' },
+      { id: 's3', name: 'Enterprise Deployment', price: 399, durationMinutes: 60, description: 'Hybrid search, custom integrations, and SLA guarantees.' },
+    ],
+  },
+  {
     id: 'barbershop',
     name: 'Barbershop & Grooming Salon',
     description: 'Precision fades, beard grooming, hot towel shaves with calendar appointments.',

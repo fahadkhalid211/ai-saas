@@ -21,9 +21,12 @@
 .mk-lead, .mk-body { font-size: clamp(1.05rem, 1.7vw, 1.25rem); }
 .mk-section-tint { border: 0; }
 
-/* Header: floating bordered bar */
-.mk-header { background: transparent; padding: 12px 12px; border: 0; }
-.mk-header .mk-wrap { padding: 0; max-width: 1180px; }
+/* Header: floating bordered bar. Side gutter matches .mk-wrap elsewhere so the bar never
+   crowds the viewport edge, whatever the window width (fixes it looking edge-to-edge on
+   common laptop widths, where the old flat 12px plus a zeroed wrap padding left almost none). */
+.mk-header { background: transparent; padding: 12px 0; border: 0; }
+.mk-header .mk-wrap { padding: 0 20px; max-width: 1180px; }
+@media (min-width: 720px) { .mk-header .mk-wrap { padding: 0 32px; } }
 .mk-header-row {
   height: 68px;
   padding: 0 20px 0 24px;

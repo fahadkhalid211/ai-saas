@@ -58,6 +58,7 @@ import { NexusAiTemplate } from '@/components/landing/templates/NexusAiTemplate'
 import { CreativeAgencyTemplate } from '@/components/landing/templates/CreativeAgencyTemplate';
 import { FintechTemplate } from '@/components/landing/templates/FintechTemplate';
 import { CustomSkeletonTemplate } from '@/components/landing/templates/CustomSkeletonTemplate';
+import { CresceloTemplate } from '@/components/landing/templates/CresceloTemplate';
 import { consumeChatStream } from '@/lib/chat/stream';
 import { MarkdownRenderer } from '@/components/markdown-renderer';
 import { ChatBookingCard } from '@/components/chat/ChatBookingCard';
@@ -916,6 +917,9 @@ export default function HostedBusinessSiteClient({
       chatMessagesCount: chatMessages.length,
     };
 
+    if (ind.includes('crescelo') || ind === 'website_assistant' || ind === 'ai_assistant_saas') {
+      return <CresceloTemplate {...templateProps} />;
+    }
     if (ind.includes('nexus') || ind === 'nexus_ai' || ind === 'ai_tech') {
       return <NexusAiTemplate {...templateProps} />;
     }

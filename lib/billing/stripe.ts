@@ -92,7 +92,12 @@ export async function createCheckoutSession(params: CreateCheckoutParams): Promi
 
   // 2. Subscription Plan Purchase
   const targetPlanId = params.planId || 'growth';
-  const plan = BILLING_PLANS.find((p) => p.id === targetPlanId) || BILLING_PLANS[1];
+  const plan = BILLING_PLANS.find((p) => p.id === targetPlanId);
+  if (!plan) {
+    throw new Error(
+      `Invalid planId '${targetPlanId}'. Must be one of: ${BILLING_PLANS.map((p) => p.id).join(', ')}`
+    );
+  }
   const interval = params.billingInterval === 'annual' ? 'annual' : 'monthly';
   const priceDollars = interval === 'annual' ? plan.annualMonthlyPrice * 12 : plan.monthlyPrice;
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import {
   LandingPageConfig,
   DEFAULT_BARBER_LANDING_CONFIG,
@@ -58,13 +58,18 @@ export function useCrmLanding({
   const [deleteProgress, setDeleteProgress] = useState(0);
   const [deleteStatusMessage, setDeleteStatusMessage] = useState('');
   const [pagePendingDelete, setPagePendingDelete] = useState<LandingPageConfig | null>(null);
+  const allLandingPagesAbortRef = useRef<AbortController | null>(null);
+  const landingFetchAbortRef = useRef<AbortController | null>(null);
 
   const fetchAllLandingPages = async () => {
+    allLandingPagesAbortRef.current?.abort();
+    const controller = new AbortController();
+    allLandingPagesAbortRef.current = controller;
     try {
       const url = activeAssistant?.workspaceId
         ? `/api/landing-page?all=true&workspaceId=${encodeURIComponent(activeAssistant.workspaceId)}`
         : '/api/landing-page?all=true';
-      const res = await fetch(url);
+      const res = await fetch(url, { signal: controller.signal });
       if (res.ok) {
         const data = await res.json();
         const pagesList = data.landingPages || data.pages;
@@ -83,8 +88,10 @@ export function useCrmLanding({
           });
         }
       }
-    } catch (e) {
-      console.warn('Failed to fetch all landing pages', e);
+    } catch (e: any) {
+      if (e?.name !== 'AbortError') {
+        console.warn('Failed to fetch all landing pages', e);
+      }
     }
   };
 
@@ -191,14 +198,21 @@ export function useCrmLanding({
   };
 
   const fetchLandingConfig = async (astId: string) => {
+    landingFetchAbortRef.current?.abort();
+    const controller = new AbortController();
+    landingFetchAbortRef.current = controller;
     try {
-      const res = await fetch(`/api/landing-page?assistantId=${encodeURIComponent(astId)}`);
+      const res = await fetch(`/api/landing-page?assistantId=${encodeURIComponent(astId)}`, {
+        signal: controller.signal,
+      });
       if (res.ok) {
         const data = await res.json();
         if (data.config) setLandingConfig(data.config);
       }
-    } catch (e) {
-      console.warn('Failed to fetch landing config', e);
+    } catch (e: any) {
+      if (e?.name !== 'AbortError') {
+        console.warn('Failed to fetch landing config', e);
+      }
     }
   };
 

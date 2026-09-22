@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "id": "1790095605581-e559",
+  "createdAt": 1790095605584,
+  "origin": "failed-assert",
+  "expected": "declared consequence",
+  "observed": "no element matched {\"text\":\"Counter QR Code\"} — that text IS on the page, split across the children of generic — no single element's own text carries it, so no text query can match it; retry as {\"kind\":\"text\",\"contains\":\"Counter QR Code\",\"scope\":\"e561\",\"self\":true}",
+  "steps": [
+    {
+      "tool": "reticle_act",
+      "anchor": {
+        "kind": "testid",
+        "value": "e559",
+        "source": {
+          "file": "components/crm/landing/LandingPagesList.tsx",
+          "line": 385,
+          "column": 20
+        }
+      },
+      "action": "click"
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "id": "1790095768343-e641",
+  "createdAt": 1790095768348,
+  "origin": "failed-assert",
+  "expected": "net",
+  "observed": "no request to /api/chat",
+  "steps": [
+    {
+      "tool": "reticle_act",
+      "anchor": {
+        "kind": "testid",
+        "value": "e641",
+        "source": {
+          "file": "components/crm/PlaygroundTab.tsx",
+          "line": 179,
+          "column": 26
+        }
+      },
+      "action": "click"
+    }
+  ]
+}

@@ -3,6 +3,7 @@ import { Database, InvoiceRecord } from '@/lib/db';
 import { BILLING_PLANS } from '@/lib/billing/plans';
 import { withAdminAuth, withRoleAuth, getAuthContext } from '@/lib/security/auth';
 import { getClientIp } from '@/lib/security/rate-limit';
+import { validateEmail, sanitizeInput } from '@/lib/security/validation';
 
 export const GET = withAdminAuth(async (req: Request) => {
   try {
@@ -152,15 +153,80 @@ export const POST = withRoleAuth(['owner', 'admin', 'billing_manager'], async (r
 export const PATCH = withRoleAuth(['owner', 'admin', 'billing_manager'], async (req: Request) => {
   try {
     const ctx = await getAuthContext(req);
-    const body = await req.json();
+    let body: any;
+    try {
+      body = await req.json();
+    } catch {
+      return NextResponse.json({ error: 'Malformed JSON payload' }, { status: 400 });
+    }
+
+    if (!body || typeof body !== 'object') {
+      return NextResponse.json({ error: 'Request body must be a JSON object' }, { status: 400 });
+    }
+
     const { paymentMethod, billingEmail } = body;
     const targetWsId = ctx.isMasterAdmin && body.workspaceId
       ? body.workspaceId
       : (ctx.workspaceId && ctx.workspaceId !== '*' ? ctx.workspaceId : 'default-workspace');
 
     const updates: any = {};
-    if (paymentMethod) updates.paymentMethod = paymentMethod;
-    if (billingEmail) updates.billingEmail = billingEmail;
+
+    if (paymentMethod !== undefined) {
+      if (!paymentMethod || typeof paymentMethod !== 'object' || Array.isArray(paymentMethod)) {
+        return NextResponse.json({ error: 'paymentMethod must be a valid JSON object' }, { status: 400 });
+      }
+
+      const { brand, last4, expMonth, expYear } = paymentMethod;
+
+      if (!last4 || typeof last4 !== 'string' || !/^\d{4}$/.test(last4.trim())) {
+        return NextResponse.json(
+          { error: 'Card last4 must be exactly 4 numeric digits' },
+          { status: 400 }
+        );
+      }
+
+      const currentYear = new Date().getFullYear();
+      const numMonth = Number(expMonth);
+      const numYear = Number(expYear);
+
+      if (!Number.isInteger(numMonth) || numMonth < 1 || numMonth > 12) {
+        return NextResponse.json(
+          { error: 'Card expMonth must be an integer between 1 and 12' },
+          { status: 400 }
+        );
+      }
+
+      if (!Number.isInteger(numYear) || numYear < currentYear || numYear > currentYear + 25) {
+        return NextResponse.json(
+          { error: `Card expYear must be an integer between ${currentYear} and ${currentYear + 25}` },
+          { status: 400 }
+        );
+      }
+
+      const cleanBrand = typeof brand === 'string' ? sanitizeInput(brand).slice(0, 30) : 'Visa';
+
+      updates.paymentMethod = {
+        brand: cleanBrand || 'Visa',
+        last4: last4.trim(),
+        expMonth: numMonth,
+        expYear: numYear,
+      };
+    }
+
+    if (billingEmail !== undefined) {
+      const emailCheck = validateEmail(billingEmail);
+      if (!emailCheck.valid || !emailCheck.value) {
+        return NextResponse.json(
+          { error: emailCheck.error || 'Invalid billing email address' },
+          { status: 400 }
+        );
+      }
+      updates.billingEmail = emailCheck.value;
+    }
+
+    if (Object.keys(updates).length === 0) {
+      return NextResponse.json({ error: 'No valid update fields provided' }, { status: 400 });
+    }
 
     const updated = await Database.updateWorkspaceBilling(targetWsId, updates);
 
@@ -176,7 +242,7 @@ export const PATCH = withRoleAuth(['owner', 'admin', 'billing_manager'], async (
       targetId: targetWsId,
       details: {
         hasPaymentMethod: Boolean(paymentMethod),
-        billingEmail,
+        billingEmail: updates.billingEmail,
       },
     });
 

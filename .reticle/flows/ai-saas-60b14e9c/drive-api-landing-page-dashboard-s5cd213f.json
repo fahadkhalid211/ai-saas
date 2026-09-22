@@ -1,0 +1,101 @@
+{
+  "version": 1,
+  "name": "drive-api-landing-page-dashboard-s5cd213f",
+  "projectId": "ai-saas-60b14e9c",
+  "createdAt": 1790096705006,
+  "steps": [
+    {
+      "tool": "reticle_act",
+      "anchor": {
+        "kind": "role",
+        "role": "button",
+        "name": "Landing Pages 1"
+      },
+      "args": {},
+      "action": "click"
+    },
+    {
+      "tool": "reticle_act",
+      "anchor": {
+        "kind": "role",
+        "role": "button",
+        "name": "Edit Page"
+      },
+      "args": {},
+      "action": "click"
+    },
+    {
+      "tool": "reticle_act",
+      "anchor": {
+        "kind": "role",
+        "role": "button",
+        "name": "In-Store QR Code"
+      },
+      "args": {},
+      "action": "click"
+    },
+    {
+      "tool": "reticle_act",
+      "anchor": {
+        "kind": "role",
+        "role": "button",
+        "name": "Close"
+      },
+      "args": {},
+      "action": "click",
+      "expect": {
+        "element": {
+          "role": "heading",
+          "name": "In-Store Countertop QR Code"
+        }
+      }
+    },
+    {
+      "tool": "reticle_act",
+      "anchor": {
+        "kind": "role",
+        "role": "button",
+        "name": "Save & Publish Landing Page"
+      },
+      "args": {},
+      "action": "click",
+      "expect": {
+        "net": {
+          "urlContains": "/api/landing-page"
+        }
+      }
+    },
+    {
+      "tool": "reticle_act",
+      "anchor": {
+        "kind": "role",
+        "role": "button",
+        "name": "Testing Studio"
+      },
+      "args": {},
+      "action": "click",
+      "expect": {
+        "element": {
+          "role": "button",
+          "name": "Clear Chat"
+        }
+      }
+    },
+    {
+      "tool": "reticle_act",
+      "anchor": {
+        "kind": "role",
+        "role": "button",
+        "name": "What are your haircut & beard prices?"
+      },
+      "args": {},
+      "action": "click",
+      "expect": {
+        "net": {
+          "urlContains": "/api/chat"
+        }
+      }
+    }
+  ],
+  "startPath": "/dashboard"
+}

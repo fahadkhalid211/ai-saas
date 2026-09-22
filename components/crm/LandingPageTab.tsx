@@ -62,6 +62,20 @@ const Youtube = ({ className = 'h-4 w-4' }: { className?: string }) => (
 
 export const LANDING_TEMPLATES_LIST = [
   {
+    slug: 'crescelo',
+    industryId: 'crescelo',
+    name: 'Crescelo AI Assistant',
+    category: 'AI Website Assistant & SaaS',
+    icon: Bot,
+    colorClass: 'text-lime-500 bg-lime-950/60 dark:bg-lime-950/80 dark:text-lime-400 border border-lime-500/30',
+    themeHex: '#c9f31d',
+    heroImage: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80',
+    headline: 'Answer Every Visitor. Book The Ones Who Are Ready.',
+    badge: 'Official Crescelo Design Architecture',
+    servicesSample: ['Starter Setup ($49)', 'Growth Engine ($149)', 'Scale Deployment ($399)'],
+    description: 'Dark slate & electric lime theme matching crescelo.com with interactive demo, orbit diagrams, and horizontal carousel.',
+  },
+  {
     slug: 'classic-barbershop',
     industryId: 'barbershop',
     name: 'Classic Barbershop',
@@ -2465,6 +2479,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
               <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
                 {[
                   { id: 'all', label: 'All' },
+                  { id: 'crescelo', label: 'Crescelo AI' },
                   { id: 'barbershop', label: 'Grooming' },
                   { id: 'gym', label: 'Fitness' },
                   { id: 'real_estate', label: 'Properties' },

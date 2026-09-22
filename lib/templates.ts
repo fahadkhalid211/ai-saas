@@ -484,6 +484,52 @@ All engagements include dedicated account support and milestones.`,
       },
     ],
   },
+  {
+    id: 'crescelo',
+    aliases: ['website_assistant', 'ai_assistant_saas', 'crescelo-template', 'template_crescelo'],
+    name: 'Crescelo AI Website Assistant',
+    industry: 'Crescelo AI Assistant SaaS',
+    icon: 'Bot',
+    tagline: 'Answer every visitor. Book the ones who are ready.',
+    description:
+      'The Crescelo-style landing page template for AI website assistants. Showcases grounded answers, in-chat booking, lead capture, and live handover with the signature dark-lime design.',
+    primaryColor: '#c9f31d',
+    systemPrompt: `You are a friendly and knowledgeable AI website assistant. Your job is to answer visitor questions accurately using the knowledge provided, help them book appointments, capture their contact information when they show interest, and hand the conversation over to a human team member when needed. Always be concise and helpful. If you don't know the answer, say so clearly and offer to connect the visitor with the team.`,
+    welcomeMessage: `Hi there! 👋 I'm your AI assistant. I can answer questions about our services, help you book an appointment, or connect you with our team. What can I help you with?`,
+    fallbackMessage: `I want to make sure you get the right help. Let me connect you with our team:`,
+    starterQuestions: [
+      'What services do you offer?',
+      'How does the AI assistant work?',
+      'Can I book an appointment right now?',
+      'What are your prices?',
+    ],
+    collectLeadEmail: true,
+    proactiveMessageEnabled: true,
+    proactiveMessageText: 'Have a question? I can answer from our content — or book you in right now.',
+    proactiveMessageDelay: 5,
+    bookingEnabled: true,
+    bookingProvider: 'direct',
+    bookingPromptText: 'Book a Consultation or Demo',
+    supportCustomFields: [
+      {
+        id: 'inquiry_type',
+        label: 'What brings you here?',
+        type: 'select',
+        required: false,
+        options: ['Book an appointment', 'Get a quote', 'Learn about services', 'Speak to a person'],
+      },
+    ],
+    sampleKnowledge: [
+      {
+        title: 'About Our AI Assistant',
+        content: `We use an AI website assistant powered by Crescelo. It reads our services, prices, and policies, then answers visitor questions instantly — 24/7. If you want to book an appointment, it will show you available slots and confirm your booking. If you need to talk to a human, just ask and a team member will join the conversation.`,
+      },
+      {
+        title: 'Services & Booking Policy',
+        content: `We offer consultations and appointments Monday through Friday, 9am to 6pm. Weekend availability varies. To book, simply tell the assistant your preferred date and time and it will check availability in real time. Cancellations must be made at least 2 hours before the scheduled time.`,
+      },
+    ],
+  },
 ];
 
 export function findBotTemplate(idOrSlug: string): BotTemplate | undefined {

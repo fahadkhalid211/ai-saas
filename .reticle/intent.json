@@ -1,0 +1,662 @@
+{
+  "version": 1,
+  "intents": {
+    "inline:expanding-enterprise-sso-prompt-reveals-corporat-04be7f1f": {
+      "id": "inline:expanding-enterprise-sso-prompt-reveals-corporat-04be7f1f",
+      "statement": "Expanding Enterprise SSO prompt reveals corporate login input",
+      "state": "proved",
+      "declaredAt": 1790091518014,
+      "binding": {
+        "kind": "text",
+        "contains": "Corporate Single Sign-On"
+      },
+      "surface": {
+        "route": "/login",
+        "files": [
+          "components/crm/AdminLoginScreen.tsx"
+        ]
+      },
+      "provenBy": {
+        "verdictId": "reticle_act_and_wait:1790091520265",
+        "grade": "presence",
+        "at": 1790091520265
+      }
+    },
+    "inline:clicking-okta-demo-sso-authenticates-corporate-t-01c612c2": {
+      "id": "inline:clicking-okta-demo-sso-authenticates-corporate-t-01c612c2",
+      "statement": "Clicking Okta demo SSO authenticates corporate tenant and redirects to dashboard",
+      "state": "bound",
+      "declaredAt": 1790091567770,
+      "binding": {
+        "kind": "route",
+        "pathname": "/dashboard"
+      }
+    },
+    "inline:user-successfully-authenticated-and-redirected-t-afdc217c": {
+      "id": "inline:user-successfully-authenticated-and-redirected-t-afdc217c",
+      "statement": "User successfully authenticated and redirected to /dashboard",
+      "state": "proved",
+      "declaredAt": 1790091637357,
+      "binding": {
+        "kind": "route",
+        "pathname": "/dashboard"
+      },
+      "surface": {
+        "route": "/dashboard",
+        "files": [
+          "components/crm/AdminLoginScreen.tsx"
+        ]
+      },
+      "provenBy": {
+        "verdictId": "reticle_assert:1790091637387",
+        "grade": "presence",
+        "at": 1790091637387
+      }
+    },
+    "inline:dashboard-navigation-renders-channels-integratio-d307d6ad": {
+      "id": "inline:dashboard-navigation-renders-channels-integratio-d307d6ad",
+      "statement": "Dashboard navigation renders Channels & Integrations navigation",
+      "state": "proved",
+      "declaredAt": 1790091648399,
+      "binding": {
+        "kind": "text",
+        "contains": "Channels & Integrations"
+      },
+      "surface": {
+        "route": "/dashboard",
+        "files": [
+          "components/crm/AdminLoginScreen.tsx"
+        ]
+      },
+      "provenBy": {
+        "verdictId": "reticle_assert:1790091648443",
+        "grade": "presence",
+        "at": 1790091648443
+      }
+    },
+    "inline:clicking-channels-integrations-expands-sidebar-s-cfce4b13": {
+      "id": "inline:clicking-channels-integrations-expands-sidebar-s-cfce4b13",
+      "statement": "Clicking Channels & Integrations expands sidebar sub-menu showing Slack integration",
+      "state": "proved",
+      "declaredAt": 1790091665849,
+      "binding": {
+        "kind": "text",
+        "contains": "Slack"
+      },
+      "surface": {
+        "route": "/dashboard",
+        "files": [
+          "components/crm/DashboardSidebar.tsx"
+        ]
+      },
+      "provenBy": {
+        "verdictId": "reticle_act_and_wait:1790091666586",
+        "grade": "presence",
+        "at": 1790091666586
+      }
+    },
+    "inline:clicking-channels-integrations-again-closes-the-0ab6e475": {
+      "id": "inline:clicking-channels-integrations-again-closes-the-0ab6e475",
+      "statement": "Clicking Channels & Integrations again closes the dropdown sub-menu",
+      "state": "proved",
+      "declaredAt": 1790091689229,
+      "binding": {
+        "kind": "element",
+        "query": {
+          "role": "button",
+          "name": "Slack"
+        },
+        "absent": true
+      },
+      "surface": {
+        "route": "/dashboard",
+        "files": [
+          "components/crm/DashboardSidebar.tsx"
+        ]
+      },
+      "provenBy": {
+        "verdictId": "reticle_act_and_wait:1790091689757",
+        "grade": "presence",
+        "at": 1790091689757
+      }
+    },
+    "inline:navigate-to-plans-billing-tab-ec12e943": {
+      "id": "inline:navigate-to-plans-billing-tab-ec12e943",
+      "statement": "Navigate to Plans & Billing tab",
+      "state": "proved",
+      "declaredAt": 1790092069230,
+      "binding": {
+        "kind": "text",
+        "contains": "Plans, Usage & Billing"
+      },
+      "surface": {
+        "route": "/dashboard",
+        "files": [
+          "components/crm/DashboardSidebar.tsx"
+        ]
+      },
+      "provenBy": {
+        "verdictId": "reticle_act_and_wait:1790092069940",
+        "grade": "presence",
+        "at": 1790092069940
+      }
+    },
+    "inline:open-payment-method-update-modal-eec9c0fa": {
+      "id": "inline:open-payment-method-update-modal-eec9c0fa",
+      "statement": "Open payment method update modal",
+      "state": "proved",
+      "declaredAt": 1790092100468,
+      "binding": {
+        "kind": "text",
+        "contains": "Update Payment Details"
+      },
+      "surface": {
+        "route": "/dashboard",
+        "files": [
+          "components/crm/BillingTab.tsx"
+        ]
+      },
+      "provenBy": {
+        "verdictId": "reticle_act_and_wait:1790092101054",
+        "grade": "presence",
+        "at": 1790092101054
+      }
+    },
+    "inline:close-payment-modal-by-clicking-cancel-2dbd60fd": {
+      "id": "inline:close-payment-modal-by-clicking-cancel-2dbd60fd",
+      "statement": "Close payment modal by clicking Cancel",
+      "state": "proved",
+      "declaredAt": 1790092144067,
+      "binding": {
+        "kind": "element",
+        "query": {
+          "role": "heading",
+          "name": "Update Payment Details"
+        },
+        "absent": true
+      },
+      "surface": {
+        "route": "/dashboard",
+        "files": [
+          "components/crm/modals/PaymentMethodModal.tsx"
+        ]
+      },
+      "provenBy": {
+        "verdictId": "reticle_act_and_wait:1790092144622",
+        "grade": "presence",
+        "at": 1790092144622
+      }
+    },
+    "inline:upgrade-to-growth-plan-via-checkout-flow-a9a2bbc8": {
+      "id": "inline:upgrade-to-growth-plan-via-checkout-flow-a9a2bbc8",
+      "statement": "Upgrade to Growth plan via checkout flow",
+      "state": "bound",
+      "declaredAt": 1790092149180,
+      "binding": {
+        "kind": "text",
+        "contains": "Successfully activated growth plan"
+      }
+    },
+    "inline:monkey-toggle-annual-billing-2e73b608": {
+      "id": "inline:monkey-toggle-annual-billing-2e73b608",
+      "statement": "Monkey toggle annual billing",
+      "state": "bound",
+      "declaredAt": 1790092187493,
+      "binding": {
+        "kind": "text",
+        "contains": "Save 20%"
+      }
+    },
+    "inline:switch-to-growth-plan-and-verify-state-update-in-dd91a8bc": {
+      "id": "inline:switch-to-growth-plan-and-verify-state-update-in-dd91a8bc",
+      "statement": "Switch to Growth plan and verify state update in UI",
+      "state": "bound",
+      "declaredAt": 1790093084492,
+      "binding": {
+        "kind": "text",
+        "contains": "Switch to Agency / Scale →"
+      }
+    },
+    "inline:open-plans-billing-tab-on-dashboard-22b4594e": {
+      "id": "inline:open-plans-billing-tab-on-dashboard-22b4594e",
+      "statement": "Open Plans & Billing tab on dashboard",
+      "state": "proved",
+      "declaredAt": 1790094121690,
+      "binding": {
+        "kind": "text",
+        "contains": "Plans, Usage & Billing"
+      },
+      "surface": {
+        "route": "/dashboard",
+        "files": [
+          "components/crm/DashboardSidebar.tsx"
+        ]
+      },
+      "provenBy": {
+        "verdictId": "reticle_act_and_wait:1790094124264",
+        "grade": "presence",
+        "at": 1790094124264
+      }
+    },
+    "inline:open-payment-method-modal-be3c3ed1": {
+      "id": "inline:open-payment-method-modal-be3c3ed1",
+      "statement": "Open payment method modal",
+      "state": "proved",
+      "declaredAt": 1790094141429,
+      "binding": {
+        "kind": "text",
+        "contains": "Update Payment Details"
+      },
+      "surface": {
+        "route": "/dashboard",
+        "files": [
+          "components/crm/BillingTab.tsx"
+        ]
+      },
+      "provenBy": {
+        "verdictId": "reticle_act_and_wait:1790094143466",
+        "grade": "presence",
+        "at": 1790094143466
+      }
+    },
+    "inline:saving-updated-card-details-closes-modal-and-upd-ebf86c73": {
+      "id": "inline:saving-updated-card-details-closes-modal-and-upd-ebf86c73",
+      "statement": "Saving updated card details closes modal and updates payment method",
+      "state": "proved",
+      "declaredAt": 1790094167976,
+      "binding": {
+        "kind": "element",
+        "query": {
+          "role": "heading",
+          "name": "Update Payment Details"
+        },
+        "absent": true
+      },
+      "surface": {
+        "route": "/dashboard",
+        "files": [
+          "components/crm/modals/PaymentMethodModal.tsx"
+        ]
+      },
+      "provenBy": {
+        "verdictId": "reticle_act_and_wait:1790094173036",
+        "grade": "presence",
+        "at": 1790094173036
+      }
+    },
+    "inline:updated-card-ending-in-5555-is-rendered-on-billi-60988047": {
+      "id": "inline:updated-card-ending-in-5555-is-rendered-on-billi-60988047",
+      "statement": "Updated card ending in 5555 is rendered on billing tab",
+      "state": "proved",
+      "declaredAt": 1790094183083,
+      "binding": {
+        "kind": "text",
+        "contains": "5555"
+      },
+      "surface": {
+        "route": "/dashboard",
+        "files": [
+          "components/crm/modals/PaymentMethodModal.tsx"
+        ]
+      },
+      "provenBy": {
+        "verdictId": "reticle_assert:1790094183139",
+        "grade": "presence",
+        "at": 1790094183139
+      }
+    },
+    "inline:updated-billing-email-finance-acme-corp-is-rende-d8200d4c": {
+      "id": "inline:updated-billing-email-finance-acme-corp-is-rende-d8200d4c",
+      "statement": "Updated billing email finance@acme.corp is rendered on billing tab",
+      "state": "proved",
+      "declaredAt": 1790094193424,
+      "binding": {
+        "kind": "text",
+        "contains": "finance@acme.corp"
+      },
+      "surface": {
+        "files": [
+          "components/crm/modals/PaymentMethodModal.tsx"
+        ]
+      },
+      "provenBy": {
+        "verdictId": "reticle_assert:1790094194310",
+        "grade": "presence",
+        "at": 1790094194310
+      }
+    },
+    "inline:expand-sidebar-channels-integrations-sub-menu-dce678d5": {
+      "id": "inline:expand-sidebar-channels-integrations-sub-menu-dce678d5",
+      "statement": "Expand sidebar Channels & Integrations sub-menu",
+      "state": "proved",
+      "declaredAt": 1790094853867,
+      "binding": {
+        "kind": "text",
+        "contains": "Slack Alerts"
+      },
+      "surface": {
+        "route": "/dashboard",
+        "files": [
+          "components/crm/DashboardSidebar.tsx"
+        ]
+      },
+      "provenBy": {
+        "verdictId": "reticle_act_and_wait:1790094856364",
+        "grade": "presence",
+        "at": 1790094856364
+      }
+    },
+    "inline:send-a-live-test-ping-to-slack-webhook-and-displ-eedf0ea6": {
+      "id": "inline:send-a-live-test-ping-to-slack-webhook-and-displ-eedf0ea6",
+      "statement": "Send a live test ping to Slack webhook and display diagnostic feedback",
+      "state": "bound",
+      "declaredAt": 1790095003353,
+      "binding": {
+        "kind": "anyOf",
+        "predicates": [
+          {
+            "kind": "text",
+            "contains": "Slack Dispatch"
+          },
+          {
+            "kind": "text",
+            "contains": "Slack Webhook"
+          },
+          {
+            "kind": "text",
+            "contains": "latency"
+          }
+        ]
+      }
+    },
+    "inline:slack-diagnostics-banner-renders-after-test-ping-7bad978c": {
+      "id": "inline:slack-diagnostics-banner-renders-after-test-ping-7bad978c",
+      "statement": "Slack diagnostics banner renders after test ping with latency and error details",
+      "state": "proved",
+      "declaredAt": 1790095062033,
+      "binding": {
+        "kind": "text",
+        "contains": "Slack Dispatch Failed"
+      },
+      "surface": {
+        "route": "/dashboard",
+        "files": [
+          "components/crm/ChannelsTab.tsx"
+        ]
+      },
+      "provenBy": {
+        "verdictId": "reticle_assert:1790095062070",
+        "grade": "presence",
+        "at": 1790095062072
+      }
+    },
+    "inline:switch-channels-tab-to-google-sheets-integration-f6353727": {
+      "id": "inline:switch-channels-tab-to-google-sheets-integration-f6353727",
+      "statement": "Switch channels tab to Google Sheets integration settings",
+      "state": "bound",
+      "declaredAt": 1790095066922,
+      "binding": {
+        "kind": "text",
+        "contains": "Google Sheets Web App URL"
+      }
+    },
+    "inline:switch-to-registration-form-on-login-page-14b89511": {
+      "id": "inline:switch-to-registration-form-on-login-page-14b89511",
+      "statement": "Switch to registration form on login page",
+      "state": "bound",
+      "declaredAt": 1790095173575,
+      "binding": {
+        "kind": "text",
+        "contains": "Business or Company Name"
+      }
+    },
+    "inline:registration-form-is-displayed-with-create-busin-900671e5": {
+      "id": "inline:registration-form-is-displayed-with-create-busin-900671e5",
+      "statement": "Registration form is displayed with Create Business Account heading",
+      "state": "proved",
+      "declaredAt": 1790095188283,
+      "binding": {
+        "kind": "text",
+        "contains": "Create Business Account"
+      },
+      "surface": {
+        "route": "/login",
+        "files": [
+          "components/crm/AdminLoginScreen.tsx"
+        ]
+      },
+      "provenBy": {
+        "verdictId": "reticle_assert:1790095188340",
+        "grade": "presence",
+        "at": 1790095188340
+      }
+    },
+    "inline:submit-workspace-registration-and-navigate-to-da-8171c627": {
+      "id": "inline:submit-workspace-registration-and-navigate-to-da-8171c627",
+      "statement": "Submit workspace registration and navigate to dashboard",
+      "state": "bound",
+      "declaredAt": 1790095218136,
+      "binding": {
+        "kind": "anyOf",
+        "predicates": [
+          {
+            "kind": "route",
+            "pathname": "/dashboard"
+          },
+          {
+            "kind": "text",
+            "contains": "Testing Studio"
+          }
+        ]
+      }
+    },
+    "inline:workspace-registration-successfully-completes-an-4ac87a87": {
+      "id": "inline:workspace-registration-successfully-completes-an-4ac87a87",
+      "statement": "Workspace registration successfully completes and navigates to the dashboard",
+      "state": "bound",
+      "declaredAt": 1790095276311,
+      "binding": {
+        "kind": "route",
+        "pathname": "/dashboard"
+      }
+    },
+    "inline:dashboard-route-is-rendered-and-active-without-c-df23896d": {
+      "id": "inline:dashboard-route-is-rendered-and-active-without-c-df23896d",
+      "statement": "Dashboard route is rendered and active without contradictions",
+      "state": "proved",
+      "declaredAt": 1790095554785,
+      "binding": {
+        "kind": "route",
+        "pathname": "/dashboard"
+      },
+      "surface": {
+        "route": "/dashboard"
+      },
+      "provenBy": {
+        "verdictId": "reticle_assert:1790095554852",
+        "grade": "presence",
+        "at": 1790095554852
+      }
+    },
+    "inline:navigate-to-landing-pages-tab-79c12eb3": {
+      "id": "inline:navigate-to-landing-pages-tab-79c12eb3",
+      "statement": "Navigate to Landing Pages tab",
+      "state": "bound",
+      "declaredAt": 1790095575146,
+      "binding": {
+        "kind": "text",
+        "contains": "Landing Page"
+      }
+    },
+    "inline:open-visual-landing-page-editor-for-apex-health-6d66c235": {
+      "id": "inline:open-visual-landing-page-editor-for-apex-health-6d66c235",
+      "statement": "Open visual landing page editor for Apex Health Clinic",
+      "state": "bound",
+      "declaredAt": 1790095595571,
+      "binding": {
+        "kind": "text",
+        "contains": "Counter QR Code"
+      }
+    },
+    "inline:counter-qr-code-button-is-displayed-in-the-landi-66f54f91": {
+      "id": "inline:counter-qr-code-button-is-displayed-in-the-landi-66f54f91",
+      "statement": "Counter QR Code button is displayed in the Landing Page Editor toolbar",
+      "state": "proved",
+      "declaredAt": 1790095611647,
+      "binding": {
+        "kind": "text",
+        "contains": "Counter QR Code",
+        "scope": "e561",
+        "self": true
+      },
+      "surface": {
+        "route": "/dashboard",
+        "files": [
+          "components/crm/landing/LandingPagesList.tsx"
+        ]
+      },
+      "provenBy": {
+        "verdictId": "reticle_assert:1790095611705",
+        "grade": "presence",
+        "at": 1790095611705
+      }
+    },
+    "inline:open-in-store-counter-qr-code-modal-8394e0c8": {
+      "id": "inline:open-in-store-counter-qr-code-modal-8394e0c8",
+      "statement": "Open In-Store Counter QR Code modal",
+      "state": "bound",
+      "declaredAt": 1790095631909,
+      "binding": {
+        "kind": "text",
+        "contains": "Scan"
+      }
+    },
+    "inline:in-store-counter-qr-code-modal-is-rendered-with-7b33e150": {
+      "id": "inline:in-store-counter-qr-code-modal-is-rendered-with-7b33e150",
+      "statement": "In-store Counter QR Code modal is rendered with live QR code image",
+      "state": "proved",
+      "declaredAt": 1790095645447,
+      "binding": {
+        "kind": "text",
+        "contains": "Scan",
+        "scope": "e561",
+        "self": true
+      },
+      "surface": {
+        "route": "/dashboard",
+        "files": [
+          "components/crm/LandingPageTab.tsx"
+        ]
+      },
+      "provenBy": {
+        "verdictId": "reticle_assert:1790095645520",
+        "grade": "presence",
+        "at": 1790095645520
+      }
+    },
+    "inline:close-in-store-counter-qr-code-modal-adfb73dd": {
+      "id": "inline:close-in-store-counter-qr-code-modal-adfb73dd",
+      "statement": "Close In-Store Counter QR Code modal",
+      "state": "bound",
+      "declaredAt": 1790095667217,
+      "binding": {
+        "kind": "element",
+        "query": {
+          "role": "heading",
+          "name": "In-Store Countertop QR Code"
+        },
+        "absent": true
+      }
+    },
+    "inline:save-landing-page-configuration-317dc243": {
+      "id": "inline:save-landing-page-configuration-317dc243",
+      "statement": "Save landing page configuration",
+      "state": "proved",
+      "declaredAt": 1790095704793,
+      "binding": {
+        "kind": "net",
+        "urlContains": "/api/landing-page"
+      },
+      "surface": {
+        "route": "/dashboard",
+        "files": [
+          "components/crm/LandingPageTab.tsx"
+        ]
+      },
+      "provenBy": {
+        "verdictId": "reticle_act_and_wait:1790095711233",
+        "grade": "net",
+        "at": 1790095711233
+      }
+    },
+    "inline:navigate-to-ai-testing-studio-in-dashboard-ca56015b": {
+      "id": "inline:navigate-to-ai-testing-studio-in-dashboard-ca56015b",
+      "statement": "Navigate to AI Testing Studio in dashboard",
+      "state": "bound",
+      "declaredAt": 1790095716600,
+      "binding": {
+        "kind": "element",
+        "query": {
+          "role": "textbox",
+          "placeholder": "Ask your assistant anything..."
+        }
+      }
+    },
+    "inline:navigate-to-testing-studio-view-40a28196": {
+      "id": "inline:navigate-to-testing-studio-view-40a28196",
+      "statement": "Navigate to Testing Studio view",
+      "state": "proved",
+      "declaredAt": 1790095732239,
+      "binding": {
+        "kind": "element",
+        "query": {
+          "role": "button",
+          "name": "Clear Chat"
+        }
+      },
+      "surface": {
+        "route": "/dashboard",
+        "files": [
+          "components/crm/DashboardSidebar.tsx"
+        ]
+      },
+      "provenBy": {
+        "verdictId": "reticle_act_and_wait:1790095734284",
+        "grade": "presence",
+        "at": 1790095734284
+      }
+    },
+    "inline:send-a-test-chat-query-in-testing-studio-and-tri-f89ee27f": {
+      "id": "inline:send-a-test-chat-query-in-testing-studio-and-tri-f89ee27f",
+      "statement": "Send a test chat query in Testing Studio and trigger AI streaming conversation",
+      "state": "bound",
+      "declaredAt": 1790095753994,
+      "binding": {
+        "kind": "net",
+        "urlContains": "/api/chat"
+      }
+    },
+    "inline:ai-testing-studio-streams-sse-chat-response-with-d7c226dc": {
+      "id": "inline:ai-testing-studio-streams-sse-chat-response-with-d7c226dc",
+      "statement": "AI Testing Studio streams SSE chat response with 200 OK",
+      "state": "proved",
+      "declaredAt": 1790095851146,
+      "binding": {
+        "kind": "net",
+        "urlContains": "/api/chat",
+        "status": 200
+      },
+      "surface": {
+        "route": "/dashboard",
+        "files": [
+          "components/crm/PlaygroundTab.tsx"
+        ]
+      },
+      "provenBy": {
+        "verdictId": "reticle_assert:1790095851273",
+        "grade": "net",
+        "at": 1790095851273
+      }
+    }
+  }
+}

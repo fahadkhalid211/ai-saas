@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "id": "1790095017861-e1026",
+  "createdAt": 1790095018113,
+  "origin": "failed-assert",
+  "expected": "declared consequence",
+  "observed": "this tab is throttled and has not rendered; a miss here is not evidence the UI is absent. acquire a scriptable context with reticle_run { tool: \"reticle_lease\", action: \"acquire\", url } (the human can run `reticle drive <url>` if they have a shell)",
+  "steps": [
+    {
+      "tool": "reticle_act",
+      "anchor": {
+        "kind": "testid",
+        "value": "e1026",
+        "source": {
+          "file": "components/crm/ChannelsTab.tsx",
+          "line": 647,
+          "column": 20
+        }
+      },
+      "action": "click"
+    }
+  ]
+}
