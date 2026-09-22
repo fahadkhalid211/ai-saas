@@ -643,10 +643,64 @@ export const INDUSTRY_DESIGN_ARCHETYPES: Record<string, DesignArchetype[]> = {
       recommendedFor: ['custom'],
     },
   ],
+  crescelo: [
+    {
+      id: 'crescelo_flagship',
+      name: 'Crescelo Editorial Flagship',
+      tagline: 'Deep dark green & electric lime, googly-eyed mascot, interactive prompt demo, and smooth stacked problem cards.',
+      category: 'AI Assistant & SaaS',
+      aesthetic: 'Deep Forest & Electric Lime',
+      themeColor: '#abff44',
+      previewImage: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80',
+      badge: 'Official Signature',
+      features: [
+        'Cursor-following mascot with googly pupils',
+        'Interactive typing and hold prompt preview',
+        'Pinned smooth scroll problem stack',
+        'Rotating dual-ring orbit stage',
+      ],
+      recommendedFor: ['crescelo'],
+    },
+    {
+      id: 'crescelo_minimal',
+      name: 'Clean Modern Editorial',
+      tagline: 'Warm cream, deep ink, and refined Swiss typography with interactive before/after split slider.',
+      category: 'Minimalist Editorial',
+      aesthetic: 'Warm Cream & Deep Ink',
+      themeColor: '#0f6e58',
+      previewImage: 'https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?auto=format&fit=crop&w=800&q=80',
+      badge: 'Editorial Minimal',
+      features: [
+        'Draggable before/after comparison slider',
+        'Interactive live RAG pipeline playground',
+        'Full calendar appointment reservation',
+        'Seamless infinite feature carousel',
+      ],
+      recommendedFor: ['crescelo'],
+    },
+    {
+      id: 'crescelo_high_growth',
+      name: 'High-Velocity Conversion Studio',
+      tagline: 'High-contrast conversion layout with dynamic pricing tiers, live chat handover, and verified social proof.',
+      category: 'Conversion Studio',
+      aesthetic: 'Obsidian & Neon Lime',
+      themeColor: '#c9f31d',
+      previewImage: 'https://images.unsplash.com/photo-1551434678-e076c223a692?auto=format&fit=crop&w=800&q=80',
+      badge: 'High Velocity',
+      features: [
+        'One-click appointment slot reservation',
+        'Live human takeover in active chat',
+        'Customer reviews and rating stars',
+        'Expandable FAQ accordion',
+      ],
+      recommendedFor: ['crescelo'],
+    },
+  ],
 };
 
 export function getArchetypesForIndustry(industry?: string): DesignArchetype[] {
   const ind = (industry || 'barbershop').toLowerCase().trim();
+  if (ind.includes('crescelo') || ind === 'website_assistant' || ind === 'ai_assistant_saas') return INDUSTRY_DESIGN_ARCHETYPES.crescelo;
   if (ind.includes('legal') || ind.includes('law')) return INDUSTRY_DESIGN_ARCHETYPES.legal;
   if (ind.includes('barber') || ind.includes('salon')) return INDUSTRY_DESIGN_ARCHETYPES.barbershop;
   if (ind.includes('gym') || ind.includes('fitness')) return INDUSTRY_DESIGN_ARCHETYPES.gym;
@@ -1817,9 +1871,10 @@ export const DEFAULT_CRESCELO_CONFIG: LandingPageConfig = {
   themeColor: '#c9f31d',
   tagline: 'Answer every visitor. Book the ones who are ready.',
   badgeText: 'Website assistant for service businesses',
-  heroHeadline: 'Answer every visitor.',
-  heroSubheadline: 'Book the ones who are ready.',
+  heroHeadline: 'Answer every visitor. Book the ones who are ready.',
+  heroSubheadline: 'Crescelo builds a website assistant from your own content. It answers visitor questions, books appointments, captures leads, and hands over to your team when a person is needed.',
   heroCtaText: 'Book a consultation',
+  heroImageUrl: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=80',
   aboutTitle: 'About Crescelo',
   aboutText: 'Crescelo builds a website assistant from your own content. It answers visitor questions, books appointments, captures leads, and hands over to your team when a person is needed.',
   address: 'San Francisco, CA & Remote Worldwide',

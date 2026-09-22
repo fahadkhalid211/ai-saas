@@ -1028,6 +1028,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
                     onChange={(e) => setLandingConfig({ ...landingConfig, industry: e.target.value })}
                     className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
                   >
+                    <option value="crescelo">Crescelo AI Website Assistant</option>
                     <option value="barbershop">Barbershop &amp; Salon</option>
                     <option value="gym">Gym &amp; Fitness Club</option>
                     <option value="real_estate">Real Estate &amp; Properties</option>
@@ -1050,6 +1051,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
                     onChange={(e) => setLandingConfig({ ...landingConfig, themeColor: e.target.value })}
                     className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
                   >
+                    <option value="lime">Electric Lime (Crescelo / Editorial)</option>
                     <option value="amber">Warm Amber (Barbershop / Grooming)</option>
                     <option value="rose">High-Energy Rose (Fitness / Athletics)</option>
                     <option value="emerald">Prestige Emerald (Real Estate / Luxury)</option>

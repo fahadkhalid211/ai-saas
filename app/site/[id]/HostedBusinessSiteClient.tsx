@@ -978,16 +978,22 @@ export default function HostedBusinessSiteClient({
     slug: identifier,
   };
 
+  const indLower = (activeConfig?.industry || '').toLowerCase().trim();
+  const isCrescelo = indLower.includes('crescelo') || indLower === 'website_assistant' || indLower === 'ai_assistant_saas';
+
   return (
-    <div className={`min-h-screen ${isDark ? 'dark bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'} font-sans ${currentTheme.selectionBg} transition-colors duration-200 overflow-x-hidden`}>
+    <div className={`min-h-screen ${isCrescelo ? 'bg-[#fffeeb] text-[#1a1a1a]' : isDark ? 'dark bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'} font-sans ${currentTheme.selectionBg} transition-colors duration-200 overflow-x-hidden`}>
       {/* Top Announcement Bar */}
-      <div className={`${currentTheme.badgeBg} py-2 px-4 text-center text-xs font-semibold tracking-wider uppercase flex items-center justify-center gap-2 shadow-xs`}>
-        <Sparkles className="w-3.5 h-3.5" />
-        <span>{activeConfig.badgeText || 'Verified Excellence & Instant Online Booking'}</span>
-      </div>
+      {!isCrescelo && (
+        <div className={`${currentTheme.badgeBg} py-2 px-4 text-center text-xs font-semibold tracking-wider uppercase flex items-center justify-center gap-2 shadow-xs`}>
+          <Sparkles className="w-3.5 h-3.5" />
+          <span>{activeConfig.badgeText || 'Verified Excellence & Instant Online Booking'}</span>
+        </div>
+      )}
 
       {/* Navigation Header */}
-      <header className={`sticky top-0 z-40 ${isDark ? 'bg-slate-950/90 border-slate-800' : 'bg-white/95 border-slate-200 shadow-xs'} backdrop-blur-md border-b transition-colors`}>
+      {!isCrescelo && (
+        <header className={`sticky top-0 z-40 ${isDark ? 'bg-slate-950/90 border-slate-800' : 'bg-white/95 border-slate-200 shadow-xs'} backdrop-blur-md border-b transition-colors`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
           <div className="flex items-center gap-3">
             {activeConfig.logoUrl ? (
@@ -1095,13 +1101,15 @@ export default function HostedBusinessSiteClient({
           </div>
         </div>
       </header>
+      )}
 
       {/* Dynamic Industry-Specific Landing Layout */}
-      <main className="pb-16">
+      <main className={isCrescelo ? '' : 'pb-16'}>
         {renderIndustryTemplate()}
       </main>
 
       {/* Footer */}
+      {!isCrescelo && (
       <footer className={`border-t py-12 text-center text-xs ${isDark ? 'bg-slate-950 border-slate-900 text-slate-500' : 'bg-white border-slate-200 text-slate-600'} transition-colors`}>
         <div className="max-w-7xl mx-auto px-4 space-y-4">
           <div className={`flex items-center justify-center gap-2 font-bold text-sm ${isDark ? 'text-white' : 'text-slate-900'}`}>
@@ -1188,6 +1196,7 @@ export default function HostedBusinessSiteClient({
           </p>
         </div>
       </footer>
+      )}
 
       {/* Booking Appointment Modal */}
       {isBookingOpen && (
