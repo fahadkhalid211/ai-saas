@@ -24,7 +24,11 @@ export default function LoginPage() {
       const saved = localStorage.getItem('kortex_theme');
       if (saved === 'dark' || saved === 'light') setTheme(saved);
     } catch {}
-    if (new URLSearchParams(window.location.search).get('mode') === 'register') setAuthLoginMode('register');
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('mode') === 'register') setAuthLoginMode('register');
+    const errParam = params.get('error');
+    if (errParam) setAuthError(`Sign-in notice: ${errParam}`);
+
     // Already signed in: go straight to the dashboard.
     fetch('/api/auth')
       .then((r) => r.json())
@@ -71,6 +75,54 @@ export default function LoginPage() {
     }
   };
 
+  const handleGoogleLogin = async () => {
+    setIsLoggingIn(true);
+    setAuthError(null);
+    try {
+      window.location.href = '/api/auth/oauth/google';
+    } catch (err: any) {
+      setAuthError(err?.message || 'Google authentication failed');
+      setIsLoggingIn(false);
+    }
+  };
+
+  const handleAppleLogin = async () => {
+    setIsLoggingIn(true);
+    setAuthError(null);
+    try {
+      window.location.href = '/api/auth/oauth/apple';
+    } catch (err: any) {
+      setAuthError(err?.message || 'Apple authentication failed');
+      setIsLoggingIn(false);
+    }
+  };
+
+  const handleSSOLogin = async (domainOrEmail: string) => {
+    if (!domainOrEmail || !domainOrEmail.trim()) {
+      setAuthError('Please enter your company domain or corporate work email.');
+      return;
+    }
+    setIsLoggingIn(true);
+    setAuthError(null);
+    try {
+      const res = await fetch('/api/auth/sso', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ domain: domainOrEmail.trim() }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        router.replace('/dashboard');
+      } else {
+        setAuthError(data.error || 'Enterprise SSO authentication failed');
+        setIsLoggingIn(false);
+      }
+    } catch (err: any) {
+      setAuthError(err?.message || 'Enterprise SSO authentication failed');
+      setIsLoggingIn(false);
+    }
+  };
+
   return (
     <AdminLoginScreen
       theme={theme}
@@ -92,6 +144,9 @@ export default function LoginPage() {
       setRegTemplateInput={setRegTemplateInput}
       isLoggingIn={isLoggingIn}
       handleLogin={handleLogin}
+      handleGoogleLogin={handleGoogleLogin}
+      handleAppleLogin={handleAppleLogin}
+      handleSSOLogin={handleSSOLogin}
     />
   );
 }

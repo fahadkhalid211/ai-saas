@@ -3422,6 +3422,80 @@ export class Database {
     return null;
   }
 
+  /**
+   * Locates an existing tenant member by email, or auto-provisions a new workspace for social/SSO logins.
+   */
+  static async findOrCreateOAuthTenant(params: {
+    email: string;
+    name?: string;
+    provider: 'google' | 'apple' | 'sso';
+    providerId?: string;
+    domain?: string;
+  }): Promise<{
+    workspace: WorkspaceBillingData;
+    member: TeamMemberData;
+    isNewUser: boolean;
+  }> {
+    const state = await ensureInitialized();
+    const cleanEmail = (params.email || '').toLowerCase().trim();
+    if (!cleanEmail) throw new Error('Email is required for social or SSO login.');
+
+    // 1. Check if an existing workspace owner has this email
+    const existingWs = (state.workspaces || []).find(
+      (w: any) => (w.ownerEmail || '').toLowerCase() === cleanEmail
+    );
+    if (existingWs) {
+      let ownerMember = (state.teamMembers || []).find((m) => m.email.toLowerCase() === cleanEmail);
+      if (!ownerMember) {
+        ownerMember = {
+          id: `owner_${existingWs.id}`,
+          workspaceId: existingWs.id,
+          name: params.name || existingWs.name || 'Owner',
+          email: cleanEmail,
+          role: 'owner' as const,
+          status: 'active' as const,
+          createdAt: existingWs.createdAt || new Date().toISOString(),
+          lastLoginAt: new Date().toISOString(),
+        };
+        if (!state.teamMembers) state.teamMembers = [];
+        state.teamMembers.push(ownerMember);
+      } else {
+        ownerMember.lastLoginAt = new Date().toISOString();
+        if (params.name && !ownerMember.name) ownerMember.name = params.name;
+      }
+      await saveState(state);
+      return { workspace: existingWs, member: ownerMember, isNewUser: false };
+    }
+
+    // 2. Check if a team member with this email exists
+    const existingMember = (state.teamMembers || []).find((m) => m.email.toLowerCase() === cleanEmail);
+    if (existingMember) {
+      existingMember.lastLoginAt = new Date().toISOString();
+      const ws = await Database.getWorkspaceBilling(existingMember.workspaceId || 'default-workspace');
+      await saveState(state);
+      return { workspace: ws, member: existingMember, isNewUser: false };
+    }
+
+    // 3. New user: Auto-provision a workspace
+    const businessName = params.name
+      ? `${params.name}'s Workspace`
+      : params.domain
+      ? `${params.domain.split('.')[0].toUpperCase()} Enterprise`
+      : 'My AI Workspace';
+
+    const tenantResult = await Database.createTenantWorkspace({
+      businessName,
+      ownerEmail: cleanEmail,
+      industryTemplateSlug: 'classic-barbershop',
+    });
+
+    return {
+      workspace: tenantResult.workspace,
+      member: tenantResult.owner,
+      isNewUser: true,
+    };
+  }
+
   // Multi-Landing Pages Management
   static async getLandingPages(workspaceId: string = 'default-workspace'): Promise<LandingPageConfig[]> {
     const state = await ensureInitialized();
