@@ -14,18 +14,31 @@ declare global {
 export function SmoothScroll() {
   const pathname = usePathname();
 
-  // Reset scroll to top on every route change immediately
+  // Reset scroll to top and recalculate dimensions on every route change
   useEffect(() => {
     if (typeof window !== 'undefined') {
       window.__mkLenis?.scrollTo(0, { immediate: true });
       window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+      // Recalculate dimensions after next tick and after animations mount
+      setTimeout(() => {
+        window.__mkLenis?.resize();
+      }, 150);
     }
   }, [pathname]);
 
   useEffect(() => {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    const lenis = new Lenis({ lerp: 0.085, smoothWheel: true, anchors: false });
+    const lenis = new Lenis({
+      lerp: 0.1,
+      wheelMultiplier: 1.05,
+      touchMultiplier: 1.2,
+      autoResize: true,
+      prevent: (node) => {
+        return node.hasAttribute('data-lenis-prevent') || !!node.closest?.('[data-lenis-prevent]');
+      },
+    });
     window.__mkLenis = lenis;
+
     let raf = 0;
     const loop = (t: number) => {
       lenis.raf(t);
@@ -33,18 +46,34 @@ export function SmoothScroll() {
     };
     raf = requestAnimationFrame(loop);
 
+    // Actively synchronize Lenis scroll dimensions whenever DOM changes or expands
+    let ro: ResizeObserver | null = null;
+    if (typeof ResizeObserver !== 'undefined') {
+      ro = new ResizeObserver(() => {
+        lenis.resize();
+      });
+      ro.observe(document.documentElement);
+      if (document.body) ro.observe(document.body);
+    }
+
+    // Ensure dimensions are correct when web fonts finish downloading
+    document.fonts?.ready?.then(() => {
+      lenis.resize();
+    });
+
     const onClick = (e: MouseEvent) => {
       const a = (e.target as Element | null)?.closest?.('a[href^="#"]') as HTMLAnchorElement | null;
       if (!a || a.getAttribute('href') === '#') return;
       const el = document.querySelector(a.getAttribute('href') as string);
       if (!el) return;
       e.preventDefault();
-      lenis.scrollTo(el as HTMLElement, { offset: -84, duration: 1.3 });
+      lenis.scrollTo(el as HTMLElement, { offset: -84, duration: 1.2 });
       history.replaceState(null, '', a.getAttribute('href'));
     };
     document.addEventListener('click', onClick);
 
     return () => {
+      ro?.disconnect();
       document.removeEventListener('click', onClick);
       cancelAnimationFrame(raf);
       lenis.destroy();

@@ -15,6 +15,13 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Crescelo",
   description: "Enterprise chatbot engine to train AI on business PDFs, CSVs, JSON, and documents with zero API costs or BYOK.",
+  icons: {
+    icon: [
+      { url: '/icon.svg', type: 'image/svg+xml' },
+      { url: '/favicon.ico' },
+    ],
+    apple: '/icon.svg',
+  },
 };
 
 export default function RootLayout({

@@ -146,8 +146,8 @@
 
 /* Integrations: full-width orbit stage */
 .mk-orbit-section { background: var(--mk-deep); color: var(--mk-bg); }
-.mk-orbit-outer { position: relative; height: 190vh; }
-.mk-orbit-stage { --e: 0; position: sticky; top: 0; height: 100vh; min-height: 640px; overflow: hidden; display: grid; grid-template-rows: auto minmax(320px, 1fr); justify-items: center; padding-top: 88px; }
+.mk-orbit-outer { position: relative; height: 120vh; }
+.mk-orbit-stage { --e: 0; position: sticky; top: 0; height: 100vh; min-height: 600px; overflow: hidden; display: grid; grid-template-rows: auto minmax(320px, 1fr); justify-items: center; padding-top: 88px; }
 .mk-orbit-stage::before { content: ""; position: absolute; left: 50%; top: 56%; width: min(1100px, 140vw); aspect-ratio: 1; transform: translate(-50%, -50%) scale(calc(0.7 + var(--e) * 0.3)); background: radial-gradient(closest-side, rgba(171, 255, 68, 0.14), rgba(28, 156, 129, 0.06) 55%, transparent); opacity: var(--e); pointer-events: none; }
 .mk-orbit-head { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; text-align: center; padding-inline: 20px; opacity: calc(0.25 + var(--e) * 0.75); transform: translateY(calc((1 - var(--e)) * 24px)); }
 .mk-orbit-head .mk-eyebrow { color: var(--mk-lime); }

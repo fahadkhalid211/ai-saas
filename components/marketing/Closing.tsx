@@ -160,8 +160,11 @@ export function Footer() {
           <span>{FOOTER.legalNote}</span>
         </div>
         <div className="mk-footer-giant-word" aria-hidden="true">
-          <svg viewBox="0 0 1000 165" width="100%" preserveAspectRatio="xMidYMid meet" className="mk-footer-wordmark-svg">
-            <text x="50%" y="78%" textAnchor="middle" className="mk-footer-wordmark-text">
+          <svg viewBox="0 0 1000 195" width="100%" preserveAspectRatio="xMidYMid meet" className="mk-footer-wordmark-svg">
+            <text x="50.3%" y="81.5%" textAnchor="middle" className="mk-footer-wordmark-shadow">
+              Crescelo
+            </text>
+            <text x="50%" y="79%" textAnchor="middle" className="mk-footer-wordmark-text">
               Crescelo
             </text>
           </svg>

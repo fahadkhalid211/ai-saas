@@ -212,28 +212,39 @@
   list-style: none;
 }
 
-/* Giant Optimizely-style wordmark across bottom of footer: full section width in brand lime */
+/* Giant Optimizely-style wordmark across bottom of footer: increased scale with dark green color and tactile button effect */
 .mk-footer-giant-word {
   width: 100%;
-  margin-top: 64px;
-  padding-bottom: 8px;
+  margin-top: 56px;
+  padding-bottom: 4px;
   user-select: none;
-  pointer-events: none;
   display: block;
 }
 .mk-footer-wordmark-svg {
   width: 100%;
   height: auto;
-  max-height: 180px;
+  max-height: 250px;
   display: block;
   overflow: visible;
+  filter: drop-shadow(0 4px 0 var(--mk-ink));
+}
+.mk-footer-wordmark-shadow {
+  font-family: var(--mk-serif);
+  font-size: 215px;
+  font-weight: 500;
+  letter-spacing: -0.04em;
+  fill: var(--mk-lime);
 }
 .mk-footer-wordmark-text {
   font-family: var(--mk-serif);
-  font-size: 195px;
-  font-weight: 400;
-  letter-spacing: -0.035em;
-  fill: var(--mk-lime);
+  font-size: 215px;
+  font-weight: 500;
+  letter-spacing: -0.04em;
+  fill: var(--mk-deep);
+  transition: transform 0.22s var(--mk-ease);
+}
+.mk-footer-giant-word:hover .mk-footer-wordmark-text {
+  transform: translateY(-2.5px);
 }
 
 /* Sticky playful scroll to top button */

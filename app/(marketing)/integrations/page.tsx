@@ -565,7 +565,7 @@ export default function IntegrationsPage() {
                     Select an integration to read specifications ({filtered.length})
                   </p>
 
-                  <div style={{ display: 'grid', gap: '10px', maxHeight: '680px', overflowY: 'auto', paddingRight: '6px' }}>
+                  <div data-lenis-prevent style={{ display: 'grid', gap: '10px', maxHeight: '680px', overflowY: 'auto', paddingRight: '6px' }}>
                     {filtered.map((item) => {
                       const isSelected = item.id === selectedIntegration.id;
                       return (
