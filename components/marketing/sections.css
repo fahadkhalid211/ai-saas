@@ -62,10 +62,10 @@
 
 /* Feature carousel */
 .mk-carousel { padding-bottom: 72px; overflow: hidden; }
-.mk-car-track { display: flex; gap: 20px; overflow-x: auto; scroll-snap-type: x mandatory; padding: 14px max(20px, calc((100vw - 1180px) / 2 + 32px)) 30px; scroll-padding-inline: max(20px, calc((100vw - 1180px) / 2 + 32px)); scrollbar-width: none; cursor: grab; overscroll-behavior-x: contain; }
+.mk-car-track { display: flex; gap: 20px; overflow-x: auto; padding: 14px max(20px, calc((100vw - 1180px) / 2 + 32px)) 30px; scrollbar-width: none; cursor: grab; overscroll-behavior-x: contain; }
 .mk-car-track::-webkit-scrollbar { display: none; }
-.mk-car-track.is-drag { cursor: grabbing; scroll-snap-type: none; user-select: none; }
-.mk-car-card { flex: 0 0 min(78vw, 340px); scroll-snap-align: start; display: flex; flex-direction: column; gap: 12px; min-height: 420px; padding: 22px; border: 1.5px solid var(--mk-ink); border-radius: 28px; background: var(--tone); transition: transform 0.25s var(--mk-ease), box-shadow 0.25s var(--mk-ease); }
+.mk-car-track.is-drag { cursor: grabbing; user-select: none; }
+.mk-car-card { flex: 0 0 min(78vw, 340px); display: flex; flex-direction: column; gap: 12px; min-height: 420px; padding: 22px; border: 1.5px solid var(--mk-ink); border-radius: 28px; background: var(--tone); transition: transform 0.25s var(--mk-ease), box-shadow 0.25s var(--mk-ease); }
 .mk-car-card:hover { transform: translate(2px, -3px); box-shadow: -5px 6px 0 var(--mk-deep); }
 .mk-car-art { flex: 1; display: grid; place-items: center; min-height: 170px; }
 .mk-car-glyph { display: grid; place-items: center; width: 120px; height: 120px; border-radius: 50%; border: 1.5px solid var(--mk-ink); background: var(--mk-surface); color: var(--mk-deep); transition: transform 0.55s var(--mk-ease); }
@@ -74,10 +74,8 @@
 .mk-car-card h3 { font-family: var(--mk-serif); font-weight: 400; font-size: 2rem; line-height: 1.05; letter-spacing: -0.02em; }
 .mk-car-card p { color: #2f3a33; font-size: 15px; }
 .mk-car-controls { display: flex; align-items: center; gap: 24px; }
-.mk-car-bar { flex: 1; height: 4px; border-radius: 4px; background: rgba(26, 26, 26, 0.14); overflow: hidden; }
-.mk-car-bar span { display: block; width: 100%; height: 100%; background: var(--mk-ink); transform-origin: left; transition: transform 0.2s linear; }
+.mk-car-hint { flex: 1; margin: 0; font-size: 13px; color: var(--mk-muted); }
 .mk-car-arrows { display: flex; gap: 8px; }
-.mk-icon-btn:disabled { opacity: 0.35; cursor: default; }
 
 /* Diagonal scroll benefits */
 .mk-diag-section { padding: 112px 0 40px; }

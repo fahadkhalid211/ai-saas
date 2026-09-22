@@ -1,11 +1,12 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState, type PointerEvent } from 'react';
+import { useEffect, useRef, useState, type PointerEvent } from 'react';
 import Link from 'next/link';
 import { BEHIND, CAROUSEL, TOOLS } from './content-extra';
 import { Eyebrow, Reveal } from './ui';
 import { Glyph, ToolArt } from './art';
 import { OrbitStage, type OrbitItem } from './OrbitStage';
+import { usePrefersReducedMotion } from './hooks';
 
 /* ------------------------------ Tools: three cards ------------------------------ */
 
@@ -86,42 +87,90 @@ export function BehindTheScenes() {
 
 /* ------------------------------ Feature carousel ------------------------------ */
 
+const CAR_SPEED = 42; // px per second while drifting
+const CAR_RESUME_MS = 1500; // pause after the visitor scrolls, drags or presses an arrow
+const CAR_COPIES = 3; // enough copies that a jump of one set is never visible
+
 export function FeatureCarousel() {
   const trackRef = useRef<HTMLDivElement>(null);
-  const [progress, setProgress] = useState(0);
-  const [atStart, setAtStart] = useState(true);
-  const [atEnd, setAtEnd] = useState(false);
-  const drag = useRef({ down: false, x: 0, left: 0, moved: false });
+  const reduced = usePrefersReducedMotion();
+  const drag = useRef({ down: false, x: 0, left: 0 });
+  const hold = useRef({ hover: false, focus: false, touch: false, offscreen: false, until: 0 });
   const [dragging, setDragging] = useState(false);
+  const items = CAROUSEL.items;
 
-  const update = useCallback(() => {
-    const el = trackRef.current;
-    if (!el) return;
-    const max = el.scrollWidth - el.clientWidth;
-    setProgress(max > 0 ? el.scrollLeft / max : 0);
-    setAtStart(el.scrollLeft < 4);
-    setAtEnd(el.scrollLeft > max - 4);
-  }, []);
-
+  // Continuous drift plus seamless wrap in both directions. The content is repeated, and whenever the
+  // scroll position leaves the middle copy it jumps by exactly one copy's width, which looks identical.
   useEffect(() => {
     const el = trackRef.current;
     if (!el) return;
     let raf = 0;
-    const on = () => {
-      if (!raf) raf = requestAnimationFrame(() => {
-        raf = 0;
-        update();
-      });
+    let last = 0;
+    let pos = 0;
+    let lastSet = -1;
+    let period = 0;
+
+    const measure = () => {
+      const cards = el.querySelectorAll<HTMLElement>('.mk-car-card');
+      if (cards.length < items.length * 2) return;
+      period = cards[items.length].offsetLeft - cards[0].offsetLeft;
     };
-    update();
-    el.addEventListener('scroll', on, { passive: true });
-    window.addEventListener('resize', on);
+    const wrap = () => {
+      if (period <= 0) return;
+      if (el.scrollLeft >= period * 2) el.scrollLeft -= period;
+      else if (el.scrollLeft < period) el.scrollLeft += period;
+      pos = el.scrollLeft;
+    };
+    // Movement that is not ours is the visitor (wheel, touch, drag, arrows): follow it and pause a moment.
+    const adoptUserScroll = () => {
+      if (Math.abs(el.scrollLeft - lastSet) > 1.5) {
+        hold.current.until = performance.now() + CAR_RESUME_MS;
+        pos = el.scrollLeft;
+      }
+    };
+    const onScroll = () => {
+      adoptUserScroll();
+      wrap();
+      lastSet = el.scrollLeft;
+    };
+    const tick = (t: number) => {
+      const dt = last ? Math.min(64, t - last) : 16;
+      last = t;
+      adoptUserScroll(); // do not overwrite a scroll the visitor made since the last frame
+      const h = hold.current;
+      const paused = h.hover || h.focus || h.touch || h.offscreen || drag.current.down || t < h.until;
+      if (!paused && period > 0) {
+        pos += (CAR_SPEED * dt) / 1000;
+        el.scrollLeft = pos;
+        lastSet = el.scrollLeft;
+        wrap();
+      }
+      raf = requestAnimationFrame(tick);
+    };
+
+    measure();
+    el.scrollLeft = period; // start on the middle copy so there is room to move both ways
+    pos = el.scrollLeft;
+    lastSet = pos;
+    el.addEventListener('scroll', onScroll, { passive: true });
+    const onResize = () => {
+      const before = period;
+      measure();
+      if (before > 0 && period > 0) el.scrollLeft = (el.scrollLeft / before) * period;
+    };
+    window.addEventListener('resize', onResize);
+    const io = new IntersectionObserver(([e]) => {
+      hold.current.offscreen = !e.isIntersecting;
+    });
+    io.observe(el);
+    if (!reduced) raf = requestAnimationFrame(tick);
     return () => {
-      el.removeEventListener('scroll', on);
-      window.removeEventListener('resize', on);
-      if (raf) cancelAnimationFrame(raf);
+      cancelAnimationFrame(raf);
+      io.disconnect();
+      el.removeEventListener('scroll', onScroll);
+      window.removeEventListener('resize', onResize);
     };
-  }, [update]);
+  }, [reduced, items.length]);
 
   const step = (dir: 1 | -1) => {
     const el = trackRef.current;
@@ -132,23 +181,28 @@ export function FeatureCarousel() {
   };
 
   const onDown = (e: PointerEvent<HTMLDivElement>) => {
-    if (e.pointerType !== 'mouse') return;
     const el = trackRef.current;
     if (!el) return;
-    drag.current = { down: true, x: e.clientX, left: el.scrollLeft, moved: false };
+    if (e.pointerType !== 'mouse') {
+      hold.current.touch = true; // the browser scrolls natively for touch
+      return;
+    }
+    drag.current = { down: true, x: e.clientX, left: el.scrollLeft };
     setDragging(true);
   };
   const onMove = (e: PointerEvent<HTMLDivElement>) => {
     const d = drag.current;
     const el = trackRef.current;
     if (!d.down || !el) return;
-    const dx = e.clientX - d.x;
-    if (Math.abs(dx) > 4) d.moved = true;
-    el.scrollLeft = d.left - dx;
+    el.scrollLeft = d.left - (e.clientX - d.x);
   };
   const onUp = () => {
-    drag.current.down = false;
-    setDragging(false);
+    hold.current.touch = false;
+    hold.current.until = performance.now() + CAR_RESUME_MS;
+    if (drag.current.down) {
+      drag.current.down = false;
+      setDragging(false);
+    }
   };
 
   return (
@@ -170,38 +224,57 @@ export function FeatureCarousel() {
         aria-roledescription="carousel"
         aria-label="Product features"
         tabIndex={0}
+        onPointerEnter={(e) => {
+          if (e.pointerType === 'mouse') hold.current.hover = true;
+        }}
+        onPointerLeave={(e) => {
+          if (e.pointerType === 'mouse') hold.current.hover = false;
+          onUp();
+        }}
+        onFocus={() => {
+          hold.current.focus = true;
+        }}
+        onBlur={() => {
+          hold.current.focus = false;
+        }}
         onPointerDown={onDown}
         onPointerMove={onMove}
         onPointerUp={onUp}
-        onPointerLeave={onUp}
+        onPointerCancel={onUp}
         onKeyDown={(e) => {
           if (e.key === 'ArrowRight') step(1);
           if (e.key === 'ArrowLeft') step(-1);
         }}
       >
-        {CAROUSEL.items.map((it, i) => (
-          <article key={it.id} className="mk-car-card" data-tone={it.tone} aria-label={`${i + 1} of ${CAROUSEL.items.length}: ${it.title}`}>
-            <div className="mk-car-art" aria-hidden="true">
-              <span className="mk-car-glyph">
-                <Glyph kind={it.glyph} />
-              </span>
-            </div>
-            <span className="mk-car-tag">{it.tag}</span>
-            <h3>{it.title}</h3>
-            <p>{it.body}</p>
-          </article>
-        ))}
+        {Array.from({ length: CAR_COPIES }).flatMap((_, copy) =>
+          items.map((it, i) => (
+            <article
+              key={`${copy}-${it.id}`}
+              className="mk-car-card"
+              data-tone={it.tone}
+              aria-hidden={copy === 1 ? undefined : true}
+              aria-label={copy === 1 ? `${i + 1} of ${items.length}: ${it.title}` : undefined}
+            >
+              <div className="mk-car-art" aria-hidden="true">
+                <span className="mk-car-glyph">
+                  <Glyph kind={it.glyph} />
+                </span>
+              </div>
+              <span className="mk-car-tag">{it.tag}</span>
+              <h3>{it.title}</h3>
+              <p>{it.body}</p>
+            </article>
+          ))
+        )}
       </div>
 
       <div className="mk-wrap mk-car-controls">
-        <div className="mk-car-bar" aria-hidden="true">
-          <span style={{ transform: `scaleX(${0.12 + progress * 0.88})` }} />
-        </div>
+        <p className="mk-car-hint">Drifts on its own. Hover to pause, drag or use the arrows to go either way.</p>
         <div className="mk-car-arrows">
-          <button type="button" className="mk-icon-btn" aria-label="Previous features" disabled={atStart} onClick={() => step(-1)}>
+          <button type="button" className="mk-icon-btn" aria-label="Previous features" onClick={() => step(-1)}>
             ←
           </button>
-          <button type="button" className="mk-icon-btn" aria-label="Next features" disabled={atEnd} onClick={() => step(1)}>
+          <button type="button" className="mk-icon-btn" aria-label="Next features" onClick={() => step(1)}>
             →
           </button>
         </div>

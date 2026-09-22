@@ -78,7 +78,7 @@ export interface CarouselFeature {
 export const CAROUSEL = {
   eyebrow: 'Everything included',
   title: 'Yes, you can test here. And the rest!',
-  intro: 'Every part of the product on one rail. Drag, swipe or use the arrows.',
+  intro: 'Every part of the product on one rail.',
   items: [
     { id: 'files', tag: 'Knowledge', title: 'Documents and files', body: 'PDF, Word and text files become searchable passages.', tone: 'lav', glyph: 'doc' },
     { id: 'urls', tag: 'Knowledge', title: 'Web pages and video', body: 'Add a website URL or a YouTube video and its transcript is indexed.', tone: 'mint', glyph: 'page' },
