@@ -204,33 +204,11 @@ export function DashboardSidebar({
                         </button>
                       </div>
 
-                      {/* Dropdown in the Left Sidebar */}
+                      {/* Integrations Sub-List */}
                       {showSubMenu && (
-                        <div className="ml-3 pl-2.5 my-1 border-l-2 border-slate-200 dark:border-slate-800 space-y-1.5 animate-in fade-in duration-150">
-                          {/* 1. Integration Dropdown Select */}
-                          <div className="relative">
-                            <select
-                              value={selectedIntegration}
-                              onChange={(e) => {
-                                setSelectedIntegration?.(e.target.value as IntegrationId);
-                                setActiveTab('channels');
-                              }}
-                              className="w-full appearance-none rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-2.5 py-1.5 text-xs font-semibold text-slate-800 dark:text-slate-200 outline-none focus:border-blue-500 pr-7 cursor-pointer shadow-xs hover:border-slate-300 dark:hover:border-slate-600 transition"
-                              title="Select Integration"
-                            >
-                              {INTEGRATIONS_CONFIG.map((item) => (
-                                <option key={item.id} value={item.id}>
-                                  {item.shortName}
-                                </option>
-                              ))}
-                            </select>
-                            <ChevronDown className="h-3.5 w-3.5 text-slate-400 absolute right-2 top-2 pointer-events-none" />
-                          </div>
-
-                          {/* 2. Direct 1-Click Sub-Links */}
-                          <div className="space-y-0.5">
-                            {INTEGRATIONS_CONFIG.map((item) => {
-                              const isSelected = isChannelsActive && selectedIntegration === item.id;
+                        <div className="ml-3 pl-2.5 my-1 border-l-2 border-slate-200 dark:border-slate-800 space-y-0.5 animate-in fade-in duration-150">
+                          {INTEGRATIONS_CONFIG.map((item) => {
+                            const isSelected = isChannelsActive && selectedIntegration === item.id;
                               return (
                                 <button
                                   key={item.id}
@@ -255,7 +233,6 @@ export function DashboardSidebar({
                                 </button>
                               );
                             })}
-                          </div>
                         </div>
                       )}
                     </div>
