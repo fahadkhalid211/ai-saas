@@ -179,6 +179,14 @@
 .mk-faq-item button { font-family: var(--mk-serif); font-size: 1.35rem; font-weight: 500; }
 .mk-faq-plus::before, .mk-faq-plus::after { height: 2px; }
 
+.mk-head.is-center .mk-h2,
+.mk-head.is-center .mk-h3,
+.mk-head.is-center .mk-lead,
+.mk-head.is-center .mk-body {
+  margin-inline: auto !important;
+  text-align: center !important;
+}
+
 /* Final CTA + footer */
 .mk-final { margin: 0 12px; padding: 96px 0; border-radius: 36px; background: var(--mk-deep); color: var(--mk-bg); text-align: center; }
 .mk-final .mk-h2 { margin-inline: auto; font-family: var(--mk-serif); color: var(--mk-lime); font-size: clamp(2.2rem, 6.5vw, 4.6rem); letter-spacing: -0.01em; line-height: 1.06; max-width: 18ch; }
@@ -186,8 +194,8 @@
 .mk-final .mk-cta-row { justify-content: center; }
 .mk-final .mk-btn-primary { background: var(--mk-lime); color: var(--mk-deep); border-color: var(--mk-lime); box-shadow: 0 3px 0 #4b9a1e; }
 .mk-final .mk-btn-primary:hover { background: var(--mk-lime); }
-.mk-final .mk-btn-ghost { background: transparent; color: var(--mk-bg); border-color: var(--mk-bg); }
-.mk-final .mk-btn-ghost:hover { background: var(--mk-bg); color: var(--mk-deep); }
+.mk-final .mk-btn-ghost { background: transparent !important; color: var(--mk-bg) !important; border: 1.5px solid rgba(255, 254, 235, 0.4) !important; }
+.mk-final .mk-btn-ghost:hover { background: var(--mk-lime) !important; color: var(--mk-deep) !important; border-color: var(--mk-lime) !important; transform: translateY(-2px); box-shadow: 0 4px 0 var(--mk-ink); }
 .mk-footer { border-top: 0; }
 .mk-news input { border: 1.5px solid var(--mk-ink); border-radius: 12px; }
 
@@ -204,23 +212,96 @@
   list-style: none;
 }
 
-/* Giant Optimizely-style wordmark across bottom of footer */
+/* Giant Optimizely-style wordmark across bottom of footer: full section width in brand lime */
 .mk-footer-giant-word {
-  font-family: var(--mk-serif);
-  font-size: clamp(3.8rem, 15vw, 13rem);
-  line-height: 0.85;
-  letter-spacing: -0.04em;
-  font-weight: 400;
-  color: var(--mk-deep);
-  opacity: 0.08;
-  text-align: center;
+  width: 100%;
+  margin-top: 64px;
+  padding-bottom: 8px;
   user-select: none;
   pointer-events: none;
-  margin-top: 56px;
-  padding-bottom: 8px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-transform: capitalize;
+  display: block;
+}
+.mk-footer-wordmark-svg {
+  width: 100%;
+  height: auto;
+  max-height: 180px;
+  display: block;
+  overflow: visible;
+}
+.mk-footer-wordmark-text {
+  font-family: var(--mk-serif);
+  font-size: 195px;
+  font-weight: 400;
+  letter-spacing: -0.035em;
+  fill: var(--mk-lime);
+}
+
+/* Sticky playful scroll to top button */
+.mk-scroll-top {
+  position: fixed;
+  bottom: 28px;
+  right: 28px;
+  z-index: 90;
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  border: 2px solid var(--mk-ink);
+  background: var(--mk-lime);
+  color: var(--mk-deep);
+  box-shadow: 0 4px 0 var(--mk-ink);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(16px) scale(0.9);
+  transition: opacity 0.25s var(--mk-ease), transform 0.25s var(--mk-ease), background-color 0.2s, box-shadow 0.2s;
+}
+.mk-scroll-top.is-visible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0) scale(1);
+}
+.mk-scroll-top:hover {
+  background: #c3ff74;
+  transform: translateY(-3px) scale(1.06);
+  box-shadow: 0 6px 0 var(--mk-ink);
+}
+.mk-scroll-top:active {
+  transform: translateY(2px) scale(0.96);
+  box-shadow: 0 1px 0 var(--mk-ink);
+}
+.mk-scroll-top svg {
+  width: 22px;
+  height: 22px;
+  stroke: var(--mk-deep);
+  stroke-width: 2.2;
+  transition: transform 0.2s var(--mk-ease);
+}
+.mk-scroll-top:hover svg {
+  transform: translateY(-2px);
+}
+
+/* Creative interactive showcase utility styles */
+.mk-cockpit-tab {
+  padding: 10px 18px;
+  border-radius: 999px;
+  border: 1.5px solid var(--mk-ink);
+  font-size: 14px;
+  font-weight: 700;
+  background: var(--mk-surface);
+  color: var(--mk-ink);
+  cursor: pointer;
+  transition: all 0.2s var(--mk-ease);
+}
+.mk-cockpit-tab:hover {
+  background: var(--mk-lav);
+  transform: translateY(-2px);
+}
+.mk-cockpit-tab.is-active {
+  background: var(--mk-deep);
+  color: var(--mk-lime);
+  box-shadow: 0 3px 0 var(--mk-ink);
 }
 
 @media (max-width: 640px) {

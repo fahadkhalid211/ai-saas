@@ -37,6 +37,7 @@ export default function VoiceAgentGuidePage() {
               title="Connecting Inbound AI Phone Calls"
               intro="How to give your Crescelo assistant a real phone number so callers can ask questions, verify hours, and book appointments over the phone."
               id="voice-guide"
+              align="center"
             />
 
             <div style={{ display: 'grid', gap: '32px', marginTop: '40px' }}>

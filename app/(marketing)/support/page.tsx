@@ -192,6 +192,7 @@ export default function SupportPage() {
               eyebrow="Popular Articles"
               title="Frequently viewed setup instructions."
               id="popular"
+              align="center"
             />
 
             <div style={{ display: 'grid', gap: '12px', marginTop: '36px' }}>
@@ -218,14 +219,14 @@ export default function SupportPage() {
                         borderRadius: '6px',
                         background: 'var(--mk-surface)',
                         border: '1px solid var(--mk-line)',
-                        color: 'var(--mk-muted)',
+                        color: 'var(--mk-deep)',
                       }}
                     >
                       {art.cat}
                     </span>
-                    <strong style={{ fontSize: '15px', color: 'var(--mk-deep)' }}>
+                    <span style={{ fontSize: '15px', fontWeight: 600, color: 'var(--mk-deep)' }}>
                       {art.title}
-                    </strong>
+                    </span>
                   </div>
                   <span style={{ fontSize: '18px', color: 'var(--mk-muted)' }}>→</span>
                 </Link>
@@ -246,7 +247,7 @@ export default function SupportPage() {
             </p>
             <div className="mk-cta-row" style={{ justifyContent: 'center' }}>
               <ButtonLink href="/support/contact">Open support request</ButtonLink>
-              <ButtonLink href="mailto:contact@crescelo.com" variant="ghost" style={{ borderColor: '#fff', color: '#fff' }}>
+              <ButtonLink href="mailto:contact@crescelo.com" variant="ghost">
                 Email contact@crescelo.com
               </ButtonLink>
             </div>

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 import Lenis from 'lenis';
 
 declare global {
@@ -11,6 +12,16 @@ declare global {
 
 /** Inertial page scrolling (same approach as the reference sites). Disabled for reduced motion. */
 export function SmoothScroll() {
+  const pathname = usePathname();
+
+  // Reset scroll to top on every route change immediately
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      window.__mkLenis?.scrollTo(0, { immediate: true });
+      window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    }
+  }, [pathname]);
+
   useEffect(() => {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     const lenis = new Lenis({ lerp: 0.085, smoothWheel: true, anchors: false });

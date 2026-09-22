@@ -302,7 +302,7 @@ export default function PricingPage() {
             </p>
             <div className="mk-cta-row" style={{ justifyContent: 'center' }}>
               <ButtonLink href={SIGNUP_HREF}>Create your assistant</ButtonLink>
-              <ButtonLink href="/support/contact" variant="ghost" style={{ borderColor: '#fff', color: '#fff' }}>
+              <ButtonLink href="/support/contact" variant="ghost">
                 Ask a billing question
               </ButtonLink>
             </div>

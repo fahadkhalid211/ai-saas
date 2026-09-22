@@ -37,6 +37,7 @@ export default function RagKnowledgeGuidePage() {
               title="Knowledge Base & Grounded RAG Indexing"
               intro="How Crescelo reads your documentation, creates vector embeddings, and ensures that answers cite your exact material without inventing facts."
               id="rag-guide"
+              align="center"
             />
 
             <div style={{ display: 'grid', gap: '28px', marginTop: '40px' }}>

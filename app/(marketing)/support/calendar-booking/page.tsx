@@ -37,6 +37,7 @@ export default function CalendarBookingGuidePage() {
               title="Calendar Booking & Concurrency Locks"
               intro="How Crescelo books appointments inside the chat conversation, syncs with external calendars, and prevents race-condition double-bookings."
               id="calendar-guide"
+              align="center"
             />
 
             <div style={{ display: 'grid', gap: '28px', marginTop: '40px' }}>
