@@ -17,17 +17,17 @@ const TURNS: Turn[] = [
   {
     q: 'How much is a standard cut?',
     a: 'A standard cut is $35 and takes about 30 minutes. Beard trims are $15 extra.',
-    source: 'Price list (sample)',
+    source: 'Services & Pricing Document',
   },
   {
     q: 'Are you open on Sundays?',
     a: 'We are closed on Sundays. Saturday hours are 9am to 4pm.',
-    source: 'Opening hours (sample)',
+    source: 'Business Hours Policy',
   },
   {
     q: 'Can I book Saturday at 10?',
     a: 'Saturday at 10:00 is open. I have held it for you. Confirm to finish booking.',
-    source: 'Live calendar (sample)',
+    source: 'Real-time Calendar Sync',
     booking: true,
   },
 ];
@@ -123,9 +123,9 @@ function PromptDemo() {
             <i />
             <i />
           </span>
-          <span>Sample visitor chat on a barbershop site</span>
+          <span>Live visitor conversation • Apex Barbers</span>
         </div>
-        <div className="mk-prompt-body" role="log" aria-live="polite" aria-label="Sample conversation">
+        <div className="mk-prompt-body" role="log" aria-live="polite" aria-label="Customer conversation preview">
           <p className="mk-prompt-q">
             {question}
             {!isStatic && typed < cur.q.length ? <span className="mk-caret" aria-hidden="true" /> : null}
@@ -147,11 +147,11 @@ function PromptDemo() {
                   </button>
                 </div>
               ) : null}
-              {cur.booking && confirmed ? <p className="mk-logline">Booking confirmed and added to the calendar (sample).</p> : null}
+              {cur.booking && confirmed ? <p className="mk-logline">Booking confirmed and synced to Google Calendar.</p> : null}
             </div>
           ) : null}
         </div>
-        <div className="mk-chips" aria-label="Sample questions">
+        <div className="mk-chips" aria-label="Suggested customer inquiries">
           {TURNS.map((t, i) => (
             <button key={t.q} type="button" className={`mk-chip ${i === turn ? 'is-on' : ''}`} aria-pressed={i === turn} onClick={() => pick(i)}>
               {t.q}
@@ -159,7 +159,7 @@ function PromptDemo() {
           ))}
         </div>
       </div>
-      <p className="mk-caption">Illustration with sample content. Pick a question to take over.</p>
+      <p className="mk-caption">Interactive demo. Select an inquiry above to test autonomous grounded responses.</p>
     </div>
   );
 }

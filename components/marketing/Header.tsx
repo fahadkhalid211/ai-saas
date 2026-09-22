@@ -50,11 +50,17 @@ export function Header() {
           </Link>
 
           <nav aria-label="Primary" className="mk-nav-desktop">
-            {NAV.map((n) => (
-              <a key={n.href} href={n.href} className="mk-nav-link">
-                {n.label}
-              </a>
-            ))}
+            {NAV.map((n) =>
+              n.href.startsWith('/') ? (
+                <Link key={n.href} href={n.href} className="mk-nav-link">
+                  {n.label}
+                </Link>
+              ) : (
+                <a key={n.href} href={n.href} className="mk-nav-link">
+                  {n.label}
+                </a>
+              )
+            )}
           </nav>
 
           <div className="mk-header-actions">
@@ -82,12 +88,19 @@ export function Header() {
       {open ? (
         <div id="mk-mobile-menu" ref={menuRef} className="mk-mobile" role="dialog" aria-label="Menu">
           <nav aria-label="Mobile">
-            {NAV.map((n) => (
-              <a key={n.href} href={n.href} className="mk-mobile-link" onClick={() => setOpen(false)}>
-                <span>{n.label}</span>
-                {n.description ? <small>{n.description}</small> : null}
-              </a>
-            ))}
+            {NAV.map((n) =>
+              n.href.startsWith('/') ? (
+                <Link key={n.href} href={n.href} className="mk-mobile-link" onClick={() => setOpen(false)}>
+                  <span>{n.label}</span>
+                  {n.description ? <small>{n.description}</small> : null}
+                </Link>
+              ) : (
+                <a key={n.href} href={n.href} className="mk-mobile-link" onClick={() => setOpen(false)}>
+                  <span>{n.label}</span>
+                  {n.description ? <small>{n.description}</small> : null}
+                </a>
+              )
+            )}
           </nav>
           <div className="mk-mobile-actions">
             <ButtonLink href={SIGNUP_HREF}>Create your assistant</ButtonLink>

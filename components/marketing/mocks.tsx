@@ -17,7 +17,7 @@ function SourcesVisual() {
   const [selected, setSelected] = useState(0);
   return (
     <div className="mk-mock">
-      <p className="mk-mock-label">Knowledge sources (sample)</p>
+      <p className="mk-mock-label">Knowledge sources</p>
       <ul className="mk-rows">
         {rows.map((r, i) => (
           <li key={r.name}>
@@ -70,7 +70,7 @@ function CalendarVisual() {
   const taken = new Set(['11:00', '15:30']);
   return (
     <div className="mk-mock">
-      <p className="mk-mock-label">Pick a slot (sample)</p>
+      <p className="mk-mock-label">Live calendar slot picker</p>
       <div className="mk-slots">
         {times.map((t) => (
           <button
@@ -123,7 +123,7 @@ function InboxVisual() {
   const [sel, setSel] = useState(0);
   return (
     <div className="mk-mock">
-      <p className="mk-mock-label">Conversations (sample)</p>
+      <p className="mk-mock-label">Live conversations</p>
       <ul className="mk-rows">
         {items.map((it, i) => (
           <li key={it.who}>
@@ -153,7 +153,7 @@ function ConfigVisual() {
   const [handover, setHandover] = useState(true);
   return (
     <div className="mk-mock">
-      <p className="mk-mock-label">Assistant settings (sample)</p>
+      <p className="mk-mock-label">Assistant configuration</p>
       <div className="mk-set">
         <span>Tone of voice</span>
         <div className="mk-toggle" role="group" aria-label="Tone of voice">

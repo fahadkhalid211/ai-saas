@@ -191,11 +191,44 @@
 .mk-footer { border-top: 0; }
 .mk-news input { border: 1.5px solid var(--mk-ink); border-radius: 12px; }
 
+/* Badge grid without repeating marquee ticker */
+.mk-badge-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 0;
+  list-style: none;
+}
+
+/* Giant Optimizely-style wordmark across bottom of footer */
+.mk-footer-giant-word {
+  font-family: var(--mk-serif);
+  font-size: clamp(3.8rem, 15vw, 13rem);
+  line-height: 0.85;
+  letter-spacing: -0.04em;
+  font-weight: 400;
+  color: var(--mk-deep);
+  opacity: 0.08;
+  text-align: center;
+  user-select: none;
+  pointer-events: none;
+  margin-top: 56px;
+  padding-bottom: 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-transform: capitalize;
+}
+
 @media (max-width: 640px) {
   .mk-hero { padding: 56px 0 40px; border-radius: 28px; }
   #metrics, .mk-final { border-radius: 28px; }
   .mk-mascot { right: 12px; top: -46px; }
   .mk-prompt-body { min-height: 210px; }
+  .mk-footer-giant-word { margin-top: 36px; }
 }
 @media (prefers-reduced-motion: reduce) {
     .mk-prompt, .mk-mascot, .mk-hero-glow { animation: none; }

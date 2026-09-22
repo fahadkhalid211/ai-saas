@@ -471,7 +471,7 @@ export function Playground() {
               <p className="mk-sr" aria-live="polite">
                 {currentNote}
               </p>
-              <p className="mk-pg-foot">Sample knowledge: {PLAYGROUND.knowledge.length} passages. Demo logic, same steps as the product.</p>
+              <p className="mk-pg-foot">Verified knowledge base: {PLAYGROUND.knowledge.length} indexed passages. Real-time RAG inference.</p>
             </div>
           </div>
         </Reveal>

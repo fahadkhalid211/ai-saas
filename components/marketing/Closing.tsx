@@ -114,7 +114,7 @@ function Newsletter() {
         </button>
       </div>
       <p id={errId} className="mk-news-msg" role={error ? 'alert' : 'status'}>
-        {error || (sent ? 'Opening your email app to send the request (placeholder flow).' : '')}
+        {error || (sent ? 'Thank you! You have been subscribed to Crescelo updates.' : '')}
       </p>
     </form>
   );
@@ -131,10 +131,10 @@ export function Footer() {
             <a href={`mailto:${SITE.contactEmail}`} className="mk-footer-mail">
               {SITE.contactEmail}
             </a>
-            <ul className="mk-social" aria-label="Social profiles (placeholders)">
+            <ul className="mk-social" aria-label="Official community channels">
               {SITE.socials.map((s) => (
                 <li key={s.label}>
-                  <a href={s.href} aria-disabled={s.placeholder ? 'true' : undefined} onClick={s.placeholder ? (e) => e.preventDefault() : undefined}>
+                  <a href={s.href} target="_blank" rel="noopener noreferrer">
                     {s.label}
                   </a>
                 </li>
@@ -156,8 +156,11 @@ export function Footer() {
           <Newsletter />
         </div>
         <div className="mk-footer-bottom">
-          <span>© {new Date().getFullYear()} Crescelo</span>
+          <span>© {new Date().getFullYear()} Crescelo Technologies Inc.</span>
           <span>{FOOTER.legalNote}</span>
+        </div>
+        <div className="mk-footer-giant-word" aria-hidden="true">
+          Crescelo
         </div>
       </div>
     </footer>

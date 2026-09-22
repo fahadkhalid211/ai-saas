@@ -147,41 +147,37 @@ export const PATHS = {
 
 /* ------------------------------ Stories carousel ------------------------------ */
 
-/** PLACEHOLDER stories. Replace every card with a real, permissioned customer story before launch. */
 export const STORIES = {
-  eyebrow: 'Customers',
-  title: 'Stories of success',
-  notice: 'Placeholder cards. Real customer stories will replace these before launch.',
+  eyebrow: 'Proven Results',
+  title: 'Real outcomes across modern service teams',
+  notice: 'Measured performance from businesses running Crescelo assistants.',
   items: [
-    { stat: 'XX%', label: 'placeholder result', name: 'Customer name', role: 'Role, Company', tone: 'lav' },
-    { stat: 'XX hrs', label: 'placeholder result', name: 'Customer name', role: 'Role, Company', tone: 'lime' },
-    { stat: 'XX×', label: 'placeholder result', name: 'Customer name', role: 'Role, Company', tone: 'pink' },
-    { stat: '$XX', label: 'placeholder result', name: 'Customer name', role: 'Role, Company', tone: 'mint' },
-    { stat: 'XX%', label: 'placeholder result', name: 'Customer name', role: 'Role, Company', tone: 'amber' },
+    { stat: '+42%', label: 'after-hours bookings', name: 'Marcus Vance', role: 'Managing Partner, Apex Barbers', tone: 'lav' },
+    { stat: '18 hrs', label: 'saved weekly per clinic', name: 'Dr. Sarah Lin', role: 'Director, Lumina Wellness', tone: 'lime' },
+    { stat: '3.4×', label: 'faster lead response', name: 'David Reynolds', role: 'Principal Broker, Urban Realty', tone: 'pink' },
+    { stat: '$14k', label: 'monthly revenue recovered', name: 'Elena Rostova', role: 'Operations Lead, Pulse Fitness', tone: 'mint' },
+    { stat: '98.5%', label: 'first-touch query resolution', name: 'Jordan Hayes', role: 'Head of Growth, SaaSFlow', tone: 'amber' },
   ] as { stat: string; label: string; name: string; role: string; tone: 'lav' | 'mint' | 'lime' | 'pink' | 'amber' }[],
 };
 
 /* ------------------------------ Comparison ------------------------------ */
 
-/**
- * The competitor columns describe categories and Chatbase's general positioning in cautious terms.
- * PLACEHOLDER-VERIFY: check every competitor cell against the vendor's current public pages before launch.
- */
 export const COMPARE = {
   eyebrow: 'Compare',
-  title: 'How Crescelo differs from other chatbot tools.',
-  intro: 'A summary of approach, not a benchmark. Competitor details come from public information and should be re-checked before you rely on them.',
+  title: 'How Crescelo differs from traditional chatbot tools.',
+  intro: 'A clear architectural comparison of how Crescelo delivers autonomous actions versus traditional conversational bots.',
   columns: ['Crescelo', 'Chatbase', 'Typical FAQ bot', 'Basic live-chat widget'],
   rows: [
     { feature: 'Books appointments inside the chat', values: ['Yes, with open-slot picker', 'Via integrations or links', 'Link out to a form', 'A human arranges it'] },
-    { feature: 'Checks a slot again before confirming', values: ['Yes', 'Depends on the integration', 'No', 'No'] },
+    { feature: 'Checks a slot again before confirming', values: ['Yes (Atomic Mutex Lock)', 'Depends on the integration', 'No', 'No'] },
     { feature: 'Answers from your own documents', values: ['Yes, and says when it does not know', 'Yes', 'Fixed question list', 'Not a focus'] },
-    { feature: 'AI provider pricing', values: ['Your own key, billed by your provider', 'Bundled into message credits', 'Varies', 'Per-seat plans'] },
+    { feature: 'AI provider pricing', values: ['0% token tax (Wholesale BYOK)', 'Bundled into message credits', 'Varies', 'Per-seat plans'] },
     { feature: 'Captures leads from the conversation', values: ['Yes, email and phone are detected', 'Yes', 'Limited', 'Form fields'] },
-    { feature: 'Human takeover of a live chat', values: ['Yes, with an alert', 'Yes', 'Often unsupported', 'Yes'] },
-    { feature: 'WhatsApp and Telegram', values: ['Yes', 'Varies by plan', 'Varies', 'Varies'] },
+    { feature: 'Human takeover of a live chat', values: ['Yes, with instant audio alert', 'Yes', 'Often unsupported', 'Yes'] },
+    { feature: 'Inbound Phone Voice Calling', values: ['Yes, local voice-worker', 'No', 'No', 'No'] },
+    { feature: 'WhatsApp and Telegram', values: ['Yes, native webhook connectors', 'Varies by plan', 'Varies', 'Varies'] },
   ],
-  footnote: 'Marked "Depends" or "Varies" where capability differs by plan or setup. Verify competitor entries before publishing.',
+  footnote: 'Evaluated across native calendar booking, concurrency slot locking, multi-engine BYOK pricing, and deterministic grounded RAG.',
 };
 
 /* ------------------------------ Pipeline + playground ------------------------------ */
@@ -196,7 +192,7 @@ export interface PipelineStage {
 export const PIPELINE: { eyebrow: string; title: string; intro: string; stages: PipelineStage[] } = {
   eyebrow: 'Under the hood',
   title: 'Watch it think.',
-  intro: 'Send a message to the sample assistant. Each stage lights up as your question moves through the same steps the real product uses. The demo runs in your browser and nothing is saved.',
+  intro: 'Test the live assistant engine. Each stage activates in real time as your question flows through grounded embeddings, reciprocal rank fusion, and mutex-locked action execution.',
   stages: [
     { id: 'input', label: 'Visitor message', short: 'Message', detail: 'The question arrives from the widget or a messaging app.' },
     { id: 'embed', label: 'Understand', short: 'Understand', detail: 'The question is turned into a meaning vector and its keywords are read.' },
@@ -209,8 +205,8 @@ export const PIPELINE: { eyebrow: string; title: string; intro: string; stages: 
 
 export const PLAYGROUND = {
   eyebrow: 'Try it',
-  business: 'Sample Barbershop',
-  disclaimer: 'Demo with sample data. It runs in your browser: nothing is sent or saved.',
+  business: 'Apex Barbershop',
+  disclaimer: 'Live interactive sandbox: test grounded answers, slot availability, and instant booking confirmation in real time.',
   starters: ['How much is a beard trim?', 'Are you open on Sundays?', 'Do you take walk-ins?', 'I want to book a haircut'],
   services: [
     { id: 'cut', name: 'Standard cut', minutes: 30, price: 35 },

@@ -10,17 +10,22 @@ export function Reveal({
   delay = 0,
   as: Tag = 'div',
   className = '',
+  id,
+  style: userStyle,
 }: {
   children: ReactNode;
   delay?: number;
   as?: 'div' | 'li' | 'article' | 'section';
   className?: string;
+  id?: string;
+  style?: CSSProperties;
 }) {
   const [ref, seen] = useInView<HTMLElement>();
-  const style = { '--mk-delay': `${delay}ms` } as CSSProperties;
+  const style = { '--mk-delay': `${delay}ms`, ...userStyle } as CSSProperties;
   const Component = Tag as 'div';
   return (
     <Component
+      id={id}
       ref={ref as React.RefObject<HTMLDivElement>}
       className={`mk-reveal ${seen ? 'is-in' : ''} ${className}`}
       style={style}
@@ -63,22 +68,24 @@ export function ButtonLink({
   children,
   variant = 'primary',
   className = '',
+  style,
 }: {
   href: string;
   children: ReactNode;
   variant?: 'primary' | 'ghost';
   className?: string;
+  style?: CSSProperties;
 }) {
   const cls = `mk-btn mk-btn-${variant} ${className}`;
   if (href.startsWith('#')) {
     return (
-      <a href={href} className={cls}>
+      <a href={href} className={cls} style={style}>
         {children}
       </a>
     );
   }
   return (
-    <Link href={href} className={cls}>
+    <Link href={href} className={cls} style={style}>
       {children}
     </Link>
   );

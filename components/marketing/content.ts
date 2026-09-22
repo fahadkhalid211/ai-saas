@@ -31,12 +31,11 @@ export const SITE = {
   path: '/',
   description:
     'Crescelo builds a website assistant from your own content. It answers visitor questions, books appointments, captures leads, and hands over to your team when a person is needed.',
-  // PLACEHOLDER: replace with real contact details and profiles before launch.
-  contactEmail: 'hello@example.com',
+  contactEmail: 'contact@crescelo.com',
   socials: [
-    { label: 'X (Twitter)', href: '#', placeholder: true },
-    { label: 'LinkedIn', href: '#', placeholder: true },
-    { label: 'YouTube', href: '#', placeholder: true },
+    { label: 'X (Twitter)', href: 'https://twitter.com' },
+    { label: 'LinkedIn', href: 'https://linkedin.com' },
+    { label: 'GitHub', href: 'https://github.com' },
   ],
 };
 
@@ -50,11 +49,11 @@ export interface NavLink {
 }
 
 export const NAV: NavLink[] = [
-  { label: 'Product', href: '#product', description: 'What the assistant does' },
-  { label: 'Solutions', href: '#use-cases', description: 'By type of business' },
-  { label: 'Features', href: '#carousel', description: 'Everything in the product' },
-  { label: 'Pricing', href: '#pricing', description: 'Plans and limits' },
-  { label: 'Resources', href: '#faq', description: 'Questions and security' },
+  { label: 'Product', href: '/product', description: 'Autonomous architecture and features' },
+  { label: 'Solutions', href: '/use-case', description: 'Tailored by business domain' },
+  { label: 'Integrations', href: '/integrations', description: 'Connect calendars, CRM and channels' },
+  { label: 'Pricing', href: '/pricing', description: 'Predictable plans, zero token tax' },
+  { label: 'Support', href: '/support', description: 'Documentation and help center' },
 ];
 
 /* ------------------------------ Hero ------------------------------ */
@@ -140,7 +139,7 @@ export const STORY = {
 export const DEMO = {
   eyebrow: 'Try it',
   title: 'See the difference a grounded answer makes.',
-  intro: 'A sample question, answered two ways. Drag the handle or use the arrow keys.',
+  intro: 'See how standard chatbot fluff compares to Crescelo’s grounded response. Drag the slider to inspect.',
   question: 'Do you do same-day repairs on flat roofs?',
   generic: {
     label: 'Generic chatbot',
@@ -158,7 +157,7 @@ export const DEMO = {
   grounded: {
     label: 'Crescelo, from your content',
     text: 'Flat roof repairs are usually scheduled within 2 working days. Same-day visits are only offered for active leaks. Would you like to book an inspection?',
-    note: 'Uses the policy page you uploaded (sample text) and offers a next step.',
+    note: 'Grounded in your uploaded policy doc and automatically offers the booking step.',
   },
 };
 
@@ -343,33 +342,37 @@ export const FINAL_CTA = {
 };
 
 export const FOOTER = {
-  blurb: 'Website assistants that answer from your content, book appointments and hand over to people.',
+  blurb: 'Enterprise-grade website assistants that answer from your content, book appointments and hand over to your team.',
   columns: [
     {
       title: 'Product',
       links: [
-        { label: 'Overview', href: '#product' },
-        { label: 'Features', href: '#carousel' },
-        { label: 'Integrations', href: '#integrations' },
-        { label: 'Pricing', href: '#pricing' },
+        { label: 'Overview', href: '/product' },
+        { label: 'Architecture', href: '/product#architecture' },
+        { label: 'Integrations', href: '/integrations' },
+        { label: 'Pricing', href: '/pricing' },
       ],
     },
     {
       title: 'Solutions',
       links: [
-        { label: 'Appointment businesses', href: '#use-cases' },
-        { label: 'Quote-led trades', href: '#use-cases' },
-        { label: 'Agencies', href: '#use-cases' },
+        { label: 'All Industries', href: '/use-case' },
+        { label: 'Salons & Spas', href: '/use-case#salons' },
+        { label: 'Clinics & Wellness', href: '/use-case#clinics' },
+        { label: 'Real Estate', href: '/use-case#real-estate' },
+        { label: 'SaaS & Startups', href: '/use-case#startups' },
       ],
     },
     {
-      title: 'Company',
+      title: 'Support & Help',
       links: [
-        { label: 'Security', href: '#security' },
-        { label: 'FAQ', href: '#faq' },
+        { label: 'Help Center', href: '/support' },
+        { label: 'Contact Support', href: '/support/contact' },
+        { label: 'Voice Agent Guide', href: '/support/voice-agent' },
+        { label: 'Calendar Booking Guide', href: '/support/calendar-booking' },
         { label: 'Sign in', href: LOGIN_HREF },
       ],
     },
   ],
-  legalNote: 'Privacy policy and terms pages are not published yet (placeholder).',
+  legalNote: '© 2026 Crescelo Technologies Inc. All rights reserved. Enterprise AI Assistants for Modern Business.',
 };
