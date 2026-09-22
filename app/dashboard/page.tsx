@@ -32,7 +32,7 @@ import { DocsTab } from '@/components/crm/DocsTab';
 import { TemplatesTab } from '@/components/crm/TemplatesTab';
 import { AnalyticsTab } from '@/components/crm/AnalyticsTab';
 import { KnowledgeTab } from '@/components/crm/KnowledgeTab';
-import { ChannelsTab } from '@/components/crm/ChannelsTab';
+import { ChannelsTab, IntegrationId } from '@/components/crm/ChannelsTab';
 import { ConversationsTab } from '@/components/crm/ConversationsTab';
 import { LandingPageTab } from '@/components/crm/LandingPageTab';
 import { WidgetTab } from '@/components/crm/WidgetTab';
@@ -83,6 +83,7 @@ export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState<
     'overview' | 'profile' | 'analytics' | 'billing' | 'landing_page' | 'team' | 'security' | 'audit' | 'knowledge' | 'engine' | 'behavior' | 'widget' | 'channels' | 'playground' | 'leads' | 'appointments' | 'docs' | 'templates' | 'history'
   >('overview');
+  const [selectedIntegration, setSelectedIntegration] = useState<IntegrationId>('slack');
 
   const [currentUser, setCurrentUser] = useState<any | null>(null);
   const [isMasterAdmin, setIsMasterAdmin] = useState<boolean>(false);
@@ -679,6 +680,8 @@ export default function DashboardPage() {
           <DashboardSidebar
             activeTab={activeTab}
             setActiveTab={setActiveTab}
+            selectedIntegration={selectedIntegration}
+            setSelectedIntegration={setSelectedIntegration}
             teamCount={teamSecurity.teamMembers.length}
             auditCount={teamSecurity.auditLogs.length}
             sourcesCount={knowledge.sources.length}
@@ -971,6 +974,8 @@ export default function DashboardPage() {
             {/* TAB: CHANNELS */}
             {activeTab === 'channels' && (
               <ChannelsTab
+                selectedIntegration={selectedIntegration}
+                setSelectedIntegration={setSelectedIntegration}
                 activeAssistant={activeAssistant}
                 formData={formData}
                 setFormData={setFormData}

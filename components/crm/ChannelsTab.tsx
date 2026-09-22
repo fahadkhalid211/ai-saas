@@ -44,6 +44,82 @@ export type IntegrationId =
   | 'smtp'
   | 'whitelabel';
 
+export interface IntegrationConfigItem {
+  id: IntegrationId;
+  name: string;
+  shortName: string;
+  category: string;
+  badge: string;
+  summary: string;
+}
+
+export const INTEGRATIONS_CONFIG: IntegrationConfigItem[] = [
+  {
+    id: 'slack',
+    name: 'Slack Alerts',
+    shortName: 'Slack',
+    category: 'Alerts & Collaboration',
+    badge: 'Real-Time Cards',
+    summary: 'Post rich Block Kit cards into team channels for new leads and bookings.',
+  },
+  {
+    id: 'google-sheets',
+    name: 'Google Sheets',
+    shortName: 'Google Sheets',
+    category: 'Productivity & CRM',
+    badge: 'Live Auto-Sync',
+    summary: 'Append formatted 12-column customer rows directly to any Google Sheet.',
+  },
+  {
+    id: 'telegram',
+    name: 'Telegram Bot',
+    shortName: 'Telegram Bot',
+    category: 'Autonomous Messaging',
+    badge: 'Zero API Cost',
+    summary: 'Autonomous 24/7 client assistant answering questions and booking on Telegram.',
+  },
+  {
+    id: 'whatsapp',
+    name: 'WhatsApp Cloud',
+    shortName: 'WhatsApp Cloud',
+    category: 'Autonomous Messaging',
+    badge: 'Meta Business',
+    summary: 'Official WhatsApp Business API integration for two-way automated client chats.',
+  },
+  {
+    id: 'phone',
+    name: 'Phone & AI Voice',
+    shortName: 'Phone & Voice',
+    category: 'Inbound Telephony',
+    badge: 'Sub-400ms Voice',
+    summary: 'Connect carrier lines to answer incoming voice calls with local speech synthesis.',
+  },
+  {
+    id: 'webhooks',
+    name: 'Zapier & Webhooks',
+    shortName: 'Webhooks',
+    category: 'Automation & CRM',
+    badge: 'Event Stream',
+    summary: 'Dispatch HMAC-SHA256 signed JSON payloads to Zapier, Make, n8n, or your CRM.',
+  },
+  {
+    id: 'smtp',
+    name: 'Custom SMTP',
+    shortName: 'Custom SMTP',
+    category: 'Email Delivery',
+    badge: 'Branded Sender',
+    summary: 'Route appointment confirmations and alerts via your dedicated mail server.',
+  },
+  {
+    id: 'whitelabel',
+    name: 'Agency White-Label',
+    shortName: 'White-Label',
+    category: 'Reseller & Agency',
+    badge: 'Client Branding',
+    summary: 'Remove Crescelo branding and display your agency watermark and backlink.',
+  },
+];
+
 export const SlackIcon: React.FC<{ className?: string }> = ({ className = 'h-5 w-5' }) => (
   <svg viewBox="0 0 122.8 122.8" className={className}>
     <path d="M25.8 77.6c0 7.1-5.8 12.9-12.9 12.9S0 84.7 0 77.6s5.8-12.9 12.9-12.9h12.9v12.9zm6.5 0c0-7.1 5.8-12.9 12.9-12.9s12.9 5.8 12.9 12.9v32.3c0 7.1-5.8 12.9-12.9 12.9s-12.9-5.8-12.9-12.9V77.6z" fill="#E01E5A" />
@@ -85,6 +161,8 @@ export interface ChannelsTabProps {
   handleSaveSmtpSettings: () => Promise<void>;
   handleTestEmailSend: () => Promise<void>;
   isMasterAdmin?: boolean;
+  selectedIntegration?: IntegrationId;
+  setSelectedIntegration?: (id: IntegrationId) => void;
 }
 
 export const ChannelsTab: React.FC<ChannelsTabProps> = ({
@@ -108,9 +186,13 @@ export const ChannelsTab: React.FC<ChannelsTabProps> = ({
   smtpTestResult,
   handleSaveSmtpSettings,
   handleTestEmailSend,
+  selectedIntegration: propSelectedIntegration,
+  setSelectedIntegration: propSetSelectedIntegration,
 }) => {
   // Navigation State
-  const [selectedIntegration, setSelectedIntegration] = useState<IntegrationId>('slack');
+  const [internalSelectedIntegration, setInternalSelectedIntegration] = useState<IntegrationId>('slack');
+  const selectedIntegration = propSelectedIntegration ?? internalSelectedIntegration;
+  const setSelectedIntegration = propSetSelectedIntegration ?? setInternalSelectedIntegration;
   const [activeSubTab, setActiveSubTab] = useState<'settings' | 'guide'>('settings');
 
   // Secrets visibility toggles
@@ -427,19 +509,24 @@ export const ChannelsTab: React.FC<ChannelsTabProps> = ({
 
   return (
     <div className="max-w-6xl space-y-7 mx-auto pb-14">
-      {/* 1. Header Bar with Global Save Trigger */}
+      {/* 1. Header Bar with Global Save Trigger & Breadcrumb */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-5">
         <div>
+          <div className="flex items-center gap-2 text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">
+            <span>Channels &amp; Integrations</span>
+            <span>/</span>
+            <span className="font-semibold text-blue-600 dark:text-blue-400">{currentItem.name}</span>
+          </div>
           <div className="flex items-center gap-2.5">
             <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
-              Channels &amp; Integrations Hub
+              {currentItem.name}
             </h1>
             <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-800 dark:bg-blue-900/60 dark:text-blue-300 uppercase tracking-wider">
               {activeCount} of {INTEGRATION_LIST.length} Connected
             </span>
           </div>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1.5">
-            Configure native integrations, messaging bots, real-time alerts, and automation pipelines with step-by-step guides.
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+            {currentItem.summary}
           </p>
         </div>
 
@@ -477,60 +564,7 @@ export const ChannelsTab: React.FC<ChannelsTabProps> = ({
         </div>
       </div>
 
-      {/* 2. Primary Integration Selector Dropdown & Quick Switcher */}
-      <div className="p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-3.5">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="flex items-center gap-2 text-xs font-semibold text-slate-700 dark:text-slate-300">
-            <Sliders className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-            <span>Select Integration to Configure &amp; Inspect:</span>
-          </div>
-
-          {/* Styled Select Dropdown */}
-          <div className="relative min-w-[280px]">
-            <select
-              value={selectedIntegration}
-              onChange={(e) => setSelectedIntegration(e.target.value as IntegrationId)}
-              className="w-full appearance-none rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/90 px-4 py-2.5 text-xs font-semibold text-slate-900 dark:text-white outline-none focus:border-blue-500 pr-10 cursor-pointer shadow-xs"
-            >
-              {INTEGRATION_LIST.map((item) => (
-                <option key={item.id} value={item.id}>
-                  {item.name} — {item.isActive ? 'Active' : 'Setup Required'} ({item.category})
-                </option>
-              ))}
-            </select>
-            <ChevronDown className="h-4 w-4 text-slate-400 absolute right-3.5 top-3 pointer-events-none" />
-          </div>
-        </div>
-
-        {/* Quick-Switch Horizontal Badges */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 pt-1 no-scrollbar">
-          {INTEGRATION_LIST.map((item) => {
-            const isSelected = selectedIntegration === item.id;
-            return (
-              <button
-                key={item.id}
-                type="button"
-                onClick={() => setSelectedIntegration(item.id)}
-                className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition cursor-pointer border ${
-                  isSelected
-                    ? 'bg-blue-600 text-white border-blue-600 shadow-xs'
-                    : 'bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700/60'
-                }`}
-              >
-                <span className="shrink-0">{item.icon}</span>
-                <span>{item.name}</span>
-                <span
-                  className={`h-2 w-2 rounded-full ${
-                    item.isActive ? (isSelected ? 'bg-white' : 'bg-emerald-500') : (isSelected ? 'bg-blue-300' : 'bg-slate-300 dark:bg-slate-600')
-                  }`}
-                />
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* 3. Integration View Header & Dual Sub-Tabs */}
+      {/* 2. Integration View Header & Dual Sub-Tabs */}
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 sm:p-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs">
           <div className="flex items-center gap-4">

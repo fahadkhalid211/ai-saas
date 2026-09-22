@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import {
   FileCheck,
   BarChart3,
@@ -22,7 +22,43 @@ import {
   BookOpen,
   UserCircle,
   Compass,
+  ChevronDown,
+  SendHorizontal,
+  Radio,
+  PhoneCall,
+  Webhook,
+  Mail,
+  Shield,
 } from 'lucide-react';
+import {
+  IntegrationId,
+  INTEGRATIONS_CONFIG,
+  SlackIcon,
+  GoogleSheetsIcon,
+} from '@/components/crm/ChannelsTab';
+
+function renderIntegrationIcon(id: IntegrationId) {
+  switch (id) {
+    case 'slack':
+      return <SlackIcon className="h-3.5 w-3.5 shrink-0" />;
+    case 'google-sheets':
+      return <GoogleSheetsIcon className="h-3.5 w-3.5 shrink-0" />;
+    case 'telegram':
+      return <SendHorizontal className="h-3.5 w-3.5 text-sky-500 shrink-0" />;
+    case 'whatsapp':
+      return <Radio className="h-3.5 w-3.5 text-emerald-500 shrink-0" />;
+    case 'phone':
+      return <PhoneCall className="h-3.5 w-3.5 text-indigo-500 shrink-0" />;
+    case 'webhooks':
+      return <Webhook className="h-3.5 w-3.5 text-amber-500 shrink-0" />;
+    case 'smtp':
+      return <Mail className="h-3.5 w-3.5 text-blue-500 shrink-0" />;
+    case 'whitelabel':
+      return <Shield className="h-3.5 w-3.5 text-purple-500 shrink-0" />;
+    default:
+      return <Share2 className="h-3.5 w-3.5 text-slate-400 shrink-0" />;
+  }
+}
 
 interface TabItem {
   id: string;
@@ -40,6 +76,8 @@ interface TabSection {
 interface DashboardSidebarProps {
   activeTab: string;
   setActiveTab: (tab: any) => void;
+  selectedIntegration?: IntegrationId;
+  setSelectedIntegration?: (id: IntegrationId) => void;
   teamCount: number;
   auditCount: number;
   sourcesCount: number;
@@ -56,6 +94,8 @@ interface DashboardSidebarProps {
 export function DashboardSidebar({
   activeTab,
   setActiveTab,
+  selectedIntegration = 'slack',
+  setSelectedIntegration,
   teamCount,
   auditCount,
   sourcesCount,
@@ -69,6 +109,7 @@ export function DashboardSidebar({
   onOpenTour,
 }: DashboardSidebarProps) {
   const canViewAudit = Boolean(isOwner || isMasterAdmin);
+  const [isChannelsExpanded, setIsChannelsExpanded] = useState<boolean>(true);
 
   const sections: TabSection[] = [
     {
@@ -99,7 +140,7 @@ export function DashboardSidebar({
       items: [
         { id: 'landing_page', label: 'Landing Pages', icon: Globe, count: landingPagesCount },
         { id: 'widget', label: 'Widget & Styling', icon: Palette },
-        { id: 'channels', label: 'Channels & Alerts', icon: Share2 },
+        { id: 'channels', label: 'Channels & Integrations', icon: Share2 },
         { id: 'behavior', label: 'Behavior & Rules', icon: Sliders },
         { id: 'templates', label: 'Bot Templates', icon: LayoutTemplate },
       ],
@@ -128,6 +169,99 @@ export function DashboardSidebar({
             </div>
             <nav className="space-y-0.5">
               {section.items.map((tab) => {
+                if (tab.id === 'channels') {
+                  const isChannelsActive = activeTab === 'channels';
+                  const showSubMenu = isChannelsActive || isChannelsExpanded;
+                  return (
+                    <div key={tab.id} className="space-y-1">
+                      <div
+                        onClick={() => {
+                          setActiveTab('channels');
+                          setIsChannelsExpanded(true);
+                        }}
+                        className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-xs font-medium transition cursor-pointer select-none ${
+                          isChannelsActive
+                            ? 'bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-400 font-semibold'
+                            : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-200'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2.5">
+                          <Share2 className={`h-4 w-4 ${isChannelsActive ? 'text-blue-600 dark:text-blue-400' : 'text-slate-500'}`} />
+                          <span>{tab.label}</span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setIsChannelsExpanded(!isChannelsExpanded);
+                          }}
+                          className="p-0.5 rounded hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition cursor-pointer"
+                          title={showSubMenu ? 'Collapse Integrations' : 'Expand Integrations'}
+                        >
+                          <ChevronDown
+                            className={`h-3.5 w-3.5 transition-transform duration-200 ${showSubMenu ? 'rotate-0' : '-rotate-90'}`}
+                          />
+                        </button>
+                      </div>
+
+                      {/* Dropdown in the Left Sidebar */}
+                      {showSubMenu && (
+                        <div className="ml-3 pl-2.5 my-1 border-l-2 border-slate-200 dark:border-slate-800 space-y-1.5 animate-in fade-in duration-150">
+                          {/* 1. Integration Dropdown Select */}
+                          <div className="relative">
+                            <select
+                              value={selectedIntegration}
+                              onChange={(e) => {
+                                setSelectedIntegration?.(e.target.value as IntegrationId);
+                                setActiveTab('channels');
+                              }}
+                              className="w-full appearance-none rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-2.5 py-1.5 text-xs font-semibold text-slate-800 dark:text-slate-200 outline-none focus:border-blue-500 pr-7 cursor-pointer shadow-xs hover:border-slate-300 dark:hover:border-slate-600 transition"
+                              title="Select Integration"
+                            >
+                              {INTEGRATIONS_CONFIG.map((item) => (
+                                <option key={item.id} value={item.id}>
+                                  {item.shortName}
+                                </option>
+                              ))}
+                            </select>
+                            <ChevronDown className="h-3.5 w-3.5 text-slate-400 absolute right-2 top-2 pointer-events-none" />
+                          </div>
+
+                          {/* 2. Direct 1-Click Sub-Links */}
+                          <div className="space-y-0.5">
+                            {INTEGRATIONS_CONFIG.map((item) => {
+                              const isSelected = isChannelsActive && selectedIntegration === item.id;
+                              return (
+                                <button
+                                  key={item.id}
+                                  type="button"
+                                  onClick={() => {
+                                    setSelectedIntegration?.(item.id);
+                                    setActiveTab('channels');
+                                  }}
+                                  className={`w-full flex items-center justify-between rounded-md px-2 py-1 text-[11px] font-medium transition cursor-pointer ${
+                                    isSelected
+                                      ? 'bg-blue-100/70 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 font-semibold'
+                                      : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-200'
+                                  }`}
+                                >
+                                  <div className="flex items-center gap-1.5 truncate">
+                                    {renderIntegrationIcon(item.id)}
+                                    <span className="truncate">{item.shortName}</span>
+                                  </div>
+                                  {isSelected && (
+                                    <span className="h-1.5 w-1.5 rounded-full bg-blue-600 dark:bg-blue-400 shrink-0" />
+                                  )}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                }
+
                 const Icon = tab.icon;
                 const isActive = activeTab === tab.id;
                 return (
