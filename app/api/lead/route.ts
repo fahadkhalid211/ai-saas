@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { Database } from '@/lib/db';
 import { sendSupportLeadEmail } from '@/lib/email';
 import { dispatchWebhook } from '@/lib/webhook';
+import { dispatchSlackNotification } from '@/lib/integrations/slack';
+import { dispatchGoogleSheetRow } from '@/lib/integrations/google-sheets';
 import { verifyAdminRequest, getAuthContext, requireWorkspaceAssistant, withRoleAuth } from '@/lib/security/auth';
 import { enforceRateLimit, getClientIp } from '@/lib/security/rate-limit';
 import { resolveAttribution, attributionCustomData } from '@/lib/analytics/attribution';
@@ -115,6 +117,20 @@ export async function POST(req: Request) {
     if (assistant?.webhookUrl && assistant.webhookUrl.trim()) {
       dispatchWebhook(assistant, 'lead.created', lead).catch((webhookErr) => {
         console.warn('[LeadAPI] Webhook dispatch warning:', webhookErr?.message);
+      });
+    }
+
+    // Asynchronously dispatch Slack notification
+    if (assistant?.slackEnabled && assistant.slackWebhookUrl?.trim()) {
+      dispatchSlackNotification(assistant, 'lead.created', lead).catch((slackErr) => {
+        console.warn('[LeadAPI] Slack notification warning:', slackErr?.message);
+      });
+    }
+
+    // Asynchronously dispatch Google Sheet row
+    if (assistant?.googleSheetsEnabled && assistant.googleSheetsWebhookUrl?.trim()) {
+      dispatchGoogleSheetRow(assistant, 'lead.created', lead).catch((sheetsErr) => {
+        console.warn('[LeadAPI] Google Sheets sync warning:', sheetsErr?.message);
       });
     }
 

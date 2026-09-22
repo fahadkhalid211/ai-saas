@@ -424,6 +424,75 @@ const INTEGRATIONS: IntegrationDetail[] = [
       },
     },
   },
+  {
+    id: 'slack',
+    name: 'Slack',
+    category: 'messaging',
+    categoryLabel: 'Messaging Channels',
+    badge: 'Native',
+    tone: 'lime',
+    tagline: 'Instant Block Kit cards in team channels for leads & bookings.',
+    overview:
+      'Send structured, actionable notifications directly to any Slack channel whenever a prospective customer submits contact info or locks in an appointment. Team members get instant visibility with formatted lead details, contact links, and booking notes without context switching.',
+    features: [
+      'Interactive Slack Block Kit rich card formatting',
+      'Configurable per-assistant channel routing via Incoming Webhooks',
+      'Instant alerts for lead.created and appointment.created events',
+      'Sub-80ms notification delivery with automatic SSRF protection',
+    ],
+    latency: '60ms delivery latency',
+    security: 'Validated Incoming Webhook endpoint with SSRF & private IP filtering',
+    samplePayload: {
+      text: '🎯 New Lead Captured: Jordan Rivera (jordan@acme.com)',
+      blocks: [
+        {
+          type: 'header',
+          text: { type: 'plain_text', text: '🎯 New Lead Captured!' },
+        },
+        {
+          type: 'section',
+          fields: [
+            { type: 'mrkdwn', text: '*Lead Name:*\nJordan Rivera' },
+            { type: 'mrkdwn', text: '*Email:*\njordan@acme.com' },
+            { type: 'mrkdwn', text: '*Phone:*\n+1 (555) 438-9210' },
+            { type: 'mrkdwn', text: '*Source:*\nWebsite Live Chat' },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    id: 'google-sheets',
+    name: 'Google Sheets',
+    category: 'crm',
+    categoryLabel: 'CRM & Storage',
+    badge: 'Native',
+    tone: 'mint',
+    tagline: 'Zero-code auto-sync appending formatted rows in real time.',
+    overview:
+      'Automatically append structured tabular rows into any Google Sheet the instant an appointment is booked or a lead is captured. Includes an auto-header creation template with customer contact details, service types, scheduled dates, and notes for immediate team collaboration without paid database tools.',
+    features: [
+      'Auto-appends structured 12-column customer rows in real time',
+      'Includes 30-second copy-paste Google Apps Script Web App template',
+      'Zero per-seat or third-party automation tool costs',
+      'Concurrency lock protection preventing row collisions',
+    ],
+    latency: '120ms append latency',
+    security: 'TLS encrypted transport with least-privilege Web App authorization',
+    samplePayload: {
+      event: 'appointment.created',
+      assistantName: 'Corporate Concierge',
+      customerName: 'Marcus Brody',
+      customerEmail: 'marcus@brody.io',
+      customerPhone: '+1 (555) 019-2834',
+      service: 'Haircut & Styling',
+      appointmentDate: '2026-09-23',
+      appointmentTime: '2:30 PM',
+      duration: '30m',
+      notes: 'Confirmed slot via Web Chat',
+      source: 'Calendar Booking',
+    },
+  },
 ];
 
 const CATEGORIES = [

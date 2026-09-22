@@ -22,7 +22,32 @@ import {
   Mail,
   AlertCircle,
   Info,
+  FileSpreadsheet,
+  ExternalLink,
+  ChevronDown,
+  ChevronUp,
 } from 'lucide-react';
+import { GOOGLE_APPS_SCRIPT_TEMPLATE } from '@/lib/integrations/google-sheets-template';
+
+const SlackIcon: React.FC<{ className?: string }> = ({ className = 'h-5 w-5' }) => (
+  <svg viewBox="0 0 122.8 122.8" className={className}>
+    <path d="M25.8 77.6c0 7.1-5.8 12.9-12.9 12.9S0 84.7 0 77.6s5.8-12.9 12.9-12.9h12.9v12.9zm6.5 0c0-7.1 5.8-12.9 12.9-12.9s12.9 5.8 12.9 12.9v32.3c0 7.1-5.8 12.9-12.9 12.9s-12.9-5.8-12.9-12.9V77.6z" fill="#E01E5A" />
+    <path d="M45.2 25.8c-7.1 0-12.9-5.8-12.9-12.9S38.1 0 45.2 0s12.9 5.8 12.9 12.9v12.9H45.2zm0 6.5c7.1 0 12.9 5.8 12.9 12.9s-5.8 12.9-12.9 12.9H12.9C5.8 58.1 0 52.3 0 45.2s5.8-12.9 12.9-12.9h32.3z" fill="#36C5F0" />
+    <path d="M97 45.2c0-7.1 5.8-12.9 12.9-12.9s12.9 5.8 12.9 12.9-5.8 12.9-12.9 12.9H97V45.2zm-6.5 0c0 7.1-5.8 12.9-12.9 12.9s-12.9-5.8-12.9-12.9V12.9C64.7 5.8 70.5 0 77.6 0s12.9 5.8 12.9 12.9v32.3z" fill="#2EB67D" />
+    <path d="M77.6 97c7.1 0 12.9 5.8 12.9 12.9s-5.8 12.9-12.9 12.9-12.9-5.8-12.9-12.9V97h12.9zm0-6.5c-7.1 0-12.9-5.8-12.9-12.9s5.8-12.9 12.9-12.9h32.3c7.1 0 12.9 5.8 12.9 12.9s-5.8 12.9-12.9 12.9H77.6z" fill="#ECB22E" />
+  </svg>
+);
+
+const GoogleSheetsIcon: React.FC<{ className?: string }> = ({ className = 'h-5 w-5' }) => (
+  <svg viewBox="0 0 48 48" className={className}>
+    <path fill="#0F9D58" d="M29 4H11c-2.2 0-4 1.8-4 4v32c0 2.2 1.8 4 4 4h26c2.2 0 4-1.8 4-4V16L29 4z" />
+    <path fill="#EA4335" d="M29 4v12h12" opacity="0.2" />
+    <path fill="#FFFFFF" d="M29 4v12h12L29 4z" />
+    <path fill="#FFFFFF" opacity="0.3" d="M14 22h20v2H14zm0 6h20v2H14zm0 6h20v2H14z" />
+    <rect x="14" y="22" width="20" height="15" rx="1.5" fill="#FFFFFF" />
+    <path fill="#0F9D58" d="M16 24h7v4h-7zm9 0h7v4h-7zm-9 6h7v4h-7zm9 0h7v4h-7z" />
+  </svg>
+);
 
 export interface ChannelsTabProps {
   activeAssistant: any;
@@ -190,6 +215,115 @@ export const ChannelsTab: React.FC<ChannelsTabProps> = ({
     }
   }
 
+  const [slackTestStatus, setSlackTestStatus] = useState<{
+    loading: boolean;
+    tested?: boolean;
+    success?: boolean;
+    error?: string;
+    statusCode?: number;
+    latencyMs?: number;
+  }>({ loading: false });
+
+  const [googleSheetsTestStatus, setGoogleSheetsTestStatus] = useState<{
+    loading: boolean;
+    tested?: boolean;
+    success?: boolean;
+    error?: string;
+    statusCode?: number;
+    latencyMs?: number;
+  }>({ loading: false });
+
+  const [copiedGoogleScript, setCopiedGoogleScript] = useState(false);
+  const [showAppsScriptGuide, setShowAppsScriptGuide] = useState(false);
+
+  async function handleSlackTestPing() {
+    if (!formData.slackWebhookUrl?.trim()) {
+      setSlackTestStatus({ loading: false, tested: true, success: false, error: 'Please enter a Slack Incoming Webhook URL.' });
+      return;
+    }
+    setSlackTestStatus({ loading: true });
+    try {
+      const res = await fetch('/api/channels/slack', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          webhookUrl: formData.slackWebhookUrl.trim(),
+          assistantName: activeAssistant?.name || 'AI Assistant',
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setSlackTestStatus({
+          loading: false,
+          tested: true,
+          success: true,
+          statusCode: data.statusCode,
+          latencyMs: data.latencyMs,
+        });
+      } else {
+        setSlackTestStatus({
+          loading: false,
+          tested: true,
+          success: false,
+          error: data.error || 'Slack test ping failed',
+          statusCode: data.statusCode,
+          latencyMs: data.latencyMs,
+        });
+      }
+    } catch (err: any) {
+      setSlackTestStatus({
+        loading: false,
+        tested: true,
+        success: false,
+        error: err?.message || 'Failed to send test card to Slack',
+      });
+    }
+  }
+
+  async function handleGoogleSheetsTestPing() {
+    if (!formData.googleSheetsWebhookUrl?.trim()) {
+      setGoogleSheetsTestStatus({ loading: false, tested: true, success: false, error: 'Please enter a Google Sheets Web App URL.' });
+      return;
+    }
+    setGoogleSheetsTestStatus({ loading: true });
+    try {
+      const res = await fetch('/api/channels/google-sheets', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          webhookUrl: formData.googleSheetsWebhookUrl.trim(),
+          assistantName: activeAssistant?.name || 'AI Assistant',
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setGoogleSheetsTestStatus({
+          loading: false,
+          tested: true,
+          success: true,
+          statusCode: data.statusCode,
+          latencyMs: data.latencyMs,
+        });
+      } else {
+        setGoogleSheetsTestStatus({
+          loading: false,
+          tested: true,
+          success: false,
+          error: data.error || 'Google Sheets test row failed',
+          statusCode: data.statusCode,
+          latencyMs: data.latencyMs,
+        });
+      }
+    } catch (err: any) {
+      setGoogleSheetsTestStatus({
+        loading: false,
+        tested: true,
+        success: false,
+        error: err?.message || 'Failed to send test row to Google Sheets',
+      });
+    }
+  }
+
   return (
               <div className="max-w-6xl space-y-8 mx-auto pb-12">
                 {/* Header Section with Save Trigger */}
@@ -242,8 +376,8 @@ export const ChannelsTab: React.FC<ChannelsTabProps> = ({
                   </div>
                 </div>
 
-                {/* 4 Summary Stat Cards */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                {/* 6 Summary Stat Cards */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {/* Web Widget Card */}
                   <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs flex items-center justify-between">
                     <div className="space-y-1">
@@ -301,11 +435,49 @@ export const ChannelsTab: React.FC<ChannelsTabProps> = ({
                     </div>
                   </div>
 
+                  {/* Slack Channel Alerts Card */}
+                  <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs flex items-center justify-between">
+                    <div className="space-y-1">
+                      <div className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                        Slack Channel Alerts
+                      </div>
+                      <div className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                        <span>{formData.slackEnabled ? 'Active' : 'Disabled'}</span>
+                      </div>
+                      <div className="text-[11px] text-slate-500 dark:text-slate-400 flex items-center gap-1 font-medium">
+                        <span className={`h-1.5 w-1.5 rounded-full ${formData.slackEnabled ? 'bg-emerald-500' : 'bg-slate-400'}`}></span>
+                        {formData.slackWebhookUrl ? 'Channel Connected' : 'Webhook Missing'}
+                      </div>
+                    </div>
+                    <div className="h-11 w-11 rounded-xl bg-rose-50/70 dark:bg-rose-950/40 text-slate-700 dark:text-slate-300 flex items-center justify-center border border-rose-100 dark:border-rose-900/40">
+                      <SlackIcon className="h-5 w-5" />
+                    </div>
+                  </div>
+
+                  {/* Google Sheets Sync Card */}
+                  <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs flex items-center justify-between">
+                    <div className="space-y-1">
+                      <div className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                        Google Sheets Sync
+                      </div>
+                      <div className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                        <span>{formData.googleSheetsEnabled ? 'Live Sync' : 'Disabled'}</span>
+                      </div>
+                      <div className="text-[11px] text-slate-500 dark:text-slate-400 flex items-center gap-1 font-medium">
+                        <span className={`h-1.5 w-1.5 rounded-full ${formData.googleSheetsEnabled ? 'bg-emerald-500' : 'bg-slate-400'}`}></span>
+                        {formData.googleSheetsWebhookUrl ? 'Sheet Connected' : 'Setup Required'}
+                      </div>
+                    </div>
+                    <div className="h-11 w-11 rounded-xl bg-emerald-50/70 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center border border-emerald-100 dark:border-emerald-900/40">
+                      <GoogleSheetsIcon className="h-5 w-5" />
+                    </div>
+                  </div>
+
                   {/* Webhooks & Zapier Card */}
                   <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs flex items-center justify-between">
                     <div className="space-y-1">
                       <div className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">
-                        Zapier &amp; Webhooks
+                        Zapier &amp; Custom Webhooks
                       </div>
                       <div className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
                         <span>{formData.webhookUrl ? 'Connected' : 'Inactive'}</span>
@@ -860,6 +1032,478 @@ export const ChannelsTab: React.FC<ChannelsTabProps> = ({
                   </div>
                 </div>
 
+                {/* CHANNEL 5: SLACK CHANNEL ALERTS */}
+                <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 sm:p-7 shadow-xs space-y-6">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-200 dark:border-slate-800">
+                    <div className="flex items-center gap-3.5">
+                      <div className="h-12 w-12 rounded-2xl bg-rose-50/80 dark:bg-rose-950/60 text-slate-800 dark:text-slate-200 flex items-center justify-center border border-rose-200 dark:border-rose-900/50">
+                        <SlackIcon className="h-6 w-6" />
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <h2 className="text-base font-bold text-slate-900 dark:text-white">
+                            Slack Channel Integration
+                          </h2>
+                          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300">
+                            Block Kit Cards
+                          </span>
+                        </div>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                          Stream incoming visitor leads and confirmed calendar appointments straight into your company Slack channels.
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      <button
+                        type="button"
+                        onClick={handleSlackTestPing}
+                        disabled={slackTestStatus.loading || !formData.slackWebhookUrl}
+                        className="flex items-center gap-1.5 rounded-xl border border-rose-200 dark:border-rose-900/80 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/40 dark:hover:bg-rose-950/70 text-rose-900 dark:text-rose-200 px-4 py-2 text-xs font-semibold shadow-2xs transition disabled:opacity-50 cursor-pointer"
+                      >
+                        {slackTestStatus.loading ? (
+                          <RefreshCw className="h-3.5 w-3.5 animate-spin text-rose-600" />
+                        ) : (
+                          <Send className="h-3.5 w-3.5 text-rose-600 dark:text-rose-400" />
+                        )}
+                        <span>Send Test Ping</span>
+                      </button>
+
+                      <label className="relative inline-flex items-center cursor-pointer select-none">
+                        <input
+                          type="checkbox"
+                          checked={formData.slackEnabled || false}
+                          onChange={(e) =>
+                            setFormData({ ...formData, slackEnabled: e.target.checked })
+                          }
+                          className="sr-only peer"
+                        />
+                        <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-800 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-slate-600 peer-checked:bg-emerald-600"></div>
+                        <span className="ml-2.5 text-xs font-semibold text-slate-700 dark:text-slate-300">
+                          {formData.slackEnabled ? 'Active' : 'Disabled'}
+                        </span>
+                      </label>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {/* Left: Webhook URL & Event Subscriptions */}
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                          Slack Incoming Webhook URL
+                        </label>
+                        <input
+                          type="url"
+                          placeholder="https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX"
+                          value={formData.slackWebhookUrl || ''}
+                          onChange={(e) =>
+                            setFormData({ ...formData, slackWebhookUrl: e.target.value })
+                          }
+                          className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-3.5 py-2.5 text-xs font-mono text-slate-900 dark:text-slate-100 outline-none focus:border-rose-500"
+                        />
+                        <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 flex items-center gap-1">
+                          Create via a Slack App under <strong>Incoming Webhooks</strong>.{' '}
+                          <a
+                            href="https://api.slack.com/messaging/webhooks"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-600 dark:text-blue-400 hover:underline inline-flex items-center gap-0.5"
+                          >
+                            Slack Guide <ExternalLink className="h-3 w-3 inline" />
+                          </a>
+                        </p>
+                      </div>
+
+                      {/* Event Subscriptions */}
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                          Notified Slack Events
+                        </label>
+                        <div className="space-y-2">
+                          <label className="flex items-center gap-2 text-xs text-slate-700 dark:text-slate-300 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={(formData.slackEvents || ['lead.created', 'appointment.created']).includes('lead.created')}
+                              onChange={(e) => {
+                                const current: string[] = formData.slackEvents || ['lead.created', 'appointment.created'];
+                                const next = e.target.checked
+                                  ? [...current, 'lead.created']
+                                  : current.filter((x: string) => x !== 'lead.created');
+                                setFormData({ ...formData, slackEvents: next });
+                              }}
+                              className="rounded text-rose-600 focus:ring-rose-500 dark:bg-slate-950 dark:border-slate-800"
+                            />
+                            <span><strong className="font-semibold">lead.created</strong> — Post rich card when a visitor submits their email, phone, or inquiry</span>
+                          </label>
+
+                          <label className="flex items-center gap-2 text-xs text-slate-700 dark:text-slate-300 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={(formData.slackEvents || ['lead.created', 'appointment.created']).includes('appointment.created')}
+                              onChange={(e) => {
+                                const current: string[] = formData.slackEvents || ['lead.created', 'appointment.created'];
+                                const next = e.target.checked
+                                  ? [...current, 'appointment.created']
+                                  : current.filter((x: string) => x !== 'appointment.created');
+                                setFormData({ ...formData, slackEvents: next });
+                              }}
+                              className="rounded text-rose-600 focus:ring-rose-500 dark:bg-slate-950 dark:border-slate-800"
+                            />
+                            <span><strong className="font-semibold">appointment.created</strong> — Post schedule alert with customer details &amp; meeting links</span>
+                          </label>
+                        </div>
+                      </div>
+
+                      {/* Slack Test Result Box */}
+                      {slackTestStatus.tested && (
+                        <div
+                          className={`p-3 rounded-xl border text-xs ${
+                            slackTestStatus.success
+                              ? 'bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800/60 text-emerald-800 dark:text-emerald-300'
+                              : 'bg-rose-50 dark:bg-rose-950/30 border-rose-200 dark:border-rose-800/60 text-rose-800 dark:text-rose-300'
+                          }`}
+                        >
+                          <div className="flex items-center justify-between font-semibold">
+                            <div className="flex items-center gap-1.5">
+                              {slackTestStatus.success ? (
+                                <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                              ) : (
+                                <AlertTriangle className="h-4 w-4 text-rose-600 dark:text-rose-400" />
+                              )}
+                              <span>
+                                {slackTestStatus.success ? 'Slack Webhook Verified (HTTP 200 OK)' : 'Slack Dispatch Failed'}
+                              </span>
+                            </div>
+                            {slackTestStatus.latencyMs !== undefined && (
+                              <span className="font-mono text-[11px] opacity-80">
+                                {slackTestStatus.latencyMs}ms latency
+                              </span>
+                            )}
+                          </div>
+                          {slackTestStatus.error && (
+                            <p className="mt-1 text-[11px] font-mono opacity-90">
+                              {slackTestStatus.error}
+                            </p>
+                          )}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Right: Slack Block Kit Card Mockup */}
+                    <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-[#1A1D21] text-slate-100 space-y-3 font-sans">
+                      <div className="flex items-center justify-between text-xs font-semibold text-slate-400 pb-2 border-b border-[#2C3136]">
+                        <span className="flex items-center gap-2">
+                          <SlackIcon className="h-4 w-4" />
+                          <span className="text-white font-medium">#general-leads channel</span>
+                        </span>
+                        <span className="text-[10px] uppercase font-mono tracking-wider text-slate-400">Slack Block Kit</span>
+                      </div>
+
+                      {/* Mock Slack Message */}
+                      <div className="bg-[#222529] p-3.5 rounded-lg border-l-4 border-emerald-500 space-y-2.5 text-xs">
+                        <div className="text-sm font-bold text-white flex items-center gap-1.5">
+                          <span>🎯 New Lead Captured!</span>
+                        </div>
+                        <p className="text-slate-300 text-[11px]">
+                          A new prospective customer just engaged with <strong className="text-white">{activeAssistant?.name || 'AI Assistant'}</strong>:
+                        </p>
+                        <div className="grid grid-cols-2 gap-2 bg-[#1A1D21] p-2.5 rounded text-[11px]">
+                          <div>
+                            <span className="text-slate-400 block font-semibold">Lead Name:</span>
+                            <span className="text-white font-medium">Jordan Rivera</span>
+                          </div>
+                          <div>
+                            <span className="text-slate-400 block font-semibold">Email Address:</span>
+                            <span className="text-sky-400 font-medium">jordan@acme-enterprises.com</span>
+                          </div>
+                          <div>
+                            <span className="text-slate-400 block font-semibold">Phone Number:</span>
+                            <span className="text-white font-medium">+1 (555) 438-9210</span>
+                          </div>
+                          <div>
+                            <span className="text-slate-400 block font-semibold">Source:</span>
+                            <span className="text-emerald-400 font-medium">Website Live Chat</span>
+                          </div>
+                        </div>
+                        <div className="border-l-2 border-slate-600 pl-2 text-[11px] text-slate-300 italic">
+                          "Looking to automate appointment scheduling for our 12-location clinic network."
+                        </div>
+                        <div className="text-[10px] text-slate-500 pt-1">
+                          🤖 {activeAssistant?.name || 'Crescelo AI'} • Just now
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* CHANNEL 6: GOOGLE SHEETS REAL-TIME SYNC */}
+                <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 sm:p-7 shadow-xs space-y-6">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-200 dark:border-slate-800">
+                    <div className="flex items-center gap-3.5">
+                      <div className="h-12 w-12 rounded-2xl bg-emerald-50/80 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center border border-emerald-200 dark:border-emerald-900/50">
+                        <GoogleSheetsIcon className="h-6 w-6" />
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <h2 className="text-base font-bold text-slate-900 dark:text-white">
+                            Google Sheets Real-Time Sync
+                          </h2>
+                          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
+                            Zero-Code Database
+                          </span>
+                        </div>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                          Automatically append formatted rows to any Google Spreadsheet when visitors submit contact info or schedule appointments.
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      <button
+                        type="button"
+                        onClick={handleGoogleSheetsTestPing}
+                        disabled={googleSheetsTestStatus.loading || !formData.googleSheetsWebhookUrl}
+                        className="flex items-center gap-1.5 rounded-xl border border-emerald-200 dark:border-emerald-900/80 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:hover:bg-emerald-950/70 text-emerald-900 dark:text-emerald-200 px-4 py-2 text-xs font-semibold shadow-2xs transition disabled:opacity-50 cursor-pointer"
+                      >
+                        {googleSheetsTestStatus.loading ? (
+                          <RefreshCw className="h-3.5 w-3.5 animate-spin text-emerald-600" />
+                        ) : (
+                          <FileSpreadsheet className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+                        )}
+                        <span>Append Test Row</span>
+                      </button>
+
+                      <label className="relative inline-flex items-center cursor-pointer select-none">
+                        <input
+                          type="checkbox"
+                          checked={formData.googleSheetsEnabled || false}
+                          onChange={(e) =>
+                            setFormData({ ...formData, googleSheetsEnabled: e.target.checked })
+                          }
+                          className="sr-only peer"
+                        />
+                        <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-800 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-slate-600 peer-checked:bg-emerald-600"></div>
+                        <span className="ml-2.5 text-xs font-semibold text-slate-700 dark:text-slate-300">
+                          {formData.googleSheetsEnabled ? 'Active' : 'Disabled'}
+                        </span>
+                      </label>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {/* Left: Webhook URL & Event Subscriptions */}
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                          Google Apps Script Web App URL
+                        </label>
+                        <input
+                          type="url"
+                          placeholder="https://script.google.com/macros/s/AKfycbx.../exec"
+                          value={formData.googleSheetsWebhookUrl || ''}
+                          onChange={(e) =>
+                            setFormData({ ...formData, googleSheetsWebhookUrl: e.target.value })
+                          }
+                          className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-3.5 py-2.5 text-xs font-mono text-slate-900 dark:text-slate-100 outline-none focus:border-emerald-500"
+                        />
+                        <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
+                          Deploy a free 20-line Apps Script in your spreadsheet. See template below.
+                        </p>
+                      </div>
+
+                      {/* Event Subscriptions */}
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                          Synced Sheet Events
+                        </label>
+                        <div className="space-y-2">
+                          <label className="flex items-center gap-2 text-xs text-slate-700 dark:text-slate-300 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={(formData.googleSheetsEvents || ['lead.created', 'appointment.created']).includes('lead.created')}
+                              onChange={(e) => {
+                                const current: string[] = formData.googleSheetsEvents || ['lead.created', 'appointment.created'];
+                                const next = e.target.checked
+                                  ? [...current, 'lead.created']
+                                  : current.filter((x: string) => x !== 'lead.created');
+                                setFormData({ ...formData, googleSheetsEvents: next });
+                              }}
+                              className="rounded text-emerald-600 focus:ring-emerald-500 dark:bg-slate-950 dark:border-slate-800"
+                            />
+                            <span><strong className="font-semibold">lead.created</strong> — Append row when a new contact lead is captured</span>
+                          </label>
+
+                          <label className="flex items-center gap-2 text-xs text-slate-700 dark:text-slate-300 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={(formData.googleSheetsEvents || ['lead.created', 'appointment.created']).includes('appointment.created')}
+                              onChange={(e) => {
+                                const current: string[] = formData.googleSheetsEvents || ['lead.created', 'appointment.created'];
+                                const next = e.target.checked
+                                  ? [...current, 'appointment.created']
+                                  : current.filter((x: string) => x !== 'appointment.created');
+                                setFormData({ ...formData, googleSheetsEvents: next });
+                              }}
+                              className="rounded text-emerald-600 focus:ring-emerald-500 dark:bg-slate-950 dark:border-slate-800"
+                            />
+                            <span><strong className="font-semibold">appointment.created</strong> — Append row with booking date, time, and service</span>
+                          </label>
+                        </div>
+                      </div>
+
+                      {/* Google Sheets Test Result Box */}
+                      {googleSheetsTestStatus.tested && (
+                        <div
+                          className={`p-3 rounded-xl border text-xs ${
+                            googleSheetsTestStatus.success
+                              ? 'bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800/60 text-emerald-800 dark:text-emerald-300'
+                              : 'bg-rose-50 dark:bg-rose-950/30 border-rose-200 dark:border-rose-800/60 text-rose-800 dark:text-rose-300'
+                          }`}
+                        >
+                          <div className="flex items-center justify-between font-semibold">
+                            <div className="flex items-center gap-1.5">
+                              {googleSheetsTestStatus.success ? (
+                                <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                              ) : (
+                                <AlertTriangle className="h-4 w-4 text-rose-600 dark:text-rose-400" />
+                              )}
+                              <span>
+                                {googleSheetsTestStatus.success ? 'Row Appended Successfully (HTTP 200 OK)' : 'Google Sheets Sync Failed'}
+                              </span>
+                            </div>
+                            {googleSheetsTestStatus.latencyMs !== undefined && (
+                              <span className="font-mono text-[11px] opacity-80">
+                                {googleSheetsTestStatus.latencyMs}ms latency
+                              </span>
+                            )}
+                          </div>
+                          {googleSheetsTestStatus.error && (
+                            <p className="mt-1 text-[11px] font-mono opacity-90">
+                              {googleSheetsTestStatus.error}
+                            </p>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Expandable 30-Second Setup Guide Trigger */}
+                      <button
+                        type="button"
+                        onClick={() => setShowAppsScriptGuide(!showAppsScriptGuide)}
+                        className="w-full py-2.5 px-3.5 rounded-xl border border-emerald-200 dark:border-emerald-900/60 bg-emerald-50/50 dark:bg-emerald-950/20 hover:bg-emerald-100/50 dark:hover:bg-emerald-950/40 text-emerald-900 dark:text-emerald-200 text-xs font-semibold flex items-center justify-between transition cursor-pointer"
+                      >
+                        <span className="flex items-center gap-2">
+                          <FileSpreadsheet className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                          <span>30-Second Google Apps Script Setup Guide</span>
+                        </span>
+                        {showAppsScriptGuide ? (
+                          <ChevronUp className="h-4 w-4" />
+                        ) : (
+                          <ChevronDown className="h-4 w-4" />
+                        )}
+                      </button>
+                    </div>
+
+                    {/* Right: Live Spreadsheet Preview */}
+                    <div className="space-y-3">
+                      <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-950 text-slate-100 space-y-3 font-sans overflow-hidden">
+                        <div className="flex items-center justify-between text-xs font-semibold text-slate-400 pb-2 border-b border-slate-800">
+                          <span className="flex items-center gap-2">
+                            <GoogleSheetsIcon className="h-4 w-4" />
+                            <span className="text-white font-medium">Spreadsheet Auto-Sync View</span>
+                          </span>
+                          <span className="text-[10px] uppercase font-mono tracking-wider text-emerald-400">12 Columns Auto-Generated</span>
+                        </div>
+
+                        <div className="overflow-x-auto text-[11px]">
+                          <table className="w-full text-left border-collapse">
+                            <thead>
+                              <tr className="bg-[#08251a] text-[#abff44] font-semibold border-b border-emerald-900/50">
+                                <th className="p-2 whitespace-nowrap">Timestamp</th>
+                                <th className="p-2 whitespace-nowrap">Event</th>
+                                <th className="p-2 whitespace-nowrap">Customer Name</th>
+                                <th className="p-2 whitespace-nowrap">Email</th>
+                                <th className="p-2 whitespace-nowrap">Service</th>
+                                <th className="p-2 whitespace-nowrap">Notes</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-800 font-mono text-[10px] text-slate-300">
+                              <tr className="hover:bg-slate-900/60">
+                                <td className="p-2 whitespace-nowrap text-slate-400">{new Date().toISOString().slice(0, 16)}</td>
+                                <td className="p-2 whitespace-nowrap text-emerald-400">lead.created</td>
+                                <td className="p-2 whitespace-nowrap text-white font-sans">Elena Rostova</td>
+                                <td className="p-2 whitespace-nowrap">elena@techlabs.co</td>
+                                <td className="p-2 whitespace-nowrap">Enterprise Consultation</td>
+                                <td className="p-2 whitespace-nowrap truncate max-w-[120px]">Requested custom demo</td>
+                              </tr>
+                              <tr className="hover:bg-slate-900/60">
+                                <td className="p-2 whitespace-nowrap text-slate-400">{new Date(Date.now() - 3600000).toISOString().slice(0, 16)}</td>
+                                <td className="p-2 whitespace-nowrap text-sky-400">appointment.created</td>
+                                <td className="p-2 whitespace-nowrap text-white font-sans">Marcus Brody</td>
+                                <td className="p-2 whitespace-nowrap">marcus@brody.io</td>
+                                <td className="p-2 whitespace-nowrap">Haircut &amp; Styling</td>
+                                <td className="p-2 whitespace-nowrap truncate max-w-[120px]">Confirmed slot 2:30 PM</td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Expandable Apps Script Guide Details */}
+                  {showAppsScriptGuide && (
+                    <div className="pt-4 border-t border-slate-200 dark:border-slate-800 space-y-4 animate-in fade-in duration-200">
+                      <div className="bg-slate-50 dark:bg-slate-950 p-4 rounded-xl border border-slate-200 dark:border-slate-800 space-y-3 text-xs">
+                        <div className="font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                          <span className="h-5 w-5 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[10px] font-bold">1</span>
+                          <span>How to set up Google Sheets in 30 seconds:</span>
+                        </div>
+                        <ol className="list-decimal list-inside space-y-1.5 text-slate-600 dark:text-slate-300 ml-1 leading-relaxed">
+                          <li>Create a new spreadsheet in Google Sheets (or open an existing one).</li>
+                          <li>In the top menu, click <strong>Extensions &gt; Apps Script</strong>.</li>
+                          <li>Delete any existing starter code in the editor, and paste the code snippet below.</li>
+                          <li>Click <strong>Deploy &gt; New deployment</strong> in the top right.</li>
+                          <li>Click the gear icon next to "Select type" and choose <strong>Web app</strong>.</li>
+                          <li>Set <strong>Execute as:</strong> <em>Me</em>, and <strong>Who has access:</strong> <em>Anyone</em>.</li>
+                          <li>Click <strong>Deploy</strong>, grant permission to your account, and copy the <strong>Web app URL</strong>.</li>
+                          <li>Paste the Web app URL into the field above and click <strong>Append Test Row</strong>!</li>
+                        </ol>
+
+                        <div className="relative mt-2">
+                          <div className="flex items-center justify-between pb-1.5">
+                            <span className="text-[11px] font-mono font-semibold text-slate-500">Google Apps Script Web App Template</span>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                navigator.clipboard.writeText(GOOGLE_APPS_SCRIPT_TEMPLATE);
+                                setCopiedGoogleScript(true);
+                                setTimeout(() => setCopiedGoogleScript(false), 2500);
+                              }}
+                              className="flex items-center gap-1 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 hover:underline cursor-pointer"
+                            >
+                              {copiedGoogleScript ? (
+                                <>
+                                  <Check className="h-3.5 w-3.5" />
+                                  <span>Copied to Clipboard!</span>
+                                </>
+                              ) : (
+                                <>
+                                  <Copy className="h-3.5 w-3.5" />
+                                  <span>Copy Script Code</span>
+                                </>
+                              )}
+                            </button>
+                          </div>
+                          <pre className="p-3.5 rounded-lg bg-slate-900 text-emerald-400 font-mono text-[11px] overflow-x-auto max-h-60 leading-relaxed">
+                            {GOOGLE_APPS_SCRIPT_TEMPLATE}
+                          </pre>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
                 {/* INTEGRATION 4: AGENCY WHITE-LABELING & RESELLER BRANDING */}
                 <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 sm:p-7 shadow-xs space-y-6">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-200 dark:border-slate-800">
@@ -1269,7 +1913,7 @@ export const ChannelsTab: React.FC<ChannelsTabProps> = ({
                   <div className="flex items-center gap-2.5 text-xs text-blue-900 dark:text-blue-200">
                     <Info className="h-4 w-4 text-blue-600 shrink-0" />
                     <span>
-                      Remember to click <strong>Save Channel Settings</strong> above to apply your Telegram, WhatsApp, and Webhook tokens to the live bot.
+                      Remember to click <strong>Save Channel Settings</strong> above to apply your Telegram, WhatsApp, Slack, Google Sheets, and Webhook settings to the live bot.
                     </span>
                   </div>
                   <button

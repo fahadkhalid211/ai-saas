@@ -123,6 +123,12 @@ export interface AssistantData {
   webhookUrl?: string;
   webhookSecret?: string;
   webhookEvents?: string[];
+  slackWebhookUrl?: string;
+  slackEnabled?: boolean;
+  slackEvents?: string[];
+  googleSheetsWebhookUrl?: string;
+  googleSheetsEnabled?: boolean;
+  googleSheetsEvents?: string[];
   whiteLabelEnabled?: boolean;
   customBrandingText?: string;
   customBrandingUrl?: string;
@@ -1100,6 +1106,12 @@ export class Database {
       webhookUrl: data.webhookUrl || '',
       webhookSecret: data.webhookSecret ? encryptSecret(data.webhookSecret) : '',
       webhookEvents: data.webhookEvents || ['lead.created', 'chat.escalated'],
+      slackWebhookUrl: data.slackWebhookUrl || '',
+      slackEnabled: data.slackEnabled ?? false,
+      slackEvents: data.slackEvents || ['lead.created', 'appointment.created'],
+      googleSheetsWebhookUrl: data.googleSheetsWebhookUrl || '',
+      googleSheetsEnabled: data.googleSheetsEnabled ?? false,
+      googleSheetsEvents: data.googleSheetsEvents || ['lead.created', 'appointment.created'],
       whiteLabelEnabled: data.whiteLabelEnabled ?? false,
       customBrandingText: data.customBrandingText || '',
       customBrandingUrl: data.customBrandingUrl || '',
