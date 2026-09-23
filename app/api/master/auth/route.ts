@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getAdminKey, generateSessionToken, createSessionCookieHeader } from '@/lib/security/auth';
-import { checkRateLimit, getClientIp } from '@/lib/security/rate-limit';
+import { getClientIp } from '@/lib/security/rate-limit';
+import { enforceDistributedRateLimit } from '@/lib/security/rate-limit-redis';
 import { timingSafeStringEqual } from '@/lib/security/password';
 import { getMasterEmail } from '@/lib/security/master';
 import { Database } from '@/lib/db';
@@ -17,10 +18,8 @@ const GENERIC_FAILURE = { error: 'Invalid credentials' };
 export async function POST(req: Request) {
   try {
     const ip = getClientIp(req);
-    const limit = checkRateLimit(`master-login:${ip}`, { windowMs: 60 * 1000, max: 5 });
-    if (!limit.allowed) {
-      return NextResponse.json({ error: 'Too many attempts. Try again in a minute.' }, { status: 429 });
-    }
+    const limited = await enforceDistributedRateLimit(req, 'master-login', { windowMs: 60 * 1000, max: 5 });
+    if (limited) return limited;
 
     const body = await req.json().catch(() => ({}));
     const email = typeof body?.email === 'string' ? body.email.trim().toLowerCase() : '';

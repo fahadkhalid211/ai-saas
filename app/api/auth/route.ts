@@ -6,7 +6,8 @@ import {
   createSessionCookieHeader,
   createClearCookieHeader,
 } from '@/lib/security/auth';
-import { checkRateLimit, getClientIp } from '@/lib/security/rate-limit';
+import { getClientIp } from '@/lib/security/rate-limit';
+import { enforceDistributedRateLimit, enforceDistributedRateLimitByKey } from '@/lib/security/rate-limit-redis';
 import { getMasterEmail } from '@/lib/security/master';
 import { Database, sanitizeTeamMember } from '@/lib/db';
 import { validateRegistrationPayload, validateEmail, sanitizeInput } from '@/lib/security/validation';
@@ -50,15 +51,10 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
-    // Rate limit login attempts to 10 per minute per IP to prevent brute forcing
+    // Limit sign-in / sign-up attempts per IP (counted in Redis so it holds across serverless instances).
     const ip = getClientIp(req);
-    const limit = checkRateLimit(`login:${ip}`, { windowMs: 60 * 1000, max: 10 });
-    if (!limit.allowed) {
-      return NextResponse.json(
-        { error: 'Too many login attempts. Please try again in 1 minute.' },
-        { status: 429 }
-      );
-    }
+    const limited = await enforceDistributedRateLimit(req, 'login', { windowMs: 60 * 1000, max: 10 });
+    if (limited) return limited;
 
     const body = await req.json();
     const mode = body?.mode || (body?.email && !body?.businessName ? 'staff' : body?.businessName ? 'register' : 'staff');
@@ -139,6 +135,10 @@ export async function POST(req: Request) {
 
       const email = emailValidation.value;
       const passwordOrCode = (body?.password || body?.accessCode || '').trim();
+
+      // Slow down password guessing against one account, whichever IPs it comes from.
+      const emailLimited = await enforceDistributedRateLimitByKey(`login-email:${email}`, { windowMs: 15 * 60 * 1000, max: 10 });
+      if (emailLimited) return emailLimited;
 
       if (!passwordOrCode) {
         return NextResponse.json(

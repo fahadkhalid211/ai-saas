@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { Database } from '@/lib/db';
 import { sendContactInquiryEmail } from '@/lib/email';
 import { enforceRateLimit } from '@/lib/security/rate-limit';
+import { enforceDistributedRateLimit, enforceDistributedRateLimitByKey } from '@/lib/security/rate-limit-redis';
 
 export async function POST(req: Request) {
   try {
@@ -10,6 +11,10 @@ export async function POST(req: Request) {
     if (rateLimit.errorResponse) {
       return rateLimit.errorResponse;
     }
+    const sharedLimited =
+      (await enforceDistributedRateLimit(req, 'contact-support', { windowMs: 60 * 1000, max: 5 })) ||
+      (await enforceDistributedRateLimit(req, 'contact-support-day', { windowMs: 24 * 60 * 60 * 1000, max: 30 }));
+    if (sharedLimited) return sharedLimited;
 
     const body = await req.json().catch(() => null);
     if (!body) {

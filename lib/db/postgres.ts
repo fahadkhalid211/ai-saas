@@ -80,24 +80,97 @@ export function isPostgresConfigured(): boolean {
   return Boolean(url.startsWith('postgres://') || url.startsWith('postgresql://'));
 }
 
+export type PostgresTlsMode = 'off' | 'encrypted' | 'verified';
+
+const PRIVATE_HOST = /^(localhost|127\.\d+\.\d+\.\d+|::1|10\.\d+\.\d+\.\d+|192\.168\.\d+\.\d+|172\.(1[6-9]|2\d|3[01])\.\d+\.\d+|[^.]+)$/i;
+
+function isPrivateHost(hostname: string): boolean {
+  return PRIVATE_HOST.test(hostname);
+}
+
+/**
+ * Decides how the connection to Postgres is protected, and returns the connection string with the
+ * ssl query parameters removed. (node-postgres lets `sslmode` in the URL override the `ssl` option and
+ * silently turns "require" into full certificate checking, so the mode is resolved here instead.)
+ *
+ *   sslmode=disable                       -> no TLS (only acceptable on a private network)
+ *   DATABASE_SSL_CA set (PEM)             -> TLS, server certificate verified against that CA
+ *   sslmode=verify-full / verify-ca       -> TLS, certificate verified against the system CAs
+ *   anything else (require, unset)        -> TLS, certificate NOT verified (encrypted, but can be impersonated)
+ */
+export function resolvePostgresConnection(rawUrl: string): {
+  connectionString: string;
+  ssl: false | { rejectUnauthorized: boolean; ca?: string };
+  mode: PostgresTlsMode;
+  host: string;
+} {
+  let host = '';
+  let sslmode = '';
+  let cleaned = rawUrl;
+  try {
+    const u = new URL(rawUrl);
+    host = u.hostname;
+    sslmode = (u.searchParams.get('sslmode') || (u.searchParams.get('ssl') === 'false' ? 'disable' : '')).toLowerCase();
+    for (const key of ['sslmode', 'ssl', 'sslcert', 'sslkey', 'sslrootcert', 'uselibpqcompat']) u.searchParams.delete(key);
+    cleaned = u.toString();
+  } catch {
+    sslmode = /sslmode=disable|ssl=false/i.test(rawUrl) ? 'disable' : '';
+  }
+
+  const ca = (process.env.DATABASE_SSL_CA || '').replace(/\\n/g, '\n').trim();
+  if (sslmode === 'disable' || (!sslmode && host && isPrivateHost(host) && !ca)) {
+    return { connectionString: cleaned, ssl: false, mode: 'off', host };
+  }
+  if (ca) return { connectionString: cleaned, ssl: { rejectUnauthorized: true, ca }, mode: 'verified', host };
+  if (sslmode === 'verify-full' || sslmode === 'verify-ca') {
+    return { connectionString: cleaned, ssl: { rejectUnauthorized: true }, mode: 'verified', host };
+  }
+  return { connectionString: cleaned, ssl: { rejectUnauthorized: false }, mode: 'encrypted', host };
+}
+
+let warnedInsecureTransport = false;
+
 export function getPostgresPool(): Pool | null {
   if (!isPostgresConfigured()) return null;
   if (pgPoolInstance) return pgPoolInstance;
 
-  const connectionString = getPostgresUrl()!;
-  const isLocal =
-    connectionString.includes('localhost') ||
-    connectionString.includes('127.0.0.1');
-  const isSslDisabled =
-    connectionString.includes('sslmode=disable') ||
-    connectionString.includes('ssl=false');
+  const conn = resolvePostgresConnection(getPostgresUrl()!);
+  const remote = Boolean(conn.host) && !isPrivateHost(conn.host);
+
+  if (conn.mode === 'off' && remote) {
+    // Password and all customer data would cross the internet in clear text.
+    if (process.env.DATABASE_REQUIRE_TLS === 'true') {
+      console.error('[Postgres] DATABASE_REQUIRE_TLS is set and the connection has TLS disabled: refusing to connect.');
+      return null;
+    }
+    if (!warnedInsecureTransport) {
+      warnedInsecureTransport = true;
+      console.error(
+        '[Postgres] SECURITY: connecting to a remote database WITHOUT TLS. Enable TLS on the server, then set DATABASE_URL to sslmode=require and DATABASE_REQUIRE_TLS=true.'
+      );
+    }
+  }
+
+  const isServerless =
+    Boolean(process.env.VERCEL) || Boolean(process.env.VERCEL_ENV) || Boolean(process.env.AWS_LAMBDA_FUNCTION_NAME);
+  // Every serverless instance holds its own pool, so keep it small: many instances x a large pool would
+  // exhaust the server's connection limit (100 by default) and take the database down for everyone.
+  const configuredMax = Number(process.env.DATABASE_POOL_MAX);
+  const max = Number.isFinite(configuredMax) && configuredMax > 0 ? Math.min(configuredMax, 20) : isServerless ? 3 : 10;
 
   pgPoolInstance = new Pool({
-    connectionString,
-    ssl: (isLocal || isSslDisabled) ? false : { rejectUnauthorized: false },
-    max: 10,
-    idleTimeoutMillis: 30000,
+    connectionString: conn.connectionString,
+    ssl: conn.ssl,
+    max,
+    idleTimeoutMillis: isServerless ? 10_000 : 30_000,
     connectionTimeoutMillis: 5000,
+    keepAlive: true,
+    allowExitOnIdle: true,
+    application_name: 'crescelo',
+    // A stuck query must not hold a connection (and a request) forever.
+    statement_timeout: 30_000,
+    query_timeout: 35_000,
+    idle_in_transaction_session_timeout: 30_000,
   });
 
   pgPoolInstance.on('error', (err) => {

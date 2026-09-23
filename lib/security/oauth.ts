@@ -1,6 +1,7 @@
 import crypto from 'crypto';
 import { Database, TeamMemberData, WorkspaceBillingData } from '@/lib/db';
 import { generateSessionToken, createSessionCookieHeader } from '@/lib/security/auth';
+import { timingSafeStringEqual } from '@/lib/security/password';
 
 export interface OAuthUserProfile {
   email: string;
@@ -18,20 +19,14 @@ export interface OAuthAuthResult {
   isNewUser: boolean;
 }
 
-/**
- * Safe JWT payload decoder (works in Node.js runtime without external libraries).
+/*
+ * SECURITY: a session may only be issued for an identity that a provider has proven to us
+ * server-side. Never from an e-mail, JWT or "credential" a browser hands us: JWTs decoded without
+ * checking their signature are forgeable by anyone. Google sign-in below uses the authorization-code
+ * flow (we exchange the code with our client secret over TLS), a per-login `state` bound to the
+ * browser by a cookie, and PKCE. Sign in with Apple and enterprise SSO are switched off until they
+ * are implemented with real signature verification (see the routes).
  */
-export function decodeJwtPayload(token: string): Record<string, any> | null {
-  try {
-    const parts = token.split('.');
-    if (parts.length !== 3) return null;
-    const base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
-    const json = Buffer.from(base64, 'base64').toString('utf8');
-    return JSON.parse(json);
-  } catch {
-    return null;
-  }
-}
 
 export function isGoogleOAuthConfigured(): boolean {
   const clientId = process.env.GOOGLE_CLIENT_ID || process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
@@ -39,51 +34,67 @@ export function isGoogleOAuthConfigured(): boolean {
   return Boolean(clientId && clientSecret);
 }
 
-export function isAppleOAuthConfigured(): boolean {
-  const clientId = process.env.APPLE_CLIENT_ID;
-  return Boolean(clientId && clientId !== 'com.crescelo.ai.web');
+export const OAUTH_STATE_COOKIE = 'crescelo_oauth';
+
+function b64url(buf: Buffer): string {
+  return buf.toString('base64url');
 }
 
-export function isEnterpriseSSOConfigured(): boolean {
-  return Boolean(
-    (process.env.SSO_CLIENT_ID && process.env.SSO_CLIENT_SECRET) ||
-    process.env.SSO_OIDC_ISSUER ||
-    process.env.SAML_ENTRY_POINT ||
-    process.env.WORKOS_API_KEY
-  );
+/** A fresh login attempt: the state to send to the provider, the PKCE pair, and the cookie that binds it to this browser. */
+export function createOAuthAttempt(): { state: string; challenge: string; cookie: string } {
+  const state = b64url(crypto.randomBytes(24));
+  const verifier = b64url(crypto.randomBytes(32));
+  const challenge = b64url(crypto.createHash('sha256').update(verifier).digest());
+  const secure = process.env.NODE_ENV === 'production' ? '; Secure' : '';
+  const cookie = `${OAUTH_STATE_COOKIE}=${state}.${verifier}; Path=/api/auth/oauth; HttpOnly; SameSite=Lax; Max-Age=600${secure}`;
+  return { state, challenge, cookie };
 }
 
-/**
- * Returns the Google OAuth 2.0 authorization URL.
- */
-export function getGoogleAuthUrl(origin: string, state?: string): string | null {
+export function clearOAuthCookie(): string {
+  const secure = process.env.NODE_ENV === 'production' ? '; Secure' : '';
+  return `${OAUTH_STATE_COOKIE}=; Path=/api/auth/oauth; HttpOnly; SameSite=Lax; Max-Age=0${secure}`;
+}
+
+/** Checks the `state` returned by the provider against this browser's cookie. Returns the PKCE verifier, or null. */
+export function verifyOAuthAttempt(req: Request, returnedState: string | null): { verifier: string } | null {
+  if (!returnedState) return null;
+  const header = req.headers.get('cookie') || '';
+  const match = header
+    .split(';')
+    .map((p) => p.trim())
+    .find((p) => p.startsWith(`${OAUTH_STATE_COOKIE}=`));
+  if (!match) return null;
+  const [state, verifier] = match.slice(OAUTH_STATE_COOKIE.length + 1).split('.');
+  if (!state || !verifier) return null;
+  return timingSafeStringEqual(state, returnedState) ? { verifier } : null;
+}
+
+/** The Google authorization URL for a login attempt created with createOAuthAttempt(). */
+export function getGoogleAuthUrl(origin: string, attempt: { state: string; challenge: string }): string | null {
   const clientId = process.env.GOOGLE_CLIENT_ID || process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
   if (!clientId) return null;
-
-  const redirectUri = `${origin}/api/auth/oauth/google`;
-  const scope = encodeURIComponent('openid email profile');
-  const stateParam = encodeURIComponent(state || crypto.randomBytes(16).toString('hex'));
-
-  return `https://accounts.google.com/o/oauth2/v2/auth?response_type=code&client_id=${encodeURIComponent(
-    clientId
-  )}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${scope}&state=${stateParam}&access_type=offline&prompt=consent`;
+  const params = new URLSearchParams({
+    response_type: 'code',
+    client_id: clientId,
+    redirect_uri: `${origin}/api/auth/oauth/google`,
+    scope: 'openid email profile',
+    state: attempt.state,
+    code_challenge: attempt.challenge,
+    code_challenge_method: 'S256',
+    prompt: 'select_account',
+  });
+  return `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
 }
 
-/**
- * Exchanges Google authorization code for verified user info.
- */
+/** Exchanges the authorization code for a verified Google identity. Throws unless the e-mail is verified by Google. */
 export async function exchangeGoogleCode(
   code: string,
-  origin: string
+  origin: string,
+  verifier: string
 ): Promise<{ email: string; name: string; providerId: string }> {
   const clientId = process.env.GOOGLE_CLIENT_ID || process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
   const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
-
-  if (!clientId || !clientSecret) {
-    throw new Error('Google OAuth credentials (GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET) are not configured in .env');
-  }
-
-  const redirectUri = `${origin}/api/auth/oauth/google`;
+  if (!clientId || !clientSecret) throw new Error('Google sign-in is not configured.');
 
   const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
     method: 'POST',
@@ -92,108 +103,34 @@ export async function exchangeGoogleCode(
       code,
       client_id: clientId,
       client_secret: clientSecret,
-      redirect_uri: redirectUri,
+      redirect_uri: `${origin}/api/auth/oauth/google`,
       grant_type: 'authorization_code',
+      code_verifier: verifier,
     }),
+    signal: AbortSignal.timeout(10_000),
   });
+  const tokens = await tokenRes.json().catch(() => ({}));
+  if (!tokenRes.ok || !tokens.access_token) throw new Error('Google sign-in could not be completed.');
 
-  const tokens = await tokenRes.json();
-  if (!tokenRes.ok || !tokens.access_token) {
-    const errorDesc = tokens.error_description || tokens.error || 'Failed to exchange authorization code with Google';
-    throw new Error(`Google token exchange error: ${errorDesc}`);
-  }
-
-  // Fetch verified profile from Google UserInfo
+  // The profile comes straight from Google over TLS with the access token we just obtained.
   const profileRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
     headers: { Authorization: `Bearer ${tokens.access_token}` },
+    signal: AbortSignal.timeout(10_000),
   });
-
-  const profile = await profileRes.json();
-  if (!profileRes.ok || !profile.email) {
-    // Fallback: inspect id_token if userinfo didn't return email
-    if (tokens.id_token) {
-      const decoded = decodeJwtPayload(tokens.id_token);
-      if (decoded?.email) {
-        return {
-          email: decoded.email,
-          name: decoded.name || decoded.email.split('@')[0],
-          providerId: decoded.sub || code.slice(0, 16),
-        };
-      }
-    }
-    throw new Error('Failed to retrieve verified email from Google OAuth');
+  const profile = await profileRes.json().catch(() => ({}));
+  if (!profileRes.ok || typeof profile.email !== 'string' || !profile.sub) {
+    throw new Error('Google did not return an account e-mail.');
   }
+  if (profile.email_verified !== true) throw new Error('Your Google e-mail address is not verified.');
 
   return {
     email: profile.email,
     name: profile.name || profile.given_name || profile.email.split('@')[0],
-    providerId: profile.sub || code.slice(0, 16),
+    providerId: String(profile.sub),
   };
 }
 
-/**
- * Returns the Sign in with Apple authorization URL.
- */
-export function getAppleAuthUrl(origin: string, state?: string): string | null {
-  const clientId = process.env.APPLE_CLIENT_ID;
-  if (!clientId) return null;
-
-  const redirectUri = `${origin}/api/auth/oauth/apple`;
-  const scope = encodeURIComponent('name email');
-  const stateParam = encodeURIComponent(state || crypto.randomBytes(16).toString('hex'));
-
-  return `https://appleid.apple.com/auth/authorize?response_type=code%20id_token&client_id=${encodeURIComponent(
-    clientId
-  )}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${scope}&state=${stateParam}&response_mode=form_post`;
-}
-
-/**
- * Parses Apple authorization callback payload.
- */
-export function parseAppleAuthPayload(params: {
-  id_token?: string;
-  code?: string;
-  user?: any;
-}): { email: string; name: string; providerId: string } {
-  const { id_token, code, user } = params;
-
-  let email = '';
-  let providerId = code ? `apple_${code.slice(0, 16)}` : 'apple_user';
-  let name = 'Apple User';
-
-  // Decode id_token JWT
-  if (id_token) {
-    const payload = decodeJwtPayload(id_token);
-    if (payload) {
-      if (payload.email) email = payload.email;
-      if (payload.sub) providerId = payload.sub;
-    }
-  }
-
-  // Parse user object sent by Apple on first sign-in
-  if (user) {
-    try {
-      const userObj = typeof user === 'string' ? JSON.parse(user) : user;
-      if (userObj.name) {
-        const parts = [userObj.name.firstName, userObj.name.lastName].filter(Boolean);
-        if (parts.length > 0) name = parts.join(' ');
-      }
-      if (userObj.email && !email) {
-        email = userObj.email;
-      }
-    } catch {}
-  }
-
-  if (!email) {
-    throw new Error('Apple authorization did not return an email address. Please ensure email sharing is granted.');
-  }
-
-  return { email, name, providerId };
-}
-
-/**
- * Resolves an enterprise email domain to an Identity Provider profile (Okta, Azure AD, Google Workspace SAML).
- */
+/** Describes the identity provider for an e-mail domain. Informational only: it authenticates nobody. */
 export function resolveEnterpriseSSO(domainOrEmail: string): {
   domain: string;
   idpName: string;
@@ -201,28 +138,10 @@ export function resolveEnterpriseSSO(domainOrEmail: string): {
 } {
   const clean = domainOrEmail.toLowerCase().trim();
   const domain = clean.includes('@') ? clean.split('@')[1] : clean;
-
-  let idpName = 'Enterprise SAML 2.0 IdP';
-  if (domain.includes('google') || domain.includes('alphabet')) {
-    idpName = 'Google Workspace SSO';
-  } else if (domain.includes('microsoft') || domain.includes('azure') || domain.includes('outlook')) {
-    idpName = 'Microsoft Entra ID (Azure AD)';
-  } else if (domain.includes('okta')) {
-    idpName = 'Okta Enterprise SSO';
-  } else {
-    idpName = `${domain.split('.')[0].toUpperCase()} Corporate IdP`;
-  }
-
-  return {
-    domain,
-    idpName,
-    protocol: 'SAML_2_0',
-  };
+  return { domain, idpName: `${domain.split('.')[0].toUpperCase()} Corporate IdP`, protocol: 'SAML_2_0' };
 }
 
-/**
- * Authenticates an OAuth/SSO profile into a tenant workspace and generates session tokens.
- */
+/** Signs a provider-verified identity in to its workspace (creating one on first use) and issues a session. */
 export async function authenticateOAuthUser(
   profile: OAuthUserProfile,
   ip: string = '127.0.0.1'
@@ -235,11 +154,7 @@ export async function authenticateOAuthUser(
     domain: profile.domain,
   });
 
-  const sessionToken = generateSessionToken(
-    member.role,
-    member.id,
-    workspace.id
-  );
+  const sessionToken = generateSessionToken(member.role, member.id, workspace.id);
   const cookieHeader = createSessionCookieHeader(sessionToken);
 
   await Database.addAuditLog({
@@ -247,18 +162,8 @@ export async function authenticateOAuthUser(
     action: isNewUser ? 'auth.oauth_provisioned' : 'auth.oauth_login',
     targetType: 'workspace',
     targetId: workspace.id,
-    details: {
-      provider: profile.provider,
-      providerId: profile.providerId,
-      domain: profile.domain,
-    },
+    details: { provider: profile.provider, providerId: profile.providerId, domain: profile.domain },
   });
 
-  return {
-    member,
-    workspace,
-    token: sessionToken,
-    cookieHeader,
-    isNewUser,
-  };
+  return { member, workspace, token: sessionToken, cookieHeader, isNewUser };
 }

@@ -67,7 +67,10 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const appSecret = process.env.WHATSAPP_APP_SECRET || assistant.whatsappVerifyToken;
+    // Meta signs webhooks with the Meta app secret. The per-assistant verify token is a guessable label
+    // (it has a public default), so it is accepted as a signing key outside production only.
+    const appSecret =
+      process.env.WHATSAPP_APP_SECRET || (process.env.NODE_ENV === 'production' ? '' : assistant.whatsappVerifyToken);
     if (!appSecret) {
       return NextResponse.json(
         { error: 'Forbidden: WhatsApp webhook secret is not configured' },

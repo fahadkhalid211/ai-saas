@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { Database } from '@/lib/db';
 import { verifyAdminRequest, getAuthContext } from '@/lib/security/auth';
 import { enforceRateLimit, getClientIp } from '@/lib/security/rate-limit';
+import { enforceDistributedRateLimit, enforceDistributedRateLimitByKey } from '@/lib/security/rate-limit-redis';
 import { validateAppointmentPayload } from '@/lib/security/validation';
 import { acquireBookingLock } from '@/lib/appointments/booking-lock';
 import { resolveAttribution } from '@/lib/analytics/attribution';
@@ -209,6 +210,8 @@ export async function POST(req: Request) {
     if (rateLimit.errorResponse) {
       return rateLimit.errorResponse;
     }
+    const sharedLimited = await enforceDistributedRateLimit(req, 'appts', { windowMs: 60 * 1000, max: 10 });
+    if (sharedLimited) return sharedLimited;
     const ip = rateLimit.clientIp;
 
     const validation = validateAppointmentPayload(body);

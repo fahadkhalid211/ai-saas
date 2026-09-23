@@ -1,205 +1,85 @@
 import { NextResponse } from 'next/server';
 import {
+  createOAuthAttempt,
+  clearOAuthCookie,
+  verifyOAuthAttempt,
   getGoogleAuthUrl,
-  getAppleAuthUrl,
   isGoogleOAuthConfigured,
-  isAppleOAuthConfigured,
   exchangeGoogleCode,
-  parseAppleAuthPayload,
   authenticateOAuthUser,
-  decodeJwtPayload,
 } from '@/lib/security/oauth';
 import { getClientIp } from '@/lib/security/rate-limit';
+import { enforceDistributedRateLimit } from '@/lib/security/rate-limit-redis';
+import { canonicalOrigin } from '@/lib/security/origin';
 
-export async function GET(
-  req: Request,
-  { params }: { params: Promise<{ provider: string }> }
-) {
+export const dynamic = 'force-dynamic';
+
+function loginRedirect(origin: string, message: string, clearCookie = false): NextResponse {
+  const res = NextResponse.redirect(`${origin}/login?message=${encodeURIComponent(message)}`);
+  if (clearCookie) res.headers.append('Set-Cookie', clearOAuthCookie());
+  return res;
+}
+
+/**
+ * Google sign-in (authorization-code flow with `state` + PKCE).
+ * GET without `code`  -> start: send the browser to Google.
+ * GET with `code`     -> callback: verify state, exchange the code server-side, sign in.
+ *
+ * Sign in with Apple is disabled until its id_token signature is verified against Apple's keys.
+ */
+export async function GET(req: Request, { params }: { params: Promise<{ provider: string }> }) {
   const { provider } = await params;
+  const origin = canonicalOrigin(req);
+
+  if (provider !== 'google') {
+    return loginRedirect(origin, 'That sign-in method is not available.');
+  }
+
+  const limited = await enforceDistributedRateLimit(req, 'oauth', { windowMs: 60 * 1000, max: 20 });
+  if (limited) return limited;
+
   const url = new URL(req.url);
-  const origin = url.origin;
   const code = url.searchParams.get('code');
-  const error = url.searchParams.get('error');
+  const providerError = url.searchParams.get('error');
 
-  if (error) {
-    return NextResponse.redirect(`${origin}/login?error=${encodeURIComponent(error)}`);
-  }
+  if (providerError) return loginRedirect(origin, 'Google sign-in was cancelled or refused.', true);
 
-  // 1. Initial redirect to Provider Login
+  // 1. Start. The state cookie must be set on the same host Google will send the browser back to, so if
+  // this request came in on another host (for example www.), hop to the canonical one first.
   if (!code) {
-    if (provider === 'google') {
-      if (!isGoogleOAuthConfigured()) {
-        return NextResponse.redirect(
-          `${origin}/login?error=GoogleNotConfigured&message=${encodeURIComponent(
-            'Google OAuth credentials are not configured. Please set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in your .env file.'
-          )}`
-        );
-      }
-      const authUrl = getGoogleAuthUrl(origin);
-      if (!authUrl) {
-        return NextResponse.redirect(`${origin}/login?error=GoogleOAuthInitFailed`);
-      }
-      return NextResponse.redirect(authUrl);
-    }
-
-    if (provider === 'apple') {
-      if (!isAppleOAuthConfigured()) {
-        return NextResponse.redirect(
-          `${origin}/login?error=AppleNotConfigured&message=${encodeURIComponent(
-            'Sign in with Apple is not configured. Please set APPLE_CLIENT_ID (Services ID) in your .env file.'
-          )}`
-        );
-      }
-      const authUrl = getAppleAuthUrl(origin);
-      if (!authUrl) {
-        return NextResponse.redirect(`${origin}/login?error=AppleOAuthInitFailed`);
-      }
-      return NextResponse.redirect(authUrl);
-    }
-
-    return NextResponse.redirect(`${origin}/login?error=UnsupportedProvider`);
+    if (url.origin !== origin) return NextResponse.redirect(`${origin}/api/auth/oauth/google`);
+    if (!isGoogleOAuthConfigured()) return loginRedirect(origin, 'Google sign-in is not available right now.');
+    const attempt = createOAuthAttempt();
+    const authUrl = getGoogleAuthUrl(origin, attempt);
+    if (!authUrl) return loginRedirect(origin, 'Google sign-in is not available right now.');
+    const res = NextResponse.redirect(authUrl);
+    res.headers.append('Set-Cookie', attempt.cookie);
+    return res;
   }
 
-  // 2. OAuth Callback Code Exchange
+  // 2. Callback: the state must match the cookie set when this browser started the login.
+  const attempt = verifyOAuthAttempt(req, url.searchParams.get('state'));
+  if (!attempt) {
+    return loginRedirect(origin, 'That sign-in link is invalid or has expired. Please try again.', true);
+  }
+
   try {
-    const ip = getClientIp(req);
-    let email = '';
-    let name = '';
-    let providerId = '';
-
-    if (provider === 'google') {
-      const googleProfile = await exchangeGoogleCode(code, origin);
-      email = googleProfile.email;
-      name = googleProfile.name;
-      providerId = googleProfile.providerId;
-    } else if (provider === 'apple') {
-      const idToken = url.searchParams.get('id_token') || undefined;
-      const appleProfile = parseAppleAuthPayload({ id_token: idToken, code });
-      email = appleProfile.email;
-      name = appleProfile.name;
-      providerId = appleProfile.providerId;
-    } else {
-      return NextResponse.redirect(`${origin}/login?error=InvalidProvider`);
-    }
-
+    const profile = await exchangeGoogleCode(code, origin, attempt.verifier);
     const authResult = await authenticateOAuthUser(
-      {
-        email,
-        name,
-        provider: provider as 'google' | 'apple',
-        providerId,
-      },
-      ip
+      { email: profile.email, name: profile.name, provider: 'google', providerId: profile.providerId },
+      getClientIp(req)
     );
-
-    const redirectRes = NextResponse.redirect(`${origin}/dashboard`);
-    redirectRes.headers.set('Set-Cookie', authResult.cookieHeader);
-    return redirectRes;
+    const res = NextResponse.redirect(`${origin}/dashboard`);
+    res.headers.append('Set-Cookie', authResult.cookieHeader);
+    res.headers.append('Set-Cookie', clearOAuthCookie());
+    return res;
   } catch (err: any) {
-    console.error(`[OAuth] ${provider} callback error:`, err?.message);
-    return NextResponse.redirect(
-      `${origin}/login?error=${encodeURIComponent(provider + 'AuthFailed')}&message=${encodeURIComponent(
-        err?.message || 'Authentication could not be completed.'
-      )}`
-    );
+    console.error('[OAuth] google callback failed:', err?.message);
+    return loginRedirect(origin, 'Google sign-in could not be completed. Please try again.', true);
   }
 }
 
-export async function POST(
-  req: Request,
-  { params }: { params: Promise<{ provider: string }> }
-) {
-  try {
-    const { provider } = await params;
-    const url = new URL(req.url);
-    const origin = url.origin;
-    const ip = getClientIp(req);
-    const contentType = req.headers.get('content-type') || '';
-
-    if (provider !== 'google' && provider !== 'apple') {
-      return NextResponse.json({ error: 'Invalid provider' }, { status: 400 });
-    }
-
-    // A. Handle browser form_post from Apple Sign-In
-    if (contentType.includes('application/x-www-form-urlencoded') || contentType.includes('multipart/form-data')) {
-      const formData = await req.formData();
-      const code = formData.get('code')?.toString();
-      const idToken = formData.get('id_token')?.toString();
-      const userRaw = formData.get('user')?.toString();
-      const error = formData.get('error')?.toString();
-
-      if (error) {
-        return NextResponse.redirect(`${origin}/login?error=${encodeURIComponent(error)}`);
-      }
-
-      const appleProfile = parseAppleAuthPayload({
-        id_token: idToken,
-        code,
-        user: userRaw,
-      });
-
-      const authResult = await authenticateOAuthUser(
-        {
-          email: appleProfile.email,
-          name: appleProfile.name,
-          provider: 'apple',
-          providerId: appleProfile.providerId,
-        },
-        ip
-      );
-
-      const redirectRes = NextResponse.redirect(`${origin}/dashboard`, 303);
-      redirectRes.headers.set('Set-Cookie', authResult.cookieHeader);
-      return redirectRes;
-    }
-
-    // B. Handle JSON API (Google Identity Services / One Tap / Client SDKs)
-    const body = await req.json().catch(() => ({}));
-    let email = body.email?.trim();
-    let name = body.name?.trim();
-    let providerId = body.providerId;
-
-    // Decode Google ID Token if present (from Google Identity Services credential)
-    if (body.credential && !email) {
-      const payload = decodeJwtPayload(body.credential);
-      if (payload) {
-        if (payload.email) email = payload.email;
-        if (payload.name) name = payload.name;
-        if (payload.sub) providerId = payload.sub;
-      }
-    }
-
-    if (!email) {
-      return NextResponse.json({ error: 'Email address is required for authentication.' }, { status: 400 });
-    }
-
-    const authResult = await authenticateOAuthUser(
-      {
-        email,
-        name,
-        provider,
-        providerId: providerId || body.credential?.slice(0, 24),
-      },
-      ip
-    );
-
-    return NextResponse.json(
-      {
-        success: true,
-        isNewUser: authResult.isNewUser,
-        member: authResult.member,
-        workspace: authResult.workspace,
-        token: authResult.token,
-      },
-      {
-        status: 200,
-        headers: {
-          'Set-Cookie': authResult.cookieHeader,
-        },
-      }
-    );
-  } catch (err: any) {
-    console.error('[OAuth] POST auth error:', err);
-    return NextResponse.json({ error: err?.message || 'Authentication failed' }, { status: 500 });
-  }
+/** No POST sign-in: nothing a browser posts is trusted as proof of identity. */
+export async function POST() {
+  return NextResponse.json({ error: 'Not supported.' }, { status: 405, headers: { Allow: 'GET' } });
 }

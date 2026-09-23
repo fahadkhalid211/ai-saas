@@ -6,6 +6,7 @@ import { dispatchSlackNotification } from '@/lib/integrations/slack';
 import { dispatchGoogleSheetRow } from '@/lib/integrations/google-sheets';
 import { verifyAdminRequest, getAuthContext, requireWorkspaceAssistant, withRoleAuth } from '@/lib/security/auth';
 import { enforceRateLimit, getClientIp } from '@/lib/security/rate-limit';
+import { enforceDistributedRateLimit, enforceDistributedRateLimitByKey } from '@/lib/security/rate-limit-redis';
 import { resolveAttribution, attributionCustomData } from '@/lib/analytics/attribution';
 
 export async function OPTIONS() {
@@ -26,6 +27,8 @@ export async function POST(req: Request) {
     if (rateLimit.errorResponse) {
       return rateLimit.errorResponse;
     }
+    const sharedLimited = await enforceDistributedRateLimit(req, 'lead', { windowMs: 60 * 1000, max: 10 });
+    if (sharedLimited) return sharedLimited;
 
     const body = await req.json();
     const { assistantId, email, name, phone, notes, customData } = body;

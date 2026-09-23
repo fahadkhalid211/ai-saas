@@ -7,6 +7,7 @@ import { ChatMessage } from '@/lib/ai/types';
 import { isWebSearchIntent, extractSearchQuery, executeWebSearch } from '@/lib/rag/web-search';
 import { parseFileOrText } from '@/lib/rag/parsers';
 import { enforceRateLimit, enforceGlobalRateLimit, enforceRateLimitByKey } from '@/lib/security/rate-limit';
+import { enforceDistributedRateLimit, enforceDistributedRateLimitByKey } from '@/lib/security/rate-limit-redis';
 import { generateConversationAccessToken } from '@/lib/security/auth';
 import { validateChatPayload } from '@/lib/security/validation';
 import { autoCaptureChatLead } from '@/lib/chat/lead-extraction';
@@ -74,6 +75,14 @@ export async function POST(req: NextRequest) {
     if (globalLimit.errorResponse) {
       return globalLimit.errorResponse;
     }
+
+    // The same limits counted in Redis, so they hold across serverless instances: per client per minute
+    // and per hour, plus a platform-wide ceiling on model spend.
+    const sharedLimited =
+      (await enforceDistributedRateLimit(req, 'chat-min', { windowMs: 60 * 1000, max: 35 })) ||
+      (await enforceDistributedRateLimit(req, 'chat-hour', { windowMs: 60 * 60 * 1000, max: 400 })) ||
+      (await enforceDistributedRateLimitByKey('global:chat-min', { windowMs: 60 * 1000, max: 600 }));
+    if (sharedLimited) return sharedLimited;
 
     const body = await req.json();
 

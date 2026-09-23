@@ -9,11 +9,10 @@ export async function GET(request: NextRequest) {
   try {
     const authHeader = request.headers.get('authorization');
     const secretHeader = request.headers.get('x-cron-secret');
-    const searchParams = request.nextUrl.searchParams;
-    const queryKey = searchParams.get('key');
     const expectedKey = process.env.CRON_SECRET || process.env.ADMIN_API_KEY || getAdminKey();
 
-    const token = authHeader?.replace(/^Bearer\s+/i, '') || secretHeader || queryKey;
+    // Header only: a secret in the URL ends up in access logs and browser history.
+    const token = authHeader?.replace(/^Bearer\s+/i, '') || secretHeader;
     const isSessionAuthed = await verifyAdminRequest(request);
 
     if (!isSessionAuthed && (!token || !timingSafeStringEqual(token, expectedKey))) {

@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "security:check": "node scripts/security-check.mjs",
+    "db:verify": "node scripts/db-verify.mjs",
+    "db:schema": "node scripts/apply-schema.mjs",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
