@@ -944,6 +944,7 @@ export default function DashboardPage() {
                 saveError={saveError}
                 handleSaveSettings={handleSaveSettings}
                 isSaving={isSaving}
+                activeAssistant={activeAssistant}
               />
             )}
 

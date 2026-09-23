@@ -23,6 +23,8 @@ export interface EngineTabProps {
   saveError: string | null;
   handleSaveSettings: () => void | Promise<void>;
   isSaving: boolean;
+  /** The assistant as last saved, so the panel can show what is live rather than what is being edited. */
+  activeAssistant?: any;
 }
 
 export const PROVIDER_GUIDES: Record<
@@ -140,6 +142,7 @@ export const EngineTab: React.FC<EngineTabProps> = ({
   saveError,
   handleSaveSettings,
   isSaving,
+  activeAssistant,
 }) => {
   const [showApiKey, setShowApiKey] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
@@ -152,6 +155,17 @@ export const EngineTab: React.FC<EngineTabProps> = ({
 
   const currentProviderId = formData.provider || 'auto_free';
   const currentGuide = PROVIDER_GUIDES[currentProviderId] || PROVIDER_GUIDES.auto_free;
+
+  // What is live is the saved assistant; formData may hold edits that are not saved yet.
+  const live = activeAssistant || formData;
+  const liveProviderId = live.provider || 'auto_free';
+  const liveGuide = PROVIDER_GUIDES[liveProviderId] || PROVIDER_GUIDES.auto_free;
+  const liveUsesKey = liveProviderId !== 'auto_free' && liveProviderId !== 'ollama';
+  const liveHasKey = Boolean(live.apiKeyEncrypted);
+  const liveModel =
+    liveProviderId === 'auto_free' ? 'Groq, then Gemini, then Ollama (automatic failover)' : live.modelName || 'default model';
+  const hasUnsavedProviderChange =
+    Boolean(activeAssistant) && (formData.provider || 'auto_free') !== liveProviderId;
 
   return (
     <div className="max-w-4xl space-y-6 mx-auto">
@@ -186,6 +200,45 @@ export const EngineTab: React.FC<EngineTabProps> = ({
           <span>{saveError}</span>
         </div>
       )}
+
+      {/* Currently active AI */}
+      <div
+        className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl border border-emerald-300 dark:border-emerald-800/70 bg-emerald-50/70 dark:bg-emerald-950/30 px-4 py-3"
+        role="status"
+        aria-label="Currently active AI"
+      >
+        <div className="flex items-center gap-3 min-w-0">
+          <span className="relative flex h-2.5 w-2.5 shrink-0">
+            <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-60 animate-ping" />
+            <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500" />
+          </span>
+          <div className="min-w-0">
+            <div className="text-[10.5px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">Currently active AI</div>
+            <div className="text-sm font-bold text-slate-900 dark:text-white truncate">
+              {liveGuide.label}
+              <span className="font-medium text-slate-500 dark:text-slate-400"> · {liveModel}</span>
+            </div>
+          </div>
+        </div>
+        <div className="flex flex-wrap items-center gap-2 text-[11px] font-semibold">
+          {liveUsesKey && (
+            <span
+              className={`px-2 py-0.5 rounded-md border ${
+                liveHasKey
+                  ? 'bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-900/40 dark:text-emerald-300 dark:border-emerald-800'
+                  : 'bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-900/40 dark:text-amber-300 dark:border-amber-800'
+              }`}
+            >
+              {liveHasKey ? 'Your API key is set' : 'No API key yet'}
+            </span>
+          )}
+          {hasUnsavedProviderChange && (
+            <span className="px-2 py-0.5 rounded-md border bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-900/40 dark:text-amber-300 dark:border-amber-800">
+              Switching to {currentGuide.label} once you save
+            </span>
+          )}
+        </div>
+      </div>
 
       {/* Zero-Markup BYOK Positioning Banner */}
       <div className="rounded-xl border border-blue-200 dark:border-blue-800/60 bg-gradient-to-r from-blue-50/70 via-indigo-50/40 to-slate-50 dark:from-blue-950/30 dark:via-indigo-950/20 dark:to-slate-900/40 p-4 text-xs text-slate-700 dark:text-slate-300 shadow-xs">
