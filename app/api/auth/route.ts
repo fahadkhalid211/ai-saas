@@ -91,7 +91,13 @@ export async function POST(req: Request) {
       const cookieHeader = createSessionCookieHeader(sessionToken);
 
       await Database.addAuditLog({
-        actor: { id: tenantResult.owner.id, name: tenantResult.owner.name, ip },
+        actor: {
+          id: tenantResult.owner.id,
+          name: tenantResult.owner.name,
+          email,
+          username: email.split('@')[0],
+          ip,
+        },
         action: 'auth.tenant_registered',
         targetType: 'workspace',
         targetId: tenantResult.workspace.id,
@@ -152,7 +158,13 @@ export async function POST(req: Request) {
         const cookieHeader = createSessionCookieHeader(sessionToken);
 
         await Database.addAuditLog({
-          actor: { id: tenantMatch.member.id, name: tenantMatch.member.name, ip },
+          actor: {
+            id: tenantMatch.member.id,
+            name: tenantMatch.member.name,
+            email: tenantMatch.member.email || email,
+            username: (tenantMatch.member.email || email).split('@')[0],
+            ip,
+          },
           action: 'auth.tenant_login_success',
           targetType: 'workspace',
           targetId: tenantMatch.workspace.id,
@@ -181,6 +193,13 @@ export async function POST(req: Request) {
       // Check staff team member login
       const staffMember = await Database.verifyStaffLogin(email, passwordOrCode, body?.workspaceId);
       if (!staffMember) {
+        await Database.addAuditLog({
+          actor: { id: 'unknown', name: 'Anonymous', email, username: email.split('@')[0], ip },
+          action: 'auth.login_failed',
+          targetType: 'session',
+          targetId: email,
+          details: { attemptedEmail: email },
+        });
         return NextResponse.json(
           { error: 'Invalid credentials or account inactive' },
           { status: 401 }
@@ -192,7 +211,13 @@ export async function POST(req: Request) {
       const cookieHeader = createSessionCookieHeader(sessionToken);
 
       await Database.addAuditLog({
-        actor: { id: staffMember.id, name: staffMember.name, ip },
+        actor: {
+          id: staffMember.id,
+          name: staffMember.name,
+          email: staffMember.email,
+          username: staffMember.email ? staffMember.email.split('@')[0] : staffMember.name,
+          ip,
+        },
         action: 'auth.staff_login_success',
         targetType: 'session',
         targetId: staffMember.id,

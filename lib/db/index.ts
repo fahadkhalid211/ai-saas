@@ -376,6 +376,7 @@ export interface AuditLogData {
     id: string;
     name: string;
     email?: string;
+    username?: string;
     ip: string;
   };
   action: string;
@@ -402,8 +403,11 @@ export interface SmtpSettingsData {
   user?: string;
   pass?: string;
   from?: string;
+  fromName?: string;
+  fromEmail?: string;
   resendApiKey?: string;
   resendFrom?: string;
+  provider?: 'smtp' | 'resend';
   updatedAt?: string;
 }
 
@@ -696,9 +700,9 @@ function loadState(): DatabaseState {
     saveLocalStateSync(state);
   }
 
-  const legacyOwner = state.teamMembers.find((m) => m.id === 'tm_owner' && m.email === 'admin@kortexai.com');
-  if (legacyOwner) {
-    legacyOwner.email = getMasterEmail();
+  const masterOwner = state.teamMembers.find((m) => m.id === 'tm_owner');
+  if (masterOwner && masterOwner.email !== getMasterEmail()) {
+    masterOwner.email = getMasterEmail();
     saveLocalStateSync(state);
   }
 
@@ -834,6 +838,10 @@ async function ensureInitialized(forceFresh = false): Promise<DatabaseState> {
               smtpSettings: remoteState.smtpSettings,
               pageViews: Array.isArray(remoteState.pageViews) ? remoteState.pageViews : (cachedState?.pageViews || []),
             };
+            const remoteMaster = (cachedState.teamMembers || []).find((m) => m.id === 'tm_owner');
+            if (remoteMaster && remoteMaster.email !== getMasterEmail()) {
+              remoteMaster.email = getMasterEmail();
+            }
             if (isRedisConfigured() && cachedState) {
               redisSet(CACHE_KEYS.STATE, { state: cachedState, updatedAt: lastKnownCloudUpdatedAt }, 300).catch(() => {});
             }
@@ -2859,10 +2867,32 @@ export class Database {
   static async addAuditLog(entry: Omit<AuditLogData, 'id' | 'timestamp'>): Promise<AuditLogData> {
     const state = await ensureInitialized();
     if (!state.auditLogs) state.auditLogs = [];
+
+    const actor = { ...entry.actor };
+    if (!actor.email) {
+      if (entry.details?.email && typeof entry.details.email === 'string') {
+        actor.email = entry.details.email;
+      } else if (entry.details?.attemptedEmail && typeof entry.details.attemptedEmail === 'string') {
+        actor.email = entry.details.attemptedEmail;
+      } else if (entry.details?.ownerEmail && typeof entry.details.ownerEmail === 'string') {
+        actor.email = entry.details.ownerEmail;
+      } else if (actor.id === 'admin' || actor.id === 'master-admin' || actor.name === 'Master Admin') {
+        actor.email = getMasterEmail();
+      }
+    }
+    if (!actor.username) {
+      if (actor.email) {
+        actor.username = actor.email.split('@')[0];
+      } else if (actor.name && actor.name !== 'Unknown') {
+        actor.username = actor.name;
+      }
+    }
+
     const log: AuditLogData = {
       id: 'aud_' + Math.random().toString(36).substring(2, 12),
       timestamp: new Date().toISOString(),
       ...entry,
+      actor,
     };
     state.auditLogs.unshift(log);
     // Keep last 1000 logs
@@ -4161,18 +4191,43 @@ export class Database {
   // SMTP & Email Configuration
   static async getSmtpSettings(): Promise<SmtpSettingsData | null> {
     const state = await ensureInitialized();
-    return state.smtpSettings || null;
+
+    const envSmtp: Partial<SmtpSettingsData> = {};
+    if (process.env.SMTP_HOST) envSmtp.host = process.env.SMTP_HOST;
+    if (process.env.SMTP_PORT) envSmtp.port = parseInt(process.env.SMTP_PORT, 10);
+    if (process.env.SMTP_USER) envSmtp.user = process.env.SMTP_USER;
+    if (process.env.SMTP_PASS) envSmtp.pass = process.env.SMTP_PASS;
+    if (process.env.SMTP_FROM) {
+      envSmtp.from = process.env.SMTP_FROM;
+      envSmtp.fromEmail = process.env.SMTP_FROM;
+    }
+    if (process.env.SMTP_SECURE) envSmtp.secure = process.env.SMTP_SECURE === 'true';
+    if (process.env.RESEND_API_KEY) envSmtp.resendApiKey = process.env.RESEND_API_KEY;
+    if (process.env.RESEND_FROM) envSmtp.resendFrom = process.env.RESEND_FROM;
+
+    const merged: SmtpSettingsData = {
+      ...envSmtp,
+      ...(state.smtpSettings || {}),
+    };
+
+    if (!merged.host && !merged.user && !merged.resendApiKey) {
+      return state.smtpSettings || null;
+    }
+    return merged;
   }
 
   static async saveSmtpSettings(settings: Partial<SmtpSettingsData>): Promise<SmtpSettingsData> {
     const state = await ensureInitialized();
+    const current = state.smtpSettings || {};
     const updated: SmtpSettingsData = {
-      ...(state.smtpSettings || {}),
+      ...current,
       ...settings,
       updatedAt: new Date().toISOString(),
     };
     state.smtpSettings = updated;
     await saveState(state);
+    cachedState = state;
+    lastCloudFetchTime = Date.now();
     return updated;
   }
 }

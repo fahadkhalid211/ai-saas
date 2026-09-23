@@ -4,6 +4,7 @@ import { sendTestDiagnosticEmail } from '@/lib/email';
 import { withAdminAuth, getAuthContext } from '@/lib/security/auth';
 import { getClientIp } from '@/lib/security/rate-limit';
 import { validateSafeExternalUrl } from '@/lib/security/ssrf';
+import { getMasterEmail } from '@/lib/security/master';
 
 export const GET = withAdminAuth(async (req: Request) => {
   try {
@@ -36,7 +37,8 @@ export const POST = withAdminAuth(async (req: Request) => {
     }
 
     const body = await req.json();
-    const { action, to, config } = body;
+    const { action, to } = body;
+    const config = body.settings || body.config || {};
     const ip = getClientIp(req);
 
     if (action === 'save_settings') {
@@ -52,20 +54,28 @@ export const POST = withAdminAuth(async (req: Request) => {
         }
       }
 
-      // Preserve existing password / API key if masked
-      if (updates.pass && updates.pass.includes('••••')) {
+      // Preserve existing password / API key if masked or left blank
+      if (!updates.pass || updates.pass.includes('••••')) {
         updates.pass = existing?.pass;
       }
-      if (updates.resendApiKey && updates.resendApiKey.includes('••••')) {
+      if (!updates.resendApiKey || updates.resendApiKey.includes('••••')) {
         updates.resendApiKey = existing?.resendApiKey;
+      }
+
+      // Harmonize sender name and email into canonical from field
+      if (updates.fromEmail && !updates.from) {
+        updates.from = updates.fromName ? `${updates.fromName} <${updates.fromEmail}>` : updates.fromEmail;
+      } else if (updates.from && !updates.fromEmail) {
+        const match = updates.from.match(/<([^>]+)>/);
+        updates.fromEmail = match ? match[1] : updates.from;
       }
 
       const saved = await Database.saveSmtpSettings(updates);
       await Database.addAuditLog({
-        actor: { id: ctx.memberId || 'admin', name: ctx.role || 'Master Admin', ip },
+        actor: { id: ctx.memberId || 'admin', name: ctx.role || 'Master Admin', email: getMasterEmail(), ip },
         action: 'settings.smtp_updated',
         targetType: 'system_settings',
-        details: { host: saved.host, port: saved.port, user: saved.user, from: saved.from },
+        details: { host: saved.host, port: saved.port, user: saved.user, from: saved.from, provider: saved.provider },
       });
 
       // Never echo unmasked secrets in response

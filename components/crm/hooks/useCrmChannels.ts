@@ -8,7 +8,11 @@ interface SmtpConfig {
   user: string;
   pass: string;
   from: string;
+  fromName?: string;
+  fromEmail?: string;
+  secure?: boolean;
   resendApiKey?: string;
+  resendFrom?: string;
   provider: 'smtp' | 'resend';
 }
 
@@ -23,7 +27,11 @@ export function useCrmChannels({ playNotificationChime }: UseCrmChannelsOptions)
     user: '',
     pass: '',
     from: '',
+    fromName: '',
+    fromEmail: '',
+    secure: false,
     resendApiKey: '',
+    resendFrom: '',
     provider: 'smtp',
   });
   const [smtpLoading, setSmtpLoading] = useState(false);
@@ -45,8 +53,14 @@ export function useCrmChannels({ playNotificationChime }: UseCrmChannelsOptions)
             host: data.settings.host || '',
             port: data.settings.port || 587,
             user: data.settings.user || '',
+            pass: data.settings.pass || '',
             from: data.settings.from || '',
+            fromName: data.settings.fromName || '',
+            fromEmail: data.settings.fromEmail || data.settings.from || '',
+            secure: data.settings.secure ?? false,
             provider: data.settings.provider || 'smtp',
+            resendApiKey: data.settings.resendApiKey || '',
+            resendFrom: data.settings.resendFrom || '',
           }));
         }
       }
@@ -62,12 +76,19 @@ export function useCrmChannels({ playNotificationChime }: UseCrmChannelsOptions)
       setSmtpLoading(true);
       setSmtpSaveSuccess(false);
       setSmtpSaveError(null);
+      const payloadConfig = {
+        ...smtpConfig,
+        from: smtpConfig.fromName && smtpConfig.fromEmail
+          ? `${smtpConfig.fromName} <${smtpConfig.fromEmail}>`
+          : smtpConfig.fromEmail || smtpConfig.from,
+      };
       const res = await fetch('/api/email/test', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           action: 'save_settings',
-          settings: smtpConfig,
+          settings: payloadConfig,
+          config: payloadConfig,
         }),
       });
       const data = await res.json();

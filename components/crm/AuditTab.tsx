@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useMemo, useEffect } from 'react';
-import { ClipboardList, RefreshCw, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ClipboardList, RefreshCw, ChevronLeft, ChevronRight, Search } from 'lucide-react';
 
 export interface AuditTabProps {
   auditLogs: any[];
@@ -15,14 +15,37 @@ export const AuditTab: React.FC<AuditTabProps> = ({
   fetchAuditLogs,
 }) => {
   const [currentPage, setCurrentPage] = useState(1);
+  const [searchQuery, setSearchQuery] = useState('');
   const pageSize = 10;
+
+  // Filter logs by search term (actor name, email, action, target)
+  const filteredLogs = useMemo(() => {
+    if (!searchQuery.trim()) return auditLogs;
+    const q = searchQuery.toLowerCase().trim();
+    return auditLogs.filter((log) => {
+      const name = (log.actor?.name || '').toLowerCase();
+      const email = (log.actor?.email || log.details?.email || log.details?.attemptedEmail || '').toLowerCase();
+      const username = (log.actor?.username || '').toLowerCase();
+      const action = (log.action || '').toLowerCase();
+      const targetType = (log.targetType || '').toLowerCase();
+      const ip = (log.actor?.ip || '').toLowerCase();
+      return (
+        name.includes(q) ||
+        email.includes(q) ||
+        username.includes(q) ||
+        action.includes(q) ||
+        targetType.includes(q) ||
+        ip.includes(q)
+      );
+    });
+  }, [auditLogs, searchQuery]);
 
   // Always sort newest logs to the very top
   const sortedLogs = useMemo(() => {
-    return [...auditLogs].sort(
+    return [...filteredLogs].sort(
       (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
     );
-  }, [auditLogs]);
+  }, [filteredLogs]);
 
   const totalPages = Math.max(1, Math.ceil(sortedLogs.length / pageSize));
 
@@ -53,11 +76,24 @@ export const AuditTab: React.FC<AuditTabProps> = ({
           </p>
         </div>
         <div className="flex items-center gap-2">
+          <div className="relative">
+            <input
+              type="text"
+              placeholder="Search user, email, action..."
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setCurrentPage(1);
+              }}
+              className="w-48 sm:w-64 pl-8 pr-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs text-slate-800 dark:text-slate-200 outline-none focus:border-blue-500 font-mono"
+            />
+            <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" />
+          </div>
           <button
             type="button"
             onClick={fetchAuditLogs}
             disabled={isSyncingAudit}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition cursor-pointer disabled:opacity-50"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition cursor-pointer disabled:opacity-50 shrink-0"
           >
             <RefreshCw className={`h-3.5 w-3.5 ${isSyncingAudit ? 'animate-spin text-blue-600' : ''}`} />
             <span>Refresh Logs</span>
@@ -72,6 +108,7 @@ export const AuditTab: React.FC<AuditTabProps> = ({
               <tr>
                 <th className="py-3 px-4">Timestamp</th>
                 <th className="py-3 px-4">Actor</th>
+                <th className="py-3 px-4">User Email / Username</th>
                 <th className="py-3 px-4">Action Event</th>
                 <th className="py-3 px-4">Target</th>
                 <th className="py-3 px-4">IP Address</th>
@@ -80,32 +117,50 @@ export const AuditTab: React.FC<AuditTabProps> = ({
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
               {paginatedLogs.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="py-8 text-center text-slate-400">
-                    No security audit logs recorded yet.
+                  <td colSpan={6} className="py-8 text-center text-slate-400">
+                    {searchQuery ? 'No matching audit logs found for your search.' : 'No security audit logs recorded yet.'}
                   </td>
                 </tr>
               ) : (
-                paginatedLogs.map((log) => (
-                  <tr key={log.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
-                    <td className="py-3 px-4 font-mono text-[11px] text-slate-500 dark:text-slate-400">
-                      {new Date(log.timestamp).toLocaleString()}
-                    </td>
-                    <td className="py-3 px-4 font-medium text-slate-800 dark:text-slate-200">
-                      {log.actor?.name || 'Admin'}
-                    </td>
-                    <td className="py-3 px-4">
-                      <span className="px-2 py-0.5 rounded font-mono text-[11px] bg-slate-100 dark:bg-slate-800 text-blue-600 dark:text-blue-400 font-semibold">
-                        {log.action}
-                      </span>
-                    </td>
-                    <td className="py-3 px-4 text-slate-500 font-mono text-[11px]">
-                      {log.targetType}
-                    </td>
-                    <td className="py-3 px-4 text-slate-400 font-mono text-[11px]">
-                      {log.actor?.ip || '127.0.0.1'}
-                    </td>
-                  </tr>
-                ))
+                paginatedLogs.map((log) => {
+                  const userEmail = log.actor?.email || log.details?.email || log.details?.attemptedEmail || log.details?.ownerEmail;
+                  const username = log.actor?.username || (userEmail ? userEmail.split('@')[0] : null);
+
+                  return (
+                    <tr key={log.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
+                      <td className="py-3 px-4 font-mono text-[11px] text-slate-500 dark:text-slate-400 whitespace-nowrap">
+                        {new Date(log.timestamp).toLocaleString()}
+                      </td>
+                      <td className="py-3 px-4 font-medium text-slate-800 dark:text-slate-200 whitespace-nowrap">
+                        {log.actor?.name || 'Admin'}
+                      </td>
+                      <td className="py-3 px-4 font-mono text-[11px]">
+                        {userEmail ? (
+                          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900/60 text-blue-700 dark:text-blue-300 font-medium">
+                            {userEmail}
+                          </span>
+                        ) : username ? (
+                          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-medium">
+                            @{username}
+                          </span>
+                        ) : (
+                          <span className="text-slate-400 italic">system</span>
+                        )}
+                      </td>
+                      <td className="py-3 px-4">
+                        <span className="px-2 py-0.5 rounded font-mono text-[11px] bg-slate-100 dark:bg-slate-800 text-blue-600 dark:text-blue-400 font-semibold whitespace-nowrap">
+                          {log.action}
+                        </span>
+                      </td>
+                      <td className="py-3 px-4 text-slate-500 font-mono text-[11px] whitespace-nowrap">
+                        {log.targetType}{log.targetId ? ` (${log.targetId.slice(0, 10)})` : ''}
+                      </td>
+                      <td className="py-3 px-4 text-slate-400 font-mono text-[11px] whitespace-nowrap">
+                        {log.actor?.ip || '127.0.0.1'}
+                      </td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>
