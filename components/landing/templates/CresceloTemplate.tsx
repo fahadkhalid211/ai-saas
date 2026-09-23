@@ -716,6 +716,7 @@ function DynamicFooter({
               <li><a href="#agent">Behind The Scenes</a></li>
               <li><a href="#services">Services</a></li>
               <li><a href="#pricing">Pricing</a></li>
+              <li><a href="/roadmap">Roadmap</a></li>
               <li><a href="#faq">FAQ</a></li>
             </ul>
           </nav>

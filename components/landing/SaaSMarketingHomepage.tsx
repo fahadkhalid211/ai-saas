@@ -149,45 +149,6 @@ export function SaaSMarketingHomepage({
     }, 600);
   };
 
-  const templates = [
-    {
-      name: 'Classic Barbershop',
-      slug: 'classic-barbershop',
-      tag: 'Local Service',
-      desc: 'Appointment booking, barber selection, service pricing menu.',
-    },
-    {
-      name: 'Fitness & Gym Club',
-      slug: 'fitness-gym',
-      tag: 'Health & Wellness',
-      desc: 'Membership tiers, class booking, personal training dispatch.',
-    },
-    {
-      name: 'Real Estate Agency',
-      slug: 'real-estate',
-      tag: 'High Ticket',
-      desc: 'Property inquiries, viewing appointments, buyer lead triage.',
-    },
-    {
-      name: 'SaaS Platform',
-      slug: 'saas-platform',
-      tag: 'B2B Software',
-      desc: 'Interactive API playground, demo booking, SLA questions.',
-    },
-    {
-      name: 'Healthcare Clinic',
-      slug: 'healthcare-clinic',
-      tag: 'Medical',
-      desc: 'Doctor consultations, insurance inquiries, intake routing.',
-    },
-    {
-      name: 'Legal Counsel',
-      slug: 'legal-counsel',
-      tag: 'Professional',
-      desc: 'Case evaluations, practice areas, consultation scheduling.',
-    },
-  ];
-
   const faqs = [
     {
       q: 'How does Crescelo drive higher conversions than standard chatbots?',
@@ -292,12 +253,12 @@ export function SaaSMarketingHomepage({
               >
                 Features
               </a>
-              <a
-                href="#templates"
+              <Link
+                href="/roadmap"
                 className={`transition ${isLight ? 'hover:text-blue-600' : 'hover:text-white'}`}
               >
-                Templates
-              </a>
+                Roadmap
+              </Link>
               <a
                 href="#pricing"
                 className={`transition ${isLight ? 'hover:text-blue-600' : 'hover:text-white'}`}
@@ -1040,17 +1001,17 @@ export function SaaSMarketingHomepage({
                       Domain-specific conversation trees, booking schedules, and knowledge schemas ready to deploy in under 60 seconds.
                     </p>
                   </div>
-                  <a
-                    href="#templates"
+                  <Link
+                    href="/roadmap"
                     className={`px-4 py-2 rounded-xl text-xs font-semibold border transition shrink-0 flex items-center gap-1.5 ${
                       isLight
                         ? 'border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-800'
                         : 'border-slate-700 bg-slate-800 hover:bg-slate-700 text-slate-200'
                     }`}
                   >
-                    <span>Browse All Templates</span>
+                    <span>View Roadmap &amp; Beta Archetypes</span>
                     <ArrowRight className="h-3.5 w-3.5" />
-                  </a>
+                  </Link>
                 </div>
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2.5 pt-2">
@@ -1073,100 +1034,6 @@ export function SaaSMarketingHomepage({
                   ))}
                 </div>
               </SpotlightCard>
-            </div>
-          </div>
-        </section>
-
-        {/* Industry Template Showcase */}
-        <section
-          id="templates"
-          className={`py-20 border-b scroll-reveal opacity-0 translate-y-8 transition-all duration-700 ease-out ${
-            isLight ? 'border-slate-200/80 bg-slate-100/50' : 'border-slate-800/60 bg-slate-950/40'
-          }`}
-        >
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
-            <div className="text-center max-w-2xl mx-auto space-y-3">
-              <div
-                className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold border ${
-                  isLight
-                    ? 'bg-blue-50 border-blue-200 text-blue-700'
-                    : 'bg-blue-950/60 border-blue-800/60 text-blue-300'
-                }`}
-              >
-                <Sparkles className="h-3.5 w-3.5 text-blue-500" />
-                <span>Pre-Configured Knowledge Bases</span>
-              </div>
-              <h2
-                className={`text-3xl sm:text-4xl font-extrabold tracking-tight ${
-                  isLight ? 'text-slate-950' : 'text-white'
-                }`}
-              >
-                Ready-to-Deploy Industry Landing Pages
-              </h2>
-              <p className={`text-sm ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
-                Each archetype includes a dedicated landing surface, pre-loaded service knowledge,
-                and calendar booking flows.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {templates.map((tpl, idx) => (
-                <div
-                  key={idx}
-                  className={`p-5 rounded-2xl border transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl flex flex-col justify-between ${
-                    isLight
-                      ? 'border-slate-200 bg-white hover:border-blue-300 shadow-sm text-slate-800'
-                      : 'border-slate-800/90 bg-slate-900/60 hover:border-slate-700 hover:shadow-blue-500/10 text-slate-200'
-                  }`}
-                >
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span
-                        className={`text-[10px] font-mono px-2 py-0.5 rounded border ${
-                          isLight
-                            ? 'bg-blue-50 text-blue-700 border-blue-200'
-                            : 'bg-blue-950/60 text-blue-300 border-blue-800/60'
-                        }`}
-                      >
-                        {tpl.tag}
-                      </span>
-                      <span className="h-2 w-2 rounded-full bg-emerald-500" />
-                    </div>
-                    <h3
-                      className={`text-base font-bold ${
-                        isLight ? 'text-slate-900' : 'text-white'
-                      }`}
-                    >
-                      {tpl.name}
-                    </h3>
-                    <p className={`text-xs ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
-                      {tpl.desc}
-                    </p>
-                  </div>
-
-                  <div className="pt-4 mt-4 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between">
-                    <Link
-                      href={`/site/${tpl.slug}`}
-                      target="_blank"
-                      className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
-                    >
-                      <span>Preview Live Site</span>
-                      <ExternalLink className="h-3 w-3" />
-                    </Link>
-                    <button
-                      type="button"
-                      onClick={() => onOpenAuth('register')}
-                      className={`text-xs px-3 py-1.5 rounded-lg border transition font-medium cursor-pointer ${
-                        isLight
-                          ? 'border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700'
-                          : 'border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-slate-200'
-                      }`}
-                    >
-                      Deploy Archetype
-                    </button>
-                  </div>
-                </div>
-              ))}
             </div>
           </div>
         </section>
@@ -1657,9 +1524,9 @@ export function SaaSMarketingHomepage({
               <a href="#features" className={isLight ? 'hover:text-slate-900' : 'hover:text-slate-300'}>
                 Features
               </a>
-              <a href="#templates" className={isLight ? 'hover:text-slate-900' : 'hover:text-slate-300'}>
-                Templates
-              </a>
+              <Link href="/roadmap" className={isLight ? 'hover:text-slate-900' : 'hover:text-slate-300'}>
+                Roadmap
+              </Link>
               <a href="#pricing" className={isLight ? 'hover:text-slate-900' : 'hover:text-slate-300'}>
                 Pricing
               </a>

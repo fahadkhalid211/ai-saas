@@ -349,6 +349,7 @@ export const FOOTER = {
       links: [
         { label: 'Overview', href: '/product' },
         { label: 'Architecture', href: '/product#architecture' },
+        { label: 'Roadmap', href: '/roadmap' },
         { label: 'Integrations', href: '/integrations' },
         { label: 'Pricing', href: '/pricing' },
       ],
