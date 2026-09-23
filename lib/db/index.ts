@@ -3462,6 +3462,7 @@ export class Database {
     provider: 'google' | 'apple' | 'sso';
     providerId?: string;
     domain?: string;
+    picture?: string;
   }): Promise<{
     workspace: WorkspaceBillingData;
     member: TeamMemberData;
@@ -3475,6 +3476,15 @@ export class Database {
     const existingWs = (state.workspaces || []).find(
       (w: any) => (w.ownerEmail || '').toLowerCase() === cleanEmail
     );
+    // Fill in the person's own name and photo from the provider, without overwriting anything they set themselves.
+    const applyProfile = (member: TeamMemberData, workspaceName?: string) => {
+      const personName = (params.name || '').trim();
+      const looksAutoNamed =
+        !member.name || member.name === workspaceName || /'s Workspace$/.test(member.name) || member.name === 'Owner';
+      if (personName && looksAutoNamed) member.name = personName;
+      if (params.picture && !member.avatarUrl) member.avatarUrl = params.picture;
+    };
+
     if (existingWs) {
       let ownerMember = (state.teamMembers || []).find((m) => m.email.toLowerCase() === cleanEmail);
       if (!ownerMember) {
@@ -3492,8 +3502,8 @@ export class Database {
         state.teamMembers.push(ownerMember);
       } else {
         ownerMember.lastLoginAt = new Date().toISOString();
-        if (params.name && !ownerMember.name) ownerMember.name = params.name;
       }
+      applyProfile(ownerMember, existingWs.name);
       await saveState(state);
       return { workspace: existingWs, member: ownerMember, isNewUser: false };
     }
@@ -3503,6 +3513,7 @@ export class Database {
     if (existingMember) {
       existingMember.lastLoginAt = new Date().toISOString();
       const ws = await Database.getWorkspaceBilling(existingMember.workspaceId || 'default-workspace');
+      applyProfile(existingMember, ws?.name);
       await saveState(state);
       return { workspace: ws, member: existingMember, isNewUser: false };
     }
@@ -3519,6 +3530,10 @@ export class Database {
       ownerEmail: cleanEmail,
       industryTemplateSlug: 'classic-barbershop',
     });
+
+    // The owner record is named after the business by default; use the person's own name and photo instead.
+    applyProfile(tenantResult.owner, tenantResult.workspace.name);
+    await saveState(state);
 
     return {
       workspace: tenantResult.workspace,

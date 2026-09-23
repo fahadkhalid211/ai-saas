@@ -9,6 +9,7 @@ export interface OAuthUserProfile {
   provider: 'google' | 'apple' | 'sso';
   providerId?: string;
   domain?: string;
+  picture?: string;
 }
 
 export interface OAuthAuthResult {
@@ -86,12 +87,23 @@ export function getGoogleAuthUrl(origin: string, attempt: { state: string; chall
   return `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
 }
 
+/** Google profile photos live on googleusercontent.com; accept nothing else so a profile cannot inject an arbitrary URL. */
+export function safeAvatarUrl(value: unknown): string | undefined {
+  if (typeof value !== 'string' || value.length > 500) return undefined;
+  try {
+    const u = new URL(value);
+    return u.protocol === 'https:' && /(^|\.)googleusercontent\.com$/i.test(u.hostname) ? u.toString() : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 /** Exchanges the authorization code for a verified Google identity. Throws unless the e-mail is verified by Google. */
 export async function exchangeGoogleCode(
   code: string,
   origin: string,
   verifier: string
-): Promise<{ email: string; name: string; providerId: string }> {
+): Promise<{ email: string; name: string; providerId: string; picture?: string }> {
   const clientId = process.env.GOOGLE_CLIENT_ID || process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
   const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
   if (!clientId || !clientSecret) throw new Error('Google sign-in is not configured.');
@@ -127,6 +139,7 @@ export async function exchangeGoogleCode(
     email: profile.email,
     name: profile.name || profile.given_name || profile.email.split('@')[0],
     providerId: String(profile.sub),
+    picture: safeAvatarUrl(profile.picture),
   };
 }
 
@@ -152,6 +165,7 @@ export async function authenticateOAuthUser(
     provider: profile.provider,
     providerId: profile.providerId,
     domain: profile.domain,
+    picture: profile.picture,
   });
 
   const sessionToken = generateSessionToken(member.role, member.id, workspace.id);

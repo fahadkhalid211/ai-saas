@@ -344,6 +344,7 @@ export function DashboardHeader({
               {currentUser?.avatarUrl ? (
                 <img
                   src={currentUser.avatarUrl}
+                  referrerPolicy="no-referrer"
                   alt={currentUser.name || 'User Profile'}
                   className="h-full w-full object-cover"
                 />

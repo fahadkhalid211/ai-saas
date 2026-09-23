@@ -66,7 +66,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ provider
   try {
     const profile = await exchangeGoogleCode(code, origin, attempt.verifier);
     const authResult = await authenticateOAuthUser(
-      { email: profile.email, name: profile.name, provider: 'google', providerId: profile.providerId },
+      { email: profile.email, name: profile.name, provider: 'google', providerId: profile.providerId, picture: profile.picture },
       getClientIp(req)
     );
     const res = NextResponse.redirect(`${origin}/dashboard`);
