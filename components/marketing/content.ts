@@ -277,7 +277,6 @@ export const PLANS: PricingPlan[] = BILLING_PLANS.map((p) => ({
     p.botLimit === 'Unlimited'
       ? 'Unlimited assistants'
       : `${p.botLimit} ${p.botLimit === 1 ? 'assistant' : 'assistants'}`,
-    `${p.landingPageLimit} hosted ${p.landingPageLimit === 1 ? 'page' : 'pages'}`,
     p.knowledgeStorageLimitMb >= 1000
       ? `${p.knowledgeStorageLimitMb / 1000} GB knowledge storage`
       : `${p.knowledgeStorageLimitMb} MB knowledge storage`,

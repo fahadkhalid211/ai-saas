@@ -118,7 +118,7 @@ export async function createCheckoutSession(params: CreateCheckoutParams): Promi
           currency: 'usd',
           product_data: {
             name: `Crescelo ${plan.name} Plan`,
-            description: `${plan.chatSessionsLimit} chat sessions/mo, ${plan.botLimit} bots, ${plan.landingPageLimit} landing pages (${plan.tagline})`,
+            description: `${plan.chatSessionsLimit} chat sessions/mo, ${plan.botLimit} bots (${plan.tagline})`,
           },
           unit_amount: priceDollars * 100,
           recurring: {

@@ -120,29 +120,6 @@ export const TemplatesTab: React.FC<TemplatesTabProps> = ({
             Configure {activeAssistant?.name ? `"${activeAssistant.name}"` : 'your AI bot'} with pre-built system prompts, conversation starters, lead capture schemas, and sample knowledge bases.
           </p>
         </div>
-
-        {/* Clear Referral Card to Landing Page Studio */}
-        {setActiveTab && (
-          <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm shrink-0 w-full md:w-auto space-y-2">
-            <div className="flex items-center gap-2">
-              <Globe className="w-4 h-4 text-indigo-500" />
-              <span className="text-xs font-bold text-slate-900 dark:text-white">
-                Looking for Website Designs?
-              </span>
-            </div>
-            <p className="text-[11px] text-slate-500 dark:text-slate-400 max-w-xs">
-              To build and customize landing pages, launch the AI Website Architect in the Landing Page Studio.
-            </p>
-            <button
-              type="button"
-              onClick={() => setActiveTab('landing_page')}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-xs transition cursor-pointer"
-            >
-              <span>Open Landing Page Studio</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </button>
-          </div>
-        )}
       </div>
 
       {/* Success Notification */}
@@ -282,17 +259,6 @@ export const TemplatesTab: React.FC<TemplatesTabProps> = ({
                     </>
                   )}
                 </button>
-
-                {setActiveTab && (
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab('landing_page')}
-                    className="w-full flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/60 text-slate-600 dark:text-slate-400 py-1.5 text-[11px] font-medium transition cursor-pointer"
-                  >
-                    <Globe className="h-3 w-3 text-indigo-500" />
-                    <span>Build Website for this Bot</span>
-                  </button>
-                )}
               </div>
             </div>
           );

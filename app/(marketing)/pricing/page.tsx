@@ -10,7 +10,6 @@ import { SIGNUP_HREF } from '@/components/marketing/content';
 const COMPARISON_ROWS = [
   { feature: 'Included Chat Sessions', starter: '100 / mo', growth: '500 / mo', scale: '2,000 / mo' },
   { feature: 'Assistant Bots', starter: '1 Bot', growth: '5 Bots', scale: 'Unlimited' },
-  { feature: 'Hosted Business Landing Pages', starter: '1 Included', growth: '3 Included', scale: '7 Included' },
   { feature: 'Knowledge Base Storage', starter: '50 MB (~50k pages)', growth: '500 MB', scale: '5 GB' },
   { feature: 'Grounded RAG (No Hallucinations)', starter: 'Included', growth: 'Included', scale: 'Included' },
   { feature: 'Zero Token Markup (BYOK)', starter: 'Included', growth: 'Included', scale: 'Included' },

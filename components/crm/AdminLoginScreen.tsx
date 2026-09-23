@@ -132,7 +132,7 @@ export function AdminLoginScreen({
           </h2>
           <p className="text-xs text-slate-500 dark:text-slate-400 max-w-xs leading-relaxed">
             {authLoginMode === 'register'
-              ? 'Launch your automated AI customer assistant and hosted landing page in 2 minutes.'
+              ? 'Launch your automated AI customer assistant in 2 minutes.'
               : 'Sign in to access your business assistant, CRM leads, and live conversations.'}
           </p>
         </div>

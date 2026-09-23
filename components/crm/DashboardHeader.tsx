@@ -102,7 +102,7 @@ export function DashboardHeader({
       {/* Left Section: Brand & Assistant Dropdown */}
       <div className="flex items-center gap-4 sm:gap-6">
         {/* Brand Logo */}
-        <div className="flex items-center gap-3 cursor-pointer" onClick={() => setActiveTab('landing')}>
+        <div className="flex items-center gap-3 cursor-pointer" onClick={() => setActiveTab('overview')}>
           <BrandMark size={34} showWord={false} />
           <div className="hidden sm:block">
             <div className="flex items-center gap-2">

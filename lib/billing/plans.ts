@@ -37,7 +37,6 @@ export const BILLING_PLANS: PlanTier[] = [
     features: [
       '100 Chat Sessions / month ($0.50/extra chat)',
       '1 AI Assistant Bot',
-      '1 Hosted Business Landing Page',
       '50 MB Knowledge Storage (~50,000 document pages)',
       'Live Webpage Scraper & URL Indexing',
       'Lead Capture Form & Instant Email Alerts',
@@ -61,7 +60,6 @@ export const BILLING_PLANS: PlanTier[] = [
     features: [
       '500 Chat Sessions / month ($0.40/extra chat)',
       '5 AI Assistant Bots',
-      '3 Hosted Business Landing Pages',
       '500 MB Knowledge Storage (Audio/Video Transcripts & Docs)',
       'Multimodal RAG (Audio & Video Transcripts + Image OCR)',
       'Appointment Booking & Calendar Sync (Direct, Calendly, Cal.com)',
@@ -86,7 +84,6 @@ export const BILLING_PLANS: PlanTier[] = [
     features: [
       '2,000 Chat Sessions / month ($0.30/extra chat)',
       'Unlimited AI Assistant Bots',
-      '7 Hosted Business Landing Pages',
       '5 GB High-Capacity Knowledge Storage (5,000 MB)',
       'Omnichannel: WhatsApp Cloud API & Telegram Bot integrations',
       'Outbound Webhook Dispatching & CRM Pipeline Sync',

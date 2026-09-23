@@ -1080,7 +1080,6 @@ export function SaaSMarketingHomepage({
                   features: [
                     '100 Chat Sessions / month',
                     '1 AI Assistant Bot',
-                    '1 Hosted Business Landing Page',
                     '50 MB Knowledge Storage (~50,000 pages)',
                     'Native Calendar Booking Picker',
                     'Automatic In-Chat Lead Capture',
@@ -1098,7 +1097,6 @@ export function SaaSMarketingHomepage({
                   features: [
                     '500 Chat Sessions / month',
                     '5 AI Assistant Bots',
-                    '3 Hosted Business Landing Pages',
                     '500 MB Knowledge Storage',
                     'Appointment Booking & Calendar Sync',
                     'Multi-Document RAG Knowledge Base',
@@ -1116,10 +1114,8 @@ export function SaaSMarketingHomepage({
                   features: [
                     '2,000 Chat Sessions / month',
                     'Unlimited AI Assistant Bots',
-                    '7 Hosted Business Landing Pages',
                     '5 GB High-Capacity Knowledge Storage',
                     'Omnichannel: WhatsApp & Telegram',
-                    'All 11 Industry Archetypes',
                     'Custom Domain & Full White-Label',
                     'Dedicated Account Manager & SLA',
                   ],

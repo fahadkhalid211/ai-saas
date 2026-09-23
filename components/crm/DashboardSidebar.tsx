@@ -138,7 +138,6 @@ export function DashboardSidebar({
     {
       title: 'Customize & Channels',
       items: [
-        { id: 'landing_page', label: 'Landing Pages', icon: Globe, count: landingPagesCount },
         { id: 'widget', label: 'Widget & Styling', icon: Palette },
         { id: 'channels', label: 'Channels & Integrations', icon: Share2 },
         { id: 'behavior', label: 'Behavior & Rules', icon: Sliders },

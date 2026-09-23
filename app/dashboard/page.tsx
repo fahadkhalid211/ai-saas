@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { RefreshCw } from 'lucide-react';
+import { RefreshCw, Globe } from 'lucide-react';
 import '../brand.css';
 import { brandFontClasses } from '@/lib/brand-fonts';
 import { BrandMark } from '@/components/brand/BrandMark';
@@ -34,7 +34,6 @@ import { AnalyticsTab } from '@/components/crm/AnalyticsTab';
 import { KnowledgeTab } from '@/components/crm/KnowledgeTab';
 import { ChannelsTab, IntegrationId } from '@/components/crm/ChannelsTab';
 import { ConversationsTab } from '@/components/crm/ConversationsTab';
-import { LandingPageTab } from '@/components/crm/LandingPageTab';
 import { WidgetTab } from '@/components/crm/WidgetTab';
 import { AppointmentsTab } from '@/components/crm/AppointmentsTab';
 import { ProfileTab } from '@/components/crm/ProfileTab';
@@ -741,51 +740,34 @@ export default function DashboardPage() {
               />
             )}
 
-            {/* TAB: HOSTED BUSINESS LANDING PAGE */}
+            {/* TAB: HOSTED BUSINESS LANDING PAGE (Deferred to Next Update & Roadmap) */}
             {activeTab === 'landing_page' && (
-              <LandingPageTab
-                landingConfig={landing.landingConfig}
-                setLandingConfig={landing.setLandingConfig}
-                isSavingLanding={landing.isSavingLanding}
-                saveLandingSuccess={landing.saveLandingSuccess}
-                saveLandingError={landing.saveLandingError}
-                copiedLandingUrl={landing.copiedLandingUrl}
-                setCopiedLandingUrl={landing.setCopiedLandingUrl}
-                setShowCounterQrModal={landing.setShowCounterQrModal}
-                presetNotice={landing.presetNotice}
-                setPresetNotice={landing.setPresetNotice}
-                allLandingPages={landing.allLandingPages}
-                landingPageLimits={landing.landingPageLimits}
-                isPurchasingAddon={landing.isPurchasingAddon}
-                addonSuccessMsg={landing.addonSuccessMsg}
-                addonErrorMsg={landing.addonErrorMsg}
-                setShowNewPageModal={landing.setShowNewPageModal}
-                showQuotaModal={landing.showQuotaModal}
-                setShowQuotaModal={landing.setShowQuotaModal}
-                handlePurchaseExtraLandingPage={landing.handlePurchaseExtraLandingPage}
-                handleSaveLandingConfig={landing.handleSaveLandingConfig}
-                handleDeleteLandingPage={landing.handleDeleteLandingPage}
-                viewMode={landing.viewMode}
-                setViewMode={landing.setViewMode}
-                handleSelectPageForEdit={landing.handleSelectPageForEdit}
-                handleStartCreateWizard={landing.handleStartCreateWizard}
-                handleBackToList={landing.handleBackToList}
-                handleQuickUpdateKnowledgeBase={landing.handleQuickUpdateKnowledgeBase}
-                handleAIGenerateLandingPage={landing.handleAIGenerateLandingPage}
-                deletingPageId={landing.deletingPageId}
-                isDeletingLandingPage={landing.isDeletingLandingPage}
-                deleteProgress={landing.deleteProgress}
-                deleteStatusMessage={landing.deleteStatusMessage}
-                pagePendingDelete={landing.pagePendingDelete}
-                setPagePendingDelete={landing.setPagePendingDelete}
-                handleConfirmDeleteLandingPage={landing.handleConfirmDeleteLandingPage}
-                activeAssistant={activeAssistant}
-                assistants={assistants}
-                setActiveAssistant={setActiveAssistant}
-                setActiveTab={setActiveTab}
-                appointments={appointments}
-                theme={theme}
-              />
+              <div className="flex flex-col items-center justify-center py-20 px-4 text-center max-w-lg mx-auto space-y-4">
+                <div className="h-14 w-14 rounded-2xl bg-indigo-50 dark:bg-indigo-950/50 border border-indigo-200 dark:border-indigo-800 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
+                  <Globe className="h-7 w-7" />
+                </div>
+                <h3 className="text-lg font-bold text-slate-900 dark:text-white">
+                  Landing Page Studio Moving to Next Update
+                </h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                  Autonomous industry landing pages are currently in active beta polish. Check out the 11 beta archetypes and milestones on our public roadmap.
+                </p>
+                <div className="flex items-center gap-3 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('overview')}
+                    className="px-3.5 py-1.5 rounded-xl border border-slate-200 dark:border-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
+                  >
+                    Back to Overview
+                  </button>
+                  <a
+                    href="/roadmap"
+                    className="px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold shadow-xs transition"
+                  >
+                    View Roadmap ↗
+                  </a>
+                </div>
+              </div>
             )}
 
             {/* TAB: MULTI-USER TEAM & RBAC */}
