@@ -26,19 +26,28 @@ export default function ContactPage() {
     setStatus('sending');
 
     try {
-      // Direct mailto fallback and graceful simulated submission
-      const subject = encodeURIComponent(`[${priority}] ${category} inquiry from ${name}`);
-      const body = encodeURIComponent(
-        `Name: ${name}\nEmail: ${email}\nBusiness: ${business}\nCategory: ${category}\nPriority: ${priority}\n\nMessage:\n${message}`
-      );
-      
-      // Simulate quick processing then provide confirmation
-      await new Promise((r) => setTimeout(r, 600));
+      const res = await fetch('/api/support/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: name.trim(),
+          email: email.trim(),
+          business: business.trim(),
+          category,
+          priority,
+          message: message.trim(),
+        }),
+      });
+
+      const data = await res.json().catch(() => null);
+      if (!res.ok) {
+        throw new Error(data?.error || 'Failed to submit support request.');
+      }
+
       setStatus('success');
-      window.location.href = `mailto:${SITE.contactEmail}?subject=${subject}&body=${body}`;
-    } catch {
+    } catch (err: any) {
       setStatus('error');
-      setErrorMsg('Failed to dispatch support request. Please email us directly.');
+      setErrorMsg(err?.message || 'Failed to dispatch support request. Please email us directly.');
     }
   };
 
@@ -87,11 +96,17 @@ export default function ContactPage() {
                   </span>
                   <h3 style={{ fontSize: '2rem', marginBottom: '8px' }}>Support Request Received</h3>
                   <p style={{ color: 'var(--mk-muted)', fontSize: '15px', maxWidth: '44ch', marginInline: 'auto' }}>
-                    Thank you, {name}! Your ticket has been logged and forwarded to our engineering team. We will review your inquiry and follow up at <strong>{email}</strong> shortly.
+                    Thank you, {name}! Your ticket has been logged and forwarded directly to our support desk (<strong>{SITE.contactEmail}</strong>). We will review your inquiry and follow up at <strong>{email}</strong> shortly.
                   </p>
                   <button
                     type="button"
-                    onClick={() => setStatus('idle')}
+                    onClick={() => {
+                      setName('');
+                      setEmail('');
+                      setBusiness('');
+                      setMessage('');
+                      setStatus('idle');
+                    }}
                     className="mk-btn mk-btn-primary mk-btn-sm"
                     style={{ marginTop: '24px' }}
                   >

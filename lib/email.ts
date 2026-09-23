@@ -898,3 +898,91 @@ export async function sendAppointmentReminderEmail(
   });
 }
 
+export interface SendContactInquiryOptions {
+  name: string;
+  email: string;
+  business?: string;
+  category: string;
+  priority?: string;
+  message: string;
+}
+
+export async function sendContactInquiryEmail(
+  options: SendContactInquiryOptions
+): Promise<EmailSendResult> {
+  const { name, email, business, category, priority = 'Normal', message } = options;
+  const recipient = process.env.CONTACT_EMAIL || 'contact@crescelo.com';
+  const cleanName = name.trim() || 'Visitor';
+  const cleanEmail = email.trim();
+  const cleanBusiness = business?.trim() || 'Not specified';
+  const cleanCategory = category.trim();
+  const cleanPriority = priority.trim();
+  const cleanMessage = message.trim();
+  const dateStr = new Date().toLocaleString();
+
+  const subject = `[${cleanPriority}] Support Inquiry: ${cleanCategory} - ${cleanName}`;
+  const textContent = `
+NEW SUPPORT INQUIRY
+===================
+Time: ${dateStr}
+From: ${cleanName}
+Email: ${cleanEmail}
+Company: ${cleanBusiness}
+Category: ${cleanCategory}
+Priority: ${cleanPriority}
+
+MESSAGE:
+${cleanMessage}
+===================
+`;
+
+  const htmlContent = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>${escapeHtml(subject)}</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f8fafc; color: #1e293b; margin: 0; padding: 24px 12px; }
+    .card { max-width: 600px; margin: 0 auto; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; }
+    .header { background: #0f172a; color: #ffffff; padding: 24px; }
+    .body { padding: 24px; }
+    .info-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+    .info-table th { text-align: left; font-size: 12px; color: #64748b; padding: 6px 0; width: 30%; }
+    .info-table td { font-size: 14px; color: #0f172a; padding: 6px 0; }
+    .msg-box { background: #f8fafc; border: 1px solid #e2e8f0; border-left: 4px solid #2563eb; border-radius: 6px; padding: 14px; white-space: pre-wrap; font-size: 14px; }
+    .btn { display: inline-block; background: #2563eb; color: #ffffff !important; text-decoration: none; padding: 10px 18px; border-radius: 6px; font-weight: 600; font-size: 13px; margin-top: 16px; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="header">
+      <h2 style="margin:0;font-size:18px;">New Crescelo Support Inquiry</h2>
+      <p style="margin:4px 0 0 0;font-size:12px;color:#94a3b8;">${escapeHtml(cleanCategory)} &bull; Priority: ${escapeHtml(cleanPriority)}</p>
+    </div>
+    <div class="body">
+      <table class="info-table">
+        <tr><th>Name:</th><td><strong>${escapeHtml(cleanName)}</strong></td></tr>
+        <tr><th>Email:</th><td><a href="mailto:${encodeURIComponent(cleanEmail)}">${escapeHtml(cleanEmail)}</a></td></tr>
+        <tr><th>Company:</th><td>${escapeHtml(cleanBusiness)}</td></tr>
+        <tr><th>Category:</th><td>${escapeHtml(cleanCategory)}</td></tr>
+        <tr><th>Date:</th><td>${escapeHtml(dateStr)}</td></tr>
+      </table>
+      <div style="font-size:12px;font-weight:700;color:#64748b;text-transform:uppercase;margin-bottom:6px;">Message</div>
+      <div class="msg-box">${escapeHtml(cleanMessage)}</div>
+      <a href="mailto:${encodeURIComponent(cleanEmail)}?subject=Re:%20${encodeURIComponent(subject)}" class="btn">Reply to ${escapeHtml(cleanName)}</a>
+    </div>
+  </div>
+</body>
+</html>
+  `;
+
+  return sendEmailTransport({
+    to: recipient,
+    subject,
+    text: textContent,
+    html: htmlContent,
+    fromName: `Crescelo Support (${cleanName})`,
+  });
+}
+
