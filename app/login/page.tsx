@@ -27,7 +27,12 @@ export default function LoginPage() {
     const params = new URLSearchParams(window.location.search);
     if (params.get('mode') === 'register') setAuthLoginMode('register');
     const errParam = params.get('error');
-    if (errParam) setAuthError(`Sign-in notice: ${errParam}`);
+    const msgParam = params.get('message');
+    if (msgParam) {
+      setAuthError(msgParam);
+    } else if (errParam) {
+      setAuthError(`Sign-in notice: ${errParam}`);
+    }
 
     // Already signed in: go straight to the dashboard.
     fetch('/api/auth')
