@@ -88,13 +88,16 @@ export function getPostgresPool(): Pool | null {
   const isLocal =
     connectionString.includes('localhost') ||
     connectionString.includes('127.0.0.1');
+  const isSslDisabled =
+    connectionString.includes('sslmode=disable') ||
+    connectionString.includes('ssl=false');
 
   pgPoolInstance = new Pool({
     connectionString,
-    ssl: isLocal ? false : { rejectUnauthorized: false },
+    ssl: (isLocal || isSslDisabled) ? false : { rejectUnauthorized: false },
     max: 10,
     idleTimeoutMillis: 30000,
-    connectionTimeoutMillis: 1500,
+    connectionTimeoutMillis: 5000,
   });
 
   pgPoolInstance.on('error', (err) => {
