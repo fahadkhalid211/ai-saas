@@ -55,4 +55,14 @@ describe('Google sign-in fills in the person\'s name and photo', () => {
     expect(third.member.name).toBe('Grace (custom)');
     expect(third.member.avatarUrl).toBe('https://example.com/mine.png');
   });
+
+  it('replaces the placeholder "Master Admin" name given to the seeded owner', async () => {
+    const { Database } = await import('./index');
+    const email = `oauth-placeholder-${Date.now()}@example.com`;
+    const first = await Database.findOrCreateOAuthTenant({ email, provider: 'google', providerId: 'g3' });
+    created.push(first.workspace.id);
+    first.member.name = 'Master Admin';
+    const again = await Database.findOrCreateOAuthTenant({ email, name: 'Fahad Khalid', provider: 'google', providerId: 'g3' });
+    expect(again.member.name).toBe('Fahad Khalid');
+  });
 });

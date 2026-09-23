@@ -3479,8 +3479,12 @@ export class Database {
     // Fill in the person's own name and photo from the provider, without overwriting anything they set themselves.
     const applyProfile = (member: TeamMemberData, workspaceName?: string) => {
       const personName = (params.name || '').trim();
+      // Names the app generated itself (the seeded owner is called "Master Admin"), as opposed to ones a person chose.
       const looksAutoNamed =
-        !member.name || member.name === workspaceName || /'s Workspace$/.test(member.name) || member.name === 'Owner';
+        !member.name ||
+        member.name === workspaceName ||
+        /'s Workspace$/.test(member.name) ||
+        ['Owner', 'Master Admin', 'Staff Member', 'Admin'].includes(member.name);
       if (personName && looksAutoNamed) member.name = personName;
       if (params.picture && !member.avatarUrl) member.avatarUrl = params.picture;
     };
