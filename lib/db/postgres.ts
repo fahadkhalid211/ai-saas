@@ -126,18 +126,20 @@ export async function ensurePostgresSchema(): Promise<boolean> {
       ALTER TABLE kortex_app_state ENABLE ROW LEVEL SECURITY;
       DO $$
       BEGIN
-        IF NOT EXISTS (
-          SELECT 1 FROM pg_policies
-          WHERE schemaname = 'public'
-            AND tablename = 'kortex_app_state'
-            AND policyname = 'Service role has full access to app state'
-        ) THEN
-          CREATE POLICY "Service role has full access to app state"
-            ON kortex_app_state
-            FOR ALL
-            TO service_role
-            USING (true)
-            WITH CHECK (true);
+        IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'service_role') THEN
+          IF NOT EXISTS (
+            SELECT 1 FROM pg_policies
+            WHERE schemaname = 'public'
+              AND tablename = 'kortex_app_state'
+              AND policyname = 'Service role has full access to app state'
+          ) THEN
+            CREATE POLICY "Service role has full access to app state"
+              ON kortex_app_state
+              FOR ALL
+              TO service_role
+              USING (true)
+              WITH CHECK (true);
+          END IF;
         END IF;
       END $$;
     `);
