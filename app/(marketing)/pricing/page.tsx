@@ -34,17 +34,22 @@ export default function PricingPage() {
         <section className="mk-hero" style={{ marginTop: '12px' }}>
           <div className="mk-hero-glow" aria-hidden="true" />
           <div className="mk-wrap mk-hero-inner">
-            <p className="mk-eyebrow">PREDICTABLE INVESTMENT</p>
+            <p className="mk-eyebrow mk-rise" style={{ ['--mk-delay' as string]: '0ms' }}>
+              PREDICTABLE INVESTMENT
+            </p>
             <h1 className="mk-h1" style={{ maxWidth: '20ch', marginInline: 'auto' }}>
-              Transparent pricing. <span className="mk-echo-em">Zero</span> token markup.
+              <span className="mk-echo" style={{ ['--mk-delay' as string]: '140ms' }}>
+                Transparent pricing. <span className="mk-echo-em">Zero</span> token markup.
+              </span>
             </h1>
-            <p className="mk-lead">
+            <p className="mk-lead mk-rise" style={{ ['--mk-delay' as string]: '320ms' }}>
               Every plan includes grounded RAG memory, lead detection, and deterministic scheduling.
               Save 20% by choosing annual billing.
             </p>
 
             {/* Annual Switcher */}
             <div
+              className="mk-rise"
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
@@ -54,6 +59,7 @@ export default function PricingPage() {
                 borderRadius: '999px',
                 background: 'var(--mk-surface)',
                 border: '1.5px solid var(--mk-ink)',
+                ['--mk-delay' as string]: '460ms',
               }}
             >
               <button

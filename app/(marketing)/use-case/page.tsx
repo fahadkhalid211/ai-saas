@@ -232,15 +232,19 @@ export default function UseCasePage() {
         <section className="mk-hero" style={{ marginTop: '12px' }}>
           <div className="mk-hero-glow" aria-hidden="true" />
           <div className="mk-wrap mk-hero-inner">
-            <p className="mk-eyebrow">VIRTUAL TEAMMATES</p>
+            <p className="mk-eyebrow mk-rise" style={{ ['--mk-delay' as string]: '0ms' }}>
+              VIRTUAL TEAMMATES
+            </p>
             <h1 className="mk-h1" style={{ maxWidth: '20ch', marginInline: 'auto' }}>
-              Tailored for your domain. <span className="mk-echo-em">Trained</span> on your rules.
+              <span className="mk-echo" style={{ ['--mk-delay' as string]: '140ms' }}>
+                Tailored for your domain. <span className="mk-echo-em">Trained</span> on your rules.
+              </span>
             </h1>
-            <p className="mk-lead">
+            <p className="mk-lead mk-rise" style={{ ['--mk-delay' as string]: '320ms' }}>
               A website assistant should never act like a generic chatbot. Crescelo adapts its
               cadence and booking workflow to the operational realities of your specific industry.
             </p>
-            <div className="mk-cta-row">
+            <div className="mk-cta-row mk-rise" style={{ ['--mk-delay' as string]: '460ms' }}>
               <ButtonLink href={SIGNUP_HREF}>Deploy your virtual teammate</ButtonLink>
               <ButtonLink href="/pricing" variant="ghost">
                 Compare plans

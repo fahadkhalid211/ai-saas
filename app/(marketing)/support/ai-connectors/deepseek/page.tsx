@@ -56,10 +56,10 @@ export default function DeepSeekGuidePage() {
               <span>95% Cheaper than GPT-4o • High-Precision Reasoning</span>
             </div>
 
-            <h1 className="mk-h1" style={{ maxWidth: '20ch', marginInline: 'auto' }}>
+            <h1 className="mk-h1 mk-rise" style={{ maxWidth: '20ch', marginInline: 'auto' }}>
               How to connect <span className="mk-echo-em">DeepSeek</span> to Crescelo.
             </h1>
-            <p className="mk-lead" style={{ maxWidth: '60ch', marginInline: 'auto' }}>
+            <p className="mk-lead mk-rise" style={{ maxWidth: '60ch', marginInline: 'auto', animationDelay: '140ms' }}>
               DeepSeek-V3 and DeepSeek-R1 deliver frontier-class intelligence at a fraction of standard LLM pricing ($0.14 per 1M input tokens).
               Here is how to set up your API connection in minutes.
             </p>

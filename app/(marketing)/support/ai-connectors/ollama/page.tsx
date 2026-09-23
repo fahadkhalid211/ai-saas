@@ -58,10 +58,10 @@ export default function OllamaGuidePage() {
               <span>100% Air-Gapped Privacy • Zero Cloud Dependencies</span>
             </div>
 
-            <h1 className="mk-h1" style={{ maxWidth: '20ch', marginInline: 'auto' }}>
+            <h1 className="mk-h1 mk-rise" style={{ maxWidth: '20ch', marginInline: 'auto' }}>
               How to connect <span className="mk-echo-em">Local Ollama</span> to Crescelo.
             </h1>
-            <p className="mk-lead" style={{ maxWidth: '60ch', marginInline: 'auto' }}>
+            <p className="mk-lead mk-rise" style={{ maxWidth: '60ch', marginInline: 'auto', animationDelay: '140ms' }}>
               Run Llama 3.2, Mistral, or Qwen entirely on your own hardware.
               Follow this step-by-step guide to download Ollama, configure cross-origin permissions, and connect your assistant.
             </p>

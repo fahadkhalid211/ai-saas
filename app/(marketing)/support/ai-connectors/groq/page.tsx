@@ -55,10 +55,10 @@ export default function GroqGuidePage() {
               <span>World's Fastest Inference (~500+ tokens/sec) • 100% Free Tier</span>
             </div>
 
-            <h1 className="mk-h1" style={{ maxWidth: '20ch', marginInline: 'auto' }}>
+            <h1 className="mk-h1 mk-rise" style={{ maxWidth: '20ch', marginInline: 'auto' }}>
               How to connect <span className="mk-echo-em">Groq Cloud</span> to Crescelo.
             </h1>
-            <p className="mk-lead" style={{ maxWidth: '60ch', marginInline: 'auto' }}>
+            <p className="mk-lead mk-rise" style={{ maxWidth: '60ch', marginInline: 'auto', animationDelay: '140ms' }}>
               Groq’s Language Processing Unit (LPU) hardware streams responses so fast they feel instantaneous.
               Follow this 2-minute guide to get your free API key with zero credit card required.
             </p>

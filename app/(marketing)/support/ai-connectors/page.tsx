@@ -129,11 +129,15 @@ export default function AiConnectorsIndexPage() {
         <section className="mk-hero" style={{ marginTop: '16px' }}>
           <div className="mk-hero-glow" aria-hidden="true" />
           <div className="mk-wrap mk-hero-inner">
-            <p className="mk-eyebrow">BYOK &amp; ZERO-MARKUP GUIDES</p>
+            <p className="mk-eyebrow mk-rise" style={{ ['--mk-delay' as string]: '0ms' }}>
+              BYOK &amp; ZERO-MARKUP GUIDES
+            </p>
             <h1 className="mk-h1" style={{ maxWidth: '22ch', marginInline: 'auto' }}>
-              Connect your favorite <span className="mk-echo-em">AI Platform</span>.
+              <span className="mk-echo" style={{ ['--mk-delay' as string]: '140ms' }}>
+                Connect your favorite <span className="mk-echo-em">AI Platform</span>.
+              </span>
             </h1>
-            <p className="mk-lead" style={{ maxWidth: '64ch', marginInline: 'auto' }}>
+            <p className="mk-lead mk-rise" style={{ maxWidth: '64ch', marginInline: 'auto', ['--mk-delay' as string]: '320ms' }}>
               Crescelo guarantees 0% token markup. You can bring your own API key and pay raw wholesale rates
               directly to providers, or use our built-in Zero-Cost failover engine for $0 compute.
             </p>

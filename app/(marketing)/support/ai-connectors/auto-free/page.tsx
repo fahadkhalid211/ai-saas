@@ -56,10 +56,10 @@ export default function AutoFreeGuidePage() {
               <span>100% Free • Multi-Provider Cascade • $0 Compute</span>
             </div>
 
-            <h1 className="mk-h1" style={{ maxWidth: '22ch', marginInline: 'auto' }}>
+            <h1 className="mk-h1 mk-rise" style={{ maxWidth: '22ch', marginInline: 'auto' }}>
               How the <span className="mk-echo-em">Zero-Cost Engine</span> operates.
             </h1>
-            <p className="mk-lead" style={{ maxWidth: '62ch', marginInline: 'auto' }}>
+            <p className="mk-lead mk-rise" style={{ maxWidth: '62ch', marginInline: 'auto', animationDelay: '140ms' }}>
               You don&apos;t need an OpenAI credit balance or paid subscription to launch a production-grade AI concierge.
               Crescelo includes an intelligent multi-provider cascade that runs on free tiers forever.
             </p>

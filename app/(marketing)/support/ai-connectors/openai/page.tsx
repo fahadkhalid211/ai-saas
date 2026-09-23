@@ -66,10 +66,10 @@ export default function OpenAiGuidePage() {
               <span>0% Platform Markup • Direct Wholesale Token Billing</span>
             </div>
 
-            <h1 className="mk-h1" style={{ maxWidth: '20ch', marginInline: 'auto' }}>
+            <h1 className="mk-h1 mk-rise" style={{ maxWidth: '20ch', marginInline: 'auto' }}>
               How to connect <span className="mk-echo-em">OpenAI</span> to Crescelo.
             </h1>
-            <p className="mk-lead" style={{ maxWidth: '60ch', marginInline: 'auto' }}>
+            <p className="mk-lead mk-rise" style={{ maxWidth: '60ch', marginInline: 'auto', animationDelay: '140ms' }}>
               Follow this 5-minute walkthrough to create an OpenAI developer account, generate a secure API key,
               and connect GPT-4o or GPT-4o-mini to power your customer concierge.
             </p>

@@ -97,17 +97,21 @@ export default function SupportPage() {
         <section className="mk-hero" style={{ marginTop: '12px' }}>
           <div className="mk-hero-glow" aria-hidden="true" />
           <div className="mk-wrap mk-hero-inner">
-            <p className="mk-eyebrow">HELP CENTER & KNOWLEDGE BASE</p>
+            <p className="mk-eyebrow mk-rise" style={{ ['--mk-delay' as string]: '0ms' }}>
+              HELP CENTER &amp; KNOWLEDGE BASE
+            </p>
             <h1 className="mk-h1" style={{ maxWidth: '20ch', marginInline: 'auto' }}>
-              How can we <span className="mk-echo-em">help</span> you today?
+              <span className="mk-echo" style={{ ['--mk-delay' as string]: '140ms' }}>
+                How can we <span className="mk-echo-em">help</span> you today?
+              </span>
             </h1>
-            <p className="mk-lead">
+            <p className="mk-lead mk-rise" style={{ ['--mk-delay' as string]: '320ms' }}>
               Find technical setup guides, integration walkthroughs, and architecture documentation
               for your Crescelo assistant.
             </p>
 
             {/* Quick action buttons */}
-            <div className="mk-cta-row" style={{ justifyContent: 'center' }}>
+            <div className="mk-cta-row mk-rise" style={{ justifyContent: 'center', ['--mk-delay' as string]: '460ms' }}>
               <ButtonLink href="/support/contact">Contact Support Team</ButtonLink>
               <ButtonLink href="/support/voice-agent" variant="ghost">
                 Phone Setup Guide

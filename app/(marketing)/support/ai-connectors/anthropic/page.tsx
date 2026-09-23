@@ -56,10 +56,10 @@ export default function AnthropicGuidePage() {
               <span>Nuanced Tone • Human-Like Professional Empathy</span>
             </div>
 
-            <h1 className="mk-h1" style={{ maxWidth: '20ch', marginInline: 'auto' }}>
+            <h1 className="mk-h1 mk-rise" style={{ maxWidth: '20ch', marginInline: 'auto' }}>
               How to connect <span className="mk-echo-em">Anthropic Claude</span> to Crescelo.
             </h1>
-            <p className="mk-lead" style={{ maxWidth: '60ch', marginInline: 'auto' }}>
+            <p className="mk-lead mk-rise" style={{ maxWidth: '60ch', marginInline: 'auto', animationDelay: '140ms' }}>
               Claude 3.5 Sonnet and Haiku deliver industry-leading conversational nuance and factual adherence.
               Here is how to generate your Anthropic API key and configure your assistant in under 4 minutes.
             </p>

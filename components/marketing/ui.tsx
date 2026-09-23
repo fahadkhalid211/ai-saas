@@ -54,11 +54,17 @@ export function SectionHead({
 }) {
   return (
     <Reveal className={`mk-head ${align === 'center' ? 'is-center' : ''}`}>
-      <Eyebrow>{eyebrow}</Eyebrow>
-      <h2 id={id} className="mk-h2">
+      <p className="mk-eyebrow mk-rise" style={{ ['--mk-delay' as string]: '0ms' }}>
+        {eyebrow}
+      </p>
+      <h2 id={id} className="mk-h2 mk-rise" style={{ ['--mk-delay' as string]: '140ms' }}>
         {title}
       </h2>
-      {intro ? <p className="mk-lead">{intro}</p> : null}
+      {intro ? (
+        <p className="mk-lead mk-rise" style={{ ['--mk-delay' as string]: '260ms' }}>
+          {intro}
+        </p>
+      ) : null}
     </Reveal>
   );
 }

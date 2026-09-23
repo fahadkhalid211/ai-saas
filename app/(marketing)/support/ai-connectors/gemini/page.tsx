@@ -56,10 +56,10 @@ export default function GeminiGuidePage() {
               <span>100% Free Tier Available • Massive 1M+ Context Window</span>
             </div>
 
-            <h1 className="mk-h1" style={{ maxWidth: '20ch', marginInline: 'auto' }}>
+            <h1 className="mk-h1 mk-rise" style={{ maxWidth: '20ch', marginInline: 'auto' }}>
               How to connect <span className="mk-echo-em">Google Gemini</span> to Crescelo.
             </h1>
-            <p className="mk-lead" style={{ maxWidth: '60ch', marginInline: 'auto' }}>
+            <p className="mk-lead mk-rise" style={{ maxWidth: '60ch', marginInline: 'auto', animationDelay: '140ms' }}>
               Google AI Studio offers one of the most generous free tiers in the industry with Gemini Flash.
               Here is how to get your free API key in under 2 minutes.
             </p>

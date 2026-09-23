@@ -220,16 +220,21 @@ export default function RoadmapPage() {
         <section className="mk-hero" style={{ marginTop: '16px' }}>
           <div className="mk-hero-glow" aria-hidden="true" />
           <div className="mk-wrap mk-hero-inner">
-            <p className="mk-eyebrow">PRODUCT ROADMAP &amp; BETA RELEASES</p>
+            <p className="mk-eyebrow mk-rise" style={{ ['--mk-delay' as string]: '0ms' }}>
+              PRODUCT ROADMAP &amp; BETA RELEASES
+            </p>
             <h1 className="mk-h1" style={{ maxWidth: '22ch', marginInline: 'auto' }}>
-              Where we are heading. <span className="mk-echo-em">Polishing for launch</span>.
+              <span className="mk-echo" style={{ ['--mk-delay' as string]: '140ms' }}>
+                Where we are heading. <span className="mk-echo-em">Polishing for launch</span>.
+              </span>
             </h1>
-            <p className="mk-lead" style={{ maxWidth: '64ch', marginInline: 'auto' }}>
+            <p className="mk-lead mk-rise" style={{ maxWidth: '64ch', marginInline: 'auto', ['--mk-delay' as string]: '320ms' }}>
               We believe in rigorous testing and real-world validation. We are currently polishing our industry-specific
               landing page archetypes, booking mutex engines, and staff concierge bridges before general availability.
             </p>
 
             <div
+              className="mk-rise"
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
@@ -242,6 +247,7 @@ export default function RoadmapPage() {
                 fontSize: '13px',
                 fontWeight: 600,
                 color: 'var(--mk-ink)',
+                ['--mk-delay' as string]: '460ms',
               }}
             >
               <span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', background: '#10b981' }} />
