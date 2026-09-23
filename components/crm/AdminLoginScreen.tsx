@@ -146,26 +146,15 @@ export function AdminLoginScreen({
 
         {/* Social & SSO Quick-Auth Actions */}
         <div className="space-y-2.5">
-          <div className="grid grid-cols-2 gap-2">
-            <button
-              type="button"
-              onClick={handleGoogleLogin}
-              disabled={isLoggingIn}
-              className="w-full py-2.5 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/80 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs font-semibold shadow-xs flex items-center justify-center gap-2 transition disabled:opacity-50 cursor-pointer"
-            >
-              <GoogleIcon className="h-4 w-4 shrink-0" />
-              <span>Google</span>
-            </button>
-            <button
-              type="button"
-              onClick={handleAppleLogin}
-              disabled={isLoggingIn}
-              className="w-full py-2.5 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/80 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs font-semibold shadow-xs flex items-center justify-center gap-2 transition disabled:opacity-50 cursor-pointer"
-            >
-              <AppleIcon className="h-4 w-4 shrink-0 text-slate-900 dark:text-white" />
-              <span>Apple</span>
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={handleGoogleLogin}
+            disabled={isLoggingIn}
+            className="w-full py-2.5 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/80 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs font-semibold shadow-xs flex items-center justify-center gap-2.5 transition disabled:opacity-50 cursor-pointer"
+          >
+            <GoogleIcon className="h-4 w-4 shrink-0" />
+            <span>Continue with Google</span>
+          </button>
 
           <button
             type="button"
