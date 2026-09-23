@@ -17,6 +17,36 @@ const DEFAULT_SUGGESTIONS = [
   'How do I embed the chat widget on my website?',
 ];
 
+function CresceloAvatarFace({ size = 36 }: { size?: number }) {
+  return (
+    <svg viewBox="0 0 72 72" width={size} height={size} className="shrink-0" aria-hidden="true">
+      {/* Brand Signal Crest */}
+      <path d="M30 6a7 7 0 1 1 12 0" fill="none" stroke="#abff44" strokeWidth="3" strokeLinecap="round" />
+      <circle cx="36" cy="10" r="2.2" fill="#abff44" />
+      
+      {/* Brand Ear Nodes */}
+      <path d="M9 30c-3 0-5 3-5 7s2 7 5 7" fill="none" stroke="#abff44" strokeWidth="2.5" strokeLinecap="round" />
+      <path d="M63 30c3 0 5 3 5 7s-2 7-5 7" fill="none" stroke="#abff44" strokeWidth="2.5" strokeLinecap="round" />
+
+      {/* Chassis Head - Crescelo Deep Obsidian */}
+      <rect x="9" y="13" width="54" height="48" rx="18" fill="#08251a" stroke="#abff44" strokeWidth="2" />
+
+      {/* Warm Cream Eye Portals */}
+      <circle cx="26" cy="33" r="9" fill="#fffeeb" stroke="#1a1a1a" strokeWidth="1.5" />
+      <circle cx="46" cy="33" r="9" fill="#fffeeb" stroke="#1a1a1a" strokeWidth="1.5" />
+
+      {/* Pupils */}
+      <circle cx="26" cy="33" r="4.2" fill="#08251a" />
+      <circle cx="27.4" cy="31.4" r="1.6" fill="#abff44" />
+      <circle cx="46" cy="33" r="4.2" fill="#08251a" />
+      <circle cx="47.4" cy="31.4" r="1.6" fill="#abff44" />
+
+      {/* Friendly Lime Smile */}
+      <path d="M30 48c3.5 3.5 8.5 3.5 12 0" fill="none" stroke="#abff44" strokeWidth="2.6" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 export function FloatingPlatformChatbot() {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([
@@ -178,24 +208,31 @@ export function FloatingPlatformChatbot() {
   };
 
   return (
-    <div className="fixed bottom-5 right-5 z-[9999] font-sans">
-      {/* Launcher Button */}
+    <div className="fixed bottom-6 right-6 z-[99999] font-sans">
+      {/* Launcher Button: circular avatar face at rest, expands to pill on hover */}
       {!isOpen && (
         <button
           type="button"
           onClick={() => setIsOpen(true)}
-          className="group relative flex items-center gap-2.5 px-4 py-3 bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 text-white font-medium text-sm rounded-full shadow-2xl hover:shadow-blue-500/25 hover:scale-105 active:scale-95 transition-all duration-200 border border-white/20"
+          className="group relative flex items-center h-[54px] rounded-full p-1.5 bg-[#08251a] hover:bg-[#0d3a29] border-2 border-[#abff44] shadow-[0_10px_35px_rgba(0,0,0,0.55)] shadow-[#abff44]/20 hover:shadow-[#abff44]/35 hover:scale-105 active:scale-95 transition-all duration-300 ease-out cursor-pointer hover:pr-4"
           aria-label="Open Crescelo Platform Assistant"
         >
-          <div className="relative">
-            <Bot className="w-5 h-5 text-sky-200 animate-pulse" />
-            <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-emerald-400 border-2 border-slate-900 rounded-full" />
+          {/* Avatar Face (always visible) */}
+          <div className="relative w-[40px] h-[40px] rounded-full bg-[#051811] flex items-center justify-center overflow-hidden shrink-0">
+            <CresceloAvatarFace size={36} />
+            <span className="absolute bottom-0.5 right-0.5 w-2.5 h-2.5 bg-[#abff44] border-2 border-[#08251a] rounded-full" />
           </div>
-          <span className="hidden sm:inline-block tracking-wide">Ask Crescelo AI</span>
+
+          {/* Text revealed on hover: expands smoothly to pill size */}
+          <div className="max-w-0 opacity-0 group-hover:max-w-[130px] group-hover:opacity-100 group-hover:ml-2.5 overflow-hidden whitespace-nowrap transition-all duration-300 ease-out flex items-center gap-1.5">
+            <span className="text-xs font-bold text-[#fffeeb] tracking-wide">Ask Crescelo AI</span>
+            <span className="text-[11px] text-[#abff44] font-bold">✨</span>
+          </div>
+
           {hasUnread && (
             <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75" />
-              <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-blue-500" />
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#abff44] opacity-75" />
+              <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-[#abff44]" />
             </span>
           )}
         </button>
@@ -206,24 +243,24 @@ export function FloatingPlatformChatbot() {
         <div
           role="dialog"
           aria-label="Crescelo Concierge Chat"
-          className="flex flex-col w-[92vw] sm:w-[380px] md:w-[410px] h-[580px] max-h-[85vh] bg-slate-950 text-slate-100 rounded-2xl shadow-2xl border border-slate-800 overflow-hidden animate-in fade-in slide-in-from-bottom-5 duration-200"
+          className="flex flex-col w-[92vw] sm:w-[380px] md:w-[420px] h-[580px] max-h-[85vh] bg-[#051811] text-slate-100 rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.7)] border-2 border-[#1c4533] overflow-hidden animate-in fade-in slide-in-from-bottom-5 duration-200"
         >
           {/* Header */}
-          <div className="flex items-center justify-between px-4 py-3.5 bg-gradient-to-r from-slate-900 via-slate-850 to-slate-900 border-b border-slate-800">
+          <div className="flex items-center justify-between px-4 py-3.5 bg-[#08251a] border-b border-[#1c4533]">
             <div className="flex items-center gap-3">
-              <div className="relative flex items-center justify-center w-9 h-9 rounded-xl bg-blue-600/20 border border-blue-500/30 text-blue-400">
-                <Bot className="w-5 h-5" />
-                <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 border-2 border-slate-900 rounded-full" />
+              <div className="relative flex items-center justify-center w-10 h-10 rounded-xl bg-[#051811] border border-[#abff44]/40 shrink-0">
+                <CresceloAvatarFace size={32} />
+                <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-[#abff44] border-2 border-[#08251a] rounded-full" />
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <h3 className="font-semibold text-sm tracking-tight text-white">Crescelo Concierge</h3>
-                  <span className="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                  <h3 className="font-semibold text-sm tracking-tight text-[#fffeeb]">Crescelo Concierge</h3>
+                  <span className="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-[#abff44]/15 text-[#abff44] border border-[#abff44]/30">
                     Official AI
                   </span>
                 </div>
-                <p className="text-[11px] text-slate-400 flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block animate-ping" />
+                <p className="text-[11px] text-[#cfe3d6] flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#abff44] inline-block animate-ping" />
                   Instant answers • Zero Token Markup
                 </p>
               </div>

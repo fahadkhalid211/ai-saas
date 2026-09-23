@@ -72,35 +72,34 @@ function Mascot() {
   return (
     <div className="mk-mascot" ref={ref} aria-hidden="true">
       <svg viewBox="0 0 72 72" width="72" height="72">
-        {/* Sensor Node & Antenna */}
-        <line x1="36" y1="8" x2="36" y2="12" stroke="var(--mk-deep)" strokeWidth="2" strokeLinecap="round" />
-        <circle cx="36" cy="5" r="3" fill="#38bdf8" stroke="var(--mk-deep)" strokeWidth="1.5" />
+        {/* Brand Signal Crest */}
+        <path d="M30 6a7 7 0 1 1 12 0" fill="none" stroke="#abff44" strokeWidth="2.5" strokeLinecap="round" />
+        <circle cx="36" cy="10" r="2" fill="#abff44" />
         
-        {/* Audio / Comm Pods */}
-        <rect x="6" y="24" width="5" height="16" rx="2.5" fill="#38bdf8" stroke="var(--mk-deep)" strokeWidth="1.5" />
-        <rect x="61" y="24" width="5" height="16" rx="2.5" fill="#38bdf8" stroke="var(--mk-deep)" strokeWidth="1.5" />
-        
-        {/* Floating Collar */}
-        <path d="M26 58h20l-2 5H28z" fill="#94a3b8" stroke="var(--mk-deep)" strokeWidth="1.5" strokeLinejoin="round" />
+        {/* Brand Audio / Ear Nodes */}
+        <path d="M9 30c-3 0-5 3-5 7s2 7 5 7" fill="none" stroke="#abff44" strokeWidth="2.5" strokeLinecap="round" />
+        <path d="M63 30c3 0 5 3 5 7s-2 7-5 7" fill="none" stroke="#abff44" strokeWidth="2.5" strokeLinecap="round" />
 
-        {/* Chassis Head */}
-        <rect x="10" y="12" width="52" height="46" rx="18" fill="var(--mk-surface, #f8fafc)" stroke="var(--mk-deep)" strokeWidth="2.5" />
-        
-        {/* Visor Screen */}
-        <rect x="15" y="18" width="42" height="26" rx="12" fill="#090d16" stroke="#1e293b" strokeWidth="1.2" />
-        
-        {/* Eye Aperture Rings */}
-        <circle cx="27" cy="31" r="7.5" fill="#0f172a" stroke="#0284c7" strokeWidth="1.2" opacity="0.9" />
-        <circle cx="45" cy="31" r="7.5" fill="#0f172a" stroke="#0284c7" strokeWidth="1.2" opacity="0.9" />
-        
-        {/* Responsive Cursor-Tracking Pupils */}
-        <circle className="mk-pupil" cx="27" cy="31" r="3.6" fill="#38bdf8" />
-        <circle className="mk-pupil" cx="28.2" cy="29.8" r="1.2" fill="#ffffff" />
-        <circle className="mk-pupil" cx="45" cy="31" r="3.6" fill="#38bdf8" />
-        <circle className="mk-pupil" cx="46.2" cy="29.8" r="1.2" fill="#ffffff" />
-        
-        {/* Friendly AI Micro-Smile */}
-        <path d="M30 49c3.5 2.8 8.5 2.8 12 0" fill="none" stroke="var(--mk-deep)" strokeWidth="2.2" strokeLinecap="round" />
+        {/* Chassis Head - Crescelo Deep Obsidian */}
+        <rect x="9" y="13" width="54" height="48" rx="18" fill="#08251a" stroke="#1a1a1a" strokeWidth="2.5" />
+        <rect x="11" y="15" width="50" height="44" rx="16" fill="none" stroke="rgba(171,255,68,0.25)" strokeWidth="1" />
+
+        {/* Warm Cream Eye Portals */}
+        <circle cx="26" cy="33" r="10" fill="#fffeeb" stroke="#1a1a1a" strokeWidth="2" />
+        <circle cx="46" cy="33" r="10" fill="#fffeeb" stroke="#1a1a1a" strokeWidth="2" />
+
+        {/* Responsive Cursor-Tracking Pupils with Lime Reflection */}
+        <circle className="mk-pupil" cx="26" cy="33" r="4.5" fill="#08251a" />
+        <circle className="mk-pupil" cx="27.6" cy="31.2" r="1.8" fill="#abff44" />
+        <circle className="mk-pupil" cx="46" cy="33" r="4.5" fill="#08251a" />
+        <circle className="mk-pupil" cx="47.6" cy="31.2" r="1.8" fill="#abff44" />
+
+        {/* Cheek Accents */}
+        <circle cx="17" cy="42" r="2.5" fill="#f0d7ff" opacity="0.7" />
+        <circle cx="55" cy="42" r="2.5" fill="#f0d7ff" opacity="0.7" />
+
+        {/* Friendly Lime Smile */}
+        <path d="M29 48c4.5 4 9.5 4 14 0" fill="none" stroke="#abff44" strokeWidth="2.8" strokeLinecap="round" />
       </svg>
     </div>
   );

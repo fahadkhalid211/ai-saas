@@ -33,8 +33,28 @@ export default function PrivacyPolicyPage() {
               We respect your privacy, enforce zero token markup, and ensure your data and customer
               conversations remain strictly confidential, isolated, and under your control.
             </p>
-            <div style={{ marginTop: '16px', fontSize: '13px', color: 'var(--mk-muted)' }}>
-              Last updated: {lastUpdated} • Effective Date: January 1, 2026
+            <div
+              className="mk-rise"
+              style={{
+                marginTop: '22px',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '10px',
+                padding: '6px 18px',
+                borderRadius: '999px',
+                background: 'rgba(255, 255, 255, 0.12)',
+                border: '1.5px solid rgba(171, 255, 68, 0.5)',
+                boxShadow: '0 2px 10px rgba(0, 0, 0, 0.3)',
+                ['--mk-delay' as string]: '380ms',
+              }}
+            >
+              <span style={{ color: 'var(--mk-lime)', fontWeight: 700, fontSize: '13px', letterSpacing: '0.01em' }}>
+                Last updated: {lastUpdated}
+              </span>
+              <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: '12px' }}>•</span>
+              <span style={{ color: '#cfe3d6', fontWeight: 500, fontSize: '13px' }}>
+                Effective Date: January 1, 2026
+              </span>
             </div>
           </div>
         </section>
