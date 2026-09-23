@@ -59,15 +59,39 @@ function Mascot() {
       if (raf) cancelAnimationFrame(raf);
     };
   }, [reduced]);
+
   return (
     <div className="mk-mascot" ref={ref} aria-hidden="true">
       <svg viewBox="0 0 72 72" width="72" height="72">
-        <path d="M36 4c17 0 30 12 30 30 0 16-9 30-30 34C15 64 6 50 6 34 6 16 19 4 36 4Z" fill="var(--mk-lime)" stroke="var(--mk-deep)" strokeWidth="3" />
-        <circle cx="26" cy="32" r="9" fill="#fff" stroke="var(--mk-deep)" strokeWidth="2.5" />
-        <circle cx="47" cy="32" r="9" fill="#fff" stroke="var(--mk-deep)" strokeWidth="2.5" />
-        <circle className="mk-pupil" cx="26" cy="32" r="3.8" fill="var(--mk-deep)" />
-        <circle className="mk-pupil" cx="47" cy="32" r="3.8" fill="var(--mk-deep)" />
-        <path d="M27 50c5 5 13 5 18 0" fill="none" stroke="var(--mk-deep)" strokeWidth="3" strokeLinecap="round" />
+        {/* Sensor Node & Antenna */}
+        <line x1="36" y1="8" x2="36" y2="12" stroke="var(--mk-deep)" strokeWidth="2" strokeLinecap="round" />
+        <circle cx="36" cy="5" r="3" fill="#38bdf8" stroke="var(--mk-deep)" strokeWidth="1.5" />
+        
+        {/* Audio / Comm Pods */}
+        <rect x="6" y="24" width="5" height="16" rx="2.5" fill="#38bdf8" stroke="var(--mk-deep)" strokeWidth="1.5" />
+        <rect x="61" y="24" width="5" height="16" rx="2.5" fill="#38bdf8" stroke="var(--mk-deep)" strokeWidth="1.5" />
+        
+        {/* Floating Collar */}
+        <path d="M26 58h20l-2 5H28z" fill="#94a3b8" stroke="var(--mk-deep)" strokeWidth="1.5" strokeLinejoin="round" />
+
+        {/* Chassis Head */}
+        <rect x="10" y="12" width="52" height="46" rx="18" fill="var(--mk-surface, #f8fafc)" stroke="var(--mk-deep)" strokeWidth="2.5" />
+        
+        {/* Visor Screen */}
+        <rect x="15" y="18" width="42" height="26" rx="12" fill="#090d16" stroke="#1e293b" strokeWidth="1.2" />
+        
+        {/* Eye Aperture Rings */}
+        <circle cx="27" cy="31" r="7.5" fill="#0f172a" stroke="#0284c7" strokeWidth="1.2" opacity="0.9" />
+        <circle cx="45" cy="31" r="7.5" fill="#0f172a" stroke="#0284c7" strokeWidth="1.2" opacity="0.9" />
+        
+        {/* Responsive Cursor-Tracking Pupils */}
+        <circle className="mk-pupil" cx="27" cy="31" r="3.6" fill="#38bdf8" />
+        <circle className="mk-pupil" cx="28.2" cy="29.8" r="1.2" fill="#ffffff" />
+        <circle className="mk-pupil" cx="45" cy="31" r="3.6" fill="#38bdf8" />
+        <circle className="mk-pupil" cx="46.2" cy="29.8" r="1.2" fill="#ffffff" />
+        
+        {/* Friendly AI Micro-Smile */}
+        <path d="M30 49c3.5 2.8 8.5 2.8 12 0" fill="none" stroke="var(--mk-deep)" strokeWidth="2.2" strokeLinecap="round" />
       </svg>
     </div>
   );

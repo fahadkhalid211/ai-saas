@@ -6,6 +6,7 @@ import { AlertCircle, Eye, EyeOff, KeyRound, RefreshCw } from 'lucide-react';
 import '../brand.css';
 import { brandFontClasses } from '@/lib/brand-fonts';
 import { BrandMark } from '@/components/brand/BrandMark';
+import { GoogleRecaptchaNotice } from '@/components/security/GoogleRecaptcha';
 
 const inputClass =
   'w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 transition';
@@ -72,6 +73,9 @@ export default function MasterLoginPage() {
           {busy ? <RefreshCw className="h-3.5 w-3.5 animate-spin" /> : <KeyRound className="h-3.5 w-3.5" />}
           <span>{busy ? 'Checking...' : 'Sign in'}</span>
         </button>
+        <div className="flex justify-center pt-1">
+          <GoogleRecaptchaNotice />
+        </div>
       </form>
     </div>
   );

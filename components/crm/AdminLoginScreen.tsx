@@ -16,6 +16,7 @@ import {
 import { EMAIL_REGEX } from '@/lib/security/validation';
 import Link from 'next/link';
 import { brandFontClasses } from '@/lib/brand-fonts';
+import { GoogleRecaptchaNotice } from '@/components/security/GoogleRecaptcha';
 
 const GoogleIcon: React.FC<{ className?: string }> = ({ className = 'h-4 w-4' }) => (
   <svg viewBox="0 0 24 24" className={className}>
@@ -316,6 +317,10 @@ export function AdminLoginScreen({
               </>
             )}
           </button>
+
+          <div className="flex justify-center pt-1">
+            <GoogleRecaptchaNotice />
+          </div>
         </form>
 
         <div className="pt-2 text-center text-[11px] text-slate-400 dark:text-slate-500 border-t border-slate-100 dark:border-slate-800">

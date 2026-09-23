@@ -4,10 +4,12 @@ import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import '../brand.css';
 import { AdminLoginScreen } from '@/components/crm/AdminLoginScreen';
+import { useRecaptcha } from '@/components/security/GoogleRecaptcha';
 
 /** Customer sign-in and registration. The platform-owner sign-in is a separate, unlinked page. */
 export default function LoginPage() {
   const router = useRouter();
+  const { executeRecaptcha } = useRecaptcha();
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [authLoginMode, setAuthLoginMode] = useState<'staff' | 'register'>('staff');
   const [authError, setAuthError] = useState<string | null>(null);
@@ -53,6 +55,7 @@ export default function LoginPage() {
     setIsLoggingIn(true);
     setAuthError(null);
     try {
+      const recaptchaToken = await executeRecaptcha(registering ? 'register' : 'login');
       const payload = registering
         ? {
             mode: 'register',
@@ -60,8 +63,14 @@ export default function LoginPage() {
             email: regEmailInput.trim(),
             password: regPasswordInput.trim(),
             industryTemplateSlug: regTemplateInput,
+            recaptchaToken,
           }
-        : { mode: 'staff', email: staffEmailInput.trim(), password: staffPasswordInput.trim() };
+        : {
+            mode: 'staff',
+            email: staffEmailInput.trim(),
+            password: staffPasswordInput.trim(),
+            recaptchaToken,
+          };
       const res = await fetch('/api/auth', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

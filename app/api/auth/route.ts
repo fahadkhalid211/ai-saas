@@ -11,6 +11,7 @@ import { enforceDistributedRateLimit, enforceDistributedRateLimitByKey } from '@
 import { getMasterEmail } from '@/lib/security/master';
 import { Database, sanitizeTeamMember } from '@/lib/db';
 import { validateRegistrationPayload, validateEmail, sanitizeInput } from '@/lib/security/validation';
+import { verifyRecaptchaToken } from '@/lib/security/recaptcha';
 
 export async function GET(req: Request) {
   try {
@@ -58,6 +59,16 @@ export async function POST(req: Request) {
 
     const body = await req.json();
     const mode = body?.mode || (body?.email && !body?.businessName ? 'staff' : body?.businessName ? 'register' : 'staff');
+
+    // Verify Google reCAPTCHA token if configured
+    const recaptchaToken = body?.recaptchaToken;
+    const recaptchaResult = await verifyRecaptchaToken(recaptchaToken, ip);
+    if (!recaptchaResult.success) {
+      return NextResponse.json(
+        { error: recaptchaResult.error || 'Security check failed. Please verify reCAPTCHA and try again.' },
+        { status: 400 }
+      );
+    }
 
     // 1. Self-Serve Business Account Registration
     if (mode === 'register') {

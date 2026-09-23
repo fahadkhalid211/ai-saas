@@ -2,9 +2,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import { Database } from '@/lib/db';
 import { createCustomerPortalSession } from '@/lib/billing/stripe';
 import { getAuthContext, requireRole } from '@/lib/security/auth';
+import { enforceRateLimit } from '@/lib/security/rate-limit';
 
 export async function POST(req: NextRequest) {
   try {
+    const rateLimitRes = enforceRateLimit(req, 'billing-portal', { max: 10, windowMs: 60 * 1000 });
+    if (rateLimitRes.errorResponse) return rateLimitRes.errorResponse;
+
     const ctx = await getAuthContext(req);
     if (!ctx.authenticated) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

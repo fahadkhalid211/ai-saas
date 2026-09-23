@@ -5,6 +5,7 @@ import { Header } from '@/components/marketing/Header';
 import { Footer } from '@/components/marketing/Closing';
 import { Reveal, SectionHead } from '@/components/marketing/ui';
 import { SITE } from '@/components/marketing/content';
+import { GoogleRecaptchaNotice } from '@/components/security/GoogleRecaptcha';
 
 export default function ContactPage() {
   const [name, setName] = useState('');
@@ -239,10 +240,13 @@ export default function ContactPage() {
                     </p>
                   )}
 
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '8px' }}>
-                    <span style={{ fontSize: '13px', color: 'var(--mk-muted)' }}>
-                      Direct email: <a href="mailto:contact@crescelo.com" style={{ textDecoration: 'underline' }}>contact@crescelo.com</a>
-                    </span>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '12px', marginTop: '8px' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <span style={{ fontSize: '13px', color: 'var(--mk-muted)' }}>
+                        Direct email: <a href="mailto:contact@crescelo.com" style={{ textDecoration: 'underline' }}>contact@crescelo.com</a>
+                      </span>
+                      <GoogleRecaptchaNotice />
+                    </div>
                     <button
                       type="submit"
                       disabled={status === 'sending'}

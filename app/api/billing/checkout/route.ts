@@ -3,10 +3,13 @@ import { Database } from '@/lib/db';
 import { createCheckoutSession, isStripeConfigured } from '@/lib/billing/stripe';
 import { BILLING_PLANS } from '@/lib/billing/plans';
 import { getAuthContext, requireRole } from '@/lib/security/auth';
-import { getClientIp } from '@/lib/security/rate-limit';
+import { getClientIp, enforceRateLimit } from '@/lib/security/rate-limit';
 
 export async function POST(req: NextRequest) {
   try {
+    const rateLimit = enforceRateLimit(req, 'billing-checkout', { windowMs: 60 * 1000, max: 10 });
+    if (rateLimit.errorResponse) return rateLimit.errorResponse;
+
     const ctx = await getAuthContext(req);
     if (!ctx.authenticated) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

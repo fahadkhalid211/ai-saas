@@ -7,7 +7,7 @@ import { generateEmbeddingsBatch } from '@/lib/rag/embedder';
 import { diagnoseKnowledgeFailure } from '@/lib/rag/diagnostics';
 import { withRoleAuth, getAuthContext, requireWorkspaceAssistant } from '@/lib/security/auth';
 import { clearRetrievalCache } from '@/lib/rag/cache';
-import { getClientIp } from '@/lib/security/rate-limit';
+import { getClientIp, enforceRateLimit } from '@/lib/security/rate-limit';
 
 // Audio/video transcription (+ optional translation) followed by embedding
 // hundreds of chunks can legitimately take well over a minute; let the
@@ -18,6 +18,9 @@ export const maxDuration = 300;
 
 export const POST = withRoleAuth(['owner', 'admin'], async (req: Request) => {
   try {
+    const rateLimit = enforceRateLimit(req, 'knowledge-upload', { windowMs: 60 * 1000, max: 20 });
+    if (rateLimit.errorResponse) return rateLimit.errorResponse;
+
     const ctx = await getAuthContext(req);
     const formData = await req.formData();
     const assistantId = formData.get('assistantId') as string;

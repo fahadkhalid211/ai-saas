@@ -40,6 +40,7 @@ import { ProfileTab } from '@/components/crm/ProfileTab';
 import { OnboardingWizardModal } from '@/components/crm/onboarding/OnboardingWizardModal';
 import { TourGuideModal } from '@/components/crm/tour/TourGuideModal';
 import { TOUR_STEPS } from '@/components/crm/tour/tourData';
+import { FloatingPlatformChatbot } from '@/components/chat/FloatingPlatformChatbot';
 
 import { useCrmAssistants } from '@/components/crm/hooks/useCrmAssistants';
 import { useCrmBilling } from '@/components/crm/hooks/useCrmBilling';
@@ -1179,6 +1180,9 @@ export default function DashboardPage() {
           onClose={() => setIsTourOpen(false)}
           onGoToStep={handleTourGoToStep}
         />
+
+        {/* Global Floating Platform AI Concierge Chatbot */}
+        <FloatingPlatformChatbot />
       </div>
     </div>
   );

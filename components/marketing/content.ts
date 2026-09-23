@@ -364,12 +364,12 @@ export const FOOTER = {
       ],
     },
     {
-      title: 'Support & Help',
+      title: 'Support & Legal',
       links: [
         { label: 'Help Center', href: '/support' },
         { label: 'Contact Support', href: '/support/contact' },
-        { label: 'Voice Agent Guide', href: '/support/voice-agent' },
-        { label: 'Calendar Booking Guide', href: '/support/calendar-booking' },
+        { label: 'Privacy Policy', href: '/privacy' },
+        { label: 'Terms of Service', href: '/terms' },
         { label: 'Sign in', href: LOGIN_HREF },
       ],
     },

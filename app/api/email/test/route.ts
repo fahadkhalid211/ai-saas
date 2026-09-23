@@ -2,12 +2,15 @@ import { NextResponse } from 'next/server';
 import { Database } from '@/lib/db';
 import { sendTestDiagnosticEmail } from '@/lib/email';
 import { withAdminAuth, getAuthContext } from '@/lib/security/auth';
-import { getClientIp } from '@/lib/security/rate-limit';
+import { getClientIp, enforceRateLimit } from '@/lib/security/rate-limit';
 import { validateSafeExternalUrl } from '@/lib/security/ssrf';
 import { getMasterEmail } from '@/lib/security/master';
 
 export const GET = withAdminAuth(async (req: Request) => {
   try {
+    const rateLimitRes = enforceRateLimit(req, 'email-settings-get', { max: 30, windowMs: 60 * 1000 });
+    if (rateLimitRes.errorResponse) return rateLimitRes.errorResponse;
+
     const ctx = await getAuthContext(req);
     if (!ctx.isMasterAdmin) {
       return NextResponse.json({ error: 'Forbidden: only master admin may view global SMTP settings' }, { status: 403 });
@@ -31,6 +34,9 @@ export const GET = withAdminAuth(async (req: Request) => {
 
 export const POST = withAdminAuth(async (req: Request) => {
   try {
+    const rateLimitRes = enforceRateLimit(req, 'email-test-post', { max: 15, windowMs: 60 * 1000 });
+    if (rateLimitRes.errorResponse) return rateLimitRes.errorResponse;
+
     const ctx = await getAuthContext(req);
     if (!ctx.isMasterAdmin) {
       return NextResponse.json({ error: 'Forbidden: only master admin may configure global SMTP' }, { status: 403 });

@@ -618,33 +618,31 @@ function loadState(): DatabaseState {
         {
           id: 'demo-assistant',
           workspaceId: 'default-workspace',
-          name: 'Crown & Blade AI Concierge',
-          description: 'A friendly AI assistant trained to answer questions about our barbershop, services, and appointment bookings.',
-          systemPrompt: 'You are an intelligent, professional, and friendly representative for Crown & Blade Barbershop. Answer questions clearly about haircuts, beard trims, pricing, opening hours, and help clients schedule an appointment.',
-          welcomeMessage: 'Hello! Welcome to Crown & Blade Barbershop. How can I assist you with your grooming or booking today?',
-          fallbackMessage: "I apologize, but I don't have enough specific details on that in my knowledge base. Would you like to schedule an appointment or connect with our team?",
+          name: 'Crescelo AI Concierge',
+          description: 'Official Crescelo platform assistant trained to answer questions about platform features, BYOK AI connectors, zero token markup pricing, and dashboard usage.',
+          systemPrompt: 'You are the official AI Concierge for Crescelo (crescelo.com). You help visitors and users understand how Crescelo works: connecting AI providers (Google Gemini, OpenAI, Claude, Groq, DeepSeek, Ollama), setting up website assistants, sovereign zero-token markup pricing, knowledge base document & URL ingestion (RAG), and dashboard features. Provide clear, concise, and helpful answers about Crescelo.',
+          welcomeMessage: 'Hello! I am the Crescelo Platform Concierge. How can I help you explore our AI assistants, integrations, zero-markup pricing, or dashboard features today?',
+          fallbackMessage: "I would be glad to help with any details regarding Crescelo, connecting your AI models, or embedding assistants on your website. Feel free to ask or reach out to our team at contact@crescelo.com.",
           temperature: 0.3,
-          provider: 'ollama',
-          modelName: 'llama3.2',
-          customBaseUrl: 'http://localhost:11434/v1',
+          provider: 'gemini',
+          modelName: 'gemini-1.5-flash',
           primaryColor: '#2563eb',
           launcherPosition: 'bottom-right',
           starterQuestions: [
-            'What services and haircuts do you offer?',
-            'How much is a haircut and beard trim?',
-            'What are your opening hours?',
-            'Can I book an appointment for today?',
+            'How does Zero Token Markup work?',
+            'How do I connect Google Gemini or OpenAI?',
+            'How do I add a knowledge base to my assistant?',
+            'How do I embed the chat widget on my website?',
           ],
           collectLeadEmail: true,
           allowedDomains: [],
-          bookingEnabled: true,
+          bookingEnabled: false,
           bookingProvider: 'direct',
-          bookingPromptText: 'Schedule a Haircut Appointment',
-          bookingSlotDuration: 40,
+          bookingPromptText: 'Schedule a Consultation',
+          bookingSlotDuration: 30,
           bookingStartHour: '09:00',
-          bookingEndHour: '20:00',
-          bookingAvailableDays: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
-          landingPageConfig: DEFAULT_BARBER_LANDING_CONFIG,
+          bookingEndHour: '18:00',
+          bookingAvailableDays: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         },
@@ -720,12 +718,30 @@ function loadState(): DatabaseState {
     saveLocalStateSync(state);
   }
 
-  // Ensure demo assistant has landing page config initialized
+  // Ensure demo assistant is clean Crescelo AI Concierge (remove legacy barbershop)
   const demo = (state.assistants || []).find((a: any) => a.id === 'demo-assistant');
-  if (demo && !demo.landingPageConfig) {
-    demo.landingPageConfig = DEFAULT_BARBER_LANDING_CONFIG;
-    demo.bookingEnabled = true;
-    saveLocalStateSync(state);
+  if (demo) {
+    if (
+      !demo.name ||
+      demo.name.includes('Crown & Blade') ||
+      demo.systemPrompt?.includes('Barbershop') ||
+      demo.systemPrompt?.includes('haircut')
+    ) {
+      demo.name = 'Crescelo AI Concierge';
+      demo.description = 'Official Crescelo platform assistant trained to answer questions about platform features, BYOK AI connectors, zero token markup pricing, and dashboard usage.';
+      demo.systemPrompt = 'You are the official AI Concierge for Crescelo (crescelo.com). You help visitors and users understand how Crescelo works: connecting AI providers (Google Gemini, OpenAI, Claude, Groq, DeepSeek, Ollama), setting up website assistants, sovereign zero-token markup pricing, knowledge base document & URL ingestion (RAG), and dashboard features. Provide clear, concise, and helpful answers about Crescelo.';
+      demo.welcomeMessage = 'Hello! I am the Crescelo Platform Concierge. How can I help you explore our AI assistants, integrations, zero-markup pricing, or dashboard features today?';
+      demo.fallbackMessage = "I would be glad to help with any details regarding Crescelo, connecting your AI models, or embedding assistants on your website. Feel free to ask or reach out to our team at contact@crescelo.com.";
+      demo.starterQuestions = [
+        'How does Zero Token Markup work?',
+        'How do I connect Google Gemini or OpenAI?',
+        'How do I add a knowledge base to my assistant?',
+        'How do I embed the chat widget on my website?',
+      ];
+      demo.bookingEnabled = false;
+      delete demo.landingPageConfig;
+      saveLocalStateSync(state);
+    }
   }
 
   // Bind chunks from decoupled vector store
@@ -1001,6 +1017,64 @@ function getIndexedAssistantChunks(assistantId: string, state: DatabaseState): C
 
   return matchingChunks;
 }
+
+export const DEFAULT_CRESCELO_KNOWLEDGE_CHUNKS: ChunkRecord[] = [
+  {
+    id: 'chunk_crescelo_overview',
+    assistantId: 'demo-assistant',
+    knowledgeSourceId: 'src_crescelo_platform',
+    content: 'Crescelo Autonomous AI Platform Overview: Crescelo provides enterprise-grade autonomous website assistants, multi-channel customer engagement (embeddable web widgets, WhatsApp, Telegram), and scheduling automation. The platform features Retrieval-Augmented Generation (RAG) over uploaded documents and web URLs, lead capture, appointment booking with Google & Outlook calendar synchronization, and live handoff to human staff.',
+    chunkIndex: 0,
+    tokenCount: 75,
+    metadata: { title: 'Crescelo Platform Overview', category: 'overview' },
+    embedding: [],
+    createdAt: '2026-01-01T00:00:00.000Z',
+  },
+  {
+    id: 'chunk_crescelo_byok_pricing',
+    assistantId: 'demo-assistant',
+    knowledgeSourceId: 'src_crescelo_pricing',
+    content: 'Zero Token Markup & BYOK (Bring Your Own Key): Crescelo does NOT mark up AI model tokens. Users bring their own API keys from Google Gemini (including free tier with 1M tokens), OpenAI (GPT-4o, GPT-4o-mini), Anthropic Claude (3.5 Sonnet, Haiku), Groq (high-speed Llama 3.3), DeepSeek, or run completely private local inference using Ollama. Users only pay their model provider directly at zero margin. Crescelo plans start with Starter ($29/mo), Professional ($79/mo), and Agency ($199/mo).',
+    chunkIndex: 1,
+    tokenCount: 95,
+    metadata: { title: 'Zero Token Markup & Pricing', category: 'pricing' },
+    embedding: [],
+    createdAt: '2026-01-01T00:00:00.000Z',
+  },
+  {
+    id: 'chunk_crescelo_rag_knowledge',
+    assistantId: 'demo-assistant',
+    knowledgeSourceId: 'src_crescelo_rag',
+    content: 'Knowledge Base & RAG Indexing: You can upload PDF manuals, policy guides, DOCX files, crawl public website URLs, or write custom Q&A pairs. Crescelo automatically chunks, embeds, and indexes your data with hybrid semantic vector and keyword search. The assistant grounds every answer strictly in your verified business sources, eliminating hallucinations.',
+    chunkIndex: 2,
+    tokenCount: 75,
+    metadata: { title: 'Knowledge Base and RAG', category: 'knowledge' },
+    embedding: [],
+    createdAt: '2026-01-01T00:00:00.000Z',
+  },
+  {
+    id: 'chunk_crescelo_embedding_widget',
+    assistantId: 'demo-assistant',
+    knowledgeSourceId: 'src_crescelo_widget',
+    content: 'Embedding the Chat Widget on Your Website: Embed the Crescelo chat assistant on any website (WordPress, Shopify, Webflow, React, HTML) by adding a single <script> tag provided in your Dashboard. You can customize the primary color, launcher position (bottom-right or bottom-left), greeting message, starter suggestions, and lead capture settings.',
+    chunkIndex: 3,
+    tokenCount: 75,
+    metadata: { title: 'Website Widget Integration', category: 'embed' },
+    embedding: [],
+    createdAt: '2026-01-01T00:00:00.000Z',
+  },
+  {
+    id: 'chunk_crescelo_dashboard_features',
+    assistantId: 'demo-assistant',
+    knowledgeSourceId: 'src_crescelo_features',
+    content: 'Dashboard Features & Usage: The Crescelo Dashboard includes: Assistants management (create and customize multiple bots), AI Engine connectors (manage Google Gemini, OpenAI, Claude, Groq, DeepSeek API keys), Knowledge Base uploader & URL scraper, Unified Inbox (view live chat transcripts and lead submissions), Appointments & Calendar sync, Analytics & Unanswered queries, Team management with role-based access, and Developer Webhooks.',
+    chunkIndex: 4,
+    tokenCount: 85,
+    metadata: { title: 'Dashboard Features & Usage', category: 'dashboard' },
+    embedding: [],
+    createdAt: '2026-01-01T00:00:00.000Z',
+  },
+];
 
 /**
  * Universal Database Layer
@@ -1500,6 +1574,9 @@ export class Database {
     if (chunks.length === 0 && (!cachedChunks || cachedChunks.length === 0)) {
       await ensureChunksLoaded();
       chunks = getIndexedAssistantChunks(assistantId, state);
+    }
+    if (chunks.length === 0 && assistantId === 'demo-assistant') {
+      return DEFAULT_CRESCELO_KNOWLEDGE_CHUNKS;
     }
     return chunks;
   }

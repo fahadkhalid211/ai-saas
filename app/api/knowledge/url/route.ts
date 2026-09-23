@@ -8,7 +8,7 @@ import { diagnoseKnowledgeFailure } from '@/lib/rag/diagnostics';
 import { withRoleAuth, getAuthContext, requireWorkspaceAssistant } from '@/lib/security/auth';
 import { validateSafeExternalUrl } from '@/lib/security/ssrf';
 import { clearRetrievalCache } from '@/lib/rag/cache';
-import { getClientIp } from '@/lib/security/rate-limit';
+import { getClientIp, enforceRateLimit } from '@/lib/security/rate-limit';
 
 // Webpage scraping falls back through up to three tiers (direct fetch, curl,
 // Jina reader) and YouTube/media extraction can involve transcription, so
@@ -17,6 +17,9 @@ export const maxDuration = 300;
 
 export const POST = withRoleAuth(['owner', 'admin'], async (req: Request) => {
   try {
+    const rateLimit = enforceRateLimit(req, 'knowledge-url', { windowMs: 60 * 1000, max: 20 });
+    if (rateLimit.errorResponse) return rateLimit.errorResponse;
+
     const ctx = await getAuthContext(req);
     const body = await req.json();
     const { assistantId, url, customTitle } = body;
