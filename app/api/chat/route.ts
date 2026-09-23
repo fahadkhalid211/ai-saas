@@ -509,11 +509,10 @@ export async function POST(req: NextRequest) {
               topK
             );
 
-            // Smart fallback: If assistant has 0 chunks, search across workspace concierges
-            if (retrieval.chunks.length === 0) {
-              const fallbackTarget = assistant.id === 'demo-assistant' ? 'default-workspace' : 'demo-assistant';
+            // Fallback only if this is explicitly the demo-assistant
+            if (retrieval.chunks.length === 0 && assistant.id === 'demo-assistant') {
               const fallbackRetrieval = await retrieveRelevantContext(
-                fallbackTarget,
+                'default-workspace',
                 effectiveQuery,
                 conversationHistory,
                 topK
@@ -560,18 +559,35 @@ export async function POST(req: NextRequest) {
             }
           }
 
+          const isExplicitBarber = (assistant.name || '').toLowerCase().includes('barber') ||
+                                   (assistant.systemPrompt || '').toLowerCase().includes('barber');
+
+          // Always filter foreign barbershop chunks out for non-barbershop assistants
+          if (!isExplicitBarber && retrieval.chunks && retrieval.chunks.length > 0) {
+            retrieval.chunks = retrieval.chunks.filter((chunk: any) => {
+              const text = (chunk.content || '').toLowerCase();
+              const title = (chunk.metadata?.sourceTitle || '').toLowerCase();
+              return !(
+                text.includes('crown & blade') ||
+                text.includes('haircut') ||
+                text.includes('skin fade') ||
+                text.includes('beard sculpt') ||
+                text.includes('beard trim') ||
+                text.includes('straight razor') ||
+                title.includes('barber')
+              );
+            });
+            retrieval.contextText = retrieval.chunks.map((c: any) => c.content).join('\n\n');
+          }
+
           // Filter out foreign industry knowledge chunks to prevent cross-contamination from seed presets
           if (activeLandingConfig) {
             const currentIndustry = (activeLandingConfig.industry || activeLandingConfig.slug || '').toLowerCase();
-            const isBarber = currentIndustry.includes('barber');
             const isGym = currentIndustry.includes('gym') || currentIndustry.includes('fitness');
 
             retrieval.chunks = (retrieval.chunks || []).filter((chunk: any) => {
               const src = (chunk.metadata?.sourceTitle || '').toLowerCase();
               if (src.startsWith('template:') || src.startsWith('sample:')) {
-                if (isBarber && (src.includes('gym') || src.includes('fitness') || src.includes('real estate'))) {
-                  return false;
-                }
                 if (isGym && src.includes('barber')) {
                   return false;
                 }
@@ -581,59 +597,63 @@ export async function POST(req: NextRequest) {
             retrieval.contextText = retrieval.chunks.map((c: any) => c.content).join('\n\n');
           }
 
+          // Suppress default barbershop services and copy for non-barber assistants
+          if (activeLandingConfig && !isExplicitBarber) {
+            const hasBarberServices = (activeLandingConfig.services || []).some((s: any) =>
+              /haircut|beard|fade|shave|barber|grooming/i.test(s.name || '')
+            );
+            if (hasBarberServices || activeLandingConfig.industry === 'barbershop' || activeLandingConfig.slug === 'classic-barbershop') {
+              activeLandingConfig = {
+                ...activeLandingConfig,
+                industry: 'general',
+                tagline: /fade|haircut|barber|grooming/i.test(activeLandingConfig.tagline || '') ? '' : activeLandingConfig.tagline,
+                aboutText: /crown & blade|haircut|scissor work|skin fades/i.test(activeLandingConfig.aboutText || '') ? '' : activeLandingConfig.aboutText,
+                address: activeLandingConfig.address?.includes('Atlantic Avenue') ? '' : activeLandingConfig.address,
+                phone: activeLandingConfig.phone?.includes('555-0198') ? '' : activeLandingConfig.phone,
+                email: activeLandingConfig.email?.includes('crownandblade') ? '' : activeLandingConfig.email,
+                services: (activeLandingConfig.services || []).filter((s: any) =>
+                  !/haircut|beard|fade|shave|barber|grooming/i.test(s.name || '')
+                ),
+                testimonials: (activeLandingConfig.testimonials || []).filter((t: any) =>
+                  !/fade|brooklyn|barber|haircut|crown signature/i.test(t.comment || '')
+                ),
+              };
+            }
+          }
+
           // Inject official landing page services, pricing, and operating details into context
           let landingKnowledge = '';
-          let businessPrompt = assistant.systemPrompt;
+          let businessPrompt = assistant.systemPrompt || `You are the friendly, professional AI representative for ${assistant.name}.`;
 
           if (activeLandingConfig) {
             const cfg = activeLandingConfig;
-            const srvList = (cfg.services || []).map((s: any) => 
+            const validServices = cfg.services || [];
+            const srvList = validServices.map((s: any) => 
               `- ${s.name}: ${s.price} (Duration: ${s.durationMinutes} mins) - ${s.description}`
             ).join('\n');
             const hoursList = (cfg.workingHours || []).map((h: any) => `- ${h.days}: ${h.hours}`).join('\n');
-            landingKnowledge = `\n\n[OFFICIAL BUSINESS PROFILE, SERVICES & PRICING CATALOG]:
+
+            if (validServices.length > 0 || (hoursList && !isExplicitBarber && cfg.address)) {
+              landingKnowledge = `\n\n[OFFICIAL BUSINESS PROFILE & SERVICES]:
 Business Name: ${cfg.businessName}
-Tagline: ${cfg.tagline || ''}
-Address / Location: ${cfg.address || 'Local facility'}
-Phone: ${cfg.phone || 'Direct contact available'}
-Email: ${cfg.email || 'Direct contact available'}
-
-OFFICIAL SERVICES & LIVE PRICING:
-${srvList || 'Consultation and custom packages available upon request.'}
-
-OFFICIAL OPERATING HOURS:
-${hoursList || 'Regular business hours.'}
-
+${cfg.tagline ? `Tagline: ${cfg.tagline}\n` : ''}${cfg.address ? `Address / Location: ${cfg.address}\n` : ''}${cfg.phone ? `Phone: ${cfg.phone}\n` : ''}${cfg.email ? `Email: ${cfg.email}\n` : ''}
+${srvList ? `OFFICIAL SERVICES & PRICING:\n${srvList}\n` : ''}
+${hoursList ? `OFFICIAL OPERATING HOURS:\n${hoursList}\n` : ''}
 INSTRUCTIONS FOR INQUIRIES:
 - Answer visitor questions accurately and authoritatively using the verified knowledge base documentation and the official business catalog above.
-- GENERAL PRICING INQUIRIES: When a visitor asks an open-ended question about prices, rates, or packages (e.g. "what is the price?", "how much do you charge?", "what are your prices?"):
-  1. If multiple services exist across the catalog and knowledge base, ask the visitor which specific service they want the price for.
-  2. ALWAYS proactively offer: "Would you like to see our complete service list and pricing menu?"
-- COMPLETE SERVICE LIST / MENU: If the visitor asks to see the full service list or menu, provide a comprehensive bulleted list of all services with their exact prices and descriptions from both the official catalog and the verified knowledge base.
-- UNLISTED SERVICES OR BUDGETS: If a service, package, price, or project budget is not listed in the official catalog above, but appears in the verified knowledge base (from uploaded documents, text entries, audio, or video), you MUST retrieve and provide that information authoritatively. Never claim that you lack information if it exists in any knowledge base fragment.
-- MULTI-PROJECT BUDGETS: If the visitor asks a general question about budget (e.g. "what is the budget?", "how much is the budget?"):
-  1. Inspect the verified knowledge base for all projects with budgets.
-  2. If multiple projects exist, list them by name (e.g. "We have budget information for: 1. The Students Help...") and confirm with the visitor which project they want to know about.
-  3. When the visitor clarifies (even with compound names, abbreviations, or synonyms like "studenthelp" for "The Students Help"), provide the exact budget and financial breakdown.
-- PRICE/BUDGET CONFLICTS: If the knowledge base documentation states a different price, budget, or figure than the official catalog for what appears to be the SAME service or item, do NOT silently pick one number. Point out that you found two different figures, state both (and where each came from, e.g. "the current pricing catalog" vs. "a document titled X"), and ask the visitor a clarifying question (e.g. which package, tier, or scope they mean) before committing to a number. Only state a single confident figure when the sources agree or the visitor has clarified which one applies.
+${validServices.length > 0 ? `- When a visitor specifically asks for prices or rates, answer based on the official services or verified knowledge base.` : ''}
 - When the user asks to book, schedule, or reserve an appointment, enthusiastically encourage them and ALWAYS include the token [ACTION:BOOKING_FORM] at the very end of your response so the interactive booking card is displayed.`;
+            }
 
-            businessPrompt = `You are the friendly, professional AI representative for ${cfg.businessName}.
-Tagline: ${cfg.tagline || ''}
-Physical Address: ${cfg.address || 'Local facility'}
-Phone: ${cfg.phone || 'Available online'}
-Email: ${cfg.email || 'Available online'}
-
+            // Only augment businessPrompt if assistant.systemPrompt was unset
+            if (!assistant.systemPrompt || assistant.systemPrompt.trim().length === 0) {
+              businessPrompt = `You are the friendly, professional AI representative for ${cfg.businessName}.
 CRITICAL IDENTITY & BUSINESS SCOPE:
 - You represent ONLY ${cfg.businessName}.
-- You answer questions accurately, politely, and authoritatively using the verified knowledge base and official business services catalog.
-- If the visitor asks questions covered in the knowledge base, provide clear, comprehensive answers using that knowledge.
-- When asked about prices, hours, or services, cite the exact services and prices from the official catalog by default.
-- If a service or price was added to the knowledge base (via doc, text, audio, video) but is absent from the catalog, authoritatively answer with the knowledge base price.
-- When the visitor asks generally about prices, ask which service they are interested in and offer to share the complete service list and pricing menu.
-- If asked generally about project budgets, list available projects and confirm which one they want to discuss.
-- If a knowledge base document quotes a different price/budget for what looks like the same service, don't guess which is right: mention both figures and their source, and ask the visitor to clarify rather than guessing.
+- You answer questions accurately, politely, and authoritatively using the verified knowledge base.
+- When asked about prices, hours, or services, cite the exact services and prices if configured.
 - When the visitor expresses interest in booking an appointment or reservation, confirm warmly and append [ACTION:BOOKING_FORM] at the end of your message.`;
+            }
           }
 
           const combinedContext = [

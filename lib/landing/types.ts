@@ -699,7 +699,7 @@ export const INDUSTRY_DESIGN_ARCHETYPES: Record<string, DesignArchetype[]> = {
 };
 
 export function getArchetypesForIndustry(industry?: string): DesignArchetype[] {
-  const ind = (industry || 'barbershop').toLowerCase().trim();
+  const ind = (industry || 'general').toLowerCase().trim();
   if (ind.includes('crescelo') || ind === 'website_assistant' || ind === 'ai_assistant_saas') return INDUSTRY_DESIGN_ARCHETYPES.crescelo;
   if (ind.includes('legal') || ind.includes('law')) return INDUSTRY_DESIGN_ARCHETYPES.legal;
   if (ind.includes('barber') || ind.includes('salon')) return INDUSTRY_DESIGN_ARCHETYPES.barbershop;
@@ -1937,8 +1937,38 @@ export const DEFAULT_CRESCELO_CONFIG: LandingPageConfig = {
   },
 };
 
+// 13. General Business / AI Assistant Default
+export const DEFAULT_BUSINESS_LANDING_CONFIG: LandingPageConfig = {
+  enabled: false,
+  slug: 'general',
+  businessName: 'AI Business Concierge',
+  industry: 'general',
+  themeColor: '#2563eb',
+  tagline: 'Professional AI Assistant & Customer Support',
+  badgeText: 'Verified Business Concierge',
+  heroHeadline: 'Welcome to Our Online Concierge',
+  heroSubheadline: 'Get instant answers to your questions, explore our offerings, and connect with our team.',
+  heroCtaText: 'Contact Our Team',
+  aboutTitle: 'About Us',
+  aboutText: 'We provide dedicated support and services to help our clients succeed.',
+  address: 'Available Worldwide',
+  email: 'contact@business.com',
+  starterQuestions: [
+    'What services do you offer?',
+    'How can I get in touch with your team?',
+    'What are your operating hours?',
+  ],
+  workingHours: [
+    { days: 'Monday – Friday', hours: '9:00 AM – 6:00 PM' },
+  ],
+  services: [],
+};
+
 // Preset mapping dictionary
 export const TEMPLATE_LANDING_CONFIGS: Record<string, LandingPageConfig> = {
+  // General / Default
+  'general': DEFAULT_BUSINESS_LANDING_CONFIG,
+  'default': DEFAULT_BUSINESS_LANDING_CONFIG,
   // Crescelo AI Website Assistant
   'crescelo': DEFAULT_CRESCELO_CONFIG,
   'crescelo-template': DEFAULT_CRESCELO_CONFIG,
@@ -2000,6 +2030,7 @@ export const TEMPLATE_LANDING_CONFIGS: Record<string, LandingPageConfig> = {
 
 export function getLandingConfigForSlugOrTemplate(slugOrId: string): LandingPageConfig {
   const normalized = (slugOrId || '').toLowerCase().trim();
-  return TEMPLATE_LANDING_CONFIGS[normalized] || DEFAULT_BARBER_LANDING_CONFIG;
+  return TEMPLATE_LANDING_CONFIGS[normalized] || DEFAULT_BUSINESS_LANDING_CONFIG;
 }
+
 

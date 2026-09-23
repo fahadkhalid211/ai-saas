@@ -13,6 +13,7 @@ import {
   LandingPageGalleryItem,
   LandingPageTestimonialItem,
   LandingPageWorkingHours,
+  DEFAULT_BUSINESS_LANDING_CONFIG,
   DEFAULT_BARBER_LANDING_CONFIG,
   DEFAULT_GYM_LANDING_CONFIG,
   DEFAULT_REAL_ESTATE_LANDING_CONFIG,
@@ -2560,7 +2561,7 @@ export class Database {
     const ast = state.assistants.find((a) => a.id === assistantId);
     if (!ast) return null;
     ast.landingPageConfig = {
-      ...(ast.landingPageConfig || DEFAULT_BARBER_LANDING_CONFIG),
+      ...(ast.landingPageConfig || DEFAULT_BUSINESS_LANDING_CONFIG),
       ...config,
     };
     ast.updatedAt = new Date().toISOString();
@@ -3302,8 +3303,10 @@ export class Database {
     const assistantId = `ast_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 6)}`;
     const landingPageId = `lp_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 6)}`;
 
-    const templateSlug = params.industryTemplateSlug || 'classic-barbershop';
-    const preset = TEMPLATE_LANDING_CONFIGS[templateSlug] || DEFAULT_BARBER_LANDING_CONFIG;
+    const templateSlug = params.industryTemplateSlug || 'general';
+    const preset = TEMPLATE_LANDING_CONFIGS[templateSlug] || DEFAULT_BUSINESS_LANDING_CONFIG;
+    const isExplicitBarber = cleanName.toLowerCase().includes('barber') || templateSlug === 'classic-barbershop';
+    const initialServices = isExplicitBarber ? (preset.services || []) : [];
 
     const startOfCurrentMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString();
     const endOfCurrentMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 1).toISOString();
@@ -3341,7 +3344,7 @@ export class Database {
       provider: 'ollama',
       modelName: 'llama3.2',
       primaryColor: preset.themeColor || '#2563eb',
-      starterQuestions: preset.starterQuestions || [
+      starterQuestions: isExplicitBarber ? (preset.starterQuestions || []) : [
         `What services does ${cleanName} provide?`,
         'What are your pricing and availability?',
         'How do I book an appointment?',
@@ -3360,6 +3363,12 @@ export class Database {
         id: landingPageId,
         workspaceId,
         businessName: cleanName,
+        tagline: isExplicitBarber ? preset.tagline : 'Professional AI Concierge & Customer Support',
+        aboutText: isExplicitBarber ? preset.aboutText : `Welcome to ${cleanName}. We provide professional services and instant customer support.`,
+        address: isExplicitBarber ? preset.address : '',
+        phone: isExplicitBarber ? preset.phone : '',
+        email: cleanEmail,
+        services: initialServices,
         slug: `${cleanName.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${Date.now().toString(36).slice(-4)}`,
       },
       createdAt: new Date().toISOString(),
@@ -3373,6 +3382,12 @@ export class Database {
       workspaceId,
       assistantId,
       businessName: cleanName,
+      tagline: isExplicitBarber ? preset.tagline : 'Professional AI Concierge & Customer Support',
+      aboutText: isExplicitBarber ? preset.aboutText : `Welcome to ${cleanName}. We provide professional services and instant customer support.`,
+      address: isExplicitBarber ? preset.address : '',
+      phone: isExplicitBarber ? preset.phone : '',
+      email: cleanEmail,
+      services: initialServices,
       slug: newAssistant.landingPageConfig?.slug || `site-${Date.now().toString(36)}`,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -3532,7 +3547,7 @@ export class Database {
     const tenantResult = await Database.createTenantWorkspace({
       businessName,
       ownerEmail: cleanEmail,
-      industryTemplateSlug: 'classic-barbershop',
+      industryTemplateSlug: 'general',
     });
 
     // The owner record is named after the business by default; use the person's own name and photo instead.
@@ -3562,13 +3577,13 @@ export class Database {
     // If default workspace has never been initialized with a landing page, initialize once
     const defaultPages = state.landingPages.filter((p) => !p.workspaceId || p.workspaceId === 'default-workspace');
     if (!state.landingPagesInitialized && defaultPages.length === 0 && (workspaceId === 'default-workspace' || workspaceId === '*')) {
-      const barberPage: LandingPageConfig = {
-        ...DEFAULT_BARBER_LANDING_CONFIG,
-        id: 'lp_barbershop',
+      const defaultPage: LandingPageConfig = {
+        ...DEFAULT_BUSINESS_LANDING_CONFIG,
+        id: 'lp_default_business',
         workspaceId: 'default-workspace',
         assistantId: 'demo-assistant',
       };
-      state.landingPages.unshift(barberPage);
+      state.landingPages.unshift(defaultPage);
       state.landingPagesInitialized = true;
       await saveState(state);
     }
@@ -4090,7 +4105,7 @@ export class Database {
     });
 
     appointments.forEach((a) => {
-      const slg = a.landingPageSlug || 'classic-barbershop';
+      const slg = a.landingPageSlug || 'general';
       if (pageBreakdownMap[slg]) {
         pageBreakdownMap[slg].bookings++;
         pageBreakdownMap[slg].revenue += (a.price ?? 0);

@@ -17,7 +17,7 @@ export default function LoginPage() {
   const [regBusinessNameInput, setRegBusinessNameInput] = useState('');
   const [regEmailInput, setRegEmailInput] = useState('');
   const [regPasswordInput, setRegPasswordInput] = useState('');
-  const [regTemplateInput, setRegTemplateInput] = useState('classic-barbershop');
+  const [regTemplateInput, setRegTemplateInput] = useState('general');
 
   useEffect(() => {
     try {
