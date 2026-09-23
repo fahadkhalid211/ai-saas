@@ -12,24 +12,31 @@ export const metadata: Metadata = {
 
 const TOPIC_HUBS = [
   {
+    title: 'AI Platform Connectors & BYOK',
+    desc: 'Step-by-step guides for connecting OpenAI, Anthropic Claude, Google Gemini, Groq, DeepSeek, and local Ollama.',
+    href: '/support/ai-connectors',
+    tone: 'lime',
+    count: '7 Guides',
+  },
+  {
     title: 'Inbound Phone Voice Calling',
     desc: 'How to purchase numbers on Telnyx or Twilio, configure TeXML webhooks, and run the sub-second voice worker.',
     href: '/support/voice-agent',
-    tone: 'lime',
+    tone: 'lav',
     count: '3 Guides',
   },
   {
     title: 'Calendar Sync & Concurrency Locks',
     desc: 'Connecting Google Calendar & Outlook, configuring buffer durations, and understanding atomic mutex slot locks.',
     href: '/support/calendar-booking',
-    tone: 'lav',
+    tone: 'mint',
     count: '4 Guides',
   },
   {
     title: 'Knowledge Base & RAG Indexing',
     desc: 'Uploading documents, scraping website URLs, and troubleshooting vector retrieval diagnostics.',
     href: '/support/rag-knowledge',
-    tone: 'mint',
+    tone: 'amber',
     count: '5 Guides',
   },
   {
@@ -43,23 +50,31 @@ const TOPIC_HUBS = [
     title: 'Omnichannel: WhatsApp & Telegram',
     desc: 'Connecting Meta WhatsApp Business Cloud webhooks and creating official Telegram bots.',
     href: '/integrations',
-    tone: 'amber',
-    count: '2 Guides',
-  },
-  {
-    title: 'Security, BYOK & Admin Passcodes',
-    desc: 'Configuring AES-256 GCM vault encryption, master login passcodes, and managing team access.',
-    href: '/product#specifications',
     tone: 'lime',
-    count: '4 Guides',
+    count: '2 Guides',
   },
 ];
 
 const POPULAR_ARTICLES = [
   {
-    title: 'How to connect an inbound phone number for AI voice calls',
-    href: '/support/voice-agent',
-    cat: 'Telephony',
+    title: 'How to connect OpenAI (GPT-4o & GPT-4o-mini) to Crescelo',
+    href: '/support/ai-connectors/openai',
+    cat: 'AI Models',
+  },
+  {
+    title: 'How to connect Google Gemini with free API key and 1M context',
+    href: '/support/ai-connectors/gemini',
+    cat: 'AI Models',
+  },
+  {
+    title: 'Achieving ~500+ tokens/sec with Groq Cloud Llama 3.3 for free',
+    href: '/support/ai-connectors/groq',
+    cat: 'AI Models',
+  },
+  {
+    title: 'How to connect Anthropic Claude 3.5 Sonnet & Haiku',
+    href: '/support/ai-connectors/anthropic',
+    cat: 'AI Models',
   },
   {
     title: 'Setting up Google Calendar two-way synchronization',
@@ -67,19 +82,9 @@ const POPULAR_ARTICLES = [
     cat: 'Calendar',
   },
   {
-    title: 'Best practices for document formatting and vector chunking',
-    href: '/support/rag-knowledge',
-    cat: 'Knowledge',
-  },
-  {
-    title: 'Configuring Bring-Your-Own-Key (BYOK) for Groq, OpenAI & Gemini',
-    href: '/product#architecture',
+    title: 'How to run 100% private offline inference with local Ollama',
+    href: '/support/ai-connectors/ollama',
     cat: 'AI Models',
-  },
-  {
-    title: 'How to embed the chat bubble on Webflow or WordPress',
-    href: '/support/contact',
-    cat: 'Integration',
   },
 ];
 

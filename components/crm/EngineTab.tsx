@@ -25,6 +25,114 @@ export interface EngineTabProps {
   isSaving: boolean;
 }
 
+export const PROVIDER_GUIDES: Record<
+  string,
+  {
+    label: string;
+    slug: string;
+    href: string;
+    actionText: string;
+    consoleUrl?: string;
+    consoleLabel?: string;
+    badge: string;
+    badgeColor: 'emerald' | 'blue' | 'purple' | 'amber';
+    tagline: string;
+    summary: string;
+  }
+> = {
+  auto_free: {
+    label: 'Zero-Cost Free Engine',
+    slug: 'auto-free',
+    href: '/support/ai-connectors/auto-free',
+    actionText: "Here's how to connect the Zero-Cost Multi-Provider Engine",
+    badge: '100% Free - $0 Compute',
+    badgeColor: 'emerald',
+    tagline: 'Multi-Provider Failover (Groq + Gemini + Ollama)',
+    summary:
+      'Runs at zero cost with no credit card or server purchases required. Automatically routes requests to Groq Free Tier (sub-second Llama 3.3 70B), fails over to Google Gemini Flash Free Tier, and falls back to local Ollama on your computer.',
+    consoleUrl: 'https://console.groq.com/keys',
+    consoleLabel: 'Get Free Groq Key',
+  },
+  groq: {
+    label: 'Groq Cloud',
+    slug: 'groq',
+    href: '/support/ai-connectors/groq',
+    actionText: "Here's how to connect Groq for free in 90 seconds",
+    badge: '100% Free Tier (14.4k req/day)',
+    badgeColor: 'emerald',
+    tagline: 'Sub-Second LPU Inference (~500+ tokens/sec)',
+    summary:
+      'Groq runs open-source models with near-instant responses on dedicated LPU hardware. Their free tier offers 14,400 requests/day at $0 cost with no credit card required.',
+    consoleUrl: 'https://console.groq.com/keys',
+    consoleLabel: 'Get Free Groq API Key',
+  },
+  gemini: {
+    label: 'Google Gemini',
+    slug: 'gemini',
+    href: '/support/ai-connectors/gemini',
+    actionText: "Here's how to connect Google Gemini with free API key",
+    badge: 'Free Tier (15 RPM) + BYOK',
+    badgeColor: 'blue',
+    tagline: 'Massive 1,000,000+ Context Window with Gemini Flash',
+    summary:
+      'Google AI Studio provides a free API key with fast, accurate responses across huge business documents, catalogs, and websites without truncation.',
+    consoleUrl: 'https://aistudio.google.com/app/apikey',
+    consoleLabel: 'Get Free Gemini Key',
+  },
+  openai: {
+    label: 'OpenAI',
+    slug: 'openai',
+    href: '/support/ai-connectors/openai',
+    actionText: "Here's how to connect OpenAI & configure API limits",
+    badge: '0% Markup BYOK Wholesale',
+    badgeColor: 'emerald',
+    tagline: 'Direct OpenAI Connection (GPT-4o & GPT-4o-mini)',
+    summary:
+      'Connect your OpenAI Developer account. Pay wholesale rates directly to OpenAI ($0.15/1M tokens on gpt-4o-mini). Keys are encrypted at rest with AES-256-GCM.',
+    consoleUrl: 'https://platform.openai.com/api-keys',
+    consoleLabel: 'Open OpenAI API Keys Console',
+  },
+  anthropic: {
+    label: 'Anthropic Claude',
+    slug: 'anthropic',
+    href: '/support/ai-connectors/anthropic',
+    actionText: "Here's how to connect Anthropic Claude & generate keys",
+    badge: '0% Markup BYOK Wholesale',
+    badgeColor: 'purple',
+    tagline: 'Claude 3.5 Sonnet & Haiku with Human-Like Empathy',
+    summary:
+      'Industry-leading conversational nuance and factual adherence. Pay raw wholesale rates directly to Anthropic Console with zero platform surcharge.',
+    consoleUrl: 'https://console.anthropic.com/',
+    consoleLabel: 'Open Anthropic Console',
+  },
+  deepseek: {
+    label: 'DeepSeek',
+    slug: 'deepseek',
+    href: '/support/ai-connectors/deepseek',
+    actionText: "Here's how to connect DeepSeek at 95% wholesale savings",
+    badge: 'Ultra-Low Cost ($0.14/1M)',
+    badgeColor: 'blue',
+    tagline: 'DeepSeek-V3 & R1 High-Precision Reasoning',
+    summary:
+      'Frontier model intelligence at a fraction of standard LLM pricing ($0.14 per 1M input tokens). DeepSeek-V3 and R1 reasoning handle high-volume customer inquiries at nominal cost.',
+    consoleUrl: 'https://platform.deepseek.com/',
+    consoleLabel: 'Open DeepSeek Platform',
+  },
+  ollama: {
+    label: 'Local Server (Ollama)',
+    slug: 'ollama',
+    href: '/support/ai-connectors/ollama',
+    actionText: "Here's how to set up local Ollama & configure CORS",
+    badge: '100% Offline Air-Gapped Privacy',
+    badgeColor: 'amber',
+    tagline: 'Self-Hosted Llama 3.2 on Your Own Hardware',
+    summary:
+      'Run open-source models completely locally on your machine. Customer queries and sensitive documents never leave your local environment or device.',
+    consoleUrl: 'https://ollama.com/download',
+    consoleLabel: 'Download Ollama (Free)',
+  },
+};
+
 export const EngineTab: React.FC<EngineTabProps> = ({
   formData,
   setFormData,
@@ -42,13 +150,27 @@ export const EngineTab: React.FC<EngineTabProps> = ({
   const currentStyle =
     currentTemp <= 0.1 ? 'strict' : currentTemp <= 0.5 ? 'balanced' : 'creative';
 
+  const currentProviderId = formData.provider || 'auto_free';
+  const currentGuide = PROVIDER_GUIDES[currentProviderId] || PROVIDER_GUIDES.auto_free;
+
   return (
     <div className="max-w-4xl space-y-6 mx-auto">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">AI Settings</h1>
-        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-          Choose your AI model provider and customize how your assistant communicates with customers.
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">AI Settings &amp; Connectors</h1>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+            Choose your AI model provider and customize how your assistant communicates with customers.
+          </p>
+        </div>
+        <a
+          href="/support/ai-connectors"
+          target="_blank"
+          rel="noreferrer"
+          className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 hover:bg-blue-100 dark:hover:bg-blue-900/60 px-3 py-1.5 rounded-lg border border-blue-200 dark:border-blue-800 transition shrink-0"
+        >
+          <BookOpen className="h-3.5 w-3.5" />
+          <span>Browse All AI Connector Guides ↗</span>
+        </a>
       </div>
 
       {saveSuccess && (
@@ -84,7 +206,10 @@ export const EngineTab: React.FC<EngineTabProps> = ({
 
       {/* Provider Selection Cards */}
       <div className="space-y-3">
-        <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Select AI Provider</label>
+        <div className="flex items-center justify-between">
+          <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Select AI Provider</label>
+          <span className="text-[11px] text-slate-500 dark:text-slate-400">Click any card to switch provider</span>
+        </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           {[
             { id: 'auto_free', label: 'Zero-Cost Free Engine', tag: 'ZERO COST', desc: 'Auto failover across Groq, Gemini & Ollama ($0 compute)' },
@@ -96,10 +221,10 @@ export const EngineTab: React.FC<EngineTabProps> = ({
             { id: 'ollama', label: 'Local Server (Ollama)', tag: 'OFFLINE', desc: 'Self-hosted model on your computer' },
           ].map((prov) => {
             const isSelected = (formData.provider || 'auto_free') === prov.id;
+            const guide = PROVIDER_GUIDES[prov.id];
             return (
-              <button
+              <div
                 key={prov.id}
-                type="button"
                 onClick={() => {
                   const defaultModels: Record<string, string> = {
                     auto_free: 'openai/gpt-oss-120b',
@@ -116,140 +241,154 @@ export const EngineTab: React.FC<EngineTabProps> = ({
                     modelName: defaultModels[prov.id] || 'openai/gpt-oss-120b',
                   });
                 }}
-                className={`text-left p-3.5 rounded-xl border transition relative cursor-pointer ${
+                className={`text-left p-3.5 rounded-xl border transition flex flex-col justify-between cursor-pointer ${
                   isSelected
                     ? 'border-blue-600 bg-blue-50/60 dark:bg-blue-950/40 text-slate-900 dark:text-white shadow-xs ring-1 ring-blue-600/30'
                     : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:border-slate-300 dark:hover:border-slate-700'
                 }`}
               >
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-slate-900 dark:text-white">{prov.label}</span>
-                  <span
-                    className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${
-                      prov.tag.includes('FASTEST')
-                        ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800'
-                        : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300'
-                    }`}
-                  >
-                    {prov.tag}
-                  </span>
+                <div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-slate-900 dark:text-white">{prov.label}</span>
+                    <span
+                      className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${
+                        prov.tag.includes('FASTEST')
+                          ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800'
+                          : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300'
+                      }`}
+                    >
+                      {prov.tag}
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1.5 leading-snug">
+                    {prov.desc}
+                  </p>
                 </div>
-                <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1.5 leading-snug">
-                  {prov.desc}
-                </p>
-              </button>
+
+                {guide && (
+                  <a
+                    href={guide.href}
+                    target="_blank"
+                    rel="noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                    className="inline-flex items-center gap-1 text-[10.5px] font-semibold text-blue-600 dark:text-blue-400 hover:underline mt-2.5 pt-1.5 border-t border-slate-100 dark:border-slate-800/80"
+                  >
+                    <BookOpen className="h-3 w-3 shrink-0" />
+                    <span>Setup Guide ↗</span>
+                  </a>
+                )}
+              </div>
             );
           })}
         </div>
       </div>
 
-      {/* Zero-Cost Free Engine Callout */}
-      {formData.provider === 'auto_free' && (
-        <div className="rounded-xl border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/30 p-4 text-xs text-emerald-800 dark:text-emerald-200 flex items-start gap-3">
-          <Zap className="h-5 w-5 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
-          <div className="space-y-1.5">
-            <p className="font-bold text-emerald-900 dark:text-emerald-200 flex items-center gap-2">
-              <span>Zero-Cost Inference Engine (Multi-Provider Failover)</span>
-              <span className="bg-emerald-100 dark:bg-emerald-900 text-emerald-800 dark:text-emerald-200 px-2 py-0.5 rounded text-[10px] font-bold">100% Free - $0 Compute</span>
-            </p>
-            <p className="text-slate-600 dark:text-slate-300 text-[11.5px] leading-relaxed">
-              Runs at zero cost with no credit card or server purchases required. Automatically routes requests to Groq Free Tier (sub-second Llama 3.3 70B), fails over to Google Gemini Flash Free Tier, and falls back to local Ollama on your computer.
-            </p>
-            <div className="flex flex-wrap gap-2 pt-1">
+      {/* Dynamic Connection Guide Callout for Selected Provider */}
+      {currentGuide && (
+        <div
+          className={`rounded-xl border p-4 text-xs shadow-xs flex items-start gap-3.5 transition-all ${
+            currentGuide.badgeColor === 'emerald'
+              ? 'border-emerald-200 dark:border-emerald-800 bg-emerald-50/70 dark:bg-emerald-950/30 text-emerald-900 dark:text-emerald-100'
+              : currentGuide.badgeColor === 'blue'
+              ? 'border-blue-200 dark:border-blue-800 bg-blue-50/70 dark:bg-blue-950/30 text-blue-900 dark:text-blue-100'
+              : currentGuide.badgeColor === 'purple'
+              ? 'border-purple-200 dark:border-purple-800 bg-purple-50/70 dark:bg-purple-950/30 text-purple-900 dark:text-purple-100'
+              : 'border-amber-200 dark:border-amber-800 bg-amber-50/70 dark:bg-amber-950/30 text-amber-900 dark:text-amber-100'
+          }`}
+        >
+          <Zap
+            className={`h-5 w-5 shrink-0 mt-0.5 ${
+              currentGuide.badgeColor === 'emerald'
+                ? 'text-emerald-600 dark:text-emerald-400'
+                : currentGuide.badgeColor === 'blue'
+                ? 'text-blue-600 dark:text-blue-400'
+                : currentGuide.badgeColor === 'purple'
+                ? 'text-purple-600 dark:text-purple-400'
+                : 'text-amber-600 dark:text-amber-400'
+            }`}
+          />
+          <div className="space-y-2 w-full">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <p className="font-bold text-sm flex items-center gap-2">
+                <span>{currentGuide.tagline}</span>
+                <span className="px-2 py-0.5 rounded text-[10px] font-bold border border-current opacity-85">
+                  {currentGuide.badge}
+                </span>
+              </p>
               <a
-                href="https://console.groq.com/keys"
+                href={currentGuide.href}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-1.5 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 px-3 py-1.5 rounded-lg transition shadow-xs"
+                className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-600 dark:text-blue-400 hover:underline"
               >
-                <span>Get Free Groq Key</span>
-                <ExternalLink className="h-3 w-3" />
+                <BookOpen className="h-3.5 w-3.5" />
+                <span>{currentGuide.actionText} ↗</span>
               </a>
+            </div>
+
+            <p className="text-slate-600 dark:text-slate-300 text-[11.5px] leading-relaxed">
+              {currentGuide.summary}
+            </p>
+
+            <div className="flex flex-wrap items-center gap-2 pt-1">
+              {currentGuide.consoleUrl && (
+                <a
+                  href={currentGuide.consoleUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-white bg-slate-900 hover:bg-slate-800 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white px-3 py-1.5 rounded-lg transition shadow-xs"
+                >
+                  <span>{currentGuide.consoleLabel || 'Open Console'}</span>
+                  <ExternalLink className="h-3 w-3" />
+                </a>
+              )}
               <a
-                href="https://aistudio.google.com/app/apikey"
+                href={currentGuide.href}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-1.5 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 px-3 py-1.5 rounded-lg transition shadow-xs"
+                className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition"
               >
-                <span>Get Free Gemini Key</span>
-                <ExternalLink className="h-3 w-3" />
+                <BookOpen className="h-3 w-3" />
+                <span>View Full Step-by-Step Connection Guide</span>
+                <ExternalLink className="h-2.5 w-2.5 opacity-60" />
               </a>
             </div>
           </div>
         </div>
       )}
 
-      {/* Groq Callout */}
-      {formData.provider === 'groq' && (
-        <div className="rounded-xl border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/30 p-4 text-xs text-emerald-800 dark:text-emerald-200 flex items-start gap-3">
-          <Zap className="h-5 w-5 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
-          <div className="space-y-1.5">
-            <p className="font-bold text-emerald-900 dark:text-emerald-200 flex items-center gap-2">
-              <span>Recommended for Lightning Speed (~500+ tokens/sec)</span>
-              <span className="bg-emerald-100 dark:bg-emerald-900 text-emerald-800 dark:text-emerald-200 px-2 py-0.5 rounded text-[10px]">100% Free Tier</span>
-            </p>
-            <p className="text-slate-600 dark:text-slate-300 text-[11.5px] leading-relaxed">
-              Groq runs open-source models with near-instant responses. Their free tier offers 14,400 requests/day at $0 cost with no credit card required.
-            </p>
-            <div className="pt-1">
-              <a
-                href="https://console.groq.com/keys"
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex items-center gap-1.5 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 px-3 py-1.5 rounded-lg transition shadow-xs"
-              >
-                <span>Get Free Groq API Key</span>
-                <ExternalLink className="h-3 w-3" />
-              </a>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Gemini Callout */}
-      {formData.provider === 'gemini' && (
-        <div className="rounded-xl border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-950/30 p-4 text-xs text-blue-800 dark:text-blue-200 flex items-start gap-3">
-          <Zap className="h-5 w-5 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
-          <div className="space-y-1.5">
-            <p className="font-bold text-blue-900 dark:text-blue-200 flex items-center gap-2">
-              <span>Fast Answers with Google Gemini Flash</span>
-              <span className="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-2 py-0.5 rounded text-[10px]">Free Tier</span>
-            </p>
-            <p className="text-slate-600 dark:text-slate-300 text-[11.5px] leading-relaxed">
-              Google AI Studio provides a free API key with fast, accurate responses across business documents and websites.
-            </p>
-            <div className="pt-1">
-              <a
-                href="https://aistudio.google.com/app/apikey"
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex items-center gap-1.5 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 px-3 py-1.5 rounded-lg transition shadow-xs"
-              >
-                <span>Get Free Gemini API Key</span>
-                <ExternalLink className="h-3 w-3" />
-              </a>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Primary Human-Friendly Settings Box */}
+      {/* Primary Settings Box */}
       <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 space-y-6 shadow-xs">
         {/* API Key Input (if cloud provider) */}
-        {formData.provider !== 'ollama' && (
+        {formData.provider !== 'ollama' ? (
           <div>
-            <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center justify-between mb-1.5">
-              <span>
-                {formData.provider === 'auto_free'
-                  ? 'Free Tier API Key (Optional)'
-                  : `${(formData.provider || 'Provider').toUpperCase()} API Key`}
-              </span>
-              {formData.provider !== 'auto_free' && (
-                <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-200 dark:border-emerald-800">
-                  Wholesale Direct Billing (0% Platform Markup)
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 mb-1.5">
+              <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
+                <span>
+                  {formData.provider === 'auto_free'
+                    ? 'Free Tier API Key (Optional)'
+                    : `${(formData.provider || 'Provider').toUpperCase()} API Key`}
                 </span>
+                {formData.provider !== 'auto_free' && (
+                  <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-200 dark:border-emerald-800">
+                    Wholesale Direct Billing (0% Markup)
+                  </span>
+                )}
+              </label>
+
+              {currentGuide && (
+                <a
+                  href={currentGuide.href}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1.5 text-[11px] font-bold text-blue-600 dark:text-blue-400 hover:underline"
+                >
+                  <BookOpen className="h-3.5 w-3.5 text-blue-500" />
+                  <span>Here&apos;s how to get your {currentGuide.label} key (Guide ↗)</span>
+                </a>
               )}
-            </label>
+            </div>
+
             <div className="relative">
               <input
                 type={showApiKey ? 'text' : 'password'}
@@ -273,7 +412,35 @@ export const EngineTab: React.FC<EngineTabProps> = ({
             <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
               {formData.provider === 'auto_free'
                 ? 'Zero-cost failover automatically tests your key with Groq, then Gemini, and falls back to local Ollama.'
-                : 'Your API key is securely encrypted at rest and never shared.'}
+                : 'Your API key is securely encrypted at rest using AES-256-GCM and never shared or logged.'}
+            </p>
+          </div>
+        ) : (
+          /* Ollama Host Configuration */
+          <div>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 mb-1.5">
+              <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                Ollama Server Endpoint URL
+              </label>
+              <a
+                href="/support/ai-connectors/ollama"
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-1.5 text-[11px] font-bold text-amber-700 dark:text-amber-400 hover:underline"
+              >
+                <BookOpen className="h-3.5 w-3.5" />
+                <span>Here&apos;s how to set up local Ollama &amp; configure CORS (Guide ↗)</span>
+              </a>
+            </div>
+            <input
+              type="text"
+              value={formData.ollamaHost || formData.customBaseUrl || 'http://localhost:11434'}
+              onChange={(e) => setFormData({ ...formData, ollamaHost: e.target.value, customBaseUrl: e.target.value })}
+              placeholder="http://localhost:11434"
+              className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3 py-2 text-xs text-slate-900 dark:text-slate-100 font-mono outline-none focus:border-blue-500"
+            />
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
+              Ensure you have launched Ollama with <code>OLLAMA_ORIGINS=&quot;*&quot;</code> to permit browser CORS requests.
             </p>
           </div>
         )}
