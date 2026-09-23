@@ -87,14 +87,6 @@ export const INTEGRATIONS_CONFIG: IntegrationConfigItem[] = [
     summary: 'Official WhatsApp Business API integration for two-way automated client chats.',
   },
   {
-    id: 'phone',
-    name: 'Phone & AI Voice',
-    shortName: 'Phone & Voice',
-    category: 'Inbound Telephony',
-    badge: 'Sub-400ms Voice',
-    summary: 'Connect carrier lines to answer incoming voice calls with local speech synthesis.',
-  },
-  {
     id: 'webhooks',
     name: 'Zapier & Webhooks',
     shortName: 'Webhooks',
@@ -191,7 +183,8 @@ export const ChannelsTab: React.FC<ChannelsTabProps> = ({
 }) => {
   // Navigation State
   const [internalSelectedIntegration, setInternalSelectedIntegration] = useState<IntegrationId>('slack');
-  const selectedIntegration = propSelectedIntegration ?? internalSelectedIntegration;
+  const rawSelected = propSelectedIntegration ?? internalSelectedIntegration;
+  const selectedIntegration: IntegrationId = rawSelected === 'phone' ? 'slack' : rawSelected;
   const setSelectedIntegration = propSetSelectedIntegration ?? setInternalSelectedIntegration;
   const [activeSubTab, setActiveSubTab] = useState<'settings' | 'guide'>('settings');
 
@@ -465,15 +458,6 @@ export const ChannelsTab: React.FC<ChannelsTabProps> = ({
       summary: 'Official WhatsApp Business API integration for two-way automated client chats.',
       icon: <Radio className="h-5 w-5 text-emerald-500" />,
       isActive: Boolean(formData.whatsappEnabled && formData.whatsappPhoneNumberId),
-    },
-    {
-      id: 'phone' as const,
-      name: 'Phone & AI Voice',
-      category: 'Inbound Telephony',
-      badge: 'Sub-400ms Voice',
-      summary: 'Connect carrier lines to answer incoming voice calls with local speech synthesis.',
-      icon: <PhoneCall className="h-5 w-5 text-indigo-500" />,
-      isActive: Boolean(formData.phoneEnabled && formData.phoneNumber),
     },
     {
       id: 'webhooks' as const,
@@ -1424,7 +1408,7 @@ export const ChannelsTab: React.FC<ChannelsTabProps> = ({
         {/* ======================================================== */}
         {/* INTEGRATION 5: PHONE & AI VOICE WORKER                  */}
         {/* ======================================================== */}
-        {selectedIntegration === 'phone' && (
+        {(selectedIntegration as string) === 'phone' && (
           <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 sm:p-7 shadow-xs space-y-6">
             {activeSubTab === 'settings' ? (
               <PhoneChannelCard

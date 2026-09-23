@@ -200,7 +200,7 @@ export function DashboardSidebar({
                       {/* Integrations Sub-List */}
                       {showSubMenu && (
                         <div className="ml-3 pl-2.5 my-1 border-l-2 border-slate-200 dark:border-slate-800 space-y-0.5 animate-in fade-in duration-150">
-                          {INTEGRATIONS_CONFIG.map((item) => {
+                          {INTEGRATIONS_CONFIG.filter((item) => item.id !== 'phone').map((item) => {
                             const isSelected = isChannelsActive && selectedIntegration === item.id;
                               return (
                                 <button
