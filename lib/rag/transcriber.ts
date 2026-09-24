@@ -119,6 +119,73 @@ export function detectAudioBufferFormat(buffer: Buffer): { ext: string; mime: st
   return null;
 }
 
+const DEPRECATED_GEMINI_MODELS = new Set([
+  'gemini-1.5-flash',
+  'gemini-1.5-flash-latest',
+  'gemini-1.5-flash-8b',
+  'gemini-1.5-pro',
+  'gemini-1.5-pro-latest',
+  'gemini-1.0-pro',
+  'gemini-pro',
+  'gemini-2.0-flash',
+  'gemini-2.0-flash-lite',
+  'gemini-2.0-flash-exp',
+]);
+
+const DEFAULT_GEMINI_CANDIDATE_MODELS = [
+  'gemini-3.6-flash',
+  'gemini-3.5-flash',
+  'gemini-3.8-flash',
+  'gemini-3.7-flash',
+  'gemini-3.5-flash-lite',
+  'gemini-2.5-flash',
+];
+
+/**
+ * Dynamically queries Google Gemini ModelService to discover active, non-deprecated
+ * models supporting generateContent for the provided API key.
+ */
+async function resolveGeminiCandidateModels(apiKey: string): Promise<string[]> {
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 4000);
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(apiKey)}`, {
+      method: 'GET',
+      signal: controller.signal,
+    });
+    clearTimeout(timeout);
+
+    if (res.ok) {
+      const data = await res.json().catch(() => ({}));
+      if (Array.isArray(data?.models) && data.models.length > 0) {
+        const available: string[] = data.models
+          .filter(
+            (m: any) =>
+              Array.isArray(m.supportedGenerationMethods) &&
+              m.supportedGenerationMethods.includes('generateContent')
+          )
+          .map((m: any) => (m.name || '').replace(/^models\//, ''))
+          .filter((name: string) => Boolean(name) && !DEPRECATED_GEMINI_MODELS.has(name));
+
+        if (available.length > 0) {
+          // Prioritize standard flagship flash models first
+          const sorted = [...DEFAULT_GEMINI_CANDIDATE_MODELS.filter((m) => available.includes(m))];
+          for (const m of available) {
+            if (!sorted.includes(m) && m.includes('flash')) sorted.push(m);
+          }
+          for (const m of available) {
+            if (!sorted.includes(m)) sorted.push(m);
+          }
+          if (sorted.length > 0) return sorted;
+        }
+      }
+    }
+  } catch {
+    // Non-fatal network/timeout: fall back to static default candidate list
+  }
+  return DEFAULT_GEMINI_CANDIDATE_MODELS;
+}
+
 async function transcribeWithGemini(
   buffer: Buffer,
   filename: string,
@@ -136,8 +203,8 @@ Please transcribe the spoken audio of this ${mediaLabel} recording thoroughly an
 3. Capture every detail: service names, prices, contact info, business policies, and answers to common questions.
 4. Output the complete spoken narrative clearly.`;
 
-  // Candidate Google Gemini models in priority order
-  const candidateModels = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash'];
+  // Dynamically resolve active Gemini models for this key, falling back to Gemini 3.6/3.5/3.8 Flash
+  const candidateModels = await resolveGeminiCandidateModels(apiKey);
   let lastError: any = null;
 
   for (const model of candidateModels) {
@@ -194,7 +261,7 @@ Please transcribe the spoken audio of this ${mediaLabel} recording thoroughly an
     }
   }
 
-  throw lastError || new Error('Gemini transcription failed across candidate models.');
+  throw lastError || new Error(`Gemini transcription failed across candidate models (${candidateModels.join(', ')}).`);
 }
 
 /**

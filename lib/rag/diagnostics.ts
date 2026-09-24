@@ -137,6 +137,22 @@ export function diagnoseKnowledgeFailure(params: {
     };
   }
 
+  // 6b. Deprecated or Retired Gemini Model (404 / Model Not Found)
+  if (
+    lowerMsg.includes('gemini-1.5') ||
+    lowerMsg.includes('is not found for api version') ||
+    lowerMsg.includes('call modelservice.listmodels') ||
+    (lowerMsg.includes('gemini') && lowerMsg.includes('404'))
+  ) {
+    return {
+      category: 'auth',
+      reason: `Google Gemini retired older model versions (such as gemini-1.5-flash). Our system has automatically updated to modern Gemini 3.6/3.5 Flash models.`,
+      whatToDoNext:
+        'Please re-upload your file or click Retry. In the AI Engine settings, make sure your Gemini model is set to gemini-3.6-flash.',
+      actionLabel: 'Retry Upload',
+    };
+  }
+
   // 7. Rate Limits or Quota Exceeded (429)
   if (lowerMsg.includes('429') || lowerMsg.includes('rate limit') || lowerMsg.includes('quota')) {
     return {

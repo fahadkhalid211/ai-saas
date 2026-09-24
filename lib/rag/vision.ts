@@ -110,12 +110,18 @@ export async function extractWithVisionAI(
     }
   }
 
-  // 3. Try Gemini with gemini-2.0-flash (fallback to gemini-1.5-flash)
+  // 3. Try Gemini with active modern Flash models (Gemini 3.6/3.5/3.8 Flash)
   const geminiKey = options?.apiKey || process.env.GEMINI_API_KEY;
   const isGemini = (options?.provider || '').toLowerCase() === 'gemini' || geminiKey?.startsWith('AIza');
 
   if (geminiKey && isGemini) {
-    const modelsToTry = ['gemini-2.0-flash', 'gemini-1.5-flash'];
+    const modelsToTry = [
+      'gemini-3.6-flash',
+      'gemini-3.5-flash',
+      'gemini-3.8-flash',
+      'gemini-3.7-flash',
+      'gemini-2.5-flash',
+    ];
     for (const geminiModel of modelsToTry) {
       try {
         const url = `https://generativelanguage.googleapis.com/v1beta/models/${geminiModel}:generateContent?key=${geminiKey}`;

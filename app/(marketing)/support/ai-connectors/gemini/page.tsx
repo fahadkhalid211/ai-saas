@@ -215,7 +215,7 @@ export default function GeminiGuidePage() {
                 <li>Open your <strong>Crescelo Dashboard</strong> &rarr; <strong>Settings</strong> &rarr; <strong>AI Settings</strong>.</li>
                 <li>Select <strong>Google Gemini</strong> as your provider.</li>
                 <li>Paste your <code>AIzaSy...</code> key into the API key box.</li>
-                <li>Set the model to <code>gemini-3.6-flash</code> (or <code>gemini-1.5-flash</code>).</li>
+                <li>Set the model to <code>gemini-3.6-flash</code> (recommended) or <code>gemini-3.5-flash</code>.</li>
                 <li>Click <strong>Save AI Settings</strong>.</li>
               </ol>
               <div
