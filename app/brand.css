@@ -119,13 +119,52 @@ body:has(.kx-app.dark) { background-color: #1f1e1d; color: #faf9f5; }
   --color-slate-900: #262624;
   --color-slate-950: #1f1e1d;
 
-  /* Teal accent tints: desaturated so tinted panels read as charcoal with a hint of colour, not as green blocks */
-  --color-blue-800: #2b4a42;
-  --color-blue-900: #223a34;
-  --color-blue-950: #1c2c28;
-  --color-indigo-800: #2b4a42;
-  --color-indigo-900: #223a34;
-  --color-indigo-950: #1c2c28;
+  /* One green everywhere: the brand lime. Accent text and icons use the lime itself; tinted panels are charcoal with a hint of lime.
+     (The light theme's teal ramp for blue/indigo does not carry over: it read as a second, off-brand green on charcoal.) */
+  --color-blue-50: #f6ffe0;
+  --color-blue-100: #eaffc2;
+  --color-blue-200: #dcff9e;
+  --color-blue-300: #cbff73;
+  --color-blue-400: #abff44;
+  --color-blue-500: #abff44;
+  --color-blue-600: #abff44;
+  --color-blue-700: #98ea38;
+  --color-blue-800: #3a4522;
+  --color-blue-900: #2c3519;
+  --color-blue-950: #232a16;
+  --color-indigo-50: #f6ffe0;
+  --color-indigo-100: #eaffc2;
+  --color-indigo-200: #dcff9e;
+  --color-indigo-300: #cbff73;
+  --color-indigo-400: #abff44;
+  --color-indigo-500: #abff44;
+  --color-indigo-600: #abff44;
+  --color-indigo-700: #98ea38;
+  --color-indigo-800: #3a4522;
+  --color-indigo-900: #2c3519;
+  --color-indigo-950: #232a16;
+  /* status greens (live, success, connected) are the same lime */
+  --color-emerald-50: #f6ffe0;
+  --color-emerald-100: #eaffc2;
+  --color-emerald-200: #dcff9e;
+  --color-emerald-300: #cbff73;
+  --color-emerald-400: #abff44;
+  --color-emerald-500: #abff44;
+  --color-emerald-600: #98ea38;
+  --color-emerald-700: #7fcf2c;
+  --color-emerald-800: #3a4522;
+  --color-emerald-900: #2c3519;
+  --color-emerald-950: #232a16;
+  --color-green-400: #abff44;
+  --color-green-500: #abff44;
+  --color-green-600: #98ea38;
+  --color-green-900: #2c3519;
+  --color-green-950: #232a16;
+  --color-teal-400: #abff44;
+  --color-teal-500: #abff44;
+  --color-teal-600: #98ea38;
+  --color-teal-900: #2c3519;
+  --color-teal-950: #232a16;
   --color-purple-900: #3b2c48;
   --color-purple-950: #2c2236;
   --color-violet-900: #3b2c48;
@@ -174,6 +213,16 @@ body:has(.kx-app.dark) { background-color: #1f1e1d; color: #faf9f5; }
 .kx-app.dark :is(button, a).bg-blue-500,
 .kx-app.dark :is(button, a).bg-indigo-600,
 .kx-app.dark :is(button, a).bg-purple-600 { box-shadow: 0 0 0 1.5px rgba(0, 0, 0, 0.55), 0 3px 0 1.5px rgba(0, 0, 0, 0.55); }
+
+/* Filled status chips and buttons are lime in dark mode, so their label must be the deep ink, not white */
+.kx-app.dark :is(button, a, span, div).bg-emerald-500,
+.kx-app.dark :is(button, a, span, div).bg-emerald-600,
+.kx-app.dark :is(button, a, span, div).bg-green-500,
+.kx-app.dark :is(button, a, span, div).bg-green-600 { color: var(--kx-deep); }
+.kx-app.dark :is(button, a, span, div).bg-emerald-500 *,
+.kx-app.dark :is(button, a, span, div).bg-emerald-600 *,
+.kx-app.dark :is(button, a, span, div).bg-green-500 *,
+.kx-app.dark :is(button, a, span, div).bg-green-600 * { color: inherit; }
 
 /* Focus, selection, scrollbars */
 .kx-app :focus-visible { outline: 2px solid #0f6e58; outline-offset: 2px; }

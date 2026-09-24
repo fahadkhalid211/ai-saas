@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef } from 'react';
+import { showErrorModal } from '@/lib/ui/notify';
 import {
   LandingPageConfig,
   DEFAULT_BARBER_LANDING_CONFIG,
@@ -237,9 +238,11 @@ export function useCrmLanding({
         setTimeout(() => setSaveLandingSuccess(false), 3000);
       } else {
         setSaveLandingError(data.error || 'Failed to update landing page');
+        showErrorModal({ title: "Landing page wasn't saved", message: data.error || 'Failed to update landing page' });
       }
     } catch (err: any) {
       setSaveLandingError(err.message || 'Network error saving landing page');
+      showErrorModal({ title: "Landing page wasn't saved", message: err.message || 'Network error saving landing page', hint: 'Check your connection and try again.' });
     } finally {
       setIsSavingLanding(false);
     }

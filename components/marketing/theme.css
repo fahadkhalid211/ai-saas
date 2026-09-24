@@ -252,8 +252,9 @@
 /* Sticky playful scroll to top button */
 .mk-scroll-top {
   position: fixed;
-  bottom: 28px;
-  right: 28px;
+  /* sits directly above the assistant launcher (64px orb at bottom/right 24px) instead of underneath it */
+  bottom: 108px;
+  right: 30px;
   z-index: 90;
   width: 52px;
   height: 52px;

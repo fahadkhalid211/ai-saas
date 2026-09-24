@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { showErrorModal } from '@/lib/ui/notify';
 
 interface SmtpConfig {
   host: string;
@@ -97,6 +98,7 @@ export function useCrmChannels({ playNotificationChime }: UseCrmChannelsOptions)
       setTimeout(() => setSmtpSaveSuccess(false), 3000);
     } catch (err: any) {
       setSmtpSaveError(err.message);
+      showErrorModal({ title: "SMTP settings weren't saved", message: err.message || 'Failed to save SMTP settings' });
     } finally {
       setSmtpLoading(false);
     }

@@ -1,0 +1,34 @@
+/* Branded save button states and error dialog. transform/opacity/stroke only. */
+
+/* ---------- save button ---------- */
+.sb-check path, .sb-cross path { stroke-dasharray: 24; stroke-dashoffset: 24; animation: sb-draw 0.4s 0.05s ease-out forwards; }
+.sb-cross path:nth-child(2) { animation-delay: 0.2s; }
+@keyframes sb-draw { to { stroke-dashoffset: 0; } }
+.sb-pop { animation: sb-pop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1); }
+@keyframes sb-pop { 0% { transform: scale(0.85); } 100% { transform: scale(1); } }
+.sb-shake { animation: sb-shake 0.45s ease-in-out; }
+@keyframes sb-shake { 0%, 100% { transform: translateX(0); } 20%, 60% { transform: translateX(-4px); } 40%, 80% { transform: translateX(4px); } }
+
+/* ---------- error dialog ---------- */
+.em-overlay { animation: em-fade 0.18s ease-out; }
+@keyframes em-fade { from { opacity: 0; } to { opacity: 1; } }
+.em-card { animation: em-rise 0.32s cubic-bezier(0.22, 1, 0.36, 1); }
+@keyframes em-rise { from { opacity: 0; transform: translateY(14px) scale(0.96); } to { opacity: 1; transform: none; } }
+
+.em-badge { position: relative; width: 84px; height: 84px; }
+.em-badge svg { position: absolute; inset: 0; overflow: visible; }
+.em-pulse { position: absolute; inset: 6px; border-radius: 9999px; background: rgba(244, 63, 94, 0.22); animation: em-pulse 2s ease-out 0.5s infinite; }
+@keyframes em-pulse { 0% { transform: scale(0.9); opacity: 0.8; } 100% { transform: scale(1.5); opacity: 0; } }
+.em-ring { stroke-dasharray: 226; stroke-dashoffset: 226; animation: em-ring 0.55s cubic-bezier(0.65, 0, 0.35, 1) 0.1s forwards; }
+@keyframes em-ring { to { stroke-dashoffset: 0; } }
+.em-x1, .em-x2 { stroke-dasharray: 34; stroke-dashoffset: 34; animation: em-x 0.28s ease-out forwards; }
+.em-x1 { animation-delay: 0.55s; }
+.em-x2 { animation-delay: 0.72s; }
+@keyframes em-x { to { stroke-dashoffset: 0; } }
+.em-badge-inner { transform-origin: 50% 50%; animation: em-shake 0.5s ease-in-out 0.95s; }
+@keyframes em-shake { 0%, 100% { transform: rotate(0); } 20% { transform: rotate(-7deg); } 40% { transform: rotate(6deg); } 60% { transform: rotate(-4deg); } 80% { transform: rotate(3deg); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .em-overlay, .em-card, .em-pulse, .em-badge-inner, .sb-pop, .sb-shake { animation: none !important; }
+  .em-ring, .em-x1, .em-x2, .sb-check path, .sb-cross path { animation: none !important; stroke-dashoffset: 0; }
+}

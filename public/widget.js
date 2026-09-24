@@ -6,10 +6,11 @@
     var currentScript =
       document.currentScript ||
       document.querySelector('script[data-assistant]') ||
+      document.querySelector('script[data-assistant-id]') ||
       document.querySelector('script[src*="widget.js"]');
 
     var assistantId =
-      (currentScript && currentScript.getAttribute('data-assistant')) ||
+      (currentScript && (currentScript.getAttribute('data-assistant') || currentScript.getAttribute('data-assistant-id'))) ||
       window.AIAssistantId;
 
     if (!assistantId) {

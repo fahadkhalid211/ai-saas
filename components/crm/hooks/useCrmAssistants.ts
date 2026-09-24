@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { showErrorModal } from '@/lib/ui/notify';
 import { Assistant } from '@/types/crm';
 
 export function useCrmAssistants() {
@@ -83,6 +84,7 @@ export function useCrmAssistants() {
     } catch (err: any) {
       console.error('Failed to save settings:', err);
       setSaveError(err?.message || 'Failed to save settings');
+      showErrorModal({ title: "Settings weren't saved", message: err?.message || 'Failed to save settings', hint: 'Fix the value above and press Save again. Nothing was changed.' });
       setTimeout(() => setSaveError(null), 5000);
     } finally {
       setIsSaving(false);

@@ -1,5 +1,6 @@
 'use client';
 
+import { resolveEmbedHost } from '@/lib/embed';
 import React from 'react';
 import {
   HelpCircle,
@@ -289,7 +290,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                     </div>
                     <button
                       onClick={() => {
-                        const effectiveHost = (customEmbedHost.trim() || (typeof window !== 'undefined' ? window.location.origin : 'https://your-domain.com')).replace(/\/+$/, '');
+                        const effectiveHost = resolveEmbedHost(customEmbedHost, typeof window !== 'undefined' ? window.location.origin : undefined).host;
                         navigator.clipboard.writeText(
                           `<script src="${effectiveHost}/widget.js" data-assistant="${activeAssistant?.id}" defer></script>`
                         );
@@ -303,22 +304,15 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                     </button>
                   </div>
 
-                  {typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && !customEmbedHost.trim() && (
-                    <div className="rounded-lg border border-amber-200 dark:border-amber-900/50 bg-amber-50/70 dark:bg-amber-950/20 p-3.5 flex items-start gap-2.5 text-xs">
-                      <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
-                      <div className="text-slate-700 dark:text-slate-300 space-y-1">
-                        <span className="font-semibold text-amber-900 dark:text-amber-200">
-                          Embedding on a live HTTPS website (e.g. WordPress)?
-                        </span>
-                        <p className="leading-relaxed">
-                          Web browsers automatically block <code className="font-mono bg-amber-100 dark:bg-amber-900/40 px-1 py-0.5 rounded text-amber-800 dark:text-amber-300 font-semibold">http://localhost:3000</code> on live HTTPS websites due to browser <strong>Mixed Content Security</strong>.
-                        </p>
-                        <p className="leading-relaxed">
-                          To display the widget on a live site, deploy this app to a public HTTPS domain (e.g., <strong>Vercel</strong>, <strong>Railway</strong>) or use a secure HTTPS tunnel (like Cloudflare Tunnel or localtunnel), then enter your live URL in the field below.
-                        </p>
+                  {(() => {
+                    const note = resolveEmbedHost(customEmbedHost, typeof window !== 'undefined' ? window.location.origin : undefined).note;
+                    return note ? (
+                      <div className="rounded-lg border border-amber-200 dark:border-amber-900/50 bg-amber-50/70 dark:bg-amber-950/20 p-3.5 flex items-start gap-2.5 text-xs">
+                        <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                        <p className="text-slate-700 dark:text-slate-300 leading-relaxed">{note}</p>
                       </div>
-                    </div>
-                  )}
+                    ) : null;
+                  })()}
 
                   <div className="space-y-1.5">
                     <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center justify-between">
@@ -338,7 +332,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                     Paste this snippet before the closing <code className="text-blue-600 dark:text-blue-400 font-mono">&lt;/body&gt;</code> tag on your website:
                   </p>
                   <div className="overflow-x-auto rounded-lg bg-slate-50 dark:bg-slate-950 p-3 text-xs font-mono text-slate-800 dark:text-cyan-300 border border-slate-200 dark:border-slate-800">
-                    &lt;script src=&quot;{(customEmbedHost.trim() || (typeof window !== 'undefined' ? window.location.origin : 'https://your-domain.com')).replace(/\/+$/, '')}/widget.js&quot; data-assistant=&quot;{activeAssistant?.id}&quot; defer&gt;&lt;/script&gt;
+                    &lt;script src=&quot;{resolveEmbedHost(customEmbedHost, typeof window !== 'undefined' ? window.location.origin : undefined).host}/widget.js&quot; data-assistant=&quot;{activeAssistant?.id}&quot; defer&gt;&lt;/script&gt;
                   </div>
                 </div>
               </div>

@@ -1,3 +1,4 @@
+import { dispatchIntegrationsAfterResponse } from '@/lib/integrations/dispatch';
 import { Database } from '../db';
 import { attributionCustomData } from '../analytics/attribution';
 
@@ -91,6 +92,10 @@ export async function autoCaptureChatLead(params: {
         }),
       },
     });
+
+    // A lead captured in the chat goes to the connected tools too (webhook, Slack, Google Sheets)
+    const assistant = await Database.getAssistantById(params.assistantId).catch(() => null);
+    if (assistant) dispatchIntegrationsAfterResponse(assistant, 'lead.created', lead);
 
     await Database.addNotification({
       assistantId: params.assistantId,

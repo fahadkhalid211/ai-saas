@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { resolveEmbedHost } from '@/lib/embed';
 import { X, ChevronDown, ChevronUp, Globe, Code2, Layers } from 'lucide-react';
 
 export interface EmbedModalProps {
@@ -22,10 +23,7 @@ export const EmbedModal: React.FC<EmbedModalProps> = ({
 
   if (!isOpen) return null;
 
-  const effectiveHost = (
-    customEmbedHost.trim() ||
-    (typeof window !== 'undefined' ? window.location.origin : 'https://your-domain.com')
-  ).replace(/\/+$/, '');
+  const { host: effectiveHost, note: hostNote } = resolveEmbedHost(customEmbedHost, typeof window !== 'undefined' ? window.location.origin : undefined);
 
   const scriptTag = `<script src="${effectiveHost}/widget.js" data-assistant="${assistantId}" defer></script>`;
   const iframeTag = `<iframe src="${effectiveHost}/embed/${assistantId}" width="100%" height="650" frameborder="0" style="border:none; border-radius:16px; width:100%; height:650px; box-shadow:0 4px 20px rgba(0,0,0,0.06);" allow="microphone"></iframe>`;
@@ -57,6 +55,9 @@ export const EmbedModal: React.FC<EmbedModalProps> = ({
             <span className="text-xs font-bold text-blue-700 dark:text-blue-300">Recommended — Script Tag</span>
             <span className="ml-auto px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-600 text-white">Best Option</span>
           </div>
+          {hostNote && (
+            <p className="rounded-lg border border-amber-200 dark:border-amber-900/50 bg-amber-50/70 dark:bg-amber-950/20 p-2.5 text-[11px] leading-relaxed text-slate-700 dark:text-slate-300">{hostNote}</p>
+          )}
           <p className="text-[11px] text-slate-600 dark:text-slate-300 leading-relaxed">
             Paste this one line before <code className="text-blue-600 dark:text-blue-400 font-mono">&lt;/body&gt;</code> on any HTML, Shopify, or Webflow page. The chat button will appear automatically.
           </p>

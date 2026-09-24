@@ -1,0 +1,36 @@
+/* Crescelo "C" mark: a lime C with a seed in its opening, on a deep green tile. Used for the logo, loader and favicon
+   (the orb stays on the assistant avatar). Motion is stroke/transform/opacity only. */
+.cm-mark { display: inline-block; line-height: 0; }
+.cm-mark svg { display: block; overflow: visible; }
+.cm-mark * { transform-box: fill-box; transform-origin: center; }
+
+/* logo: the seed breathes, a soft light sweeps across the C once in a while */
+.cm-seed { animation: cm-seed 3.4s ease-in-out infinite; }
+.cm-sheen { animation: cm-sheen 6s ease-in-out infinite; }
+@keyframes cm-seed { 0%, 100% { transform: scale(0.8); opacity: 0.85; } 50% { transform: scale(1.18); opacity: 1; } }
+@keyframes cm-sheen { 0%, 60% { transform: translateX(-140%); opacity: 0; } 70% { opacity: 0.9; } 100% { transform: translateX(140%); opacity: 0; } }
+
+/* loader: the C draws itself, holds, and wipes away; the seed pops in at the end of each stroke */
+.is-drawing .cm-c { stroke-dasharray: 100; animation: cm-draw 2.2s cubic-bezier(0.65, 0, 0.35, 1) infinite; }
+.is-drawing .cm-seed { animation: cm-seed-pop 2.2s ease-in-out infinite; }
+.is-drawing .cm-sheen { animation: none; opacity: 0; }
+@keyframes cm-draw {
+  0% { stroke-dashoffset: 100; }
+  55%, 75% { stroke-dashoffset: 0; }
+  100% { stroke-dashoffset: -100; }
+}
+@keyframes cm-seed-pop {
+  0%, 45% { transform: scale(0); opacity: 0; }
+  60% { transform: scale(1.35); opacity: 1; }
+  72%, 80% { transform: scale(1); opacity: 1; }
+  100% { transform: scale(0); opacity: 0; }
+}
+
+/* the tile glows on the loader */
+.is-drawing .cm-glow { animation: cm-glow 2.2s ease-in-out infinite; }
+@keyframes cm-glow { 0%, 100% { opacity: 0.1; } 60% { opacity: 0.3; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .cm-mark * { animation: none !important; }
+  .is-drawing .cm-c { stroke-dashoffset: 0; }
+}

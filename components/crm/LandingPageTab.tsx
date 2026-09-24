@@ -1,3 +1,4 @@
+import { SaveButton } from '@/components/ui/SaveButton';
 import React, { useState } from 'react';
 import {
   Globe,
@@ -2421,23 +2422,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
             <span>Editing: <strong className="text-slate-900 dark:text-white">{landingConfig.businessName}</strong> (/site/{landingConfig.slug})</span>
           </div>
 
-          <button
-            type="submit"
-            disabled={isSavingLanding}
-            className="w-full sm:w-auto px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs rounded-xl shadow-md shadow-blue-600/20 transition flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
-          >
-            {isSavingLanding ? (
-              <>
-                <RefreshCw className="h-4 w-4 animate-spin" />
-                <span>Saving Changes...</span>
-              </>
-            ) : (
-              <>
-                <Check className="h-4 w-4" />
-                <span>Save &amp; Publish Landing Page</span>
-              </>
-            )}
-          </button>
+          <SaveButton type="submit" saving={isSavingLanding} idleLabel="Save & Publish Landing Page" savingLabel="Publishing…" savedLabel="Published" icon={<Check className="h-4 w-4" />} className="w-full sm:w-auto px-6 py-2.5" />
         </div>
       </form>
 

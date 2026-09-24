@@ -4,7 +4,8 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { RefreshCw, Globe } from 'lucide-react';
 import '../brand.css';
 import { brandFontClasses } from '@/lib/brand-fonts';
-import { CresceloOrb } from '@/components/brand/CresceloOrb';
+import { ErrorModalHost } from '@/components/ui/ErrorModal';
+import { CresceloMark } from '@/components/brand/CresceloMark';
 import { Appointment } from '@/components/crm/AppointmentsTab';
 import { useRouter } from 'next/navigation';
 import { DashboardHeader } from '@/components/crm/DashboardHeader';
@@ -41,7 +42,6 @@ import { SystemLogsTab } from '@/components/crm/SystemLogsTab';
 import { OnboardingWizardModal } from '@/components/crm/onboarding/OnboardingWizardModal';
 import { TourGuideModal } from '@/components/crm/tour/TourGuideModal';
 import { TOUR_STEPS } from '@/components/crm/tour/tourData';
-import { FloatingPlatformChatbot } from '@/components/chat/FloatingPlatformChatbot';
 
 import { useCrmAssistants } from '@/components/crm/hooks/useCrmAssistants';
 import { useCrmBilling } from '@/components/crm/hooks/useCrmBilling';
@@ -613,7 +613,7 @@ export default function DashboardPage() {
     return (
       <div className={`kx-app ${brandFontClasses} ${theme === 'dark' ? 'dark' : ''} h-screen w-full flex items-center justify-center bg-slate-50 dark:bg-slate-950 font-sans`}>
         <div className="flex flex-col items-center gap-3">
-          <CresceloOrb size={72} state="thinking" />
+          <CresceloMark size={72} motion="draw" />
           <div className="flex items-center gap-2 text-xs font-medium text-slate-500 dark:text-slate-400">
             <RefreshCw className="h-3.5 w-3.5 animate-spin text-blue-600" />
             <span>Verifying workspace session...</span>
@@ -1173,6 +1173,9 @@ export default function DashboardPage() {
           onOpenEmbed={() => setShowEmbedModal(true)}
         />
 
+        {/* Branded error dialog for every failed save */}
+        <ErrorModalHost />
+
         {/* Interactive Product Tour */}
         <TourGuideModal
           isOpen={isTourOpen}
@@ -1183,8 +1186,6 @@ export default function DashboardPage() {
           onGoToStep={handleTourGoToStep}
         />
 
-        {/* Global Floating Platform AI Concierge Chatbot */}
-        <FloatingPlatformChatbot />
       </div>
     </div>
   );

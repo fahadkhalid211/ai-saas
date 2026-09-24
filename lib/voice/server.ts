@@ -1,3 +1,4 @@
+import { dispatchIntegrationsAfterResponse } from '@/lib/integrations/dispatch';
 import { NextResponse } from 'next/server';
 import { Database, type AssistantData } from '@/lib/db';
 import { withEnvProviderFallback } from '@/lib/ai/resolve-provider';
@@ -163,7 +164,7 @@ export function productionVoiceDeps(): VoiceDeps {
     },
 
     saveCallback: async ({ assistant, name, phone, note, conversationId }) => {
-      await Database.saveLead({
+      const lead = await Database.saveLead({
         assistantId: assistant.id,
         email: syntheticEmail(phone),
         name,
@@ -171,6 +172,7 @@ export function productionVoiceDeps(): VoiceDeps {
         notes: note,
         customData: { Type: 'Phone Call-back', attributionSource: 'phone', attributionConversationId: conversationId },
       });
+      dispatchIntegrationsAfterResponse(assistant, 'lead.created', lead);
     },
 
     notify: async ({ assistant, title, message, type }) => {
@@ -209,7 +211,7 @@ export async function endVoiceCall(input: { state: VoiceCallState; durationSecon
 
   if (input.voicemailText && input.voicemailText.trim()) {
     const text = input.voicemailText.trim().slice(0, 1500);
-    await Database.saveLead({
+    const voicemailLead = await Database.saveLead({
       assistantId: assistant.id,
       email: syntheticEmail(state.from),
       phone: state.from || undefined,
@@ -217,6 +219,7 @@ export async function endVoiceCall(input: { state: VoiceCallState; durationSecon
       notes: `Voicemail: ${text}`,
       customData: { Type: 'Voicemail', attributionSource: 'phone', attributionConversationId: state.conversationId },
     });
+    dispatchIntegrationsAfterResponse(assistant, 'lead.created', voicemailLead);
     await Database.saveMessage(state.conversationId, 'user', `(voicemail) ${text}`);
     await Database.addNotification({ assistantId: assistant.id, title: 'New voicemail', message: `From ${state.from || 'unknown'}: ${text.slice(0, 160)}`, type: 'lead_captured' }).catch(() => undefined);
     state.outcome = 'callback';

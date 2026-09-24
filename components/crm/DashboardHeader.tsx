@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { BrandMark } from '@/components/brand/BrandMark';
+import { FloatingPlatformChatbot } from '@/components/chat/FloatingPlatformChatbot';
 import {
   Bot,
   Plus,
@@ -232,6 +233,9 @@ export function DashboardHeader({
             {activeAssistant?.provider || 'GEMINI'}
           </span>
         </div>
+
+        {/* Crescelo assistant: drops the chat down from here; stays mounted so the conversation survives minimizing */}
+        <FloatingPlatformChatbot variant="header" />
 
         {/* Tour Guide Button */}
         {onOpenTour && (

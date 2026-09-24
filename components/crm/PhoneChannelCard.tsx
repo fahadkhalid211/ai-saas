@@ -1,3 +1,4 @@
+import { SaveButton } from '@/components/ui/SaveButton';
 import React, { useEffect, useState } from 'react';
 import { PhoneCall } from 'lucide-react';
 import { maskPhone } from '@/lib/voice/text';
@@ -210,14 +211,7 @@ export const PhoneChannelCard: React.FC<PhoneChannelCardProps> = ({ activeAssist
             The time zone decides what &quot;today&quot; and opening hours mean when the assistant offers appointment times. Booking uses the days and hours from your booking settings.
           </p>
 
-          <button
-            type="button"
-            onClick={handleSaveSettings}
-            disabled={isSaving}
-            className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold disabled:opacity-60 cursor-pointer"
-          >
-            {isSaving ? 'Saving...' : 'Save phone settings'}
-          </button>
+          <SaveButton onClick={handleSaveSettings} saving={isSaving} idleLabel="Save phone settings" savedLabel="Phone settings saved" />
         </div>
       </div>
 

@@ -1,3 +1,4 @@
+import { SaveButton } from '@/components/ui/SaveButton';
 import React, { useState } from 'react';
 import { PhoneChannelCard } from '@/components/crm/PhoneChannelCard';
 import {
@@ -515,36 +516,7 @@ export const ChannelsTab: React.FC<ChannelsTabProps> = ({
         </div>
 
         <div className="flex items-center gap-2.5">
-          {saveSuccess && (
-            <div className="flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400 font-semibold bg-emerald-50 dark:bg-emerald-950/40 px-3 py-1.5 rounded-lg border border-emerald-200 dark:border-emerald-800 animate-in fade-in">
-              <CheckCircle2 className="h-3.5 w-3.5" />
-              <span>Saved Successfully</span>
-            </div>
-          )}
-          {saveError && (
-            <div className="flex items-center gap-1.5 text-xs text-rose-600 dark:text-rose-400 font-semibold bg-rose-50 dark:bg-rose-950/40 px-3 py-1.5 rounded-lg border border-rose-200 dark:border-rose-800">
-              <AlertTriangle className="h-3.5 w-3.5" />
-              <span>{saveError}</span>
-            </div>
-          )}
-          <button
-            type="button"
-            onClick={handleSaveSettings}
-            disabled={isSaving}
-            className="flex items-center gap-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 text-xs font-semibold shadow-sm transition disabled:opacity-50 cursor-pointer"
-          >
-            {isSaving ? (
-              <>
-                <RefreshCw className="h-3.5 w-3.5 animate-spin" />
-                <span>Saving Changes...</span>
-              </>
-            ) : (
-              <>
-                <Check className="h-3.5 w-3.5" />
-                <span>Save Channel Settings</span>
-              </>
-            )}
-          </button>
+          <SaveButton onClick={handleSaveSettings} saving={isSaving} error={saveError} idleLabel="Save Channel Settings" savingLabel="Saving Changes…" savedLabel="Channel Settings Saved" icon={<Check className="h-3.5 w-3.5" />} className="px-5 py-2.5" />
         </div>
       </div>
 
@@ -1663,25 +1635,7 @@ export const ChannelsTab: React.FC<ChannelsTabProps> = ({
                   </div>
 
                   <div className="flex items-center gap-2.5">
-                    {smtpSaveSuccess && (
-                      <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1 bg-emerald-50 dark:bg-emerald-950/40 px-2.5 py-1 rounded-lg border border-emerald-200 dark:border-emerald-800">
-                        <Check className="w-3.5 h-3.5" /> Saved
-                      </span>
-                    )}
-                    {smtpSaveError && (
-                      <span className="text-xs font-semibold text-rose-600 dark:text-rose-400 flex items-center gap-1 bg-rose-50 dark:bg-rose-950/40 px-2.5 py-1 rounded-lg border border-rose-200 dark:border-rose-800">
-                        <AlertTriangle className="w-3.5 h-3.5" /> {smtpSaveError}
-                      </span>
-                    )}
-                    <button
-                      type="button"
-                      onClick={handleSaveSmtpSettings}
-                      disabled={smtpLoading}
-                      className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs transition disabled:opacity-50 cursor-pointer flex items-center gap-1.5"
-                    >
-                      {smtpLoading ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
-                      <span>Save SMTP Settings</span>
-                    </button>
+                    <SaveButton onClick={handleSaveSmtpSettings} saving={smtpLoading} error={smtpSaveError} idleLabel="Save SMTP Settings" savedLabel="SMTP Saved" icon={<Check className="w-3.5 h-3.5" />} />
                   </div>
                 </div>
 
@@ -1999,14 +1953,7 @@ export const ChannelsTab: React.FC<ChannelsTabProps> = ({
             Remember to click <strong>Save Channel Settings</strong> above to apply your integration updates to the live bot.
           </span>
         </div>
-        <button
-          type="button"
-          onClick={handleSaveSettings}
-          disabled={isSaving}
-          className="shrink-0 rounded-xl bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 text-xs font-semibold shadow-xs transition disabled:opacity-50 cursor-pointer"
-        >
-          Save Settings
-        </button>
+        <SaveButton onClick={handleSaveSettings} saving={isSaving} error={saveError} idleLabel="Save Settings" savedLabel="Settings Saved" className="shrink-0" />
       </div>
     </div>
   );

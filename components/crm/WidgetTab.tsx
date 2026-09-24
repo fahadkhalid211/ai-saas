@@ -1,3 +1,4 @@
+import { SaveButton } from '@/components/ui/SaveButton';
 import React, { useState } from 'react';
 import {
   RefreshCw,
@@ -87,16 +88,7 @@ export const WidgetTab: React.FC<WidgetTabProps> = ({
                       Change how the chat button looks on your website — colors, position, greeting, and logo.
                     </p>
                   </div>
-                  <button
-                    onClick={handleSaveSettings}
-                    disabled={isSaving}
-                    className={`flex items-center gap-2 self-start sm:self-auto rounded-lg px-4 py-2 text-xs font-semibold text-white transition shadow-xs disabled:opacity-50 ${
-                      saveSuccess ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-blue-600 hover:bg-blue-700'
-                    }`}
-                  >
-                    {isSaving ? <RefreshCw className="h-3.5 w-3.5 animate-spin" /> : <CheckCircle2 className="h-3.5 w-3.5" />}
-                    <span>{isSaving ? 'Saving Settings...' : saveSuccess ? 'Saved Successfully!' : 'Save Widget Settings'}</span>
-                  </button>
+                  <SaveButton onClick={handleSaveSettings} saving={isSaving} idleLabel="Save Widget Settings" savingLabel="Saving Settings…" savedLabel="Saved Successfully" icon={<CheckCircle2 className="h-3.5 w-3.5" />} className="self-start sm:self-auto" />
                 </div>
 
                 {saveSuccess && (
@@ -647,28 +639,7 @@ export const WidgetTab: React.FC<WidgetTabProps> = ({
                     </div>
 
                     <div className="pt-2">
-                      <button
-                        onClick={handleSaveSettings}
-                        disabled={isSaving}
-                        className={`flex items-center gap-2 rounded-lg px-4 py-2 text-xs font-semibold text-white transition shadow-xs disabled:opacity-50 ${
-                          saveSuccess
-                            ? 'bg-emerald-600 hover:bg-emerald-700'
-                            : 'bg-blue-600 hover:bg-blue-700'
-                        }`}
-                      >
-                        {isSaving ? (
-                          <RefreshCw className="h-3.5 w-3.5 animate-spin" />
-                        ) : (
-                          <CheckCircle2 className="h-3.5 w-3.5" />
-                        )}
-                        <span>
-                          {isSaving
-                            ? 'Saving Settings...'
-                            : saveSuccess
-                            ? 'Saved Successfully!'
-                            : 'Save Widget & Support Settings'}
-                        </span>
-                      </button>
+                      <SaveButton onClick={handleSaveSettings} saving={isSaving} idleLabel="Save Widget & Support Settings" savingLabel="Saving Settings…" savedLabel="Saved Successfully" icon={<CheckCircle2 className="h-3.5 w-3.5" />} />
                     </div>
                   </div>
 

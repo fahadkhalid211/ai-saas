@@ -1,5 +1,6 @@
 'use client';
 
+import { SaveButton } from '@/components/ui/SaveButton';
 import React from 'react';
 import { CheckCircle2, AlertTriangle, RefreshCw } from 'lucide-react';
 
@@ -114,14 +115,7 @@ export const BehaviorTab: React.FC<BehaviorTabProps> = ({
                   </div>
 
                   <div className="pt-2 flex justify-end">
-                    <button
-                      onClick={handleSaveSettings}
-                      disabled={isSaving}
-                      className="flex items-center gap-2 rounded-lg bg-blue-600 hover:bg-blue-700 px-4 py-2 text-xs font-semibold text-white disabled:opacity-50 transition shadow-xs"
-                    >
-                      {isSaving ? <RefreshCw className="h-3.5 w-3.5 animate-spin" /> : <CheckCircle2 className="h-3.5 w-3.5" />}
-                      <span>Save Guardrails</span>
-                    </button>
+                    <SaveButton onClick={handleSaveSettings} saving={isSaving} idleLabel="Save Guardrails" savedLabel="Guardrails Saved" icon={<CheckCircle2 className="h-3.5 w-3.5" />} />
                   </div>
                 </div>
               </div>

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Send, RefreshCw, Check, Copy } from 'lucide-react';
+import { X, Send, RefreshCw, Check, Copy, Minus, ChevronDown } from 'lucide-react';
 import { CresceloOrb, type OrbState } from '@/components/brand/CresceloOrb';
 import { PlatformBookingCard, type BookingConfig } from './PlatformBookingCard';
 import { stripActionTokens } from '@/lib/chat/handoff';
@@ -46,7 +46,13 @@ function actionsOf(content: string): { text: string; booking: boolean; human: bo
   };
 }
 
-export function FloatingPlatformChatbot() {
+interface FloatingPlatformChatbotProps {
+  /** 'floating' (default): the launcher orb in the corner of the page. 'header': a compact button that drops the chat down from the dashboard header. */
+  variant?: 'floating' | 'header';
+}
+
+export function FloatingPlatformChatbot({ variant = 'floating' }: FloatingPlatformChatbotProps = {}) {
+  const inHeader = variant === 'header';
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
@@ -284,13 +290,38 @@ export function FloatingPlatformChatbot() {
 
   return (
     <div
-      className="fixed bottom-6 right-6 z-[99999] font-sans"
+      className={inHeader ? 'relative font-sans' : 'fixed bottom-6 right-6 z-[99999] font-sans'}
       onKeyDown={(e) => {
         if (e.key === 'Escape' && isOpen) setIsOpen(false);
       }}
     >
       {/* Launcher: the orb on its own; a small label slides out on hover */}
-      {!isOpen && (
+      {inHeader && (
+        <button
+          type="button"
+          onClick={() => setIsOpen((o) => !o)}
+          aria-expanded={isOpen}
+          aria-label={isOpen ? 'Minimize the Crescelo assistant' : 'Open the Crescelo assistant'}
+          title="Ask the Crescelo assistant"
+          className={`relative flex items-center gap-2 rounded-xl border px-2.5 py-1.5 text-xs font-semibold transition cursor-pointer shadow-2xs ${
+            isOpen
+              ? 'border-[#abff44]/60 bg-[#08251a] text-[#e9ffc2]'
+              : 'border-slate-200 dark:border-slate-700/80 bg-slate-50 hover:bg-slate-100 dark:bg-slate-800/70 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200'
+          }`}
+        >
+          <CresceloOrb size={22} mark state={isLoading ? 'thinking' : 'idle'} />
+          <span className="hidden sm:inline">Assistant</span>
+          <ChevronDown className={`h-3.5 w-3.5 opacity-70 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+          {hasUnread && !isOpen && (
+            <span className="absolute -top-1 -right-1 flex h-3 w-3">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#abff44] opacity-70" />
+              <span className="relative inline-flex h-3 w-3 rounded-full bg-[#abff44] ring-2 ring-white dark:ring-slate-900" />
+            </span>
+          )}
+        </button>
+      )}
+
+      {!inHeader && !isOpen && (
         <button
           type="button"
           onClick={() => setIsOpen(true)}
@@ -317,7 +348,13 @@ export function FloatingPlatformChatbot() {
         <div
           role="dialog"
           aria-label="Crescelo assistant"
-          className="relative flex flex-col w-[92vw] sm:w-[380px] md:w-[410px] h-[580px] max-h-[85vh] bg-[#1f1e1d] text-[#e8e5dc] rounded-3xl shadow-[0_28px_90px_rgba(0,0,0,0.55)] border border-white/10 overflow-hidden animate-in fade-in slide-in-from-bottom-5 duration-300"
+          className={`flex flex-col bg-[#1f1e1d] ${
+            inHeader
+              ? 'absolute right-0 top-full mt-2 z-[99999] w-[400px] h-[560px] max-h-[calc(100vh-5.5rem)] max-sm:fixed max-sm:inset-x-2 max-sm:top-[4.5rem] max-sm:mt-0 max-sm:w-auto'
+              : 'relative w-[92vw] sm:w-[380px] md:w-[410px] h-[580px] max-h-[85vh]'
+          } text-[#e8e5dc] rounded-3xl shadow-[0_28px_90px_rgba(0,0,0,0.55)] border border-white/10 overflow-hidden animate-in fade-in ${
+            inHeader ? 'slide-in-from-top-3' : 'slide-in-from-bottom-5'
+          } duration-300`}
         >
           {/* soft light from above, the only colour in the panel */}
           <div className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-[radial-gradient(60%_100%_at_50%_0%,rgba(171,255,68,0.10),transparent)]" aria-hidden="true" />
@@ -360,11 +397,11 @@ export function FloatingPlatformChatbot() {
               <button
                 type="button"
                 onClick={() => setIsOpen(false)}
-                title="Close"
-                aria-label="Close chat"
+                title={inHeader ? 'Minimize' : 'Close'}
+                aria-label={inHeader ? 'Minimize chat' : 'Close chat'}
                 className="p-2 text-[#a19f96] hover:text-[#faf9f5] hover:bg-white/[0.06] rounded-xl transition"
               >
-                <X className="w-[18px] h-[18px]" />
+                {inHeader ? <Minus className="w-[18px] h-[18px]" /> : <X className="w-[18px] h-[18px]" />}
               </button>
             </div>
           </div>

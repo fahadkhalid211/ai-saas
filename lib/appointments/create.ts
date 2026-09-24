@@ -1,8 +1,6 @@
 import { Database, DEFAULT_BARBER_LANDING_CONFIG, type AppointmentData, type AssistantData } from '@/lib/db';
 import { sendAppointmentConfirmationEmail } from '@/lib/email';
-import { dispatchWebhook } from '@/lib/webhook';
-import { dispatchSlackNotification } from '@/lib/integrations/slack';
-import { dispatchGoogleSheetRow } from '@/lib/integrations/google-sheets';
+import { dispatchIntegrationsAfterResponse } from '@/lib/integrations/dispatch';
 import { acquireBookingLock } from '@/lib/appointments/booking-lock';
 import { attributionCustomData, type ResolvedAttribution } from '@/lib/analytics/attribution';
 import { overlapsExisting, parseTimeToMinutes } from '@/lib/appointments/availability';
@@ -191,23 +189,8 @@ export async function createAppointment(opts: CreateAppointmentOptions): Promise
     console.warn('[Appointments] Lead sync warning:', leadErr);
   }
 
-  if (assistant.webhookUrl && assistant.webhookUrl.trim()) {
-    dispatchWebhook(assistant, 'appointment.created', appointment).catch((webhookErr) => {
-      console.warn('[Appointments] Webhook dispatch warning:', webhookErr?.message);
-    });
-  }
-
-  if (assistant.slackEnabled && assistant.slackWebhookUrl?.trim()) {
-    dispatchSlackNotification(assistant, 'appointment.created', appointment).catch((slackErr) => {
-      console.warn('[Appointments] Slack dispatch warning:', slackErr?.message);
-    });
-  }
-
-  if (assistant.googleSheetsEnabled && assistant.googleSheetsWebhookUrl?.trim()) {
-    dispatchGoogleSheetRow(assistant, 'appointment.created', appointment).catch((sheetsErr) => {
-      console.warn('[Appointments] Google Sheets dispatch warning:', sheetsErr?.message);
-    });
-  }
+  // Webhook, Slack and Google Sheets: delivered after the response, kept alive by after()
+  dispatchIntegrationsAfterResponse(assistant, 'appointment.created', appointment);
 
   if (assistant.supportReceiverEmail && assistant.supportReceiverEmail.trim()) {
     try {

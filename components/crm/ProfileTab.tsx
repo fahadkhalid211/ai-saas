@@ -1,6 +1,8 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
+import { showErrorModal } from '@/lib/ui/notify';
+import { SaveButton } from '@/components/ui/SaveButton';
 import {
   User,
   Shield,
@@ -148,6 +150,7 @@ export function ProfileTab({ currentUser, onProfileUpdated }: ProfileTabProps) {
     e.preventDefault();
     if (!name.trim()) {
       setProfileErrorMsg('Full Name cannot be empty.');
+      showErrorModal({ title: 'Name is required', message: 'Full Name cannot be empty.' });
       return;
     }
 
@@ -179,6 +182,7 @@ export function ProfileTab({ currentUser, onProfileUpdated }: ProfileTabProps) {
       setTimeout(() => setProfileSuccessMsg(null), 4000);
     } catch (err: any) {
       setProfileErrorMsg(err?.message || 'Error updating profile.');
+      showErrorModal({ title: "Profile wasn't saved", message: err?.message || 'Error updating profile.' });
       setTimeout(() => setProfileErrorMsg(null), 5000);
     } finally {
       setIsSavingProfile(false);
@@ -472,20 +476,7 @@ export function ProfileTab({ currentUser, onProfileUpdated }: ProfileTabProps) {
               </div>
 
               <div className="pt-2 flex justify-end">
-                <button
-                  type="submit"
-                  disabled={isSavingProfile}
-                  className="flex items-center gap-2 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white px-5 py-2.5 text-xs font-semibold shadow-xs transition cursor-pointer"
-                >
-                  {isSavingProfile ? (
-                    <>
-                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                      <span>Saving Changes...</span>
-                    </>
-                  ) : (
-                    <span>Save Profile Changes</span>
-                  )}
-                </button>
+                <SaveButton type="submit" saving={isSavingProfile} error={profileErrorMsg} idleLabel="Save Profile Changes" savingLabel="Saving Changes…" savedLabel="Profile Saved" className="px-5 py-2.5" />
               </div>
             </form>
           </div>

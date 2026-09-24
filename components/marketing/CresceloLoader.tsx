@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { CresceloOrb } from '@/components/brand/CresceloOrb';
+import { CresceloMark } from '@/components/brand/CresceloMark';
 
 interface CresceloLoaderProps {
   size?: 'sm' | 'md' | 'lg' | 'xl';
@@ -17,13 +17,13 @@ const SIZE_MAP = {
   xl: 128,
 };
 
-/** The loading state everywhere in the app: the Crescelo orb, thinking. */
+/** The loading state everywhere in the app: the Crescelo C drawing itself. */
 export function CresceloLoader({ size = 'md', label, fullscreen = false, className = '' }: CresceloLoaderProps) {
   const px = SIZE_MAP[size];
 
   const content = (
     <div className={`inline-flex flex-col items-center justify-center gap-3 ${className}`} role="status" aria-label={label || 'Loading...'}>
-      <CresceloOrb size={px} state="thinking" />
+      <CresceloMark size={px} motion="draw" />
       {label && (
         <span
           style={{ fontFamily: 'system-ui, -apple-system, sans-serif', fontSize: size === 'sm' ? '12px' : '14px', fontWeight: 600, letterSpacing: '0.02em' }}

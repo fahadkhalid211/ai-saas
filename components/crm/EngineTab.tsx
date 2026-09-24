@@ -1,5 +1,6 @@
 'use client';
 
+import { SaveButton } from '@/components/ui/SaveButton';
 import React, { useState } from 'react';
 import {
   CheckCircle2,
@@ -218,20 +219,6 @@ export const EngineTab: React.FC<EngineTabProps> = ({
           <span>Browse All AI Connector Guides ↗</span>
         </a>
       </div>
-
-      {saveSuccess && (
-        <div className="flex items-center gap-2 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 p-3 text-xs text-emerald-700 dark:text-emerald-300">
-          <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
-          <span>Configuration saved successfully!</span>
-        </div>
-      )}
-
-      {saveError && (
-        <div className="flex items-center gap-2 rounded-lg bg-rose-50 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-800 p-3 text-xs text-rose-700 dark:text-rose-300">
-          <AlertTriangle className="h-4 w-4 text-rose-600 dark:text-rose-400 shrink-0" />
-          <span>{saveError}</span>
-        </div>
-      )}
 
       {/* Currently active AI */}
       <div
@@ -809,14 +796,7 @@ export const EngineTab: React.FC<EngineTabProps> = ({
           <p className="text-[10.5px] text-slate-400 dark:text-slate-500">
             Saving will verify your connection before applying — a bad key will be rejected with an error.
           </p>
-          <button
-            onClick={handleSaveSettings}
-            disabled={isSaving}
-            className="flex items-center gap-2 rounded-lg bg-blue-600 hover:bg-blue-700 px-4 py-2 text-xs font-semibold text-white disabled:opacity-50 transition shadow-xs cursor-pointer shrink-0"
-          >
-            {isSaving ? <RefreshCw className="h-3.5 w-3.5 animate-spin" /> : <CheckCircle2 className="h-3.5 w-3.5" />}
-            <span>{isSaving ? 'Verifying & Saving…' : 'Save Settings'}</span>
-          </button>
+          <SaveButton onClick={handleSaveSettings} saving={isSaving} error={saveError} idleLabel="Save Settings" savingLabel="Verifying & Saving…" savedLabel="Settings Saved" icon={<CheckCircle2 className="h-3.5 w-3.5" />} className="shrink-0" />
         </div>
       </div>
     </div>
