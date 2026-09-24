@@ -1,6 +1,7 @@
 'use client';
 
 import { useId } from 'react';
+import { useRootScale } from '@/lib/ui/use-root-scale';
 import './mark.css';
 
 interface CresceloMarkProps {
@@ -18,15 +19,16 @@ interface CresceloMarkProps {
  */
 export function CresceloMark({ size = 32, motion = 'still', label, className = '' }: CresceloMarkProps) {
   const id = useId().replace(/[^a-zA-Z0-9]/g, '');
+  const px = Math.round(size * useRootScale());
   return (
     <span
       className={`cm-mark ${motion === 'draw' ? 'is-drawing' : ''} ${className}`}
-      style={{ width: size, height: size }}
+      style={{ width: px, height: px }}
       role={label ? 'img' : undefined}
       aria-label={label}
       aria-hidden={label ? undefined : true}
     >
-      <svg viewBox="0 0 100 100" width={size} height={size}>
+      <svg viewBox="0 0 100 100" width={px} height={px}>
         <defs>
           <linearGradient id={`t${id}`} x1="0%" y1="0%" x2="100%" y2="100%">
             <stop offset="0%" stopColor="#12432f" />

@@ -351,8 +351,8 @@ export function FloatingPlatformChatbot({ variant = 'floating' }: FloatingPlatfo
           data-lenis-prevent
           className={`flex flex-col bg-[#1f1e1d] ${
             inHeader
-              ? 'absolute right-0 top-full mt-2 z-[99999] w-[400px] h-[560px] max-h-[calc(100vh-5.5rem)] max-sm:fixed max-sm:inset-x-2 max-sm:top-[4.5rem] max-sm:mt-0 max-sm:w-auto'
-              : 'relative w-[92vw] sm:w-[380px] md:w-[410px] h-[580px] max-h-[85vh]'
+              ? 'absolute right-0 top-full mt-2 z-[99999] w-[25rem] h-[35rem] max-h-[calc(100vh-5.5rem)] max-sm:fixed max-sm:inset-x-2 max-sm:top-[4.5rem] max-sm:mt-0 max-sm:w-auto'
+              : 'relative w-[92vw] sm:w-[23.75rem] md:w-[25.625rem] h-[36.25rem] max-h-[85vh]'
           } text-[#e8e5dc] rounded-3xl shadow-[0_28px_90px_rgba(0,0,0,0.55)] border border-white/10 overflow-hidden animate-in fade-in ${
             inHeader ? 'slide-in-from-top-3' : 'slide-in-from-bottom-5'
           } duration-300`}
