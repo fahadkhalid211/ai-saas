@@ -30,7 +30,7 @@ Crescelo is a website assistant for service businesses (salons and barbershops, 
 - Bring your own AI provider (OpenAI, Anthropic, Google Gemini, Groq, DeepSeek or a self-hosted model). Crescelo adds no markup to AI usage; the provider bills the customer directly.
 
 ## Pricing
-Every new account gets a ${TRIAL_DAYS}-day free trial of all Growth features, with no credit card. There is no permanent free plan. Prices in US dollars.
+Every new account gets a ${TRIAL_DAYS}-day free trial of all Growth features. A card is required to start; it is charged automatically when the trial ends and the customer can cancel any time before that to pay nothing. There is no permanent free plan. Prices in US dollars.
 ${plans}
 Full details: ${u}/pricing
 

@@ -44,7 +44,7 @@ import { isPostgresConfigured, disablePostgresTemporarily, isConnectionError } f
 import * as Relational from './relational';
 import * as ChunkStore from './chunk-store';
 import { BILLING_PLANS } from '../billing/plans';
-import { TRIAL_PLAN_ID, newTrialDates } from '../billing/trial';
+import { TRIAL_PLAN_ID, type SubscriptionStatus } from '../billing/trial';
 import { pgVectorStoreEnabled } from './chunk-store';
 import { isRedisConfigured, redisGet, redisSet, CACHE_KEYS } from '../cache/redis';
 export { isCloudDbConfigured, getCloudDbProvider, isSupabaseConfigured };
@@ -298,10 +298,14 @@ export interface WorkspaceBillingData {
   billingEmail?: string;
   invoices?: InvoiceRecord[];
   /** Free trial (see lib/billing/trial.ts). Absent on workspaces created before the trial existed. */
+  /** New workspaces must start a card-backed trial (or subscribe) before assistants serve visitors. */
+  requiresSubscription?: boolean;
   trialStartedAt?: string;
   trialEndsAt?: string;
   stripeCustomerId?: string;
   stripeSubscriptionId?: string;
+  subscriptionStatus?: SubscriptionStatus;
+  cancelAtPeriodEnd?: boolean;
 }
 
 export interface AppointmentData {
@@ -3589,13 +3593,14 @@ export class Database {
     const startOfCurrentMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString();
     const endOfCurrentMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 1).toISOString();
 
-    // Every new workspace starts a 14-day trial with all Growth features and no card (lib/billing/trial.ts).
+    // Every new workspace must start a card-backed 14-day trial via Stripe Checkout before its assistants serve visitors
+    // (lib/billing/trial.ts). The dates and status come from Stripe once Checkout completes.
     const trialPlan = BILLING_PLANS.find((p) => p.id === TRIAL_PLAN_ID) || BILLING_PLANS[0];
     const workspace: WorkspaceBillingData = {
       id: workspaceId,
       name: cleanName,
       planId: trialPlan.id,
-      planName: `${trialPlan.name} (free trial)`,
+      planName: trialPlan.name,
       billingInterval: 'monthly',
       monthlyChatLimit: trialPlan.chatSessionsLimit,
       overageRatePerChat: trialPlan.overageRate,
@@ -3604,7 +3609,7 @@ export class Database {
       currentPeriodEnd: endOfCurrentMonth,
       billingEmail: cleanEmail,
       invoices: [],
-      ...newTrialDates(),
+      requiresSubscription: true,
     };
     (workspace as any).ownerEmail = cleanEmail;
     (workspace as any).ownerPassword = hashedPass;

@@ -48,6 +48,13 @@ const GETHandler = withAdminAuth(async (req: Request) => {
       workspaceId: ws.id,
       name: ws.name,
       trial: trialInfo(ws),
+      subscription: {
+        // what the card is charged, and when: the end of the trial while trialing, otherwise the next renewal
+        nextChargeAmount: ws.billingInterval === 'annual' ? currentPlan.annualMonthlyPrice * 12 : currentPlan.monthlyPrice,
+        nextChargeDate: trialInfo(ws).endsAt || ws.currentPeriodEnd,
+        cancelAtPeriodEnd: Boolean(ws.cancelAtPeriodEnd),
+        hasStripeCustomer: Boolean(ws.stripeCustomerId),
+      },
       planId: ws.planId,
       planName: ws.planName,
       billingInterval: ws.billingInterval,

@@ -48,7 +48,7 @@ export function Pricing() {
                   <span className="mk-price-num">${price}</span>
                   <span className="mk-price-per"> / month</span>
                 </p>
-                <p className="mk-price-note" style={{ fontWeight: 600 }}>14 days free, no card. Then:</p>
+                <p className="mk-price-note" style={{ fontWeight: 600 }}>14 days free (card required, cancel any time). Then:</p>
                 <p className="mk-price-note">{annual ? `Billed annually: $${price * 12} per year (instead of $${p.monthly * 12} if paid monthly)` : 'Billed monthly, cancel any time'}</p>
                 <ul className="mk-ticks">
                   {p.highlights.map((h) => (

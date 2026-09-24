@@ -136,7 +136,7 @@ export function AdminLoginScreen({
           </h2>
           <p className="text-xs text-slate-500 dark:text-slate-400 max-w-xs leading-relaxed">
             {authLoginMode === 'register'
-              ? 'Start your 14-day free trial. All Growth features, no credit card needed.'
+              ? 'Create your account, then add a card to start your 14-day free trial. Charged after 14 days unless you cancel. Cancel any time.'
               : 'Sign in to access your business assistant, CRM leads, and live conversations.'}
           </p>
           {authLoginMode === 'register' && selectedPlanNote && (

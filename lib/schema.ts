@@ -56,7 +56,7 @@ export function softwareSchema() {
       {
         '@type': 'Offer',
         name: `${TRIAL_DAYS}-day free trial`,
-        description: `All Growth features for ${TRIAL_DAYS} days, no credit card required.`,
+        description: `All Growth features free for ${TRIAL_DAYS} days. A card is required to start; it is charged automatically when the trial ends unless cancelled.`,
         price: '0',
         priceCurrency: 'USD',
         eligibleDuration: { '@type': 'QuantitativeValue', value: TRIAL_DAYS, unitCode: 'DAY' },

@@ -1,5 +1,6 @@
 import Stripe from 'stripe';
 import { BILLING_PLANS, EXTRA_LANDING_PAGE_ADDON_PRICE, PlanTier } from './plans';
+import { TRIAL_DAYS, type SubscriptionStatus } from './trial';
 
 let stripeInstance: Stripe | null = null;
 
@@ -23,7 +24,17 @@ export function isStripeConfigured(): boolean {
   return Boolean(process.env.STRIPE_SECRET_KEY && process.env.STRIPE_SECRET_KEY.trim());
 }
 
+/**
+ * A simulated checkout (no Stripe) is for local development only. In production a missing Stripe key must never grant paid
+ * or trial access for free, so callers refuse instead.
+ */
+export function sandboxAllowed(): boolean {
+  return process.env.NODE_ENV !== 'production';
+}
+
 export interface CreateCheckoutParams {
+  /** Start the subscription with a 14-day trial (the card is collected now and charged automatically when the trial ends). */
+  withTrial?: boolean;
   workspaceId: string;
   workspaceName?: string;
   customerEmail?: string;
@@ -132,6 +143,25 @@ export async function createCheckoutSession(params: CreateCheckoutParams): Promi
       workspaceId: params.workspaceId,
       planId: plan.id,
       billingInterval: interval,
+      trial: params.withTrial ? 'true' : 'false',
+    },
+    subscription_data: {
+      metadata: { workspaceId: params.workspaceId, planId: plan.id, billingInterval: interval },
+      ...(params.withTrial
+        ? {
+            trial_period_days: TRIAL_DAYS,
+            // no card, no trial: if it is somehow missing at the end, cancel instead of continuing for free
+            trial_settings: { end_behavior: { missing_payment_method: 'cancel' as const } },
+          }
+        : {}),
+    },
+    payment_method_collection: 'always',
+    custom_text: {
+      submit: {
+        message: params.withTrial
+          ? `Your ${TRIAL_DAYS}-day free trial starts today. You will not be charged until the trial ends; then $${priceDollars} is charged automatically every ${interval === 'annual' ? 'year' : 'month'} until you cancel. Cancel any time in the billing portal, and cancelling before the trial ends means you are never charged.`
+          : `$${priceDollars} is charged now and every ${interval === 'annual' ? 'year' : 'month'} until you cancel. Cancel any time in the billing portal.`,
+      },
     },
     customer_email: params.customerEmail,
     success_url: params.successUrl,
@@ -175,4 +205,50 @@ export function constructWebhookEvent(payload: string | Buffer, signature: strin
     console.error('[Stripe] Webhook signature verification failed:', err.message);
     return null;
   }
+}
+
+export interface SubscriptionSummary {
+  status: SubscriptionStatus;
+  customerId: string | null;
+  trialEnd: string | null;
+  currentPeriodEnd: string | null;
+  cancelAtPeriodEnd: boolean;
+}
+
+const iso = (unix?: number | null) => (unix ? new Date(unix * 1000).toISOString() : null);
+
+/** Reads a subscription from Stripe so our records follow Stripe's (trial end, status, pending cancellation). */
+export async function retrieveSubscriptionSummary(subscriptionId: string): Promise<SubscriptionSummary | null> {
+  const stripe = getStripeClient();
+  if (!stripe || !subscriptionId) return null;
+  try {
+    const sub: any = await stripe.subscriptions.retrieve(subscriptionId);
+    return {
+      status: sub.status as SubscriptionStatus,
+      customerId: sub.customer ? String(typeof sub.customer === 'string' ? sub.customer : sub.customer.id) : null,
+      trialEnd: iso(sub.trial_end),
+      currentPeriodEnd: iso(sub.current_period_end),
+      cancelAtPeriodEnd: Boolean(sub.cancel_at_period_end),
+    };
+  } catch (err: any) {
+    console.error('[Stripe] Could not read subscription:', err?.message);
+    return null;
+  }
+}
+
+/** Moves an existing subscription to another plan or billing period (a second Checkout would create a second subscription). */
+export async function changeSubscriptionPlan(subscriptionId: string, planId: 'starter' | 'growth' | 'scale', interval: 'monthly' | 'annual'): Promise<boolean> {
+  const stripe = getStripeClient();
+  const plan = BILLING_PLANS.find((p) => p.id === planId);
+  if (!stripe || !plan) return false;
+  const sub: any = await stripe.subscriptions.retrieve(subscriptionId);
+  const item = sub.items?.data?.[0];
+  if (!item) return false;
+  const price = interval === 'annual' ? plan.annualMonthlyPrice * 12 : plan.monthlyPrice;
+  await stripe.subscriptions.update(subscriptionId, {
+    items: [{ id: item.id, price_data: { currency: 'usd', product: String(item.price.product), unit_amount: price * 100, recurring: { interval: interval === 'annual' ? 'year' : 'month' } } }],
+    proration_behavior: sub.status === 'trialing' ? 'none' : 'create_prorations',
+    metadata: { planId: plan.id, billingInterval: interval },
+  } as any);
+  return true;
 }

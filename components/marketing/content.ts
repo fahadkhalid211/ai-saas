@@ -285,7 +285,7 @@ export const PLANS: PricingPlan[] = BILLING_PLANS.map((p) => ({
 export const PRICING = {
   eyebrow: 'Pricing',
   title: 'Pick a plan by how many conversations you expect.',
-  intro: 'Every plan starts with a 14-day free trial of all Growth features, no credit card needed. Prices in US dollars. Annual billing shows the effective monthly price.',
+  intro: 'Every plan starts with a 14-day free trial of all Growth features. A card is required to start; it is charged automatically when the trial ends, and you can cancel any time before that to pay nothing. Prices in US dollars. Annual billing shows the effective monthly price.',
   note: 'You bring your own AI provider key, so model usage is billed by your provider, not marked up by us.',
 };
 
@@ -313,7 +313,7 @@ export const FAQ = {
     },
     {
       q: 'Is there a free trial?',
-      a: 'Yes. Every new account gets a 14-day free trial with all Growth features and no credit card. When it ends, choose a plan to keep your assistant answering visitors. If you do nothing, the assistant pauses and your data is kept for 30 days so you can subscribe later or export it. There is no permanent free plan.',
+      a: 'Yes. Every new account gets a 14-day free trial with all Growth features. You add a card to start it, pay nothing for 14 days, and the card is charged automatically for the plan you chose when the trial ends. Cancel any time in the billing portal; cancelling before the trial ends means you are never charged. If a subscription ends, the assistant pauses and your data is kept for 30 days. There is no permanent free plan.',
     },
     {
       q: 'Which channels are supported?',
@@ -334,7 +334,7 @@ export const FAQ = {
 
 export const FINAL_CTA = {
   title: 'Put a knowledgeable front desk on your website.',
-  body: 'Start a 14-day free trial, add your content, and try it yourself before any visitor does. No credit card needed.',
+  body: 'Start a 14-day free trial, add your content, and try it yourself before any visitor does. Cancel any time before the trial ends and you pay nothing.',
   primary: 'Start your 14-day free trial',
   secondary: 'Sign in',
 };

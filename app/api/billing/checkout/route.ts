@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Database } from '@/lib/db';
-import { createCheckoutSession, isStripeConfigured } from '@/lib/billing/stripe';
+import { createCheckoutSession, changeSubscriptionPlan, isStripeConfigured, sandboxAllowed } from '@/lib/billing/stripe';
+import { newTrialDates, trialAvailable } from '@/lib/billing/trial';
 import { BILLING_PLANS } from '@/lib/billing/plans';
 import { getAuthContext, requireRole } from '@/lib/security/auth';
 import { getClientIp, enforceRateLimit } from '@/lib/security/rate-limit';
 import { logged } from '@/lib/logging/route';
+import { logEvent } from '@/lib/logging/logger';
 
 async function POSTHandler(req: NextRequest) {
   try {
@@ -69,10 +71,35 @@ async function POSTHandler(req: NextRequest) {
       : (ctx.workspaceId && ctx.workspaceId !== '*' ? ctx.workspaceId : 'default-workspace');
 
     const origin = req.nextUrl.origin || process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
-    const successUrl = `${origin}/?billing_success=true&session_id={CHECKOUT_SESSION_ID}`;
-    const cancelUrl = `${origin}/?billing_cancelled=true`;
+    const successUrl = `${origin}/dashboard?billing_success=true&session_id={CHECKOUT_SESSION_ID}`;
+    const cancelUrl = `${origin}/dashboard?billing_cancelled=true`;
 
     const ws = await Database.getWorkspaceBilling(workspaceId);
+    // The first subscription of a workspace starts with the 14-day trial (card collected now, charged when it ends)
+    const withTrial = !addonType && trialAvailable(ws);
+
+    if (!addonType && isStripeConfigured() && ws.stripeSubscriptionId && ws.subscriptionStatus !== 'canceled') {
+      // Already subscribed: move the existing subscription. A second Checkout would create a second, double-billed one.
+      try {
+        await changeSubscriptionPlan(ws.stripeSubscriptionId, planId, billingInterval);
+      } catch (err: any) {
+        return NextResponse.json({ error: err?.message || 'Could not change the plan. Use "Manage subscription" instead.' }, { status: 502 });
+      }
+      await Database.updateWorkspaceBilling(ws.id, {
+        planId,
+        planName: BILLING_PLANS.find((p) => p.id === planId)!.name,
+        billingInterval,
+        monthlyChatLimit: BILLING_PLANS.find((p) => p.id === planId)!.chatSessionsLimit,
+        overageRatePerChat: BILLING_PLANS.find((p) => p.id === planId)!.overageRate,
+        landingPageLimit: BILLING_PLANS.find((p) => p.id === planId)!.landingPageLimit,
+      });
+      return NextResponse.json({ success: true, isSandbox: false, message: 'Your plan was updated. Changes take effect on your next billing date; nothing extra is charged during a trial.' });
+    }
+
+    if (!isStripeConfigured() && !sandboxAllowed()) {
+      logEvent({ level: 'error', category: 'billing', event: 'billing.stripe_not_configured' });
+      return NextResponse.json({ error: 'Billing is not available right now. Please contact support.' }, { status: 503 });
+    }
 
     // Call Stripe helper
     const result = await createCheckoutSession({
@@ -82,6 +109,7 @@ async function POSTHandler(req: NextRequest) {
       planId,
       billingInterval,
       addonType,
+      withTrial,
       successUrl,
       cancelUrl,
     });
@@ -131,7 +159,7 @@ async function POSTHandler(req: NextRequest) {
     const interval = billingInterval as 'monthly' | 'annual';
 
     // Prevent duplicate duplicate invoice if already on this exact plan and interval
-    if (ws.planId === targetPlan.id && ws.billingInterval === interval) {
+    if (ws.stripeSubscriptionId && ws.planId === targetPlan.id && ws.billingInterval === interval) {
       return NextResponse.json({
         success: true,
         isSandbox: true,
@@ -161,7 +189,11 @@ async function POSTHandler(req: NextRequest) {
       monthlyChatLimit: targetPlan.chatSessionsLimit,
       overageRatePerChat: targetPlan.overageRate,
       landingPageLimit: targetPlan.landingPageLimit,
-      invoices: [newInvoice, ...currentInvoices],
+      // simulated subscription (development only): a trial when one is available, otherwise paid
+      stripeSubscriptionId: 'sandbox_sub',
+      subscriptionStatus: withTrial ? 'trialing' : 'active',
+      ...(withTrial ? newTrialDates() : {}),
+      invoices: withTrial ? currentInvoices : [newInvoice, ...currentInvoices],
     });
 
     return NextResponse.json({
