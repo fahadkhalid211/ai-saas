@@ -802,9 +802,22 @@ export const ChannelsTab: React.FC<ChannelsTabProps> = ({
                   </div>
                 </div>
 
+                {/* Important Callout to prevent Scopes/OAuth confusion */}
+                <div className="p-4 rounded-xl bg-amber-50/80 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/60 flex items-start gap-3">
+                  <AlertCircle className="h-5 w-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                  <div className="space-y-1">
+                    <h4 className="font-bold text-amber-900 dark:text-amber-200 text-sm">
+                      Don&apos;t Worry About &quot;OAuth Scopes&quot; or &quot;Bot Tokens&quot;
+                    </h4>
+                    <p className="text-amber-800/90 dark:text-amber-300/90 leading-relaxed">
+                      If you visit Slack&apos;s <em>OAuth &amp; Permissions</em> tab, Slack shows warnings asking you to configure Bot Scopes, User Scopes, or Redirect URLs. <strong>You can completely ignore all of that!</strong> Incoming Webhooks require zero manual scope configuration. When you click <em>&quot;Add New Webhook to Workspace&quot;</em> under <strong>Incoming Webhooks</strong>, Slack automatically grants the <code className="font-mono bg-amber-100 dark:bg-amber-900/60 px-1 py-0.5 rounded text-amber-900 dark:text-amber-200 font-semibold">incoming-webhook</code> permission behind the scenes.
+                    </p>
+                  </div>
+                </div>
+
                 <div className="space-y-4">
                   <h4 className="font-bold text-slate-900 dark:text-white text-sm">
-                    4-Step Slack Integration Setup
+                    5-Step Quick Setup Guide
                   </h4>
                   <ol className="space-y-3.5 list-decimal list-inside text-slate-700 dark:text-slate-300 leading-relaxed">
                     <li className="pl-1">
@@ -820,16 +833,16 @@ export const ChannelsTab: React.FC<ChannelsTabProps> = ({
                       and click <strong>Create New App</strong> &gt; <em>From scratch</em>.
                     </li>
                     <li className="pl-1">
-                      <strong>Name your app:</strong> Enter a name like <code className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 font-mono">Crescelo Bot</code> and select your Slack workspace.
+                      <strong>Name your app:</strong> Enter an App Name (e.g. <code className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 font-mono">Crescelo Alerts</code>) and select your Slack workspace.
                     </li>
                     <li className="pl-1">
-                      <strong>Activate Incoming Webhooks:</strong> In the left sidebar, click <strong>Incoming Webhooks</strong>, and toggle the switch to <strong>On</strong>.
+                      <strong>Click &quot;Incoming Webhooks&quot;:</strong> In the left sidebar under <strong>Features</strong>, click <strong>Incoming Webhooks</strong> <em>(do not click OAuth &amp; Permissions)</em>.
                     </li>
                     <li className="pl-1">
-                      <strong>Add Webhook to Workspace:</strong> Scroll down and click <strong>Add New Webhook to Workspace</strong>. Choose the channel you want notifications sent to (e.g. <code className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 font-mono">#leads</code> or <code className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 font-mono">#appointments</code>), and click <em>Allow</em>.
+                      <strong>Activate and Add to Workspace:</strong> Toggle the switch to <strong>On</strong> (&quot;Activate Incoming Webhooks&quot;). Then scroll down to the bottom of the page and click the green button <strong>Add New Webhook to Workspace</strong>. Choose the destination channel (e.g. <code className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 font-mono">#leads</code> or <code className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 font-mono">#general</code>), and click <em>Allow</em>.
                     </li>
                     <li className="pl-1">
-                      <strong>Copy &amp; Paste:</strong> Copy the generated Webhook URL, switch to the <strong>Settings &amp; Test</strong> tab above, paste it into the field, and click <strong>Send Live Test Ping</strong>!
+                      <strong>Copy &amp; Paste:</strong> Copy the generated Webhook URL (format: <code className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 font-mono">https://hooks.slack.com/services/T.../B.../...</code>), switch back to the <strong>Settings &amp; Test</strong> tab above, paste it into the field, and click <strong>Send Live Test Ping</strong>!
                     </li>
                   </ol>
                 </div>
