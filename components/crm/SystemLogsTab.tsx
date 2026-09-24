@@ -50,7 +50,7 @@ const RANGES: Array<{ id: string; label: string; ms: number; hours: number }> = 
   { id: '30d', label: 'Last 30 days', ms: 30 * 24 * 3_600_000, hours: 24 * 30 },
 ];
 
-const CATEGORIES = ['request', 'auth', 'security', 'db', 'llm', 'webhook', 'billing', 'booking', 'knowledge', 'voice', 'client', 'system', 'audit', 'cron', 'admin'];
+const CATEGORIES = ['request', 'auth', 'security', 'db', 'llm', 'rag', 'webhook', 'billing', 'booking', 'knowledge', 'voice', 'client', 'system', 'audit', 'cron', 'admin'];
 const LEVELS: Array<LogEntry['level']> = ['fatal', 'error', 'warn', 'info', 'debug'];
 
 const LEVEL_STYLE: Record<string, string> = {

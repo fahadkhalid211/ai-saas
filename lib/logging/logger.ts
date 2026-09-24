@@ -9,6 +9,7 @@ export type LogCategory =
   | 'security'
   | 'db'
   | 'llm'
+  | 'rag'
   | 'webhook'
   | 'billing'
   | 'booking'

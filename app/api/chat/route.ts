@@ -506,12 +506,30 @@ async function POSTHandler(req: NextRequest) {
               citations: [],
             };
           } else {
+            const retrievalStarted = performance.now();
             retrieval = await retrieveRelevantContext(
               assistant.id,
               effectiveQuery,
               conversationHistory,
               topK
             );
+            // Live retrieval-quality signal (no text): how many passages, how confident, from how many sources.
+            // Consecutive weak or empty retrievals are the earliest sign of a gap in a knowledge base.
+            logEvent({
+              level: retrieval.chunks.length === 0 ? 'warn' : 'info',
+              category: 'rag',
+              event: retrieval.chunks.length === 0 ? 'rag.no_results' : 'rag.retrieval',
+              durationMs: performance.now() - retrievalStarted,
+              meta: {
+                assistantId: assistant.id,
+                chunks: retrieval.chunks.length,
+                topScore: Number((retrieval.chunks[0]?.similarity ?? 0).toFixed(3)),
+                scores: retrieval.chunks.slice(0, 5).map((c) => Number((c.similarity ?? 0).toFixed(3))),
+                sources: new Set(retrieval.chunks.map((c) => c.knowledgeSourceId)).size,
+                queryChars: effectiveQuery.length,
+                historyTurns: conversationHistory.length,
+              },
+            });
 
             // Fallback only if this is explicitly the demo-assistant
             if (retrieval.chunks.length === 0 && assistant.id === 'demo-assistant') {
