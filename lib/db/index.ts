@@ -42,6 +42,8 @@ import {
 import { isSupabaseConfigured } from './supabase';
 import { isPostgresConfigured, disablePostgresTemporarily, isConnectionError } from './postgres';
 import * as Relational from './relational';
+import * as ChunkStore from './chunk-store';
+import { pgVectorStoreEnabled } from './chunk-store';
 import { isRedisConfigured, redisGet, redisSet, CACHE_KEYS } from '../cache/redis';
 export { isCloudDbConfigured, getCloudDbProvider, isSupabaseConfigured };
 
@@ -626,7 +628,7 @@ function loadState(): DatabaseState {
           fallbackMessage: "I would be glad to help with any details regarding Crescelo, connecting your AI models, or embedding assistants on your website. Feel free to ask or reach out to our team at contact@crescelo.com.",
           temperature: 0.3,
           provider: 'gemini',
-          modelName: 'gemini-1.5-flash',
+          modelName: 'gemini-3.6-flash',
           primaryColor: '#2563eb',
           launcherPosition: 'bottom-right',
           starterQuestions: [
@@ -746,7 +748,7 @@ function loadState(): DatabaseState {
   }
 
   // Bind chunks from decoupled vector store
-  const chunks = loadChunksState();
+  const chunks = pgVectorStoreEnabled() ? [] : loadChunksState();
   state.chunks = chunks;
   cachedState = state;
   return cachedState;
@@ -1291,8 +1293,13 @@ export class Database {
 
     state.assistants = state.assistants.filter((a) => a.id !== id);
     state.knowledgeSources = state.knowledgeSources.filter((k) => k.assistantId !== id);
-    const remainingChunks = state.chunks.filter((c) => c.assistantId !== id);
-    await saveChunksState(remainingChunks, true);
+    if (pgVectorStoreEnabled()) {
+      await ChunkStore.deleteChunksByAssistant(id);
+      clearRetrievalCache(id);
+    } else {
+      const remainingChunks = state.chunks.filter((c) => c.assistantId !== id);
+      await saveChunksState(remainingChunks, true);
+    }
     state.conversations = state.conversations.filter((c) => c.assistantId !== id);
     state.messages = (state.messages || []).filter((m) => !deletedConvIds.has(m.conversationId));
     state.leads = state.leads.filter((l) => l.assistantId !== id);
@@ -1459,8 +1466,13 @@ export class Database {
     }
 
     state.knowledgeSources = state.knowledgeSources.filter((k) => k.id !== id);
-    const remainingChunks = state.chunks.filter((c) => c.knowledgeSourceId !== id);
-    await saveChunksState(remainingChunks, true);
+    if (pgVectorStoreEnabled()) {
+      await ChunkStore.deleteChunksBySource(id);
+      clearRetrievalCache();
+    } else {
+      const remainingChunks = state.chunks.filter((c) => c.knowledgeSourceId !== id);
+      await saveChunksState(remainingChunks, true);
+    }
     await saveState(state, { deletedSourceId: id });
 
     if (isPostgresConfigured()) {
@@ -1492,17 +1504,25 @@ export class Database {
       ws ? assistantIds.has(k.assistantId) : true
     );
 
+    const pgStore = pgVectorStoreEnabled();
+    const textBytes = pgStore ? await ChunkStore.textBytesBySource(sources.filter((k) => !k.fileSizeBytes).map((k) => k.id)) : null;
     for (const source of sources) {
       let bytes = source.fileSizeBytes || 0;
       if (!bytes) {
-        const sourceChunks = sourceChunksIndex.get(source.id) || [];
-        bytes = sourceChunks.reduce((acc, c) => acc + Buffer.byteLength(c.content || '', 'utf-8'), 0);
+        if (textBytes) {
+          bytes = textBytes.get(source.id) || 0;
+        } else {
+          const sourceChunks = sourceChunksIndex.get(source.id) || [];
+          bytes = sourceChunks.reduce((acc, c) => acc + Buffer.byteLength(c.content || '', 'utf-8'), 0);
+        }
       }
       totalBytes += bytes;
     }
 
     let chunkCount = 0;
-    if (ws) {
+    if (pgStore) {
+      chunkCount = await ChunkStore.countChunksByAssistants(ws ? wsAssistants.map((a) => a.id) : (state.assistants || []).map((a) => a.id));
+    } else if (ws) {
       for (const ast of wsAssistants) {
         const chunks = getIndexedAssistantChunks(ast.id, state);
         chunkCount += chunks.length;
@@ -1521,6 +1541,16 @@ export class Database {
 
   // Chunks
   static async saveChunks(chunks: Omit<ChunkRecord, 'id' | 'createdAt'>[]): Promise<void> {
+    if (pgVectorStoreEnabled()) {
+      const records: ChunkRecord[] = chunks.map((c) => ({
+        ...c,
+        id: 'chk_' + Math.random().toString(36).substring(2, 10) + Date.now().toString(36).slice(-4),
+        createdAt: new Date().toISOString(),
+      }));
+      await ChunkStore.upsertChunks(records);
+      new Set(records.map((r) => r.assistantId)).forEach((a) => clearRetrievalCache(a));
+      return;
+    }
     const state = await ensureInitialized();
     const newRecords: ChunkRecord[] = chunks.map((c) => ({
       ...c,
@@ -1541,6 +1571,11 @@ export class Database {
   }
 
   static async updateChunks(updatedChunks: ChunkRecord[]): Promise<void> {
+    if (pgVectorStoreEnabled()) {
+      await ChunkStore.upsertChunks(updatedChunks);
+      new Set(updatedChunks.map((r) => r.assistantId)).forEach((a) => clearRetrievalCache(a));
+      return;
+    }
     const state = await ensureInitialized();
     const map = new Map<string, ChunkRecord>(updatedChunks.map((c) => [c.id, c]));
     const updated = state.chunks.map((c) => map.get(c.id) || c);
@@ -1556,6 +1591,11 @@ export class Database {
   }
 
   static async deleteChunksBySource(sourceId: string): Promise<void> {
+    if (pgVectorStoreEnabled()) {
+      await ChunkStore.deleteChunksBySource(sourceId);
+      clearRetrievalCache();
+      return;
+    }
     const state = await ensureInitialized();
     const remaining = state.chunks.filter((c) => c.knowledgeSourceId !== sourceId);
     await saveChunksState(remaining, true);
@@ -1570,6 +1610,11 @@ export class Database {
   }
 
   static async getChunksByAssistant(assistantId: string): Promise<ChunkRecord[]> {
+    if (pgVectorStoreEnabled()) {
+      const rows = await ChunkStore.getChunksByAssistant(assistantId);
+      if (rows.length === 0 && assistantId === 'demo-assistant') return DEFAULT_CRESCELO_KNOWLEDGE_CHUNKS;
+      return rows;
+    }
     const state = await ensureInitialized();
     let chunks = getIndexedAssistantChunks(assistantId, state);
     if (chunks.length === 0 && (!cachedChunks || cachedChunks.length === 0)) {
@@ -1583,6 +1628,7 @@ export class Database {
   }
 
   static async getChunksBySource(sourceId: string): Promise<ChunkRecord[]> {
+    if (pgVectorStoreEnabled()) return ChunkStore.getChunksBySource(sourceId);
     const state = await ensureInitialized();
     if (sourceChunksIndex.size === 0 && (state.chunks || []).length > 0) {
       rebuildChunkIndex(state.chunks);
@@ -1596,6 +1642,14 @@ export class Database {
   }
 
   static async getPricingChunks(assistantId: string, limit: number = 12): Promise<SearchResultChunk[]> {
+    if (pgVectorStoreEnabled()) {
+      try {
+        return await ChunkStore.getPricingChunks(assistantId, limit);
+      } catch (err) {
+        console.warn('[ChunkStore] getPricingChunks failed:', (err as Error)?.message);
+        return [];
+      }
+    }
     if (isPostgresConfigured()) {
       try {
         const relPricing = await Relational.relationalGetPricingChunks(assistantId, limit);
@@ -1633,8 +1687,16 @@ export class Database {
     queryEmbedding: number[],
     topK: number = 6
   ): Promise<SearchResultChunk[]> {
-    // 1. Try fast database-native HNSW vector + FTS hybrid search if Postgres is active
-    if (isPostgresConfigured()) {
+    // 0. pgvector store (RAG_VECTOR_STORE=pgvector): meaning + words searched and fused inside Postgres
+    if (pgVectorStoreEnabled()) {
+      try {
+        return await ChunkStore.hybridSearch(assistantId, query, queryEmbedding, topK);
+      } catch (err) {
+        console.warn('[ChunkStore] hybridSearch failed, falling back to in-memory:', (err as Error)?.message);
+        if (isConnectionError(err)) disablePostgresTemporarily();
+      }
+    } else if (isPostgresConfigured() && process.env.RAG_VECTOR_STORE !== 'legacy') {
+      // 1. Try fast database-native HNSW vector + FTS hybrid search if Postgres is active
       try {
         const relResults = await Relational.relationalHybridSearch(
           assistantId,

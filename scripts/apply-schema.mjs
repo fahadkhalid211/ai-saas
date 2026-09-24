@@ -31,7 +31,7 @@ const dry = process.argv.includes('--dry');
 const FILES = [
   'supabase/schema-relational-v2.sql',
   'supabase/schema-relational-v3-widget-events.sql',
-  'supabase/schema-chunks-v2.sql',
+  'supabase/schema-chunks-v3.sql',
   'supabase/schema-logs-v1.sql',
 ];
 

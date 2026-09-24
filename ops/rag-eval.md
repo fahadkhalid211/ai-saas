@@ -19,3 +19,14 @@ questions the knowledge base cannot answer), and scores the app's real retrieval
 
 Live signal: each chat request writes `rag.retrieval` (or `rag.no_results`) to System Logs with chunk count, top scores
 and timing, never the question text.
+
+## pgvector store (RAG step 2)
+
+Passages can live in the `kortex_chunks` table (HNSW cosine index + generated `fts` column with GIN), searched and fused by
+reciprocal rank inside Postgres in one round trip, instead of one JSON value scanned in memory.
+
+1. `npm run db:apply` (or let the app create the table on first use).
+2. `npm run rag:migrate` copies existing passages (idempotent, verifies counts; `-- --dry` to preview).
+3. Set `RAG_VECTOR_STORE=pgvector` on Vercel and redeploy. Unset it to go back; nothing is deleted from the old store.
+4. `npm run rag:eval -- --pg --compare baseline` measures it in a temporary database that is dropped afterwards.
+   Latency shown there includes the network hop from your machine; on Vercel (bom1) it is much lower.
