@@ -146,6 +146,38 @@ export const EngineTab: React.FC<EngineTabProps> = ({
 }) => {
   const [showApiKey, setShowApiKey] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [isTesting, setIsTesting] = useState(false);
+  const [testResult, setTestResult] = useState<{ success: boolean; message: string } | null>(null);
+
+  const handleTestConnection = async () => {
+    setIsTesting(true);
+    setTestResult(null);
+    try {
+      const res = await fetch('/api/connectors/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'ai',
+          provider: formData.provider,
+          apiKey: formData.apiKeyEncrypted,
+          customBaseUrl: formData.customBaseUrl || formData.ollamaHost,
+          modelName: formData.modelName,
+        }),
+      });
+      const data = await res.json();
+      setTestResult({
+        success: res.ok && data.success,
+        message: data.message || (res.ok ? 'Connection verified successfully!' : 'Connection test failed.'),
+      });
+    } catch (err: any) {
+      setTestResult({
+        success: false,
+        message: err?.message || 'Failed to reach verification endpoint.',
+      });
+    } finally {
+      setIsTesting(false);
+    }
+  };
 
   const currentTemp = formData.temperature ?? 0.3;
   const currentChunks = formData.contextChunks ?? 5;
@@ -467,6 +499,38 @@ export const EngineTab: React.FC<EngineTabProps> = ({
                 ? 'Zero-cost failover automatically tests your key with Groq, then Gemini, and falls back to local Ollama.'
                 : 'Your API key is securely encrypted at rest using AES-256-GCM and never shared or logged.'}
             </p>
+            {/* Test Connection Row */}
+            <div className="flex flex-wrap items-center gap-3 mt-2.5">
+              <button
+                type="button"
+                onClick={handleTestConnection}
+                disabled={isTesting || !formData.apiKeyEncrypted}
+                className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed transition cursor-pointer"
+              >
+                {isTesting ? (
+                  <RefreshCw className="h-3.5 w-3.5 animate-spin text-blue-500" />
+                ) : (
+                  <Zap className="h-3.5 w-3.5 text-blue-500" />
+                )}
+                <span>{isTesting ? 'Testing…' : 'Test Connection'}</span>
+              </button>
+              {testResult && (
+                <span
+                  className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-lg ${
+                    testResult.success
+                      ? 'text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800'
+                      : 'text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-800'
+                  }`}
+                >
+                  {testResult.success ? (
+                    <CheckCircle2 className="h-3.5 w-3.5" />
+                  ) : (
+                    <AlertTriangle className="h-3.5 w-3.5" />
+                  )}
+                  {testResult.message}
+                </span>
+              )}
+            </div>
           </div>
         ) : (
           /* Ollama Host Configuration */
@@ -495,6 +559,38 @@ export const EngineTab: React.FC<EngineTabProps> = ({
             <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
               Ensure you have launched Ollama with <code>OLLAMA_ORIGINS=&quot;*&quot;</code> to permit browser CORS requests.
             </p>
+            {/* Test Connection Row (Ollama) */}
+            <div className="flex flex-wrap items-center gap-3 mt-2.5">
+              <button
+                type="button"
+                onClick={handleTestConnection}
+                disabled={isTesting}
+                className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed transition cursor-pointer"
+              >
+                {isTesting ? (
+                  <RefreshCw className="h-3.5 w-3.5 animate-spin text-amber-500" />
+                ) : (
+                  <Zap className="h-3.5 w-3.5 text-amber-500" />
+                )}
+                <span>{isTesting ? 'Testing…' : 'Test Ollama Connection'}</span>
+              </button>
+              {testResult && (
+                <span
+                  className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-lg ${
+                    testResult.success
+                      ? 'text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800'
+                      : 'text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-800'
+                  }`}
+                >
+                  {testResult.success ? (
+                    <CheckCircle2 className="h-3.5 w-3.5" />
+                  ) : (
+                    <AlertTriangle className="h-3.5 w-3.5" />
+                  )}
+                  {testResult.message}
+                </span>
+              )}
+            </div>
           </div>
         )}
 
@@ -709,14 +805,17 @@ export const EngineTab: React.FC<EngineTabProps> = ({
         </div>
 
         {/* Save Button */}
-        <div className="pt-2 flex justify-end">
+        <div className="pt-2 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+          <p className="text-[10.5px] text-slate-400 dark:text-slate-500">
+            Saving will verify your connection before applying — a bad key will be rejected with an error.
+          </p>
           <button
             onClick={handleSaveSettings}
             disabled={isSaving}
-            className="flex items-center gap-2 rounded-lg bg-blue-600 hover:bg-blue-700 px-4 py-2 text-xs font-semibold text-white disabled:opacity-50 transition shadow-xs cursor-pointer"
+            className="flex items-center gap-2 rounded-lg bg-blue-600 hover:bg-blue-700 px-4 py-2 text-xs font-semibold text-white disabled:opacity-50 transition shadow-xs cursor-pointer shrink-0"
           >
             {isSaving ? <RefreshCw className="h-3.5 w-3.5 animate-spin" /> : <CheckCircle2 className="h-3.5 w-3.5" />}
-            <span>Save Settings</span>
+            <span>{isSaving ? 'Verifying & Saving…' : 'Save Settings'}</span>
           </button>
         </div>
       </div>

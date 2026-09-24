@@ -4,6 +4,12 @@ import { withAdminAuth, withRoleAuth, getAuthContext, requireWorkspaceAssistant,
 import { maskSecret } from '@/lib/security/crypto';
 import { getClientIp } from '@/lib/security/rate-limit';
 import { sanitizePhoneSettings } from '@/lib/voice/settings';
+import {
+  verifyAiProviderConnection,
+  verifyTelegramBotConnection,
+  verifyWhatsAppConnection,
+  verifyWebhookConnection,
+} from '@/lib/connectors/verify';
 
 export const GET = withAdminAuth(async (
   req: Request,
@@ -62,6 +68,99 @@ export const PUT = withRoleAuth(['owner', 'admin'], async (
     });
     if (!phoneCheck.ok) {
       return NextResponse.json({ error: phoneCheck.error }, { status: phoneCheck.status });
+    }
+
+    // Connection verification for AI Engine & messaging connectors before saving
+    const isAiConfigChanging =
+      (safeUpdates.provider !== undefined && safeUpdates.provider !== existing.provider) ||
+      (safeUpdates.apiKeyEncrypted !== undefined &&
+        !safeUpdates.apiKeyEncrypted.includes('****') &&
+        safeUpdates.apiKeyEncrypted !== '') ||
+      (safeUpdates.customBaseUrl !== undefined && safeUpdates.customBaseUrl !== existing.customBaseUrl);
+
+    if (isAiConfigChanging) {
+      const targetProvider = safeUpdates.provider !== undefined ? safeUpdates.provider : existing.provider;
+      const targetBaseUrl = safeUpdates.customBaseUrl !== undefined ? safeUpdates.customBaseUrl : existing.customBaseUrl;
+      const targetModel = safeUpdates.modelName !== undefined ? safeUpdates.modelName : existing.modelName;
+
+      let keyToVerify = '';
+      if (safeUpdates.apiKeyEncrypted !== undefined) {
+        keyToVerify = safeUpdates.apiKeyEncrypted.includes('****')
+          ? existing.apiKeyEncrypted || ''
+          : safeUpdates.apiKeyEncrypted;
+      } else {
+        keyToVerify = existing.apiKeyEncrypted || '';
+      }
+
+      const aiCheck = await verifyAiProviderConnection(targetProvider, keyToVerify, {
+        customBaseUrl: targetBaseUrl,
+        modelName: targetModel,
+      });
+
+      if (!aiCheck.success) {
+        return NextResponse.json(
+          {
+            error: `Connection verification failed: ${aiCheck.message}`,
+            connectionFailed: true,
+            details: aiCheck.details,
+          },
+          { status: 400 }
+        );
+      }
+    }
+
+    if (
+      safeUpdates.telegramBotToken !== undefined &&
+      !safeUpdates.telegramBotToken.includes('****') &&
+      safeUpdates.telegramBotToken.trim() !== ''
+    ) {
+      const tgCheck = await verifyTelegramBotConnection(safeUpdates.telegramBotToken);
+      if (!tgCheck.success) {
+        return NextResponse.json(
+          {
+            error: `Connection verification failed: ${tgCheck.message}`,
+            connectionFailed: true,
+          },
+          { status: 400 }
+        );
+      }
+    }
+
+    if (
+      safeUpdates.whatsappAccessToken !== undefined &&
+      !safeUpdates.whatsappAccessToken.includes('****') &&
+      safeUpdates.whatsappAccessToken.trim() !== ''
+    ) {
+      const waCheck = await verifyWhatsAppConnection(
+        safeUpdates.whatsappAccessToken,
+        safeUpdates.whatsappPhoneNumberId || existing.whatsappPhoneNumberId
+      );
+      if (!waCheck.success) {
+        return NextResponse.json(
+          {
+            error: `Connection verification failed: ${waCheck.message}`,
+            connectionFailed: true,
+          },
+          { status: 400 }
+        );
+      }
+    }
+
+    if (
+      safeUpdates.webhookUrl !== undefined &&
+      safeUpdates.webhookUrl.trim() !== '' &&
+      safeUpdates.webhookUrl !== existing.webhookUrl
+    ) {
+      const whCheck = await verifyWebhookConnection(safeUpdates.webhookUrl);
+      if (!whCheck.success) {
+        return NextResponse.json(
+          {
+            error: `Connection verification failed: ${whCheck.message}`,
+            connectionFailed: true,
+          },
+          { status: 400 }
+        );
+      }
     }
 
     const updated = await Database.updateAssistant(id, phoneCheck.updates, ctx.workspaceId);
