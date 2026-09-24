@@ -541,7 +541,6 @@ export default function DashboardPage() {
       landing.fetchLandingConfig(activeAssistant.id);
       landing.fetchAllLandingPages();
       teamSecurity.fetchTeamMembers();
-      teamSecurity.fetch2faStatus();
       if (isMasterAdmin) {
         teamSecurity.fetchAuditLogs();
       }
@@ -549,6 +548,11 @@ export default function DashboardPage() {
       channels.fetchSmtpSettings();
     }
   }, [activeAssistant?.id]);
+
+  // 2FA status is only shown on the Security tab, so it is fetched when that tab opens instead of in the dashboard-load burst
+  useEffect(() => {
+    if (isAuthenticated && activeTab === 'security') teamSecurity.fetch2faStatus();
+  }, [isAuthenticated, activeTab]);
 
   // Background notification check - relaxed to 10s and paused when tab is hidden
   useEffect(() => {
