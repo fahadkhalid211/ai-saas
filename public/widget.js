@@ -171,6 +171,14 @@
         pointer-events: auto;
         transform: translateY(0) scale(1);
       }
+      /* Expanded: a roomy reading window (the Expand button in the header) */
+      .chat-window.expanded {
+        width: min(760px, calc(100vw - 32px));
+        height: min(820px, calc(100vh - 110px));
+      }
+      @media (max-width: 640px) {
+        .chat-window.expanded { width: calc(100vw - 16px); height: calc(100vh - 90px); }
+      }
       /* Header */
       .header {
         background-color: var(--primary-color, #2563eb);
@@ -1167,6 +1175,25 @@
       }
     });
 
+    // Expand / Minimize
+    var expandBtn = shadow.getElementById('header-expand-btn');
+    if (expandBtn) {
+      expandBtn.addEventListener('click', function () {
+        var expanded = chatWindow.classList.toggle('expanded');
+        var label = shadow.getElementById('header-expand-label');
+        var icon = shadow.getElementById('header-expand-icon');
+        if (label) label.textContent = expanded ? 'Minimize' : 'Expand';
+        if (icon) {
+          // arrows pointing in when expanded, out when not
+          icon.innerHTML = expanded
+            ? '<polyline points="4 14 10 14 10 20"></polyline><polyline points="20 10 14 10 14 4"></polyline><line x1="14" y1="10" x2="21" y2="3"></line><line x1="3" y1="21" x2="10" y2="14"></line>'
+            : '<polyline points="15 3 21 3 21 9"></polyline><polyline points="9 21 3 21 3 15"></polyline><line x1="21" y1="3" x2="14" y2="10"></line><line x1="3" y1="21" x2="10" y2="14"></line>';
+        }
+        expandBtn.title = expanded ? 'Minimize chat window' : 'Expand chat window';
+        scrollToBottom();
+      });
+    }
+
     if (closeBtn) {
       closeBtn.addEventListener('click', function () {
         isOpen = false;
@@ -1386,7 +1413,7 @@
       if (liveSyncTimer || !conversationId) return;
       liveSyncTimer = setInterval(function () {
         if (!conversationId || !isOpen || (typeof document !== 'undefined' && document.hidden)) return;
-        var syncUrl = config.backendUrl + '/api/conversations?id=' + encodeURIComponent(conversationId);
+        var syncUrl = hostUrl + '/api/conversations?id=' + encodeURIComponent(conversationId);
         if (conversationToken) {
           syncUrl += '&token=' + encodeURIComponent(conversationToken);
         }

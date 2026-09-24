@@ -102,6 +102,18 @@ describe('Server-Level Proxy, Rate Limiting & Security', () => {
     }
   });
 
+  it('gives widget endpoints CORS headers on every response, so an error is not misreported as a CORS block', () => {
+    const ok = proxy(new NextRequest('http://localhost:3000/api/chat', { method: 'POST' }));
+    expect(ok.headers.get('Access-Control-Allow-Origin')).toBe('*');
+    let limited: Response | undefined;
+    for (let i = 0; i < 80 && (!limited || limited.status !== 429); i++) {
+      limited = proxy(new NextRequest('http://localhost:3000/api/chat', { method: 'POST', headers: { 'x-forwarded-for': '203.0.113.77' } }));
+    }
+    expect(limited?.status).toBe(429);
+    expect(limited?.headers.get('Access-Control-Allow-Origin')).toBe('*');
+    expect(proxy(new NextRequest('http://localhost:3000/api/team')).headers.get('Access-Control-Allow-Origin')).toBeNull();
+  });
+
   it('does not apply SAMEORIGIN frame blocking on embed routes', () => {
     const req = new NextRequest('http://localhost:3000/embed/ast_123', {
       method: 'GET',

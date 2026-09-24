@@ -34,6 +34,18 @@ const SENSITIVE_MUTATION_ROUTES = [
   '/api/landing-page',
 ];
 
+/** Endpoints called from customers' websites (the embedded widget): every response, errors included, must carry CORS headers,
+ *  otherwise the browser reports a 429 or 500 as a misleading "blocked by CORS policy". */
+const PUBLIC_WIDGET_API = ['/api/chat', '/api/lead', '/api/appointments', '/api/widget', '/api/widget-events', '/api/conversations'];
+
+function withWidgetCors(response: NextResponse, pathname: string): NextResponse {
+  if (PUBLIC_WIDGET_API.some((p) => pathname === p || pathname.startsWith(p + '/'))) {
+    response.headers.set('Access-Control-Allow-Origin', '*');
+    response.headers.set('Access-Control-Expose-Headers', 'Retry-After, X-RateLimit-Remaining');
+  }
+  return response;
+}
+
 function getRateLimitConfig(pathname: string): { windowMs: number; max: number; bucketKey: string } {
   for (const config of ROUTE_RATE_LIMITS) {
     if (pathname.startsWith(config.prefix)) {
@@ -97,10 +109,10 @@ export function proxy(request: NextRequest) {
     const originAllowed = verifyOrigin(request, pathname);
     if (!originAllowed) {
       logEvent({ level: 'warn', category: 'security', event: 'security.csrf_blocked', ip: getClientIp(request), meta: { path: pathname, method: request.method, origin: request.headers.get('origin') } });
-      return NextResponse.json(
+      return withWidgetCors(NextResponse.json(
         { error: 'Forbidden: cross-origin request blocked.' },
         { status: 403 }
-      );
+      ), pathname);
     }
 
     // 2. Server-level Rate Limiting for API routes
@@ -111,7 +123,7 @@ export function proxy(request: NextRequest) {
     if (!limitResult.allowed) {
       logEvent({ level: 'warn', category: 'security', event: 'security.rate_limited', ip: clientIp, meta: { limiter: 'proxy', path: pathname, max } });
       const retryAfterSec = Math.max(1, Math.ceil((limitResult.resetTime - Date.now()) / 1000));
-      return NextResponse.json(
+      return withWidgetCors(NextResponse.json(
         {
           error: 'Too many requests. Please slow down and try again.',
           retryAfter: retryAfterSec,
@@ -125,7 +137,7 @@ export function proxy(request: NextRequest) {
             'X-RateLimit-Reset': String(limitResult.resetTime),
           },
         }
-      );
+      ), pathname);
     }
 
     // Pass through to route handler with rate limit headers added
@@ -137,7 +149,7 @@ export function proxy(request: NextRequest) {
     // Security headers
     response.headers.set('X-Content-Type-Options', 'nosniff');
     response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
-    return response;
+    return withWidgetCors(response, pathname);
   }
 
   // For non-API routes, pass through with standard security headers
