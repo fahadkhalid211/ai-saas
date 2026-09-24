@@ -28,7 +28,7 @@ const ARCHITECTURE_STEPS: ArchitectureStep[] = [
     tagline: 'Dual-path audio and text streams with sub-50ms ingress validation.',
     tone: 'pink',
     description:
-      'Phone calls from Telnyx and Twilio arrive via encrypted bidirectional WebSocket media streams (`wss://`) with 8kHz mulaw audio transcoding. Text chat from the web widget, WhatsApp, and Telegram arrives through signed HTTPS webhooks.',
+      'Phone calls from Telnyx arrive via encrypted bidirectional WebSocket media streams (`wss://`) with 8kHz mulaw audio transcoding. Text chat from the web widget, WhatsApp, and Telegram arrives through signed HTTPS webhooks.',
     specs: [
       { label: 'Protocols', value: 'WebSocket (wss://) & HTTPS' },
       { label: 'Ingress Latency', value: '< 24ms validation' },
@@ -110,10 +110,10 @@ if (!lock.acquired) {
   return reply("That slot was just reserved. Let me check the next opening...");
 }`,
     highlights: [
-      'Instant verification across multi-staff calendars',
-      'Automatic Google Meet and Microsoft Teams conference link creation',
+      'Slot locking so two visitors cannot take the same time',
+      'Confirmation emails with self-service reschedule and cancel links',
       'Dynamic buffer periods between appointments (e.g. 15-minute prep)',
-      'SMS and email booking confirmations with self-service reschedule links',
+      'Booking notifications to your team by email and in the dashboard',
     ],
   },
   {
@@ -569,7 +569,7 @@ export default function ProductPage() {
                 { label: 'Token Markup', val: '0% (Wholesale Provider Cost)' },
                 { label: 'Supported Providers', val: 'OpenAI, Groq, Gemini, Claude, Ollama' },
                 { label: 'Voice STT / TTS', val: 'faster-whisper + Piper (CPU)' },
-                { label: 'Telephony Carriers', val: 'Telnyx TeXML & Twilio Media Streams' },
+                { label: 'Telephony Carriers', val: 'Telnyx TeXML' },
                 { label: 'Credential Encryption', val: 'AES-256 GCM Salted Vault' },
                 { label: 'Calendar Sync', val: 'Google Calendar, Outlook, Cal.com' },
                 { label: 'Concurrency Engine', val: 'Atomic Mutex In-Memory Locks' },

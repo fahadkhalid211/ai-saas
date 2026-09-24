@@ -1,13 +1,14 @@
 import type { Metadata } from 'next';
+import { withSocial } from '@/lib/seo';
 import { LegalPage } from '@/components/marketing/LegalPage';
 import { LEGAL, SUBPROCESSORS } from '@/lib/legal/config';
 import type { LegalDocument } from '@/lib/legal/documents';
 
-export const metadata: Metadata = {
+export const metadata: Metadata = withSocial({
   title: 'Sub-processors | Crescelo',
   description: 'The providers that process personal data on behalf of Crescelo and its customers.',
   alternates: { canonical: '/subprocessors' },
-};
+}, '/subprocessors');
 
 const doc: LegalDocument = {
   slug: 'subprocessors',

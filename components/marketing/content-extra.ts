@@ -177,7 +177,7 @@ export const COMPARE = {
     { feature: 'Inbound Phone Voice Calling', values: ['Yes, local voice-worker', 'No', 'No', 'No'] },
     { feature: 'WhatsApp and Telegram', values: ['Yes, native webhook connectors', 'Varies by plan', 'Varies', 'Varies'] },
   ],
-  footnote: 'Evaluated across native calendar booking, concurrency slot locking, multi-engine BYOK pricing, and deterministic grounded RAG.',
+  footnote: 'Based on each vendor\u2019s public documentation as of September 2026. Products change, so check each vendor for current features and plans.',
 };
 
 /* ------------------------------ Pipeline + playground ------------------------------ */

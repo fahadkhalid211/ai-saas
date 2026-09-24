@@ -1,12 +1,13 @@
 import type { Metadata } from 'next';
+import { withSocial } from '@/lib/seo';
 import { LegalPage } from '@/components/marketing/LegalPage';
 import { COOKIES } from '@/lib/legal/documents';
 
-export const metadata: Metadata = {
+export const metadata: Metadata = withSocial({
   title: 'Cookie Policy | Crescelo',
   description: COOKIES.summary,
   alternates: { canonical: '/cookies' },
-};
+}, '/cookies');
 
 export default function Page() {
   return <LegalPage doc={COOKIES} />;

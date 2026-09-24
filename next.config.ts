@@ -6,10 +6,20 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   async redirects() {
     // The marketing page moved from /welcome to the site root.
-    return [{ source: '/welcome', destination: '/', permanent: true }];
+    return [
+      { source: '/welcome', destination: '/', permanent: true },
+      // one address per page: /use-cases used to serve the same content as /use-case
+      { source: '/use-cases', destination: '/use-case', permanent: true },
+    ];
   },
   async headers() {
     return [
+      // Preview deployments (*.vercel.app) must never compete with the real site in search results.
+      {
+        source: '/:path*',
+        has: [{ type: 'host', value: '(?<host>.*\\.vercel\\.app)' }],
+        headers: [{ key: 'X-Robots-Tag', value: 'noindex, nofollow' }],
+      },
       {
         source: '/embed/:path*',
         headers: [

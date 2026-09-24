@@ -132,15 +132,17 @@ export function Footer() {
             <a href={`mailto:${SITE.contactEmail}`} className="mk-footer-mail">
               {SITE.contactEmail}
             </a>
-            <ul className="mk-social" aria-label="Official community channels">
-              {SITE.socials.map((s) => (
-                <li key={s.label}>
-                  <a href={s.href} target="_blank" rel="noopener noreferrer">
-                    {s.label}
-                  </a>
-                </li>
-              ))}
-            </ul>
+            {SITE.socials.length > 0 && (
+              <ul className="mk-social" aria-label="Official community channels">
+                {SITE.socials.map((s) => (
+                  <li key={s.label}>
+                    <a href={s.href} target="_blank" rel="noopener noreferrer">
+                      {s.label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
           {FOOTER.columns.map((c) => (
             <nav key={c.title} aria-label={c.title} className="mk-footer-col">

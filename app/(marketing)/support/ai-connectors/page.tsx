@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { withSocial } from '@/lib/seo';
 import Link from 'next/link';
 import { Header } from '@/components/marketing/Header';
 import { Footer } from '@/components/marketing/Closing';
@@ -13,11 +14,12 @@ import {
   Lock,
 } from 'lucide-react';
 
-export const metadata: Metadata = {
+export const metadata: Metadata = withSocial({
+  alternates: { canonical: '/support/ai-connectors' },
   title: 'AI Platform Connectors & BYOK Guides | Crescelo Support',
   description:
     'Comprehensive step-by-step setup guides for all supported AI model providers: OpenAI, Anthropic Claude, Google Gemini, Groq, DeepSeek, and local Ollama.',
-};
+}, '/support/ai-connectors');
 
 const CONNECTORS = [
   {

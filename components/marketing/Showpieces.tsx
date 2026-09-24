@@ -97,6 +97,9 @@ export function FeatureCarousel() {
   const drag = useRef({ down: false, x: 0, left: 0 });
   const hold = useRef({ hover: false, focus: false, touch: false, offscreen: false, until: 0 });
   const [dragging, setDragging] = useState(false);
+  const [userPaused, setUserPaused] = useState(false); // a persistent pause the visitor chose (keyboard, touch or mouse)
+  const userPausedRef = useRef(false);
+  userPausedRef.current = userPaused;
   const items = CAROUSEL.items;
 
   // Continuous drift plus seamless wrap in both directions. The content is repeated, and whenever the
@@ -138,7 +141,7 @@ export function FeatureCarousel() {
       last = t;
       adoptUserScroll(); // do not overwrite a scroll the visitor made since the last frame
       const h = hold.current;
-      const paused = h.hover || h.focus || h.touch || h.offscreen || drag.current.down || t < h.until;
+      const paused = userPausedRef.current || h.hover || h.focus || h.touch || h.offscreen || drag.current.down || t < h.until;
       if (!paused && period > 0) {
         pos += (CAR_SPEED * dt) / 1000;
         el.scrollLeft = pos;
@@ -214,6 +217,15 @@ export function FeatureCarousel() {
             {CAROUSEL.title}
           </h2>
           <p className="mk-lead">{CAROUSEL.intro}</p>
+          <button
+            type="button"
+            className="mk-btn mk-btn-sm mk-btn-ghost"
+            style={{ marginTop: '1rem' }}
+            aria-pressed={userPaused}
+            onClick={() => setUserPaused((v) => !v)}
+          >
+            {userPaused ? 'Resume movement' : 'Pause movement'}
+          </button>
         </Reveal>
       </div>
 

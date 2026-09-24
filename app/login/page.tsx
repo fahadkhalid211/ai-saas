@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import '../brand.css';
 import { AdminLoginScreen } from '@/components/crm/AdminLoginScreen';
 import { useRecaptcha } from '@/components/security/GoogleRecaptcha';
+import { readSelectedPlan, rememberSelectedPlan, trackEvent } from '@/lib/analytics/track';
+import { BILLING_PLANS } from '@/lib/billing/plans';
 
 /** Customer sign-in and registration. The platform-owner sign-in is a separate, unlinked page. */
 export default function LoginPage() {
@@ -20,6 +22,21 @@ export default function LoginPage() {
   const [regEmailInput, setRegEmailInput] = useState('');
   const [regPasswordInput, setRegPasswordInput] = useState('');
   const [regTemplateInput, setRegTemplateInput] = useState('general');
+  const [selectedPlanNote, setSelectedPlanNote] = useState<string | null>(null);
+
+  // The plan and billing period chosen on the pricing page: kept for the whole sign-up and shown before the account is made.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const plan = params.get('plan');
+    const billing = params.get('billing') === 'monthly' ? 'monthly' : 'annual';
+    if (plan && BILLING_PLANS.some((p) => p.id === plan)) rememberSelectedPlan({ plan, billing });
+    const chosen = readSelectedPlan();
+    const found = chosen && BILLING_PLANS.find((p) => p.id === chosen.plan);
+    if (found && chosen) {
+      const price = chosen.billing === 'annual' ? found.annualMonthlyPrice : found.monthlyPrice;
+      setSelectedPlanNote(`Selected plan: ${found.name}, $${price} / month, billed ${chosen.billing === 'annual' ? `annually ($${price * 12} / year)` : 'monthly'}. You choose and pay for your plan after you sign up.`);
+    }
+  }, []);
 
   useEffect(() => {
     try {
@@ -78,6 +95,7 @@ export default function LoginPage() {
       });
       const data = await res.json();
       if (res.ok && data.success) {
+        if (registering) trackEvent('sign_up', { method: 'email', plan: readSelectedPlan()?.plan ?? 'none' });
         router.replace('/dashboard');
       } else {
         setAuthError(data.error || 'Authentication failed');
@@ -139,6 +157,7 @@ export default function LoginPage() {
 
   return (
     <AdminLoginScreen
+      selectedPlanNote={selectedPlanNote}
       theme={theme}
       authError={authError}
       authLoginMode={authLoginMode}

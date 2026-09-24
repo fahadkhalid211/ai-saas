@@ -1088,7 +1088,7 @@ export function SaaSMarketingHomepage({
                     'Standard Email Support',
                   ],
                   featured: false,
-                  cta: 'Start 14-Day Free Trial',
+                  cta: 'Get started',
                 },
                 {
                   name: 'Growth',

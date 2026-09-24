@@ -59,6 +59,7 @@ export default function ContactPage() {
         <section className="mk-section">
           <div className="mk-wrap" style={{ maxWidth: '780px' }}>
             <SectionHead
+              as="h1"
               eyebrow="Contact & Support"
               title="Get in touch with our solutions team."
               intro="Whether you need help configuring your voice worker, connecting Google Calendar, or exploring custom enterprise deployment, our engineering team responds within 24 hours."

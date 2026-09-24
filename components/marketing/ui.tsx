@@ -46,21 +46,24 @@ export function SectionHead({
   intro,
   id,
   align = 'left',
+  as: Tag = 'h2',
 }: {
   eyebrow: string;
   title: string;
   intro?: string;
   id: string;
   align?: 'left' | 'center';
+  /** Use "h1" for the main heading of a page. */
+  as?: 'h1' | 'h2';
 }) {
   return (
     <Reveal className={`mk-head ${align === 'center' ? 'is-center' : ''}`}>
       <p className="mk-eyebrow mk-rise" style={{ ['--mk-delay' as string]: '0ms' }}>
         {eyebrow}
       </p>
-      <h2 id={id} className="mk-h2 mk-rise" style={{ ['--mk-delay' as string]: '140ms' }}>
+      <Tag id={id} className="mk-h2 mk-rise" style={{ ['--mk-delay' as string]: '140ms' }}>
         {title}
-      </h2>
+      </Tag>
       {intro ? (
         <p className="mk-lead mk-rise" style={{ ['--mk-delay' as string]: '260ms' }}>
           {intro}
@@ -76,23 +79,25 @@ export function ButtonLink({
   variant = 'primary',
   className = '',
   style,
+  onClick,
 }: {
   href: string;
   children: ReactNode;
   variant?: 'primary' | 'ghost';
   className?: string;
   style?: CSSProperties;
+  onClick?: () => void;
 }) {
   const cls = `mk-btn mk-btn-${variant} ${className}`;
   if (href.startsWith('#')) {
     return (
-      <a href={href} className={cls} style={style}>
+      <a href={href} className={cls} style={style} onClick={onClick}>
         {children}
       </a>
     );
   }
   return (
-    <Link href={href} className={cls} style={style}>
+    <Link href={href} className={cls} style={style} onClick={onClick}>
       {children}
     </Link>
   );
@@ -102,7 +107,11 @@ export function Counter({ end, suffix = '' }: { end: number; suffix?: string }) 
   const [ref, seen] = useInView<HTMLSpanElement>();
   const value = useCountUp(end, seen);
   return (
-    <span ref={ref} aria-label={`${end}${suffix}`}>
+    <span ref={ref}>
+      <span className="mk-sr">
+        {end}
+        {suffix}
+      </span>
       <span aria-hidden="true">
         {value}
         {suffix}

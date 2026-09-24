@@ -34,6 +34,8 @@ const AppleIcon: React.FC<{ className?: string }> = ({ className = 'h-4 w-4' }) 
 );
 
 interface AdminLoginScreenProps {
+  /** The plan and billing period picked on the pricing page, shown before the account is created. */
+  selectedPlanNote?: string | null;
   theme: 'light' | 'dark';
   authError: string | null;
   authLoginMode: 'staff' | 'register';
@@ -60,6 +62,7 @@ interface AdminLoginScreenProps {
 }
 
 export function AdminLoginScreen({
+  selectedPlanNote,
   theme,
   authError,
   authLoginMode,
@@ -136,6 +139,11 @@ export function AdminLoginScreen({
               ? 'Launch your automated AI customer assistant in 2 minutes.'
               : 'Sign in to access your business assistant, CRM leads, and live conversations.'}
           </p>
+          {authLoginMode === 'register' && selectedPlanNote && (
+            <p className="text-[11px] font-semibold text-slate-700 dark:text-slate-200 rounded-full border border-slate-200 dark:border-slate-700 px-3 py-1" role="status">
+              {selectedPlanNote}
+            </p>
+          )}
         </div>
 
         {authError && (
@@ -200,10 +208,15 @@ export function AdminLoginScreen({
           {authLoginMode === 'register' && (
             <div className="space-y-3">
               <div className="space-y-1">
-                <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Business / Company Name</label>
+                <label htmlFor="reg-business" className="text-xs font-semibold text-slate-700 dark:text-slate-300">Business / Company Name</label>
                 <input
                   type="text"
                   value={regBusinessNameInput}
+                  id="reg-business"
+                  name="organization"
+                  autoComplete="organization"
+                  aria-invalid={!isRegBusinessNameValid}
+                  aria-describedby={!isRegBusinessNameValid ? 'reg-business-error' : undefined}
                   onChange={(e) => setRegBusinessNameInput(e.target.value)}
                   placeholder="e.g. Apex Health Clinic"
                   className={`w-full px-3.5 py-2.5 rounded-xl border ${
@@ -215,15 +228,20 @@ export function AdminLoginScreen({
                   required
                 />
                 {!isRegBusinessNameValid && (
-                  <p className="text-[10.5px] text-rose-500 font-medium">Business name must be at least 2 characters.</p>
+                  <p id="reg-business-error" role="alert" className="text-[10.5px] text-rose-500 font-medium">Business name must be at least 2 characters.</p>
                 )}
               </div>
 
               <div className="space-y-1">
-                <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Owner Work Email</label>
+                <label htmlFor="reg-email" className="text-xs font-semibold text-slate-700 dark:text-slate-300">Owner Work Email</label>
                 <input
                   type="email"
                   value={regEmailInput}
+                  id="reg-email"
+                  name="email"
+                  autoComplete="email"
+                  aria-invalid={!isRegEmailValid}
+                  aria-describedby={!isRegEmailValid ? 'reg-email-error' : undefined}
                   onChange={(e) => setRegEmailInput(e.target.value)}
                   placeholder="owner@company.com"
                   className={`w-full px-3.5 py-2.5 rounded-xl border ${
@@ -234,15 +252,20 @@ export function AdminLoginScreen({
                   required
                 />
                 {!isRegEmailValid && (
-                  <p className="text-[10.5px] text-rose-500 font-medium">Please enter a valid email address.</p>
+                  <p id="reg-email-error" role="alert" className="text-[10.5px] text-rose-500 font-medium">Please enter a valid email address.</p>
                 )}
               </div>
 
               <div className="space-y-1">
-                <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Account Password</label>
+                <label htmlFor="reg-password" className="text-xs font-semibold text-slate-700 dark:text-slate-300">Account Password</label>
                 <input
                   type="password"
                   value={regPasswordInput}
+                  id="reg-password"
+                  name="new-password"
+                  autoComplete="new-password"
+                  aria-invalid={!isRegPasswordValid}
+                  aria-describedby={!isRegPasswordValid ? 'reg-password-error' : undefined}
                   onChange={(e) => setRegPasswordInput(e.target.value)}
                   placeholder="At least 6 characters..."
                   className={`w-full px-3.5 py-2.5 rounded-xl border ${
@@ -253,7 +276,7 @@ export function AdminLoginScreen({
                   required
                 />
                 {!isRegPasswordValid && (
-                  <p className="text-[10.5px] text-rose-500 font-medium">Password must be at least 6 characters.</p>
+                  <p id="reg-password-error" role="alert" className="text-[10.5px] text-rose-500 font-medium">Password must be at least 6 characters.</p>
                 )}
               </div>
             </div>
@@ -263,10 +286,15 @@ export function AdminLoginScreen({
           {authLoginMode === 'staff' && (
             <div className="space-y-3">
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Account Email Address</label>
+                <label htmlFor="staff-email" className="text-xs font-semibold text-slate-700 dark:text-slate-300">Account Email Address</label>
                 <input
                   type="email"
                   value={staffEmailInput}
+                  id="staff-email"
+                  name="email"
+                  autoComplete="username"
+                  aria-invalid={!isStaffEmailValid}
+                  aria-describedby={!isStaffEmailValid ? 'staff-email-error' : undefined}
                   onChange={(e) => setStaffEmailInput(e.target.value)}
                   placeholder="owner@company.com or staff@crescelo.com"
                   className={`w-full px-3.5 py-2.5 rounded-xl border ${
@@ -278,14 +306,17 @@ export function AdminLoginScreen({
                   required
                 />
                 {!isStaffEmailValid && (
-                  <p className="text-[10.5px] text-rose-500 font-medium">Please enter a valid email address.</p>
+                  <p id="staff-email-error" role="alert" className="text-[10.5px] text-rose-500 font-medium">Please enter a valid email address.</p>
                 )}
               </div>
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center justify-between">
+                <label htmlFor="staff-password" className="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center justify-between">
                   <span>Password or Access Code</span>
                 </label>
                 <input
+                  id="staff-password"
+                  name="password"
+                  autoComplete="current-password"
                   type="password"
                   value={staffPasswordInput}
                   onChange={(e) => setStaffPasswordInput(e.target.value)}

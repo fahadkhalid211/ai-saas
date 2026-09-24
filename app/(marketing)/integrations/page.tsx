@@ -29,90 +29,28 @@ interface IntegrationDetail {
 const INTEGRATIONS: IntegrationDetail[] = [
   {
     id: 'google-calendar',
-    name: 'Google Calendar',
+    name: 'Calendar feed (Google Calendar, Outlook, Apple)',
     category: 'calendar',
-    categoryLabel: 'Calendar Sync',
+    categoryLabel: 'Calendar',
     badge: 'Native',
     tone: 'lime',
-    tagline: 'Two-way slot synchronization with atomic mutex locking.',
+    tagline: 'Subscribe to your bookings in any calendar app.',
     overview:
-      'Crescelo communicates directly with Google Calendar via OAuth 2.0 to inspect free/busy slots across team schedules in real time. When a customer confirms an appointment in chat or over phone, Crescelo claims the slot atomically, generates a Google Meet video conference link, and sends instant calendar invites to all attendees.',
+      'Every assistant has a private calendar feed (iCalendar, .ics). Add its address to Google Calendar, Outlook or Apple Calendar with "subscribe from URL" and new bookings appear there. The feed is read-only: events you add in your calendar do not block times in Crescelo, and there is no two-way sync yet (see the roadmap).',
     features: [
-      'Zero double-booking via atomic mutex locking',
-      'Automatic Google Meet video link generation',
-      'Two-way sync: manual events block assistant availability instantly',
-      'Dynamic buffer times (e.g. 15-minute prep between appointments)',
+      'Private, token-protected feed address per assistant',
+      'Works with Google Calendar, Outlook and Apple Calendar subscriptions',
+      'Slot locking so two visitors cannot take the same time',
+      'Confirmation and reminder emails with self-service reschedule links',
     ],
-    latency: '180ms sync latency',
-    security: 'Scoped OAuth 2.0 (calendar.events only), refresh tokens AES-256 encrypted',
+    latency: 'Refresh rate is set by your calendar app',
+    security: 'Feed address contains a secret token; regenerate it in the dashboard if it leaks',
     guideHref: '/support/calendar-booking',
     guideLabel: 'Read Calendar Booking Guide',
     samplePayload: {
-      event: 'calendar.booking.created',
-      calendarId: 'primary',
-      summary: 'Haircut & Styling with Marcus',
-      start: { dateTime: '2026-09-23T14:30:00Z', timeZone: 'America/New_York' },
-      end: { dateTime: '2026-09-23T15:15:00Z', timeZone: 'America/New_York' },
-      attendees: [{ email: 'client@example.com', name: 'Sophia Miller' }],
-      conference: { type: 'google_meet', url: 'https://meet.google.com/abc-defg-hij' },
-    },
-  },
-  {
-    id: 'outlook-calendar',
-    name: 'Microsoft Outlook & 365',
-    category: 'calendar',
-    categoryLabel: 'Calendar Sync',
-    badge: 'Native',
-    tone: 'lav',
-    tagline: 'Enterprise Microsoft Graph calendar synchronization.',
-    overview:
-      'Seamlessly connects to Microsoft 365 and Outlook Exchange accounts. The assistant respects working hours, multi-person availability, and tentative holds, locking confirmed appointments directly into corporate staff calendars with Microsoft Teams meeting coordinates.',
-    features: [
-      'Microsoft Graph API multi-calendar availability query',
-      'Teams conference link auto-provisioning',
-      'Respects user working hours and out-of-office blocks',
-      'Corporate tenant isolation and Single Sign-On friendly',
-    ],
-    latency: '210ms sync latency',
-    security: 'Microsoft Azure App Registration with least-privilege Graph scopes',
-    guideHref: '/support/calendar-booking',
-    guideLabel: 'Read Calendar Booking Guide',
-    samplePayload: {
-      event: 'outlook.event.created',
-      mailbox: 'partner@lawfirm.com',
-      subject: 'Initial Retainer Consultation',
-      start: '2026-09-24T10:00:00-04:00',
-      end: '2026-09-24T11:00:00-04:00',
-      isOnlineMeeting: true,
-      onlineMeetingProvider: 'teamsForBusiness',
-    },
-  },
-  {
-    id: 'cal-com',
-    name: 'Cal.com',
-    category: 'calendar',
-    categoryLabel: 'Calendar Sync',
-    badge: 'One-Click',
-    tone: 'mint',
-    tagline: 'Open-source scheduling with round-robin host routing.',
-    overview:
-      'Direct integration with Cal.com event types. Distribute booked leads across team members using weighted round-robin distribution, dynamic booking questions, and automated reminder sequences.',
-    features: [
-      'Weighted round-robin host assignment',
-      'Custom booking questions piped into conversation summary',
-      'Embedded Cal.com booking confirmation fallback',
-      'Native time-zone conversion for global clients',
-    ],
-    latency: '150ms webhook trigger',
-    security: 'API Key integration with HMAC signature verification',
-    guideHref: '/support/calendar-booking',
-    guideLabel: 'Read Calendar Booking Guide',
-    samplePayload: {
-      event: 'BOOKING_CREATED',
-      eventTypeId: 84920,
-      title: '30 Min Discovery with Crescelo Team',
-      startTime: '2026-09-25T16:00:00.000Z',
-      assignedUser: { id: 142, name: 'Elena Rostova' },
+      feedUrl: 'https://www.crescelo.com/api/appointments/calendar?assistantId=<your assistant>&token=<your private token>',
+      format: 'iCalendar (.ics)',
+      direction: 'Crescelo to your calendar (read-only)',
     },
   },
   {
@@ -142,34 +80,6 @@ const INTEGRATIONS: IntegrationDetail[] = [
       speech_text: 'Hi, I need an appointment for a haircut tomorrow afternoon.',
       detected_intent: 'appointment.request',
       suggested_slots: ['2:30 PM', '4:00 PM'],
-    },
-  },
-  {
-    id: 'twilio-streams',
-    name: 'Twilio Media Streams',
-    category: 'voice',
-    categoryLabel: 'Phone & Voice',
-    badge: 'Native',
-    tone: 'amber',
-    tagline: 'Bidirectional WebSocket audio streaming for phone lines.',
-    overview:
-      'Connect any existing Twilio phone number to Crescelo. Audio frames are streamed over secure bidirectional WebSockets (`wss://`) with mulaw 8kHz transcoding, enabling low-latency phone conversations backed by your assistant’s verified knowledge base.',
-    features: [
-      'Bidirectional WebSocket media stream routing',
-      'Native Twilio TwiML <Stream> and <Connect> actions',
-      'DTMF keypad digit detection fallback',
-      'Direct caller caller-ID lookup in CRM',
-    ],
-    latency: '410ms roundtrip audio turn',
-    security: 'Twilio X-Twilio-Signature validation on all ingress webhooks',
-    guideHref: '/support/voice-agent',
-    guideLabel: 'Read Voice Agent Setup Guide',
-    samplePayload: {
-      event: 'media.stream.start',
-      streamSid: 'MZ182937401928384',
-      callSid: 'CA817263548192837',
-      tracks: ['inbound', 'outbound'],
-      customParameters: { assistantId: 'ast_prod_01' },
     },
   },
   {
@@ -360,38 +270,6 @@ const INTEGRATIONS: IntegrationDetail[] = [
       model: 'claude-3-5-sonnet-20241022',
       stop_reason: 'end_turn',
       usage: { input_tokens: 950, output_tokens: 58 },
-    },
-  },
-  {
-    id: 'supabase-db',
-    name: 'Supabase PostgreSQL & Vector',
-    category: 'crm',
-    categoryLabel: 'CRM & Storage',
-    badge: 'Native',
-    tone: 'mint',
-    tagline: 'Persistent relational storage and pgvector similarity embeddings.',
-    overview:
-      'Connect your Supabase PostgreSQL database to store complete conversation records, customer lead profiles, audit logs, and vector embeddings with Row-Level Security (RLS).',
-    features: [
-      'Relational schema for leads, appointments, and messages',
-      'pgvector cosine similarity search for document chunks',
-      'Row-Level Security (RLS) ensuring strict multi-tenant isolation',
-      'Realtime database change subscriptions',
-    ],
-    latency: '15ms database query',
-    security: 'PostgreSQL Row-Level Security with encrypted connection pooling',
-    guideHref: '/support/rag-knowledge',
-    guideLabel: 'Read RAG Knowledge Guide',
-    samplePayload: {
-      table: 'crescelo_appointments',
-      action: 'INSERT',
-      record: {
-        id: 'apt_91283',
-        customer_name: 'David Vance',
-        service: 'Discovery Consultation',
-        status: 'confirmed',
-        created_at: '2026-09-22T08:00:00Z',
-      },
     },
   },
   {
@@ -856,7 +734,7 @@ export default function IntegrationsPage() {
                 No vendor lock-in. No per-minute markups. Complete ownership of your schedule and customer relationships.
               </p>
               <div className="mk-cta-row">
-                <ButtonLink href={SIGNUP_HREF}>Start your 14-day trial</ButtonLink>
+                <ButtonLink href={SIGNUP_HREF}>Create your assistant</ButtonLink>
                 <ButtonLink href="/support/contact" variant="ghost">
                   Book an onboarding call
                 </ButtonLink>

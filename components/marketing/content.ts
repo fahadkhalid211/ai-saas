@@ -11,18 +11,21 @@ import { BILLING_PLANS } from '@/lib/billing/plans';
  * Absolute site origin for canonical/OG URLs. Tolerates a value without a scheme
  * (e.g. "example.vercel.app") and never throws, so a misconfigured env var cannot break the build.
  */
+export const PRODUCTION_URL = 'https://www.crescelo.com';
+
 function resolveSiteUrl(): string {
-  const candidates = [process.env.NEXT_PUBLIC_APP_URL, process.env.VERCEL_PROJECT_PRODUCTION_URL, process.env.VERCEL_URL];
-  for (const raw of candidates) {
-    const v = raw?.trim();
-    if (!v) continue;
+  // Only NEXT_PUBLIC_APP_URL may override the default, and never with a deployment address: a *.vercel.app host in the
+  // canonical, sitemap or Open Graph URL tells search engines that a preview deployment is the real website.
+  const v = process.env.NEXT_PUBLIC_APP_URL?.trim();
+  if (v) {
     try {
-      return new URL(/^https?:\/\//i.test(v) ? v : `https://${v}`).origin;
+      const url = new URL(/^https?:\/\//i.test(v) ? v : `https://${v}`);
+      if (!/\.vercel\.app$/i.test(url.hostname) && !/^(localhost|127\.)/.test(url.hostname)) return url.origin;
     } catch {
-      continue;
+      // fall through
     }
   }
-  return 'http://localhost:3000';
+  return PRODUCTION_URL;
 }
 
 export const SITE = {
@@ -32,11 +35,8 @@ export const SITE = {
   description:
     'Crescelo builds a website assistant from your own content. It answers visitor questions, books appointments, captures leads, and hands over to your team when a person is needed.',
   contactEmail: 'contact@crescelo.com',
-  socials: [
-    { label: 'X (Twitter)', href: 'https://twitter.com' },
-    { label: 'LinkedIn', href: 'https://linkedin.com' },
-    { label: 'GitHub', href: 'https://github.com' },
-  ],
+  /** Official profiles only. Add a profile here when it exists; the footer shows the list only if it is not empty. */
+  socials: [] as { label: string; href: string }[],
 };
 
 export const LOGIN_HREF = '/login';
@@ -346,7 +346,7 @@ export const FOOTER = {
       title: 'Product',
       links: [
         { label: 'Overview', href: '/product' },
-        { label: 'Architecture', href: '/product#architecture' },
+        { label: 'Architecture', href: '/product#pipeline-stages' },
         { label: 'Roadmap', href: '/roadmap' },
         { label: 'Integrations', href: '/integrations' },
         { label: 'Pricing', href: '/pricing' },
@@ -359,7 +359,7 @@ export const FOOTER = {
         { label: 'Salons & Spas', href: '/use-case#salons' },
         { label: 'Clinics & Wellness', href: '/use-case#clinics' },
         { label: 'Real Estate', href: '/use-case#real-estate' },
-        { label: 'SaaS & Startups', href: '/use-case#startups' },
+        { label: 'SaaS & Startups', href: '/use-case#saas' },
       ],
     },
     {

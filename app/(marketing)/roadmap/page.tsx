@@ -142,55 +142,55 @@ interface Milestone {
 
 const MILESTONES: Milestone[] = [
   {
-    quarter: 'Q1 2026',
-    title: 'Foundational Autonomous Concierge',
+    quarter: 'Available today',
+    title: 'The core assistant',
     badge: 'Shipped',
     tone: 'lime',
-    description: 'Core infrastructure for grounded multi-model RAG, deterministic booking, and zero token markup.',
+    description: 'Included in every plan unless the plan says otherwise.',
     items: [
-      'Grounded RAG retrieval with hybrid vector + lexical search',
-      'Atomic mutex calendar booking preventing double-reservations',
-      'Multi-provider BYOK (OpenAI, Anthropic, Google Gemini raw rates)',
-      'Embeddable customizable JS chat widget for any website',
+      'Answers from your own documents, with hybrid search and an "I do not know" path that offers a booking or a person',
+      'Appointment booking in the chat with slot locking to prevent double bookings',
+      'Bring your own AI provider (OpenAI, Anthropic, Google Gemini, Groq, DeepSeek or a self-hosted model) with no markup on usage',
+      'Embeddable chat widget, hosted business page and lead capture',
+      'Live agent hand-over and notifications',
+      'Webhooks, Slack and Google Sheets delivery of leads and bookings',
     ],
   },
   {
-    quarter: 'Current Phase',
-    title: 'Industry Archetypes & Polishing',
+    quarter: 'Available, setup required',
+    title: 'Channels: WhatsApp, Telegram and phone',
     badge: 'In Polish',
     tone: 'amber',
-    description: 'Refining 11 specialized business archetypes with tailored knowledge trees and conversion flows before public GA.',
+    description: 'Working, with prerequisites you provide yourself. We call these out so nobody buys expecting more.',
     items: [
-      '11 Industry-specific landing page templates with live preview sandbox',
-      'Mobile-responsive concierge UX and cursor-aware mascot interactions',
-      'Customizable services, pricing matrices, and business hours per client',
-      'Real-time staff chime notifications and one-click operator takeover',
+      'WhatsApp Cloud API and Telegram bots: you create the accounts and connect the webhooks',
+      'Inbound phone assistant: needs your own telephony account (for example Telnyx) and the voice worker running on your server; carrier and hosting costs are yours',
+      'Calendar: bookings are exported as a calendar feed you subscribe to; two-way sync with Google Calendar or Outlook is not available yet',
+      'Industry starter templates for common service businesses',
     ],
   },
   {
-    quarter: 'Q2 2026',
-    title: 'Omnichannel & Voice Telephony',
+    quarter: 'In development',
+    title: 'Deeper calendar and domain support',
     badge: 'In Development',
     tone: 'lav',
-    description: 'Expanding autonomous interactions beyond web browsers into real-time voice calls and messaging protocols.',
+    description: 'Work in progress. Dates are goals, not commitments.',
     items: [
-      'Inbound telephone voice agent with ultra-low latency audio stream',
-      'Official WhatsApp Cloud API & Telegram bot bi-directional bridges',
-      'Two-way live Google Calendar and Outlook 365 availability feed',
-      'Custom domain CNAME mapping with automated SSL cert issuance',
+      'Two-way Google Calendar and Outlook 365 availability sync',
+      'Custom domain mapping for hosted business pages with automatic SSL',
+      'More voice and messaging channels',
     ],
   },
   {
-    quarter: 'Q3 2026',
-    title: 'Enterprise Orchestration & Intelligence',
+    quarter: 'Planned',
+    title: 'Agencies and integrations',
     badge: 'Planned',
     tone: 'mint',
-    description: 'Self-improving knowledge graphs, automated CRM synchronization, and multi-location agency dashboards.',
+    description: 'On the list, not started. Priorities change with customer feedback.',
     items: [
-      'Self-learning gap analysis: prompts that failed to answer automatically flagged',
-      'Native bidirectional sync for HubSpot, Salesforce, and Pipedrive',
-      'Multi-tenant agency workspace with white-label client provisioning',
-      'Multimodal document intake: blueprints, menus, and PDF price books',
+      'Native two-way sync with HubSpot, Salesforce and Pipedrive',
+      'Expanded agency workspace with client provisioning and permissions',
+      'Multimodal document intake such as menus and price books',
     ],
   },
 ];
@@ -221,16 +221,16 @@ export default function RoadmapPage() {
           <div className="mk-hero-glow" aria-hidden="true" />
           <div className="mk-wrap mk-hero-inner">
             <p className="mk-eyebrow mk-rise" style={{ ['--mk-delay' as string]: '0ms' }}>
-              PRODUCT ROADMAP &amp; BETA RELEASES
+              PRODUCT ROADMAP &amp; FEATURE STATUS
             </p>
             <h1 className="mk-h1" style={{ maxWidth: '22ch', marginInline: 'auto' }}>
               <span className="mk-echo" style={{ ['--mk-delay' as string]: '140ms' }}>
-                Where we are heading. <span className="mk-echo-em">Polishing for launch</span>.
+                What works today, <span className="mk-echo-em">and what comes next</span>.
               </span>
             </h1>
             <p className="mk-lead mk-rise" style={{ maxWidth: '64ch', marginInline: 'auto', ['--mk-delay' as string]: '320ms' }}>
-              We believe in rigorous testing and real-world validation. We are currently polishing our industry-specific
-              landing page archetypes, booking mutex engines, and staff concierge bridges before general availability.
+              A plain list of what is available now, what needs setup on your side, what we are building and what is only planned.
+              Last reviewed September 2026.
             </p>
 
             <div
@@ -251,7 +251,7 @@ export default function RoadmapPage() {
               }}
             >
               <span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', background: '#10b981' }} />
-              <span>11 Pre-Configured Archetypes in Active Beta</span>
+              <span>Feature status reviewed September 2026</span>
               <span style={{ color: 'var(--mk-muted)' }}>•</span>
               <span style={{ color: 'var(--mk-muted)' }}>Zero Token Markup BYOK Architecture</span>
             </div>

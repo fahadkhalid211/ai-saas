@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Header } from '@/components/marketing/Header';
 import { Footer } from '@/components/marketing/Closing';
 import { ButtonLink, Reveal, SectionHead } from '@/components/marketing/ui';
@@ -214,6 +214,22 @@ const INDUSTRIES: IndustrySimulation[] = [
 
 export default function UseCasePage() {
   const [activeTabId, setActiveTabId] = useState('salons');
+
+  // Direct links such as /use-case#clinics (the footer uses these) open that industry, on a fresh visit and when the hash changes.
+  useEffect(() => {
+    const alias: Record<string, string> = { startups: 'saas' };
+    const apply = () => {
+      const raw = decodeURIComponent(window.location.hash.replace('#', ''));
+      const id = alias[raw] ?? raw;
+      if (INDUSTRIES.some((ind) => ind.id === id)) {
+        setActiveTabId(id);
+        requestAnimationFrame(() => document.getElementById('solutions-list')?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+      }
+    };
+    apply();
+    window.addEventListener('hashchange', apply);
+    return () => window.removeEventListener('hashchange', apply);
+  }, []);
   const [inquiryCount, setInquiryCount] = useState(120);
   const [selectedSlotIndex, setSelectedSlotIndex] = useState(0);
   const [isBooked, setIsBooked] = useState(false);
@@ -704,7 +720,7 @@ export default function UseCasePage() {
                 Join forward-thinking studios, clinics, and service businesses that run autonomous front desks with Crescelo.
               </p>
               <div className="mk-cta-row">
-                <ButtonLink href={SIGNUP_HREF}>Start your 14-day trial</ButtonLink>
+                <ButtonLink href={SIGNUP_HREF}>Create your assistant</ButtonLink>
                 <ButtonLink href="/support/contact" variant="ghost">
                   Schedule onboarding call
                 </ButtonLink>

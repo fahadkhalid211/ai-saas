@@ -1,14 +1,16 @@
 import type { Metadata } from 'next';
+import { withSocial } from '@/lib/seo';
 import Link from 'next/link';
 import { Header } from '@/components/marketing/Header';
 import { Footer } from '@/components/marketing/Closing';
 import { ButtonLink, SectionHead } from '@/components/marketing/ui';
 
-export const metadata: Metadata = {
+export const metadata: Metadata = withSocial({
+  alternates: { canonical: '/support/voice-agent' },
   title: 'Voice Agent & Inbound Phone Setup Guide | Crescelo Support',
   description:
     'Complete setup guide for answering inbound telephone calls with the Crescelo voice worker, Telnyx TeXML, and local faster-whisper CPU inference.',
-};
+}, '/support/voice-agent');
 
 export default function VoiceAgentGuidePage() {
   return (
@@ -33,6 +35,7 @@ export default function VoiceAgentGuidePage() {
             </Link>
 
             <SectionHead
+              as="h1"
               eyebrow="TELEPHONY SETUP GUIDE"
               title="Connecting Inbound AI Phone Calls"
               intro="How to give your Crescelo assistant a real phone number so callers can ask questions, verify hours, and book appointments over the phone."

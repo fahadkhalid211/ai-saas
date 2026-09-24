@@ -1,4 +1,5 @@
 import { CookieConsent } from '@/components/legal/CookieConsent';
+import { SITE } from '@/components/marketing/content';
 import { ReticleDev } from './reticle-dev';
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
@@ -15,8 +16,22 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Crescelo",
-  description: "Enterprise chatbot engine to train AI on business PDFs, CSVs, JSON, and documents with zero API costs or BYOK.",
+  metadataBase: new URL(SITE.url),
+  title: { default: 'Crescelo: AI website assistant for service businesses', template: '%s' },
+  description: SITE.description,
+  applicationName: 'Crescelo',
+  openGraph: {
+    type: 'website',
+    siteName: 'Crescelo',
+    locale: 'en_US',
+    title: 'Crescelo: AI website assistant for service businesses',
+    description: SITE.description,
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Crescelo: AI website assistant for service businesses',
+    description: SITE.description,
+  },
   icons: {
     icon: [
       { url: '/icon.svg', type: 'image/svg+xml' },

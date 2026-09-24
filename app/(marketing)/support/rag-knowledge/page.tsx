@@ -1,14 +1,16 @@
 import type { Metadata } from 'next';
+import { withSocial } from '@/lib/seo';
 import Link from 'next/link';
 import { Header } from '@/components/marketing/Header';
 import { Footer } from '@/components/marketing/Closing';
 import { ButtonLink, SectionHead } from '@/components/marketing/ui';
 
-export const metadata: Metadata = {
+export const metadata: Metadata = withSocial({
+  alternates: { canonical: '/support/rag-knowledge' },
   title: 'RAG Knowledge Base & Document Indexing Guide | Crescelo Support',
   description:
     'Learn how Crescelo indexes documents, scrapes live URLs, and uses hybrid vector retrieval to answer customer inquiries without hallucinations.',
-};
+}, '/support/rag-knowledge');
 
 export default function RagKnowledgeGuidePage() {
   return (
@@ -33,6 +35,7 @@ export default function RagKnowledgeGuidePage() {
             </Link>
 
             <SectionHead
+              as="h1"
               eyebrow="KNOWLEDGE ARCHITECTURE"
               title="Knowledge Base & Grounded RAG Indexing"
               intro="How Crescelo reads your documentation, creates vector embeddings, and ensures that answers cite your exact material without inventing facts."

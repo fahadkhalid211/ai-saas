@@ -1,14 +1,16 @@
 import type { Metadata } from 'next';
+import { withSocial } from '@/lib/seo';
 import Link from 'next/link';
 import { Header } from '@/components/marketing/Header';
 import { Footer } from '@/components/marketing/Closing';
 import { ButtonLink, SectionHead } from '@/components/marketing/ui';
 
-export const metadata: Metadata = {
+export const metadata: Metadata = withSocial({
+  alternates: { canonical: '/support/calendar-booking' },
   title: 'Calendar Booking & Concurrency Guide | Crescelo Support',
   description:
     'Learn how Crescelo synchronizes with Google Calendar, checks live slot availability, and locks appointment times using atomic mutexes.',
-};
+}, '/support/calendar-booking');
 
 export default function CalendarBookingGuidePage() {
   return (
@@ -33,6 +35,7 @@ export default function CalendarBookingGuidePage() {
             </Link>
 
             <SectionHead
+              as="h1"
               eyebrow="SCHEDULING DOCUMENTATION"
               title="Calendar Booking & Concurrency Locks"
               intro="How Crescelo books appointments inside the chat conversation, syncs with external calendars, and prevents race-condition double-bookings."
@@ -51,19 +54,19 @@ export default function CalendarBookingGuidePage() {
               <div className="mk-card" style={{ padding: '32px' }}>
                 <h3 style={{ fontSize: '1.6rem', marginBottom: '10px' }}>2. The Atomic Mutex Concurrency Lock</h3>
                 <p style={{ color: 'var(--mk-muted)', fontSize: '15px', lineHeight: 1.6 }}>
-                  If two visitors click the same 2:00 PM slot simultaneously, traditional bots often double-book both users. Crescelo uses <code>acquireBookingLock(assistantId, date, timeSlot)</code>. The first request acquires an atomic in-memory mutex, verifies that no conflict was written in the interim, commits the booking, and safely releases the lock. The second user receives an immediate prompt offering the next nearest available slot.
+                  If two visitors click the same 2:00 PM slot simultaneously, traditional bots often double-book both users. Crescelo uses <code>acquireBookingLock(assistantId, date, timeSlot)</code>. The first request acquires a lock (shared across servers when Redis is configured), verifies that no conflict was written in the interim, commits the booking, and safely releases the lock. The second user receives an immediate prompt offering the next nearest available slot.
                 </p>
               </div>
 
               <div className="mk-card" style={{ padding: '32px' }}>
-                <h3 style={{ fontSize: '1.6rem', marginBottom: '10px' }}>3. Two-Way Google Calendar Sync</h3>
+                <h3 style={{ fontSize: '1.6rem', marginBottom: '10px' }}>3. Confirmations and your calendar feed</h3>
                 <p style={{ color: 'var(--mk-muted)', fontSize: '15px', lineHeight: 1.6 }}>
                   Once an appointment is committed:
                 </p>
                 <ul style={{ display: 'grid', gap: '8px', marginTop: '12px', fontSize: '14.5px', color: 'var(--mk-deep)' }}>
-                  <li>• A calendar invitation is dispatched to the client&apos;s email address.</li>
-                  <li>• An event is automatically created on your Google Calendar with client notes and phone number.</li>
-                  <li>• An instant email notification is delivered to the business owner and assigned staff member.</li>
+                  <li>• A confirmation email with a self-service reschedule and cancel link is sent to the client.</li>
+                  <li>• The business owner is notified by email and in the dashboard.</li>
+                  <li>• The booking appears in your private calendar feed. Subscribe to its address in Google Calendar, Outlook or Apple Calendar to see bookings there. The feed is read-only; two-way sync is on the roadmap.</li>
                 </ul>
               </div>
 

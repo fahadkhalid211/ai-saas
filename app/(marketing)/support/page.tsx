@@ -1,14 +1,16 @@
 import type { Metadata } from 'next';
+import { withSocial } from '@/lib/seo';
 import Link from 'next/link';
 import { Header } from '@/components/marketing/Header';
 import { Footer } from '@/components/marketing/Closing';
 import { ButtonLink, Reveal, SectionHead } from '@/components/marketing/ui';
 
-export const metadata: Metadata = {
+export const metadata: Metadata = withSocial({
+  alternates: { canonical: '/support' },
   title: 'Help Center & Documentation | Crescelo',
   description:
     'Documentation, setup guides, and technical support for Crescelo autonomous website and phone assistants.',
-};
+}, '/support');
 
 const TOPIC_HUBS = [
   {
@@ -42,7 +44,7 @@ const TOPIC_HUBS = [
   {
     title: 'Widget & Website Embedding',
     desc: 'Adding the script tag to WordPress, Shopify, Webflow, or custom HTML with custom brand colors.',
-    href: '/support#embeds',
+    href: '/guides/add-ai-assistant-to-wordpress',
     tone: 'pink',
     count: '3 Guides',
   },
@@ -77,7 +79,7 @@ const POPULAR_ARTICLES = [
     cat: 'AI Models',
   },
   {
-    title: 'Setting up Google Calendar two-way synchronization',
+    title: 'Subscribing to your bookings in Google Calendar or Outlook',
     href: '/support/calendar-booking',
     cat: 'Calendar',
   },
