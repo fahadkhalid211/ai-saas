@@ -1,5 +1,6 @@
 'use client';
 
+import { LEGAL } from '@/lib/legal/config';
 import { CookieSettingsLink } from '@/components/legal/CookieConsent';
 import { useId, useState, type FormEvent } from 'react';
 import Link from 'next/link';
@@ -159,7 +160,7 @@ export function Footer() {
           <Newsletter />
         </div>
         <div className="mk-footer-bottom">
-          <span>© {new Date().getFullYear()} Fahad Khalid, trading as Crescelo. All rights reserved.</span>
+          <span>© {new Date().getFullYear()} {LEGAL.operatorLine}. All rights reserved.</span>
           <span>{FOOTER.legalNote}</span>
           <CookieSettingsLink className="underline cursor-pointer" />
         </div>

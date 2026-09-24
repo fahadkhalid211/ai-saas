@@ -92,7 +92,9 @@ export function LegalPage({ doc, children }: { doc: LegalDocument; children?: Re
               <div style={{ borderTop: '1px solid var(--mk-line)', paddingTop: '1.5rem' }}>
                 <h2 style={{ fontSize: '1.5rem', marginBottom: '0.75rem', color: 'var(--mk-ink)' }}>Contact</h2>
                 <p>
-                  {LEGAL.operatorLine}, {LEGAL.country}. Email:{' '}
+                  {LEGAL.operatorLine}
+                  {LEGAL.registrationNumber ? `, company registration no. ${LEGAL.registrationNumber}` : ''}
+                  {LEGAL.registeredAddress ? `, ${LEGAL.registeredAddress}` : ''}, {LEGAL.country}. Email:{' '}
                   <a href={`mailto:${LEGAL.email}`} style={{ textDecoration: 'underline' }}>
                     {LEGAL.email}
                   </a>
