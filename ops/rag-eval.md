@@ -51,3 +51,14 @@ Eval vs step 3 (hit@5 97.7%, MRR 0.771, AUC 0.74):
 
 Off by default: the gain is modest and the model has not been tried in a Vercel function (cold start, size). Its main value is a
 cleaner confidence score for step 5.
+
+## Confidence and "I don't know" (RAG step 5)
+
+`lib/rag/confidence.ts`: confidence = best question-to-passage cosine among the retrieved passages. The old fused rank score was
+on a different scale per retrieval path (0.06 vs 0.9) and separated answerable from unanswerable questions poorly (AUC 0.74);
+cosine separates them well (AUC 0.91). Threshold `RAG_CONFIDENCE_MIN` (default 0.58: answers 100% of answerable questions in the eval).
+
+- Below the threshold the model is told the match is weak and to say so instead of stretching a loosely related passage.
+- Any reply that says the assistant does not know (or the assistant's fallback message) gets the two ways forward appended:
+  the booking form (its card also carries the live-agent button) when booking is on, otherwise a live-agent hand-off.
+  Never a request for contact details. Logged as `rag.abstain`; retrieval logs carry `confidence` and `lowConfidence`.

@@ -15,6 +15,7 @@ import { autoCaptureChatLead } from '@/lib/chat/lead-extraction';
 import { logged } from '@/lib/logging/route';
 import { logEvent } from '@/lib/logging/logger';
 import { wantsLiveAgent, liveAgentReply, streamFixedReply } from '@/lib/chat/handoff';
+import { isLowConfidence, looksLikeUnknown, withUnknownOffer } from '@/lib/rag/confidence';
 
 // Streamed responses (token-by-token LLM output, plus an optional live web
 // search round-trip) can run well past a short default function timeout.
@@ -524,6 +525,8 @@ async function POSTHandler(req: NextRequest) {
                 assistantId: assistant.id,
                 chunks: retrieval.chunks.length,
                 topScore: Number((retrieval.chunks[0]?.similarity ?? 0).toFixed(3)),
+                confidence: Number((retrieval.confidence ?? 0).toFixed(3)),
+                lowConfidence: isLowConfidence(retrieval.confidence),
                 scores: retrieval.chunks.slice(0, 5).map((c) => Number((c.similarity ?? 0).toFixed(3))),
                 sources: new Set(retrieval.chunks.map((c) => c.knowledgeSourceId)).size,
                 queryChars: effectiveQuery.length,
@@ -542,6 +545,7 @@ async function POSTHandler(req: NextRequest) {
               if (fallbackRetrieval.chunks.length > 0) {
                 retrieval.chunks = fallbackRetrieval.chunks;
                 retrieval.contextText = fallbackRetrieval.contextText;
+                retrieval.confidence = fallbackRetrieval.confidence;
               }
             }
           }
@@ -678,9 +682,16 @@ CRITICAL IDENTITY & BUSINESS SCOPE:
             }
           }
 
+          // The knowledge base match is weak: say so, so the model does not stretch a loosely related passage into an answer.
+          const weakMatchNote =
+            !isWebSearchUsed && isLowConfidence(retrieval.confidence)
+              ? '[NOTE: The knowledge base has no close match for this question. Only answer from it if the answer is clearly stated above or in your instructions; otherwise say you do not have that information.]'
+              : '';
+
           const combinedContext = [
             retrieval.contextText ? `[OFFICIAL VERIFIED KNOWLEDGE BASE]:\n${retrieval.contextText}` : '',
             landingKnowledge,
+            weakMatchNote,
           ].filter(Boolean).join('\n\n');
 
           // 3. Assemble Prompt with web-linking instructions
@@ -820,6 +831,23 @@ Directly use the content of this attached document to assist the visitor, answer
             for (let i = 0; i < words.length; i += 4) {
               const chunk = words.slice(i, i + 4).join(' ') + (i + 4 < words.length ? ' ' : '');
               controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'token', token: chunk })}\n\n`));
+            }
+          }
+
+          // Every "I don't know" ends with the two ways forward (booking form / live agent), never a request for contact details.
+          const saidUnknown =
+            !humanRequested &&
+            !llmFailed &&
+            (looksLikeUnknown(fullAssistantReply) ||
+              Boolean(assistant.fallbackMessage && fullAssistantReply.toLowerCase().includes(assistant.fallbackMessage.slice(0, 25).toLowerCase())));
+          if (saidUnknown) {
+            const withOffer = withUnknownOffer(fullAssistantReply, { bookingEnabled: Boolean(assistant.bookingEnabled) });
+            if (withOffer !== fullAssistantReply) {
+              controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'token', token: withOffer.slice(fullAssistantReply.length) })}
+
+`));
+              fullAssistantReply = withOffer;
+              logEvent({ level: 'info', category: 'rag', event: 'rag.abstain', meta: { assistantId: assistant.id || assistantId, confidence: Number((retrieval.confidence ?? 0).toFixed(3)), chunks: retrieval.chunks.length } });
             }
           }
 

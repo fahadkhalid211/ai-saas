@@ -27,6 +27,7 @@ export {
 };
 import { RetrievalResult } from './types';
 import { crossEncoderEnabled, crossEncoderRerank } from './cross-encoder';
+import { retrievalConfidence } from './confidence';
 import { prepareQuery, resolveFollowUp, fuseRankings } from './query-prep';
 
 /**
@@ -338,6 +339,7 @@ export async function retrieveRelevantContext(
       chunks: [],
       contextText: 'No relevant business documentation was found in the knowledge base.',
       citations: [],
+      confidence: 0,
     };
     setCachedRetrieval(assistantId, condensedQuery, emptyResult);
     return emptyResult;
@@ -356,6 +358,7 @@ export async function retrieveRelevantContext(
     chunks,
     contextText,
     citations: [],
+    confidence: retrievalConfidence(chunks),
   };
   setCachedRetrieval(assistantId, condensedQuery, finalResult);
   setRedisCachedRetrieval(assistantId, condensedQuery, finalResult).catch(() => {});

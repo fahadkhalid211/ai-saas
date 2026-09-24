@@ -49,6 +49,10 @@ export interface ChunkItem {
 export interface SearchResultChunk extends ChunkItem {
   similarity: number;
   knowledgeSourceId: string;
+  /** Cosine similarity between the question and this passage (0..1): an absolute signal, unlike the fused rank score. */
+  vectorScore?: number;
+  /** True when the passage contains the question's words (full-text match). */
+  keywordMatch?: boolean;
 }
 
 export interface Citation {
@@ -66,4 +70,6 @@ export interface RetrievalResult {
   chunks: SearchResultChunk[];
   contextText: string;
   citations: Citation[];
+  /** 0..1: how likely the knowledge base can answer this question (see lib/rag/confidence.ts). */
+  confidence?: number;
 }

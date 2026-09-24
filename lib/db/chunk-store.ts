@@ -264,10 +264,11 @@ export async function hybridSearch(assistantId: string, query: string, queryEmbe
     vecf AS (SELECT vec.* FROM vec, cut WHERE vec.score >= cut.v AND vec.score > 0),
     fused AS (
       SELECT COALESCE(v.id, k.id) AS id,
-             COALESCE(1.0 / (60 + v.rnk) + v.score * 0.05, 0) + COALESCE(1.0 / (60 + k.rnk), 0) AS rrf
+             COALESCE(1.0 / (60 + v.rnk) + v.score * 0.05, 0) + COALESCE(1.0 / (60 + k.rnk), 0) AS rrf,
+             COALESCE(v.score, 0) AS vscore, (k.id IS NOT NULL) AS kmatch
       FROM vecf v FULL OUTER JOIN kw k ON k.id = v.id
     )
-    SELECT c.id, c.content, c.tokens, c.metadata, c.source_id, c.chunk_index, f.rrf
+    SELECT c.id, c.content, c.tokens, c.metadata, c.source_id, c.chunk_index, f.rrf, f.vscore, f.kmatch
     FROM fused f JOIN ${t} c ON c.id = f.id
     ORDER BY f.rrf DESC
     LIMIT $4`;
@@ -285,7 +286,11 @@ export async function hybridSearch(assistantId: string, query: string, queryEmbe
       tunedClients.add(client);
     }
     const res = await client.query({ text: sql, values: [vec, assistantId, tsq, topK], query_timeout: 15_000 } as any);
-    return res.rows.map((r: any) => rowToResult(r, Number(r.rrf) || 0));
+    return res.rows.map((r: any) => ({
+      ...rowToResult(r, Number(r.rrf) || 0),
+      vectorScore: Number(r.vscore) || 0,
+      keywordMatch: Boolean(r.kmatch),
+    }));
   } finally {
     client.release();
   }

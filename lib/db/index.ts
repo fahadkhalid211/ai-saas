@@ -1753,6 +1753,8 @@ export class Database {
     // Reciprocal Rank Fusion
     const fused = reciprocalRankFusion(vectorScored, keywordScored);
 
+    const vectorById = new Map(vectorScored.map((c) => [c.id, c.score]));
+    const keywordIds = new Set(keywordScored.map((c) => c.id));
     return fused.slice(0, topK).map((item) => ({
       id: item.id,
       content: item.content,
@@ -1761,6 +1763,8 @@ export class Database {
       metadata: item.metadata as any,
       knowledgeSourceId: item.knowledgeSourceId,
       similarity: item.rrfScore,
+      vectorScore: vectorById.get(item.id) ?? 0,
+      keywordMatch: keywordIds.has(item.id),
     }));
   }
 

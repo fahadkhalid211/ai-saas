@@ -103,7 +103,10 @@ async function main() {
           text: ch.content,
           docId: docBySource.get(ch.knowledgeSourceId ?? '') ?? null,
           score: ch.similarity ?? 0,
+          vectorScore: ch.vectorScore,
+          keywordMatch: ch.keywordMatch,
         })),
+        confidence: result.confidence,
       };
     },
     { k }

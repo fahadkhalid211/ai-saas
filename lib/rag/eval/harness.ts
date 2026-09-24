@@ -36,9 +36,12 @@ export interface RetrievedChunk {
   /** Corpus document id this chunk came from, if known. */
   docId: string | null;
   score: number;
+  /** Cosine similarity and full-text match, when the retriever reports them. */
+  vectorScore?: number;
+  keywordMatch?: boolean;
 }
 
-export type Retriever = (c: EvalCase) => Promise<{ chunks: RetrievedChunk[] }>;
+export type Retriever = (c: EvalCase) => Promise<{ chunks: RetrievedChunk[]; confidence?: number }>;
 
 /* ----------------------------------------------- report ----------------------------------------------- */
 
@@ -56,7 +59,7 @@ export interface CaseResult {
   ndcg: number;
   topScore: number;
   latencyMs: number;
-  retrieved: Array<{ docId: string | null; score: number; preview: string }>;
+  retrieved: Array<{ docId: string | null; score: number; preview: string; vectorScore?: number; keywordMatch?: boolean }>;
   error?: string;
 }
 
@@ -134,9 +137,12 @@ export async function evaluate(set: EvalSet, retrieve: Retriever, options: { k?:
   for (const c of set.cases) {
     const started = performance.now();
     let chunks: RetrievedChunk[] = [];
+    let confidence: number | undefined;
     let error: string | undefined;
     try {
-      chunks = (await retrieve(c)).chunks;
+      const res = await retrieve(c);
+      chunks = res.chunks;
+      confidence = res.confidence;
     } catch (err) {
       error = (err as Error)?.message || String(err);
     }
@@ -155,9 +161,10 @@ export async function evaluate(set: EvalSet, retrieve: Retriever, options: { k?:
       precision: precisionAtK(ranked, k),
       reciprocalRank: reciprocalRank(ranked),
       ndcg: ndcgAtK(ranked, k),
-      topScore: chunks[0]?.score ?? 0,
+      // the confidence the app would act on when the retriever reports one, else the first chunk's score
+      topScore: confidence ?? chunks[0]?.score ?? 0,
       latencyMs,
-      retrieved: chunks.slice(0, k).map((ch) => ({ docId: ch.docId, score: Number(ch.score.toFixed(4)), preview: ch.text.replace(/\s+/g, ' ').slice(0, 90) })),
+      retrieved: chunks.slice(0, k).map((ch) => ({ docId: ch.docId, score: Number(ch.score.toFixed(4)), preview: ch.text.replace(/\s+/g, ' ').slice(0, 90), vectorScore: ch.vectorScore, keywordMatch: ch.keywordMatch })),
       ...(error ? { error } : {}),
     });
   }
