@@ -144,7 +144,8 @@ export function proxy(request: NextRequest) {
   const response = NextResponse.next();
   response.headers.set('X-Content-Type-Options', 'nosniff');
   response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
-  if (!pathname.startsWith('/embed/')) {
+  // only the signed-in areas refuse to be framed; public pages and /embed/ may be shown inside other sites
+  if (pathname === '/master' || pathname === '/login' || pathname === '/dashboard' || /^\/(master|login|dashboard)\//.test(pathname)) {
     response.headers.set('X-Frame-Options', 'SAMEORIGIN');
   }
   if (pathname === '/master' || pathname.startsWith('/dashboard')) {

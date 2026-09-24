@@ -90,6 +90,18 @@ describe('Server-Level Proxy, Rate Limiting & Security', () => {
     expect(res.headers.get('X-Content-Type-Options')).toBe('nosniff');
   });
 
+  it('lets public pages be framed, but never the dashboard or master console', () => {
+    for (const path of ['/', '/pricing', '/site/acme']) {
+      expect(proxy(new NextRequest(`http://localhost:3000${path}`)).headers.get('X-Frame-Options')).toBeNull();
+    }
+    for (const path of ['/login', '/master', '/dashboard/x']) {
+      const req = new NextRequest(`http://localhost:3000${path}`);
+      req.cookies.set('kortex_admin_session', 'x');
+      const res = proxy(req);
+      if (res.status < 300 || res.status >= 400) expect(res.headers.get('X-Frame-Options')).toBe('SAMEORIGIN');
+    }
+  });
+
   it('does not apply SAMEORIGIN frame blocking on embed routes', () => {
     const req = new NextRequest('http://localhost:3000/embed/ast_123', {
       method: 'GET',
