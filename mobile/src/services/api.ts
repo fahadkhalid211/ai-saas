@@ -226,6 +226,31 @@ class ApiService {
       body: JSON.stringify({ action: 'mark_all_read', assistantId }),
     });
   }
+
+  // --- Push Token Registration ---
+
+  async registerPushToken(
+    token: string,
+    assistantId?: string,
+    deviceInfo?: string
+  ): Promise<{ success: boolean }> {
+    return this.request('/api/notifications/push-token', {
+      method: 'POST',
+      body: JSON.stringify({
+        token,
+        assistantId,
+        platform: 'android',
+        deviceInfo,
+      }),
+    });
+  }
+
+  async unregisterPushToken(token: string): Promise<{ success: boolean }> {
+    return this.request('/api/notifications/push-token', {
+      method: 'DELETE',
+      body: JSON.stringify({ token }),
+    });
+  }
 }
 
 export const api = new ApiService();

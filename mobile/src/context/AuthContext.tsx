@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { api, DEFAULT_SERVER_URL } from '../services/api';
+import { registerForPushNotifications, unregisterPushNotifications } from '../services/notifications';
 import { TeamMember, WorkspaceSummary, AssistantSummary } from '../types';
 
 const SELECTED_ASSISTANT_KEY = '@crescelo_assistant_id';
@@ -53,6 +54,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
           // Fetch assistants for this account
           await fetchAssistants();
+
+          // Refresh device push registration
+          registerForPushNotifications().catch(() => {});
         } else {
           // Token is expired or invalid
           await api.logout();
@@ -111,6 +115,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       // Fetch user's assistants
       await fetchAssistants();
+
+      // Register device for real-time mobile push notifications
+      registerForPushNotifications().catch(() => {});
     } finally {
       setIsLoading(false);
     }
@@ -119,6 +126,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logout = async () => {
     setIsLoading(true);
     try {
+      await unregisterPushNotifications().catch(() => {});
       await api.logout();
       setToken(null);
       setMember(null);

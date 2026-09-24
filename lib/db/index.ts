@@ -429,6 +429,18 @@ export interface CallRecordData {
   summary?: string;
 }
 
+export interface DevicePushTokenRecord {
+  id: string;
+  token: string;
+  memberId?: string;
+  workspaceId: string;
+  assistantId?: string;
+  platform: 'android' | 'ios' | 'web';
+  deviceInfo?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 interface DatabaseState {
   workspaces: any[];
   assistants: AssistantData[];
@@ -448,6 +460,7 @@ interface DatabaseState {
   smtpSettings?: SmtpSettingsData;
   pageViews?: PageViewEventData[];
   processedWebhookEvents?: string[];
+  pushTokens?: DevicePushTokenRecord[];
 }
 
 const DATA_DIR = resolveDataDir();
@@ -3135,6 +3148,19 @@ export class Database {
         }
         cachedState = state;
         scheduleDeferredBlobSync(state);
+
+        // Non-blocking background push notification dispatch
+        import('@/lib/notifications/push')
+          .then(({ sendPushNotification }) => {
+            sendPushNotification({
+              title: notif.title,
+              body: notif.message,
+              assistantId: notif.assistantId,
+              data: notif.metadata,
+            }).catch(() => {});
+          })
+          .catch(() => {});
+
         return notif;
       } catch (err) {
         console.warn('[Relational] addNotification failed, disabling postgres:', err);
@@ -3149,6 +3175,19 @@ export class Database {
       state.notifications = state.notifications.slice(0, 200);
     }
     await saveState(state);
+
+    // Non-blocking background push notification dispatch
+    import('@/lib/notifications/push')
+      .then(({ sendPushNotification }) => {
+        sendPushNotification({
+          title: notif.title,
+          body: notif.message,
+          assistantId: notif.assistantId,
+          data: notif.metadata,
+        }).catch(() => {});
+      })
+      .catch(() => {});
+
     return notif;
   }
 
@@ -3241,6 +3280,77 @@ export class Database {
     }
     await saveState(state);
     return true;
+  }
+
+  // Device Push Tokens (Mobile Companions)
+  static async registerPushToken(
+    token: string,
+    workspaceId: string,
+    memberId?: string,
+    assistantId?: string,
+    platform: 'android' | 'ios' | 'web' = 'android',
+    deviceInfo?: string
+  ): Promise<DevicePushTokenRecord> {
+    const state = await ensureInitialized();
+    if (!state.pushTokens) state.pushTokens = [];
+
+    const existingIndex = state.pushTokens.findIndex((t) => t.token === token);
+    const now = new Date().toISOString();
+
+    if (existingIndex >= 0) {
+      state.pushTokens[existingIndex] = {
+        ...state.pushTokens[existingIndex],
+        workspaceId,
+        memberId: memberId || state.pushTokens[existingIndex].memberId,
+        assistantId: assistantId || state.pushTokens[existingIndex].assistantId,
+        platform,
+        deviceInfo: deviceInfo || state.pushTokens[existingIndex].deviceInfo,
+        updatedAt: now,
+      };
+      await saveState(state);
+      return state.pushTokens[existingIndex];
+    }
+
+    const record: DevicePushTokenRecord = {
+      id: 'ptk_' + Math.random().toString(36).substring(2, 10),
+      token,
+      memberId,
+      workspaceId,
+      assistantId,
+      platform,
+      deviceInfo,
+      createdAt: now,
+      updatedAt: now,
+    };
+
+    state.pushTokens.push(record);
+    if (state.pushTokens.length > 500) {
+      state.pushTokens = state.pushTokens.slice(-500);
+    }
+    await saveState(state);
+    return record;
+  }
+
+  static async getPushTokens(workspaceId: string, assistantId?: string): Promise<DevicePushTokenRecord[]> {
+    const state = await ensureInitialized();
+    if (!state.pushTokens) return [];
+    return state.pushTokens.filter((t) => {
+      if (workspaceId !== '*' && t.workspaceId !== workspaceId) return false;
+      if (assistantId && t.assistantId && t.assistantId !== assistantId) return false;
+      return true;
+    });
+  }
+
+  static async removePushToken(token: string): Promise<boolean> {
+    const state = await ensureInitialized();
+    if (!state.pushTokens) return false;
+    const initialLen = state.pushTokens.length;
+    state.pushTokens = state.pushTokens.filter((t) => t.token !== token);
+    if (state.pushTokens.length !== initialLen) {
+      await saveState(state);
+      return true;
+    }
+    return false;
   }
   // Workspace & Chat-Based Billing
   static async getWorkspaceBilling(workspaceId: string = 'default-workspace'): Promise<WorkspaceBillingData> {

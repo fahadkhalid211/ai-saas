@@ -15,7 +15,9 @@ import {
   Copy,
   Check,
   Share2,
+  Smartphone,
 } from 'lucide-react';
+import { CresceloMark } from '@/components/brand/CresceloMark';
 
 export interface Appointment {
   id: string;
@@ -57,6 +59,7 @@ export const AppointmentsTab: React.FC<AppointmentsTabProps> = ({
   const [appointmentFilter, setAppointmentFilter] = useState<'all' | 'confirmed' | 'pending' | 'completed' | 'cancelled'>('all');
   const [appointmentSearch, setAppointmentSearch] = useState('');
   const [showCalendarSyncModal, setShowCalendarSyncModal] = useState(false);
+  const [showMobileAppModal, setShowMobileAppModal] = useState(false);
   const [copiedFeedUrl, setCopiedFeedUrl] = useState(false);
 
   return (
@@ -76,6 +79,16 @@ export const AppointmentsTab: React.FC<AppointmentsTabProps> = ({
                       <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
                       <span>Live Sync Active</span>
                     </div>
+
+                    <button
+                      type="button"
+                      onClick={() => setShowMobileAppModal(true)}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-lime-500/40 bg-lime-500/10 hover:bg-lime-500/20 text-lime-600 dark:text-lime-400 text-xs font-semibold shadow-xs transition cursor-pointer"
+                      title="Get the Crescelo Android Mobile App"
+                    >
+                      <Smartphone className="h-3.5 w-3.5 text-lime-600 dark:text-lime-400" />
+                      <span>Android App</span>
+                    </button>
 
                     <button
                       type="button"
@@ -545,6 +558,97 @@ export const AppointmentsTab: React.FC<AppointmentsTabProps> = ({
                             Close
                           </button>
                         </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Android Companion App Modal */}
+                {showMobileAppModal && (
+                  <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs animate-in fade-in duration-150">
+                    <div className="relative w-full max-w-lg rounded-2xl bg-[#08251a] border border-[#1b4834] text-[#fffeeb] shadow-2xl p-6 space-y-5">
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-center gap-3">
+                          <CresceloMark size={48} motion="still" />
+                          <div>
+                            <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                              <span>Crescelo for Android</span>
+                              <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-[#abff44]/20 text-[#abff44] border border-[#abff44]/30">
+                                Native App
+                              </span>
+                            </h3>
+                            <p className="text-xs text-[#94a3b8] mt-0.5">
+                              Manage client bookings & get push notifications on your phone
+                            </p>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setShowMobileAppModal(false)}
+                          className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition cursor-pointer"
+                        >
+                          <X className="h-5 w-5" />
+                        </button>
+                      </div>
+
+                      {/* Feature Highlights */}
+                      <div className="space-y-2">
+                        <div className="p-3 rounded-xl bg-[#0c2e20] border border-[#174834] flex items-start gap-3">
+                          <span className="text-lg">🔔</span>
+                          <div>
+                            <div className="text-xs font-bold text-white">Instant Push Notifications</div>
+                            <div className="text-[11px] text-[#94a3b8]">
+                              Receive alerts the moment a customer books, reschedules, or cancels.
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="p-3 rounded-xl bg-[#0c2e20] border border-[#174834] flex items-start gap-3">
+                          <span className="text-lg">📞</span>
+                          <div>
+                            <div className="text-xs font-bold text-white">1-Tap Customer Contact</div>
+                            <div className="text-[11px] text-[#94a3b8]">
+                              Direct phone dialer and email shortcuts for fast client communication.
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="p-3 rounded-xl bg-[#0c2e20] border border-[#174834] flex items-start gap-3">
+                          <span className="text-lg">🔄</span>
+                          <div>
+                            <div className="text-xs font-bold text-white">2-Way Live Sync</div>
+                            <div className="text-[11px] text-[#94a3b8]">
+                              Status updates, completions, and cancellations sync in real time.
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Quick Start Instructions */}
+                      <div className="p-3.5 rounded-xl bg-[#04140d] border border-[#174834] space-y-2">
+                        <div className="text-[11px] font-bold text-[#abff44] uppercase tracking-wider">
+                          How to Launch on Your Android Phone
+                        </div>
+                        <ol className="text-xs text-slate-300 space-y-1.5 list-decimal list-inside leading-relaxed">
+                          <li>Install free <strong>Expo Go</strong> app from Google Play Store.</li>
+                          <li>In your computer terminal, start the mobile dev server:</li>
+                        </ol>
+                        <div className="p-2 rounded bg-black/50 font-mono text-[11px] text-[#abff44] select-all">
+                          cd mobile && npx expo start
+                        </div>
+                        <p className="text-[11px] text-[#94a3b8]">
+                          Scan the displayed QR code with Expo Go to run on your phone.
+                        </p>
+                      </div>
+
+                      <div className="pt-2 border-t border-[#174834] flex justify-end">
+                        <button
+                          type="button"
+                          onClick={() => setShowMobileAppModal(false)}
+                          className="rounded-lg bg-[#abff44] hover:bg-[#bbfd66] px-5 py-2 text-xs font-bold text-[#04140d] transition cursor-pointer"
+                        >
+                          Got it
+                        </button>
                       </div>
                     </div>
                   </div>
