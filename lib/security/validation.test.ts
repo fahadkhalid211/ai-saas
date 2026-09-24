@@ -267,6 +267,17 @@ describe('Enterprise Validation & Sanitization Suite', () => {
       expect(res.valid).toBe(true);
       expect(res.sanitized?.messages).toHaveLength(1);
 
+      // Support widget format: { assistantId, message, history }
+      const widgetChat = {
+        assistantId: 'demo-assistant',
+        message: 'How does Zero Token Markup work?',
+        history: [{ role: 'assistant', content: 'Hello!' }],
+      };
+      const widgetRes = validateChatPayload(widgetChat);
+      expect(widgetRes.valid).toBe(true);
+      expect(widgetRes.sanitized?.messages).toHaveLength(2);
+      expect(widgetRes.sanitized?.messages[1].content).toBe('How does Zero Token Markup work?');
+
       const invalidChat = {
         assistantId: '',
         messages: [],

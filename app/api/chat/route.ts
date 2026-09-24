@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse, after } from 'next/server';
 import { withEnvProviderFallback } from '@/lib/ai/resolve-provider';
+import { getPlatformConciergeAnswer } from '@/lib/ai/concierge';
 import { Database, getLandingConfigForSlugOrTemplate } from '@/lib/db';
 import { retrieveRelevantContext, isPurelyConversationalTurn, RetrievalResult } from '@/lib/rag/retrieval';
 import { buildSystemPrompt, streamChatResponse } from '@/lib/ai/providers';
@@ -746,10 +747,37 @@ Directly use the content of this attached document to assist the visitor, answer
             maxTokens: assistant.maxTokens || 2048,
           });
 
+          const isDemoAssistant = assistant.id === 'demo-assistant';
+
           for await (const token of tokenGenerator) {
             fullAssistantReply += token;
+            if (
+              isDemoAssistant &&
+              (fullAssistantReply.startsWith('\n\n*(Authentication Error:') ||
+                fullAssistantReply.startsWith('\n\n*(Notice: Could not connect') ||
+                fullAssistantReply.startsWith('\n\n*(AI Generation Error:'))
+            ) {
+              continue;
+            }
             const tokenEvent = `data: ${JSON.stringify({ type: 'token', token })}\n\n`;
             controller.enqueue(encoder.encode(tokenEvent));
+          }
+
+          // If demo-assistant failed to stream valid tokens or yielded an error, stream platform concierge answer
+          if (
+            isDemoAssistant &&
+            (!fullAssistantReply.trim() ||
+              fullAssistantReply.includes('*(Authentication Error:') ||
+              fullAssistantReply.includes('*(Notice: Could not connect') ||
+              fullAssistantReply.includes('*(AI Generation Error:'))
+          ) {
+            const conciergeAnswer = getPlatformConciergeAnswer(latestUserMsg);
+            fullAssistantReply = conciergeAnswer;
+            const words = conciergeAnswer.split(' ');
+            for (let i = 0; i < words.length; i += 4) {
+              const chunk = words.slice(i, i + 4).join(' ') + (i + 4 < words.length ? ' ' : '');
+              controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'token', token: chunk })}\n\n`));
+            }
           }
 
           // Save assistant message in DB
@@ -826,11 +854,23 @@ Directly use the content of this attached document to assist the visitor, answer
           controller.enqueue(encoder.encode(doneEvent));
         } catch (streamErr: any) {
           console.error('Streaming error in chat route:', streamErr);
-          const errorEvent = `data: ${JSON.stringify({
-            type: 'error',
-            error: sanitizeClientErrorMessage(streamErr?.message),
-          })}\n\n`;
-          controller.enqueue(encoder.encode(errorEvent));
+          if (assistant.id === 'demo-assistant') {
+            const conciergeAnswer = getPlatformConciergeAnswer(latestUserMsg);
+            const words = conciergeAnswer.split(' ');
+            for (let i = 0; i < words.length; i += 4) {
+              const chunk = words.slice(i, i + 4).join(' ') + (i + 4 < words.length ? ' ' : '');
+              controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'token', token: chunk })}\n\n`));
+            }
+            controller.enqueue(
+              encoder.encode(`data: ${JSON.stringify({ type: 'done', conversationId: conv?.id, conversationToken: convToken })}\n\n`)
+            );
+          } else {
+            const errorEvent = `data: ${JSON.stringify({
+              type: 'error',
+              error: sanitizeClientErrorMessage(streamErr?.message),
+            })}\n\n`;
+            controller.enqueue(encoder.encode(errorEvent));
+          }
         } finally {
           controller.close();
         }

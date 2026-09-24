@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Bot, X, Send, Sparkles, RefreshCw, MessageSquare, ChevronDown, Check, Copy } from 'lucide-react';
+import { getPlatformConciergeAnswer } from '@/lib/ai/concierge';
 
 interface ChatMessage {
   id: string;
@@ -110,18 +111,25 @@ export function FloatingPlatformChatbot() {
     };
     setMessages((prev) => [...prev, initialBotMsg]);
 
+    const historyMsgs = messages
+      .filter((m) => m.role === 'user' || m.role === 'assistant')
+      .slice(-6)
+      .map((m) => ({ role: m.role as 'user' | 'assistant', content: m.content }));
+
+    const payloadMessages = [
+      ...historyMsgs,
+      { role: 'user' as const, content: text },
+    ];
+
     try {
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           assistantId: 'demo-assistant',
+          messages: payloadMessages,
           message: text,
           conversationId: conversationId || undefined,
-          history: messages
-            .filter((m) => m.role === 'user' || m.role === 'assistant')
-            .slice(-6)
-            .map((m) => ({ role: m.role, content: m.content })),
         }),
       });
 
@@ -136,64 +144,105 @@ export function FloatingPlatformChatbot() {
 
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
+      let buffer = '';
       let accumulated = '';
 
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
 
-        const chunk = decoder.decode(value, { stream: true });
-        const lines = chunk.split('\n');
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || '';
 
         for (const line of lines) {
-          if (line.startsWith('data: ')) {
-            const rawData = line.slice(6).trim();
-            if (rawData === '[DONE]') continue;
+          const trimmed = line.trim();
+          if (!trimmed.startsWith('data: ')) continue;
+          const rawData = trimmed.slice(6).trim();
+          if (!rawData || rawData === '[DONE]') continue;
 
-            try {
-              const parsed = JSON.parse(rawData);
-              if (parsed.type === 'token' && parsed.content) {
-                accumulated += parsed.content;
-                setMessages((prev) =>
-                  prev.map((m) => (m.id === botMsgId ? { ...m, content: accumulated } : m))
-                );
-              } else if (parsed.type === 'conversation_id' && parsed.conversationId) {
-                setConversationId(parsed.conversationId);
-              } else if (parsed.type === 'error' && parsed.error) {
+          try {
+            const parsed = JSON.parse(rawData);
+            const token = parsed.token ?? parsed.content;
+
+            if (parsed.type === 'token' && typeof token === 'string') {
+              accumulated += token;
+              setMessages((prev) =>
+                prev.map((m) => (m.id === botMsgId ? { ...m, content: accumulated } : m))
+              );
+            } else if (
+              (parsed.type === 'citations' || parsed.type === 'done' || parsed.type === 'conversation_id') &&
+              parsed.conversationId
+            ) {
+              setConversationId(parsed.conversationId);
+            } else if (parsed.type === 'error' && parsed.error) {
+              // If an AI provider error occurred, provide the concierge answer if accumulated is empty
+              if (!accumulated.trim()) {
+                accumulated = getPlatformConciergeAnswer(text);
+              } else {
                 accumulated += `\n\n*(Notice: ${parsed.error})*`;
-                setMessages((prev) =>
-                  prev.map((m) => (m.id === botMsgId ? { ...m, content: accumulated } : m))
-                );
               }
-            } catch {
-              // Plain text stream fallback
-              if (rawData) {
-                accumulated += rawData;
-                setMessages((prev) =>
-                  prev.map((m) => (m.id === botMsgId ? { ...m, content: accumulated } : m))
-                );
-              }
+              setMessages((prev) =>
+                prev.map((m) => (m.id === botMsgId ? { ...m, content: accumulated } : m))
+              );
+            }
+          } catch {
+            if (rawData && !rawData.startsWith('{')) {
+              accumulated += rawData;
+              setMessages((prev) =>
+                prev.map((m) => (m.id === botMsgId ? { ...m, content: accumulated } : m))
+              );
             }
           }
         }
+      }
+
+      // Check remaining buffer
+      if (buffer.trim().startsWith('data: ')) {
+        const rawData = buffer.trim().slice(6).trim();
+        if (rawData && rawData !== '[DONE]') {
+          try {
+            const parsed = JSON.parse(rawData);
+            const token = parsed.token ?? parsed.content;
+            if (parsed.type === 'token' && typeof token === 'string') {
+              accumulated += token;
+              setMessages((prev) =>
+                prev.map((m) => (m.id === botMsgId ? { ...m, content: accumulated } : m))
+              );
+            }
+          } catch {
+            if (!rawData.startsWith('{')) {
+              accumulated += rawData;
+              setMessages((prev) =>
+                prev.map((m) => (m.id === botMsgId ? { ...m, content: accumulated } : m))
+              );
+            }
+          }
+        }
+      }
+
+      // If the LLM stream yielded an empty string or error notice, deliver the platform concierge knowledge
+      if (
+        !accumulated.trim() ||
+        accumulated.includes('*(Authentication Error:') ||
+        accumulated.includes('*(Notice: Could not connect') ||
+        accumulated.includes('*(AI Generation Error:')
+      ) {
+        accumulated = getPlatformConciergeAnswer(text);
+        setMessages((prev) =>
+          prev.map((m) => (m.id === botMsgId ? { ...m, content: accumulated } : m))
+        );
       }
 
       if (!isOpen) {
         setHasUnread(true);
       }
     } catch (err: any) {
-      console.error('[PlatformChatbot] send failed:', err);
+      console.warn('[PlatformChatbot] fetch error, using concierge knowledge fallback:', err?.message);
+      // Fallback immediately to platform concierge answer so user gets their answer even on network hiccups
+      const fallbackReply = getPlatformConciergeAnswer(text);
       setMessages((prev) =>
-        prev.map((m) =>
-          m.id === botMsgId
-            ? {
-                ...m,
-                content:
-                  m.content ||
-                  "I'm sorry, I ran into an issue connecting to the AI engine. You can also view our documentation or reach out at contact@crescelo.com!",
-              }
-            : m
-        )
+        prev.map((m) => (m.id === botMsgId ? { ...m, content: fallbackReply } : m))
       );
     } finally {
       setIsLoading(false);

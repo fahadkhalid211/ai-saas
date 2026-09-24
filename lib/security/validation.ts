@@ -441,15 +441,37 @@ export function validateChatPayload(data: any): {
   const astCheck = validateString(data?.assistantId, 1, 128, 'Assistant ID');
   if (!astCheck.valid) errors.assistantId = astCheck.error!;
 
-  if (!data?.messages || !Array.isArray(data.messages) || data.messages.length === 0) {
+  let rawMessages = data?.messages;
+  // Support both { messages: [...] } and legacy/widget payload { message: string, history?: [...] }
+  if (
+    (!rawMessages || !Array.isArray(rawMessages) || rawMessages.length === 0) &&
+    typeof data?.message === 'string' &&
+    data.message.trim()
+  ) {
+    const rawHistory = Array.isArray(data?.history) ? data.history : [];
+    rawMessages = [
+      ...rawHistory
+        .filter(
+          (h: any) =>
+            h &&
+            typeof h === 'object' &&
+            (h.role === 'user' || h.role === 'assistant' || h.role === 'system') &&
+            typeof h.content === 'string'
+        )
+        .map((h: any) => ({ role: h.role, content: h.content })),
+      { role: 'user', content: data.message.trim() },
+    ];
+  }
+
+  if (!rawMessages || !Array.isArray(rawMessages) || rawMessages.length === 0) {
     errors.messages = 'A messages array containing at least one message is required.';
   }
 
   const sanitizedMessages: Array<{ role: 'user' | 'assistant' | 'system'; content: string }> = [];
 
-  if (Array.isArray(data?.messages)) {
-    for (let i = 0; i < data.messages.length; i++) {
-      const msg = data.messages[i];
+  if (Array.isArray(rawMessages)) {
+    for (let i = 0; i < rawMessages.length; i++) {
+      const msg = rawMessages[i];
       if (!msg || typeof msg !== 'object') {
         errors[`messages[${i}]`] = 'Message must be an object with role and content.';
         continue;
