@@ -39,3 +39,15 @@ searching (`lib/rag/query-prep.ts`). Eval: hit@5 93.0% → 97.7%, follow-ups 50%
 An optional LLM rewriter (`RAG_QUERY_REWRITE=llm`, model via `RAG_REWRITE_MODEL`) also writes alternative phrasings that are
 searched and fused. Measured on Groq it did NOT beat the free version (hit@5 93–95%) and added ~1 s, so it is off by default.
 Re-measure with `RAG_QUERY_REWRITE=llm npm run rag:eval` if you change models.
+
+## Cross-encoder re-ranker (RAG step 4)
+
+`RAG_RERANKER=cross-encoder` re-orders the candidates with a small local model that reads question and passage together
+(`lib/rag/cross-encoder.ts`, default `Xenova/ms-marco-MiniLM-L-6-v2`, ~23 MB, downloaded on first use).
+
+Eval vs step 3 (hit@5 97.7%, MRR 0.771, AUC 0.74):
+- MiniLM: MRR 0.812, synonym hit 100%, AUC 0.84, but ~+0.7 s per question on this laptop CPU. A wider candidate pool made it worse.
+- `Xenova/bge-reranker-base` (`RAG_RERANK_MODEL`): AUC 0.92 but ~5 s per question — too slow.
+
+Off by default: the gain is modest and the model has not been tried in a Vercel function (cold start, size). Its main value is a
+cleaner confidence score for step 5.

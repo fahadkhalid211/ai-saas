@@ -26,6 +26,7 @@ export {
   setRedisCachedRetrieval,
 };
 import { RetrievalResult } from './types';
+import { crossEncoderEnabled, crossEncoderRerank } from './cross-encoder';
 import { prepareQuery, resolveFollowUp, fuseRankings } from './query-prep';
 
 /**
@@ -128,6 +129,7 @@ export async function retrieveRelevantContext(
   const isOverview = isGlobalOverviewQuery(condensedQuery);
   const isCountQuery = isCountOrAggregationQuery(condensedQuery);
   const isBroadPricing = isBroadPricingOrBudgetQuery(condensedQuery);
+  const poolFactor = 2;
   const effectiveTopK = isOverview ? Math.max(topK, 8) : isBroadPricing ? Math.max(topK, 12) : isCountQuery ? 4 : topK;
 
   // 1. Fetch assistant knowledge sources for title context and synonym correlation
@@ -146,22 +148,22 @@ export async function retrieveRelevantContext(
   }
 
   // 4. Perform Hybrid Search: dense vector from condensedQuery + sparse keyword search from expandedQuery
-  let chunks = await Database.hybridSearch(assistantId, expandedQuery, queryEmbedding, effectiveTopK * 2);
+  let chunks = await Database.hybridSearch(assistantId, expandedQuery, queryEmbedding, effectiveTopK * poolFactor);
 
   // 4.05. Alternative phrasings written by the query rewriter: search each, then fuse the rankings
   if (prepared.variants.length > 0) {
     const others = await Promise.all(
       prepared.variants.map(async (v) => {
         const emb = await generateEmbedding(v);
-        return Database.hybridSearch(assistantId, expandQueryWithSynonyms(v, sourceTitles).expandedQuery, emb, effectiveTopK * 2);
+        return Database.hybridSearch(assistantId, expandQueryWithSynonyms(v, sourceTitles).expandedQuery, emb, effectiveTopK * poolFactor);
       })
     ).catch(() => [] as SearchResultChunk[][]);
-    chunks = fuseRankings([chunks, ...others], effectiveTopK * 2);
+    chunks = fuseRankings([chunks, ...others], effectiveTopK * poolFactor);
   }
 
   // 4.1. Fallback to raw condensed query if expanded query returned no results
   if (chunks.length === 0 && expandedQuery !== condensedQuery) {
-    chunks = await Database.hybridSearch(assistantId, condensedQuery, queryEmbedding, effectiveTopK * 2);
+    chunks = await Database.hybridSearch(assistantId, condensedQuery, queryEmbedding, effectiveTopK * poolFactor);
   }
 
   // 4.2. Dynamic Concept Fallback: If still 0 chunks, check if any knowledge source matches concept
@@ -314,12 +316,13 @@ export async function retrieveRelevantContext(
       chunks = chunks.slice(0, effectiveTopK);
     }
   } else {
-    chunks = chunks.slice(0, topK * 2);
+    chunks = chunks.slice(0, topK * poolFactor);
   }
 
   // 3.8. Semantic Reranking & Near-Duplicate Deduplication
   if (chunks.length > 1 && !isOverview && !isCountQuery) {
-    chunks = rerankCandidates(condensedQuery, chunks, effectiveTopK);
+    chunks = rerankCandidates(condensedQuery, chunks, crossEncoderEnabled() ? effectiveTopK * poolFactor : effectiveTopK);
+    if (crossEncoderEnabled()) chunks = await crossEncoderRerank(condensedQuery, chunks, effectiveTopK);
   } else if (chunks.length > 1) {
     chunks = deduplicateChunks(chunks);
   }
