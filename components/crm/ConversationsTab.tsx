@@ -477,15 +477,15 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
                               </div>
                             </div>
                             <div className="flex items-center gap-2">
-                              <span className="rounded-full bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 font-semibold px-2.5 py-1 text-[11px]">
+                              <span className="rounded-full bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 font-semibold px-2.5 py-1 text-[11px] whitespace-nowrap">
                                 {selectedConversation.messages?.length || 0} Messages
                               </span>
                               <button
                                 type="button"
                                 onClick={() => handleToggleTakeover(selectedConversation.id, !selectedConversation.isLiveTakeover)}
-                                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-xs font-semibold transition cursor-pointer ${
+                                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-semibold transition cursor-pointer whitespace-nowrap ${
                                   selectedConversation.isLiveTakeover
-                                    ? 'bg-purple-600 text-white border-purple-600 shadow-xs'
+                                    ? 'bg-purple-600 hover:bg-purple-700 text-white border-purple-600 shadow-xs'
                                     : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-950/40'
                                 }`}
                                 title={selectedConversation.isLiveTakeover ? "Click to release back to AI bot" : "Click to pause AI and take over as live human agent"}
@@ -496,19 +496,19 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
                               <button
                                 type="button"
                                 onClick={() => handleToggleConversationStatus(selectedConversation.id, !selectedConversation.resolved)}
-                                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-xs font-semibold transition cursor-pointer ${
+                                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-semibold transition cursor-pointer whitespace-nowrap ${
                                   selectedConversation.resolved
                                     ? 'bg-emerald-50 dark:bg-emerald-950/60 border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300'
-                                    : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50'
+                                    : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-750'
                                 }`}
                               >
-                                <CheckCircle2 className={`h-3.5 w-3.5 ${selectedConversation.resolved ? 'text-emerald-600' : 'text-slate-400'}`} />
+                                <CheckCircle2 className={`h-3.5 w-3.5 ${selectedConversation.resolved ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400'}`} />
                                 <span>{selectedConversation.resolved ? 'Resolved' : 'Mark Resolved'}</span>
                               </button>
                               <button
                                 type="button"
                                 onClick={() => downloadConversationTranscript(selectedConversation)}
-                                className="flex items-center gap-1.5 px-3 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-750 text-xs font-semibold transition shadow-xs"
+                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-750 text-xs font-semibold transition shadow-xs whitespace-nowrap"
                                 title="Download chat transcript as TXT"
                               >
                                 <Download className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
@@ -588,10 +588,10 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
                                   <div
                                     className={`rounded-2xl px-4 py-2.5 text-xs max-w-[85%] leading-relaxed ${
                                       isUser
-                                        ? 'bg-blue-600 text-white rounded-br-xs'
+                                        ? 'bg-[#08251a] text-[#fffeeb] border border-[#12432f] dark:bg-[#abff44]/18 dark:border dark:border-[#abff44]/35 dark:text-[#fffeeb] rounded-br-xs shadow-xs'
                                         : isAgent
                                         ? 'bg-purple-50 dark:bg-purple-950/60 border border-purple-200 dark:border-purple-800 text-purple-950 dark:text-purple-100 rounded-bl-xs'
-                                        : 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100 rounded-bl-xs'
+                                        : 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100 rounded-bl-xs border border-slate-200/80 dark:border-slate-750'
                                     }`}
                                   >
                                     {isAgent && (

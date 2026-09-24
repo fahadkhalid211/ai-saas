@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { X, Send, RefreshCw, Check, Copy, Minus, ChevronDown } from 'lucide-react';
 import { CresceloOrb, type OrbState } from '@/components/brand/CresceloOrb';
+import { CresceloMark } from '@/components/brand/CresceloMark';
 import { PlatformBookingCard, type BookingConfig } from './PlatformBookingCard';
 import { stripActionTokens } from '@/lib/chat/handoff';
 import { getPlatformConciergeAnswer } from '@/lib/ai/concierge';
@@ -529,6 +530,10 @@ export function FloatingPlatformChatbot({ variant = 'floating' }: FloatingPlatfo
               </button>
             </form>
             <p className="mt-2 text-center text-[10.5px] leading-snug text-[#8b8981]">AI assistant, replies may be inaccurate. Messages are processed as described in our <a href="/privacy" className="underline">Privacy Policy</a>.</p>
+            <div className="mt-2 pt-2 border-t border-white/[0.06] flex items-center justify-center gap-1.5 text-[10px] text-[#8b8981]">
+              <CresceloMark size={13} motion="draw" />
+              <span>Powered by <strong className="font-semibold text-[#faf9f5]">Crescelo</strong></span>
+            </div>
           </div>
         </div>
       )}

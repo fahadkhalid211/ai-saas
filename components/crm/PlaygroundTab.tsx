@@ -94,7 +94,7 @@ export const PlaygroundTab: React.FC<PlaygroundTabProps> = ({
                           <div
                             className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-xs leading-relaxed ${
                               msg.role === 'user'
-                                ? 'bg-blue-600 text-white rounded-br-xs'
+                                ? 'bg-[#08251a] text-[#fffeeb] border border-[#12432f] dark:bg-[#abff44]/18 dark:border dark:border-[#abff44]/35 dark:text-[#fffeeb] rounded-br-xs shadow-xs'
                                 : 'bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 rounded-bl-xs border border-slate-200/80 dark:border-slate-700/60'
                             }`}
                           >

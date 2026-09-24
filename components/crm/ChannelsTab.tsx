@@ -33,6 +33,7 @@ import {
   Sliders,
   CheckCircle,
 } from 'lucide-react';
+import { CresceloMark } from '@/components/brand/CresceloMark';
 import { GOOGLE_APPS_SCRIPT_TEMPLATE } from '@/lib/integrations/google-sheets-template';
 
 export type IntegrationId =
@@ -1906,8 +1907,9 @@ export const ChannelsTab: React.FC<ChannelsTabProps> = ({
                             {formData.customBrandingText}
                           </a>
                         ) : (
-                          <span>
-                            ⚡ Powered by <strong className="text-slate-800 dark:text-slate-200">Crescelo AI</strong>
+                          <span className="inline-flex items-center gap-1.5">
+                            <CresceloMark size={14} motion="draw" />
+                            <span>Powered by <strong className="text-slate-800 dark:text-slate-200">Crescelo AI</strong></span>
                           </span>
                         )}
                       </span>

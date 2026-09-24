@@ -22,6 +22,19 @@ import {
 import { MarkdownRenderer } from '@/components/markdown-renderer';
 import { ChatBookingCard } from '@/components/chat/ChatBookingCard';
 import { consumeChatStream } from '@/lib/chat/stream';
+import { CresceloMark } from '@/components/brand/CresceloMark';
+
+function getContrastingTextColor(hexColor?: string): string {
+  if (!hexColor) return '#ffffff';
+  const hex = hexColor.replace('#', '');
+  if (hex.length !== 6 && hex.length !== 3) return '#ffffff';
+  const fullHex = hex.length === 3 ? hex.split('').map((c) => c + c).join('') : hex;
+  const r = parseInt(fullHex.substring(0, 2), 16);
+  const g = parseInt(fullHex.substring(2, 4), 16);
+  const b = parseInt(fullHex.substring(4, 6), 16);
+  const yiq = (r * 299 + g * 587 + b * 114) / 1000;
+  return yiq >= 150 ? '#08251a' : '#ffffff';
+}
 
 interface EmbedPageProps {
   params: Promise<{ id: string }>;
@@ -450,13 +463,14 @@ export default function EmbedChatPage({ params }: EmbedPageProps) {
   }
 
   const primaryColor = config.primaryColor || '#2563eb';
+  const primaryTextColor = getContrastingTextColor(primaryColor);
 
   return (
     <div className="flex flex-col h-screen w-full bg-slate-50 dark:bg-slate-950 overflow-hidden font-sans text-slate-900 dark:text-slate-100 antialiased">
       {/* Header */}
       <header
-        className="flex items-center justify-between px-4 py-3 text-white shrink-0 shadow-xs"
-        style={{ backgroundColor: primaryColor }}
+        className="flex items-center justify-between px-4 py-3 shrink-0 shadow-xs"
+        style={{ backgroundColor: primaryColor, color: primaryTextColor }}
       >
         <div className="flex items-center gap-2.5 min-w-0">
           <div className="h-8 w-8 rounded-full bg-white/20 border border-white/30 flex items-center justify-center font-bold text-xs shrink-0">
@@ -570,10 +584,10 @@ export default function EmbedChatPage({ params }: EmbedPageProps) {
               <div
                 className={`max-w-[88%] sm:max-w-[80%] rounded-2xl px-4 py-2.5 text-xs leading-relaxed shadow-xs ${
                   isUser
-                    ? 'text-white rounded-br-xs'
+                    ? 'rounded-br-xs'
                     : 'bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 text-slate-800 dark:text-slate-100 rounded-bl-xs'
                 }`}
-                style={isUser ? { backgroundColor: primaryColor } : undefined}
+                style={isUser ? { backgroundColor: primaryColor, color: primaryTextColor } : undefined}
               >
                 {/* User Attachment Pill */}
                 {msg.attachment && (
@@ -759,8 +773,8 @@ export default function EmbedChatPage({ params }: EmbedPageProps) {
             type="button"
             onClick={() => handleSendMessage()}
             disabled={isStreaming || (!input.trim() && !attachedFile)}
-            className="p-2 rounded-xl text-white disabled:opacity-40 transition shadow-xs cursor-pointer shrink-0"
-            style={{ backgroundColor: primaryColor }}
+            className="p-2 rounded-xl disabled:opacity-40 transition shadow-xs cursor-pointer shrink-0"
+            style={{ backgroundColor: primaryColor, color: primaryTextColor }}
             title="Send Message"
           >
             <Send className="h-4 w-4" />
@@ -768,16 +782,34 @@ export default function EmbedChatPage({ params }: EmbedPageProps) {
         </div>
 
         {/* Branding */}
-        <div className="text-center text-[10px] text-slate-400 flex items-center justify-center gap-1 pt-1">
+        <div className="text-center text-[10px] text-slate-400 flex items-center justify-center gap-1.5 pt-1">
           {config.whiteLabelEnabled ? (
             config.customBrandingText ? (
-              <span>{config.customBrandingText}</span>
+              config.customBrandingUrl ? (
+                <a
+                  href={config.customBrandingUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:underline font-medium text-slate-500 dark:text-slate-400"
+                >
+                  {config.customBrandingText}
+                </a>
+              ) : (
+                <span className="font-medium text-slate-500 dark:text-slate-400">{config.customBrandingText}</span>
+              )
             ) : null
           ) : (
-            <>
-              <Zap className="h-2.5 w-2.5 text-blue-500" />
-              <span>Powered by Crescelo</span>
-            </>
+            <a
+              href="https://crescelo.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition group"
+            >
+              <CresceloMark size={13} motion="draw" />
+              <span>
+                Powered by <strong className="font-semibold text-slate-600 dark:text-slate-300 group-hover:text-slate-800 dark:group-hover:text-white transition">Crescelo</strong>
+              </span>
+            </a>
           )}
         </div>
       </footer>

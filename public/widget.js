@@ -870,6 +870,54 @@
         right: auto;
         left: 24px;
       }
+      .chat-notice {
+        font-size: 10px;
+        color: #94a3b8;
+        text-align: center;
+        padding: 4px 16px 2px;
+        line-height: 1.35;
+      }
+      .chat-branding {
+        font-size: 10.5px;
+        color: #94a3b8;
+        text-align: center;
+        padding: 2px 16px 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .chat-branding a {
+        color: #64748b;
+        text-decoration: none;
+        font-weight: 600;
+        transition: color 0.15s;
+      }
+      .chat-branding a:hover {
+        color: #0f172a;
+        text-decoration: underline;
+      }
+      .cm-mark-mini svg {
+        display: block;
+        overflow: visible;
+      }
+      @keyframes cm-draw-mini {
+        0% { stroke-dashoffset: 100; }
+        55%, 75% { stroke-dashoffset: 0; }
+        100% { stroke-dashoffset: -100; }
+      }
+      @keyframes cm-seed-mini {
+        0%, 100% { transform: scale(0.8); opacity: 0.85; }
+        50% { transform: scale(1.25); opacity: 1; }
+      }
+      .cm-c-anim {
+        stroke-dasharray: 100;
+        animation: cm-draw-mini 2.4s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+      }
+      .cm-seed-anim {
+        transform-box: fill-box;
+        transform-origin: center;
+        animation: cm-seed-mini 2.8s ease-in-out infinite;
+      }
     `;
     shadow.appendChild(style);
 
@@ -967,7 +1015,7 @@
       </div>
       <div class="chat-notice" id="widget-notice">AI assistant. Replies may be inaccurate. Your messages are stored and processed by this business and its service providers.</div>
       <div class="chat-branding" id="widget-branding">
-        <span style="display:inline-flex;align-items:center;gap:4px;"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg> Powered by <a href="https://crescelo.com" target="_blank" rel="noopener noreferrer">Crescelo</a></span>
+        <span style="display:inline-flex;align-items:center;gap:5px;"><span class="cm-mark-mini" style="display:inline-block;width:13px;height:13px;vertical-align:middle;line-height:0;"><svg viewBox="0 0 100 100" width="13" height="13"><defs><linearGradient id="cm_t_w" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#12432f"/><stop offset="100%" stop-color="#04140d"/></linearGradient><linearGradient id="cm_c_w" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#f1ffc9"/><stop offset="45%" stop-color="#abff44"/><stop offset="100%" stop-color="#74d321"/></linearGradient></defs><rect x="0" y="0" width="100" height="100" rx="26" fill="url(#cm_t_w)"/><path class="cm-c-anim" d="M69.9 33.3 A26 26 0 1 0 69.9 66.7" fill="none" stroke="url(#cm_c_w)" stroke-width="14" stroke-linecap="round"/><circle class="cm-seed-anim" cx="63" cy="50" r="5.6" fill="url(#cm_c_w)"/><rect x="1" y="1" width="98" height="98" rx="25" fill="none" stroke="#abff44" stroke-opacity="0.3" stroke-width="2"/></svg></span> Powered by <a href="https://crescelo.com" target="_blank" rel="noopener noreferrer">Crescelo</a></span>
       </div>
     `;
 
@@ -1098,7 +1146,7 @@
           }
         } else {
           brandingEl.style.display = 'flex';
-          brandingEl.innerHTML = '<span style="display:inline-flex;align-items:center;gap:4px;"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg> Powered by <a href="https://crescelo.com" target="_blank" rel="noopener noreferrer">Crescelo</a></span>';
+          brandingEl.innerHTML = '<span style="display:inline-flex;align-items:center;gap:5px;"><span class="cm-mark-mini" style="display:inline-block;width:13px;height:13px;vertical-align:middle;line-height:0;"><svg viewBox="0 0 100 100" width="13" height="13"><defs><linearGradient id="cm_t_w2" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#12432f"/><stop offset="100%" stop-color="#04140d"/></linearGradient><linearGradient id="cm_c_w2" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#f1ffc9"/><stop offset="45%" stop-color="#abff44"/><stop offset="100%" stop-color="#74d321"/></linearGradient></defs><rect x="0" y="0" width="100" height="100" rx="26" fill="url(#cm_t_w2)"/><path class="cm-c-anim" d="M69.9 33.3 A26 26 0 1 0 69.9 66.7" fill="none" stroke="url(#cm_c_w2)" stroke-width="14" stroke-linecap="round"/><circle class="cm-seed-anim" cx="63" cy="50" r="5.6" fill="url(#cm_c_w2)"/><rect x="1" y="1" width="98" height="98" rx="25" fill="none" stroke="#abff44" stroke-opacity="0.3" stroke-width="2"/></svg></span> Powered by <a href="https://crescelo.com" target="_blank" rel="noopener noreferrer">Crescelo</a></span>';
         }
       }
 

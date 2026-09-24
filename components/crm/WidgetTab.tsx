@@ -12,6 +12,7 @@ import {
   Trash2,
   Send,
 } from 'lucide-react';
+import { CresceloMark } from '@/components/brand/CresceloMark';
 
 export interface SupportCustomField {
   id: string;
@@ -695,6 +696,20 @@ export const WidgetTab: React.FC<WidgetTabProps> = ({
                         >
                           <Send className="h-3 w-3" />
                         </div>
+                      </div>
+
+                      {/* Footer branding preview */}
+                      <div className="py-2 px-3 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800 text-center text-[10px] text-slate-400 flex items-center justify-center gap-1.5">
+                        {formData.whiteLabelEnabled ? (
+                          formData.customBrandingText ? (
+                            <span className="font-medium text-slate-500 dark:text-slate-400">{formData.customBrandingText}</span>
+                          ) : null
+                        ) : (
+                          <div className="inline-flex items-center gap-1.5 opacity-80">
+                            <CresceloMark size={13} motion="draw" />
+                            <span>Powered by <strong className="font-semibold text-slate-600 dark:text-slate-300">Crescelo</strong></span>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>

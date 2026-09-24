@@ -179,9 +179,7 @@ body:has(.kx-app.dark) { background-color: #1f1e1d; color: #faf9f5; }
 .kx-app :is(button, a).bg-blue-600,
 .kx-app :is(button, a).bg-blue-500,
 .kx-app :is(button, a).bg-indigo-600,
-.kx-app :is(button, a).bg-blue-700,
-.kx-app :is(button, a).bg-purple-600,
-.kx-app :is(button, a).bg-violet-600 {
+.kx-app :is(button, a).bg-blue-700 {
   background-color: var(--kx-lime);
   color: var(--kx-deep);
   font-weight: 700;
@@ -191,28 +189,22 @@ body:has(.kx-app.dark) { background-color: #1f1e1d; color: #faf9f5; }
 .kx-app :is(button, a).bg-blue-600 *,
 .kx-app :is(button, a).bg-blue-500 *,
 .kx-app :is(button, a).bg-indigo-600 *,
-.kx-app :is(button, a).bg-blue-700 *,
-.kx-app :is(button, a).bg-purple-600 *,
-.kx-app :is(button, a).bg-violet-600 * { color: inherit; }
+.kx-app :is(button, a).bg-blue-700 * { color: inherit; }
 .kx-app :is(button, a).bg-blue-600:hover:not(:disabled),
 .kx-app :is(button, a).bg-blue-500:hover:not(:disabled),
 .kx-app :is(button, a).bg-indigo-600:hover:not(:disabled),
-.kx-app :is(button, a).bg-blue-700:hover:not(:disabled),
-.kx-app :is(button, a).bg-purple-600:hover:not(:disabled),
-.kx-app :is(button, a).bg-violet-600:hover:not(:disabled) {
+.kx-app :is(button, a).bg-blue-700:hover:not(:disabled) {
   background-color: var(--kx-lime);
   transform: translateY(-1px);
   box-shadow: 0 0 0 1.5px var(--kx-ink), 0 4px 0 1.5px var(--kx-ink);
 }
 .kx-app :is(button, a).bg-blue-600:active:not(:disabled) { transform: translateY(1px); box-shadow: 0 0 0 1.5px var(--kx-ink), 0 1px 0 1.5px var(--kx-ink); }
 .kx-app :is(button, a).bg-blue-600:disabled,
-.kx-app :is(button, a).bg-blue-500:disabled,
-.kx-app :is(button, a).bg-purple-600:disabled { opacity: 0.55; box-shadow: 0 0 0 1.5px rgba(26, 26, 26, 0.4); }
+.kx-app :is(button, a).bg-blue-500:disabled { opacity: 0.55; box-shadow: 0 0 0 1.5px rgba(26, 26, 26, 0.4); }
 /* On dark surfaces the outline is a deep neutral edge, so the lime button still reads as a raised control */
 .kx-app.dark :is(button, a).bg-blue-600,
 .kx-app.dark :is(button, a).bg-blue-500,
-.kx-app.dark :is(button, a).bg-indigo-600,
-.kx-app.dark :is(button, a).bg-purple-600 { box-shadow: 0 0 0 1.5px rgba(0, 0, 0, 0.55), 0 3px 0 1.5px rgba(0, 0, 0, 0.55); }
+.kx-app.dark :is(button, a).bg-indigo-600 { box-shadow: 0 0 0 1.5px rgba(0, 0, 0, 0.55), 0 3px 0 1.5px rgba(0, 0, 0, 0.55); }
 
 /* Filled status chips and buttons are lime in dark mode, so their label must be the deep ink, not white */
 .kx-app.dark :is(button, a, span, div).bg-emerald-500,
