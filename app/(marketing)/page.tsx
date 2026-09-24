@@ -1,3 +1,5 @@
+import { JsonLd } from '@/components/marketing/JsonLd';
+import { faqSchema, organizationSchema, softwareSchema, websiteSchema } from '@/lib/schema';
 import type { Metadata } from 'next';
 import { SITE } from '@/components/marketing/content';
 import { Header } from '@/components/marketing/Header';
@@ -26,72 +28,20 @@ export const metadata: Metadata = {
     siteName: SITE.name,
     title: TITLE,
     description: SITE.description,
-    images: ['/opengraph-image'],
+    images: [{ url: '/opengraph-image', width: 1200, height: 630, alt: 'Crescelo: AI website assistant for service businesses' }],
   },
   twitter: {
     card: 'summary_large_image',
     title: TITLE,
     description: SITE.description,
-    images: ['/twitter-image'],
+    images: [{ url: '/twitter-image', alt: 'Crescelo: AI website assistant for service businesses' }],
   },
 };
-
-function jsonLd() {
-  const data = [
-    {
-      '@context': 'https://schema.org',
-      '@type': 'Organization',
-      name: SITE.name,
-      url: SITE.url,
-      logo: `${SITE.url}/icon-512.png`,
-      email: SITE.contactEmail,
-    },
-    {
-      '@context': 'https://schema.org',
-      '@type': 'WebSite',
-      name: SITE.name,
-      url: SITE.url,
-    },
-    {
-      '@context': 'https://schema.org',
-      '@type': 'SoftwareApplication',
-      name: SITE.name,
-      applicationCategory: 'BusinessApplication',
-      description: SITE.description,
-      offers: PLANS.map((p) => ({
-        '@type': 'Offer',
-        name: p.name,
-        url: `${SITE.url}/pricing`,
-        priceSpecification: {
-          '@type': 'UnitPriceSpecification',
-          price: String(p.monthly),
-          priceCurrency: 'USD',
-          billingDuration: 1,
-          billingIncrement: 1,
-          unitCode: 'MON',
-          referenceQuantity: { '@type': 'QuantitativeValue', value: 1, unitCode: 'MON' },
-        },
-        price: String(p.monthly),
-        priceCurrency: 'USD',
-      })),
-    },
-    {
-      '@context': 'https://schema.org',
-      '@type': 'FAQPage',
-      mainEntity: FAQ.items.map((i) => ({
-        '@type': 'Question',
-        name: i.q,
-        acceptedAnswer: { '@type': 'Answer', text: i.a },
-      })),
-    },
-  ];
-  return JSON.stringify(data).replace(/</g, '\\u003c');
-}
 
 export default function WelcomePage() {
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd() }} />
+      <JsonLd data={[organizationSchema(), websiteSchema(), softwareSchema(), faqSchema(FAQ.items)]} />
       <Header />
       <main id="main">
         <Hero />

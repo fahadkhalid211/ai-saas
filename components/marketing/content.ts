@@ -62,7 +62,7 @@ export const HERO = {
   eyebrow: 'Website assistant for service businesses',
   title: ['Answer every visitor.', 'Book the ones who are ready.'],
   body: 'Crescelo reads your services, prices and policies, then talks to visitors on your website. It answers from what you have written, books real appointments, and passes the conversation to your team when it should.',
-  primaryCta: 'Create your assistant',
+  primaryCta: 'Start your 14-day free trial',
   secondaryCta: 'See how it works',
   trust: [
     'Answers only from your content',
@@ -285,7 +285,7 @@ export const PLANS: PricingPlan[] = BILLING_PLANS.map((p) => ({
 export const PRICING = {
   eyebrow: 'Pricing',
   title: 'Pick a plan by how many conversations you expect.',
-  intro: 'Prices in US dollars. Annual billing shows the effective monthly price.',
+  intro: 'Every plan starts with a 14-day free trial of all Growth features, no credit card needed. Prices in US dollars. Annual billing shows the effective monthly price.',
   note: 'You bring your own AI provider key, so model usage is billed by your provider, not marked up by us.',
 };
 
@@ -312,8 +312,8 @@ export const FAQ = {
       a: 'The slot is checked again at the moment of confirmation. If it was just taken, the visitor is offered another time.',
     },
     {
-      q: 'Is there a free plan or trial?',
-      a: 'Not at the moment. The plans listed above are the ones available.',
+      q: 'Is there a free trial?',
+      a: 'Yes. Every new account gets a 14-day free trial with all Growth features and no credit card. When it ends, choose a plan to keep your assistant answering visitors. If you do nothing, the assistant pauses and your data is kept for 30 days so you can subscribe later or export it. There is no permanent free plan.',
     },
     {
       q: 'Which channels are supported?',
@@ -334,8 +334,8 @@ export const FAQ = {
 
 export const FINAL_CTA = {
   title: 'Put a knowledgeable front desk on your website.',
-  body: 'Create an assistant, add your content, and try it yourself before any visitor does.',
-  primary: 'Create your assistant',
+  body: 'Start a 14-day free trial, add your content, and try it yourself before any visitor does. No credit card needed.',
+  primary: 'Start your 14-day free trial',
   secondary: 'Sign in',
 };
 

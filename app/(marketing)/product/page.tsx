@@ -175,7 +175,7 @@ export default function ProductPage() {
               and local CPU voice calling into a unified customer-facing engine.
             </p>
             <div className="mk-cta-row mk-rise" style={{ ['--mk-delay' as string]: '460ms' }}>
-              <ButtonLink href={SIGNUP_HREF}>Create your assistant</ButtonLink>
+              <ButtonLink href={SIGNUP_HREF}>Start your 14-day free trial</ButtonLink>
               <ButtonLink href="/#playground" variant="ghost">
                 Test live playground
               </ButtonLink>
@@ -607,7 +607,7 @@ export default function ProductPage() {
                 Upload your documents, test the booking engine, and connect your phone number with wholesale rates.
               </p>
               <div className="mk-cta-row">
-                <ButtonLink href={SIGNUP_HREF}>Create your assistant</ButtonLink>
+                <ButtonLink href={SIGNUP_HREF}>Start your 14-day free trial</ButtonLink>
                 <ButtonLink href="/pricing" variant="ghost">
                   View pricing plans
                 </ButtonLink>

@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import { withSocial } from '@/lib/seo';
 import type { ReactNode } from 'react';
+import { JsonLd } from '@/components/marketing/JsonLd';
+import { breadcrumbSchema } from '@/lib/schema';
 
 const title = 'How to Add an AI Assistant to WordPress | Crescelo Guide';
 const description =
@@ -13,5 +15,10 @@ export const metadata: Metadata = withSocial({
 }, '/guides/add-ai-assistant-to-wordpress');
 
 export default function Layout({ children }: { children: ReactNode }) {
-  return children;
+  return (
+    <>
+      <JsonLd data={[breadcrumbSchema([{ name: 'Support', path: '/support' }, { name: 'WordPress guide', path: '/guides/add-ai-assistant-to-wordpress' }])]} />
+      {children}
+    </>
+  );
 }

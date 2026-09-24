@@ -720,7 +720,7 @@ export default function UseCasePage() {
                 Join forward-thinking studios, clinics, and service businesses that run autonomous front desks with Crescelo.
               </p>
               <div className="mk-cta-row">
-                <ButtonLink href={SIGNUP_HREF}>Create your assistant</ButtonLink>
+                <ButtonLink href={SIGNUP_HREF}>Start your 14-day free trial</ButtonLink>
                 <ButtonLink href="/support/contact" variant="ghost">
                   Schedule onboarding call
                 </ButtonLink>

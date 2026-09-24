@@ -93,7 +93,7 @@ export default function WordPressGuidePage() {
             </div>
 
             <div style={{ marginTop: '2.5rem', textAlign: 'center' }}>
-              <ButtonLink href="/login?mode=register">Create your assistant</ButtonLink>
+              <ButtonLink href="/login?mode=register">Start your 14-day free trial</ButtonLink>
               <p style={{ marginTop: '0.75rem', fontSize: '0.9rem', color: 'var(--mk-muted)' }}>
                 Still stuck? <Link href="/support/contact" style={{ textDecoration: 'underline' }}>Contact support</Link>
               </p>

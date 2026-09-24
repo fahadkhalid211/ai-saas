@@ -34,7 +34,7 @@ export default function LoginPage() {
     const found = chosen && BILLING_PLANS.find((p) => p.id === chosen.plan);
     if (found && chosen) {
       const price = chosen.billing === 'annual' ? found.annualMonthlyPrice : found.monthlyPrice;
-      setSelectedPlanNote(`Selected plan: ${found.name}, $${price} / month, billed ${chosen.billing === 'annual' ? `annually ($${price * 12} / year)` : 'monthly'}. You choose and pay for your plan after you sign up.`);
+      setSelectedPlanNote(`Selected plan: ${found.name}, $${price} / month, billed ${chosen.billing === 'annual' ? `annually ($${price * 12} / year)` : 'monthly'}. You start with 14 days free on all Growth features, no card needed, and choose this plan when the trial ends.`);
     }
   }, []);
 

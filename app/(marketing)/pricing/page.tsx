@@ -306,7 +306,7 @@ export default function PricingPage() {
               Set up your assistant, train it on your services, and start taking bookings today.
             </p>
             <div className="mk-cta-row" style={{ justifyContent: 'center' }}>
-              <ButtonLink href={SIGNUP_HREF}>Create your assistant</ButtonLink>
+              <ButtonLink href={SIGNUP_HREF}>Start your 14-day free trial</ButtonLink>
               <ButtonLink href="/support/contact" variant="ghost">
                 Ask a billing question
               </ButtonLink>

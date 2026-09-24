@@ -136,7 +136,7 @@ export function AdminLoginScreen({
           </h2>
           <p className="text-xs text-slate-500 dark:text-slate-400 max-w-xs leading-relaxed">
             {authLoginMode === 'register'
-              ? 'Launch your automated AI customer assistant in 2 minutes.'
+              ? 'Start your 14-day free trial. All Growth features, no credit card needed.'
               : 'Sign in to access your business assistant, CRM leads, and live conversations.'}
           </p>
           {authLoginMode === 'register' && selectedPlanNote && (
@@ -343,7 +343,7 @@ export function AdminLoginScreen({
                 {authLoginMode === 'register' && <Sparkles className="h-3.5 w-3.5" />}
                 {authLoginMode === 'staff' && <Users className="h-3.5 w-3.5" />}
                 <span>
-                  {authLoginMode === 'register' ? 'Create Workspace & Launch AI' : 'Sign In to Workspace'}
+                  {authLoginMode === 'register' ? 'Start 14-Day Free Trial' : 'Sign In to Workspace'}
                 </span>
               </>
             )}
@@ -351,7 +351,7 @@ export function AdminLoginScreen({
 
           {authLoginMode === 'register' && (
             <p className="text-center text-[11px] leading-relaxed text-slate-500 dark:text-slate-400">
-              By creating an account you agree to our{' '}
+              By starting your free trial you agree to our{' '}
               <a href="/terms" target="_blank" rel="noopener noreferrer" className="underline">Terms of Service</a>,{' '}
               <a href="/acceptable-use" target="_blank" rel="noopener noreferrer" className="underline">Acceptable Use Policy</a> and{' '}
               <a href="/privacy" target="_blank" rel="noopener noreferrer" className="underline">Privacy Policy</a>, and confirm you are at least 18.

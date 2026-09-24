@@ -16,6 +16,7 @@ import { logged } from '@/lib/logging/route';
 import { logEvent } from '@/lib/logging/logger';
 import { wantsLiveAgent, liveAgentReply, streamFixedReply } from '@/lib/chat/handoff';
 import { isLowConfidence, looksLikeUnknown, withUnknownOffer } from '@/lib/rag/confidence';
+import { SERVICE_PAUSED_MESSAGE, serviceBlocked } from '@/lib/billing/trial';
 
 // Streamed responses (token-by-token LLM output, plus an optional live web
 // search round-trip) can run well past a short default function timeout.
@@ -147,6 +148,11 @@ async function POSTHandler(req: NextRequest) {
     // Monthly chat quota validation per workspace
     const wsId = assistant.workspaceId || 'default-workspace';
     const billing = await Database.getWorkspaceBilling(wsId);
+    // Trial over and no subscription: the assistant stops answering visitors (the owner is told in the dashboard).
+    if (assistant.id !== 'demo-assistant' && serviceBlocked(billing)) {
+      logEvent({ level: 'info', category: 'billing', event: 'billing.service_paused', meta: { workspaceId: wsId, assistantId: assistant.id } });
+      return NextResponse.json({ error: SERVICE_PAUSED_MESSAGE, serviceUnavailable: true }, { status: 402, headers: { 'Access-Control-Allow-Origin': '*' } });
+    }
     const convs = await Database.getConversations(undefined, wsId);
     const periodStart = new Date(billing.currentPeriodStart).getTime();
     const periodEnd = new Date(billing.currentPeriodEnd).getTime();

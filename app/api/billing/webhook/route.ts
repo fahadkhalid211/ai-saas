@@ -88,6 +88,8 @@ async function POSTHandler(req: NextRequest) {
               overageRatePerChat: starterPlan.overageRate,
               landingPageLimit: starterPlan.landingPageLimit,
               stripeSubscriptionId: undefined,
+              // a cancelled subscription ends service; it does not fall back to a free plan
+              trialEndsAt: new Date().toISOString(),
             } as any);
             console.log(`[Stripe Webhook] Subscription cancelled for workspace ${ws.id}, reverted to Starter.`);
           }

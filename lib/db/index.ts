@@ -43,6 +43,8 @@ import { isSupabaseConfigured } from './supabase';
 import { isPostgresConfigured, disablePostgresTemporarily, isConnectionError } from './postgres';
 import * as Relational from './relational';
 import * as ChunkStore from './chunk-store';
+import { BILLING_PLANS } from '../billing/plans';
+import { TRIAL_PLAN_ID, newTrialDates } from '../billing/trial';
 import { pgVectorStoreEnabled } from './chunk-store';
 import { isRedisConfigured, redisGet, redisSet, CACHE_KEYS } from '../cache/redis';
 export { isCloudDbConfigured, getCloudDbProvider, isSupabaseConfigured };
@@ -295,6 +297,11 @@ export interface WorkspaceBillingData {
   };
   billingEmail?: string;
   invoices?: InvoiceRecord[];
+  /** Free trial (see lib/billing/trial.ts). Absent on workspaces created before the trial existed. */
+  trialStartedAt?: string;
+  trialEndsAt?: string;
+  stripeCustomerId?: string;
+  stripeSubscriptionId?: string;
 }
 
 export interface AppointmentData {
@@ -3582,19 +3589,22 @@ export class Database {
     const startOfCurrentMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString();
     const endOfCurrentMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 1).toISOString();
 
+    // Every new workspace starts a 14-day trial with all Growth features and no card (lib/billing/trial.ts).
+    const trialPlan = BILLING_PLANS.find((p) => p.id === TRIAL_PLAN_ID) || BILLING_PLANS[0];
     const workspace: WorkspaceBillingData = {
       id: workspaceId,
       name: cleanName,
-      planId: 'starter',
-      planName: 'Starter',
+      planId: trialPlan.id,
+      planName: `${trialPlan.name} (free trial)`,
       billingInterval: 'monthly',
-      monthlyChatLimit: 100,
-      overageRatePerChat: 0.50,
-      landingPageLimit: 1,
+      monthlyChatLimit: trialPlan.chatSessionsLimit,
+      overageRatePerChat: trialPlan.overageRate,
+      landingPageLimit: trialPlan.landingPageLimit,
       currentPeriodStart: startOfCurrentMonth,
       currentPeriodEnd: endOfCurrentMonth,
       billingEmail: cleanEmail,
       invoices: [],
+      ...newTrialDates(),
     };
     (workspace as any).ownerEmail = cleanEmail;
     (workspace as any).ownerPassword = hashedPass;

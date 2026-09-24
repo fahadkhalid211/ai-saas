@@ -5,6 +5,8 @@ import { withAdminAuth, withRoleAuth, getAuthContext } from '@/lib/security/auth
 import { getClientIp } from '@/lib/security/rate-limit';
 import { validateEmail, sanitizeInput } from '@/lib/security/validation';
 import { logged } from '@/lib/logging/route';
+import { trialInfo } from '@/lib/billing/trial';
+import { isStripeConfigured } from '@/lib/billing/stripe';
 
 const GETHandler = withAdminAuth(async (req: Request) => {
   try {
@@ -45,6 +47,7 @@ const GETHandler = withAdminAuth(async (req: Request) => {
     return NextResponse.json({
       workspaceId: ws.id,
       name: ws.name,
+      trial: trialInfo(ws),
       planId: ws.planId,
       planName: ws.planName,
       billingInterval: ws.billingInterval,
@@ -91,6 +94,11 @@ const POSTHandler = withRoleAuth(['owner', 'admin', 'billing_manager'], async (r
       : (ctx.workspaceId && ctx.workspaceId !== '*' ? ctx.workspaceId : 'default-workspace');
 
     if (action === 'change_plan') {
+      // With Stripe connected a plan is only ever set by a paid checkout (webhook). This direct route would otherwise let any
+      // workspace owner give themselves a paid plan for free, and would sidestep the end of the trial.
+      if (isStripeConfigured() && !ctx.isMasterAdmin) {
+        return NextResponse.json({ error: 'Plans are changed through checkout. Use "Choose plan" to subscribe.' }, { status: 400 });
+      }
       const targetPlan = BILLING_PLANS.find((p) => p.id === planId);
       if (!targetPlan) {
         return NextResponse.json({ error: 'Invalid plan selected' }, { status: 400 });

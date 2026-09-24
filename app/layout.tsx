@@ -1,7 +1,7 @@
 import { CookieConsent } from '@/components/legal/CookieConsent';
 import { SITE } from '@/components/marketing/content';
 import { ReticleDev } from './reticle-dev';
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -15,8 +15,22 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+export const viewport: Viewport = {
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#fffeeb' },
+    { media: '(prefers-color-scheme: dark)', color: '#1f1e1d' },
+  ],
+};
+
 export const metadata: Metadata = {
   metadataBase: new URL(SITE.url),
+  keywords: ['AI website assistant', 'AI chatbot for service businesses', 'appointment booking chatbot', 'lead capture chatbot', 'website chat widget', 'BYOK AI chatbot'],
+  authors: [{ name: 'Crescelo', url: SITE.url }],
+  creator: 'Crescelo',
+  publisher: 'Crescelo',
+  category: 'technology',
+  formatDetection: { telephone: false },
+  robots: { index: true, follow: true, googleBot: { index: true, follow: true, 'max-image-preview': 'large', 'max-snippet': -1, 'max-video-preview': -1 } },
   title: { default: 'Crescelo: AI website assistant for service businesses', template: '%s' },
   description: SITE.description,
   applicationName: 'Crescelo',

@@ -237,6 +237,7 @@ export const TERMS: LegalDocument = {
       id: 'fees',
       heading: '7. Plans, fees and billing',
       body: [
+        'Free trial: every new account gets a 14-day free trial of all Growth features, without a payment card, once per business. When the trial ends we pause your assistants unless you have subscribed to a paid plan; your dashboard stays available so you can subscribe or export your data, and we keep your data for 30 days before deleting it under the Privacy Policy. We may end or change the trial, and may refuse it where we suspect abuse (for example repeated sign-ups by the same business).',
         'Paid plans (currently Starter, Growth and Agency / Scale) are described on our pricing page and are billed in advance, monthly or annually as you choose, through Stripe. Prices exclude taxes; you are responsible for applicable taxes and we may add them where required. Subscriptions renew automatically until cancelled. You can cancel at any time in the billing portal; cancellation takes effect at the end of the period already paid, and you keep access until then.',
         'Fees are non-refundable except where these Terms say otherwise or the law gives you a right to a refund. If a payment fails we may retry it and, after notice, suspend paid features. Usage beyond your plan’s included amounts (for example extra chat sessions) is billed at the rates shown when you enable it. We may change prices for future periods by giving at least 30 days’ notice; if you do not agree, cancel before the change takes effect.',
       ],

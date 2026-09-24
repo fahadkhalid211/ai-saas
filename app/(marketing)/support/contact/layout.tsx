@@ -1,13 +1,22 @@
 import type { Metadata } from 'next';
 import { withSocial } from '@/lib/seo';
 import type { ReactNode } from 'react';
+import { JsonLd } from '@/components/marketing/JsonLd';
+import { breadcrumbSchema, softwareSchema, webPageSchema } from '@/lib/schema';
+
+const description = 'Talk to the Crescelo team about plans, setup or a problem. Send a message and we reply by email.';
 
 export const metadata: Metadata = withSocial({
   title: 'Contact Crescelo | Sales & Technical Support',
-  description: 'Talk to the Crescelo team about plans, setup or a problem. Send a message and we reply by email.',
+  description,
   alternates: { canonical: '/support/contact' },
 }, '/support/contact');
 
 export default function Layout({ children }: { children: ReactNode }) {
-  return children;
+  return (
+    <>
+      <JsonLd data={[webPageSchema('Contact Crescelo', description, '/support/contact', 'ContactPage'), breadcrumbSchema([{ name: 'Support', path: '/support' }, { name: 'Contact', path: '/support/contact' }])]} />
+      {children}
+    </>
+  );
 }

@@ -1,5 +1,6 @@
 'use client';
 
+import { TrialBanner } from '@/components/crm/TrialBanner';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { RefreshCw, Globe } from 'lucide-react';
 import '../brand.css';
@@ -651,6 +652,8 @@ export default function DashboardPage() {
           dbStatus={dbStatus}
           onOpenTour={handleOpenTour}
         />
+
+        <TrialBanner onChoosePlan={() => setActiveTab('billing')} />
 
         {/* Cloud Persistence Notice Banner */}
         {dbStatus && !dbStatus.connected && dbStatus.isServerless && !dismissedDbBanner && (

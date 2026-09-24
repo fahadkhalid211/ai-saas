@@ -734,7 +734,7 @@ export default function IntegrationsPage() {
                 No vendor lock-in. No per-minute markups. Complete ownership of your schedule and customer relationships.
               </p>
               <div className="mk-cta-row">
-                <ButtonLink href={SIGNUP_HREF}>Create your assistant</ButtonLink>
+                <ButtonLink href={SIGNUP_HREF}>Start your 14-day free trial</ButtonLink>
                 <ButtonLink href="/support/contact" variant="ghost">
                   Book an onboarding call
                 </ButtonLink>

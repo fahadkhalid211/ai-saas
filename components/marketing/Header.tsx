@@ -68,7 +68,7 @@ export function Header() {
               Log in
             </Link>
             <ButtonLink href={SIGNUP_HREF} className="mk-btn-sm mk-cta-desktop">
-              Create your assistant
+              Start your 14-day free trial
             </ButtonLink>
             <button
               ref={toggleRef}
@@ -103,7 +103,7 @@ export function Header() {
             )}
           </nav>
           <div className="mk-mobile-actions">
-            <ButtonLink href={SIGNUP_HREF}>Create your assistant</ButtonLink>
+            <ButtonLink href={SIGNUP_HREF}>Start your 14-day free trial</ButtonLink>
             <ButtonLink href={LOGIN_HREF} variant="ghost">
               Log in
             </ButtonLink>
