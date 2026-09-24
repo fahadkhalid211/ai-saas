@@ -81,16 +81,16 @@ export const CustomSkeletonTemplate: React.FC<IndustryTemplateProps> = ({
           {/* Blueprint Badge */}
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-indigo-500/30 bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 text-xs font-mono font-medium">
             <Layers className="w-3.5 h-3.5 animate-pulse" />
-            <span>{config.badgeText || '[CUSTOM MODULAR SKELETON BLUEPRINT]'}</span>
+            <span>{config.badgeText || 'Welcome'}</span>
           </div>
 
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-slate-900 dark:text-white leading-[1.15]">
-            {config.heroHeadline || 'Craft Your Bespoke Presence. Convert Visitors Seamlessly.'}
+            {config.heroHeadline || 'Welcome. How can we help?'}
           </h1>
 
           <p className="text-base sm:text-lg text-slate-600 dark:text-slate-400 leading-relaxed font-normal">
             {config.heroSubheadline ||
-              'This is a clean, modular skeleton template designed for bespoke businesses and agencies. Replace this placeholder copy with your core value proposition, upload your brand assets, and connect appointments directly.'}
+              'Ask a question, book a time, or talk to our team. We are here to help.'}
           </p>
 
           <div className="pt-3 flex flex-wrap items-center justify-center gap-4">
@@ -159,7 +159,7 @@ export const CustomSkeletonTemplate: React.FC<IndustryTemplateProps> = ({
                       [HERO MEDIA ZONE]
                     </div>
                     <h3 className="text-2xl font-bold text-slate-900 dark:text-white">
-                      {config.businessName || 'Your Business Name'}
+                      {config.businessName || 'Welcome'}
                     </h3>
                     <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
                       {config.aboutText ||
@@ -313,11 +313,11 @@ export const CustomSkeletonTemplate: React.FC<IndustryTemplateProps> = ({
                 [ABOUT &amp; BACKGROUND]
               </span>
               <h3 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">
-                {config.aboutTitle || 'About Your Company & Mission'}
+                {config.aboutTitle || 'About us'}
               </h3>
               <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
                 {config.aboutText ||
-                  'Introduce your company story, core vision, and client commitments here. This clean skeleton layout is fully customizable: update services, working hours, pricing tiers, and embed customer testimonials with one click.'}
+                  'Get in touch to learn more about what we do and how we can help.'}
               </p>
 
               <div className="space-y-2 pt-2 text-xs text-slate-600 dark:text-slate-400">
@@ -403,7 +403,7 @@ export const CustomSkeletonTemplate: React.FC<IndustryTemplateProps> = ({
       <footer className="py-12 border-t border-slate-200 dark:border-slate-800 text-center text-xs text-slate-500 dark:text-slate-400 space-y-4">
         <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="font-bold text-slate-900 dark:text-white text-sm">
-            {config.businessName || 'Your Company Name'}
+            {config.businessName || 'Welcome'}
           </div>
           <div className="text-xs font-mono">
             Powered by Crescelo Enterprise Platform

@@ -74,11 +74,10 @@ export const HERO = {
 /* ------------------------ Social proof strip ----------------------- */
 
 /**
- * The brief asks for a logo marquee with placeholders. These are labelled
- * categories, not company names, so nothing implies a real customer.
+ * Industries the product is built for: categories, not company names, so nothing implies a real customer.
  */
 export const LOGO_STRIP = {
-  caption: 'Built for teams like these (placeholder slots for customer logos)',
+  caption: 'Built for service businesses like these',
   items: [
     'Barbershops',
     'Dental clinics',

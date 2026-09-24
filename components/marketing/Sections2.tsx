@@ -225,7 +225,7 @@ export function Stories() {
           <p className="mk-lead">{STORIES.notice}</p>
         </Reveal>
       </div>
-      <div className="mk-story-viewport" role="region" aria-label="Customer stories (placeholders)" tabIndex={0}>
+      <div className="mk-story-viewport" role="region" aria-label="Customer stories" tabIndex={0}>
         <ul className="mk-story-track">
           {items.map((s, i) => (
             <li key={i} className="mk-story-li" aria-hidden={i >= STORIES.items.length ? 'true' : undefined}>
