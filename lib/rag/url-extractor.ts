@@ -13,6 +13,98 @@ export function isYouTubeUrl(url: string): boolean {
   return /(?:youtu\.be\/|youtube\.com\/(?:watch|shorts|embed|live|v|e|attribution_link))/i.test(url.trim());
 }
 
+export function isInstagramUrl(url: string): boolean {
+  if (!url) return false;
+  return /instagram\.com\/(p|reel|tv|stories)\//i.test(url.trim());
+}
+
+/**
+ * Extracts Instagram post/reel metadata using the public oEmbed endpoint.
+ * Instagram requires JavaScript to render content, so all generic scraping tiers fail.
+ * The oEmbed API returns the post caption and author without any authentication.
+ */
+export async function extractFromInstagram(url: string): Promise<ExtractedDocument> {
+  const ssrfCheck = await validateSafeExternalUrl(url);
+  if (!ssrfCheck.safe) {
+    throw new Error(ssrfCheck.error || 'Target URL points to an internal or forbidden address.');
+  }
+
+  console.log(`[URLExtractor] Fetching Instagram oEmbed for ${url}...`);
+
+  // Determine the post type for a human-readable label
+  const isReel = /instagram\.com\/(reel|tv)\//i.test(url);
+  const postType = isReel ? 'Reel' : 'Post';
+
+  let caption = '';
+  let authorName = '';
+
+  try {
+    const oembedUrl = `https://api.instagram.com/oembed?url=${encodeURIComponent(url)}&format=json`;
+    const res = await fetch(oembedUrl, {
+      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; KnowledgeBot/1.0)' },
+      signal: AbortSignal.timeout(10000),
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      caption = (data.title || '').trim();
+      authorName = (data.author_name || '').trim();
+      console.log(`[URLExtractor] Instagram oEmbed succeeded. Author: ${authorName}, Caption length: ${caption.length}`);
+    } else {
+      console.warn(`[URLExtractor] Instagram oEmbed returned ${res.status} ${res.statusText}`);
+    }
+  } catch (err: any) {
+    console.warn(`[URLExtractor] Instagram oEmbed fetch failed:`, err?.message);
+  }
+
+  // Build the knowledge document content
+  const lines: string[] = [];
+  const docTitle = authorName
+    ? `Instagram ${postType} by @${authorName}`
+    : `Instagram ${postType}`;
+
+  lines.push(`=== [Instagram Knowledge: ${docTitle}] ===`);
+  lines.push(`URL: ${url}`);
+  if (authorName) lines.push(`Author: @${authorName}`);
+  lines.push('');
+
+  if (caption) {
+    lines.push(`Caption:\n${caption}`);
+  } else {
+    // Fallback: extract what we can from the URL itself
+    lines.push(
+      `Note: The full caption of this Instagram ${postType.toLowerCase()} could not be retrieved automatically (Instagram requires a logged-in session for full content). ` +
+      `The post URL is: ${url}` +
+      (authorName ? ` by @${authorName}.` : '.')
+    );
+    lines.push('');
+    lines.push(
+      'To add the content from this post to the knowledge base, please copy the caption text manually and add it as a text note.'
+    );
+  }
+
+  const content = lines.join('\n');
+
+  if (content.length < 50) {
+    throw new Error(
+      `Could not retrieve content from this Instagram ${postType.toLowerCase()}. Instagram requires a logged-in browser session to display post content. ` +
+      `Please copy the caption or description text and add it manually as a text note to the knowledge base.`
+    );
+  }
+
+  return {
+    title: docTitle,
+    type: 'web',
+    content,
+    metadata: {
+      url,
+      domain: 'instagram.com',
+      characterCount: content.length,
+      extractorTier: 'instagram-oembed',
+    },
+  };
+}
+
 export function extractYouTubeVideoId(url: string): string | null {
   if (!url) return null;
   const clean = url.trim();
@@ -1171,6 +1263,10 @@ export async function extractFromUrl(
 
   if (isYouTubeUrl(cleanUrl)) {
     return await extractFromYouTube(cleanUrl, options);
+  }
+
+  if (isInstagramUrl(cleanUrl)) {
+    return await extractFromInstagram(cleanUrl);
   }
 
   if (isDirectMediaUrl(cleanUrl)) {
