@@ -34,6 +34,15 @@ async function main() {
   console.log(`Found ${chunks.length} passages (${withVec} with embeddings, ${chunks.length - withVec} without).`);
   if (dry || chunks.length === 0) return;
 
+  // passages saved without an embedding would only be findable by words: compute the missing ones now
+  const missing = chunks.filter((c) => !(Array.isArray(c.embedding) && c.embedding.length === store.EMBEDDING_DIMENSIONS));
+  if (missing.length) {
+    const { generateEmbeddingsBatch } = await import('../lib/rag/embedder');
+    const vecs = await generateEmbeddingsBatch(missing.map((c) => c.content));
+    missing.forEach((c, i) => { c.embedding = vecs[i]; });
+    console.log(`Embedded ${missing.length} passages that had no embedding.`);
+  }
+
   process.env.RAG_VECTOR_STORE = 'pgvector';
   await store.ensureChunkStore();
   for (let i = 0; i < chunks.length; i += 200) {
