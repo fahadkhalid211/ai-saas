@@ -306,6 +306,10 @@ export interface WorkspaceBillingData {
   stripeSubscriptionId?: string;
   subscriptionStatus?: SubscriptionStatus;
   cancelAtPeriodEnd?: boolean;
+  /** Stripe's identifier for the card that started the trial (never the card number). */
+  cardFingerprint?: string;
+  /** Set when a card was disputed or flagged as fraud; the workspace cannot start another trial. */
+  billingRisk?: 'fraud_warning' | 'dispute' | 'trial_card_reused';
 }
 
 export interface AppointmentData {
@@ -3549,6 +3553,13 @@ export class Database {
   static async getProcessedWebhookCount(): Promise<number> {
     const state = await ensureInitialized();
     return (state.processedWebhookEvents || []).length;
+  }
+
+  /** Another workspace that already started a trial with this physical card, if any. */
+  static async findOtherWorkspaceByCardFingerprint(fingerprint: string, excludeWorkspaceId: string): Promise<WorkspaceBillingData | null> {
+    if (!fingerprint) return null;
+    const state = await ensureInitialized();
+    return (state.workspaces || []).find((w) => w.id !== excludeWorkspaceId && w.cardFingerprint === fingerprint && w.trialStartedAt) || null;
   }
 
   static async findWorkspaceByStripeCustomer(customerId: string): Promise<WorkspaceBillingData | null> {

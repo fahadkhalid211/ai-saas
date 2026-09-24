@@ -101,29 +101,12 @@ export function useCrmBilling() {
     }
   };
 
+  // Cards are only ever entered on Stripe's own pages. This opens the Stripe billing portal, where the card can be replaced.
   const handleUpdatePaymentMethod = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsUpdatingCard(true);
     try {
-      const res = await fetch('/api/billing', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          paymentMethod: {
-            brand: cardBrand,
-            last4: cardLast4,
-            expMonth: parseInt(cardExpMonth, 10) || 12,
-            expYear: parseInt(cardExpYear, 10) || 2028,
-          },
-          billingEmail: billingEmailInput,
-        }),
-      });
-      if (res.ok) {
-        setShowPaymentModal(false);
-        await fetchBilling();
-      }
-    } catch (err) {
-      console.error('Failed to update payment method:', err);
+      await handleOpenCustomerPortal();
     } finally {
       setIsUpdatingCard(false);
     }

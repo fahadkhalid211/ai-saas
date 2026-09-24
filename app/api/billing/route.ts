@@ -75,12 +75,7 @@ const GETHandler = withAdminAuth(async (req: Request) => {
         limitMb: storageLimitMb,
         percentUsed: storagePercentUsed,
       },
-      paymentMethod: ws.paymentMethod || {
-        brand: 'Visa',
-        last4: '4242',
-        expMonth: 12,
-        expYear: 2028,
-      },
+      paymentMethod: ws.paymentMethod || null,
       billingEmail: ws.billingEmail || 'billing@crescelo.com',
       invoices: ws.invoices || [],
       plans: BILLING_PLANS,
@@ -187,7 +182,12 @@ const PATCHHandler = withRoleAuth(['owner', 'admin', 'billing_manager'], async (
 
     const updates: any = {};
 
+    // Card details are never accepted from the browser: the real card comes from Stripe through the webhook, and it is changed
+    // in Stripe's billing portal. (A hand-typed "card" would fake a payment method.)
     if (paymentMethod !== undefined) {
+      return NextResponse.json({ error: 'Card details are managed by Stripe. Use "Cancel or manage" to update your card.' }, { status: 400 });
+    }
+    if (false as boolean) {
       if (!paymentMethod || typeof paymentMethod !== 'object' || Array.isArray(paymentMethod)) {
         return NextResponse.json({ error: 'paymentMethod must be a valid JSON object' }, { status: 400 });
       }

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Database } from '@/lib/db';
-import { createCheckoutSession, changeSubscriptionPlan, isStripeConfigured, sandboxAllowed } from '@/lib/billing/stripe';
+import { createCheckoutSession, changeSubscriptionPlan, cleanCustomerEmail, isStripeConfigured, sandboxAllowed, stripeModeOk } from '@/lib/billing/stripe';
+import { enforceDistributedRateLimit, enforceDistributedRateLimitByKey } from '@/lib/security/rate-limit-redis';
 import { newTrialDates, trialAvailable } from '@/lib/billing/trial';
 import { BILLING_PLANS } from '@/lib/billing/plans';
 import { getAuthContext, requireRole } from '@/lib/security/auth';
@@ -35,7 +36,18 @@ async function POSTHandler(req: NextRequest) {
       return NextResponse.json({ error: 'Request body must be a JSON object' }, { status: 400 });
     }
 
-    const { planId, billingInterval = 'monthly', addonType } = body;
+    const { planId, billingInterval = 'monthly', addonType } = body as { planId?: any; billingInterval?: any; addonType?: any };
+
+    // Only plain strings from a fixed list are accepted; nothing typed by the user reaches Stripe.
+    if (typeof planId !== 'undefined' && typeof planId !== 'string') {
+      return NextResponse.json({ error: 'Invalid planId' }, { status: 400 });
+    }
+    if (typeof addonType !== 'undefined' && typeof addonType !== 'string') {
+      return NextResponse.json({ error: 'Invalid addonType' }, { status: 400 });
+    }
+    if (typeof billingInterval !== 'string') {
+      return NextResponse.json({ error: 'Invalid billingInterval' }, { status: 400 });
+    }
 
     // Validate addonType if specified
     if (addonType !== undefined) {
@@ -66,9 +78,20 @@ async function POSTHandler(req: NextRequest) {
       );
     }
 
-    const workspaceId = ctx.isMasterAdmin && body.workspaceId
+    const workspaceId = ctx.isMasterAdmin && typeof body.workspaceId === 'string'
       ? body.workspaceId
       : (ctx.workspaceId && ctx.workspaceId !== '*' ? ctx.workspaceId : 'default-workspace');
+
+    // Card-testing defence: each workspace and each address can only open a handful of checkouts per hour, shared across servers.
+    const limitedByWorkspace = await enforceDistributedRateLimitByKey(`billing-checkout:ws:${workspaceId}`, { windowMs: 60 * 60 * 1000, max: 6 });
+    if (limitedByWorkspace) return limitedByWorkspace;
+    const limitedByIp = await enforceDistributedRateLimit(req, 'billing-checkout-ip', { windowMs: 60 * 60 * 1000, max: 15 });
+    if (limitedByIp) return limitedByIp;
+
+    if (!stripeModeOk()) {
+      logEvent({ level: 'error', category: 'billing', event: 'billing.test_key_in_production' });
+      return NextResponse.json({ error: 'Billing is not available right now. Please contact support.' }, { status: 503 });
+    }
 
     const origin = req.nextUrl.origin || process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
     const successUrl = `${origin}/dashboard?billing_success=true&session_id={CHECKOUT_SESSION_ID}`;
@@ -81,12 +104,12 @@ async function POSTHandler(req: NextRequest) {
     if (!addonType && isStripeConfigured() && ws.stripeSubscriptionId && ws.subscriptionStatus !== 'canceled') {
       // Already subscribed: move the existing subscription. A second Checkout would create a second, double-billed one.
       try {
-        await changeSubscriptionPlan(ws.stripeSubscriptionId, planId, billingInterval);
+        await changeSubscriptionPlan(ws.stripeSubscriptionId, planId as 'starter' | 'growth' | 'scale', billingInterval);
       } catch (err: any) {
         return NextResponse.json({ error: err?.message || 'Could not change the plan. Use "Manage subscription" instead.' }, { status: 502 });
       }
       await Database.updateWorkspaceBilling(ws.id, {
-        planId,
+        planId: planId as 'starter' | 'growth' | 'scale',
         planName: BILLING_PLANS.find((p) => p.id === planId)!.name,
         billingInterval,
         monthlyChatLimit: BILLING_PLANS.find((p) => p.id === planId)!.chatSessionsLimit,
@@ -105,8 +128,8 @@ async function POSTHandler(req: NextRequest) {
     const result = await createCheckoutSession({
       workspaceId: ws.id,
       workspaceName: ws.name,
-      customerEmail: ws.billingEmail,
-      planId,
+      customerEmail: cleanCustomerEmail(ws.billingEmail),
+      planId: planId as 'starter' | 'growth' | 'scale' | undefined,
       billingInterval,
       addonType,
       withTrial,

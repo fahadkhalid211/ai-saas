@@ -1,6 +1,7 @@
 import { FAQ, PLANS, SITE } from '@/components/marketing/content';
 import { LEGAL } from '@/lib/legal/config';
 import { TRIAL_DAYS } from '@/lib/billing/trial';
+import { sortedPosts } from '@/lib/blog/posts';
 
 export const dynamic = 'force-static';
 export const revalidate = 86400;
@@ -14,6 +15,7 @@ export function GET() {
   const plans = PLANS.map(
     (p) => `- ${p.name}: $${p.monthly}/month billed monthly, or $${p.annualMonthly}/month billed annually. ${p.highlights.join('; ')}.`
   ).join('\n');
+  const blog = sortedPosts().map((p) => `- [${p.title}](${u}/blog/${p.slug}): ${p.excerpt}`).join('\n');
   const faq = FAQ.items.map((i) => `- ${i.q} ${i.a}`).join('\n');
 
   const body = `# Crescelo
@@ -44,6 +46,9 @@ Full details: ${u}/pricing
 - [Help center](${u}/support)
 - [Add the assistant to WordPress](${u}/guides/add-ai-assistant-to-wordpress)
 - [Contact](${u}/support/contact)
+
+## Blog
+${blog}
 
 ## Common questions
 ${faq}

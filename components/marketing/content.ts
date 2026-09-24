@@ -365,6 +365,7 @@ export const FOOTER = {
     {
       title: 'Support & Legal',
       links: [
+        { label: 'Blog', href: '/blog' },
         { label: 'Help Center', href: '/support' },
         { label: 'Contact Support', href: '/support/contact' },
         { label: 'Privacy Policy', href: '/privacy' },

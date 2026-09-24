@@ -763,6 +763,10 @@
         background: #16a34a;
         color: #ffffff;
       }
+      .cal-title { margin-top: 10px; font-size: 11px; font-weight: 700; color: #475569; }
+      .cal-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+      .cal-btn { display: inline-flex; align-items: center; padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 8px; background: #fff; color: #0f172a; font-size: 11.5px; font-weight: 600; text-decoration: none; cursor: pointer; font-family: inherit; }
+      .cal-btn:hover { border-color: var(--primary-color, #2563eb); color: var(--primary-color, #2563eb); }
       .chat-notice {
         padding: 6px 16px 0 16px;
         background: #ffffff;
@@ -2226,9 +2230,34 @@
             }),
           })
             .then(function (res) {
-              return res.json();
+              return res.json().then(function (data) {
+                return { ok: res.ok, data: data || {} };
+              });
             })
-            .then(function (data) {
+            .then(function (result) {
+              if (!result.ok) {
+                // e.g. the slot was just taken: say so and let the visitor choose another time
+                if (btnEl) {
+                  btnEl.disabled = false;
+                  btnEl.textContent = 'Confirm Appointment';
+                }
+                var errBox = card.querySelector('#book-error');
+                if (!errBox) {
+                  errBox = document.createElement('div');
+                  errBox.id = 'book-error';
+                  errBox.style.cssText = 'margin-top:8px;padding:8px 10px;border-radius:8px;background:#fef2f2;color:#b91c1c;font-size:12px;';
+                  formEl.appendChild(errBox);
+                }
+                errBox.textContent = (result.data && result.data.error) || 'That time could not be booked. Please choose another.';
+                return;
+              }
+              var links = buildCalendarLinks({
+                title: 'Appointment with ' + (config.name || 'us'),
+                description: 'Booked through the ' + (config.name || 'business') + ' chat assistant.' + (notesVal ? ' Notes: ' + notesVal : ''),
+                date: dateVal,
+                time: timeVal,
+                durationMinutes: slotDuration,
+              });
               card.innerHTML = `
                 <div class="support-success-card">
                   <div class="support-success-title">
@@ -2240,8 +2269,22 @@
                   <div class="support-success-text">
                     Thank you, <strong>${escapeHtml(nameVal)}</strong>! Your appointment has been booked for <strong>${escapeHtml(dateVal)}</strong> at <strong>${escapeHtml(timeVal)}</strong> (${escapeHtml(durationLabel)}). A confirmation email has been dispatched to <strong>${escapeHtml(emailVal)}</strong>.
                   </div>
+                  ${links ? `
+                  <div class="cal-title">Add to your calendar</div>
+                  <div class="cal-actions">
+                    <a class="cal-btn" id="cal-google" href="${escapeHtml(links.google)}" target="_blank" rel="noopener noreferrer">Google Calendar</a>
+                    <button type="button" class="cal-btn" id="cal-apple">Apple Calendar</button>
+                    <button type="button" class="cal-btn" id="cal-ical">iCal / Outlook (.ics)</button>
+                  </div>` : ''}
                 </div>
               `;
+              if (links) {
+                var onIcs = function () { downloadIcs(links.ics); };
+                var appleBtn = card.querySelector('#cal-apple');
+                var icalBtn = card.querySelector('#cal-ical');
+                if (appleBtn) appleBtn.addEventListener('click', onIcs);
+                if (icalBtn) icalBtn.addEventListener('click', onIcs);
+              }
               scrollToBottom();
             })
             .catch(function () {
@@ -2252,6 +2295,81 @@
             });
         });
       }
+    }
+
+    // ---- Add to calendar (Google link, and an .ics file that Apple Calendar, iCal and Outlook open) ----
+    function pad2(n) { return (n < 10 ? '0' : '') + n; }
+
+    function parseSlotTime(t) {
+      var m = String(t || '').trim().match(/^(\d{1,2}):(\d{2})\s*([AaPp][Mm])?$/);
+      if (!m) return null;
+      var h = parseInt(m[1], 10);
+      var min = parseInt(m[2], 10);
+      if (m[3]) {
+        var pm = m[3].toLowerCase() === 'pm';
+        if (h === 12) h = pm ? 12 : 0;
+        else if (pm) h += 12;
+      }
+      if (h > 23 || min > 59) return null;
+      return { h: h, m: min };
+    }
+
+    function localStamp(d) {
+      return d.getFullYear() + pad2(d.getMonth() + 1) + pad2(d.getDate()) + 'T' + pad2(d.getHours()) + pad2(d.getMinutes()) + '00';
+    }
+
+    function icsEscape(v) {
+      return String(v || '').replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\r?\n/g, '\\n');
+    }
+
+    function buildCalendarLinks(ev) {
+      var dm = String(ev.date || '').match(/^(\d{4})-(\d{2})-(\d{2})$/);
+      var tm = parseSlotTime(ev.time);
+      if (!dm || !tm) return null;
+      var start = new Date(parseInt(dm[1], 10), parseInt(dm[2], 10) - 1, parseInt(dm[3], 10), tm.h, tm.m, 0);
+      var end = new Date(start.getTime() + (ev.durationMinutes || 30) * 60000);
+      var s = localStamp(start);
+      var e = localStamp(end);
+      // "floating" local time: the event appears at the same clock time in the visitor's own calendar
+      var google = 'https://calendar.google.com/calendar/render?action=TEMPLATE&text=' + encodeURIComponent(ev.title) +
+        '&dates=' + s + '/' + e + '&details=' + encodeURIComponent(ev.description || '');
+      var stamp = new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+      var ics = [
+        'BEGIN:VCALENDAR',
+        'VERSION:2.0',
+        'PRODID:-//Crescelo//Booking//EN',
+        'CALSCALE:GREGORIAN',
+        'METHOD:PUBLISH',
+        'BEGIN:VEVENT',
+        'UID:' + Date.now() + '-' + Math.random().toString(36).slice(2, 10) + '@crescelo.com',
+        'DTSTAMP:' + stamp,
+        'DTSTART:' + s,
+        'DTEND:' + e,
+        'SUMMARY:' + icsEscape(ev.title),
+        'DESCRIPTION:' + icsEscape(ev.description),
+        'BEGIN:VALARM',
+        'TRIGGER:-PT1H',
+        'ACTION:DISPLAY',
+        'DESCRIPTION:Appointment reminder',
+        'END:VALARM',
+        'END:VEVENT',
+        'END:VCALENDAR',
+      ].join('\r\n');
+      return { google: google, ics: ics };
+    }
+
+    function downloadIcs(icsText) {
+      try {
+        var blob = new Blob([icsText], { type: 'text/calendar;charset=utf-8' });
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = 'appointment.ics';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
+      } catch (err) {}
     }
 
     // Send Streaming Message with Stream Stability & Support Handoff

@@ -987,6 +987,11 @@ ${cleanMessage}
 }
 
 
+/** Sends a ready-made message through the configured Resend/SMTP settings (billing e-mails use this). */
+export async function sendTransactionalEmail(payload: { to: string; subject: string; text: string; html: string; fromName: string }): Promise<EmailSendResult> {
+  return sendEmailTransport(payload);
+}
+
 /**
  * Plain operational e-mail to the platform owner (error alerts). Uses the same Resend/SMTP settings as every other
  * e-mail. `simulated: true` in the result means no sending service is configured and nothing was actually sent.

@@ -32,6 +32,30 @@ export function sandboxAllowed(): boolean {
   return process.env.NODE_ENV !== 'production';
 }
 
+/**
+ * A live website must charge real cards. If a TEST key (sk_test_) is used in production, Stripe test cards such as
+ * 4242 4242 4242 4242 would start subscriptions for free, so checkout refuses unless ALLOW_STRIPE_TEST_MODE=true is set on purpose.
+ */
+export function stripeModeOk(): boolean {
+  const key = process.env.STRIPE_SECRET_KEY?.trim() || '';
+  if (!key) return true; // handled separately (sandbox in development, refusal in production)
+  if (process.env.NODE_ENV === 'production' && key.startsWith('sk_test_') && process.env.ALLOW_STRIPE_TEST_MODE !== 'true') return false;
+  return true;
+}
+
+const EMAIL_OK = /^[^\s@<>"']+@[^\s@<>"']+\.[^\s@<>"']+$/;
+/** Only a well-formed address is ever handed to Stripe as the customer e-mail. */
+export function cleanCustomerEmail(email?: string): string | undefined {
+  const v = (email || '').trim().toLowerCase();
+  return v.length <= 254 && EMAIL_OK.test(v) ? v : undefined;
+}
+
+/** Card checks applied to every Checkout: 3-D Secure whenever the bank supports it, and the billing address for AVS checks. */
+const CARD_PROTECTION = {
+  billing_address_collection: 'required' as const,
+  payment_method_options: { card: { request_three_d_secure: 'any' as const } },
+};
+
 export interface CreateCheckoutParams {
   /** Start the subscription with a 14-day trial (the card is collected now and charged automatically when the trial ends). */
   withTrial?: boolean;
@@ -89,7 +113,10 @@ export async function createCheckoutSession(params: CreateCheckoutParams): Promi
         workspaceId: params.workspaceId,
         addonType: 'extra_landing_page',
       },
-      customer_email: params.customerEmail,
+      ...CARD_PROTECTION,
+      invoice_creation: { enabled: true }, // a real invoice exists for every one-time purchase
+      payment_intent_data: { receipt_email: cleanCustomerEmail(params.customerEmail) },
+      customer_email: cleanCustomerEmail(params.customerEmail),
       success_url: params.successUrl,
       cancel_url: params.cancelUrl,
     });
@@ -156,6 +183,7 @@ export async function createCheckoutSession(params: CreateCheckoutParams): Promi
         : {}),
     },
     payment_method_collection: 'always',
+    ...CARD_PROTECTION,
     custom_text: {
       submit: {
         message: params.withTrial
@@ -163,7 +191,7 @@ export async function createCheckoutSession(params: CreateCheckoutParams): Promi
           : `$${priceDollars} is charged now and every ${interval === 'annual' ? 'year' : 'month'} until you cancel. Cancel any time in the billing portal.`,
       },
     },
-    customer_email: params.customerEmail,
+    customer_email: cleanCustomerEmail(params.customerEmail),
     success_url: params.successUrl,
     cancel_url: params.cancelUrl,
   });
@@ -207,7 +235,17 @@ export function constructWebhookEvent(payload: string | Buffer, signature: strin
   }
 }
 
+export interface CardSummary {
+  brand: string;
+  last4: string;
+  expMonth: number;
+  expYear: number;
+  /** Stripe's stable identifier for the physical card, used to stop one card starting many free trials. */
+  fingerprint: string | null;
+}
+
 export interface SubscriptionSummary {
+  card: CardSummary | null;
   status: SubscriptionStatus;
   customerId: string | null;
   trialEnd: string | null;
@@ -222,8 +260,10 @@ export async function retrieveSubscriptionSummary(subscriptionId: string): Promi
   const stripe = getStripeClient();
   if (!stripe || !subscriptionId) return null;
   try {
-    const sub: any = await stripe.subscriptions.retrieve(subscriptionId);
+    const sub: any = await stripe.subscriptions.retrieve(subscriptionId, { expand: ['default_payment_method'] });
+    const pm = sub.default_payment_method && typeof sub.default_payment_method === 'object' ? sub.default_payment_method : null;
     return {
+      card: pm?.card ? { brand: String(pm.card.brand || 'card'), last4: String(pm.card.last4 || ''), expMonth: Number(pm.card.exp_month) || 0, expYear: Number(pm.card.exp_year) || 0, fingerprint: pm.card.fingerprint ? String(pm.card.fingerprint) : null } : null,
       status: sub.status as SubscriptionStatus,
       customerId: sub.customer ? String(typeof sub.customer === 'string' ? sub.customer : sub.customer.id) : null,
       trialEnd: iso(sub.trial_end),
@@ -251,4 +291,17 @@ export async function changeSubscriptionPlan(subscriptionId: string, planId: 'st
     metadata: { planId: plan.id, billingInterval: interval },
   } as any);
   return true;
+}
+
+/** Ends a subscription immediately (used when a card turns out to be disputed, flagged or reused for a second free trial). */
+export async function cancelSubscriptionNow(subscriptionId: string): Promise<boolean> {
+  const stripe = getStripeClient();
+  if (!stripe || !subscriptionId) return false;
+  try {
+    await stripe.subscriptions.cancel(subscriptionId);
+    return true;
+  } catch (err: any) {
+    console.error('[Stripe] Could not cancel subscription:', err?.message);
+    return false;
+  }
 }
