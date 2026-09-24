@@ -153,17 +153,11 @@ async function POSTHandler(req: NextRequest) {
       logEvent({ level: 'info', category: 'billing', event: 'billing.service_paused', meta: { workspaceId: wsId, assistantId: assistant.id } });
       return NextResponse.json({ error: SERVICE_PAUSED_MESSAGE, serviceUnavailable: true }, { status: 402, headers: { 'Access-Control-Allow-Origin': '*' } });
     }
-    const convs = await Database.getConversations(undefined, wsId);
-    const periodStart = new Date(billing.currentPeriodStart).getTime();
-    const periodEnd = new Date(billing.currentPeriodEnd).getTime();
-    const periodConvs = convs.filter((c) => {
-      const cTime = new Date(c.createdAt).getTime();
-      return cTime >= periodStart && cTime <= periodEnd;
-    });
-
-    const isExistingConv = Boolean(conversationId && convs.some((c) => c.id === conversationId));
+    // Two cheap checks (a COUNT and an existence test) instead of loading every conversation with all its messages on each message
+    const periodCount = await Database.countConversationsInPeriod(wsId, billing.currentPeriodStart, billing.currentPeriodEnd);
+    const isExistingConv = Boolean(conversationId && (await Database.conversationExists(conversationId)));
     const limit = billing.monthlyChatLimit || 100;
-    if (!isExistingConv && periodConvs.length >= limit && !billing.paymentMethod) {
+    if (!isExistingConv && periodCount >= limit && !billing.paymentMethod) {
       return NextResponse.json(
         {
           error: 'Monthly chat limit reached for this workspace. Please upgrade your plan or add a payment method for overages.',

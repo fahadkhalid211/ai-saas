@@ -16,18 +16,8 @@ const GETHandler = withAdminAuth(async (req: Request) => {
     const targetWsId = ctx.isMasterAdmin && queryWs ? queryWs : (ctx.workspaceId && ctx.workspaceId !== '*' ? ctx.workspaceId : 'default-workspace');
 
     const ws = await Database.getWorkspaceBilling(targetWsId);
-    const convs = await Database.getConversations(undefined, targetWsId);
-
-    // Calculate chats used in current billing period
-    const periodStart = new Date(ws.currentPeriodStart).getTime();
-    const periodEnd = new Date(ws.currentPeriodEnd).getTime();
-
-    const periodConvs = convs.filter((c) => {
-      const cTime = new Date(c.createdAt).getTime();
-      return cTime >= periodStart && cTime <= periodEnd;
-    });
-
-    const chatsUsed = periodConvs.length;
+    // Chats used in the current billing period: one COUNT
+    const chatsUsed = await Database.countConversationsInPeriod(targetWsId, ws.currentPeriodStart, ws.currentPeriodEnd);
     const chatLimit = ws.monthlyChatLimit || 100;
     const remainingChats = Math.max(0, chatLimit - chatsUsed);
     const percentUsed = Math.min(100, Math.round((chatsUsed / chatLimit) * 100));

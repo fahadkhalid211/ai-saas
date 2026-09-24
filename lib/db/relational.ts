@@ -46,11 +46,16 @@ async function withPool<T>(fn: (client: PoolClient) => Promise<T>): Promise<T | 
 
 export async function relationalInsertMessage(msg: MessageData): Promise<boolean> {
   const result = await withPool(async (client) => {
+    // One statement: store the message and move its conversation to the top of the list (updated_at)
     await client.query(
-      `INSERT INTO kortex_messages
-         (id, conversation_id, role, content, citations, tokens_used, sender_name, attachment, created_at)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-       ON CONFLICT (id) DO NOTHING`,
+      `WITH ins AS (
+         INSERT INTO kortex_messages
+           (id, conversation_id, role, content, citations, tokens_used, sender_name, attachment, created_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+         ON CONFLICT (id) DO NOTHING
+         RETURNING conversation_id
+       )
+       UPDATE kortex_conversations SET updated_at = $9 WHERE id = (SELECT conversation_id FROM ins)`,
       [
         msg.id,
         msg.conversationId,
@@ -1001,3 +1006,63 @@ export async function relationalCountWidgetEvents(
   }
 }
 
+
+// ---------------------------------------------------------------------------
+// Batch reads and counts (one query instead of one per item)
+// ---------------------------------------------------------------------------
+
+/** Messages for many conversations in ONE query, grouped by conversation (oldest first). */
+export async function relationalGetMessagesForConversations(conversationIds: string[]): Promise<Map<string, MessageData[]>> {
+  const grouped = new Map<string, MessageData[]>();
+  if (conversationIds.length === 0) return grouped;
+  const result = await withPool(async (client) => {
+    const { rows } = await client.query(
+      `SELECT id, conversation_id, role, content, citations, tokens_used, sender_name, attachment, created_at
+       FROM kortex_messages WHERE conversation_id = ANY($1::text[]) ORDER BY created_at ASC`,
+      [conversationIds]
+    );
+    return rows;
+  });
+  for (const r of result ?? []) {
+    const msg: MessageData = {
+      id: r.id,
+      conversationId: r.conversation_id,
+      role: r.role as MessageData['role'],
+      content: r.content,
+      citations: Array.isArray(r.citations) ? r.citations : [],
+      tokensUsed: r.tokens_used,
+      ...(r.sender_name ? { senderName: r.sender_name } : {}),
+      ...(r.attachment ? { attachment: r.attachment } : {}),
+      createdAt: r.created_at,
+    };
+    const list = grouped.get(r.conversation_id);
+    if (list) list.push(msg);
+    else grouped.set(r.conversation_id, [msg]);
+  }
+  return grouped;
+}
+
+/** How many conversations the given assistants started in a period. One COUNT, no rows transferred. */
+export async function relationalCountConversations(assistantIds: string[] | undefined, sinceIso: string, untilIso: string): Promise<number> {
+  const result = await withPool(async (client) => {
+    if (assistantIds !== undefined) {
+      if (assistantIds.length === 0) return 0;
+      const { rows } = await client.query(
+        `SELECT COUNT(*)::int AS n FROM kortex_conversations WHERE assistant_id = ANY($1::text[]) AND created_at >= $2 AND created_at <= $3`,
+        [assistantIds, sinceIso, untilIso]
+      );
+      return rows[0]?.n ?? 0;
+    }
+    const { rows } = await client.query(`SELECT COUNT(*)::int AS n FROM kortex_conversations WHERE created_at >= $1 AND created_at <= $2`, [sinceIso, untilIso]);
+    return rows[0]?.n ?? 0;
+  });
+  return result ?? 0;
+}
+
+export async function relationalConversationExists(id: string): Promise<boolean> {
+  const result = await withPool(async (client) => {
+    const { rows } = await client.query(`SELECT 1 FROM kortex_conversations WHERE id = $1 LIMIT 1`, [id]);
+    return rows.length > 0;
+  });
+  return Boolean(result);
+}

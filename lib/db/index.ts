@@ -55,6 +55,14 @@ export { isCloudDbConfigured, getCloudDbProvider, isSupabaseConfigured };
  * to ensure the runtime does not freeze/terminate the function before the blob is saved.
  * Falls back to background promise execution outside Next.js request lifecycle (e.g. tests, scripts).
  */
+/**
+ * Relational mode: the item was already written to its own table, so the in-memory copy is updated and the big state row is left
+ * alone. (This used to rewrite the whole ~1.3 MB row after every single lead, message or booking.)
+ */
+function afterHotWrite(state: DatabaseState): void {
+  cachedState = state;
+}
+
 function scheduleDeferredBlobSync(state: DatabaseState): void {
   try {
     const { after } = require('next/server');
@@ -886,6 +894,15 @@ async function ensureInitialized(forceFresh = false): Promise<DatabaseState> {
               smtpSettings: remoteState.smtpSettings,
               pageViews: Array.isArray(remoteState.pageViews) ? remoteState.pageViews : (cachedState?.pageViews || []),
             };
+            if (isRelationalModeEnabled()) {
+              // these live in their own tables now; the copies inside the state row are stale leftovers from before the migration
+              cachedState.conversations = [];
+              cachedState.messages = [];
+              cachedState.leads = [];
+              cachedState.appointments = [];
+              cachedState.notifications = [];
+              cachedState.unansweredQueries = [];
+            }
             const remoteMaster = (cachedState.teamMembers || []).find((m) => m.id === 'tm_owner');
             if (remoteMaster && remoteMaster.email !== getMasterEmail()) {
               remoteMaster.email = getMasterEmail();
@@ -1327,6 +1344,13 @@ export class Database {
     } else {
       const remainingChunks = state.chunks.filter((c) => c.assistantId !== id);
       await saveChunksState(remainingChunks, true);
+    }
+    if (isRelationalModeEnabled()) {
+      try {
+        await Relational.relationalDeleteAssistantData(id);
+      } catch (err) {
+        console.warn('[Relational] deleteAssistant cleanup failed:', err);
+      }
     }
     state.conversations = state.conversations.filter((c) => c.assistantId !== id);
     state.messages = (state.messages || []).filter((m) => !deletedConvIds.has(m.conversationId));
@@ -1810,13 +1834,8 @@ export class Database {
       try {
         const relConvs = await Relational.relationalGetConversations(assistantId, 500, wsAssistantIds);
         if (relConvs.length > 0 || wsAssistantIds !== undefined) {
-          const withMsgs = await Promise.all(
-            relConvs.map(async (c) => ({
-              ...c,
-              messages: await Relational.relationalGetMessagesByConversation(c.id),
-            }))
-          );
-          return withMsgs;
+          const byConv = await Relational.relationalGetMessagesForConversations(relConvs.map((c) => c.id));
+          return relConvs.map((c) => ({ ...c, messages: byConv.get(c.id) || [] }));
         }
       } catch (err) {
         console.warn('[Relational] getConversations failed:', err);
@@ -1896,6 +1915,37 @@ export class Database {
     return conversationsWithMessages;
   }
 
+  /** Conversations a workspace started in a period (for the monthly chat limit). A COUNT in relational mode, not a download. */
+  static async countConversationsInPeriod(workspaceId: string, sinceIso: string, untilIso: string): Promise<number> {
+    const state = await ensureInitialized();
+    const ids = workspaceId && workspaceId !== '*'
+      ? (state.assistants || []).filter((a) => (a.workspaceId || 'default-workspace') === workspaceId).map((a) => a.id)
+      : undefined;
+    if (isRelationalModeEnabled()) {
+      try {
+        return await Relational.relationalCountConversations(ids, sinceIso, untilIso);
+      } catch (err) {
+        console.warn('[Relational] countConversationsInPeriod failed:', err);
+        if (isConnectionError(err)) disablePostgresTemporarily();
+      }
+    }
+    const set = ids ? new Set(ids) : null;
+    return (state.conversations || []).filter((c) => (!set || set.has(c.assistantId)) && c.createdAt >= sinceIso && c.createdAt <= untilIso).length;
+  }
+
+  static async conversationExists(id: string): Promise<boolean> {
+    if (!id) return false;
+    if (isRelationalModeEnabled()) {
+      try {
+        if (await Relational.relationalConversationExists(id)) return true;
+      } catch (err) {
+        if (isConnectionError(err)) disablePostgresTemporarily();
+      }
+    }
+    const state = await ensureInitialized();
+    return (state.conversations || []).some((c) => c.id === id);
+  }
+
   static async getOrCreateConversation(
     assistantId: string,
     visitorId?: string,
@@ -1943,7 +1993,7 @@ export class Database {
         if (!state.conversations.find((c) => c.id === id)) {
           state.conversations.unshift(newConv);
           cachedState = state;
-          scheduleDeferredBlobSync(state);
+          afterHotWrite(state);
         }
         return { ...newConv, messages: [] };
       } catch (err) {
@@ -2044,7 +2094,7 @@ export class Database {
               state.conversations[idx] = updatedConv;
               cachedState = state;
             }
-            scheduleDeferredBlobSync(state);
+            afterHotWrite(state);
             return true;
           }
         } else {
@@ -2058,7 +2108,7 @@ export class Database {
             };
             cachedState = state;
           }
-          scheduleDeferredBlobSync(state);
+          afterHotWrite(state);
           return true;
         }
       } catch (err) {
@@ -2110,15 +2160,17 @@ export class Database {
 
     if (isRelationalModeEnabled()) {
       try {
-        const convExists = await Relational.relationalGetConversationById(conversationId);
-        if (!convExists) {
-          const state = await ensureInitialized();
-          const blobConv = state.conversations.find((c) => c.id === conversationId);
-          if (blobConv) {
-            await Relational.relationalUpsertConversation(blobConv);
-          }
+        try {
+          await Relational.relationalInsertMessage(msg);
+        } catch (insertErr: any) {
+          // 23503 = the conversation is not in its table yet (it only exists in the older state row): copy it over, then retry once
+          if (insertErr?.code !== '23503') throw insertErr;
+          const early = await ensureInitialized();
+          const blobConv = early.conversations.find((c) => c.id === conversationId);
+          if (!blobConv) throw insertErr;
+          await Relational.relationalUpsertConversation(blobConv);
+          await Relational.relationalInsertMessage(msg);
         }
-        await Relational.relationalInsertMessage(msg);
         const state = await ensureInitialized();
         state.messages.push(msg);
         const convIdx = state.conversations.findIndex((c) => c.id === conversationId);
@@ -2126,7 +2178,7 @@ export class Database {
           state.conversations[convIdx].updatedAt = msg.createdAt;
         }
         cachedState = state;
-        scheduleDeferredBlobSync(state);
+        afterHotWrite(state);
         return msg;
       } catch (err) {
         console.warn('[Relational] saveMessage failed, disabling postgres:', err);
@@ -2170,7 +2222,7 @@ export class Database {
         const state = await ensureInitialized();
         state.leads.unshift(lead);
         cachedState = state;
-        scheduleDeferredBlobSync(state);
+        afterHotWrite(state);
         return lead;
       } catch (err) {
         console.warn('[Relational] saveLead failed, disabling postgres:', err);
@@ -2286,7 +2338,7 @@ export class Database {
           state.unansweredQueries = state.unansweredQueries.slice(0, 500);
         }
         cachedState = state;
-        scheduleDeferredBlobSync(state);
+        afterHotWrite(state);
         return record;
       } catch (err) {
         console.warn('[Relational] recordUnansweredQuery failed, disabling postgres:', err);
@@ -2342,7 +2394,7 @@ export class Database {
         item.resolved = true;
         if (answer) item.suggestedAnswer = answer;
         cachedState = state;
-        scheduleDeferredBlobSync(state);
+        afterHotWrite(state);
         return true;
       } catch (err) {
         console.warn('[Relational] resolveUnansweredQuery failed:', err);
@@ -2376,7 +2428,7 @@ export class Database {
         await Relational.relationalDeleteUnansweredQuery(id);
         state.unansweredQueries = state.unansweredQueries.filter((q) => q.id !== id);
         cachedState = state;
-        scheduleDeferredBlobSync(state);
+        afterHotWrite(state);
         return true;
       } catch (err) {
         console.warn('[Relational] deleteUnansweredQuery failed:', err);
@@ -2441,7 +2493,7 @@ export class Database {
         if (!state.appointments) state.appointments = [];
         state.appointments.unshift(apt);
         cachedState = state;
-        scheduleDeferredBlobSync(state);
+        afterHotWrite(state);
         return apt;
       } catch (err: any) {
         if (err?.code === 'SLOT_CONFLICT') {
@@ -2561,11 +2613,11 @@ export class Database {
           if (apt) {
             Object.assign(apt, updates, { updatedAt: new Date().toISOString() });
             cachedState = state;
-            scheduleDeferredBlobSync(state);
+            afterHotWrite(state);
             return apt;
           }
         }
-        scheduleDeferredBlobSync(state);
+        afterHotWrite(state);
         return Relational.relationalGetAppointmentById(id);
       } catch (err) {
         console.warn('[Relational] updateAppointment failed, disabling postgres:', err);
@@ -2614,7 +2666,7 @@ export class Database {
             cachedState = state;
           }
         }
-        scheduleDeferredBlobSync(state);
+        afterHotWrite(state);
         return true;
       } catch (err) {
         console.warn('[Relational] updateAppointmentStatus failed, disabling postgres:', err);
@@ -2651,7 +2703,7 @@ export class Database {
         await Relational.relationalDeleteAppointment(id);
         state.appointments = state.appointments.filter((a) => a.id !== id);
         cachedState = state;
-        scheduleDeferredBlobSync(state);
+        afterHotWrite(state);
         return true;
       } catch (err) {
         console.warn('[Relational] deleteAppointment failed, disabling postgres:', err);
@@ -2699,7 +2751,7 @@ export class Database {
       try {
         await Relational.relationalUpdateAppointment(id, { remindersSent: apt.remindersSent });
         cachedState = state;
-        scheduleDeferredBlobSync(state);
+        afterHotWrite(state);
         return true;
       } catch (err) {
         console.warn('[Relational] markReminderSent failed, disabling postgres:', err);
@@ -3162,7 +3214,7 @@ export class Database {
           state.notifications = state.notifications.slice(0, 200);
         }
         cachedState = state;
-        scheduleDeferredBlobSync(state);
+        afterHotWrite(state);
 
         // Non-blocking background push notification dispatch
         import('@/lib/notifications/push')
@@ -3226,7 +3278,7 @@ export class Database {
         await Relational.relationalMarkNotificationRead(id);
         item.read = true;
         cachedState = state;
-        scheduleDeferredBlobSync(state);
+        afterHotWrite(state);
         return true;
       } catch (err) {
         console.warn('[Relational] markNotificationAsRead failed:', err);
@@ -3278,7 +3330,7 @@ export class Database {
           }
         }
         cachedState = state;
-        scheduleDeferredBlobSync(state);
+        afterHotWrite(state);
         return true;
       } catch (err) {
         console.warn('[Relational] markAllNotificationsAsRead failed:', err);
@@ -4110,7 +4162,21 @@ export class Database {
       return v.timestamp >= cutoff;
     });
 
-    const appointments = (state.appointments || []).filter((a) => {
+    let allAppointments: AppointmentData[] = state.appointments || [];
+    let allLeads: LeadData[] = state.leads || [];
+    if (isRelationalModeEnabled()) {
+      try {
+        [allAppointments, allLeads] = await Promise.all([
+          Relational.relationalGetAppointments(options.assistantId, wsAssistantIds),
+          Relational.relationalGetLeads(options.assistantId, wsAssistantIds),
+        ]);
+      } catch (err) {
+        console.warn('[Relational] analytics read failed:', err);
+        if (isConnectionError(err)) disablePostgresTemporarily();
+      }
+    }
+
+    const appointments = allAppointments.filter((a) => {
       if (wsAssistantIds !== undefined) {
         const matchesWs = (a.assistantId && wsAssistantIds.includes(a.assistantId)) ||
           (a.landingPageSlug && wsSlugs.includes(a.landingPageSlug.toLowerCase()));
@@ -4125,7 +4191,7 @@ export class Database {
       return a.createdAt >= cutoff;
     });
 
-    const leads = (state.leads || []).filter((l) => {
+    const leads = allLeads.filter((l) => {
       if (wsAssistantIds !== undefined) {
         if (l.assistantId && !wsAssistantIds.includes(l.assistantId)) return false;
       }

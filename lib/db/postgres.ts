@@ -321,14 +321,38 @@ export async function persistPostgresState(state: any): Promise<{ ok: boolean; u
     };
 
     const writeStarted = performance.now();
-    const result = await pool.query(
-      `INSERT INTO kortex_app_state (id, data, updated_at)
-       VALUES ($1, $2, NOW())
-       ON CONFLICT (id) DO UPDATE
-       SET data = EXCLUDED.data, updated_at = NOW()
-       RETURNING updated_at`,
-      ['default', JSON.stringify(cloudData)]
-    );
+    let result;
+    if (process.env.DB_RELATIONAL_MODE === 'true') {
+      // Conversations, messages, leads, appointments, notifications and unanswered questions live in their own tables. The state
+      // row carries only settings, assistants, workspaces and the like; whatever it already holds for those six collections is
+      // kept as it is (a frozen copy that makes switching back possible) instead of being sent again on every save.
+      const { conversations: _c, messages: _m, leads: _l, appointments: _a, notifications: _n, unansweredQueries: _u, ...rest } = cloudData as any;
+      result = await pool.query(
+        `INSERT INTO kortex_app_state (id, data, updated_at)
+         VALUES ($1, $2::jsonb, NOW())
+         ON CONFLICT (id) DO UPDATE
+         SET data = EXCLUDED.data || jsonb_build_object(
+               'conversations', COALESCE(kortex_app_state.data->'conversations', '[]'::jsonb),
+               'messages', COALESCE(kortex_app_state.data->'messages', '[]'::jsonb),
+               'leads', COALESCE(kortex_app_state.data->'leads', '[]'::jsonb),
+               'appointments', COALESCE(kortex_app_state.data->'appointments', '[]'::jsonb),
+               'notifications', COALESCE(kortex_app_state.data->'notifications', '[]'::jsonb),
+               'unansweredQueries', COALESCE(kortex_app_state.data->'unansweredQueries', '[]'::jsonb)
+             ),
+             updated_at = NOW()
+         RETURNING updated_at`,
+        ['default', JSON.stringify(rest)]
+      );
+    } else {
+      result = await pool.query(
+        `INSERT INTO kortex_app_state (id, data, updated_at)
+         VALUES ($1, $2, NOW())
+         ON CONFLICT (id) DO UPDATE
+         SET data = EXCLUDED.data, updated_at = NOW()
+         RETURNING updated_at`,
+        ['default', JSON.stringify(cloudData)]
+      );
+    }
     const writeMs = performance.now() - writeStarted;
     if (writeMs > 500) {
       dbLog({ level: 'warn', event: 'db.slow_state_write', durationMs: writeMs, meta: { bytes: JSON.stringify(cloudData).length } });
