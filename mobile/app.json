@@ -2,6 +2,7 @@
   "expo": {
     "name": "Crescelo",
     "slug": "crescelo",
+    "scheme": "crescelo",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -30,6 +31,11 @@
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "plugins": []
+    "plugins": [],
+    "extra": {
+      "eas": {
+        "projectId": "35b5edfa-f743-44b4-bc37-0f2edafacaf8"
+      }
+    }
   }
 }

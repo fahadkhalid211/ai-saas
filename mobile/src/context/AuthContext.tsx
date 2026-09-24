@@ -1,8 +1,12 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as WebBrowser from 'expo-web-browser';
+import * as Linking from 'expo-linking';
 import { api, DEFAULT_SERVER_URL } from '../services/api';
 import { registerForPushNotifications, unregisterPushNotifications } from '../services/notifications';
 import { TeamMember, WorkspaceSummary, AssistantSummary } from '../types';
+
+WebBrowser.maybeCompleteAuthSession();
 
 const SELECTED_ASSISTANT_KEY = '@crescelo_assistant_id';
 
@@ -16,6 +20,9 @@ interface AuthContextType {
   selectedAssistant: AssistantSummary | null;
   serverUrl: string;
   login: (email: string, passwordOrCode: string) => Promise<void>;
+  loginWithGoogle: () => Promise<void>;
+  loginWithToken: (token: string) => Promise<void>;
+  quickDemoLogin: () => Promise<void>;
   logout: () => Promise<void>;
   setSelectedAssistant: (assistant: AssistantSummary) => void;
   setServerUrl: (url: string) => void;
@@ -36,6 +43,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     bootstrap();
+
+    // Listen for incoming deep links (e.g. crescelo://auth?token=...)
+    const handleUrl = (event: { url: string }) => {
+      try {
+        const parsed = Linking.parse(event.url);
+        const incomingToken = parsed.queryParams?.token as string;
+        if (incomingToken) {
+          loginWithToken(incomingToken).catch(console.error);
+        }
+      } catch (e) {
+        console.warn('Failed to parse incoming deep link url:', e);
+      }
+    };
+
+    const sub = Linking.addEventListener('url', handleUrl);
+    Linking.getInitialURL().then((url) => {
+      if (url) handleUrl({ url });
+    });
+
+    return () => {
+      sub.remove();
+    };
   }, []);
 
   const bootstrap = async () => {
@@ -104,6 +133,67 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setServerUrlState(url);
   };
 
+  const loginWithToken = async (incomingToken: string) => {
+    setIsLoading(true);
+    try {
+      api.setToken(incomingToken);
+      setToken(incomingToken);
+      const authResult = await api.verifyAuth();
+      if (authResult.authenticated && authResult.member) {
+        setIsAuthenticated(true);
+        setMember(authResult.member);
+        if (authResult.workspace) setWorkspace(authResult.workspace);
+        await fetchAssistants();
+        registerForPushNotifications().catch(() => {});
+      } else {
+        throw new Error('Unable to verify login session. Please try again.');
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const loginWithGoogle = async () => {
+    setIsLoading(true);
+    try {
+      const redirectUrl = Linking.createURL('auth');
+      const authUrl = `${api.getServerUrl()}/api/auth/oauth/google?platform=mobile`;
+      const result = await WebBrowser.openAuthSessionAsync(authUrl, redirectUrl);
+
+      if (result.type === 'success' && result.url) {
+        const parsed = Linking.parse(result.url);
+        const incomingToken = parsed.queryParams?.token as string;
+        if (incomingToken) {
+          await loginWithToken(incomingToken);
+          return;
+        }
+        if (parsed.queryParams?.error) {
+          throw new Error(String(parsed.queryParams.error));
+        }
+      }
+    } catch (err: any) {
+      console.warn('Google sign-in exception:', err);
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const quickDemoLogin = async () => {
+    setIsLoading(true);
+    try {
+      const res = await api.quickDemoLogin();
+      setToken(res.token);
+      setMember(res.member);
+      if (res.workspace) setWorkspace(res.workspace);
+      setIsAuthenticated(true);
+      await fetchAssistants();
+      registerForPushNotifications().catch(() => {});
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const login = async (email: string, passwordOrCode: string) => {
     setIsLoading(true);
     try {
@@ -151,6 +241,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         selectedAssistant,
         serverUrl,
         login,
+        loginWithGoogle,
+        loginWithToken,
+        quickDemoLogin,
         logout,
         setSelectedAssistant,
         setServerUrl,

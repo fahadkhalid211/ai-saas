@@ -3,6 +3,26 @@ import { Database } from '@/lib/db';
 import { verifyAdminRequest, verifyConversationAccessToken, getAuthContext } from '@/lib/security/auth';
 import { logged } from '@/lib/logging/route';
 
+const CORS_HEADERS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, PATCH, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+};
+
+function jsonResponse(data: any, status = 200) {
+  return NextResponse.json(data, {
+    status,
+    headers: CORS_HEADERS,
+  });
+}
+
+export async function OPTIONS() {
+  return new NextResponse(null, {
+    status: 204,
+    headers: CORS_HEADERS,
+  });
+}
+
 async function GETHandler(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
@@ -19,18 +39,18 @@ async function GETHandler(req: Request) {
       const ctx = await getAuthContext(req);
 
       if (!hasValidToken && !ctx.authenticated) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        return jsonResponse({ error: 'Unauthorized' }, 401);
       }
 
       const conversation = await Database.getConversationById(id);
       if (!conversation) {
-        return NextResponse.json({ error: 'Conversation not found' }, { status: 404 });
+        return jsonResponse({ error: 'Conversation not found' }, 404);
       }
 
       if (!hasValidToken && ctx.authenticated && ctx.workspaceId !== '*') {
         const ast = await Database.getAssistantById(conversation.assistantId);
         if (!ast || (ast.workspaceId || 'default-workspace') !== ctx.workspaceId) {
-          return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+          return jsonResponse({ error: 'Forbidden' }, 403);
         }
       }
 
@@ -44,33 +64,33 @@ async function GETHandler(req: Request) {
         const allMessages = conversation.messages || [];
         const newMessages = sinceCount < allMessages.length ? allMessages.slice(sinceCount) : [];
         const { messages: _omit, ...meta } = conversation;
-        return NextResponse.json({
+        return jsonResponse({
           conversation: meta,
           newMessages,
           totalMessageCount: allMessages.length,
         });
       }
 
-      return NextResponse.json({ conversation });
+      return jsonResponse({ conversation });
     }
 
     // Listing conversations across an assistant or workspace strictly requires admin auth
     const ctx = await getAuthContext(req);
     if (!ctx.authenticated) {
-      return NextResponse.json({ error: 'Unauthorized: Admin authentication required' }, { status: 401 });
+      return jsonResponse({ error: 'Unauthorized: Admin authentication required' }, 401);
     }
 
     // Assistant-specific conversations lookup
     if (assistantId) {
       const conversations = await Database.getConversations(assistantId, ctx.workspaceId);
-      return NextResponse.json({ conversations });
+      return jsonResponse({ conversations });
     }
 
     // Workspace-wide conversations lookup
     const conversations = await Database.getConversations(undefined, ctx.workspaceId);
-    return NextResponse.json({ conversations });
+    return jsonResponse({ conversations });
   } catch (error: any) {
-    return NextResponse.json({ error: error?.message || 'Failed to fetch conversations' }, { status: 500 });
+    return jsonResponse({ error: error?.message || 'Failed to fetch conversations' }, 500);
   }
 }
 
@@ -79,25 +99,25 @@ async function POSTHandler(req: Request) {
     // Only authenticated human operators can send operator messages
     const ctx = await getAuthContext(req);
     if (!ctx.authenticated) {
-      return NextResponse.json({ error: 'Unauthorized: Admin authentication required' }, { status: 401 });
+      return jsonResponse({ error: 'Unauthorized: Admin authentication required' }, 401);
     }
 
     const body = await req.json();
     const { conversationId, content, agentName, takeover = true } = body;
 
     if (!conversationId || !content || typeof content !== 'string' || !content.trim()) {
-      return NextResponse.json({ error: 'conversationId and non-empty content are required' }, { status: 400 });
+      return jsonResponse({ error: 'conversationId and non-empty content are required' }, 400);
     }
 
     const conv = await Database.getConversationById(conversationId);
     if (!conv) {
-      return NextResponse.json({ error: 'Conversation not found' }, { status: 404 });
+      return jsonResponse({ error: 'Conversation not found' }, 404);
     }
 
     if (ctx.workspaceId !== '*') {
       const ast = await Database.getAssistantById(conv.assistantId);
       if (!ast || (ast.workspaceId || 'default-workspace') !== ctx.workspaceId) {
-        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+        return jsonResponse({ error: 'Forbidden' }, 403);
       }
     }
 
@@ -125,14 +145,14 @@ async function POSTHandler(req: Request) {
       });
     }
 
-    return NextResponse.json({
+    return jsonResponse({
       success: true,
       message,
       isLiveTakeover: true,
       assignedAgentName: cleanName,
     });
   } catch (error: any) {
-    return NextResponse.json({ error: error?.message || 'Failed to send operator message' }, { status: 500 });
+    return jsonResponse({ error: error?.message || 'Failed to send operator message' }, 500);
   }
 }
 
@@ -141,25 +161,25 @@ async function PATCHHandler(req: Request) {
     // Only authenticated admins/operators can patch conversation status
     const ctx = await getAuthContext(req);
     if (!ctx.authenticated) {
-      return NextResponse.json({ error: 'Unauthorized: Admin authentication required' }, { status: 401 });
+      return jsonResponse({ error: 'Unauthorized: Admin authentication required' }, 401);
     }
 
     const body = await req.json();
     const { id, resolved, escalated, sentiment, isLiveTakeover, assignedAgentName, status } = body;
 
     if (!id) {
-      return NextResponse.json({ error: 'Conversation id is required' }, { status: 400 });
+      return jsonResponse({ error: 'Conversation id is required' }, 400);
     }
 
     const conv = await Database.getConversationById(id);
     if (!conv) {
-      return NextResponse.json({ error: 'Conversation not found' }, { status: 404 });
+      return jsonResponse({ error: 'Conversation not found' }, 404);
     }
 
     if (ctx.workspaceId !== '*') {
       const ast = await Database.getAssistantById(conv.assistantId);
       if (!ast || (ast.workspaceId || 'default-workspace') !== ctx.workspaceId) {
-        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+        return jsonResponse({ error: 'Forbidden' }, 403);
       }
     }
 
@@ -172,9 +192,9 @@ async function PATCHHandler(req: Request) {
       ...(status !== undefined ? { status } : {}),
     });
 
-    return NextResponse.json({ success: updated });
+    return jsonResponse({ success: updated });
   } catch (error: any) {
-    return NextResponse.json({ error: error?.message || 'Failed to update conversation' }, { status: 500 });
+    return jsonResponse({ error: error?.message || 'Failed to update conversation' }, 500);
   }
 }
 

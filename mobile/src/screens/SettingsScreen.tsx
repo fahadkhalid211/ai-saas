@@ -8,8 +8,6 @@ import {
   ScrollView,
   Alert,
   SafeAreaView,
-  TextInput,
-  Modal,
 } from 'react-native';
 import { colors, typography } from '../theme/colors';
 import { useAuth } from '../context/AuthContext';
@@ -18,11 +16,10 @@ import {
   User,
   Bot,
   Bell,
-  Server,
   LogOut,
   Shield,
   Check,
-  ChevronRight,
+  Globe,
   Sparkles,
   Smartphone,
   ExternalLink,
@@ -35,18 +32,12 @@ export function SettingsScreen() {
     assistants,
     selectedAssistant,
     setSelectedAssistant,
-    serverUrl,
-    setServerUrl,
     logout,
   } = useAuth();
 
   const [bookingAlerts, setBookingAlerts] = useState(true);
   const [soundVibrate, setSoundVibrate] = useState(true);
   const [leadAlerts, setLeadAlerts] = useState(true);
-
-  // Server edit modal
-  const [serverModalVisible, setServerModalVisible] = useState(false);
-  const [newServerUrl, setNewServerUrl] = useState(serverUrl);
 
   const handleLogout = () => {
     Alert.alert('Sign Out', 'Are you sure you want to sign out of Crescelo?', [
@@ -57,13 +48,6 @@ export function SettingsScreen() {
         onPress: () => logout(),
       },
     ]);
-  };
-
-  const handleSaveServer = () => {
-    if (!newServerUrl.trim()) return;
-    setServerUrl(newServerUrl.trim());
-    setServerModalVisible(false);
-    Alert.alert('Server Updated', `Now syncing with: ${newServerUrl.trim()}`);
   };
 
   return (
@@ -206,26 +190,29 @@ export function SettingsScreen() {
           </View>
         </View>
 
-        {/* Server & Cloud Connection */}
+        {/* Server & Cloud Connection (Hardwired to Live Production) */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>CLOUD SYNC & BACKEND</Text>
+          <Text style={styles.sectionTitle}>LIVE CLOUD SYNCHRONIZATION</Text>
 
-          <TouchableOpacity
-            style={styles.clickableSettingRow}
-            onPress={() => setServerModalVisible(true)}
-            activeOpacity={0.7}
-          >
-            <View style={styles.clickableLeft}>
-              <Server size={18} color={colors.accent} />
-              <View>
-                <Text style={styles.settingLabel}>Backend Server Endpoint</Text>
-                <Text style={styles.serverValueText} numberOfLines={1}>
-                  {serverUrl}
-                </Text>
+          <View style={styles.cloudCard}>
+            <View style={styles.cloudCardTop}>
+              <View style={styles.cloudIconWrap}>
+                <Globe size={18} color={colors.accent} />
+              </View>
+              <View style={styles.cloudInfo}>
+                <Text style={styles.cloudTitle}>Crescelo Cloud Platform</Text>
+                <Text style={styles.cloudUrl}>https://www.crescelo.com</Text>
+              </View>
+              <View style={styles.liveBadge}>
+                <View style={styles.liveDot} />
+                <Text style={styles.liveBadgeText}>Synced</Text>
               </View>
             </View>
-            <ChevronRight size={18} color={colors.textSecondary} />
-          </TouchableOpacity>
+            <View style={styles.cloudCardDivider} />
+            <Text style={styles.cloudDescription}>
+              Hardwired and synchronized in real-time with your Crescelo web dashboard, calendar appointments, and AI customer assistants.
+            </Text>
+          </View>
         </View>
 
         {/* Sign Out Button */}
@@ -248,63 +235,6 @@ export function SettingsScreen() {
           </Text>
         </View>
       </ScrollView>
-
-      {/* Edit Server URL Modal */}
-      <Modal
-        visible={serverModalVisible}
-        animationType="fade"
-        transparent={true}
-        onRequestClose={() => setServerModalVisible(false)}
-      >
-        <View style={styles.modalBackdrop}>
-          <View style={styles.modalBox}>
-            <Text style={styles.modalTitle}>Change Server Endpoint</Text>
-            <Text style={styles.modalSubtitle}>
-              Enter the URL of your Crescelo backend or local dev server:
-            </Text>
-
-            <TextInput
-              style={styles.serverInputModal}
-              value={newServerUrl}
-              onChangeText={setNewServerUrl}
-              placeholder="https://crescelo.com"
-              placeholderTextColor={colors.textMuted}
-              autoCapitalize="none"
-              autoCorrect={false}
-            />
-
-            <View style={styles.presetRow}>
-              <TouchableOpacity
-                style={styles.presetChip}
-                onPress={() => setNewServerUrl('http://10.0.2.2:3000')}
-              >
-                <Text style={styles.presetChipText}>Emulator (10.0.2.2)</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.presetChip}
-                onPress={() => setNewServerUrl('https://crescelo.com')}
-              >
-                <Text style={styles.presetChipText}>Production</Text>
-              </TouchableOpacity>
-            </View>
-
-            <View style={styles.modalButtonsRow}>
-              <TouchableOpacity
-                style={styles.modalCancelBtn}
-                onPress={() => setServerModalVisible(false)}
-              >
-                <Text style={styles.modalCancelText}>Cancel</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.modalSaveBtn}
-                onPress={handleSaveServer}
-              >
-                <Text style={styles.modalSaveText}>Save & Reconnect</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
     </SafeAreaView>
   );
 }
@@ -496,26 +426,74 @@ const styles = StyleSheet.create({
     fontSize: 11,
     marginTop: 2,
   },
-  clickableSettingRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+  cloudCard: {
     backgroundColor: colors.bgCard,
-    padding: 14,
-    borderRadius: 12,
+    padding: 16,
+    borderRadius: 16,
     borderWidth: 1,
-    borderColor: colors.borderSubtle,
+    borderColor: 'rgba(171, 255, 68, 0.2)',
   },
-  clickableLeft: {
+  cloudCardTop: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
+  },
+  cloudIconWrap: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(171, 255, 68, 0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(171, 255, 68, 0.2)',
+  },
+  cloudInfo: {
     flex: 1,
   },
-  serverValueText: {
+  cloudTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.textPrimary,
+  },
+  cloudUrl: {
     fontSize: 12,
-    color: colors.textSecondary,
+    color: colors.accent,
     marginTop: 2,
+    fontWeight: '500',
+  },
+  liveBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    backgroundColor: 'rgba(171, 255, 68, 0.12)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(171, 255, 68, 0.25)',
+  },
+  liveDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: colors.accent,
+  },
+  liveBadgeText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: colors.accent,
+  },
+  cloudCardDivider: {
+    height: 1,
+    backgroundColor: colors.borderSubtle,
+    marginVertical: 12,
+  },
+  cloudDescription: {
+    ...typography.caption,
+    fontSize: 11,
+    color: colors.textSecondary,
+    lineHeight: 16,
   },
   logoutButton: {
     flexDirection: 'row',
@@ -557,84 +535,5 @@ const styles = StyleSheet.create({
     color: colors.textMuted,
     fontSize: 10,
     marginTop: 4,
-  },
-  modalBackdrop: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.75)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-  modalBox: {
-    width: '100%',
-    backgroundColor: colors.bgCard,
-    borderRadius: 20,
-    padding: 20,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  modalTitle: {
-    ...typography.heading2,
-    fontSize: 18,
-    marginBottom: 6,
-  },
-  modalSubtitle: {
-    ...typography.bodySecondary,
-    marginBottom: 16,
-  },
-  serverInputModal: {
-    backgroundColor: colors.bgDark,
-    borderRadius: 10,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    color: colors.textPrimary,
-    fontSize: 14,
-    borderWidth: 1,
-    borderColor: colors.borderSubtle,
-    marginBottom: 12,
-  },
-  presetRow: {
-    flexDirection: 'row',
-    gap: 8,
-    marginBottom: 20,
-  },
-  presetChip: {
-    flex: 1,
-    paddingVertical: 8,
-    paddingHorizontal: 10,
-    backgroundColor: colors.bgElevated,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  presetChipText: {
-    fontSize: 11,
-    color: colors.accent,
-    fontWeight: '600',
-  },
-  modalButtonsRow: {
-    flexDirection: 'row',
-    gap: 10,
-  },
-  modalCancelBtn: {
-    flex: 1,
-    paddingVertical: 12,
-    alignItems: 'center',
-    borderRadius: 10,
-    backgroundColor: colors.bgElevated,
-  },
-  modalCancelText: {
-    color: colors.textSecondary,
-    fontWeight: '600',
-  },
-  modalSaveBtn: {
-    flex: 1,
-    paddingVertical: 12,
-    alignItems: 'center',
-    borderRadius: 10,
-    backgroundColor: colors.accent,
-  },
-  modalSaveText: {
-    color: colors.textInverse,
-    fontWeight: '700',
   },
 });

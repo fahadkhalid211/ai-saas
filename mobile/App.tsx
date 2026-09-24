@@ -7,6 +7,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AuthProvider, useAuth } from './src/context/AuthContext';
 import { colors } from './src/theme/colors';
 import { CresceloMark } from './src/components/CresceloMark';
+import { SplashScreen } from './src/screens/SplashScreen';
 import { LoginScreen } from './src/screens/LoginScreen';
 import { AppointmentsScreen } from './src/screens/AppointmentsScreen';
 import { NotificationsScreen } from './src/screens/NotificationsScreen';
@@ -114,16 +115,7 @@ function NavigationRoot() {
   const { isAuthenticated, isLoading } = useAuth();
 
   if (isLoading) {
-    return (
-      <View style={styles.splashContainer}>
-        <CresceloMark size={84} motion="draw" />
-        <ActivityIndicator
-          size="small"
-          color={colors.accent}
-          style={{ marginTop: 24 }}
-        />
-      </View>
-    );
+    return <SplashScreen />;
   }
 
   return (

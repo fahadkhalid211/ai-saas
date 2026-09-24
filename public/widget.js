@@ -124,6 +124,7 @@
       }
       /* Launcher button */
       .launcher-btn {
+        position: relative;
         width: 60px;
         height: 60px;
         border-radius: 50%;
@@ -933,6 +934,7 @@
       <svg class="launcher-icon" viewBox="0 0 24 24">
         <path d="M12 2C6.477 2 2 6.477 2 12c0 1.821.487 3.53 1.338 5L2.5 21.5l4.63-1.22A9.957 9.957 0 0012 22c5.523 0 10-4.477 10-10S17.523 2 12 2zm0 18a7.95 7.95 0 01-4.085-1.127l-.293-.173-2.97.782.795-2.884-.188-.302A7.957 7.957 0 014 12c0-4.411 3.589-8 8-8s8 3.589 8 8-3.589 8-8 8z"/>
       </svg>
+      <span class="launcher-badge" id="launcher-unread-badge" style="display:none;position:absolute;top:-2px;right:-2px;background:#ef4444;color:#ffffff;font-size:11px;font-weight:700;min-width:18px;height:18px;line-height:18px;border-radius:9px;text-align:center;padding:0 4px;box-shadow:0 0 0 2px #ffffff;pointer-events:none;"></span>
     `;
 
     // Chat window
@@ -1150,6 +1152,9 @@
         }
       }
 
+      // Restore active session conversation if returning/reloading
+      restoreSessionState();
+
       // Add initial welcome message if empty
       if (messages.length === 0 && config.welcomeMessage) {
         appendMessage('assistant', config.welcomeMessage);
@@ -1224,9 +1229,15 @@
       if (proactiveBubble) proactiveBubble.style.display = 'none';
       isOpen = !isOpen;
       if (isOpen) {
+        unreadAgentCount = 0;
+        updateUnreadBadge();
         chatWindow.classList.add('open');
         chatInput.focus();
         sendWidgetEvent('widget_opened');
+        scrollToBottom();
+        if (conversationId) {
+          pollLiveSync();
+        }
       } else {
         chatWindow.classList.remove('open');
       }
@@ -1439,6 +1450,76 @@
     var knownMessageIds = {};
     var conversationToken = null;
     var isTakeoverActive = false;
+    var unreadAgentCount = 0;
+
+    var CONV_STORAGE_KEY = 'ai_ast_conv_' + assistantId;
+    var TOKEN_STORAGE_KEY = 'ai_ast_tok_' + assistantId;
+    var MSGS_STORAGE_KEY = 'ai_ast_msgs_' + assistantId;
+    var TAKEOVER_STORAGE_KEY = 'ai_ast_takeover_' + assistantId;
+
+    function persistSessionState() {
+      try {
+        if (conversationId) {
+          sessionStorage.setItem(CONV_STORAGE_KEY, conversationId);
+        }
+        if (conversationToken) {
+          sessionStorage.setItem(TOKEN_STORAGE_KEY, conversationToken);
+        }
+        if (messages && messages.length > 0) {
+          sessionStorage.setItem(MSGS_STORAGE_KEY, JSON.stringify(messages.slice(-50)));
+        }
+        sessionStorage.setItem(TAKEOVER_STORAGE_KEY, isTakeoverActive ? '1' : '0');
+      } catch (e) {}
+    }
+
+    function restoreSessionState() {
+      try {
+        var savedConvId = sessionStorage.getItem(CONV_STORAGE_KEY);
+        var savedToken = sessionStorage.getItem(TOKEN_STORAGE_KEY);
+        var savedMsgsRaw = sessionStorage.getItem(MSGS_STORAGE_KEY);
+        var savedTakeover = sessionStorage.getItem(TAKEOVER_STORAGE_KEY);
+
+        if (savedConvId) {
+          conversationId = savedConvId;
+        }
+        if (savedToken) {
+          conversationToken = savedToken;
+        }
+        if (savedTakeover === '1') {
+          isTakeoverActive = true;
+        }
+
+        if (savedMsgsRaw) {
+          var parsed = JSON.parse(savedMsgsRaw);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            messages = [];
+            if (messagesBody) messagesBody.innerHTML = '';
+            parsed.forEach(function (m) {
+              if (m.id) knownMessageIds[m.id] = true;
+              appendMessage(m.role, m.content, m.senderName);
+            });
+            if (isTakeoverActive) {
+              renderTakeoverBanner('Live Support Agent');
+            }
+          }
+        }
+
+        if (conversationId) {
+          startLiveSync();
+        }
+      } catch (e) {}
+    }
+
+    function updateUnreadBadge() {
+      var badge = shadow.getElementById('launcher-unread-badge');
+      if (!badge) return;
+      if (!isOpen && unreadAgentCount > 0) {
+        badge.textContent = unreadAgentCount > 9 ? '9+' : String(unreadAgentCount);
+        badge.style.display = 'inline-block';
+      } else {
+        badge.style.display = 'none';
+      }
+    }
 
     function renderTakeoverBanner(agentName) {
       if (!messagesBody) return;
@@ -1466,44 +1547,66 @@
       }
     }
 
-    function startLiveSync() {
-      if (liveSyncTimer || !conversationId) return;
-      liveSyncTimer = setInterval(function () {
-        if (!conversationId || !isOpen || (typeof document !== 'undefined' && document.hidden)) return;
-        var syncUrl = hostUrl + '/api/conversations?id=' + encodeURIComponent(conversationId);
-        if (conversationToken) {
-          syncUrl += '&token=' + encodeURIComponent(conversationToken);
-        }
-        fetch(syncUrl)
-          .then(function (res) { return res.json(); })
-          .then(function (data) {
-            if (!data || !data.conversation) return;
-            var conv = data.conversation;
-            var msgList = conv.messages || [];
+    function pollLiveSync() {
+      if (!conversationId) return;
+      var syncUrl = hostUrl + '/api/conversations?id=' + encodeURIComponent(conversationId);
+      if (conversationToken) {
+        syncUrl += '&token=' + encodeURIComponent(conversationToken);
+      }
+      fetch(syncUrl)
+        .then(function (res) {
+          if (!res.ok) return null;
+          return res.json();
+        })
+        .then(function (data) {
+          if (!data) return;
+          var conv = data.conversation || {};
+          var msgList = (conv && conv.messages) || data.newMessages || [];
 
-            if (conv.isLiveTakeover) {
-              isTakeoverActive = true;
-              renderTakeoverBanner(conv.assignedAgentName || 'Live Support Agent');
-            } else {
-              isTakeoverActive = false;
-              removeTakeoverBanner();
+          if (conv.isLiveTakeover) {
+            isTakeoverActive = true;
+            renderTakeoverBanner(conv.assignedAgentName || 'Live Support Agent');
+          } else if (conv.isLiveTakeover === false) {
+            isTakeoverActive = false;
+            removeTakeoverBanner();
+          }
+
+          var hasNewAgentMsg = false;
+          msgList.forEach(function (m) {
+            if (m.role === 'agent' && !knownMessageIds[m.id]) {
+              knownMessageIds[m.id] = true;
+              appendMessage('agent', m.content, m.senderName);
+              hasNewAgentMsg = true;
+            } else if (m.id) {
+              knownMessageIds[m.id] = true;
             }
+          });
 
-            msgList.forEach(function (m) {
-              if (m.role === 'agent' && !knownMessageIds[m.id]) {
-                knownMessageIds[m.id] = true;
-                appendMessage('agent', m.content, m.senderName);
-              } else if (m.id) {
-                knownMessageIds[m.id] = true;
-              }
-            });
-          })
-          .catch(function () {});
-      }, 10000);
+          if (hasNewAgentMsg) {
+            persistSessionState();
+            if (!isOpen) {
+              unreadAgentCount++;
+              updateUnreadBadge();
+            } else {
+              scrollToBottom();
+            }
+          }
+        })
+        .catch(function () {});
+    }
+
+    function startLiveSync() {
+      if (!conversationId) return;
+      pollLiveSync();
+      if (liveSyncTimer) return;
+      liveSyncTimer = setInterval(function () {
+        pollLiveSync();
+      }, 3500);
     }
 
     function appendMessage(role, text, senderName) {
       messages.push({ role: role, content: text, senderName: senderName });
+      persistSessionState();
       var msgEl = document.createElement('div');
       var isUser = role === 'user';
       var isAgent = role === 'agent';
@@ -2289,6 +2392,8 @@
             parentBubble.appendChild(container);
           }
 
+          var streamBuffer = '';
+
           function readStream() {
             return reader.read().then(function (result) {
               if (result.done) {
@@ -2305,6 +2410,7 @@
                     var fbEl = appendMessage('assistant', fallback);
                     renderSupportQuickButton(fbEl, text);
                   }
+                } else {
                   var hasActionBooking = streamedText.indexOf('[ACTION:BOOKING_FORM]') !== -1;
                   var hasActionHuman = streamedText.indexOf('[ACTION:HUMAN_ESCALATION]') !== -1;
                   var cleanContent = streamedText.replace(/\s*\[ACTION:[A-Z_]+\]/g, '').trim();
@@ -2312,6 +2418,7 @@
                     assistantBubble.innerHTML = formatMarkdown(cleanContent);
                   }
                   messages.push({ role: 'assistant', content: cleanContent });
+                  persistSessionState();
                   // Attach citation pills strictly if a live external web search was executed
                   if (assistantBubble && currentCitations.length > 0 && isCurrentWebSearch) {
                     renderWidgetCitations(assistantBubble, currentCitations, isCurrentWebSearch);
@@ -2340,11 +2447,12 @@
                 return;
               }
 
-              var chunkStr = decoder.decode(result.value, { stream: true });
-              var lines = chunkStr.split('\n');
+              streamBuffer += decoder.decode(result.value, { stream: true });
+              var lines = streamBuffer.split('\n');
+              streamBuffer = lines.pop();
 
               for (var i = 0; i < lines.length; i++) {
-                var line = lines[i];
+                var line = lines[i].trim();
                 if (line.indexOf('data: ') === 0) {
                   try {
                     var data = JSON.parse(line.slice(6));
@@ -2378,6 +2486,7 @@
                     } else if (data.type === 'citations') {
                       if (data.conversationId) conversationId = data.conversationId;
                       if (data.conversationToken) conversationToken = data.conversationToken;
+                      persistSessionState();
                       if (conversationId) startLiveSync();
                       isCurrentWebSearch = Boolean(data.isWebSearch);
                       if (Array.isArray(data.citations)) {
@@ -2388,6 +2497,12 @@
                       if (data.conversationToken) conversationToken = data.conversationToken;
                       isTakeoverActive = true;
                       renderTakeoverBanner(data.agentName || 'Live Support Agent');
+                      persistSessionState();
+                      if (conversationId) startLiveSync();
+                    } else if (data.type === 'escalation') {
+                      if (data.conversationId) conversationId = data.conversationId;
+                      if (data.conversationToken) conversationToken = data.conversationToken;
+                      persistSessionState();
                       if (conversationId) startLiveSync();
                     } else if (data.type === 'token') {
                       // MOUNT BUBBLE ON FIRST TOKEN ONLY
@@ -2409,6 +2524,7 @@
                     } else if (data.type === 'done') {
                       if (data.conversationId) conversationId = data.conversationId;
                       if (data.conversationToken) conversationToken = data.conversationToken;
+                      persistSessionState();
                       if (conversationId) startLiveSync();
                     }
                   } catch (e) {
