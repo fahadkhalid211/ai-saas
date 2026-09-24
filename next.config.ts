@@ -1,4 +1,5 @@
 import { withReticle } from '@reticlehq/next';
+import { internalPolicy, publicPolicy } from './lib/security/csp';
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
@@ -30,6 +31,16 @@ const nextConfig: NextConfig = {
           { key: 'X-DNS-Prefetch-Control', value: 'on' },
         ],
       },
+      // Content Security Policy in REPORT-ONLY mode: browsers tell /api/csp-report what would be blocked, nothing is blocked yet.
+      // Switch the header name to Content-Security-Policy once System Logs show no legitimate violations (see lib/security/csp.ts).
+      {
+        source: '/((?!api|_next|embed|dashboard|login|master).*)',
+        headers: [{ key: 'Content-Security-Policy-Report-Only', value: publicPolicy(true) }],
+      },
+      ...['/dashboard/:path*', '/login/:path*', '/master/:path*'].map((source) => ({
+        source,
+        headers: [{ key: 'Content-Security-Policy-Report-Only', value: internalPolicy(true) }],
+      })),
       // Sign-in, dashboard and master console are never framed (clickjacking protection).
       ...['/dashboard/:path*', '/login/:path*', '/master/:path*'].map((source) => ({
         source,

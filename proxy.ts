@@ -17,6 +17,7 @@ const ROUTE_RATE_LIMITS: RouteLimitConfig[] = [
   { prefix: '/api/landing-page', windowMs: 60 * 1000, max: 40 },
   { prefix: '/api/templates', windowMs: 60 * 1000, max: 60 },
   { prefix: '/api/lead', windowMs: 60 * 1000, max: 15 },
+  { prefix: '/api/csp-report', windowMs: 60 * 1000, max: 30 },
   { prefix: '/api/widget-events', windowMs: 60 * 1000, max: 60 },
   // Voice: all calls share the worker's / carrier's addresses, so these are per-service ceilings, not per-caller.
   // Per-caller and per-number limits are enforced inside the handlers.
@@ -41,6 +42,8 @@ const PUBLIC_WIDGET_API = ['/api/chat', '/api/lead', '/api/appointments', '/api/
 function withWidgetCors(response: NextResponse, pathname: string): NextResponse {
   if (PUBLIC_WIDGET_API.some((p) => pathname === p || pathname.startsWith(p + '/'))) {
     response.headers.set('Access-Control-Allow-Origin', '*');
+    response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PATCH, OPTIONS');
+    response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
     response.headers.set('Access-Control-Expose-Headers', 'Retry-After, X-RateLimit-Remaining');
   }
   return response;
@@ -106,6 +109,18 @@ export function proxy(request: NextRequest) {
 
   // 1. Verify Origin / CSRF on sensitive mutation endpoints
   if (pathname.startsWith('/api/')) {
+    const isWidgetApi = PUBLIC_WIDGET_API.some((p) => pathname === p || pathname.startsWith(p + '/'));
+
+    // Handle CORS preflight OPTIONS requests directly for public widget endpoints
+    if (request.method === 'OPTIONS' && isWidgetApi) {
+      const preflight = new NextResponse(null, { status: 204 });
+      preflight.headers.set('Access-Control-Allow-Origin', '*');
+      preflight.headers.set('Access-Control-Allow-Methods', 'GET, POST, PATCH, OPTIONS');
+      preflight.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+      preflight.headers.set('Access-Control-Max-Age', '86400');
+      return preflight;
+    }
+
     const originAllowed = verifyOrigin(request, pathname);
     if (!originAllowed) {
       logEvent({ level: 'warn', category: 'security', event: 'security.csrf_blocked', ip: getClientIp(request), meta: { path: pathname, method: request.method, origin: request.headers.get('origin') } });
