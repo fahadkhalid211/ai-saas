@@ -348,6 +348,7 @@ export function FloatingPlatformChatbot({ variant = 'floating' }: FloatingPlatfo
         <div
           role="dialog"
           aria-label="Crescelo assistant"
+          data-lenis-prevent
           className={`flex flex-col bg-[#1f1e1d] ${
             inHeader
               ? 'absolute right-0 top-full mt-2 z-[99999] w-[400px] h-[560px] max-h-[calc(100vh-5.5rem)] max-sm:fixed max-sm:inset-x-2 max-sm:top-[4.5rem] max-sm:mt-0 max-sm:w-auto'
@@ -407,7 +408,7 @@ export function FloatingPlatformChatbot({ variant = 'floating' }: FloatingPlatfo
           </div>
 
           {/* Messages */}
-          <div className="relative flex-1 px-4 pt-2 pb-3 overflow-y-auto space-y-4 [scrollbar-width:thin] [scrollbar-color:rgba(250,249,245,0.18)_transparent]">
+          <div data-lenis-prevent className="relative flex-1 min-h-0 overscroll-contain px-4 pt-2 pb-3 overflow-y-auto space-y-4 [scrollbar-width:thin] [scrollbar-color:rgba(250,249,245,0.18)_transparent]">
             {messages.map((m) => (
               <div key={m.id} className={`flex gap-2.5 ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                 {m.role === 'assistant' && (
