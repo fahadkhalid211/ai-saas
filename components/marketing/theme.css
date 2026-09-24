@@ -83,9 +83,8 @@
 @keyframes mk-blink { 50% { opacity: 0; } }
 .mk-prompt-a { display: grid; gap: 10px; margin-top: 14px; padding: 14px 16px; border-radius: 16px; background: var(--mk-accent-soft); animation: mk-rise 0.5s var(--mk-ease) both; }
 .mk-prompt-a > p { font-size: 15.5px; }
-.mk-mascot { position: absolute; top: -52px; right: 28px; z-index: 2; animation: mk-wiggle 3.2s ease-in-out infinite; transform-origin: bottom center; }
-.mk-pupil { transform: translate(var(--px, 0px), var(--py, 0px)); }
-@keyframes mk-wiggle { 0%, 100% { transform: rotate(-4deg); } 50% { transform: rotate(5deg) translateY(-3px); } }
+/* The assistant orb perches on the prompt card's top edge; its own animation does the moving */
+.mk-orb-perch { position: absolute; top: -62px; right: 24px; z-index: 2; filter: drop-shadow(0 10px 22px rgba(0, 0, 0, 0.28)); }
 .mk-hero .mk-caption { color: #a9c4b4; text-align: center; }
 
 /* Shared chat pieces (also used by the product mocks) */
@@ -321,10 +320,10 @@
 @media (max-width: 640px) {
   .mk-hero { padding: 56px 0 40px; border-radius: 28px; }
   #metrics, .mk-final { border-radius: 28px; }
-  .mk-mascot { right: 12px; top: -46px; }
+  .mk-orb-perch { right: 6px; top: -54px; transform: scale(0.82); transform-origin: bottom right; }
   .mk-prompt-body { min-height: 210px; }
   .mk-footer-giant-word { margin-top: 36px; }
 }
 @media (prefers-reduced-motion: reduce) {
-    .mk-prompt, .mk-mascot, .mk-hero-glow { animation: none; }
+    .mk-prompt, .mk-hero-glow { animation: none; }
 }

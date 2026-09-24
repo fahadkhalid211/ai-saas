@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Bot, X, Send, Sparkles, RefreshCw, MessageSquare, ChevronDown, Check, Copy } from 'lucide-react';
+import { X, Send, RefreshCw, Check, Copy } from 'lucide-react';
+import { CresceloOrb, type OrbState } from '@/components/brand/CresceloOrb';
 import { getPlatformConciergeAnswer } from '@/lib/ai/concierge';
 
 interface ChatMessage {
@@ -18,33 +19,16 @@ const DEFAULT_SUGGESTIONS = [
   'How do I embed the chat widget on my website?',
 ];
 
-function CresceloAvatarFace({ size = 36 }: { size?: number }) {
-  return (
-    <svg viewBox="0 0 72 72" width={size} height={size} className="shrink-0" aria-hidden="true">
-      {/* Brand Signal Crest */}
-      <path d="M30 6a7 7 0 1 1 12 0" fill="none" stroke="#abff44" strokeWidth="3" strokeLinecap="round" />
-      <circle cx="36" cy="10" r="2.2" fill="#abff44" />
-      
-      {/* Brand Ear Nodes */}
-      <path d="M9 30c-3 0-5 3-5 7s2 7 5 7" fill="none" stroke="#abff44" strokeWidth="2.5" strokeLinecap="round" />
-      <path d="M63 30c3 0 5 3 5 7s-2 7-5 7" fill="none" stroke="#abff44" strokeWidth="2.5" strokeLinecap="round" />
-
-      {/* Chassis Head - Crescelo Deep Obsidian */}
-      <rect x="9" y="13" width="54" height="48" rx="18" fill="#08251a" stroke="#abff44" strokeWidth="2" />
-
-      {/* Warm Cream Eye Portals */}
-      <circle cx="26" cy="33" r="9" fill="#fffeeb" stroke="#1a1a1a" strokeWidth="1.5" />
-      <circle cx="46" cy="33" r="9" fill="#fffeeb" stroke="#1a1a1a" strokeWidth="1.5" />
-
-      {/* Pupils */}
-      <circle cx="26" cy="33" r="4.2" fill="#08251a" />
-      <circle cx="27.4" cy="31.4" r="1.6" fill="#abff44" />
-      <circle cx="46" cy="33" r="4.2" fill="#08251a" />
-      <circle cx="47.4" cy="31.4" r="1.6" fill="#abff44" />
-
-      {/* Friendly Lime Smile */}
-      <path d="M30 48c3.5 3.5 8.5 3.5 12 0" fill="none" stroke="#abff44" strokeWidth="2.6" strokeLinecap="round" />
-    </svg>
+/** Renders **bold** spans (the assistant's replies use them) without showing the asterisks. */
+function renderRich(text: string): React.ReactNode {
+  return text.split(/(\*\*[^*]+\*\*)/g).map((part, i) =>
+    part.startsWith('**') && part.endsWith('**') && part.length > 4 ? (
+      <strong key={i} className="font-semibold text-[#faf9f5]">
+        {part.slice(2, -2)}
+      </strong>
+    ) : (
+      <React.Fragment key={i}>{part}</React.Fragment>
+    )
   );
 }
 
@@ -256,66 +240,66 @@ export function FloatingPlatformChatbot() {
     }
   };
 
+  const lastMessage = messages[messages.length - 1];
+  // What the orb is doing: waiting for the first words, or talking as they arrive.
+  const orbState: OrbState = isLoading ? (lastMessage?.role === 'assistant' && lastMessage.content ? 'speaking' : 'thinking') : 'idle';
+  const serif = { fontFamily: 'var(--font-mk-serif, var(--kx-serif, Georgia, "Times New Roman", serif))' } as const;
+
   return (
-    <div className="fixed bottom-6 right-6 z-[99999] font-sans">
-      {/* Launcher Button: circular avatar face at rest, expands to pill on hover */}
+    <div
+      className="fixed bottom-6 right-6 z-[99999] font-sans"
+      onKeyDown={(e) => {
+        if (e.key === 'Escape' && isOpen) setIsOpen(false);
+      }}
+    >
+      {/* Launcher: the orb on its own; a small label slides out on hover */}
       {!isOpen && (
         <button
           type="button"
           onClick={() => setIsOpen(true)}
-          className="group relative flex items-center h-[54px] rounded-full p-1.5 bg-[#08251a] hover:bg-[#0d3a29] border-2 border-[#abff44] shadow-[0_10px_35px_rgba(0,0,0,0.55)] shadow-[#abff44]/20 hover:shadow-[#abff44]/35 hover:scale-105 active:scale-95 transition-all duration-300 ease-out cursor-pointer hover:pr-4"
-          aria-label="Open Crescelo Platform Assistant"
+          className="group relative flex items-center gap-2.5 cursor-pointer rounded-full focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#abff44]"
+          aria-label="Open the Crescelo assistant"
         >
-          {/* Avatar Face (always visible) */}
-          <div className="relative w-[40px] h-[40px] rounded-full bg-[#051811] flex items-center justify-center overflow-hidden shrink-0">
-            <CresceloAvatarFace size={36} />
-            <span className="absolute bottom-0.5 right-0.5 w-2.5 h-2.5 bg-[#abff44] border-2 border-[#08251a] rounded-full" />
-          </div>
-
-          {/* Text revealed on hover: expands smoothly to pill size */}
-          <div className="max-w-0 opacity-0 group-hover:max-w-[130px] group-hover:opacity-100 group-hover:ml-2.5 overflow-hidden whitespace-nowrap transition-all duration-300 ease-out flex items-center gap-1.5">
-            <span className="text-xs font-bold text-[#fffeeb] tracking-wide">Ask Crescelo AI</span>
-            <span className="text-[11px] text-[#abff44] font-bold">✨</span>
-          </div>
-
-          {hasUnread && (
-            <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#abff44] opacity-75" />
-              <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-[#abff44]" />
-            </span>
-          )}
+          <span className="pointer-events-none translate-x-3 opacity-0 group-hover:translate-x-0 group-hover:opacity-100 group-focus-visible:translate-x-0 group-focus-visible:opacity-100 transition-all duration-300 ease-out whitespace-nowrap rounded-full border border-white/10 bg-[#262624]/95 px-3.5 py-2 text-xs font-medium text-[#faf9f5] shadow-[0_8px_30px_rgba(0,0,0,0.35)] backdrop-blur">
+            Ask Crescelo
+          </span>
+          <span className="relative block transition-transform duration-300 group-hover:scale-105 group-active:scale-95">
+            <CresceloOrb size={64} state="idle" followPointer />
+            {hasUnread && (
+              <span className="absolute top-1.5 right-1.5 flex h-3 w-3">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#abff44] opacity-70" />
+                <span className="relative inline-flex h-3 w-3 rounded-full bg-[#abff44] ring-2 ring-[#1f1e1d]" />
+              </span>
+            )}
+          </span>
         </button>
       )}
 
-      {/* Floating Chat Modal */}
+      {/* Chat panel */}
       {isOpen && (
         <div
           role="dialog"
-          aria-label="Crescelo Concierge Chat"
-          className="flex flex-col w-[92vw] sm:w-[380px] md:w-[420px] h-[580px] max-h-[85vh] bg-[#051811] text-slate-100 rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.7)] border-2 border-[#1c4533] overflow-hidden animate-in fade-in slide-in-from-bottom-5 duration-200"
+          aria-label="Crescelo assistant"
+          className="relative flex flex-col w-[92vw] sm:w-[380px] md:w-[410px] h-[580px] max-h-[85vh] bg-[#1f1e1d] text-[#e8e5dc] rounded-3xl shadow-[0_28px_90px_rgba(0,0,0,0.55)] border border-white/10 overflow-hidden animate-in fade-in slide-in-from-bottom-5 duration-300"
         >
+          {/* soft light from above, the only colour in the panel */}
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-[radial-gradient(60%_100%_at_50%_0%,rgba(171,255,68,0.10),transparent)]" aria-hidden="true" />
+
           {/* Header */}
-          <div className="flex items-center justify-between px-4 py-3.5 bg-[#08251a] border-b border-[#1c4533]">
+          <div className="relative flex items-center justify-between px-4 pt-4 pb-3">
             <div className="flex items-center gap-3">
-              <div className="relative flex items-center justify-center w-10 h-10 rounded-xl bg-[#051811] border border-[#abff44]/40 shrink-0">
-                <CresceloAvatarFace size={32} />
-                <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-[#abff44] border-2 border-[#08251a] rounded-full" />
-              </div>
+              <CresceloOrb size={44} state={orbState} />
               <div>
-                <div className="flex items-center gap-2">
-                  <h3 className="font-semibold text-sm tracking-tight text-[#fffeeb]">Crescelo Concierge</h3>
-                  <span className="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-[#abff44]/15 text-[#abff44] border border-[#abff44]/30">
-                    Official AI
-                  </span>
-                </div>
-                <p className="text-[11px] text-[#cfe3d6] flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#abff44] inline-block animate-ping" />
-                  Instant answers • Zero Token Markup
+                <h3 className="text-[19px] leading-none text-[#faf9f5] tracking-tight" style={serif}>
+                  Crescelo
+                </h3>
+                <p className="mt-1 text-[11px] text-[#a19f96]" aria-live="polite">
+                  {orbState === 'thinking' ? 'Thinking…' : orbState === 'speaking' ? 'Answering…' : 'Ask about pricing, setup or features'}
                 </p>
               </div>
             </div>
 
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-0.5">
               <button
                 type="button"
                 onClick={() => {
@@ -330,49 +314,49 @@ export function FloatingPlatformChatbot() {
                   ]);
                   setConversationId(null);
                 }}
-                title="Clear conversation"
-                className="p-1.5 text-slate-400 hover:text-slate-200 hover:bg-slate-800 rounded-lg transition"
+                title="Start over"
+                aria-label="Start over"
+                className="p-2 text-[#a19f96] hover:text-[#faf9f5] hover:bg-white/[0.06] rounded-xl transition"
               >
                 <RefreshCw className="w-4 h-4" />
               </button>
               <button
                 type="button"
                 onClick={() => setIsOpen(false)}
-                title="Close chat"
-                className="p-1.5 text-slate-400 hover:text-slate-200 hover:bg-slate-800 rounded-lg transition"
+                title="Close"
+                aria-label="Close chat"
+                className="p-2 text-[#a19f96] hover:text-[#faf9f5] hover:bg-white/[0.06] rounded-xl transition"
               >
-                <X className="w-5 h-5" />
+                <X className="w-[18px] h-[18px]" />
               </button>
             </div>
           </div>
 
-          {/* Messages Scroll Area */}
-          <div className="flex-1 p-4 overflow-y-auto space-y-3.5 scrollbar-thin scrollbar-thumb-slate-800 scrollbar-track-transparent">
+          {/* Messages */}
+          <div className="relative flex-1 px-4 pt-2 pb-3 overflow-y-auto space-y-4 [scrollbar-width:thin] [scrollbar-color:rgba(250,249,245,0.18)_transparent]">
             {messages.map((m) => (
-              <div
-                key={m.id}
-                className={`flex gap-2.5 ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}
-              >
+              <div key={m.id} className={`flex gap-2.5 ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                 {m.role === 'assistant' && (
-                  <div className="w-7 h-7 rounded-lg bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-blue-400 shrink-0 mt-0.5">
-                    <Bot className="w-4 h-4" />
-                  </div>
+                  <span className="mt-0.5 shrink-0">
+                    <CresceloOrb size={26} mark />
+                  </span>
                 )}
 
                 <div
-                  className={`relative group max-w-[85%] rounded-2xl px-3.5 py-2.5 text-xs sm:text-[13px] leading-relaxed ${
+                  className={`relative group max-w-[84%] px-3.5 py-2.5 text-[13px] leading-relaxed ${
                     m.role === 'user'
-                      ? 'bg-blue-600 text-white rounded-tr-none shadow-md shadow-blue-600/20'
-                      : 'bg-slate-900 text-slate-200 border border-slate-800/80 rounded-tl-none'
+                      ? 'bg-[#abff44] text-[#08251a] font-medium rounded-2xl rounded-tr-md'
+                      : 'bg-[#2c2b29] text-[#e8e5dc] border border-white/[0.06] rounded-2xl rounded-tl-md'
                   }`}
                 >
                   <div className="whitespace-pre-wrap break-words">
                     {m.content ? (
-                      m.content
+                      m.role === 'assistant' ? renderRich(m.content) : m.content
                     ) : (
-                      <span className="flex items-center gap-1.5 py-0.5 text-slate-400 italic">
-                        <Sparkles className="w-3.5 h-3.5 animate-spin text-blue-400" />
-                        Thinking...
+                      <span className="flex items-center gap-1 py-1" aria-label="Thinking">
+                        {[0, 1, 2].map((i) => (
+                          <span key={i} className="h-1.5 w-1.5 rounded-full bg-[#abff44] animate-pulse" style={{ animationDelay: `${i * 180}ms`, animationDuration: '1.1s' }} />
+                        ))}
                       </span>
                     )}
                   </div>
@@ -381,34 +365,28 @@ export function FloatingPlatformChatbot() {
                     <button
                       type="button"
                       onClick={() => handleCopy(m.id, m.content)}
-                      title="Copy response"
-                      className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 p-1 text-slate-400 hover:text-slate-200 bg-slate-800/80 rounded transition"
+                      title="Copy answer"
+                      aria-label="Copy answer"
+                      className="absolute -bottom-2 right-2 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 p-1 text-[#a19f96] hover:text-[#faf9f5] bg-[#33322f] border border-white/10 rounded-md transition"
                     >
-                      {copiedId === m.id ? (
-                        <Check className="w-3 h-3 text-emerald-400" />
-                      ) : (
-                        <Copy className="w-3 h-3" />
-                      )}
+                      {copiedId === m.id ? <Check className="w-3 h-3 text-[#abff44]" /> : <Copy className="w-3 h-3" />}
                     </button>
                   )}
                 </div>
               </div>
             ))}
 
-            {/* Quick Suggestion Chips on initial view */}
+            {/* Suggestions on the first view */}
             {messages.length <= 2 && !isLoading && (
-              <div className="pt-2">
-                <p className="text-[11px] font-medium text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-1">
-                  <Sparkles className="w-3 h-3 text-sky-400" />
-                  Popular Questions
-                </p>
+              <div className="pt-1">
+                <p className="text-[10.5px] font-semibold text-[#8b8981] uppercase tracking-[0.14em] mb-2">Try asking</p>
                 <div className="flex flex-wrap gap-1.5">
                   {DEFAULT_SUGGESTIONS.map((sug, i) => (
                     <button
                       key={i}
                       type="button"
                       onClick={() => sendMessage(sug)}
-                      className="text-left text-xs bg-slate-900/90 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800 hover:border-slate-700 px-2.5 py-1.5 rounded-lg transition duration-150"
+                      className="text-left text-xs text-[#d8d5cb] hover:text-[#faf9f5] bg-white/[0.05] hover:bg-white/[0.09] border border-white/[0.16] hover:border-[#abff44]/50 px-3 py-1.5 rounded-full transition duration-200"
                     >
                       {sug}
                     </button>
@@ -420,14 +398,14 @@ export function FloatingPlatformChatbot() {
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Input Footer */}
-          <div className="p-3 bg-slate-900/90 border-t border-slate-800">
+          {/* Input */}
+          <div className="relative px-3 pb-3 pt-2">
             <form
               onSubmit={(e) => {
                 e.preventDefault();
                 sendMessage();
               }}
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 rounded-2xl border border-white/10 bg-[#262624] pl-3.5 pr-1.5 py-1.5 focus-within:border-[#abff44]/50 transition"
             >
               <input
                 ref={inputRef}
@@ -435,24 +413,21 @@ export function FloatingPlatformChatbot() {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder="Ask anything about Crescelo..."
+                placeholder="Ask anything about Crescelo…"
                 disabled={isLoading}
-                className="flex-1 bg-slate-950 border border-slate-800 focus:border-blue-500 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-slate-100 placeholder-slate-500 outline-none transition"
+                aria-label="Your question"
+                className="flex-1 bg-transparent text-[13px] text-[#faf9f5] placeholder-[#8b8981] outline-none py-1.5"
               />
               <button
                 type="submit"
                 disabled={!input.trim() || isLoading}
-                className="p-2.5 bg-blue-600 hover:bg-blue-500 disabled:opacity-40 disabled:hover:bg-blue-600 text-white rounded-xl shadow transition shrink-0"
+                className="grid place-items-center h-9 w-9 rounded-xl bg-[#abff44] text-[#08251a] hover:brightness-105 active:scale-95 disabled:opacity-30 disabled:hover:brightness-100 transition shrink-0"
                 aria-label="Send message"
               >
                 <Send className="w-4 h-4" />
               </button>
             </form>
-            <div className="mt-2 text-center text-[10px] text-slate-400 flex items-center justify-center gap-1.5">
-              <span>Powered by Crescelo Sovereign RAG</span>
-              <span>•</span>
-              <span className="text-emerald-400 font-medium">100% Free Consultation</span>
-            </div>
+            <p className="mt-2 text-center text-[10.5px] text-[#8b8981]">Powered by Crescelo</p>
           </div>
         </div>
       )}

@@ -2,7 +2,7 @@
    Scoped to .kx-app so the public pages, hosted sites and embeds are untouched.
    Tailwind v4 reads every colour from a CSS variable, so re-pointing the palette
    here re-skins the whole dashboard without editing each component.
-   Palette: cream #fffeeb, deep green #08251a, lime #abff44, lavender #f0d7ff. */
+   Light palette: cream #fffeeb, deep green #08251a, lime #abff44, lavender #f0d7ff. Dark palette: warm charcoal (see below). */
 
 .kx-app {
   --kx-cream: #fffeeb;
@@ -12,7 +12,7 @@
   --font-sans: var(--font-kx-sans), ui-sans-serif, system-ui, sans-serif;
   --kx-serif: var(--font-kx-serif), Georgia, "Times New Roman", serif;
 
-  /* Neutrals: cream in light mode, deep green in dark mode (same scale drives both) */
+  /* Neutrals: cream in light mode (the dark theme re-points these below) */
   --color-slate-50: #fffeeb;
   --color-slate-100: #f7f6dd;
   --color-slate-200: #e9e8d2;
@@ -96,7 +96,41 @@
 }
 
 body:has(.kx-app) { background-color: #fffeeb; color: #08251a; }
-body:has(.kx-app.dark) { background-color: #0a2c1f; color: #fffeeb; }
+body:has(.kx-app.dark) { background-color: #1f1e1d; color: #faf9f5; }
+
+/* ===================== Dark theme =====================
+   Warm charcoal, not green: quiet neutrals with a faint warm cast (the same family as Claude's dark UI), the lime kept for
+   the few things that should glow. Only the palette changes; every component already pairs light and dark utilities.
+   Surfaces step up in lightness: 950 sidebar/header, 900 page, 850/800 cards, inputs and hover, 700 strong borders.
+   Text: 50-200 body and headings, 300 secondary, 400 muted (>= 4.5:1 on the page), 500 placeholders and disabled. */
+.kx-app.dark {
+  color-scheme: dark;
+  --color-slate-50: #faf9f5;
+  --color-slate-100: #f0eee6;
+  --color-slate-200: #e0ddd3;
+  --color-slate-300: #c2c0b6;
+  --color-slate-400: #a19f96;
+  --color-slate-500: #94928a;
+  --color-slate-600: #666560;
+  --color-slate-700: #46453f;
+  --color-slate-750: #3c3b37;
+  --color-slate-800: #33322f;
+  --color-slate-850: #2c2b29;
+  --color-slate-900: #262624;
+  --color-slate-950: #1f1e1d;
+
+  /* Teal accent tints: desaturated so tinted panels read as charcoal with a hint of colour, not as green blocks */
+  --color-blue-800: #2b4a42;
+  --color-blue-900: #223a34;
+  --color-blue-950: #1c2c28;
+  --color-indigo-800: #2b4a42;
+  --color-indigo-900: #223a34;
+  --color-indigo-950: #1c2c28;
+  --color-purple-900: #3b2c48;
+  --color-purple-950: #2c2236;
+  --color-violet-900: #3b2c48;
+  --color-violet-950: #2c2236;
+}
 
 /* Headings: editorial serif, as on the marketing site */
 .kx-app :where(h1, h2) { font-family: var(--kx-serif); letter-spacing: -0.02em; }
@@ -135,18 +169,19 @@ body:has(.kx-app.dark) { background-color: #0a2c1f; color: #fffeeb; }
 .kx-app :is(button, a).bg-blue-600:disabled,
 .kx-app :is(button, a).bg-blue-500:disabled,
 .kx-app :is(button, a).bg-purple-600:disabled { opacity: 0.55; box-shadow: 0 0 0 1.5px rgba(26, 26, 26, 0.4); }
-/* On dark surfaces the outline is the cream, so the lime button still reads as a raised control */
+/* On dark surfaces the outline is a deep neutral edge, so the lime button still reads as a raised control */
 .kx-app.dark :is(button, a).bg-blue-600,
 .kx-app.dark :is(button, a).bg-blue-500,
 .kx-app.dark :is(button, a).bg-indigo-600,
-.kx-app.dark :is(button, a).bg-purple-600 { box-shadow: 0 0 0 1.5px var(--kx-deep), 0 3px 0 1.5px var(--kx-deep); }
+.kx-app.dark :is(button, a).bg-purple-600 { box-shadow: 0 0 0 1.5px rgba(0, 0, 0, 0.55), 0 3px 0 1.5px rgba(0, 0, 0, 0.55); }
 
 /* Focus, selection, scrollbars */
 .kx-app :focus-visible { outline: 2px solid #0f6e58; outline-offset: 2px; }
 .kx-app.dark :focus-visible { outline-color: var(--kx-lime); }
 .kx-app ::selection { background: var(--kx-lime); color: var(--kx-deep); }
 .kx-app ::-webkit-scrollbar-thumb { background: rgba(8, 37, 26, 0.28); }
-.kx-app.dark ::-webkit-scrollbar-thumb { background: rgba(171, 255, 68, 0.28); }
+.kx-app.dark ::-webkit-scrollbar-thumb { background: rgba(250, 249, 245, 0.16); }
+.kx-app.dark ::-webkit-scrollbar-thumb:hover { background: rgba(250, 249, 245, 0.28); }
 
 /* Inputs: a warmer border and a brand focus ring */
 .kx-app :is(input, textarea, select):focus { border-color: #0f6e58; --tw-ring-color: rgba(15, 110, 88, 0.25); }
@@ -155,4 +190,4 @@ body:has(.kx-app.dark) { background-color: #0a2c1f; color: #fffeeb; }
 /* Brand mark */
 .kx-brand { display: inline-flex; align-items: center; gap: 10px; }
 .kx-brand-word { font-family: var(--kx-serif); font-size: 1.55rem; line-height: 1; letter-spacing: -0.01em; color: #08251a; }
-.kx-app.dark .kx-brand-word { color: #fffeeb; }
+.kx-app.dark .kx-brand-word { color: #faf9f5; }

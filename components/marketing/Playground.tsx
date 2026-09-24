@@ -5,6 +5,7 @@ import { PIPELINE, PLAYGROUND, type PipelineStage } from './content-extra';
 import { Eyebrow, Reveal } from './ui';
 import { usePrefersReducedMotion } from './hooks';
 import { dayKey, isEmail, makeIcs, openDays, respond, slotsFor, type Reply, type Service, type TraceNote } from './playground-engine';
+import { CresceloOrb } from '@/components/brand/CresceloOrb';
 
 interface Confirmation {
   ref: string;
@@ -369,9 +370,7 @@ export function Playground() {
             {/* Chat */}
             <div className="mk-pg-chat">
               <div className="mk-pg-chat-top">
-                <span className="mk-pg-avatar" aria-hidden="true">
-                  K
-                </span>
+                <CresceloOrb size={42} />
                 <div>
                   <b>{PLAYGROUND.business}</b>
                   <small>{PLAYGROUND.disclaimer}</small>

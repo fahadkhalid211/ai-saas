@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { HERO, SIGNUP_HREF } from './content';
 import { ButtonLink } from './ui';
 import { usePrefersReducedMotion } from './hooks';
+import { CresceloOrb, type OrbState } from '@/components/brand/CresceloOrb';
 
 interface Turn {
   q: string;
@@ -31,70 +32,6 @@ const TURNS: Turn[] = [
     booking: true,
   },
 ];
-
-/** Googly-eyed mascot. Pupils follow the pointer through two CSS variables on the element. */
-function Mascot() {
-  const ref = useRef<HTMLDivElement>(null);
-  const reduced = usePrefersReducedMotion();
-  useEffect(() => {
-    const el = ref.current;
-    if (!el || reduced) return;
-    let raf = 0;
-    const onMove = (e: PointerEvent) => {
-      if (raf) return;
-      raf = requestAnimationFrame(() => {
-        raf = 0;
-        const r = el.getBoundingClientRect();
-        const dx = e.clientX - (r.left + r.width / 2);
-        const dy = e.clientY - (r.top + r.height / 2);
-        const d = Math.max(1, Math.hypot(dx, dy));
-        const k = Math.min(1, d / 200) * 4;
-        el.style.setProperty('--px', `${((dx / d) * k).toFixed(2)}px`);
-        el.style.setProperty('--py', `${((dy / d) * k).toFixed(2)}px`);
-      });
-    };
-    window.addEventListener('pointermove', onMove, { passive: true });
-    return () => {
-      window.removeEventListener('pointermove', onMove);
-      if (raf) cancelAnimationFrame(raf);
-    };
-  }, [reduced]);
-
-  return (
-    <div className="mk-mascot" ref={ref} aria-hidden="true">
-      <svg viewBox="0 0 72 72" width="72" height="72">
-        {/* Brand Signal Crest */}
-        <path d="M30 6a7 7 0 1 1 12 0" fill="none" stroke="#abff44" strokeWidth="2.5" strokeLinecap="round" />
-        <circle cx="36" cy="10" r="2" fill="#abff44" />
-        
-        {/* Brand Audio / Ear Nodes */}
-        <path d="M9 30c-3 0-5 3-5 7s2 7 5 7" fill="none" stroke="#abff44" strokeWidth="2.5" strokeLinecap="round" />
-        <path d="M63 30c3 0 5 3 5 7s-2 7-5 7" fill="none" stroke="#abff44" strokeWidth="2.5" strokeLinecap="round" />
-
-        {/* Chassis Head - Crescelo Deep Obsidian */}
-        <rect x="9" y="13" width="54" height="48" rx="18" fill="#08251a" stroke="#1a1a1a" strokeWidth="2.5" />
-        <rect x="11" y="15" width="50" height="44" rx="16" fill="none" stroke="rgba(171,255,68,0.25)" strokeWidth="1" />
-
-        {/* Warm Cream Eye Portals */}
-        <circle cx="26" cy="33" r="10" fill="#fffeeb" stroke="#1a1a1a" strokeWidth="2" />
-        <circle cx="46" cy="33" r="10" fill="#fffeeb" stroke="#1a1a1a" strokeWidth="2" />
-
-        {/* Responsive Cursor-Tracking Pupils with Lime Reflection */}
-        <circle className="mk-pupil" cx="26" cy="33" r="4.5" fill="#08251a" />
-        <circle className="mk-pupil" cx="27.6" cy="31.2" r="1.8" fill="#abff44" />
-        <circle className="mk-pupil" cx="46" cy="33" r="4.5" fill="#08251a" />
-        <circle className="mk-pupil" cx="47.6" cy="31.2" r="1.8" fill="#abff44" />
-
-        {/* Cheek Accents */}
-        <circle cx="17" cy="42" r="2.5" fill="#f0d7ff" opacity="0.7" />
-        <circle cx="55" cy="42" r="2.5" fill="#f0d7ff" opacity="0.7" />
-
-        {/* Friendly Lime Smile */}
-        <path d="M29 48c4.5 4 9.5 4 14 0" fill="none" stroke="#abff44" strokeWidth="2.8" strokeLinecap="round" />
-      </svg>
-    </div>
-  );
-}
 
 function PromptDemo() {
   const reduced = usePrefersReducedMotion();
@@ -135,9 +72,14 @@ function PromptDemo() {
   const question = isStatic ? cur.q : cur.q.slice(0, typed);
   const answerVisible = isStatic ? true : showAnswer;
 
+  // The assistant mirrors the demo: it listens while the question is typed, thinks for a beat, then answers.
+  const orbState: OrbState = isStatic ? 'idle' : typed < cur.q.length ? 'listening' : !showAnswer ? 'thinking' : 'speaking';
+
   return (
     <div className="mk-prompt-wrap">
-      <Mascot />
+      <div className="mk-orb-perch">
+        <CresceloOrb size={88} state={orbState} followPointer />
+      </div>
       <div className="mk-prompt">
         <div className="mk-prompt-top">
           <span className="mk-live" aria-hidden="true">
