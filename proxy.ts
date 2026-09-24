@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { checkRateLimit, getClientIp } from './lib/security/rate-limit';
+import { logEvent } from './lib/logging/logger';
 
 interface RouteLimitConfig {
   prefix: string;
@@ -95,6 +96,7 @@ export function proxy(request: NextRequest) {
   if (pathname.startsWith('/api/')) {
     const originAllowed = verifyOrigin(request, pathname);
     if (!originAllowed) {
+      logEvent({ level: 'warn', category: 'security', event: 'security.csrf_blocked', ip: getClientIp(request), meta: { path: pathname, method: request.method, origin: request.headers.get('origin') } });
       return NextResponse.json(
         { error: 'Forbidden: cross-origin request blocked.' },
         { status: 403 }
@@ -107,6 +109,7 @@ export function proxy(request: NextRequest) {
     const limitResult = checkRateLimit(`${bucketKey}:${clientIp}`, { windowMs, max });
 
     if (!limitResult.allowed) {
+      logEvent({ level: 'warn', category: 'security', event: 'security.rate_limited', ip: clientIp, meta: { limiter: 'proxy', path: pathname, max } });
       const retryAfterSec = Math.max(1, Math.ceil((limitResult.resetTime - Date.now()) / 1000));
       return NextResponse.json(
         {

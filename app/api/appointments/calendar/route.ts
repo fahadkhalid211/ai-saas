@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { Database } from '@/lib/db';
 import { generateIcsFeed } from '@/lib/calendar/ical';
 import { verifyCalendarFeedToken, verifyAdminRequest } from '@/lib/security/auth';
+import { logged } from '@/lib/logging/route';
 
 export async function OPTIONS() {
   return new NextResponse(null, {
@@ -14,7 +15,7 @@ export async function OPTIONS() {
   });
 }
 
-export async function GET(req: Request) {
+async function GETHandler(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
     const assistantId = searchParams.get('assistantId') || 'demo-assistant';
@@ -67,3 +68,5 @@ export async function GET(req: Request) {
     });
   }
 }
+
+export const GET = logged(GETHandler, { route: '/api/appointments/calendar' });

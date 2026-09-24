@@ -2,8 +2,9 @@ import { NextResponse } from 'next/server';
 import { Database } from '@/lib/db';
 import { withAdminAuth, getAuthContext, requireWorkspaceAssistant } from '@/lib/security/auth';
 import { checkRateLimit, getClientIp } from '@/lib/security/rate-limit';
+import { logged } from '@/lib/logging/route';
 
-export const GET = withAdminAuth(async (req: Request) => {
+const GETHandler = withAdminAuth(async (req: Request) => {
   try {
     const ctx = await getAuthContext(req);
     const { searchParams } = new URL(req.url);
@@ -97,7 +98,7 @@ export const GET = withAdminAuth(async (req: Request) => {
 });
 
 // Record live page view event from hosted landing page
-export async function POST(req: Request) {
+async function POSTHandler(req: Request) {
   try {
     const ip = getClientIp(req);
     const limit = checkRateLimit(`pageview:${ip}`, { windowMs: 60 * 1000, max: 120 });
@@ -144,3 +145,6 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: error?.message || 'Failed to record page view' }, { status: 500 });
   }
 }
+
+export const POST = logged(POSTHandler, { route: '/api/analytics', sample: 0.1 });
+export const GET = logged(GETHandler, { route: '/api/analytics' });

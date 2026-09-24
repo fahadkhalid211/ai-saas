@@ -5,6 +5,7 @@ import { enforceRateLimitByKey } from '@/lib/security/rate-limit';
 import { getVoiceSecret, mintCallToken } from '@/lib/voice/auth';
 import { normalizeE164 } from '@/lib/voice/text';
 import { dialResponse, parseCarrierBody, rejectResponse, sayHangupResponse, streamResponse, verifyTelnyxSignature, verifyWebhookKey } from '@/lib/voice/texml';
+import { logged } from '@/lib/logging/route';
 
 export const dynamic = 'force-dynamic';
 
@@ -64,5 +65,8 @@ async function handle(req: Request): Promise<Response> {
   return xml(streamResponse({ url: streamUrl, token, callId, from, to }));
 }
 
-export const POST = handle;
-export const GET = handle;
+const POSTHandler = handle;
+const GETHandler = handle;
+
+export const POST = logged(POSTHandler, { route: '/api/channels/voice' });
+export const GET = logged(GETHandler, { route: '/api/channels/voice' });

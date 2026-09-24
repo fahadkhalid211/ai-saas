@@ -2,8 +2,9 @@ import { NextResponse } from 'next/server';
 import { Database } from '@/lib/db';
 import { executeWebSearch, ingestWebSearchResults } from '@/lib/rag/web-search';
 import { withAdminAuth, getAuthContext } from '@/lib/security/auth';
+import { logged } from '@/lib/logging/route';
 
-export const POST = withAdminAuth(async (req: Request) => {
+const POSTHandler = withAdminAuth(async (req: Request) => {
   try {
     const ctx = await getAuthContext(req);
     const body = await req.json();
@@ -51,3 +52,5 @@ export const POST = withAdminAuth(async (req: Request) => {
     );
   }
 });
+
+export const POST = logged(POSTHandler, { route: '/api/knowledge/search' });

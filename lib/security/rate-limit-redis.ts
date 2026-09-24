@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getRedisClient, isRedisConfigured } from '@/lib/cache/redis';
 import { checkRateLimit, getClientIp, type RateLimitOptions } from './rate-limit';
+import { logEvent } from '@/lib/logging/logger';
 
 /**
  * Rate limiting that holds across serverless instances.
@@ -35,7 +36,8 @@ export async function checkDistributedRateLimit(
   }
 }
 
-function tooMany(options: RateLimitOptions, resetTime: number): NextResponse {
+function tooMany(options: RateLimitOptions, resetTime: number, limiter: string, ip?: string): NextResponse {
+  logEvent({ level: 'warn', category: 'security', event: 'security.rate_limited', ip, meta: { limiter, max: options.max, windowMs: options.windowMs } });
   const retryAfterSec = Math.max(1, Math.ceil((resetTime - Date.now()) / 1000));
   return NextResponse.json(
     { error: 'Too many requests. Please try again later.', retryAfter: retryAfterSec },
@@ -57,8 +59,9 @@ export async function enforceDistributedRateLimit(
   prefix: string,
   options: RateLimitOptions
 ): Promise<NextResponse | null> {
-  const limit = await checkDistributedRateLimit(`${prefix}:${getClientIp(req)}`, options);
-  return limit.allowed ? null : tooMany(options, limit.resetTime);
+  const ip = getClientIp(req);
+  const limit = await checkDistributedRateLimit(`${prefix}:${ip}`, options);
+  return limit.allowed ? null : tooMany(options, limit.resetTime, prefix, ip);
 }
 
 /** Limit on an arbitrary key (for example a login e-mail), shared across instances. */
@@ -67,5 +70,5 @@ export async function enforceDistributedRateLimitByKey(
   options: RateLimitOptions
 ): Promise<NextResponse | null> {
   const limit = await checkDistributedRateLimit(key, options);
-  return limit.allowed ? null : tooMany(options, limit.resetTime);
+  return limit.allowed ? null : tooMany(options, limit.resetTime, key.split(':')[0]);
 }

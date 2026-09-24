@@ -7,12 +7,14 @@ import {
   processTelegramUpdate,
 } from '@/lib/channels/telegram';
 import { verifyAdminRequest } from '@/lib/security/auth';
+import { logged } from '@/lib/logging/route';
+import { logEvent } from '@/lib/logging/logger';
 
 function getTelegramSecretToken(assistantId: string, token: string): string {
   return crypto.createHmac('sha256', token).update(assistantId).digest('hex').slice(0, 32);
 }
 
-export async function POST(req: NextRequest) {
+async function POSTHandler(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const assistantId = searchParams.get('assistantId');
@@ -43,6 +45,7 @@ export async function POST(req: NextRequest) {
       headerBuf.length !== expectedBuf.length ||
       !crypto.timingSafeEqual(headerBuf, expectedBuf)
     ) {
+      logEvent({ level: 'warn', category: 'security', event: 'security.invalid_signature', meta: { channel: 'telegram' } });
       return NextResponse.json({ error: 'Invalid secret token' }, { status: 403 });
     }
 
@@ -60,7 +63,7 @@ export async function POST(req: NextRequest) {
   }
 }
 
-export async function GET(req: NextRequest) {
+async function GETHandler(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const action = searchParams.get('action');
@@ -101,3 +104,6 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: error?.message || 'Telegram action failed' }, { status: 500 });
   }
 }
+
+export const POST = logged(POSTHandler, { route: '/api/channels/telegram' });
+export const GET = logged(GETHandler, { route: '/api/channels/telegram' });

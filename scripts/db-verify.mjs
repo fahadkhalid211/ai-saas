@@ -88,6 +88,15 @@ try {
   const noRls = have.filter((r) => !r.rls);
   if (noRls.length) add('WARN', 'row-level security', `off for: ${noRls.map((r) => r.t).join(', ')}`);
 
+  // 4b. System log table (created on first write; size matters on the small free database)
+  if (names.has('kortex_logs')) {
+    const [lg] = await q("select pg_total_relation_size('kortex_logs')::bigint bytes, (select count(*) from kortex_logs)::bigint n, (select min(ts) from kortex_logs) oldest");
+    const mb = Number(lg.bytes) / 1048576;
+    add(mb > 500 ? 'WARN' : 'OK', 'system log', `${Number(lg.n).toLocaleString()} rows, ${mb.toFixed(1)} MB, oldest ${lg.oldest ? new Date(lg.oldest).toISOString().slice(0, 10) : 'n/a'}`);
+  } else {
+    add('OK', 'system log', 'table not created yet (it is created on the first logged event)');
+  }
+
   // 5. Double-booking guard
   if (names.has('kortex_appointments')) {
     const [idx] = await q("select count(*)::int n from pg_indexes where indexname = 'idx_kortex_appointments_slot_unique'");

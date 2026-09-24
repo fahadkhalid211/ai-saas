@@ -2,8 +2,9 @@ import { NextResponse } from 'next/server';
 import { testWebhookPing } from '@/lib/webhook';
 import { withAdminAuth } from '@/lib/security/auth';
 import { enforceRateLimit } from '@/lib/security/rate-limit';
+import { logged } from '@/lib/logging/route';
 
-export const POST = withAdminAuth(async (req: Request) => {
+const POSTHandler = withAdminAuth(async (req: Request) => {
   try {
     const rateLimitRes = enforceRateLimit(req, 'webhook-test', { max: 20, windowMs: 60 * 1000 });
     if (rateLimitRes.errorResponse) return rateLimitRes.errorResponse;
@@ -24,3 +25,5 @@ export const POST = withAdminAuth(async (req: Request) => {
     );
   }
 });
+
+export const POST = logged(POSTHandler, { route: '/api/webhook/test' });

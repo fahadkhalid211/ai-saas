@@ -1,11 +1,12 @@
 import { NextResponse } from 'next/server';
 import { Database } from '@/lib/db';
 import { getAuthContext, requireWorkspaceAssistant, withAdminAuth } from '@/lib/security/auth';
+import { logged } from '@/lib/logging/route';
 
 export const dynamic = 'force-dynamic';
 
 /** Dashboard: recent phone calls for one assistant (admin session required, workspace-scoped). */
-export const GET = withAdminAuth(async (req: Request) => {
+const GETHandler = withAdminAuth(async (req: Request) => {
   const ctx = await getAuthContext(req);
   const assistantId = new URL(req.url).searchParams.get('assistantId');
   if (!assistantId) return NextResponse.json({ error: 'assistantId is required' }, { status: 400 });
@@ -16,3 +17,5 @@ export const GET = withAdminAuth(async (req: Request) => {
   const calls = (await Database.getCalls(assistantId, ctx.workspaceId)).slice(0, 25);
   return NextResponse.json({ calls });
 });
+
+export const GET = logged(GETHandler, { route: '/api/voice/calls' });

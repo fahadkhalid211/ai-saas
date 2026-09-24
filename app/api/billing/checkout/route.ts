@@ -4,8 +4,9 @@ import { createCheckoutSession, isStripeConfigured } from '@/lib/billing/stripe'
 import { BILLING_PLANS } from '@/lib/billing/plans';
 import { getAuthContext, requireRole } from '@/lib/security/auth';
 import { getClientIp, enforceRateLimit } from '@/lib/security/rate-limit';
+import { logged } from '@/lib/logging/route';
 
-export async function POST(req: NextRequest) {
+async function POSTHandler(req: NextRequest) {
   try {
     const rateLimit = enforceRateLimit(req, 'billing-checkout', { windowMs: 60 * 1000, max: 10 });
     if (rateLimit.errorResponse) return rateLimit.errorResponse;
@@ -178,3 +179,5 @@ export async function POST(req: NextRequest) {
     );
   }
 }
+
+export const POST = logged(POSTHandler, { route: '/api/billing/checkout' });

@@ -28,7 +28,12 @@ if (!raw) {
   process.exit(2);
 }
 const dry = process.argv.includes('--dry');
-const FILES = ['supabase/schema-relational-v2.sql', 'supabase/schema-relational-v3-widget-events.sql', 'supabase/schema-chunks-v2.sql'];
+const FILES = [
+  'supabase/schema-relational-v2.sql',
+  'supabase/schema-relational-v3-widget-events.sql',
+  'supabase/schema-chunks-v2.sql',
+  'supabase/schema-logs-v1.sql',
+];
 
 const u = new URL(raw);
 const sslmode = (u.searchParams.get('sslmode') || '').toLowerCase();

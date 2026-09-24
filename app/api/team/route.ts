@@ -2,10 +2,11 @@ import { NextResponse } from 'next/server';
 import { Database, sanitizeTeamMember } from '@/lib/db';
 import { withAdminAuth, withRoleAuth, getAuthContext } from '@/lib/security/auth';
 import { getClientIp } from '@/lib/security/rate-limit';
+import { logged } from '@/lib/logging/route';
 
 export const dynamic = 'force-dynamic';
 
-export const GET = withAdminAuth(async (req: Request) => {
+const GETHandler = withAdminAuth(async (req: Request) => {
   try {
     const ctx = await getAuthContext(req);
     const { searchParams } = new URL(req.url);
@@ -24,7 +25,7 @@ export const GET = withAdminAuth(async (req: Request) => {
 const ALLOWED_ROLES = ['owner', 'admin', 'support_agent', 'billing_manager', 'viewer'] as const;
 type AllowedRole = typeof ALLOWED_ROLES[number];
 
-export const POST = withRoleAuth(['owner', 'admin'], async (req: Request) => {
+const POSTHandler = withRoleAuth(['owner', 'admin'], async (req: Request) => {
   try {
     const ctx = await getAuthContext(req);
     const body = await req.json();
@@ -83,7 +84,7 @@ export const POST = withRoleAuth(['owner', 'admin'], async (req: Request) => {
   }
 });
 
-export const PUT = withRoleAuth(['owner', 'admin'], async (req: Request) => {
+const PUTHandler = withRoleAuth(['owner', 'admin'], async (req: Request) => {
   try {
     const ctx = await getAuthContext(req);
     const body = await req.json();
@@ -136,7 +137,7 @@ export const PUT = withRoleAuth(['owner', 'admin'], async (req: Request) => {
   }
 });
 
-export const DELETE = withRoleAuth(['owner', 'admin'], async (req: Request) => {
+const DELETEHandler = withRoleAuth(['owner', 'admin'], async (req: Request) => {
   try {
     const ctx = await getAuthContext(req);
     const { searchParams } = new URL(req.url);
@@ -182,3 +183,8 @@ export const DELETE = withRoleAuth(['owner', 'admin'], async (req: Request) => {
     return NextResponse.json({ error: error?.message || 'Failed to remove team member' }, { status: 500 });
   }
 });
+
+export const GET = logged(GETHandler, { route: '/api/team' });
+export const POST = logged(POSTHandler, { route: '/api/team' });
+export const PUT = logged(PUTHandler, { route: '/api/team' });
+export const DELETE = logged(DELETEHandler, { route: '/api/team' });

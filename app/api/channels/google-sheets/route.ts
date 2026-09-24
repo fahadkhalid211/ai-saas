@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server';
 import { testGoogleSheetWebhook } from '@/lib/integrations/google-sheets';
 import { withAdminAuth } from '@/lib/security/auth';
+import { logged } from '@/lib/logging/route';
 
-export const POST = withAdminAuth(async (req: Request) => {
+const POSTHandler = withAdminAuth(async (req: Request) => {
   try {
     const body = await req.json();
     const { webhookUrl, assistantName } = body;
@@ -20,3 +21,5 @@ export const POST = withAdminAuth(async (req: Request) => {
     );
   }
 });
+
+export const POST = logged(POSTHandler, { route: '/api/channels/google-sheets' });

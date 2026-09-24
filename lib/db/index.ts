@@ -7,6 +7,7 @@ import { clearRetrievalCache } from '../rag/cache';
 import { encryptSecret, decryptSecret } from '../security/crypto';
 import { hashPassword, verifyPassword, isHashedPassword, generateTempPassword } from '../security/password';
 import { getMasterEmail } from '@/lib/security/master';
+import { logEvent } from '../logging/logger';
 import {
   LandingPageConfig,
   LandingPageServiceItem,
@@ -2972,6 +2973,23 @@ export class Database {
       ...entry,
       actor,
     };
+    // Mirror into the system log (master-only), which keeps far more history than the blob-backed audit trail.
+    logEvent({
+      level: /fail|denied|blocked|invalid|lockout/i.test(entry.action) ? 'warn' : 'info',
+      category: entry.action.startsWith('auth.') ? 'auth' : 'audit',
+      event: entry.action,
+      userId: actor.id,
+      workspaceId: entry.workspaceId || entry.details?.workspaceId,
+      ip: actor.ip,
+      meta: {
+        actorName: actor.name,
+        // e-mail addresses are recorded for sign-in events only
+        ...(entry.action.startsWith('auth.') && actor.email ? { email: actor.email } : {}),
+        targetType: entry.targetType,
+        targetId: entry.targetId,
+        details: entry.details,
+      },
+    });
     state.auditLogs.unshift(log);
     // Keep last 1000 logs
     if (state.auditLogs.length > 1000) {

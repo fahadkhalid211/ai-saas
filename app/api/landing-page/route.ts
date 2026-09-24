@@ -5,6 +5,7 @@ import { verifyAdminRequest, getAuthContext } from '@/lib/security/auth';
 import { getClientIp } from '@/lib/security/rate-limit';
 import { LandingPageConfig } from '@/lib/landing/types';
 import { validateLandingPagePayload } from '@/lib/security/validation';
+import { logged } from '@/lib/logging/route';
 
 export const dynamic = 'force-dynamic';
 
@@ -111,7 +112,7 @@ async function getPublicAssistantConfig(assistantId: string, fallbackName?: stri
   };
 }
 
-export async function GET(req: NextRequest) {
+async function GETHandler(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const all = searchParams.get('all');
@@ -248,7 +249,7 @@ export async function GET(req: NextRequest) {
   }
 }
 
-export async function POST(req: NextRequest) {
+async function POSTHandler(req: NextRequest) {
   try {
     const ctx = await getAuthContext(req);
     if (!ctx.authenticated) {
@@ -374,7 +375,7 @@ export async function POST(req: NextRequest) {
   }
 }
 
-export async function DELETE(req: NextRequest) {
+async function DELETEHandler(req: NextRequest) {
   try {
     const ctx = await getAuthContext(req);
     if (!ctx.authenticated) {
@@ -408,3 +409,7 @@ export async function DELETE(req: NextRequest) {
     return NextResponse.json({ error: error?.message || 'Failed to delete landing page' }, { status: 500 });
   }
 }
+
+export const GET = logged(GETHandler, { route: '/api/landing-page' });
+export const POST = logged(POSTHandler, { route: '/api/landing-page' });
+export const DELETE = logged(DELETEHandler, { route: '/api/landing-page' });

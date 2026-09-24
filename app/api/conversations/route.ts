@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server';
 import { Database } from '@/lib/db';
 import { verifyAdminRequest, verifyConversationAccessToken, getAuthContext } from '@/lib/security/auth';
+import { logged } from '@/lib/logging/route';
 
-export async function GET(req: Request) {
+async function GETHandler(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
     const id = searchParams.get('id');
@@ -73,7 +74,7 @@ export async function GET(req: Request) {
   }
 }
 
-export async function POST(req: Request) {
+async function POSTHandler(req: Request) {
   try {
     // Only authenticated human operators can send operator messages
     const ctx = await getAuthContext(req);
@@ -135,7 +136,7 @@ export async function POST(req: Request) {
   }
 }
 
-export async function PATCH(req: Request) {
+async function PATCHHandler(req: Request) {
   try {
     // Only authenticated admins/operators can patch conversation status
     const ctx = await getAuthContext(req);
@@ -176,3 +177,7 @@ export async function PATCH(req: Request) {
     return NextResponse.json({ error: error?.message || 'Failed to update conversation' }, { status: 500 });
   }
 }
+
+export const GET = logged(GETHandler, { route: '/api/conversations', sample: 0.2 });
+export const POST = logged(POSTHandler, { route: '/api/conversations' });
+export const PATCH = logged(PATCHHandler, { route: '/api/conversations' });

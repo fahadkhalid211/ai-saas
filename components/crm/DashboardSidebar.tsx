@@ -9,6 +9,7 @@ import {
   UserCheck,
   ShieldCheck,
   ClipboardList,
+  Activity,
   Upload,
   MessageSquare,
   Share2,
@@ -152,6 +153,8 @@ export function DashboardSidebar({
         { id: 'billing', label: 'Plans & Billing', icon: CreditCard },
         { id: 'security', label: 'Security & 2FA', icon: ShieldCheck },
         ...(canViewAudit ? [{ id: 'audit', label: 'Audit Trail', icon: ClipboardList, count: auditCount }] : []),
+        // The system log is for the platform owner only (the API refuses everyone else with a 404).
+        ...(isMasterAdmin ? [{ id: 'system_logs', label: 'System Logs', icon: Activity }] : []),
         { id: 'profile', label: 'My Profile', icon: UserCircle },
         { id: 'docs', label: 'Guides & Docs', icon: BookOpen },
       ],

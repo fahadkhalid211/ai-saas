@@ -3,8 +3,9 @@ import { Database } from '@/lib/db';
 import { BILLING_PLANS, EXTRA_LANDING_PAGE_ADDON_PRICE } from '@/lib/billing/plans';
 import { withRoleAuth, getAuthContext } from '@/lib/security/auth';
 import { createCheckoutSession, isStripeConfigured } from '@/lib/billing/stripe';
+import { logged } from '@/lib/logging/route';
 
-export const POST = withRoleAuth(['owner', 'admin', 'billing_manager'], async (req: Request) => {
+const POSTHandler = withRoleAuth(['owner', 'admin', 'billing_manager'], async (req: Request) => {
   try {
     const ctx = await getAuthContext(req);
     const body = await req.json().catch(() => ({}));
@@ -63,3 +64,5 @@ export const POST = withRoleAuth(['owner', 'admin', 'billing_manager'], async (r
     return NextResponse.json({ success: false, error: err?.message || 'Server error' }, { status: 500 });
   }
 });
+
+export const POST = logged(POSTHandler, { route: '/api/billing/addon' });

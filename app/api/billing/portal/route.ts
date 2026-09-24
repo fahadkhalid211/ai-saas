@@ -3,8 +3,9 @@ import { Database } from '@/lib/db';
 import { createCustomerPortalSession } from '@/lib/billing/stripe';
 import { getAuthContext, requireRole } from '@/lib/security/auth';
 import { enforceRateLimit } from '@/lib/security/rate-limit';
+import { logged } from '@/lib/logging/route';
 
-export async function POST(req: NextRequest) {
+async function POSTHandler(req: NextRequest) {
   try {
     const rateLimitRes = enforceRateLimit(req, 'billing-portal', { max: 10, windowMs: 60 * 1000 });
     if (rateLimitRes.errorResponse) return rateLimitRes.errorResponse;
@@ -53,3 +54,5 @@ export async function POST(req: NextRequest) {
     );
   }
 }
+
+export const POST = logged(POSTHandler, { route: '/api/billing/portal' });

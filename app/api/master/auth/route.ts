@@ -5,6 +5,8 @@ import { enforceDistributedRateLimit } from '@/lib/security/rate-limit-redis';
 import { timingSafeStringEqual } from '@/lib/security/password';
 import { getMasterEmail } from '@/lib/security/master';
 import { Database } from '@/lib/db';
+import { updateLogContext } from '@/lib/logging/context';
+import { logged } from '@/lib/logging/route';
 
 export const dynamic = 'force-dynamic';
 
@@ -15,7 +17,7 @@ const GENERIC_FAILURE = { error: 'Invalid credentials' };
  * failure the same way so nobody can tell which half was wrong. The customer sign-in at /api/auth
  * never accepts the master key.
  */
-export async function POST(req: Request) {
+async function POSTHandler(req: Request) {
   try {
     const ip = getClientIp(req);
     const limited = await enforceDistributedRateLimit(req, 'master-login', { windowMs: 60 * 1000, max: 5 });
@@ -42,6 +44,7 @@ export async function POST(req: Request) {
     }
 
     const sessionToken = generateSessionToken('admin', 'master-admin', '*', true);
+    updateLogContext({ userId: 'master-admin', workspaceId: '*', role: 'master' });
     await Database.addAuditLog({
       actor: { id: 'admin', name: 'Master Admin', ip },
       action: 'auth.master_admin_login_success',
@@ -62,3 +65,5 @@ export async function POST(req: Request) {
     return NextResponse.json(GENERIC_FAILURE, { status: 401 });
   }
 }
+
+export const POST = logged(POSTHandler, { route: '/api/master/auth' });

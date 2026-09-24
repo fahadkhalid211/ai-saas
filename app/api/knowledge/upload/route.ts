@@ -8,6 +8,7 @@ import { diagnoseKnowledgeFailure } from '@/lib/rag/diagnostics';
 import { withRoleAuth, getAuthContext, requireWorkspaceAssistant } from '@/lib/security/auth';
 import { clearRetrievalCache } from '@/lib/rag/cache';
 import { getClientIp, enforceRateLimit } from '@/lib/security/rate-limit';
+import { logged } from '@/lib/logging/route';
 
 // Audio/video transcription (+ optional translation) followed by embedding
 // hundreds of chunks can legitimately take well over a minute; let the
@@ -16,7 +17,7 @@ import { getClientIp, enforceRateLimit } from '@/lib/security/rate-limit';
 export const dynamic = 'force-dynamic';
 export const maxDuration = 300;
 
-export const POST = withRoleAuth(['owner', 'admin'], async (req: Request) => {
+const POSTHandler = withRoleAuth(['owner', 'admin'], async (req: Request) => {
   try {
     const rateLimit = enforceRateLimit(req, 'knowledge-upload', { windowMs: 60 * 1000, max: 20 });
     if (rateLimit.errorResponse) return rateLimit.errorResponse;
@@ -312,3 +313,5 @@ export const POST = withRoleAuth(['owner', 'admin'], async (req: Request) => {
     );
   }
 });
+
+export const POST = logged(POSTHandler, { route: '/api/knowledge/upload' });

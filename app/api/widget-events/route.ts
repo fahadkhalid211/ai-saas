@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { Database } from '@/lib/db';
 import { enforceRateLimit } from '@/lib/security/rate-limit';
+import { logged } from '@/lib/logging/route';
 
 /**
  * Public, fire-and-forget funnel events from the embeddable widget
@@ -27,7 +28,7 @@ export async function OPTIONS() {
   return new NextResponse(null, { status: 204, headers: CORS_HEADERS });
 }
 
-export async function POST(req: Request) {
+async function POSTHandler(req: Request) {
   const rateLimit = enforceRateLimit(req, 'widget-events', { windowMs: 60 * 1000, max: 60 });
   if (rateLimit.errorResponse) {
     return new NextResponse(null, { status: 429, headers: CORS_HEADERS });
@@ -70,3 +71,5 @@ export async function POST(req: Request) {
 
   return new NextResponse(null, { status: 202, headers: CORS_HEADERS });
 }
+
+export const POST = logged(POSTHandler, { route: '/api/widget-events', sample: 0.1 });

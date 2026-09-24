@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect } from 'react';
+import { reportClientError } from '@/lib/logging/client';
 
 export default function GlobalError({
   error,
@@ -11,6 +12,7 @@ export default function GlobalError({
 }) {
   useEffect(() => {
     console.error('Root Layout Global Error Boundary caught:', error);
+    reportClientError({ kind: 'boundary', message: error.message, name: error.name, stack: error.stack, digest: error.digest });
   }, [error]);
 
   return (

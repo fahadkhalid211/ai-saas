@@ -1,10 +1,11 @@
 import { NextResponse } from 'next/server';
 import { Database } from '@/lib/db';
 import { withAdminAuth, getAuthContext } from '@/lib/security/auth';
+import { logged } from '@/lib/logging/route';
 
 export const dynamic = 'force-dynamic';
 
-export const GET = withAdminAuth(async (req: Request) => {
+const GETHandler = withAdminAuth(async (req: Request) => {
   try {
     const ctx = await getAuthContext(req);
     const { searchParams } = new URL(req.url);
@@ -20,7 +21,7 @@ export const GET = withAdminAuth(async (req: Request) => {
   }
 });
 
-export const POST = withAdminAuth(async (req: Request) => {
+const POSTHandler = withAdminAuth(async (req: Request) => {
   try {
     const ctx = await getAuthContext(req);
     const body = await req.json();
@@ -47,3 +48,6 @@ export const POST = withAdminAuth(async (req: Request) => {
     return NextResponse.json({ error: error?.message || 'Failed to update notification' }, { status: 500 });
   }
 });
+
+export const GET = logged(GETHandler, { route: '/api/notifications', sample: 0.05 });
+export const POST = logged(POSTHandler, { route: '/api/notifications' });

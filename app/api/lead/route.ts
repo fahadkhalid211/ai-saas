@@ -8,6 +8,7 @@ import { verifyAdminRequest, getAuthContext, requireWorkspaceAssistant, withRole
 import { enforceRateLimit, getClientIp } from '@/lib/security/rate-limit';
 import { enforceDistributedRateLimit, enforceDistributedRateLimitByKey } from '@/lib/security/rate-limit-redis';
 import { resolveAttribution, attributionCustomData } from '@/lib/analytics/attribution';
+import { logged } from '@/lib/logging/route';
 
 export async function OPTIONS() {
   return new NextResponse(null, {
@@ -20,7 +21,7 @@ export async function OPTIONS() {
   });
 }
 
-export async function POST(req: Request) {
+async function POSTHandler(req: Request) {
   try {
     // Rate limit lead submissions (max 10 per minute per IP)
     const rateLimit = enforceRateLimit(req, 'lead', { windowMs: 60 * 1000, max: 10 });
@@ -177,7 +178,7 @@ export async function POST(req: Request) {
   }
 }
 
-export async function GET(req: Request) {
+async function GETHandler(req: Request) {
   try {
     // Only authenticated admins can view customer leads
     const ctx = await getAuthContext(req);
@@ -204,7 +205,7 @@ export async function GET(req: Request) {
   }
 }
 
-export const DELETE = withRoleAuth(['owner', 'admin'], async (req: Request) => {
+const DELETEHandler = withRoleAuth(['owner', 'admin'], async (req: Request) => {
   try {
     const ctx = await getAuthContext(req);
     const { searchParams } = new URL(req.url);
@@ -239,3 +240,7 @@ export const DELETE = withRoleAuth(['owner', 'admin'], async (req: Request) => {
     return NextResponse.json({ error: error?.message || 'Failed to delete lead' }, { status: 500 });
   }
 });
+
+export const POST = logged(POSTHandler, { route: '/api/lead' });
+export const GET = logged(GETHandler, { route: '/api/lead' });
+export const DELETE = logged(DELETEHandler, { route: '/api/lead' });

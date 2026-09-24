@@ -7,8 +7,9 @@ import {
   verifyWhatsAppConnection,
   verifyWebhookConnection,
 } from '@/lib/connectors/verify';
+import { logged } from '@/lib/logging/route';
 
-export const POST = withRoleAuth(['owner', 'admin'], async (req: Request) => {
+const POSTHandler = withRoleAuth(['owner', 'admin'], async (req: Request) => {
   try {
     const rateLimit = enforceRateLimit(req, 'connector-verify', { windowMs: 60 * 1000, max: 30 });
     if (rateLimit.errorResponse) {
@@ -49,3 +50,5 @@ export const POST = withRoleAuth(['owner', 'admin'], async (req: Request) => {
     );
   }
 });
+
+export const POST = logged(POSTHandler, { route: '/api/connectors/verify' });

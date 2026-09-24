@@ -16,16 +16,16 @@ describe('sign-in routes never trust what a browser sends', () => {
 
   it('enterprise SSO cannot sign anyone in', async () => {
     const { POST, GET } = await import('../../app/api/auth/sso/route');
-    const res = await POST();
+    const res = await POST(req('/api/auth/sso', { method: 'POST' }));
     expect(res.status).toBe(501);
     expect(res.headers.get('set-cookie')).toBeNull();
-    expect(await (await GET()).json()).toEqual({ ssoEnabled: false });
+    expect(await (await GET(req('/api/auth/sso'))).json()).toEqual({ ssoEnabled: false });
   });
 
   it('a posted e-mail, id token or "credential" does not create a session for google or apple', async () => {
     const { POST } = await import('../../app/api/auth/oauth/[provider]/route');
     for (const provider of ['google', 'apple']) {
-      const res = await POST();
+      const res = await POST(req(`/api/auth/oauth/${provider}`, { method: 'POST' }));
       expect(res.status).toBe(405);
       expect(res.headers.get('set-cookie')).toBeNull();
     }

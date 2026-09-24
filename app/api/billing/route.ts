@@ -4,8 +4,9 @@ import { BILLING_PLANS } from '@/lib/billing/plans';
 import { withAdminAuth, withRoleAuth, getAuthContext } from '@/lib/security/auth';
 import { getClientIp } from '@/lib/security/rate-limit';
 import { validateEmail, sanitizeInput } from '@/lib/security/validation';
+import { logged } from '@/lib/logging/route';
 
-export const GET = withAdminAuth(async (req: Request) => {
+const GETHandler = withAdminAuth(async (req: Request) => {
   try {
     const ctx = await getAuthContext(req);
     const { searchParams } = new URL(req.url);
@@ -80,7 +81,7 @@ export const GET = withAdminAuth(async (req: Request) => {
   }
 });
 
-export const POST = withRoleAuth(['owner', 'admin', 'billing_manager'], async (req: Request) => {
+const POSTHandler = withRoleAuth(['owner', 'admin', 'billing_manager'], async (req: Request) => {
   try {
     const ctx = await getAuthContext(req);
     const body = await req.json();
@@ -150,7 +151,7 @@ export const POST = withRoleAuth(['owner', 'admin', 'billing_manager'], async (r
   }
 });
 
-export const PATCH = withRoleAuth(['owner', 'admin', 'billing_manager'], async (req: Request) => {
+const PATCHHandler = withRoleAuth(['owner', 'admin', 'billing_manager'], async (req: Request) => {
   try {
     const ctx = await getAuthContext(req);
     let body: any;
@@ -256,3 +257,7 @@ export const PATCH = withRoleAuth(['owner', 'admin', 'billing_manager'], async (
     return NextResponse.json({ error: error.message || 'Failed to update payment info' }, { status: 500 });
   }
 });
+
+export const GET = logged(GETHandler, { route: '/api/billing' });
+export const POST = logged(POSTHandler, { route: '/api/billing' });
+export const PATCH = logged(PATCHHandler, { route: '/api/billing' });

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { Database } from '@/lib/db';
+import { logged } from '@/lib/logging/route';
 
 export async function OPTIONS() {
   return new NextResponse(null, {
@@ -12,7 +13,7 @@ export async function OPTIONS() {
   });
 }
 
-export async function GET(
+async function GETHandler(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -69,3 +70,5 @@ export async function GET(
     );
   }
 }
+
+export const GET = logged(GETHandler, { route: '/api/widget/[id]/config', sample: 0.1 });

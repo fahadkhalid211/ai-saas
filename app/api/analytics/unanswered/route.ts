@@ -4,8 +4,9 @@ import { parseFileOrText } from '@/lib/rag/parsers';
 import { chunkDocument } from '@/lib/rag/chunker';
 import { generateEmbeddingsBatch } from '@/lib/rag/embedder';
 import { withAdminAuth, getAuthContext } from '@/lib/security/auth';
+import { logged } from '@/lib/logging/route';
 
-export const GET = withAdminAuth(async (req: Request) => {
+const GETHandler = withAdminAuth(async (req: Request) => {
   try {
     const ctx = await getAuthContext(req);
     const { searchParams } = new URL(req.url);
@@ -29,7 +30,7 @@ export const GET = withAdminAuth(async (req: Request) => {
   }
 });
 
-export const POST = withAdminAuth(async (req: Request) => {
+const POSTHandler = withAdminAuth(async (req: Request) => {
   try {
     const ctx = await getAuthContext(req);
     const body = await req.json();
@@ -128,3 +129,6 @@ export const POST = withAdminAuth(async (req: Request) => {
     return NextResponse.json({ error: error?.message || 'Action failed' }, { status: 500 });
   }
 });
+
+export const GET = logged(GETHandler, { route: '/api/analytics/unanswered' });
+export const POST = logged(POSTHandler, { route: '/api/analytics/unanswered' });

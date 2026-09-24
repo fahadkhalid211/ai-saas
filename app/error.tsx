@@ -3,6 +3,7 @@
 import React, { useEffect } from 'react';
 import { AlertCircle, RotateCcw, Home } from 'lucide-react';
 import Link from 'next/link';
+import { reportClientError } from '@/lib/logging/client';
 
 export default function Error({
   error,
@@ -13,6 +14,7 @@ export default function Error({
 }) {
   useEffect(() => {
     console.error('App Route Error Boundary caught:', error);
+    reportClientError({ kind: 'boundary', message: error.message, name: error.name, stack: error.stack, digest: error.digest });
   }, [error]);
 
   return (

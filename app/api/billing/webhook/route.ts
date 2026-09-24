@@ -2,18 +2,22 @@ import { NextRequest, NextResponse } from 'next/server';
 import { Database } from '@/lib/db';
 import { constructWebhookEvent } from '@/lib/billing/stripe';
 import { BILLING_PLANS } from '@/lib/billing/plans';
+import { logged } from '@/lib/logging/route';
+import { logEvent } from '@/lib/logging/logger';
 
 export const dynamic = 'force-dynamic';
 
-export async function POST(req: NextRequest) {
+async function POSTHandler(req: NextRequest) {
   try {
     const rawBody = await req.text();
     const signature = req.headers.get('stripe-signature') || '';
 
     const event = constructWebhookEvent(rawBody, signature);
     if (!event) {
+      logEvent({ level: 'warn', category: 'security', event: 'security.invalid_signature', meta: { channel: 'stripe' } });
       return NextResponse.json({ error: 'Invalid webhook signature or missing secret' }, { status: 400 });
     }
+    logEvent({ category: 'billing', event: 'billing.webhook_received', meta: { type: event.type, eventId: event.id } });
 
     // Webhook Idempotency: Deduplicate repeated events to prevent duplicate invoices or slot allocations
     if (await Database.isWebhookProcessed(event.id)) {
@@ -127,3 +131,5 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: error.message || 'Webhook processing failed' }, { status: 500 });
   }
 }
+
+export const POST = logged(POSTHandler, { route: '/api/billing/webhook' });

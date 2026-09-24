@@ -9,6 +9,7 @@ import { enforceRateLimitByKey } from '@/lib/security/rate-limit';
 import { getVoiceSecret, verifyVoiceRequest } from '@/lib/voice/auth';
 import { normalizeE164 } from '@/lib/voice/text';
 import { buildGreeting, newCallState, type BookResult, type VoiceCallState, type VoiceDeps } from '@/lib/voice/turn';
+import { logEvent } from '@/lib/logging/logger';
 
 /** Reads a worker request, verifies its HMAC signature and returns the parsed JSON body. */
 export async function readSignedBody(req: Request): Promise<{ body: any } | { error: NextResponse }> {
@@ -21,6 +22,7 @@ export async function readSignedBody(req: Request): Promise<{ body: any } | { er
   });
   if (!check.ok) {
     const status = check.reason === 'disabled' ? 503 : 401;
+    logEvent({ level: 'warn', category: 'security', event: 'security.invalid_signature', meta: { channel: 'voice', reason: check.reason } });
     return { error: NextResponse.json({ error: check.reason === 'disabled' ? 'Voice channel is not configured' : 'Unauthorized' }, { status }) };
   }
   try {

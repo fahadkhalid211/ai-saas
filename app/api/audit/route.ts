@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Database } from '@/lib/db';
 import { withAdminAuth, getAuthContext } from '@/lib/security/auth';
+import { logged } from '@/lib/logging/route';
 
 export const dynamic = 'force-dynamic';
 
-export const GET = withAdminAuth(async (req: Request) => {
+const GETHandler = withAdminAuth(async (req: Request) => {
   try {
     const ctx = await getAuthContext(req);
     if (ctx.role !== 'owner' && !ctx.isMasterAdmin) {
@@ -61,3 +62,5 @@ export const GET = withAdminAuth(async (req: Request) => {
     return NextResponse.json({ error: error?.message || 'Failed to fetch audit trail' }, { status: 500 });
   }
 });
+
+export const GET = logged(GETHandler, { route: '/api/audit' });

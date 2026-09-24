@@ -1,6 +1,7 @@
 import crypto from 'crypto';
 import { AssistantData } from './db';
 import { validateSafeExternalUrl } from './security/ssrf';
+import { logEvent } from '@/lib/logging/logger';
 
 export interface WebhookPayload {
   event: string;
@@ -71,11 +72,13 @@ export async function dispatchWebhook(
     });
 
     clearTimeout(timeout);
+    logEvent({ level: res.ok ? 'info' : 'warn', category: 'webhook', event: 'webhook.outbound', status: res.status, meta: { assistantId: assistant.id, host: hostOf(assistant.webhookUrl) } });
     return {
       success: res.ok,
       statusCode: res.status,
     };
   } catch (err: any) {
+    logEvent({ level: 'warn', category: 'webhook', event: 'webhook.outbound_failed', error: err, meta: { assistantId: assistant.id, host: hostOf(assistant.webhookUrl) } });
     console.warn(`[Webhook] Failed to dispatch to ${assistant.webhookUrl}:`, err.message);
     return {
       success: false,
@@ -157,5 +160,13 @@ export async function testWebhookPing(
       durationMs,
       error: err?.message || 'Connection timed out or failed',
     };
+  }
+}
+
+function hostOf(url: string): string {
+  try {
+    return new URL(url.trim()).host;
+  } catch {
+    return 'invalid-url';
   }
 }

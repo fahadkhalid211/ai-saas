@@ -6,6 +6,7 @@ import { dispatchGoogleSheetRow } from '@/lib/integrations/google-sheets';
 import { acquireBookingLock } from '@/lib/appointments/booking-lock';
 import { attributionCustomData, type ResolvedAttribution } from '@/lib/analytics/attribution';
 import { overlapsExisting, parseTimeToMinutes } from '@/lib/appointments/availability';
+import { logEvent } from '@/lib/logging/logger';
 
 export interface NewAppointmentInput {
   name: string;
@@ -69,6 +70,7 @@ export async function createAppointment(opts: CreateAppointmentOptions): Promise
     const start = parseTimeToMinutes(timeSlot);
     const overlaps = opts.enforceOverlap && start !== null && overlapsExisting(date, start, resolvedDuration, existingAppointments);
     if (conflict || overlaps) {
+      logEvent({ level: 'warn', category: 'booking', event: 'booking.slot_conflict', meta: { assistantId: assistant.id, date, timeSlot, overlap: Boolean(overlaps) } });
       return { ok: false, status: 409, error: `The time slot "${timeSlot}" on ${date} has already been booked. Please select another time.` };
     }
 
@@ -90,6 +92,7 @@ export async function createAppointment(opts: CreateAppointmentOptions): Promise
       });
     } catch (err: any) {
       if (err?.code === 'SLOT_CONFLICT') {
+        logEvent({ level: 'warn', category: 'booking', event: 'booking.slot_conflict', meta: { assistantId: assistant.id, date, timeSlot, source: 'database_index' } });
         return { ok: false, status: 409, error: `The time slot "${timeSlot}" on ${date} has already been booked. Please select another time.` };
       }
       throw err;
@@ -214,5 +217,6 @@ export async function createAppointment(opts: CreateAppointmentOptions): Promise
     }
   }
 
+  logEvent({ category: 'booking', event: 'booking.created', meta: { assistantId: assistant.id, appointmentId: appointment.id, date, timeSlot } });
   return { ok: true, appointment };
 }

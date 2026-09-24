@@ -5,12 +5,13 @@ import { parseFileOrText } from '@/lib/rag/parsers';
 import { chunkDocument } from '@/lib/rag/chunker';
 import { generateEmbeddingsBatch } from '@/lib/rag/embedder';
 import { withAdminAuth } from '@/lib/security/auth';
+import { logged } from '@/lib/logging/route';
 
-export async function GET() {
+async function GETHandler() {
   return NextResponse.json({ templates: BOT_TEMPLATES });
 }
 
-export const POST = withAdminAuth(async (req: Request) => {
+const POSTHandler = withAdminAuth(async (req: Request) => {
   try {
 
     const body = await req.json();
@@ -107,3 +108,6 @@ export const POST = withAdminAuth(async (req: Request) => {
     return NextResponse.json({ error: error?.message || 'Failed to apply template' }, { status: 500 });
   }
 });
+
+export const GET = logged(GETHandler, { route: '/api/templates' });
+export const POST = logged(POSTHandler, { route: '/api/templates' });

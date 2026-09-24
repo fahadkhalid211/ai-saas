@@ -7,13 +7,15 @@ import {
   createClearCookieHeader,
 } from '@/lib/security/auth';
 import { getClientIp } from '@/lib/security/rate-limit';
+import { updateLogContext } from '@/lib/logging/context';
 import { enforceDistributedRateLimit, enforceDistributedRateLimitByKey } from '@/lib/security/rate-limit-redis';
 import { getMasterEmail } from '@/lib/security/master';
 import { Database, sanitizeTeamMember } from '@/lib/db';
 import { validateRegistrationPayload, validateEmail, sanitizeInput } from '@/lib/security/validation';
 import { verifyRecaptchaToken } from '@/lib/security/recaptcha';
+import { logged } from '@/lib/logging/route';
 
-export async function GET(req: Request) {
+async function GETHandler(req: Request) {
   try {
     const ctx = await getAuthContext(req);
     if (!ctx.authenticated) {
@@ -50,7 +52,7 @@ export async function GET(req: Request) {
   }
 }
 
-export async function POST(req: Request) {
+async function POSTHandler(req: Request) {
   try {
     // Limit sign-in / sign-up attempts per IP (counted in Redis so it holds across serverless instances).
     const ip = getClientIp(req);
@@ -96,6 +98,7 @@ export async function POST(req: Request) {
         tenantResult.workspace.id
       );
       const cookieHeader = createSessionCookieHeader(sessionToken);
+      updateLogContext({ userId: tenantResult.owner.id, workspaceId: tenantResult.workspace.id, role: 'owner' });
 
       await Database.addAuditLog({
         actor: {
@@ -167,6 +170,7 @@ export async function POST(req: Request) {
           tenantMatch.workspace.id
         );
         const cookieHeader = createSessionCookieHeader(sessionToken);
+        updateLogContext({ userId: tenantMatch.member.id, workspaceId: tenantMatch.workspace.id, role: tenantMatch.member.role });
 
         await Database.addAuditLog({
           actor: {
@@ -220,6 +224,7 @@ export async function POST(req: Request) {
       const staffWs = staffMember.workspaceId || 'default-workspace';
       const sessionToken = generateSessionToken(staffMember.role, staffMember.id, staffWs);
       const cookieHeader = createSessionCookieHeader(sessionToken);
+      updateLogContext({ userId: staffMember.id, workspaceId: staffWs, role: staffMember.role });
 
       await Database.addAuditLog({
         actor: {
@@ -265,7 +270,7 @@ export async function POST(req: Request) {
   }
 }
 
-export async function DELETE() {
+async function DELETEHandler() {
   const clearHeader = createClearCookieHeader();
   return NextResponse.json(
     { success: true, message: 'Logged out successfully' },
@@ -277,3 +282,7 @@ export async function DELETE() {
     }
   );
 }
+
+export const GET = logged(GETHandler, { route: '/api/auth', sample: 0.2 });
+export const POST = logged(POSTHandler, { route: '/api/auth' });
+export const DELETE = logged(DELETEHandler, { route: '/api/auth' });

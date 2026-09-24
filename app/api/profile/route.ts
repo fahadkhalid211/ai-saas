@@ -4,8 +4,9 @@ import { Database, TeamMemberData } from '@/lib/db';
 import { getAuthContext, getAdminKey } from '@/lib/security/auth';
 import { getClientIp } from '@/lib/security/rate-limit';
 import { verifyPassword, timingSafeStringEqual } from '@/lib/security/password';
+import { logged } from '@/lib/logging/route';
 
-export async function GET(req: Request) {
+async function GETHandler(req: Request) {
   try {
     const ctx = await getAuthContext(req);
     if (!ctx.authenticated) {
@@ -57,7 +58,7 @@ export async function GET(req: Request) {
   }
 }
 
-export async function PATCH(req: Request) {
+async function PATCHHandler(req: Request) {
   try {
     const ctx = await getAuthContext(req);
     if (!ctx.authenticated) {
@@ -145,3 +146,6 @@ export async function PATCH(req: Request) {
     return NextResponse.json({ error: error?.message || 'Failed to update profile' }, { status: 500 });
   }
 }
+
+export const GET = logged(GETHandler, { route: '/api/profile' });
+export const PATCH = logged(PATCHHandler, { route: '/api/profile' });

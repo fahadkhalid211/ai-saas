@@ -7,6 +7,7 @@ import { validateAppointmentPayload } from '@/lib/security/validation';
 import { acquireBookingLock } from '@/lib/appointments/booking-lock';
 import { resolveAttribution } from '@/lib/analytics/attribution';
 import { createAppointment } from '@/lib/appointments/create';
+import { logged } from '@/lib/logging/route';
 
 export async function OPTIONS() {
   return new NextResponse(null, {
@@ -19,7 +20,7 @@ export async function OPTIONS() {
   });
 }
 
-export async function GET(req: Request) {
+async function GETHandler(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
     const manageToken = searchParams.get('manageToken');
@@ -79,7 +80,7 @@ export async function GET(req: Request) {
   }
 }
 
-export async function POST(req: Request) {
+async function POSTHandler(req: Request) {
   try {
     const body = await req.json();
 
@@ -295,7 +296,7 @@ export async function POST(req: Request) {
   }
 }
 
-export async function DELETE(req: Request) {
+async function DELETEHandler(req: Request) {
   try {
     const ctx = await getAuthContext(req);
     if (!ctx.authenticated) {
@@ -337,3 +338,7 @@ export async function DELETE(req: Request) {
     );
   }
 }
+
+export const GET = logged(GETHandler, { route: '/api/appointments' });
+export const POST = logged(POSTHandler, { route: '/api/appointments' });
+export const DELETE = logged(DELETEHandler, { route: '/api/appointments' });

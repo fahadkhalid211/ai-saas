@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { logEvent } from '@/lib/logging/logger';
 
 interface RateLimitRecord {
   timestamps: number[];
@@ -112,6 +113,7 @@ export function enforceRateLimit(
 
   if (!limit.allowed) {
     const retryAfterSec = Math.max(1, Math.ceil((limit.resetTime - Date.now()) / 1000));
+    logEvent({ level: 'warn', category: 'security', event: 'security.rate_limited', ip, meta: { limiter: prefix, max: options.max, windowMs: options.windowMs } });
     return {
       errorResponse: NextResponse.json(
         { error: 'Too many requests. Please try again later.', retryAfter: retryAfterSec },

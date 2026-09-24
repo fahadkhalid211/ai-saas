@@ -3,6 +3,7 @@ import { getAuthContext } from '@/lib/security/auth';
 import { isCloudDbConfigured, getCloudDbProvider, pingCloudDb } from '@/lib/db/cloud';
 import { isSupabaseConfigured, getSupabaseClient, getSupabaseUrl } from '@/lib/db/supabase';
 import { isRedisConfigured, redisPing } from '@/lib/cache/redis';
+import { logged } from '@/lib/logging/route';
 
 export const dynamic = 'force-dynamic';
 
@@ -19,7 +20,7 @@ function scrub<T extends Record<string, any>>(body: T, isMaster: boolean): T {
 }
 
 // Signed-in users only. It used to be public and put the database address in its error text.
-export async function GET(req: Request) {
+async function GETHandler(req: Request) {
   const ctx = await getAuthContext(req);
   if (!ctx.authenticated) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -131,3 +132,5 @@ export async function GET(req: Request) {
     );
   }
 }
+
+export const GET = logged(GETHandler, { route: '/api/db-status', sample: 0.1 });

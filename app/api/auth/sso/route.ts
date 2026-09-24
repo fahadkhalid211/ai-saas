@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { logged } from '@/lib/logging/route';
 
 export const dynamic = 'force-dynamic';
 
@@ -9,10 +10,13 @@ export const dynamic = 'force-dynamic';
  * provider. A real SAML/OIDC login must be added with signature verification before this route
  * can issue sessions again.
  */
-export async function GET() {
+async function GETHandler() {
   return NextResponse.json({ ssoEnabled: false });
 }
 
-export async function POST() {
+async function POSTHandler() {
   return NextResponse.json({ error: 'Enterprise SSO is not available.' }, { status: 501 });
 }
+
+export const GET = logged(GETHandler, { route: '/api/auth/sso' });
+export const POST = logged(POSTHandler, { route: '/api/auth/sso' });

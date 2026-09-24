@@ -5,8 +5,9 @@ import { maskSecret } from '@/lib/security/crypto';
 import { BILLING_PLANS } from '@/lib/billing/plans';
 
 import { getClientIp } from '@/lib/security/rate-limit';
+import { logged } from '@/lib/logging/route';
 
-export const GET = withAdminAuth(async (req: Request) => {
+const GETHandler = withAdminAuth(async (req: Request) => {
   try {
     const ctx = await getAuthContext(req);
     const assistants = await Database.getAssistants(ctx.workspaceId);
@@ -28,7 +29,7 @@ export const GET = withAdminAuth(async (req: Request) => {
   }
 });
 
-export const POST = withRoleAuth(['owner', 'admin'], async (req: Request) => {
+const POSTHandler = withRoleAuth(['owner', 'admin'], async (req: Request) => {
   try {
     const ctx = await getAuthContext(req);
     const body = await req.json();
@@ -100,3 +101,6 @@ export const POST = withRoleAuth(['owner', 'admin'], async (req: Request) => {
     );
   }
 });
+
+export const GET = logged(GETHandler, { route: '/api/assistants' });
+export const POST = logged(POSTHandler, { route: '/api/assistants' });

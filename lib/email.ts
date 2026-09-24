@@ -986,3 +986,13 @@ ${cleanMessage}
   });
 }
 
+
+/**
+ * Plain operational e-mail to the platform owner (error alerts). Uses the same Resend/SMTP settings as every other
+ * e-mail. `simulated: true` in the result means no sending service is configured and nothing was actually sent.
+ */
+export async function sendOperationalEmail(options: { to: string; subject: string; text: string }): Promise<EmailSendResult> {
+  const subject = options.subject.replace(/[\r\n]+/g, ' ').slice(0, 200);
+  const html = `<pre style="font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px;line-height:1.5;white-space:pre-wrap">${escapeHtml(options.text)}</pre>`;
+  return sendEmailTransport({ to: options.to, subject, text: options.text, html, fromName: 'Crescelo Alerts' });
+}

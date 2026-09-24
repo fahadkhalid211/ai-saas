@@ -1,10 +1,11 @@
 import { NextResponse } from 'next/server';
 import { isSafeId, readSignedBody, startVoiceSession } from '@/lib/voice/server';
+import { logged } from '@/lib/logging/route';
 
 export const dynamic = 'force-dynamic';
 
 /** Worker -> app: a call arrived. Resolves the assistant from the dialled number and returns the greeting and call state. */
-export async function POST(req: Request) {
+async function POSTHandler(req: Request) {
   const parsed = await readSignedBody(req);
   if ('error' in parsed) return parsed.error;
   const { callId, from, to } = parsed.body || {};
@@ -19,3 +20,5 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, action: 'reject', reason: 'server_error' }, { status: 500 });
   }
 }
+
+export const POST = logged(POSTHandler, { route: '/api/voice/session' });

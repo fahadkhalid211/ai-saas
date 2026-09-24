@@ -3,8 +3,9 @@ import { Database } from '@/lib/db';
 import { sendContactInquiryEmail } from '@/lib/email';
 import { enforceRateLimit } from '@/lib/security/rate-limit';
 import { enforceDistributedRateLimit, enforceDistributedRateLimitByKey } from '@/lib/security/rate-limit-redis';
+import { logged } from '@/lib/logging/route';
 
-export async function POST(req: Request) {
+async function POSTHandler(req: Request) {
   try {
     // Rate limit to prevent spam (max 5 per minute per IP)
     const rateLimit = enforceRateLimit(req, 'contact-support', { windowMs: 60 * 1000, max: 5 });
@@ -86,3 +87,5 @@ export async function POST(req: Request) {
     );
   }
 }
+
+export const POST = logged(POSTHandler, { route: '/api/support/contact' });

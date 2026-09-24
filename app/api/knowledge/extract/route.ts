@@ -7,11 +7,12 @@ import { diagnoseKnowledgeFailure } from '@/lib/rag/diagnostics';
 import { withAdminAuth, getAuthContext } from '@/lib/security/auth';
 import { validateSafeExternalUrl } from '@/lib/security/ssrf';
 import { enforceRateLimit } from '@/lib/security/rate-limit';
+import { logged } from '@/lib/logging/route';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 300;
 
-export const POST = withAdminAuth(async (req: Request) => {
+const POSTHandler = withAdminAuth(async (req: Request) => {
   const rateLimit = enforceRateLimit(req, 'knowledge-extract', { windowMs: 60 * 1000, max: 15 });
   if (rateLimit.errorResponse) return rateLimit.errorResponse;
 
@@ -201,3 +202,5 @@ export const POST = withAdminAuth(async (req: Request) => {
     );
   }
 });
+
+export const POST = logged(POSTHandler, { route: '/api/knowledge/extract' });

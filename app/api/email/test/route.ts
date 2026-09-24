@@ -5,8 +5,9 @@ import { withAdminAuth, getAuthContext } from '@/lib/security/auth';
 import { getClientIp, enforceRateLimit } from '@/lib/security/rate-limit';
 import { validateSafeExternalUrl } from '@/lib/security/ssrf';
 import { getMasterEmail } from '@/lib/security/master';
+import { logged } from '@/lib/logging/route';
 
-export const GET = withAdminAuth(async (req: Request) => {
+const GETHandler = withAdminAuth(async (req: Request) => {
   try {
     const rateLimitRes = enforceRateLimit(req, 'email-settings-get', { max: 30, windowMs: 60 * 1000 });
     if (rateLimitRes.errorResponse) return rateLimitRes.errorResponse;
@@ -32,7 +33,7 @@ export const GET = withAdminAuth(async (req: Request) => {
   }
 });
 
-export const POST = withAdminAuth(async (req: Request) => {
+const POSTHandler = withAdminAuth(async (req: Request) => {
   try {
     const rateLimitRes = enforceRateLimit(req, 'email-test-post', { max: 15, windowMs: 60 * 1000 });
     if (rateLimitRes.errorResponse) return rateLimitRes.errorResponse;
@@ -140,3 +141,6 @@ export const POST = withAdminAuth(async (req: Request) => {
     return NextResponse.json({ success: false, error: err?.message || 'Server error' }, { status: 500 });
   }
 });
+
+export const GET = logged(GETHandler, { route: '/api/email/test' });
+export const POST = logged(POSTHandler, { route: '/api/email/test' });

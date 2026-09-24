@@ -2,6 +2,7 @@ import crypto from 'crypto';
 import { Database, TeamMemberData, WorkspaceBillingData } from '@/lib/db';
 import { generateSessionToken, createSessionCookieHeader } from '@/lib/security/auth';
 import { timingSafeStringEqual } from '@/lib/security/password';
+import { updateLogContext } from '@/lib/logging/context';
 
 export interface OAuthUserProfile {
   email: string;
@@ -170,6 +171,7 @@ export async function authenticateOAuthUser(
 
   const sessionToken = generateSessionToken(member.role, member.id, workspace.id);
   const cookieHeader = createSessionCookieHeader(sessionToken);
+  updateLogContext({ userId: member.id, workspaceId: workspace.id, role: member.role });
 
   await Database.addAuditLog({
     actor: { id: member.id, name: member.name, email: member.email, ip },

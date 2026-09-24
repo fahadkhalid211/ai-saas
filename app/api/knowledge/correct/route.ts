@@ -5,8 +5,9 @@ import { chunkDocument } from '@/lib/rag/chunker';
 import { withAdminAuth, withRoleAuth, getAuthContext, requireWorkspaceAssistant } from '@/lib/security/auth';
 import { clearRetrievalCache } from '@/lib/rag/cache';
 import { getClientIp } from '@/lib/security/rate-limit';
+import { logged } from '@/lib/logging/route';
 
-export const GET = withAdminAuth(async (req: Request) => {
+const GETHandler = withAdminAuth(async (req: Request) => {
   try {
     const ctx = await getAuthContext(req);
     const { searchParams } = new URL(req.url);
@@ -50,7 +51,7 @@ export const GET = withAdminAuth(async (req: Request) => {
   }
 });
 
-export const POST = withRoleAuth(['owner', 'admin'], async (req: Request) => {
+const POSTHandler = withRoleAuth(['owner', 'admin'], async (req: Request) => {
   try {
     const ctx = await getAuthContext(req);
     const body = await req.json();
@@ -326,3 +327,6 @@ export const POST = withRoleAuth(['owner', 'admin'], async (req: Request) => {
     );
   }
 });
+
+export const GET = logged(GETHandler, { route: '/api/knowledge/correct' });
+export const POST = logged(POSTHandler, { route: '/api/knowledge/correct' });

@@ -12,6 +12,8 @@ import { enforceDistributedRateLimit, enforceDistributedRateLimitByKey } from '@
 import { generateConversationAccessToken } from '@/lib/security/auth';
 import { validateChatPayload } from '@/lib/security/validation';
 import { autoCaptureChatLead } from '@/lib/chat/lead-extraction';
+import { logged } from '@/lib/logging/route';
+import { logEvent } from '@/lib/logging/logger';
 
 // Streamed responses (token-by-token LLM output, plus an optional live web
 // search round-trip) can run well past a short default function timeout.
@@ -61,7 +63,7 @@ export async function OPTIONS() {
   });
 }
 
-export async function POST(req: NextRequest) {
+async function POSTHandler(req: NextRequest) {
   try {
     // 1. Rate Limiting Check (max 35 messages per minute per IP)
     const rateLimit = enforceRateLimit(req, 'chat', { windowMs: 60 * 1000, max: 35 });
@@ -738,6 +740,7 @@ Directly use the content of this attached document to assist the visitor, answer
 
           let fullAssistantReply = '';
 
+          const llmStarted = performance.now();
           const tokenGenerator = streamChatResponse(llmMessages, {
             provider: assistant.provider,
             modelName: assistant.modelName,
@@ -762,6 +765,22 @@ Directly use the content of this attached document to assist the visitor, answer
             const tokenEvent = `data: ${JSON.stringify({ type: 'token', token })}\n\n`;
             controller.enqueue(encoder.encode(tokenEvent));
           }
+
+          // Record how the model call went (never the text). The provider layer reports its own failures inside the reply.
+          const llmFailed = /^\s*\*\((Authentication Error|Notice: Could not connect|AI Generation Error):/.test(fullAssistantReply);
+          logEvent({
+            level: llmFailed ? 'error' : 'info',
+            category: 'llm',
+            event: llmFailed ? 'llm.provider_error' : 'llm.completion',
+            durationMs: performance.now() - llmStarted,
+            meta: {
+              assistantId: assistant.id || assistantId,
+              provider: assistant.provider,
+              model: assistant.modelName,
+              replyChars: fullAssistantReply.length,
+              contextChunks: retrieval.chunks.length,
+            },
+          });
 
           // If demo-assistant failed to stream valid tokens or yielded an error, stream platform concierge answer
           if (
@@ -853,6 +872,7 @@ Directly use the content of this attached document to assist the visitor, answer
           })}\n\n`;
           controller.enqueue(encoder.encode(doneEvent));
         } catch (streamErr: any) {
+          logEvent({ level: 'error', category: 'llm', event: 'llm.stream_failed', error: streamErr, meta: { assistantId: assistant.id || assistantId, provider: assistant.provider, model: assistant.modelName } });
           console.error('Streaming error in chat route:', streamErr);
           if (assistant.id === 'demo-assistant') {
             const conciergeAnswer = getPlatformConciergeAnswer(latestUserMsg);
@@ -895,3 +915,5 @@ Directly use the content of this attached document to assist the visitor, answer
     );
   }
 }
+
+export const POST = logged(POSTHandler, { route: '/api/chat' });

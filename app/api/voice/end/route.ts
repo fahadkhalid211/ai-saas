@@ -1,10 +1,11 @@
 import { NextResponse } from 'next/server';
 import { endVoiceCall, isSafeId, readSignedBody } from '@/lib/voice/server';
+import { logged } from '@/lib/logging/route';
 
 export const dynamic = 'force-dynamic';
 
 /** Worker -> app: the call ended. Finalises the call record; optionally carries a voicemail transcript. */
-export async function POST(req: Request) {
+async function POSTHandler(req: Request) {
   const parsed = await readSignedBody(req);
   if ('error' in parsed) return parsed.error;
   const { state, durationSeconds, voicemailText } = parsed.body || {};
@@ -23,3 +24,5 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false }, { status: 500 });
   }
 }
+
+export const POST = logged(POSTHandler, { route: '/api/voice/end' });

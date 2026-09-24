@@ -3,6 +3,7 @@ import { Database } from '@/lib/db';
 import { enforceRateLimitByKey } from '@/lib/security/rate-limit';
 import { isSafeId, productionVoiceDeps, readSignedBody } from '@/lib/voice/server';
 import { runVoiceTurn, type VoiceCallState } from '@/lib/voice/turn';
+import { logged } from '@/lib/logging/route';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
@@ -25,7 +26,7 @@ function validState(s: any): s is VoiceCallState {
  * Worker -> app: the caller said something. Streams newline-delimited JSON events:
  * {"type":"say","text":...} as sentences are ready, then optional {"type":"action",...}, then {"type":"state",...}.
  */
-export async function POST(req: Request) {
+async function POSTHandler(req: Request) {
   const parsed = await readSignedBody(req);
   if ('error' in parsed) return parsed.error;
   const { state, text } = parsed.body || {};
@@ -60,3 +61,5 @@ export async function POST(req: Request) {
 
   return new Response(stream, { headers: { 'Content-Type': 'application/x-ndjson', 'Cache-Control': 'no-store' } });
 }
+
+export const POST = logged(POSTHandler, { route: '/api/voice/turn' });

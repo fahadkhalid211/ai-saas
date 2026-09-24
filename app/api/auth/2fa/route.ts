@@ -9,10 +9,11 @@ import {
   generateRecoveryCodes,
   verifyTotpToken,
 } from '@/lib/security/totp';
+import { logged } from '@/lib/logging/route';
 
 export const dynamic = 'force-dynamic';
 
-export const GET = withAdminAuth(async (req: Request) => {
+const GETHandler = withAdminAuth(async (req: Request) => {
   try {
     const ctx = await getAuthContext(req);
     const { searchParams } = new URL(req.url);
@@ -49,7 +50,7 @@ export const GET = withAdminAuth(async (req: Request) => {
   }
 });
 
-export async function POST(req: NextRequest) {
+async function POSTHandler(req: NextRequest) {
   try {
     const body = await req.json();
     const { action, secret, code, email } = body;
@@ -171,3 +172,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: error?.message || 'Error processing 2FA request' }, { status: 500 });
   }
 }
+
+export const POST = logged(POSTHandler, { route: '/api/auth/2fa' });
+export const GET = logged(GETHandler, { route: '/api/auth/2fa' });

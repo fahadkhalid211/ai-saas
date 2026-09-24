@@ -11,6 +11,7 @@ import {
 import { getClientIp } from '@/lib/security/rate-limit';
 import { enforceDistributedRateLimit } from '@/lib/security/rate-limit-redis';
 import { canonicalOrigin } from '@/lib/security/origin';
+import { logged } from '@/lib/logging/route';
 
 export const dynamic = 'force-dynamic';
 
@@ -27,7 +28,7 @@ function loginRedirect(origin: string, message: string, clearCookie = false): Ne
  *
  * Sign in with Apple is disabled until its id_token signature is verified against Apple's keys.
  */
-export async function GET(req: Request, { params }: { params: Promise<{ provider: string }> }) {
+async function GETHandler(req: Request, { params }: { params: Promise<{ provider: string }> }) {
   const { provider } = await params;
   const origin = canonicalOrigin(req);
 
@@ -80,6 +81,9 @@ export async function GET(req: Request, { params }: { params: Promise<{ provider
 }
 
 /** No POST sign-in: nothing a browser posts is trusted as proof of identity. */
-export async function POST() {
+async function POSTHandler() {
   return NextResponse.json({ error: 'Not supported.' }, { status: 405, headers: { Allow: 'GET' } });
 }
+
+export const GET = logged(GETHandler, { route: '/api/auth/oauth/[provider]' });
+export const POST = logged(POSTHandler, { route: '/api/auth/oauth/[provider]' });

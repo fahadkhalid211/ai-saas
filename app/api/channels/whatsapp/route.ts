@@ -2,12 +2,14 @@ import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { Database } from '@/lib/db';
 import { processWhatsAppWebhook } from '@/lib/channels/whatsapp';
+import { logged } from '@/lib/logging/route';
+import { logEvent } from '@/lib/logging/logger';
 
 /**
  * Meta Webhook Verification (GET)
  * Meta sends hub.mode, hub.verify_token, and hub.challenge when saving the webhook in Meta Developer App.
  */
-export async function GET(req: NextRequest) {
+async function GETHandler(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const mode = searchParams.get('hub.mode');
@@ -38,7 +40,7 @@ export async function GET(req: NextRequest) {
 /**
  * Meta Webhook Event Receiver (POST)
  */
-export async function POST(req: NextRequest) {
+async function POSTHandler(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const assistantId = searchParams.get('assistantId');
@@ -82,6 +84,7 @@ export async function POST(req: NextRequest) {
     const sigBuf = Buffer.from(signature);
     const expectedBuf = Buffer.from(expectedSig);
     if (sigBuf.length !== expectedBuf.length || !crypto.timingSafeEqual(sigBuf, expectedBuf)) {
+      logEvent({ level: 'warn', category: 'security', event: 'security.invalid_signature', meta: { channel: 'whatsapp', assistantId: assistant.id } });
       return NextResponse.json({ error: 'Forbidden: Invalid webhook signature' }, { status: 403 });
     }
 
@@ -98,3 +101,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: error?.message || 'Webhook failed' }, { status: 500 });
   }
 }
+
+export const GET = logged(GETHandler, { route: '/api/channels/whatsapp' });
+export const POST = logged(POSTHandler, { route: '/api/channels/whatsapp' });

@@ -3,10 +3,11 @@ import { Database } from '@/lib/db';
 import { BILLING_PLANS } from '@/lib/billing/plans';
 import { withAdminAuth, withRoleAuth, getAuthContext, requireWorkspaceAssistant } from '@/lib/security/auth';
 import { getClientIp } from '@/lib/security/rate-limit';
+import { logged } from '@/lib/logging/route';
 
 export const dynamic = 'force-dynamic';
 
-export const GET = withAdminAuth(async (req: Request) => {
+const GETHandler = withAdminAuth(async (req: Request) => {
   try {
     const ctx = await getAuthContext(req);
     const { searchParams } = new URL(req.url);
@@ -51,7 +52,7 @@ export const GET = withAdminAuth(async (req: Request) => {
   }
 });
 
-export const DELETE = withRoleAuth(['owner', 'admin'], async (req: Request) => {
+const DELETEHandler = withRoleAuth(['owner', 'admin'], async (req: Request) => {
   try {
     const ctx = await getAuthContext(req);
     const { searchParams } = new URL(req.url);
@@ -86,3 +87,6 @@ export const DELETE = withRoleAuth(['owner', 'admin'], async (req: Request) => {
     return NextResponse.json({ error: error?.message || 'Failed to delete knowledge source' }, { status: 500 });
   }
 });
+
+export const GET = logged(GETHandler, { route: '/api/knowledge' });
+export const DELETE = logged(DELETEHandler, { route: '/api/knowledge' });

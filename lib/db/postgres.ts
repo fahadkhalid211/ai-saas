@@ -1,5 +1,15 @@
 import { Pool } from 'pg';
 
+/** Records a database event in the system log. Lazy require: the log store imports this module. */
+function dbLog(input: Record<string, unknown>): void {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    (require('../logging/logger') as typeof import('../logging/logger')).logEvent({ category: 'db', ...(input as any) });
+  } catch {
+    // logging must never affect database access
+  }
+}
+
 let pgPoolInstance: Pool | null = null;
 let isSchemaInitialized = false;
 let isPostgresDisabledUntil = 0;
@@ -40,6 +50,7 @@ export function isConnectionError(err: any): boolean {
 
 export function disablePostgresTemporarily(durationMs = 60000): void {
   isPostgresDisabledUntil = Date.now() + durationMs;
+  dbLog({ level: 'error', event: 'db.postgres_unavailable', message: 'Database connection failed; pausing database use', meta: { pausedForMs: durationMs } });
   if (pgPoolInstance) {
     try {
       pgPoolInstance.end().catch(() => {});
@@ -262,10 +273,13 @@ export async function fetchPostgresState(): Promise<CloudStateResult> {
   try {
     const initialized = await ensurePostgresSchema();
     if (!initialized) return { status: 'error', error: 'Postgres schema initialization failed' };
+    const readStarted = performance.now();
     const result = await pool.query(
       'SELECT data FROM kortex_app_state WHERE id = $1 LIMIT 1',
       ['default']
     );
+    const readMs = performance.now() - readStarted;
+    if (readMs > 500) dbLog({ level: 'warn', event: 'db.slow_state_read', durationMs: readMs });
     if (result.rows.length === 0) return { status: 'not_found' };
     return { status: 'found', data: result.rows[0].data || {} };
   } catch (err: any) {
@@ -306,6 +320,7 @@ export async function persistPostgresState(state: any): Promise<{ ok: boolean; u
       pageViews: cloudPageViews,
     };
 
+    const writeStarted = performance.now();
     const result = await pool.query(
       `INSERT INTO kortex_app_state (id, data, updated_at)
        VALUES ($1, $2, NOW())
@@ -314,6 +329,10 @@ export async function persistPostgresState(state: any): Promise<{ ok: boolean; u
        RETURNING updated_at`,
       ['default', JSON.stringify(cloudData)]
     );
+    const writeMs = performance.now() - writeStarted;
+    if (writeMs > 500) {
+      dbLog({ level: 'warn', event: 'db.slow_state_write', durationMs: writeMs, meta: { bytes: JSON.stringify(cloudData).length } });
+    }
     const updatedAt = result.rows[0]?.updated_at ? new Date(result.rows[0].updated_at).toISOString() : new Date().toISOString();
     return { ok: true, updatedAt };
   } catch (err: any) {

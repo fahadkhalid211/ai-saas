@@ -10,8 +10,9 @@ import {
   verifyWhatsAppConnection,
   verifyWebhookConnection,
 } from '@/lib/connectors/verify';
+import { logged } from '@/lib/logging/route';
 
-export const GET = withAdminAuth(async (
+const GETHandler = withAdminAuth(async (
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) => {
@@ -39,7 +40,7 @@ export const GET = withAdminAuth(async (
   }
 });
 
-export const PUT = withRoleAuth(['owner', 'admin'], async (
+const PUTHandler = withRoleAuth(['owner', 'admin'], async (
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) => {
@@ -200,7 +201,7 @@ export const PUT = withRoleAuth(['owner', 'admin'], async (
   }
 });
 
-export const DELETE = withRoleAuth(['owner', 'admin'], async (
+const DELETEHandler = withRoleAuth(['owner', 'admin'], async (
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) => {
@@ -237,3 +238,7 @@ export const DELETE = withRoleAuth(['owner', 'admin'], async (
     return NextResponse.json({ error: error?.message || 'Failed to delete assistant' }, { status: 500 });
   }
 });
+
+export const GET = logged(GETHandler, { route: '/api/assistants/[id]' });
+export const PUT = logged(PUTHandler, { route: '/api/assistants/[id]' });
+export const DELETE = logged(DELETEHandler, { route: '/api/assistants/[id]' });
