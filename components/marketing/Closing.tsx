@@ -1,5 +1,6 @@
 'use client';
 
+import { CookieSettingsLink } from '@/components/legal/CookieConsent';
 import { useId, useState, type FormEvent } from 'react';
 import Link from 'next/link';
 import { FAQ, FINAL_CTA, FOOTER, LOGIN_HREF, SIGNUP_HREF, SITE } from './content';
@@ -156,8 +157,9 @@ export function Footer() {
           <Newsletter />
         </div>
         <div className="mk-footer-bottom">
-          <span>© {new Date().getFullYear()} Crescelo Technologies Inc.</span>
+          <span>© {new Date().getFullYear()} Fahad Khalid, trading as Crescelo. All rights reserved.</span>
           <span>{FOOTER.legalNote}</span>
+          <CookieSettingsLink className="underline cursor-pointer" />
         </div>
         <div className="mk-footer-giant-word" aria-hidden="true">
           <svg viewBox="0 0 1000 195" width="100%" preserveAspectRatio="xMidYMid meet" className="mk-footer-wordmark-svg">

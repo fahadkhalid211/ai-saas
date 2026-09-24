@@ -528,7 +528,7 @@ export function FloatingPlatformChatbot({ variant = 'floating' }: FloatingPlatfo
                 <Send className="w-4 h-4" />
               </button>
             </form>
-            <p className="mt-2 text-center text-[10.5px] text-[#8b8981]">Powered by Crescelo</p>
+            <p className="mt-2 text-center text-[10.5px] leading-snug text-[#8b8981]">AI assistant, replies may be inaccurate. Messages are processed as described in our <a href="/privacy" className="underline">Privacy Policy</a>.</p>
           </div>
         </div>
       )}

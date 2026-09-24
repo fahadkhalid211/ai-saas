@@ -318,13 +318,22 @@ export function AdminLoginScreen({
             )}
           </button>
 
+          {authLoginMode === 'register' && (
+            <p className="text-center text-[11px] leading-relaxed text-slate-500 dark:text-slate-400">
+              By creating an account you agree to our{' '}
+              <a href="/terms" target="_blank" rel="noopener noreferrer" className="underline">Terms of Service</a>,{' '}
+              <a href="/acceptable-use" target="_blank" rel="noopener noreferrer" className="underline">Acceptable Use Policy</a> and{' '}
+              <a href="/privacy" target="_blank" rel="noopener noreferrer" className="underline">Privacy Policy</a>, and confirm you are at least 18.
+            </p>
+          )}
+
           <div className="flex justify-center pt-1">
             <GoogleRecaptchaNotice />
           </div>
         </form>
 
         <div className="pt-2 text-center text-[11px] text-slate-400 dark:text-slate-500 border-t border-slate-100 dark:border-slate-800">
-          Crescelo Multi-Tenant SaaS · AES-256 GCM Security
+          <a href="/terms" className="underline">Terms</a> · <a href="/privacy" className="underline">Privacy</a> · <a href="/cookies" className="underline">Cookies</a>
         </div>
       </div>
     </div>

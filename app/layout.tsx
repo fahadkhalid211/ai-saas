@@ -1,3 +1,4 @@
+import { CookieConsent } from '@/components/legal/CookieConsent';
 import { ReticleDev } from './reticle-dev';
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
@@ -41,27 +42,10 @@ export default function RootLayout({
       suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <head>
-        {/* Google tag (gtag.js) */}
-        <script
-          async
-          src="https://www.googletagmanager.com/gtag/js?id=G-MEBPX2NE1Y"
-        />
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              window.dataLayer = window.dataLayer || [];
-              function gtag(){dataLayer.push(arguments);}
-              gtag('js', new Date());
-
-              gtag('config', 'G-MEBPX2NE1Y');
-            `,
-          }}
-        />
-      </head>
       <body className="min-h-full flex flex-col bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 selection:bg-blue-600 selection:text-white font-sans">
         {process.env.NODE_ENV === 'development' ? <ReticleDev /> : null}
         {children}
+        <CookieConsent />
       </body>
     </html>
   );

@@ -762,6 +762,14 @@
         background: #16a34a;
         color: #ffffff;
       }
+      .chat-notice {
+        padding: 6px 16px 0 16px;
+        background: #ffffff;
+        text-align: center;
+        font-size: 10px;
+        line-height: 1.35;
+        color: #94a3b8;
+      }
       /* Footer branding */
       .chat-branding {
         padding: 6px 16px 8px 16px;
@@ -957,6 +965,7 @@
           </svg>
         </button>
       </div>
+      <div class="chat-notice" id="widget-notice">AI assistant. Replies may be inaccurate. Your messages are stored and processed by this business and its service providers.</div>
       <div class="chat-branding" id="widget-branding">
         <span style="display:inline-flex;align-items:center;gap:4px;"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg> Powered by <a href="https://crescelo.com" target="_blank" rel="noopener noreferrer">Crescelo</a></span>
       </div>
