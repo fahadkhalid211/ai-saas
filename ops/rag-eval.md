@@ -30,3 +30,12 @@ reciprocal rank inside Postgres in one round trip, instead of one JSON value sca
 3. Set `RAG_VECTOR_STORE=pgvector` on Vercel and redeploy. Unset it to go back; nothing is deleted from the old store.
 4. `npm run rag:eval -- --pg --compare baseline` measures it in a temporary database that is dropped afterwards.
    Latency shown there includes the network hop from your machine; on Vercel (bom1) it is much lower.
+
+## Query preparation (RAG step 3)
+
+Follow-up messages ("and how many assistants does it include?") are now resolved with the previous user question before
+searching (`lib/rag/query-prep.ts`). Eval: hit@5 93.0% → 97.7%, follow-ups 50% → 100%, no added latency.
+
+An optional LLM rewriter (`RAG_QUERY_REWRITE=llm`, model via `RAG_REWRITE_MODEL`) also writes alternative phrasings that are
+searched and fused. Measured on Groq it did NOT beat the free version (hit@5 93–95%) and added ~1 s, so it is off by default.
+Re-measure with `RAG_QUERY_REWRITE=llm npm run rag:eval` if you change models.

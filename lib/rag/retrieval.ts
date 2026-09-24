@@ -26,6 +26,7 @@ export {
   setRedisCachedRetrieval,
 };
 import { RetrievalResult } from './types';
+import { prepareQuery, resolveFollowUp, fuseRankings } from './query-prep';
 
 /**
  * Condense multi-turn query if history is present.
@@ -35,29 +36,7 @@ export function condenseQuery(
   latestMessage: string,
   history: { role: string; content: string }[] = []
 ): string {
-  if (history.length === 0) return latestMessage;
-
-  // Find the last 2 user/assistant interactions
-  const recentHistory = history.slice(-3);
-  const subjectHints: string[] = [];
-
-  for (const msg of recentHistory) {
-    // Extract key noun phrases or words with uppercase/digits (e.g. SKU, product names)
-    const words = msg.content.split(/\s+/).filter((w) => w.length > 3);
-    if (words.length > 0) {
-      subjectHints.push(words.slice(0, 5).join(' '));
-    }
-  }
-
-  // If latest message is very short/ambiguous (e.g. "how much?", "is it in stock?", "what about shipping?")
-  const isAmbiguous = latestMessage.split(/\s+/).length <= 4 &&
-    /^(how|what|is|can|where|when|why|tell|give|do|does|price|cost|shipping)/i.test(latestMessage.trim());
-
-  if (isAmbiguous && subjectHints.length > 0) {
-    return `${subjectHints[subjectHints.length - 1]} ${latestMessage}`;
-  }
-
-  return latestMessage;
+  return resolveFollowUp(latestMessage, history);
 }
 
 /**
@@ -130,7 +109,8 @@ export async function retrieveRelevantContext(
   history: { role: string; content: string }[] = [],
   topK: number = 5
 ): Promise<RetrievalResult> {
-  const condensedQuery = condenseQuery(userMessage, history);
+  const prepared = await prepareQuery(userMessage, history);
+  const condensedQuery = prepared.query;
 
   // Fast Path: Check L1 RAM retrieval result cache for repeat queries (sub-1ms response)
   const cachedRetrieval = getCachedRetrieval(assistantId, condensedQuery);
@@ -167,6 +147,17 @@ export async function retrieveRelevantContext(
 
   // 4. Perform Hybrid Search: dense vector from condensedQuery + sparse keyword search from expandedQuery
   let chunks = await Database.hybridSearch(assistantId, expandedQuery, queryEmbedding, effectiveTopK * 2);
+
+  // 4.05. Alternative phrasings written by the query rewriter: search each, then fuse the rankings
+  if (prepared.variants.length > 0) {
+    const others = await Promise.all(
+      prepared.variants.map(async (v) => {
+        const emb = await generateEmbedding(v);
+        return Database.hybridSearch(assistantId, expandQueryWithSynonyms(v, sourceTitles).expandedQuery, emb, effectiveTopK * 2);
+      })
+    ).catch(() => [] as SearchResultChunk[][]);
+    chunks = fuseRankings([chunks, ...others], effectiveTopK * 2);
+  }
 
   // 4.1. Fallback to raw condensed query if expanded query returned no results
   if (chunks.length === 0 && expandedQuery !== condensedQuery) {
