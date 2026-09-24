@@ -38,8 +38,13 @@ export async function ensureChunkStore(): Promise<{ table: string; iterative: bo
     const pool = getPostgresPool();
     if (!pool) throw new Error('Postgres is not configured');
     try {
-      await pool.query('CREATE EXTENSION IF NOT EXISTS vector').catch(() => undefined); // already installed on your server
-      await pool.query({
+      const present = await pool.query('SELECT to_regclass($1) AS r', [t]);
+      if (!present.rows[0]?.r) {
+      const ddl = await pool.connect(); // the lock belongs to one connection
+      try {
+        await ddl.query('SELECT pg_advisory_lock(hashtext($1))', [`ddl:${t}`]);
+      await ddl.query('CREATE EXTENSION IF NOT EXISTS vector').catch(() => undefined); // already installed on your server
+      await ddl.query({
         text: `
         CREATE TABLE IF NOT EXISTS ${t} (
           id TEXT PRIMARY KEY,
@@ -70,6 +75,11 @@ export async function ensureChunkStore(): Promise<{ table: string; iterative: bo
         END $$;`,
         query_timeout: 60_000,
       } as any);
+      } finally {
+        await ddl.query('SELECT pg_advisory_unlock(hashtext($1))', [`ddl:${t}`]).catch(() => undefined);
+        ddl.release();
+      }
+      }
       // pgvector 0.8+ can keep scanning the index until enough rows pass the tenant filter (needed for correct multi-tenant results)
       const v = await pool.query("SELECT extversion FROM pg_extension WHERE extname = 'vector'");
       const [maj, min] = String(v.rows[0]?.extversion || '0.0').split('.').map(Number);

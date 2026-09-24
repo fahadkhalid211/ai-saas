@@ -55,7 +55,17 @@ export async function ensureLogTable(): Promise<boolean> {
   if (!pool) return false;
   const t = logTable();
   if (ensuredTable === t) return true;
-  await pool.query({
+  // Already there (the normal case): nothing to do. Running the DDL below on every cold start let several serverless
+  // instances take conflicting table locks at once ("deadlock detected"), which also broke the log export.
+  const exists = await pool.query('SELECT to_regclass($1) AS r', [t]);
+  if (exists.rows[0]?.r) {
+    ensuredTable = t;
+    return true;
+  }
+  const client = await pool.connect();
+  try {
+    await client.query('SELECT pg_advisory_lock(hashtext($1))', [`ddl:${t}`]); // one creator at a time
+    await client.query({
     text: `
     CREATE TABLE IF NOT EXISTS ${t} (
       id BIGSERIAL PRIMARY KEY,
@@ -98,7 +108,11 @@ export async function ensureLogTable(): Promise<boolean> {
       END IF;
     END $$;`,
     query_timeout: 10_000,
-  } as any);
+    } as any);
+  } finally {
+    await client.query('SELECT pg_advisory_unlock(hashtext($1))', [`ddl:${t}`]).catch(() => undefined);
+    client.release();
+  }
   ensuredTable = t;
   return true;
 }

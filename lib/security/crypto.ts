@@ -95,6 +95,8 @@ export function encryptSecret(plaintext: string): string {
  * Decrypts an AES-256-GCM encrypted string.
  * Gracefully falls back to plaintext if the input is not encrypted.
  */
+const reportedUndecryptable = new Set<string>();
+
 export function decryptSecret(ciphertext: string): string {
   if (!ciphertext || typeof ciphertext !== 'string') return '';
   if (!ciphertext.startsWith('enc:v1:')) {
@@ -134,7 +136,13 @@ export function decryptSecret(ciphertext: string): string {
       }
     } catch {}
 
-    console.error('[Crypto] Decryption error (invalid key or corrupted ciphertext):', err);
+    // Once per unreadable value, not once per request: after ENCRYPTION_SECRET changes every saved key fails the same way
+    // on every page load, which used to bury the log. The fix is to enter the key again (or restore the old secret).
+    const id = ciphertext.slice(0, 40);
+    if (!reportedUndecryptable.has(id)) {
+      reportedUndecryptable.add(id);
+      console.warn('[Crypto] A saved secret cannot be decrypted with the current ENCRYPTION_SECRET; enter it again in the dashboard or restore the previous secret:', (err as Error)?.message);
+    }
     return '';
   }
 }
