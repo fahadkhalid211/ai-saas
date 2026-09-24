@@ -101,7 +101,7 @@ export const PlaygroundTab: React.FC<PlaygroundTabProps> = ({
                             {msg.role === 'assistant' ? (
                               (() => {
                                 const hasBookingAction = msg.content.includes('[ACTION:BOOKING_FORM]');
-                                const cleanContent = msg.content.replace(/\[ACTION:BOOKING_FORM\]/g, '').trim();
+                                const cleanContent = msg.content.replace(/\s*\[ACTION:[A-Z_]+\]/g, '').trim();
                                 return (
                                   <>
                                     {cleanContent && <MarkdownRenderer content={cleanContent} />}

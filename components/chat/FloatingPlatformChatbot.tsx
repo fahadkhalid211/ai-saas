@@ -3,6 +3,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { X, Send, RefreshCw, Check, Copy } from 'lucide-react';
 import { CresceloOrb, type OrbState } from '@/components/brand/CresceloOrb';
+import { PlatformBookingCard, type BookingConfig } from './PlatformBookingCard';
+import { stripActionTokens } from '@/lib/chat/handoff';
 import { getPlatformConciergeAnswer } from '@/lib/ai/concierge';
 
 interface ChatMessage {
@@ -32,6 +34,18 @@ function renderRich(text: string): React.ReactNode {
   );
 }
 
+const ASSISTANT_ID = 'demo-assistant';
+const BOOKING_INTENT = /\b(book|schedule|appointment|demo|meeting|call with|consultation|reserve|calendar)\b/i;
+
+/** What the assistant asked the interface to show, taken from its control tokens. */
+function actionsOf(content: string): { text: string; booking: boolean; human: boolean } {
+  return {
+    text: stripActionTokens(content),
+    booking: content.includes('[ACTION:BOOKING_FORM]'),
+    human: content.includes('[ACTION:HUMAN_ESCALATION]'),
+  };
+}
+
 export function FloatingPlatformChatbot() {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([
@@ -48,6 +62,7 @@ export function FloatingPlatformChatbot() {
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [hasUnread, setHasUnread] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [bookingConfig, setBookingConfig] = useState<BookingConfig | null>(null);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -63,6 +78,14 @@ export function FloatingPlatformChatbot() {
       setTimeout(() => inputRef.current?.focus(), 150);
     }
   }, [isOpen, messages]);
+
+  useEffect(() => {
+    if (!isOpen || bookingConfig) return;
+    fetch(`/api/widget/${ASSISTANT_ID}/config`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((c) => setBookingConfig(c || { bookingEnabled: false }))
+      .catch(() => setBookingConfig({ bookingEnabled: false }));
+  }, [isOpen, bookingConfig]);
 
   const handleCopy = (id: string, text: string) => {
     navigator.clipboard.writeText(text);
@@ -84,6 +107,20 @@ export function FloatingPlatformChatbot() {
 
     setMessages((prev) => [...prev, newUserMsg]);
     setInput('');
+
+    // Wanting to book: show the booking form straight away (with a live agent as the second option).
+    if (bookingConfig?.bookingEnabled && BOOKING_INTENT.test(text)) {
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: 'ast_' + (Date.now() + 1),
+          role: 'assistant',
+          content: 'Happy to help you pick a time. Choose a day and slot below. [ACTION:BOOKING_FORM]',
+          createdAt: new Date().toISOString(),
+        },
+      ]);
+      return;
+    }
     setIsLoading(true);
 
     const botMsgId = 'ast_' + (Date.now() + 1);
@@ -351,7 +388,7 @@ export function FloatingPlatformChatbot() {
                 >
                   <div className="whitespace-pre-wrap break-words">
                     {m.content ? (
-                      m.role === 'assistant' ? renderRich(m.content) : m.content
+                      m.role === 'assistant' ? renderRich(actionsOf(m.content).text) : m.content
                     ) : (
                       <span className="flex items-center gap-1 py-1" aria-label="Thinking">
                         {[0, 1, 2].map((i) => (
@@ -361,10 +398,35 @@ export function FloatingPlatformChatbot() {
                     )}
                   </div>
 
+                  {m.role === 'assistant' && m.content && !(isLoading && m.id === lastMessage?.id) && (() => {
+                    const a = actionsOf(m.content);
+                    if (!a.booking && !a.human) return null;
+                    return (
+                      <div className="mt-2.5 space-y-2">
+                        {a.booking && bookingConfig?.bookingEnabled && <PlatformBookingCard assistantId={ASSISTANT_ID} config={bookingConfig} />}
+                        {a.human ? (
+                          <div className="inline-flex items-center gap-2 text-[12px] font-semibold text-[#abff44]" role="status">
+                            <span className="h-1.5 w-1.5 rounded-full bg-[#abff44]" />
+                            Live agent notified. Someone will join this chat shortly.
+                          </div>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => sendMessage('I would like to talk to a live agent')}
+                            disabled={isLoading}
+                            className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/[0.05] px-3 py-1.5 text-[12px] font-medium text-[#e8e5dc] transition hover:border-[#abff44]/50 hover:bg-white/[0.09] disabled:opacity-40"
+                          >
+                            Talk to a live agent
+                          </button>
+                        )}
+                      </div>
+                    );
+                  })()}
+
                   {m.role === 'assistant' && m.content && (
                     <button
                       type="button"
-                      onClick={() => handleCopy(m.id, m.content)}
+                      onClick={() => handleCopy(m.id, actionsOf(m.content).text)}
                       title="Copy answer"
                       aria-label="Copy answer"
                       className="absolute -bottom-2 right-2 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 p-1 text-[#a19f96] hover:text-[#faf9f5] bg-[#33322f] border border-white/10 rounded-md transition"
@@ -416,7 +478,8 @@ export function FloatingPlatformChatbot() {
                 placeholder="Ask anything about Crescelo…"
                 disabled={isLoading}
                 aria-label="Your question"
-                className="flex-1 bg-transparent text-[13px] text-[#faf9f5] placeholder-[#8b8981] outline-none py-1.5"
+                style={{ outline: 'none', boxShadow: 'none' }}
+                className="flex-1 bg-transparent text-[13px] text-[#faf9f5] placeholder-[#8b8981] outline-none focus:outline-none focus-visible:outline-none selection:bg-white/20 selection:text-white py-1.5"
               />
               <button
                 type="submit"

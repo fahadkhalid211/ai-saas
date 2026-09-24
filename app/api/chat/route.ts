@@ -14,6 +14,7 @@ import { validateChatPayload } from '@/lib/security/validation';
 import { autoCaptureChatLead } from '@/lib/chat/lead-extraction';
 import { logged } from '@/lib/logging/route';
 import { logEvent } from '@/lib/logging/logger';
+import { wantsLiveAgent, liveAgentReply, streamFixedReply } from '@/lib/chat/handoff';
 
 // Streamed responses (token-by-token LLM output, plus an optional live web
 // search round-trip) can run well past a short default function timeout.
@@ -741,14 +742,19 @@ Directly use the content of this attached document to assist the visitor, answer
           let fullAssistantReply = '';
 
           const llmStarted = performance.now();
-          const tokenGenerator = streamChatResponse(llmMessages, {
-            provider: assistant.provider,
-            modelName: assistant.modelName,
-            apiKey: assistant.apiKeyEncrypted,
-            customBaseUrl: assistant.customBaseUrl,
-            temperature: assistant.temperature,
-            maxTokens: assistant.maxTokens || 2048,
-          });
+          // A request for a person is answered in code (same result whichever model is configured): the visitor is told
+          // an agent is coming and the conversation is escalated below. No contact details are ever requested in the chat.
+          const humanRequested = wantsLiveAgent(latestUserMsg);
+          const tokenGenerator = humanRequested
+            ? streamFixedReply(liveAgentReply({ bookingEnabled: Boolean(assistant.bookingEnabled) }))
+            : streamChatResponse(llmMessages, {
+                provider: assistant.provider,
+                modelName: assistant.modelName,
+                apiKey: assistant.apiKeyEncrypted,
+                customBaseUrl: assistant.customBaseUrl,
+                temperature: assistant.temperature,
+                maxTokens: assistant.maxTokens || 2048,
+              });
 
           const isDemoAssistant = assistant.id === 'demo-assistant';
 

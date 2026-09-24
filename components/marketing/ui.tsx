@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import type { CSSProperties, ReactNode } from 'react';
 import { useCountUp, useInView } from './hooks';
+import { CresceloOrb } from '@/components/brand/CresceloOrb';
 
 /** Fades and lifts children into place once. Content is visible without JS (see marketing.css). */
 export function Reveal({
@@ -121,10 +122,7 @@ export function Check() {
 export function Logo({ className = '' }: { className?: string }) {
   return (
     <span className={`mk-logo ${className}`}>
-      <svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true">
-        <rect x="1" y="1" width="20" height="20" rx="6" fill="var(--mk-deep)" />
-        <path d="M14.6 7.4A5 5 0 1 0 14.6 14.6" stroke="var(--mk-lime)" strokeWidth="2" strokeLinecap="round" fill="none" />
-      </svg>
+      <CresceloOrb size={30} />
       <span>Crescelo</span>
     </span>
   );

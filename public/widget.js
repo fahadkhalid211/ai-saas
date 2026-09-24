@@ -1175,7 +1175,7 @@
 
     if (supportHeaderBtn) {
       supportHeaderBtn.addEventListener('click', function () {
-        renderSupportForm();
+        requestLiveAgent();
       });
     }
 
@@ -1438,7 +1438,8 @@
       }
 
       var hasBookingAction = text && text.indexOf('[ACTION:BOOKING_FORM]') !== -1;
-      var cleanText = text ? text.replace(/\[ACTION:BOOKING_FORM\]/g, '').trim() : '';
+      var hasHumanAction = text && text.indexOf('[ACTION:HUMAN_ESCALATION]') !== -1;
+      var cleanText = text ? text.replace(/\s*\[ACTION:[A-Z_]+\]/g, '').trim() : '';
 
       var textContainer = document.createElement('div');
       textContainer.innerHTML = formatMarkdown(cleanText);
@@ -1447,6 +1448,9 @@
       if (messagesBody) messagesBody.appendChild(msgEl);
       if (hasBookingAction) {
         renderBookingCard();
+        renderSupportQuickButton(msgEl, '');
+      } else if (hasHumanAction) {
+        renderAgentNotified(msgEl);
       }
       if (isUser) {
         scrollToBottom();
@@ -1798,7 +1802,24 @@
       });
     }
 
-    function renderSupportQuickButton(parentMsgEl, queryText) {
+    // Second option next to the booking form: hand the conversation to a person, right here in the chat.
+    function requestLiveAgent() {
+      if (isStreaming) return;
+      chatInput.value = 'I would like to talk to a live agent';
+      sendMessage();
+    }
+
+    function renderAgentNotified(parentMsgEl) {
+      if (!parentMsgEl || parentMsgEl.querySelector('.agent-notified')) return;
+      var note = document.createElement('div');
+      note.className = 'agent-notified';
+      note.style.cssText = 'margin-top:8px;display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--primary-color, #2563eb);';
+      note.innerHTML = '<span style="width:7px;height:7px;border-radius:50%;background:currentColor;display:inline-block"></span><span>Live agent notified. Someone will join this chat shortly.</span>';
+      parentMsgEl.appendChild(note);
+      scrollToBottom();
+    }
+
+    function renderSupportQuickButton(parentMsgEl) {
       if (!parentMsgEl || parentMsgEl.querySelector('.support-quick-btn')) return;
       var btn = document.createElement('button');
       btn.className = 'support-quick-btn';
@@ -1806,11 +1827,11 @@
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
           <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
         </svg>
-        <span>Connect with Support Team</span>
+        <span>Talk to a live agent</span>
       `;
       btn.addEventListener('click', function () {
         btn.remove();
-        renderSupportForm(queryText);
+        requestLiveAgent();
       });
       parentMsgEl.appendChild(btn);
       scrollToBottom();
@@ -2083,17 +2104,7 @@
       }
 
       // If user directly typed "connect to support", render form immediately!
-      if (userWantsSupport) {
-        if (typing.parentNode && messagesBody) {
-          messagesBody.removeChild(typing);
-        }
-        appendMessage('assistant', "I would be happy to connect you with our support team! Please fill in your contact details below:");
-        renderSupportForm(text);
-        isStreaming = false;
-        sendBtn.disabled = false;
-        chatInput.focus();
-        return;
-      }
+      // (A request for a person is answered by the server, which alerts the team; no contact form is shown here.)
 
       // 28-second AbortController timeout safeguard against hanging connections
       var controller = null;
@@ -2210,7 +2221,8 @@
                     renderSupportQuickButton(fbEl, text);
                   }
                   var hasActionBooking = streamedText.indexOf('[ACTION:BOOKING_FORM]') !== -1;
-                  var cleanContent = streamedText.replace(/\[ACTION:BOOKING_FORM\]/g, '').trim();
+                  var hasActionHuman = streamedText.indexOf('[ACTION:HUMAN_ESCALATION]') !== -1;
+                  var cleanContent = streamedText.replace(/\s*\[ACTION:[A-Z_]+\]/g, '').trim();
                   if (assistantBubble) {
                     assistantBubble.innerHTML = formatMarkdown(cleanContent);
                   }
@@ -2220,10 +2232,15 @@
                     renderWidgetCitations(assistantBubble, currentCitations, isCurrentWebSearch);
                   }
                   // Check if bot explicitly signaled booking form or suggested booking/support
+                  // Two ways forward, never a request to type contact details: the booking form, or a live agent.
                   if (hasActionBooking) {
                     renderBookingCard(text);
+                    if (assistantBubble) renderSupportQuickButton(assistantBubble, text);
+                  } else if (hasActionHuman && assistantBubble) {
+                    renderAgentNotified(assistantBubble);
                   } else if (assistantBubble && config.bookingEnabled && isBookingIntent(cleanContent)) {
                     renderBookingQuickButton(assistantBubble, text);
+                    renderSupportQuickButton(assistantBubble, text);
                   } else if (assistantBubble && isSupportSuggested(cleanContent)) {
                     renderSupportQuickButton(assistantBubble, text);
                   }
@@ -2299,7 +2316,7 @@
                         hasMountedBubble = true;
                       }
                       streamedText += data.token;
-                      var cleanStreamed = streamedText.replace(/\[ACTION:BOOKING_FORM\]/g, '').trim();
+                      var cleanStreamed = streamedText.replace(/\s*\[ACTION:[A-Z_]+\]/g, '').trim();
                       assistantBubble.innerHTML = formatMarkdown(cleanStreamed);
                       scrollToBottom();
                     } else if (data.type === 'error') {

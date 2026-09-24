@@ -1,4 +1,15 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
-  <rect width="32" height="32" rx="8" fill="#08251a"/>
-  <path d="M21.5 10.2C20.2 9 18.5 8.2 16.5 8.2C12.3 8.2 8.8 11.7 8.8 16C8.8 20.3 12.3 23.8 16.5 23.8C18.5 23.8 20.2 23 21.5 21.8" fill="none" stroke="#abff44" stroke-width="3.6" stroke-linecap="round"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="14 14 72 72" width="64" height="64">
+  <defs>
+    <radialGradient id="b" cx="34%" cy="28%" r="85%"><stop offset="0%" stop-color="#1d6a4b"/><stop offset="42%" stop-color="#0c3526"/><stop offset="100%" stop-color="#04140d"/></radialGradient>
+    <linearGradient id="c" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#f1ffc9"/><stop offset="45%" stop-color="#abff44"/><stop offset="100%" stop-color="#74d321"/></linearGradient>
+    <mask id="m" maskUnits="userSpaceOnUse" x="0" y="0" width="100" height="100"><circle cx="50" cy="50" r="25" fill="#fff"/><circle cx="54.5" cy="47.5" r="22.4" fill="#000"/></mask>
+    <clipPath id="k"><circle cx="50" cy="50" r="34"/></clipPath>
+  </defs>
+  <circle cx="50" cy="50" r="35.5" fill="url(#b)"/>
+  <circle cx="50" cy="50" r="34.6" fill="none" stroke="#abff44" stroke-opacity="0.45" stroke-width="1.6"/>
+  <g clip-path="url(#k)">
+    <rect width="100" height="100" fill="url(#c)" mask="url(#m)"/>
+    <circle cx="57" cy="51" r="3.6" fill="url(#c)"/>
+    <ellipse cx="37" cy="29" rx="10" ry="5.2" transform="rotate(-32 37 29)" fill="#fff" fill-opacity="0.2"/>
+  </g>
 </svg>

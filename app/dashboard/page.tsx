@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { RefreshCw, Globe } from 'lucide-react';
 import '../brand.css';
 import { brandFontClasses } from '@/lib/brand-fonts';
-import { BrandMark } from '@/components/brand/BrandMark';
+import { CresceloOrb } from '@/components/brand/CresceloOrb';
 import { Appointment } from '@/components/crm/AppointmentsTab';
 import { useRouter } from 'next/navigation';
 import { DashboardHeader } from '@/components/crm/DashboardHeader';
@@ -613,9 +613,7 @@ export default function DashboardPage() {
     return (
       <div className={`kx-app ${brandFontClasses} ${theme === 'dark' ? 'dark' : ''} h-screen w-full flex items-center justify-center bg-slate-50 dark:bg-slate-950 font-sans`}>
         <div className="flex flex-col items-center gap-3">
-          <div className="animate-pulse">
-            <BrandMark size={44} showWord={false} />
-          </div>
+          <CresceloOrb size={72} state="thinking" />
           <div className="flex items-center gap-2 text-xs font-medium text-slate-500 dark:text-slate-400">
             <RefreshCw className="h-3.5 w-3.5 animate-spin text-blue-600" />
             <span>Verifying workspace session...</span>
