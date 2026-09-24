@@ -5,7 +5,6 @@ import { BrandMark } from '@/components/brand/BrandMark';
 import {
   Bot,
   Plus,
-  LayoutTemplate,
   Sun,
   Moon,
   Bell,
@@ -201,28 +200,17 @@ export function DashboardHeader({
               </div>
 
               {/* Dropdown Bottom Actions */}
-              <div className="pt-2 border-t border-slate-100 dark:border-slate-800 grid grid-cols-2 gap-1.5">
+              <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
                 <button
                   type="button"
                   onClick={() => {
                     setIsAssistantMenuOpen(false);
                     setShowNewModal(true);
                   }}
-                  className="flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-xl border border-blue-200 dark:border-blue-900 bg-blue-50/50 hover:bg-blue-100/70 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300 text-xs font-semibold transition cursor-pointer"
+                  className="w-full flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-xl border border-blue-200 dark:border-blue-900 bg-blue-50/50 hover:bg-blue-100/70 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300 text-xs font-semibold transition cursor-pointer"
                 >
                   <Plus className="h-3.5 w-3.5" />
                   <span>New Bot</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsAssistantMenuOpen(false);
-                    setActiveTab('templates');
-                  }}
-                  className="flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 hover:bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-semibold transition cursor-pointer"
-                >
-                  <LayoutTemplate className="h-3.5 w-3.5 text-indigo-500" />
-                  <span>Templates</span>
                 </button>
               </div>
             </div>

@@ -19,7 +19,6 @@ import {
   Users,
   Calendar,
   History as HistoryIcon,
-  LayoutTemplate,
   BookOpen,
   UserCircle,
   Compass,
@@ -142,7 +141,6 @@ export function DashboardSidebar({
         { id: 'widget', label: 'Widget & Styling', icon: Palette },
         { id: 'channels', label: 'Channels & Integrations', icon: Share2 },
         { id: 'behavior', label: 'Behavior & Rules', icon: Sliders },
-        { id: 'templates', label: 'Bot Templates', icon: LayoutTemplate },
       ],
     },
     {
