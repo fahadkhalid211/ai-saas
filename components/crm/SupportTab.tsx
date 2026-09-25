@@ -44,7 +44,7 @@ const PRIORITY_STYLE: Record<Priority, string> = {
 };
 const fmt = (iso: string) => new Date(iso).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });
 
-const input = 'w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500';
+const input = 'w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 dark:[color-scheme:dark] [&>option]:bg-white [&>option]:text-slate-900 dark:[&>option]:bg-slate-800 dark:[&>option]:text-white';
 
 export function SupportTab({ master }: { master: boolean }) {
   const base = master ? '/api/master/tickets' : '/api/support/tickets';
@@ -123,8 +123,12 @@ export function SupportTab({ master }: { master: boolean }) {
   };
 
   const create = async () => {
-    setBusy(true);
     setError('');
+    if (draft.message.trim().length < 10) {
+      setError('Please describe the problem or question in a little more detail (at least 10 characters).');
+      return;
+    }
+    setBusy(true);
     try {
       const res = await fetch('/api/support/tickets', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(draft) });
       const data = await res.json().catch(() => ({}));
@@ -221,7 +225,7 @@ export function SupportTab({ master }: { master: boolean }) {
               <textarea className={input} rows={7} maxLength={5000} placeholder="Describe the problem or question" value={draft.message} onChange={(e) => setDraft({ ...draft, message: e.target.value })} />
               {error && <p className="text-xs text-rose-500">{error}</p>}
               <div className="flex gap-2">
-                <button type="button" disabled={busy || draft.message.trim().length < 10} onClick={create} className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white text-xs font-semibold cursor-pointer">
+                <button type="button" disabled={busy} onClick={create} className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white text-xs font-semibold cursor-pointer">
                   {busy ? 'Sending...' : 'Submit ticket'}
                 </button>
                 <button type="button" onClick={() => setComposing(false)} className="px-4 py-2 rounded-xl text-xs text-slate-500 cursor-pointer">Cancel</button>
