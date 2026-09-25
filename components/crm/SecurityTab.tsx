@@ -181,6 +181,23 @@ export const SecurityTab: React.FC<SecurityTabProps> = ({
         )}
       </div>
 
+      <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs flex items-center justify-between gap-4">
+        <div>
+          <span className="text-xs font-bold text-slate-900 dark:text-white">Sign out everywhere</span>
+          <p className="text-[11px] text-slate-500 dark:text-slate-400">Ends every session of your account on every device, including this one. Use it if a device is lost or you think someone else got in.</p>
+        </div>
+        <button
+          type="button"
+          onClick={async () => {
+            try { await fetch('/api/auth?all=1', { method: 'DELETE' }); } catch {}
+            window.location.href = '/login';
+          }}
+          className="shrink-0 px-3 py-2 rounded-xl border border-rose-200 dark:border-rose-900 text-rose-600 text-xs font-semibold hover:bg-rose-50 dark:hover:bg-rose-950/40 cursor-pointer"
+        >
+          Sign out everywhere
+        </button>
+      </div>
+
       {/* Enterprise Security Checkup Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-2">

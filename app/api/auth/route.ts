@@ -16,8 +16,7 @@ import { Database, sanitizeTeamMember } from '@/lib/db';
 import { validateRegistrationPayload, validateEmail, sanitizeInput } from '@/lib/security/validation';
 import { verifyRecaptchaToken } from '@/lib/security/recaptcha';
 import { logged } from '@/lib/logging/route';
-import { verifyTotpToken } from '@/lib/security/totp';
-import { decryptSecret } from '@/lib/security/crypto';
+import { checkSecondFactor } from '@/lib/security/two-factor';
 
 /**
  * Second step of sign-in. Once the password is right, an account with two-factor authentication turned on must also present a
@@ -28,7 +27,7 @@ async function requireSecondFactor(memberId: string, email: string, code: unknow
   const member = await Database.getTeamMemberById(memberId);
   if (!member || !member.twoFactorEnabled || !member.twoFactorSecret) return null;
 
-  const supplied = typeof code === 'string' ? code.trim().toUpperCase() : '';
+  const supplied = typeof code === 'string' ? code.trim() : '';
   if (!supplied) {
     return NextResponse.json({ requiresTwoFactor: true, error: 'Enter the 6-digit code from your authenticator app.' }, { status: 401 });
   }
@@ -36,9 +35,8 @@ async function requireSecondFactor(memberId: string, email: string, code: unknow
   const limited = await enforceDistributedRateLimitByKey(`login-2fa:${memberId}`, { windowMs: 5 * 60 * 1000, max: 5 });
   if (limited) return limited;
 
-  const totpOk = verifyTotpToken(supplied, decryptSecret(member.twoFactorSecret));
-  const recoveryOk = !totpOk && Boolean(member.recoveryCodes?.includes(supplied));
-  if (!totpOk && !recoveryOk) {
+  const result = checkSecondFactor(member, supplied);
+  if (!result.ok) {
     await Database.addAuditLog({
       actor: { id: member.id, name: member.name, email, username: email.split('@')[0], ip },
       action: 'auth.2fa_failed',
@@ -48,9 +46,7 @@ async function requireSecondFactor(memberId: string, email: string, code: unknow
     });
     return NextResponse.json({ requiresTwoFactor: true, error: 'Invalid authentication code.' }, { status: 401 });
   }
-  if (recoveryOk) {
-    await Database.updateTeamMember(member.id, { recoveryCodes: (member.recoveryCodes || []).filter((c) => c !== supplied) });
-  }
+  await Database.updateTeamMember(member.id, result.updates); // records the used time step / spends the recovery code
   return null;
 }
 
@@ -116,6 +112,10 @@ async function POSTHandler(req: Request) {
 
     // Demo / Quick Preview access for seamless mobile testing
     if (mode === 'demo_preview') {
+      // This hands a session for the FIRST workspace in the database to anyone who asks. Never on a live deployment.
+      if (process.env.NODE_ENV === 'production' && process.env.ALLOW_DEMO_PREVIEW !== 'true') {
+        return NextResponse.json({ error: 'Demo access is not available.' }, { status: 403 });
+      }
       const state = await Database.getState();
       const ws = (state.workspaces && state.workspaces[0]) || {
         id: 'default-workspace',
@@ -151,7 +151,7 @@ async function POSTHandler(req: Request) {
       const stop = await requireSecondFactor(member.id, member.email || '', body?.twoFactorCode, ip);
       if (stop) return stop;
 
-      const sessionToken = generateSessionToken(member.role, member.id, pending.workspaceId);
+      const sessionToken = generateSessionToken(member.role, member.id, pending.workspaceId, undefined, member.sessionVersion || 0);
       updateLogContext({ userId: member.id, workspaceId: pending.workspaceId, role: member.role });
       await Database.addAuditLog({
         actor: { id: member.id, name: member.name, email: member.email, ip },
@@ -263,7 +263,9 @@ async function POSTHandler(req: Request) {
         const sessionToken = generateSessionToken(
           tenantMatch.member.role,
           tenantMatch.member.id,
-          tenantMatch.workspace.id
+          tenantMatch.workspace.id,
+          undefined,
+          tenantMatch.member.sessionVersion || 0
         );
         const cookieHeader = createSessionCookieHeader(sessionToken);
         updateLogContext({ userId: tenantMatch.member.id, workspaceId: tenantMatch.workspace.id, role: tenantMatch.member.role });
@@ -321,7 +323,7 @@ async function POSTHandler(req: Request) {
       if (stop2) return stop2;
 
       const staffWs = staffMember.workspaceId || 'default-workspace';
-      const sessionToken = generateSessionToken(staffMember.role, staffMember.id, staffWs);
+      const sessionToken = generateSessionToken(staffMember.role, staffMember.id, staffWs, undefined, staffMember.sessionVersion || 0);
       const cookieHeader = createSessionCookieHeader(sessionToken);
       updateLogContext({ userId: staffMember.id, workspaceId: staffWs, role: staffMember.role });
 
@@ -369,8 +371,14 @@ async function POSTHandler(req: Request) {
   }
 }
 
-async function DELETEHandler() {
+async function DELETEHandler(req: Request) {
   const clearHeader = createClearCookieHeader();
+  if (new URL(req.url).searchParams.get('all') === '1') {
+    const ctx = await getAuthContext(req);
+    if (ctx.authenticated && !ctx.isMasterAdmin) {
+      await Database.bumpSessionVersion(ctx.memberId);
+    }
+  }
   return NextResponse.json(
     { success: true, message: 'Logged out successfully' },
     {

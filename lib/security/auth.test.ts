@@ -1,3 +1,4 @@
+import { tokenFor } from '@/lib/security/test-session';
 import { describe, it, expect } from 'vitest';
 import {
   getAdminKey,
@@ -86,7 +87,7 @@ describe('Security Auth Module', () => {
   });
 
   it('getAuthContext should resolve authenticated context with workspaceId', async () => {
-    const token = generateSessionToken('admin', 'staff-99', 'ws-corp-1');
+    const token = await tokenFor('admin', 'staff-99', 'ws-corp-1');
     const req = new Request('http://localhost/api/test', {
       headers: { authorization: `Bearer ${token}` },
     });

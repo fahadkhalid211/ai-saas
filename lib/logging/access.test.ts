@@ -1,3 +1,4 @@
+import { tokenFor } from '@/lib/security/test-session';
 import { describe, it, expect, beforeAll, vi } from 'vitest';
 
 const queryLogs = vi.fn(async () => ({ entries: [], nextCursor: null }));
@@ -40,14 +41,14 @@ describe('the log is visible to the master admin only', () => {
 
   it('answers every customer role with 404, so the endpoints look like they do not exist', async () => {
     for (const role of ['owner', 'admin', 'support_agent', 'billing_manager', 'viewer']) {
-      const token = generateSessionToken(role, 'tm_customer', 'ws_customer');
+      const token = await tokenFor(role, 'tm_customer', 'ws_customer');
       for (const p of ENDPOINTS) {
         const res = await (await handler(p))(call(p, { cookie: `kortex_admin_session=${token}` }));
         expect(res.status, `${role} ${p}`).toBe(404);
       }
     }
     // a bearer session token of a customer is no better
-    const token = generateSessionToken('owner', 'tm_customer', 'ws_customer');
+    const token = await tokenFor('owner', 'tm_customer', 'ws_customer');
     expect((await (await handler(ENDPOINTS[0]))(call(ENDPOINTS[0], { authorization: `Bearer ${token}` }))).status).toBe(404);
     expect(queryLogs).not.toHaveBeenCalled();
   });
@@ -59,7 +60,7 @@ describe('the log is visible to the master admin only', () => {
   });
 
   it('lets the master admin in (session from /master, or the master key as a bearer token)', async () => {
-    const session = generateSessionToken('admin', 'master-admin', '*', true);
+    const session = await tokenFor('admin', 'master-admin', '*', true);
     const viaCookie = await (await handler(ENDPOINTS[0]))(call(`${ENDPOINTS[0]}?levels=error&limit=10`, { cookie: `kortex_admin_session=${session}` }));
     expect(viaCookie.status).toBe(200);
     expect(await viaCookie.json()).toEqual({ entries: [], nextCursor: null });

@@ -81,3 +81,14 @@ export function generateRecoveryCodes(count = 8): string[] {
   }
   return codes;
 }
+
+/** The 30-second time step a valid token belongs to (within +-window), or null. Lets callers refuse a code that was already used. */
+export function findTotpStep(token: string, secret: string, window = 1): number | null {
+  const normalized = (token || '').trim();
+  if (normalized.length !== 6) return null;
+  const nowStep = Math.floor(Date.now() / 1000 / 30);
+  for (let w = -window; w <= window; w++) {
+    if (generateTotpCode(secret, 30, w * 30) === normalized) return nowStep + w;
+  }
+  return null;
+}

@@ -17,6 +17,7 @@ export default function MasterLoginPage() {
   const [email, setEmail] = useState('');
   const [key, setKey] = useState('');
   const [showKey, setShowKey] = useState(false);
+  const [code, setCode] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -29,7 +30,7 @@ export default function MasterLoginPage() {
       const res = await fetch('/api/master/auth', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email.trim(), key: key.trim() }),
+        body: JSON.stringify({ email: email.trim(), key: key.trim(), code: code.trim() }),
       });
       const data = await res.json().catch(() => ({}));
       if (res.ok && data.success) {
@@ -68,6 +69,10 @@ export default function MasterLoginPage() {
               {showKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </button>
           </div>
+        </div>
+        <div className="space-y-1">
+          <label htmlFor="m-code" className="text-xs font-semibold text-slate-700 dark:text-slate-300">Authenticator code <span className="font-normal text-slate-400">(if enabled)</span></label>
+          <input id="m-code" inputMode="numeric" autoComplete="one-time-code" value={code} onChange={(e) => setCode(e.target.value)} className={`${inputClass} font-mono`} />
         </div>
         <button type="submit" disabled={busy || !email.trim() || !key.trim()} className="w-full py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white text-xs font-semibold flex items-center justify-center gap-2 cursor-pointer">
           {busy ? <RefreshCw className="h-3.5 w-3.5 animate-spin" /> : <KeyRound className="h-3.5 w-3.5" />}

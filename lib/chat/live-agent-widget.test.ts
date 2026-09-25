@@ -1,3 +1,4 @@
+import { tokenFor } from '@/lib/security/test-session';
 import { describe, it, expect, beforeAll } from 'vitest';
 import { Database } from '@/lib/db';
 import { generateConversationAccessToken, generateSessionToken } from '@/lib/security/auth';
@@ -13,7 +14,7 @@ describe('Live Agent to Widget communication', () => {
     const assistants = await Database.getAssistants();
     const a = assistants[0];
     assistantId = a.id;
-    adminSession = generateSessionToken('admin', 'admin-user', a.workspaceId || 'default-workspace');
+    adminSession = await tokenFor('admin', 'admin-user', a.workspaceId || 'default-workspace');
 
     // Create a conversation as visitor
     const conv = await Database.getOrCreateConversation(assistantId, 'vis_test_123');

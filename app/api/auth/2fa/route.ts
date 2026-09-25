@@ -3,13 +3,15 @@ import { getMasterEmail } from '@/lib/security/master';
 import { Database } from '@/lib/db';
 import { verifyAdminRequest, withAdminAuth, getAuthContext } from '@/lib/security/auth';
 import { enforceDistributedRateLimitByKey } from '@/lib/security/rate-limit-redis';
-import { encryptSecret, decryptSecret } from '@/lib/security/crypto';
+import { encryptSecret } from '@/lib/security/crypto';
+import { checkSecondFactor, hashRecoveryCodes } from '@/lib/security/two-factor';
 import {
   generateBase32Secret,
   generateOtpAuthUrl,
   generateRecoveryCodes,
   verifyTotpToken,
 } from '@/lib/security/totp';
+import { createSessionCookieHeader, generateSessionToken } from '@/lib/security/auth';
 import { logged } from '@/lib/logging/route';
 
 export const dynamic = 'force-dynamic';
@@ -87,8 +89,11 @@ async function POSTHandler(req: NextRequest) {
       await Database.updateTeamMember(targetMember.id, {
         twoFactorEnabled: true,
         twoFactorSecret: encryptSecret(secret),
-        recoveryCodes: body.recoveryCodes || [],
+        recoveryCodes: hashRecoveryCodes(body.recoveryCodes),
+        twoFactorLastStep: undefined,
       });
+      // changing the second factor ends every other session; this one continues
+      const enabledVersion = await Database.bumpSessionVersion(targetMember.id);
 
       await Database.addAuditLog({
         actor: { id: targetMember.id, name: targetMember.name, email: targetMember.email, ip: req.headers.get('x-forwarded-for') || '127.0.0.1' },
@@ -104,7 +109,9 @@ async function POSTHandler(req: NextRequest) {
         type: 'reminder_dispatched',
       });
 
-      return NextResponse.json({ success: true, message: 'Two-factor authentication enabled successfully' });
+      const res = NextResponse.json({ success: true, message: 'Two-factor authentication enabled successfully' });
+      res.headers.append('Set-Cookie', createSessionCookieHeader(generateSessionToken(targetMember.role, targetMember.id, targetMember.workspaceId, undefined, enabledVersion)));
+      return res;
     }
 
     if (action === 'disable') {
@@ -116,8 +123,8 @@ async function POSTHandler(req: NextRequest) {
         }
         const limited = await enforceDistributedRateLimitByKey(`2fa-disable:${targetMember.id}`, { windowMs: 5 * 60 * 1000, max: 5 });
         if (limited) return limited;
-        const ok = verifyTotpToken(supplied, decryptSecret(targetMember.twoFactorSecret)) || Boolean(targetMember.recoveryCodes?.includes(supplied));
-        if (!ok) {
+        const check = checkSecondFactor(targetMember, supplied);
+        if (!check.ok) {
           return NextResponse.json({ error: 'Invalid authentication code.', codeRequired: true }, { status: 400 });
         }
       }
@@ -125,7 +132,9 @@ async function POSTHandler(req: NextRequest) {
         twoFactorEnabled: false,
         twoFactorSecret: undefined,
         recoveryCodes: undefined,
+        twoFactorLastStep: undefined,
       });
+      const disabledVersion = await Database.bumpSessionVersion(targetMember.id);
 
       await Database.addAuditLog({
         actor: { id: targetMember.id, name: targetMember.name, email: targetMember.email, ip: req.headers.get('x-forwarded-for') || '127.0.0.1' },
@@ -141,7 +150,9 @@ async function POSTHandler(req: NextRequest) {
         type: 'reminder_dispatched',
       });
 
-      return NextResponse.json({ success: true, message: 'Two-factor authentication disabled' });
+      const res = NextResponse.json({ success: true, message: 'Two-factor authentication disabled' });
+      res.headers.append('Set-Cookie', createSessionCookieHeader(generateSessionToken(targetMember.role, targetMember.id, targetMember.workspaceId, undefined, disabledVersion)));
+      return res;
     }
 
     return NextResponse.json({ error: 'Unknown action' }, { status: 400 });

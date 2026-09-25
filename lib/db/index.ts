@@ -362,6 +362,10 @@ export interface TeamMemberData {
   twoFactorEnabled?: boolean;
   twoFactorSecret?: string;
   recoveryCodes?: string[];
+  /** Last authenticator time step accepted at sign-in (a code cannot be used twice). */
+  twoFactorLastStep?: number;
+  /** Raised to end every existing session of this member (password change, 2FA change, sign out everywhere). */
+  sessionVersion?: number;
   title?: string;
   avatarUrl?: string;
   createdAt: string;
@@ -376,7 +380,7 @@ export interface TeamMemberData {
  */
 export function sanitizeTeamMember<T extends Partial<TeamMemberData> | null | undefined>(member: T): T {
   if (!member) return member;
-  const { password, accessCode, twoFactorSecret, recoveryCodes, ...safe } = member as TeamMemberData;
+  const { password, accessCode, twoFactorSecret, recoveryCodes, twoFactorLastStep, sessionVersion, ...safe } = member as TeamMemberData;
   return safe as T;
 }
 
@@ -2916,6 +2920,22 @@ export class Database {
     return member;
   }
 
+  /** Plain lookup: unlike getTeamMemberById it never invents a member. Used to check a session against the account it names. */
+  static async findTeamMember(id: string): Promise<TeamMemberData | null> {
+    const state = await ensureInitialized();
+    return (state.teamMembers || []).find((m) => m.id === id) || null;
+  }
+
+  /** Ends every existing session of a member and returns the version a fresh session must carry. */
+  static async bumpSessionVersion(id: string): Promise<number> {
+    const state = await ensureInitialized();
+    const member = (state.teamMembers || []).find((m) => m.id === id);
+    if (!member) return 0;
+    member.sessionVersion = (member.sessionVersion || 0) + 1;
+    await saveState(state);
+    return member.sessionVersion;
+  }
+
   static async deleteTeamMember(id: string): Promise<boolean> {
     const state = await ensureInitialized();
     if (!state.teamMembers) return false;
@@ -3086,6 +3106,7 @@ export class Database {
     if (updates.password !== undefined && updates.password.trim()) {
       const hashed = hashPassword(updates.password.trim());
       member.password = hashed;
+      member.sessionVersion = (member.sessionVersion || 0) + 1;
       const ws = state.workspaces.find((w) => w.id === member!.workspaceId);
       if (ws && (ws as any).ownerEmail && (ws as any).ownerEmail.toLowerCase() === member.email.toLowerCase()) {
         (ws as any).ownerPassword = hashed;

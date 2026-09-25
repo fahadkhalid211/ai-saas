@@ -1,3 +1,4 @@
+import { tokenFor } from '@/lib/security/test-session';
 import { describe, it, expect, beforeAll, beforeEach, vi } from 'vitest';
 
 const persisted: any[] = [];
@@ -52,7 +53,7 @@ describe('logged()', () => {
 
   it('records who made the request (verified session only)', async () => {
     const handler = logged(async () => NextResponse.json({ ok: true }), { route: '/api/x' });
-    const token = generateSessionToken('owner', 'tm_abc', 'ws_123');
+    const token = await tokenFor('owner', 'tm_abc', 'ws_123');
     await handler(req('/api/x', { headers: { cookie: `kortex_admin_session=${token}` } }));
     // a forged token is not trusted for identity
     await handler(req('/api/x', { headers: { cookie: 'kortex_admin_session=eyJyb2xlIjoib3duZXIifQ.deadbeef' } }));

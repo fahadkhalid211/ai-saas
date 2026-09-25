@@ -188,7 +188,7 @@ export async function authenticateOAuthUser(
     return { member, workspace, token: '', cookieHeader: createPendingTwoFactorCookie(member.id, workspace.id), isNewUser, twoFactorRequired: true };
   }
 
-  const sessionToken = generateSessionToken(member.role, member.id, workspace.id);
+  const sessionToken = generateSessionToken(member.role, member.id, workspace.id, undefined, member.sessionVersion || 0);
   const cookieHeader = createSessionCookieHeader(sessionToken);
   updateLogContext({ userId: member.id, workspaceId: workspace.id, role: member.role });
 

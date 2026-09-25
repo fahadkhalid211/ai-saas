@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getMasterEmail } from '@/lib/security/master';
 import { Database, TeamMemberData } from '@/lib/db';
-import { getAuthContext, getAdminKey } from '@/lib/security/auth';
+import { getAuthContext, getAdminKey, generateSessionToken, createSessionCookieHeader } from '@/lib/security/auth';
 import { getClientIp } from '@/lib/security/rate-limit';
 import { verifyPassword, timingSafeStringEqual } from '@/lib/security/password';
 import { logged } from '@/lib/logging/route';
@@ -126,7 +126,7 @@ async function PATCHHandler(req: Request) {
       },
     });
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       success: true,
       message: 'Profile updated successfully',
       member: {
@@ -142,6 +142,11 @@ async function PATCHHandler(req: Request) {
         updatedAt: updated.updatedAt,
       },
     });
+    if (newPassword && !ctx.isMasterAdmin) {
+      // a new password ended every other session; keep this one signed in
+      response.headers.append('Set-Cookie', createSessionCookieHeader(generateSessionToken(updated.role, updated.id, updated.workspaceId, undefined, updated.sessionVersion || 0)));
+    }
+    return response;
   } catch (error: any) {
     return NextResponse.json({ error: error?.message || 'Failed to update profile' }, { status: 500 });
   }

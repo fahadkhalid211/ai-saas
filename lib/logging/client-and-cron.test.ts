@@ -1,3 +1,4 @@
+import { tokenFor } from '@/lib/security/test-session';
 import { describe, it, expect, beforeAll, beforeEach, vi } from 'vitest';
 
 const persisted: any[] = [];
@@ -39,7 +40,7 @@ beforeEach(() => {
 describe('browser error reports', () => {
   it('records a report with the server-verified identity, never the one claimed in the payload', async () => {
     const { POST } = await import('../../app/api/log/client/route');
-    const token = generateSessionToken('owner', 'tm_real', 'ws_real');
+    const token = await tokenFor('owner', 'tm_real', 'ws_real');
     const res = await POST(
       post(
         { kind: 'error', message: 'Cannot read properties of undefined', stack: 'at render (app.js:1:2)', page: '/dashboard', userId: 'tm_FAKE', workspaceId: 'ws_FAKE', line: 10 },

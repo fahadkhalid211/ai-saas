@@ -7,6 +7,7 @@ import { getMasterEmail } from '@/lib/security/master';
 import { Database } from '@/lib/db';
 import { updateLogContext } from '@/lib/logging/context';
 import { logged } from '@/lib/logging/route';
+import { verifyTotpToken } from '@/lib/security/totp';
 
 export const dynamic = 'force-dynamic';
 
@@ -32,7 +33,10 @@ async function POSTHandler(req: Request) {
     // Evaluate both checks before deciding, so timing does not reveal which one failed.
     const emailOk = timingSafeStringEqual(email, getMasterEmail());
     const keyOk = timingSafeStringEqual(key, getAdminKey());
-    if (!emailOk || !keyOk) {
+    // Optional second factor: set MASTER_TOTP_SECRET (a base32 authenticator secret) and the owner sign-in also needs the current code.
+    const totpSecret = (process.env.MASTER_TOTP_SECRET || '').trim();
+    const codeOk = !totpSecret || verifyTotpToken(typeof body?.code === 'string' ? body.code.trim() : '', totpSecret);
+    if (!emailOk || !keyOk || !codeOk) {
       await Database.addAuditLog({
         actor: { id: 'unknown', name: 'Unknown', ip },
         action: 'auth.master_admin_login_failed',

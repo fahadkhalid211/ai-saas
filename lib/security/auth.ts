@@ -77,7 +77,8 @@ export function generateSessionToken(
   role: string = 'admin',
   memberId?: string,
   workspaceId: string = 'default-workspace',
-  isMasterAdmin?: boolean
+  isMasterAdmin?: boolean,
+  sessionVersion: number = 0
 ): string {
   const masterKey = getAdminKey();
   const computedIsMaster =
@@ -90,6 +91,7 @@ export function generateSessionToken(
     memberId: memberId || 'admin',
     workspaceId: workspaceId || 'default-workspace',
     isMasterAdmin: computedIsMaster,
+    sv: sessionVersion || 0,
     iat: Date.now(),
     exp: Date.now() + 7 * 24 * 60 * 60 * 1000,
   };
@@ -146,6 +148,7 @@ export function getSessionPayload(token: string): {
   memberId: string;
   workspaceId: string;
   isMasterAdmin: boolean;
+  sessionVersion: number;
 } | null {
   if (!token || typeof token !== 'string') return null;
   const parts = token.split('.');
@@ -163,6 +166,7 @@ export function getSessionPayload(token: string): {
       memberId: payload.memberId || 'admin',
       workspaceId: payload.workspaceId || 'default-workspace',
       isMasterAdmin: isMaster,
+      sessionVersion: Number(payload.sv) || 0,
     };
   } catch {
     return null;
@@ -175,6 +179,32 @@ export interface AuthContext {
   memberId: string;
   workspaceId: string;
   isMasterAdmin: boolean;
+}
+
+const GUEST: AuthContext = { authenticated: false, role: 'guest', memberId: '', workspaceId: 'default-workspace', isMasterAdmin: false };
+
+/** Legacy/placeholder identities that have no team-member row of their own. */
+const NON_MEMBER_IDS = new Set(['admin', 'master-admin', 'tm_owner', 'demo_user']);
+
+/**
+ * A valid signature is not enough: the account must still exist and the session must not have been ended.
+ * The role and workspace come from the account as it is now, so a demotion or removal takes effect at once
+ * instead of when the 7-day token runs out.
+ */
+async function resolveSession(session: NonNullable<ReturnType<typeof getSessionPayload>>): Promise<AuthContext> {
+  if (session.isMasterAdmin) {
+    return { authenticated: true, role: session.role, memberId: session.memberId, workspaceId: session.workspaceId, isMasterAdmin: true };
+  }
+  const member = await Database.findTeamMember(session.memberId);
+  if (!member) {
+    if (NON_MEMBER_IDS.has(session.memberId)) {
+      return { authenticated: true, role: session.role, memberId: session.memberId, workspaceId: session.workspaceId, isMasterAdmin: false };
+    }
+    return GUEST; // the account was removed
+  }
+  if (member.status && member.status !== 'active') return GUEST;
+  if ((member.sessionVersion || 0) !== session.sessionVersion) return GUEST; // signed out everywhere / password or 2FA changed
+  return { authenticated: true, role: member.role, memberId: member.id, workspaceId: member.workspaceId || session.workspaceId, isMasterAdmin: false };
 }
 
 /**
@@ -191,15 +221,7 @@ export async function getAuthContext(req: Request): Promise<AuthContext> {
       return { authenticated: true, role: 'admin', memberId: 'master-admin', workspaceId: '*', isMasterAdmin: true };
     }
     const session = getSessionPayload(token);
-    if (session) {
-      return {
-        authenticated: true,
-        role: session.role,
-        memberId: session.memberId,
-        workspaceId: session.workspaceId,
-        isMasterAdmin: session.isMasterAdmin,
-      };
-    }
+    if (session) return resolveSession(session);
   }
 
   // 2. Check Cookie header
@@ -214,19 +236,11 @@ export async function getAuthContext(req: Request): Promise<AuthContext> {
     const sessionCookie = cookies['kortex_admin_session'];
     if (sessionCookie) {
       const session = getSessionPayload(sessionCookie);
-      if (session) {
-        return {
-          authenticated: true,
-          role: session.role,
-          memberId: session.memberId,
-          workspaceId: session.workspaceId,
-          isMasterAdmin: session.isMasterAdmin,
-        };
-      }
+      if (session) return resolveSession(session);
     }
   }
 
-  return { authenticated: false, role: 'guest', memberId: '', workspaceId: 'default-workspace', isMasterAdmin: false };
+  return GUEST;
 }
 
 /**

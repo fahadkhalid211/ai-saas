@@ -1,3 +1,4 @@
+import { tokenFor } from '@/lib/security/test-session';
 import { describe, it, expect } from 'vitest';
 import { Database } from '../db';
 import {
@@ -225,7 +226,7 @@ describe('Multi-Tenant Isolation & BOLA/IDOR Security', () => {
     });
 
     // Tenant B session token
-    const tokenB = generateSessionToken('admin', 'user-beta', wsB);
+    const tokenB = await tokenFor('admin', 'user-beta', wsB);
     const authHeaders = { authorization: `Bearer ${tokenB}` };
 
     // 1. GET attempt from Tenant B
@@ -649,7 +650,7 @@ describe('Multi-Tenant Isolation & BOLA/IDOR Security', () => {
     const query = await Database.recordUnansweredQuery(botA.id, 'How much is shipping?');
 
     // Tenant B session token
-    const tokenB = generateSessionToken('admin', 'user-beta', wsB);
+    const tokenB = await tokenFor('admin', 'user-beta', wsB);
     const authHeaders = { authorization: `Bearer ${tokenB}` };
 
     // Tenant B attempts to fetch unanswered queries of botA
@@ -683,7 +684,7 @@ describe('Multi-Tenant Isolation & BOLA/IDOR Security', () => {
     });
 
     // Tenant B session token
-    const tokenB = generateSessionToken('admin', 'user-beta', wsB);
+    const tokenB = await tokenFor('admin', 'user-beta', wsB);
     const authHeaders = { authorization: `Bearer ${tokenB}` };
 
     const markReq = new Request('http://localhost/api/notifications', {
@@ -729,7 +730,7 @@ describe('Multi-Tenant Isolation & BOLA/IDOR Security', () => {
       workspaceId: wsA,
     });
 
-    const tokenA = generateSessionToken('admin', 'user-alpha', wsA);
+    const tokenA = await tokenFor('admin', 'user-alpha', wsA);
     const authHeaders = { authorization: `Bearer ${tokenA}`, 'content-type': 'application/json' };
 
     // Tenant A attempts to overwrite workspaceId and id
