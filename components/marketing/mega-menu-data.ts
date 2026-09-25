@@ -47,6 +47,8 @@ export interface MegaColumn {
 }
 
 export interface MegaFeature {
+  /** A two-line sample chat shown at the top of the card. */
+  preview?: { visitor: string; assistant: string };
   eyebrow: string;
   title: string;
   body: string;
@@ -88,9 +90,10 @@ export const MEGA_MENUS: MegaMenu[] = [
       },
     ],
     feature: {
+      preview: { visitor: 'Any openings tomorrow afternoon?', assistant: 'Yes, 3:15 PM is free. Booked for you.' },
       eyebrow: '14-day free trial',
       title: 'See it answer your visitors',
-      body: 'Add your services and prices, then watch the assistant book a real appointment. Every Growth feature for 14 days.',
+      body: 'Add your prices and services, then watch it book a real appointment.',
       cta: { label: 'Start your free trial', href: '/login?mode=register' },
       secondary: { label: 'View pricing', href: '/pricing' },
     },
@@ -121,9 +124,10 @@ export const MEGA_MENUS: MegaMenu[] = [
       },
     ],
     feature: {
+      preview: { visitor: 'Do you take walk-ins on Saturday?', assistant: 'Yes, from 10 to 4. Want a reserved slot instead?' },
       eyebrow: 'Built for service businesses',
       title: 'Find the setup for your industry',
-      body: 'See a sample conversation, the questions it handles and how bookings land in your calendar.',
+      body: 'See a sample chat and how bookings reach your calendar.',
       cta: { label: 'Explore solutions', href: '/use-case' },
       secondary: { label: 'Talk to us', href: '/support/contact' },
     },
@@ -156,9 +160,10 @@ export const MEGA_MENUS: MegaMenu[] = [
       },
     ],
     feature: {
+      preview: { visitor: 'How do I connect my own OpenAI key?', assistant: 'Settings, AI, paste the key. Guide below.' },
       eyebrow: 'Need a hand?',
       title: 'Open a support ticket',
-      body: 'Tell us what you need. Every request gets a ticket you can follow, and we answer by email.',
+      body: 'Every request gets a ticket you can follow. We reply by email.',
       cta: { label: 'Contact support', href: '/support/contact' },
       secondary: { label: 'Read the guides', href: '/blog' },
     },

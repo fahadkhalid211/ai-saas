@@ -9,6 +9,9 @@ export interface OrbitItem {
   note?: string;
   /** Inner items sit on a smaller ellipse. Everything else sits on the outer one. */
   ring?: 'inner' | 'outer';
+  /** A glyph for the round badge (instead of the label's first letter) and the colour behind it. */
+  icon?: ReactNode;
+  iconBg?: string;
 }
 
 const clamp = (n: number, a: number, b: number) => Math.min(b, Math.max(a, n));
@@ -117,8 +120,8 @@ export function OrbitStage({
               {items.map((it, i) => (
                 <li key={it.id} className="mk-orbit-item" style={place(it, i)}>
                   <span className={`mk-orbit-pill ${it.ring === 'inner' ? 'is-inner' : ''}`} data-i={i % 5} tabIndex={0}>
-                    <span className="mk-orbit-badge" aria-hidden="true">
-                      {it.label[0]}
+                    <span className={`mk-orbit-badge ${it.icon ? 'has-icon' : ''}`} style={it.iconBg ? { background: it.iconBg } : undefined} aria-hidden="true">
+                      {it.icon ?? it.label[0]}
                     </span>
                     <span>
                       <b>{it.label}</b>

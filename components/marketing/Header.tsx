@@ -47,6 +47,12 @@ function MegaPanel({ menu, onNavigate, id }: { menu: MegaMenu; onNavigate: () =>
 
         <aside className="mk-mega-feature" aria-label={menu.feature.title}>
           <span className="mk-mega-glow" aria-hidden="true" />
+          {menu.feature.preview ? (
+            <div className="mk-mega-chat" aria-hidden="true">
+              <span className="mk-mega-bubble is-visitor">{menu.feature.preview.visitor}</span>
+              <span className="mk-mega-bubble is-bot">{menu.feature.preview.assistant}</span>
+            </div>
+          ) : null}
           <p className="mk-mega-feature-eyebrow">{menu.feature.eyebrow}</p>
           <p className="mk-mega-feature-title">{menu.feature.title}</p>
           <p className="mk-mega-feature-body">{menu.feature.body}</p>

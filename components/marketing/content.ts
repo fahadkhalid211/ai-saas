@@ -226,10 +226,12 @@ export const INTEGRATIONS = {
   items: [
     { id: 'whatsapp', label: 'WhatsApp', note: 'Answer customers in WhatsApp' },
     { id: 'telegram', label: 'Telegram', note: 'Answer customers in Telegram' },
-    { id: 'stripe', label: 'Stripe', note: 'Subscription billing' },
+    { id: 'slack', label: 'Slack', note: 'New leads posted to a channel' },
+    { id: 'sheets', label: 'Google Sheets', note: 'Every lead added as a row' },
+    { id: 'voice', label: 'Phone calls', note: 'Answer calls with the same knowledge' },
     { id: 'email', label: 'Email (SMTP)', note: 'Booking confirmations and reminders' },
-    { id: 'calendar', label: 'Calendar feed', note: 'Subscribe from any calendar app' },
-    { id: 'webhooks', label: 'Signed webhooks', note: 'Send events to your systems' },
+    { id: 'calendar', label: 'Calendar feed', note: 'Subscribe from Google, Apple or Outlook' },
+    { id: 'webhooks', label: 'Webhooks', note: 'Zapier, Make or your own systems' },
   ],
 };
 

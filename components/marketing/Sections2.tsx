@@ -6,6 +6,7 @@ import { COMPARE, DIAGONAL, PATHS, STORIES } from './content-extra';
 import { Check, Eyebrow, Reveal } from './ui';
 import { FeatureVisual } from './mocks';
 import { OrbitStage } from './OrbitStage';
+import { ORBIT_ICONS } from './BrandIcons';
 import { usePrefersReducedMotion } from './hooks';
 
 /* ------------------------------ Diagonal scroll benefits ------------------------------ */
@@ -303,10 +304,10 @@ export function Compare() {
 
 const ORBIT = [
   ...INTEGRATIONS.items.map((i) => ({ id: i.id, label: i.label, note: i.note })),
-  { id: 'provider', label: 'Your AI provider', note: 'Bring your own key' },
+  { id: 'provider', label: 'AI providers', note: 'OpenAI, Claude, Gemini, Groq: your key' },
   { id: 'urls', label: 'Web pages', note: 'Index a site by URL' },
   { id: 'youtube', label: 'YouTube', note: 'Video transcripts as knowledge' },
-];
+].map((i) => ({ ...i, icon: ORBIT_ICONS[i.id]?.icon, iconBg: ORBIT_ICONS[i.id]?.bg }));
 
 export function IntegrationsStage() {
   return (

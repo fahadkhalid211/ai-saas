@@ -169,6 +169,8 @@
 .mk-orbit-pill:hover small, .mk-orbit-pill:focus-visible small { color: #2d4a20; }
 .mk-orbit-pill b { display: block; font-size: 0.875rem; }
 .mk-orbit-pill small { display: block; font-size: 0.7188rem; color: #a9c4b4; }
+.mk-orbit-badge.has-icon { border: 1.5px solid rgba(255, 254, 235, 0.35); }
+.mk-orbit-badge.has-icon svg, .mk-orbit-badge.has-icon > svg { display: block; }
 .mk-orbit-badge { display: grid; place-items: center; width: 2.25rem; height: 2.25rem; border-radius: 50%; font-family: var(--mk-serif); font-size: 1.2rem; color: var(--mk-deep); background: var(--mk-lav); flex: none; }
 .mk-orbit-pill[data-i="1"] .mk-orbit-badge { background: var(--mk-pink); }
 .mk-orbit-pill[data-i="2"] .mk-orbit-badge { background: var(--mk-amber); }
