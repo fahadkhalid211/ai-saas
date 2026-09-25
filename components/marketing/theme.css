@@ -11,6 +11,12 @@
 .mk-btn-primary:disabled { background: var(--mk-lime-soft); opacity: 1; box-shadow: none; }
 .mk-btn-ghost { background: var(--mk-lav); color: var(--mk-ink); }
 .mk-btn-ghost:hover { background: var(--mk-lav); color: var(--mk-ink); transform: translateY(-2px); }
+.mk-btn-blue { background: #2563eb !important; color: #ffffff !important; border-color: var(--mk-ink) !important; box-shadow: 0 0.1875rem 0 var(--mk-ink) !important; }
+.mk-btn-blue:hover { background: #1d4ed8 !important; color: #ffffff !important; transform: translateY(-2px); box-shadow: 0 0.3125rem 0 var(--mk-ink) !important; }
+.mk-btn-blue:active { transform: translateY(1px); box-shadow: 0 1px 0 var(--mk-ink) !important; }
+.mk-btn-pink { background: #ec4899 !important; color: #ffffff !important; border-color: var(--mk-ink) !important; box-shadow: 0 0.1875rem 0 var(--mk-ink) !important; }
+.mk-btn-pink:hover { background: #db2777 !important; color: #ffffff !important; transform: translateY(-2px); box-shadow: 0 0.3125rem 0 var(--mk-ink) !important; }
+.mk-btn-pink:active { transform: translateY(1px); box-shadow: 0 1px 0 var(--mk-ink) !important; }
 
 /* Headings */
 .mk-h1, .mk-h2, .mk-h3 { font-weight: 400; letter-spacing: -0.03em; }

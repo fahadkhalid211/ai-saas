@@ -62,12 +62,12 @@ export const NAV: NavLink[] = [
 export const HERO = {
   eyebrow: 'Website assistant for service businesses',
   title: ['Answer every visitor.', 'Book the ones who are ready.'],
-  body: 'Crescelo reads your services, prices and policies, then talks to visitors on your website. It answers from what you have written, books real appointments, and passes the conversation to your team when it should.',
-  primaryCta: 'Start your 14-day free trial',
+  body: 'Your website gets questions at 10pm. Most go unanswered until morning — and by then, the person has already booked somewhere else. Crescelo answers instantly from your own content, books real appointments into your calendar, and alerts your team when a human is needed.',
+  primaryCta: 'Start free — no card today',
   secondaryCta: 'See how it works',
   trust: [
-    'Answers only from your content',
-    'Bring your own AI provider key',
+    'Answers only from your content — no hallucinations',
+    'Bring your own AI key — zero markup',
     'Human takeover in one click',
   ],
 };
@@ -97,39 +97,39 @@ export const LOGO_STRIP = {
 
 export const STORY = {
   eyebrow: 'The problem',
-  title: 'Most website visitors leave without saying a word.',
+  title: 'Your website is open 24 hours. Your team is not.',
   before: [
     {
-      title: 'Questions wait for office hours',
-      body: 'Someone asks about pricing at 9pm. By the time you reply, they have booked with whoever answered first.',
+      title: 'Questions arrive after hours',
+      body: 'A prospect asks about pricing at 9pm. You reply the next morning. They booked with whoever answered first.',
     },
     {
-      title: 'Bookings live in a back-and-forth',
-      body: 'Finding a slot over email takes several messages. Each one is a chance for the person to drop off.',
+      title: 'Bookings get stuck in back-and-forth',
+      body: '"What time works for you?" turns into five emails. Every exchange is a chance for the person to lose interest.',
     },
     {
-      title: 'The same answers, typed again and again',
-      body: 'Opening hours, deposits, service areas. Your team repeats them all week instead of doing the work.',
+      title: 'Your team answers the same ten questions, daily',
+      body: 'Opening hours, deposit policy, service areas. Good people spending good time on questions that could be answered automatically.',
     },
     {
-      title: 'Details get lost between chats and inboxes',
-      body: 'Questions, names and phone numbers end up scattered across messages instead of in one place your team can act on.',
+      title: 'Leads fall through the cracks',
+      body: 'Names and numbers end up scattered across Instagram DMs, missed calls and email threads — nowhere anyone can act on them.',
     },
   ],
-  afterEyebrow: 'The approach',
-  afterTitle: 'A front desk that never closes, and knows when to step aside.',
+  afterEyebrow: 'The fix',
+  afterTitle: 'A front desk that answers at 2am and knows exactly when to get you involved.',
   after: [
     {
-      title: 'It answers from your own material',
-      body: 'Upload documents, paste pages, add a website URL. Replies are grounded in that content, and it says so when it does not know.',
+      title: 'Answers from your own content',
+      body: 'Upload your documents, paste your web pages, add a YouTube link. Every reply is grounded in what you wrote — and it says so when it does not know.',
     },
     {
-      title: 'It books into your calendar',
-      body: 'Visitors pick a real slot inside the chat. Double bookings are checked before a slot is confirmed.',
+      title: 'Books into your real calendar',
+      body: 'Visitors pick a slot inside the chat. The moment they confirm, the time is checked and held — no double bookings.',
     },
     {
-      title: 'It hands over cleanly',
-      body: 'When a visitor asks for a person, your team takes the live conversation with the full history in view.',
+      title: 'Hands over without losing context',
+      body: 'When a visitor asks for a person, your team joins the live conversation with every earlier message already in view.',
     },
   ],
 };
@@ -164,36 +164,36 @@ export const DEMO = {
 /* ------------------------------ Use cases ------------------------------ */
 
 export const USE_CASES = {
-  eyebrow: 'Solutions',
-  title: 'Shaped around how your business takes enquiries.',
+  eyebrow: 'Who it is for',
+  title: 'Built around how your business takes enquiries.',
   items: [
     {
       id: 'appointments',
       label: 'Appointment businesses',
       title: 'Salons, clinics and studios',
-      body: 'Visitors ask about services and prices, choose a slot, and the booking lands in your calendar with their contact details.',
-      points: ['Service list with durations', 'Reminders by email', 'Reschedule from a link'],
+      body: 'Visitors ask about services and pricing, choose a slot, and the booking lands in your calendar — complete with their contact details.',
+      points: ['Service list with durations and pricing', 'Automated reminders by email', 'Self-service reschedule links'],
     },
     {
       id: 'quotes',
       label: 'Quote-led trades',
       title: 'Contractors and home services',
-      body: 'The assistant explains what you cover, asks the questions you need for a quote, and records the enquiry as a lead.',
-      points: ['Lead capture with custom fields', 'Inspection bookings', 'Service-area answers'],
+      body: 'The assistant explains what you cover, gathers the details you need for a quote, and logs the enquiry as a lead — ready for you to follow up.',
+      points: ['Lead capture with custom fields', 'Inspection slot booking', 'Service-area and coverage answers'],
     },
     {
       id: 'professional',
       label: 'Professional services',
       title: 'Consultants, agencies and advisers',
-      body: 'Answer the first round of questions about scope and process, then move serious enquiries to a call.',
-      points: ['Policy and process answers', 'Discovery-call scheduling', 'Human takeover for complex questions'],
+      body: 'Answer the first round of scope and process questions automatically, then move serious enquiries to a discovery call with your team.',
+      points: ['Policy and process answers from your docs', 'Discovery-call scheduling', 'Seamless human takeover for complex cases'],
     },
     {
       id: 'agencies',
       label: 'Agencies',
       title: 'Building for several clients',
-      body: 'Run separate assistants and hosted pages per client, each with its own knowledge and settings.',
-      points: ['Multiple assistants', 'Hosted page per client', 'Team roles'],
+      body: 'Run separate assistants and hosted pages for each client, each with its own knowledge base, branding and settings.',
+      points: ['Multiple independent assistants', 'Hosted page per client', 'Team roles and permissions'],
     },
   ],
 };
@@ -205,23 +205,23 @@ export const USE_CASES = {
  * No customer outcomes are claimed.
  */
 export const METRICS = {
-  eyebrow: 'By the numbers',
-  title: 'What is in the product today.',
+  eyebrow: 'What is inside',
+  title: 'Everything you need, already built.',
   items: [
     { value: 11, suffix: '', label: 'Industry starter templates' },
     { value: 5, suffix: '', label: 'Ways to add knowledge: files, URLs, video, text, images' },
     { value: 3, suffix: '', label: 'Channels: web widget, WhatsApp, Telegram' },
-    { value: 2, suffix: '', label: 'Search methods combined: meaning and keyword' },
+    { value: 2, suffix: '', label: 'Search methods combined: semantic and keyword' },
   ],
-  footnote: 'Customer results are not shown because we have not published any yet.',
+  footnote: 'Figures describe product capabilities, not projected customer outcomes.',
 };
 
 /* ---------------------------- Integrations ---------------------------- */
 
 export const INTEGRATIONS = {
   eyebrow: 'Integrations',
-  title: 'Connects to the tools you already use.',
-  intro: 'Only integrations that exist in the product are listed.',
+  title: 'Plugs into the tools you already use.',
+  intro: 'Only integrations that exist in the product are listed here.',
   hub: 'Crescelo',
   items: [
     { id: 'whatsapp', label: 'WhatsApp', note: 'Answer customers in WhatsApp' },
@@ -238,16 +238,16 @@ export const INTEGRATIONS = {
 /** Each claim maps to a control that exists in this codebase. No certifications are claimed. */
 export const SECURITY = {
   eyebrow: 'Security',
-  title: 'Controls you can check, described plainly.',
+  title: 'Built to protect your customers and your business.',
   intro:
-    'We do not hold or claim any compliance certifications at this time. Here is what the product does today.',
+    'No compliance certifications are claimed at this time. Here is exactly what the product does to keep your data safe.',
   items: [
     { title: 'Passwords are hashed', body: 'Account passwords are stored as salted scrypt hashes, never in plain text.' },
-    { title: 'Stored keys are encrypted', body: 'Your AI provider keys are encrypted at rest with AES-256-GCM.' },
-    { title: 'Two-factor sign-in', body: 'Accounts can enable time-based one-time codes as a second step.' },
-    { title: 'Rate limiting', body: 'Sign-in and public endpoints are rate limited to slow down guessing and abuse.' },
-    { title: 'Signed webhooks', body: 'Outgoing webhooks are signed so your systems can verify where they came from.' },
-    { title: 'Role-based access', body: 'Team members get roles that limit what they can view and change.' },
+    { title: 'AI keys are encrypted at rest', body: 'Your AI provider keys are encrypted with AES-256-GCM before storage.' },
+    { title: 'Two-factor sign-in', body: 'Team accounts can require a time-based one-time code as a second step at login.' },
+    { title: 'Rate limiting on all endpoints', body: 'Sign-in and public endpoints are rate limited to slow brute-force attempts.' },
+    { title: 'Signed webhooks', body: 'Outgoing webhooks carry a signature your systems can verify to confirm they came from us.' },
+    { title: 'Role-based access', body: 'Team members are assigned roles that restrict what they can view, edit or change.' },
   ],
 };
 
@@ -285,48 +285,48 @@ export const PLANS: PricingPlan[] = BILLING_PLANS.map((p) => ({
 
 export const PRICING = {
   eyebrow: 'Pricing',
-  title: 'Pick a plan by how many conversations you expect.',
-  intro: 'Every plan starts with a 14-day free trial of all Growth features. A card is required to start; it is charged automatically when the trial ends, and you can cancel any time before that to pay nothing. Prices in US dollars. Annual billing shows the effective monthly price.',
-  note: 'You bring your own AI provider key, so model usage is billed by your provider, not marked up by us.',
+  title: 'Simple pricing. No surprises.',
+  intro: 'Every plan starts with a 14-day free trial of all Growth features. A card is required to start; you are not charged during the trial. Cancel any time before it ends and you pay nothing. Prices are in US dollars. Annual billing shows the monthly equivalent.',
+  note: 'You bring your own AI key — model usage is billed directly by your provider at their rates. We do not mark it up.',
 };
 
 /* -------------------------------- FAQ -------------------------------- */
 
 export const FAQ = {
   eyebrow: 'FAQ',
-  title: 'Questions people ask first.',
+  title: 'Plain answers to the questions that come up first.',
   items: [
     {
       q: 'Where does the assistant get its answers?',
-      a: 'From the documents, pages and notes you add. If the answer is not in them, it says it does not know instead of inventing one, and the question is logged so you can fill the gap.',
+      a: 'From the content you add — documents, pages and notes. If the answer is not in your material, it says so instead of guessing. Every unanswered question is logged so you can fill the gap.',
     },
     {
       q: 'Do I need my own AI provider account?',
-      a: 'Yes. You add your own provider key, and usage is billed by that provider at their rates. Crescelo does not add a markup on model usage.',
+      a: 'Yes. You connect your own API key from OpenAI, Anthropic, Google Gemini, Groq or another provider. Usage goes directly to them at their rates. We add nothing on top.',
     },
     {
-      q: 'Can a person take over a conversation?',
-      a: 'Yes. Visitors can ask for a human at any point, your team is notified, and they continue the same conversation with the earlier messages visible.',
+      q: 'Can a person take over a live conversation?',
+      a: 'Yes. Visitors can ask for a human at any point. Your team gets an alert, joins the same chat thread, and can see everything that was already said.',
     },
     {
-      q: 'How does booking avoid double bookings?',
-      a: 'The slot is checked again at the moment of confirmation. If it was just taken, the visitor is offered another time.',
+      q: 'How does it avoid double bookings?',
+      a: 'The slot is checked and locked the moment a visitor confirms. If someone else just took it, they are immediately offered the next available time.',
     },
     {
       q: 'Is there a free trial?',
-      a: 'Yes. Every new account gets a 14-day free trial with all Growth features. You add a card to start it, pay nothing for 14 days, and the card is charged automatically for the plan you chose when the trial ends. Cancel any time in the billing portal; cancelling before the trial ends means you are never charged. If a subscription ends, the assistant pauses and your data is kept for 30 days. There is no permanent free plan.',
+      a: 'Yes — 14 days with all Growth features. Add a card to start; you are not charged during the trial. Cancel any time before it ends and you pay nothing. After the trial, your plan billing starts automatically.',
     },
     {
-      q: 'Which channels are supported?',
-      a: 'An embeddable web widget, a hosted business page, WhatsApp and Telegram.',
+      q: 'Which channels does it work on?',
+      a: 'An embeddable website widget, a hosted business page, WhatsApp and Telegram. One assistant, four channels.',
     },
     {
-      q: 'Is the service certified for compliance frameworks?',
-      a: 'No certifications are claimed at this time. The security section lists the controls that exist today.',
+      q: 'Is Crescelo certified for HIPAA, SOC 2 or similar?',
+      a: 'No certifications are claimed at this time. The security section lists exactly what controls are in place today.',
     },
     {
-      q: 'Can I cancel?',
-      a: 'Billing is handled through Stripe, where you can manage or cancel your subscription.',
+      q: 'How do I cancel?',
+      a: 'Through the Stripe billing portal in your account. Cancel any time — no penalty, no waiting.',
     },
   ],
 };
@@ -334,14 +334,14 @@ export const FAQ = {
 /* ---------------------------- Final CTA + footer ---------------------------- */
 
 export const FINAL_CTA = {
-  title: 'Put a knowledgeable front desk on your website.',
-  body: 'Start a 14-day free trial, add your content, and try it yourself before any visitor does. Cancel any time before the trial ends and you pay nothing.',
-  primary: 'Start your 14-day free trial',
+  title: 'Ready to stop missing visitors?',
+  body: 'Set up your assistant in minutes. Add your content, test it yourself, and put it live — all before your 14-day trial ends. Cancel any time, pay nothing if you do.',
+  primary: 'Start your free trial',
   secondary: 'Sign in',
 };
 
 export const FOOTER = {
-  blurb: 'Enterprise-grade website assistants that answer from your content, book appointments and hand over to your team.',
+  blurb: 'A website assistant that answers from your content, books real appointments and hands off to your team — any time, any channel.',
   columns: [
     {
       title: 'Product',

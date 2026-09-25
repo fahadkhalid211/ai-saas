@@ -163,28 +163,27 @@ export default function ProductPage() {
           <div className="mk-hero-glow" aria-hidden="true" />
           <div className="mk-wrap mk-hero-inner">
             <p className="mk-eyebrow mk-rise" style={{ ['--mk-delay' as string]: '0ms' }}>
-              AUTONOMOUS ARCHITECTURE
+              HOW IT WORKS UNDER THE HOOD
             </p>
-            <h1 className="mk-h1" style={{ maxWidth: '20ch', marginInline: 'auto' }}>
+            <h1 className="mk-h1" style={{ maxWidth: '22ch', marginInline: 'auto' }}>
               <span className="mk-echo" style={{ ['--mk-delay' as string]: '140ms' }}>
-                Engineered for <span className="mk-echo-em">revenue</span> and deterministic action.
+                Built to answer, book and <span className="mk-echo-em">never guess.</span>
               </span>
             </h1>
             <p className="mk-lead mk-rise" style={{ ['--mk-delay' as string]: '320ms' }}>
-              Crescelo combines grounded hybrid RAG retrieval, atomic mutex calendar scheduling,
-              and local CPU voice calling into a unified customer-facing engine.
+              Every reply is grounded in content you uploaded. Every booking is checked against a real calendar slot. Every AI call goes directly to your provider — no middleman, no markup.
             </p>
             <div className="mk-cta-row mk-rise" style={{ ['--mk-delay' as string]: '460ms' }}>
-              <ButtonLink href={SIGNUP_HREF}>Start your 14-day free trial</ButtonLink>
+              <ButtonLink href={SIGNUP_HREF}>Start your free trial</ButtonLink>
               <ButtonLink href="/#playground" variant="ghost">
-                Test live playground
+                Try it live
               </ButtonLink>
             </div>
             <ul className="mk-trust mk-rise" style={{ marginTop: '36px', ['--mk-delay' as string]: '600ms' }}>
-              <li>Grounded RAG (No Hallucinations)</li>
-              <li>0% Token Markup (BYOK)</li>
-              <li>Atomic Mutex Slot Locking</li>
-              <li>Sub-Second Phone Calling</li>
+              <li>No hallucinations — answers from your content only</li>
+              <li>Zero token markup — your key, your rate</li>
+              <li>Real calendar slot locking — no double bookings</li>
+              <li>Human takeover in one click</li>
             </ul>
           </div>
         </section>

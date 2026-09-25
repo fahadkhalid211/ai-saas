@@ -100,21 +100,20 @@ export default function SupportPage() {
           <div className="mk-hero-glow" aria-hidden="true" />
           <div className="mk-wrap mk-hero-inner">
             <p className="mk-eyebrow mk-rise" style={{ ['--mk-delay' as string]: '0ms' }}>
-              HELP CENTER &amp; KNOWLEDGE BASE
+              HELP CENTER
             </p>
             <h1 className="mk-h1" style={{ maxWidth: '20ch', marginInline: 'auto' }}>
               <span className="mk-echo" style={{ ['--mk-delay' as string]: '140ms' }}>
-                How can we <span className="mk-echo-em">help</span> you today?
+                Find what you need. <span className="mk-echo-em">Get it working.</span>
               </span>
             </h1>
             <p className="mk-lead mk-rise" style={{ ['--mk-delay' as string]: '320ms' }}>
-              Find technical setup guides, integration walkthroughs, and architecture documentation
-              for your Crescelo assistant.
+              Step-by-step guides for setting up your assistant, connecting your AI key, syncing your calendar, and going live on your website or messaging channels.
             </p>
 
             {/* Quick action buttons */}
             <div className="mk-cta-row mk-rise" style={{ justifyContent: 'center', ['--mk-delay' as string]: '460ms' }}>
-              <ButtonLink href="/support/contact">Contact Support Team</ButtonLink>
+              <ButtonLink href="/support/contact">Contact Support</ButtonLink>
               <ButtonLink href="/support/voice-agent" variant="ghost">
                 Phone Setup Guide
               </ButtonLink>
@@ -126,9 +125,9 @@ export default function SupportPage() {
         <section className="mk-section">
           <div className="mk-wrap">
             <SectionHead
-              eyebrow="Browse by Topic"
-              title="Everything you need to launch and scale."
-              intro="Comprehensive guides organized by feature and operational area."
+              eyebrow="Browse by topic"
+              title="Everything you need to go from zero to live."
+              intro="Guides organised by feature area. Start with AI connectors if you are just getting set up."
               id="topics"
               align="center"
             />

@@ -34,16 +34,15 @@ export default function PricingPage() {
           <div className="mk-hero-glow" aria-hidden="true" />
           <div className="mk-wrap mk-hero-inner">
             <p className="mk-eyebrow mk-rise" style={{ ['--mk-delay' as string]: '0ms' }}>
-              PREDICTABLE INVESTMENT
+              PRICING
             </p>
             <h1 className="mk-h1" style={{ maxWidth: '20ch', marginInline: 'auto' }}>
               <span className="mk-echo" style={{ ['--mk-delay' as string]: '140ms' }}>
-                Transparent pricing. <span className="mk-echo-em">Zero</span> token markup.
+                Simple pricing. <span className="mk-echo-em">Zero</span> surprises.
               </span>
             </h1>
             <p className="mk-lead mk-rise" style={{ ['--mk-delay' as string]: '320ms' }}>
-              Every plan includes grounded RAG memory, lead detection, and deterministic scheduling.
-              Save 20% by choosing annual billing.
+              Pay for the conversations your assistant handles. Bring your own AI key and model costs go directly to your provider — we add nothing on top. Save 20% with annual billing.
             </p>
 
             {/* Annual Switcher */}

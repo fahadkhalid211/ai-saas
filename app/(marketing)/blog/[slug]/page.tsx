@@ -143,7 +143,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
                       fontWeight: 700,
                       letterSpacing: '0.05em',
                       textTransform: 'uppercase',
-                      color: 'var(--mk-accent, #2563eb)',
+                      color: '#2563eb',
                       background: 'rgba(37, 99, 235, 0.08)',
                       padding: '0.25rem 0.6rem',
                       borderRadius: '4px',
@@ -237,7 +237,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
                     textAlign: 'center',
                   }}
                 >
-                  <p style={{ fontSize: '0.85rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--mk-accent, #2563eb)', marginBottom: '0.5rem' }}>
+                  <p style={{ fontSize: '0.85rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#2563eb', marginBottom: '0.5rem' }}>
                     ANSWER EVERY VISITOR. BOOK THE ONES WHO ARE READY.
                   </p>
                   <h3 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '0.75rem', color: 'var(--mk-ink)' }}>
@@ -247,7 +247,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
                     Train your assistant on your price lists, documents, and service policies. Enable 24/7 grounded answers and conflict-free in-chat appointment booking.
                   </p>
                   <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', flexWrap: 'wrap' }}>
-                    <ButtonLink href="/login?mode=register">Start 14-Day Free Trial</ButtonLink>
+                    <ButtonLink href="/login?mode=register" className="mk-btn-blue">Start 14-Day Free Trial</ButtonLink>
                     <Link
                       href="/pricing"
                       style={{
@@ -277,7 +277,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 260px), 1fr))', gap: '1rem' }}>
                       {related.map((r) => (
                         <div key={r.slug} className="mk-card" style={{ padding: '1.25rem', borderRadius: '8px' }}>
-                          <p style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--mk-accent, #2563eb)', marginBottom: '0.4rem' }}>
+                          <p style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', color: '#2563eb', marginBottom: '0.4rem' }}>
                             {r.clusterName || 'Guide'} · ⏱️ {r.readMinutes}m
                           </p>
                           <Link href={`/blog/${r.slug}`} className="mk-animated-link" style={{ fontWeight: 700, fontSize: '1.05rem', color: 'var(--mk-ink)' }}>
@@ -359,7 +359,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
                       ))}
                     </ul>
                     <div style={{ marginTop: '1rem', paddingTop: '0.75rem', borderTop: '1px solid var(--mk-border, #f1f5f9)' }}>
-                      <Link href="/blog" className="mk-animated-link" style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--mk-accent, #2563eb)' }}>
+                      <Link href="/blog" className="mk-animated-link" style={{ fontSize: '0.82rem', fontWeight: 700, color: '#2563eb' }}>
                         Browse all 200 guides →
                       </Link>
                     </div>
@@ -381,15 +381,12 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
                   </p>
                   <Link
                     href="/login?mode=register"
+                    className="mk-btn mk-btn-blue mk-btn-sm"
                     style={{
-                      display: 'block',
-                      textAlign: 'center',
-                      padding: '0.5rem',
-                      borderRadius: '6px',
-                      background: 'var(--mk-accent, #2563eb)',
-                      color: '#ffffff',
-                      fontWeight: 600,
-                      fontSize: '0.85rem',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      width: '100%',
                       textDecoration: 'none',
                     }}
                   >

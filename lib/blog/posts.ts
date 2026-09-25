@@ -5,6 +5,7 @@
  */
 
 import allGeneratedPosts from './data/all-posts.json';
+import { seoDescription, seoTitle, withFurtherReading } from './seo';
 
 export type BlogBlock =
   | { type: 'p'; text: string }
@@ -17,6 +18,8 @@ export type BlogBlock =
 export interface BlogPost {
   slug: string;
   title: string;
+  /** The <title> text: the title shortened to fit a search result. Filled in below for every post. */
+  seoTitle?: string;
   /** Meta description, 140-160 characters. */
   description: string;
   excerpt: string;
@@ -196,11 +199,23 @@ const INITIAL_POSTS: BlogPost[] = [
 
 // Combine generated posts, replacing any initial posts with higher priority
 const postMap = new Map<string, BlogPost>();
+/** Search-result polish that must not depend on how a post was written: display-length title and description, a clean excerpt, cited sources. */
+function polish(p: BlogPost): BlogPost {
+  const description = seoDescription(p.description);
+  return {
+    ...p,
+    seoTitle: seoTitle(p),
+    description,
+    excerpt: description,
+    body: withFurtherReading(p.body, p),
+  };
+}
+
 (allGeneratedPosts as unknown as BlogPost[]).forEach((p) => {
-  postMap.set(p.slug, p);
+  postMap.set(p.slug, polish(p));
 });
 INITIAL_POSTS.forEach((p) => {
-  postMap.set(p.slug, p);
+  postMap.set(p.slug, polish(p));
 });
 
 export const BLOG_POSTS: BlogPost[] = Array.from(postMap.values());

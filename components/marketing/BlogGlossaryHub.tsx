@@ -193,7 +193,7 @@ export function BlogGlossaryHub({ posts, clusters }: BlogGlossaryHubProps) {
                 style={{
                   background: 'none',
                   border: 'none',
-                  color: 'var(--mk-accent, #2563eb)',
+                  color: '#2563eb',
                   textDecoration: 'underline',
                   cursor: 'pointer',
                   fontWeight: 600,
@@ -255,7 +255,7 @@ export function BlogGlossaryHub({ posts, clusters }: BlogGlossaryHubProps) {
                     fontSize: '0.88rem',
                     fontWeight: selectedClusterId === null ? 700 : 500,
                     background: selectedClusterId === null ? 'var(--mk-surface-muted, #eff6ff)' : 'transparent',
-                    color: selectedClusterId === null ? 'var(--mk-accent, #2563eb)' : 'inherit',
+                    color: selectedClusterId === null ? '#2563eb' : 'inherit',
                     border: 'none',
                     cursor: 'pointer',
                     display: 'flex',
@@ -282,7 +282,7 @@ export function BlogGlossaryHub({ posts, clusters }: BlogGlossaryHubProps) {
                         fontSize: '0.86rem',
                         fontWeight: isSelected ? 700 : 500,
                         background: isSelected ? 'var(--mk-surface-muted, #eff6ff)' : 'transparent',
-                        color: isSelected ? 'var(--mk-accent, #2563eb)' : 'inherit',
+                        color: isSelected ? '#2563eb' : 'inherit',
                         border: 'none',
                         cursor: 'pointer',
                         display: 'flex',
@@ -327,7 +327,7 @@ export function BlogGlossaryHub({ posts, clusters }: BlogGlossaryHubProps) {
                 display: 'inline-block',
                 fontWeight: 700,
                 fontSize: '0.82rem',
-                color: 'var(--mk-accent, #2563eb)',
+                color: '#2563eb',
                 textDecoration: 'underline',
               }}
             >
@@ -360,7 +360,7 @@ export function BlogGlossaryHub({ posts, clusters }: BlogGlossaryHubProps) {
                 style={{
                   padding: '0.6rem 1.25rem',
                   borderRadius: '6px',
-                  background: 'var(--mk-accent, #2563eb)',
+                  background: '#2563eb',
                   color: '#ffffff',
                   border: 'none',
                   fontWeight: 600,
@@ -398,7 +398,7 @@ export function BlogGlossaryHub({ posts, clusters }: BlogGlossaryHubProps) {
                           style={{
                             fontWeight: 700,
                             letterSpacing: '0.04em',
-                            color: 'var(--mk-accent, #2563eb)',
+                            color: '#2563eb',
                             background: 'rgba(37, 99, 235, 0.08)',
                             padding: '0.2rem 0.5rem',
                             borderRadius: '4px',
@@ -451,7 +451,7 @@ export function BlogGlossaryHub({ posts, clusters }: BlogGlossaryHubProps) {
                         className="mk-animated-link"
                         style={{
                           fontWeight: 700,
-                          color: 'var(--mk-accent, #2563eb)',
+                          color: '#2563eb',
                         }}
                       >
                         Read guide →
@@ -516,7 +516,7 @@ export function BlogGlossaryHub({ posts, clusters }: BlogGlossaryHubProps) {
                                 height: '2.2rem',
                                 borderRadius: '6px',
                                 border: '1px solid var(--mk-border, #cbd5e1)',
-                                background: currentPage === pageNum ? 'var(--mk-accent, #2563eb)' : 'transparent',
+                                background: currentPage === pageNum ? '#2563eb' : 'transparent',
                                 color: currentPage === pageNum ? '#ffffff' : 'inherit',
                                 fontWeight: currentPage === pageNum ? 700 : 500,
                                 fontSize: '0.88rem',

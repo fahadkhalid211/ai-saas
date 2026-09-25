@@ -23,27 +23,27 @@ export const TOOLS = {
   cards: [
     {
       id: 'answer',
-      kicker: 'Never leave a question waiting',
+      kicker: 'No more "I will check and get back to you"',
       title: 'Knowledge assistant',
-      body: 'Answers from your own documents, pages and notes, and says so when it does not know.',
+      body: 'Answers from your own documents, pages and notes — instantly, accurately, and with the source shown.',
       cta: "Let's answer",
       href: '#carousel',
       tone: 'lav',
     },
     {
       id: 'book',
-      kicker: 'Turn interest into appointments',
+      kicker: 'From "interested" to "confirmed" in one chat',
       title: 'Booking engine',
-      body: 'Offers real open slots inside the chat and checks each one again before confirming.',
+      body: 'Shows real available slots inside the conversation and double-checks each one before confirming.',
       cta: "Let's book",
       href: '#playground',
       tone: 'mint',
     },
     {
       id: 'handover',
-      kicker: 'A person when it matters',
+      kicker: 'The right person, at exactly the right moment',
       title: 'Live handover',
-      body: 'Your team takes over the same conversation, with the earlier messages in view.',
+      body: 'Your team steps into the same conversation, with the full history visible. No context lost.',
       cta: "Let's hand over",
       href: '#how-it-works',
       tone: 'lime',
@@ -55,9 +55,9 @@ export const TOOLS = {
 
 export const BEHIND = {
   eyebrow: 'Always on',
-  titleLines: ['An assistant that works', 'while you sleep'],
-  body: 'It answers the first question, offers the next step, and hands the conversation to you with everything already written down.',
-  cta: 'Try and stop me',
+  titleLines: ['Working while you sleep,', 'ready when you wake'],
+  body: 'While you are with a client, in a meeting, or off the clock, Crescelo handles the enquiry, offers the booking, and writes up the lead — so you come back to work that is already done.',
+  cta: 'Try it now',
   ctaHref: '#playground',
   caption: 'Lime: what your visitors experience. Dark: what runs behind it.',
   features: ['Grounded answers', 'Booking', 'Lead capture', 'Live takeover', 'Email reminders'],
@@ -77,8 +77,8 @@ export interface CarouselFeature {
 
 export const CAROUSEL = {
   eyebrow: 'Everything included',
-  title: 'Yes, you can test here. And the rest!',
-  intro: 'Every part of the product on one rail.',
+  title: 'One product. Every feature you need.',
+  intro: 'Scroll through every capability in Crescelo — from knowledge ingestion to live team handover.',
   items: [
     { id: 'files', tag: 'Knowledge', title: 'Documents and files', body: 'PDF, Word and text files become searchable passages.', tone: 'lav', glyph: 'doc' },
     { id: 'urls', tag: 'Knowledge', title: 'Web pages and video', body: 'Add a website URL or a YouTube video and its transcript is indexed.', tone: 'mint', glyph: 'page' },
@@ -110,15 +110,15 @@ export interface DiagonalCard {
 export const DIAGONAL = {
   eyebrow: 'Why teams use it',
   titleLine: 'Less repeating yourself.',
-  titleEm: 'More of the work that needs you.',
+  titleEm: 'More of the work only you can do.',
   cards: [
-    { title: 'Save time', body: 'Routine questions are answered without anyone stopping what they are doing.', stat: '24/7', statLabel: 'front desk', tone: 'lav' },
-    { title: 'Reduce manual work', body: 'Bookings and lead details arrive already filled in, ready to act on.', stat: '0', statLabel: 'copy-paste steps', tone: 'lime' },
-    { title: 'Improve results', body: 'Visitors get an answer while they are still interested, at any hour.', stat: '1', statLabel: 'chat to a booking', tone: 'pink' },
-    { title: 'Scale faster', body: 'Add a second site or a new service by adding content, not headcount.', stat: '∞', statLabel: 'sources to add', tone: 'mint' },
-    { title: 'Decide with better information', body: 'Unanswered questions show you exactly what your website fails to explain.', stat: '100%', statLabel: 'of gaps logged', tone: 'amber' },
+    { title: 'Reclaim your time', body: 'Routine questions get answered without anyone stopping what they are doing. Your team stays focused.', stat: '24/7', statLabel: 'front desk', tone: 'lav' },
+    { title: 'Kill the copy-paste', body: 'Booking details and lead info land in your inbox already filled in, ready to act on — no data entry.', stat: '0', statLabel: 'copy-paste steps', tone: 'lime' },
+    { title: 'Catch visitors while they are interested', body: 'People ask questions when they are ready to buy. Answer them instantly instead of the next morning.', stat: '1', statLabel: 'chat to a booking', tone: 'pink' },
+    { title: 'Grow without hiring', body: 'Add a second location or a new service by uploading content — not by adding headcount.', stat: '∞', statLabel: 'sources to add', tone: 'mint' },
+    { title: 'See exactly what your website misses', body: 'Every question your assistant could not answer is logged. Fix it once, answer it forever.', stat: '100%', statLabel: 'of gaps logged', tone: 'amber' },
   ] as DiagonalCard[],
-  note: 'Figures on these cards describe how the product works, not customer results.',
+  note: 'Figures on these cards describe how the product works, not individual customer results.',
 };
 
 /* ------------------------------ Paths (how it works) ------------------------------ */
@@ -135,13 +135,13 @@ export interface PathRow {
 
 export const PATHS = {
   eyebrow: 'How it works',
-  titleLines: ['One assistant.', 'Four steps to live.'],
-  echo: 'Four steps to live.',
+  titleLines: ['One assistant.', 'Live in four steps.'],
+  echo: 'Live in four steps.',
   rows: [
-    { id: 'connect', step: '01', title: 'Connect', body: 'Add your documents, pages and links. Crescelo reads and indexes them so answers come from your material.', cta: 'Add knowledge', href: '#carousel', tone: 'lav' },
-    { id: 'configure', step: '02', title: 'Configure', body: 'Set the assistant name, tone, services, opening hours and your own AI provider key.', cta: 'See the controls', href: '#playground', tone: 'mint' },
-    { id: 'automate', step: '03', title: 'Automate', body: 'Embed the widget or publish the hosted page. Visitors start getting answers and bookings.', cta: 'Try the demo', href: '#playground', tone: 'lime' },
-    { id: 'grow', step: '04', title: 'Grow', body: 'Review conversations, fill the gaps it could not answer, and add channels as you need them.', cta: 'See pricing', href: '#pricing', tone: 'pink' },
+    { id: 'connect', step: '01', title: 'Add your content', body: 'Upload documents, paste web pages, drop in a YouTube link. Crescelo reads and indexes everything so answers come straight from your material.', cta: 'Add knowledge', href: '#carousel', tone: 'lav' },
+    { id: 'configure', step: '02', title: 'Set it up your way', body: 'Name the assistant, set the tone, add your services and hours, connect your own AI key. Takes about ten minutes.', cta: 'See the controls', href: '#playground', tone: 'mint' },
+    { id: 'automate', step: '03', title: 'Put it live', body: 'Paste one script tag on your site or share the hosted page. Visitors start getting answers and bookings immediately.', cta: 'Try the demo', href: '#playground', tone: 'lime' },
+    { id: 'grow', step: '04', title: 'Learn and improve', body: 'Check which questions went unanswered, fill the gaps, and add more channels as your business grows.', cta: 'See pricing', href: '#pricing', tone: 'pink' },
   ] as PathRow[],
 };
 
@@ -164,8 +164,8 @@ export const STORIES = {
 
 export const COMPARE = {
   eyebrow: 'Compare',
-  title: 'How Crescelo differs from traditional chatbot tools.',
-  intro: 'A clear architectural comparison of how Crescelo delivers autonomous actions versus traditional conversational bots.',
+  title: 'Not just another chatbot.',
+  intro: 'Crescelo books real appointments, locks slots against your calendar, and answers strictly from your content. Here is how that compares to the alternatives.',
   columns: ['Crescelo', 'Chatbase', 'Typical FAQ bot', 'Basic live-chat widget'],
   rows: [
     { feature: 'Books appointments inside the chat', values: ['Yes, with open-slot picker', 'Via integrations or links', 'Link out to a form', 'A human arranges it'] },

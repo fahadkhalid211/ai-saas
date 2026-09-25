@@ -409,21 +409,20 @@ export default function IntegrationsPage() {
           <div className="mk-hero-glow" aria-hidden="true" />
           <div className="mk-wrap mk-hero-inner">
             <p className="mk-eyebrow mk-rise" style={{ ['--mk-delay' as string]: '0ms' }}>
-              CONNECTED ECOSYSTEM
+              INTEGRATIONS
             </p>
-            <h1 className="mk-h1" style={{ maxWidth: '20ch', marginInline: 'auto' }}>
+            <h1 className="mk-h1" style={{ maxWidth: '22ch', marginInline: 'auto' }}>
               <span className="mk-echo" style={{ ['--mk-delay' as string]: '140ms' }}>
-                Connect with the <span className="mk-echo-em">tools</span> you run every day.
+                Plugs into the <span className="mk-echo-em">tools</span> you already run.
               </span>
             </h1>
             <p className="mk-lead mk-rise" style={{ ['--mk-delay' as string]: '320ms' }}>
-              From calendars and phone lines to AI engines and CRMs, Crescelo plugs directly into
-              your existing workflow without requiring changes to your stack.
+              Calendars, messaging apps, AI providers, webhooks — Crescelo connects to your existing setup without you having to rebuild anything.
             </p>
             <div className="mk-cta-row mk-rise" style={{ ['--mk-delay' as string]: '460ms' }}>
-              <ButtonLink href={SIGNUP_HREF}>Connect your first integration</ButtonLink>
+              <ButtonLink href={SIGNUP_HREF}>Start free — no card today</ButtonLink>
               <ButtonLink href="/support/contact" variant="ghost">
-                Request custom integration
+                Request an integration
               </ButtonLink>
             </div>
           </div>
@@ -433,9 +432,9 @@ export default function IntegrationsPage() {
         <section className="mk-section" style={{ paddingBottom: '32px' }}>
           <div className="mk-wrap">
             <SectionHead
-              eyebrow="Architecture Flow"
-              title="How Crescelo links your business in real time."
-              intro="Click any integration below to inspect its live data flow, verification protocols, and integration guides."
+              eyebrow="How it connects"
+              title="One assistant. Every channel."
+              intro="Click any integration below to see how it works, what it sends, and how to set it up."
               id="architecture-title"
               align="center"
             />
