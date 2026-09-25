@@ -263,7 +263,7 @@ async function* streamAutoFree(
         }
 
         const remainingBudget = 5500 - estimatedPromptTokens;
-        safeMaxTokens = Math.min(safeMaxTokens, Math.min(1200, Math.max(350, remainingBudget)));
+        safeMaxTokens = groqOutputBudget(model, safeMaxTokens, remainingBudget);
 
         return {
           client: new OpenAI({
@@ -325,6 +325,7 @@ async function* streamAutoFree(
         messages: activeMessages as any,
         temperature: options.temperature ?? 0.3,
         max_tokens: safeMaxTokens,
+        ...groqReasoning(model),
         stream: true,
       });
 
@@ -362,14 +363,28 @@ async function* streamAutoFree(
  * Universal Streaming Chat Generator
  * Yields text tokens one by one as they arrive from the LLM.
  */
+/**
+ * Groq's openai/gpt-oss models think before they answer, and the thinking counts against max_tokens. With a small limit the thinking
+ * used everything and the visible answer stopped mid-sentence (or came back empty). Ask for light thinking and leave room for the answer.
+ */
+function groqReasoning(model: string): Record<string, unknown> {
+  return /gpt-oss/i.test(model) ? { reasoning_effort: 'low' } : {};
+}
+
+function groqOutputBudget(model: string, requested: number, remainingBudget: number): number {
+  const answer = Math.max(requested, 1200);
+  const headroom = /gpt-oss/i.test(model) ? 600 : 0;
+  return Math.min(answer + headroom, Math.max(900, remainingBudget), 2600);
+}
+
 /** True when the text stops in the middle of a sentence: it is long enough to be an answer and ends on a word, comma, dash or open bracket. */
 export function endsMidSentence(text: string): boolean {
   const t = text.trimEnd();
   if (t.length < 40 || t.startsWith('*(')) return false;
   const last = t[t.length - 1];
-  if (/[.!?…:;)\]}"'`*>|—]/.test(last)) return false;
+  if (/[.!?…:;)\]}"'`*>|]/.test(last)) return false;
   if (/\p{Extended_Pictographic}$/u.test(t)) return false;
-  return /[\p{L}\p{N},\-(\[]/u.test(last);
+  return /[\p{L}\p{N},\-–—(\[/&+=]/u.test(last);
 }
 
 export async function* streamChatResponse(
@@ -383,7 +398,7 @@ export async function* streamChatResponse(
   for (let round = 0; round <= MAX_CONTINUATIONS; round++) {
     const meta: StreamMeta = {};
     const request =
-      round === 0
+      round === 0 || !produced
         ? messages
         : [
             ...messages,
@@ -402,6 +417,7 @@ export async function* streamChatResponse(
         held.push(chunk);
       }
     }
+    if (round === 0 && !text.trim() && (meta.finish === 'length' || meta.interrupted)) continue; // the model spent its whole budget thinking: ask again
     if (round > 0) {
       if (!text.trim() || text.trimStart().startsWith('*(')) {
         if (endsMidSentence(produced)) yield '.';
@@ -475,7 +491,7 @@ async function* streamChatOnce(
 
     // Ensure estimatedPromptTokens + safeMaxTokens <= 5,500 (generous 2,500-token safety buffer under 8,000 TPM)
     const remainingBudget = 5500 - estimatedPromptTokens;
-    safeMaxTokens = Math.min(safeMaxTokens, Math.min(1200, Math.max(350, remainingBudget)));
+    safeMaxTokens = groqOutputBudget(model, safeMaxTokens, remainingBudget);
   }
 
   let sentAny = false;
@@ -485,6 +501,7 @@ async function* streamChatOnce(
       messages: activeMessages as any,
       temperature: options.temperature ?? 0.3,
       max_tokens: safeMaxTokens,
+      ...(provider === 'groq' ? groqReasoning(model) : {}),
       stream: true,
     });
 
@@ -534,7 +551,8 @@ async function* streamChatOnce(
           model: fallbackModel,
           messages: condensedFallbackMessages as any,
           temperature: options.temperature ?? 0.3,
-          max_tokens: 1200,
+          max_tokens: 1600,
+          ...groqReasoning(fallbackModel),
           stream: true,
         });
 
