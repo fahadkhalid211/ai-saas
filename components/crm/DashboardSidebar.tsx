@@ -160,8 +160,8 @@ export function DashboardSidebar({
   ];
 
   return (
-    <aside className="w-60 border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3 flex flex-col justify-between shrink-0 overflow-hidden">
-      <div className="flex flex-col flex-1 min-h-0 gap-5 overflow-y-auto pr-0.5">
+    <aside className="w-60 h-full max-h-full border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3 flex flex-col justify-between shrink-0 overflow-hidden select-none">
+      <div className="flex flex-col flex-1 min-h-0 gap-5 overflow-y-auto pr-1 overscroll-contain mk-sidebar-scroll">
         {sections.map((section) => (
           <div key={section.title}>
             <div className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500 px-3 mb-1.5">

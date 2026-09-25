@@ -680,7 +680,7 @@ export default function DashboardPage() {
         )}
 
         {/* Main Shell (Sidebar + Content Workspace) */}
-        <div className="flex flex-1 overflow-hidden">
+        <div className="flex flex-1 overflow-hidden min-h-0">
           
           {/* Left Enterprise Sidebar */}
           <DashboardSidebar

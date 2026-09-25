@@ -111,17 +111,22 @@ html { font-size: 16px; }
 /* Smooth scrollbar styling for sidebars */
 .mk-sidebar-scroll {
   scrollbar-width: thin;
-  scrollbar-color: rgba(148, 163, 184, 0.4) transparent;
+  scrollbar-color: rgba(148, 163, 184, 0.6) transparent;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
 }
 .mk-sidebar-scroll::-webkit-scrollbar {
-  width: 5px;
+  width: 6px;
+}
+.mk-sidebar-scroll::-webkit-scrollbar-track {
+  background: transparent;
 }
 .mk-sidebar-scroll::-webkit-scrollbar-thumb {
-  background: rgba(148, 163, 184, 0.4);
+  background: rgba(148, 163, 184, 0.5);
   border-radius: 9999px;
 }
 .mk-sidebar-scroll::-webkit-scrollbar-thumb:hover {
-  background: rgba(100, 116, 139, 0.7);
+  background: rgba(100, 116, 139, 0.8);
 }
 
 /* Responsive 2-column layouts for Blog & Article detail */

@@ -212,6 +212,7 @@ export function BlogGlossaryHub({ posts, clusters }: BlogGlossaryHubProps) {
         {/* Left Sticky Sidebar: Topic Clusters */}
         <aside
           aria-label="Topic Clusters"
+          data-lenis-prevent="true"
           className="mk-card mk-sidebar-scroll"
           style={{
             padding: '1.25rem',
@@ -220,6 +221,8 @@ export function BlogGlossaryHub({ posts, clusters }: BlogGlossaryHubProps) {
             top: '5rem',
             maxHeight: 'calc(100vh - 6rem)',
             overflowY: 'auto',
+            overscrollBehavior: 'contain',
+            WebkitOverflowScrolling: 'touch',
           }}
         >
           <div style={{ marginBottom: '1.25rem' }}>

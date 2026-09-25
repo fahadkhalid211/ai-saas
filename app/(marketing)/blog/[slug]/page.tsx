@@ -296,16 +296,19 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
               {/* Right Sticky Sidebar */}
               <aside
                 aria-label="Table of contents & related guides"
+                data-lenis-prevent="true"
                 className="mk-sidebar-scroll"
                 style={{
                   position: 'sticky',
                   top: '5rem',
                   maxHeight: 'calc(100vh - 6rem)',
                   overflowY: 'auto',
+                  overscrollBehavior: 'contain',
+                  WebkitOverflowScrolling: 'touch',
                   display: 'flex',
                   flexDirection: 'column',
                   gap: '1.5rem',
-                  paddingRight: '0.35rem',
+                  paddingRight: '0.45rem',
                 }}
               >
                 {/* Sticky Table of Contents Card */}

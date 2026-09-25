@@ -34,7 +34,12 @@ export function SmoothScroll() {
       touchMultiplier: 1.2,
       autoResize: true,
       prevent: (node) => {
-        return node.hasAttribute('data-lenis-prevent') || !!node.closest?.('[data-lenis-prevent]');
+        return (
+          node.hasAttribute('data-lenis-prevent') ||
+          !!node.closest?.('[data-lenis-prevent]') ||
+          !!node.closest?.('.mk-sidebar-scroll') ||
+          !!node.closest?.('aside')
+        );
       },
     });
     window.__mkLenis = lenis;
