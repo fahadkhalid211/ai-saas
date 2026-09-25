@@ -152,20 +152,6 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
                     {post.clusterName}
                   </span>
                 )}
-                {post.funnel && (
-                  <span
-                    style={{
-                      fontSize: '0.75rem',
-                      fontWeight: 600,
-                      color: 'var(--mk-muted)',
-                      border: '1px solid var(--mk-border, #cbd5e1)',
-                      padding: '0.2rem 0.5rem',
-                      borderRadius: '4px',
-                    }}
-                  >
-                    {post.funnel} Guide
-                  </span>
-                )}
                 <span
                   style={{
                     fontSize: '0.8rem',
@@ -200,7 +186,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
                 }}
               >
                 <span>
-                  Published by <strong>Crescelo Editorial</strong>
+                  Published by <strong>Crescelo</strong>
                 </span>
                 <span>·</span>
                 <time dateTime={post.datePublished}>
@@ -218,217 +204,204 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
             </header>
 
             {/* Two-Column Responsive Layout */}
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: 'minmax(0, 1fr)',
-                gap: '3rem',
-              }}
-            >
-              <div
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-                  gap: '3rem',
-                  alignItems: 'start',
-                }}
-              >
-                {/* Main Content Column */}
-                <article style={{ gridColumn: 'span 2' }}>
-                  {/* Mobile Table of Contents */}
-                  {toc.length > 2 && (
-                    <div className="mk-card mk-mobile-only" style={{ padding: '1.25rem', marginBottom: '2rem', borderRadius: '8px' }}>
-                      <p style={{ fontWeight: 700, marginBottom: '0.6rem', fontSize: '0.95rem' }}>Quick Navigation</p>
-                      <ol style={{ paddingLeft: '1.2rem', listStyle: 'decimal', fontSize: '0.9rem', display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
-                        {toc.map((h) => (
-                          <li key={h.id}>
-                            <a href={`#${h.id}`} style={{ textDecoration: 'underline' }}>
-                              {h.text.replace(/^\d+\.\s*/, '')}
-                            </a>
-                          </li>
-                        ))}
-                      </ol>
-                    </div>
-                  )}
-
-                  <BlogBody blocks={post.body} />
-
-                  {/* Mid-Article / Post-Article Conversion Card */}
-                  <div
-                    className="mk-card"
-                    style={{
-                      marginTop: '3rem',
-                      padding: '2rem',
-                      borderRadius: '12px',
-                      background: 'linear-gradient(135deg, var(--mk-surface-muted, #f8fafc) 0%, rgba(37, 99, 235, 0.05) 100%)',
-                      border: '1px solid var(--mk-border, #cbd5e1)',
-                      textAlign: 'center',
-                    }}
-                  >
-                    <p style={{ fontSize: '0.85rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--mk-accent, #2563eb)', marginBottom: '0.5rem' }}>
-                      ANSWER EVERY VISITOR. BOOK THE ONES WHO ARE READY.
-                    </p>
-                    <h3 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '0.75rem', color: 'var(--mk-ink)' }}>
-                      Deploy Crescelo on your website in 15 minutes
-                    </h3>
-                    <p style={{ maxWidth: '36rem', margin: '0 auto 1.5rem', color: 'var(--mk-muted)', lineHeight: 1.6 }}>
-                      Train your assistant on your price lists, documents, and service policies. Enable 24/7 grounded answers and conflict-free in-chat appointment booking.
-                    </p>
-                    <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', flexWrap: 'wrap' }}>
-                      <ButtonLink href="/login?mode=register">Start 14-Day Free Trial</ButtonLink>
-                      <Link
-                        href="/pricing"
-                        style={{
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          padding: '0.6rem 1.25rem',
-                          borderRadius: '6px',
-                          border: '1px solid var(--mk-border, #cbd5e1)',
-                          background: 'var(--mk-surface, #ffffff)',
-                          fontWeight: 600,
-                          fontSize: '0.95rem',
-                          color: 'var(--mk-ink)',
-                          textDecoration: 'none',
-                        }}
-                      >
-                        View Pricing & Plans
-                      </Link>
-                    </div>
+            <div className="mk-article-layout">
+              {/* Main Content Column */}
+              <article style={{ minWidth: 0 }}>
+                {/* Mobile Table of Contents */}
+                {toc.length > 2 && (
+                  <div className="mk-card mk-mobile-only" style={{ padding: '1.25rem', marginBottom: '2rem', borderRadius: '8px' }}>
+                    <p style={{ fontWeight: 700, marginBottom: '0.6rem', fontSize: '0.95rem' }}>Quick Navigation</p>
+                    <ol style={{ paddingLeft: '1.2rem', listStyle: 'decimal', fontSize: '0.9rem', display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+                      {toc.map((h) => (
+                        <li key={h.id}>
+                          <a href={`#${h.id}`} className="mk-animated-link" style={{ textDecoration: 'none' }}>
+                            {h.text.replace(/^\d+\.\s*/, '')}
+                          </a>
+                        </li>
+                      ))}
+                    </ol>
                   </div>
+                )}
 
-                  {/* Related Articles Bottom Grid */}
-                  {related.length > 0 && (
-                    <aside aria-label="Related articles" style={{ marginTop: '3.5rem', paddingTop: '2rem', borderTop: '1px solid var(--mk-border, #e2e8f0)' }}>
-                      <h2 style={{ fontSize: '1.4rem', fontWeight: 700, marginBottom: '1rem', color: 'var(--mk-ink)' }}>
-                        Recommended Next Reading
-                      </h2>
-                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '1rem' }}>
-                        {related.map((r) => (
-                          <div key={r.slug} className="mk-card" style={{ padding: '1.25rem', borderRadius: '8px' }}>
-                            <p style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--mk-accent, #2563eb)', marginBottom: '0.4rem' }}>
-                              {r.clusterName || 'Guide'} · ⏱️ {r.readMinutes}m
-                            </p>
-                            <Link href={`/blog/${r.slug}`} style={{ fontWeight: 700, fontSize: '1.05rem', color: 'var(--mk-ink)', textDecoration: 'none' }}>
-                              {r.title}
-                            </Link>
-                            <p style={{ fontSize: '0.85rem', color: 'var(--mk-muted)', marginTop: '0.4rem', lineHeight: 1.5 }}>
-                              {r.excerpt}
-                            </p>
-                          </div>
-                        ))}
-                      </div>
-                    </aside>
-                  )}
-                </article>
+                <BlogBody blocks={post.body} />
 
-                {/* Right Sticky Sidebar */}
-                <aside
-                  aria-label="Table of contents & related guides"
+                {/* Mid-Article / Post-Article Conversion Card */}
+                <div
+                  className="mk-card"
                   style={{
-                    position: 'sticky',
-                    top: '5.5rem',
-                    maxHeight: 'calc(100vh - 6.5rem)',
-                    overflowY: 'auto',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '1.5rem',
+                    marginTop: '3rem',
+                    padding: '2rem',
+                    borderRadius: '12px',
+                    background: 'linear-gradient(135deg, var(--mk-surface-muted, #f8fafc) 0%, rgba(37, 99, 235, 0.05) 100%)',
+                    border: '1px solid var(--mk-border, #cbd5e1)',
+                    textAlign: 'center',
                   }}
                 >
-                  {/* Sticky Table of Contents Card */}
-                  {toc.length > 0 && (
-                    <div
-                      className="mk-card"
+                  <p style={{ fontSize: '0.85rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--mk-accent, #2563eb)', marginBottom: '0.5rem' }}>
+                    ANSWER EVERY VISITOR. BOOK THE ONES WHO ARE READY.
+                  </p>
+                  <h3 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '0.75rem', color: 'var(--mk-ink)' }}>
+                    Deploy Crescelo on your website in 15 minutes
+                  </h3>
+                  <p style={{ maxWidth: '36rem', margin: '0 auto 1.5rem', color: 'var(--mk-muted)', lineHeight: 1.6 }}>
+                    Train your assistant on your price lists, documents, and service policies. Enable 24/7 grounded answers and conflict-free in-chat appointment booking.
+                  </p>
+                  <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+                    <ButtonLink href="/login?mode=register">Start 14-Day Free Trial</ButtonLink>
+                    <Link
+                      href="/pricing"
                       style={{
-                        padding: '1.25rem',
-                        borderRadius: '10px',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        padding: '0.6rem 1.25rem',
+                        borderRadius: '6px',
                         border: '1px solid var(--mk-border, #cbd5e1)',
+                        background: 'var(--mk-surface, #ffffff)',
+                        fontWeight: 600,
+                        fontSize: '0.95rem',
+                        color: 'var(--mk-ink)',
+                        textDecoration: 'none',
                       }}
                     >
-                      <p style={{ fontSize: '0.8rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--mk-muted)', marginBottom: '0.75rem' }}>
-                        TABLE OF CONTENTS
-                      </p>
-                      <ol style={{ paddingLeft: '1.2rem', margin: 0, fontSize: '0.88rem', display: 'flex', flexDirection: 'column', gap: '0.5rem', lineHeight: 1.4 }}>
-                        {toc.map((h) => (
-                          <li key={h.id}>
-                            <a
-                              href={`#${h.id}`}
-                              style={{
-                                color: 'var(--mk-ink, #0f172a)',
-                                textDecoration: 'none',
-                                fontWeight: 500,
-                              }}
-                            >
-                              {h.text.replace(/^\d+\.\s*/, '')}
-                            </a>
-                          </li>
-                        ))}
-                      </ol>
-                    </div>
-                  )}
+                      View Pricing & Plans
+                    </Link>
+                  </div>
+                </div>
 
-                  {/* Sibling Articles / Related Topics in Cluster */}
-                  {related.length > 0 && (
-                    <div
-                      className="mk-card"
-                      style={{
-                        padding: '1.25rem',
-                        borderRadius: '10px',
-                        border: '1px solid var(--mk-border, #e2e8f0)',
-                      }}
-                    >
-                      <p style={{ fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--mk-muted)', marginBottom: '0.6rem' }}>
-                        MORE IN THIS TOPIC
-                      </p>
-                      <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
-                        {related.map((r) => (
-                          <li key={r.slug} style={{ fontSize: '0.85rem', lineHeight: 1.35 }}>
-                            <Link href={`/blog/${r.slug}`} style={{ textDecoration: 'none', color: 'var(--mk-ink)', fontWeight: 600 }}>
-                              {r.title}
-                            </Link>
-                          </li>
-                        ))}
-                      </ul>
-                      <div style={{ marginTop: '1rem', paddingTop: '0.75rem', borderTop: '1px solid var(--mk-border, #f1f5f9)' }}>
-                        <Link href="/blog" style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--mk-accent, #2563eb)', textDecoration: 'none' }}>
-                          Browse all 200 guides →
-                        </Link>
-                      </div>
+                {/* Related Articles Bottom Grid */}
+                {related.length > 0 && (
+                  <aside aria-label="Related articles" style={{ marginTop: '3.5rem', paddingTop: '2rem', borderTop: '1px solid var(--mk-border, #e2e8f0)' }}>
+                    <h2 style={{ fontSize: '1.4rem', fontWeight: 700, marginBottom: '1rem', color: 'var(--mk-ink)' }}>
+                      Recommended Next Reading
+                    </h2>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '1rem' }}>
+                      {related.map((r) => (
+                        <div key={r.slug} className="mk-card" style={{ padding: '1.25rem', borderRadius: '8px' }}>
+                          <p style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--mk-accent, #2563eb)', marginBottom: '0.4rem' }}>
+                            {r.clusterName || 'Guide'} · ⏱️ {r.readMinutes}m
+                          </p>
+                          <Link href={`/blog/${r.slug}`} className="mk-animated-link" style={{ fontWeight: 700, fontSize: '1.05rem', color: 'var(--mk-ink)' }}>
+                            {r.title}
+                          </Link>
+                          <p style={{ fontSize: '0.85rem', color: 'var(--mk-muted)', marginTop: '0.4rem', lineHeight: 1.5 }}>
+                            {r.excerpt}
+                          </p>
+                        </div>
+                      ))}
                     </div>
-                  )}
+                  </aside>
+                )}
+              </article>
 
-                  {/* Mini Trial Promo */}
+              {/* Right Sticky Sidebar */}
+              <aside
+                aria-label="Table of contents & related guides"
+                className="mk-sidebar-scroll"
+                style={{
+                  position: 'sticky',
+                  top: '5rem',
+                  maxHeight: 'calc(100vh - 6rem)',
+                  overflowY: 'auto',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '1.5rem',
+                  paddingRight: '0.35rem',
+                }}
+              >
+                {/* Sticky Table of Contents Card */}
+                {toc.length > 0 && (
                   <div
                     className="mk-card"
                     style={{
                       padding: '1.25rem',
                       borderRadius: '10px',
-                      background: 'var(--mk-surface-muted, #f8fafc)',
+                      border: '1px solid var(--mk-border, #cbd5e1)',
+                    }}
+                  >
+                    <p style={{ fontSize: '0.8rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--mk-muted)', marginBottom: '0.75rem' }}>
+                      TABLE OF CONTENTS
+                    </p>
+                    <ol style={{ paddingLeft: '1.2rem', margin: 0, fontSize: '0.88rem', display: 'flex', flexDirection: 'column', gap: '0.5rem', lineHeight: 1.4 }}>
+                      {toc.map((h) => (
+                        <li key={h.id}>
+                          <a
+                            href={`#${h.id}`}
+                            className="mk-animated-link"
+                            style={{
+                              color: 'var(--mk-ink, #0f172a)',
+                              fontWeight: 500,
+                            }}
+                          >
+                            {h.text.replace(/^\d+\.\s*/, '')}
+                          </a>
+                        </li>
+                      ))}
+                    </ol>
+                  </div>
+                )}
+
+                {/* Sibling Articles / Related Topics in Cluster */}
+                {related.length > 0 && (
+                  <div
+                    className="mk-card"
+                    style={{
+                      padding: '1.25rem',
+                      borderRadius: '10px',
                       border: '1px solid var(--mk-border, #e2e8f0)',
                     }}
                   >
-                    <p style={{ fontWeight: 700, fontSize: '0.9rem', marginBottom: '0.3rem' }}>Stop missing bookings</p>
-                    <p style={{ fontSize: '0.82rem', color: 'var(--mk-muted)', lineHeight: 1.5, marginBottom: '0.75rem' }}>
-                      Crescelo installs on WordPress, Webflow, Squarespace, or plain HTML in minutes.
+                    <p style={{ fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--mk-muted)', marginBottom: '0.6rem' }}>
+                      MORE IN THIS TOPIC
                     </p>
-                    <Link
-                      href="/login?mode=register"
-                      style={{
-                        display: 'block',
-                        textAlign: 'center',
-                        padding: '0.5rem',
-                        borderRadius: '6px',
-                        background: 'var(--mk-accent, #2563eb)',
-                        color: '#ffffff',
-                        fontWeight: 600,
-                        fontSize: '0.85rem',
-                        textDecoration: 'none',
-                      }}
-                    >
-                      Start Free Trial
-                    </Link>
+                    <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+                      {related.map((r) => (
+                        <li key={r.slug} style={{ fontSize: '0.85rem', lineHeight: 1.35 }}>
+                          <Link href={`/blog/${r.slug}`} className="mk-animated-link" style={{ color: 'var(--mk-ink)', fontWeight: 600 }}>
+                            {r.title}
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                    <div style={{ marginTop: '1rem', paddingTop: '0.75rem', borderTop: '1px solid var(--mk-border, #f1f5f9)' }}>
+                      <Link href="/blog" className="mk-animated-link" style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--mk-accent, #2563eb)' }}>
+                        Browse all 200 guides →
+                      </Link>
+                    </div>
                   </div>
-                </aside>
-              </div>
+                )}
+
+                {/* Mini Trial Promo */}
+                <div
+                  className="mk-card"
+                  style={{
+                    padding: '1.25rem',
+                    borderRadius: '10px',
+                    background: 'var(--mk-surface-muted, #f8fafc)',
+                    border: '1px solid var(--mk-border, #e2e8f0)',
+                  }}
+                >
+                  <p style={{ fontWeight: 700, fontSize: '0.9rem', marginBottom: '0.3rem' }}>Stop missing bookings</p>
+                  <p style={{ fontSize: '0.82rem', color: 'var(--mk-muted)', lineHeight: 1.5, marginBottom: '0.75rem' }}>
+                    Crescelo installs on WordPress, Webflow, Squarespace, or plain HTML in minutes.
+                  </p>
+                  <Link
+                    href="/login?mode=register"
+                    style={{
+                      display: 'block',
+                      textAlign: 'center',
+                      padding: '0.5rem',
+                      borderRadius: '6px',
+                      background: 'var(--mk-accent, #2563eb)',
+                      color: '#ffffff',
+                      fontWeight: 600,
+                      fontSize: '0.85rem',
+                      textDecoration: 'none',
+                    }}
+                  >
+                    Start Free Trial
+                  </Link>
+                </div>
+              </aside>
             </div>
           </div>
         </section>

@@ -4,29 +4,52 @@ import type { BlogBlock } from '@/lib/blog/posts';
 
 const LINK = /\[([^\]]+)\]\((https?:\/\/[^)\s]+|\/[^)\s]*)\)/g;
 
-/** Turns "[label](/path)" or "[label](https://site)" into links. Internal links use Next's Link; external links open safely. Nothing else is interpreted. */
+/** Turns "[label](/path)" or "[label](https://site)" into links, and "**bold**" into <strong>, splitting newlines with <br />. */
 export function inline(text: string): ReactNode[] {
+  const lines = text.split('\n');
   const out: ReactNode[] = [];
-  let last = 0;
-  let m: RegExpExecArray | null;
-  LINK.lastIndex = 0;
-  while ((m = LINK.exec(text))) {
-    if (m.index > last) out.push(text.slice(last, m.index));
-    const [, label, href] = m;
-    out.push(
-      href.startsWith('/') ? (
-        <Link key={m.index} href={href} style={{ textDecoration: 'underline', textUnderlineOffset: 3, fontWeight: 600 }}>
-          {label}
-        </Link>
-      ) : (
-        <a key={m.index} href={href} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'underline', textUnderlineOffset: 3, fontWeight: 600 }}>
-          {label}
-        </a>
-      )
-    );
-    last = m.index + m[0].length;
-  }
-  if (last < text.length) out.push(text.slice(last));
+
+  lines.forEach((line, lineIdx) => {
+    if (lineIdx > 0) {
+      out.push(<br key={`br-${lineIdx}`} />);
+    }
+
+    const TOKEN_REGEX = /\[([^\]]+)\]\((https?:\/\/[^)\s]+|\/[^)\s]*)\)|\*\*([^*]+)\*\*/g;
+    let last = 0;
+    let m: RegExpExecArray | null;
+
+    while ((m = TOKEN_REGEX.exec(line))) {
+      if (m.index > last) {
+        out.push(line.slice(last, m.index));
+      }
+      if (m[1] && m[2]) {
+        const label = m[1];
+        const href = m[2];
+        out.push(
+          href.startsWith('/') ? (
+            <Link key={`link-${lineIdx}-${m.index}`} href={href} style={{ textDecoration: 'underline', textUnderlineOffset: 3, fontWeight: 600 }}>
+              {label}
+            </Link>
+          ) : (
+            <a key={`ext-${lineIdx}-${m.index}`} href={href} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'underline', textUnderlineOffset: 3, fontWeight: 600 }}>
+              {label}
+            </a>
+          )
+        );
+      } else if (m[3]) {
+        out.push(
+          <strong key={`bold-${lineIdx}-${m.index}`} style={{ fontWeight: 700, color: 'var(--mk-ink, #0f172a)' }}>
+            {m[3]}
+          </strong>
+        );
+      }
+      last = m.index + m[0].length;
+    }
+    if (last < line.length) {
+      out.push(line.slice(last));
+    }
+  });
+
   return out;
 }
 

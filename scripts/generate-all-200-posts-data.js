@@ -146,7 +146,7 @@ function generateArticleContent(cluster, article) {
   body.push({
     type: 'h2',
     id: sec5Id,
-    text: `Frequently Asked Questions About ${pKw}`
+    text: `Frequently Asked Questions`
   });
 
   body.push({

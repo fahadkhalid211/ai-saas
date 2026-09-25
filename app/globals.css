@@ -79,3 +79,76 @@ html { font-size: 16px; }
 @media (min-width: 2560px) { html { font-size: 24px; } }
 @media (min-width: 3200px) { html { font-size: 30px; } }
 @media (min-width: 3840px) { html { font-size: 34px; } }
+
+/* Animated Underline for Table of Contents, Sidebar & Glossary */
+.mk-animated-link {
+  position: relative;
+  text-decoration: none;
+  display: inline-block;
+  color: inherit;
+  transition: color 0.18s ease;
+}
+
+.mk-animated-link::after {
+  content: '';
+  position: absolute;
+  width: 0;
+  height: 2px;
+  bottom: -2px;
+  left: 0;
+  background-color: var(--mk-accent, #2563eb);
+  transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.mk-animated-link:hover {
+  color: var(--mk-accent, #2563eb);
+}
+
+.mk-animated-link:hover::after {
+  width: 100%;
+}
+
+/* Smooth scrollbar styling for sidebars */
+.mk-sidebar-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, 0.4) transparent;
+}
+.mk-sidebar-scroll::-webkit-scrollbar {
+  width: 5px;
+}
+.mk-sidebar-scroll::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.4);
+  border-radius: 9999px;
+}
+.mk-sidebar-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(100, 116, 139, 0.7);
+}
+
+/* Responsive 2-column layouts for Blog & Article detail */
+.mk-article-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: 3rem;
+  align-items: start;
+}
+
+.mk-glossary-layout {
+  display: grid;
+  grid-template-columns: 290px minmax(0, 1fr);
+  gap: 2.5rem;
+  align-items: start;
+}
+
+@media (max-width: 1024px) {
+  .mk-article-layout {
+    grid-template-columns: 1fr !important;
+    gap: 2rem !important;
+  }
+}
+
+@media (max-width: 960px) {
+  .mk-glossary-layout {
+    grid-template-columns: 1fr !important;
+    gap: 2rem !important;
+  }
+}
