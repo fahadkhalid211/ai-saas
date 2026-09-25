@@ -362,6 +362,16 @@ async function* streamAutoFree(
  * Universal Streaming Chat Generator
  * Yields text tokens one by one as they arrive from the LLM.
  */
+/** True when the text stops in the middle of a sentence: it is long enough to be an answer and ends on a word, comma, dash or open bracket. */
+export function endsMidSentence(text: string): boolean {
+  const t = text.trimEnd();
+  if (t.length < 40 || t.startsWith('*(')) return false;
+  const last = t[t.length - 1];
+  if (/[.!?…:;)\]}"'`*>|—]/.test(last)) return false;
+  if (/\p{Extended_Pictographic}$/u.test(t)) return false;
+  return /[\p{L}\p{N},\-(\[]/u.test(last);
+}
+
 export async function* streamChatResponse(
   messages: ChatMessage[],
   options: ProviderOptions
@@ -387,7 +397,8 @@ export async function* streamChatResponse(
       yield chunk;
     }
     // notices such as "*(Authentication Error...)*" are not answers, and an empty result has nothing to continue
-    const truncated = meta.finish === 'length' || meta.finish === 'max_tokens' || meta.interrupted === true;
+    // some providers report a clean stop even though the text ends mid-sentence (reasoning tokens ate the budget, dropped connection)
+    const truncated = meta.finish === 'length' || meta.finish === 'max_tokens' || meta.interrupted === true || endsMidSentence(produced);
     if (!truncated || !text.trim() || text.trimStart().startsWith('*(')) return;
   }
 }

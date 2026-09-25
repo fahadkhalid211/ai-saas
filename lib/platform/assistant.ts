@@ -72,7 +72,7 @@ export async function answerDashboardMessage(text: string, history: ChatMessage[
       ...history.slice(-8),
       { role: 'user', content: text },
     ];
-    const out = (await generateChatCompletion(prompt, { provider: 'auto_free', modelName: 'llama-3.3-70b-versatile', temperature: 0.2, maxTokens: 700 })).trim();
+    const out = (await generateChatCompletion(prompt, { provider: 'auto_free', modelName: 'llama-3.3-70b-versatile', temperature: 0.2, maxTokens: 1200 })).trim();
     if (out && !out.startsWith('*(') && !ERROR_MARKERS.some((m) => out.includes(m))) {
       if (FALSE_CLAIM.test(out)) {
         return { reply: 'I cannot change your plan or settings myself. If you want a plan change, say for example "upgrade to Growth" and I will show a Confirm button.', actions: [], source: 'ai' };
