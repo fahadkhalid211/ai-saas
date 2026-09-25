@@ -32,6 +32,7 @@
   font-size: 1rem;
   line-height: 1.6;
   overflow-x: clip;
+  overflow-y: visible;
   -webkit-font-smoothing: antialiased;
 }
 .mk *,
@@ -114,9 +115,9 @@ html.lenis, html.lenis body { height: auto !important; }
 .mk-burger-lines { transform: translateY(-0.1875rem); }
 .mk-burger-lines.is-open { transform: rotate(45deg); }
 .mk-burger-lines.is-open::before { transform: translateY(-0.375rem) rotate(-90deg); }
-.mk-mobile { position: fixed; inset: 4.25rem 0 0 0; background: var(--mk-bg); padding: 1rem 1.25rem 2rem; overflow-y: auto; display: flex; flex-direction: column; justify-content: space-between; gap: 2rem; z-index: 40; }
-.mk-mobile-link { display: flex; flex-direction: column; padding: 1.125rem 0; border-bottom: 1px solid var(--mk-line); font-family: var(--mk-serif); font-size: 2rem; line-height: 1.1; }
-.mk-mobile-link small { font-family: var(--mk-sans); font-size: 0.875rem; color: var(--mk-muted); margin-top: 0.25rem; }
+.mk-mobile { position: fixed; inset: 4.25rem 0 0 0; background: var(--mk-bg); padding: 1rem 1.25rem 2rem; overflow-y: auto; display: flex; flex-direction: column; justify-content: space-between; gap: 1.5rem; z-index: 40; }
+.mk-mobile-link { display: flex; flex-direction: column; padding: 0.75rem 0; border-bottom: 1px solid var(--mk-line); font-family: var(--mk-sans); font-size: 1.125rem; font-weight: 600; line-height: 1.35; color: var(--mk-ink); text-decoration: none; }
+.mk-mobile-link small { font-family: var(--mk-sans); font-size: 0.8125rem; font-weight: 400; color: var(--mk-muted); margin-top: 0.2rem; }
 .mk-mobile-actions { display: grid; gap: 0.75rem; }
 @media (min-width: 960px) {
   .mk-nav-desktop { display: flex; }

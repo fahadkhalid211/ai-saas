@@ -47,7 +47,7 @@
 .mk-nav-link:hover { background: var(--mk-lime-soft); }
 .mk-burger { border: 1.5px solid var(--mk-ink); border-radius: 0.75rem; }
 .mk-mobile { inset: 5.25rem 0.75rem 0.75rem 0.75rem; border: 1.5px solid var(--mk-ink); border-radius: 1.5rem; background: var(--mk-surface); }
-.mk-mobile-link { font-size: 2.2rem; }
+.mk-mobile-link { font-size: 1.125rem; font-family: var(--mk-sans); font-weight: 600; }
 
 /* Hero: deep green panel, extruded lime headline */
 .mk-hero { position: relative; margin: 0 0.75rem; padding: 4.5rem 0 3.5rem; border-radius: 2.25rem; background: var(--mk-deep); color: var(--mk-bg); overflow: hidden; }

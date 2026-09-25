@@ -212,17 +212,12 @@ export function BlogGlossaryHub({ posts, clusters }: BlogGlossaryHubProps) {
         {/* Left Sticky Sidebar: Topic Clusters */}
         <aside
           aria-label="Topic Clusters"
-          data-lenis-prevent="true"
-          className="mk-card mk-sidebar-scroll"
+          className="mk-sidebar-sticky mk-sidebar-scroll"
           style={{
             padding: '1.25rem',
             borderRadius: '10px',
-            position: 'sticky',
-            top: '5rem',
-            maxHeight: 'calc(100vh - 6rem)',
-            overflowY: 'auto',
-            overscrollBehavior: 'contain',
-            WebkitOverflowScrolling: 'touch',
+            background: 'var(--mk-surface)',
+            border: '1px solid var(--mk-line, #e2e8f0)',
           }}
         >
           <div style={{ marginBottom: '1.25rem' }}>

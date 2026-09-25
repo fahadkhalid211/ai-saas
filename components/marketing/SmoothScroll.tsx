@@ -33,12 +33,11 @@ export function SmoothScroll() {
       wheelMultiplier: 1.05,
       touchMultiplier: 1.2,
       autoResize: true,
+      allowNestedScroll: true,
       prevent: (node) => {
         return (
           node.hasAttribute('data-lenis-prevent') ||
-          !!node.closest?.('[data-lenis-prevent]') ||
-          !!node.closest?.('.mk-sidebar-scroll') ||
-          !!node.closest?.('aside')
+          !!node.closest?.('[data-lenis-prevent]')
         );
       },
     });

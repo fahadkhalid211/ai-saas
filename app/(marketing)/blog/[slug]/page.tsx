@@ -296,28 +296,21 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
               {/* Right Sticky Sidebar */}
               <aside
                 aria-label="Table of contents & related guides"
-                data-lenis-prevent="true"
-                className="mk-sidebar-scroll"
+                className="mk-sidebar-sticky mk-sidebar-scroll"
                 style={{
-                  position: 'sticky',
-                  top: '5rem',
-                  maxHeight: 'calc(100vh - 6rem)',
-                  overflowY: 'auto',
-                  overscrollBehavior: 'contain',
-                  WebkitOverflowScrolling: 'touch',
                   display: 'flex',
                   flexDirection: 'column',
-                  gap: '1.5rem',
+                  gap: '1.25rem',
                   paddingRight: '0.45rem',
                 }}
               >
                 {/* Sticky Table of Contents Card */}
                 {toc.length > 0 && (
                   <div
-                    className="mk-card"
                     style={{
                       padding: '1.25rem',
                       borderRadius: '10px',
+                      background: 'var(--mk-surface)',
                       border: '1px solid var(--mk-border, #cbd5e1)',
                     }}
                   >
@@ -346,10 +339,10 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
                 {/* Sibling Articles / Related Topics in Cluster */}
                 {related.length > 0 && (
                   <div
-                    className="mk-card"
                     style={{
                       padding: '1.25rem',
                       borderRadius: '10px',
+                      background: 'var(--mk-surface)',
                       border: '1px solid var(--mk-border, #e2e8f0)',
                     }}
                   >
@@ -375,7 +368,6 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
 
                 {/* Mini Trial Promo */}
                 <div
-                  className="mk-card"
                   style={{
                     padding: '1.25rem',
                     borderRadius: '10px',

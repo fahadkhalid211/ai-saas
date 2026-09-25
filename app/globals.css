@@ -17,10 +17,14 @@
   --foreground: #f8fafc;
 }
 
+html,
+body {
+  overflow-x: clip;
+}
+
 body {
   background-color: var(--background);
   color: var(--foreground);
-  overflow-x: hidden;
   transition: background-color 0.15s ease, color 0.15s ease;
 }
 
@@ -144,6 +148,15 @@ html { font-size: 16px; }
   align-items: start;
 }
 
+.mk-sidebar-sticky {
+  position: -webkit-sticky;
+  position: sticky;
+  top: 5.5rem;
+  max-height: calc(100vh - 6.5rem);
+  overflow-y: auto;
+  align-self: start;
+}
+
 @media (max-width: 1024px) {
   .mk-article-layout {
     grid-template-columns: 1fr !important;
@@ -155,5 +168,9 @@ html { font-size: 16px; }
   .mk-glossary-layout {
     grid-template-columns: 1fr !important;
     gap: 2rem !important;
+  }
+  .mk-sidebar-sticky {
+    position: static !important;
+    max-height: 320px !important;
   }
 }
