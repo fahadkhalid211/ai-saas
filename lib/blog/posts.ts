@@ -5,6 +5,7 @@
  */
 
 import allGeneratedPosts from './data/all-posts.json';
+import { REWRITTEN_POSTS } from './rewritten';
 import { seoDescription, seoTitle, withFurtherReading } from './seo';
 
 export type BlogBlock =
@@ -35,6 +36,8 @@ export interface BlogPost {
   /** Slugs of other posts to suggest at the end (internal linking). */
   related: string[];
   body: BlogBlock[];
+  /** A templated placeholder article that has not been rewritten yet: kept reachable, but hidden from search engines, the hub, the feed and the sitemap. */
+  thin?: boolean;
 }
 
 const DATE = '2026-09-25';
@@ -212,13 +215,16 @@ function polish(p: BlogPost): BlogPost {
 }
 
 (allGeneratedPosts as unknown as BlogPost[]).forEach((p) => {
-  postMap.set(p.slug, polish(p));
+  postMap.set(p.slug, { ...polish(p), thin: true });
 });
-INITIAL_POSTS.forEach((p) => {
+[...INITIAL_POSTS, ...REWRITTEN_POSTS].forEach((p) => {
   postMap.set(p.slug, polish(p));
 });
 
 export const BLOG_POSTS: BlogPost[] = Array.from(postMap.values());
+
+/** Articles that are written for readers and are listed in search: everything except the unrewritten placeholders. */
+export const PUBLISHED_POSTS: BlogPost[] = BLOG_POSTS.filter((p) => !p.thin);
 
 export function getPost(slug: string): BlogPost | undefined {
   return postMap.get(slug);
@@ -226,7 +232,7 @@ export function getPost(slug: string): BlogPost | undefined {
 
 /** Newest first. */
 export function sortedPosts(): BlogPost[] {
-  return [...BLOG_POSTS].sort((a, b) => {
+  return [...PUBLISHED_POSTS].sort((a, b) => {
     const dComp = b.datePublished.localeCompare(a.datePublished);
     if (dComp !== 0) return dComp;
     return a.title.localeCompare(b.title);
@@ -242,7 +248,7 @@ export interface ClusterSummary {
 /** Returns all unique topic clusters with their article counts. */
 export function getClusters(): ClusterSummary[] {
   const map = new Map<number, { name: string; count: number }>();
-  BLOG_POSTS.forEach((p) => {
+  PUBLISHED_POSTS.forEach((p) => {
     if (p.clusterId && p.clusterName) {
       const cur = map.get(p.clusterId) || { name: p.clusterName, count: 0 };
       cur.count += 1;

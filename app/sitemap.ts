@@ -1,6 +1,6 @@
 import type { MetadataRoute } from 'next';
 import { SITE } from '@/components/marketing/content';
-import { BLOG_POSTS } from '@/lib/blog/posts';
+import { PUBLISHED_POSTS } from '@/lib/blog/posts';
 
 /** Bump this when the marketing pages change in a way worth re-crawling. */
 const SITE_UPDATED = '2026-09-25';
@@ -65,7 +65,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     changeFrequency: p.changeFrequency,
     priority: p.priority,
   }));
-  const posts = BLOG_POSTS.map((b) => ({
+  const posts = PUBLISHED_POSTS.map((b) => ({
     url: `${SITE.url}/blog/${b.slug}`,
     lastModified: new Date(b.dateModified),
     changeFrequency: 'monthly' as const,
