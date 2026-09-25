@@ -8,7 +8,32 @@ import './playground.css';
 
 interface Source { id: string; title: string; kind: 'file' | 'text' | 'url'; chars: number }
 interface Session { key: string; name: string; sources: Source[]; chatsLeft: number; expiresAt: string; limits: { maxSources: number; maxFileMb: number } }
-interface Msg { role: 'user' | 'assistant'; content: string; sources?: string[] }
+interface Msg { role: 'user' | 'assistant'; content: string; sources?: string[]; booking?: boolean }
+
+/** Wanting to book, in the words people use. The playground answers this with a sample booking form, like a real assistant would. */
+const BOOKING_INTENT = /\b(book|booking|schedule|appointment|reserve|reservation|consultation|meeting|demo|call back|callback)\b/i;
+const SLOTS = ['9:30 AM', '11:00 AM', '1:15 PM', '3:00 PM', '4:45 PM'];
+
+/** A sample of the booking form the assistant shows on a customer's site. Nothing is saved or sent. */
+function DemoBooking({ name }: { name: string }) {
+  const days = Array.from({ length: 5 }, (_, i) => { const d = new Date(); d.setDate(d.getDate() + i + 1); return d; });
+  const [day, setDay] = useState(0);
+  const [slot, setSlot] = useState('');
+  const [who, setWho] = useState(name);
+  const [done, setDone] = useState(false);
+  const label = (d: Date) => d.toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' });
+  if (done) return <div className="pg-book"><b>Booked (sample)</b><p>{who}, you are down for {label(days[day])} at {slot}. On your own site this lands in your calendar and inbox, and the customer gets a confirmation.</p></div>;
+  return (
+    <form className="pg-book" onSubmit={(e) => { e.preventDefault(); if (slot && who.trim()) setDone(true); }}>
+      <b>Pick a time</b>
+      <div className="pg-book-row" role="group" aria-label="Day">{days.map((d, i) => <button key={i} type="button" aria-pressed={day === i} onClick={() => setDay(i)}>{label(d)}</button>)}</div>
+      <div className="pg-book-row" role="group" aria-label="Time">{SLOTS.map((t) => <button key={t} type="button" aria-pressed={slot === t} onClick={() => setSlot(t)}>{t}</button>)}</div>
+      <input value={who} onChange={(e) => setWho(e.target.value)} placeholder="Your name" maxLength={80} aria-label="Your name" />
+      <button className="pg-btn" disabled={!slot || !who.trim()}>Confirm booking</button>
+      <small>This is a sample: nothing is saved. Your real assistant books into your own calendar.</small>
+    </form>
+  );
+}
 
 const STORE = 'crescelo_playground_key';
 
@@ -177,6 +202,10 @@ function Workspace({ session, setSession, onLeave }: { session: Session; setSess
     const message = q.trim();
     if (!message || sending) return;
     const history = msgs.map((m) => ({ role: m.role, content: m.content }));
+    if (BOOKING_INTENT.test(message)) {
+      setMsgs((m) => [...m, { role: 'user', content: message }, { role: 'assistant', content: 'Happy to help you pick a time. Choose a day and a slot below.', booking: true }]); setInput('');
+      return;
+    }
     setMsgs((m) => [...m, { role: 'user', content: message }]); setInput(''); setSending(true);
     try {
       const r = await call<{ reply: string; sources: string[]; chatsLeft: number }>('/api/playground/chat', { method: 'POST', key, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message, history }) });
@@ -236,6 +265,7 @@ function Workspace({ session, setSession, onLeave }: { session: Session; setSess
           ) : msgs.map((m, i) => (
             <div key={i} className={`pg-msg pg-${m.role}`}>
               <p>{m.content}</p>
+              {m.booking ? <DemoBooking name={session.name} /> : null}
               {m.sources?.length ? <small>From: {m.sources.join(', ')}</small> : null}
             </div>
           ))}

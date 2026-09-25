@@ -47,3 +47,10 @@
 .pg-faq-item summary { cursor: pointer; font-weight: 600; }
 .pg-faq-item p { margin-top: 0.6rem; line-height: 1.6; }
 .pg-msg p { white-space: pre-line; }
+
+.pg-book { margin-top: 0.6rem; display: grid; gap: 0.6rem; padding: 0.8rem; border-radius: 0.9rem; background: #fff; border: 1px solid rgba(8,37,26,0.15); color: var(--mk-ink, #08251a); }
+.pg-book-row { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.pg-book-row button { padding: 0.35rem 0.7rem; border-radius: 999px; border: 1px solid rgba(8,37,26,0.25); background: #fff; font-size: 0.8rem; cursor: pointer; }
+.pg-book-row button[aria-pressed='true'] { background: var(--mk-lime, #abff44); border-color: var(--mk-ink, #08251a); font-weight: 700; }
+.pg-book input { padding: 0.5rem 0.7rem; border-radius: 0.6rem; border: 1px solid rgba(8,37,26,0.25); font: inherit; }
+.pg-book small { opacity: 0.7; }
