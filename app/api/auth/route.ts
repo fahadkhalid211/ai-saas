@@ -14,6 +14,42 @@ import { Database, sanitizeTeamMember } from '@/lib/db';
 import { validateRegistrationPayload, validateEmail, sanitizeInput } from '@/lib/security/validation';
 import { verifyRecaptchaToken } from '@/lib/security/recaptcha';
 import { logged } from '@/lib/logging/route';
+import { verifyTotpToken } from '@/lib/security/totp';
+
+/**
+ * Second step of sign-in. Once the password is right, an account with two-factor authentication turned on must also present a
+ * current authenticator code (or an unused recovery code) before any session is issued. Returns a response to send when the
+ * sign-in must stop here, or null when it may continue.
+ */
+async function requireSecondFactor(memberId: string, email: string, code: unknown, ip: string): Promise<Response | null> {
+  const member = await Database.getTeamMemberById(memberId);
+  if (!member || !member.twoFactorEnabled || !member.twoFactorSecret) return null;
+
+  const supplied = typeof code === 'string' ? code.trim().toUpperCase() : '';
+  if (!supplied) {
+    return NextResponse.json({ requiresTwoFactor: true, error: 'Enter the 6-digit code from your authenticator app.' }, { status: 401 });
+  }
+
+  const limited = await enforceDistributedRateLimitByKey(`login-2fa:${memberId}`, { windowMs: 5 * 60 * 1000, max: 5 });
+  if (limited) return limited;
+
+  const totpOk = verifyTotpToken(supplied, member.twoFactorSecret);
+  const recoveryOk = !totpOk && Boolean(member.recoveryCodes?.includes(supplied));
+  if (!totpOk && !recoveryOk) {
+    await Database.addAuditLog({
+      actor: { id: member.id, name: member.name, email, username: email.split('@')[0], ip },
+      action: 'auth.2fa_failed',
+      targetType: 'session',
+      targetId: member.id,
+      details: { email },
+    });
+    return NextResponse.json({ requiresTwoFactor: true, error: 'Invalid authentication code.' }, { status: 401 });
+  }
+  if (recoveryOk) {
+    await Database.updateTeamMember(member.id, { recoveryCodes: (member.recoveryCodes || []).filter((c) => c !== supplied) });
+  }
+  return null;
+}
 
 async function GETHandler(req: Request) {
   try {
@@ -193,6 +229,8 @@ async function POSTHandler(req: Request) {
       // Check tenant workspace login
       const tenantMatch = await Database.verifyTenantLogin(email, passwordOrCode);
       if (tenantMatch) {
+        const stop = await requireSecondFactor(tenantMatch.member.id, email, body?.twoFactorCode, ip);
+        if (stop) return stop;
         const sessionToken = generateSessionToken(
           tenantMatch.member.role,
           tenantMatch.member.id,
@@ -249,6 +287,9 @@ async function POSTHandler(req: Request) {
           { status: 401 }
         );
       }
+
+      const stop2 = await requireSecondFactor(staffMember.id, email, body?.twoFactorCode, ip);
+      if (stop2) return stop2;
 
       const staffWs = staffMember.workspaceId || 'default-workspace';
       const sessionToken = generateSessionToken(staffMember.role, staffMember.id, staffWs);

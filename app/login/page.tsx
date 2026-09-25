@@ -62,6 +62,9 @@ export default function LoginPage() {
       .catch(() => undefined);
   }, [router]);
 
+  const [twoFactorCode, setTwoFactorCode] = useState('');
+  const [needsTwoFactor, setNeedsTwoFactor] = useState(false);
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     const registering = authLoginMode === 'register';
@@ -86,6 +89,7 @@ export default function LoginPage() {
             mode: 'staff',
             email: staffEmailInput.trim(),
             password: staffPasswordInput.trim(),
+            ...(needsTwoFactor ? { twoFactorCode: twoFactorCode.trim() } : {}),
             recaptchaToken,
           };
       const res = await fetch('/api/auth', {
@@ -98,6 +102,11 @@ export default function LoginPage() {
         if (registering) trackEvent('sign_up', { method: 'email', plan: readSelectedPlan()?.plan ?? 'none' });
         router.replace('/dashboard');
       } else {
+        if (data.requiresTwoFactor) {
+          // password accepted, the account also needs its authenticator code
+          setNeedsTwoFactor(true);
+          if (needsTwoFactor) setTwoFactorCode('');
+        }
         setAuthError(data.error || 'Authentication failed');
         setIsLoggingIn(false);
       }
@@ -177,6 +186,9 @@ export default function LoginPage() {
       setRegTemplateInput={setRegTemplateInput}
       isLoggingIn={isLoggingIn}
       handleLogin={handleLogin}
+      needsTwoFactor={needsTwoFactor}
+      twoFactorCode={twoFactorCode}
+      setTwoFactorCode={setTwoFactorCode}
       handleGoogleLogin={handleGoogleLogin}
       handleAppleLogin={handleAppleLogin}
       handleSSOLogin={handleSSOLogin}

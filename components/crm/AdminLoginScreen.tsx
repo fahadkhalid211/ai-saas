@@ -55,6 +55,9 @@ interface AdminLoginScreenProps {
   setRegTemplateInput: (val: string) => void;
   isLoggingIn: boolean;
   handleLogin: (e: React.FormEvent) => void;
+  needsTwoFactor?: boolean;
+  twoFactorCode?: string;
+  setTwoFactorCode?: (val: string) => void;
   handleGoogleLogin?: () => void;
   handleAppleLogin?: () => void;
   handleSSOLogin?: (domainOrEmail: string) => void;
@@ -82,6 +85,9 @@ export function AdminLoginScreen({
   setRegTemplateInput,
   isLoggingIn,
   handleLogin,
+  needsTwoFactor,
+  twoFactorCode,
+  setTwoFactorCode,
   handleGoogleLogin,
   handleAppleLogin,
   handleSSOLogin,
@@ -325,6 +331,25 @@ export function AdminLoginScreen({
                   required
                 />
               </div>
+              {needsTwoFactor && (
+                <div className="space-y-1.5">
+                  <label htmlFor="staff-2fa" className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                    Authentication code
+                  </label>
+                  <input
+                    id="staff-2fa"
+                    name="twoFactorCode"
+                    autoComplete="one-time-code"
+                    inputMode="numeric"
+                    value={twoFactorCode || ''}
+                    onChange={(e) => setTwoFactorCode?.(e.target.value)}
+                    placeholder="6-digit code, or a recovery code"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white text-xs placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                    autoFocus
+                    required
+                  />
+                </div>
+              )}
             </div>
           )}
 
