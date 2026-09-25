@@ -1,4 +1,7 @@
 import { Database } from '../db';
+import { isAskAllQuery } from './ask-all';
+
+export { isAskAllQuery };
 import { generateEmbedding } from './embedder';
 import { Citation, SearchResultChunk } from './types';
 import { rerankCandidates, deduplicateChunks } from './rerank';
@@ -44,11 +47,6 @@ export function condenseQuery(
 /**
  * Detect if user is asking for a comprehensive or global overview of a document or video
  */
-/** "Tell me everything", "what do you know", "what is this about": questions about the whole knowledge base, not a keyword in it. */
-export function isAskAllQuery(query: string): boolean {
-  return /\b(all you know|everything|what (?:do|can) you (?:know|tell|help)|tell me (?:more )?about (?:yourself|your (?:business|company|services|product)|it|this|the (?:company|business|product|service))|what(?:'s| is| are) (?:this|these|the (?:doc|document|documents|file|page)) (?:about|for)|what (?:do|does) (?:this|the) (?:company|business|site|website|product|service) do|what do you (?:have|offer|do)|who are you|introduce yourself|give me (?:an? )?(?:intro|introduction|idea|rundown|overview))\b/i.test(query);
-}
-
 export function isGlobalOverviewQuery(query: string): boolean {
   if (isAskAllQuery(query)) return true;
   return /\b(complete|full|entire|whole|all|overview|summary|summarize|walkthrough|outline|explain (the|her|his|this)? ?(video|audio|document|presentation)|about the video|about her video)\b/i.test(query);

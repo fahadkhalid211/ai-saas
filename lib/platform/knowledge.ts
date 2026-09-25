@@ -1,6 +1,6 @@
 import type { ChunkRecord } from '@/lib/db';
 import { GUIDES, type Guide } from './guides';
-import { isAskAllQuery } from '@/lib/rag/retrieval';
+import { isAskAllQuery } from '@/lib/rag/ask-all';
 
 /** Finding and presenting the hand-written guides. No network, no model: it works even when every AI provider is down. */
 
