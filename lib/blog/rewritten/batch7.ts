@@ -138,7 +138,7 @@ export const BATCH7 = [
       h2("A quick calculation"),
       ol("Hours per week a person spends in chat or on chat-related follow-up.", "Multiply by their hourly cost.", "Add the software fee.", "Estimate the enquiries that arrive outside staffed hours."),
       h2("A worked example"),
-      p("Suppose a receptionist spends six hours a week in chat at $20 an hour, which is $120, and the software is $50 a month per seat. That is roughly $700 a month for one seat once you count weeks, before any training time, and it still leaves nights and weekends uncovered. The figures are placeholders; replace them with your own."),
+      p("Suppose a receptionist spends six hours a week in chat at $20 an hour, which is $120 a week or about $520 a month, and the software is $50 a month per seat. That is roughly $570 a month for one seat, before any training time, and it still leaves nights and weekends uncovered. The figures are placeholders; replace them with your own."),
       h2("Ways to reduce it"),
       ul("Let an assistant answer routine questions first.", "Route only conversations that need a person.", "Give staff the history so they do not repeat questions."),
       p("An assistant has its own costs: a plan and AI usage, plus your review time. It is not free, but it does not need a seat per shift. For a fuller comparison see [AI or live chat for a small team](/blog/crescelo-vs-traditional-live-chat) and [return on an assistant](/blog/ai-website-assistant-roi-calculator)."),
