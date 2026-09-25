@@ -205,23 +205,23 @@ export function SubscriptionGate({ isMasterAdmin, onLogout, onOpenBilling, onOpe
   const showManual = !cardsWork || checkoutFailed || expired;
   const earlyBird = Boolean(data.earlyBird?.available);
   return (
-    <div className="fixed inset-0 z-[9000] overflow-y-auto bg-[#1f1e1d]/95 p-4 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="sg-title">
-      <div className="mx-auto my-8 w-full max-w-3xl rounded-3xl border border-white/10 bg-[#262624] p-6 text-[#e8e5dc] shadow-2xl sm:p-8">
+    <div className="fixed inset-0 z-[9000] overflow-y-auto bg-[#fffeeb]/95 p-4 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="sg-title">
+      <div className="mx-auto my-8 w-full max-w-3xl rounded-3xl border border-[#08251a]/10 bg-white ring-1 ring-[#08251a]/10 shadow-[0_30px_80px_-30px_rgba(8,37,26,0.45)] p-6 text-[#08251a] shadow-2xl sm:p-8">
         {confirming ? (
           <div className="py-16 text-center" role="status">
-            <p className="text-lg font-semibold text-[#faf9f5]">Confirming your card…</p>
-            <p className="mt-2 text-sm text-[#a19f96]">This takes a few seconds. Please do not close this page.</p>
+            <p className="text-lg font-semibold text-[#08251a]">Confirming your card…</p>
+            <p className="mt-2 text-sm text-[#4b5d54]">This takes a few seconds. Please do not close this page.</p>
           </div>
         ) : (
           <>
             <div className="text-center">
-              <span className="inline-flex items-center gap-2 rounded-full border border-[#abff44]/40 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#abff44]">
+              <span className="inline-flex items-center gap-2 rounded-full border border-[#08251a]/20 bg-[#abff44]/40 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#0d5b2a]">
                 <CreditCard className="h-3.5 w-3.5" /> {expired ? 'Subscription ended' : `${TRIAL_DAYS}-day free trial`}
               </span>
-              <h1 id="sg-title" className="mt-3 text-3xl text-[#faf9f5]" style={{ fontFamily: 'var(--kx-serif, Georgia, serif)' }}>
+              <h1 id="sg-title" className="mt-3 text-3xl text-[#08251a]" style={{ fontFamily: 'var(--kx-serif, Georgia, serif)' }}>
                 {expired ? 'Choose a plan to switch your assistants back on' : earlyBird && !cardsWork ? 'Early birds, this one is on us 🐣' : 'Start your free trial'}
               </h1>
-              <p className="mx-auto mt-2 max-w-xl text-sm leading-relaxed text-[#c9c6bc]">
+              <p className="mx-auto mt-2 max-w-xl text-sm leading-relaxed text-[#33473d]">
                 {expired
                   ? 'Your assistants are paused. Your data is kept for 30 days. Pick a plan, or message us below and we will arrange payment by hand.'
                   : earlyBird && !cardsWork
@@ -232,7 +232,7 @@ export function SubscriptionGate({ isMasterAdmin, onLogout, onOpenBilling, onOpe
 
             <div className="mt-5 flex justify-center" role="group" aria-label="Billing period">
               {(['annual', 'monthly'] as const).map((i) => (
-                <button key={i} type="button" onClick={() => setInterval(i)} aria-pressed={interval === i} className={`px-4 py-1.5 text-xs font-semibold first:rounded-l-full last:rounded-r-full border border-white/15 cursor-pointer ${interval === i ? 'bg-[#abff44] text-[#08251a]' : 'bg-white/[0.04] text-[#e8e5dc]'}`}>
+                <button key={i} type="button" onClick={() => setInterval(i)} aria-pressed={interval === i} className={`px-4 py-1.5 text-xs font-semibold first:rounded-l-full last:rounded-r-full border border-[#08251a]/15 cursor-pointer ${interval === i ? 'bg-[#abff44] text-[#08251a]' : 'bg-[#f5f3dd] text-[#08251a]'}`}>
                   {i === 'annual' ? `Annual · save ${annualSavingsPercent()}%` : 'Monthly'}
                 </button>
               ))}
@@ -243,18 +243,18 @@ export function SubscriptionGate({ isMasterAdmin, onLogout, onOpenBilling, onOpe
                 const monthly = interval === 'annual' ? p.annualMonthlyPrice : p.monthlyPrice;
                 const on = p.id === planId;
                 return (
-                  <button key={p.id} type="button" onClick={() => setPlanId(p.id)} aria-pressed={on} className={`rounded-2xl border p-4 text-left transition cursor-pointer ${on ? 'border-[#abff44] bg-[#abff44]/10' : 'border-white/10 bg-white/[0.03] hover:border-white/25'}`}>
-                    <p className="text-sm font-bold text-[#faf9f5]">{p.name}</p>
-                    <p className="mt-1 text-2xl font-semibold text-[#faf9f5]">${monthly}<span className="text-xs font-normal text-[#a19f96]"> / month</span></p>
-                    <p className="mt-1 text-[11px] text-[#a19f96]">{interval === 'annual' ? `Billed $${p.annualMonthlyPrice * 12} per year` : 'Billed monthly'}</p>
-                    {interval === 'annual' && <p className="mt-1 text-[11px] font-semibold text-[#abff44]">You save ${planAnnualSavingsDollars(p)} a year</p>}
-                    <p className="mt-2 text-[11px] leading-snug text-[#c9c6bc]">{p.chatSessionsLimit.toLocaleString('en-US')} chat sessions, {p.botLimit === 'Unlimited' ? 'unlimited' : p.botLimit} {p.botLimit === 1 ? 'assistant' : 'assistants'}</p>
+                  <button key={p.id} type="button" onClick={() => setPlanId(p.id)} aria-pressed={on} className={`rounded-2xl border p-4 text-left transition cursor-pointer ${on ? 'border-[#abff44] bg-[#abff44]/25' : 'border-[#08251a]/10 bg-[#faf9ea] hover:border-[#08251a]/40'}`}>
+                    <p className="text-sm font-bold text-[#08251a]">{p.name}</p>
+                    <p className="mt-1 text-2xl font-semibold text-[#08251a]">${monthly}<span className="text-xs font-normal text-[#4b5d54]"> / month</span></p>
+                    <p className="mt-1 text-[11px] text-[#4b5d54]">{interval === 'annual' ? `Billed $${p.annualMonthlyPrice * 12} per year` : 'Billed monthly'}</p>
+                    {interval === 'annual' && <p className="mt-1 text-[11px] font-semibold text-[#0d5b2a]">You save ${planAnnualSavingsDollars(p)} a year</p>}
+                    <p className="mt-2 text-[11px] leading-snug text-[#33473d]">{p.chatSessionsLimit.toLocaleString('en-US')} chat sessions, {p.botLimit === 'Unlimited' ? 'unlimited' : p.botLimit} {p.botLimit === 1 ? 'assistant' : 'assistants'}</p>
                   </button>
                 );
               })}
             </div>
 
-            <div className="mt-5 rounded-2xl border border-white/10 bg-white/[0.04] p-4 text-sm leading-relaxed text-[#e8e5dc]">
+            <div className="mt-5 rounded-2xl border border-[#08251a]/10 bg-[#f5f3dd] p-4 text-sm leading-relaxed text-[#08251a]">
               {earlyBird && !cardsWork ? (
                 <p>Today: <strong>$0</strong>, and no card asked for. Your {TRIAL_DAYS} early-bird days run until <strong>{fmtDate(new Date(Date.now() + TRIAL_DAYS * 86400000).toISOString())}</strong>. Loving it? Message us below and we will set up payment together.</p>
               ) : expired ? (
@@ -273,24 +273,24 @@ export function SubscriptionGate({ isMasterAdmin, onLogout, onOpenBilling, onOpe
               {cardsWork && !(earlyBird && checkoutFailed) ? (
                 <SaveButton onClick={startCheckout} saving={busy} idleLabel={expired ? `Subscribe to ${plan.name}` : earlyBird ? 'Start free trial with a card' : 'Start free trial'} savingLabel="Opening secure checkout…" savedLabel="Opening…" className="px-6 py-3 text-sm" />
               ) : null}
-              <p className="text-[11px] text-[#a19f96]">{cardsWork ? 'Secure payment by Stripe. ' : ''}By continuing you agree to the <a className="underline" href="/terms" target="_blank" rel="noopener noreferrer">Terms</a> and <a className="underline" href="/privacy" target="_blank" rel="noopener noreferrer">Privacy Policy</a>.</p>
-              <button type="button" onClick={onLogout} className="inline-flex items-center gap-1.5 text-[11px] text-[#a19f96] underline cursor-pointer"><LogOut className="h-3 w-3" /> Sign out</button>
+              <p className="text-[11px] text-[#4b5d54]">{cardsWork ? 'Secure payment by Stripe. ' : ''}By continuing you agree to the <a className="underline" href="/terms" target="_blank" rel="noopener noreferrer">Terms</a> and <a className="underline" href="/privacy" target="_blank" rel="noopener noreferrer">Privacy Policy</a>.</p>
+              <button type="button" onClick={onLogout} className="inline-flex items-center gap-1.5 text-[11px] text-[#4b5d54] underline cursor-pointer"><LogOut className="h-3 w-3" /> Sign out</button>
             </div>
 
             {showManual && (
-              <div className="mt-6 rounded-2xl border border-[#abff44]/30 bg-[#abff44]/[0.06] p-5">
+              <div className="mt-6 rounded-2xl border border-[#08251a]/25 bg-[#abff44]/20 p-5">
                 {ticketRef ? (
                   <div className="text-center" role="status">
-                    <CheckCircle2 className="mx-auto h-8 w-8 text-[#abff44]" />
-                    <p className="mt-2 text-base font-semibold text-[#faf9f5]">Got it, thank you!</p>
-                    <p className="mt-1 text-sm text-[#c9c6bc]">{ticketRef !== 'sent' ? `Ticket ${ticketRef} is open. ` : ''}We will email you shortly to arrange payment. You can follow the conversation in the Support tab.</p>
-                    {onOpenSupport && <button type="button" onClick={onOpenSupport} className="mt-3 rounded-full border border-white/20 px-4 py-1.5 text-xs font-semibold text-[#faf9f5] hover:bg-white/10 cursor-pointer">Open Support</button>}
+                    <CheckCircle2 className="mx-auto h-8 w-8 text-[#0d5b2a]" />
+                    <p className="mt-2 text-base font-semibold text-[#08251a]">Got it, thank you!</p>
+                    <p className="mt-1 text-sm text-[#33473d]">{ticketRef !== 'sent' ? `Ticket ${ticketRef} is open. ` : ''}We will email you shortly to arrange payment. You can follow the conversation in the Support tab.</p>
+                    {onOpenSupport && <button type="button" onClick={onOpenSupport} className="mt-3 rounded-full border border-[#08251a]/20 px-4 py-1.5 text-xs font-semibold text-[#08251a] hover:bg-[#08251a]/5 cursor-pointer">Open Support</button>}
                   </div>
                 ) : (
                   <>
-                    <h2 className="text-lg text-[#faf9f5]" style={{ fontFamily: 'var(--kx-serif, Georgia, serif)' }}>Prefer to pay now? Let us sort it out by hand.</h2>
-                    <p className="mt-1 text-sm leading-relaxed text-[#c9c6bc]">Our automatic card payments are still on their way. Until they land, we will happily arrange payment with you directly. Tell us which plan you want and anything we should know, and we will reply by email with the next step.</p>
-                    <label htmlFor="sg-note" className="mt-4 block text-[11px] font-semibold uppercase tracking-[0.12em] text-[#a19f96]">Your message</label>
+                    <h2 className="text-lg text-[#08251a]" style={{ fontFamily: 'var(--kx-serif, Georgia, serif)' }}>Prefer to pay now? Let us sort it out by hand.</h2>
+                    <p className="mt-1 text-sm leading-relaxed text-[#33473d]">Our automatic card payments are still on their way. Until they land, we will happily arrange payment with you directly. Tell us which plan you want and anything we should know, and we will reply by email with the next step.</p>
+                    <label htmlFor="sg-note" className="mt-4 block text-[11px] font-semibold uppercase tracking-[0.12em] text-[#4b5d54]">Your message</label>
                     <textarea
                       id="sg-note"
                       rows={3}
@@ -298,7 +298,7 @@ export function SubscriptionGate({ isMasterAdmin, onLogout, onOpenBilling, onOpe
                       value={note}
                       onChange={(e) => setNote(e.target.value)}
                       placeholder={`I would like to pay for the ${plan.name} plan (${interval}).`}
-                      className="mt-1 w-full rounded-xl border border-white/15 bg-black/20 px-3 py-2 text-sm text-[#faf9f5] placeholder:text-[#8b8981] focus:border-[#abff44]/60 focus:outline-none"
+                      className="mt-1 w-full rounded-xl border border-[#08251a]/15 bg-[#f5f3dd] px-3 py-2 text-sm text-[#08251a] placeholder:text-[#7a877f] focus:border-[#08251a]/60 focus:outline-none"
                     />
                     {noteError && <p role="alert" className="mt-1 text-xs text-rose-300">{noteError}</p>}
                     <button type="button" onClick={sendNote} disabled={sending} className="mt-3 inline-flex items-center gap-2 rounded-full bg-[#abff44] px-5 py-2 text-sm font-semibold text-[#08251a] hover:brightness-105 disabled:opacity-60 cursor-pointer">
