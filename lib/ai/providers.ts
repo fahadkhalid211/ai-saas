@@ -292,8 +292,38 @@ async function* streamAutoFree(
       },
     },
     {
+      name: 'gemini/gemini-2.5-flash',
+      canAttempt: () => Boolean(geminiKey),
+      createClient: () => {
+        return {
+          client: new OpenAI({
+            apiKey: geminiKey,
+            baseURL: 'https://generativelanguage.googleapis.com/v1beta/openai/',
+          }),
+          model: 'gemini-2.5-flash',
+          safeMaxTokens: options.maxTokens || 2048,
+          activeMessages: [...messages],
+        };
+      },
+    },
+    {
+      name: 'gemini/gemini-2.5-flash-lite',
+      canAttempt: () => Boolean(geminiKey),
+      createClient: () => {
+        return {
+          client: new OpenAI({
+            apiKey: geminiKey,
+            baseURL: 'https://generativelanguage.googleapis.com/v1beta/openai/',
+          }),
+          model: 'gemini-2.5-flash-lite',
+          safeMaxTokens: options.maxTokens || 2048,
+          activeMessages: [...messages],
+        };
+      },
+    },
+    {
       name: 'ollama',
-      canAttempt: () => true,
+      canAttempt: () => Boolean(options.customBaseUrl || process.env.OLLAMA_BASE_URL) || process.env.NODE_ENV !== 'production',
       createClient: () => {
         const baseURL =
           options.customBaseUrl ||
