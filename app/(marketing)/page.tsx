@@ -1,5 +1,5 @@
 import { JsonLd } from '@/components/marketing/JsonLd';
-import { faqSchema, organizationSchema, softwareSchema, websiteSchema } from '@/lib/schema';
+import { faqSchema, organizationSchema, siteNavigationSchema, softwareSchema, websiteSchema } from '@/lib/schema';
 import type { Metadata } from 'next';
 import { SITE } from '@/components/marketing/content';
 import { Header } from '@/components/marketing/Header';
@@ -41,7 +41,7 @@ export const metadata: Metadata = {
 export default function WelcomePage() {
   return (
     <>
-      <JsonLd data={[organizationSchema(), websiteSchema(), softwareSchema(), faqSchema(FAQ.items)]} />
+      <JsonLd data={[organizationSchema(), websiteSchema(), siteNavigationSchema(), softwareSchema(), faqSchema(FAQ.items)]} />
       <Header />
       <main id="main">
         <Hero />

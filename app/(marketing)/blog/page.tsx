@@ -5,7 +5,7 @@ import { JsonLd } from '@/components/marketing/JsonLd';
 import { SectionHead } from '@/components/marketing/ui';
 import { SITE } from '@/components/marketing/content';
 import { sortedPosts, getClusters } from '@/lib/blog/posts';
-import { breadcrumbSchema, webPageSchema } from '@/lib/schema';
+import { blogSchema, breadcrumbSchema, itemListSchema, webPageSchema } from '@/lib/schema';
 import { withSocial } from '@/lib/seo';
 import { BlogGlossaryHub } from '@/components/marketing/BlogGlossaryHub';
 
@@ -31,6 +31,8 @@ export default function BlogIndexPage() {
         data={[
           webPageSchema('Crescelo Knowledge Hub & Glossary', description, '/blog', 'CollectionPage'),
           breadcrumbSchema([{ name: 'Blog', path: '/blog' }]),
+          blogSchema(posts),
+          itemListSchema(posts),
         ]}
       />
       <Header />

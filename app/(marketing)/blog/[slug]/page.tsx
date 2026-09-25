@@ -8,7 +8,7 @@ import { BlogBody } from '@/components/marketing/BlogBody';
 import { ButtonLink } from '@/components/marketing/ui';
 import { SITE } from '@/components/marketing/content';
 import { BLOG_POSTS, getPost } from '@/lib/blog/posts';
-import { breadcrumbSchema } from '@/lib/schema';
+import { blogImageUrl, blogPostingSchema, breadcrumbSchema } from '@/lib/schema';
 import { withSocial } from '@/lib/seo';
 
 export function generateStaticParams() {
@@ -21,20 +21,25 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   if (!post) return {};
   const meta = withSocial(
     {
-      title: `${post.title} | Crescelo Knowledge Hub`,
+      title: post.seoTitle || post.title,
       description: post.description,
       alternates: { canonical: `/blog/${post.slug}` },
     },
     `/blog/${post.slug}`
   );
+  const image = { url: blogImageUrl(post.slug), width: 1200, height: 630, alt: post.title };
   return {
     ...meta,
+    twitter: { ...meta.twitter, title: post.seoTitle || post.title, images: [image] },
     openGraph: {
       ...meta.openGraph,
+      title: post.seoTitle || post.title,
+      images: [image],
+      section: post.clusterName,
       type: 'article',
       publishedTime: post.datePublished,
       modifiedTime: post.dateModified,
-      authors: ['Crescelo Technical Editorial'],
+      authors: ['Crescelo'],
       tags: post.tags,
     },
   };
@@ -47,65 +52,14 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
 
   const url = `${SITE.url}/blog/${post.slug}`;
 
-  // Extract FAQs if present in body
-  const faqQuestions: { '@type': 'Question'; name: string; acceptedAnswer: { '@type': 'Answer'; text: string } }[] = [];
-  post.body.forEach((b) => {
-    if (b.type === 'p' && b.text.startsWith('**Q:')) {
-      const match = b.text.match(/^\*\*Q:\s*([^*]+)\*\*\s*\n([\s\S]+)$/);
-      if (match) {
-        faqQuestions.push({
-          '@type': 'Question',
-          name: match[1].trim(),
-          acceptedAnswer: {
-            '@type': 'Answer',
-            text: match[2].trim(),
-          },
-        });
-      }
-    }
-  });
-
-  const articleSchema = {
-    '@context': 'https://schema.org',
-    '@type': 'BlogPosting',
-    headline: post.title,
-    description: post.description,
-    image: `${SITE.url}/opengraph-image`,
-    datePublished: post.datePublished,
-    dateModified: post.dateModified,
-    inLanguage: 'en',
-    keywords: post.tags.join(', '),
-    author: {
-      '@type': 'Organization',
-      name: 'Crescelo Technical Editorial Team',
-      url: SITE.url,
-    },
-    publisher: {
-      '@type': 'Organization',
-      name: SITE.name,
-      url: SITE.url,
-      logo: {
-        '@type': 'ImageObject',
-        url: `${SITE.url}/logo.png`,
-      },
-    },
-    mainEntityOfPage: { '@type': 'WebPage', '@id': url },
-  };
-
   const breadcrumbs = breadcrumbSchema([
-    { name: 'Home', path: '/' },
     { name: 'Blog & Glossary', path: '/blog' },
     { name: post.title, path: `/blog/${post.slug}` },
   ]);
 
-  const jsonLdData: object[] = [articleSchema, breadcrumbs];
-  if (faqQuestions.length > 0) {
-    jsonLdData.push({
-      '@context': 'https://schema.org',
-      '@type': 'FAQPage',
-      mainEntity: faqQuestions,
-    });
-  }
+  // The FAQ answers in these articles are shared boilerplate, so they are not marked up as FAQPage (marking up identical
+  // answers on hundreds of URLs would look like manipulation, and Google shows FAQ results only to a few site types anyway).
+  const jsonLdData: object[] = [blogPostingSchema(post), breadcrumbs];
 
   const toc = post.body.filter((b): b is Extract<(typeof post.body)[number], { type: 'h2' }> => b.type === 'h2');
   const related = post.related.map((s) => getPost(s)).filter((p): p is NonNullable<typeof p> => Boolean(p));

@@ -2,6 +2,9 @@ import type { MetadataRoute } from 'next';
 import { SITE } from '@/components/marketing/content';
 import { BLOG_POSTS } from '@/lib/blog/posts';
 
+/** Bump this when the marketing pages change in a way worth re-crawling. */
+const SITE_UPDATED = '2026-09-25';
+
 /** Every public page that should be in search results. Sign-in and private areas are left out on purpose. */
 const PAGES: { path: string; priority: number; changeFrequency: 'weekly' | 'monthly' | 'yearly' }[] = [
   { path: '', priority: 1, changeFrequency: 'weekly' },
@@ -27,7 +30,8 @@ const PAGES: { path: string; priority: number; changeFrequency: 'weekly' | 'mont
 ];
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const lastModified = new Date();
+  // A page's date should change only when the page does; stamping "now" on everything teaches Google to ignore it.
+  const lastModified = new Date(SITE_UPDATED);
   const pages = PAGES.map((p) => ({ url: `${SITE.url}${p.path}`, lastModified, changeFrequency: p.changeFrequency, priority: p.priority }));
   const posts = BLOG_POSTS.map((b) => ({ url: `${SITE.url}/blog/${b.slug}`, lastModified: new Date(b.dateModified), changeFrequency: 'monthly' as const, priority: 0.6 }));
   return [...pages, ...posts];

@@ -3,6 +3,8 @@ import type { ReactNode } from 'react';
 import { Header } from '@/components/marketing/Header';
 import { Footer } from '@/components/marketing/Closing';
 import { LEGAL } from '@/lib/legal/config';
+import { JsonLd } from '@/components/marketing/JsonLd';
+import { breadcrumbSchema, webPageSchema } from '@/lib/schema';
 import type { Block, LegalDocument } from '@/lib/legal/documents';
 
 const RELATED = [
@@ -43,8 +45,10 @@ function renderBlock(block: Block, i: number) {
 
 /** Shared layout for every legal page: title, dates, contents list, numbered sections, links to the other documents. */
 export function LegalPage({ doc, children }: { doc: LegalDocument; children?: ReactNode }) {
+  const path = `/${doc.slug}`;
   return (
     <>
+      <JsonLd data={[webPageSchema(doc.title, doc.summary, path), breadcrumbSchema([{ name: doc.title, path }])]} />
       <Header />
       <main id="main">
         <section className="mk-hero" style={{ marginTop: '1rem' }}>
