@@ -78,7 +78,7 @@ export const MEGA_MENUS: MegaMenu[] = [
           { label: 'Appointment booking', description: 'Live slots that cannot be double-booked', href: '/product/appointment-booking', icon: CalendarCheck, tone: 'mint' },
           { label: 'Lead capture', description: 'Send leads to email, Slack, Sheets or webhooks', href: '/product/lead-capture', icon: UserPlus, tone: 'lav' },
           { label: 'Knowledge base', description: 'Upload documents and pages it learns from', href: '/product/knowledge-base', icon: BookOpen, tone: 'amber' },
-          { label: 'Try the playground', description: 'Chat with a live demo assistant', href: '/#playground', icon: Play, tone: 'pink', badge: 'Try' },
+          { label: 'Try the playground', description: 'Upload your docs and quiz the assistant', href: '/playground', icon: Play, tone: 'pink', badge: 'Try' },
         ],
       },
       {

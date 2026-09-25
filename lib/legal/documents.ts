@@ -53,6 +53,7 @@ export const PRIVACY: LegalDocument = {
             'Visitor Data (as a processor): the messages a visitor types or speaks to an assistant, the assistant’s replies, contact details a visitor chooses to give (name, email, phone), appointment bookings, call recordings or voicemails and transcripts if the customer enables the phone feature, and a random visitor identifier stored in the visitor’s browser.',
             'Technical and security data: IP address, browser type, device information, pages and API endpoints requested, timestamps, error details and a request identifier. Our operational logs record metadata only, not the text of chat messages or form entries.',
             'Communications: messages you send us through the contact form, support requests and emails.',
+            'Playground data: if you open the public playground, your name and email address, whether you agreed to tips and product news, and the documents, pasted text or web pages you add and the questions you ask. Playground documents and questions are deleted automatically after 7 days. We email you a private link to your playground and, only if you agreed, occasional tips and product news that you can opt out of at any time.',
           ],
         },
         'We do not knowingly collect special-category data (such as health, biometric or political data). Customers must not use Crescelo to collect it (see the Acceptable Use Policy). If it reaches us anyway, we treat it as confidential and delete it on request.',
