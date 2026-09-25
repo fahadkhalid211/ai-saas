@@ -62,7 +62,7 @@ export const NAV: NavLink[] = [
 export const HERO = {
   eyebrow: 'Website assistant for service businesses',
   title: ['Answer every visitor.', 'Book the ones who are ready.'],
-  body: 'Your website gets questions at 10pm. Most go unanswered until morning — and by then, the person has already booked somewhere else. Crescelo answers instantly from your own content, books real appointments into your calendar, and alerts your team when a human is needed.',
+  body: 'Instant answers from your content. Real bookings into your calendar.\nYour team steps in only when it matters.',
   primaryCta: 'Start free — no card today',
   secondaryCta: 'See how it works',
   trust: [

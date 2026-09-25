@@ -146,7 +146,9 @@ export function Hero() {
           </span>
         </h1>
         <p className="mk-lead mk-rise" style={{ ['--mk-delay' as string]: '520ms' }}>
-          {HERO.body}
+          {HERO.body.split('\n').map((line, i, arr) => (
+            <span key={i}>{line}{i < arr.length - 1 && <br />}</span>
+          ))}
         </p>
         <div className="mk-cta-row mk-rise" style={{ ['--mk-delay' as string]: '640ms' }}>
           <ButtonLink href={SIGNUP_HREF}>{HERO.primaryCta}</ButtonLink>

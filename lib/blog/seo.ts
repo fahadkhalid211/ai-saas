@@ -9,12 +9,29 @@ import type { BlogBlock, BlogPost } from './posts';
 const BRAND = 'Crescelo';
 const TITLE_MAX = 60;
 const DESC_MAX = 158;
-const TRAILING_WORDS = new Set(['a', 'an', 'the', 'and', 'or', 'for', 'to', 'of', 'with', 'in', 'on', 'your', 'that', 'by', 'from', 'at', 'is', 'are']);
+const TRAILING_WORDS = new Set(['a', 'an', 'the', 'and', 'or', 'for', 'to', 'of', 'with', 'in', 'on', 'your', 'that', 'by', 'from', 'at', 'is', 'are', 'without', 'using', 'into', 'through', 'vs', 'versus', 'how', 'why', 'what']);
 
 function trimTrailingFiller(text: string): string {
   const words = text.split(/\s+/);
   while (words.length > 3 && TRAILING_WORDS.has(words[words.length - 1].toLowerCase().replace(/[^a-z]/g, ''))) words.pop();
   return words.join(' ').replace(/[\s,;:\-–—]+$/, '');
+}
+
+const BREAKS = [' with ', ' for ', ' to ', ' in ', ' on ', ' and ', ' without ', ' using ', ' that ', ' from ', ' through ', ' into ', ' during ', ' across ', ' while ', ' when ', ' by ', ' vs. ', ' versus '];
+
+/** Longest whole-phrase start of `text` (cut at a preposition or conjunction) that fits in `max` characters. */
+function longestPhrase(text: string, max: number, minLen = 0): string {
+  const lower = text.toLowerCase();
+  let best = '';
+  for (const b of BREAKS) {
+    let i = lower.indexOf(b, 12);
+    while (i !== -1) {
+      const head = text.slice(0, i).trim();
+      if (head.length <= max && head.length > best.length) best = head;
+      i = lower.indexOf(b, i + 1);
+    }
+  }
+  return best.length >= minLen ? best : '';
 }
 
 /** The <title> text: the article title shortened at a natural break so it is not cut off in results. */
@@ -24,21 +41,17 @@ export function seoTitle(post: Pick<BlogPost, 'title'>): string {
   if (title.length <= TITLE_MAX) return withBrand(title);
 
   const colon = title.indexOf(':');
-  if (colon >= 25 && colon <= TITLE_MAX) return withBrand(title.slice(0, colon).trim());
-
-  // cut before a trailing prepositional phrase ("... for Small Businesses", "... with Grounded Data")
-  const breaks = [' with ', ' for ', ' to ', ' in ', ' on ', ' and ', ' without ', ' using ', ' that ', ' from '];
-  let best = '';
-  for (const b of breaks) {
-    let i = title.indexOf(b, 20);
-    while (i !== -1) {
-      const head = title.slice(0, i).trim();
-      if (head.length <= TITLE_MAX && head.length > best.length) best = head;
-      i = title.indexOf(b, i + 1);
-    }
+  if (colon >= 20 && colon <= TITLE_MAX) {
+    const head = title.slice(0, colon).trim();
+    // add the first clause of the subtitle when it is a real phrase and still fits
+    const subtitle = title.slice(colon + 1).trim();
+    const clause = subtitle.split(/,| with | for | without | to | from | in | on | by | and /i)[0].trim();
+    if (clause.split(/\s+/).length >= 3 && !/^(from|to|in|on|at|of|by|as|when|while)/i.test(clause) && `${head}: ${clause}`.length <= TITLE_MAX) return withBrand(`${head}: ${clause}`);
+    return withBrand(head);
   }
-  if (best.length >= 28) return withBrand(best);
 
+  const phrase = longestPhrase(title, TITLE_MAX, 28);
+  if (phrase) return withBrand(phrase);
   return withBrand(trimTrailingFiller(title.slice(0, TITLE_MAX + 1).replace(/\s+\S*$/, '')));
 }
 
@@ -82,34 +95,35 @@ const SRC = {
 } satisfies Record<string, Source>;
 
 /** Picks up to two sources that fit the article's subject, always ending with a general one so every post cites at least one. */
-export function sourcesFor(post: Pick<BlogPost, 'title' | 'primaryKeyword' | 'secondaryKeywords' | 'clusterName' | 'slug' | 'tags'>): Source[] {
-  const hay = `${post.title} ${post.primaryKeyword || ''} ${(post.secondaryKeywords || []).join(' ')} ${post.clusterName || ''} ${post.slug} ${(post.tags || []).join(' ')}`.toLowerCase();
+export function sourcesFor(post: Pick<BlogPost, 'title' | 'primaryKeyword' | 'secondaryKeywords' | 'slug'>): Source[] {
+  // only the words that name the article's subject, and only whole words (so "sse" does not match "assistant")
+  const hay = ` ${post.title} ${post.primaryKeyword || ''} ${(post.secondaryKeywords || []).join(' ')} ${post.slug.replace(/-/g, ' ')} `.toLowerCase();
   const has = (re: RegExp) => re.test(hay);
   const picked: Source[] = [];
   const add = (s: Source) => {
     if (!picked.includes(s) && picked.length < 2) picked.push(s);
   };
 
-  if (has(/gdpr|privacy|consent|data protection|personal data|cookie|ccpa|compliance|retention/)) {
+  if (has(/\b(gdpr|privacy|consent|data protection|personal data|cookies?|ccpa|compliance|retention)\b/)) {
     add(SRC.ico);
     add(SRC.eu);
   }
-  if (has(/disclos|transparen|ai act|regulat/)) add(SRC.aiact);
-  if (has(/prompt injection|jailbreak|security|encrypt|secure|threat|attack|abuse/)) add(SRC.owaspllm);
-  if (has(/\brag\b|retrieval|embedding|vector|hallucinat|grounded|knowledge base|chunk|rerank|semantic/)) add(SRC.rag);
-  if (has(/accessib|wcag|screen reader/)) add(SRC.wcag);
-  if (has(/sse|streaming/)) add(SRC.sse);
-  if (has(/websocket/)) add(SRC.ws);
-  if (has(/openai|gpt/)) add(SRC.openai);
-  if (has(/anthropic|claude/)) add(SRC.anthropic);
-  if (has(/gemini|google ai/)) add(SRC.gemini);
-  if (has(/byok|bring your own key|api key|llm/)) add(SRC.openai);
-  if (has(/calendar|outlook|google calendar|scheduling|double.?book|booking|appointment/)) add(SRC.calendar);
-  if (has(/schema|structured data|seo|search|ranking|organic|visibility/)) add(SRC.schema);
-  if (has(/local|near me|map|google business/)) add(SRC.local);
-  if (has(/mobile|speed|performance|core web|latency|load/)) add(SRC.vitals);
-  if (has(/claims|advertis|marketing|trust/)) add(SRC.ftc);
-  if (has(/web app|widget|embed|cross-site|xss|csrf/)) add(SRC.owasp);
+  if (has(/\b(disclosure|disclosing|transparen\w*|ai act|regulat\w*)\b/)) add(SRC.aiact);
+  if (has(/\b(prompt injection|jailbreak\w*|security|encrypt\w*|threats?|attacks?|abuse|hmac)\b/)) add(SRC.owaspllm);
+  if (has(/\b(rag|retrieval|embeddings?|vector|hallucinat\w*|grounded|grounding|chunk\w*|rerank\w*|semantic|synonym)\b/)) add(SRC.rag);
+  if (has(/\b(accessib\w*|wcag|screen readers?)\b/)) add(SRC.wcag);
+  if (has(/\b(sse|streaming|server-sent)\b/)) add(SRC.sse);
+  if (has(/\bwebsockets?\b/)) add(SRC.ws);
+  if (has(/\b(openai|gpt\S*)\b/)) add(SRC.openai);
+  if (has(/\b(anthropic|claude)\b/)) add(SRC.anthropic);
+  if (has(/\b(gemini|google ai)\b/)) add(SRC.gemini);
+  if (has(/\b(byok|bring your own key|api keys?|llms?)\b/)) add(SRC.openai);
+  if (has(/\b(calendar|outlook|scheduling|double.?book\w*|calendly|acuity)\b/)) add(SRC.calendar);
+  if (has(/\b(schema|structured data|seo|search engines?|ranking|organic|visibility)\b/)) add(SRC.schema);
+  if (has(/\b(near me|google business|local seo|local search|google maps)\b/)) add(SRC.local);
+  if (has(/\b(mobile|page speed|core web vitals|latency)\b/)) add(SRC.vitals);
+  if (has(/\b(advertis\w*|false claims)\b/)) add(SRC.ftc);
+  if (has(/\b(xss|csrf|cross-site|web application)\b/)) add(SRC.owasp);
   add(SRC.helpful);
   return picked;
 }
