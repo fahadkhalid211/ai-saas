@@ -81,6 +81,19 @@ async function GETHandler(req: Request, { params }: { params: Promise<{ provider
       getClientIp(req)
     );
 
+    if (authResult.twoFactorRequired) {
+      // no session yet: the browser gets a 5-minute challenge cookie and is asked for its authenticator code
+      if (attempt.isMobile) {
+        const res = NextResponse.redirect(`crescelo://auth?error=${encodeURIComponent('Two-factor authentication is on for this account. Sign in with your email and password, then enter your code.')}`);
+        res.headers.append('Set-Cookie', clearOAuthCookie());
+        return res;
+      }
+      const res = NextResponse.redirect(`${origin}/login?twofactor=1`);
+      res.headers.append('Set-Cookie', authResult.cookieHeader);
+      res.headers.append('Set-Cookie', clearOAuthCookie());
+      return res;
+    }
+
     if (attempt.isMobile) {
       const mobileRedirect = `crescelo://auth?token=${encodeURIComponent(authResult.token)}&email=${encodeURIComponent(profile.email)}&name=${encodeURIComponent(profile.name || '')}`;
       const res = NextResponse.redirect(mobileRedirect);

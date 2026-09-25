@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getMasterEmail } from '@/lib/security/master';
 import { Database } from '@/lib/db';
 import { verifyAdminRequest, withAdminAuth, getAuthContext } from '@/lib/security/auth';
-import { enforceRateLimit } from '@/lib/security/rate-limit';
+import { enforceDistributedRateLimitByKey } from '@/lib/security/rate-limit-redis';
+import { encryptSecret, decryptSecret } from '@/lib/security/crypto';
 import {
   generateBase32Secret,
   generateOtpAuthUrl,
@@ -53,47 +54,7 @@ const GETHandler = withAdminAuth(async (req: Request) => {
 async function POSTHandler(req: NextRequest) {
   try {
     const body = await req.json();
-    const { action, secret, code, email } = body;
-
-    if (action === 'verify_login') {
-      const targetMember = email
-        ? await Database.getTeamMemberByEmail(email.trim().toLowerCase())
-        : (await Database.getTeamMembers()).find((m) => m.role === 'owner');
-
-      // Throttle brute-force guessing of the 6-digit TOTP code / recovery codes
-      const rateLimitKey = `2fa-verify:${(email || targetMember?.email || '').toLowerCase()}`;
-      const rl = enforceRateLimit(req, rateLimitKey, { windowMs: 5 * 60 * 1000, max: 5 });
-      if (rl.errorResponse) {
-        return rl.errorResponse;
-      }
-
-      // Login verification challenge
-      if (!targetMember || !targetMember.twoFactorEnabled || !targetMember.twoFactorSecret) {
-        return NextResponse.json({ success: true, message: '2FA not enabled for account' });
-      }
-
-      const isValid = verifyTotpToken(code, targetMember.twoFactorSecret);
-      const isRecovery = targetMember.recoveryCodes?.includes(code.trim().toUpperCase());
-
-      if (!isValid && !isRecovery) {
-        return NextResponse.json({ error: 'Invalid authentication code or recovery key' }, { status: 400 });
-      }
-
-      // If recovery code was used, remove it from list
-      if (isRecovery && targetMember.recoveryCodes) {
-        const remaining = targetMember.recoveryCodes.filter((c) => c !== code.trim().toUpperCase());
-        await Database.updateTeamMember(targetMember.id, { recoveryCodes: remaining });
-      }
-
-      await Database.addAuditLog({
-        actor: { id: targetMember.id, name: targetMember.name, email: targetMember.email, ip: req.headers.get('x-forwarded-for') || '127.0.0.1' },
-        action: 'auth.2fa_success',
-        targetType: 'auth',
-        details: { method: isRecovery ? 'recovery_code' : 'totp' },
-      });
-
-      return NextResponse.json({ success: true, message: 'Two-factor authentication verified' });
-    }
+    const { action, secret, code } = body;
 
     // Following actions require active admin auth
     const ctx = await getAuthContext(req);
@@ -111,6 +72,9 @@ async function POSTHandler(req: NextRequest) {
     }
 
     if (action === 'enable') {
+      if (targetMember.twoFactorEnabled) {
+        return NextResponse.json({ error: 'Two-factor authentication is already on. Turn it off first (this needs a current code) to set up a new device.' }, { status: 409 });
+      }
       if (!secret || !code) {
         return NextResponse.json({ error: 'Secret and verification code are required' }, { status: 400 });
       }
@@ -122,7 +86,7 @@ async function POSTHandler(req: NextRequest) {
 
       await Database.updateTeamMember(targetMember.id, {
         twoFactorEnabled: true,
-        twoFactorSecret: secret,
+        twoFactorSecret: encryptSecret(secret),
         recoveryCodes: body.recoveryCodes || [],
       });
 
@@ -144,6 +108,19 @@ async function POSTHandler(req: NextRequest) {
     }
 
     if (action === 'disable') {
+      // A stolen session must not be able to switch the second factor off: prove possession of the authenticator first.
+      if (targetMember.twoFactorEnabled && targetMember.twoFactorSecret) {
+        const supplied = typeof code === 'string' ? code.trim().toUpperCase() : '';
+        if (!supplied) {
+          return NextResponse.json({ error: 'Enter a current authentication code (or a recovery code) to turn off two-factor authentication.', codeRequired: true }, { status: 400 });
+        }
+        const limited = await enforceDistributedRateLimitByKey(`2fa-disable:${targetMember.id}`, { windowMs: 5 * 60 * 1000, max: 5 });
+        if (limited) return limited;
+        const ok = verifyTotpToken(supplied, decryptSecret(targetMember.twoFactorSecret)) || Boolean(targetMember.recoveryCodes?.includes(supplied));
+        if (!ok) {
+          return NextResponse.json({ error: 'Invalid authentication code.', codeRequired: true }, { status: 400 });
+        }
+      }
       await Database.updateTeamMember(targetMember.id, {
         twoFactorEnabled: false,
         twoFactorSecret: undefined,

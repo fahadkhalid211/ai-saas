@@ -360,3 +360,45 @@ export function verifyCalendarFeedToken(assistantId: string, token: string | nul
   return timingSafeStringEqual(token, expected);
 }
 
+
+// ---------------------------------------------------------------------------
+// Pending two-factor challenge (sign-in methods where the password step is done elsewhere, e.g. Google)
+// ---------------------------------------------------------------------------
+
+const PENDING_2FA_COOKIE = 'kortex_2fa_pending';
+const PENDING_2FA_TTL_MS = 5 * 60 * 1000;
+
+function signPending(payloadB64: string): string {
+  return crypto.createHmac('sha256', getAdminKey()).update(`2fa-pending:${payloadB64}`).digest('hex');
+}
+
+/** A short-lived proof that the first factor passed. It is NOT a session and grants no access on its own. */
+export function createPendingTwoFactorCookie(memberId: string, workspaceId: string): string {
+  const payloadB64 = Buffer.from(JSON.stringify({ memberId, workspaceId, exp: Date.now() + PENDING_2FA_TTL_MS })).toString('base64url');
+  const isProd = process.env.NODE_ENV === 'production';
+  return `${PENDING_2FA_COOKIE}=${payloadB64}.${signPending(payloadB64)}; Path=/api/auth; HttpOnly; SameSite=Lax; Max-Age=300${isProd ? '; Secure' : ''}`;
+}
+
+export function clearPendingTwoFactorCookie(): string {
+  const isProd = process.env.NODE_ENV === 'production';
+  return `${PENDING_2FA_COOKIE}=; Path=/api/auth; HttpOnly; SameSite=Lax; Max-Age=0${isProd ? '; Secure' : ''}`;
+}
+
+export function readPendingTwoFactor(req: Request): { memberId: string; workspaceId: string } | null {
+  const header = req.headers.get('cookie') || '';
+  const raw = header.split(';').map((c) => c.trim()).find((c) => c.startsWith(`${PENDING_2FA_COOKIE}=`));
+  if (!raw) return null;
+  const token = decodeURIComponent(raw.slice(PENDING_2FA_COOKIE.length + 1));
+  const [payloadB64, sig] = token.split('.');
+  if (!payloadB64 || !sig) return null;
+  const expected = Buffer.from(signPending(payloadB64), 'hex');
+  const given = Buffer.from(sig, 'hex');
+  if (given.length !== expected.length || !crypto.timingSafeEqual(given, expected)) return null;
+  try {
+    const p = JSON.parse(Buffer.from(payloadB64, 'base64url').toString('utf8'));
+    if (!p.memberId || !p.workspaceId || typeof p.exp !== 'number' || p.exp < Date.now()) return null;
+    return { memberId: String(p.memberId), workspaceId: String(p.workspaceId) };
+  } catch {
+    return null;
+  }
+}

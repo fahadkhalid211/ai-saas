@@ -169,18 +169,22 @@ export function useCrmTeamSecurity() {
   };
 
   const handleDisable2fa = async () => {
-    if (!confirm('Are you sure you want to disable two-factor authentication?')) return;
+    const code = prompt('To turn off two-factor authentication, enter a current 6-digit code from your authenticator app (or a recovery code).');
+    if (!code || !code.trim()) return;
     setTwoFactorLoading(true);
     setTwoFactorError(null);
     try {
       const res = await fetch('/api/auth/2fa', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'disable' }),
+        body: JSON.stringify({ action: 'disable', code: code.trim() }),
       });
       if (res.ok) {
         setTwoFactorEnabled(false);
         setTwoFactorSuccess('Two-factor authentication disabled.');
+      } else {
+        const data = await res.json().catch(() => ({}));
+        setTwoFactorError(data.error || 'Could not turn off two-factor authentication.');
       }
     } catch (err: any) {
       setTwoFactorError(err.message || 'Error disabling 2FA');

@@ -23,6 +23,9 @@ export default function LoginPage() {
   const [regPasswordInput, setRegPasswordInput] = useState('');
   const [regTemplateInput, setRegTemplateInput] = useState('general');
   const [selectedPlanNote, setSelectedPlanNote] = useState<string | null>(null);
+  const [twoFactorCode, setTwoFactorCode] = useState('');
+  const [needsTwoFactor, setNeedsTwoFactor] = useState(false);
+  const [googleTwoFactor, setGoogleTwoFactor] = useState(false);
 
   // The plan and billing period chosen on the pricing page: kept for the whole sign-up and shown before the account is made.
   useEffect(() => {
@@ -45,6 +48,7 @@ export default function LoginPage() {
     } catch {}
     const params = new URLSearchParams(window.location.search);
     if (params.get('mode') === 'register') setAuthLoginMode('register');
+    if (params.get('twofactor') === '1') setGoogleTwoFactor(true);
     const errParam = params.get('error');
     const msgParam = params.get('message');
     if (msgParam) {
@@ -61,9 +65,6 @@ export default function LoginPage() {
       })
       .catch(() => undefined);
   }, [router]);
-
-  const [twoFactorCode, setTwoFactorCode] = useState('');
-  const [needsTwoFactor, setNeedsTwoFactor] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -116,6 +117,32 @@ export default function LoginPage() {
     }
   };
 
+  const handleGoogleTwoFactor = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!twoFactorCode.trim()) return;
+    setIsLoggingIn(true);
+    setAuthError(null);
+    try {
+      const recaptchaToken = await executeRecaptcha('login');
+      const res = await fetch('/api/auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mode: 'oauth_2fa', twoFactorCode: twoFactorCode.trim(), recaptchaToken }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        router.replace('/dashboard');
+        return;
+      }
+      if (data.expired) setGoogleTwoFactor(false);
+      setTwoFactorCode('');
+      setAuthError(data.error || 'Authentication failed');
+    } catch (err: any) {
+      setAuthError(err?.message || 'Authentication failed');
+    }
+    setIsLoggingIn(false);
+  };
+
   const handleGoogleLogin = async () => {
     setIsLoggingIn(true);
     setAuthError(null);
@@ -163,6 +190,35 @@ export default function LoginPage() {
       setIsLoggingIn(false);
     }
   };
+
+  if (googleTwoFactor) {
+    return (
+      <main className="min-h-screen flex items-center justify-center p-6 bg-slate-50 dark:bg-slate-950">
+        <form onSubmit={handleGoogleTwoFactor} className="w-full max-w-sm space-y-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm">
+          <h1 className="text-lg font-semibold text-slate-900 dark:text-white">Two-step verification</h1>
+          <p className="text-xs text-slate-500">Google confirmed it is you. Enter the 6-digit code from your authenticator app, or a recovery code, to finish signing in.</p>
+          {authError && <p role="alert" className="text-xs text-rose-500">{authError}</p>}
+          <input
+            name="twoFactorCode"
+            autoComplete="one-time-code"
+            inputMode="numeric"
+            autoFocus
+            required
+            value={twoFactorCode}
+            onChange={(e) => setTwoFactorCode(e.target.value)}
+            placeholder="6-digit code"
+            className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <button type="submit" disabled={isLoggingIn} className="w-full py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white text-xs font-semibold">
+            {isLoggingIn ? 'Verifying...' : 'Verify and sign in'}
+          </button>
+          <button type="button" onClick={() => { setGoogleTwoFactor(false); setAuthError(null); }} className="w-full text-xs text-slate-500 hover:underline">
+            Back to sign in
+          </button>
+        </form>
+      </main>
+    );
+  }
 
   return (
     <AdminLoginScreen

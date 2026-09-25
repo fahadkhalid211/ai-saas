@@ -5,6 +5,8 @@ import {
   getAuthContext,
   createSessionCookieHeader,
   createClearCookieHeader,
+  readPendingTwoFactor,
+  clearPendingTwoFactorCookie,
 } from '@/lib/security/auth';
 import { getClientIp } from '@/lib/security/rate-limit';
 import { updateLogContext } from '@/lib/logging/context';
@@ -15,6 +17,7 @@ import { validateRegistrationPayload, validateEmail, sanitizeInput } from '@/lib
 import { verifyRecaptchaToken } from '@/lib/security/recaptcha';
 import { logged } from '@/lib/logging/route';
 import { verifyTotpToken } from '@/lib/security/totp';
+import { decryptSecret } from '@/lib/security/crypto';
 
 /**
  * Second step of sign-in. Once the password is right, an account with two-factor authentication turned on must also present a
@@ -33,7 +36,7 @@ async function requireSecondFactor(memberId: string, email: string, code: unknow
   const limited = await enforceDistributedRateLimitByKey(`login-2fa:${memberId}`, { windowMs: 5 * 60 * 1000, max: 5 });
   if (limited) return limited;
 
-  const totpOk = verifyTotpToken(supplied, member.twoFactorSecret);
+  const totpOk = verifyTotpToken(supplied, decryptSecret(member.twoFactorSecret));
   const recoveryOk = !totpOk && Boolean(member.recoveryCodes?.includes(supplied));
   if (!totpOk && !recoveryOk) {
     await Database.addAuditLog({
@@ -135,6 +138,32 @@ async function POSTHandler(req: Request) {
         workspace: ws,
         token: sessionToken,
       });
+    }
+
+    // Second step of a Google sign-in on an account with two-factor authentication
+    if (mode === 'oauth_2fa') {
+      const pending = readPendingTwoFactor(req);
+      if (!pending) {
+        return NextResponse.json({ error: 'That sign-in expired. Please sign in with Google again.', expired: true }, { status: 401 });
+      }
+      const member = await Database.getTeamMemberById(pending.memberId);
+      if (!member) return NextResponse.json({ error: 'Account not found.', expired: true }, { status: 401 });
+      const stop = await requireSecondFactor(member.id, member.email || '', body?.twoFactorCode, ip);
+      if (stop) return stop;
+
+      const sessionToken = generateSessionToken(member.role, member.id, pending.workspaceId);
+      updateLogContext({ userId: member.id, workspaceId: pending.workspaceId, role: member.role });
+      await Database.addAuditLog({
+        actor: { id: member.id, name: member.name, email: member.email, ip },
+        action: 'auth.oauth_login',
+        targetType: 'workspace',
+        targetId: pending.workspaceId,
+        details: { provider: 'google', twoFactor: true },
+      });
+      const res = NextResponse.json({ success: true, member: sanitizeTeamMember(member), token: sessionToken });
+      res.headers.append('Set-Cookie', createSessionCookieHeader(sessionToken));
+      res.headers.append('Set-Cookie', clearPendingTwoFactorCookie());
+      return res;
     }
 
     // 1. Self-Serve Business Account Registration

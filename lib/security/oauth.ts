@@ -1,6 +1,6 @@
 import crypto from 'crypto';
 import { Database, TeamMemberData, WorkspaceBillingData } from '@/lib/db';
-import { generateSessionToken, createSessionCookieHeader } from '@/lib/security/auth';
+import { generateSessionToken, createSessionCookieHeader, createPendingTwoFactorCookie } from '@/lib/security/auth';
 import { timingSafeStringEqual } from '@/lib/security/password';
 import { updateLogContext } from '@/lib/logging/context';
 
@@ -19,6 +19,8 @@ export interface OAuthAuthResult {
   token: string;
   cookieHeader: string;
   isNewUser: boolean;
+  /** The account has two-factor authentication on: no session was issued, `cookieHeader` is the pending-challenge cookie. */
+  twoFactorRequired?: boolean;
 }
 
 /*
@@ -172,6 +174,19 @@ export async function authenticateOAuthUser(
     domain: profile.domain,
     picture: profile.picture,
   });
+
+  const full = await Database.getTeamMemberById(member.id);
+  if (full?.twoFactorEnabled && full.twoFactorSecret) {
+    // Google proved who this is; the app's own second factor is still required before a session exists.
+    await Database.addAuditLog({
+      actor: { id: member.id, name: member.name, email: member.email, ip },
+      action: 'auth.oauth_2fa_challenge',
+      targetType: 'workspace',
+      targetId: workspace.id,
+      details: { provider: profile.provider },
+    });
+    return { member, workspace, token: '', cookieHeader: createPendingTwoFactorCookie(member.id, workspace.id), isNewUser, twoFactorRequired: true };
+  }
 
   const sessionToken = generateSessionToken(member.role, member.id, workspace.id);
   const cookieHeader = createSessionCookieHeader(sessionToken);
