@@ -81,7 +81,7 @@ export default function ContactPage() {
               as="h1"
               eyebrow="Contact & Support"
               title="Get in touch with our solutions team."
-              intro="Whether you need help configuring your voice worker, connecting Google Calendar, or exploring custom enterprise deployment, our engineering team responds within 24 hours."
+              intro="Whether you need help setting up your assistant, subscribing to your calendar feed, or exploring custom enterprise deployment, our engineering team responds within 24 hours."
               id="contact"
               align="center"
             />

@@ -83,7 +83,7 @@ export const MEGA_MENUS: MegaMenu[] = [
         title: 'Where it works',
         links: [
           { label: 'Website chat widget', description: 'One script tag on any site', href: '/guides/add-ai-assistant-to-wordpress', icon: Globe, tone: 'lime' },
-          { label: 'Phone voice agent', description: 'Answer calls with the same knowledge', href: '/support/voice-agent', icon: Phone, tone: 'pink' },
+          { label: 'Phone voice agent', description: 'Answering calls is under development', href: '/roadmap', icon: Phone, tone: 'pink', badge: 'Soon' },
           { label: 'WhatsApp and Telegram', description: 'Reply on the apps customers already use', href: '/integrations', icon: MessageCircle, tone: 'mint' },
           { label: 'Human handover', description: 'Take over any conversation in one click', href: '/product', icon: HandHelping, tone: 'coral' },
         ],
@@ -169,7 +169,6 @@ export const MEGA_MENUS: MegaMenu[] = [
     },
     footerLinks: [
       { label: 'Calendar booking guide', href: '/support/calendar-booking' },
-      { label: 'Voice agent guide', href: '/support/voice-agent' },
     ],
   },
 ];

@@ -228,7 +228,7 @@ export const INTEGRATIONS = {
     { id: 'telegram', label: 'Telegram', note: 'Answer customers in Telegram' },
     { id: 'slack', label: 'Slack', note: 'New leads posted to a channel' },
     { id: 'sheets', label: 'Google Sheets', note: 'Every lead added as a row' },
-    { id: 'voice', label: 'Phone calls', note: 'Answer calls with the same knowledge' },
+    { id: 'voice', label: 'Phone calls', note: 'Coming soon' },
     { id: 'email', label: 'Email (SMTP)', note: 'Booking confirmations and reminders' },
     { id: 'calendar', label: 'Calendar feed', note: 'Subscribe from Google, Apple or Outlook' },
     { id: 'webhooks', label: 'Webhooks', note: 'Zapier, Make or your own systems' },

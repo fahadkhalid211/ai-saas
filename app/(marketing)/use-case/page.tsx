@@ -44,7 +44,7 @@ const INDUSTRIES: IndustrySimulation[] = [
     metric: '+42%',
     metricLabel: 'Increase in after-hours appointment revenue',
     features: [
-      'In-chat & inbound phone voice booking',
+      'In-chat booking (phone voice coming soon)',
       'Stylist-specific calendar assignment',
       'Atomic mutex lock prevents chair double-booking',
       'Self-service reschedule & cancellation links',

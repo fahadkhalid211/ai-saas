@@ -24,34 +24,29 @@ const ARCHITECTURE_STEPS: ArchitectureStep[] = [
     id: 'ingress',
     stepNumber: '01',
     title: 'Inbound Multimodal Ingress',
-    badge: 'Telephony & Webhooks',
-    tagline: 'Dual-path audio and text streams with sub-50ms ingress validation.',
+    badge: 'Chat & Webhooks',
+    tagline: 'Every message arrives through a signed, validated request.',
     tone: 'pink',
     description:
-      'Phone calls from Telnyx arrive via encrypted bidirectional WebSocket media streams (`wss://`) with 8kHz mulaw audio transcoding. Text chat from the web widget, WhatsApp, and Telegram arrives through signed HTTPS webhooks.',
+      'Text chat from the web widget, WhatsApp, and Telegram arrives through signed HTTPS requests and webhooks, and is validated before the assistant sees it.',
     specs: [
-      { label: 'Protocols', value: 'WebSocket (wss://) & HTTPS' },
+      { label: 'Protocols', value: 'HTTPS' },
       { label: 'Ingress Latency', value: '< 24ms validation' },
-      { label: 'Audio Sample Rate', value: '8,000 Hz / 16,000 Hz PCM' },
       { label: 'Security', value: 'HMAC-SHA256 & Ed25519 Webhook Verification' },
     ],
-    codeSnippet: `// Inbound Telephony WebSocket Handshake
-POST /api/channels/voice/stream
+    codeSnippet: `// A signed inbound webhook (WhatsApp shown)
+POST /api/channels/whatsapp?assistantId=ast_1
 Headers: {
-  "X-Telnyx-Signature": "t=1790046900,h=0a1b2c...",
-  "Upgrade": "websocket",
-  "Connection": "Upgrade"
+  "X-Hub-Signature-256": "sha256=0a1b2c..."
 }
 Payload: {
-  event: "media.start",
-  stream_id: "str_9942",
-  codec: "PCMU/8000"
+  object: "whatsapp_business_account",
+  entry: [ ... ]
 }`,
     highlights: [
-      'Zero round-trip carrier authentication',
-      'Silero Voice Activity Detection (VAD) runs in real time',
-      'Handles instantaneous caller interruption (barge-in)',
-      'Direct caller caller-ID lookup in unified customer database',
+      'Webhook signatures are verified before anything is processed',
+      'Web, WhatsApp and Telegram share one conversation history',
+      'Visitors are rate limited to stop abuse',
     ],
   },
   {
@@ -119,29 +114,27 @@ if (!lock.acquired) {
   {
     id: 'byok',
     stepNumber: '04',
-    title: 'BYOK Multi-LLM Routing & Voice',
+    title: 'BYOK Multi-LLM Routing',
     badge: 'Inference Layer',
-    tagline: '0% platform token markup. Sub-400ms neural voice synthesis.',
+    tagline: '0% platform token markup. Your keys, your provider.',
     tone: 'lime',
     description:
-      'Connect your own keys from Groq, OpenAI, Anthropic, or Google Gemini with 0% token tax. For voice calls, responses stream into Piper neural TTS on CPU, delivering natural conversational tone and real-time interruption under wholesale carrier rates.',
+      'Connect your own keys from Groq, OpenAI, Anthropic, or Google Gemini with 0% token tax. Replies stream to the visitor as they are written, and a backup provider takes over if the first is down.',
     specs: [
       { label: 'Token Markup', value: '0% (Wholesale Provider Cost)' },
-      { label: 'Voice STT / TTS', value: 'faster-whisper + Piper on CPU' },
       { label: 'Fastest First Token', value: '140ms with Groq LPU' },
       { label: 'Encryption', value: 'AES-256 GCM Salted Key Vault' },
     ],
-    codeSnippet: `// BYOK Multi-LLM Dispatch & Piper Audio Stream
+    codeSnippet: `// BYOK Multi-LLM Dispatch
 const stream = await dispatchModel({
   provider: "groq",
   model: "llama-3.3-70b-versatile",
   prompt: groundedSystemPrompt,
-  userMessage: callerAudioTranscript,
-  onToken: (token) => piperVoiceSynthesizer.feed(token)
+  userMessage: visitorQuestion,
+  onToken: (token) => widget.stream(token)
 });`,
     highlights: [
       'Complete ownership: pay wholesale direct to model providers',
-      'Sub-400ms voice turn latency without costly third-party speech wrappers',
       'Multi-model fallback cascades if an external AI provider has downtime',
       'Zero retention of private customer data on third-party servers',
     ],
@@ -378,172 +371,20 @@ export default function ProductPage() {
           </div>
         </section>
 
-        {/* Live Speech & Latency Benchmark Lab */}
+        {/* Phone voice calls: not available yet */}
         <section className="mk-section mk-section-tint">
           <div className="mk-wrap">
             <SectionHead
-              eyebrow="Voice Engineering"
-              title="CPU Speech Synthesis vs Legacy Phone IVR."
-              intro="Hear and compare the difference between Crescelo's sub-400ms neural voice and expensive legacy cloud wrappers."
+              eyebrow="COMING SOON"
+              title="Phone calls are under development."
+              intro="We are building an assistant that answers inbound phone calls from the same knowledge base and books appointments by voice. It is not available yet; follow its progress on the roadmap."
               id="voice-lab-title"
               align="center"
             />
-
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))',
-                gap: '24px',
-                marginTop: '36px',
-              }}
-            >
-              {/* Crescelo Voice Card */}
-              <Reveal
-                className="mk-card"
-                style={{
-                  padding: 'clamp(18px, 4vw, 32px)',
-                  background: 'var(--mk-deep)',
-                  color: 'var(--mk-bg)',
-                  border: '2px solid var(--mk-ink)',
-                }}
-              >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                  <span
-                    style={{
-                      fontSize: '12px',
-                      fontWeight: 800,
-                      textTransform: 'uppercase',
-                      padding: '3px 10px',
-                      borderRadius: '999px',
-                      background: 'var(--mk-lime)',
-                      color: 'var(--mk-deep)',
-                    }}
-                  >
-                    Crescelo Voice Worker
-                  </span>
-                  <span style={{ fontSize: '14px', color: 'var(--mk-lime)', fontWeight: 700 }}>
-                    ⚡ 380ms Latency
-                  </span>
-                </div>
-
-                <h3 style={{ fontFamily: 'var(--mk-serif)', fontSize: '1.8rem', color: 'var(--mk-lime)', margin: '0 0 8px' }}>
-                  Natural Neural Speech on CPU
-                </h3>
-                <p style={{ fontSize: '14px', color: '#cfe3d6', lineHeight: 1.5, marginBottom: '20px' }}>
-                  Faster-whisper STT + Silero VAD + Piper neural speech. Callers talk naturally and can interrupt at any point without awkward robotic delays.
-                </p>
-
-                {/* Simulated Audio Player */}
-                <div
-                  style={{
-                    padding: '16px',
-                    borderRadius: '14px',
-                    background: 'rgba(255,255,255,0.06)',
-                    border: '1px solid rgba(171,255,68,0.3)',
-                    marginBottom: '20px',
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
-                    <span style={{ fontSize: '12px', color: '#cfe3d6' }}>Natural Conversational Cadence</span>
-                    <button
-                      type="button"
-                      onClick={() => setIsSimulatingAudio((v) => !v)}
-                      style={{
-                        padding: '6px 14px',
-                        borderRadius: '999px',
-                        border: '1px solid var(--mk-lime)',
-                        background: isSimulatingAudio ? 'var(--mk-lime)' : 'transparent',
-                        color: isSimulatingAudio ? 'var(--mk-deep)' : 'var(--mk-lime)',
-                        fontSize: '12px',
-                        fontWeight: 700,
-                        cursor: 'pointer',
-                      }}
-                    >
-                      {isSimulatingAudio ? '❚❚ Playing Audio' : '▶ Play Voice Demo'}
-                    </button>
-                  </div>
-
-                  {/* Animated Waveform Bars */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px', height: '28px' }}>
-                    {[12, 24, 18, 28, 14, 22, 10, 26, 16, 20, 28, 14, 22, 18, 24, 12, 16].map((h, i) => (
-                      <span
-                        key={i}
-                        style={{
-                          flex: 1,
-                          height: isSimulatingAudio ? `${(h * 1.2)}px` : '6px',
-                          background: 'var(--mk-lime)',
-                          borderRadius: '2px',
-                          transition: 'height 0.2s ease',
-                          animation: isSimulatingAudio ? `mk-bars 0.8s ease-in-out infinite alternate ${i * 0.05}s` : 'none',
-                        }}
-                      />
-                    ))}
-                  </div>
-                </div>
-
-                <div style={{ fontSize: '13px', color: '#a9c4b4' }}>
-                  Cost: Wholesale carrier wholesale rates (~$0.015/min). No platform per-minute markup.
-                </div>
-              </Reveal>
-
-              {/* Legacy Phone IVR Card */}
-              <Reveal
-                className="mk-card"
-                style={{
-                  padding: 'clamp(18px, 4vw, 32px)',
-                  background: 'var(--mk-surface)',
-                  border: '2px solid var(--mk-ink)',
-                }}
-              >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                  <span
-                    style={{
-                      fontSize: '12px',
-                      fontWeight: 800,
-                      textTransform: 'uppercase',
-                      padding: '3px 10px',
-                      borderRadius: '999px',
-                      background: 'var(--mk-lav)',
-                      color: 'var(--mk-ink)',
-                    }}
-                  >
-                    Legacy Cloud Wrappers
-                  </span>
-                  <span style={{ fontSize: '14px', color: 'var(--mk-muted)', fontWeight: 700 }}>
-                    🐢 1,850ms Latency
-                  </span>
-                </div>
-
-                <h3 style={{ fontFamily: 'var(--mk-serif)', fontSize: '1.8rem', margin: '0 0 8px' }}>
-                  Multi-Hop Cloud Chaining
-                </h3>
-                <p style={{ fontSize: '14px', color: 'var(--mk-muted)', lineHeight: 1.5, marginBottom: '20px' }}>
-                  Chains three distinct external cloud APIs for transcription, LLM generation, and cloud voice audio. Causes high latency, frequent interruptions, and caller drop-offs.
-                </p>
-
-                <div
-                  style={{
-                    padding: '16px',
-                    borderRadius: '14px',
-                    background: 'var(--mk-bg)',
-                    border: '1px solid var(--mk-line)',
-                    marginBottom: '20px',
-                    fontSize: '13px',
-                    lineHeight: 1.5,
-                  }}
-                >
-                  <p style={{ margin: '0 0 6px', fontWeight: 600 }}>Bottlenecks:</p>
-                  <ul style={{ paddingLeft: '18px', margin: 0, color: 'var(--mk-muted)' }}>
-                    <li>1.8 to 2.4 second silence before the robot replies</li>
-                    <li>No interruption handling (talks over the caller)</li>
-                    <li>Expensive $0.12 to $0.25 per minute platform fees</li>
-                  </ul>
-                </div>
-
-                <div style={{ fontSize: '13px', color: 'var(--mk-muted)' }}>
-                  Outcome: Callers hang up and assume they reached an offshore robocall center.
-                </div>
-              </Reveal>
+            <div className="mk-cta-row" style={{ justifyContent: 'center', marginTop: '24px' }}>
+              <ButtonLink href="/roadmap" variant="ghost">
+                See the roadmap
+              </ButtonLink>
             </div>
           </div>
         </section>
@@ -571,10 +412,8 @@ export default function ProductPage() {
                 { label: 'Embedding Architecture', val: 'ONNX bge-small-en-v1.5 (Local)' },
                 { label: 'Token Markup', val: '0% (Wholesale Provider Cost)' },
                 { label: 'Supported Providers', val: 'OpenAI, Groq, Gemini, Claude, Ollama' },
-                { label: 'Voice STT / TTS', val: 'faster-whisper + Piper (CPU)' },
-                { label: 'Telephony Carriers', val: 'Telnyx TeXML' },
                 { label: 'Credential Encryption', val: 'AES-256 GCM Salted Vault' },
-                { label: 'Calendar Sync', val: 'Google Calendar, Outlook, Cal.com' },
+                { label: 'Calendar', val: 'Calendar feed, Calendly and Cal.com links' },
                 { label: 'Concurrency Engine', val: 'Atomic Mutex In-Memory Locks' },
               ].map((spec, i) => (
                 <div
@@ -607,7 +446,7 @@ export default function ProductPage() {
                 Deploy your autonomous assistant in under 5 minutes.
               </h2>
               <p className="mk-lead">
-                Upload your documents, test the booking engine, and connect your phone number with wholesale rates.
+                Upload your documents, test the booking engine, and add the widget to your site.
               </p>
               <div className="mk-cta-row">
                 <ButtonLink href={SIGNUP_HREF}>Start your 14-day free trial</ButtonLink>

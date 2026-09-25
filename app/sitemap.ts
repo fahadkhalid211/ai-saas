@@ -33,7 +33,6 @@ const PAGES: { path: string; priority: number; changeFrequency: 'weekly' | 'mont
   { path: '/support/ai-connectors/auto-free',          priority: 0.6, changeFrequency: 'monthly' },
 
   // Other support guides
-  { path: '/support/voice-agent',                      priority: 0.7, changeFrequency: 'monthly' },
   { path: '/support/calendar-booking',                 priority: 0.7, changeFrequency: 'monthly' },
   { path: '/support/rag-knowledge',                    priority: 0.6, changeFrequency: 'monthly' },
 

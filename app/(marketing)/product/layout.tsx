@@ -4,7 +4,7 @@ import type { ReactNode } from 'react';
 import { JsonLd } from '@/components/marketing/JsonLd';
 import { breadcrumbSchema, softwareSchema, webPageSchema } from '@/lib/schema';
 
-const description = 'See what a Crescelo assistant does: answers questions from your own documents, books appointments in the chat, captures leads, answers phone calls and hands over to your team.';
+const description = 'See what a Crescelo assistant does: answers questions from your own documents, books appointments in the chat, captures leads and hands over to your team.';
 
 export const metadata: Metadata = withSocial({
   title: 'AI Chatbot & Appointment Booking Features | Crescelo',

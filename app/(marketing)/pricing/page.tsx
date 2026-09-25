@@ -15,7 +15,7 @@ const COMPARISON_ROWS = [
   { feature: 'Zero Token Markup (BYOK)', starter: 'Included', growth: 'Included', scale: 'Included' },
   { feature: 'Calendar Slot Picker', starter: 'Basic', growth: 'Full Mutex Locking', scale: 'Full Mutex Locking' },
   { feature: 'Google Calendar & Outlook Sync', starter: '—', growth: 'Included', scale: 'Included' },
-  { feature: 'Inbound Phone Voice Calling', starter: '—', growth: 'Add-on ($15/mo)', scale: 'Included (1 Number)' },
+  { feature: 'Inbound Phone Voice Calling', starter: 'Coming soon', growth: 'Coming soon', scale: 'Coming soon' },
   { feature: 'WhatsApp Cloud & Telegram Bots', starter: '—', growth: '—', scale: 'Included' },
   { feature: 'Live Staff Audio Chimes & Takeover', starter: 'Email only', growth: 'Audio + Desktop', scale: 'Priority Multi-seat' },
   { feature: 'Custom Domain CNAME Mapping', starter: '—', growth: 'Included', scale: 'Included (Multi-domain)' },

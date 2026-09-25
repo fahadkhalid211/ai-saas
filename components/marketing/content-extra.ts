@@ -174,7 +174,7 @@ export const COMPARE = {
     { feature: 'AI provider pricing', values: ['0% token tax (Wholesale BYOK)', 'Bundled into message credits', 'Varies', 'Per-seat plans'] },
     { feature: 'Captures leads from the conversation', values: ['Yes, email and phone are detected', 'Yes', 'Limited', 'Form fields'] },
     { feature: 'Human takeover of a live chat', values: ['Yes, with instant audio alert', 'Yes', 'Often unsupported', 'Yes'] },
-    { feature: 'Inbound Phone Voice Calling', values: ['Yes, local voice-worker', 'No', 'No', 'No'] },
+    { feature: 'Inbound Phone Voice Calling', values: ['Coming soon', 'No', 'No', 'No'] },
     { feature: 'WhatsApp and Telegram', values: ['Yes, native webhook connectors', 'Varies by plan', 'Varies', 'Varies'] },
   ],
   footnote: 'Based on each vendor\u2019s public documentation as of September 2026. Products change, so check each vendor for current features and plans.',

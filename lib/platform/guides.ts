@@ -55,7 +55,7 @@ export const GUIDES: Guide[] = [
     title: 'Where things are in the dashboard',
     category: 'Getting started',
     keywords: ['dashboard', 'where', 'find', 'menu', 'sidebar', 'tabs', 'navigate', 'navigation', 'settings'],
-    body: `The left menu is grouped like this:\n- **Get started**: Overview, Knowledge Base, Testing Studio.\n- **Grow and engage**: Leads, Appointments, Chat History, Analytics and KPIs.\n- **Customize and channels**: Widget and Styling (colours, welcome message, booking options), Channels and Integrations (Slack, Google Sheets, webhooks, WhatsApp, Telegram, phone, email), Behavior and Rules.\n- **Settings and account**: AI Settings, Team, Plans and Billing, Security and 2FA, Audit Trail (owners), Support, My Profile, Guides and Docs.\n\nThe assistant picker at the top switches between your assistants.`,
+    body: `The left menu is grouped like this:\n- **Get started**: Overview, Knowledge Base, Testing Studio.\n- **Grow and engage**: Leads, Appointments, Chat History, Analytics and KPIs.\n- **Customize and channels**: Widget and Styling (colours, welcome message, booking options), Channels and Integrations (Slack, Google Sheets, webhooks, WhatsApp, Telegram, email), Behavior and Rules.\n- **Settings and account**: AI Settings, Team, Plans and Billing, Security and 2FA, Audit Trail (owners), Support, My Profile, Guides and Docs.\n\nThe assistant picker at the top switches between your assistants.`,
   },
   {
     id: 'connect-openai',
@@ -242,11 +242,11 @@ export const GUIDES: Guide[] = [
   },
   {
     id: 'phone-voice',
-    title: 'Answer phone calls (voice assistant)',
+    title: 'Phone calls (coming soon)',
     category: 'Channels',
-    keywords: ['phone', 'voice', 'calls', 'telnyx', 'twilio', 'phone number', 'voice worker', 'inbound calls', 'texml', 'speech'],
-    body: `The phone assistant needs your own telephony account and a small voice worker on your server; carrier and hosting costs are yours.\n1. **Deploy the voice worker** on a VPS (Docker): copy \`.env.example\`, run \`docker compose up -d --build\`, and download a voice.\n2. **Point a domain** (for example voice.yourdomain.com) at the server; the built-in Caddy service gets a free SSL certificate.\n3. **Create a Telnyx TeXML application**, set the webhook to \`https://YOUR-APP/api/channels/voice?k=YOUR_VOICE_WEBHOOK_SECRET\`, and assign your number to it.\n4. **Call the number** to test: it greets, answers from your knowledge base and can book appointments.\n\nVoice is an add-on on Growth and included (one number) on Agency / Scale.`,
-    links: [{ label: 'Phone setup guide', href: '/support/voice-agent' }],
+    keywords: ['phone', 'voice', 'calls', 'telnyx', 'twilio', 'phone number', 'voice worker', 'inbound calls', 'texml', 'speech', 'voice call'],
+    body: `**Answering phone calls is under development and is not available yet.** It is on the roadmap: a phone assistant that answers from your knowledge base and books appointments by voice. There is nothing to set up for it today.\n\nWhat works now: the website chat widget, **WhatsApp** and **Telegram**, all answering from the same knowledge and booking appointments.`,
+    links: [{ label: 'Roadmap', href: '/roadmap' }],
   },
   {
     id: 'human-handover',
@@ -334,7 +334,7 @@ export const GUIDES: Guide[] = [
     title: 'What is not available yet',
     category: 'Product',
     keywords: ['roadmap', 'not available', 'coming soon', 'planned', 'missing', 'feature request', 'two-way calendar', 'custom domain', 'crm sync', 'hubspot', 'salesforce', 'roadmap status'],
-    body: `Available today: the assistant with your knowledge, in-chat booking with slot locking, your own AI provider, embeddable widget and hosted page, leads to email/webhooks/Slack/Google Sheets, live handover, WhatsApp and Telegram (with your own accounts), phone (with your own telephony).\n\n**In development:** two-way Google Calendar and Outlook sync, custom domains for hosted pages, more channels.\n**Planned:** native HubSpot, Salesforce and Pipedrive sync, expanded agency workspaces, image and menu intake.\n\nDates are goals, not commitments.`,
+    body: `Available today: the assistant with your knowledge, in-chat booking with slot locking, your own AI provider, embeddable widget and hosted page, leads to email/webhooks/Slack/Google Sheets, live handover, WhatsApp and Telegram (with your own accounts).\n\n**In development:** phone voice calls (an inbound phone assistant), two-way Google Calendar and Outlook sync, custom domains for hosted pages, more messaging channels.\n**Planned:** native HubSpot, Salesforce and Pipedrive sync, expanded agency workspaces, image and menu intake.\n\nDates are goals, not commitments.`,
     links: [{ label: 'Roadmap', href: '/roadmap' }],
   },
   {

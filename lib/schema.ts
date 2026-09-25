@@ -77,7 +77,7 @@ export function softwareSchema() {
       'Books appointments in the chat with slot locking',
       'Captures leads and sends them to email, webhooks, Slack and Google Sheets',
       'Hands over to a person in one click',
-      'WhatsApp, Telegram and phone channels',
+      'WhatsApp and Telegram channels',
       'Bring your own AI provider with no usage markup',
     ],
     offers: [

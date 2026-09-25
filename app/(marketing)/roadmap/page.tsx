@@ -158,13 +158,12 @@ const MILESTONES: Milestone[] = [
   },
   {
     quarter: 'Available, setup required',
-    title: 'Channels: WhatsApp, Telegram and phone',
+    title: 'Channels: WhatsApp and Telegram',
     badge: 'In Polish',
     tone: 'amber',
     description: 'Working, with prerequisites you provide yourself. We call these out so nobody buys expecting more.',
     items: [
       'WhatsApp Cloud API and Telegram bots: you create the accounts and connect the webhooks',
-      'Inbound phone assistant: needs your own telephony account (for example Telnyx) and the voice worker running on your server; carrier and hosting costs are yours',
       'Calendar: bookings are exported as a calendar feed you subscribe to; two-way sync with Google Calendar or Outlook is not available yet',
       'Industry starter templates for common service businesses',
     ],
@@ -178,7 +177,8 @@ const MILESTONES: Milestone[] = [
     items: [
       'Two-way Google Calendar and Outlook 365 availability sync',
       'Custom domain mapping for hosted business pages with automatic SSL',
-      'More voice and messaging channels',
+      'Inbound phone assistant (voice calls)',
+      'More messaging channels',
     ],
   },
   {

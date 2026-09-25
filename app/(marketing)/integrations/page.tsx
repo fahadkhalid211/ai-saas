@@ -14,7 +14,7 @@ interface IntegrationDetail {
   name: string;
   category: Category;
   categoryLabel: string;
-  badge: 'Native' | 'One-Click' | 'BYOK' | 'Webhook';
+  badge: 'Native' | 'One-Click' | 'BYOK' | 'Webhook' | 'Coming soon';
   tone: 'lime' | 'lav' | 'mint' | 'pink' | 'amber';
   tagline: string;
   overview: string;
@@ -55,24 +55,23 @@ const INTEGRATIONS: IntegrationDetail[] = [
   },
   {
     id: 'telnyx-voice',
-    name: 'Telnyx Voice & TeXML',
+    name: 'Phone Calls (Telnyx)',
     category: 'voice',
     categoryLabel: 'Phone & Voice',
-    badge: 'Native',
+    badge: 'Coming soon',
     tone: 'pink',
-    tagline: 'Inbound telephony worker with CPU speech synthesis.',
+    tagline: 'Answering inbound phone calls is under development.',
     overview:
-      'Answers incoming phone calls directly with Crescelo’s local voice worker. Webhooks stream caller audio to faster-whisper on CPU, formulate knowledge answers and bookings, and synthesize neural speech with Piper in under 400ms without expensive per-minute transcription markups.',
+      'Letting your assistant answer phone calls from the same knowledge base is under development and is not available yet. It is on the roadmap; the details below are the plan, not a shipped feature.',
     features: [
-      'Sub-400ms voice turn-around latency',
-      'Real-time caller interruption detection',
-      'Wholesale carrier pricing directly on your Telnyx balance',
-      'Automatic call summary, transcript, and SMS confirmation dispatch',
+      'Planned: answer calls from your knowledge base',
+      'Planned: book appointments by phone',
+      'Planned: call summaries and transcripts',
     ],
-    latency: '380ms end-to-end voice turn',
-    security: 'TeXML webhook signature verification via Ed25519 & HMAC-SHA256',
-    guideHref: '/support/voice-agent',
-    guideLabel: 'Read Voice Agent Setup Guide',
+    latency: 'Not available yet',
+    security: 'Under development',
+    guideHref: '/roadmap',
+    guideLabel: 'See the roadmap',
     samplePayload: {
       event: 'call.session.turn',
       call_control_id: 'v3:call_1947291a8',
@@ -376,7 +375,7 @@ const INTEGRATIONS: IntegrationDetail[] = [
 const CATEGORIES = [
   { id: 'all', label: 'All Ecosystem' },
   { id: 'calendar', label: 'Calendars' },
-  { id: 'voice', label: 'Phone & Voice' },
+  { id: 'voice', label: 'Phone & Voice (soon)' },
   { id: 'messaging', label: 'Messaging Channels' },
   { id: 'ai', label: 'AI Engines (BYOK)' },
   { id: 'crm', label: 'Data & Webhooks' },

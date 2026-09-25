@@ -9,7 +9,7 @@ export const metadata: Metadata = withSocial({
   alternates: { canonical: '/support' },
   title: 'Help Center & Documentation | Crescelo',
   description:
-    'Documentation, setup guides, and technical support for Crescelo autonomous website and phone assistants.',
+    'Documentation, setup guides, and technical support for Crescelo autonomous website assistants.',
 }, '/support');
 
 const TOPIC_HUBS = [
@@ -22,10 +22,10 @@ const TOPIC_HUBS = [
   },
   {
     title: 'Inbound Phone Voice Calling',
-    desc: 'How to purchase numbers on Telnyx or Twilio, configure TeXML webhooks, and run the sub-second voice worker.',
+    desc: 'Coming soon. Answering phone calls with your assistant is under development; the setup guide will be published when it ships.',
     href: '/support/voice-agent',
     tone: 'lav',
-    count: '3 Guides',
+    count: 'Coming soon',
   },
   {
     title: 'Calendar Sync & Concurrency Locks',
@@ -114,8 +114,8 @@ export default function SupportPage() {
             {/* Quick action buttons */}
             <div className="mk-cta-row mk-rise" style={{ justifyContent: 'center', ['--mk-delay' as string]: '460ms' }}>
               <ButtonLink href="/support/contact">Contact Support</ButtonLink>
-              <ButtonLink href="/support/voice-agent" variant="ghost">
-                Phone Setup Guide
+              <ButtonLink href="/support/ticket" variant="ghost">
+                Check a ticket
               </ButtonLink>
             </div>
           </div>
