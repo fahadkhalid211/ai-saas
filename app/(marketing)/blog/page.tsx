@@ -44,7 +44,7 @@ export default function BlogIndexPage() {
               id="blog-title"
               eyebrow="KNOWLEDGE HUB & GLOSSARY"
               title="Practical guides for service businesses"
-              intro="Browse 200+ comprehensive playbooks, architecture whitepapers, and industry blueprints. Straight answers on AI assistants, online booking, costs, and customer conversion."
+              intro="Practical guides on AI website assistants, online booking, lead capture, costs and security, written for owners of appointment-based businesses."
               align="center"
             />
             <BlogGlossaryHub posts={posts} clusters={clusters} />
