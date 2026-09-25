@@ -46,7 +46,7 @@ export function seoTitle(post: Pick<BlogPost, 'title'>): string {
     // add the first clause of the subtitle when it is a real phrase and still fits
     const subtitle = title.slice(colon + 1).trim();
     const clause = subtitle.split(/,| with | for | without | to | from | in | on | by | and /i)[0].trim();
-    if (clause.split(/\s+/).length >= 3 && !/^(from|to|in|on|at|of|by|as|when|while)/i.test(clause) && `${head}: ${clause}`.length <= TITLE_MAX) return withBrand(`${head}: ${clause}`);
+    if (clause.split(/\s+/).length >= 3 && !/^(from|to|in|on|at|of|by|as|when|while)\b/i.test(clause) && `${head}: ${clause}`.length <= TITLE_MAX) return withBrand(`${head}: ${clause}`);
     return withBrand(head);
   }
 
