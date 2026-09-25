@@ -843,6 +843,8 @@ async function ensureInitialized(forceFresh = false): Promise<DatabaseState> {
 
   if (!cloudSyncPromise) {
     cloudSyncPromise = (async () => {
+      const loadStarted = performance.now();
+      let loadSource: 'redis' | 'postgres' | 'check' = 'check';
       try {
         let remoteNeedsFetch = true;
         if (cachedState !== null && !forceFresh) {
@@ -865,6 +867,7 @@ async function ensureInitialized(forceFresh = false): Promise<DatabaseState> {
                 lastKnownCloudUpdatedAt = redisCached.updatedAt;
               }
               remoteNeedsFetch = false;
+              loadSource = 'redis';
             }
           } catch (err) {
             console.warn('[Database] L2 Redis cache check failed, falling back to cloud DB:', err);
@@ -872,6 +875,7 @@ async function ensureInitialized(forceFresh = false): Promise<DatabaseState> {
         }
 
         if (remoteNeedsFetch) {
+          loadSource = 'postgres';
           const remoteRes = await fetchCloudState();
           if (remoteRes.status === 'found' && remoteRes.data && typeof remoteRes.data === 'object' && Array.isArray(remoteRes.data.workspaces)) {
             const remoteState = remoteRes.data;
@@ -950,6 +954,11 @@ async function ensureInitialized(forceFresh = false): Promise<DatabaseState> {
         }
       } finally {
         cloudSyncPromise = null;
+        // a slow (re)load of the shared state is what makes the first request on a cold instance slow, so record where the time went
+        const ms = performance.now() - loadStarted;
+        if (ms > 250) {
+          logEvent({ category: 'db', level: 'warn', event: 'db.slow_state_load', message: `state load via ${loadSource} took ${Math.round(ms)} ms`, durationMs: ms });
+        }
       }
     })();
   }

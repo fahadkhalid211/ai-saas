@@ -200,6 +200,13 @@ export async function ensurePostgresSchema(): Promise<boolean> {
   if (!pool) return false;
 
   try {
+    // Every cold serverless instance lands here. The DDL below takes a table lock (ALTER ... ROW LEVEL SECURITY) and costs a round
+    // trip, so it only runs when the table is really missing.
+    const present = await pool.query(`SELECT to_regclass('public.kortex_app_state') AS r`);
+    if (present.rows[0]?.r) {
+      isSchemaInitialized = true;
+      return true;
+    }
     await pool.query(`
       CREATE TABLE IF NOT EXISTS kortex_app_state (
         id TEXT PRIMARY KEY,
