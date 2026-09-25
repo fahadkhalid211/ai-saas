@@ -5,7 +5,19 @@ import { JsonLd } from '@/components/marketing/JsonLd';
 import { ButtonLink, Reveal, SectionHead } from '@/components/marketing/ui';
 import { LOGIN_HREF, SIGNUP_HREF } from '@/components/marketing/content';
 import { breadcrumbSchema, faqSchema, webPageSchema } from '@/lib/schema';
+import { FeatureVisual, type VisualKind } from '@/components/marketing/mocks';
 import { featureBySlug, PRODUCT_FEATURES, type ProductFeature } from '@/lib/product-features';
+
+/** The product screen shown for each feature, so visitors see what they get and not only read about it. */
+const VISUAL: Record<string, { kind: VisualKind; title: string; body: string }> = {
+  'ai-assistant': { kind: 'retrieval', title: 'It finds the answer in your content.', body: 'Every reply is built from passages in your own documents. This is what happens behind a single question.' },
+  'appointment-booking': { kind: 'calendar', title: 'Customers pick a real free slot.', body: 'The assistant shows open times from your calendar and books in the chat. No back and forth.' },
+  'lead-capture': { kind: 'inbox', title: 'Every lead lands in one inbox.', body: 'Name, contact details and the conversation behind them, ready for your team to follow up.' },
+  'knowledge-base': { kind: 'sources', title: 'Add your content in minutes.', body: 'Upload files, paste text or add web pages. The assistant learns them and stays in sync.' },
+  'website-widget': { kind: 'config', title: 'Make it look like your brand.', body: 'Choose the tone, colours and greeting, then paste one line of code on your site.' },
+  'human-handover': { kind: 'inbox', title: 'Your team steps in when it matters.', body: 'Conversations that need a person show up in the inbox with the full history attached.' },
+  'messaging-channels': { kind: 'channels', title: 'One assistant, every channel.', body: 'Website, WhatsApp and Telegram share the same knowledge and the same conversation history.' },
+};
 
 /** One product feature page: hero with a sample chat, benefits, how it works, what you control, an honest note, FAQ and related features. */
 export function FeaturePage({ feature }: { feature: ProductFeature }) {
@@ -26,14 +38,14 @@ export function FeaturePage({ feature }: { feature: ProductFeature }) {
         <section className="mk-hero" style={{ marginTop: '1rem' }}>
           <div className="mk-hero-glow" aria-hidden="true" />
           <div className="mk-wrap mk-hero-inner">
-            <p className="mk-eyebrow">{feature.eyebrow}</p>
-            <h1 className="mk-h1" style={{ maxWidth: '22ch', marginInline: 'auto' }}>
+            <p className="mk-eyebrow mk-rise" style={{ ['--mk-delay' as string]: '0ms' }}>{feature.eyebrow}</p>
+            <h1 className="mk-h1 mk-rise" style={{ maxWidth: '22ch', marginInline: 'auto', ['--mk-delay' as string]: '140ms' }}>
               {feature.title}
             </h1>
-            <p className="mk-lead" style={{ maxWidth: '62ch' }}>
+            <p className="mk-lead mk-rise" style={{ maxWidth: '62ch', ['--mk-delay' as string]: '320ms' }}>
               {feature.intro}
             </p>
-            <div className="mk-cta-row" style={{ justifyContent: 'center' }}>
+            <div className="mk-cta-row mk-rise" style={{ justifyContent: 'center', ['--mk-delay' as string]: '460ms' }}>
               <ButtonLink href={SIGNUP_HREF}>Start free trial</ButtonLink>
               <ButtonLink href="/pricing" variant="ghost">
                 See pricing
@@ -52,7 +64,22 @@ export function FeaturePage({ feature }: { feature: ProductFeature }) {
           </div>
         </section>
 
-        <section className="mk-section" aria-labelledby="feat-benefits">
+        {VISUAL[feature.slug] ? (
+          <section className="mk-section" aria-labelledby="feat-see">
+            <div className="mk-wrap" style={{ display: 'grid', gap: '2rem', alignItems: 'center', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 22rem), 1fr))' }}>
+              <Reveal>
+                <p className="mk-eyebrow">SEE IT</p>
+                <h2 id="feat-see" className="mk-h2">{VISUAL[feature.slug].title}</h2>
+                <p className="mk-lead">{VISUAL[feature.slug].body}</p>
+              </Reveal>
+              <Reveal delay={120} className="mk-path-visual">
+                <FeatureVisual kind={VISUAL[feature.slug].kind} />
+              </Reveal>
+            </div>
+          </section>
+        ) : null}
+
+        <section className="mk-section mk-section-tint" aria-labelledby="feat-benefits">
           <div className="mk-wrap">
             <SectionHead eyebrow="WHAT YOU GET" title={`${feature.name}, in practice.`} id="feat-benefits" align="center" />
             <div style={{ display: 'grid', gap: '1rem', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 17rem), 1fr))', marginTop: '2rem' }}>
@@ -66,12 +93,12 @@ export function FeaturePage({ feature }: { feature: ProductFeature }) {
           </div>
         </section>
 
-        <section className="mk-section mk-section-tint" aria-labelledby="feat-how">
+        <section className="mk-section" aria-labelledby="feat-how">
           <div className="mk-wrap" style={{ maxWidth: '60rem' }}>
             <SectionHead eyebrow="HOW IT WORKS" title="From set-up to live." id="feat-how" align="center" />
             <ol style={{ listStyle: 'none', padding: 0, margin: '2rem 0 0', display: 'grid', gap: '1rem' }}>
               {feature.steps.map((s, i) => (
-                <li key={s.title} className="mk-card" style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
+                <Reveal as="li" key={s.title} delay={i * 80} className="mk-card" style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
                   <span aria-hidden="true" style={{ flex: 'none', width: '2.25rem', height: '2.25rem', borderRadius: '50%', display: 'grid', placeItems: 'center', background: 'var(--mk-lime)', color: 'var(--mk-deep)', border: '1.5px solid var(--mk-ink)', fontWeight: 800 }}>
                     {i + 1}
                   </span>
@@ -79,13 +106,13 @@ export function FeaturePage({ feature }: { feature: ProductFeature }) {
                     <h3 style={{ fontSize: '1.25rem', marginBottom: '0.25rem' }}>{s.title}</h3>
                     <p>{s.body}</p>
                   </div>
-                </li>
+                </Reveal>
               ))}
             </ol>
           </div>
         </section>
 
-        <section className="mk-section" aria-labelledby="feat-control">
+        <section className="mk-section mk-section-tint" aria-labelledby="feat-control">
           <div className="mk-wrap" style={{ maxWidth: '60rem' }}>
             <SectionHead eyebrow="YOU STAY IN CONTROL" title="What you can set." id="feat-control" align="center" />
             <ul style={{ listStyle: 'none', padding: 0, margin: '2rem 0 0', display: 'grid', gap: '0.6rem', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 18rem), 1fr))' }}>
@@ -105,7 +132,7 @@ export function FeaturePage({ feature }: { feature: ProductFeature }) {
           </div>
         </section>
 
-        <section className="mk-section mk-section-tint" aria-labelledby="feat-faq">
+        <section className="mk-section" aria-labelledby="feat-faq">
           <div className="mk-wrap" style={{ maxWidth: '52rem' }}>
             <SectionHead eyebrow="QUESTIONS" title="Good to know." id="feat-faq" align="center" />
             <div style={{ display: 'grid', gap: '0.75rem', marginTop: '2rem' }}>
@@ -119,7 +146,7 @@ export function FeaturePage({ feature }: { feature: ProductFeature }) {
           </div>
         </section>
 
-        <section className="mk-section" aria-labelledby="feat-related">
+        <section className="mk-section mk-section-tint" aria-labelledby="feat-related">
           <div className="mk-wrap">
             <SectionHead eyebrow="KEEP EXPLORING" title="Works together with." id="feat-related" align="center" />
             <div style={{ display: 'grid', gap: '1rem', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 16rem), 1fr))', marginTop: '2rem' }}>
