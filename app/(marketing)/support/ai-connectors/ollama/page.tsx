@@ -1,7 +1,10 @@
 import type { Metadata } from 'next';
+import { withSocial } from '@/lib/seo';
 import Link from 'next/link';
 import { Header } from '@/components/marketing/Header';
 import { Footer } from '@/components/marketing/Closing';
+import { JsonLd } from '@/components/marketing/JsonLd';
+import { breadcrumbSchema, webPageSchema } from '@/lib/schema';
 import { ButtonLink, SectionHead } from '@/components/marketing/ui';
 import {
   ExternalLink,
@@ -12,15 +15,17 @@ import {
   Zap,
 } from 'lucide-react';
 
-export const metadata: Metadata = {
-  title: 'How to Connect Local Ollama to Crescelo | 100% Offline AI Guide',
+export const metadata: Metadata = withSocial({
+  alternates: { canonical: '/support/ai-connectors/ollama' },
+  title: 'Connect a Local Ollama Model to Crescelo',
   description:
     'Complete guide to install Ollama, pull local open-source models (Llama 3.2, Mistral), configure CORS origins, and run 100% private offline inference on Crescelo.',
-};
+}, '/support/ai-connectors/ollama');
 
 export default function OllamaGuidePage() {
   return (
     <>
+      <JsonLd data={[webPageSchema('Connect a Local Ollama Model to Crescelo', 'Complete guide to install Ollama, pull local open-source models (Llama 3.2, Mistral), configure CORS origins, and run 100% private offline inference on Crescelo.', '/support/ai-connectors/ollama'), breadcrumbSchema([{ name: 'Support', path: '/support' }, { name: 'AI connectors', path: '/support/ai-connectors' }, { name: 'Local Ollama', path: '/support/ai-connectors/ollama' }])]} />
       <Header />
       <main id="main">
         {/* Breadcrumb & Hero */}

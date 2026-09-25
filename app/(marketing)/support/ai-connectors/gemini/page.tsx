@@ -1,7 +1,10 @@
 import type { Metadata } from 'next';
+import { withSocial } from '@/lib/seo';
 import Link from 'next/link';
 import { Header } from '@/components/marketing/Header';
 import { Footer } from '@/components/marketing/Closing';
+import { JsonLd } from '@/components/marketing/JsonLd';
+import { breadcrumbSchema, webPageSchema } from '@/lib/schema';
 import { ButtonLink, SectionHead } from '@/components/marketing/ui';
 import {
   ExternalLink,
@@ -10,15 +13,17 @@ import {
   Zap,
 } from 'lucide-react';
 
-export const metadata: Metadata = {
-  title: 'How to Connect Google Gemini to Crescelo | Step-by-Step API Guide',
+export const metadata: Metadata = withSocial({
+  alternates: { canonical: '/support/ai-connectors/gemini' },
+  title: 'Connect Google Gemini to Crescelo: API Key Guide',
   description:
     'Step-by-step guide to get a free Google AI Studio API key and connect Gemini 1.5 Flash or Gemini 2.0 Flash to Crescelo with massive context windows.',
-};
+}, '/support/ai-connectors/gemini');
 
 export default function GeminiGuidePage() {
   return (
     <>
+      <JsonLd data={[webPageSchema('Connect Google Gemini to Crescelo: API Key Guide', 'Step-by-step guide to get a free Google AI Studio API key and connect Gemini 1.5 Flash or Gemini 2.0 Flash to Crescelo with massive context windows.', '/support/ai-connectors/gemini'), breadcrumbSchema([{ name: 'Support', path: '/support' }, { name: 'AI connectors', path: '/support/ai-connectors' }, { name: 'Google Gemini', path: '/support/ai-connectors/gemini' }])]} />
       <Header />
       <main id="main">
         {/* Breadcrumb & Hero */}

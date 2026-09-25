@@ -3,6 +3,8 @@ import { withSocial } from '@/lib/seo';
 import Link from 'next/link';
 import { Header } from '@/components/marketing/Header';
 import { Footer } from '@/components/marketing/Closing';
+import { JsonLd } from '@/components/marketing/JsonLd';
+import { breadcrumbSchema, webPageSchema } from '@/lib/schema';
 import { ButtonLink, SectionHead } from '@/components/marketing/ui';
 import {
   ExternalLink,
@@ -125,6 +127,7 @@ const CONNECTORS = [
 export default function AiConnectorsIndexPage() {
   return (
     <>
+      <JsonLd data={[webPageSchema('AI Platform Connectors & BYOK Guides', 'Guides for connecting OpenAI, Anthropic Claude, Google Gemini, Groq, DeepSeek or a local Ollama model to Crescelo with your own API key.', '/support/ai-connectors'), breadcrumbSchema([{ name: 'Support', path: '/support' }, { name: 'AI connectors', path: '/support/ai-connectors' }])]} />
       <Header />
       <main id="main">
         {/* Hero */}

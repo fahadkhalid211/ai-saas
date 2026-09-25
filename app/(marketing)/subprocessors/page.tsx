@@ -6,7 +6,7 @@ import type { LegalDocument } from '@/lib/legal/documents';
 
 export const metadata: Metadata = withSocial({
   title: 'Sub-processors | Crescelo',
-  description: 'The providers that process personal data on behalf of Crescelo and its customers.',
+  description: 'The providers that process personal data on behalf of Crescelo and its customers, what they do, what data they see and where they operate.',
   alternates: { canonical: '/subprocessors' },
 }, '/subprocessors');
 

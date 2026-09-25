@@ -21,6 +21,21 @@ export function getPlanKnowledgeStorageLimitMb(planId: string = 'starter'): numb
   return plan.knowledgeStorageLimitMb;
 }
 
+/** What paying yearly saves on a plan, as a whole percent (annual price per month against the monthly price). */
+export function planAnnualSavingsPercent(p: Pick<PlanTier, 'monthlyPrice' | 'annualMonthlyPrice'>): number {
+  return Math.round((1 - p.annualMonthlyPrice / p.monthlyPrice) * 100);
+}
+
+/** The saving shown next to "Annual": the smallest across the plans, so it is true for every plan. */
+export function annualSavingsPercent(): number {
+  return Math.min(...BILLING_PLANS.map(planAnnualSavingsPercent));
+}
+
+/** Dollars saved per year on a plan by paying yearly. */
+export function planAnnualSavingsDollars(p: Pick<PlanTier, 'monthlyPrice' | 'annualMonthlyPrice'>): number {
+  return (p.monthlyPrice - p.annualMonthlyPrice) * 12;
+}
+
 export const BILLING_PLANS: PlanTier[] = [
   {
     id: 'starter',

@@ -3,6 +3,8 @@ import { withSocial } from '@/lib/seo';
 import Link from 'next/link';
 import { Header } from '@/components/marketing/Header';
 import { Footer } from '@/components/marketing/Closing';
+import { JsonLd } from '@/components/marketing/JsonLd';
+import { breadcrumbSchema, webPageSchema } from '@/lib/schema';
 import { ButtonLink, SectionHead } from '@/components/marketing/ui';
 
 export const metadata: Metadata = withSocial({
@@ -15,6 +17,7 @@ export const metadata: Metadata = withSocial({
 export default function RagKnowledgeGuidePage() {
   return (
     <>
+      <JsonLd data={[webPageSchema('Knowledge Base & Document Indexing Guide', 'How Crescelo reads your documents and web pages, finds the right passage for each question and logs what it could not answer.', '/support/rag-knowledge'), breadcrumbSchema([{ name: 'Support', path: '/support' }, { name: 'Knowledge base', path: '/support/rag-knowledge' }])]} />
       <Header />
       <main id="main">
         <section className="mk-section">

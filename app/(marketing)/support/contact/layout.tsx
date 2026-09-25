@@ -4,7 +4,7 @@ import type { ReactNode } from 'react';
 import { JsonLd } from '@/components/marketing/JsonLd';
 import { breadcrumbSchema, softwareSchema, webPageSchema } from '@/lib/schema';
 
-const description = 'Talk to the Crescelo team about plans, setup or a problem. Send a message and we reply by email.';
+const description = 'Contact the Crescelo team about plans, setup or a problem. Every message opens a support ticket you can follow, and we reply by email.';
 
 export const metadata: Metadata = withSocial({
   title: 'Contact Crescelo | Sales & Technical Support',

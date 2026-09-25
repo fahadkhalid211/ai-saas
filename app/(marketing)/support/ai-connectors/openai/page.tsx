@@ -1,7 +1,10 @@
 import type { Metadata } from 'next';
+import { withSocial } from '@/lib/seo';
 import Link from 'next/link';
 import { Header } from '@/components/marketing/Header';
 import { Footer } from '@/components/marketing/Closing';
+import { JsonLd } from '@/components/marketing/JsonLd';
+import { breadcrumbSchema, webPageSchema } from '@/lib/schema';
 import { ButtonLink, Reveal, SectionHead } from '@/components/marketing/ui';
 import {
   ExternalLink,
@@ -20,15 +23,17 @@ import {
   BookOpen,
 } from 'lucide-react';
 
-export const metadata: Metadata = {
-  title: 'How to Connect OpenAI to Crescelo | Step-by-Step API Guide',
+export const metadata: Metadata = withSocial({
+  alternates: { canonical: '/support/ai-connectors/openai' },
+  title: 'Connect OpenAI to Crescelo: API Key Guide',
   description:
     'Complete step-by-step guide to generate your OpenAI API key, configure usage limits, and connect GPT-4o or GPT-4o mini to Crescelo with zero token markup.',
-};
+}, '/support/ai-connectors/openai');
 
 export default function OpenAiGuidePage() {
   return (
     <>
+      <JsonLd data={[webPageSchema('Connect OpenAI to Crescelo: API Key Guide', 'Complete step-by-step guide to generate your OpenAI API key, configure usage limits, and connect GPT-4o or GPT-4o mini to Crescelo with zero token markup.', '/support/ai-connectors/openai'), breadcrumbSchema([{ name: 'Support', path: '/support' }, { name: 'AI connectors', path: '/support/ai-connectors' }, { name: 'OpenAI', path: '/support/ai-connectors/openai' }])]} />
       <Header />
       <main id="main">
         {/* Breadcrumb & Hero */}

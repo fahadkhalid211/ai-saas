@@ -1,7 +1,10 @@
 import type { Metadata } from 'next';
+import { withSocial } from '@/lib/seo';
 import Link from 'next/link';
 import { Header } from '@/components/marketing/Header';
 import { Footer } from '@/components/marketing/Closing';
+import { JsonLd } from '@/components/marketing/JsonLd';
+import { breadcrumbSchema, webPageSchema } from '@/lib/schema';
 import { ButtonLink, SectionHead } from '@/components/marketing/ui';
 import {
   ExternalLink,
@@ -9,15 +12,17 @@ import {
   Zap,
 } from 'lucide-react';
 
-export const metadata: Metadata = {
-  title: 'How to Connect Groq Cloud to Crescelo | Lightning Fast LPU Guide',
+export const metadata: Metadata = withSocial({
+  alternates: { canonical: '/support/ai-connectors/groq' },
+  title: 'Connect Groq Cloud to Crescelo: Free API Key Guide',
   description:
     'Step-by-step guide to get a free Groq API key and achieve sub-second Llama 3.3 70B inference (500+ tokens/sec) on Crescelo for free.',
-};
+}, '/support/ai-connectors/groq');
 
 export default function GroqGuidePage() {
   return (
     <>
+      <JsonLd data={[webPageSchema('Connect Groq Cloud to Crescelo: Free API Key Guide', 'Step-by-step guide to get a free Groq API key and achieve sub-second Llama 3.3 70B inference (500+ tokens/sec) on Crescelo for free.', '/support/ai-connectors/groq'), breadcrumbSchema([{ name: 'Support', path: '/support' }, { name: 'AI connectors', path: '/support/ai-connectors' }, { name: 'Groq Cloud', path: '/support/ai-connectors/groq' }])]} />
       <Header />
       <main id="main">
         {/* Breadcrumb & Hero */}

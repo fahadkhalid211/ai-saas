@@ -36,6 +36,7 @@ export async function loadAccountSnapshot(ctx: AuthContext): Promise<AccountSnap
     subscriptionStatus: ws.subscriptionStatus,
     cancelAtPeriodEnd: Boolean(ws.cancelAtPeriodEnd),
     hasSubscription: Boolean(ws.stripeSubscriptionId),
+    earlyBird: Boolean(ws.earlyBird),
     chatsUsed,
     chatLimit: ws.monthlyChatLimit || 100,
     overageRate: ws.overageRatePerChat || 0.5,

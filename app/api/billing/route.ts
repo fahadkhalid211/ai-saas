@@ -7,6 +7,7 @@ import { validateEmail, sanitizeInput } from '@/lib/security/validation';
 import { logged } from '@/lib/logging/route';
 import { trialInfo } from '@/lib/billing/trial';
 import { isStripeConfigured } from '@/lib/billing/stripe';
+import { earlyBirdAvailableFor, paymentsAvailable } from '@/lib/billing/early-bird';
 
 const GETHandler = withAdminAuth(async (req: Request) => {
   try {
@@ -38,6 +39,8 @@ const GETHandler = withAdminAuth(async (req: Request) => {
       workspaceId: ws.id,
       name: ws.name,
       trial: trialInfo(ws),
+      payments: { available: paymentsAvailable() },
+      earlyBird: { available: earlyBirdAvailableFor(ws), active: Boolean(ws.earlyBird) },
       subscription: {
         // what the card is charged, and when: the end of the trial while trialing, otherwise the next renewal
         nextChargeAmount: ws.billingInterval === 'annual' ? currentPlan.annualMonthlyPrice * 12 : currentPlan.monthlyPrice,

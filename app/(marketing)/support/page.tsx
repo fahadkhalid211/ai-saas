@@ -3,13 +3,15 @@ import { withSocial } from '@/lib/seo';
 import Link from 'next/link';
 import { Header } from '@/components/marketing/Header';
 import { Footer } from '@/components/marketing/Closing';
+import { JsonLd } from '@/components/marketing/JsonLd';
+import { breadcrumbSchema, webPageSchema } from '@/lib/schema';
 import { ButtonLink, Reveal, SectionHead } from '@/components/marketing/ui';
 
 export const metadata: Metadata = withSocial({
   alternates: { canonical: '/support' },
   title: 'Help Center & Documentation | Crescelo',
   description:
-    'Documentation, setup guides, and technical support for Crescelo autonomous website assistants.',
+    'Setup guides for connecting your AI provider, adding the chat widget, booking, leads and WhatsApp or Telegram, plus how to open a support ticket.',
 }, '/support');
 
 const TOPIC_HUBS = [
@@ -93,6 +95,7 @@ const POPULAR_ARTICLES = [
 export default function SupportPage() {
   return (
     <>
+      <JsonLd data={[webPageSchema('Help Center & Documentation', 'Setup guides for connecting your AI provider, adding the chat widget, booking, leads and WhatsApp or Telegram, plus how to open a support ticket.', '/support'), breadcrumbSchema([{ name: 'Support', path: '/support' }])]} />
       <Header />
       <main id="main">
         {/* Support Hero with Search Bar Look */}

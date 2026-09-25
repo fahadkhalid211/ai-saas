@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { annualSavingsPercent } from '@/lib/billing/plans';
 import { Header } from '@/components/marketing/Header';
 import { Footer } from '@/components/marketing/Closing';
 import { ButtonLink, Reveal, SectionHead, Check } from '@/components/marketing/ui';
@@ -109,7 +110,7 @@ export default function PricingPage() {
                     fontWeight: 800,
                   }}
                 >
-                  SAVE 20%
+                  SAVE {annualSavingsPercent()}%
                 </span>
               </button>
             </div>

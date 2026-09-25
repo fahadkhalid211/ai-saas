@@ -315,6 +315,8 @@ export interface WorkspaceBillingData {
   stripeSubscriptionId?: string;
   subscriptionStatus?: SubscriptionStatus;
   cancelAtPeriodEnd?: boolean;
+  /** Started the free trial without a card during the launch (early-bird) offer. */
+  earlyBird?: boolean;
   /** Stripe's identifier for the card that started the trial (never the card number). */
   cardFingerprint?: string;
   /** Set when a card was disputed or flagged as fraud; the workspace cannot start another trial. */

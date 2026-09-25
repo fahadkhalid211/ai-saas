@@ -35,7 +35,32 @@ function longestPhrase(text: string, max: number, minLen = 0): string {
 }
 
 /** The <title> text: the article title shortened at a natural break so it is not cut off in results. */
-export function seoTitle(post: Pick<BlogPost, 'title'>): string {
+const DANGLING = new Set(['based', 'every', 'each', 'most', 'more', 'less', 'your', 'our', 'their', 'its', 'key', 'top', 'best', 'complete', 'ultimate', 'considerations', 'implementation', 'critical', 'essential', 'main']);
+const SMALL = new Set(['a', 'an', 'and', 'or', 'the', 'of', 'to', 'in', 'on', 'for', 'vs', 'with', 'by', 'at']);
+const titleCase = (t: string) => t.split(/\s+/).map((w, i) => (SMALL.has(w.toLowerCase()) && i > 0 ? w.toLowerCase() : /^[A-Z0-9]{2,}$/.test(w) ? w : w.charAt(0).toUpperCase() + w.slice(1))).join(' ').replace(/\bAi\b/g, 'AI').replace(/\bByok\b/g, 'BYOK').replace(/\bRag\b/g, 'RAG').replace(/\bSeo\b/g, 'SEO').replace(/\bFaq\b/g, 'FAQ');
+
+/** A shortened title that stops mid-thought ("... Based", "... Every Service Business Website") is worse than the keyword. */
+function reads(t: string): boolean {
+  const last = t.split(/\s+/).pop()!.toLowerCase().replace(/[^a-z]/g, '');
+  return !DANGLING.has(last) && !TRAILING_WORDS.has(last);
+}
+
+export function seoTitle(post: Pick<BlogPost, 'title'> & { primaryKeyword?: string }): string {
+  const t = seoTitleRaw(post);
+  const bare = t.replace(/\s*\|\s*Crescelo$/, '');
+  const kw = (post.primaryKeyword || '').trim();
+  // a title that says nothing about the article's subject ("The Step-by-Step Implementation Guide") wastes the search result
+  const kwWords = kw.toLowerCase().split(/\s+/).filter((w) => w.length > 3);
+  const covered = kwWords.length === 0 || kwWords.filter((w) => bare.toLowerCase().includes(w.slice(0, 5))).length >= Math.ceil(kwWords.length / 2);
+  if (bare.length <= TITLE_MAX && reads(bare) && covered) return t;
+  if (kw.length >= 12 && kw.length <= 50) {
+    const k = titleCase(kw);
+    return k.length + BRAND.length + 3 <= TITLE_MAX + 4 ? `${k} | ${BRAND}` : k;
+  }
+  return t;
+}
+
+function seoTitleRaw(post: Pick<BlogPost, 'title'>): string {
   const title = post.title.trim();
   const withBrand = (t: string) => (t.length + BRAND.length + 3 <= TITLE_MAX + 4 ? `${t} | ${BRAND}` : t);
   if (title.length <= TITLE_MAX) return withBrand(title);

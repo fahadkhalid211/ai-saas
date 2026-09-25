@@ -10,11 +10,11 @@ import { withSocial } from '@/lib/seo';
 import { BlogGlossaryHub } from '@/components/marketing/BlogGlossaryHub';
 
 const description =
-  'The definitive knowledge hub and glossary for appointment-based service businesses. Comprehensive guides on AI website assistants, in-chat scheduling, lead capture, and RAG architecture.';
+  'Guides for service businesses on AI website assistants, online booking, lead capture and knowledge bases, with a glossary of the terms.';
 
 export const metadata: Metadata = withSocial(
   {
-    title: 'Knowledge Hub & Glossary: AI Assistants, Booking & Service CRO | Crescelo',
+    title: 'Knowledge Hub: AI Assistants, Booking & Leads | Crescelo',
     description,
     alternates: { canonical: '/blog', types: { 'application/rss+xml': `${SITE.url}/blog/feed.xml` } },
   },

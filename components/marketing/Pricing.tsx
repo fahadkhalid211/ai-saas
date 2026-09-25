@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { annualSavingsPercent } from '@/lib/billing/plans';
 import { trackEvent } from '@/lib/analytics/track';
 import { PLANS, PRICING, SIGNUP_HREF } from './content';
 import { ButtonLink, Check, Reveal, SectionHead } from './ui';
@@ -32,7 +33,7 @@ export function Pricing() {
             Monthly
           </button>
           <button type="button" aria-pressed={annual} className={annual ? 'is-on' : ''} onClick={() => setAnnual(true)}>
-            Annual
+            Annual <small style={{ fontWeight: 700 }}>· save {annualSavingsPercent()}%</small>
           </button>
         </div>
 

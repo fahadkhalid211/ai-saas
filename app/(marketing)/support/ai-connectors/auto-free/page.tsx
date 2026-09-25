@@ -1,7 +1,10 @@
 import type { Metadata } from 'next';
+import { withSocial } from '@/lib/seo';
 import Link from 'next/link';
 import { Header } from '@/components/marketing/Header';
 import { Footer } from '@/components/marketing/Closing';
+import { JsonLd } from '@/components/marketing/JsonLd';
+import { breadcrumbSchema, webPageSchema } from '@/lib/schema';
 import { ButtonLink, SectionHead } from '@/components/marketing/ui';
 import {
   ExternalLink,
@@ -10,15 +13,17 @@ import {
   CheckCircle2,
 } from 'lucide-react';
 
-export const metadata: Metadata = {
-  title: 'Zero-Cost Free Engine Architecture & Guide | Crescelo Support',
+export const metadata: Metadata = withSocial({
+  alternates: { canonical: '/support/ai-connectors/auto-free' },
+  title: 'Free AI Engine for Your Assistant | Crescelo',
   description:
     'Learn how Crescelo’s built-in Zero-Cost Inference Engine cascades requests across Groq Free Tier, Google Gemini Flash, and local Ollama for $0 compute cost.',
-};
+}, '/support/ai-connectors/auto-free');
 
 export default function AutoFreeGuidePage() {
   return (
     <>
+      <JsonLd data={[webPageSchema('Free AI Engine for Your Assistant | Crescelo', 'Learn how Crescelo’s built-in Zero-Cost Inference Engine cascades requests across Groq Free Tier, Google Gemini Flash, and local Ollama for $0 compute cost.', '/support/ai-connectors/auto-free'), breadcrumbSchema([{ name: 'Support', path: '/support' }, { name: 'AI connectors', path: '/support/ai-connectors' }, { name: 'Free engine', path: '/support/ai-connectors/auto-free' }])]} />
       <Header />
       <main id="main">
         {/* Breadcrumb & Hero */}

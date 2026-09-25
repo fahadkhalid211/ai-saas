@@ -33,7 +33,7 @@ export const SITE = {
   url: resolveSiteUrl(),
   path: '/',
   description:
-    'Crescelo builds a website assistant from your own content. It answers visitor questions, books appointments, captures leads, and hands over to your team when a person is needed.',
+    'An AI website assistant for service businesses: answers visitors from your own content, books appointments, captures leads and hands over to your team.',
   /** The public contact route. There is deliberately no published mailbox: requests go through the ticket form. */
   contactPath: '/support/contact',
   /** Official profiles only. Add a profile here when it exists; the footer shows the list only if it is not empty. */

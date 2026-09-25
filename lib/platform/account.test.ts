@@ -154,3 +154,18 @@ describe('navigation', () => {
     expect(accountIntent('what is my plan?', null)).toBeNull();
   });
 });
+
+describe('early-bird trial (no card)', () => {
+  const eb: AccountSnapshot = { ...base, earlyBird: true, hasSubscription: false, subscriptionStatus: undefined };
+  it('says nothing will be charged', () => {
+    const r = describeAccount(eb);
+    expect(r).toMatch(/early-bird/i);
+    expect(r).toMatch(/nothing will be charged/i);
+    expect(r).not.toMatch(/card is charged/i);
+  });
+  it('has nothing to cancel', () => {
+    const r = accountIntent('cancel my subscription', eb)!;
+    expect(r.actions).toHaveLength(0);
+    expect(r.reply).toMatch(/nothing to cancel/i);
+  });
+});

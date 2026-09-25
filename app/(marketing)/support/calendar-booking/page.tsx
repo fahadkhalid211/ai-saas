@@ -3,6 +3,8 @@ import { withSocial } from '@/lib/seo';
 import Link from 'next/link';
 import { Header } from '@/components/marketing/Header';
 import { Footer } from '@/components/marketing/Closing';
+import { JsonLd } from '@/components/marketing/JsonLd';
+import { breadcrumbSchema, webPageSchema } from '@/lib/schema';
 import { ButtonLink, SectionHead } from '@/components/marketing/ui';
 
 export const metadata: Metadata = withSocial({
@@ -15,6 +17,7 @@ export const metadata: Metadata = withSocial({
 export default function CalendarBookingGuidePage() {
   return (
     <>
+      <JsonLd data={[webPageSchema('Calendar Booking & Concurrency Guide', 'How Crescelo books appointments in the chat, locks slots to prevent double bookings and exports bookings to a calendar feed.', '/support/calendar-booking'), breadcrumbSchema([{ name: 'Support', path: '/support' }, { name: 'Calendar booking', path: '/support/calendar-booking' }])]} />
       <Header />
       <main id="main">
         <section className="mk-section">

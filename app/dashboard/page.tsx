@@ -666,7 +666,7 @@ export default function DashboardPage() {
           onBillingChanged={() => billing.fetchBilling()}
         />
 
-        <SubscriptionGate isMasterAdmin={isMasterAdmin} onLogout={handleLogout} onOpenBilling={() => setActiveTab('billing')} />
+        <SubscriptionGate isMasterAdmin={isMasterAdmin} onLogout={handleLogout} onOpenBilling={() => setActiveTab('billing')} onOpenSupport={() => setActiveTab('support')} />
 
         {/* Cloud Persistence Notice Banner */}
         {dbStatus && !dbStatus.connected && dbStatus.isServerless && !dismissedDbBanner && (

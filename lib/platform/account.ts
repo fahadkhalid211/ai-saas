@@ -21,6 +21,8 @@ export interface AccountSnapshot {
   subscriptionStatus?: string;
   cancelAtPeriodEnd: boolean;
   hasSubscription: boolean;
+  /** Started the launch trial without a card: nothing will be charged; payment is arranged through a ticket. */
+  earlyBird?: boolean;
   chatsUsed: number;
   chatLimit: number;
   overageRate: number;
@@ -77,6 +79,10 @@ export function describeAccount(a: AccountSnapshot): string {
 
   switch (a.trial.status) {
     case 'trialing':
+      if (a.earlyBird) {
+        lines.push(`You are on the **early-bird trial** with **${a.trial.daysLeft} day${a.trial.daysLeft === 1 ? '' : 's'} left**${a.trial.endsAt ? ` (it ends on ${dateText(a.trial.endsAt)})` : ''}. No card is on file, so **nothing will be charged**. To keep your assistants running afterwards, open a ticket in the **Support** tab and we will arrange payment with you.`);
+        break;
+      }
       lines.push(`You are in your ${TRIAL_DAYS}-day free trial with **${a.trial.daysLeft} day${a.trial.daysLeft === 1 ? '' : 's'} left**${a.trial.endsAt ? ` (it ends on ${dateText(a.trial.endsAt)})` : ''}. ${a.trial.cancelling ? 'It is set to cancel, so your card will **not** be charged.' : `Your card is charged ${usd(priceOf(plan, a.interval) * (a.interval === 'annual' ? 12 : 1))} automatically when it ends unless you cancel first.`}`);
       break;
     case 'subscribed':
@@ -164,6 +170,11 @@ export function accountIntent(text: string, a: AccountSnapshot | null): IntentRe
   const mentionsPlanWord = /\b(plan|plans|subscription|tier|package)\b/i.test(t);
   const wantsChange = /\b(upgrade|downgrade|switch|change|move|go|put me|set me|step up|step down|drop|reduce|increase|bump)\b/i.test(t);
   const target = detectTarget(t);
+
+  // ---- cancel
+  if (a.earlyBird && /\b(cancel|stop|end|terminate)\b.*\b(subscription|plan|trial|billing|membership|charging|charges?)\b/i.test(t)) {
+    return { reply: 'You are on the early-bird trial with no card on file, so there is nothing to cancel and nothing will be charged. If you would rather stop using Crescelo, just let your trial run out.', actions: [] };
+  }
 
   // ---- cancel
   if (/\b(cancel|stop|end|terminate)\b.*\b(subscription|plan|trial|billing|membership|account|charging|charges?)\b/i.test(t) || /\bunsubscribe\b/i.test(t)) {

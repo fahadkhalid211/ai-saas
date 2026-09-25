@@ -1,4 +1,5 @@
 import React from 'react';
+import { annualSavingsPercent } from '@/lib/billing/plans';
 import {
   CreditCard,
   RefreshCw,
@@ -262,7 +263,7 @@ export const BillingTab: React.FC<BillingTabProps> = ({
           >
             <span>Annual</span>
             <span className="bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 text-[10px] px-1.5 py-0.2 rounded-full font-bold">
-              Save 20%
+              Save {annualSavingsPercent()}%
             </span>
           </button>
         </div>

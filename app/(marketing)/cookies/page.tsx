@@ -5,7 +5,7 @@ import { COOKIES } from '@/lib/legal/documents';
 
 export const metadata: Metadata = withSocial({
   title: 'Cookie Policy | Crescelo',
-  description: COOKIES.summary,
+  description: `${COOKIES.summary} Includes the full list and how to change your choice.`,
   alternates: { canonical: '/cookies' },
 }, '/cookies');
 

@@ -1,7 +1,10 @@
 import type { Metadata } from 'next';
+import { withSocial } from '@/lib/seo';
 import Link from 'next/link';
 import { Header } from '@/components/marketing/Header';
 import { Footer } from '@/components/marketing/Closing';
+import { JsonLd } from '@/components/marketing/JsonLd';
+import { breadcrumbSchema, webPageSchema } from '@/lib/schema';
 import { ButtonLink, SectionHead } from '@/components/marketing/ui';
 import {
   ExternalLink,
@@ -10,15 +13,17 @@ import {
   Zap,
 } from 'lucide-react';
 
-export const metadata: Metadata = {
-  title: 'How to Connect DeepSeek to Crescelo | Step-by-Step API Guide',
+export const metadata: Metadata = withSocial({
+  alternates: { canonical: '/support/ai-connectors/deepseek' },
+  title: 'Connect DeepSeek to Crescelo: API Key Guide',
   description:
     'Complete step-by-step guide to create a DeepSeek Platform account, generate an API key, and run DeepSeek-V3 and R1 reasoning on Crescelo at raw wholesale rates.',
-};
+}, '/support/ai-connectors/deepseek');
 
 export default function DeepSeekGuidePage() {
   return (
     <>
+      <JsonLd data={[webPageSchema('Connect DeepSeek to Crescelo: API Key Guide', 'Complete step-by-step guide to create a DeepSeek Platform account, generate an API key, and run DeepSeek-V3 and R1 reasoning on Crescelo at raw wholesale rates.', '/support/ai-connectors/deepseek'), breadcrumbSchema([{ name: 'Support', path: '/support' }, { name: 'AI connectors', path: '/support/ai-connectors' }, { name: 'DeepSeek', path: '/support/ai-connectors/deepseek' }])]} />
       <Header />
       <main id="main">
         {/* Breadcrumb & Hero */}
