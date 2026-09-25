@@ -28,7 +28,12 @@
         "DATABASE_URL": "",
         "POSTGRES_URL": "",
         "UPSTASH_REDIS_REST_URL": "",
-        "UPSTASH_REDIS_REST_TOKEN": ""
+        "UPSTASH_REDIS_REST_TOKEN": "",
+        "RECAPTCHA_SECRET_KEY": "",
+        "NEXT_PUBLIC_RECAPTCHA_SITE_KEY": "",
+        "ADMIN_API_KEY": "browser-test-master-key",
+        "MASTER_ADMIN_EMAIL": "owner@test.local",
+        "RESEND_API_KEY": ""
       }
     }
   ]
