@@ -40,6 +40,7 @@ import { WidgetTab } from '@/components/crm/WidgetTab';
 import { AppointmentsTab } from '@/components/crm/AppointmentsTab';
 import { ProfileTab } from '@/components/crm/ProfileTab';
 import { SystemLogsTab } from '@/components/crm/SystemLogsTab';
+import { SupportTab } from '@/components/crm/SupportTab';
 import { OnboardingWizardModal } from '@/components/crm/onboarding/OnboardingWizardModal';
 import { TourGuideModal } from '@/components/crm/tour/TourGuideModal';
 import { TOUR_STEPS } from '@/components/crm/tour/tourData';
@@ -83,7 +84,7 @@ export default function DashboardPage() {
   const [isAuthChecking, setIsAuthChecking] = useState<boolean>(true);
 
   const [activeTab, setActiveTab] = useState<
-    'overview' | 'profile' | 'analytics' | 'billing' | 'landing_page' | 'team' | 'security' | 'audit' | 'system_logs' | 'knowledge' | 'engine' | 'behavior' | 'widget' | 'channels' | 'playground' | 'leads' | 'appointments' | 'docs' | 'templates' | 'history'
+    'overview' | 'profile' | 'analytics' | 'billing' | 'landing_page' | 'team' | 'security' | 'audit' | 'system_logs' | 'support' | 'knowledge' | 'engine' | 'behavior' | 'widget' | 'channels' | 'playground' | 'leads' | 'appointments' | 'docs' | 'templates' | 'history'
   >('overview');
   const [selectedIntegration, setSelectedIntegration] = useState<IntegrationId>('slack');
 
@@ -549,6 +550,11 @@ export default function DashboardPage() {
     }
   }, [activeAssistant?.id]);
 
+  // a link from a support e-mail opens the Support tab (and the ticket) directly
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get('tab') === 'support') setActiveTab('support');
+  }, []);
+
   // 2FA status is only shown on the Security tab, so it is fetched when that tab opens instead of in the dashboard-load burst
   useEffect(() => {
     if (isAuthenticated && activeTab === 'security') teamSecurity.fetch2faStatus();
@@ -818,6 +824,8 @@ export default function DashboardPage() {
             {/* TAB: AUDIT TRAIL */}
             {/* TAB: SYSTEM LOGS (platform owner only) */}
             {activeTab === 'system_logs' && isMasterAdmin && <SystemLogsTab />}
+
+            {activeTab === 'support' && <SupportTab master={isMasterAdmin} />}
 
             {activeTab === 'audit' && (currentUser?.role === 'owner' || isMasterAdmin) && (
               <AuditTab

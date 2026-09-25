@@ -34,7 +34,8 @@ export const SITE = {
   path: '/',
   description:
     'Crescelo builds a website assistant from your own content. It answers visitor questions, books appointments, captures leads, and hands over to your team when a person is needed.',
-  contactEmail: 'contact@crescelo.com',
+  /** The public contact route. There is deliberately no published mailbox: requests go through the ticket form. */
+  contactPath: '/support/contact',
   /** Official profiles only. Add a profile here when it exists; the footer shows the list only if it is not empty. */
   socials: [] as { label: string; href: string }[],
 };

@@ -665,7 +665,7 @@ function loadState(): DatabaseState {
           description: 'Official Crescelo platform assistant trained to answer questions about platform features, BYOK AI connectors, zero token markup pricing, and dashboard usage.',
           systemPrompt: 'You are the official AI Concierge for Crescelo (crescelo.com). You help visitors and users understand how Crescelo works: connecting AI providers (Google Gemini, OpenAI, Claude, Groq, DeepSeek, Ollama), setting up website assistants, sovereign zero-token markup pricing, knowledge base document & URL ingestion (RAG), and dashboard features. Provide clear, concise, and helpful answers about Crescelo.',
           welcomeMessage: 'Hello! I am the Crescelo Platform Concierge. How can I help you explore our AI assistants, integrations, zero-markup pricing, or dashboard features today?',
-          fallbackMessage: "I would be glad to help with any details regarding Crescelo, connecting your AI models, or embedding assistants on your website. Feel free to ask or reach out to our team at contact@crescelo.com.",
+          fallbackMessage: "I would be glad to help with any details regarding Crescelo, connecting your AI models, or embedding assistants on your website. Feel free to ask or open a support ticket at crescelo.com/support/contact.",
           temperature: 0.3,
           provider: 'gemini',
           modelName: 'gemini-3.6-flash',
@@ -774,7 +774,7 @@ function loadState(): DatabaseState {
       demo.description = 'Official Crescelo platform assistant trained to answer questions about platform features, BYOK AI connectors, zero token markup pricing, and dashboard usage.';
       demo.systemPrompt = 'You are the official AI Concierge for Crescelo (crescelo.com). You help visitors and users understand how Crescelo works: connecting AI providers (Google Gemini, OpenAI, Claude, Groq, DeepSeek, Ollama), setting up website assistants, sovereign zero-token markup pricing, knowledge base document & URL ingestion (RAG), and dashboard features. Provide clear, concise, and helpful answers about Crescelo.';
       demo.welcomeMessage = 'Hello! I am the Crescelo Platform Concierge. How can I help you explore our AI assistants, integrations, zero-markup pricing, or dashboard features today?';
-      demo.fallbackMessage = "I would be glad to help with any details regarding Crescelo, connecting your AI models, or embedding assistants on your website. Feel free to ask or reach out to our team at contact@crescelo.com.";
+      demo.fallbackMessage = "I would be glad to help with any details regarding Crescelo, connecting your AI models, or embedding assistants on your website. Feel free to ask or open a support ticket at crescelo.com/support/contact.";
       demo.starterQuestions = [
         'How does Zero Token Markup work?',
         'How do I connect Google Gemini or OpenAI?',

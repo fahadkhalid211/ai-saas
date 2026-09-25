@@ -159,7 +159,7 @@ export default function AiConnectorsIndexPage() {
             <div
               style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 280px), 1fr))',
                 gap: '24px',
                 marginTop: '40px',
               }}
@@ -172,7 +172,7 @@ export default function AiConnectorsIndexPage() {
                     display: 'flex',
                     flexDirection: 'column',
                     justifyContent: 'space-between',
-                    padding: '28px',
+                    padding: 'clamp(18px, 4vw, 28px)',
                     borderRadius: '16px',
                     border: '1.5px solid var(--mk-ink)',
                     background: 'var(--mk-surface)',
@@ -222,7 +222,7 @@ export default function AiConnectorsIndexPage() {
                       </div>
                       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                         <span style={{ color: 'var(--mk-muted)', fontWeight: 600 }}>Best For:</span>
-                        <span style={{ fontWeight: 600, color: 'var(--mk-ink)', textAlign: 'right', maxWidth: '200px' }}>{c.bestFor}</span>
+                        <span style={{ fontWeight: 600, color: 'var(--mk-ink)', textAlign: 'right', maxWidth: 'min(100%, 200px)' }}>{c.bestFor}</span>
                       </div>
                     </div>
                   </div>

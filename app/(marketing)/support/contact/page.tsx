@@ -1,13 +1,17 @@
 'use client';
 
-import { useState, type FormEvent } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 import { Header } from '@/components/marketing/Header';
 import { Footer } from '@/components/marketing/Closing';
 import { Reveal, SectionHead } from '@/components/marketing/ui';
-import { SITE } from '@/components/marketing/content';
-import { GoogleRecaptchaNotice } from '@/components/security/GoogleRecaptcha';
+import { GoogleRecaptchaNotice, useRecaptcha } from '@/components/security/GoogleRecaptcha';
+
+const CATEGORIES = ['Technical Support', 'Billing & Payments', 'Account & Access', 'Privacy request', 'Security', 'Sales & Enterprise', 'Feature request', 'General Support'];
 
 export default function ContactPage() {
+  const { executeRecaptcha } = useRecaptcha();
+  const [website, setWebsite] = useState(''); // honeypot: real visitors never see or fill this
+  const [ticketRef, setTicketRef] = useState('');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [business, setBusiness] = useState('');
@@ -16,6 +20,17 @@ export default function ContactPage() {
   const [message, setMessage] = useState('');
   const [status, setStatus] = useState<'idle' | 'sending' | 'success' | 'error'>('idle');
   const [errorMsg, setErrorMsg] = useState('');
+
+  // links such as /support/contact?category=Privacy%20request prefill the form
+  useEffect(() => {
+    const q = new URLSearchParams(window.location.search);
+    const cat = q.get('category');
+    if (cat && CATEGORIES.includes(cat)) setCategory(cat);
+    const mail = q.get('email');
+    if (mail) setEmail(mail);
+    const topic = q.get('topic');
+    if (topic === 'newsletter') setMessage('Please add me to the Crescelo email updates.');
+  }, []);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -27,6 +42,7 @@ export default function ContactPage() {
     setStatus('sending');
 
     try {
+      const recaptchaToken = await executeRecaptcha('contact');
       const res = await fetch('/api/support/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -37,6 +53,8 @@ export default function ContactPage() {
           category,
           priority,
           message: message.trim(),
+          website,
+          recaptchaToken,
         }),
       });
 
@@ -45,10 +63,11 @@ export default function ContactPage() {
         throw new Error(data?.error || 'Failed to submit support request.');
       }
 
+      setTicketRef(data?.ticketRef || '');
       setStatus('success');
     } catch (err: any) {
       setStatus('error');
-      setErrorMsg(err?.message || 'Failed to dispatch support request. Please email us directly.');
+      setErrorMsg(err?.message || 'Could not send your request. Please try again.');
     }
   };
 
@@ -71,7 +90,7 @@ export default function ContactPage() {
               as="article"
               className="mk-card"
               style={{
-                padding: '40px',
+                padding: 'clamp(20px, 4vw, 40px)',
                 marginTop: '40px',
                 background: 'var(--mk-surface)',
                 borderColor: 'var(--mk-ink)',
@@ -96,9 +115,9 @@ export default function ContactPage() {
                   >
                     ✓
                   </span>
-                  <h3 style={{ fontSize: '2rem', marginBottom: '8px' }}>Support Request Received</h3>
+                  <h3 style={{ fontSize: '2rem', marginBottom: '8px' }}>Ticket {ticketRef || 'created'} opened</h3>
                   <p style={{ color: 'var(--mk-muted)', fontSize: '15px', maxWidth: '44ch', marginInline: 'auto' }}>
-                    Thank you, {name}! Your ticket has been logged and forwarded directly to our support desk (<strong>{SITE.contactEmail}</strong>). We will review your inquiry and follow up at <strong>{email}</strong> shortly.
+                    Thank you, {name}! We sent a confirmation to <strong>{email}</strong> with a private link to your ticket. Use that link to follow the progress and to reply. Check your spam folder if it does not arrive within a few minutes.
                   </p>
                   <button
                     type="button"
@@ -107,6 +126,7 @@ export default function ContactPage() {
                       setEmail('');
                       setBusiness('');
                       setMessage('');
+                      setTicketRef('');
                       setStatus('idle');
                     }}
                     className="mk-btn mk-btn-primary mk-btn-sm"
@@ -117,7 +137,7 @@ export default function ContactPage() {
                 </div>
               ) : (
                 <form onSubmit={handleSubmit} noValidate style={{ display: 'grid', gap: '20px' }}>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '20px' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 240px), 1fr))', gap: '20px' }}>
                     <div>
                       <label htmlFor="contact-name" style={{ display: 'block', fontSize: '13px', fontWeight: 700, marginBottom: '6px' }}>
                         Your Full Name *
@@ -163,7 +183,7 @@ export default function ContactPage() {
                     </div>
                   </div>
 
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '20px' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 240px), 1fr))', gap: '20px' }}>
                     <div>
                       <label htmlFor="contact-business" style={{ display: 'block', fontSize: '13px', fontWeight: 700, marginBottom: '6px' }}>
                         Company / Organization
@@ -203,11 +223,11 @@ export default function ContactPage() {
                           cursor: 'pointer',
                         }}
                       >
-                        <option value="Technical Support">Technical Support</option>
-                        <option value="Phone Voice Worker">Phone Voice Worker & Telnyx</option>
-                        <option value="Calendar & Booking">Calendar Sync & Mutex Locks</option>
-                        <option value="Billing & Plans">Billing & Plan Inquiries</option>
-                        <option value="Custom Enterprise">Custom Enterprise Integration</option>
+                        {CATEGORIES.map((c) => (
+                          <option key={c} value={c}>
+                            {c}
+                          </option>
+                        ))}
                       </select>
                     </div>
                   </div>
@@ -235,6 +255,11 @@ export default function ContactPage() {
                     />
                   </div>
 
+                  <div aria-hidden="true" style={{ position: 'absolute', left: '-9999px', width: '1px', height: '1px', overflow: 'hidden' }}>
+                    <label htmlFor="contact-website">Website</label>
+                    <input id="contact-website" type="text" tabIndex={-1} autoComplete="off" value={website} onChange={(e) => setWebsite(e.target.value)} />
+                  </div>
+
                   {errorMsg && (
                     <p style={{ color: 'var(--mk-warn)', fontSize: '14px', fontWeight: 600 }}>
                       {errorMsg}
@@ -244,7 +269,7 @@ export default function ContactPage() {
                   <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '12px', marginTop: '8px' }}>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                       <span style={{ fontSize: '13px', color: 'var(--mk-muted)' }}>
-                        Direct email: <a href="mailto:contact@crescelo.com" style={{ textDecoration: 'underline' }}>contact@crescelo.com</a>
+                        Every request becomes a ticket you can follow and reply to. Replies come by email with a link to it.
                       </span>
                       <GoogleRecaptchaNotice />
                     </div>

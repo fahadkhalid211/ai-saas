@@ -13,9 +13,8 @@ export function organizationSchema() {
     legalName: LEGAL.operatorLine,
     url: SITE.url,
     logo: { '@type': 'ImageObject', url: `${SITE.url}/icon-512.png`, width: 512, height: 512 },
-    email: SITE.contactEmail,
     address: { '@type': 'PostalAddress', addressCountry: 'PK' },
-    contactPoint: [{ '@type': 'ContactPoint', contactType: 'customer support', email: SITE.contactEmail, availableLanguage: ['English'] }],
+    contactPoint: [{ '@type': 'ContactPoint', contactType: 'customer support', url: `${SITE.url}${SITE.contactPath}`, availableLanguage: ['English'] }],
     ...(SITE.socials.length ? { sameAs: SITE.socials.map((s) => s.href) } : {}),
   };
 }

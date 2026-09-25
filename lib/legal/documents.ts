@@ -28,7 +28,7 @@ export const PRIVACY: LegalDocument = {
       id: 'who-we-are',
       heading: '1. Who we are and what this policy covers',
       body: [
-        `Crescelo is operated by ${op} ("Crescelo", "we", "us"). You can reach us at ${LEGAL.email}.`,
+        `Crescelo is operated by ${op} ("Crescelo", "we", "us"). You can reach us through the contact form at ${LEGAL.contactUrl}, which opens a support ticket.`,
         'Crescelo lets businesses put an AI assistant on their website that answers visitor questions from the business’s own content, books appointments, captures leads and hands over to a person. This policy explains how we handle personal data in two different roles:',
         {
           list: [
@@ -135,7 +135,7 @@ export const PRIVACY: LegalDocument = {
       heading: '9. Your rights',
       body: [
         'Depending on where you live you may have the right to: access your personal data and receive a copy; correct it; delete it; restrict or object to processing; receive it in a portable format; withdraw consent; and complain to your data protection authority. Residents of California and some other US states may also ask what we collected, ask us to delete or correct it, and opt out of sale or sharing (we do neither), and we will not discriminate against you for using these rights.',
-        `To use a right, email ${LEGAL.email} from the address on your account. We may need to verify your identity, and we aim to reply within 30 days (45 days where US law allows). If your data is Visitor Data, we will pass your request to the business whose assistant you used.`,
+        `To use a right, send a request through our contact form (${LEGAL.contactUrl}, category "Privacy request") using the email address on your account. We may need to verify your identity, and we aim to reply within 30 days (45 days where US law allows). If your data is Visitor Data, we will pass your request to the business whose assistant you used.`,
       ],
     },
     {
@@ -156,7 +156,7 @@ export const PRIVACY: LegalDocument = {
       id: 'representatives',
       heading: '12. Representatives and complaints',
       body: [
-        `Our contact for privacy matters is ${LEGAL.email}. We have not appointed a representative in the EU or UK; if you are in those regions you may contact us directly, and you also have the right to lodge a complaint with your local supervisory authority.`,
+        `You can contact us about privacy matters through ${LEGAL.contactUrl} (category "Privacy request"). We have not appointed a representative in the EU or UK; if you are in those regions you may contact us directly, and you also have the right to lodge a complaint with your local supervisory authority.`,
       ],
     },
     {
@@ -197,7 +197,7 @@ export const TERMS: LegalDocument = {
       id: 'accounts',
       heading: '3. Your account',
       body: [
-        'Give accurate information and keep it up to date. Keep your password, session and API keys confidential, use two-factor sign-in where offered, and tell us straight away at ' + LEGAL.email + ' if you suspect unauthorised access. You are responsible for activity under your account and for the people you invite. You may not share an account between unrelated businesses or resell access unless you are on a plan that allows agencies to manage client workspaces.',
+        'Give accurate information and keep it up to date. Keep your password, session and API keys confidential, use two-factor sign-in where offered, and tell us straight away through ' + LEGAL.contactUrl + ' (category "Security") if you suspect unauthorised access. You are responsible for activity under your account and for the people you invite. You may not share an account between unrelated businesses or resell access unless you are on a plan that allows agencies to manage client workspaces.',
       ],
     },
     {
@@ -267,7 +267,7 @@ export const TERMS: LegalDocument = {
       id: 'availability',
       heading: '11. Availability and support',
       body: [
-        'We work to keep Crescelo available and secure, but the service is provided without a guaranteed uptime unless a written agreement says otherwise. There will be maintenance and occasional interruptions, and services we depend on can fail. Support is by email at ' + LEGAL.email + '.',
+        'We work to keep Crescelo available and secure, but the service is provided without a guaranteed uptime unless a written agreement says otherwise. There will be maintenance and occasional interruptions, and services we depend on can fail. Support is through the contact form at ' + LEGAL.contactUrl + ', which opens a support ticket.',
       ],
     },
     {
@@ -310,7 +310,7 @@ export const TERMS: LegalDocument = {
       id: 'general',
       heading: '17. General',
       body: [
-        'These Terms, with the documents they refer to, are the whole agreement about the service and replace earlier understandings. If part of them is unenforceable, the rest stays in force. Not enforcing a right is not a waiver of it. You may not transfer your rights without our written consent. We may transfer ours, including to a company formed to run Crescelo or as part of a sale or reorganisation; if that happens we will tell you, and the new operator takes over these Terms and our Privacy Policy commitments. Neither of us is liable for delay or failure caused by events beyond reasonable control. You may not use the service in breach of applicable export-control or sanctions laws. Notices to you may be sent to your account email or posted in the dashboard; notices to us go to ' + LEGAL.email + '.',
+        'These Terms, with the documents they refer to, are the whole agreement about the service and replace earlier understandings. If part of them is unenforceable, the rest stays in force. Not enforcing a right is not a waiver of it. You may not transfer your rights without our written consent. We may transfer ours, including to a company formed to run Crescelo or as part of a sale or reorganisation; if that happens we will tell you, and the new operator takes over these Terms and our Privacy Policy commitments. Neither of us is liable for delay or failure caused by events beyond reasonable control. You may not use the service in breach of applicable export-control or sanctions laws. Notices to you may be sent to your account email or posted in the dashboard; notices to us go through the contact form at ' + LEGAL.contactUrl + '.',
         'We may update these Terms. We will post the new version here with a new date and, for material changes, give account holders at least 30 days’ notice. Continuing to use Crescelo after the change takes effect means you accept it.',
       ],
     },
@@ -391,7 +391,7 @@ export const COOKIES: LegalDocument = {
       heading: '6. Your choices',
       body: [
         'You can delete or block cookies and clear localStorage in your browser settings. If you block the strictly necessary ones you will not be able to sign in. Browser "Do Not Track" and Global Privacy Control signals are respected: because we do not sell or share personal data for advertising, there is nothing to opt out of.',
-        `Questions: ${LEGAL.email}. Last updated ${LEGAL.lastUpdated}.`,
+        `Questions: ${LEGAL.contactUrl}. Last updated ${LEGAL.lastUpdated}.`,
       ],
     },
   ],
@@ -446,7 +446,7 @@ export const AUP: LegalDocument = {
       id: 'enforcement',
       heading: '4. Reporting and enforcement',
       body: [
-        `Report abuse or a security issue to ${LEGAL.email}. If we find or reasonably suspect a breach we may warn you, remove content, limit features, suspend or end your account, and involve the authorities. Where practical we will tell you why and give you a chance to fix it first.`,
+        `Report abuse or a security issue through ${LEGAL.contactUrl} (category "Security"). If we find or reasonably suspect a breach we may warn you, remove content, limit features, suspend or end your account, and involve the authorities. Where practical we will tell you why and give you a chance to fix it first.`,
       ],
     },
   ],
@@ -557,7 +557,7 @@ export const DPA: LegalDocument = {
       id: 'general',
       heading: '13. Order of precedence and contact',
       body: [
-        `If this Addendum conflicts with the Terms on data protection, this Addendum prevails. Liability under it is subject to the limits in the Terms, except where the law or the Standard Contractual Clauses provide otherwise. Send questions or a signed copy request to ${LEGAL.email}. Last updated ${LEGAL.lastUpdated}.`,
+        `If this Addendum conflicts with the Terms on data protection, this Addendum prevails. Liability under it is subject to the limits in the Terms, except where the law or the Standard Contractual Clauses provide otherwise. Send questions or a signed copy request through ${LEGAL.contactUrl}. Last updated ${LEGAL.lastUpdated}.`,
       ],
     },
   ],

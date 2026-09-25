@@ -21,7 +21,7 @@ const doc: LegalDocument = {
       heading: 'About this list',
       body: [
         'Crescelo uses the providers below to run the service. Each is bound by data-protection terms no less protective than our Data Processing Addendum (/dpa). Customers who connect their own AI provider, calendar or other tool control that connection themselves.',
-        `We will update this page at least 14 days before a new sub-processor starts processing customer personal data. To be told about changes, email ${LEGAL.email} with the subject "Sub-processor updates".`,
+        `We will update this page at least 14 days before a new sub-processor starts processing customer personal data. To be told about changes, send a request through ${LEGAL.contactUrl} with the subject "Sub-processor updates".`,
       ],
     },
     {

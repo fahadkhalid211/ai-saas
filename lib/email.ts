@@ -911,7 +911,7 @@ export async function sendContactInquiryEmail(
   options: SendContactInquiryOptions
 ): Promise<EmailSendResult> {
   const { name, email, business, category, priority = 'Normal', message } = options;
-  const recipient = process.env.CONTACT_EMAIL || 'contact@crescelo.com';
+  const recipient = process.env.CONTACT_EMAIL || '';
   const cleanName = name.trim() || 'Visitor';
   const cleanEmail = email.trim();
   const cleanBusiness = business?.trim() || 'Not specified';

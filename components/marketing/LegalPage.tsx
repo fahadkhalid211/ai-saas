@@ -65,9 +65,9 @@ export function LegalPage({ doc, children }: { doc: LegalDocument; children?: Re
 
         <section className="mk-section" style={{ paddingTop: '1.5rem' }}>
           <div className="mk-wrap" style={{ maxWidth: '52rem' }}>
-            <nav aria-label="On this page" className="mk-card" style={{ padding: '1.25rem 1.5rem', marginBottom: '1.5rem' }}>
+            <nav aria-label="On this page" className="mk-card" style={{ padding: '1.25rem clamp(1rem, 4vw, 1.5rem)', marginBottom: '1.5rem' }}>
               <p style={{ fontWeight: 700, marginBottom: '0.5rem' }}>On this page</p>
-              <ol style={{ display: 'grid', gap: '0.25rem 1.5rem', gridTemplateColumns: 'repeat(auto-fit, minmax(16rem, 1fr))', fontSize: '0.92rem' }}>
+              <ol style={{ display: 'grid', gap: '0.25rem 1.5rem', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 14rem), 1fr))', fontSize: '0.92rem' }}>
                 {doc.sections.map((s) => (
                   <li key={s.id}>
                     <a href={`#${s.id}`} style={{ textDecoration: 'underline', textUnderlineOffset: 3 }}>
@@ -94,9 +94,9 @@ export function LegalPage({ doc, children }: { doc: LegalDocument; children?: Re
                 <p>
                   {LEGAL.operatorLine}
                   {LEGAL.registrationNumber ? `, company registration no. ${LEGAL.registrationNumber}` : ''}
-                  {LEGAL.registeredAddress ? `, ${LEGAL.registeredAddress}` : ''}. Email:{' '}
-                  <a href={`mailto:${LEGAL.email}`} style={{ textDecoration: 'underline' }}>
-                    {LEGAL.email}
+                  {LEGAL.registeredAddress ? `, ${LEGAL.registeredAddress}` : ''}. Contact us through the{' '}
+                  <a href="/support/contact" style={{ textDecoration: 'underline' }}>
+                    contact form
                   </a>
                 </p>
               </div>

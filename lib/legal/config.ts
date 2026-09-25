@@ -26,8 +26,8 @@ export const LEGAL = {
   registeredAddress: COMPANY.registered ? COMPANY.registeredAddress : '',
   country: 'Pakistan',
   website: 'https://www.crescelo.com',
-  /** One mailbox for everything, so no notice is sent to an address that does not exist. */
-  email: 'contact@crescelo.com',
+  /** No published mailbox (scrapers and bots). Everything goes through the contact form, which opens a support ticket. */
+  contactUrl: 'https://www.crescelo.com/support/contact',
   governingLaw: 'the laws of Pakistan',
   courts: 'the competent courts of Pakistan',
   effectiveDate: 'September 24, 2026',

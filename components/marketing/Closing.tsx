@@ -90,9 +90,8 @@ function Newsletter() {
     }
     setError('');
     setSent(true);
-    const subject = encodeURIComponent('Newsletter sign-up');
-    const body = encodeURIComponent(`Please add ${v} to the Crescelo newsletter.`);
-    window.location.href = `mailto:${SITE.contactEmail}?subject=${subject}&body=${body}`;
+    // no public mailbox: the sign-up goes through the contact form, which opens a ticket
+    window.location.href = `/support/contact?topic=newsletter&email=${encodeURIComponent(v)}`;
   };
 
   return (
@@ -130,8 +129,8 @@ export function Footer() {
           <div className="mk-footer-brand">
             <Logo />
             <p>{FOOTER.blurb}</p>
-            <a href={`mailto:${SITE.contactEmail}`} className="mk-footer-mail">
-              {SITE.contactEmail}
+            <a href="/support/contact" className="mk-footer-mail">
+              Contact support
             </a>
             {SITE.socials.length > 0 && (
               <ul className="mk-social" aria-label="Official community channels">

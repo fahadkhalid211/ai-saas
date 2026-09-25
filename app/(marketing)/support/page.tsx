@@ -136,7 +136,7 @@ export default function SupportPage() {
             <div
               style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))',
                 gap: '24px',
                 marginTop: '48px',
               }}
@@ -147,7 +147,7 @@ export default function SupportPage() {
                   as="article"
                   className="mk-card"
                   style={{
-                    padding: '32px',
+                    padding: 'clamp(20px, 4vw, 32px)',
                     display: 'flex',
                     flexDirection: 'column',
                     justifyContent: 'space-between',
@@ -247,7 +247,7 @@ export default function SupportPage() {
         </section>
 
         {/* Contact Banner */}
-        <section className="mk-final" style={{ margin: '48px 12px 12px 12px' }}>
+        <section className="mk-final" style={{ margin: '48px 0.75rem 12px' }}>
           <div className="mk-wrap">
             <p className="mk-eyebrow" style={{ color: 'var(--mk-lime)' }}>NEED ASSISTANCE?</p>
             <h2 className="mk-h2" style={{ color: 'var(--mk-bg)' }}>
@@ -258,8 +258,8 @@ export default function SupportPage() {
             </p>
             <div className="mk-cta-row" style={{ justifyContent: 'center' }}>
               <ButtonLink href="/support/contact">Open support request</ButtonLink>
-              <ButtonLink href="mailto:contact@crescelo.com" variant="ghost">
-                Email contact@crescelo.com
+              <ButtonLink href="/support/ticket" variant="ghost">
+                Check a ticket
               </ButtonLink>
             </div>
           </div>

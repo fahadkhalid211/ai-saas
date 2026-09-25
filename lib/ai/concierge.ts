@@ -180,5 +180,5 @@ I am the **Crescelo Platform Concierge**, here to help you get the most out of o
 - **Embedding the Widget**: How to install the chat widget on WordPress, Shopify, or Webflow.
 - **Plans & Pricing**: Overview of Starter (\$19), Pro (\$49), and Enterprise (\$149).
 
-Feel free to ask any specific question, or email our support team directly at **contact@crescelo.com**!`;
+Feel free to ask any specific question, or open a support ticket at **crescelo.com/support/contact** and our team will reply by email!`;
 }

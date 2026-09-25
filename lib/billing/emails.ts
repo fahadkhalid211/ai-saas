@@ -93,7 +93,7 @@ export function buildBillingEmail(input: BillingEmailInput): { subject: string; 
   }
 
   const workspace = input.workspaceName ? `Workspace: ${input.workspaceName}` : '';
-  const text = [heading, '', ...lines, workspace, link ? `Invoice: ${link}` : '', pdf ? `PDF: ${pdf}` : '', '', `${LEGAL.operatorLine}`, `Questions: ${LEGAL.email}`]
+  const text = [heading, '', ...lines, workspace, link ? `Invoice: ${link}` : '', pdf ? `PDF: ${pdf}` : '', '', `${LEGAL.operatorLine}`, `Questions: open a ticket at ${LEGAL.contactUrl}`]
     .filter((l, i, a) => l !== '' || (a[i - 1] !== '' && i > 0))
     .join('\n');
 
@@ -105,7 +105,7 @@ export function buildBillingEmail(input: BillingEmailInput): { subject: string; 
     ${workspace ? `<p style="font-size:12px;color:#64748b;margin:14px 0 0">${escapeHtml(workspace)}</p>` : ''}
     ${link ? `<p style="margin:18px 0 0"><a href="${escapeHtml(link)}" style="background:#abff44;color:#08251a;padding:10px 16px;border-radius:10px;text-decoration:none;font-weight:600;font-size:13px">View invoice</a>${pdf ? ` <a href="${escapeHtml(pdf)}" style="margin-left:10px;color:#0f172a;font-size:13px">Download PDF</a>` : ''}</p>` : ''}
     <hr style="border:none;border-top:1px solid #e2e8f0;margin:22px 0 12px" />
-    <p style="font-size:11px;color:#94a3b8;margin:0">${escapeHtml(LEGAL.operatorLine)}. Questions: ${escapeHtml(LEGAL.email)}</p>
+    <p style="font-size:11px;color:#94a3b8;margin:0">${escapeHtml(LEGAL.operatorLine)}. Questions: <a href="${escapeHtml(LEGAL.contactUrl)}" style="color:#94a3b8">open a support ticket</a></p>
   </div>`;
 
   return { subject: subject.replace(/[\r\n]+/g, ' ').slice(0, 200), text, html };

@@ -11,7 +11,7 @@ interface RouteLimitConfig {
 
 const ROUTE_RATE_LIMITS: RouteLimitConfig[] = [
   { prefix: '/api/auth', windowMs: 60 * 1000, max: 15 },
-  { prefix: '/api/master', windowMs: 60 * 1000, max: 10 },
+  { prefix: '/api/master', windowMs: 60 * 1000, max: 60 }, // sign-in has its own stricter limit (5/min) in the route
   { prefix: '/api/chat', windowMs: 60 * 1000, max: 35 },
   { prefix: '/api/appointments', windowMs: 60 * 1000, max: 30 },
   { prefix: '/api/landing-page', windowMs: 60 * 1000, max: 40 },
