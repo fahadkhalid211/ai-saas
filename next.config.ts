@@ -2,6 +2,8 @@ import { internalPolicy, publicPolicy } from './lib/security/csp';
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // A second dev server (for tests against a throwaway database) needs its own build folder: NEXT_DIST_DIR=.next-iso
+  distDir: process.env.NEXT_DIST_DIR || '.next',
   // Do not advertise the framework in every response.
   poweredByHeader: false,
   async redirects() {
