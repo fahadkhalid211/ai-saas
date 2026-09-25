@@ -8,6 +8,7 @@ import { encryptSecret, decryptSecret } from '../security/crypto';
 import { hashPassword, verifyPassword, isHashedPassword, generateTempPassword } from '../security/password';
 import { getMasterEmail } from '@/lib/security/master';
 import { logEvent } from '../logging/logger';
+import { guideChunks } from '../platform/knowledge';
 import {
   LandingPageConfig,
   LandingPageServiceItem,
@@ -1108,63 +1109,8 @@ function getIndexedAssistantChunks(assistantId: string, state: DatabaseState): C
   return matchingChunks;
 }
 
-export const DEFAULT_CRESCELO_KNOWLEDGE_CHUNKS: ChunkRecord[] = [
-  {
-    id: 'chunk_crescelo_overview',
-    assistantId: 'demo-assistant',
-    knowledgeSourceId: 'src_crescelo_platform',
-    content: 'Crescelo Autonomous AI Platform Overview: Crescelo provides enterprise-grade autonomous website assistants, multi-channel customer engagement (embeddable web widgets, WhatsApp, Telegram), and scheduling automation. The platform features Retrieval-Augmented Generation (RAG) over uploaded documents and web URLs, lead capture, appointment booking with Google & Outlook calendar synchronization, and live handoff to human staff.',
-    chunkIndex: 0,
-    tokenCount: 75,
-    metadata: { title: 'Crescelo Platform Overview', category: 'overview' },
-    embedding: [],
-    createdAt: '2026-01-01T00:00:00.000Z',
-  },
-  {
-    id: 'chunk_crescelo_byok_pricing',
-    assistantId: 'demo-assistant',
-    knowledgeSourceId: 'src_crescelo_pricing',
-    content: 'Zero Token Markup & BYOK (Bring Your Own Key): Crescelo does NOT mark up AI model tokens. Users bring their own API keys from Google Gemini (including free tier with 1M tokens), OpenAI (GPT-4o, GPT-4o-mini), Anthropic Claude (3.5 Sonnet, Haiku), Groq (high-speed Llama 3.3), DeepSeek, or run completely private local inference using Ollama. Users only pay their model provider directly at zero margin. Crescelo plans start with Starter ($29/mo), Professional ($79/mo), and Agency ($199/mo).',
-    chunkIndex: 1,
-    tokenCount: 95,
-    metadata: { title: 'Zero Token Markup & Pricing', category: 'pricing' },
-    embedding: [],
-    createdAt: '2026-01-01T00:00:00.000Z',
-  },
-  {
-    id: 'chunk_crescelo_rag_knowledge',
-    assistantId: 'demo-assistant',
-    knowledgeSourceId: 'src_crescelo_rag',
-    content: 'Knowledge Base & RAG Indexing: You can upload PDF manuals, policy guides, DOCX files, crawl public website URLs, or write custom Q&A pairs. Crescelo automatically chunks, embeds, and indexes your data with hybrid semantic vector and keyword search. The assistant grounds every answer strictly in your verified business sources, eliminating hallucinations.',
-    chunkIndex: 2,
-    tokenCount: 75,
-    metadata: { title: 'Knowledge Base and RAG', category: 'knowledge' },
-    embedding: [],
-    createdAt: '2026-01-01T00:00:00.000Z',
-  },
-  {
-    id: 'chunk_crescelo_embedding_widget',
-    assistantId: 'demo-assistant',
-    knowledgeSourceId: 'src_crescelo_widget',
-    content: 'Embedding the Chat Widget on Your Website: Embed the Crescelo chat assistant on any website (WordPress, Shopify, Webflow, React, HTML) by adding a single <script> tag provided in your Dashboard. You can customize the primary color, launcher position (bottom-right or bottom-left), greeting message, starter suggestions, and lead capture settings.',
-    chunkIndex: 3,
-    tokenCount: 75,
-    metadata: { title: 'Website Widget Integration', category: 'embed' },
-    embedding: [],
-    createdAt: '2026-01-01T00:00:00.000Z',
-  },
-  {
-    id: 'chunk_crescelo_dashboard_features',
-    assistantId: 'demo-assistant',
-    knowledgeSourceId: 'src_crescelo_features',
-    content: 'Dashboard Features & Usage: The Crescelo Dashboard includes: Assistants management (create and customize multiple bots), AI Engine connectors (manage Google Gemini, OpenAI, Claude, Groq, DeepSeek API keys), Knowledge Base uploader & URL scraper, Unified Inbox (view live chat transcripts and lead submissions), Appointments & Calendar sync, Analytics & Unanswered queries, Team management with role-based access, and Developer Webhooks.',
-    chunkIndex: 4,
-    tokenCount: 85,
-    metadata: { title: 'Dashboard Features & Usage', category: 'dashboard' },
-    embedding: [],
-    createdAt: '2026-01-01T00:00:00.000Z',
-  },
-];
+/** What the assistant on crescelo.com itself knows: the hand-written product guides (lib/platform/guides.ts). */
+export const DEFAULT_CRESCELO_KNOWLEDGE_CHUNKS: ChunkRecord[] = guideChunks();
 
 /**
  * Universal Database Layer
