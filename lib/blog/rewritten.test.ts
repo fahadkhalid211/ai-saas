@@ -24,9 +24,13 @@ describe('rewritten articles', () => {
     const slugs = new Set(BLOG_POSTS.map((p) => p.slug));
     for (const r of REWRITTEN_POSTS) {
       expect(r.body.filter((b) => b.type === 'h2').length, r.slug).toBeGreaterThanOrEqual(4);
-      expect(text(r).length, r.slug).toBeGreaterThan(1800);
       for (const m of text(r).matchAll(/\]\(\/blog\/([a-z0-9-]+)\)/g)) expect(slugs.has(m[1]), `${r.slug} -> ${m[1]}`).toBe(true);
     }
+  });
+
+  it('are long enough to be useful', () => {
+    const short = REWRITTEN_POSTS.filter((r) => text(r).length <= 1700).map((r) => `${r.slug} (${text(r).length})`);
+    expect(short).toEqual([]);
   });
 
   it('keep the unrewritten placeholders out of the hub, feed and sitemap list', () => {

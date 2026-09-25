@@ -197,6 +197,8 @@ export const BATCH6 = [
       p("Chat opens in the evening or weekend show demand you cannot meet in person. That is a reason to keep the assistant working after hours."),
       h2("Simple ways to look"),
       ol("Ask which page each conversation started on, where your tools show it.", "Read the first messages of chats from your busiest page.", "Use your web analytics to compare page views with chat opens, where you track them.", "Try a different greeting on the busiest page."),
+      h2("Turn what you see into changes"),
+      table(["Finding", "Change to try"], ["Many chats from the pricing page", "Add the missing details to the page and the knowledge base"], ["Chats mostly at night", "Make sure booking and lead capture work unattended"], ["No chats on the contact page", "Move the bubble or add a prompt there"]),
       h2("Keep tracking proportionate"),
       ul("You do not need to record individual mouse movements to learn this.", "Tell visitors what you collect in your privacy policy.", "Respect consent for analytics cookies."),
       p("What to do with what you find: rewrite the page, add the answer to your knowledge base, or change the greeting; see [writing prompts](/blog/micro-copy-quick-reply-buttons-conversational-prompts) and [heatmaps versus chat transcripts](/blog/heatmaps-vs-chat-transcripts-friction)."),
