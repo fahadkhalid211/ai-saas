@@ -28,3 +28,12 @@ export function stripMarkdown(text: string): string {
     .replace(/^\s*[*•]\s+/gm, '- ')
     .replace(/\*\*|##+/g, '');
 }
+
+/** The best passage as clean plain text that ends on a full sentence (used when no model can be reached). */
+export function cleanExcerpt(text: string, max = 420): string {
+  const plain = stripMarkdown(text).replace(/^\s*[-•]\s+/gm, '').replace(/[*#]+/g, ' ').replace(/\s+/g, ' ').trim();
+  if (plain.length <= max) return plain;
+  const cut = plain.slice(0, max);
+  const end = Math.max(cut.lastIndexOf('. '), cut.lastIndexOf('! '), cut.lastIndexOf('? '));
+  return end > 80 ? cut.slice(0, end + 1) : cut.replace(/\s+\S*$/, '') + '.';
+}

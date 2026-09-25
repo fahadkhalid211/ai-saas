@@ -8,7 +8,7 @@ import type { ChatMessage } from '@/lib/ai/types';
 import { sendTransactionalEmail } from '@/lib/email';
 import { escapeHtml } from '@/lib/billing/emails';
 import { SITE } from '@/components/marketing/content';
-import { tidy } from './tidy';
+import { cleanExcerpt, tidy } from './tidy';
 import { LIMITS, createSession, getSession, saveContent, searchChunks, sessionKey, sessionsForEmailToday, bumpChat, type PgChunk, type PgSource, type PlaygroundSession } from './store';
 
 export class PlaygroundError extends Error {
@@ -173,18 +173,29 @@ export async function ask(id: string, message: unknown, history: ChatMessage[]):
   const sources = [...new Set(hits.map((h) => h.chunk.sourceTitle))];
 
   let reply = '';
-  try {
-    const out = (await generateChatCompletion(
-      [{ role: 'system', content: `${SYSTEM}\n\nCONTEXT:\n${context}` }, ...history.slice(-6), { role: 'user', content: q }],
-      { provider: 'auto_free', modelName: 'llama-3.3-70b-versatile', temperature: 0.2, maxTokens: 1000 }
-    )).trim();
-    if (out && !out.startsWith('*(')) reply = tidy(out);
-  } catch (err) {
-    console.warn('[Playground] model unavailable:', (err as Error)?.message);
+  const messages: ChatMessage[] = [{ role: 'system', content: `${SYSTEM}
+
+CONTEXT:
+${context}` }, ...history.slice(-6), { role: 'user', content: q }];
+  // a second, lighter try (smaller reply budget, fewer passages) when the first one fails or comes back empty
+  const lighter: ChatMessage[] = [{ role: 'system', content: `${SYSTEM}
+
+CONTEXT:
+${hits.slice(0, 3).map((h, i) => `[${i + 1}] (${h.chunk.sourceTitle}) ${h.chunk.text.slice(0, 1000)}`).join('\n\n')}` }, { role: 'user', content: q }];
+  for (const [attempt, maxTokens] of [[messages, 1000], [lighter, 700]] as [ChatMessage[], number][]) {
+    try {
+      const out = (await generateChatCompletion(attempt, { provider: 'auto_free', modelName: 'llama-3.3-70b-versatile', temperature: 0.2, maxTokens })).trim();
+      if (out && !out.startsWith('*(') && !out.includes('*(Notice')) {
+        reply = tidy(out);
+        break;
+      }
+    } catch (err) {
+      console.warn('[Playground] model unavailable:', (err as Error)?.message);
+    }
   }
   if (!reply) {
-    // no model reachable: show the best passage from the documents instead of a made-up answer
-    reply = `Here is the closest thing in your documents: "${hits[0].chunk.text.replace(/\s+/g, ' ').slice(0, 320)}"`;
+    // no model reachable: show the best passage from the documents as clean text instead of a made-up answer
+    reply = `The assistant is busy right now, so here is the closest passage in your documents: ${cleanExcerpt(hits[0].chunk.text)}`;
   }
   return { reply, sources, chatsLeft: Math.max(0, LIMITS.maxChats - used), answered: true };
 }

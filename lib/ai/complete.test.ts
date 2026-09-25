@@ -19,3 +19,12 @@ describe('stripMarkdown', () => {
     expect(stripMarkdown('## Symptoms\n**Fever** and *chills*\n* one\n* two')).toBe('Symptoms\nFever and chills\n- one\n- two');
   });
 });
+
+import { cleanExcerpt } from '@/lib/playground/tidy';
+describe('cleanExcerpt', () => {
+  it('is plain text and ends on a sentence', () => {
+    const out = cleanExcerpt('### What do gene mutations do? A gene mutation can instruct a healthy cell to: * **Allow rapid growth.** A gene mutation can tell a cell to grow and divide more rapidly. This creates many new cells that all have that same mutation. * **Fail to stop uncontrolled cell growth.** Normal cells know when to stop growing so t', 300);
+    expect(out).not.toMatch(/[#*]/);
+    expect(out.endsWith('.')).toBe(true);
+  });
+});
