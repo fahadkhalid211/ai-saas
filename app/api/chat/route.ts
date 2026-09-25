@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse, after } from 'next/server';
 import { withEnvProviderFallback } from '@/lib/ai/resolve-provider';
 import { getPlatformConciergeAnswer } from '@/lib/ai/concierge';
+import { syncPlatformGuides } from '@/lib/platform/sync';
 import { Database, getLandingConfigForSlugOrTemplate } from '@/lib/db';
 import { retrieveRelevantContext, isPurelyConversationalTurn, RetrievalResult } from '@/lib/rag/retrieval';
 import { buildSystemPrompt, streamChatResponse } from '@/lib/ai/providers';
@@ -144,6 +145,9 @@ async function POSTHandler(req: NextRequest) {
     if (!assistant) {
       return NextResponse.json({ error: 'Assistant not found' }, { status: 404 });
     }
+
+    // The assistant on crescelo.com answers from the hand-written guides; make sure the stored copy is current (once per instance, after replying)
+    if (assistant.id === 'demo-assistant') after(() => syncPlatformGuides());
 
     // Monthly chat quota validation per workspace
     const wsId = assistant.workspaceId || 'default-workspace';
