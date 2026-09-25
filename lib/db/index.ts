@@ -4211,17 +4211,29 @@ export class Database {
 
     let allAppointments: AppointmentData[] = state.appointments || [];
     let allLeads: LeadData[] = state.leads || [];
+    let allConversations: ConversationData[] = state.conversations || [];
     if (isRelationalModeEnabled()) {
       try {
-        [allAppointments, allLeads] = await Promise.all([
+        [allAppointments, allLeads, allConversations] = await Promise.all([
           Relational.relationalGetAppointments(options.assistantId, wsAssistantIds),
           Relational.relationalGetLeads(options.assistantId, wsAssistantIds),
+          Relational.relationalGetConversations(options.assistantId, 2000, wsAssistantIds),
         ]);
       } catch (err) {
         console.warn('[Relational] analytics read failed:', err);
         if (isConnectionError(err)) disablePostgresTemporarily();
       }
     }
+
+    const conversations = allConversations.filter((c) => {
+      if (wsAssistantIds !== undefined) {
+        if (c.assistantId && !wsAssistantIds.includes(c.assistantId)) return false;
+      }
+      if (options.assistantId && c.assistantId && c.assistantId !== options.assistantId) {
+        return false;
+      }
+      return (c.createdAt || '') >= cutoff;
+    });
 
     const appointments = allAppointments.filter((a) => {
       if (wsAssistantIds !== undefined) {
@@ -4253,15 +4265,17 @@ export class Database {
     const uniqueVisitorSet = new Set(filteredViews.map((v) => v.visitorId));
     const uniqueVisitors = uniqueVisitorSet.size;
 
-    // Real-time active in last 15 mins
+    // Real-time active in last 15 mins (active chat sessions or web visitors)
     const fifteenMinsAgo = new Date(Date.now() - 15 * 60000).toISOString();
-    const realtimeActive = allViews.filter((v) => v.timestamp >= fifteenMinsAgo).length;
+    const recentConversations = conversations.filter((c) => (c.updatedAt || c.createdAt) >= fifteenMinsAgo).length;
+    const recentViews = allViews.filter((v) => v.timestamp >= fifteenMinsAgo).length;
+    const realtimeActive = Math.max(1, recentConversations + recentViews);
 
-    // Real Conversion rate: appointments + leads relative to unique visitors
+    // Real Conversion rate: appointments + leads relative to unique visitors/chats
     const totalConversions = appointments.length + leads.length;
-    const conversionRate = uniqueVisitors > 0
-      ? ((totalConversions / uniqueVisitors) * 100).toFixed(1)
-      : '0.0';
+    const conversionRate = conversations.length > 0
+      ? ((appointments.length / conversations.length) * 100).toFixed(1)
+      : (uniqueVisitors > 0 ? ((totalConversions / uniqueVisitors) * 100).toFixed(1) : '0.0');
 
     // Real Bounce Rate: visitors with only 1 page view
     const visitorViewCounts: Record<string, number> = {};
@@ -4281,8 +4295,18 @@ export class Database {
     const appointmentsWithPrice = pricedAppointments.length;
     const avgBookingValue = appointmentsWithPrice > 0 ? Math.round(totalPipelineRevenue / appointmentsWithPrice) : 0;
 
-    // 2. Daily Time Series (Pageviews, Visitors, Bookings, Revenue)
-    const timeSeriesMap: Record<string, { date: string; label: string; views: number; visitors: Set<string>; bookings: number; revenue: number }> = {};
+    // 2. Daily Time Series (Conversations, Messages, Bookings, Revenue)
+    const timeSeriesMap: Record<string, {
+      date: string;
+      label: string;
+      views: number;
+      visitors: Set<string>;
+      bookings: number;
+      revenue: number;
+      conversations: number;
+      messages: number;
+      leads: number;
+    }> = {};
     const chartDays = Math.min(days, 30);
     for (let i = chartDays - 1; i >= 0; i--) {
       const d = new Date(Date.now() - i * 86400000);
@@ -4295,6 +4319,9 @@ export class Database {
         visitors: new Set(),
         bookings: 0,
         revenue: 0,
+        conversations: 0,
+        messages: 0,
+        leads: 0,
       };
     }
 
@@ -4306,8 +4333,23 @@ export class Database {
       }
     });
 
+    conversations.forEach((c) => {
+      const dayKey = c.createdAt ? c.createdAt.slice(0, 10) : '';
+      if (timeSeriesMap[dayKey]) {
+        timeSeriesMap[dayKey].conversations++;
+        timeSeriesMap[dayKey].messages += (c.messages?.length || 0);
+      }
+    });
+
+    leads.forEach((l) => {
+      const dayKey = l.createdAt ? l.createdAt.slice(0, 10) : '';
+      if (timeSeriesMap[dayKey]) {
+        timeSeriesMap[dayKey].leads++;
+      }
+    });
+
     appointments.forEach((a) => {
-      const dayKey = a.createdAt.slice(0, 10);
+      const dayKey = a.createdAt ? a.createdAt.slice(0, 10) : '';
       if (timeSeriesMap[dayKey]) {
         timeSeriesMap[dayKey].bookings++;
         timeSeriesMap[dayKey].revenue += (a.price ?? 0);
@@ -4317,10 +4359,13 @@ export class Database {
     const timeSeries = Object.values(timeSeriesMap).map((item) => ({
       date: item.date,
       label: item.label,
-      views: item.views,
-      visitors: item.visitors.size,
+      conversations: item.conversations,
+      messages: item.messages,
       bookings: item.bookings,
       revenue: item.revenue,
+      leads: item.leads,
+      views: item.views,
+      visitors: item.visitors.size,
     }));
 
     // 3. Traffic Acquisition Sources (Only genuine recorded sources)
@@ -4532,8 +4577,63 @@ export class Database {
       revenue: p.revenue,
     })).sort((a, b) => b.views - a.views);
 
+    // Service breakdown
+    const serviceMap: Record<string, { serviceName: string; bookings: number; revenue: number }> = {};
+    appointments.forEach((a) => {
+      const name = a.serviceName || (a.notes && a.notes.includes('Service:') ? a.notes.split('Service:')[1].trim() : 'General Consultation');
+      if (!serviceMap[name]) {
+        serviceMap[name] = { serviceName: name, bookings: 0, revenue: 0 };
+      }
+      serviceMap[name].bookings++;
+      serviceMap[name].revenue += (a.price ?? 0);
+    });
+
+    const servicePerformance = Object.values(serviceMap)
+      .sort((a, b) => b.bookings - a.bookings)
+      .map((s) => ({
+        ...s,
+        percent: appointments.length > 0 ? Math.round((s.bookings / appointments.length) * 100) : 0,
+        avgPrice: s.bookings > 0 ? Math.round(s.revenue / s.bookings) : 0,
+      }));
+
+    const bookingStatus = {
+      confirmed: appointments.filter((a) => a.status === 'confirmed').length,
+      completed: appointments.filter((a) => a.status === 'completed').length,
+      pending: appointments.filter((a) => a.status === 'pending').length,
+      cancelled: appointments.filter((a) => a.status === 'cancelled').length,
+      total: appointments.length,
+    };
+
+    const totalConversationsCount = conversations.length;
+    const conversationsWithMultipleMsgs = conversations.filter((c) => (c.messages?.length || 0) > 1).length;
+    const chatbotFunnelSteps = [
+      { step: 'Chat Sessions Started', count: totalConversationsCount, dropOffPercent: 0 },
+      {
+        step: 'Engaged Inquiries (Multi-Turn)',
+        count: conversationsWithMultipleMsgs,
+        dropOffPercent: totalConversationsCount > 0 ? Math.max(0, Math.round(((totalConversationsCount - conversationsWithMultipleMsgs) / totalConversationsCount) * 100)) : 0,
+      },
+      {
+        step: 'Lead Details Captured',
+        count: leads.length,
+        dropOffPercent: conversationsWithMultipleMsgs > 0 ? Math.max(0, Math.round((1 - (leads.length / Math.max(1, conversationsWithMultipleMsgs))) * 100)) : 0,
+      },
+      {
+        step: 'Confirmed Bookings',
+        count: appointments.length,
+        dropOffPercent: leads.length > 0 ? Math.max(0, Math.round((1 - (appointments.length / Math.max(1, leads.length))) * 100)) : 0,
+      },
+    ];
+
     return {
       overview: {
+        totalConversations: totalConversationsCount,
+        totalMessages: conversations.reduce((sum, c) => sum + (c.messages?.length || 0), 0),
+        totalBookings: appointments.length,
+        confirmedBookings: bookingStatus.confirmed + bookingStatus.completed,
+        pendingBookings: bookingStatus.pending,
+        cancelledBookings: bookingStatus.cancelled,
+        totalLeads: leads.length,
         totalPageViews,
         uniqueVisitors,
         realtimeActive,
@@ -4547,11 +4647,14 @@ export class Database {
         repeatRate,
       },
       timeSeries,
+      servicePerformance,
+      bookingStatus,
+      chatbotFunnelSteps,
       trafficSources,
       devices,
       browsers,
       topCities,
-      funnelSteps,
+      funnelSteps: chatbotFunnelSteps.length > 0 ? chatbotFunnelSteps : funnelSteps,
       customerDirectory,
       pagePerformance,
     };

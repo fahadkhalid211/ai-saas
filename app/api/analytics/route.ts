@@ -90,6 +90,13 @@ const GETHandler = withAdminAuth(async (req: Request) => {
         trend: last7Days,
       },
       webAnalytics: webAndCustomerAnalytics,
+      sentiment,
+      trend7Days: last7Days,
+      unansweredCount: pendingUnanswered,
+      totalConversations,
+      totalMessages,
+      totalLeads,
+      totalAppointments,
     });
   } catch (error: any) {
     console.error('Failed to get analytics:', error);
