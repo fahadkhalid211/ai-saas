@@ -109,7 +109,7 @@ export default function TicketPage() {
             {state === 'loading' && <p style={{ color: 'var(--mk-muted)' }}>Loading your ticket...</p>}
 
             {state === 'nolink' && (
-              <article className="mk-card" style={{ padding: '32px' }}>
+              <article className="mk-card" style={{ padding: 'clamp(18px, 4vw, 32px)' }}>
                 <h1 style={{ fontSize: '1.75rem', marginBottom: '8px' }}>Find your ticket</h1>
                 <p style={{ color: 'var(--mk-muted)' }}>
                   Tickets are private. Open the link in the e-mail we sent when you contacted us; it takes you straight to your ticket. If you cannot find it, check your spam folder or{' '}
@@ -119,7 +119,7 @@ export default function TicketPage() {
             )}
 
             {state === 'missing' && (
-              <article className="mk-card" style={{ padding: '32px' }}>
+              <article className="mk-card" style={{ padding: 'clamp(18px, 4vw, 32px)' }}>
                 <h1 style={{ fontSize: '1.75rem', marginBottom: '8px' }}>Ticket not found</h1>
                 <p style={{ color: 'var(--mk-muted)' }}>
                   This link is not valid. Please use the exact link from our e-mail, or{' '}
@@ -142,16 +142,16 @@ export default function TicketPage() {
                       key={m.id}
                       className="mk-card"
                       style={{
-                        padding: '18px 20px',
+                        padding: '16px clamp(14px, 3.5vw, 20px)',
                         borderColor: m.author === 'staff' ? 'var(--mk-ink)' : undefined,
                         background: m.author === 'staff' ? 'var(--mk-surface)' : undefined,
                       }}
                     >
-                      <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', fontSize: '12px', color: 'var(--mk-muted)', marginBottom: '8px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap', fontSize: '12px', color: 'var(--mk-muted)', marginBottom: '8px' }}>
                         <strong style={{ color: 'var(--mk-ink)' }}>{m.author === 'staff' ? 'Crescelo Support' : m.authorName || 'You'}</strong>
                         <span>{fmt(m.createdAt)}</span>
                       </div>
-                      <div style={{ whiteSpace: 'pre-wrap', fontSize: '15px', lineHeight: 1.6 }}>{m.body}</div>
+                      <div style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word', overflowWrap: 'anywhere', fontSize: '15px', lineHeight: 1.6 }}>{m.body}</div>
                     </article>
                   ))}
                 </div>

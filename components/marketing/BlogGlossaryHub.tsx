@@ -468,12 +468,12 @@ export function BlogGlossaryHub({ posts, clusters }: BlogGlossaryHubProps) {
                   className="mk-card"
                   style={{
                     marginTop: '2.5rem',
-                    padding: '1rem 1.25rem',
+                    padding: '1rem clamp(0.75rem, 3vw, 1.25rem)',
                     borderRadius: '10px',
                     display: 'flex',
                     flexWrap: 'wrap',
                     alignItems: 'center',
-                    justifyContent: 'space-between',
+                    justifyContent: 'center',
                     gap: '0.75rem',
                   }}
                 >

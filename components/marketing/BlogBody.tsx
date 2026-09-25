@@ -88,7 +88,7 @@ export function BlogBody({ blocks }: { blocks: BlogBlock[] }) {
             );
           case 'table':
             return (
-              <div key={i} style={{ overflowX: 'auto', margin: '1.25rem 0', borderRadius: '8px', border: '1px solid var(--mk-border, #e2e8f0)' }}>
+              <div key={i} style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch', maxWidth: '100%', margin: '1.25rem 0', borderRadius: '8px', border: '1px solid var(--mk-border, #e2e8f0)' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.92rem', textAlign: 'left' }}>
                   <thead>
                     <tr style={{ background: 'var(--mk-surface-muted, #f8fafc)', borderBottom: '2px solid var(--mk-border, #cbd5e1)' }}>

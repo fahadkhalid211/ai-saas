@@ -74,7 +74,7 @@ export default function WordPressGuidePage() {
                   <h2 style={{ fontSize: '1.4rem', margin: '0.25rem 0 0.5rem' }}>{s.title}</h2>
                   <p style={{ color: 'var(--mk-muted)', lineHeight: 1.65 }}>{s.body}</p>
                   {i === 0 && (
-                    <pre style={{ marginTop: '0.75rem', background: 'var(--mk-deep)', color: '#cfe3d6', padding: '1rem', borderRadius: '0.75rem', overflowX: 'auto', fontSize: '0.8rem' }}>
+                    <pre style={{ marginTop: '0.75rem', background: 'var(--mk-deep)', color: '#cfe3d6', padding: '1rem', borderRadius: '0.75rem', overflowX: 'auto', WebkitOverflowScrolling: 'touch', maxWidth: '100%', wordBreak: 'break-all', whiteSpace: 'pre-wrap', fontSize: '0.8rem' }}>
                       <code>{SNIPPET}</code>
                     </pre>
                   )}

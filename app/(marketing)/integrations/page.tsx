@@ -444,7 +444,7 @@ export default function IntegrationsPage() {
             <div
               className="mk-card"
               style={{
-                padding: '28px',
+                padding: 'clamp(18px, 4vw, 28px)',
                 background: 'var(--mk-surface)',
                 marginTop: '32px',
                 display: 'grid',
@@ -483,7 +483,7 @@ export default function IntegrationsPage() {
                   })}
                 </div>
 
-                <div style={{ position: 'relative', minWidth: '240px' }}>
+                <div style={{ position: 'relative', width: '100%', maxWidth: '320px', minWidth: 'min(100%, 200px)' }}>
                   <input
                     type="text"
                     placeholder="Search integrations..."
@@ -505,7 +505,7 @@ export default function IntegrationsPage() {
               <div
                 style={{
                   display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))',
                   gap: '32px',
                   alignItems: 'start',
                 }}
@@ -602,8 +602,9 @@ export default function IntegrationsPage() {
                     borderRadius: '24px',
                     border: '2px solid var(--mk-ink)',
                     background: 'var(--mk-bg)',
-                    padding: '32px',
+                    padding: 'clamp(18px, 4vw, 32px)',
                     boxShadow: '0 6px 0 var(--mk-ink)',
+                    maxWidth: '100%',
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap', borderBottom: '1.5px solid var(--mk-line)', paddingBottom: '20px', marginBottom: '24px' }}>
@@ -696,6 +697,9 @@ export default function IntegrationsPage() {
                         fontSize: '12px',
                         lineHeight: 1.4,
                         overflowX: 'auto',
+                        maxWidth: '100%',
+                        wordBreak: 'break-all',
+                        whiteSpace: 'pre-wrap',
                         fontFamily: 'monospace',
                         border: '1.5px solid var(--mk-ink)',
                         margin: 0,

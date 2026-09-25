@@ -85,10 +85,10 @@ export default function OpenAiGuidePage() {
                 borderRadius: '16px',
                 border: '1.5px solid var(--mk-ink)',
                 background: 'var(--mk-surface)',
-                padding: '24px',
+                padding: 'clamp(16px, 4vw, 24px)',
                 marginBottom: '36px',
                 display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 180px), 1fr))',
                 gap: '16px',
               }}
             >
@@ -107,7 +107,7 @@ export default function OpenAiGuidePage() {
             </div>
 
             {/* Step 1 */}
-            <div className="mk-card" style={{ padding: '32px', marginBottom: '24px' }}>
+            <div className="mk-card" style={{ padding: 'clamp(18px, 4vw, 32px)', marginBottom: '24px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
                 <span
                   style={{
@@ -162,7 +162,7 @@ export default function OpenAiGuidePage() {
             </div>
 
             {/* Step 2 */}
-            <div className="mk-card" style={{ padding: '32px', marginBottom: '24px' }}>
+            <div className="mk-card" style={{ padding: 'clamp(18px, 4vw, 32px)', marginBottom: '24px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
                 <span
                   style={{
@@ -197,7 +197,7 @@ export default function OpenAiGuidePage() {
             </div>
 
             {/* Step 3 */}
-            <div className="mk-card" style={{ padding: '32px', marginBottom: '24px' }}>
+            <div className="mk-card" style={{ padding: 'clamp(18px, 4vw, 32px)', marginBottom: '24px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
                 <span
                   style={{
@@ -252,7 +252,7 @@ export default function OpenAiGuidePage() {
             </div>
 
             {/* Step 4 */}
-            <div className="mk-card" style={{ padding: '32px', marginBottom: '24px' }}>
+            <div className="mk-card" style={{ padding: 'clamp(18px, 4vw, 32px)', marginBottom: '24px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
                 <span
                   style={{
@@ -307,7 +307,7 @@ export default function OpenAiGuidePage() {
             </div>
 
             {/* Wholesale Pricing Breakdown */}
-            <div className="mk-card" style={{ padding: '32px', marginBottom: '24px' }}>
+            <div className="mk-card" style={{ padding: 'clamp(18px, 4vw, 32px)', marginBottom: '24px' }}>
               <h3 style={{ fontSize: '1.3rem', fontWeight: 700, color: 'var(--mk-ink)', marginBottom: '12px' }}>
                 Wholesale Token Cost Breakdown (Zero Markup Guarantee)
               </h3>

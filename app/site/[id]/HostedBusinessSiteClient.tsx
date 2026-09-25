@@ -798,6 +798,10 @@ export default function HostedBusinessSiteClient({
     }
   };
 
+  // Menu entries point at sections of the page. A template does not have every section a menu can name, so once the page
+  // is on screen the entries whose section is missing are dropped instead of leading nowhere.
+  const [presentAnchors, setPresentAnchors] = useState<Set<string> | null>(null);
+
   const navLinks = useMemo(() => {
     // If customized menu items are saved, use them
     if (landingConfig?.menuItems && landingConfig.menuItems.length > 0) {
@@ -879,6 +883,19 @@ export default function HostedBusinessSiteClient({
       { href: '#hours', label: 'Hours & Location' },
     ];
   }, [landingConfig?.industry, landingConfig?.menuItems]);
+
+  useEffect(() => {
+    const present = new Set<string>();
+    for (const link of navLinks) {
+      if (link.href.startsWith('#') && document.getElementById(link.href.slice(1))) present.add(link.href);
+    }
+    setPresentAnchors(present);
+  }, [navLinks, landingConfig]);
+
+  const visibleNavLinks = useMemo(
+    () => (presentAnchors ? navLinks.filter((l) => !l.href.startsWith('#') || presentAnchors.has(l.href)) : navLinks),
+    [navLinks, presentAnchors]
+  );
 
   const renderIndustryTemplate = () => {
     if (!landingConfig) {
@@ -1014,7 +1031,7 @@ export default function HostedBusinessSiteClient({
           </div>
 
           <nav className={`hidden md:flex items-center gap-6 text-sm font-medium ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
-            {navLinks.map((link) => (
+            {visibleNavLinks.map((link) => (
               <a key={link.href} href={link.href} className={`hover:${currentTheme.accentText} transition-colors`}>
                 {link.label}
               </a>

@@ -230,7 +230,7 @@ export default function ProductPage() {
             <Reveal
               className="mk-card"
               style={{
-                padding: '40px',
+                padding: 'clamp(18px, 4vw, 40px)',
                 background: 'var(--mk-surface)',
                 border: '2px solid var(--mk-ink)',
                 boxShadow: '0 8px 0 var(--mk-ink)',
@@ -239,8 +239,8 @@ export default function ProductPage() {
               <div
                 style={{
                   display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))',
-                  gap: '40px',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))',
+                  gap: 'clamp(20px, 3.5vw, 40px)',
                   alignItems: 'start',
                 }}
               >
@@ -287,7 +287,7 @@ export default function ProductPage() {
                   <div
                     style={{
                       display: 'grid',
-                      gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
+                      gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 140px), 1fr))',
                       gap: '12px',
                       marginBottom: '24px',
                     }}
@@ -329,9 +329,10 @@ export default function ProductPage() {
                     borderRadius: '20px',
                     background: 'var(--mk-deep)',
                     border: '2px solid var(--mk-ink)',
-                    padding: '24px',
+                    padding: 'clamp(16px, 3.5vw, 24px)',
                     boxShadow: '0 6px 0 var(--mk-ink)',
                     color: 'var(--mk-bg)',
+                    maxWidth: '100%',
                   }}
                 >
                   <div
@@ -365,6 +366,9 @@ export default function ProductPage() {
                       color: 'var(--mk-lime)',
                       fontFamily: 'monospace',
                       overflowX: 'auto',
+                      maxWidth: '100%',
+                      wordBreak: 'break-all',
+                      whiteSpace: 'pre-wrap',
                     }}
                   >
                     {activeStep.codeSnippet}
@@ -389,7 +393,7 @@ export default function ProductPage() {
             <div
               style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))',
                 gap: '24px',
                 marginTop: '36px',
               }}
@@ -398,7 +402,7 @@ export default function ProductPage() {
               <Reveal
                 className="mk-card"
                 style={{
-                  padding: '32px',
+                  padding: 'clamp(18px, 4vw, 32px)',
                   background: 'var(--mk-deep)',
                   color: 'var(--mk-bg)',
                   border: '2px solid var(--mk-ink)',
@@ -487,7 +491,7 @@ export default function ProductPage() {
               <Reveal
                 className="mk-card"
                 style={{
-                  padding: '32px',
+                  padding: 'clamp(18px, 4vw, 32px)',
                   background: 'var(--mk-surface)',
                   border: '2px solid var(--mk-ink)',
                 }}
@@ -533,7 +537,7 @@ export default function ProductPage() {
                   <ul style={{ paddingLeft: '18px', margin: 0, color: 'var(--mk-muted)' }}>
                     <li>1.8 to 2.4 second silence before the robot replies</li>
                     <li>No interruption handling (talks over the caller)</li>
-                    <li>Expensive \$0.12 to \$0.25 per minute platform fees</li>
+                    <li>Expensive $0.12 to $0.25 per minute platform fees</li>
                   </ul>
                 </div>
 
@@ -559,7 +563,7 @@ export default function ProductPage() {
             <div
               style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 240px), 1fr))',
                 gap: '16px',
                 marginTop: '36px',
               }}
@@ -597,7 +601,7 @@ export default function ProductPage() {
         </section>
 
         {/* Conversion CTA */}
-        <section className="mk-final" style={{ margin: '48px 12px 12px 12px' }}>
+        <section className="mk-final" style={{ margin: '48px 0.75rem 12px' }}>
           <div className="mk-wrap">
             <Reveal className="mk-final-inner">
               <h2 id="mk-final-title" className="mk-h2 mk-h2-wide">

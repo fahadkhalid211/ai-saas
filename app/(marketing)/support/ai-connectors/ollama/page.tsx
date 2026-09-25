@@ -77,10 +77,10 @@ export default function OllamaGuidePage() {
                 borderRadius: '16px',
                 border: '1.5px solid var(--mk-ink)',
                 background: 'var(--mk-surface)',
-                padding: '24px',
+                padding: 'clamp(16px, 4vw, 24px)',
                 marginBottom: '36px',
                 display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 180px), 1fr))',
                 gap: '16px',
               }}
             >
@@ -99,7 +99,7 @@ export default function OllamaGuidePage() {
             </div>
 
             {/* Step 1 */}
-            <div className="mk-card" style={{ padding: '32px', marginBottom: '24px' }}>
+            <div className="mk-card" style={{ padding: 'clamp(18px, 4vw, 32px)', marginBottom: '24px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
                 <span
                   style={{
@@ -154,7 +154,7 @@ export default function OllamaGuidePage() {
             </div>
 
             {/* Step 2 */}
-            <div className="mk-card" style={{ padding: '32px', marginBottom: '24px' }}>
+            <div className="mk-card" style={{ padding: 'clamp(18px, 4vw, 32px)', marginBottom: '24px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
                 <span
                   style={{
@@ -188,6 +188,10 @@ export default function OllamaGuidePage() {
                   borderRadius: '10px',
                   fontSize: '13.5px',
                   margin: '14px 0',
+                  maxWidth: '100%',
+                  overflowX: 'auto',
+                  WebkitOverflowScrolling: 'touch',
+                  wordBreak: 'break-all',
                 }}
               >
                 ollama run llama3.2
@@ -198,7 +202,7 @@ export default function OllamaGuidePage() {
             </div>
 
             {/* Step 3 */}
-            <div className="mk-card" style={{ padding: '32px', marginBottom: '24px' }}>
+            <div className="mk-card" style={{ padding: 'clamp(18px, 4vw, 32px)', marginBottom: '24px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
                 <span
                   style={{
@@ -249,7 +253,7 @@ export default function OllamaGuidePage() {
             </div>
 
             {/* Step 4 */}
-            <div className="mk-card" style={{ padding: '32px', marginBottom: '24px' }}>
+            <div className="mk-card" style={{ padding: 'clamp(18px, 4vw, 32px)', marginBottom: '24px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
                 <span
                   style={{

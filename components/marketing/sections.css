@@ -78,8 +78,8 @@
 .mk-car-arrows { display: flex; gap: 0.5rem; }
 
 /* Diagonal scroll benefits */
-.mk-diag-section { padding: 7rem 0 2.5rem; }
-.mk-diag-outer { position: relative; }
+.mk-diag-section { padding: 7rem 0 2.5rem; overflow-x: clip; max-width: 100%; }
+.mk-diag-outer { position: relative; overflow-x: clip; max-width: 100%; }
 .mk-diag-stage { position: sticky; top: 0; height: 100vh; overflow: hidden; perspective: 93.75rem; }
 .mk-diag-world { position: absolute; inset: 0; transform-style: preserve-3d; }
 .mk-diag-card { position: absolute; left: 50%; top: 54%; width: min(86vw, 29.375rem); padding: 2rem; border: 1.5px solid var(--mk-ink); border-radius: 2rem; background: var(--tone); box-shadow: -0.375rem 0.5rem 0 var(--mk-deep); opacity: 0; will-change: transform, opacity; backface-visibility: hidden; }
@@ -130,7 +130,7 @@
 .mk-story-person small { opacity: 0.7; }
 
 /* Comparison */
-.mk-cmp-wrap { overflow-x: auto; border: 1.5px solid var(--mk-ink); border-radius: 1.75rem; background: var(--mk-surface); box-shadow: -0.375rem 0.5rem 0 var(--mk-deep); }
+.mk-cmp-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; max-width: 100%; border: 1.5px solid var(--mk-ink); border-radius: 1.75rem; background: var(--mk-surface); box-shadow: -0.375rem 0.5rem 0 var(--mk-deep); }
 .mk-cmp { width: 100%; min-width: 48.75rem; border-collapse: separate; border-spacing: 0; font-size: 0.9375rem; }
 .mk-cmp th, .mk-cmp td { padding: 1.125rem 1.25rem; text-align: left; vertical-align: top; border-bottom: 1px solid var(--mk-line); }
 .mk-cmp thead th { font-family: var(--mk-serif); font-size: 1.35rem; font-weight: 500; background: var(--mk-bg); position: sticky; top: 0; }
@@ -145,8 +145,8 @@
 .mk-cmp td { color: #3a3a33; }
 
 /* Integrations: full-width orbit stage */
-.mk-orbit-section { background: var(--mk-deep); color: var(--mk-bg); }
-.mk-orbit-outer { position: relative; height: 120vh; }
+.mk-orbit-section { background: var(--mk-deep); color: var(--mk-bg); overflow-x: clip; max-width: 100%; }
+.mk-orbit-outer { position: relative; height: 120vh; overflow-x: clip; max-width: 100%; }
 .mk-orbit-stage { --e: 0; position: sticky; top: 0; height: 100vh; min-height: 37.5rem; overflow: hidden; display: grid; grid-template-rows: auto minmax(20rem, 1fr); justify-items: center; padding-top: 5.5rem; }
 .mk-orbit-stage::before { content: ""; position: absolute; left: 50%; top: 56%; width: min(68.75rem, 140vw); aspect-ratio: 1; transform: translate(-50%, -50%) scale(calc(0.7 + var(--e) * 0.3)); background: radial-gradient(closest-side, rgba(171, 255, 68, 0.14), rgba(28, 156, 129, 0.06) 55%, transparent); opacity: var(--e); pointer-events: none; }
 .mk-orbit-head { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; text-align: center; padding-inline: 1.25rem; opacity: calc(0.25 + var(--e) * 0.75); transform: translateY(calc((1 - var(--e)) * 1.5rem)); }
@@ -284,9 +284,9 @@
 
 /* Problem points: pinned stack, cards arrive one by one and stack, centred */
 .mk-story-head { margin-bottom: 0.5rem; }
-.mk-stack-outer { position: relative; }
+.mk-stack-outer { position: relative; overflow-x: clip; max-width: 100%; }
 .mk-stack-stage { position: sticky; top: 0; height: 100vh; min-height: 35rem; overflow: hidden; }
-.mk-stack-card { position: absolute; left: 50%; top: 54%; width: min(90vw, 38.75rem); padding: 2.25rem; border: 1.5px solid var(--mk-ink); border-radius: 2rem; background: var(--tone); box-shadow: -0.375rem 0.5rem 0 var(--mk-deep); will-change: transform, opacity; text-align: center; }
+.mk-stack-card { position: absolute; left: 50%; top: 54%; width: min(90vw, 38.75rem); max-width: calc(100vw - 2rem); padding: 2.25rem; border: 1.5px solid var(--mk-ink); border-radius: 2rem; background: var(--tone); box-shadow: -0.375rem 0.5rem 0 var(--mk-deep); will-change: transform, opacity; text-align: center; }
 .mk-stack-num { display: block; font-family: var(--mk-serif); font-style: italic; font-size: clamp(3.6rem, 9vw, 5.4rem); line-height: 0.9; color: var(--mk-deep); margin-bottom: 0.625rem; }
 .mk-stack-card h3 { font-family: var(--mk-serif); font-weight: 400; font-size: clamp(1.9rem, 4.4vw, 2.7rem); line-height: 1.05; letter-spacing: -0.025em; margin-bottom: 0.625rem; }
 .mk-stack-card p { color: #2f3a33; max-width: 44ch; margin-inline: auto; font-size: 1.05rem; }

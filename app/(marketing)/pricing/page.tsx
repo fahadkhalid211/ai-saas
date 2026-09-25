@@ -52,6 +52,9 @@ export default function PricingPage() {
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
+                justifyContent: 'center',
+                flexWrap: 'wrap',
+                maxWidth: '100%',
                 gap: '8px',
                 marginTop: '32px',
                 padding: '6px 8px',
@@ -120,7 +123,7 @@ export default function PricingPage() {
             <div
               style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(310px, 1fr))',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))',
                 gap: '24px',
               }}
             >
@@ -133,7 +136,7 @@ export default function PricingPage() {
                     as="article"
                     className={`mk-card mk-plan ${isPop ? 'is-popular' : ''}`}
                     style={{
-                      padding: '36px',
+                      padding: 'clamp(20px, 4vw, 36px)',
                       display: 'flex',
                       flexDirection: 'column',
                       justifyContent: 'space-between',
@@ -227,6 +230,8 @@ export default function PricingPage() {
             <div
               style={{
                 overflowX: 'auto',
+                WebkitOverflowScrolling: 'touch',
+                maxWidth: '100%',
                 marginTop: '40px',
                 border: '1.5px solid var(--mk-ink)',
                 borderRadius: '20px',
@@ -273,19 +278,19 @@ export default function PricingPage() {
               align="center"
             />
             <div style={{ display: 'grid', gap: '16px', marginTop: '36px' }}>
-              <div className="mk-card" style={{ padding: '24px' }}>
+              <div className="mk-card" style={{ padding: 'clamp(16px, 4vw, 24px)' }}>
                 <h3 style={{ fontSize: '1.3rem', marginBottom: '8px' }}>How does Bring-Your-Own-Key (BYOK) work?</h3>
                 <p style={{ color: 'var(--mk-muted)', fontSize: '15px' }}>
                   You paste your own API key (Groq, OpenAI, Anthropic, or Google Gemini) in your assistant dashboard. When visitors converse with your assistant, the inference is billed directly by your provider at wholesale rates. Crescelo takes zero cut of your token consumption.
                 </p>
               </div>
-              <div className="mk-card" style={{ padding: '24px' }}>
+              <div className="mk-card" style={{ padding: 'clamp(16px, 4vw, 24px)' }}>
                 <h3 style={{ fontSize: '1.3rem', marginBottom: '8px' }}>What happens if I exceed my monthly chat sessions?</h3>
                 <p style={{ color: 'var(--mk-muted)', fontSize: '15px' }}>
                   Your assistant never cuts off visitors in the middle of a booking. Extra sessions are simply billed at the plan’s overage rate ($0.50 for Starter, $0.40 for Growth, $0.30 for Scale). You can also upgrade tiers at any time.
                 </p>
               </div>
-              <div className="mk-card" style={{ padding: '24px' }}>
+              <div className="mk-card" style={{ padding: 'clamp(16px, 4vw, 24px)' }}>
                 <h3 style={{ fontSize: '1.3rem', marginBottom: '8px' }}>Can I cancel or switch plans at any time?</h3>
                 <p style={{ color: 'var(--mk-muted)', fontSize: '15px' }}>
                   Yes. All payments and subscriptions are handled securely through the Stripe Customer Portal. You can change your plan, download invoices, or cancel with a single click.
@@ -296,7 +301,7 @@ export default function PricingPage() {
         </section>
 
         {/* Final CTA */}
-        <section className="mk-final" style={{ margin: '48px 12px 12px 12px' }}>
+        <section className="mk-final" style={{ margin: '48px 0.75rem 12px' }}>
           <div className="mk-wrap">
             <p className="mk-eyebrow" style={{ color: 'var(--mk-lime)' }}>GET STARTED</p>
             <h2 className="mk-h2" style={{ color: 'var(--mk-bg)' }}>

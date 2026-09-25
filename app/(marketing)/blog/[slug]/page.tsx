@@ -230,7 +230,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
                   className="mk-card"
                   style={{
                     marginTop: '3rem',
-                    padding: '2rem',
+                    padding: 'clamp(1.25rem, 4vw, 2rem)',
                     borderRadius: '12px',
                     background: 'linear-gradient(135deg, var(--mk-surface-muted, #f8fafc) 0%, rgba(37, 99, 235, 0.05) 100%)',
                     border: '1px solid var(--mk-border, #cbd5e1)',
@@ -274,7 +274,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
                     <h2 style={{ fontSize: '1.4rem', fontWeight: 700, marginBottom: '1rem', color: 'var(--mk-ink)' }}>
                       Recommended Next Reading
                     </h2>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '1rem' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 260px), 1fr))', gap: '1rem' }}>
                       {related.map((r) => (
                         <div key={r.slug} className="mk-card" style={{ padding: '1.25rem', borderRadius: '8px' }}>
                           <p style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--mk-accent, #2563eb)', marginBottom: '0.4rem' }}>

@@ -217,6 +217,8 @@
 /* Giant Optimizely-style wordmark across bottom of footer: increased scale with dark green color and tactile button effect */
 .mk-footer-giant-word {
   width: 100%;
+  max-width: 100%;
+  overflow: hidden;
   margin-top: 3.5rem;
   padding-bottom: 0.25rem;
   user-select: none;
@@ -319,8 +321,8 @@
 }
 
 @media (max-width: 640px) {
-  .mk-hero { padding: 3.5rem 0 2.5rem; border-radius: 1.75rem; }
-  #metrics, .mk-final { border-radius: 1.75rem; }
+  .mk-hero { margin: 0 0.5rem; padding: 3.5rem 0 2.5rem; border-radius: 1.75rem; }
+  #metrics, .mk-final { margin: 0 0.5rem; border-radius: 1.75rem; }
   .mk-orb-perch { right: 0.375rem; top: -3.375rem; transform: scale(0.82); transform-origin: bottom right; }
   .mk-prompt-body { min-height: 13.125rem; }
   .mk-footer-giant-word { margin-top: 2.25rem; }

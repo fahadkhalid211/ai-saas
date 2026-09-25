@@ -314,7 +314,7 @@ export default function UseCasePage() {
             <Reveal
               className="mk-card"
               style={{
-                padding: '40px',
+                padding: 'clamp(18px, 4vw, 40px)',
                 background: 'var(--mk-surface)',
                 boxShadow: '0 8px 0 var(--mk-ink)',
                 border: '2px solid var(--mk-ink)',
@@ -323,8 +323,8 @@ export default function UseCasePage() {
               <div
                 style={{
                   display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))',
-                  gap: '48px',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))',
+                  gap: 'clamp(20px, 3.5vw, 48px)',
                   alignItems: 'center',
                 }}
               >
@@ -432,8 +432,9 @@ export default function UseCasePage() {
                     borderRadius: '24px',
                     border: '2px solid var(--mk-ink)',
                     background: 'var(--mk-bg)',
-                    padding: '24px',
+                    padding: 'clamp(16px, 3.5vw, 24px)',
                     boxShadow: '0 6px 0 var(--mk-ink)',
+                    maxWidth: '100%',
                     display: 'grid',
                     gap: '16px',
                   }}
@@ -648,7 +649,7 @@ export default function UseCasePage() {
               <div
                 style={{
                   display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 160px), 1fr))',
                   gap: '16px',
                   textAlign: 'center',
                 }}

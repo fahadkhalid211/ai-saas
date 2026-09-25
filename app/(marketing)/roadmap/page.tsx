@@ -271,7 +271,7 @@ export default function RoadmapPage() {
             <div
               style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))',
                 gap: '24px',
                 marginTop: '40px',
               }}
@@ -284,7 +284,7 @@ export default function RoadmapPage() {
                       display: 'flex',
                       flexDirection: 'column',
                       justifyContent: 'space-between',
-                      padding: '28px',
+                      padding: 'clamp(18px, 4vw, 28px)',
                       borderRadius: '16px',
                       border: '1.5px solid var(--mk-ink)',
                       background: 'var(--mk-surface)',
@@ -439,7 +439,7 @@ export default function RoadmapPage() {
             <div
               style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 280px), 1fr))',
                 gap: '24px',
               }}
             >
@@ -451,7 +451,7 @@ export default function RoadmapPage() {
                       display: 'flex',
                       flexDirection: 'column',
                       justifyContent: 'space-between',
-                      padding: '24px',
+                      padding: 'clamp(16px, 4vw, 24px)',
                       borderRadius: '16px',
                       border: '1.5px solid var(--mk-ink)',
                       background: 'var(--mk-surface)',
@@ -631,9 +631,9 @@ export default function RoadmapPage() {
                 borderRadius: '24px',
                 border: '2px solid var(--mk-ink)',
                 background: 'var(--mk-surface)',
-                padding: '48px 36px',
+                padding: 'clamp(20px, 4vw, 48px) clamp(16px, 4vw, 36px)',
                 display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))',
                 gap: '36px',
                 alignItems: 'center',
               }}

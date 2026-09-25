@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1500 400" width="1500" height="400">
+  <defs>
+    <linearGradient id="t" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#12432f"/>
+      <stop offset="100%" stop-color="#04140d"/>
+    </linearGradient>
+    <linearGradient id="c" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f1ffc9"/>
+      <stop offset="45%" stop-color="#abff44"/>
+      <stop offset="100%" stop-color="#74d321"/>
+    </linearGradient>
+    <clipPath id="k">
+      <rect x="150" y="80" width="240" height="240" rx="62" />
+    </clipPath>
+  </defs>
+  
+  <!-- Crescelo Mark Icon (240x240) -->
+  <g>
+    <rect x="150" y="80" width="240" height="240" rx="62" fill="url(#t)"/>
+    <g clip-path="url(#k)">
+      <circle cx="270" cy="200" r="92" fill="#abff44" opacity="0.14" />
+      <g transform="translate(150, 80) scale(2.4)">
+        <path d="M69.9 33.3 A26 26 0 1 0 69.9 66.7" fill="none" stroke="url(#c)" stroke-width="14" stroke-linecap="round"/>
+        <circle cx="63" cy="50" r="5.6" fill="url(#c)"/>
+      </g>
+    </g>
+    <rect x="152" y="82" width="236" height="236" rx="60" fill="none" stroke="#abff44" stroke-opacity="0.32" stroke-width="4.8"/>
+  </g>
+  
+  <text x="440" y="235" font-family="EB Garamond, Georgia, 'Times New Roman', serif" font-size="142" font-weight="600" fill="#ffffff" letter-spacing="-2">Crescelo</text>
+  <text x="446" y="280" font-family="Figtree, system-ui, -apple-system, sans-serif" font-size="28" font-weight="600" fill="#abff44" letter-spacing="1">AI WEBSITE ASSISTANT FOR SERVICE BUSINESSES</text>
+</svg>
