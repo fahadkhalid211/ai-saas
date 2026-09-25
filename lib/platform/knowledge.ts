@@ -1,5 +1,6 @@
 import type { ChunkRecord } from '@/lib/db';
 import { GUIDES, type Guide } from './guides';
+import { isAskAllQuery } from '@/lib/rag/retrieval';
 
 /** Finding and presenting the hand-written guides. No network, no model: it works even when every AI provider is down. */
 
@@ -60,6 +61,10 @@ export function overview(): string {
 
 /** The guides as text for a model's prompt: only the few that match the question, to keep the prompt short. */
 export function guidesForPrompt(query: string, limit = 4): string {
+  // "tell me everything" / "what can you do": a short digest of every guide (title and first paragraph) instead of four keyword matches
+  if (isAskAllQuery(query)) {
+    return GUIDES.map((g) => `## ${g.title}\n${g.body.split('\n\n')[0]}`).join('\n\n').slice(0, 9000);
+  }
   const hits = searchGuides(query, limit);
   const chosen = hits.length ? hits.map((h) => h.guide) : GUIDES.filter((g) => ['what-is-crescelo', 'quick-start', 'dashboard-map'].includes(g.id));
   return chosen.map((g) => `## ${g.title}\n${g.body}${g.links?.length ? `\nLinks: ${g.links.map((l) => `${l.label} (${l.href})`).join(', ')}` : ''}`).join('\n\n');

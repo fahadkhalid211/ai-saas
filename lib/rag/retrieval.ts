@@ -44,7 +44,13 @@ export function condenseQuery(
 /**
  * Detect if user is asking for a comprehensive or global overview of a document or video
  */
+/** "Tell me everything", "what do you know", "what is this about": questions about the whole knowledge base, not a keyword in it. */
+export function isAskAllQuery(query: string): boolean {
+  return /\b(all you know|everything|what (?:do|can) you (?:know|tell|help)|tell me (?:more )?about (?:yourself|your (?:business|company|services|product)|it|this|the (?:company|business|product|service))|what(?:'s| is| are) (?:this|these|the (?:doc|document|documents|file|page)) (?:about|for)|what (?:do|does) (?:this|the) (?:company|business|site|website|product|service) do|what do you (?:have|offer|do)|who are you|introduce yourself|give me (?:an? )?(?:intro|introduction|idea|rundown|overview))\b/i.test(query);
+}
+
 export function isGlobalOverviewQuery(query: string): boolean {
+  if (isAskAllQuery(query)) return true;
   return /\b(complete|full|entire|whole|all|overview|summary|summarize|walkthrough|outline|explain (the|her|his|this)? ?(video|audio|document|presentation)|about the video|about her video)\b/i.test(query);
 }
 
@@ -208,6 +214,24 @@ export async function retrieveRelevantContext(
         }
       }
       chunks = combined;
+    }
+  }
+
+  // A question about the whole knowledge base gets passages spread across all of it, not the few that match some words.
+  if (isAskAllQuery(condensedQuery)) {
+    const everything = (await Database.getChunksByAssistant(assistantId)).filter((c) => c.content?.trim());
+    if (everything.length) {
+      const n = Math.min(8, everything.length);
+      const step = everything.length / n;
+      chunks = Array.from({ length: n }, (_, i) => everything[Math.floor(i * step)]).map((c) => ({
+        id: c.id,
+        content: c.content,
+        chunkIndex: c.chunkIndex,
+        tokenCount: c.tokenCount,
+        metadata: c.metadata as any,
+        knowledgeSourceId: c.knowledgeSourceId,
+        similarity: 0.9,
+      }));
     }
   }
 
