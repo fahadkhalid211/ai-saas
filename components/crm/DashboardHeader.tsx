@@ -51,6 +51,8 @@ interface DashboardHeaderProps {
     message?: string;
   } | null;
   onOpenTour?: () => void;
+  /** Called after the assistant changed the plan, so billing data can be reloaded. */
+  onBillingChanged?: () => void;
 }
 
 export function DashboardHeader({
@@ -72,6 +74,7 @@ export function DashboardHeader({
   currentUser,
   dbStatus,
   onOpenTour,
+  onBillingChanged,
 }: DashboardHeaderProps) {
   const [isAssistantMenuOpen, setIsAssistantMenuOpen] = useState(false);
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
@@ -235,7 +238,7 @@ export function DashboardHeader({
         </div>
 
         {/* Crescelo assistant: drops the chat down from here; stays mounted so the conversation survives minimizing */}
-        <FloatingPlatformChatbot variant="header" />
+        <FloatingPlatformChatbot variant="header" onNavigate={(tab) => setActiveTab(tab)} onBillingChanged={onBillingChanged} />
 
         {/* Tour Guide Button */}
         {onOpenTour && (

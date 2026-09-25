@@ -550,9 +550,11 @@ export default function DashboardPage() {
     }
   }, [activeAssistant?.id]);
 
-  // a link from a support e-mail opens the Support tab (and the ticket) directly
+  // a link such as /dashboard?tab=support (support e-mails) or ?tab=billing opens that tab directly
   useEffect(() => {
-    if (new URLSearchParams(window.location.search).get('tab') === 'support') setActiveTab('support');
+    const tab = new URLSearchParams(window.location.search).get('tab');
+    const valid = ['overview', 'profile', 'analytics', 'billing', 'landing_page', 'team', 'security', 'audit', 'support', 'knowledge', 'engine', 'behavior', 'widget', 'channels', 'playground', 'leads', 'appointments', 'docs', 'templates', 'history'];
+    if (tab && valid.includes(tab)) setActiveTab(tab as any);
   }, []);
 
   // 2FA status is only shown on the Security tab, so it is fetched when that tab opens instead of in the dashboard-load burst
@@ -661,6 +663,7 @@ export default function DashboardPage() {
           currentUser={currentUser}
           dbStatus={dbStatus}
           onOpenTour={handleOpenTour}
+          onBillingChanged={() => billing.fetchBilling()}
         />
 
         <SubscriptionGate isMasterAdmin={isMasterAdmin} onLogout={handleLogout} onOpenBilling={() => setActiveTab('billing')} />

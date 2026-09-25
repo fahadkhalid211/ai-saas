@@ -7,13 +7,23 @@ import { CresceloMark } from '@/components/brand/CresceloMark';
 import { PlatformBookingCard, type BookingConfig } from './PlatformBookingCard';
 import { stripActionTokens } from '@/lib/chat/handoff';
 import { getPlatformConciergeAnswer } from '@/lib/ai/concierge';
+import type { AssistantAction } from '@/lib/platform/account';
 
 interface ChatMessage {
   id: string;
   role: 'user' | 'assistant' | 'system';
   content: string;
   createdAt?: string;
+  /** Buttons the dashboard assistant offers under its answer (confirm a plan change, open a tab, open the billing portal). */
+  actions?: AssistantAction[];
 }
+
+const DASHBOARD_SUGGESTIONS = [
+  'What plan am I on?',
+  'How do I connect OpenAI?',
+  'Upgrade my plan',
+  'How do I add the widget to WordPress?',
+];
 
 const DEFAULT_SUGGESTIONS = [
   'How does Zero Token Markup work?',
@@ -47,20 +57,27 @@ function actionsOf(content: string): { text: string; booking: boolean; human: bo
   };
 }
 
+const res401 = (err: any) => /sign in|401/i.test(String(err?.message || ''));
+
 interface FloatingPlatformChatbotProps {
   /** 'floating' (default): the launcher orb in the corner of the page. 'header': a compact button that drops the chat down from the dashboard header. */
   variant?: 'floating' | 'header';
+  /** Dashboard only: open one of the dashboard tabs (the assistant offers this as a button). */
+  onNavigate?: (tab: string) => void;
+  /** Dashboard only: called after a plan change so the billing screen can refresh. */
+  onBillingChanged?: () => void;
 }
 
-export function FloatingPlatformChatbot({ variant = 'floating' }: FloatingPlatformChatbotProps = {}) {
+export function FloatingPlatformChatbot({ variant = 'floating', onNavigate, onBillingChanged }: FloatingPlatformChatbotProps = {}) {
   const inHeader = variant === 'header';
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: 'msg_welcome',
       role: 'assistant',
-      content:
-        'Hi there! 👋 I am your **Crescelo Platform Concierge**. Ask me anything about our zero token markup pricing, connecting your AI models (Google Gemini, OpenAI, Claude, Groq, Ollama), adding knowledge bases, or navigating the dashboard!',
+      content: inHeader
+        ? 'Hi! I am your Crescelo assistant. I know the setup guides and **your account**: ask about your plan and usage, how to connect a provider, add the widget or set up booking, or ask me to **upgrade or downgrade your plan** (I will always ask you to confirm first).'
+        : 'Hi there! 👋 I am your **Crescelo Platform Concierge**. Ask me anything about our zero token markup pricing, connecting your AI models (Google Gemini, OpenAI, Claude, Groq, Ollama), adding knowledge bases, or navigating the dashboard!',
       createdAt: new Date().toISOString(),
     },
   ]);
@@ -70,6 +87,7 @@ export function FloatingPlatformChatbot({ variant = 'floating' }: FloatingPlatfo
   const [hasUnread, setHasUnread] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [bookingConfig, setBookingConfig] = useState<BookingConfig | null>(null);
+  const [busyAction, setBusyAction] = useState<string | null>(null);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -100,6 +118,86 @@ export function FloatingPlatformChatbot({ variant = 'floating' }: FloatingPlatfo
     setTimeout(() => setCopiedId(null), 2000);
   };
 
+  /** The dashboard assistant: answers from the person's own account and the product guides, and proposes actions. */
+  const askDashboard = async (text: string) => {
+    setIsLoading(true);
+    const id = 'ast_' + (Date.now() + 1);
+    setMessages((prev) => [...prev, { id, role: 'assistant', content: '', createdAt: new Date().toISOString() }]);
+    try {
+      const history = messages
+        .filter((m) => (m.role === 'user' || m.role === 'assistant') && m.content)
+        .slice(-8)
+        .map((m) => ({ role: m.role, content: m.content }));
+      const res = await fetch('/api/platform-assistant', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: text, history }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+      setMessages((prev) => prev.map((m) => (m.id === id ? { ...m, content: data.reply, actions: data.actions || [] } : m)));
+    } catch (err: any) {
+      const reply = res401(err) ? 'Your session has ended. Please sign in again.' : getPlatformConciergeAnswer(text);
+      setMessages((prev) => prev.map((m) => (m.id === id ? { ...m, content: reply } : m)));
+    } finally {
+      setIsLoading(false);
+      if (!isOpen) setHasUnread(true);
+    }
+  };
+
+  const say = (content: string) => setMessages((prev) => [...prev, { id: 'ast_' + Date.now() + Math.random().toString(36).slice(2, 6), role: 'assistant', content, createdAt: new Date().toISOString() }]);
+
+  /** Runs a button under an answer. A plan change only ever runs from the confirm button, and the server checks the person's role again. */
+  const runAction = async (msg: ChatMessage, a: AssistantAction) => {
+    if (busyAction) return;
+    if (a.type === 'navigate') {
+      if (onNavigate) onNavigate(a.tab);
+      else window.location.href = `/dashboard?tab=${encodeURIComponent(a.tab)}`;
+      return;
+    }
+    if (a.type === 'change_plan' && a.note === 'choose') {
+      sendMessage(`switch to ${a.planId} ${a.interval}`);
+      return;
+    }
+    const key = a.type === 'change_plan' ? `plan:${a.planId}:${a.interval}` : a.type;
+    setBusyAction(key);
+    try {
+      if (a.type === 'open_portal') {
+        const res = await fetch('/api/billing/portal', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' });
+        const data = await res.json().catch(() => ({}));
+        if (res.ok && data.url) {
+          window.location.href = data.url;
+          return;
+        }
+        say(data.error || 'The billing portal is available once a subscription is active.');
+        return;
+      }
+      // change_plan: consume the buttons first so it cannot be sent twice
+      setMessages((prev) => prev.map((m) => (m.id === msg.id ? { ...m, actions: [] } : m)));
+      const res = await fetch('/api/billing/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ planId: a.planId, billingInterval: a.interval }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && !data.isSandbox && data.url) {
+        say('Taking you to secure checkout to finish this.');
+        window.location.href = data.url;
+        return;
+      }
+      if (res.ok) {
+        say(`Done. ${data.message || 'Your plan was updated.'}`);
+        onBillingChanged?.();
+      } else {
+        say(`I could not change the plan: ${data.error || 'please try again from Plans & Billing.'}`);
+      }
+    } catch {
+      say('I could not reach the server. Please try again from Plans & Billing.');
+    } finally {
+      setBusyAction(null);
+    }
+  };
+
   const sendMessage = async (contentToSend?: string) => {
     const text = (contentToSend || input).trim();
     if (!text || isLoading) return;
@@ -114,6 +212,11 @@ export function FloatingPlatformChatbot({ variant = 'floating' }: FloatingPlatfo
 
     setMessages((prev) => [...prev, newUserMsg]);
     setInput('');
+
+    if (inHeader) {
+      await askDashboard(text);
+      return;
+    }
 
     // Wanting to book: show the booking form straight away (with a live agent as the second option).
     if (bookingConfig?.bookingEnabled && BOOKING_INTENT.test(text)) {
@@ -370,7 +473,7 @@ export function FloatingPlatformChatbot({ variant = 'floating' }: FloatingPlatfo
                   Crescelo
                 </h3>
                 <p className="mt-1 text-[11px] text-[#a19f96]" aria-live="polite">
-                  {orbState === 'thinking' ? 'Thinking…' : orbState === 'speaking' ? 'Answering…' : 'Ask about pricing, setup or features'}
+                  {orbState === 'thinking' ? 'Thinking…' : orbState === 'speaking' ? 'Answering…' : inHeader ? 'Ask about your plan or any setup guide' : 'Ask about pricing, setup or features'}
                 </p>
               </div>
             </div>
@@ -462,6 +565,30 @@ export function FloatingPlatformChatbot({ variant = 'floating' }: FloatingPlatfo
                     );
                   })()}
 
+                  {m.role === 'assistant' && m.actions && m.actions.length > 0 && (
+                    <div className="mt-2.5 flex flex-wrap gap-1.5">
+                      {m.actions.map((a, i) => {
+                        const primary = a.type === 'change_plan' && a.note !== 'choose';
+                        const key = a.type === 'change_plan' ? `plan:${a.planId}:${a.interval}` : a.type;
+                        return (
+                          <button
+                            key={i}
+                            type="button"
+                            onClick={() => runAction(m, a)}
+                            disabled={Boolean(busyAction) || isLoading}
+                            className={
+                              primary
+                                ? 'inline-flex items-center gap-1.5 rounded-full bg-[#abff44] px-3.5 py-1.5 text-[12px] font-semibold text-[#08251a] transition hover:brightness-105 active:scale-95 disabled:opacity-50'
+                                : 'inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/[0.05] px-3 py-1.5 text-[12px] font-medium text-[#e8e5dc] transition hover:border-[#abff44]/50 hover:bg-white/[0.09] disabled:opacity-40'
+                            }
+                          >
+                            {busyAction === key ? 'Working…' : a.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+
                   {m.role === 'assistant' && m.content && (
                     <button
                       type="button"
@@ -482,7 +609,7 @@ export function FloatingPlatformChatbot({ variant = 'floating' }: FloatingPlatfo
               <div className="pt-1">
                 <p className="text-[10.5px] font-semibold text-[#8b8981] uppercase tracking-[0.14em] mb-2">Try asking</p>
                 <div className="flex flex-wrap gap-1.5">
-                  {DEFAULT_SUGGESTIONS.map((sug, i) => (
+                  {(inHeader ? DASHBOARD_SUGGESTIONS : DEFAULT_SUGGESTIONS).map((sug, i) => (
                     <button
                       key={i}
                       type="button"
@@ -514,7 +641,7 @@ export function FloatingPlatformChatbot({ variant = 'floating' }: FloatingPlatfo
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder="Ask anything about Crescelo…"
+                placeholder={inHeader ? 'Ask about your plan, or how to set something up…' : 'Ask anything about Crescelo…'}
                 disabled={isLoading}
                 aria-label="Your question"
                 style={{ outline: 'none', boxShadow: 'none' }}
