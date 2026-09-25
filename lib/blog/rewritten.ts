@@ -8,6 +8,7 @@ import { BATCH6 } from './rewritten/batch6';
 import { BATCH7 } from './rewritten/batch7';
 import { BATCH8 } from './rewritten/batch8';
 import { BATCH9 } from './rewritten/batch9';
+import { BATCH10 } from './rewritten/batch10';
 
 /** Articles written for readers. They replace the templated placeholder with the same address and are listed in search. */
-export const REWRITTEN_POSTS: BlogPost[] = [...BATCH1, ...BATCH2, ...BATCH3, ...BATCH4, ...BATCH5, ...BATCH6, ...BATCH7, ...BATCH8, ...BATCH9];
+export const REWRITTEN_POSTS: BlogPost[] = [...BATCH1, ...BATCH2, ...BATCH3, ...BATCH4, ...BATCH5, ...BATCH6, ...BATCH7, ...BATCH8, ...BATCH9, ...BATCH10];
