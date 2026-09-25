@@ -46,3 +46,4 @@
 .pg-faq-item { background: #fff; border: 1px solid rgba(8,37,26,0.12); border-radius: 1rem; padding: 0.9rem 1.1rem; }
 .pg-faq-item summary { cursor: pointer; font-weight: 600; }
 .pg-faq-item p { margin-top: 0.6rem; line-height: 1.6; }
+.pg-msg p { white-space: pre-line; }

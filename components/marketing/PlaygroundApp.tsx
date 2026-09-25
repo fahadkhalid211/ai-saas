@@ -11,7 +11,6 @@ interface Session { key: string; name: string; sources: Source[]; chatsLeft: num
 interface Msg { role: 'user' | 'assistant'; content: string; sources?: string[] }
 
 const STORE = 'crescelo_playground_key';
-const SUGGESTIONS = ['What are your opening hours?', 'How much does it cost?', 'What is your refund policy?'];
 
 const remember = (key: string | null) => {
   try { if (key) localStorage.setItem(STORE, key); else localStorage.removeItem(STORE); } catch { /* private mode */ }
@@ -143,9 +142,21 @@ function Workspace({ session, setSession, onLeave }: { session: Session; setSess
   const [mode, setMode] = useState<'file' | 'text' | 'url'>('file');
   const [text, setText] = useState('');
   const [url, setUrl] = useState('');
+  const [suggestions, setSuggestions] = useState<string[]>([]);
   const fileRef = useRef<HTMLInputElement>(null);
   const logRef = useRef<HTMLDivElement>(null);
   const key = session.key;
+
+  // starter questions come from the visitor's own documents and refresh whenever the sources change
+  const sourceIds = sources.map((x) => x.id).join(',');
+  useEffect(() => {
+    if (!sourceIds) { setSuggestions([]); return; }
+    let live = true;
+    call<{ questions: string[] }>('/api/playground/suggest', { method: 'POST', key })
+      .then((r) => { if (live) setSuggestions(r.questions || []); })
+      .catch(() => { if (live) setSuggestions([]); });
+    return () => { live = false; };
+  }, [sourceIds, key]);
 
   useEffect(() => { logRef.current?.scrollTo({ top: logRef.current.scrollHeight, behavior: 'smooth' }); }, [msgs, sending]);
 
@@ -220,7 +231,7 @@ function Workspace({ session, setSession, onLeave }: { session: Session; setSess
           {msgs.length === 0 ? (
             <div className="pg-empty">
               <p>{sources.length ? 'Ask it something a customer would ask.' : 'Add a document on the left, then ask away.'}</p>
-              {sources.length ? <div className="pg-chips">{SUGGESTIONS.map((s) => <button key={s} type="button" onClick={() => send(s)}>{s}</button>)}</div> : null}
+              {suggestions.length ? <div className="pg-chips">{suggestions.map((s) => <button key={s} type="button" onClick={() => send(s)}>{s}</button>)}</div> : null}
             </div>
           ) : msgs.map((m, i) => (
             <div key={i} className={`pg-msg pg-${m.role}`}>
