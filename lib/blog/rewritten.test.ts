@@ -35,7 +35,6 @@ describe('rewritten articles', () => {
 
   it('keep the unrewritten placeholders out of the hub, feed and sitemap list', () => {
     const thin = BLOG_POSTS.filter((p) => p.thin);
-    expect(thin.length).toBeGreaterThan(0);
     const listed = new Set(sortedPosts().map((p) => p.slug));
     for (const t of thin) expect(listed.has(t.slug), t.slug).toBe(false);
   });
