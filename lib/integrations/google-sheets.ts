@@ -38,7 +38,7 @@ export async function dispatchGoogleSheetRow(
   }
 
   // SSRF Verification
-  const ssrf = await validateSafeExternalUrl(assistant.googleSheetsWebhookUrl.trim());
+  const ssrf = await validateSafeExternalUrl(assistant.googleSheetsWebhookUrl.trim(), { requireHttps: true });
   if (!ssrf.safe) {
     console.warn(`[GoogleSheets] Blocked unsafe target URL (${assistant.googleSheetsWebhookUrl}):`, ssrf.error);
     return { success: false, error: ssrf.error || 'Google Sheets webhook URL was blocked by security policy.' };
@@ -93,7 +93,7 @@ export async function testGoogleSheetWebhook(
     return { success: false, latencyMs: 0, error: 'Google Sheets Webhook URL is required.' };
   }
 
-  const ssrf = await validateSafeExternalUrl(webhookUrl.trim());
+  const ssrf = await validateSafeExternalUrl(webhookUrl.trim(), { requireHttps: true });
   if (!ssrf.safe) {
     return { success: false, latencyMs: 0, error: ssrf.error || 'Blocked by SSRF security policy.' };
   }

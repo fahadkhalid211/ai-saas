@@ -63,7 +63,7 @@ export function isPrivateOrReservedIp(ip: string): boolean {
  * Validates that an external URL does not target loopback, RFC1918 private subnets,
  * or cloud metadata endpoints (SSRF prevention).
  */
-export async function validateSafeExternalUrl(rawUrl: string): Promise<{ safe: boolean; error?: string; url?: string }> {
+export async function validateSafeExternalUrl(rawUrl: string, opts: { requireHttps?: boolean } = {}): Promise<{ safe: boolean; error?: string; url?: string }> {
   if (!rawUrl || typeof rawUrl !== 'string') {
     return { safe: false, error: 'URL must be a non-empty string' };
   }
@@ -78,6 +78,10 @@ export async function validateSafeExternalUrl(rawUrl: string): Promise<{ safe: b
   // 1. Enforce strict HTTP/HTTPS protocol
   if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
     return { safe: false, error: `Protocol "${parsed.protocol}" is not allowed. Only HTTP and HTTPS are permitted.` };
+  }
+  // Data sent to a customer's own endpoints (leads, bookings) must not travel unencrypted on a live deployment.
+  if (opts.requireHttps && parsed.protocol !== 'https:' && process.env.NODE_ENV === 'production') {
+    return { safe: false, error: 'This address must use https:// so the data is encrypted in transit.' };
   }
 
   const hostname = parsed.hostname.toLowerCase();

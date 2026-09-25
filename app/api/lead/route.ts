@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { sanitizeLeadInput } from '@/lib/security/lead-input';
 import { Database } from '@/lib/db';
 import { sendSupportLeadEmail } from '@/lib/email';
 import { dispatchIntegrationsAfterResponse } from '@/lib/integrations/dispatch';
@@ -29,8 +30,12 @@ async function POSTHandler(req: Request) {
     const sharedLimited = await enforceDistributedRateLimit(req, 'lead', { windowMs: 60 * 1000, max: 10 });
     if (sharedLimited) return sharedLimited;
 
-    const body = await req.json();
-    const { assistantId, email, name, phone, notes, customData } = body;
+    const body = await req.json().catch(() => null);
+    const cleaned = sanitizeLeadInput(body);
+    if (!cleaned.ok) {
+      return NextResponse.json({ error: cleaned.error }, { status: 400, headers: { 'Access-Control-Allow-Origin': '*' } });
+    }
+    const { assistantId, email, name, phone, notes, customData } = cleaned.lead;
 
     if (!assistantId) {
       return NextResponse.json(

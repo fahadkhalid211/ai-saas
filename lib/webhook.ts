@@ -24,7 +24,7 @@ export async function dispatchWebhook(
   }
 
   // SSRF Protection
-  const ssrf = await validateSafeExternalUrl(assistant.webhookUrl.trim());
+  const ssrf = await validateSafeExternalUrl(assistant.webhookUrl.trim(), { requireHttps: true });
   if (!ssrf.safe) {
     console.warn(`[Webhook] Blocked unsafe webhook target (${assistant.webhookUrl}):`, ssrf.error);
     return { success: false, error: ssrf.error || 'Target webhook URL is blocked by security policy' };
@@ -98,7 +98,7 @@ export async function testWebhookPing(
     return { success: false, durationMs: 0, error: 'Webhook URL is required' };
   }
 
-  const ssrf = await validateSafeExternalUrl(webhookUrl.trim());
+  const ssrf = await validateSafeExternalUrl(webhookUrl.trim(), { requireHttps: true });
   if (!ssrf.safe) {
     return { success: false, durationMs: 0, error: ssrf.error || 'Blocked by SSRF security policy' };
   }

@@ -36,7 +36,7 @@ export async function dispatchSlackNotification(
   }
 
   // SSRF Verification
-  const ssrf = await validateSafeExternalUrl(assistant.slackWebhookUrl.trim());
+  const ssrf = await validateSafeExternalUrl(assistant.slackWebhookUrl.trim(), { requireHttps: true });
   if (!ssrf.safe) {
     console.warn(`[Slack] Blocked unsafe target URL (${assistant.slackWebhookUrl}):`, ssrf.error);
     return { success: false, error: ssrf.error || 'Slack webhook URL was blocked by security policy.' };
@@ -90,7 +90,7 @@ export async function testSlackWebhook(
     return { success: false, latencyMs: 0, error: 'Slack Webhook URL is required.' };
   }
 
-  const ssrf = await validateSafeExternalUrl(webhookUrl.trim());
+  const ssrf = await validateSafeExternalUrl(webhookUrl.trim(), { requireHttps: true });
   if (!ssrf.safe) {
     return { success: false, latencyMs: 0, error: ssrf.error || 'Blocked by SSRF security policy.' };
   }

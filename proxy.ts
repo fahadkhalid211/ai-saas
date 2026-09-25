@@ -39,6 +39,25 @@ const SENSITIVE_MUTATION_ROUTES = [
  *  otherwise the browser reports a 429 or 500 as a misleading "blocked by CORS policy". */
 const PUBLIC_WIDGET_API = ['/api/chat', '/api/lead', '/api/appointments', '/api/widget', '/api/widget-events', '/api/conversations'];
 
+/** Called by other services (signed or secret-protected) or by the visitor's own page, so a browser Origin check does not apply. */
+const NO_ORIGIN_CHECK = ['/api/billing/webhook', '/api/channels/', '/api/voice/', '/api/csp-report', '/api/log/client', '/api/cron/', '/api/support/contact'];
+
+/** Largest request body accepted, by content-length. File uploads and chat attachments are allowed more. */
+const MAX_BODY_BYTES = 1_000_000;
+const LARGE_BODY_ROUTES: { prefix: string; max: number }[] = [
+  { prefix: '/api/knowledge/upload', max: 50_000_000 },
+  { prefix: '/api/knowledge/extract', max: 50_000_000 },
+  { prefix: '/api/chat', max: 8_000_000 },
+];
+function bodyTooLarge(request: NextRequest, pathname: string): boolean {
+  const m = request.method.toUpperCase();
+  if (m === 'GET' || m === 'HEAD' || m === 'OPTIONS') return false;
+  const declared = Number(request.headers.get('content-length'));
+  if (!Number.isFinite(declared) || declared <= 0) return false;
+  const limit = LARGE_BODY_ROUTES.find((r) => pathname.startsWith(r.prefix))?.max ?? MAX_BODY_BYTES;
+  return declared > limit;
+}
+
 function withWidgetCors(response: NextResponse, pathname: string): NextResponse {
   if (PUBLIC_WIDGET_API.some((p) => pathname === p || pathname.startsWith(p + '/'))) {
     response.headers.set('Access-Control-Allow-Origin', '*');
@@ -72,8 +91,10 @@ function verifyOrigin(request: NextRequest, pathname: string): boolean {
     return true;
   }
 
-  const isSensitive = SENSITIVE_MUTATION_ROUTES.some((route) => pathname.startsWith(route));
-  if (!isSensitive) {
+  // Every API mutation that a signed-in browser can make is checked. Only the endpoints that other sites or services call
+  // on purpose are exempt: the widget's public API, signed webhooks, the log/report collectors and scheduled jobs.
+  const exempt = PUBLIC_WIDGET_API.some((p) => pathname === p || pathname.startsWith(p + '/')) || NO_ORIGIN_CHECK.some((p) => pathname.startsWith(p));
+  if (exempt && !SENSITIVE_MUTATION_ROUTES.some((route) => pathname.startsWith(route))) {
     return true;
   }
 
@@ -119,6 +140,11 @@ export function proxy(request: NextRequest) {
       preflight.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
       preflight.headers.set('Access-Control-Max-Age', '86400');
       return preflight;
+    }
+
+    if (bodyTooLarge(request, pathname)) {
+      logEvent({ level: 'warn', category: 'security', event: 'security.body_too_large', ip: getClientIp(request), meta: { path: pathname, bytes: request.headers.get('content-length') } });
+      return withWidgetCors(NextResponse.json({ error: 'Request body too large.' }, { status: 413 }), pathname);
     }
 
     const originAllowed = verifyOrigin(request, pathname);
