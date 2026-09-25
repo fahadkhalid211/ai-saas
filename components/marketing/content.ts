@@ -63,7 +63,7 @@ export const HERO = {
   eyebrow: 'Website assistant for service businesses',
   title: ['Answer every visitor.', 'Book the ones who are ready.'],
   body: 'Instant answers from your content. Real bookings into your calendar.\nYour team steps in only when it matters.',
-  primaryCta: 'Start your 14-day free trial',
+  primaryCta: 'Start free trial',
   secondaryCta: 'See how it works',
   trust: [
     'Answers from your own content, and says when it does not know',
@@ -338,7 +338,7 @@ export const FAQ = {
 export const FINAL_CTA = {
   title: 'Ready to stop missing visitors?',
   body: 'Set up your assistant in minutes. Add your content, test it yourself, and put it live — all before your 14-day trial ends. Cancel any time, pay nothing if you do.',
-  primary: 'Start your free trial',
+  primary: 'Start free trial',
   secondary: 'Sign in',
 };
 

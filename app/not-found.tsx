@@ -46,7 +46,7 @@ export default function NotFound() {
             <div className="mk-cta-row" style={{ justifyContent: 'center', marginTop: '28px' }}>
               <ButtonLink href="/">Back to the homepage</ButtonLink>
               <ButtonLink href={SIGNUP_HREF} variant="ghost">
-                Start your 14-day free trial
+                Start free trial
               </ButtonLink>
             </div>
 

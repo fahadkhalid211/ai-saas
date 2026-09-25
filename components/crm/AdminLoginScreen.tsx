@@ -368,7 +368,7 @@ export function AdminLoginScreen({
                 {authLoginMode === 'register' && <Sparkles className="h-3.5 w-3.5" />}
                 {authLoginMode === 'staff' && <Users className="h-3.5 w-3.5" />}
                 <span>
-                  {authLoginMode === 'register' ? 'Start 14-Day Free Trial' : 'Sign In to Workspace'}
+                  {authLoginMode === 'register' ? 'Start Free Trial' : 'Sign In to Workspace'}
                 </span>
               </>
             )}

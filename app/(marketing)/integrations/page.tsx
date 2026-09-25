@@ -419,7 +419,7 @@ export default function IntegrationsPage() {
               Calendars, messaging apps, AI providers, webhooks — Crescelo connects to your existing setup without you having to rebuild anything.
             </p>
             <div className="mk-cta-row mk-rise" style={{ ['--mk-delay' as string]: '460ms' }}>
-              <ButtonLink href={SIGNUP_HREF}>Start your 14-day free trial</ButtonLink>
+              <ButtonLink href={SIGNUP_HREF}>Start free trial</ButtonLink>
               <ButtonLink href="/support/contact" variant="ghost">
                 Request an integration
               </ButtonLink>
@@ -736,7 +736,7 @@ export default function IntegrationsPage() {
                 No vendor lock-in. No per-minute markups. Complete ownership of your schedule and customer relationships.
               </p>
               <div className="mk-cta-row">
-                <ButtonLink href={SIGNUP_HREF}>Start your 14-day free trial</ButtonLink>
+                <ButtonLink href={SIGNUP_HREF}>Start free trial</ButtonLink>
                 <ButtonLink href="/support/contact" variant="ghost">
                   Book an onboarding call
                 </ButtonLink>

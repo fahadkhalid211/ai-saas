@@ -5,6 +5,8 @@ import { Header } from '@/components/marketing/Header';
 import { Footer } from '@/components/marketing/Closing';
 import { ButtonLink, Reveal, SectionHead } from '@/components/marketing/ui';
 import { SIGNUP_HREF } from '@/components/marketing/content';
+import { JsonLd } from '@/components/marketing/JsonLd';
+import { breadcrumbSchema, softwareSchema, webPageSchema } from '@/lib/schema';
 
 interface ArchitectureStep {
   id: string;
@@ -149,6 +151,7 @@ export default function ProductPage() {
 
   return (
     <>
+      <JsonLd data={[webPageSchema('AI Chatbot & Appointment Booking Features', 'See what a Crescelo assistant does: answers questions from your own documents, books appointments in the chat, captures leads and hands over to your team.', '/product', 'WebPage'), breadcrumbSchema([{ name: 'Product', path: '/product' }]), softwareSchema()]} />
       <Header />
       <main id="main">
         {/* Product Hero */}
@@ -167,7 +170,7 @@ export default function ProductPage() {
               Every reply is grounded in content you uploaded. Every booking is checked against a real calendar slot. Every AI call goes directly to your provider — no middleman, no markup.
             </p>
             <div className="mk-cta-row mk-rise" style={{ ['--mk-delay' as string]: '460ms' }}>
-              <ButtonLink href={SIGNUP_HREF}>Start your free trial</ButtonLink>
+              <ButtonLink href={SIGNUP_HREF}>Start free trial</ButtonLink>
               <ButtonLink href="/#playground" variant="ghost">
                 Try it live
               </ButtonLink>
@@ -449,7 +452,7 @@ export default function ProductPage() {
                 Upload your documents, test the booking engine, and add the widget to your site.
               </p>
               <div className="mk-cta-row">
-                <ButtonLink href={SIGNUP_HREF}>Start your 14-day free trial</ButtonLink>
+                <ButtonLink href={SIGNUP_HREF}>Start free trial</ButtonLink>
                 <ButtonLink href="/pricing" variant="ghost">
                   View pricing plans
                 </ButtonLink>

@@ -23,6 +23,7 @@ import {
   HandHelping,
   Plug,
   Zap,
+  Play,
 } from 'lucide-react';
 
 /**
@@ -73,19 +74,20 @@ export const MEGA_MENUS: MegaMenu[] = [
       {
         title: 'The assistant',
         links: [
-          { label: 'AI website assistant', description: 'Answers visitors from your own content', href: '/product', icon: Bot, tone: 'lime' },
-          { label: 'Appointment booking', description: 'Live slots that cannot be double-booked', href: '/support/calendar-booking', icon: CalendarCheck, tone: 'mint' },
-          { label: 'Lead capture', description: 'Send leads to email, Slack, Sheets or webhooks', href: '/integrations', icon: UserPlus, tone: 'lav' },
-          { label: 'Knowledge base', description: 'Upload documents and pages it learns from', href: '/support/rag-knowledge', icon: BookOpen, tone: 'amber' },
+          { label: 'AI website assistant', description: 'Answers visitors from your own content', href: '/product/ai-assistant', icon: Bot, tone: 'lime' },
+          { label: 'Appointment booking', description: 'Live slots that cannot be double-booked', href: '/product/appointment-booking', icon: CalendarCheck, tone: 'mint' },
+          { label: 'Lead capture', description: 'Send leads to email, Slack, Sheets or webhooks', href: '/product/lead-capture', icon: UserPlus, tone: 'lav' },
+          { label: 'Knowledge base', description: 'Upload documents and pages it learns from', href: '/product/knowledge-base', icon: BookOpen, tone: 'amber' },
+          { label: 'Try the playground', description: 'Chat with a live demo assistant', href: '/#playground', icon: Play, tone: 'pink', badge: 'Try' },
         ],
       },
       {
         title: 'Where it works',
         links: [
-          { label: 'Website chat widget', description: 'One script tag on any site', href: '/guides/add-ai-assistant-to-wordpress', icon: Globe, tone: 'lime' },
+          { label: 'Website chat widget', description: 'One script tag on any site', href: '/product/website-widget', icon: Globe, tone: 'lime' },
           { label: 'Phone voice agent', description: 'Answering calls is under development', href: '/roadmap', icon: Phone, tone: 'pink', badge: 'Soon' },
-          { label: 'WhatsApp and Telegram', description: 'Reply on the apps customers already use', href: '/integrations', icon: MessageCircle, tone: 'mint' },
-          { label: 'Human handover', description: 'Take over any conversation in one click', href: '/product', icon: HandHelping, tone: 'coral' },
+          { label: 'WhatsApp and Telegram', description: 'Reply on the apps customers already use', href: '/product/messaging-channels', icon: MessageCircle, tone: 'mint' },
+          { label: 'Human handover', description: 'Take over any conversation in one click', href: '/product/human-handover', icon: HandHelping, tone: 'coral' },
         ],
       },
     ],
@@ -94,7 +96,7 @@ export const MEGA_MENUS: MegaMenu[] = [
       eyebrow: '14-day free trial',
       title: 'See it answer your visitors',
       body: 'Add your prices and services, then watch it book a real appointment.',
-      cta: { label: 'Start your free trial', href: '/login?mode=register' },
+      cta: { label: 'Start free trial', href: '/login?mode=register' },
       secondary: { label: 'View pricing', href: '/pricing' },
     },
     footerLinks: [

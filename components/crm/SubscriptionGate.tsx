@@ -157,7 +157,7 @@ export function SubscriptionGate({ isMasterAdmin, onLogout, onOpenBilling }: { i
                 <CreditCard className="h-3.5 w-3.5" /> {expired ? 'Subscription ended' : `${TRIAL_DAYS}-day free trial`}
               </span>
               <h1 id="sg-title" className="mt-3 text-3xl text-[#faf9f5]" style={{ fontFamily: 'var(--kx-serif, Georgia, serif)' }}>
-                {expired ? 'Choose a plan to switch your assistants back on' : 'Add your card to start your free trial'}
+                {expired ? 'Choose a plan to switch your assistants back on' : 'Start your free trial'}
               </h1>
               <p className="mx-auto mt-2 max-w-xl text-sm leading-relaxed text-[#c9c6bc]">
                 {expired
@@ -200,7 +200,7 @@ export function SubscriptionGate({ isMasterAdmin, onLogout, onOpenBilling }: { i
             </div>
 
             <div className="mt-5 flex flex-col items-center gap-3">
-              <SaveButton onClick={startCheckout} saving={busy} idleLabel={expired ? `Subscribe to ${plan.name}` : 'Add card and start free trial'} savingLabel="Opening secure checkout…" savedLabel="Opening…" className="px-6 py-3 text-sm" />
+              <SaveButton onClick={startCheckout} saving={busy} idleLabel={expired ? `Subscribe to ${plan.name}` : 'Start free trial'} savingLabel="Opening secure checkout…" savedLabel="Opening…" className="px-6 py-3 text-sm" />
               <p className="text-[11px] text-[#a19f96]">Secure payment by Stripe. By continuing you agree to the <a className="underline" href="/terms" target="_blank" rel="noopener noreferrer">Terms</a> and <a className="underline" href="/privacy" target="_blank" rel="noopener noreferrer">Privacy Policy</a>.</p>
               <button type="button" onClick={onLogout} className="inline-flex items-center gap-1.5 text-[11px] text-[#a19f96] underline cursor-pointer"><LogOut className="h-3 w-3" /> Sign out</button>
             </div>

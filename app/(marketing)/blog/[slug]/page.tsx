@@ -201,7 +201,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
                     Train your assistant on your price lists, documents, and service policies. Enable 24/7 grounded answers and conflict-free in-chat appointment booking.
                   </p>
                   <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', flexWrap: 'wrap' }}>
-                    <ButtonLink href="/login?mode=register" className="mk-btn-blue">Start 14-Day Free Trial</ButtonLink>
+                    <ButtonLink href="/login?mode=register" className="mk-btn-blue">Start Free Trial</ButtonLink>
                     <Link
                       href="/pricing"
                       style={{

@@ -10,6 +10,13 @@ const PAGES: { path: string; priority: number; changeFrequency: 'weekly' | 'mont
   // Core marketing
   { path: '',                                          priority: 1.0, changeFrequency: 'weekly'  },
   { path: '/product',                                  priority: 0.9, changeFrequency: 'monthly' },
+  { path: '/product/ai-assistant', priority: 0.8, changeFrequency: 'monthly' },
+  { path: '/product/appointment-booking', priority: 0.8, changeFrequency: 'monthly' },
+  { path: '/product/lead-capture', priority: 0.8, changeFrequency: 'monthly' },
+  { path: '/product/knowledge-base', priority: 0.8, changeFrequency: 'monthly' },
+  { path: '/product/website-widget', priority: 0.8, changeFrequency: 'monthly' },
+  { path: '/product/human-handover', priority: 0.8, changeFrequency: 'monthly' },
+  { path: '/product/messaging-channels', priority: 0.8, changeFrequency: 'monthly' },
   { path: '/pricing',                                  priority: 0.9, changeFrequency: 'monthly' },
   { path: '/use-case',                                 priority: 0.8, changeFrequency: 'monthly' },
   { path: '/integrations',                             priority: 0.8, changeFrequency: 'monthly' },
