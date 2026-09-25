@@ -66,6 +66,7 @@ export function DiagonalBenefits() {
         }
         el.style.transform = `translate(-50%, -50%) translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, ${z.toFixed(1)}px) rotateX(${rx.toFixed(2)}deg) scale(${sc.toFixed(3)})`;
         el.style.opacity = o.toFixed(3);
+        el.style.visibility = o > 0.02 ? 'visible' : 'hidden';
         el.style.zIndex = String(100 - Math.round(Math.abs(t) * 10));
         el.style.pointerEvents = Math.abs(t) < 0.5 ? 'auto' : 'none';
         el.setAttribute('aria-hidden', Math.abs(t) < 0.6 ? 'false' : 'true');
