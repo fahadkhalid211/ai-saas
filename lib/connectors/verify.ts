@@ -1,3 +1,4 @@
+import { validateSafeExternalUrl } from '@/lib/security/ssrf';
 /**
  * Upstream Connection Verification Engine
  * Validates external API credentials and network endpoints before saving configurations.
@@ -31,6 +32,12 @@ export async function verifyAiProviderConnection(
   options?: { customBaseUrl?: string; modelName?: string }
 ): Promise<VerificationResult> {
   const prov = (provider || 'ollama').toLowerCase().trim();
+
+  // The server makes these requests, so a customer-supplied address must not point at a private or internal network.
+  if (options?.customBaseUrl && process.env.NODE_ENV === 'production') {
+    const safe = await validateSafeExternalUrl(options.customBaseUrl.trim());
+    if (!safe.safe) return { success: false, message: safe.error || 'That address is blocked by the security policy.' };
+  }
 
   // 1. auto_free tier
   if (prov === 'auto_free') {

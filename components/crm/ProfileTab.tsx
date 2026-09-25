@@ -415,7 +415,7 @@ export function ProfileTab({ currentUser, onProfileUpdated }: ProfileTabProps) {
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    placeholder="e.g. Fahad Khalid"
+                    placeholder="e.g. Alex Morgan"
                     className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-3.5 py-2.5 text-xs text-slate-900 dark:text-slate-100 outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition"
                     required
                   />

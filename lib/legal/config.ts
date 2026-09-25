@@ -3,8 +3,8 @@
  * a provider is replaced), change it here and every page follows.
  */
 /**
- * THE COMPANY SWITCH. Until the company exists, the pages name the individual who runs Crescelo (a page must never name an
- * entity that is not registered). When registration is complete: put the exact registered name, registration number and
+ * THE COMPANY SWITCH. Until the company exists, the pages say only "Crescelo" (a page must never name an entity that is not
+ * registered). When registration is complete: put the exact registered name, registration number and
  * registered address below and set `registered` to true. Every legal page, the footer and the contact blocks follow.
  *
  * Note: Pakistan has no "LLC". The usual forms are a Private Limited company or a Single Member Company (Private) Limited,
@@ -19,9 +19,9 @@ export const COMPANY = {
 
 export const LEGAL = {
   /** The person or company that runs the service. */
-  operator: COMPANY.registered ? COMPANY.legalName : 'Fahad Khalid',
+  operator: COMPANY.registered ? COMPANY.legalName : 'Crescelo',
   tradeName: 'Crescelo',
-  operatorLine: COMPANY.registered ? COMPANY.legalName : 'Fahad Khalid, trading as Crescelo',
+  operatorLine: COMPANY.registered ? COMPANY.legalName : 'Crescelo',
   registrationNumber: COMPANY.registered ? COMPANY.registrationNumber : '',
   registeredAddress: COMPANY.registered ? COMPANY.registeredAddress : '',
   country: 'Pakistan',

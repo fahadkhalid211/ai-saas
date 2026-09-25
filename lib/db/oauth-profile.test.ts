@@ -62,7 +62,7 @@ describe('Google sign-in fills in the person\'s name and photo', () => {
     const first = await Database.findOrCreateOAuthTenant({ email, provider: 'google', providerId: 'g3' });
     created.push(first.workspace.id);
     first.member.name = 'Master Admin';
-    const again = await Database.findOrCreateOAuthTenant({ email, name: 'Fahad Khalid', provider: 'google', providerId: 'g3' });
-    expect(again.member.name).toBe('Fahad Khalid');
+    const again = await Database.findOrCreateOAuthTenant({ email, name: 'Test Person', provider: 'google', providerId: 'g3' });
+    expect(again.member.name).toBe('Test Person');
   });
 });

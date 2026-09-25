@@ -94,7 +94,7 @@ export function LegalPage({ doc, children }: { doc: LegalDocument; children?: Re
                 <p>
                   {LEGAL.operatorLine}
                   {LEGAL.registrationNumber ? `, company registration no. ${LEGAL.registrationNumber}` : ''}
-                  {LEGAL.registeredAddress ? `, ${LEGAL.registeredAddress}` : ''}, {LEGAL.country}. Email:{' '}
+                  {LEGAL.registeredAddress ? `, ${LEGAL.registeredAddress}` : ''}. Email:{' '}
                   <a href={`mailto:${LEGAL.email}`} style={{ textDecoration: 'underline' }}>
                     {LEGAL.email}
                   </a>

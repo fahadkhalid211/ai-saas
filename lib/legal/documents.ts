@@ -28,7 +28,7 @@ export const PRIVACY: LegalDocument = {
       id: 'who-we-are',
       heading: '1. Who we are and what this policy covers',
       body: [
-        `Crescelo is operated by ${op}, based in ${LEGAL.country} ("Crescelo", "we", "us"). You can reach us at ${LEGAL.email}.`,
+        `Crescelo is operated by ${op} ("Crescelo", "we", "us"). You can reach us at ${LEGAL.email}.`,
         'Crescelo lets businesses put an AI assistant on their website that answers visitor questions from the business’s own content, books appointments, captures leads and hands over to a person. This policy explains how we handle personal data in two different roles:',
         {
           list: [
@@ -104,7 +104,7 @@ export const PRIVACY: LegalDocument = {
       id: 'transfers',
       heading: '6. International transfers',
       body: [
-        `We operate from ${LEGAL.country} and our providers process data in several countries, including the United States and India. Where personal data leaves the European Economic Area, the United Kingdom or Switzerland, we rely on an appropriate safeguard, such as the European Commission’s Standard Contractual Clauses (with the UK Addendum where relevant), and on our providers’ own transfer mechanisms. You can ask us for a copy of the safeguard that applies.`,
+        `Our providers process data in several countries, including the United States and India. Where personal data leaves the European Economic Area, the United Kingdom or Switzerland, we rely on an appropriate safeguard, such as the European Commission’s Standard Contractual Clauses (with the UK Addendum where relevant), and on our providers’ own transfer mechanisms. You can ask us for a copy of the safeguard that applies.`,
       ],
     },
     {

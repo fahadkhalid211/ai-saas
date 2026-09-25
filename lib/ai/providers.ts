@@ -1,4 +1,5 @@
 import OpenAI from 'openai';
+import { guardedFetchFor } from './safe-fetch';
 import { ChatMessage, ProviderOptions } from './types';
 
 /**
@@ -86,6 +87,7 @@ function getClient(options: ProviderOptions): { client: OpenAI; model: string } 
         client: new OpenAI({
           apiKey: options.apiKey || 'custom-key',
           baseURL: options.customBaseUrl || 'http://localhost:11434/v1',
+          fetch: guardedFetchFor(options.customBaseUrl),
         }),
         model: options.modelName || 'llama3.2',
       };
@@ -101,6 +103,7 @@ function getClient(options: ProviderOptions): { client: OpenAI; model: string } 
         client: new OpenAI({
           apiKey: 'ollama', // Ollama doesn't require a real key
           baseURL,
+          fetch: guardedFetchFor(options.customBaseUrl),
         }),
         model: options.modelName || 'llama3.2',
       };
@@ -280,6 +283,7 @@ async function* streamAutoFree(
           client: new OpenAI({
             apiKey: 'ollama',
             baseURL,
+            fetch: guardedFetchFor(options.customBaseUrl),
           }),
           model: 'llama3.2',
           safeMaxTokens: options.maxTokens || 2048,
