@@ -50,6 +50,8 @@ export const BATCH4 = [
       h2("Conversational assistants"),
       ul("Handle questions you did not plan for, as long as your content covers them.", "Upkeep means updating documents, not redrawing diagrams.", "Less exact: the wording is generated, so you need rules and testing.", "Best with clear, current source material."),
       table(["", "Flow builder", "Conversational assistant"], ["Setup", "Design each branch", "Add content, then test"], ["Novel questions", "Dead end or fallback", "Answered or honestly declined"], ["Exact wording", "Guaranteed", "Guided by rules"], ["Maintenance", "Redraw paths", "Update documents"]),
+      h2("Where each one breaks down"),
+      p("A flow breaks when a visitor types something outside the branches: the bot repeats the menu. An assistant breaks when its content is missing or wrong: it should say it does not know, but a poorly prepared knowledge base still gives thin answers. Knowing the failure mode tells you what to test."),
       h2("Which one suits which business"),
       p("Marketing-led flows for a launch or a giveaway suit a flow builder. A service business with a long tail of questions, real prices and a calendar suits an assistant that answers from its documents and books. Many teams combine them."),
       note("Products change quickly. Check each vendor's current features and pricing rather than relying on any comparison, including this one."),
