@@ -420,7 +420,7 @@ export default function IntegrationsPage() {
               Calendars, messaging apps, AI providers, webhooks — Crescelo connects to your existing setup without you having to rebuild anything.
             </p>
             <div className="mk-cta-row mk-rise" style={{ ['--mk-delay' as string]: '460ms' }}>
-              <ButtonLink href={SIGNUP_HREF}>Start free — no card today</ButtonLink>
+              <ButtonLink href={SIGNUP_HREF}>Start your 14-day free trial</ButtonLink>
               <ButtonLink href="/support/contact" variant="ghost">
                 Request an integration
               </ButtonLink>

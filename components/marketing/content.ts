@@ -63,10 +63,10 @@ export const HERO = {
   eyebrow: 'Website assistant for service businesses',
   title: ['Answer every visitor.', 'Book the ones who are ready.'],
   body: 'Instant answers from your content. Real bookings into your calendar.\nYour team steps in only when it matters.',
-  primaryCta: 'Start free — no card today',
+  primaryCta: 'Start your 14-day free trial',
   secondaryCta: 'See how it works',
   trust: [
-    'Answers only from your content — no hallucinations',
+    'Answers from your own content, and says when it does not know',
     'Bring your own AI key — zero markup',
     'Human takeover in one click',
   ],

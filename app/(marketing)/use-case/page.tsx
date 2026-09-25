@@ -260,7 +260,7 @@ export default function UseCasePage() {
               Crescelo is not a generic chatbot. It learns from your content, speaks your terminology, and follows your specific booking workflow — from salons and clinics to law firms and SaaS companies.
             </p>
             <div className="mk-cta-row mk-rise" style={{ ['--mk-delay' as string]: '460ms' }}>
-              <ButtonLink href={SIGNUP_HREF}>Start free — no card today</ButtonLink>
+              <ButtonLink href={SIGNUP_HREF}>Start your 14-day free trial</ButtonLink>
               <ButtonLink href="/pricing" variant="ghost">
                 Compare plans
               </ButtonLink>

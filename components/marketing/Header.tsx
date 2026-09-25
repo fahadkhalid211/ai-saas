@@ -1,15 +1,110 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { NAV, LOGIN_HREF, SIGNUP_HREF } from './content';
+import { usePathname } from 'next/navigation';
+import { ArrowRight, ChevronDown } from 'lucide-react';
+import { LOGIN_HREF, SIGNUP_HREF } from './content';
 import { ButtonLink, Logo } from './ui';
+import { MEGA_DIRECT_LINKS, MEGA_MENUS, type MegaMenu } from './mega-menu-data';
+import './mega-menu.css';
+
+type MenuId = MegaMenu['id'];
+
+/** The panel that opens under the bar: link columns with icons on the left, a feature card on the right. */
+function MegaPanel({ menu, onNavigate, id }: { menu: MegaMenu; onNavigate: () => void; id: string }) {
+  return (
+    <div id={id} className="mk-mega" role="region" aria-label={`${menu.label} menu`}>
+      <div className="mk-mega-grid">
+        <div className="mk-mega-cols" style={{ gridTemplateColumns: `repeat(${menu.columns.length}, minmax(0, 1fr))` }}>
+          {menu.columns.map((col) => (
+            <div key={col.title} className="mk-mega-col">
+              <p className="mk-mega-col-title">{col.title}</p>
+              <ul>
+                {col.links.map((l) => {
+                  const Icon = l.icon;
+                  return (
+                    <li key={l.label}>
+                      <Link href={l.href} className="mk-mega-link" onClick={onNavigate}>
+                        <span className="mk-mega-icon" data-tone={l.tone} aria-hidden="true">
+                          <Icon size={20} strokeWidth={2} />
+                        </span>
+                        <span className="mk-mega-text">
+                          <span className="mk-mega-label">
+                            {l.label}
+                            {l.badge ? <em className="mk-mega-badge">{l.badge}</em> : null}
+                          </span>
+                          <span className="mk-mega-desc">{l.description}</span>
+                        </span>
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          ))}
+        </div>
+
+        <aside className="mk-mega-feature" aria-label={menu.feature.title}>
+          <span className="mk-mega-glow" aria-hidden="true" />
+          <p className="mk-mega-feature-eyebrow">{menu.feature.eyebrow}</p>
+          <p className="mk-mega-feature-title">{menu.feature.title}</p>
+          <p className="mk-mega-feature-body">{menu.feature.body}</p>
+          <div className="mk-mega-feature-actions">
+            <Link href={menu.feature.cta.href} className="mk-mega-feature-cta" onClick={onNavigate}>
+              {menu.feature.cta.label}
+              <ArrowRight size={16} aria-hidden="true" />
+            </Link>
+            {menu.feature.secondary ? (
+              <Link href={menu.feature.secondary.href} className="mk-mega-feature-secondary" onClick={onNavigate}>
+                {menu.feature.secondary.label}
+              </Link>
+            ) : null}
+          </div>
+        </aside>
+      </div>
+
+      {menu.footerLinks?.length ? (
+        <div className="mk-mega-footer">
+          {menu.footerLinks.map((f) => (
+            <Link key={f.href + f.label} href={f.href} onClick={onNavigate}>
+              {f.label} <ArrowRight size={14} aria-hidden="true" />
+            </Link>
+          ))}
+        </div>
+      ) : null}
+    </div>
+  );
+}
 
 export function Header() {
-  const [open, setOpen] = useState(false);
+  const pathname = usePathname();
+  const [open, setOpen] = useState(false); // mobile menu
   const [scrolled, setScrolled] = useState(false);
+  const [menu, setMenu] = useState<MenuId | null>(null); // desktop mega menu
+  const [mobileGroup, setMobileGroup] = useState<MenuId | null>('product');
   const menuRef = useRef<HTMLDivElement>(null);
   const toggleRef = useRef<HTMLButtonElement>(null);
+  const navRef = useRef<HTMLDivElement>(null);
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const clearTimer = () => {
+    if (timer.current) clearTimeout(timer.current);
+    timer.current = null;
+  };
+  const closeMenu = useCallback(() => {
+    clearTimer();
+    setMenu(null);
+  }, []);
+  // hover opens after a beat and closes after a longer one, so the pointer can cross the gap to the panel
+  const hoverOpen = (id: MenuId) => {
+    clearTimer();
+    timer.current = setTimeout(() => setMenu(id), menu ? 0 : 90);
+  };
+  const hoverClose = () => {
+    clearTimer();
+    timer.current = setTimeout(() => setMenu(null), 220);
+  };
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -18,6 +113,38 @@ export function Header() {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
+  // navigating anywhere closes both menus
+  useEffect(() => {
+    setOpen(false);
+    closeMenu();
+  }, [pathname, closeMenu]);
+
+  // desktop menu: Escape closes it, and so does a click or focus anywhere outside it
+  useEffect(() => {
+    if (!menu) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        closeMenu();
+        navRef.current?.querySelector<HTMLElement>(`[data-menu="${menu}"]`)?.focus();
+      }
+    };
+    const onPointer = (e: PointerEvent) => {
+      if (navRef.current && !navRef.current.contains(e.target as Node)) closeMenu();
+    };
+    const onFocusIn = (e: FocusEvent) => {
+      if (navRef.current && !navRef.current.contains(e.target as Node)) closeMenu();
+    };
+    document.addEventListener('keydown', onKey);
+    document.addEventListener('pointerdown', onPointer);
+    document.addEventListener('focusin', onFocusIn);
+    return () => {
+      document.removeEventListener('keydown', onKey);
+      document.removeEventListener('pointerdown', onPointer);
+      document.removeEventListener('focusin', onFocusIn);
+    };
+  }, [menu, closeMenu]);
+
+  // mobile menu: lock the page behind it, Escape closes it
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
@@ -30,7 +157,7 @@ export function Header() {
     const prev = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     window.__mkLenis?.stop();
-    menuRef.current?.querySelector<HTMLElement>('a')?.focus();
+    menuRef.current?.querySelector<HTMLElement>('button, a')?.focus();
     return () => {
       document.removeEventListener('keydown', onKey);
       document.body.style.overflow = prev;
@@ -38,30 +165,59 @@ export function Header() {
     };
   }, [open]);
 
+  // leaving the mobile layout with the menu open would leave the page locked
+  useEffect(() => {
+    const mq = window.matchMedia('(min-width: 960px)');
+    const onChange = () => mq.matches && setOpen(false);
+    mq.addEventListener('change', onChange);
+    return () => mq.removeEventListener('change', onChange);
+  }, []);
+
+  const active = MEGA_MENUS.find((m) => m.id === menu) || null;
+
   return (
     <header className={`mk-header ${scrolled ? 'is-scrolled' : ''}`}>
       <a href="#main" className="mk-skip">
         Skip to content
       </a>
-      <div className="mk-wrap">
+      <div className="mk-wrap mk-header-wrap">
         <div className="mk-header-row">
           <Link href="/" aria-label="Crescelo home" className="mk-logo-link">
             <Logo />
           </Link>
 
-          <nav aria-label="Primary" className="mk-nav-desktop">
-            {NAV.map((n) =>
-              n.href.startsWith('/') ? (
-                <Link key={n.href} href={n.href} className="mk-nav-link">
-                  {n.label}
+          <div ref={navRef} className="mk-nav-desktop" onMouseLeave={hoverClose} onMouseEnter={clearTimer}>
+            <nav aria-label="Primary" className="mk-nav-list">
+              {MEGA_MENUS.map((m) => (
+                <button
+                  key={m.id}
+                  type="button"
+                  data-menu={m.id}
+                  className={`mk-nav-link mk-nav-trigger ${menu === m.id ? 'is-open' : ''}`}
+                  aria-expanded={menu === m.id}
+                  aria-controls={`mk-mega-${m.id}`}
+                  onMouseEnter={() => hoverOpen(m.id)}
+                  onClick={() => (menu === m.id ? closeMenu() : setMenu(m.id))}
+                  onKeyDown={(e) => {
+                    if (e.key === 'ArrowDown') {
+                      e.preventDefault();
+                      setMenu(m.id);
+                      requestAnimationFrame(() => document.querySelector<HTMLElement>(`#mk-mega-${m.id} a`)?.focus());
+                    }
+                  }}
+                >
+                  {m.label}
+                  <ChevronDown size={15} aria-hidden="true" className="mk-nav-chevron" />
+                </button>
+              ))}
+              {MEGA_DIRECT_LINKS.map((l) => (
+                <Link key={l.href} href={l.href} className="mk-nav-link" onMouseEnter={hoverClose}>
+                  {l.label}
                 </Link>
-              ) : (
-                <a key={n.href} href={n.href} className="mk-nav-link">
-                  {n.label}
-                </a>
-              )
-            )}
-          </nav>
+              ))}
+            </nav>
+            {active ? <MegaPanel key={active.id} menu={active} id={`mk-mega-${active.id}`} onNavigate={closeMenu} /> : null}
+          </div>
 
           <div className="mk-header-actions">
             <Link href={LOGIN_HREF} className="mk-nav-link mk-login">
@@ -87,20 +243,60 @@ export function Header() {
 
       {open ? (
         <div id="mk-mobile-menu" ref={menuRef} className="mk-mobile" role="dialog" aria-label="Menu">
-          <nav aria-label="Mobile">
-            {NAV.map((n) =>
-              n.href.startsWith('/') ? (
-                <Link key={n.href} href={n.href} className="mk-mobile-link" onClick={() => setOpen(false)}>
-                  <span>{n.label}</span>
-                  {n.description ? <small>{n.description}</small> : null}
-                </Link>
-              ) : (
-                <a key={n.href} href={n.href} className="mk-mobile-link" onClick={() => setOpen(false)}>
-                  <span>{n.label}</span>
-                  {n.description ? <small>{n.description}</small> : null}
-                </a>
-              )
-            )}
+          <nav aria-label="Mobile" className="mk-mobile-nav">
+            {MEGA_MENUS.map((m) => {
+              const expanded = mobileGroup === m.id;
+              return (
+                <div key={m.id} className="mk-acc">
+                  <button
+                    type="button"
+                    className="mk-acc-head"
+                    aria-expanded={expanded}
+                    aria-controls={`mk-acc-${m.id}`}
+                    onClick={() => setMobileGroup(expanded ? null : m.id)}
+                  >
+                    <span>{m.label}</span>
+                    <ChevronDown size={20} aria-hidden="true" className="mk-acc-chevron" />
+                  </button>
+                  <div id={`mk-acc-${m.id}`} className="mk-acc-body" hidden={!expanded}>
+                    {m.columns.map((col) => (
+                      <div key={col.title} className="mk-acc-group">
+                        <p className="mk-mega-col-title">{col.title}</p>
+                        <ul>
+                          {col.links.map((l) => {
+                            const Icon = l.icon;
+                            return (
+                              <li key={l.label}>
+                                <Link href={l.href} className="mk-mega-link" onClick={() => setOpen(false)}>
+                                  <span className="mk-mega-icon" data-tone={l.tone} aria-hidden="true">
+                                    <Icon size={20} strokeWidth={2} />
+                                  </span>
+                                  <span className="mk-mega-text">
+                                    <span className="mk-mega-label">
+                                      {l.label}
+                                      {l.badge ? <em className="mk-mega-badge">{l.badge}</em> : null}
+                                    </span>
+                                    <span className="mk-mega-desc">{l.description}</span>
+                                  </span>
+                                </Link>
+                              </li>
+                            );
+                          })}
+                        </ul>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+            {MEGA_DIRECT_LINKS.map((l) => (
+              <Link key={l.href} href={l.href} className="mk-mobile-link" onClick={() => setOpen(false)}>
+                <span>{l.label}</span>
+              </Link>
+            ))}
+            <Link href="/support/contact" className="mk-mobile-link" onClick={() => setOpen(false)}>
+              <span>Contact support</span>
+            </Link>
           </nav>
           <div className="mk-mobile-actions">
             <ButtonLink href={SIGNUP_HREF}>Start your 14-day free trial</ButtonLink>
