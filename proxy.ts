@@ -48,6 +48,7 @@ const LARGE_BODY_ROUTES: { prefix: string; max: number }[] = [
   { prefix: '/api/knowledge/upload', max: 50_000_000 },
   { prefix: '/api/knowledge/extract', max: 50_000_000 },
   { prefix: '/api/chat', max: 8_000_000 },
+  { prefix: '/api/playground/sources', max: 6_000_000 },
 ];
 function bodyTooLarge(request: NextRequest, pathname: string): boolean {
   const m = request.method.toUpperCase();

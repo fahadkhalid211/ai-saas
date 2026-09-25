@@ -1,11 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import Link from 'next/link';
 import { Header } from '@/components/marketing/Header';
 import { Footer } from '@/components/marketing/Closing';
 import { ButtonLink, Reveal, SectionHead } from '@/components/marketing/ui';
-import { ExternalLink, CheckCircle2, Check } from 'lucide-react';
+import { CheckCircle2, Check, ExternalLink } from 'lucide-react';
 
 interface ArchetypePreview {
   name: string;
@@ -544,7 +543,6 @@ export default function RoadmapPage() {
                         style={{
                           paddingTop: '12px',
                           borderTop: '1px solid rgba(0,0,0,0.06)',
-                          marginBottom: '20px',
                         }}
                       >
                         <div style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', color: 'var(--mk-muted)', marginBottom: '8px', letterSpacing: '0.04em' }}>
@@ -570,51 +568,6 @@ export default function RoadmapPage() {
                           ))}
                         </ul>
                       </div>
-                    </div>
-
-                    {/* Bottom action row */}
-                    <div
-                      style={{
-                        paddingTop: '16px',
-                        borderTop: '1.5px solid var(--mk-ink)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        gap: '12px',
-                      }}
-                    >
-                      <Link
-                        href={`/site/${tpl.slug}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        style={{
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: '6px',
-                          fontSize: '13px',
-                          fontWeight: 700,
-                          color: 'var(--mk-ink)',
-                          textDecoration: 'none',
-                          padding: '6px 12px',
-                          borderRadius: '8px',
-                          background: 'var(--mk-lime)',
-                          border: '1px solid var(--mk-ink)',
-                          transition: 'opacity 0.15s',
-                        }}
-                      >
-                        <span>Preview Live Beta</span>
-                        <ExternalLink style={{ width: '13px', height: '13px' }} />
-                      </Link>
-
-                      <span
-                        style={{
-                          fontSize: '11px',
-                          fontFamily: 'var(--mk-font-mono, monospace)',
-                          color: 'var(--mk-muted)',
-                        }}
-                      >
-                        /site/{tpl.slug}
-                      </span>
                     </div>
                   </div>
                 </Reveal>

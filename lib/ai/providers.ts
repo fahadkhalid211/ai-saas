@@ -111,12 +111,21 @@ function getClient(options: ProviderOptions): { client: OpenAI; model: string } 
   }
 }
 
+/** How one model request ended. The wrapper below uses it to finish an answer that was cut short. */
+interface StreamMeta {
+  /** The model stopped because it hit its output limit ("length" / "max_tokens"). */
+  finish?: string | null;
+  /** The connection broke after some text had already been sent. */
+  interrupted?: boolean;
+}
+
 /**
  * Direct Anthropic Claude Messages Streaming API
  */
 async function* streamAnthropic(
   messages: ChatMessage[],
-  options: ProviderOptions
+  options: ProviderOptions,
+  meta: StreamMeta = {}
 ): AsyncGenerator<string, void, unknown> {
   const apiKey = options.apiKey || process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
@@ -158,28 +167,38 @@ async function* streamAnthropic(
 
   const decoder = new TextDecoder();
   let buffer = '';
+  let sentAny = false;
 
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    buffer += decoder.decode(value, { stream: true });
-    const lines = buffer.split('\n');
-    buffer = lines.pop() || '';
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop() || '';
 
-    for (const line of lines) {
-      if (line.startsWith('data: ')) {
-        const jsonStr = line.slice(6).trim();
-        if (!jsonStr || jsonStr === '[DONE]') continue;
-        try {
-          const parsed = JSON.parse(jsonStr);
-          if (parsed.type === 'content_block_delta' && parsed.delta?.text) {
-            yield parsed.delta.text;
+      for (const line of lines) {
+        if (line.startsWith('data: ')) {
+          const jsonStr = line.slice(6).trim();
+          if (!jsonStr || jsonStr === '[DONE]') continue;
+          try {
+            const parsed = JSON.parse(jsonStr);
+            if (parsed.type === 'content_block_delta' && parsed.delta?.text) {
+              sentAny = true;
+              yield parsed.delta.text;
+            }
+            if (parsed.type === 'message_delta' && parsed.delta?.stop_reason) {
+              meta.finish = parsed.delta.stop_reason === 'max_tokens' ? 'length' : parsed.delta.stop_reason;
+            }
+          } catch {
+            // ignore parsing error for comments/keep-alive
           }
-        } catch {
-          // ignore parsing error for comments/keep-alive
         }
       }
     }
+  } catch (err) {
+    if (!sentAny) throw err;
+    meta.interrupted = true; // the connection broke mid-answer: the wrapper carries on from here
   }
 }
 
@@ -192,7 +211,8 @@ async function* streamAnthropic(
  */
 async function* streamAutoFree(
   messages: ChatMessage[],
-  options: ProviderOptions
+  options: ProviderOptions,
+  meta: StreamMeta = {}
 ): AsyncGenerator<string, void, unknown> {
   const groqKey = options.apiKey?.startsWith('gsk_')
     ? options.apiKey
@@ -310,6 +330,7 @@ async function* streamAutoFree(
 
       for await (const chunk of stream) {
         const content = chunk.choices[0]?.delta?.content || '';
+        if (chunk.choices[0]?.finish_reason) meta.finish = chunk.choices[0].finish_reason;
         if (content) {
           didYieldAnyToken = true;
           yield content;
@@ -324,7 +345,8 @@ async function* streamAutoFree(
       );
 
       if (didYieldAnyToken) {
-        yield `\n\n*(Stream interrupted: ${err?.message || 'Connection lost'} during generation.)*`;
+        // never show half an answer with an error stuck on the end: the wrapper continues it on the next provider
+        meta.interrupted = true;
         return;
       }
     }
@@ -344,17 +366,48 @@ export async function* streamChatResponse(
   messages: ChatMessage[],
   options: ProviderOptions
 ): AsyncGenerator<string, void, unknown> {
+  // An answer must never stop half-way. If the model ran out of output room, or the connection broke after text had been sent,
+  // ask it to carry on from exactly where it stopped, up to a few times, and stream the rest as if it were one answer.
+  const MAX_CONTINUATIONS = 3;
+  let produced = '';
+  for (let round = 0; round <= MAX_CONTINUATIONS; round++) {
+    const meta: StreamMeta = {};
+    const request =
+      round === 0
+        ? messages
+        : [
+            ...messages,
+            { role: 'assistant' as const, content: produced },
+            { role: 'user' as const, content: 'Your last reply was cut off. Continue exactly where you stopped. Do not repeat anything and do not add an introduction.' },
+          ];
+    let text = '';
+    for await (const chunk of streamChatOnce(request, options, meta)) {
+      text += chunk;
+      produced += chunk;
+      yield chunk;
+    }
+    // notices such as "*(Authentication Error...)*" are not answers, and an empty result has nothing to continue
+    const truncated = meta.finish === 'length' || meta.finish === 'max_tokens' || meta.interrupted === true;
+    if (!truncated || !text.trim() || text.trimStart().startsWith('*(')) return;
+  }
+}
+
+async function* streamChatOnce(
+  messages: ChatMessage[],
+  options: ProviderOptions,
+  meta: StreamMeta
+): AsyncGenerator<string, void, unknown> {
   const provider = (options.provider || 'ollama').toLowerCase();
 
   // Zero-cost auto failover tier (Groq -> Gemini -> Ollama)
   if (provider === 'auto_free') {
-    yield* streamAutoFree(messages, options);
+    yield* streamAutoFree(messages, options, meta);
     return;
   }
 
   // Anthropic native
   if (provider === 'anthropic') {
-    yield* streamAnthropic(messages, options);
+    yield* streamAnthropic(messages, options, meta);
     return;
   }
 
@@ -396,6 +449,7 @@ export async function* streamChatResponse(
     safeMaxTokens = Math.min(safeMaxTokens, Math.min(1200, Math.max(350, remainingBudget)));
   }
 
+  let sentAny = false;
   try {
     const stream = await client.chat.completions.create({
       model,
@@ -407,12 +461,19 @@ export async function* streamChatResponse(
 
     for await (const chunk of stream) {
       const content = chunk.choices[0]?.delta?.content || '';
+      if (chunk.choices[0]?.finish_reason) meta.finish = chunk.choices[0].finish_reason;
       if (content) {
+        sentAny = true;
         yield content;
       }
     }
   } catch (error: any) {
     console.error(`[AI Provider Error - ${provider}]:`, error);
+
+    if (sentAny) {
+      meta.interrupted = true; // half an answer is on screen: continue it instead of printing an error after it
+      return;
+    }
 
     const isRateLimit =
       error?.status === 413 ||
@@ -444,12 +505,13 @@ export async function* streamChatResponse(
           model: fallbackModel,
           messages: condensedFallbackMessages as any,
           temperature: options.temperature ?? 0.3,
-          max_tokens: 800,
+          max_tokens: 1200,
           stream: true,
         });
 
         for await (const chunk of fallbackStream) {
           const content = chunk.choices[0]?.delta?.content || '';
+          if (chunk.choices[0]?.finish_reason) meta.finish = chunk.choices[0].finish_reason;
           if (content) yield content;
         }
         return;
