@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { Database } from '@/lib/db';
 import { generateIcsFeed } from '@/lib/calendar/ical';
-import { verifyCalendarFeedToken, verifyAdminRequest } from '@/lib/security/auth';
+import { verifyCalendarFeedToken, getAuthContext, requireWorkspaceAssistant } from '@/lib/security/auth';
 import { logged } from '@/lib/logging/route';
 
 export async function OPTIONS() {
@@ -24,7 +24,12 @@ async function GETHandler(req: Request) {
     // Feed can be authenticated either by the per-assistant feedToken (for external calendar subscribers)
     // or by an active admin session (cookie / bearer header).
     const isTokenValid = verifyCalendarFeedToken(assistantId, token);
-    const isAdminAuthed = !isTokenValid ? await verifyAdminRequest(req) : false;
+    let isAdminAuthed = false;
+    if (!isTokenValid) {
+      const ctx = await getAuthContext(req);
+      // signed in is not enough: the assistant has to belong to the caller's workspace
+      isAdminAuthed = ctx.authenticated && Boolean(await requireWorkspaceAssistant(ctx, assistantId));
+    }
 
     if (!isTokenValid && !isAdminAuthed) {
       return new Response(

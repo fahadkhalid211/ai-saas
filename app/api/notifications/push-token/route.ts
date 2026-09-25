@@ -30,6 +30,10 @@ async function POSTHandler(req: Request) {
       return NextResponse.json({ error: 'Device push token is required' }, { status: 400 });
     }
 
+    if (assistantId && !(await Database.getAssistantById(String(assistantId), ctx.workspaceId))) {
+      return NextResponse.json({ error: 'Assistant not found' }, { status: 404 });
+    }
+
     const record = await Database.registerPushToken(
       token.trim(),
       ctx.workspaceId,
@@ -54,6 +58,10 @@ async function POSTHandler(req: Request) {
 
 async function DELETEHandler(req: Request) {
   try {
+    const ctx = await getAuthContext(req);
+    if (!ctx.authenticated) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     const body = await req.json();
     const { token } = body;
 

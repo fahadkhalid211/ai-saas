@@ -349,6 +349,14 @@ async function POSTHandler(req: NextRequest) {
       finalAssistantId = '';
     }
 
+    // A page may only be attached to an assistant of the same workspace (never another tenant's bot, which it would also overwrite).
+    if (finalAssistantId && finalAssistantId !== 'demo-assistant' && !ctx.isMasterAdmin) {
+      const owned = await Database.getAssistantById(finalAssistantId, targetWorkspaceId);
+      if (!owned) {
+        return NextResponse.json({ error: 'That assistant does not belong to your workspace.' }, { status: 403 });
+      }
+    }
+
     const savedConfig = await Database.saveLandingPage({
       ...config,
       workspaceId: targetWorkspaceId,

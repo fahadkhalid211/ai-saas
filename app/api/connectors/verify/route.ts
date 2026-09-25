@@ -1,3 +1,4 @@
+import { validateSafeExternalUrl } from '@/lib/security/ssrf';
 import { NextResponse } from 'next/server';
 import { withRoleAuth } from '@/lib/security/auth';
 import { enforceRateLimit } from '@/lib/security/rate-limit';
@@ -18,6 +19,16 @@ const POSTHandler = withRoleAuth(['owner', 'admin'], async (req: Request) => {
 
     const body = await req.json().catch(() => ({}));
     const { type, provider, apiKey, customBaseUrl, modelName, token, phoneNumberId, webhookUrl } = body;
+
+    // The server makes these requests, so refuse targets on private or internal networks.
+    for (const target of [webhookUrl, customBaseUrl]) {
+      if (typeof target === 'string' && target.trim()) {
+        const safe = await validateSafeExternalUrl(target.trim());
+        if (!safe.safe) {
+          return NextResponse.json({ success: false, message: safe.error || 'That address is blocked by the security policy.' }, { status: 400 });
+        }
+      }
+    }
 
     if (type === 'ai') {
       const result = await verifyAiProviderConnection(provider, apiKey, { customBaseUrl, modelName });

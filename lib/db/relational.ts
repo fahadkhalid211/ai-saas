@@ -1066,3 +1066,17 @@ export async function relationalConversationExists(id: string): Promise<boolean>
   });
   return Boolean(result);
 }
+
+/** Which assistant a row belongs to, straight from its table (the in-memory copy only holds rows written since the last load). */
+export async function relationalGetOwner(
+  kind: 'lead' | 'notification' | 'unanswered' | 'appointment',
+  id: string
+): Promise<{ assistantId: string | null } | null> {
+  const table = { lead: 'kortex_leads', notification: 'kortex_notifications', unanswered: 'kortex_unanswered_queries', appointment: 'kortex_appointments' }[kind];
+  const result = await withPool(async (client) => {
+    const { rows } = await client.query(`SELECT assistant_id FROM ${table} WHERE id = $1 LIMIT 1`, [id]);
+    if (rows.length === 0) return null;
+    return { assistantId: (rows[0].assistant_id as string | null) ?? null };
+  });
+  return result ?? null;
+}

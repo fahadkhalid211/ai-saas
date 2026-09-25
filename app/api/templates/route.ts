@@ -4,7 +4,7 @@ import { BOT_TEMPLATES, findBotTemplate } from '@/lib/templates';
 import { parseFileOrText } from '@/lib/rag/parsers';
 import { chunkDocument } from '@/lib/rag/chunker';
 import { generateEmbeddingsBatch } from '@/lib/rag/embedder';
-import { withAdminAuth } from '@/lib/security/auth';
+import { withAdminAuth, getAuthContext, requireWorkspaceAssistant } from '@/lib/security/auth';
 import { logged } from '@/lib/logging/route';
 
 async function GETHandler() {
@@ -26,7 +26,8 @@ const POSTHandler = withAdminAuth(async (req: Request) => {
       return NextResponse.json({ error: 'assistantId required' }, { status: 400 });
     }
 
-    const assistant = await Database.getAssistantById(assistantId);
+    const ctx = await getAuthContext(req);
+    const assistant = await requireWorkspaceAssistant(ctx, assistantId);
     if (!assistant) {
       return NextResponse.json({ error: 'Assistant not found' }, { status: 404 });
     }

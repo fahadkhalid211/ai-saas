@@ -6,7 +6,7 @@ import {
   setTelegramWebhook,
   processTelegramUpdate,
 } from '@/lib/channels/telegram';
-import { verifyAdminRequest } from '@/lib/security/auth';
+import { verifyAdminRequest, getAuthContext } from '@/lib/security/auth';
 import { logged } from '@/lib/logging/route';
 import { logEvent } from '@/lib/logging/logger';
 
@@ -84,7 +84,8 @@ async function GETHandler(req: NextRequest) {
 
     // Action 2: Set Webhook automatically
     if (action === 'setWebhook' && assistantId) {
-      const assistant = await Database.getAssistantById(assistantId);
+      const ctx = await getAuthContext(req);
+      const assistant = await Database.getAssistantById(assistantId, ctx.workspaceId);
       if (!assistant || !assistant.telegramBotToken) {
         return NextResponse.json({ error: 'Assistant or Telegram token not found' }, { status: 400 });
       }

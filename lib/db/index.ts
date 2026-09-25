@@ -827,6 +827,35 @@ async function saveState(state: DatabaseState, options?: PersistCloudStateOption
   }
 }
 
+/**
+ * Which assistant a lead / notification / unanswered question / appointment belongs to. In relational mode the table is the
+ * source of truth (the in-memory arrays only hold rows written since the last load), so it is asked first.
+ */
+async function ownerOfRow(
+  kind: 'lead' | 'notification' | 'unanswered' | 'appointment',
+  id: string,
+  memoryRows: Array<{ id: string; assistantId?: string | null }> | undefined
+): Promise<{ assistantId: string | null } | null> {
+  if (isRelationalModeEnabled()) {
+    try {
+      const owner = await Relational.relationalGetOwner(kind, id);
+      if (owner) return owner;
+    } catch (err) {
+      console.warn('[Relational] owner lookup failed:', err);
+      if (isConnectionError(err)) disablePostgresTemporarily();
+    }
+  }
+  const row = (memoryRows || []).find((r) => r.id === id);
+  return row ? { assistantId: row.assistantId ?? null } : null;
+}
+
+/** True when the assistant exists and belongs to the workspace. An unknown assistant is NOT treated as a match. */
+function assistantInWorkspace(state: DatabaseState, assistantId: string | null, workspaceId: string): boolean {
+  if (!assistantId) return false;
+  const ast = (state.assistants || []).find((a) => a.id === assistantId);
+  return Boolean(ast) && (ast!.workspaceId || 'default-workspace') === workspaceId;
+}
+
 let lastCloudFetchTime = 0;
 let lastKnownCloudUpdatedAt: string | null = null;
 const CLOUD_CACHE_TTL_MS = 60_000;
@@ -2286,15 +2315,11 @@ export class Database {
 
   static async deleteLead(id: string, workspaceId?: string): Promise<boolean> {
     const state = await ensureInitialized(true);
-    const lead = state.leads.find((l) => l.id === id);
+    const lead = await ownerOfRow('lead', id, state.leads);
     if (!lead) return false;
 
-    if (workspaceId && workspaceId !== '*') {
-      const ast = (state.assistants || []).find((a) => a.id === lead.assistantId);
-      const leadWsId = ast?.workspaceId || 'default-workspace';
-      if (leadWsId !== workspaceId) {
-        return false;
-      }
+    if (workspaceId && workspaceId !== '*' && !assistantInWorkspace(state, lead.assistantId, workspaceId)) {
+      return false;
     }
 
     state.leads = state.leads.filter((l) => l.id !== id);
@@ -2390,22 +2415,22 @@ export class Database {
 
   static async resolveUnansweredQuery(id: string, answer?: string, workspaceId?: string): Promise<boolean> {
     const state = await ensureInitialized();
-    if (!state.unansweredQueries) return false;
+    if (!state.unansweredQueries) state.unansweredQueries = [];
+    const owner = await ownerOfRow('unanswered', id, state.unansweredQueries);
+    if (!owner) return false;
     const item = state.unansweredQueries.find((q) => q.id === id);
-    if (!item) return false;
 
-    if (workspaceId && workspaceId !== '*') {
-      const ast = state.assistants.find((a) => a.id === item.assistantId);
-      if (!ast || (ast.workspaceId || 'default-workspace') !== workspaceId) {
-        return false;
-      }
+    if (workspaceId && workspaceId !== '*' && !assistantInWorkspace(state, owner.assistantId, workspaceId)) {
+      return false;
     }
 
     if (isRelationalModeEnabled()) {
       try {
         await Relational.relationalResolveUnansweredQuery(id, answer);
-        item.resolved = true;
-        if (answer) item.suggestedAnswer = answer;
+        if (item) {
+          item.resolved = true;
+          if (answer) item.suggestedAnswer = answer;
+        }
         cachedState = state;
         afterHotWrite(state);
         return true;
@@ -2417,6 +2442,7 @@ export class Database {
       }
     }
 
+    if (!item) return false;
     item.resolved = true;
     if (answer) item.suggestedAnswer = answer;
     await saveState(state);
@@ -2425,15 +2451,12 @@ export class Database {
 
   static async deleteUnansweredQuery(id: string, workspaceId?: string): Promise<boolean> {
     const state = await ensureInitialized();
-    if (!state.unansweredQueries) return false;
-    const item = state.unansweredQueries.find((q) => q.id === id);
-    if (!item) return false;
+    if (!state.unansweredQueries) state.unansweredQueries = [];
+    const owner = await ownerOfRow('unanswered', id, state.unansweredQueries);
+    if (!owner) return false;
 
-    if (workspaceId && workspaceId !== '*') {
-      const ast = state.assistants.find((a) => a.id === item.assistantId);
-      if (!ast || (ast.workspaceId || 'default-workspace') !== workspaceId) {
-        return false;
-      }
+    if (workspaceId && workspaceId !== '*' && !assistantInWorkspace(state, owner.assistantId, workspaceId)) {
+      return false;
     }
 
     if (isRelationalModeEnabled()) {
@@ -2700,15 +2723,12 @@ export class Database {
 
   static async deleteAppointment(id: string, workspaceId?: string): Promise<boolean> {
     const state = await ensureInitialized();
-    if (!state.appointments) return false;
-    const apt = state.appointments.find((a) => a.id === id);
+    if (!state.appointments) state.appointments = [];
+    const apt = await ownerOfRow('appointment', id, state.appointments);
     if (!apt) return false;
 
-    if (workspaceId && workspaceId !== '*') {
-      const ast = (state.assistants || []).find((a) => a.id === apt.assistantId);
-      if (ast && (ast.workspaceId || 'default-workspace') !== workspaceId) {
-        return false;
-      }
+    if (workspaceId && workspaceId !== '*' && !assistantInWorkspace(state, apt.assistantId, workspaceId)) {
+      return false;
     }
 
     if (isRelationalModeEnabled()) {
@@ -3290,23 +3310,20 @@ export class Database {
 
   static async markNotificationAsRead(id: string, workspaceId?: string): Promise<boolean> {
     const state = await ensureInitialized();
-    if (!state.notifications) return false;
+    if (!state.notifications) state.notifications = [];
+    const owner = await ownerOfRow('notification', id, state.notifications);
+    if (!owner) return false;
     const item = state.notifications.find((n) => n.id === id);
-    if (!item) return false;
 
-    if (workspaceId && workspaceId !== '*') {
-      if (item.assistantId) {
-        const ast = state.assistants.find((a) => a.id === item.assistantId);
-        if (ast && (ast.workspaceId || 'default-workspace') !== workspaceId) {
-          return false;
-        }
-      }
+    // a notification with no assistant is workspace-agnostic (system) and may be marked by anyone signed in
+    if (workspaceId && workspaceId !== '*' && owner.assistantId && !assistantInWorkspace(state, owner.assistantId, workspaceId)) {
+      return false;
     }
 
     if (isRelationalModeEnabled()) {
       try {
         await Relational.relationalMarkNotificationRead(id);
-        item.read = true;
+        if (item) item.read = true;
         cachedState = state;
         afterHotWrite(state);
         return true;
@@ -3318,7 +3335,7 @@ export class Database {
       }
     }
 
-    item.read = true;
+    if (item) item.read = true;
     await saveState(state);
     return true;
   }
