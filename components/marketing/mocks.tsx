@@ -18,13 +18,14 @@ function SourcesVisual() {
   return (
     <div className="mk-mock">
       <p className="mk-mock-label">Knowledge sources</p>
-      <ul className="mk-rows">
+      <ul className="mk-rows" role="tablist" aria-label="Knowledge sources">
         {rows.map((r, i) => (
-          <li key={r.name}>
+          <li key={r.name} role="presentation">
             <button
               type="button"
+              role="tab"
+              aria-selected={selected === i}
               className={`mk-row ${selected === i ? 'is-active' : ''}`}
-              aria-pressed={selected === i}
               onClick={() => setSelected(i)}
             >
               <span className="mk-row-kind">{r.kind}</span>

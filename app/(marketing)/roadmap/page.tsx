@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Header } from '@/components/marketing/Header';
 import { Footer } from '@/components/marketing/Closing';
 import { ButtonLink, Reveal, SectionHead } from '@/components/marketing/ui';
-import { CheckCircle2, Check, ExternalLink } from 'lucide-react';
+import { CheckCircle2, Check } from 'lucide-react';
 
 interface ArchetypePreview {
   name: string;

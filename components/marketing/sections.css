@@ -275,8 +275,62 @@
 @media (max-width: 640px) {
   .mk-pg-log { height: 23.75rem; }
   .mk-diag-card { padding: 1.5rem; }
-  .mk-path { padding: 1.375rem; border-radius: 1.625rem; }
+  .mk-path { padding: 1.25rem 1rem; border-radius: 1.5rem; }
   .mk-cmp th, .mk-cmp td { padding: 0.875rem; }
+}
+
+@media (max-width: 540px) {
+  .mk-rows {
+    gap: 0.5rem;
+  }
+  .mk-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+      "name state"
+      "kind kind";
+    row-gap: 0.25rem;
+    column-gap: 0.5rem;
+    padding: 0.625rem 0.75rem;
+    align-items: center;
+    border-radius: 0.5rem;
+  }
+  .mk-row-name {
+    grid-area: name;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--mk-ink);
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .mk-row-state {
+    grid-area: state;
+    justify-self: end;
+    font-size: 0.7rem;
+    padding: 2px 0.5rem;
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+  .mk-row-kind {
+    grid-area: kind;
+    font-size: 0.72rem;
+    color: var(--mk-muted);
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+  .mk-path-visual .mk-mock {
+    padding: 0.875rem 0.75rem;
+    border-radius: 0.875rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .mk-path {
+    padding: 1.125rem 0.875rem;
+    border-radius: 1.25rem;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

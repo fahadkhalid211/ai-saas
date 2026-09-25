@@ -25,6 +25,8 @@ export const metadata: Metadata = {
   metadataBase: new URL(SITE.url),
   keywords: ['AI website assistant', 'AI chatbot for service businesses', 'appointment booking chatbot', 'lead capture chatbot', 'website chat widget', 'BYOK AI chatbot'],
   authors: [{ name: 'Crescelo', url: SITE.url }],
+  // Google Search Console ownership: set GOOGLE_SITE_VERIFICATION in the environment to the token Search Console gives you.
+  verification: process.env.GOOGLE_SITE_VERIFICATION ? { google: process.env.GOOGLE_SITE_VERIFICATION } : undefined,
   creator: 'Crescelo',
   publisher: 'Crescelo',
   category: 'technology',
