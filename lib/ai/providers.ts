@@ -391,16 +391,34 @@ export async function* streamChatResponse(
             { role: 'user' as const, content: 'Your last reply was cut off. Continue exactly where you stopped. Do not repeat anything and do not add an introduction.' },
           ];
     let text = '';
+    // a continuation is held back until it is known to be real text, so an error notice is never glued onto half an answer
+    const held: string[] = [];
     for await (const chunk of streamChatOnce(request, options, meta)) {
       text += chunk;
-      produced += chunk;
-      yield chunk;
+      if (round === 0) {
+        produced += chunk;
+        yield chunk;
+      } else {
+        held.push(chunk);
+      }
+    }
+    if (round > 0) {
+      if (!text.trim() || text.trimStart().startsWith('*(')) {
+        if (endsMidSentence(produced)) yield '.';
+        return;
+      }
+      for (const chunk of held) {
+        produced += chunk;
+        yield chunk;
+      }
     }
     // notices such as "*(Authentication Error...)*" are not answers, and an empty result has nothing to continue
     // some providers report a clean stop even though the text ends mid-sentence (reasoning tokens ate the budget, dropped connection)
     const truncated = meta.finish === 'length' || meta.finish === 'max_tokens' || meta.interrupted === true || endsMidSentence(produced);
     if (!truncated || !text.trim() || text.trimStart().startsWith('*(')) return;
   }
+  // still unfinished after every retry: close the sentence rather than leave it hanging
+  if (endsMidSentence(produced)) yield '.';
 }
 
 async function* streamChatOnce(

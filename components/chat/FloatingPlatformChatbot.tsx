@@ -34,7 +34,7 @@ const DEFAULT_SUGGESTIONS = [
 
 /** Renders **bold** spans (the assistant's replies use them) without showing the asterisks. */
 function renderRich(text: string): React.ReactNode {
-  return text.split(/(\*\*[^*]+\*\*)/g).map((part, i) =>
+  return text.replace(/^\s{0,3}#{1,6}\s+/gm, '').split(/(\*\*[^*]+\*\*)/g).map((part, i) =>
     part.startsWith('**') && part.endsWith('**') && part.length > 4 ? (
       <strong key={i} className="font-semibold text-[#faf9f5]">
         {part.slice(2, -2)}

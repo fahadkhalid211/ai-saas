@@ -12,3 +12,10 @@ describe('endsMidSentence', () => {
     expect(endsMidSentence('*(Authentication error: check your key and try again with another one)*')).toBe(false);
   });
 });
+
+import { stripMarkdown } from '@/lib/playground/tidy';
+describe('stripMarkdown', () => {
+  it('removes headings and bold marks', () => {
+    expect(stripMarkdown('## Symptoms\n**Fever** and *chills*\n* one\n* two')).toBe('Symptoms\nFever and chills\n- one\n- two');
+  });
+});
