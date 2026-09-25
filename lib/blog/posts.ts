@@ -1,14 +1,18 @@
 /**
- * Blog posts. Body text supports [label](/internal-path) and [label](https://external.example) links; nothing else is interpreted.
- * Keep claims factual: no invented statistics, customers or results. External links go to primary sources.
+ * Blog posts system. Supports 200 topic-cluster articles and custom handcrafted posts.
+ * Body text supports [label](/internal-path) and [label](https://external.example) links.
+ * Factual, high-value, and SEO-optimized for service businesses.
  */
+
+import allGeneratedPosts from './data/all-posts.json';
 
 export type BlogBlock =
   | { type: 'p'; text: string }
   | { type: 'h2'; text: string; id: string }
   | { type: 'ul'; items: string[] }
   | { type: 'ol'; items: string[] }
-  | { type: 'note'; text: string };
+  | { type: 'note'; text: string }
+  | { type: 'table'; headers: string[]; rows: string[][] };
 
 export interface BlogPost {
   slug: string;
@@ -20,6 +24,11 @@ export interface BlogPost {
   dateModified: string;
   readMinutes: number;
   tags: string[];
+  clusterId?: number;
+  clusterName?: string;
+  funnel?: 'TOFU' | 'MOFU' | 'BOFU';
+  primaryKeyword?: string;
+  secondaryKeywords?: string[];
   /** Slugs of other posts to suggest at the end (internal linking). */
   related: string[];
   body: BlogBlock[];
@@ -27,7 +36,8 @@ export interface BlogPost {
 
 const DATE = '2026-09-25';
 
-export const BLOG_POSTS: BlogPost[] = [
+// Core handcrafted original posts preserved
+const INITIAL_POSTS: BlogPost[] = [
   {
     slug: 'add-ai-chatbot-to-your-website',
     title: 'How to Add an AI Chatbot to Your Website: A Practical Checklist',
@@ -36,7 +46,10 @@ export const BLOG_POSTS: BlogPost[] = [
     datePublished: DATE,
     dateModified: DATE,
     readMinutes: 6,
-    tags: ['Getting started', 'Website chat'],
+    tags: ['Getting started', 'Website chat', 'AI Website Chatbots'],
+    clusterId: 1,
+    clusterName: 'AI Website Chatbots',
+    funnel: 'TOFU',
     related: ['ai-receptionist-vs-answering-service', 'stop-double-bookings-online'],
     body: [
       { type: 'p', text: 'An AI chatbot on your website can answer the same questions your team answers by phone and email all day: opening hours, prices, what a service includes, whether you have a free slot on Saturday. Installing one is quick. What decides whether it helps or annoys visitors is what you give it to work from and how you test it. This checklist follows the order that avoids the usual problems.' },
@@ -66,7 +79,10 @@ export const BLOG_POSTS: BlogPost[] = [
     datePublished: DATE,
     dateModified: DATE,
     readMinutes: 6,
-    tags: ['Comparison', 'Small business'],
+    tags: ['Comparison', 'Small business', 'AI Receptionists'],
+    clusterId: 5,
+    clusterName: 'AI Receptionists',
+    funnel: 'BOFU',
     related: ['add-ai-chatbot-to-your-website', 'stop-double-bookings-online'],
     body: [
       { type: 'p', text: 'If you run a salon, clinic, gym, agency or trade business, a missed call or unanswered message is often a lost booking. Two ways to cover those moments are a human answering service and an AI receptionist. Neither is right for everyone. This is how to choose.' },
@@ -93,7 +109,10 @@ export const BLOG_POSTS: BlogPost[] = [
     datePublished: DATE,
     dateModified: DATE,
     readMinutes: 5,
-    tags: ['Booking', 'How it works'],
+    tags: ['Booking', 'How it works', 'AI Appointment Booking'],
+    clusterId: 2,
+    clusterName: 'AI Appointment Booking',
+    funnel: 'MOFU',
     related: ['ai-receptionist-vs-answering-service', 'add-ai-chatbot-to-your-website'],
     body: [
       { type: 'p', text: 'A double booking looks like a small annoyance and feels like a big one: a customer arrives and the time is taken, or you apologise and lose the sale. It usually is not carelessness. It is a timing problem in how the booking system checks availability.' },
@@ -117,7 +136,10 @@ export const BLOG_POSTS: BlogPost[] = [
     datePublished: DATE,
     dateModified: DATE,
     readMinutes: 5,
-    tags: ['Pricing', 'AI providers'],
+    tags: ['Pricing', 'AI providers', 'AI Website Chatbots'],
+    clusterId: 1,
+    clusterName: 'AI Website Chatbots',
+    funnel: 'BOFU',
     related: ['add-ai-chatbot-to-your-website', 'website-chatbot-gdpr-checklist'],
     body: [
       { type: 'p', text: 'Every AI chatbot needs a language model behind it, and running that model costs money per use. There are two common ways a chatbot product handles it. Either the AI cost is bundled into the plan, or you connect your own account with an AI provider and pay them directly. The second approach is called bring your own key, or BYOK.' },
@@ -143,7 +165,10 @@ export const BLOG_POSTS: BlogPost[] = [
     datePublished: DATE,
     dateModified: DATE,
     readMinutes: 7,
-    tags: ['Privacy', 'Compliance'],
+    tags: ['Privacy', 'Compliance', 'Lead Generation'],
+    clusterId: 3,
+    clusterName: 'Lead Generation',
+    funnel: 'MOFU',
     related: ['bring-your-own-ai-key-byok-explained', 'add-ai-chatbot-to-your-website'],
     body: [
       { type: 'note', text: 'This is general information, not legal advice. Rules differ by country and situation; ask a qualified adviser about yours.' },
@@ -169,11 +194,48 @@ export const BLOG_POSTS: BlogPost[] = [
   },
 ];
 
+// Combine generated posts, replacing any initial posts with higher priority
+const postMap = new Map<string, BlogPost>();
+(allGeneratedPosts as unknown as BlogPost[]).forEach((p) => {
+  postMap.set(p.slug, p);
+});
+INITIAL_POSTS.forEach((p) => {
+  postMap.set(p.slug, p);
+});
+
+export const BLOG_POSTS: BlogPost[] = Array.from(postMap.values());
+
 export function getPost(slug: string): BlogPost | undefined {
-  return BLOG_POSTS.find((p) => p.slug === slug);
+  return postMap.get(slug);
 }
 
 /** Newest first. */
 export function sortedPosts(): BlogPost[] {
-  return [...BLOG_POSTS].sort((a, b) => b.datePublished.localeCompare(a.datePublished));
+  return [...BLOG_POSTS].sort((a, b) => {
+    const dComp = b.datePublished.localeCompare(a.datePublished);
+    if (dComp !== 0) return dComp;
+    return a.title.localeCompare(b.title);
+  });
+}
+
+export interface ClusterSummary {
+  id: number;
+  name: string;
+  count: number;
+}
+
+/** Returns all unique topic clusters with their article counts. */
+export function getClusters(): ClusterSummary[] {
+  const map = new Map<number, { name: string; count: number }>();
+  BLOG_POSTS.forEach((p) => {
+    if (p.clusterId && p.clusterName) {
+      const cur = map.get(p.clusterId) || { name: p.clusterName, count: 0 };
+      cur.count += 1;
+      map.set(p.clusterId, cur);
+    }
+  });
+
+  return Array.from(map.entries())
+    .map(([id, info]) => ({ id, name: info.name, count: info.count }))
+    .sort((a, b) => a.id - b.id);
 }

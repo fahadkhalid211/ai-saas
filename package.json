@@ -13,6 +13,11 @@
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run --fileParallelism=false",
+    "test:load:smoke":  "k6 run load-tests/smoke.js",
+    "test:load:widget": "k6 run load-tests/widget.js",
+    "test:load:poll":   "k6 run load-tests/conversations-poll.js",
+    "test:load:chat":   "k6 run load-tests/chat.js",
+    "test:load":        "npm run test:load:smoke && npm run test:load:widget && npm run test:load:poll && npm run test:load:chat",
     "db:backfill": "npx tsx scripts/backfill-relational.ts",
     "db:backfill-chunks": "npx tsx scripts/backfill-chunks.ts"
   },
@@ -42,8 +47,6 @@
     "youtube-transcript": "^1.3.1"
   },
   "devDependencies": {
-    "@reticlehq/next": "^3.1.0",
-    "@reticlehq/react": "^3.1.0",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^22",
     "@types/nodemailer": "^8.0.1",

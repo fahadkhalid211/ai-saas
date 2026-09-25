@@ -1,19 +1,20 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
 import { Header } from '@/components/marketing/Header';
 import { Footer } from '@/components/marketing/Closing';
 import { JsonLd } from '@/components/marketing/JsonLd';
 import { SectionHead } from '@/components/marketing/ui';
 import { SITE } from '@/components/marketing/content';
-import { sortedPosts } from '@/lib/blog/posts';
+import { sortedPosts, getClusters } from '@/lib/blog/posts';
 import { breadcrumbSchema, webPageSchema } from '@/lib/schema';
 import { withSocial } from '@/lib/seo';
+import { BlogGlossaryHub } from '@/components/marketing/BlogGlossaryHub';
 
-const description = 'Practical guides for service businesses on AI chatbots, online booking, bring-your-own-key AI costs and website chatbot privacy.';
+const description =
+  'The definitive knowledge hub and glossary for appointment-based service businesses. Comprehensive guides on AI website assistants, in-chat scheduling, lead capture, and RAG architecture.';
 
 export const metadata: Metadata = withSocial(
   {
-    title: 'Blog: AI Chatbots, Booking & Privacy for Service Businesses | Crescelo',
+    title: 'Knowledge Hub & Glossary: AI Assistants, Booking & Service CRO | Crescelo',
     description,
     alternates: { canonical: '/blog', types: { 'application/rss+xml': `${SITE.url}/blog/feed.xml` } },
   },
@@ -22,34 +23,29 @@ export const metadata: Metadata = withSocial(
 
 export default function BlogIndexPage() {
   const posts = sortedPosts();
+  const clusters = getClusters();
+
   return (
     <>
-      <JsonLd data={[webPageSchema('Crescelo Blog', description, '/blog', 'CollectionPage'), breadcrumbSchema([{ name: 'Blog', path: '/blog' }])]} />
+      <JsonLd
+        data={[
+          webPageSchema('Crescelo Knowledge Hub & Glossary', description, '/blog', 'CollectionPage'),
+          breadcrumbSchema([{ name: 'Blog', path: '/blog' }]),
+        ]}
+      />
       <Header />
       <main id="main">
         <section className="mk-section">
-          <div className="mk-wrap" style={{ maxWidth: '56rem' }}>
-            <SectionHead as="h1" id="blog-title" eyebrow="BLOG" title="Practical guides for service businesses" intro="Straight answers on AI assistants, online booking, costs and privacy. No hype, no invented numbers." align="center" />
-            <div style={{ display: 'grid', gap: '1.25rem', marginTop: '2.5rem' }}>
-              {posts.map((p) => (
-                <article key={p.slug} className="mk-card" style={{ padding: '1.5rem' }}>
-                  <p style={{ fontSize: '0.78rem', fontWeight: 700, letterSpacing: '0.08em', color: 'var(--mk-muted)' }}>
-                    {p.tags.join(' · ').toUpperCase()} · {p.readMinutes} MIN READ
-                  </p>
-                  <h2 style={{ fontSize: '1.5rem', margin: '0.4rem 0' }}>
-                    <Link href={`/blog/${p.slug}`}>{p.title}</Link>
-                  </h2>
-                  <p style={{ color: 'var(--mk-muted)', lineHeight: 1.6 }}>{p.excerpt}</p>
-                  <p style={{ marginTop: '0.75rem', fontSize: '0.85rem' }}>
-                    <time dateTime={p.datePublished}>{new Date(p.datePublished).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</time>
-                    {' · '}
-                    <Link href={`/blog/${p.slug}`} style={{ textDecoration: 'underline', fontWeight: 600 }}>
-                      Read the article
-                    </Link>
-                  </p>
-                </article>
-              ))}
-            </div>
+          <div className="mk-wrap" style={{ maxWidth: '72rem' }}>
+            <SectionHead
+              as="h1"
+              id="blog-title"
+              eyebrow="KNOWLEDGE HUB & GLOSSARY"
+              title="Practical guides for service businesses"
+              intro="Browse 200+ comprehensive playbooks, architecture whitepapers, and industry blueprints. Straight answers on AI assistants, online booking, costs, and customer conversion."
+              align="center"
+            />
+            <BlogGlossaryHub posts={posts} clusters={clusters} />
           </div>
         </section>
       </main>

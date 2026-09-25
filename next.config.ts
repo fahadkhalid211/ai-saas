@@ -1,4 +1,3 @@
-import { withReticle } from '@reticlehq/next';
 import { internalPolicy, publicPolicy } from './lib/security/csp';
 import type { NextConfig } from "next";
 
@@ -77,4 +76,4 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default withReticle(nextConfig);
+export default nextConfig;

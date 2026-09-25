@@ -63,8 +63,37 @@ export function BlogBody({ blocks }: { blocks: BlogBlock[] }) {
                 {inline(b.text)}
               </p>
             );
-          default:
+          case 'table':
+            return (
+              <div key={i} style={{ overflowX: 'auto', margin: '1.25rem 0', borderRadius: '8px', border: '1px solid var(--mk-border, #e2e8f0)' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.92rem', textAlign: 'left' }}>
+                  <thead>
+                    <tr style={{ background: 'var(--mk-surface-muted, #f8fafc)', borderBottom: '2px solid var(--mk-border, #cbd5e1)' }}>
+                      {b.headers.map((h, k) => (
+                        <th key={k} style={{ padding: '0.75rem 1rem', fontWeight: 700, color: 'var(--mk-ink, #0f172a)' }}>
+                          {h}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {b.rows.map((row, r) => (
+                      <tr key={r} style={{ borderBottom: '1px solid var(--mk-border, #e2e8f0)', background: r % 2 === 1 ? 'var(--mk-surface-muted, #f8fafc)' : 'transparent' }}>
+                        {row.map((cell, c) => (
+                          <td key={c} style={{ padding: '0.7rem 1rem', verticalAlign: 'top' }}>
+                            {inline(cell)}
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            );
+          case 'p':
             return <p key={i}>{inline(b.text)}</p>;
+          default:
+            return null;
         }
       })}
     </div>
