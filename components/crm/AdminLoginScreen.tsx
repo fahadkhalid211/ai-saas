@@ -114,8 +114,11 @@ export function AdminLoginScreen({
     ));
 
   return (
-    <div className={`kx-app ${brandFontClasses} ${theme === 'dark' ? 'dark' : ''} min-h-screen w-full flex items-center justify-center bg-slate-950 font-sans p-4 relative overflow-hidden`}>
-      <div className="w-full max-w-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl p-7 z-10 space-y-5">
+    <div
+      className={`kx-app ${brandFontClasses} min-h-screen w-full flex items-center justify-center font-sans px-4 py-12 sm:py-20 relative overflow-hidden`}
+      style={{ background: 'radial-gradient(60rem 30rem at 10% -10%, #e9e0ff 0%, transparent 60%), radial-gradient(50rem 26rem at 100% 0%, #d8ffb0 0%, transparent 55%), radial-gradient(50rem 30rem at 50% 110%, #ffd9e6 0%, transparent 60%), #fffeeb' }}
+    >
+      <div className="w-full max-w-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-[0_24px_60px_-20px_rgba(8,37,26,0.35)] ring-1 ring-[#08251a]/10 p-7 sm:p-8 z-10 space-y-5">
         <div className="flex items-center justify-between w-full mb-1">
           <Link
             href="/"
@@ -134,7 +137,7 @@ export function AdminLoginScreen({
           )}
         </div>
         <div className="flex flex-col items-center text-center space-y-1.5">
-          <div className="h-12 w-12 rounded-2xl bg-blue-600/10 dark:bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-600 dark:text-blue-400 mb-0.5">
+          <div className="h-12 w-12 rounded-2xl bg-[#abff44]/40 border border-[#08251a]/15 flex items-center justify-center text-[#08251a] mb-0.5">
             {authLoginMode === 'register' ? <Building2 className="h-6 w-6" /> : <ShieldCheck className="h-6 w-6" />}
           </div>
           <h2 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">
@@ -356,7 +359,7 @@ export function AdminLoginScreen({
           <button
             type="submit"
             disabled={isSubmitDisabled}
-            className="w-full py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white text-xs font-semibold shadow-md shadow-blue-600/20 transition flex items-center justify-center gap-2 cursor-pointer"
+            className="w-full py-2.5 rounded-xl bg-[#abff44] hover:bg-[#9af02e] disabled:opacity-50 text-[#08251a] text-xs font-bold shadow-md shadow-[#abff44]/40 transition flex items-center justify-center gap-2 cursor-pointer"
           >
             {isLoggingIn ? (
               <>
