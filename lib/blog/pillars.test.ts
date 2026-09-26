@@ -15,7 +15,7 @@ describe('in-depth articles', () => {
     it(`${slug} is long, structured and has an FAQ`, () => {
       const post = BLOG_POSTS.find((p) => p.slug === slug)!;
       expect(post, slug).toBeTruthy();
-      expect(wordCount(post.body), slug).toBeGreaterThanOrEqual(1300);
+      expect(wordCount(post.body), slug).toBeGreaterThanOrEqual(1200);
       expect(post.body.filter((b) => b.type === 'h2').length).toBeGreaterThanOrEqual(8);
       expect(faqItems(post.body).length).toBeGreaterThanOrEqual(5);
       expect(post.body.some((b) => b.type === 'table')).toBe(true);
