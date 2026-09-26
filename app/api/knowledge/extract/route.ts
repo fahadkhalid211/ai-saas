@@ -3,6 +3,7 @@ import { Database } from '@/lib/db';
 import { BILLING_PLANS } from '@/lib/billing/plans';
 import { parseFileOrText, isMediaFile, isVideoFile, isAudioFile } from '@/lib/rag/parsers';
 import { extractFromUrl } from '@/lib/rag/url-extractor';
+import { applyCostCapToMedia } from '@/lib/ai/spend/guard';
 import { diagnoseKnowledgeFailure } from '@/lib/rag/diagnostics';
 import { withAdminAuth, getAuthContext } from '@/lib/security/auth';
 import { validateSafeExternalUrl } from '@/lib/security/ssrf';
@@ -102,15 +103,14 @@ const POSTHandler = withAdminAuth(async (req: Request) => {
       const buffer = Buffer.from(arrayBuffer);
 
       const timeoutMs = isVideo || isAudio ? 270_000 : 90_000;
+      // images and audio are read by AI on the assistant's key, so they count toward its monthly cost cap
+      const media = await applyCostCapToMedia(assistant, { apiKey: assistant.apiKeyEncrypted, provider: assistant.provider });
       const parsePromise = parseFileOrText({
         filename: activeFilename,
         type: ext,
         buffer,
-        options: {
-          apiKey: assistant.apiKeyEncrypted,
-          provider: assistant.provider,
-        },
-      });
+        options: media.options,
+      }).finally(() => media.settle());
 
       const timeoutPromise = new Promise<never>((_, reject) =>
         setTimeout(
@@ -154,10 +154,8 @@ const POSTHandler = withAdminAuth(async (req: Request) => {
         );
       }
 
-      const doc = await extractFromUrl(cleanUrl, {
-        apiKey: assistant.apiKeyEncrypted,
-        provider: assistant.provider,
-      });
+      const media = await applyCostCapToMedia(assistant, { apiKey: assistant.apiKeyEncrypted, provider: assistant.provider });
+      const doc = await extractFromUrl(cleanUrl, media.options).finally(() => media.settle());
 
       const extractedContent = doc.content ? doc.content.trim() : '';
       if (!extractedContent) {

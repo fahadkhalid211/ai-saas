@@ -1,6 +1,7 @@
 import crypto from 'node:crypto';
 import { Database } from '@/lib/db';
 import { extractFromUrl } from './url-extractor';
+import { applyCostCapToMedia } from '../ai/spend/guard';
 import { chunkDocument } from './chunker';
 import { generateEmbeddingsBatch, localEmbeddingsReady } from './embedder';
 import { clearRetrievalCache } from './cache';
@@ -34,7 +35,9 @@ export async function recrawlSource(sourceId: string): Promise<RecrawlOutcome> {
     const safe = await validateSafeExternalUrl(source.fileUrl);
     if (!safe.safe) throw new Error(safe.error || 'blocked address');
     const assistant = await Database.getAssistantById(source.assistantId);
-    const doc = await extractFromUrl(source.fileUrl, { apiKey: assistant?.apiKeyEncrypted, provider: assistant?.provider });
+    const keyOptions = { apiKey: assistant?.apiKeyEncrypted, provider: assistant?.provider };
+    const media = assistant ? await applyCostCapToMedia(assistant, keyOptions) : { options: keyOptions, settle: async () => {} };
+    const doc = await extractFromUrl(source.fileUrl, media.options).finally(() => media.settle());
     if (!doc.content || !doc.content.trim()) throw new Error('empty page');
 
     const contentHash = hashOf(doc.content);

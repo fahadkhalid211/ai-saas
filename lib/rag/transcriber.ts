@@ -1,6 +1,8 @@
 import OpenAI, { toFile } from 'openai';
 import { ExtractedDocument } from './types';
 import { diagnoseKnowledgeFailure } from './diagnostics';
+import type { LLMUsage } from '../ai/types';
+import { reportMediaUsage, geminiTokens } from './media-usage';
 
 // Supported audio and video extensions
 export const AUDIO_EXTENSIONS = new Set([
@@ -80,6 +82,8 @@ export function formatTimestamp(seconds: number): string {
 export interface TranscribeOptions {
   apiKey?: string;
   provider?: string;
+  /** Called for each request paid by apiKey (not by a platform fallback key), so the monthly cost cap can count it. */
+  onUsage?: (usage: LLMUsage) => void;
 }
 
 export interface TranscriptionSegment {
@@ -190,7 +194,8 @@ async function transcribeWithGemini(
   buffer: Buffer,
   filename: string,
   mimeType: string,
-  apiKey: string
+  apiKey: string,
+  options?: TranscribeOptions
 ): Promise<TranscribeResult> {
   const base64Data = buffer.toString('base64');
   const isVid = isVideoFile(filename);
@@ -233,6 +238,7 @@ Please transcribe the spoken audio of this ${mediaLabel} recording thoroughly an
 
         if (res.ok) {
           const data = await res.json();
+          reportMediaUsage(options, apiKey, { provider: 'gemini', model, media: 'audio', ...geminiTokens(data) });
           const text = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
           if (text) {
             return {
@@ -357,7 +363,7 @@ export async function transcribeMedia(
       apiKey = fallbackGroq;
     } else {
       try {
-        return await transcribeWithGemini(buffer, uploadFilename, uploadMime, geminiKey);
+        return await transcribeWithGemini(buffer, uploadFilename, uploadMime, geminiKey, options);
       } catch (geminiErr: any) {
         const fallbackGroq = process.env.GROQ_API_KEY || '';
         if (fallbackGroq) {
@@ -373,6 +379,7 @@ export async function transcribeMedia(
 
   let client: OpenAI;
   let model: string;
+  let keyUsed = '';
 
   if (provider === 'groq') {
     const groqKey = apiKey || process.env.GROQ_API_KEY || '';
@@ -380,7 +387,7 @@ export async function transcribeMedia(
       // Fallback to Gemini if available
       const geminiFallback = process.env.GEMINI_API_KEY || '';
       if (geminiFallback) {
-        return await transcribeWithGemini(buffer, uploadFilename, uploadMime, geminiFallback);
+        return await transcribeWithGemini(buffer, uploadFilename, uploadMime, geminiFallback, options);
       }
       throw new Error(
         'Groq API key required for fast audio/video transcription. Please provide a free Groq API key in the AI Engine settings.'
@@ -391,6 +398,7 @@ export async function transcribeMedia(
       baseURL: 'https://api.groq.com/openai/v1',
     });
     model = 'whisper-large-v3';
+    keyUsed = groqKey;
   } else if (provider === 'openai') {
     const openaiKey = apiKey || process.env.OPENAI_API_KEY || '';
     if (!openaiKey) {
@@ -400,6 +408,7 @@ export async function transcribeMedia(
     }
     client = new OpenAI({ apiKey: openaiKey });
     model = 'whisper-1';
+    keyUsed = openaiKey;
   } else {
     // Check fallback keys across all available providers
     const fallbackGroq = process.env.GROQ_API_KEY || (apiKey.startsWith('gsk_') ? apiKey : '');
@@ -412,11 +421,13 @@ export async function transcribeMedia(
         baseURL: 'https://api.groq.com/openai/v1',
       });
       model = 'whisper-large-v3';
+      keyUsed = fallbackGroq;
     } else if (fallbackGemini) {
-      return await transcribeWithGemini(buffer, uploadFilename, uploadMime, fallbackGemini);
+      return await transcribeWithGemini(buffer, uploadFilename, uploadMime, fallbackGemini, options);
     } else if (fallbackOpenAI) {
       client = new OpenAI({ apiKey: fallbackOpenAI });
       model = 'whisper-1';
+      keyUsed = fallbackOpenAI;
     } else {
       throw new Error(
         'Speech and video transcription requires an AI API key. Please configure a free Groq API key (starts with "gsk_") or Google Gemini API key in the AI Engine settings.'
@@ -438,6 +449,11 @@ export async function transcribeMedia(
         'Company and business explanation, products, services, features, pricing, contact details, and policies.',
       temperature: 0.0,
     });
+
+    // Whisper is billed per minute of audio; without a reported duration assume a 128 kbps file
+    const audioSeconds = typeof resp?.duration === 'number' ? resp.duration : byteLength / 16000;
+    const durationEstimated = typeof resp?.duration !== 'number';
+    reportMediaUsage(options, keyUsed, { provider: model === 'whisper-1' ? 'openai' : 'groq', model, media: 'audio', inputTokens: 0, outputTokens: 0, audioSeconds, estimated: durationEstimated });
 
     const text = (resp?.text || '').trim();
     if (!text) {
@@ -470,6 +486,7 @@ export async function transcribeMedia(
           model,
           response_format: 'verbose_json',
         });
+        reportMediaUsage(options, keyUsed, { provider: model === 'whisper-1' ? 'openai' : 'groq', model, media: 'audio', inputTokens: 0, outputTokens: 0, audioSeconds, estimated: durationEstimated });
         translatedText = (transResp?.text || '').trim();
         if (Array.isArray(transResp?.segments)) {
           translatedSegments = transResp.segments.map((s: any) => ({

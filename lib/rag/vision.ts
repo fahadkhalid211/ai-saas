@@ -1,4 +1,5 @@
 import { TranscribeOptions } from './transcriber';
+import { reportMediaUsage, openAiTokens, geminiTokens } from './media-usage';
 
 export interface VisionResult {
   text: string;
@@ -58,6 +59,7 @@ export async function extractWithVisionAI(
 
       if (res.ok) {
         const data = await res.json();
+        reportMediaUsage(options, groqKey, { provider: 'groq', model: 'llama-3.2-11b-vision-preview', media: 'image', ...openAiTokens(data) });
         const content = data.choices?.[0]?.message?.content?.trim();
         if (content && content.length > 10) {
           return { text: content, source: 'groq' };
@@ -100,6 +102,7 @@ export async function extractWithVisionAI(
 
       if (res.ok) {
         const data = await res.json();
+        reportMediaUsage(options, openaiKey, { provider: 'openai', model: 'gpt-4o-mini', media: 'image', ...openAiTokens(data) });
         const content = data.choices?.[0]?.message?.content?.trim();
         if (content && content.length > 10) {
           return { text: content, source: 'openai' };
@@ -147,6 +150,7 @@ export async function extractWithVisionAI(
 
         if (res.ok) {
           const data = await res.json();
+          reportMediaUsage(options, geminiKey, { provider: 'gemini', model: geminiModel, media: 'image', ...geminiTokens(data) });
           const content = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
           if (content && content.length > 10) {
             return { text: content, source: 'gemini' };

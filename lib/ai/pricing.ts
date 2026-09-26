@@ -86,6 +86,8 @@ const GROQ: PriceTable = {
   'meta-llama/llama-4-scout': { input: 0.11, output: 0.34 },
   'moonshotai/kimi-k2': { input: 1, output: 3 },
   'qwen/qwen3-32b': { input: 0.29, output: 0.59 },
+  'llama-3.2-11b-vision': { input: 0.18, output: 0.18 },
+  'llama-3.2-90b-vision': { input: 0.9, output: 0.9 },
 };
 
 const TABLES: Record<string, PriceTable> = {
@@ -128,4 +130,51 @@ export function estimateCostUsd(provider: string, model: string, inputTokens: nu
   const price = priceFor(provider, model);
   const cost = (Math.max(0, inputTokens) * price.input + Math.max(0, outputTokens) * price.output) / 1_000_000;
   return Number.isFinite(cost) ? cost : 0;
+}
+
+/** Speech-to-text models billed per minute of audio, USD per minute. Matched by longest prefix like the token tables. */
+const PER_MINUTE: Record<string, { perMinute: number; minimumSeconds: number }> = {
+  'whisper-1': { perMinute: 0.006, minimumSeconds: 0 },
+  'gpt-4o-transcribe': { perMinute: 0.006, minimumSeconds: 0 },
+  'gpt-4o-mini-transcribe': { perMinute: 0.003, minimumSeconds: 0 },
+  // Groq bills at least 10 seconds per request
+  'whisper-large-v3-turbo': { perMinute: 0.04 / 60, minimumSeconds: 10 },
+  'whisper-large-v3': { perMinute: 0.111 / 60, minimumSeconds: 10 },
+  'distil-whisper': { perMinute: 0.02 / 60, minimumSeconds: 10 },
+};
+
+/** Gemini prices audio input above text input; USD per 1M audio tokens. */
+function geminiAudioInputPrice(model: string, textPrice: ModelPrice): number {
+  const m = model.toLowerCase();
+  if (m.includes('pro')) return textPrice.input;
+  if (m.includes('flash-lite')) return 0.3;
+  return 1;
+}
+
+/** Estimated cost of one reported request: text, image understanding or speech transcription. */
+export function estimateUsageCostUsd(usage: {
+  provider: string;
+  model: string;
+  inputTokens: number;
+  outputTokens: number;
+  media?: 'image' | 'audio';
+  audioSeconds?: number;
+}): number {
+  if (typeof usage.audioSeconds === 'number') {
+    const m = (usage.model || '').toLowerCase();
+    let best: string | null = null;
+    for (const key of Object.keys(PER_MINUTE)) {
+      if (m.startsWith(key) && (!best || key.length > best.length)) best = key;
+    }
+    const rate = best ? PER_MINUTE[best] : { perMinute: 0.006, minimumSeconds: 0 };
+    const seconds = Math.max(rate.minimumSeconds, Math.max(0, usage.audioSeconds) || 0);
+    const cost = (seconds / 60) * rate.perMinute;
+    return Number.isFinite(cost) ? cost : 0;
+  }
+  if (usage.media === 'audio' && (usage.provider || '').toLowerCase() === 'gemini') {
+    const price = priceFor('gemini', usage.model);
+    const cost = (Math.max(0, usage.inputTokens) * geminiAudioInputPrice(usage.model, price) + Math.max(0, usage.outputTokens) * price.output) / 1_000_000;
+    return Number.isFinite(cost) ? cost : 0;
+  }
+  return estimateCostUsd(usage.provider, usage.model, usage.inputTokens, usage.outputTokens);
 }

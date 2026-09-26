@@ -3,7 +3,17 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 vi.mock('@/lib/db/postgres', () => ({ isPostgresConfigured: () => false, getPostgresPool: () => null }));
 
 import type { AssistantData } from '@/lib/db';
-import { applyCostCap, recordUsage, sanitizeCostCap, setCostCapNotifier, spendSummary, usesCustomerKey, FALLBACK_GROQ_MODEL } from './guard';
+import {
+  applyCostCap,
+  applyCostCapToMedia,
+  CostCapReachedError,
+  recordUsage,
+  sanitizeCostCap,
+  setCostCapNotifier,
+  spendSummary,
+  usesCustomerKey,
+  FALLBACK_GROQ_MODEL,
+} from './guard';
 import { getSpend, resetMemorySpend } from './store';
 import type { ProviderOptions } from '@/lib/ai/types';
 
@@ -137,5 +147,39 @@ describe('sanitizeCostCap', () => {
 
   it('keeps a switched-off cap without validating the amount', () => {
     expect(sanitizeCostCap({ enabled: false, monthlyUsd: '' })).toEqual({ ok: true, value: { enabled: false, monthlyUsd: 100, onLimit: 'fallback_groq' } });
+  });
+});
+
+describe('cost cap for images and audio', () => {
+  beforeEach(() => {
+    resetMemorySpend();
+    setCostCapNotifier(async () => {});
+    vi.stubEnv('GROQ_API_KEY', 'gsk_platform');
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it('meters files processed on the customer key', async () => {
+    const a = assistant({ enabled: true, monthlyUsd: 10, onLimit: 'stop' });
+    const m = await applyCostCapToMedia(a, { apiKey: a.apiKeyEncrypted, provider: 'openai' });
+    m.options.onUsage!({ provider: 'openai', model: 'whisper-1', inputTokens: 0, outputTokens: 0, audioSeconds: 600, media: 'audio', estimated: false });
+    await m.settle();
+    expect((await getSpend('ast_1')).costUsd).toBeCloseTo(0.06);
+  });
+
+  it('moves files to the platform Groq key once the cap is reached, whatever the chosen action', async () => {
+    const a = assistant({ enabled: true, monthlyUsd: 1, onLimit: 'stop' });
+    await recordUsage(a, usage());
+    const m = await applyCostCapToMedia(a, { apiKey: a.apiKeyEncrypted, provider: a.provider });
+    expect(m.options).toEqual({ apiKey: 'gsk_platform', provider: 'groq' });
+  });
+
+  it('refuses the file when the cap is reached and there is no Groq key', async () => {
+    vi.stubEnv('GROQ_API_KEY', '');
+    const a = assistant({ enabled: true, monthlyUsd: 1, onLimit: 'fallback_groq' });
+    await recordUsage(a, usage());
+    await expect(applyCostCapToMedia(a, { apiKey: a.apiKeyEncrypted, provider: a.provider })).rejects.toBeInstanceOf(CostCapReachedError);
   });
 });

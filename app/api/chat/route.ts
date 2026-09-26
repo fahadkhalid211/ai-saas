@@ -16,7 +16,7 @@ import { autoCaptureChatLead } from '@/lib/chat/lead-extraction';
 import { logged } from '@/lib/logging/route';
 import { logEvent } from '@/lib/logging/logger';
 import { wantsLiveAgent, liveAgentReply, streamFixedReply } from '@/lib/chat/handoff';
-import { applyCostCap, COST_CAP_PAUSED_MESSAGE } from '@/lib/ai/spend/guard';
+import { applyCostCap, applyCostCapToMedia, COST_CAP_PAUSED_MESSAGE } from '@/lib/ai/spend/guard';
 import { isLowConfidence, looksLikeUnknown, withUnknownOffer } from '@/lib/rag/confidence';
 import { SERVICE_PAUSED_MESSAGE, serviceBlocked } from '@/lib/billing/trial';
 
@@ -240,15 +240,14 @@ async function POSTHandler(req: NextRequest) {
           buffer = Buffer.from(attachment.data, 'utf8');
         }
 
-        const parsedDoc = await parseFileOrText({
-          filename: attachment.name,
-          type: ext,
-          buffer,
-          options: {
-            apiKey: assistant.apiKeyEncrypted,
-            provider: assistant.provider,
-          },
-        });
+        // images and audio are read by AI on the assistant's key, so they count toward its monthly cost cap
+        const media = await applyCostCapToMedia(assistant, { apiKey: assistant.apiKeyEncrypted, provider: assistant.provider });
+        let parsedDoc;
+        try {
+          parsedDoc = await parseFileOrText({ filename: attachment.name, type: ext, buffer, options: media.options });
+        } finally {
+          await media.settle();
+        }
 
         if (parsedDoc && parsedDoc.content) {
           attachmentParsedContent = parsedDoc.content.trim();

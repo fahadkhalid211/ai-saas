@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { Database } from '@/lib/db';
 import { BILLING_PLANS } from '@/lib/billing/plans';
 import { parseFileOrText } from '@/lib/rag/parsers';
+import { applyCostCapToMedia } from '@/lib/ai/spend/guard';
 import { chunkDocument } from '@/lib/rag/chunker';
 import { generateEmbeddingsBatch } from '@/lib/rag/embedder';
 import { diagnoseKnowledgeFailure } from '@/lib/rag/diagnostics';
@@ -106,15 +107,14 @@ const POSTHandler = withRoleAuth(['owner', 'admin'], async (req: Request) => {
         try {
           const processFileTask = (async () => {
             // 2. Parse file (transcribing video/audio speech if media file)
+            // images and audio are read by AI on the assistant's key, so they count toward its monthly cost cap
+            const media = await applyCostCapToMedia(assistant, { apiKey: assistant.apiKeyEncrypted, provider: assistant.provider });
             const doc = await parseFileOrText({
               filename,
               type: ext,
               buffer,
-              options: {
-                apiKey: assistant.apiKeyEncrypted,
-                provider: assistant.provider,
-              },
-            });
+              options: media.options,
+            }).finally(() => media.settle());
 
             // 3. Chunk text
             const rawChunks = chunkDocument(doc);

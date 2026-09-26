@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { Database } from '@/lib/db';
 import { BILLING_PLANS } from '@/lib/billing/plans';
 import { extractFromUrl } from '@/lib/rag/url-extractor';
+import { applyCostCapToMedia } from '@/lib/ai/spend/guard';
 import { chunkDocument } from '@/lib/rag/chunker';
 import { generateEmbeddingsBatch } from '@/lib/rag/embedder';
 import { diagnoseKnowledgeFailure } from '@/lib/rag/diagnostics';
@@ -87,10 +88,9 @@ const POSTHandler = withRoleAuth(['owner', 'admin'], async (req: Request) => {
     try {
       // 2. Extract content from URL (YouTube transcript, direct media, or webpage)
       console.log(`[URLRoute] Extracting knowledge from ${cleanUrl} for assistant ${assistantId}...`);
-      const doc = await extractFromUrl(cleanUrl, {
-        apiKey: assistant.apiKeyEncrypted,
-        provider: assistant.provider,
-      });
+      // video and audio links are transcribed on the assistant's key, so they count toward its monthly cost cap
+      const media = await applyCostCapToMedia(assistant, { apiKey: assistant.apiKeyEncrypted, provider: assistant.provider });
+      const doc = await extractFromUrl(cleanUrl, media.options).finally(() => media.settle());
 
       const docByteSize = Buffer.byteLength(doc.content || '', 'utf-8');
       if (currentStorage.totalBytes + docByteSize > storageLimitBytes) {

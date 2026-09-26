@@ -31,6 +31,10 @@ export interface LLMUsage {
   outputTokens: number;
   /** True when the provider did not report token counts and they were estimated from the text length. */
   estimated: boolean;
+  /** Set for image understanding and speech transcription, which some providers price differently from text. */
+  media?: 'image' | 'audio';
+  /** Seconds of audio, for speech-to-text models billed per minute (Whisper). Token counts are then 0. */
+  audioSeconds?: number;
 }
 
 export interface StreamEvent {

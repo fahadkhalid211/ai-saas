@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { estimateCostUsd, priceFor } from './pricing';
+import { estimateCostUsd, estimateUsageCostUsd, priceFor } from './pricing';
 
 describe('model pricing', () => {
   it('prices known models per million tokens', () => {
@@ -25,5 +25,27 @@ describe('model pricing', () => {
 
   it('never returns a negative or NaN cost', () => {
     expect(estimateCostUsd('openai', 'gpt-4o', -5, NaN)).toBe(0);
+  });
+});
+
+describe('media pricing', () => {
+  const audio = { inputTokens: 0, outputTokens: 0, media: 'audio' as const };
+
+  it('prices Whisper per minute, with the Groq 10 second minimum', () => {
+    expect(estimateUsageCostUsd({ ...audio, provider: 'openai', model: 'whisper-1', audioSeconds: 600 })).toBeCloseTo(0.06);
+    expect(estimateUsageCostUsd({ ...audio, provider: 'groq', model: 'whisper-large-v3', audioSeconds: 3600 })).toBeCloseTo(0.111);
+    expect(estimateUsageCostUsd({ ...audio, provider: 'groq', model: 'whisper-large-v3', audioSeconds: 2 })).toBeCloseTo((10 / 60) * (0.111 / 60));
+  });
+
+  it('prices Gemini audio input above text input', () => {
+    const cost = estimateUsageCostUsd({ provider: 'gemini', model: 'gemini-2.5-flash', inputTokens: 1_000_000, outputTokens: 0, media: 'audio' });
+    expect(cost).toBeCloseTo(1);
+    expect(cost).toBeGreaterThan(estimateCostUsd('gemini', 'gemini-2.5-flash', 1_000_000, 0));
+  });
+
+  it('prices images like text tokens', () => {
+    expect(estimateUsageCostUsd({ provider: 'openai', model: 'gpt-4o-mini', inputTokens: 25_000, outputTokens: 500, media: 'image' })).toBeCloseTo(
+      estimateCostUsd('openai', 'gpt-4o-mini', 25_000, 500)
+    );
   });
 });

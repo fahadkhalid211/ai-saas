@@ -1,6 +1,6 @@
 import type { AssistantData, CostCapSettings } from '@/lib/db';
 import type { LLMUsage, ProviderOptions } from '@/lib/ai/types';
-import { estimateCostUsd } from '@/lib/ai/pricing';
+import { estimateUsageCostUsd } from '@/lib/ai/pricing';
 import { addSpend, claimAlert, getSpend, periodOf, periodResetsAt, type CapAlertKind } from './store';
 
 /**
@@ -90,7 +90,7 @@ async function checkThresholds(assistant: AssistantData, period: string, spendUs
 export async function recordUsage(assistant: AssistantData, usage: LLMUsage): Promise<void> {
   try {
     const period = periodOf();
-    const costUsd = estimateCostUsd(usage.provider, usage.model, usage.inputTokens, usage.outputTokens);
+    const costUsd = estimateUsageCostUsd(usage);
     const row = await addSpend({
       assistantId: assistant.id,
       workspaceId: assistant.workspaceId,
@@ -152,6 +152,73 @@ export async function applyCostCap(assistant: AssistantData, options: ProviderOp
     },
     blocked: false,
     fellBack: false,
+    settle,
+  };
+}
+
+/** Thrown when an image or audio file would be processed on the customer's key after the cap was reached. */
+export class CostCapReachedError extends Error {
+  whatToDoNext = 'Raise the monthly cost cap in AI Engine settings, or try again next month.';
+  category = 'cost_cap';
+  constructor() {
+    super("This assistant has reached its monthly AI cost cap, so the file was not processed on your API key.");
+    this.name = 'CostCapReachedError';
+  }
+}
+
+/** The subset of the file-parsing options (lib/rag/transcriber.ts TranscribeOptions) the cap needs. */
+interface MediaOptions {
+  apiKey?: string;
+  provider?: string;
+  onUsage?: (usage: LLMUsage) => void;
+}
+
+/**
+ * The cost cap for image understanding and audio/video transcription run on the assistant's key (chat attachments,
+ * knowledge uploads, links). Under the cap, every request on the customer's key is metered. Once the cap is reached the
+ * file is processed on the platform's free Groq key instead, whichever action the owner chose (it never touches their
+ * key), and CostCapReachedError is thrown when no Groq key is configured. Await settle() once the file is processed.
+ */
+export async function applyCostCapToMedia<T extends MediaOptions>(
+  assistant: AssistantData,
+  options: T
+): Promise<{ options: T; settle: () => Promise<void> }> {
+  const pending: Promise<void>[] = [];
+  const settle = async () => {
+    await Promise.allSettled(pending);
+  };
+  if (!usesCustomerKey({ provider: options.provider || '', apiKey: options.apiKey })) return { options, settle };
+
+  const cap = activeCap(assistant);
+  if (cap) {
+    const period = periodOf();
+    let spendUsd = 0;
+    try {
+      spendUsd = (await getSpend(assistant.id, period)).costUsd;
+    } catch {
+      // cannot read the spend: let the file through
+    }
+    if (spendUsd >= cap.monthlyUsd) {
+      pending.push(checkThresholds(assistant, period, spendUsd));
+      const groqKey = process.env.GROQ_API_KEY;
+      if (!groqKey) {
+        await settle();
+        throw new CostCapReachedError();
+      }
+      const { onUsage: _meter, ...rest } = options;
+      return { options: { ...rest, provider: 'groq', apiKey: groqKey } as T, settle };
+    }
+  }
+
+  const previous = options.onUsage;
+  return {
+    options: {
+      ...options,
+      onUsage: (usage: LLMUsage) => {
+        previous?.(usage);
+        pending.push(recordUsage(assistant, usage));
+      },
+    },
     settle,
   };
 }
