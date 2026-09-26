@@ -16,6 +16,7 @@ import { autoCaptureChatLead } from '@/lib/chat/lead-extraction';
 import { logged } from '@/lib/logging/route';
 import { logEvent } from '@/lib/logging/logger';
 import { wantsLiveAgent, liveAgentReply, streamFixedReply } from '@/lib/chat/handoff';
+import { applyCostCap, COST_CAP_PAUSED_MESSAGE } from '@/lib/ai/spend/guard';
 import { isLowConfidence, looksLikeUnknown, withUnknownOffer } from '@/lib/rag/confidence';
 import { SERVICE_PAUSED_MESSAGE, serviceBlocked } from '@/lib/billing/trial';
 
@@ -784,9 +785,10 @@ Directly use the content of this attached document to assist the visitor, answer
           // A request for a person is answered in code (same result whichever model is configured): the visitor is told
           // an agent is coming and the conversation is escalated below. No contact details are ever requested in the chat.
           const humanRequested = wantsLiveAgent(latestUserMsg);
-          const tokenGenerator = humanRequested
-            ? streamFixedReply(liveAgentReply({ bookingEnabled: Boolean(assistant.bookingEnabled) }))
-            : streamChatResponse(llmMessages, {
+          // Monthly cost cap on the customer's own key: meters this reply, and once the cap is reached switches to free Groq or stops
+          const costCap = humanRequested
+            ? null
+            : await applyCostCap(assistant, {
                 provider: assistant.provider,
                 modelName: assistant.modelName,
                 apiKey: assistant.apiKeyEncrypted,
@@ -794,6 +796,11 @@ Directly use the content of this attached document to assist the visitor, answer
                 temperature: assistant.temperature,
                 maxTokens: assistant.maxTokens || 2048,
               });
+          const tokenGenerator = humanRequested
+            ? streamFixedReply(liveAgentReply({ bookingEnabled: Boolean(assistant.bookingEnabled) }))
+            : costCap!.blocked
+              ? streamFixedReply(COST_CAP_PAUSED_MESSAGE)
+              : streamChatResponse(llmMessages, costCap!.options);
 
           const isDemoAssistant = assistant.id === 'demo-assistant';
 
@@ -811,6 +818,8 @@ Directly use the content of this attached document to assist the visitor, answer
             controller.enqueue(encoder.encode(tokenEvent));
           }
 
+          await costCap?.settle();
+
           // Record how the model call went (never the text). The provider layer reports its own failures inside the reply.
           const llmFailed = /^\s*\*\((Authentication Error|Notice: Could not connect|AI Generation Error):/.test(fullAssistantReply);
           logEvent({
@@ -820,8 +829,9 @@ Directly use the content of this attached document to assist the visitor, answer
             durationMs: performance.now() - llmStarted,
             meta: {
               assistantId: assistant.id || assistantId,
-              provider: assistant.provider,
-              model: assistant.modelName,
+              provider: costCap?.options.provider ?? assistant.provider,
+              model: costCap?.options.modelName ?? assistant.modelName,
+              costCap: costCap?.blocked ? 'blocked' : costCap?.fellBack ? 'fallback' : undefined,
               replyChars: fullAssistantReply.length,
               contextChunks: retrieval.chunks.length,
             },

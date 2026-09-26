@@ -121,6 +121,8 @@ export interface AssistantData {
   modelName: string;
   apiKeyEncrypted?: string;
   customBaseUrl?: string;
+  /** Monthly spending limit on the customer's own AI key (see lib/ai/spend/guard.ts). */
+  costCap?: CostCapSettings;
   primaryColor: string;
   avatarUrl?: string;
   launcherPosition: string;
@@ -177,6 +179,14 @@ export interface AssistantData {
   landingPageConfig?: LandingPageConfig;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface CostCapSettings {
+  enabled: boolean;
+  /** US dollars per calendar month (UTC). */
+  monthlyUsd: number;
+  /** What happens once the month's estimated spend reaches the cap. */
+  onLimit: 'fallback_groq' | 'stop';
 }
 
 export interface SupportCustomField {
@@ -425,7 +435,7 @@ export interface InAppNotificationData {
   assistantId?: string;
   title: string;
   message: string;
-  type: 'appointment_booked' | 'appointment_cancelled' | 'lead_captured' | 'takeover_requested' | 'reminder_dispatched' | 'chat_new' | 'chat_message' | 'chat_escalated';
+  type: 'appointment_booked' | 'appointment_cancelled' | 'lead_captured' | 'takeover_requested' | 'reminder_dispatched' | 'chat_new' | 'chat_message' | 'chat_escalated' | 'cost_cap_warning' | 'cost_cap_reached';
   metadata?: Record<string, any>;
   read: boolean;
   createdAt: string;

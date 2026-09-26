@@ -25,6 +25,7 @@
       ],
       "port": 3101,
       "env": {
+        "NEXT_DIST_DIR": ".next-iso",
         "DATABASE_URL": "",
         "POSTGRES_URL": "",
         "UPSTASH_REDIS_REST_URL": "",

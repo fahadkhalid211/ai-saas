@@ -25,6 +25,7 @@ interface NotificationItem {
   message: string;
   createdAt: string;
   read?: boolean;
+  type?: string;
 }
 
 interface DashboardHeaderProps {
@@ -306,10 +307,20 @@ export function DashboardHeader({
                 {notifications.length === 0 ? (
                   <div className="py-6 text-center text-slate-400">No activity yet</div>
                 ) : (
-                  notifications.map((n) => (
-                    <div key={n.id} className={`py-2.5 px-1 flex gap-2.5 ${!n.read ? 'bg-blue-50/50 dark:bg-blue-950/20' : ''}`}>
+                  notifications.map((n) => {
+                    const isCostCap = n.type === 'cost_cap_warning' || n.type === 'cost_cap_reached';
+                    return (
+                    <div
+                      key={n.id}
+                      className={`py-2.5 px-1 flex gap-2.5 ${!n.read ? 'bg-blue-50/50 dark:bg-blue-950/20' : ''} ${isCostCap ? 'cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/60' : ''}`}
+                      onClick={isCostCap ? () => { setActiveTab('engine'); setIsNotifOpen(false); } : undefined}
+                    >
                       <div className="mt-0.5">
-                        <span className="h-2 w-2 rounded-full bg-blue-600 inline-block" />
+                        <span
+                          className={`h-2 w-2 rounded-full inline-block ${
+                            n.type === 'cost_cap_reached' ? 'bg-rose-500' : n.type === 'cost_cap_warning' ? 'bg-amber-500' : 'bg-blue-600'
+                          }`}
+                        />
                       </div>
                       <div className="flex-1 space-y-0.5">
                         <div className="font-semibold text-slate-800 dark:text-slate-200 text-xs">{n.title}</div>
@@ -317,7 +328,8 @@ export function DashboardHeader({
                         <div className="text-[10px] text-slate-400 font-mono">{new Date(n.createdAt).toLocaleTimeString()}</div>
                       </div>
                     </div>
-                  ))
+                    );
+                  })
                 )}
               </div>
             </div>

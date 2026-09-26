@@ -20,6 +20,17 @@ export interface ProviderOptions {
   customBaseUrl?: string;
   temperature?: number;
   maxTokens?: number;
+  /** Called once for every request sent to the provider (continuations and retries included), so spend can be metered. */
+  onUsage?: (usage: LLMUsage) => void;
+}
+
+export interface LLMUsage {
+  provider: string;
+  model: string;
+  inputTokens: number;
+  outputTokens: number;
+  /** True when the provider did not report token counts and they were estimated from the text length. */
+  estimated: boolean;
 }
 
 export interface StreamEvent {

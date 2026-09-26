@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import { Database, type AssistantData } from '@/lib/db';
 import { withEnvProviderFallback } from '@/lib/ai/resolve-provider';
 import { streamChatResponse } from '@/lib/ai/providers';
+import { applyCostCap, COST_CAP_PAUSED_MESSAGE } from '@/lib/ai/spend/guard';
 import { retrieveRelevantContext } from '@/lib/rag/retrieval';
 import { createAppointment } from '@/lib/appointments/create';
 import { isOpenNow, isSlotAvailable } from '@/lib/appointments/availability';
@@ -191,14 +192,26 @@ export function productionVoiceDeps(): VoiceDeps {
 
     streamLLM: (messages, assistant: AssistantData) => {
       const a = withEnvProviderFallback(assistant);
-      return streamChatResponse(messages, {
-        provider: a.provider,
-        modelName: a.modelName,
-        apiKey: a.apiKeyEncrypted,
-        customBaseUrl: a.customBaseUrl,
-        temperature: 0.3,
-        maxTokens: 180,
-      });
+      return (async function* () {
+        // Monthly cost cap on the customer's own key: once reached, the call runs on free Groq or the assistant pauses
+        const costCap = await applyCostCap(a, {
+          provider: a.provider,
+          modelName: a.modelName,
+          apiKey: a.apiKeyEncrypted,
+          customBaseUrl: a.customBaseUrl,
+          temperature: 0.3,
+          maxTokens: 180,
+        });
+        if (costCap.blocked) {
+          yield COST_CAP_PAUSED_MESSAGE;
+          return;
+        }
+        try {
+          yield* streamChatResponse(messages, costCap.options);
+        } finally {
+          await costCap.settle();
+        }
+      })();
     },
   };
 }

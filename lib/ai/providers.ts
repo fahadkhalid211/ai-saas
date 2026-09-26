@@ -2,6 +2,51 @@ import OpenAI from 'openai';
 import { guardedFetchFor } from './safe-fetch';
 import { ChatMessage, ProviderOptions } from './types';
 
+const charsOf = (messages: ChatMessage[]) => messages.reduce((sum, m) => sum + (m.content?.length || 0), 0);
+
+/**
+ * Reports the tokens one request used to options.onUsage. Counts the provider did not send are estimated from the text
+ * (about 4 characters per token). Never throws: metering must not break a chat.
+ */
+function reportUsage(
+  options: ProviderOptions,
+  model: string,
+  counted: { input?: number; output?: number },
+  text: { promptChars: number; outputChars: number }
+): void {
+  if (!options.onUsage) return;
+  const estimated = counted.input === undefined || counted.output === undefined;
+  try {
+    options.onUsage({
+      provider: (options.provider || '').toLowerCase(),
+      model,
+      inputTokens: counted.input ?? Math.ceil(text.promptChars / 4),
+      outputTokens: counted.output ?? Math.ceil(text.outputChars / 4),
+      estimated,
+    });
+  } catch {
+    // ignore
+  }
+}
+
+/** Asks OpenAI-compatible providers for token counts in the last stream chunk, only when someone is metering. */
+function usageParams(options: ProviderOptions, provider: string): Record<string, unknown> {
+  return options.onUsage && provider !== 'ollama' ? { stream_options: { include_usage: true } } : {};
+}
+
+/** Some OpenAI-compatible servers reject stream_options: send the request again without it. */
+async function createStream(client: OpenAI, params: Record<string, any>): Promise<AsyncIterable<any>> {
+  try {
+    return (await client.chat.completions.create(params as any)) as any;
+  } catch (err: any) {
+    if (params.stream_options && err?.status === 400 && /stream_options|include_usage/i.test(String(err?.message))) {
+      const { stream_options: _drop, ...rest } = params;
+      return (await client.chat.completions.create(rest as any)) as any;
+    }
+    throw err;
+  }
+}
+
 /**
  * Configure OpenAI-compatible client for any supported provider
  */
@@ -140,6 +185,7 @@ async function* streamAnthropic(
       content: m.content,
     }));
 
+  const model = options.modelName || 'claude-3-5-haiku-20241022';
   const response = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: {
@@ -148,7 +194,7 @@ async function* streamAnthropic(
       'anthropic-version': '2023-06-01',
     },
     body: JSON.stringify({
-      model: options.modelName || 'claude-3-5-haiku-20241022',
+      model,
       max_tokens: options.maxTokens || 2048,
       system: systemMsg,
       messages: conversationMsgs,
@@ -168,6 +214,9 @@ async function* streamAnthropic(
   const decoder = new TextDecoder();
   let buffer = '';
   let sentAny = false;
+  let inputTokens: number | undefined;
+  let outputTokens: number | undefined;
+  let outputChars = 0;
 
   try {
     while (true) {
@@ -183,8 +232,16 @@ async function* streamAnthropic(
           if (!jsonStr || jsonStr === '[DONE]') continue;
           try {
             const parsed = JSON.parse(jsonStr);
+            if (parsed.type === 'message_start' && parsed.message?.usage) {
+              const u = parsed.message.usage;
+              inputTokens = (Number(u.input_tokens) || 0) + (Number(u.cache_creation_input_tokens) || 0) + (Number(u.cache_read_input_tokens) || 0);
+            }
+            if (parsed.type === 'message_delta' && typeof parsed.usage?.output_tokens === 'number') {
+              outputTokens = parsed.usage.output_tokens;
+            }
             if (parsed.type === 'content_block_delta' && parsed.delta?.text) {
               sentAny = true;
+              outputChars += parsed.delta.text.length;
               yield parsed.delta.text;
             }
             if (parsed.type === 'message_delta' && parsed.delta?.stop_reason) {
@@ -199,6 +256,8 @@ async function* streamAnthropic(
   } catch (err) {
     if (!sentAny) throw err;
     meta.interrupted = true; // the connection broke mid-answer: the wrapper carries on from here
+  } finally {
+    reportUsage(options, model, { input: inputTokens, output: outputTokens }, { promptChars: charsOf(messages), outputChars });
   }
 }
 
@@ -525,25 +584,39 @@ async function* streamChatOnce(
   }
 
   let sentAny = false;
+  let started = false;
+  let outputChars = 0;
+  const counted: { input?: number; output?: number } = {};
+  const readUsage = (chunk: any) => {
+    if (chunk?.usage) {
+      counted.input = Number(chunk.usage.prompt_tokens) || 0;
+      counted.output = Number(chunk.usage.completion_tokens) || 0;
+    }
+  };
   try {
-    const stream = await client.chat.completions.create({
+    const stream = await createStream(client, {
       model,
       messages: activeMessages as any,
       temperature: options.temperature ?? 0.3,
       max_tokens: safeMaxTokens,
       ...(provider === 'groq' ? groqReasoning(model) : {}),
+      ...usageParams(options, provider),
       stream: true,
     });
+    started = true;
 
     for await (const chunk of stream) {
-      const content = chunk.choices[0]?.delta?.content || '';
-      if (chunk.choices[0]?.finish_reason) meta.finish = chunk.choices[0].finish_reason;
+      readUsage(chunk);
+      const content = chunk.choices?.[0]?.delta?.content || '';
+      if (chunk.choices?.[0]?.finish_reason) meta.finish = chunk.choices[0].finish_reason;
       if (content) {
         sentAny = true;
+        outputChars += content.length;
         yield content;
       }
     }
   } catch (error: any) {
+
     console.error(`[AI Provider Error - ${provider}]:`, error);
 
     if (sentAny) {
@@ -577,19 +650,33 @@ async function* streamChatOnce(
           return m;
         });
 
-        const fallbackStream = await client.chat.completions.create({
+        const fallbackStream = await createStream(client, {
           model: fallbackModel,
           messages: condensedFallbackMessages as any,
           temperature: options.temperature ?? 0.3,
           max_tokens: 1600,
           ...groqReasoning(fallbackModel),
+          ...usageParams(options, provider),
           stream: true,
         });
 
-        for await (const chunk of fallbackStream) {
-          const content = chunk.choices[0]?.delta?.content || '';
-          if (chunk.choices[0]?.finish_reason) meta.finish = chunk.choices[0].finish_reason;
-          if (content) yield content;
+        const fallbackCounted: { input?: number; output?: number } = {};
+        let fallbackChars = 0;
+        try {
+          for await (const chunk of fallbackStream) {
+            if (chunk?.usage) {
+              fallbackCounted.input = Number(chunk.usage.prompt_tokens) || 0;
+              fallbackCounted.output = Number(chunk.usage.completion_tokens) || 0;
+            }
+            const content = chunk.choices?.[0]?.delta?.content || '';
+            if (chunk.choices?.[0]?.finish_reason) meta.finish = chunk.choices[0].finish_reason;
+            if (content) {
+              fallbackChars += content.length;
+              yield content;
+            }
+          }
+        } finally {
+          reportUsage(options, fallbackModel, fallbackCounted, { promptChars: charsOf(condensedFallbackMessages), outputChars: fallbackChars });
         }
         return;
       } catch (fallbackErr) {
@@ -623,6 +710,9 @@ async function* streamChatOnce(
     }
 
     yield `\n\n*(AI Generation Error: ${error?.message || 'Failed to complete request. Please verify provider settings.'})*`;
+  } finally {
+    // a request the provider accepted is billed even if the stream broke part-way or the reader stopped early
+    if (started) reportUsage(options, model, counted, { promptChars: charsOf(activeMessages), outputChars });
   }
 }
 

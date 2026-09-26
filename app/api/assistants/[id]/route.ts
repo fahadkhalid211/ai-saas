@@ -11,6 +11,7 @@ import {
   verifyWebhookConnection,
 } from '@/lib/connectors/verify';
 import { logged } from '@/lib/logging/route';
+import { sanitizeCostCap } from '@/lib/ai/spend/guard';
 
 const GETHandler = withAdminAuth(async (
   req: Request,
@@ -60,6 +61,15 @@ const PUTHandler = withRoleAuth(['owner', 'admin'], async (
       updatedAt: _forbiddenUpdatedAt,
       ...safeUpdates
     } = body;
+
+    // Monthly cost cap on the customer's own AI key
+    if (safeUpdates.costCap !== undefined) {
+      const capCheck = sanitizeCostCap(safeUpdates.costCap);
+      if (!capCheck.ok) {
+        return NextResponse.json({ error: capCheck.error }, { status: 400 });
+      }
+      safeUpdates.costCap = capCheck.value ?? undefined;
+    }
 
     // Phone channel + timezone fields: validated, and only the platform admin can assign the dialled number.
     const phoneCheck = await sanitizePhoneSettings(safeUpdates, {
@@ -192,6 +202,7 @@ const PUTHandler = withRoleAuth(['owner', 'admin'], async (
         name: updated.name,
         provider: updated.provider,
         modelName: updated.modelName,
+        ...(safeUpdates.costCap !== undefined ? { costCap: updated.costCap ?? null } : {}),
       },
     });
 

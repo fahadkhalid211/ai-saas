@@ -1,6 +1,7 @@
 import { AssistantData, Database } from '../db';
 import { retrieveRelevantContext } from '../rag/retrieval';
 import { buildSystemPrompt, generateChatCompletion } from '../ai/providers';
+import { applyCostCap, COST_CAP_PAUSED_MESSAGE } from '@/lib/ai/spend/guard';
 import { convertMarkdownForMessagingChannel } from './format';
 
 /**
@@ -112,20 +113,25 @@ export async function processWhatsAppWebhook(
 
   // 3. Generate AI response
   try {
-    const aiResponse = await generateChatCompletion(
-      [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userText },
-      ],
-      {
-        provider: assistant.provider,
-        modelName: assistant.modelName,
-        apiKey: assistant.apiKeyEncrypted,
-        customBaseUrl: assistant.customBaseUrl,
-        temperature: assistant.temperature,
-        maxTokens: assistant.maxTokens,
-      }
-    );
+    // Monthly cost cap on the customer's own key: once reached, the reply runs on free Groq or the assistant pauses
+    const costCap = await applyCostCap(assistant, {
+      provider: assistant.provider,
+      modelName: assistant.modelName,
+      apiKey: assistant.apiKeyEncrypted,
+      customBaseUrl: assistant.customBaseUrl,
+      temperature: assistant.temperature,
+      maxTokens: assistant.maxTokens,
+    });
+    const aiResponse = costCap.blocked
+      ? COST_CAP_PAUSED_MESSAGE
+      : await generateChatCompletion(
+          [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: userText },
+          ],
+          costCap.options
+        );
+    await costCap.settle();
 
     const cleanReply = convertMarkdownForMessagingChannel(aiResponse.trim() || assistant.fallbackMessage);
 

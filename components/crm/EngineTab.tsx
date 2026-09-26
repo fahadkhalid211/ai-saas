@@ -2,6 +2,7 @@
 
 import { SaveButton } from '@/components/ui/SaveButton';
 import React, { useState } from 'react';
+import { CostCapCard } from './CostCapCard';
 import {
   CheckCircle2,
   AlertTriangle,
@@ -518,6 +519,9 @@ export const EngineTab: React.FC<EngineTabProps> = ({
                 </span>
               )}
             </div>
+            {formData.provider !== 'auto_free' && (
+              <CostCapCard formData={formData} setFormData={setFormData} activeAssistant={activeAssistant} />
+            )}
           </div>
         ) : (
           /* Ollama Host Configuration */
