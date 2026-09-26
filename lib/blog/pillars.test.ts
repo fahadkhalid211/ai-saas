@@ -9,6 +9,11 @@ const PILLARS = [
   'install-ai-chatbot-wordpress-guide',
   'embed-ai-chatbot-webflow-squarespace-wix',
   'rule-based-vs-ai-chatbots',
+  'ai-appointment-booking',
+  'ai-receptionist-vs-answering-service',
+  'virtual-ai-receptionist',
+  'ai-receptionist-vs-human-front-desk',
+  'website-chatbot-platform-comparison',
 ];
 
 describe('in-depth articles', () => {
