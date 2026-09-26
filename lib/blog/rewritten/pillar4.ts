@@ -123,7 +123,7 @@ export const PILLAR4 = [
       p("The relevant comparison is the commission on one extra transaction, or the value of one extra valuation appointment, against a monthly plan. Because real estate enquiries are high-value, even a small recovery matters. Crescelo's plans start at $49 a month, with booking and calendar sync on the $149 Growth plan; see [pricing](/pricing). You connect your own AI provider and pay it directly for usage."),
 
       h2("Setup in a day"),
-      ol("Collect listings, fee information and area guides into short documents.", "Load them and set a professional but friendly tone.", "Set appointment types and connect your calendar.", "Configure lead alerts and routing.", "Test buyer, seller and renter conversations, and three questions the documents cannot answer.", "Add the widget to your site and listing pages.", "Review the first month of conversations every week."),
+      ol("Collect listings, fee information and area guides into short documents.", "Load them and set a professional but friendly tone.", "Set your viewing hours and slot length, and subscribe to the calendar feed.", "Configure lead alerts and routing.", "Test buyer, seller and renter conversations, and three questions the documents cannot answer.", "Add the widget to your site and listing pages.", "Review the first month of conversations every week."),
 
       h2("A sample conversation with a buyer"),
       table(["Speaker", "Message"], ["Buyer", "Is the three-bed on Maple Road still available and what are the council tax and service charge?"], ["Assistant", "Yes, 14 Maple Road is currently available at $425,000. It is a three-bedroom semi with a garden and off-street parking. The brochure lists annual property tax of $3,120 and no service charge because it is freehold. Would you like to view it this week?"], ["Buyer", "Saturday morning if possible."], ["Assistant", "Saturday at 10:00 or 11:30 is free with Jordan. Which would you like?"], ["Buyer", "11:30."], ["Assistant", "Booked. May I have your name and mobile number so Jordan can confirm, and are you buying with a mortgage or cash? That helps Jordan prepare."]),
@@ -151,7 +151,7 @@ export const PILLAR4 = [
         ["How do I keep listings up to date?", "Update the knowledge base whenever listings change, or use pages the assistant re-reads. Remove sold properties promptly."],
         ["Is it suitable for lettings and property management?", "Yes. Load tenancy information and use it for applications, viewings and common tenant questions."],
       ),
-      p("Try it with a listing brochure in the [playground](/playground), then [start a free trial](/login?mode=register) to connect your calendar and website."),
+      p("Try it with a listing brochure in the [playground](/playground), then [start a free trial](/login?mode=register) to set up booking hours and your website."),
     ],
   }),
 

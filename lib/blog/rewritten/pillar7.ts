@@ -339,7 +339,7 @@ export const PILLAR7 = [
 
       h2("Stage 5: Configure the actions"),
       h3("Appointment booking"),
-      p("On the Growth plan and above, add your services with durations and prices, opening hours, holidays, buffers and staff, and connect your calendar. Test two people choosing the same slot. See [AI appointment booking](/blog/ai-appointment-booking) and [configuring calendar sync and availability rules](/blog/configure-calendar-sync-availability-rules)."),
+      p("On the Growth plan and above, turn on booking, set your opening hours and slot length, or choose Calendly or Cal.com if you need more complex scheduling, and subscribe to the calendar feed so bookings appear in your own calendar. Test two people choosing the same slot. See [AI appointment booking](/blog/ai-appointment-booking) and [configuring calendar sync and availability rules](/blog/configure-calendar-sync-availability-rules)."),
       h3("Lead capture"),
       p("Decide what you need from a lead: usually a name, a way to reach them and what they want. Turn on instant email alerts, and, if you use them, webhooks or CRM delivery. See [conversational lead capture](/blog/conversational-lead-capture)."),
       h3("Handover"),
