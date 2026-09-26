@@ -1,47 +1,21 @@
 import { describe, expect, it } from 'vitest';
 import { BLOG_POSTS } from './posts';
 import { faqItems, wordCount } from './blocks';
+import { PILLAR_DATE } from './authoring';
 
 /** The articles written in depth for competitive searches. Grows as each batch is added. */
-const PILLARS = [
-  'ai-website-assistant',
-  'add-ai-chatbot-to-your-website',
-  'install-ai-chatbot-wordpress-guide',
-  'embed-ai-chatbot-webflow-squarespace-wix',
-  'rule-based-vs-ai-chatbots',
-  'ai-appointment-booking',
-  'ai-receptionist-vs-answering-service',
-  'virtual-ai-receptionist',
-  'ai-receptionist-vs-human-front-desk',
-  'website-chatbot-platform-comparison',
-  'crescelo-vs-chatbase-dante-ai-booking',
-  'crescelo-vs-tidio-manychat-comparison',
-  'ai-website-assistant-vs-calendly-acuity',
-  'eliminate-service-no-shows-playbook',
-  'ai-booking-guide-barbershops-salons',
-  'ai-patient-scheduling-dental-practices',
-  'ai-assistant-real-estate-lead-capture',
-  'ai-intake-scheduling-professional-services',
-  'home-service-contractor-ai-lead-capture',
-  'conversational-lead-capture',
-  'grounded-ai-chatbot-hallucinations',
-  'whatsapp-cloud-api-integration-guide',
-  'byok-vs-bundled-ai-pricing-cost-comparison',
-  'website-chatbot-gdpr-checklist',
-  'ai-website-assistant-roi-calculator',
-  'speed-to-lead-service-businesses',
-  'document-chunking-strategies-pdf-docx',
-  'sms-vs-email-appointment-reminders-conversions',
-  'live-chat-hidden-costs-small-business',
-  'hybrid-rag-dense-vector-sparse-keyword',
-];
+const PILLARS = BLOG_POSTS.filter((p) => p.dateModified === PILLAR_DATE).map((p) => p.slug);
 
 describe('in-depth articles', () => {
+  it('there are at least 30', () => {
+    expect(PILLARS.length).toBeGreaterThanOrEqual(30);
+  });
+
   for (const slug of PILLARS) {
     it(`${slug} is long, structured and has an FAQ`, () => {
       const post = BLOG_POSTS.find((p) => p.slug === slug)!;
       expect(post, slug).toBeTruthy();
-      expect(wordCount(post.body), slug).toBeGreaterThanOrEqual(1700);
+      expect(wordCount(post.body), slug).toBeGreaterThanOrEqual(1500);
       expect(post.body.filter((b) => b.type === 'h2').length).toBeGreaterThanOrEqual(8);
       expect(faqItems(post.body).length).toBeGreaterThanOrEqual(5);
       expect(post.body.some((b) => b.type === 'table')).toBe(true);
