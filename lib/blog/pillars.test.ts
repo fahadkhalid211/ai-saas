@@ -29,6 +29,11 @@ const PILLARS = [
   'byok-vs-bundled-ai-pricing-cost-comparison',
   'website-chatbot-gdpr-checklist',
   'ai-website-assistant-roi-calculator',
+  'speed-to-lead-service-businesses',
+  'document-chunking-strategies-pdf-docx',
+  'sms-vs-email-appointment-reminders-conversions',
+  'live-chat-hidden-costs-small-business',
+  'hybrid-rag-dense-vector-sparse-keyword',
 ];
 
 describe('in-depth articles', () => {
