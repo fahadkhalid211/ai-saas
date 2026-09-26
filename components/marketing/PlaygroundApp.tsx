@@ -124,7 +124,7 @@ function Gate({ onStart }: { onStart: (s: Session) => void }) {
       const recaptchaToken = await executeRecaptcha('playground_start');
       onStart(await call<Session>('/api/playground/session', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, marketingOptIn: optIn, website: trap, recaptchaToken }),
+        body: JSON.stringify({ name, email, marketingOptIn: optIn, hp: trap, recaptchaToken }),
       }));
     } catch (err) {
       setError((err as Error).message);
@@ -145,7 +145,7 @@ function Gate({ onStart }: { onStart: (s: Session) => void }) {
         <form className="pg-card" onSubmit={submit}>
           <label>Your name<input value={name} onChange={(e) => setName(e.target.value)} required minLength={2} maxLength={100} autoComplete="name" /></label>
           <label>Work email<input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required maxLength={254} autoComplete="email" /></label>
-          <input className="pg-trap" tabIndex={-1} autoComplete="off" aria-hidden="true" value={trap} onChange={(e) => setTrap(e.target.value)} name="website" />
+          <input className="pg-trap" tabIndex={-1} autoComplete="off" aria-hidden="true" value={trap} onChange={(e) => setTrap(e.target.value)} name="pg_hp_ref" data-lpignore="true" data-1p-ignore="true" />
           <label className="pg-check"><input type="checkbox" checked={optIn} onChange={(e) => setOptIn(e.target.checked)} /> Send me the occasional tip on getting more from an AI assistant. Unsubscribe any time.</label>
           {error ? <p className="pg-error" role="alert">{error}</p> : null}
           <button className="pg-btn" disabled={busy}>{busy ? 'Opening…' : 'Open the playground'}</button>

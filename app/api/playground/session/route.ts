@@ -26,8 +26,11 @@ async function POSTHandler(req: Request) {
     if (limited) return limited;
     const body = await req.json().catch(() => null);
     if (!body || typeof body !== 'object') return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
-    // a hidden field real visitors never fill
-    if (typeof body.website === 'string' && body.website.trim()) return NextResponse.json({ error: 'Something went wrong.' }, { status: 400 });
+    // a hidden field real visitors never fill (named so browser autofill does not recognise it)
+    if (typeof body.hp === 'string' && body.hp.trim()) {
+      console.warn('[Playground] hidden field filled; request refused');
+      return NextResponse.json({ error: 'Something went wrong.' }, { status: 400 });
+    }
     const recaptcha = await verifyRecaptchaToken(body.recaptchaToken, getClientIp(req));
     if (!recaptcha.success) return NextResponse.json({ error: recaptcha.error || 'Security check failed. Please try again.' }, { status: 400 });
 
