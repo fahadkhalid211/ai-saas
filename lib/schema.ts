@@ -148,6 +148,8 @@ export function webPageSchema(name: string, description: string, path: string, t
   };
 }
 
+import { wordCount } from '@/lib/blog/blocks';
+
 export function serializeJsonLd(data: unknown): string {
   return JSON.stringify(data).replace(/</g, '\\u003c');
 }
@@ -157,12 +159,7 @@ export function serializeJsonLd(data: unknown): string {
 // ---------------------------------------------------------------------------
 
 const isoDate = (d: string) => (d.length === 10 ? `${d}T08:00:00+00:00` : d);
-const wordsIn = (post: BlogPost) =>
-  post.body
-    .map((b) => ('text' in b ? b.text : 'items' in b ? b.items.join(' ') : b.type === 'table' ? [...b.headers, ...b.rows.flat()].join(' ') : ''))
-    .join(' ')
-    .split(/\s+/)
-    .filter(Boolean).length;
+const wordsIn = (post: BlogPost) => wordCount(post.body);
 
 export function blogImageUrl(slug: string) {
   return `${SITE.url}/blog/${slug}/opengraph-image`;

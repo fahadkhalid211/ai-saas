@@ -1,18 +1,14 @@
 import allGeneratedPosts from './data/all-posts.json';
 import type { BlogBlock, BlogPost } from './posts';
+import { slugify, wordCount } from './blocks';
 
 /** Date the rewritten articles were published. */
 export const REWRITE_DATE = '2026-09-26';
 
-const slugify = (t: string) =>
-  t
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-    .slice(0, 60);
-
 export const p = (text: string): BlogBlock => ({ type: 'p', text });
 export const h2 = (text: string): BlogBlock => ({ type: 'h2', text, id: slugify(text) });
+export const h3 = (text: string): BlogBlock => ({ type: 'h3', text });
+export const faq = (...items: [string, string][]): BlogBlock => ({ type: 'faq', items: items.map(([q, a]) => ({ q, a })) });
 export const ul = (...items: string[]): BlogBlock => ({ type: 'ul', items });
 export const ol = (...items: string[]): BlogBlock => ({ type: 'ol', items });
 export const note = (text: string): BlogBlock => ({ type: 'note', text });
@@ -25,7 +21,7 @@ const generated = new Map((allGeneratedPosts as unknown as BlogPost[]).map((g) =
 /** A rewritten article. Cluster, tags, related links and keywords carry over from the placeholder it replaces unless given. */
 export function article(m: Meta): BlogPost {
   const old = generated.get(m.slug);
-  const words = m.body.reduce((n, b) => n + (b.type === 'p' || b.type === 'note' ? b.text : b.type === 'ul' || b.type === 'ol' ? b.items.join(' ') : b.type === 'table' ? [...b.headers, ...b.rows.flat()].join(' ') : b.text).split(/\s+/).length, 0);
+  const words = wordCount(m.body);
   return {
     slug: m.slug,
     title: m.title,

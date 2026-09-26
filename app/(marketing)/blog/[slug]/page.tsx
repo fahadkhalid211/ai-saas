@@ -7,9 +7,15 @@ import { JsonLd } from '@/components/marketing/JsonLd';
 import { BlogBody } from '@/components/marketing/BlogBody';
 import { ButtonLink } from '@/components/marketing/ui';
 import { SITE } from '@/components/marketing/content';
-import { BLOG_POSTS, getPost } from '@/lib/blog/posts';
-import { blogImageUrl, blogPostingSchema, breadcrumbSchema } from '@/lib/schema';
+import { BLOG_POSTS } from '@/lib/blog/posts';
+import { getPostResolved } from '@/lib/blog/resolve';
+import { faqItems } from '@/lib/blog/blocks';
+import { BlogViewBeacon } from '@/components/marketing/BlogViewBeacon';
+import { blogImageUrl, blogPostingSchema, breadcrumbSchema, faqSchema } from '@/lib/schema';
 import { withSocial } from '@/lib/seo';
+
+/** Pages are built once and refreshed hourly, and straight away when the owner saves an edit. */
+export const revalidate = 3600;
 
 export function generateStaticParams() {
   return BLOG_POSTS.map((p) => ({ slug: p.slug }));
@@ -17,7 +23,7 @@ export function generateStaticParams() {
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
-  const post = getPost(slug);
+  const post = await getPostResolved(slug);
   if (!post) return {};
   const meta = withSocial(
     {
@@ -48,7 +54,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
 export default async function BlogPostPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const post = getPost(slug);
+  const post = await getPostResolved(slug);
   if (!post) notFound();
 
   const url = `${SITE.url}/blog/${post.slug}`;
@@ -60,14 +66,16 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
 
   // The FAQ answers in these articles are shared boilerplate, so they are not marked up as FAQPage (marking up identical
   // answers on hundreds of URLs would look like manipulation, and Google shows FAQ results only to a few site types anyway).
-  const jsonLdData: object[] = [blogPostingSchema(post), breadcrumbs];
+  const faq = faqItems(post.body);
+  const jsonLdData: object[] = [blogPostingSchema(post), breadcrumbs, ...(faq.length >= 2 ? [faqSchema(faq)] : [])];
 
   const toc = post.body.filter((b): b is Extract<(typeof post.body)[number], { type: 'h2' }> => b.type === 'h2');
-  const related = post.related.map((s) => getPost(s)).filter((p): p is NonNullable<typeof p> => Boolean(p));
+  const related = (await Promise.all(post.related.map((s) => getPostResolved(s)))).filter((p): p is NonNullable<typeof p> => Boolean(p));
 
   return (
     <>
       <JsonLd data={jsonLdData} />
+      <BlogViewBeacon slug={post.slug} />
       <Header />
       <main id="main">
         <section className="mk-section" style={{ paddingTop: '2.5rem' }}>

@@ -11,6 +11,8 @@ import { seoDescription, seoTitle, withFurtherReading } from './seo';
 export type BlogBlock =
   | { type: 'p'; text: string }
   | { type: 'h2'; text: string; id: string }
+  | { type: 'h3'; text: string }
+  | { type: 'faq'; items: { q: string; a: string }[] }
   | { type: 'ul'; items: string[] }
   | { type: 'ol'; items: string[] }
   | { type: 'note'; text: string }
@@ -202,8 +204,10 @@ const INITIAL_POSTS: BlogPost[] = [
 
 // Combine generated posts, replacing any initial posts with higher priority
 const postMap = new Map<string, BlogPost>();
+/** The articles as written in the code, before search-result polish (the editor starts from these). */
+const rawMap = new Map<string, BlogPost>();
 /** Search-result polish that must not depend on how a post was written: display-length title and description, a clean excerpt, cited sources. */
-function polish(p: BlogPost): BlogPost {
+export function polish(p: BlogPost): BlogPost {
   const description = seoDescription(p.description);
   return {
     ...p,
@@ -215,9 +219,11 @@ function polish(p: BlogPost): BlogPost {
 }
 
 (allGeneratedPosts as unknown as BlogPost[]).forEach((p) => {
+  rawMap.set(p.slug, p);
   postMap.set(p.slug, { ...polish(p), thin: true });
 });
 [...INITIAL_POSTS, ...REWRITTEN_POSTS].forEach((p) => {
+  rawMap.set(p.slug, p);
   postMap.set(p.slug, polish(p));
 });
 
@@ -225,6 +231,8 @@ export const BLOG_POSTS: BlogPost[] = Array.from(postMap.values());
 
 /** Articles that are written for readers and are listed in search: everything except the unrewritten placeholders. */
 export const PUBLISHED_POSTS: BlogPost[] = BLOG_POSTS.filter((p) => !p.thin);
+
+export const getRawPost = (slug: string): BlogPost | undefined => rawMap.get(slug);
 
 export function getPost(slug: string): BlogPost | undefined {
   return postMap.get(slug);

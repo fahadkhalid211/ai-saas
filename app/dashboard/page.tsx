@@ -41,6 +41,7 @@ import { AppointmentsTab } from '@/components/crm/AppointmentsTab';
 import { ProfileTab } from '@/components/crm/ProfileTab';
 import { SystemLogsTab } from '@/components/crm/SystemLogsTab';
 import { SupportTab } from '@/components/crm/SupportTab';
+import { BlogAdminTab } from '@/components/crm/BlogAdminTab';
 import { OnboardingWizardModal } from '@/components/crm/onboarding/OnboardingWizardModal';
 import { TourGuideModal } from '@/components/crm/tour/TourGuideModal';
 import { TOUR_STEPS } from '@/components/crm/tour/tourData';
@@ -84,7 +85,7 @@ export default function DashboardPage() {
   const [isAuthChecking, setIsAuthChecking] = useState<boolean>(true);
 
   const [activeTab, setActiveTab] = useState<
-    'overview' | 'profile' | 'analytics' | 'billing' | 'landing_page' | 'team' | 'security' | 'audit' | 'system_logs' | 'support' | 'knowledge' | 'engine' | 'behavior' | 'widget' | 'channels' | 'playground' | 'leads' | 'appointments' | 'docs' | 'templates' | 'history'
+    'overview' | 'profile' | 'analytics' | 'billing' | 'landing_page' | 'team' | 'security' | 'audit' | 'system_logs' | 'blog_admin' | 'support' | 'knowledge' | 'engine' | 'behavior' | 'widget' | 'channels' | 'playground' | 'leads' | 'appointments' | 'docs' | 'templates' | 'history'
   >('overview');
   const [selectedIntegration, setSelectedIntegration] = useState<IntegrationId>('slack');
 
@@ -827,6 +828,7 @@ export default function DashboardPage() {
             {/* TAB: AUDIT TRAIL */}
             {/* TAB: SYSTEM LOGS (platform owner only) */}
             {activeTab === 'system_logs' && isMasterAdmin && <SystemLogsTab />}
+            {activeTab === 'blog_admin' && isMasterAdmin && <BlogAdminTab />}
 
             {activeTab === 'support' && <SupportTab master={isMasterAdmin} />}
 

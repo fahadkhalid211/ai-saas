@@ -64,6 +64,23 @@ export function BlogBody({ blocks }: { blocks: BlogBlock[] }) {
                 {b.text}
               </h2>
             );
+          case 'h3':
+            return (
+              <h3 key={i} style={{ fontSize: '1.2rem', marginTop: '0.5rem', color: 'var(--mk-ink)' }}>
+                {b.text}
+              </h3>
+            );
+          case 'faq':
+            return (
+              <div key={i} style={{ display: 'grid', gap: '0.6rem' }}>
+                {b.items.map((f, j) => (
+                  <details key={j} className="mk-card" style={{ padding: '0.9rem 1.2rem' }}>
+                    <summary style={{ cursor: 'pointer', fontWeight: 700 }}>{f.q}</summary>
+                    <p style={{ marginTop: '0.6rem' }}>{inline(f.a)}</p>
+                  </details>
+                ))}
+              </div>
+            );
           case 'ul':
             return (
               <ul key={i} style={{ paddingLeft: '1.4rem', listStyle: 'disc', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
