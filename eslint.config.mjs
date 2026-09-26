@@ -10,6 +10,8 @@ const eslintConfig = defineConfig([
     "mobile/**",
     // Default ignores of eslint-config-next:
     ".next/**",
+    // build folder of the second, isolated dev server (NEXT_DIST_DIR=.next-iso)
+    ".next-iso/**",
     "out/**",
     "build/**",
     "next-env.d.ts",
