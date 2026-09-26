@@ -29,6 +29,12 @@ function pool(): Pool | null {
   return getPostgresPool();
 }
 
+/** pg returns TIMESTAMPTZ columns as Date objects; the app's types (and the blob path) use ISO strings. */
+function iso(v: unknown): string {
+  if (v instanceof Date) return v.toISOString();
+  return typeof v === 'string' ? v : v ? new Date(v as any).toISOString() : '';
+}
+
 async function withPool<T>(fn: (client: PoolClient) => Promise<T>): Promise<T | null> {
   const pg = pool();
   if (!pg) return null;
@@ -103,7 +109,7 @@ export async function relationalGetMessagesByConversation(
       tokensUsed: r.tokens_used,
       ...(r.sender_name ? { senderName: r.sender_name } : {}),
       ...(r.attachment ? { attachment: r.attachment } : {}),
-      createdAt: r.created_at,
+      createdAt: iso(r.created_at),
     }));
   });
   return result ?? [];
@@ -144,8 +150,8 @@ function rowToConv(r: Record<string, any>): ConversationData {
     isLiveTakeover: r.is_live_takeover ?? false,
     assignedAgentName: r.assigned_agent_name ?? undefined,
     status: r.status ?? 'bot',
-    createdAt: r.created_at,
-    updatedAt: r.updated_at ?? undefined,
+    createdAt: iso(r.created_at),
+    updatedAt: r.updated_at ? iso(r.updated_at) : undefined,
   };
 }
 
@@ -310,7 +316,7 @@ export async function relationalGetLeads(
       phone: r.phone ?? undefined,
       notes: r.notes ?? undefined,
       customData: r.custom_data ?? undefined,
-      createdAt: r.created_at,
+      createdAt: iso(r.created_at),
     }));
   });
   return result ?? [];
@@ -376,8 +382,8 @@ function rowToApt(r: Record<string, any>): AppointmentData {
     landingPageName: r.landing_page_name ?? undefined,
     landingPageSlug: r.landing_page_slug ?? undefined,
     remindersSent: r.reminders_sent ?? {},
-    createdAt: r.created_at,
-    updatedAt: r.updated_at ?? undefined,
+    createdAt: iso(r.created_at),
+    updatedAt: r.updated_at ? iso(r.updated_at) : undefined,
   };
 }
 
@@ -596,7 +602,7 @@ export async function relationalGetNotifications(
       type: r.type as InAppNotificationData['type'],
       metadata: r.metadata ?? undefined,
       read: r.read,
-      createdAt: r.created_at,
+      createdAt: iso(r.created_at),
     }));
   });
   return result ?? [];
@@ -676,7 +682,7 @@ export async function relationalGetUnansweredQueries(
       visitorId: r.visitor_id ?? undefined,
       resolved: r.resolved ?? false,
       suggestedAnswer: r.suggested_answer ?? undefined,
-      createdAt: r.created_at,
+      createdAt: iso(r.created_at),
     }));
   });
   return result ?? [];
@@ -1038,7 +1044,7 @@ export async function relationalGetMessagesForConversations(conversationIds: str
       tokensUsed: r.tokens_used,
       ...(r.sender_name ? { senderName: r.sender_name } : {}),
       ...(r.attachment ? { attachment: r.attachment } : {}),
-      createdAt: r.created_at,
+      createdAt: iso(r.created_at),
     };
     const list = grouped.get(r.conversation_id);
     if (list) list.push(msg);

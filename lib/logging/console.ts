@@ -47,6 +47,8 @@ export function installConsoleCapture(): void {
         const err = args.find((a): a is Error => a instanceof Error);
         const message = util.format(...args.map((a) => (a instanceof Error ? a.message : a))).slice(0, 1000);
         if (message.startsWith('[Log]') || message.startsWith('[Log:')) return;
+        // Node's own notices about experimental features in the runtime are not application errors
+        if (/^\(node:\d+\) ExperimentalWarning:/.test(message)) return;
         if (!allow()) return;
         logEvent({
           level: method === 'error' ? 'error' : 'warn',

@@ -32,6 +32,16 @@ describe('console capture', () => {
     expect(rows[0].message).toContain('connection refused');
   });
 
+  it("ignores Node's ExperimentalWarning notices", () => {
+    console.error = () => undefined;
+    installConsoleCapture();
+    console.error('(node:4) ExperimentalWarning: vm.USE_MAIN_CONTEXT_DEFAULT_LOADER is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)');
+    console.error('(node:4) Real problem: something else');
+    const rows = _peekLogBufferForTesting();
+    expect(rows).toHaveLength(1);
+    expect(rows[0].message).toContain('Real problem');
+  });
+
   it('keeps the stack and groups by error when an Error is passed', () => {
     console.error = () => undefined;
     installConsoleCapture();
