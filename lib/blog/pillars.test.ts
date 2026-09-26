@@ -14,6 +14,11 @@ const PILLARS = [
   'virtual-ai-receptionist',
   'ai-receptionist-vs-human-front-desk',
   'website-chatbot-platform-comparison',
+  'crescelo-vs-chatbase-dante-ai-booking',
+  'crescelo-vs-tidio-manychat-comparison',
+  'ai-website-assistant-vs-calendly-acuity',
+  'eliminate-service-no-shows-playbook',
+  'ai-booking-guide-barbershops-salons',
 ];
 
 describe('in-depth articles', () => {
