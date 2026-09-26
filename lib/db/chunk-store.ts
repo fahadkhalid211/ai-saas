@@ -1,6 +1,7 @@
 import { getPostgresPool, isConnectionError, isPostgresConfigured } from './postgres';
 import type { ChunkRecord } from './index';
 import type { SearchResultChunk } from '../rag/types';
+import { embeddingProfile } from '../rag/embedding-profile';
 
 /**
  * Knowledge-base passages in Postgres with pgvector: an HNSW index for meaning, a full-text index for words, both
@@ -195,6 +196,22 @@ export async function getChunksByAssistant(assistantId: string): Promise<ChunkRe
   return r.rows.map(rowToRecord);
 }
 
+/** Passages whose vectors were made by a different embedding model than the one in use (oldest tag first), for the rebuild job. */
+export async function staleEmbeddingChunks(profileId: string, limit: number): Promise<ChunkRecord[]> {
+  const p = await pool();
+  const r = await p.query(
+    `SELECT ${COLS} FROM ${chunkTable()} WHERE COALESCE(metadata->>'embModel', 'bge-small-en-v1.5') <> $1 ORDER BY assistant_id, source_id, chunk_index LIMIT $2`,
+    [profileId, limit]
+  );
+  return r.rows.map(rowToRecord);
+}
+
+export async function countStaleEmbeddingChunks(profileId: string): Promise<number> {
+  const p = await pool();
+  const r = await p.query(`SELECT COUNT(*)::int AS n FROM ${chunkTable()} WHERE COALESCE(metadata->>'embModel', 'bge-small-en-v1.5') <> $1`, [profileId]);
+  return r.rows[0]?.n ?? 0;
+}
+
 export async function countChunksByAssistants(assistantIds: string[]): Promise<number> {
   if (assistantIds.length === 0) return 0;
   const p = await pool();
@@ -246,6 +263,7 @@ export async function hybridSearch(assistantId: string, query: string, queryEmbe
   const vec = toVector(queryEmbedding);
   if (!vec) return [];
   const tsq = tsQueryFrom(query);
+  const profile = embeddingProfile();
 
   const sql = `
     WITH q AS (
@@ -262,12 +280,13 @@ export async function hybridSearch(assistantId: string, query: string, queryEmbe
       ORDER BY score DESC, c.id
       LIMIT 15
     ),
-    cut AS (SELECT CASE WHEN EXISTS (SELECT 1 FROM kw) THEN 0.18 ELSE 0.22 END AS v),
+    cut AS (SELECT CASE WHEN EXISTS (SELECT 1 FROM kw) THEN $5::float8 ELSE $6::float8 END AS v),
     vec AS (
       SELECT c.id, 1 - (c.embedding <=> q.emb) AS score,
              ROW_NUMBER() OVER (ORDER BY c.embedding <=> q.emb, c.id) AS rnk
       FROM ${t} c, q
       WHERE c.assistant_id = $2 AND c.embedding IS NOT NULL
+        AND COALESCE(c.metadata->>'embModel', 'bge-small-en-v1.5') = $7
       ORDER BY c.embedding <=> q.emb, c.id
       LIMIT 15
     ),
@@ -295,7 +314,7 @@ export async function hybridSearch(assistantId: string, query: string, queryEmbe
       );
       tunedClients.add(client);
     }
-    const res = await client.query({ text: sql, values: [vec, assistantId, tsq, topK], query_timeout: 15_000 } as any);
+    const res = await client.query({ text: sql, values: [vec, assistantId, tsq, topK, profile.vectorCutoffWithKeyword, profile.vectorCutoffAlone, profile.id], query_timeout: 15_000 } as any);
     return res.rows.map((r: any) => ({
       ...rowToResult(r, Number(r.rrf) || 0),
       vectorScore: Number(r.vscore) || 0,

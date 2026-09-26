@@ -1,4 +1,6 @@
-// Open-source embedding pipeline running locally with @xenova/transformers (384 dimensions)
+// Open-source embedding pipeline running locally with @xenova/transformers (384 dimensions for every supported profile)
+import { embeddingProfile } from './embedding-profile';
+
 let extractorPromise: Promise<any> | null = null;
 
 async function getExtractor() {
@@ -10,7 +12,7 @@ async function getExtractor() {
         env.allowLocalModels = false;
         env.useBrowserCache = false;
         
-        const modelName = process.env.EMBEDDING_MODEL || 'Xenova/bge-small-en-v1.5';
+        const modelName = embeddingProfile().model;
         console.log(`[Embedder] Initializing local embedding pipeline with ${modelName}...`);
         
         return await pipeline('feature-extraction', modelName, {
@@ -25,27 +27,39 @@ async function getExtractor() {
   return extractorPromise;
 }
 
+/** True when the real model loaded. When it did not, embeddings are placeholders and must never be stored as if they were real. */
+export async function localEmbeddingsReady(): Promise<boolean> {
+  return Boolean(await getExtractor());
+}
+
 const embeddingCache = new Map<string, number[]>();
 
+export type EmbeddingKind = 'query' | 'passage';
+
 /**
- * Generate a 384-dimensional embedding vector for a single text chunk.
+ * Generate a 384-dimensional embedding vector for a single text.
+ * 'query' is a question being searched with; 'passage' is text being stored. Models such as e5 need to be told which.
  * 100% free, local, open-source.
  */
-export async function generateEmbedding(text: string): Promise<number[]> {
+export async function generateEmbedding(text: string, kind: EmbeddingKind = 'query'): Promise<number[]> {
   const clean = text.replace(/\n+/g, ' ').trim();
   if (!clean) {
     return new Array(384).fill(0);
   }
 
+  const profile = embeddingProfile();
+  const input = (kind === 'query' ? profile.queryPrefix : profile.passagePrefix) + clean;
+  const cacheKey = `${profile.id}|${kind}|${clean}`;
+
   // Check in-memory cache first (0ms latency)
-  if (embeddingCache.has(clean)) {
-    return embeddingCache.get(clean)!;
+  if (embeddingCache.has(cacheKey)) {
+    return embeddingCache.get(cacheKey)!;
   }
 
   try {
     const extractor = await getExtractor();
     if (extractor) {
-      const output = await extractor(clean, {
+      const output = await extractor(input, {
         pooling: 'mean',
         normalize: true,
       });
@@ -54,7 +68,7 @@ export async function generateEmbedding(text: string): Promise<number[]> {
         const firstKey = embeddingCache.keys().next().value;
         if (firstKey) embeddingCache.delete(firstKey);
       }
-      embeddingCache.set(clean, vec);
+      embeddingCache.set(cacheKey, vec);
       return vec;
     }
   } catch (error) {
@@ -80,7 +94,8 @@ export async function generateEmbedding(text: string): Promise<number[]> {
  */
 export async function generateEmbeddingsBatch(
   texts: string[],
-  concurrency: number = 8
+  concurrency: number = 8,
+  kind: EmbeddingKind = 'passage'
 ): Promise<number[][]> {
   const results: number[][] = new Array(texts.length);
   let nextIndex = 0;
@@ -89,7 +104,7 @@ export async function generateEmbeddingsBatch(
     while (true) {
       const i = nextIndex++;
       if (i >= texts.length) return;
-      results[i] = await generateEmbedding(texts[i]);
+      results[i] = await generateEmbedding(texts[i], kind);
     }
   }
 

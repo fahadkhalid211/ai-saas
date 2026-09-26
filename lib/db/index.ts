@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
 import { cosineSimilarity, keywordRelevance, reciprocalRankFusion } from '../rag/vector-math';
+import { chunkProfileId, embeddingProfile } from '../rag/embedding-profile';
 import { SearchResultChunk } from '../rag/types';
 import { clearRetrievalCache } from '../rag/cache';
 import { encryptSecret, decryptSecret } from '../security/crypto';
@@ -1117,6 +1118,12 @@ export const DEFAULT_CRESCELO_KNOWLEDGE_CHUNKS: ChunkRecord[] = guideChunks();
 /**
  * Universal Database Layer
  */
+/** Marks fresh vectors with the embedding profile that made them, so search never compares vectors from different models. */
+function tagEmbeddings<T extends { embedding?: number[]; metadata: Record<string, any> }>(chunks: T[]): T[] {
+  const id = embeddingProfile().id;
+  return chunks.map((c) => (c.embedding && c.embedding.length > 0 ? { ...c, metadata: { ...c.metadata, embModel: id } } : c));
+}
+
 export class Database {
   static async getState(): Promise<DatabaseState> {
     return ensureInitialized();
@@ -1480,6 +1487,16 @@ export class Database {
     }
   }
 
+  /** Web page sources not refreshed for `olderThanMs`, oldest first. Sources with manual corrections are left alone: a re-read would erase them. */
+  static async getDueWebSources(olderThanMs: number, limit: number): Promise<KnowledgeSourceData[]> {
+    const state = await ensureInitialized();
+    const cutoff = Date.now() - olderThanMs;
+    return (state.knowledgeSources || [])
+      .filter((k) => k.type === 'web' && k.fileUrl && k.status === 'ready' && !(k.corrections && k.corrections.length) && new Date(k.updatedAt || k.createdAt).getTime() < cutoff)
+      .sort((a, b) => new Date(a.updatedAt || a.createdAt).getTime() - new Date(b.updatedAt || b.createdAt).getTime())
+      .slice(0, limit);
+  }
+
   static async getKnowledgeSourceById(id: string): Promise<KnowledgeSourceData | null> {
     let state = await ensureInitialized();
     let source = (state.knowledgeSources || []).find((k) => k.id === id) || null;
@@ -1582,7 +1599,8 @@ export class Database {
   }
 
   // Chunks
-  static async saveChunks(chunks: Omit<ChunkRecord, 'id' | 'createdAt'>[]): Promise<void> {
+  static async saveChunks(input: Omit<ChunkRecord, 'id' | 'createdAt'>[]): Promise<void> {
+    const chunks = tagEmbeddings(input);
     if (pgVectorStoreEnabled()) {
       const records: ChunkRecord[] = chunks.map((c) => ({
         ...c,
@@ -1610,6 +1628,23 @@ export class Database {
         console.warn('[Relational] saveChunks upsert failed:', err);
       }
     }
+  }
+
+  /** Passages embedded by a different model than the current one (see lib/rag/embedding-profile.ts), up to `limit`. */
+  static async getStaleEmbeddingChunks(limit: number): Promise<ChunkRecord[]> {
+    const profileId = embeddingProfile().id;
+    if (pgVectorStoreEnabled()) return ChunkStore.staleEmbeddingChunks(profileId, limit);
+    const state = await ensureInitialized();
+    const all = (state.chunks && state.chunks.length ? state.chunks : await ensureChunksLoaded()) as ChunkRecord[];
+    return all.filter((c) => chunkProfileId(c.metadata) !== profileId).slice(0, limit);
+  }
+
+  static async countStaleEmbeddingChunks(): Promise<number> {
+    const profileId = embeddingProfile().id;
+    if (pgVectorStoreEnabled()) return ChunkStore.countStaleEmbeddingChunks(profileId);
+    const state = await ensureInitialized();
+    const all = (state.chunks && state.chunks.length ? state.chunks : await ensureChunksLoaded()) as ChunkRecord[];
+    return all.filter((c) => chunkProfileId(c.metadata) !== profileId).length;
   }
 
   static async updateChunks(updatedChunks: ChunkRecord[]): Promise<void> {
@@ -1776,9 +1811,12 @@ export class Database {
 
     // Dense Vector Cosine Similarity (adaptive cutoff: 0.18 if keyword match exists, 0.22 otherwise)
     const hasKeywordMatches = keywordScored.length > 0;
-    const minVectorCutoff = hasKeywordMatches ? 0.18 : 0.22;
+    const profile = embeddingProfile();
+    const minVectorCutoff = hasKeywordMatches ? profile.vectorCutoffWithKeyword : profile.vectorCutoffAlone;
 
+    // only vectors made by the current model are comparable with the question's vector; older ones are rebuilt by /api/cron/reembed
     const vectorScored = assistantChunks
+      .filter((chunk) => chunkProfileId(chunk.metadata) === profile.id)
       .map((chunk) => ({
         ...chunk,
         score: cosineSimilarity(queryEmbedding, chunk.embedding),

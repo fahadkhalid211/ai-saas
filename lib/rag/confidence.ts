@@ -1,4 +1,5 @@
 import type { SearchResultChunk } from './types';
+import { embeddingProfile } from './embedding-profile';
 
 /**
  * Answer-or-abstain. The fused rank score of a chunk says which passage is best, not whether ANY passage is good enough,
@@ -25,10 +26,10 @@ const KEYWORD_BONUS = Number(process.env.RAG_KEYWORD_BONUS) || 0;
 /** Below this the knowledge base most likely does not contain the answer. Tuned with `npm run rag:eval`. */
 export function confidenceThreshold(): number {
   const v = Number(process.env.RAG_CONFIDENCE_MIN);
-  return Number.isFinite(v) && v > 0 ? v : DEFAULT_THRESHOLD;
+  return Number.isFinite(v) && v > 0 ? v : embeddingProfile().confidenceThreshold;
 }
 
-const DEFAULT_THRESHOLD = 0.58; // eval: answers 100% of answerable questions; the model itself handles the rest
+// The default comes from the embedding profile: each model scores similarity on its own scale (0.58 for the English default, tuned with rag:eval).
 
 export function isLowConfidence(confidence: number | undefined): boolean {
   return confidence !== undefined && confidence < confidenceThreshold();

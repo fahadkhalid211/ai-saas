@@ -820,6 +820,8 @@ export async function relationalGetPricingChunks(
   return result ?? [];
 }
 
+import { embeddingProfile } from '../rag/embedding-profile';
+
 export async function relationalHybridSearch(
   assistantId: string,
   query: string,
@@ -828,6 +830,7 @@ export async function relationalHybridSearch(
 ): Promise<SearchResultChunk[]> {
   const cleanQuery = query.trim();
   const vectorStr = JSON.stringify(queryEmbedding);
+  const profileId = embeddingProfile().id;
 
   const result = await withPool(async (client) => {
     const querySql = cleanQuery.length > 0
@@ -839,6 +842,7 @@ export async function relationalHybridSearch(
            FROM kortex_chunks
            WHERE assistant_id = $2
              AND embedding IS NOT NULL
+             AND COALESCE(metadata->>'embModel', 'bge-small-en-v1.5') = $5
            ORDER BY embedding <=> $1::vector ASC
            LIMIT 25
          ),
@@ -878,12 +882,13 @@ export async function relationalHybridSearch(
          FROM kortex_chunks
          WHERE assistant_id = $2
            AND embedding IS NOT NULL
+           AND COALESCE(metadata->>'embModel', 'bge-small-en-v1.5') = $4
          ORDER BY embedding <=> $1::vector ASC
          LIMIT $3`;
 
     const params = cleanQuery.length > 0
-      ? [vectorStr, assistantId, cleanQuery, topK]
-      : [vectorStr, assistantId, topK];
+      ? [vectorStr, assistantId, cleanQuery, topK, profileId]
+      : [vectorStr, assistantId, topK, profileId];
 
     const { rows } = await client.query<{
       id: string;

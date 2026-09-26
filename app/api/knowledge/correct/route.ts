@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { Database, ChunkRecord } from '@/lib/db';
 import { generateEmbeddingsBatch } from '@/lib/rag/embedder';
+import { embeddingProfile } from '@/lib/rag/embedding-profile';
 import { chunkDocument } from '@/lib/rag/chunker';
 import { withAdminAuth, withRoleAuth, getAuthContext, requireWorkspaceAssistant } from '@/lib/security/auth';
 import { clearRetrievalCache } from '@/lib/rag/cache';
@@ -118,7 +119,10 @@ const POSTHandler = withRoleAuth(['owner', 'admin'], async (req: Request) => {
       // Re-embed affected chunks in batch
       const newEmbeddings = await generateEmbeddingsBatch(affectedChunks.map((c) => c.content));
       affectedChunks.forEach((c, idx) => {
-        c.embedding = newEmbeddings[idx] || c.embedding;
+        if (newEmbeddings[idx]) {
+          c.embedding = newEmbeddings[idx];
+          c.metadata = { ...c.metadata, embModel: embeddingProfile().id };
+        }
       });
 
       await Database.updateChunks(affectedChunks);
