@@ -24,6 +24,11 @@ const PILLARS = [
   'ai-intake-scheduling-professional-services',
   'home-service-contractor-ai-lead-capture',
   'conversational-lead-capture',
+  'grounded-ai-chatbot-hallucinations',
+  'whatsapp-cloud-api-integration-guide',
+  'byok-vs-bundled-ai-pricing-cost-comparison',
+  'website-chatbot-gdpr-checklist',
+  'ai-website-assistant-roi-calculator',
 ];
 
 describe('in-depth articles', () => {
