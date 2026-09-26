@@ -168,7 +168,7 @@ export const BATCH4 = [
       p("They are built for individual use inside their own app, not for embedding in your site, for anonymous visitors, or for recording bookings and leads. Access and data handling follow the tool's rules, not yours."),
       table(["Need", "Personal custom GPT", "Grounded website assistant"], ["Embed on your site", "No", "Yes"], ["Anonymous visitors", "Typically need an account", "Yes"], ["Books appointments", "No", "Yes"], ["Lead capture and alerts", "No", "Yes"], ["Human takeover", "No", "Yes"], ["Refuses out-of-scope questions", "Prompt-dependent", "Designed around your content"]),
       h2("Where a GPT is fine"),
-      p("Internal helpers for your team, drafting, research and one-off tasks. That is a different job from serving customers."),
+      p("Internal helpers for your team, drafting, research and one-off tasks. That is a different job from serving customers. A GPT is also a quick way to prototype the questions you want an assistant to answer, and to test your wording before you commit it to a customer-facing tool. Use it for drafting the documents, then load the approved versions into an assistant that answers visitors from them and nothing else."),
       h2("Security questions to ask of either"),
       ol("Where are my documents stored and who can read them?", "Is my content used to train models?", "Can I delete it?", "How are conversations from different customers kept apart?"),
       p("Read [how we keep workspaces apart](/blog/multi-tenant-saas-chatbot-architecture) and [stopping made-up answers](/blog/grounded-ai-chatbot-hallucinations), or try a grounded assistant in the [playground](/playground)."),

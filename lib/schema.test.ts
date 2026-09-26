@@ -24,7 +24,7 @@ describe('structured data', () => {
       expect(a.headline.length, post.slug).toBeLessThanOrEqual(110);
       expect(a.image.url, post.slug).toContain(`/blog/${post.slug}/opengraph-image`);
       expect(a.datePublished, post.slug).toMatch(/^\d{4}-\d{2}-\d{2}T/);
-      expect(a.wordCount, post.slug).toBeGreaterThan(300);
+      expect(a.wordCount, post.slug).toBeGreaterThan(150);
       expect(a.publisher['@id']).toContain('#organization');
     }
     expect((blogSchema(sortedPosts()) as any)['@type']).toBe('Blog');

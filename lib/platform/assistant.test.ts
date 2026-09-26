@@ -2,6 +2,9 @@ import { describe, it, expect } from 'vitest';
 import { Database } from '@/lib/db';
 import { generateSessionToken } from '@/lib/security/auth';
 
+// no local model server should be reachable in tests: the answer must come from the guides
+process.env.OLLAMA_BASE_URL = 'http://127.0.0.1:9/v1';
+
 async function tenant(name: string) {
   const t = await Database.createTenantWorkspace({ businessName: name, ownerEmail: `${name.toLowerCase().replace(/\W+/g, '')}-${Math.random().toString(36).slice(2, 7)}@example.com`, password: 'Passw0rd!Test1' } as any);
   const token = generateSessionToken(t.owner.role, t.owner.id, t.workspace.id, undefined, (t.owner as any).sessionVersion || 0);
