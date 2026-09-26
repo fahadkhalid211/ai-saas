@@ -14,7 +14,7 @@ export const ol = (...items: string[]): BlogBlock => ({ type: 'ol', items });
 export const note = (text: string): BlogBlock => ({ type: 'note', text });
 export const table = (headers: string[], ...rows: string[][]): BlogBlock => ({ type: 'table', headers, rows });
 
-type Meta = Pick<BlogPost, 'slug' | 'title' | 'description' | 'body'> & Partial<Pick<BlogPost, 'tags' | 'related' | 'funnel' | 'primaryKeyword' | 'secondaryKeywords' | 'readMinutes'>>;
+type Meta = Pick<BlogPost, 'slug' | 'title' | 'description' | 'body'> & Partial<Pick<BlogPost, 'tags' | 'related' | 'funnel' | 'primaryKeyword' | 'secondaryKeywords' | 'readMinutes' | 'clusterId' | 'clusterName'>>;
 
 const generated = new Map((allGeneratedPosts as unknown as BlogPost[]).map((g) => [g.slug, g]));
 
@@ -31,12 +31,22 @@ export function article(m: Meta): BlogPost {
     dateModified: REWRITE_DATE,
     readMinutes: m.readMinutes ?? Math.max(3, Math.round(words / 220)),
     tags: m.tags ?? old?.tags ?? [],
-    clusterId: old?.clusterId,
-    clusterName: old?.clusterName,
+    clusterId: m.clusterId ?? old?.clusterId,
+    clusterName: m.clusterName ?? old?.clusterName,
     funnel: m.funnel ?? old?.funnel,
     primaryKeyword: m.primaryKeyword ?? old?.primaryKeyword,
     secondaryKeywords: m.secondaryKeywords ?? old?.secondaryKeywords,
     related: m.related ?? old?.related ?? [],
     body: m.body,
   };
+}
+
+/** The date the in-depth versions of the highest-value articles were published. */
+export const PILLAR_DATE = '2026-09-27';
+
+/** A long, in-depth article for a competitive search. Keeps the original publish date and shows the update date. */
+export function pillar(m: Meta): BlogPost {
+  const base = article(m);
+  const old = generated.get(m.slug);
+  return { ...base, datePublished: old?.datePublished ?? '2026-09-25', dateModified: PILLAR_DATE };
 }
