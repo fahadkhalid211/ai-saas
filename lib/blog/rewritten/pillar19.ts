@@ -248,6 +248,9 @@ export const PILLAR19 = [
       table(["Service risk", "Buffer approach"], ["Very predictable", "Small or no buffer"], ["Variable length", "A buffer after each, or a gap every few bookings"], ["Messy or messy-prone (colour, repair)", "Extra clean-up time in the slot"], ["Travel between jobs", "Realistic travel time, with a margin for traffic"], ["Emotionally demanding", "A short pause for the practitioner"]),
       p("Buffers are cheaper than apologies. A five-minute gap costs a few dollars of theoretical revenue and saves the goodwill of the customer who would otherwise wait."),
 
+      h2("Related reading"),
+      ul("[Overbooking versus dynamic buffers](/blog/overbooking-strategies-vs-dynamic-buffers) covers how gaps protect revenue.", "[How online booking systems prevent double bookings](/blog/double-booking-prevention-concurrency-mutex) explains slot locking.", "[How to reduce no-shows](/blog/eliminate-service-no-shows-playbook) shows what happens after the slot is set."),
+
       h2("Frequently asked questions"),
       faq(
         ["How long should an appointment slot be?", "Long enough for the service plus preparation and clean-up, based on measured times. Add a margin if the service varies."],
