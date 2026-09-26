@@ -14,6 +14,7 @@ import { BATCH12 } from './rewritten/batch12';
 import { PILLAR1 } from './rewritten/pillar1';
 import { PILLAR2 } from './rewritten/pillar2';
 import { PILLAR3 } from './rewritten/pillar3';
+import { PILLAR4 } from './rewritten/pillar4';
 
 /** Articles written for readers. They replace the templated placeholder with the same address and are listed in search. */
 export const REWRITTEN_POSTS: BlogPost[] = [...BATCH1, ...BATCH2, ...BATCH3, ...BATCH4, ...BATCH5, ...BATCH6, ...BATCH7, ...BATCH8, ...BATCH9, ...BATCH10, ...BATCH11, ...BATCH12,
@@ -21,4 +22,5 @@ export const REWRITTEN_POSTS: BlogPost[] = [...BATCH1, ...BATCH2, ...BATCH3, ...
   ...PILLAR1,
   ...PILLAR2,
   ...PILLAR3,
+  ...PILLAR4,
 ];

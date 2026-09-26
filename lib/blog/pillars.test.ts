@@ -19,6 +19,11 @@ const PILLARS = [
   'ai-website-assistant-vs-calendly-acuity',
   'eliminate-service-no-shows-playbook',
   'ai-booking-guide-barbershops-salons',
+  'ai-patient-scheduling-dental-practices',
+  'ai-assistant-real-estate-lead-capture',
+  'ai-intake-scheduling-professional-services',
+  'home-service-contractor-ai-lead-capture',
+  'conversational-lead-capture',
 ];
 
 describe('in-depth articles', () => {
