@@ -26,10 +26,10 @@ async function POSTHandler(req: Request) {
     if (limited) return limited;
     const body = await req.json().catch(() => null);
     if (!body || typeof body !== 'object') return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
-    // a hidden field real visitors never fill (named so browser autofill does not recognise it)
-    if (typeof body.hp === 'string' && body.hp.trim()) {
-      console.warn('[Playground] hidden field filled; request refused');
-      return NextResponse.json({ error: 'Something went wrong.' }, { status: 400 });
+    // a form filled faster than a person can type is a script; reCAPTCHA and the rate limits back this up
+    if (typeof body.filledInMs === 'number' && body.filledInMs < 800) {
+      console.warn('[Playground] form submitted implausibly fast; request refused');
+      return NextResponse.json({ error: 'Please take a moment to fill in the form, then try again.' }, { status: 400 });
     }
     const recaptcha = await verifyRecaptchaToken(body.recaptchaToken, getClientIp(req));
     if (!recaptcha.success) return NextResponse.json({ error: recaptcha.error || 'Security check failed. Please try again.' }, { status: 400 });
