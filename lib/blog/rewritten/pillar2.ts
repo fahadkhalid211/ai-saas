@@ -292,6 +292,11 @@ export const PILLAR2 = [
       h2("Handover done properly"),
       p("The moment a conversation moves from AI to a person is where trust is won or lost. It should be easy to ask for a person, the person should see the whole conversation, and the customer should not have to repeat anything. See [live human handover flow design](/blog/live-human-handover-flow-design) and the [handover feature page](/product/human-handover)."),
 
+      h2("A simple break-even calculation"),
+      p("You do not need precise figures to see whether an AI receptionist is worth adding. Use your own numbers in this four-step sum."),
+      ol("Estimate how many enquiries per month arrive when nobody can answer quickly, for example 40.", "Estimate what share would have booked if answered at once. Be cautious: 10 to 20 percent is a reasonable starting guess for enquiries about services you actually offer.", "Multiply by the value of an average booking. If 40 enquiries and 15 percent gives 6 bookings at $80 each, that is $480 a month.", "Compare with the monthly cost of the assistant. If the plan costs less than the extra bookings it recovers, it pays for itself before counting the staff time saved."),
+      p("The figures above are an illustration, not a forecast. Replace each with your own, and check them after a month using real bookings. If the sum does not work for your business, do not buy it; if it works with cautious numbers, the decision is easy. The same method is explained in [the ROI guide](/blog/ai-website-assistant-roi-calculator)."),
+
       h2("Signs your front desk is overloaded"),
       ul("Calls go to voicemail during busy periods and nobody calls back the same day.", "Website messages wait until the next working day.", "Staff answer the same five questions dozens of times a week.", "Check-in queues form while someone is on the phone.", "Booking errors creep in because people are rushed.", "Your best staff spend their time on admin instead of customers."),
       p("If three or more of these are true, the routine layer is costing you more than it should, and automating it is likely to pay back. If none are true, you may not need an AI receptionist yet."),
