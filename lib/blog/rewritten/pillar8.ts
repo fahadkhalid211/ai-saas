@@ -340,6 +340,9 @@ export const PILLAR8 = [
       h2("Keeping translations current"),
       p("Multilingual content doubles the work of updating. When a price changes, change it in every language version, or keep prices only in one master document and let the assistant translate the answer. Decide which approach you can sustain. A simple rule helps: any fact that changes often lives in exactly one place, and any text that rarely changes, such as your process description, can be translated once and reviewed twice a year."),
 
+      h2("Related reading"),
+      ul("[How to stop a chatbot from making things up](/blog/grounded-ai-chatbot-hallucinations) matters even more in languages the model handles less well.", "[Bilingual local service chat](/blog/bilingual-local-service-chat) shows how a neighbourhood business applies this.", "[Immigration law multilingual intake](/blog/immigration-law-multilingual-intake-chat) covers a high-stakes example."),
+
       h2("What to put in the assistant's instructions"),
       ul("Reply in the language the visitor writes in, unless they ask to switch.", "Use the approved terms from the glossary, and never translate the names of services, staff or places.", "State prices with the currency symbol and code, for example $85 USD.", "If unsure of a translation for a policy or safety statement, say so and offer a person.", "Keep a consistent level of formality for each language.", "Never guess in a language you cannot handle well; say which languages you support and offer an alternative."),
       p("Short, specific instructions like these are easier to test than a long description of tone. Test them by asking the same question in each language and comparing the answers side by side."),
