@@ -163,7 +163,7 @@ describe('cost cap for images and audio', () => {
 
   it('meters files processed on the customer key', async () => {
     const a = assistant({ enabled: true, monthlyUsd: 10, onLimit: 'stop' });
-    const m = await applyCostCapToMedia(a, { apiKey: a.apiKeyEncrypted, provider: 'openai' });
+    const m = await applyCostCapToMedia<{ apiKey?: string; provider?: string; onUsage?: (u: any) => void }>(a, { apiKey: a.apiKeyEncrypted, provider: 'openai' });
     m.options.onUsage!({ provider: 'openai', model: 'whisper-1', inputTokens: 0, outputTokens: 0, audioSeconds: 600, media: 'audio', estimated: false });
     await m.settle();
     expect((await getSpend('ast_1')).costUsd).toBeCloseTo(0.06);

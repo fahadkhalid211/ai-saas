@@ -28,6 +28,7 @@ import { PILLAR14 } from './rewritten/pillar14';
 import { PILLAR15 } from './rewritten/pillar15';
 import { PILLAR16 } from './rewritten/pillar16';
 import { PILLAR17 } from './rewritten/pillar17';
+import { PILLAR18 } from './rewritten/pillar18';
 
 /** Articles written for readers. They replace the templated placeholder with the same address and are listed in search. */
 export const REWRITTEN_POSTS: BlogPost[] = [...BATCH1, ...BATCH2, ...BATCH3, ...BATCH4, ...BATCH5, ...BATCH6, ...BATCH7, ...BATCH8, ...BATCH9, ...BATCH10, ...BATCH11, ...BATCH12,
@@ -49,4 +50,5 @@ export const REWRITTEN_POSTS: BlogPost[] = [...BATCH1, ...BATCH2, ...BATCH3, ...
   ...PILLAR15,
   ...PILLAR16,
   ...PILLAR17,
+  ...PILLAR18,
 ];
