@@ -304,7 +304,7 @@ export const PILLAR7 = [
         ["Which is better for privacy?", "Neither is automatically better. Check agreements, data location and the processors involved for each."],
         ["How do I compare them?", "Ask for total price at current and double volume, test real questions, and check what happens to urgent or unusual cases."],
       ),
-      p("Try the assistant on your own documents in the [playground](/playground), and compare with our guide to [AI receptionist vs answering service](/blog/ai-receptionist-vs-answering-service)."),
+      p("Try the assistant on your own documents in the [playground](/playground), compare it with our guide to [AI receptionist vs answering service](/blog/ai-receptionist-vs-answering-service), and see the [pricing](/pricing) and [human handover feature](/product/human-handover) pages for what the assistant side costs and how takeover works."),
     ],
   }),
 
