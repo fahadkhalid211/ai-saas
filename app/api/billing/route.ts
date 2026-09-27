@@ -8,6 +8,7 @@ import { logged } from '@/lib/logging/route';
 import { trialInfo } from '@/lib/billing/trial';
 import { isStripeConfigured } from '@/lib/billing/stripe';
 import { earlyBirdAvailableFor, paymentsAvailable } from '@/lib/billing/early-bird';
+import { complimentaryInfo, redeemBlockReason } from '@/lib/billing/access-codes';
 
 const GETHandler = withAdminAuth(async (req: Request) => {
   try {
@@ -41,6 +42,7 @@ const GETHandler = withAdminAuth(async (req: Request) => {
       trial: trialInfo(ws),
       payments: { available: paymentsAvailable() },
       earlyBird: { available: earlyBirdAvailableFor(ws), active: Boolean(ws.earlyBird) },
+      complimentary: { ...complimentaryInfo(ws), canRedeem: redeemBlockReason(ws) === null },
       subscription: {
         // what the card is charged, and when: the end of the trial while trialing, otherwise the next renewal
         nextChargeAmount: ws.billingInterval === 'annual' ? currentPlan.annualMonthlyPrice * 12 : currentPlan.monthlyPrice,

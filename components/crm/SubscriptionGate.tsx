@@ -16,6 +16,8 @@ interface BillingSummary {
   payments?: { available: boolean };
   /** The launch offer: a trial with no card. */
   earlyBird?: { available: boolean; active: boolean };
+  /** Free access from an access code (lib/billing/access-codes.ts). */
+  complimentary?: { active: boolean; code: string; endsAt: string | null; canRedeem: boolean };
 }
 
 const fmtDate = (iso: string | null) => (iso ? new Date(iso).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : 'the end of the trial');
@@ -39,6 +41,11 @@ export function SubscriptionGate({ isMasterAdmin, onLogout, onOpenBilling, onOpe
   const [sending, setSending] = useState(false);
   const [ticketRef, setTicketRef] = useState('');
   const [noteError, setNoteError] = useState('');
+  // access code
+  const [codeOpen, setCodeOpen] = useState(false);
+  const [code, setCode] = useState('');
+  const [codeBusy, setCodeBusy] = useState(false);
+  const [codeError, setCodeError] = useState('');
 
   const load = useCallback(async () => {
     try {
@@ -122,6 +129,25 @@ export function SubscriptionGate({ isMasterAdmin, onLogout, onOpenBilling, onOpe
     }
   };
 
+  const redeemCode = async () => {
+    setCodeError('');
+    if (!code.trim()) {
+      setCodeError('Enter your access code.');
+      return;
+    }
+    setCodeBusy(true);
+    try {
+      const res = await fetch('/api/billing/redeem', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ code }) });
+      const out = await res.json().catch(() => ({}));
+      if (res.ok) await load();
+      else setCodeError(out.error || 'That code did not work. Please try again.');
+    } catch (err) {
+      setCodeError((err as Error)?.message || 'Network error.');
+    } finally {
+      setCodeBusy(false);
+    }
+  };
+
   const sendNote = async () => {
     setNoteError('');
     const planName = BILLING_PLANS.find((p) => p.id === planId)?.name || planId;
@@ -160,6 +186,18 @@ export function SubscriptionGate({ isMasterAdmin, onLogout, onOpenBilling, onOpe
   const price = interval === 'annual' ? plan.annualMonthlyPrice * 12 : plan.monthlyPrice;
 
   /* ------------------------------------------- the bar during the trial ------------------------------------------- */
+  if (trial.status === 'trialing' && data.complimentary?.active) {
+    return (
+      <div role="status" className="flex flex-wrap items-center justify-between gap-2 bg-slate-900 px-4 py-2 text-xs font-medium text-slate-50 dark:bg-slate-800">
+        <span className="flex items-center gap-2">
+          <Sparkles className="h-4 w-4" />
+          {`Free access with your code: ${trial.daysLeft} ${trial.daysLeft === 1 ? 'day' : 'days'} left, no card needed. It ends on ${fmtDate(trial.endsAt)}. To keep your assistants running after that, choose a plan.`}
+        </span>
+        <button type="button" onClick={onOpenBilling} className="rounded-lg bg-white/95 px-3 py-1 text-[11px] font-bold text-slate-900 hover:bg-white cursor-pointer">Plans</button>
+      </div>
+    );
+  }
+
   if (trial.status === 'trialing' && data.earlyBird?.active) {
     return (
       <div role="status" className="flex flex-wrap items-center justify-between gap-2 bg-slate-900 px-4 py-2 text-xs font-medium text-slate-50 dark:bg-slate-800">
@@ -274,6 +312,35 @@ export function SubscriptionGate({ isMasterAdmin, onLogout, onOpenBilling, onOpe
                 <SaveButton onClick={startCheckout} saving={busy} idleLabel={expired ? `Subscribe to ${plan.name}` : earlyBird ? 'Start free trial with a card' : 'Start free trial'} savingLabel="Opening secure checkout…" savedLabel="Opening…" className="px-6 py-3 text-sm" />
               ) : null}
               <p className="text-[11px] text-[#4b5d54]">{cardsWork ? 'Secure payment by Stripe. ' : ''}By continuing you agree to the <a className="underline" href="/terms" target="_blank" rel="noopener noreferrer">Terms</a> and <a className="underline" href="/privacy" target="_blank" rel="noopener noreferrer">Privacy Policy</a>.</p>
+              {data.complimentary?.canRedeem ? (
+                <div className="w-full max-w-sm text-center">
+                  {!codeOpen ? (
+                    <button type="button" onClick={() => setCodeOpen(true)} className="text-xs font-semibold text-[#0d5b2a] underline cursor-pointer">Have an access code?</button>
+                  ) : (
+                    <form onSubmit={(e) => { e.preventDefault(); redeemCode(); }} className="rounded-2xl border border-[#08251a]/15 bg-[#f5f3dd] p-3 text-left">
+                      <label htmlFor="sg-code" className="block text-xs font-semibold text-[#08251a]">Access code</label>
+                      <div className="mt-1.5 flex gap-2">
+                        <input
+                          id="sg-code"
+                          autoFocus
+                          value={code}
+                          onChange={(e) => setCode(e.target.value)}
+                          autoComplete="off"
+                          autoCapitalize="characters"
+                          spellCheck={false}
+                          maxLength={40}
+                          placeholder="For example FRIEND-7K3Q9X"
+                          aria-describedby={codeError ? 'sg-code-error' : undefined}
+                          aria-invalid={codeError ? true : undefined}
+                          className="min-w-0 flex-1 rounded-lg border border-[#08251a]/25 bg-white px-3 py-2 text-sm uppercase tracking-wide text-[#08251a] outline-none focus:border-[#0d5b2a]"
+                        />
+                        <button type="submit" disabled={codeBusy} className="rounded-lg bg-[#08251a] px-4 py-2 text-xs font-bold text-white disabled:opacity-60 cursor-pointer">{codeBusy ? 'Checking…' : 'Apply'}</button>
+                      </div>
+                      {codeError ? <p id="sg-code-error" role="alert" className="mt-2 text-xs font-medium text-rose-700">{codeError}</p> : <p className="mt-2 text-[11px] text-[#4b5d54]">A code gives you free access to a plan without a card.</p>}
+                    </form>
+                  )}
+                </div>
+              ) : null}
               <button type="button" onClick={onLogout} className="inline-flex items-center gap-1.5 text-[11px] text-[#4b5d54] underline cursor-pointer"><LogOut className="h-3 w-3" /> Sign out</button>
             </div>
 

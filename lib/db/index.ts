@@ -328,6 +328,8 @@ export interface WorkspaceBillingData {
   cancelAtPeriodEnd?: boolean;
   /** Started the free trial without a card during the launch (early-bird) offer. */
   earlyBird?: boolean;
+  /** The access code (lib/billing/access-codes.ts) that gave this workspace free access. */
+  complimentaryCode?: string;
   /** Stripe's identifier for the card that started the trial (never the card number). */
   cardFingerprint?: string;
   /** Set when a card was disputed or flagged as fraud; the workspace cannot start another trial. */
