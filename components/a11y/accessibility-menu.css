@@ -1,0 +1,40 @@
+/* The accessibility menu uses its own fixed, high-contrast colours so it stays readable whatever the page around it looks like. */
+.a11y-menu { position: fixed; left: 1rem; bottom: 1rem; z-index: 2147482000; font: 400 0.9375rem/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color: #111; }
+.a11y-trigger {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 3rem; height: 3rem; border-radius: 999px;
+  background: #1d4ed8; color: #fff; border: 2px solid #fff; cursor: pointer;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+}
+.a11y-trigger:hover { background: #1e40af; }
+.a11y-panel {
+  position: absolute; left: 0; bottom: 3.75rem;
+  width: min(22rem, calc(100vw - 2rem)); max-height: min(38rem, calc(100vh - 6rem)); overflow-y: auto;
+  background: #fff; color: #111; border: 2px solid #111; border-radius: 1rem; padding: 1rem 1.1rem 1.1rem;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+}
+.a11y-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.25rem; }
+.a11y-panel h2 { font-size: 1.15rem; font-weight: 700; margin: 0; }
+.a11y-panel h3 { font-size: 0.95rem; font-weight: 700; margin: 0.9rem 0 0.4rem; }
+.a11y-section { border-top: 1px solid #c8c8c8; margin-top: 0.75rem; }
+.a11y-panel button, .a11y-panel select {
+  font: inherit; color: #111; background: #fff; border: 2px solid #111; border-radius: 0.6rem;
+  padding: 0.4rem 0.75rem; cursor: pointer; min-height: 2.25rem;
+}
+.a11y-panel button:hover { background: #eef2ff; }
+.a11y-panel button[aria-pressed="true"] { background: #1d4ed8; color: #fff; border-color: #1d4ed8; }
+.a11y-panel .a11y-primary { background: #1d4ed8; color: #fff; border-color: #1d4ed8; font-weight: 600; }
+.a11y-panel .a11y-primary:hover { background: #1e40af; }
+.a11y-panel .a11y-close { padding: 0.3rem; min-height: 0; border-radius: 999px; line-height: 0; }
+.a11y-panel .a11y-reset { margin-top: 0.75rem; }
+.a11y-row { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.a11y-group { border: 0; margin: 0.5rem 0 0; padding: 0; min-width: 0; }
+.a11y-group legend { font-weight: 600; padding: 0; margin-bottom: 0.25rem; }
+.a11y-field { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; margin-top: 0.6rem; }
+.a11y-field select { max-width: 12.5rem; }
+.a11y-help { font-size: 0.8125rem; color: #333; margin: 0.6rem 0 0; }
+.a11y-help a { color: #1d4ed8; text-decoration: underline; }
+.a11y-live { min-height: 1.2em; font-size: 0.8125rem; color: #333; margin: 0.4rem 0 0; }
+.a11y-panel kbd { font: 600 0.75rem ui-monospace, monospace; background: #eee; border: 1px solid #999; border-radius: 4px; padding: 0 0.3rem; }
+@media (max-width: 480px) { .a11y-menu { left: 0.6rem; bottom: 0.6rem; } }
+@media print { .a11y-menu, .a11y-skip { display: none; } }

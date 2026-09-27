@@ -473,7 +473,7 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({
                           <ThumbsUp className="h-3 w-3" /> Positive
                         </div>
                         <div className="text-base font-bold font-mono text-emerald-900 dark:text-emerald-300 mt-0.5">{pos}</div>
-                        <div className="text-[10px] text-emerald-600/70">{posPct}%</div>
+                        <div className="text-[10px] text-emerald-700">{posPct}%</div>
                       </div>
 
                       <div className="p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40">
@@ -489,7 +489,7 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({
                           <AlertCircle className="h-3 w-3" /> Urgent
                         </div>
                         <div className="text-base font-bold font-mono text-rose-900 dark:text-rose-300 mt-0.5">{urg}</div>
-                        <div className="text-[10px] text-rose-600/70">{urgPct}%</div>
+                        <div className="text-[10px] text-rose-700 dark:text-rose-400">{urgPct}%</div>
                       </div>
                     </div>
                   </div>

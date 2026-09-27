@@ -106,7 +106,7 @@ export function DashboardHeader({
       {/* Left Section: Brand & Assistant Dropdown */}
       <div className="flex items-center gap-4 sm:gap-6">
         {/* Brand Logo */}
-        <div className="flex items-center gap-3 cursor-pointer" onClick={() => setActiveTab('overview')}>
+        <button type="button" className="flex items-center gap-3 cursor-pointer text-left rounded-lg" aria-label="Crescelo overview" onClick={() => setActiveTab('overview')}>
           <BrandMark size={34} showWord={false} />
           <div className="hidden sm:block">
             <div className="flex items-center gap-2">
@@ -117,7 +117,7 @@ export function DashboardHeader({
             </div>
             <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">Business Knowledge Engine</p>
           </div>
-        </div>
+        </button>
 
         <div className="h-6 w-px bg-slate-200 dark:bg-slate-800 hidden md:block" />
 

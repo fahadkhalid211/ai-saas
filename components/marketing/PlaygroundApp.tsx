@@ -112,7 +112,7 @@ function Gate({ onStart }: { onStart: (s: Session) => void }) {
   const { executeRecaptcha } = useRecaptcha();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
-  const [optIn, setOptIn] = useState(true);
+  const [optIn, setOptIn] = useState(false);
   const [shownAt] = useState(() => Date.now());
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -144,7 +144,7 @@ function Gate({ onStart }: { onStart: (s: Session) => void }) {
       <Reveal delay={80}>
         <form className="pg-card" onSubmit={submit}>
           <label>Your name<input value={name} onChange={(e) => setName(e.target.value)} required minLength={2} maxLength={100} autoComplete="name" /></label>
-          <label>Work email<input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required maxLength={254} autoComplete="email" /></label>
+          <label>Work email<input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required maxLength={254} autoComplete="email" /></label>
           <label className="pg-check"><input type="checkbox" checked={optIn} onChange={(e) => setOptIn(e.target.checked)} /> Send me the occasional tip on getting more from an AI assistant. Unsubscribe any time.</label>
           {error ? <p className="pg-error" role="alert">{error}</p> : null}
           <button className="pg-btn" disabled={busy}>{busy ? 'Opening…' : 'Open the playground'}</button>

@@ -356,6 +356,7 @@ export const COOKIES: LegalDocument = {
           list: [
             'kortex_theme and kortex_site_theme (localStorage): remember light or dark mode.',
             'kortex_onboarding_completed (localStorage): remembers that you finished the dashboard tour.',
+            'crescelo_a11y (localStorage): remembers your accessibility menu choices (text size, contrast, colours and so on). It never leaves your browser.',
           ],
         },
       ],
@@ -564,4 +565,81 @@ export const DPA: LegalDocument = {
   ],
 };
 
-export const LEGAL_DOCUMENTS: Record<string, LegalDocument> = { privacy: PRIVACY, terms: TERMS, cookies: COOKIES, 'acceptable-use': AUP, dpa: DPA };
+/* ------------------------------------------------------------------ Accessibility Statement ------------------------------------------------------------------ */
+
+export const ACCESSIBILITY: LegalDocument = {
+  slug: 'accessibility',
+  title: 'Accessibility Statement',
+  eyebrow: 'Legal',
+  summary: 'How we work to make Crescelo usable by everyone, the tools built into every page, what is still being improved and how to tell us about a barrier.',
+  sections: [
+    {
+      id: 'commitment',
+      heading: '1. Our commitment',
+      body: [
+        `${op} wants everyone to be able to use crescelo.com, the Crescelo dashboard, the pages our customers publish with it and the chat widget. We aim to meet the Web Content Accessibility Guidelines (WCAG) 2.2, level AA.`,
+        'This is our own assessment. We have not yet had the site independently audited, and we do not claim full conformance. We test with a keyboard, with browser tools and with a screen reader, fix what we find and re-check after changes.',
+      ],
+    },
+    {
+      id: 'tools',
+      heading: '2. Tools on every page',
+      body: [
+        'The round accessibility button at the bottom left of every page opens a menu with:',
+        {
+          list: [
+            'Read page aloud: your browser’s own voice reads the main content, highlights the part being read, and lets you pause, stop, change the speed and choose a voice. Nothing is sent to us or anyone else.',
+            'Text size up to 175 percent, and an easy-to-read font with more spacing.',
+            'High contrast, and a colour-blind friendly palette that replaces red, green and orange with blue, vermillion and gold, with links underlined so colour is never the only cue.',
+            'Always-underlined links, a thicker keyboard focus outline and reduced animation. We also follow your device settings for reduced motion and increased contrast.',
+          ],
+        },
+        'Your choices are saved in this browser only (see the Cookie Policy) and can be reset from the same menu.',
+      ],
+    },
+    {
+      id: 'keyboard',
+      heading: '3. Keyboard and assistive technology',
+      body: [
+        {
+          list: [
+            'Every link, button, form field and menu can be reached and used with the keyboard: Tab and Shift+Tab to move, Enter or Space to activate, Escape to close menus and dialogs.',
+            'A "Skip to main content" link is the first thing keyboard users reach on each page.',
+            'Dialogs keep focus inside them while open, close with Escape and return you to where you were.',
+            'The focus outline is always visible. The chat widget can be opened and closed from the keyboard and announces new replies to screen readers.',
+            'Buttons that show only an icon are given a text name for screen readers, and form fields have labels.',
+          ],
+        },
+      ],
+    },
+    {
+      id: 'limits',
+      heading: '4. Known limitations',
+      body: [
+        'We are still improving these areas:',
+        {
+          list: [
+            'Some dashboard charts and data tables are easier to use visually than with a screen reader. Table alternatives are being added.',
+            'Documents you or your visitors upload, and pages published by our customers, are the responsibility of their authors. Customers should add text alternatives to their images and check their own colours.',
+            'Text inside images and videos we do not control, and content from third parties such as reCAPTCHA, may not meet the same standard.',
+            'The read-aloud voice depends on the voices your device provides, and quality varies between browsers.',
+          ],
+        },
+      ],
+    },
+    {
+      id: 'feedback',
+      heading: '5. Tell us about a barrier',
+      body: [
+        `If something on Crescelo is hard or impossible to use, please tell us through ${LEGAL.contactUrl} (choose the accessibility topic if offered, or say so in your message). Include the page, what you were trying to do and, if you can, the browser and assistive technology you use. We aim to reply within five business days and to fix genuine barriers as a priority. If you need information in another format, ask and we will help.`,
+      ],
+    },
+    {
+      id: 'date',
+      heading: '6. This statement',
+      body: [`This statement was prepared on ${LEGAL.lastUpdated} and is reviewed whenever we make significant changes.`],
+    },
+  ],
+};
+
+export const LEGAL_DOCUMENTS: Record<string, LegalDocument> = { accessibility: ACCESSIBILITY, privacy: PRIVACY, terms: TERMS, cookies: COOKIES, 'acceptable-use': AUP, dpa: DPA };

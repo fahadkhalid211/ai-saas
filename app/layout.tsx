@@ -1,8 +1,11 @@
 import { CookieConsent } from '@/components/legal/CookieConsent';
+import { AccessibilityMenu } from '@/components/a11y/AccessibilityMenu';
+import { PageAccessibility } from '@/components/a11y/PageAccessibility';
 import { SITE } from '@/components/marketing/content';
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import "./a11y.css";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -13,6 +16,8 @@ const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
 });
+
+const A11Y_BOOT = "(function(){try{var p=JSON.parse(localStorage.getItem('crescelo_a11y')||'{}'),d=document.documentElement;for(var k in p){if(typeof p[k]==='string')d.setAttribute('data-a11y-'+k,p[k]);}}catch(e){}})();";
 
 export const viewport: Viewport = {
   themeColor: [
@@ -72,8 +77,14 @@ export default function RootLayout({
       suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
+      <head>
+        {/* Applies a visitor's saved accessibility settings before first paint, so nothing flashes. */}
+        <script dangerouslySetInnerHTML={{ __html: A11Y_BOOT }} />
+      </head>
       <body className="min-h-full flex flex-col bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 selection:bg-blue-600 selection:text-white font-sans">
         {children}
+        <PageAccessibility />
+        <AccessibilityMenu />
         <CookieConsent />
       </body>
     </html>

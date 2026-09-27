@@ -375,6 +375,7 @@ export const FOOTER = {
         { label: 'Privacy Policy', href: '/privacy' },
         { label: 'Terms of Service', href: '/terms' },
         { label: 'Cookie Policy', href: '/cookies' },
+        { label: 'Accessibility', href: '/accessibility' },
         { label: 'Acceptable Use', href: '/acceptable-use' },
         { label: 'Data Processing Addendum', href: '/dpa' },
         { label: 'Sub-processors', href: '/subprocessors' },

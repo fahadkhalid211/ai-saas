@@ -420,7 +420,7 @@ export const SystemLogsTab: React.FC = () => {
                   )}
                   {entries.map((e) => (
                     <React.Fragment key={e.id}>
-                      <tr onClick={() => setExpanded(expanded === e.id ? null : e.id)} className="cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/40 align-top">
+                      <tr onClick={() => setExpanded(expanded === e.id ? null : e.id)} tabIndex={0} aria-expanded={expanded === e.id} onKeyDown={(ev) => { if (ev.target === ev.currentTarget && (ev.key === 'Enter' || ev.key === ' ')) { ev.preventDefault(); setExpanded(expanded === e.id ? null : e.id); } }} className="cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/40 align-top">
                         <td className="py-2 px-3 whitespace-nowrap font-mono text-[11px]" title={e.ts}>
                           <div>{fmtTime(e.ts)}</div>
                           <div className="text-slate-400">{relative(e.ts)}</div>
@@ -536,7 +536,7 @@ export const SystemLogsTab: React.FC = () => {
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                 {(summary?.topFailingRoutes || []).length === 0 && <tr><td className="py-8 text-center text-slate-400">No server errors in this period.</td></tr>}
                 {(summary?.topFailingRoutes || []).map((r) => (
-                  <tr key={`${r.method}${r.route}`} className="cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/40" onClick={() => { setRoute(r.route); setStatusClass('5xx'); setView('events'); }}>
+                  <tr key={`${r.method}${r.route}`} className="cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/40" tabIndex={0} onKeyDown={(ev) => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); setRoute(r.route); setStatusClass('5xx'); setView('events'); } }} onClick={() => { setRoute(r.route); setStatusClass('5xx'); setView('events'); }}>
                     <td className="py-2 px-3 font-mono text-[11px]">{r.method} {r.route}</td>
                     <td className="py-2 px-3 font-bold text-rose-600 text-right">{r.failures}</td>
                     <td className="py-2 px-3 text-slate-500 text-right whitespace-nowrap">{relative(r.lastSeen)}</td>
@@ -551,7 +551,7 @@ export const SystemLogsTab: React.FC = () => {
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                 {(summary?.slowestRoutes || []).length === 0 && <tr><td className="py-8 text-center text-slate-400">Not enough traffic yet.</td></tr>}
                 {(summary?.slowestRoutes || []).map((r) => (
-                  <tr key={`${r.method}${r.route}`} className="cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/40" onClick={() => { setRoute(r.route); setView('events'); }}>
+                  <tr key={`${r.method}${r.route}`} className="cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/40" tabIndex={0} onKeyDown={(ev) => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); setRoute(r.route); setView('events'); } }} onClick={() => { setRoute(r.route); setView('events'); }}>
                     <td className="py-2 px-3 font-mono text-[11px]">{r.method} {r.route}</td>
                     <td className="py-2 px-3 text-right">p50 {r.p50} ms</td>
                     <td className="py-2 px-3 font-bold text-right">p95 {r.p95} ms</td>

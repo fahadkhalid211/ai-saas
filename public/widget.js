@@ -164,13 +164,25 @@
         overflow: hidden;
         opacity: 0;
         pointer-events: none;
+        visibility: hidden;
         transform: translateY(16px) scale(0.96);
-        transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1), transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), visibility 0s linear 0.25s;
       }
       .chat-window.open {
         opacity: 1;
         pointer-events: auto;
+        visibility: visible;
         transform: translateY(0) scale(1);
+        transition-delay: 0s;
+      }
+      /* Keyboard focus is always visible, and motion respects the visitor's setting */
+      button:focus-visible, a:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-visible, [tabindex]:focus-visible {
+        outline: 3px solid #1d4ed8;
+        outline-offset: 2px;
+        box-shadow: 0 0 0 5px #ffffff;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; transition-delay: 0s !important; }
       }
       /* Expanded: a roomy reading window (the Expand button in the header) */
       .chat-window.expanded {
@@ -596,7 +608,7 @@
       .support-label .optional-tag {
         font-size: 10px;
         font-weight: normal;
-        color: #94a3b8;
+        color: #526074;
         margin-left: 4px;
       }
       .support-input, .support-select, .support-textarea {
@@ -771,9 +783,9 @@
         padding: 6px 16px 0 16px;
         background: #ffffff;
         text-align: center;
-        font-size: 10px;
+        font-size: 11px;
         line-height: 1.35;
-        color: #94a3b8;
+        color: #526074;
       }
       /* Footer branding */
       .chat-branding {
@@ -781,7 +793,7 @@
         background: #ffffff;
         text-align: center;
         font-size: 11px;
-        color: #94a3b8;
+        color: #526074;
         border-top: 1px solid #f8fafc;
         display: flex;
         align-items: center;
@@ -844,7 +856,7 @@
         background: transparent;
         border: none;
         cursor: pointer;
-        color: #94a3b8;
+        color: #526074;
         padding: 2px;
         border-radius: 4px;
         display: flex;
@@ -876,15 +888,15 @@
         left: 24px;
       }
       .chat-notice {
-        font-size: 10px;
-        color: #94a3b8;
+        font-size: 11px;
+        color: #526074;
         text-align: center;
         padding: 4px 16px 2px;
         line-height: 1.35;
       }
       .chat-branding {
         font-size: 10.5px;
-        color: #94a3b8;
+        color: #526074;
         text-align: center;
         padding: 2px 16px 8px;
         display: flex;
@@ -1019,7 +1031,7 @@
           </svg>
         </button>
       </div>
-      <div class="chat-notice" id="widget-notice">AI assistant. Replies may be inaccurate. Your messages are stored and processed by this business and its service providers.</div>
+      <div class="chat-notice" id="widget-notice">AI assistant. Replies may be inaccurate. By sending a message you agree that this business and its service providers store and process it. <a href="${hostUrl}/privacy" target="_blank" rel="noopener noreferrer" style="color:inherit;text-decoration:underline">Privacy policy</a></div>
       <div class="chat-branding" id="widget-branding">
         <span style="display:inline-flex;align-items:center;gap:5px;"><span class="cm-mark-mini" style="display:inline-block;width:13px;height:13px;vertical-align:middle;line-height:0;"><svg viewBox="0 0 100 100" width="13" height="13"><defs><linearGradient id="cm_t_w" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#12432f"/><stop offset="100%" stop-color="#04140d"/></linearGradient><linearGradient id="cm_c_w" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#f1ffc9"/><stop offset="45%" stop-color="#abff44"/><stop offset="100%" stop-color="#74d321"/></linearGradient></defs><rect x="0" y="0" width="100" height="100" rx="26" fill="url(#cm_t_w)"/><path class="cm-c-anim" d="M69.9 33.3 A26 26 0 1 0 69.9 66.7" fill="none" stroke="url(#cm_c_w)" stroke-width="14" stroke-linecap="round"/><circle class="cm-seed-anim" cx="63" cy="50" r="5.6" fill="url(#cm_c_w)"/><rect x="1" y="1" width="98" height="98" rx="25" fill="none" stroke="#abff44" stroke-opacity="0.3" stroke-width="2"/></svg></span> Powered by <a href="https://crescelo.com" target="_blank" rel="noopener noreferrer">Crescelo</a></span>
       </div>
@@ -1042,6 +1054,27 @@
       <div class="proactive-popup-text" id="proactive-text"></div>
       <div class="proactive-popup-tail"></div>
     `;
+
+    // Accessibility: the window is a dialog, the transcript is a live log, icon buttons have names, the popup works from the keyboard
+    chatWindow.setAttribute('role', 'dialog');
+    chatWindow.setAttribute('aria-label', 'Chat with this business');
+    var logEl = chatWindow.querySelector('#messages-body');
+    if (logEl) {
+      logEl.setAttribute('role', 'log');
+      logEl.setAttribute('aria-live', 'polite');
+      logEl.setAttribute('aria-relevant', 'additions');
+      logEl.setAttribute('aria-label', 'Conversation');
+    }
+    [chatWindow, proactiveBubble].forEach(function (root) {
+      root.querySelectorAll('button[title]:not([aria-label])').forEach(function (b) { b.setAttribute('aria-label', b.getAttribute('title')); });
+    });
+    var sendEl = chatWindow.querySelector('#chat-input');
+    if (sendEl) sendEl.setAttribute('aria-label', 'Your message');
+    proactiveBubble.setAttribute('role', 'button');
+    proactiveBubble.setAttribute('tabindex', '0');
+    proactiveBubble.setAttribute('aria-label', 'Open chat');
+    launcher.setAttribute('aria-expanded', 'false');
+    launcher.setAttribute('aria-haspopup', 'dialog');
 
     widgetWrapper.appendChild(chatWindow);
     widgetWrapper.appendChild(proactiveBubble);
@@ -1247,6 +1280,25 @@
       }
     });
 
+    // Keep aria-expanded in step with the window, and let Escape close it and return focus to the launcher
+    new MutationObserver(function () {
+      launcher.setAttribute('aria-expanded', chatWindow.classList.contains('open') ? 'true' : 'false');
+    }).observe(chatWindow, { attributes: true, attributeFilter: ['class'] });
+    shadow.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && chatWindow.classList.contains('open')) {
+        e.stopPropagation();
+        isOpen = false;
+        chatWindow.classList.remove('open');
+        launcher.focus();
+      }
+    });
+    proactiveBubble.addEventListener('keydown', function (e) {
+      if ((e.key === 'Enter' || e.key === ' ') && e.target === proactiveBubble) {
+        e.preventDefault();
+        proactiveBubble.click();
+      }
+    });
+
     // Expand / Minimize
     var expandBtn = shadow.getElementById('header-expand-btn');
     if (expandBtn) {
@@ -1270,6 +1322,7 @@
       closeBtn.addEventListener('click', function () {
         isOpen = false;
         chatWindow.classList.remove('open');
+        launcher.focus();
       });
     }
 

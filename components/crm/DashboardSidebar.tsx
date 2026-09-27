@@ -255,7 +255,7 @@ export function DashboardSidebar({
                     </div>
                     <div className="flex items-center gap-1.5">
                       {tab.waitingCount && tab.waitingCount > 0 ? (
-                        <span className="rounded-full bg-amber-500 text-white px-1.5 py-0.2 text-[10px] font-bold animate-pulse">
+                        <span className="rounded-full bg-amber-500 text-slate-950 px-1.5 py-0.2 text-[10px] font-bold animate-pulse">
                           {tab.waitingCount} Waiting
                         </span>
                       ) : null}

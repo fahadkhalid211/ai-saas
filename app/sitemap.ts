@@ -51,6 +51,7 @@ const PAGES: { path: string; priority: number; changeFrequency: 'weekly' | 'mont
   { path: '/terms',            priority: 0.3, changeFrequency: 'yearly' },
   { path: '/privacy',          priority: 0.3, changeFrequency: 'yearly' },
   { path: '/cookies',          priority: 0.2, changeFrequency: 'yearly' },
+  { path: '/accessibility',    priority: 0.3, changeFrequency: 'yearly' },
   { path: '/acceptable-use',   priority: 0.2, changeFrequency: 'yearly' },
   { path: '/dpa',              priority: 0.2, changeFrequency: 'yearly' },
   { path: '/subprocessors',    priority: 0.2, changeFrequency: 'yearly' },
