@@ -148,7 +148,7 @@ function Gate({ onStart }: { onStart: (s: Session) => void }) {
           <label className="pg-check"><input type="checkbox" checked={optIn} onChange={(e) => setOptIn(e.target.checked)} /> Send me the occasional tip on getting more from an AI assistant. Unsubscribe any time.</label>
           {error ? <p className="pg-error" role="alert">{error}</p> : null}
           <button className="pg-btn" disabled={busy}>{busy ? 'Opening…' : 'Open the playground'}</button>
-          <small className="pg-muted">We use your details to open the playground and email your link. Documents are deleted after 7 days. See our <a href="/privacy">privacy policy</a>.</small>
+          <small className="pg-muted">We use your details to open the playground and email your link. Documents are deleted from the playground after 7 days. To write answers, your questions and the relevant passages are sent to an AI provider (Groq or Google), so do not add confidential or personal data. See our <a href="/privacy">privacy policy</a>.</small>
         </form>
       </Reveal>
     </div>
