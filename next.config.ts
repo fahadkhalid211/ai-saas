@@ -6,6 +6,24 @@ const nextConfig: NextConfig = {
   distDir: process.env.NEXT_DIST_DIR || '.next',
   // Do not advertise the framework in every response.
   poweredByHeader: false,
+  async rewrites() {
+    return {
+      beforeFiles: [
+        {
+          source: '/:path*',
+          has: [
+            {
+              type: 'host',
+              value: 'status\\.crescelo\\.com',
+            },
+          ],
+          destination: '/status/:path*',
+        },
+      ],
+      afterFiles: [],
+      fallback: [],
+    };
+  },
   async redirects() {
     // The marketing page moved from /welcome to the site root.
     return [

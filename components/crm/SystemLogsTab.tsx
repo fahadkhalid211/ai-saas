@@ -275,6 +275,14 @@ export const SystemLogsTab: React.FC = () => {
             <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin text-blue-600' : ''}`} />
             <span>Refresh</span>
           </button>
+          <a
+            href="/admin/monitoring"
+            target="_blank"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-emerald-500/40 bg-emerald-50 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300 text-xs font-semibold hover:bg-emerald-100 dark:hover:bg-emerald-950/70 transition"
+          >
+            <Activity className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+            <span>Live System Monitoring &rarr;</span>
+          </a>
           <a href={exportUrl('csv')} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition">
             <Download className="h-3.5 w-3.5" />
             <span>CSV</span>

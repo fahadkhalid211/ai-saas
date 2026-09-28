@@ -19,6 +19,7 @@ const SECRET_VALUE_PATTERNS: Array<[RegExp, string]> = [
   [/\bEA[A-Za-z0-9]{40,}\b/g, '[redacted-key]'],
   [/\bBearer\s+[A-Za-z0-9._~+/=-]{10,}/gi, 'Bearer [redacted]'],
   [/\b(postgres(?:ql)?|mysql|mongodb(?:\+srv)?|redis|rediss|amqp):\/\/[^\s'"]+/gi, '[redacted-connection-string]'],
+  [/\b((?:token|key|secret|code|password|sig|signature|api_key|apikey|access_token)\s*[:=]\s*)[^\s,;&'"]+/gi, '$1[redacted]'],
   [/([?&](?:token|key|secret|code|password|sig|signature|api_key|apikey|access_token)=)[^&\s'"]+/gi, '$1[redacted]'],
 ];
 
