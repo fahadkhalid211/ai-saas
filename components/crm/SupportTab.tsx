@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useCallback, useEffect, useState } from 'react';
-import { LifeBuoy, Plus, RefreshCw, Send, Lock, CheckCircle2, Search } from 'lucide-react';
+import { LifeBuoy, Plus, RefreshCw, Send, Lock, CheckCircle2, Search, Bug } from 'lucide-react';
 
 type Status = 'open' | 'pending' | 'resolved' | 'closed';
 type Priority = 'low' | 'normal' | 'high' | 'urgent';
@@ -29,7 +29,7 @@ interface Msg {
   createdAt: string;
 }
 
-const CATEGORIES = ['Technical Support', 'Billing & Payments', 'Account & Access', 'Privacy request', 'Security', 'Sales & Enterprise', 'Feature request', 'General Support'];
+const CATEGORIES = ['Bug Report', 'Technical Support', 'Billing & Payments', 'Account & Access', 'Privacy request', 'Security', 'Sales & Enterprise', 'Feature request', 'General Support'];
 const STATUS_STYLE: Record<Status, string> = {
   open: 'bg-amber-50 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300',
   pending: 'bg-sky-50 text-sky-700 dark:bg-sky-950/50 dark:text-sky-300',
@@ -155,9 +155,30 @@ export function SupportTab({ master }: { master: boolean }) {
             <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} />
           </button>
           {!master && (
-            <button type="button" onClick={() => { setComposing(true); setSelected(null); }} className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold cursor-pointer">
-              <Plus className="h-3.5 w-3.5" /> New ticket
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setComposing(true);
+                  setSelected(null);
+                  setDraft({ category: 'Bug Report', priority: 'normal', subject: '', message: '' });
+                }}
+                className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-rose-200 dark:border-rose-900/60 bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 hover:bg-rose-100 dark:hover:bg-rose-900/60 text-xs font-semibold cursor-pointer transition-colors"
+              >
+                <Bug className="h-3.5 w-3.5" /> Report a bug
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setComposing(true);
+                  setSelected(null);
+                  setDraft({ category: 'Technical Support', priority: 'normal', subject: '', message: '' });
+                }}
+                className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold cursor-pointer transition-colors"
+              >
+                <Plus className="h-3.5 w-3.5" /> New ticket
+              </button>
+            </div>
           )}
         </div>
       </div>
@@ -184,7 +205,7 @@ export function SupportTab({ master }: { master: boolean }) {
 
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
         <div className="lg:col-span-2 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 divide-y divide-slate-100 dark:divide-slate-800 max-h-[70vh] overflow-y-auto">
-          {tickets.length === 0 && <p className="p-6 text-xs text-slate-500 text-center">{loading ? 'Loading...' : master ? 'No tickets match.' : 'No tickets yet. Use "New ticket" to contact the Crescelo team.'}</p>}
+          {tickets.length === 0 && <p className="p-6 text-xs text-slate-500 text-center">{loading ? 'Loading...' : master ? 'No tickets match.' : 'No tickets yet. Use "New ticket" or "Report a bug" to contact the Crescelo team.'}</p>}
           {tickets.map((t) => (
             <button
               key={t.ref}
@@ -193,7 +214,14 @@ export function SupportTab({ master }: { master: boolean }) {
               className={`w-full text-left p-3.5 space-y-1 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/60 ${selected === t.ref ? 'bg-blue-50/60 dark:bg-blue-950/30' : ''}`}
             >
               <div className="flex items-center justify-between gap-2">
-                <span className="text-[11px] font-mono text-slate-500">{t.ref}</span>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[11px] font-mono text-slate-500">{t.ref}</span>
+                  {t.category === 'Bug Report' && (
+                    <span className="px-1.5 py-0.5 rounded text-[9px] font-semibold bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300 border border-rose-200 dark:border-rose-900/60">
+                      Bug
+                    </span>
+                  )}
+                </div>
                 <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${STATUS_STYLE[t.status]}`}>{t.status}</span>
               </div>
               <div className="text-xs font-semibold text-slate-900 dark:text-white line-clamp-1">{t.subject}</div>

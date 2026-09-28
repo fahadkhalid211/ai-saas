@@ -372,6 +372,7 @@ export const FOOTER = {
         { label: 'Blog', href: '/blog' },
         { label: 'Help Center', href: '/support' },
         { label: 'Contact Support', href: '/support/contact' },
+        { label: 'Report a Bug', href: '/report-bug' },
         { label: 'Privacy Policy', href: '/privacy' },
         { label: 'Terms of Service', href: '/terms' },
         { label: 'Cookie Policy', href: '/cookies' },

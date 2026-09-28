@@ -18,7 +18,7 @@ import {
 } from './store';
 import { sendTicketEmail } from './emails';
 
-export const CATEGORIES = ['Technical Support', 'Billing & Payments', 'Account & Access', 'Privacy request', 'Security', 'Sales & Enterprise', 'Feature request', 'General Support'] as const;
+export const CATEGORIES = ['Bug Report', 'Technical Support', 'Billing & Payments', 'Account & Access', 'Privacy request', 'Security', 'Sales & Enterprise', 'Feature request', 'General Support'] as const;
 export const PRIORITIES: TicketPriority[] = ['low', 'normal', 'high', 'urgent'];
 export const STATUSES: TicketStatus[] = ['open', 'pending', 'resolved', 'closed'];
 export const REOPEN_DAYS = 7;

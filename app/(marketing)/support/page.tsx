@@ -117,6 +117,9 @@ export default function SupportPage() {
             {/* Quick action buttons */}
             <div className="mk-cta-row mk-rise" style={{ justifyContent: 'center', ['--mk-delay' as string]: '460ms' }}>
               <ButtonLink href="/support/contact">Contact Support</ButtonLink>
+              <ButtonLink href="/report-bug" variant="ghost">
+                Report a Bug
+              </ButtonLink>
               <ButtonLink href="/support/ticket" variant="ghost">
                 Check a ticket
               </ButtonLink>
@@ -260,6 +263,9 @@ export default function SupportPage() {
             </p>
             <div className="mk-cta-row" style={{ justifyContent: 'center' }}>
               <ButtonLink href="/support/contact">Open support request</ButtonLink>
+              <ButtonLink href="/report-bug" variant="ghost">
+                Report a Bug
+              </ButtonLink>
               <ButtonLink href="/support/ticket" variant="ghost">
                 Check a ticket
               </ButtonLink>
