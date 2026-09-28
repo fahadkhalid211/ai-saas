@@ -156,14 +156,16 @@ export const EngineTab: React.FC<EngineTabProps> = ({
     setIsTesting(true);
     setTestResult(null);
     try {
+      const prov = formData.provider || 'groq';
+      const isCustomOrOllama = prov === 'custom' || prov === 'ollama';
       const res = await fetch('/api/connectors/verify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           type: 'ai',
-          provider: formData.provider,
+          provider: prov,
           apiKey: formData.apiKeyEncrypted,
-          customBaseUrl: formData.customBaseUrl || formData.ollamaHost,
+          customBaseUrl: isCustomOrOllama ? (formData.customBaseUrl || formData.ollamaHost) : undefined,
           modelName: formData.modelName,
         }),
       });
@@ -339,10 +341,12 @@ export const EngineTab: React.FC<EngineTabProps> = ({
                     deepseek: 'deepseek-chat',
                     ollama: 'llama3.2',
                   };
+                  const isCloud = prov.id !== 'ollama' && prov.id !== 'custom';
                   setFormData({
                     ...formData,
                     provider: prov.id,
                     modelName: defaultModels[prov.id] || 'openai/gpt-oss-120b',
+                    ...(isCloud ? { customBaseUrl: '', ollamaHost: '' } : {}),
                   });
                 }}
                 className={`text-left p-3.5 rounded-xl border transition flex flex-col justify-between cursor-pointer ${
@@ -831,7 +835,22 @@ export const EngineTab: React.FC<EngineTabProps> = ({
           <p className="text-[10.5px] text-slate-400 dark:text-slate-500">
             Saving will verify your connection before applying — a bad key will be rejected with an error.
           </p>
-          <SaveButton onClick={handleSaveSettings} saving={isSaving} error={saveError} idleLabel="Save Settings" savingLabel="Verifying & Saving…" savedLabel="Settings Saved" icon={<CheckCircle2 className="h-3.5 w-3.5" />} className="shrink-0" />
+          <SaveButton
+            onClick={() => {
+              const isCloud = formData.provider !== 'ollama' && formData.provider !== 'custom';
+              if (isCloud && formData.customBaseUrl) {
+                setFormData((prev: any) => ({ ...prev, customBaseUrl: '', ollamaHost: '' }));
+              }
+              handleSaveSettings();
+            }}
+            saving={isSaving}
+            error={saveError}
+            idleLabel="Save Settings"
+            savingLabel="Verifying & Saving…"
+            savedLabel="Settings Saved"
+            icon={<CheckCircle2 className="h-3.5 w-3.5" />}
+            className="shrink-0"
+          />
         </div>
       </div>
     </div>

@@ -93,7 +93,20 @@ const PUTHandler = withRoleAuth(['owner', 'admin'], async (
 
     if (isAiConfigChanging) {
       const targetProvider = safeUpdates.provider !== undefined ? safeUpdates.provider : existing.provider;
-      const targetBaseUrl = safeUpdates.customBaseUrl !== undefined ? safeUpdates.customBaseUrl : existing.customBaseUrl;
+      const isCustomEndpoint = targetProvider === 'custom';
+      const isOllama = targetProvider === 'ollama';
+
+      // Automatically clear leftover localhost URLs when customer uses a cloud provider (Groq, Gemini, OpenAI, Claude, etc.)
+      if (!isCustomEndpoint && !isOllama) {
+        if (safeUpdates.customBaseUrl === undefined || safeUpdates.customBaseUrl?.includes('localhost') || safeUpdates.customBaseUrl?.includes('127.0.0.1')) {
+          phoneCheck.updates.customBaseUrl = '';
+        }
+      }
+
+      const targetBaseUrl = isCustomEndpoint || isOllama
+        ? (safeUpdates.customBaseUrl !== undefined ? safeUpdates.customBaseUrl : existing.customBaseUrl)
+        : undefined;
+
       const targetModel = safeUpdates.modelName !== undefined ? safeUpdates.modelName : existing.modelName;
 
       let keyToVerify = '';

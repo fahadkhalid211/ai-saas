@@ -31,10 +31,12 @@ export async function verifyAiProviderConnection(
   apiKey: string,
   options?: { customBaseUrl?: string; modelName?: string }
 ): Promise<VerificationResult> {
-  const prov = (provider || 'ollama').toLowerCase().trim();
+  const prov = (provider || 'groq').toLowerCase().trim();
 
   // The server makes these requests, so a customer-supplied address must not point at a private or internal network.
-  if (options?.customBaseUrl && process.env.NODE_ENV === 'production') {
+  // Only validate customBaseUrl if the provider actually uses customBaseUrl (i.e. 'custom').
+  // Cloud providers (groq, gemini, openai, anthropic, deepseek) use their official HTTPS endpoints.
+  if (prov === 'custom' && options?.customBaseUrl && process.env.NODE_ENV === 'production') {
     const safe = await validateSafeExternalUrl(options.customBaseUrl.trim());
     if (!safe.safe) return { success: false, message: safe.error || 'That address is blocked by the security policy.' };
   }
