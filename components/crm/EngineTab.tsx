@@ -17,6 +17,7 @@ import {
   Sparkles,
   BookOpen,
 } from 'lucide-react';
+import { hasConnectedAiKey } from '@/lib/ai/resolve-provider';
 
 export interface EngineTabProps {
   formData: any;
@@ -187,19 +188,19 @@ export const EngineTab: React.FC<EngineTabProps> = ({
   const currentStyle =
     currentTemp <= 0.1 ? 'strict' : currentTemp <= 0.5 ? 'balanced' : 'creative';
 
-  const currentProviderId = formData.provider || 'auto_free';
-  const currentGuide = PROVIDER_GUIDES[currentProviderId] || PROVIDER_GUIDES.auto_free;
+  const currentProviderId = formData.provider || 'groq';
+  const currentGuide = PROVIDER_GUIDES[currentProviderId] || PROVIDER_GUIDES.groq;
 
   // What is live is the saved assistant; formData may hold edits that are not saved yet.
   const live = activeAssistant || formData;
-  const liveProviderId = live.provider || 'auto_free';
-  const liveGuide = PROVIDER_GUIDES[liveProviderId] || PROVIDER_GUIDES.auto_free;
-  const liveUsesKey = liveProviderId !== 'auto_free' && liveProviderId !== 'ollama';
-  const liveHasKey = Boolean(live.apiKeyEncrypted);
+  const liveProviderId = live.provider || 'groq';
+  const liveGuide = PROVIDER_GUIDES[liveProviderId] || PROVIDER_GUIDES.groq;
+  const liveUsesKey = liveProviderId !== 'ollama';
+  const liveHasKey = hasConnectedAiKey(live);
   const liveModel =
-    liveProviderId === 'auto_free' ? 'Groq, then Gemini, then Ollama (automatic failover)' : live.modelName || 'default model';
+    liveProviderId === 'auto_free' ? 'Groq, then Gemini, then Ollama (automatic failover)' : live.modelName || 'openai/gpt-oss-120b';
   const hasUnsavedProviderChange =
-    Boolean(activeAssistant) && (formData.provider || 'auto_free') !== liveProviderId;
+    Boolean(activeAssistant) && (formData.provider || 'groq') !== liveProviderId;
 
   return (
     <div className="max-w-4xl space-y-6 mx-auto">
@@ -277,6 +278,36 @@ export const EngineTab: React.FC<EngineTabProps> = ({
         </div>
       </div>
 
+      {/* Alert if API Key is Missing for Active Provider */}
+      {liveUsesKey && !liveHasKey && (
+        <div className="rounded-xl border border-amber-300 dark:border-amber-800 bg-amber-50/80 dark:bg-amber-950/40 p-4 text-xs shadow-xs flex items-start gap-3">
+          <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+          <div className="space-y-1">
+            <div className="font-bold text-amber-900 dark:text-amber-200">
+              API Key Required for {liveGuide.label}
+            </div>
+            <p className="text-amber-800/90 dark:text-amber-300/90 text-[11.5px] leading-relaxed">
+              Your assistant cannot answer customer questions or test chat in the playground until your API key is connected.
+              {liveProviderId === 'groq'
+                ? ' Groq provides 14,400 free daily requests ($0 compute, no credit card required).'
+                : ''} Enter your key below and click &ldquo;Save AI Engine Settings&rdquo;.
+            </p>
+            {liveGuide.consoleUrl && (
+              <div className="pt-1.5">
+                <a
+                  href={liveGuide.consoleUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1.5 font-bold text-amber-900 dark:text-amber-200 bg-amber-100 dark:bg-amber-900/60 hover:bg-amber-200 dark:hover:bg-amber-900 px-2.5 py-1 rounded-lg border border-amber-300 dark:border-amber-700 transition"
+                >
+                  <span>{liveGuide.consoleLabel || 'Get Free API Key'} ↗</span>
+                </a>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Provider Selection Cards */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
@@ -285,15 +316,15 @@ export const EngineTab: React.FC<EngineTabProps> = ({
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           {[
-            { id: 'auto_free', label: 'Zero-Cost Free Engine', tag: 'ZERO COST', desc: 'Auto failover across Groq, Gemini & Ollama ($0 compute)' },
-            { id: 'groq', label: 'Groq Cloud', tag: 'FASTEST (FREE)', desc: 'Instant sub-second Llama 3.3 responses' },
+            { id: 'groq', label: 'Groq Cloud', tag: 'RECOMMENDED (FREE)', desc: 'Instant sub-second inference (14,400 free req/day, $0 compute)' },
             { id: 'gemini', label: 'Google Gemini', tag: '0% MARKUP (BYOK)', desc: 'Gemini 2.5 Flash with deep context' },
             { id: 'openai', label: 'OpenAI', tag: '0% MARKUP (BYOK)', desc: 'GPT-4o & GPT-4o-mini wholesale rates' },
             { id: 'anthropic', label: 'Anthropic Claude', tag: '0% MARKUP (BYOK)', desc: 'Claude 3.5 Sonnet & Haiku wholesale' },
             { id: 'deepseek', label: 'DeepSeek', tag: '0% MARKUP (BYOK)', desc: 'DeepSeek-V3 & R1 reasoning at cost' },
+            { id: 'auto_free', label: 'Zero-Cost Free Engine', tag: 'MULTI-CLOUD', desc: 'Auto failover across Groq, Gemini & Ollama ($0 compute)' },
             { id: 'ollama', label: 'Local Server (Ollama)', tag: 'OFFLINE', desc: 'Self-hosted model on your computer' },
           ].map((prov) => {
-            const isSelected = (formData.provider || 'auto_free') === prov.id;
+            const isSelected = (formData.provider || 'groq') === prov.id;
             const guide = PROVIDER_GUIDES[prov.id];
             return (
               <div

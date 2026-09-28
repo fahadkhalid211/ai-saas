@@ -12,9 +12,12 @@ import {
   Video,
   FileSpreadsheet,
   FileEdit,
+  AlertTriangle,
+  CheckCircle2,
 } from 'lucide-react';
 import { MarkdownRenderer } from '@/components/markdown-renderer';
 import { ChatBookingCard } from '@/components/chat/ChatBookingCard';
+import { hasConnectedAiKey } from '@/lib/ai/resolve-provider';
 
 const Youtube = ({ className = 'h-4 w-4' }: { className?: string }) => (
   <svg className={className} viewBox="0 0 24 24" fill="currentColor">
@@ -38,6 +41,7 @@ export interface PlaygroundTabProps {
   setInputQuery: (val: string) => void;
   handleSendMessage: (q?: string) => void | Promise<void>;
   activeCitations: any[];
+  onRequireApiKey?: (featureName?: string) => void;
 }
 
 export const PlaygroundTab: React.FC<PlaygroundTabProps> = ({
@@ -56,7 +60,25 @@ export const PlaygroundTab: React.FC<PlaygroundTabProps> = ({
   setInputQuery,
   handleSendMessage,
   activeCitations,
+  onRequireApiKey,
 }) => {
+  const hasKey = hasConnectedAiKey(activeAssistant);
+
+  const onSendAttempt = () => {
+    if (!hasKey) {
+      onRequireApiKey?.('AI Playground Chat');
+      return;
+    }
+    handleSendMessage();
+  };
+
+  const onVoiceAttempt = () => {
+    if (!hasKey) {
+      onRequireApiKey?.('Voice Dictation');
+      return;
+    }
+    handlePlaygroundVoiceToggle();
+  };
   return (
     <div className="h-full flex flex-col max-w-6xl space-y-4 mx-auto">
                 <div className="flex items-center justify-between">
@@ -84,6 +106,25 @@ export const PlaygroundTab: React.FC<PlaygroundTabProps> = ({
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 flex-1 min-h-[500px]">
                   {/* Chat Messenger (2 cols) */}
                   <div className="lg:col-span-2 border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-900 shadow-xs flex flex-col justify-between overflow-hidden">
+                    {/* API Key Missing Alert */}
+                    {!hasKey && (
+                      <div className="bg-amber-500/10 border-b border-amber-500/25 px-4 py-2.5 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-amber-900 dark:text-amber-200">
+                        <div className="flex items-center gap-2">
+                          <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0" />
+                          <span>
+                            <strong>Groq API Key Required:</strong> Connect your free Groq API key (14,400 free req/day, $0 compute) to test chat.
+                          </span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => onRequireApiKey?.('AI Playground Chat')}
+                          className="inline-flex items-center justify-center gap-1.5 px-3 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs transition cursor-pointer shrink-0 shadow-xs"
+                        >
+                          Connect Free Key
+                        </button>
+                      </div>
+                    )}
+
                     {/* Chat Messages */}
                     <div className="p-4 overflow-y-auto space-y-3.5 flex-1 max-h-[460px]">
                       {chatMessages.map((msg, i) => (
@@ -243,7 +284,7 @@ export const PlaygroundTab: React.FC<PlaygroundTabProps> = ({
                         </button>
                         <button
                           type="button"
-                          onClick={handlePlaygroundVoiceToggle}
+                          onClick={onVoiceAttempt}
                         title={isVoiceListening ? 'Stop Voice Dictation' : 'Speak / Voice Dictation'}
                         className={`p-2 rounded-lg border transition cursor-pointer shrink-0 ${
                           isVoiceListening
@@ -259,14 +300,14 @@ export const PlaygroundTab: React.FC<PlaygroundTabProps> = ({
                         value={inputQuery}
                         onChange={(e) => setInputQuery(e.target.value)}
                         onKeyDown={(e) => {
-                          if (e.key === 'Enter') handleSendMessage();
+                          if (e.key === 'Enter') onSendAttempt();
                         }}
                         className="flex-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3.5 py-2 text-xs text-slate-900 dark:text-slate-100 outline-none focus:border-blue-500"
                       />
                       <button
-                        onClick={() => handleSendMessage()}
+                        onClick={onSendAttempt}
                         disabled={isStreaming || !inputQuery.trim()}
-                        className="flex items-center gap-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 px-4 py-2 text-xs font-semibold text-white disabled:opacity-50 transition shadow-xs"
+                        className="flex items-center gap-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 px-4 py-2 text-xs font-semibold text-white disabled:opacity-50 transition shadow-xs cursor-pointer"
                       >
                         <Send className="h-3.5 w-3.5" />
                         <span>Send</span>
@@ -288,8 +329,24 @@ export const PlaygroundTab: React.FC<PlaygroundTabProps> = ({
                       <div>
                         <label className="text-[11px] font-medium text-slate-500 dark:text-slate-400 block mb-1">Active AI Provider</label>
                         <div className="p-2.5 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs flex items-center justify-between">
-                          <span className="font-semibold text-slate-900 dark:text-white uppercase font-mono">{activeAssistant?.provider || 'Ollama'}</span>
-                          <span className="text-slate-500 dark:text-slate-400 font-mono text-[11px]">{activeAssistant?.modelName || 'llama3.2'}</span>
+                          <span className="font-semibold text-slate-900 dark:text-white uppercase font-mono">{activeAssistant?.provider || 'Groq'}</span>
+                          <span className="text-slate-500 dark:text-slate-400 font-mono text-[11px]">{activeAssistant?.modelName || 'openai/gpt-oss-120b'}</span>
+                        </div>
+                        <div className="mt-1.5 flex items-center justify-between text-[11px]">
+                          <span className="text-slate-500 dark:text-slate-400">API Key:</span>
+                          {hasKey ? (
+                            <span className="text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1">
+                              <CheckCircle2 className="h-3 w-3" /> Connected
+                            </span>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => onRequireApiKey?.('AI Engine')}
+                              className="text-amber-600 dark:text-amber-400 font-bold hover:underline flex items-center gap-1 cursor-pointer"
+                            >
+                              <AlertTriangle className="h-3 w-3" /> Missing (Connect)
+                            </button>
+                          )}
                         </div>
                       </div>
 

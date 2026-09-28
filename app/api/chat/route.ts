@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse, after } from 'next/server';
-import { withEnvProviderFallback } from '@/lib/ai/resolve-provider';
+import { withEnvProviderFallback, hasConnectedAiKey } from '@/lib/ai/resolve-provider';
 import { getPlatformConciergeAnswer } from '@/lib/ai/concierge';
 import { syncPlatformGuides } from '@/lib/platform/sync';
 import { Database, getLandingConfigForSlugOrTemplate } from '@/lib/db';
@@ -795,6 +795,19 @@ Directly use the content of this attached document to assist the visitor, answer
                 temperature: assistant.temperature,
                 maxTokens: assistant.maxTokens || 2048,
               });
+          // Check if AI provider API key is connected
+          const isMissingKey = !humanRequested && !hasConnectedAiKey(assistant) && assistant.id !== 'demo-assistant';
+          if (isMissingKey) {
+            const missingKeyMsg = `⚠️ **Groq API Key Required**: Please connect your free Groq API key in your Crescelo dashboard to activate this assistant.\n\nGroq provides ultra-fast inference with up to 14,400 free requests per day (no credit card required).\n\n👉 [Get your free Groq API key](https://console.groq.com/keys) and connect it in **Dashboard → AI Engine**.`;
+            const keyEvent = `data: ${JSON.stringify({ type: 'missing_api_key', provider: assistant.provider || 'groq', message: missingKeyMsg })}\n\n`;
+            controller.enqueue(encoder.encode(keyEvent));
+            const tokenEvent = `data: ${JSON.stringify({ type: 'token', token: missingKeyMsg })}\n\n`;
+            controller.enqueue(encoder.encode(tokenEvent));
+            controller.enqueue(encoder.encode(`data: [DONE]\n\n`));
+            controller.close();
+            return;
+          }
+
           const tokenGenerator = humanRequested
             ? streamFixedReply(liveAgentReply({ bookingEnabled: Boolean(assistant.bookingEnabled) }))
             : costCap!.blocked

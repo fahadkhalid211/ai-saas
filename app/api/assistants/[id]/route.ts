@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { Database } from '@/lib/db';
 import { withAdminAuth, withRoleAuth, getAuthContext, requireWorkspaceAssistant, generateCalendarFeedToken } from '@/lib/security/auth';
 import { maskSecret } from '@/lib/security/crypto';
+import { hasConnectedAiKey } from '@/lib/ai/resolve-provider';
 import { getClientIp } from '@/lib/security/rate-limit';
 import { sanitizePhoneSettings } from '@/lib/voice/settings';
 import {
@@ -29,6 +30,7 @@ const GETHandler = withAdminAuth(async (
     const sanitized = {
       ...assistant,
       apiKeyEncrypted: assistant.apiKeyEncrypted ? maskSecret(assistant.apiKeyEncrypted) : '',
+      hasConnectedKey: hasConnectedAiKey(assistant),
       telegramBotToken: assistant.telegramBotToken ? maskSecret(assistant.telegramBotToken) : '',
       whatsappAccessToken: assistant.whatsappAccessToken ? maskSecret(assistant.whatsappAccessToken) : '',
       webhookSecret: assistant.webhookSecret ? maskSecret(assistant.webhookSecret) : '',
@@ -182,6 +184,7 @@ const PUTHandler = withRoleAuth(['owner', 'admin'], async (
     const sanitized = {
       ...updated,
       apiKeyEncrypted: updated.apiKeyEncrypted ? maskSecret(updated.apiKeyEncrypted) : '',
+      hasConnectedKey: hasConnectedAiKey(updated),
       telegramBotToken: updated.telegramBotToken ? maskSecret(updated.telegramBotToken) : '',
       whatsappAccessToken: updated.whatsappAccessToken ? maskSecret(updated.whatsappAccessToken) : '',
       webhookSecret: updated.webhookSecret ? maskSecret(updated.webhookSecret) : '',

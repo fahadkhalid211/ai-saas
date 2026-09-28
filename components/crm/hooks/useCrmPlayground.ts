@@ -4,9 +4,10 @@ import { useState, useRef } from 'react';
 
 interface UseCrmPlaygroundOptions {
   activeAssistant: any;
+  onMissingApiKey?: (detail?: any) => void;
 }
 
-export function useCrmPlayground({ activeAssistant }: UseCrmPlaygroundOptions) {
+export function useCrmPlayground({ activeAssistant, onMissingApiKey }: UseCrmPlaygroundOptions) {
   const [chatMessages, setChatMessages] = useState<{ role: string; content: string; citations?: any[]; isWebSearch?: boolean }[]>([]);
   const [inputQuery, setInputQuery] = useState('');
   const [isStreaming, setIsStreaming] = useState(false);
@@ -124,7 +125,18 @@ export function useCrmPlayground({ activeAssistant }: UseCrmPlaygroundOptions) {
             if (line.startsWith('data: ')) {
               try {
                 const data = JSON.parse(line.slice(6));
-                if (data.type === 'status') {
+                if (data.type === 'missing_api_key') {
+                  if (typeof window !== 'undefined') {
+                    window.dispatchEvent(
+                      new CustomEvent('crescelo:missing_api_key', {
+                        detail: { provider: data.provider || 'groq', message: data.message },
+                      })
+                    );
+                  }
+                  if (onMissingApiKey) {
+                    onMissingApiKey(data);
+                  }
+                } else if (data.type === 'status') {
                   if (data.status === 'searching_web') {
                     setStreamingStatus(data.message || 'Searching the web...');
                   } else if (data.status === 'web_results_found') {

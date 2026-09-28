@@ -51,7 +51,7 @@ async function createStream(client: OpenAI, params: Record<string, any>): Promis
  * Configure OpenAI-compatible client for any supported provider
  */
 function getClient(options: ProviderOptions): { client: OpenAI; model: string } {
-  const provider = (options.provider || 'ollama').toLowerCase();
+  const provider = (options.provider || 'groq').toLowerCase();
 
   switch (provider) {
     case 'auto_free':
@@ -531,7 +531,7 @@ async function* streamChatOnce(
   options: ProviderOptions,
   meta: StreamMeta
 ): AsyncGenerator<string, void, unknown> {
-  const provider = (options.provider || 'ollama').toLowerCase();
+  const provider = (options.provider || 'groq').toLowerCase();
 
   // Zero-cost auto failover tier (Groq -> Gemini -> Ollama)
   if (provider === 'auto_free') {

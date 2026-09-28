@@ -25,6 +25,8 @@ import { LeadDetailsModal } from '@/components/crm/modals/LeadDetailsModal';
 import { AppointmentDetailsModal } from '@/components/crm/modals/AppointmentDetailsModal';
 import { NewLandingPageModal } from '@/components/crm/modals/NewLandingPageModal';
 import { CounterQrModal } from '@/components/crm/modals/CounterQrModal';
+import { ApiKeyRequiredModal } from '@/components/crm/modals/ApiKeyRequiredModal';
+import { hasConnectedAiKey } from '@/lib/ai/resolve-provider';
 import { OverviewTab } from '@/components/crm/OverviewTab';
 import { PlaygroundTab } from '@/components/crm/PlaygroundTab';
 import { EngineTab } from '@/components/crm/EngineTab';
@@ -167,6 +169,19 @@ export default function DashboardPage() {
   // Product Tour
   const [isTourOpen, setIsTourOpen] = useState(false);
   const [tourStepIndex, setTourStepIndex] = useState(0);
+
+  // Groq API Key Missing Modal State
+  const [showApiKeyModal, setShowApiKeyModal] = useState(false);
+  const [apiKeyModalFeature, setApiKeyModalFeature] = useState('AI Assistant Activation');
+
+  useEffect(() => {
+    const handleMissingKey = () => {
+      setApiKeyModalFeature('AI Feature');
+      setShowApiKeyModal(true);
+    };
+    window.addEventListener('crescelo:missing_api_key', handleMissingKey);
+    return () => window.removeEventListener('crescelo:missing_api_key', handleMissingKey);
+  }, []);
 
   const handleOpenTour = () => {
     setTourStepIndex(0);
@@ -338,7 +353,13 @@ export default function DashboardPage() {
   const knowledge = useCrmKnowledge({ activeAssistant });
 
   // Playground Hook
-  const playground = useCrmPlayground({ activeAssistant });
+  const playground = useCrmPlayground({
+    activeAssistant,
+    onMissingApiKey: () => {
+      setApiKeyModalFeature('AI Playground Chat');
+      setShowApiKeyModal(true);
+    },
+  });
 
   const fetchAnalytics = async (assistantId?: string, slug?: string, days?: number) => {
     setIsLoadingAnalytics(true);
@@ -670,6 +691,39 @@ export default function DashboardPage() {
 
         <SubscriptionGate isMasterAdmin={isMasterAdmin} onLogout={handleLogout} onOpenBilling={() => setActiveTab('billing')} onOpenSupport={() => setActiveTab('support')} />
 
+        {/* Missing AI API Key Notification Banner */}
+        {!hasConnectedAiKey(activeAssistant) && activeAssistant && (
+          <div className="bg-gradient-to-r from-amber-500/15 via-orange-500/10 to-amber-500/15 border-b border-amber-500/30 text-amber-950 dark:text-amber-200 px-4 py-2.5 text-xs font-medium flex flex-col sm:flex-row sm:items-center justify-between gap-3 shrink-0 shadow-xs">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <span className="font-bold uppercase tracking-wider text-[10px] bg-amber-500 text-slate-950 px-2 py-0.5 rounded font-mono shrink-0">
+                AI Key Required
+              </span>
+              <span className="text-slate-800 dark:text-amber-100 truncate sm:whitespace-normal">
+                <strong>Groq API key not connected:</strong> Connect your free Groq API key to activate AI replies and testing (14,400 free requests/day, $0 compute, no credit card required).
+              </span>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                type="button"
+                onClick={() => {
+                  setApiKeyModalFeature('AI Assistant Activation');
+                  setShowApiKeyModal(true);
+                }}
+                className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs px-3 py-1 rounded-lg transition cursor-pointer shadow-xs"
+              >
+                Connect Free Key
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab('engine')}
+                className="bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-medium text-xs px-2.5 py-1 rounded-lg transition cursor-pointer"
+              >
+                AI Settings →
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Cloud Persistence Notice Banner */}
         {dbStatus && !dbStatus.connected && dbStatus.isServerless && !dismissedDbBanner && (
           <div className="bg-amber-500/15 border-b border-amber-500/30 text-amber-900 dark:text-amber-200 px-4 py-2 text-xs font-medium flex items-center justify-between shrink-0">
@@ -939,6 +993,10 @@ export default function DashboardPage() {
                 setInputQuery={playground.setInputQuery}
                 handleSendMessage={playground.handleSendMessage}
                 activeCitations={playground.activeCitations}
+                onRequireApiKey={(feat) => {
+                  setApiKeyModalFeature(feat || 'AI Playground');
+                  setShowApiKeyModal(true);
+                }}
               />
             )}
 
@@ -1193,6 +1251,19 @@ export default function DashboardPage() {
           assistantName={activeAssistant?.name}
           onGoToTab={(tab) => setActiveTab(tab as any)}
           onOpenEmbed={() => setShowEmbedModal(true)}
+        />
+
+        {/* Required Groq AI Key Modal */}
+        <ApiKeyRequiredModal
+          isOpen={showApiKeyModal}
+          onClose={() => setShowApiKeyModal(false)}
+          activeAssistant={activeAssistant}
+          onSuccess={(updated) => {
+            setActiveAssistant(updated);
+            setFormData((prev: any) => ({ ...prev, ...updated }));
+          }}
+          onOpenEngineSettings={() => setActiveTab('engine')}
+          featureName={apiKeyModalFeature}
         />
 
         {/* Branded error dialog for every failed save */}

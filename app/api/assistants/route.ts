@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { Database } from '@/lib/db';
 import { withAdminAuth, withRoleAuth, getAuthContext, generateCalendarFeedToken } from '@/lib/security/auth';
 import { maskSecret } from '@/lib/security/crypto';
+import { hasConnectedAiKey } from '@/lib/ai/resolve-provider';
 import { BILLING_PLANS } from '@/lib/billing/plans';
 
 import { getClientIp } from '@/lib/security/rate-limit';
@@ -14,6 +15,7 @@ const GETHandler = withAdminAuth(async (req: Request) => {
     const sanitized = assistants.map((a) => ({
       ...a,
       apiKeyEncrypted: a.apiKeyEncrypted ? maskSecret(a.apiKeyEncrypted) : '',
+      hasConnectedKey: hasConnectedAiKey(a),
       telegramBotToken: a.telegramBotToken ? maskSecret(a.telegramBotToken) : '',
       whatsappAccessToken: a.whatsappAccessToken ? maskSecret(a.whatsappAccessToken) : '',
       webhookSecret: a.webhookSecret ? maskSecret(a.webhookSecret) : '',
