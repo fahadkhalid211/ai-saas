@@ -33,6 +33,10 @@ describe('resolve-provider & Groq Default Configuration', () => {
       apiKeyEncrypted: '',
       customBaseUrl: '',
       primaryColor: '#2563eb',
+      launcherPosition: 'bottom-right',
+      starterQuestions: [],
+      collectLeadEmail: false,
+      allowedDomains: [],
       createdAt: '2026-01-01',
       updatedAt: '2026-01-01',
     };
