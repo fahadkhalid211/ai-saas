@@ -187,8 +187,8 @@ export const KnowledgeTab: React.FC<KnowledgeTabProps> = ({
                       </div>
                       <div>
                         <div className="flex items-center gap-2">
-                          <span className="text-xs font-bold text-slate-900 dark:text-white">
-                            Training Target:
+                          <span className="text-sm font-bold text-slate-900 dark:text-white">
+                            Adding documents for:
                           </span>
                           {assistants && assistants.length > 1 ? (
                             <select
@@ -199,23 +199,23 @@ export const KnowledgeTab: React.FC<KnowledgeTabProps> = ({
                                   setActiveAssistant(selected);
                                 }
                               }}
-                              aria-label="Select AI Assistant for Training"
-                              className="px-2.5 py-1 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-bold text-blue-700 dark:text-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
+                              aria-label="Choose which assistant to add documents to"
+                              className="px-2.5 py-1 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm font-bold text-blue-700 dark:text-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
                             >
                               {assistants.map((ast) => (
                                 <option key={ast.id} value={ast.id}>
-                                  {ast.name} ({ast.id})
+                                  {ast.name}
                                 </option>
                               ))}
                             </select>
                           ) : (
-                            <span className="text-xs font-bold text-blue-700 dark:text-blue-400">
+                            <span className="text-sm font-bold text-blue-700 dark:text-blue-400">
                               {activeAssistant?.name || 'Default Assistant'}
                             </span>
                           )}
                         </div>
-                        <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
-                          ID: <span className="font-mono text-slate-700 dark:text-slate-300 font-semibold">{activeAssistant?.id || 'demo-assistant'}</span>
+                        <p className="text-xs text-slate-500 dark:text-slate-500 mt-0.5">
+                          Assistant ID (only needed if support asks for it): <span className="font-mono text-slate-600 dark:text-slate-400">{activeAssistant?.id || 'demo-assistant'}</span>
                         </p>
                       </div>
                     </div>
@@ -229,70 +229,70 @@ export const KnowledgeTab: React.FC<KnowledgeTabProps> = ({
                               handleDeleteAssistant(activeAssistant.id);
                             }
                           }}
-                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-rose-200 dark:border-rose-900/60 bg-rose-50 dark:bg-rose-950/30 text-rose-700 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-900/60 text-xs font-semibold shadow-xs transition cursor-pointer"
-                          title="Permanently remove this bot and all its training documents"
+                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-rose-200 dark:border-rose-900/60 bg-rose-50 dark:bg-rose-950/30 text-rose-700 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-900/60 text-sm font-semibold shadow-xs transition cursor-pointer"
+                          title="Permanently remove this assistant and all its documents"
                         >
                           <Trash2 className="h-3.5 w-3.5 text-rose-600 dark:text-rose-400" />
-                          <span>Delete Bot</span>
+                          <span>Delete this assistant</span>
                         </button>
                       )}
                       {onOpenNewAssistantModal && (
                         <button
                           type="button"
                           onClick={onOpenNewAssistantModal}
-                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs transition cursor-pointer"
+                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold shadow-xs transition cursor-pointer"
                         >
                           <Plus className="h-3.5 w-3.5" />
-                          <span>Create New Bot</span>
+                          <span>Create another assistant</span>
                         </button>
                       )}
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2 pt-2 border-t border-blue-100 dark:border-blue-900/40 text-[11.5px] text-blue-900 dark:text-blue-200">
+                  <div className="flex items-center gap-2 pt-2 border-t border-blue-100 dark:border-blue-900/40 text-sm text-blue-900 dark:text-blue-200">
                     <ShieldCheck className="h-4 w-4 text-blue-600 dark:text-blue-400 shrink-0" />
                     <span>
-                      <strong>Strict Per-Bot Isolation:</strong> Documents, websites, and YouTube videos uploaded here are partitioned exclusively to <strong>{activeAssistant?.name || 'this assistant'}</strong>. Other bots and separate landing pages will never access or cross-contaminate these materials.
+                      <strong>Kept separate:</strong> everything you upload here only teaches <strong>{activeAssistant?.name || 'this assistant'}</strong>. If you have more than one assistant, they never see each other&apos;s documents.
                     </span>
                   </div>
                 </div>
 
-                {/* Metric Stat Cards (Balanced Typography) */}
+                {/* Plain-language summary cards. Hover any card for the technical detail behind it. */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5">
                   <div className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs">
-                    <div className="text-[11px] font-medium text-slate-500 dark:text-slate-400">Total Articles</div>
+                    <div className="text-xs font-medium text-slate-600 dark:text-slate-400">Your documents</div>
                     <div className="text-base font-semibold text-slate-900 dark:text-white mt-0.5">
-                      {sources.length} {sources.length === 1 ? 'Document' : 'Documents'}
+                      {sources.length} {sources.length === 1 ? 'file' : 'files'}
                     </div>
-                    <div className="text-[10px] mt-0.5 font-medium">
+                    <div className="text-xs mt-0.5 font-medium">
                       {sources.length === 0 ? (
-                        <span className="text-slate-400 dark:text-slate-500">0% indexed</span>
+                        <span className="text-slate-500 dark:text-slate-500">None yet — add one below</span>
                       ) : failedSources.length > 0 ? (
-                        <span className="text-rose-600 dark:text-rose-400">{pctIndexed}% ready ({failedSources.length} failed)</span>
+                        <span className="text-rose-700 dark:text-rose-400">{pctIndexed}% ready ({failedSources.length} need attention)</span>
                       ) : processingSources.length > 0 ? (
-                        <span className="text-amber-600 dark:text-amber-400">{pctIndexed}% ready ({processingSources.length} processing)</span>
+                        <span className="text-amber-700 dark:text-amber-400">{pctIndexed}% ready ({processingSources.length} still reading)</span>
                       ) : (
-                        <span className="text-emerald-600 dark:text-emerald-400">100% indexed</span>
+                        <span className="text-emerald-700 dark:text-emerald-400">All ready to use</span>
                       )}
                     </div>
                   </div>
 
-                  <div className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs">
-                    <div className="text-[11px] font-medium text-slate-500 dark:text-slate-400">Vector Chunks</div>
+                  <div className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs" title="Stored as 384-dimensional embeddings (BGE-small) for retrieval.">
+                    <div className="text-xs font-medium text-slate-600 dark:text-slate-400">Knowledge saved</div>
                     <div className="text-base font-semibold text-slate-900 dark:text-white mt-0.5">
-                      {totalChunks} Chunks
+                      {totalChunks} {totalChunks === 1 ? 'passage' : 'passages'}
                     </div>
-                    <div className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5 font-mono">384-dim BGE-Small</div>
+                    <div className="text-xs text-slate-600 dark:text-slate-400 mt-0.5">Ready to search instantly</div>
                   </div>
 
                   <div className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-1">
-                    <div className="flex items-center justify-between text-[11px] font-medium text-slate-500 dark:text-slate-400">
-                      <span>Storage Quota</span>
+                    <div className="flex items-center justify-between text-xs font-medium text-slate-600 dark:text-slate-400">
+                      <span>Storage used</span>
                       <HardDrive className="h-3.5 w-3.5 text-blue-500" />
                     </div>
                     <div className="text-base font-semibold text-slate-900 dark:text-white mt-0.5 font-mono">
                       {storageUsage ? `${storageUsage.usedMb} MB` : '0 MB'}
-                      <span className="text-[11px] font-normal text-slate-400 font-sans">
+                      <span className="text-xs font-normal text-slate-500 font-sans">
                         {' '}/ {storageUsage ? `${storageUsage.limitMb} MB` : '50 MB'}
                       </span>
                     </div>
@@ -309,27 +309,27 @@ export const KnowledgeTab: React.FC<KnowledgeTabProps> = ({
                           }`}
                         />
                       </div>
-                      <div className="text-[10px] text-slate-400 flex justify-between font-mono">
+                      <div className="text-xs text-slate-500 flex justify-between font-mono">
                         <span>{storageUsage?.percentUsed ?? 0}% used</span>
                         <span>{storageUsage?.planName || 'Plan'}</span>
                       </div>
                     </div>
                   </div>
 
-                  <div className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs">
-                    <div className="text-[11px] font-medium text-slate-500 dark:text-slate-400">Retrieval Mode</div>
-                    <div className="text-base font-semibold text-blue-600 dark:text-blue-400 mt-0.5">
-                      Hybrid RRF
+                  <div className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs" title="Hybrid retrieval: cosine similarity + BM25 keywords, merged with reciprocal rank fusion.">
+                    <div className="text-xs font-medium text-slate-600 dark:text-slate-400">How it searches</div>
+                    <div className="text-base font-semibold text-blue-700 dark:text-blue-400 mt-0.5">
+                      Smart search
                     </div>
-                    <div className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">Cosine + BM25 Keywords</div>
+                    <div className="text-xs text-slate-600 dark:text-slate-400 mt-0.5">Finds answers even with typos or different wording</div>
                   </div>
 
-                  <div className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs">
-                    <div className="text-[11px] font-medium text-slate-500 dark:text-slate-400">Embedding Cost</div>
+                  <div className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs" title="Local CPU embeddings: $0.00/mo regardless of AI provider costs.">
+                    <div className="text-xs font-medium text-slate-600 dark:text-slate-400">Cost to read your documents</div>
                     <div className="text-base font-semibold text-slate-900 dark:text-white mt-0.5">
                       $0.00 / mo
                     </div>
-                    <div className="text-[10px] text-emerald-600 dark:text-emerald-400 mt-0.5 font-medium">Local CPU Embeddings</div>
+                    <div className="text-xs text-emerald-700 dark:text-emerald-400 mt-0.5 font-medium">Always free, however much you upload</div>
                   </div>
                 </div>
 
@@ -391,8 +391,8 @@ export const KnowledgeTab: React.FC<KnowledgeTabProps> = ({
                       <span className="text-sm font-semibold text-slate-800 dark:text-slate-200">
                         Drop files here or click to browse
                       </span>
-                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                        Supports PDF, CSV tables, JSON catalogues, Word DOCX, TXT, Images, &amp; Video/Audio (MP4, MP3, WAV, M4A, WEBM)
+                      <p className="text-sm text-slate-600 dark:text-slate-400 mt-0.5">
+                        Works with PDF, Word, spreadsheets, plain text, images, audio and video files
                       </p>
                     </div>
                     {storageUsage && (
@@ -444,8 +444,8 @@ export const KnowledgeTab: React.FC<KnowledgeTabProps> = ({
 
                   <div className="relative flex py-1 items-center">
                     <div className="flex-grow border-t border-slate-200 dark:border-slate-800"></div>
-                    <span className="flex-shrink mx-4 text-[11px] text-slate-400 dark:text-slate-500 uppercase font-semibold">
-                      Or Enter Raw Business Description / FAQs
+                    <span className="flex-shrink mx-4 text-xs text-slate-500 dark:text-slate-500 uppercase font-semibold">
+                      Or just type it in
                     </span>
                     <div className="flex-grow border-t border-slate-200 dark:border-slate-800"></div>
                   </div>
@@ -476,17 +476,17 @@ export const KnowledgeTab: React.FC<KnowledgeTabProps> = ({
                       {isExtracting ? (
                         <>
                           <RefreshCw className="h-3.5 w-3.5 animate-spin" />
-                          <span>{extractionStatusText || 'Extracting Content...'}</span>
+                          <span>{extractionStatusText || 'Reading...'}</span>
                         </>
                       ) : isUploading ? (
                         <>
                           <RefreshCw className="h-3.5 w-3.5 animate-spin" />
-                          <span>{uploadStatusText || 'Processing...'}</span>
+                          <span>{uploadStatusText || 'Adding...'}</span>
                         </>
                       ) : (
                         <>
                           <Sparkles className="h-3.5 w-3.5" />
-                          <span>Extract &amp; Inspect Content</span>
+                          <span>Add this</span>
                         </>
                       )}
                     </button>
@@ -625,22 +625,22 @@ export const KnowledgeTab: React.FC<KnowledgeTabProps> = ({
                         <Globe className="h-4 w-4" />
                       </div>
                       <div>
-                        <span className="text-xs font-bold text-slate-900 dark:text-white">
-                          Import from YouTube, Webpage, or Media URL
+                        <span className="text-sm font-bold text-slate-900 dark:text-white">
+                          Import from a link
                         </span>
-                        <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                          Grabs transcripts and knowledge in any language (English, Chinese, Spanish, etc.)
+                        <p className="text-xs text-slate-500 dark:text-slate-500">
+                          A YouTube video, a page on your website, or a direct video/audio file — in any language.
                         </p>
                       </div>
                     </div>
 
                     {urlInput.trim() && (
-                      <span className="text-[10px] font-mono px-2 py-0.5 rounded-full font-semibold border bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700">
+                      <span className="text-xs font-mono px-2 py-0.5 rounded-full font-semibold border bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700">
                         {/(?:youtube\.com|youtu\.be)/i.test(urlInput)
-                          ? 'YouTube Video'
+                          ? 'YouTube video'
                           : /\.(mp4|webm|mov|mkv|avi|mp3|wav|m4a|ogg|flac)$/i.test(urlInput.split('?')[0])
-                          ? 'Direct Media Stream'
-                          : 'Webpage Scraper'}
+                          ? 'Video/audio link'
+                          : 'Web page'}
                       </span>
                     )}
                   </div>
@@ -695,12 +695,12 @@ export const KnowledgeTab: React.FC<KnowledgeTabProps> = ({
                         {isExtracting ? (
                           <>
                             <RefreshCw className="h-3.5 w-3.5 animate-spin" />
-                            <span>Extracting Content...</span>
+                            <span>Reading...</span>
                           </>
                         ) : (
                           <>
                             <FileText className="h-3.5 w-3.5 text-blue-500" />
-                            <span>Extract &amp; Inspect Content</span>
+                            <span>Preview first</span>
                           </>
                         )}
                       </button>
@@ -713,12 +713,12 @@ export const KnowledgeTab: React.FC<KnowledgeTabProps> = ({
                       {isImportingUrl ? (
                         <>
                           <RefreshCw className="h-3.5 w-3.5 animate-spin" />
-                          <span>Fetching &amp; Indexing Knowledge...</span>
+                          <span>Adding...</span>
                         </>
                       ) : (
                         <>
                           <Globe className="h-3.5 w-3.5" />
-                          <span>Direct Import</span>
+                          <span>Add directly</span>
                         </>
                       )}
                     </button>
@@ -727,13 +727,13 @@ export const KnowledgeTab: React.FC<KnowledgeTabProps> = ({
 
                 {/* Failed sources alert banner */}
                 {sources.some((s) => s.status === 'failed') && (
-                  <div className="rounded-xl border border-rose-200 dark:border-rose-900/50 bg-rose-50/70 dark:bg-rose-950/20 p-3.5 flex items-start gap-3 text-xs">
+                  <div className="rounded-xl border border-rose-200 dark:border-rose-900/50 bg-rose-50/70 dark:bg-rose-950/20 p-3.5 flex items-start gap-3 text-sm">
                     <AlertTriangle className="w-4 h-4 text-rose-600 dark:text-rose-400 shrink-0 mt-0.5" />
                     <div className="flex-1 text-slate-700 dark:text-slate-300">
                       <span className="font-semibold text-rose-900 dark:text-rose-200">
-                        {sources.filter((s) => s.status === 'failed').length} file(s) failed to index.
+                        {sources.filter((s) => s.status === 'failed').length} file(s) had a problem.
                       </span>{' '}
-                      Click <span className="font-semibold text-rose-600 dark:text-rose-400">"View Fix"</span> in the table below to see the exact reason and step-by-step instructions on what to do next.
+                      Click <span className="font-semibold text-rose-700 dark:text-rose-400">&ldquo;See what to do&rdquo;</span> in the list below for the exact reason and how to fix it.
                     </div>
                   </div>
                 )}
@@ -742,8 +742,8 @@ export const KnowledgeTab: React.FC<KnowledgeTabProps> = ({
                 <div className="border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-900 shadow-xs overflow-hidden">
                   <div className="px-5 py-3.5 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <span className="text-sm font-bold text-slate-900 dark:text-white">Uploaded Knowledge Sources</span>
-                      <span className="text-xs text-slate-500 dark:text-slate-400 font-mono">({sources.length})</span>
+                      <span className="text-sm font-bold text-slate-900 dark:text-white">Your documents</span>
+                      <span className="text-sm text-slate-500 dark:text-slate-400 font-mono">({sources.length})</span>
                     </div>
                     <div className="relative">
                       <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" />
@@ -762,11 +762,11 @@ export const KnowledgeTab: React.FC<KnowledgeTabProps> = ({
                       <div className="mx-auto w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400">
                         <FileText className="w-5 h-5" />
                       </div>
-                      <div className="text-xs font-semibold text-slate-800 dark:text-slate-200">
-                        No training materials for {activeAssistant?.name || 'this bot'} yet
+                      <div className="text-sm font-semibold text-slate-800 dark:text-slate-200">
+                        Nothing uploaded for {activeAssistant?.name || 'this assistant'} yet
                       </div>
-                      <p className="text-[11px] text-slate-500 dark:text-slate-400 max-w-sm mx-auto">
-                        Upload PDFs, text documents, website links, or YouTube videos using the panels above to build an isolated knowledge base specifically for this assistant.
+                      <p className="text-sm text-slate-600 dark:text-slate-400 max-w-sm mx-auto">
+                        Use the panels above to add a document, a web page or a video link. It will only be used to answer for this assistant.
                       </p>
                     </div>
                   ) : filteredSources.length === 0 ? (
@@ -844,11 +844,11 @@ export const KnowledgeTab: React.FC<KnowledgeTabProps> = ({
                                 <button
                                   type="button"
                                   onClick={() => setFailedSourceModal(source)}
-                                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-400 border border-rose-200 dark:border-rose-800 font-semibold text-[11px] hover:bg-rose-100 dark:hover:bg-rose-900/60 transition cursor-pointer"
-                                  title="Click to view failure explanation & fix"
+                                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-400 border border-rose-200 dark:border-rose-800 font-semibold text-xs hover:bg-rose-100 dark:hover:bg-rose-900/60 transition cursor-pointer"
+                                  title="Click to see what went wrong and how to fix it"
                                 >
                                   <AlertTriangle className="h-3 w-3 text-rose-500" />
-                                  <span>Failed · View Fix</span>
+                                  <span>See what to do</span>
                                 </button>
                               )}
                             </td>

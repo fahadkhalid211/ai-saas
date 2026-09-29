@@ -32,6 +32,7 @@ import {
   Mail,
   Shield,
   LifeBuoy,
+  Sparkles,
 } from 'lucide-react';
 import {
   IntegrationId,
@@ -39,6 +40,7 @@ import {
   SlackIcon,
   GoogleSheetsIcon,
 } from '@/components/crm/ChannelsTab';
+import { ADVANCED_ONLY_TABS } from '@/lib/ui/simple-mode';
 
 function renderIntegrationIcon(id: IntegrationId) {
   switch (id) {
@@ -92,6 +94,9 @@ interface DashboardSidebarProps {
   isMasterAdmin?: boolean;
   isOwner?: boolean;
   onOpenTour?: () => void;
+  /** "Simple view": hides the more technical tabs (lib/ui/simple-mode.ts). Defaults to on for a reason — see there. */
+  simpleMode?: boolean;
+  onToggleSimpleMode?: () => void;
 }
 
 export function DashboardSidebar({
@@ -110,17 +115,19 @@ export function DashboardSidebar({
   isMasterAdmin = false,
   isOwner = false,
   onOpenTour,
+  simpleMode = false,
+  onToggleSimpleMode,
 }: DashboardSidebarProps) {
   const canViewAudit = Boolean(isOwner || isMasterAdmin);
   const [isChannelsExpanded, setIsChannelsExpanded] = useState<boolean>(false);
 
-  const sections: TabSection[] = [
+  const allSections: TabSection[] = [
     {
       title: 'Get Started',
       items: [
         { id: 'overview', label: 'Overview', icon: FileCheck },
-        { id: 'knowledge', label: 'Knowledge Base', icon: Upload, count: sourcesCount },
-        { id: 'playground', label: 'Testing Studio', icon: MessageSquare },
+        { id: 'knowledge', label: 'My Documents', icon: Upload, count: sourcesCount },
+        { id: 'playground', label: 'Try It Out', icon: MessageSquare },
       ],
     },
     {
@@ -141,7 +148,7 @@ export function DashboardSidebar({
     {
       title: 'Customize & Channels',
       items: [
-        { id: 'widget', label: 'Widget & Styling', icon: Palette },
+        { id: 'widget', label: 'Add to My Website', icon: Palette },
         { id: 'channels', label: 'Channels & Integrations', icon: Share2 },
         { id: 'behavior', label: 'Behavior & Rules', icon: Sliders },
       ],
@@ -152,7 +159,7 @@ export function DashboardSidebar({
         { id: 'engine', label: 'AI Settings', icon: Cpu },
         { id: 'team', label: 'Team', icon: UserCheck, count: teamCount },
         { id: 'billing', label: 'Plans & Billing', icon: CreditCard },
-        { id: 'security', label: 'Security & 2FA', icon: ShieldCheck },
+        { id: 'security', label: 'Security', icon: ShieldCheck },
         ...(canViewAudit ? [{ id: 'audit', label: 'Audit Trail', icon: ClipboardList, count: auditCount }] : []),
         // The system log is for the platform owner only (the API refuses everyone else with a 404).
         ...(isMasterAdmin ? [{ id: 'system_logs', label: 'System Logs', icon: Activity }] : []),
@@ -165,12 +172,18 @@ export function DashboardSidebar({
     },
   ];
 
+  // Simple view hides the tabs a first-time owner never needs and would only find intimidating (lib/ui/simple-mode.ts).
+  // Nothing is deleted or disabled by this — turning it off shows every tab again, exactly where it was.
+  const sections: TabSection[] = simpleMode
+    ? allSections.map((s) => ({ ...s, items: s.items.filter((t) => !ADVANCED_ONLY_TABS.has(t.id)) })).filter((s) => s.items.length > 0)
+    : allSections;
+
   return (
     <aside className="w-60 h-full max-h-full border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3 flex flex-col justify-between shrink-0 overflow-hidden select-none">
       <div className="flex flex-col flex-1 min-h-0 gap-5 overflow-y-auto pr-1 overscroll-contain mk-sidebar-scroll">
         {sections.map((section) => (
           <div key={section.title}>
-            <div className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500 px-3 mb-1.5">
+            <div className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 px-3 mb-1.5">
               {section.title}
             </div>
             <nav className="space-y-0.5">
@@ -189,7 +202,7 @@ export function DashboardSidebar({
                             setActiveTab('channels');
                           }
                         }}
-                        className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-xs font-medium transition cursor-pointer select-none ${
+                        className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm font-medium transition cursor-pointer select-none ${
                           isChannelsActive
                             ? 'bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-400 font-semibold'
                             : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-200'
@@ -217,7 +230,7 @@ export function DashboardSidebar({
                                     setSelectedIntegration?.(item.id);
                                     setActiveTab('channels');
                                   }}
-                                  className={`w-full flex items-center justify-between rounded-md px-2 py-1 text-[11px] font-medium transition cursor-pointer ${
+                                  className={`w-full flex items-center justify-between rounded-md px-2 py-1 text-xs font-medium transition cursor-pointer ${
                                     isSelected
                                       ? 'bg-blue-100/70 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 font-semibold'
                                       : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-200'
@@ -245,7 +258,7 @@ export function DashboardSidebar({
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id as any)}
-                    className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-xs font-medium transition cursor-pointer ${
+                    className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm font-medium transition cursor-pointer ${
                       isActive
                         ? 'bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-400 font-semibold'
                         : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-200'
@@ -257,13 +270,13 @@ export function DashboardSidebar({
                     </div>
                     <div className="flex items-center gap-1.5">
                       {tab.waitingCount && tab.waitingCount > 0 ? (
-                        <span className="rounded-full bg-amber-500 text-slate-950 px-1.5 py-0.2 text-[10px] font-bold animate-pulse">
+                        <span className="rounded-full bg-amber-500 text-slate-950 px-1.5 py-0.2 text-[11px] font-bold animate-pulse">
                           {tab.waitingCount} Waiting
                         </span>
                       ) : null}
                       {tab.count !== undefined && (
                         <span
-                          className={`rounded px-1.5 py-0.5 text-[11px] font-mono ${
+                          className={`rounded px-1.5 py-0.5 text-xs font-mono ${
                             isActive
                               ? 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-300 font-bold'
                               : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400'
@@ -281,18 +294,18 @@ export function DashboardSidebar({
         ))}
 
         {/* Status Compliance Box */}
-        <div className="p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 text-xs space-y-1.5">
+        <div className="p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 text-sm space-y-1.5">
           <div className="flex items-center justify-between font-semibold text-slate-700 dark:text-slate-300">
-            <span>Assistant Status</span>
-            <span className="text-emerald-600 dark:text-emerald-400 text-[10px] font-bold uppercase">Ready</span>
+            <span>Assistant status</span>
+            <span className="text-emerald-700 dark:text-emerald-400 text-xs font-bold uppercase">Ready</span>
           </div>
-          <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-normal">
-            Knowledge base is synced and ready to respond to customer inquiries.
+          <p className="text-xs text-slate-600 dark:text-slate-400 leading-normal">
+            Your assistant is ready to answer customers.
           </p>
         </div>
       </div>
 
-      <div className="pt-3 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between text-[11px]">
+      <div className="pt-3 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between gap-2 text-xs">
         {onOpenTour ? (
           <button
             type="button"
@@ -300,12 +313,31 @@ export function DashboardSidebar({
             className="flex items-center gap-1.5 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-semibold cursor-pointer transition"
           >
             <Compass className="h-3.5 w-3.5" />
-            <span>Product Tour</span>
+            <span>Guided tour</span>
           </button>
         ) : (
-          <span className="text-slate-400 dark:text-slate-500 font-mono">CRESCELO v2.0</span>
+          <span className="text-slate-400 dark:text-slate-500">Crescelo</span>
         )}
-        <span className="text-slate-400 dark:text-slate-500 font-mono text-[10px]">Enterprise</span>
+        {onToggleSimpleMode ? (
+          <button
+            type="button"
+            onClick={onToggleSimpleMode}
+            aria-pressed={simpleMode}
+            title={
+              simpleMode
+                ? "Showing a simple view with the everyday tabs only. Click to see every setting."
+                : 'Showing every setting. Click to go back to the simple view.'
+            }
+            className={`flex items-center gap-1.5 rounded-full border px-2.5 py-1 font-semibold cursor-pointer transition ${
+              simpleMode
+                ? 'border-emerald-300 bg-emerald-50 text-emerald-800 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300'
+                : 'border-slate-300 bg-slate-100 text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300'
+            }`}
+          >
+            <Sparkles className="h-3 w-3 shrink-0" />
+            {simpleMode ? 'Simple view' : 'Advanced view'}
+          </button>
+        ) : null}
       </div>
     </aside>
   );

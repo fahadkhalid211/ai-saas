@@ -27,6 +27,7 @@ import { NewLandingPageModal } from '@/components/crm/modals/NewLandingPageModal
 import { CounterQrModal } from '@/components/crm/modals/CounterQrModal';
 import { ApiKeyRequiredModal } from '@/components/crm/modals/ApiKeyRequiredModal';
 import { hasConnectedAiKey } from '@/lib/ai/resolve-provider';
+import { ADVANCED_ONLY_TABS, loadSimpleMode, saveSimpleMode } from '@/lib/ui/simple-mode';
 import { OverviewTab } from '@/components/crm/OverviewTab';
 import { PlaygroundTab } from '@/components/crm/PlaygroundTab';
 import { EngineTab } from '@/components/crm/EngineTab';
@@ -91,6 +92,24 @@ export default function DashboardPage() {
     'overview' | 'profile' | 'analytics' | 'billing' | 'landing_page' | 'team' | 'security' | 'audit' | 'system_logs' | 'blog_admin' | 'access_codes' | 'support' | 'knowledge' | 'engine' | 'behavior' | 'widget' | 'channels' | 'playground' | 'leads' | 'appointments' | 'docs' | 'templates' | 'history'
   >('overview');
   const [selectedIntegration, setSelectedIntegration] = useState<IntegrationId>('slack');
+
+  // "Simple view" (lib/ui/simple-mode.ts): hides the more technical sidebar tabs by default for a new, non-technical
+  // owner. Read from this browser's saved choice once mounted; defaults to on until then, same as the theme above.
+  const [simpleMode, setSimpleMode] = useState<boolean>(true);
+  useEffect(() => {
+    setSimpleMode(loadSimpleMode());
+  }, []);
+  const toggleSimpleMode = useCallback(() => {
+    setSimpleMode((cur) => {
+      const next = !cur;
+      saveSimpleMode(next);
+      // leaving the technical tabs hidden with nothing selected would show a blank pane
+      if (next) {
+        setActiveTab((tab) => (ADVANCED_ONLY_TABS.has(tab) ? 'overview' : tab));
+      }
+      return next;
+    });
+  }, []);
 
   const [currentUser, setCurrentUser] = useState<any | null>(null);
   const [isMasterAdmin, setIsMasterAdmin] = useState<boolean>(false);
@@ -764,6 +783,8 @@ export default function DashboardPage() {
             isMasterAdmin={isMasterAdmin}
             isOwner={currentUser?.role === 'owner' || isMasterAdmin}
             onOpenTour={handleOpenTour}
+            simpleMode={simpleMode}
+            onToggleSimpleMode={toggleSimpleMode}
           />
 
           {/* Main Content Workspace */}
@@ -914,6 +935,7 @@ export default function DashboardPage() {
                 setCustomEmbedHost={setCustomEmbedHost}
                 copiedCode={copiedCode}
                 setCopiedCode={setCopiedCode}
+                onOpenEmbedModal={() => setShowEmbedModal(true)}
               />
             )}
 
@@ -1194,6 +1216,7 @@ export default function DashboardPage() {
           isOpen={showEmbedModal}
           onClose={() => setShowEmbedModal(false)}
           assistantId={activeAssistant?.id}
+          assistantName={activeAssistant?.name}
           customEmbedHost={customEmbedHost}
         />
 

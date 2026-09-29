@@ -46,95 +46,95 @@ export const PROVIDER_GUIDES: Record<
   }
 > = {
   auto_free: {
-    label: 'Zero-Cost Free Engine',
+    label: 'Free engine (automatic)',
     slug: 'auto-free',
     href: '/support/ai-connectors/auto-free',
-    actionText: "Here's how to connect the Zero-Cost Multi-Provider Engine",
-    badge: '100% Free - $0 Compute',
+    actionText: "How the free engine works",
+    badge: 'Free — no card needed',
     badgeColor: 'emerald',
-    tagline: 'Multi-Provider Failover (Groq + Gemini + Ollama)',
+    tagline: 'Tries a free service, then another if the first is busy',
     summary:
-      'Runs at zero cost with no credit card or server purchases required. Automatically routes requests to Groq Free Tier (sub-second Llama 3.3 70B), fails over to Google Gemini Flash Free Tier, and falls back to local Ollama on your computer.',
+      "Costs nothing and needs no card. It answers using Groq's free plan, and if that is ever busy, it quietly tries Google Gemini's free plan instead, so your assistant keeps working either way.",
     consoleUrl: 'https://console.groq.com/keys',
-    consoleLabel: 'Get Free Groq Key',
+    consoleLabel: 'Get a free Groq key',
   },
   groq: {
-    label: 'Groq Cloud',
+    label: 'Groq',
     slug: 'groq',
     href: '/support/ai-connectors/groq',
-    actionText: "Here's how to connect Groq for free in 90 seconds",
-    badge: '100% Free Tier (14.4k req/day)',
+    actionText: 'How to get a free Groq key (about 90 seconds)',
+    badge: 'Free (up to 14,400 replies a day)',
     badgeColor: 'emerald',
-    tagline: 'Sub-Second LPU Inference (~500+ tokens/sec)',
+    tagline: 'Very fast replies',
     summary:
-      'Groq runs open-source models with near-instant responses on dedicated LPU hardware. Their free tier offers 14,400 requests/day at $0 cost with no credit card required.',
+      "Groq answers almost instantly. Its free plan covers 14,400 replies a day at no cost, and doesn't ask for a card.",
     consoleUrl: 'https://console.groq.com/keys',
-    consoleLabel: 'Get Free Groq API Key',
+    consoleLabel: 'Get a free Groq key',
   },
   gemini: {
     label: 'Google Gemini',
     slug: 'gemini',
     href: '/support/ai-connectors/gemini',
-    actionText: "Here's how to connect Google Gemini with free API key",
-    badge: 'Free Tier (15 RPM) + BYOK',
+    actionText: 'How to get a free Gemini key',
+    badge: 'Free plan available',
     badgeColor: 'blue',
-    tagline: 'Massive 1,000,000+ Context Window with Gemini Flash',
+    tagline: "Good with very large documents",
     summary:
-      'Google AI Studio provides a free API key with fast, accurate responses across huge business documents, catalogs, and websites without truncation.',
+      "Google's AI. Its free plan is generous and it handles long documents and catalogues especially well.",
     consoleUrl: 'https://aistudio.google.com/app/apikey',
-    consoleLabel: 'Get Free Gemini Key',
+    consoleLabel: 'Get a free Gemini key',
   },
   openai: {
     label: 'OpenAI',
     slug: 'openai',
     href: '/support/ai-connectors/openai',
-    actionText: "Here's how to connect OpenAI & configure API limits",
-    badge: '0% Markup BYOK Wholesale',
+    actionText: 'How to connect OpenAI',
+    badge: 'You pay OpenAI directly — no markup',
     badgeColor: 'emerald',
-    tagline: 'Direct OpenAI Connection (GPT-4o & GPT-4o-mini)',
+    tagline: "The AI behind ChatGPT",
     summary:
-      'Connect your OpenAI Developer account. Pay wholesale rates directly to OpenAI ($0.15/1M tokens on gpt-4o-mini). Keys are encrypted at rest with AES-256-GCM.',
+      'Connect your own OpenAI account. You pay OpenAI its normal price for what your assistant uses; Crescelo adds nothing on top. Your key is stored encrypted.',
     consoleUrl: 'https://platform.openai.com/api-keys',
-    consoleLabel: 'Open OpenAI API Keys Console',
+    consoleLabel: 'Open your OpenAI account',
   },
   anthropic: {
     label: 'Anthropic Claude',
     slug: 'anthropic',
     href: '/support/ai-connectors/anthropic',
-    actionText: "Here's how to connect Anthropic Claude & generate keys",
-    badge: '0% Markup BYOK Wholesale',
+    actionText: 'How to connect Claude',
+    badge: 'You pay Anthropic directly — no markup',
     badgeColor: 'purple',
-    tagline: 'Claude 3.5 Sonnet & Haiku with Human-Like Empathy',
+    tagline: 'Known for a careful, natural tone',
     summary:
-      'Industry-leading conversational nuance and factual adherence. Pay raw wholesale rates directly to Anthropic Console with zero platform surcharge.',
+      "Anthropic's Claude models. You pay Anthropic its normal price directly; we add nothing on top.",
     consoleUrl: 'https://console.anthropic.com/',
-    consoleLabel: 'Open Anthropic Console',
+    consoleLabel: 'Open your Anthropic account',
   },
   deepseek: {
     label: 'DeepSeek',
     slug: 'deepseek',
     href: '/support/ai-connectors/deepseek',
-    actionText: "Here's how to connect DeepSeek at 95% wholesale savings",
-    badge: 'Ultra-Low Cost ($0.14/1M)',
+    actionText: 'How to connect DeepSeek',
+    badge: 'You pay DeepSeek directly — very low cost',
     badgeColor: 'blue',
-    tagline: 'DeepSeek-V3 & R1 High-Precision Reasoning',
+    tagline: 'A capable model at a low price',
     summary:
-      'Frontier model intelligence at a fraction of standard LLM pricing ($0.14 per 1M input tokens). DeepSeek-V3 and R1 reasoning handle high-volume customer inquiries at nominal cost.',
+      'A lower-cost AI model. You pay DeepSeek its normal (low) price directly; we add nothing on top.',
     consoleUrl: 'https://platform.deepseek.com/',
-    consoleLabel: 'Open DeepSeek Platform',
+    consoleLabel: 'Open your DeepSeek account',
   },
   ollama: {
-    label: 'Local Server (Ollama)',
+    label: 'Your own computer (advanced)',
     slug: 'ollama',
     href: '/support/ai-connectors/ollama',
-    actionText: "Here's how to set up local Ollama & configure CORS",
-    badge: '100% Offline Air-Gapped Privacy',
+    actionText: 'How to set this up',
+    badge: 'For technical users',
     badgeColor: 'amber',
-    tagline: 'Self-Hosted Llama 3.2 on Your Own Hardware',
+    tagline: 'Runs on hardware you control, not the internet',
     summary:
-      'Run open-source models completely locally on your machine. Customer queries and sensitive documents never leave your local environment or device.',
+      "For technical users only. It runs on a computer you set up yourself, so nothing about your customers' questions ever leaves your building. If that sentence didn't mean much to you, one of the other options above is a better fit.",
     consoleUrl: 'https://ollama.com/download',
-    consoleLabel: 'Download Ollama (Free)',
+    consoleLabel: 'Download Ollama (free)',
   },
 };
 
@@ -208,9 +208,9 @@ export const EngineTab: React.FC<EngineTabProps> = ({
     <div className="max-w-4xl space-y-6 mx-auto">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">AI Settings &amp; Connectors</h1>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-            Choose your AI model provider and customize how your assistant communicates with customers.
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">AI Settings</h1>
+          <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+            Choose which AI answers your customers, and how it should sound. The free option below works fine for most businesses — you can always change this later.
           </p>
         </div>
         <a
@@ -220,7 +220,7 @@ export const EngineTab: React.FC<EngineTabProps> = ({
           className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 hover:bg-blue-100 dark:hover:bg-blue-900/60 px-3 py-1.5 rounded-lg border border-blue-200 dark:border-blue-800 transition shrink-0"
         >
           <BookOpen className="h-3.5 w-3.5" />
-          <span>Browse All AI Connector Guides ↗</span>
+          <span>Help with this page ↗</span>
         </a>
       </div>
 
@@ -236,45 +236,45 @@ export const EngineTab: React.FC<EngineTabProps> = ({
             <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500" />
           </span>
           <div className="min-w-0">
-            <div className="text-[10.5px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">Currently active AI</div>
+            <div className="text-xs font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">Answering your customers right now</div>
             <div className="text-sm font-bold text-slate-900 dark:text-white truncate">
               {liveGuide.label}
-              <span className="font-medium text-slate-500 dark:text-slate-400"> · {liveModel}</span>
+              <span className="font-medium text-slate-600 dark:text-slate-400"> · {liveModel}</span>
             </div>
           </div>
         </div>
-        <div className="flex flex-wrap items-center gap-2 text-[11px] font-semibold">
+        <div className="flex flex-wrap items-center gap-2 text-xs font-semibold">
           {liveUsesKey && (
             <span
               className={`px-2 py-0.5 rounded-md border ${
                 liveHasKey
                   ? 'bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-900/40 dark:text-emerald-300 dark:border-emerald-800'
-                  : 'bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-900/40 dark:text-amber-300 dark:border-amber-800'
+                  : 'bg-amber-100 text-amber-900 border-amber-300 dark:bg-amber-900/40 dark:text-amber-300 dark:border-amber-800'
               }`}
             >
-              {liveHasKey ? 'Your API key is set' : 'No API key yet'}
+              {liveHasKey ? 'Your key is connected' : 'No key connected yet'}
             </span>
           )}
           {hasUnsavedProviderChange && (
-            <span className="px-2 py-0.5 rounded-md border bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-900/40 dark:text-amber-300 dark:border-amber-800">
+            <span className="px-2 py-0.5 rounded-md border bg-amber-100 text-amber-900 border-amber-300 dark:bg-amber-900/40 dark:text-amber-300 dark:border-amber-800">
               Switching to {currentGuide.label} once you save
             </span>
           )}
         </div>
       </div>
 
-      {/* Zero-Markup BYOK Positioning Banner */}
-      <div className="rounded-xl border border-blue-200 dark:border-blue-800/60 bg-gradient-to-r from-blue-50/70 via-indigo-50/40 to-slate-50 dark:from-blue-950/30 dark:via-indigo-950/20 dark:to-slate-900/40 p-4 text-xs text-slate-700 dark:text-slate-300 shadow-xs">
+      {/* Bring-your-own-key: no markup */}
+      <div className="rounded-xl border border-blue-200 dark:border-blue-800/60 bg-gradient-to-r from-blue-50/70 via-indigo-50/40 to-slate-50 dark:from-blue-950/30 dark:via-indigo-950/20 dark:to-slate-900/40 p-4 text-sm text-slate-700 dark:text-slate-300 shadow-xs">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
-              <span className="font-bold text-slate-900 dark:text-white text-sm">Zero-Markup BYOK Architecture</span>
-              <span className="bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300 font-bold px-2 py-0.5 rounded text-[10px] border border-blue-200 dark:border-blue-700">
-                0% TOKEN MARKUP
+              <span className="font-bold text-slate-900 dark:text-white text-sm">You&apos;re never charged for the AI itself</span>
+              <span className="bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300 font-bold px-2 py-0.5 rounded text-xs border border-blue-200 dark:border-blue-700">
+                No markup
               </span>
             </div>
-            <p className="text-[11.5px] text-slate-500 dark:text-slate-400 leading-relaxed">
-              Unlike competitors that mark up AI tokens by 300%+ with opaque credit burn, Crescelo allows you to bring your own API key (BYOK) and pay wholesale rates directly to model providers with zero platform markup, or run on our Zero-Cost failover engine ($0 compute).
+            <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+              Use the free option below and it costs nothing. Or connect your own account with one of the paid services and pay them their normal price directly — we don&apos;t add anything on top, ever.
             </p>
           </div>
         </div>
@@ -282,17 +282,17 @@ export const EngineTab: React.FC<EngineTabProps> = ({
 
       {/* Alert if API Key is Missing for Active Provider */}
       {liveUsesKey && !liveHasKey && (
-        <div className="rounded-xl border border-amber-300 dark:border-amber-800 bg-amber-50/80 dark:bg-amber-950/40 p-4 text-xs shadow-xs flex items-start gap-3">
+        <div className="rounded-xl border border-amber-300 dark:border-amber-800 bg-amber-50/80 dark:bg-amber-950/40 p-4 text-sm shadow-xs flex items-start gap-3">
           <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
           <div className="space-y-1">
             <div className="font-bold text-amber-900 dark:text-amber-200">
-              API Key Required for {liveGuide.label}
+              Connect a key before this can talk to customers
             </div>
-            <p className="text-amber-800/90 dark:text-amber-300/90 text-[11.5px] leading-relaxed">
-              Your assistant cannot answer customer questions or test chat in the playground until your API key is connected.
+            <p className="text-amber-900/90 dark:text-amber-300/90 text-sm leading-relaxed">
+              It can&apos;t answer questions or be tested until then.
               {liveProviderId === 'groq'
-                ? ' Groq provides 14,400 free daily requests ($0 compute, no credit card required).'
-                : ''} Enter your key below and click &ldquo;Save AI Engine Settings&rdquo;.
+                ? ' Groq is free, up to 14,400 replies a day, and does not ask for a card.'
+                : ''} Paste your key below, then click &ldquo;Save&rdquo;.
             </p>
             {liveGuide.consoleUrl && (
               <div className="pt-1.5">
@@ -302,7 +302,7 @@ export const EngineTab: React.FC<EngineTabProps> = ({
                   rel="noreferrer"
                   className="inline-flex items-center gap-1.5 font-bold text-amber-900 dark:text-amber-200 bg-amber-100 dark:bg-amber-900/60 hover:bg-amber-200 dark:hover:bg-amber-900 px-2.5 py-1 rounded-lg border border-amber-300 dark:border-amber-700 transition"
                 >
-                  <span>{liveGuide.consoleLabel || 'Get Free API Key'} ↗</span>
+                  <span>{liveGuide.consoleLabel || 'Get a free key'} ↗</span>
                 </a>
               </div>
             )}
@@ -313,18 +313,18 @@ export const EngineTab: React.FC<EngineTabProps> = ({
       {/* Provider Selection Cards */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Select AI Provider</label>
-          <span className="text-[11px] text-slate-500 dark:text-slate-400">Click any card to switch provider</span>
+          <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Choose which AI answers your customers</label>
+          <span className="text-xs text-slate-500 dark:text-slate-500">You can change this any time</span>
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           {[
-            { id: 'groq', label: 'Groq Cloud', tag: 'RECOMMENDED (FREE)', desc: 'Instant sub-second inference (14,400 free req/day, $0 compute)' },
-            { id: 'gemini', label: 'Google Gemini', tag: '0% MARKUP (BYOK)', desc: 'Gemini 2.5 Flash with deep context' },
-            { id: 'openai', label: 'OpenAI', tag: '0% MARKUP (BYOK)', desc: 'GPT-4o & GPT-4o-mini wholesale rates' },
-            { id: 'anthropic', label: 'Anthropic Claude', tag: '0% MARKUP (BYOK)', desc: 'Claude 3.5 Sonnet & Haiku wholesale' },
-            { id: 'deepseek', label: 'DeepSeek', tag: '0% MARKUP (BYOK)', desc: 'DeepSeek-V3 & R1 reasoning at cost' },
-            { id: 'auto_free', label: 'Zero-Cost Free Engine', tag: 'MULTI-CLOUD', desc: 'Auto failover across Groq, Gemini & Ollama ($0 compute)' },
-            { id: 'ollama', label: 'Local Server (Ollama)', tag: 'OFFLINE', desc: 'Self-hosted model on your computer' },
+            { id: 'groq', label: 'Groq', tag: 'Free — recommended', desc: 'Fast, and free for normal use. No card needed.' },
+            { id: 'auto_free', label: 'Free engine (automatic)', tag: 'Free — automatic', desc: 'Tries another free service if the first is busy.' },
+            { id: 'gemini', label: 'Google Gemini', tag: 'Bring your own key', desc: "Google's AI. Good with very large documents." },
+            { id: 'openai', label: 'OpenAI', tag: 'Bring your own key', desc: "The AI behind ChatGPT, at OpenAI's own price." },
+            { id: 'anthropic', label: 'Anthropic Claude', tag: 'Bring your own key', desc: "Known for a careful, natural tone." },
+            { id: 'deepseek', label: 'DeepSeek', tag: 'Bring your own key', desc: 'A capable model at a low price.' },
+            { id: 'ollama', label: 'Your own computer', tag: 'Advanced — technical users', desc: 'Runs on hardware you set up yourself.' },
           ].map((prov) => {
             const isSelected = (formData.provider || 'groq') === prov.id;
             const guide = PROVIDER_GUIDES[prov.id];
