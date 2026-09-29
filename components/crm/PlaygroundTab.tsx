@@ -18,6 +18,7 @@ import {
 import { MarkdownRenderer } from '@/components/markdown-renderer';
 import { ChatBookingCard } from '@/components/chat/ChatBookingCard';
 import { hasConnectedAiKey } from '@/lib/ai/resolve-provider';
+import { findProviderNotice } from '@/lib/ai/error-notice';
 
 const Youtube = ({ className = 'h-4 w-4' }: { className?: string }) => (
   <svg className={className} viewBox="0 0 24 24" fill="currentColor">
@@ -141,8 +142,9 @@ export const PlaygroundTab: React.FC<PlaygroundTabProps> = ({
                           >
                             {msg.role === 'assistant' ? (
                               (() => {
+                                const notice = findProviderNotice(msg.content);
                                 const hasBookingAction = msg.content.includes('[ACTION:BOOKING_FORM]');
-                                const cleanContent = msg.content.replace(/\s*\[ACTION:[A-Z_]+\]/g, '').trim();
+                                const cleanContent = (notice ? notice.leading : msg.content).replace(/\s*\[ACTION:[A-Z_]+\]/g, '').trim();
                                 return (
                                   <>
                                     {cleanContent && <MarkdownRenderer content={cleanContent} />}
@@ -152,6 +154,28 @@ export const PlaygroundTab: React.FC<PlaygroundTabProps> = ({
                                         businessName={activeAssistant?.name || 'Our Team'}
                                         source="playground"
                                       />
+                                    )}
+                                    {notice && (
+                                      <div
+                                        className={`${cleanContent ? 'mt-2.5 pt-2.5 border-t border-amber-300/50 dark:border-amber-800/50' : ''} rounded-lg bg-amber-50 dark:bg-amber-950/40 border border-amber-300/60 dark:border-amber-800/50 px-2.5 py-2 flex items-start gap-2`}
+                                      >
+                                        <AlertTriangle className="h-3.5 w-3.5 shrink-0 mt-0.5 text-amber-600 dark:text-amber-400" />
+                                        <div className="space-y-1.5 min-w-0">
+                                          <p className="font-semibold text-amber-900 dark:text-amber-200">
+                                            {notice.kind === 'missing_provider'
+                                              ? 'No AI engine is connected yet'
+                                              : "This isn't a real answer — the AI engine had a problem"}
+                                          </p>
+                                          <p className="text-[11px] leading-relaxed text-amber-800/90 dark:text-amber-200/80 whitespace-pre-wrap">{notice.detail}</p>
+                                          <button
+                                            type="button"
+                                            onClick={() => onRequireApiKey?.('AI Playground Chat')}
+                                            className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-[11px] px-2.5 py-1 cursor-pointer"
+                                          >
+                                            Connect your API key
+                                          </button>
+                                        </div>
+                                      </div>
                                     )}
                                   </>
                                 );

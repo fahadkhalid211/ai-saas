@@ -1,8 +1,34 @@
 import OpenAI from 'openai';
 import { guardedFetchFor } from './safe-fetch';
 import { ChatMessage, ProviderOptions } from './types';
+import { usesCustomerKey } from './spend/guard';
 
 const charsOf = (messages: ChatMessage[]) => messages.reduce((sum, m) => sum + (m.content?.length || 0), 0);
+
+/**
+ * True when this call has no key of its own and is quietly running on Crescelo's own (shared, free-tier) provider key —
+ * either because the assistant never connected one, or because a cost cap fell back to it (lib/ai/spend/guard.ts).
+ * Used only to choose which error message to show; it never changes what key is actually used.
+ */
+function isSharedPlatformKey(options: ProviderOptions): boolean {
+  const provider = (options.provider || 'groq').toLowerCase();
+  if (usesCustomerKey({ provider, apiKey: options.apiKey })) return false;
+  switch (provider) {
+    case 'groq':
+    case 'auto_free':
+      return Boolean(process.env.GROQ_API_KEY);
+    case 'gemini':
+      return Boolean(process.env.GEMINI_API_KEY);
+    case 'openai':
+      return Boolean(process.env.OPENAI_API_KEY);
+    case 'anthropic':
+      return Boolean(process.env.ANTHROPIC_API_KEY);
+    case 'deepseek':
+      return Boolean(process.env.DEEPSEEK_API_KEY);
+    default:
+      return false;
+  }
+}
 
 /**
  * Reports the tokens one request used to options.onUsage. Counts the provider did not send are estimated from the text
@@ -403,9 +429,13 @@ async function* streamAutoFree(
   ];
 
   let didYieldAnyToken = false;
+  // Ollama can always be "attempted" outside production with no key at all, so it alone does not count as having
+  // tried the shared engine. Groq/Gemini only attempt when a key (the customer's or Crescelo's own) is present.
+  let attemptedRealKey = false;
 
   for (const candidate of candidates) {
     if (!candidate.canAttempt()) continue;
+    if (candidate.name === 'groq' || candidate.name.startsWith('gemini')) attemptedRealKey = true;
 
     try {
       const { client, model, safeMaxTokens, activeMessages } = candidate.createClient();
@@ -442,10 +472,14 @@ async function* streamAutoFree(
     }
   }
 
-  yield `\n\n*(Notice: Zero-Cost Inference Engine could not connect to an active free provider.\n\n` +
-    `• Option 1 (Fastest Cloud - Groq Free Tier): Add a free Groq API key in Assistant Settings > AI Engine (console.groq.com/keys) for instant 500+ tok/s responses at $0 cost.\n` +
-    `• Option 2 (High Accuracy - Google Gemini Free Tier): Add a free Gemini API key in Assistant Settings > AI Engine (aistudio.google.com/app/apikey) at $0 cost.\n` +
-    `• Option 3 (100% Offline $0 - Local Ollama): Start Ollama on your computer with 'ollama run llama3.2'.)*`;
+  // Distinguish "we tried Crescelo's shared Groq/Gemini key(s) and they failed" (temporary, not the customer's fault)
+  // from "nothing at all is configured" (the assistant genuinely has no working AI engine yet).
+  yield attemptedRealKey
+    ? `\n\n*(AI Generation Error: Crescelo's shared free AI engine (Groq/Gemini) is busy right now. This is temporary and not a problem with your assistant or its content — add your own free API key in AI Settings → AI Engine for reliable answers (Groq: console.groq.com/keys, Gemini: aistudio.google.com/app/apikey, both free, no card required).)*`
+    : `\n\n*(Notice: Zero-Cost Inference Engine could not connect to an active free provider.\n\n` +
+      `• Option 1 (Fastest Cloud - Groq Free Tier): Add a free Groq API key in Assistant Settings > AI Engine (console.groq.com/keys) for instant 500+ tok/s responses at $0 cost.\n` +
+      `• Option 2 (High Accuracy - Google Gemini Free Tier): Add a free Gemini API key in Assistant Settings > AI Engine (aistudio.google.com/app/apikey) at $0 cost.\n` +
+      `• Option 3 (100% Offline $0 - Local Ollama): Start Ollama on your computer with 'ollama run llama3.2'.)*`;
 }
 
 /**
@@ -684,6 +718,15 @@ async function* streamChatOnce(
       }
     }
 
+    // Rate limit that survived the Groq model fallback above (or hit a provider with no fallback): tell the owner
+    // plainly whose key this is running on, since "connect your own key" is meaningless advice if it is already theirs.
+    if (isRateLimit) {
+      yield isSharedPlatformKey(options)
+        ? `\n\n*(AI Generation Error: Crescelo's shared free AI engine is busy right now (rate limit) — this is not a problem with your assistant or its content. Add your own free API key in AI Settings → AI Engine to remove this limit (Groq: console.groq.com/keys, Gemini: aistudio.google.com/app/apikey, both free, no card required).)*`
+        : `\n\n*(AI Generation Error: Your connected ${provider} API key has hit its rate limit. Wait a moment and try again, or check your usage and limits in your ${provider} account.)*`;
+      return;
+    }
+
     const isConnError =
       error?.name === 'APIConnectionError' ||
       error?.message?.toLowerCase().includes('connection error') ||
@@ -705,11 +748,15 @@ async function* streamChatOnce(
     }
 
     if (error?.status === 401 || error?.message?.includes('API key')) {
-      yield `\n\n*(Authentication Error: Invalid API key for provider "${provider}". Please check your key in the assistant settings.)*`;
+      yield isSharedPlatformKey(options)
+        ? `\n\n*(Authentication Error: Crescelo's shared free AI engine is temporarily unavailable. Please try again shortly, or add your own free API key in AI Settings → AI Engine for uninterrupted service.)*`
+        : `\n\n*(Authentication Error: Invalid API key for provider "${provider}". Please check your key in the assistant settings.)*`;
       return;
     }
 
-    yield `\n\n*(AI Generation Error: ${error?.message || 'Failed to complete request. Please verify provider settings.'})*`;
+    yield isSharedPlatformKey(options)
+      ? `\n\n*(AI Generation Error: Crescelo's shared free AI engine had a problem answering${error?.message ? ` (${error.message})` : ''}. Add your own free API key in AI Settings → AI Engine for reliable answers.)*`
+      : `\n\n*(AI Generation Error: ${error?.message || 'Failed to complete request. Please verify provider settings.'})*`;
   } finally {
     // a request the provider accepted is billed even if the stream broke part-way or the reader stopped early
     if (started) reportUsage(options, model, counted, { promptChars: charsOf(activeMessages), outputChars });
