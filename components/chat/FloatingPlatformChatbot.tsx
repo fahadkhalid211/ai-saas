@@ -429,6 +429,7 @@ export function FloatingPlatformChatbot({ variant = 'floating', onNavigate, onBi
         <button
           type="button"
           onClick={() => setIsOpen(true)}
+          style={{ backgroundColor: '#08251a', color: '#fffeeb' }}
           className="mk-chat-launcher group relative flex items-center gap-3 pl-2.5 pr-4 py-2 sm:pl-3 sm:pr-4.5 sm:py-2.5 rounded-full cursor-pointer select-none bg-[#08251a] text-[#fffeeb] border-2 border-[#1a1a1a] shadow-[0_0.25rem_0_#1a1a1a,0_0.625rem_1.5rem_rgba(8,37,26,0.28)] transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_0.375rem_0_#1a1a1a,0_0.875rem_1.875rem_rgba(8,37,26,0.35)] active:translate-y-0.5 active:shadow-[0_0.125rem_0_#1a1a1a] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#abff44] max-w-[calc(100vw-2rem)]"
           aria-label="Open Crescelo AI assistant - Instant answers & booking"
         >
@@ -477,7 +478,8 @@ export function FloatingPlatformChatbot({ variant = 'floating', onNavigate, onBi
           role="dialog"
           aria-label="Crescelo assistant"
           data-lenis-prevent
-          className={`flex flex-col bg-[#1f1e1d] ${
+          style={{ backgroundColor: '#1a1918', color: '#e8e5dc' }}
+          className={`mk-chat-panel flex flex-col bg-[#1f1e1d] ${
             inHeader
               ? 'absolute right-0 top-full mt-2 z-[99999] w-[25rem] h-[35rem] max-h-[calc(100vh-5.5rem)] max-sm:fixed max-sm:inset-x-2 max-sm:top-[4.5rem] max-sm:mt-0 max-sm:w-auto'
               : 'relative w-[calc(100vw-2rem)] sm:w-[23.75rem] md:w-[25.625rem] max-w-[25.625rem] h-[36.25rem] max-h-[85vh]'
@@ -546,7 +548,12 @@ export function FloatingPlatformChatbot({ variant = 'floating', onNavigate, onBi
                 )}
 
                 <div
-                  className={`relative group max-w-[84%] px-3.5 py-2.5 text-[13px] leading-relaxed ${
+                  style={
+                    m.role === 'user'
+                      ? { backgroundColor: '#abff44', color: '#08251a' }
+                      : { backgroundColor: '#2c2b29', color: '#e8e5dc' }
+                  }
+                  className={`mk-chat-msg-${m.role === 'user' ? 'user' : 'bot'} relative group max-w-[84%] px-3.5 py-2.5 text-[13px] leading-relaxed ${
                     m.role === 'user'
                       ? 'bg-[#abff44] text-[#08251a] font-medium rounded-2xl rounded-tr-md'
                       : 'bg-[#2c2b29] text-[#e8e5dc] border border-white/[0.06] rounded-2xl rounded-tl-md'
@@ -638,7 +645,8 @@ export function FloatingPlatformChatbot({ variant = 'floating', onNavigate, onBi
                       key={i}
                       type="button"
                       onClick={() => sendMessage(sug)}
-                      className="text-left text-xs text-[#d8d5cb] hover:text-[#faf9f5] bg-white/[0.05] hover:bg-white/[0.09] border border-white/[0.16] hover:border-[#abff44]/50 px-3 py-1.5 rounded-full transition duration-200"
+                      style={{ backgroundColor: 'rgba(255, 255, 255, 0.05)', color: '#d8d5cb' }}
+                      className="mk-chat-pill-btn text-left text-xs text-[#d8d5cb] hover:text-[#faf9f5] bg-white/[0.05] hover:bg-white/[0.09] border border-white/[0.16] hover:border-[#abff44]/50 px-3 py-1.5 rounded-full transition duration-200"
                     >
                       {sug}
                     </button>
@@ -657,7 +665,8 @@ export function FloatingPlatformChatbot({ variant = 'floating', onNavigate, onBi
                 e.preventDefault();
                 sendMessage();
               }}
-              className="flex items-center gap-2 rounded-2xl border border-white/10 bg-[#262624] pl-3.5 pr-1.5 py-1.5 focus-within:border-[#abff44]/50 transition"
+              style={{ backgroundColor: '#262624' }}
+              className="mk-chat-input-box flex items-center gap-2 rounded-2xl border border-white/10 bg-[#262624] pl-3.5 pr-1.5 py-1.5 focus-within:border-[#abff44]/50 transition"
             >
               <input
                 ref={inputRef}
@@ -674,6 +683,7 @@ export function FloatingPlatformChatbot({ variant = 'floating', onNavigate, onBi
               <button
                 type="submit"
                 disabled={!input.trim() || isLoading}
+                style={{ backgroundColor: '#abff44', color: '#08251a' }}
                 className="grid place-items-center h-9 w-9 rounded-xl bg-[#abff44] text-[#08251a] hover:brightness-105 active:scale-95 disabled:opacity-30 disabled:hover:brightness-100 transition shrink-0"
                 aria-label="Send message"
               >

@@ -358,11 +358,66 @@
   }
 }
 
-.mk-chat-launcher {
+.mk-chat-launcher,
+button.mk-chat-launcher {
+  background-color: #08251a !important;
+  color: #fffeeb !important;
+  border: 2px solid #1a1a1a !important;
+  box-shadow: 0 0.25rem 0 #1a1a1a, 0 0.625rem 1.5rem rgba(8, 37, 26, 0.35) !important;
   animation: mk-chat-float 4s ease-in-out infinite, mk-chat-pulse-glow 3s ease-in-out infinite;
 }
 
-.mk-chat-launcher:hover {
+.mk-chat-launcher:hover,
+button.mk-chat-launcher:hover {
+  background-color: #0b3223 !important;
   animation-play-state: paused;
+  box-shadow: 0 0.375rem 0 #1a1a1a, 0 0.875rem 1.875rem rgba(8, 37, 26, 0.45) !important;
+}
+
+/* Chatbot panel dark styling */
+.mk-chat-panel {
+  background-color: #1a1918 !important;
+  color: #e8e5dc !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  box-shadow: 0 28px 90px rgba(0, 0, 0, 0.65) !important;
+}
+
+/* Ensure elements inside the chat panel preserve intended dark backgrounds against .mk resets */
+.mk-chat-panel button[type="submit"] {
+  background-color: #abff44 !important;
+  color: #08251a !important;
+  border: 0 !important;
+}
+
+.mk-chat-panel button[type="submit"]:disabled {
+  opacity: 0.3 !important;
+}
+
+.mk-chat-panel .mk-chat-msg-user {
+  background-color: #abff44 !important;
+  color: #08251a !important;
+}
+
+.mk-chat-panel .mk-chat-msg-bot {
+  background-color: #2c2b29 !important;
+  color: #e8e5dc !important;
+  border: 1px solid rgba(255, 255, 255, 0.06) !important;
+}
+
+.mk-chat-panel .mk-chat-input-box {
+  background-color: #262624 !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.mk-chat-panel .mk-chat-pill-btn {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.16) !important;
+  color: #d8d5cb !important;
+}
+
+.mk-chat-panel .mk-chat-pill-btn:hover {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  color: #faf9f5 !important;
+  border-color: rgba(171, 255, 68, 0.5) !important;
 }
 

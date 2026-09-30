@@ -30,7 +30,6 @@ import Link from 'next/link';
 import { ParallaxBackground } from './ParallaxBackground';
 import { PipelineSection } from './pipeline';
 import { ScrambleText, SpotlightCard, CountUp } from './effects';
-import { FloatingPlatformChatbot } from '@/components/chat/FloatingPlatformChatbot';
 
 interface SaaSMarketingHomepageProps {
   onOpenAuth: (mode: 'admin' | 'staff' | 'register') => void;
@@ -1544,9 +1543,6 @@ export function SaaSMarketingHomepage({
             <div>&copy; 2026 Crescelo Inc. Zero Token Markup Guarantee.</div>
           </div>
         </footer>
-
-        {/* Global Floating Platform AI Concierge Chatbot */}
-        <FloatingPlatformChatbot />
       </div>
     </div>
   );
