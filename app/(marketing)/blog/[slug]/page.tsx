@@ -30,7 +30,17 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       title: post.seoTitle || post.title,
       description: post.description,
       alternates: { canonical: `/blog/${post.slug}` },
-      ...(post.thin ? { robots: { index: false, follow: true } } : {}),
+      robots: {
+        index: true,
+        follow: true,
+        googleBot: {
+          index: true,
+          follow: true,
+          'max-image-preview': 'large',
+          'max-snippet': -1,
+          'max-video-preview': -1,
+        },
+      },
     },
     `/blog/${post.slug}`
   );
