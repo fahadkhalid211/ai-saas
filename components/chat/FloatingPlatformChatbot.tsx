@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Send, RefreshCw, Check, Copy, Minus, ChevronDown } from 'lucide-react';
+import { X, Send, RefreshCw, Check, Copy, Minus, ChevronDown, MessageSquare } from 'lucide-react';
 import { CresceloOrb, type OrbState } from '@/components/brand/CresceloOrb';
 import { CresceloMark } from '@/components/brand/CresceloMark';
 import { PlatformBookingCard, type BookingConfig } from './PlatformBookingCard';
@@ -429,21 +429,45 @@ export function FloatingPlatformChatbot({ variant = 'floating', onNavigate, onBi
         <button
           type="button"
           onClick={() => setIsOpen(true)}
-          className="group relative flex items-center gap-2.5 cursor-pointer rounded-full focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#abff44]"
-          aria-label="Open the Crescelo assistant"
+          className="mk-chat-launcher group relative flex items-center gap-3 pl-2.5 pr-4 py-2 sm:pl-3 sm:pr-4.5 sm:py-2.5 rounded-full cursor-pointer select-none bg-[#08251a] text-[#fffeeb] border-2 border-[#1a1a1a] shadow-[0_0.25rem_0_#1a1a1a,0_0.625rem_1.5rem_rgba(8,37,26,0.28)] transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_0.375rem_0_#1a1a1a,0_0.875rem_1.875rem_rgba(8,37,26,0.35)] active:translate-y-0.5 active:shadow-[0_0.125rem_0_#1a1a1a] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#abff44] max-w-[calc(100vw-2rem)]"
+          aria-label="Open Crescelo AI assistant - Instant answers & booking"
         >
-          <span className="pointer-events-none translate-x-3 opacity-0 group-hover:translate-x-0 group-hover:opacity-100 group-focus-visible:translate-x-0 group-focus-visible:opacity-100 transition-all duration-300 ease-out whitespace-nowrap rounded-full border border-white/10 bg-[#262624]/95 px-3.5 py-2 text-xs font-medium text-[#faf9f5] shadow-[0_8px_30px_rgba(0,0,0,0.35)] backdrop-blur">
-            Ask Crescelo
-          </span>
-          <span className="relative block transition-transform duration-300 group-hover:scale-105 group-active:scale-95">
-            <CresceloOrb size={64} state="idle" followPointer />
+          {/* Orb avatar with live pulse indicator */}
+          <div className="relative shrink-0 flex items-center justify-center">
+            <div className="transition-transform duration-300 group-hover:scale-105">
+              <CresceloOrb size={42} state="idle" followPointer />
+            </div>
+            <span className="absolute -bottom-0.5 -right-0.5 flex h-3 w-3" title="Online now">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#abff44] opacity-80" />
+              <span className="relative inline-flex h-3 w-3 rounded-full bg-[#abff44] ring-2 ring-[#08251a]" />
+            </span>
+          </div>
+
+          {/* Text descriptions: Title with badge, and subtitle */}
+          <div className="flex flex-col text-left leading-tight min-w-0 pr-1">
+            <div className="flex items-center gap-1.5">
+              <span className="font-bold text-xs sm:text-sm tracking-tight text-[#fffeeb] group-hover:text-[#abff44] transition-colors">
+                Chat with Crescelo
+              </span>
+              <span className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-[#abff44] text-[#08251a] text-[10px] font-extrabold uppercase tracking-wider leading-none shadow-xs">
+                AI
+              </span>
+            </div>
+            <span className="text-[11px] sm:text-xs text-[#fffeeb]/75 truncate font-medium">
+              Ask anything or book a demo
+            </span>
+          </div>
+
+          {/* Chat action icon pill on right */}
+          <div className="relative shrink-0 flex items-center justify-center w-8 h-8 rounded-full bg-[#abff44]/15 border border-[#abff44]/35 text-[#abff44] group-hover:bg-[#abff44] group-hover:text-[#08251a] group-hover:border-[#abff44] transition-all duration-300">
+            <MessageSquare className="w-4 h-4 transition-transform duration-300 group-hover:scale-110" />
             {hasUnread && (
-              <span className="absolute top-1.5 right-1.5 flex h-3 w-3">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#abff44] opacity-70" />
-                <span className="relative inline-flex h-3 w-3 rounded-full bg-[#abff44] ring-2 ring-[#1f1e1d]" />
+              <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#abff44] opacity-75" />
+                <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-[#abff44] ring-2 ring-[#08251a]" />
               </span>
             )}
-          </span>
+          </div>
         </button>
       )}
 

@@ -262,8 +262,8 @@
 /* Sticky playful scroll to top button */
 .mk-scroll-top {
   position: fixed;
-  /* sits directly above the assistant launcher (4rem orb at bottom/right 1.5rem) instead of underneath it */
-  bottom: 6.75rem;
+  /* sits comfortably above the wide assistant chat widget (pill widget at bottom/right 1.5rem) */
+  bottom: 7.5rem;
   right: 1.875rem;
   z-index: 90;
   width: 3.25rem;
@@ -336,5 +336,33 @@
   .mk-footer-giant-word { margin-top: 2.25rem; }
 }
 @media (prefers-reduced-motion: reduce) {
-    .mk-prompt, .mk-hero-glow { animation: none; }
+    .mk-prompt, .mk-hero-glow, .mk-chat-launcher { animation: none !important; }
 }
+
+/* Floating animated chat launcher widget */
+@keyframes mk-chat-float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+@keyframes mk-chat-pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0.25rem 0 var(--mk-ink), 0 0.625rem 1.5rem rgba(8, 37, 26, 0.28);
+  }
+  50% {
+    box-shadow: 0 0.25rem 0 var(--mk-ink), 0 0.75rem 2rem rgba(171, 255, 68, 0.3), 0 0 0 3px rgba(171, 255, 68, 0.25);
+  }
+}
+
+.mk-chat-launcher {
+  animation: mk-chat-float 4s ease-in-out infinite, mk-chat-pulse-glow 3s ease-in-out infinite;
+}
+
+.mk-chat-launcher:hover {
+  animation-play-state: paused;
+}
+
