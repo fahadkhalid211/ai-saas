@@ -54,20 +54,21 @@ html.lenis, html.lenis body { height: auto !important; }
 @media (max-width: 480px) { .mk-wrap { padding: 0 1rem; } }
 @media (min-width: 720px) { .mk-wrap { padding: 0 2rem; } }
 
-.mk-section { padding: 5.5rem 0; }
+.mk-section { padding: 5rem 0; }
 .mk-section-tint { background: var(--mk-bg-tint); border-block: 1px solid var(--mk-line); }
-@media (min-width: 900px) { .mk-section { padding: 8rem 0; } }
+@media (min-width: 900px) { .mk-section { padding: 7.5rem 0; } }
 
 /* Type */
-.mk-eyebrow { font-size: 0.75rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--mk-accent); font-weight: 600; margin-bottom: 1rem; }
-.mk-h1, .mk-h2, .mk-h3 { font-family: var(--mk-serif); font-weight: 400; letter-spacing: -0.015em; line-height: 1.05; text-wrap: balance; }
-.mk-h1 { font-size: clamp(2.6rem, 8vw, 5.2rem); }
-.mk-h2 { font-size: clamp(2rem, 5vw, 3.4rem); max-width: 18ch; }
+.mk-eyebrow { font-family: var(--mk-sans); font-size: 0.75rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--mk-accent); font-weight: 700; margin-bottom: 0.75rem; }
+.mk-h1, .mk h1 { font-family: var(--mk-serif); font-weight: 600; letter-spacing: -0.025em; line-height: 1.04; text-wrap: balance; font-size: clamp(2.8rem, 8vw, 5.6rem); }
+.mk-h2, .mk-h3 { font-family: var(--mk-serif); font-weight: 400; letter-spacing: -0.02em; line-height: 1.08; text-wrap: balance; }
+.mk-h2 { font-size: clamp(2.2rem, 5.2vw, 3.8rem); line-height: 1.08; letter-spacing: -0.02em; max-width: 19ch; }
 .mk-h2-wide { max-width: 24ch; }
-.mk-h3 { font-size: clamp(1.6rem, 3.4vw, 2.3rem); line-height: 1.12; }
-.mk-lead { font-size: clamp(1.02rem, 1.6vw, 1.2rem); color: var(--mk-muted); max-width: 56ch; margin-top: 1.25rem; }
-.mk-body { color: var(--mk-muted); margin-top: 1rem; max-width: 52ch; }
-.mk-head { margin-bottom: 3rem; }
+.mk-h3 { font-size: clamp(1.6rem, 3.4vw, 2.4rem); line-height: 1.15; letter-spacing: -0.015em; }
+.mk-lead { font-family: var(--mk-sans); font-size: clamp(1.05rem, 1.6vw, 1.25rem); color: var(--mk-muted); max-width: 58ch; margin-top: 1rem; line-height: 1.6; text-wrap: pretty; }
+.mk-body { font-family: var(--mk-sans); color: var(--mk-muted); margin-top: 0.75rem; max-width: 52ch; line-height: 1.6; text-wrap: pretty; }
+.mk-head { margin-bottom: 3.5rem; }
+@media (max-width: 640px) { .mk-head { margin-bottom: 2.25rem; } }
 .mk-head.is-center {
   text-align: center;
   display: flex;
@@ -87,7 +88,7 @@ html.lenis, html.lenis body { height: auto !important; }
 .mk-caption { color: var(--mk-muted); font-size: 0.8125rem; margin-top: 0.75rem; }
 
 /* Buttons */
-.mk-btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; min-height: 3rem; padding: 0 1.5rem; border-radius: 62.4375rem; font-weight: 600; font-size: 0.9375rem; border: 1px solid transparent; transition: transform 0.25s var(--mk-ease), background-color 0.2s, border-color 0.2s; white-space: nowrap; max-width: 100%; }
+.mk-btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; min-height: 3rem; padding: 0 1.5rem; border-radius: 62.4375rem; font-family: var(--mk-sans); font-weight: 700; font-size: 0.9375rem; border: 1px solid transparent; transition: transform 0.25s var(--mk-ease), background-color 0.2s, border-color 0.2s; white-space: nowrap; max-width: 100%; }
 .mk-btn-sm { min-height: 2.5rem; padding: 0 1.125rem; font-size: 0.875rem; }
 .mk-btn-primary { background: var(--mk-ink); color: var(--mk-bg); }
 .mk-btn-primary:hover { background: var(--mk-accent); }

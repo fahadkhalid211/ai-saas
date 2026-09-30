@@ -9,8 +9,8 @@
   --kx-deep: #08251a;
   --kx-lime: #abff44;
   --kx-ink: #1a1a1a;
-  --font-sans: var(--font-kx-sans), ui-sans-serif, system-ui, sans-serif;
-  --kx-serif: var(--font-kx-serif), Georgia, "Times New Roman", serif;
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --kx-serif: Georgia, "Times New Roman", serif;
 
   /* Neutrals: cream in light mode (the dark theme re-points these below) */
   --color-slate-50: #fffeeb;

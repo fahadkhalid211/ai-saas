@@ -12,15 +12,15 @@ const COMPARISON_ROWS = [
   { feature: 'Included Chat Sessions', starter: '100 / mo', growth: '500 / mo', scale: '2,000 / mo' },
   { feature: 'Assistant Bots', starter: '1 Bot', growth: '5 Bots', scale: 'Unlimited' },
   { feature: 'Knowledge Base Storage', starter: '50 MB (~50k pages)', growth: '500 MB', scale: '5 GB' },
-  { feature: 'Grounded RAG (No Hallucinations)', starter: 'Included', growth: 'Included', scale: 'Included' },
-  { feature: 'Zero Token Markup (BYOK)', starter: 'Included', growth: 'Included', scale: 'Included' },
-  { feature: 'Calendar Slot Picker', starter: 'Basic', growth: 'Full Mutex Locking', scale: 'Full Mutex Locking' },
+  { feature: 'Answers strictly from your documents (No made-up facts)', starter: 'Included', growth: 'Included', scale: 'Included' },
+  { feature: 'Zero markup on AI costs (BYOK)', starter: 'Included', growth: 'Included', scale: 'Included' },
+  { feature: 'Guaranteed No Double-Bookings', starter: 'Basic locking', growth: 'Instant Slot Lock', scale: 'Instant Slot Lock' },
   { feature: 'Google Calendar & Outlook Sync', starter: '—', growth: 'Included', scale: 'Included' },
   { feature: 'Inbound Phone Voice Calling', starter: 'Coming soon', growth: 'Coming soon', scale: 'Coming soon' },
-  { feature: 'WhatsApp Cloud & Telegram Bots', starter: '—', growth: '—', scale: 'Included' },
+  { feature: 'WhatsApp & Telegram Bots', starter: '—', growth: '—', scale: 'Included' },
   { feature: 'Live Staff Audio Chimes & Takeover', starter: 'Email only', growth: 'Audio + Desktop', scale: 'Priority Multi-seat' },
-  { feature: 'Custom Domain CNAME Mapping', starter: '—', growth: 'Included', scale: 'Included (Multi-domain)' },
-  { feature: 'API & Outbound Webhooks', starter: 'Standard', growth: 'High-frequency', scale: 'Dedicated Webhooks' },
+  { feature: 'Custom website address (e.g. chat.yourshop.com)', starter: '—', growth: 'Included', scale: 'Included (Multi-domain)' },
+  { feature: 'Automatic notifications & webhooks', starter: 'Standard', growth: 'High-frequency', scale: 'Dedicated Webhooks' },
 ];
 
 export default function PricingPage() {

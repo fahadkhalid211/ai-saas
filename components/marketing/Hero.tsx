@@ -152,7 +152,7 @@ export function Hero() {
         </p>
         <div className="mk-cta-row mk-rise" style={{ ['--mk-delay' as string]: '640ms' }}>
           <ButtonLink href={SIGNUP_HREF}>{HERO.primaryCta}</ButtonLink>
-          <ButtonLink href="#how-it-works" variant="ghost">
+          <ButtonLink href="/playground" variant="ghost">
             {HERO.secondaryCta}
           </ButtonLink>
         </div>

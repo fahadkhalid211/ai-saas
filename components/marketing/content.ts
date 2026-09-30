@@ -50,10 +50,11 @@ export interface NavLink {
 }
 
 export const NAV: NavLink[] = [
-  { label: 'Product', href: '/product', description: 'Autonomous architecture and features' },
-  { label: 'Solutions', href: '/use-case', description: 'Tailored by business domain' },
+  { label: 'Product', href: '/product', description: 'Features and how it works' },
+  { label: "Who It's For", href: '/use-case', description: 'Tailored by business type' },
   { label: 'Integrations', href: '/integrations', description: 'Connect calendars, CRM and channels' },
   { label: 'Pricing', href: '/pricing', description: 'Predictable plans, zero token tax' },
+  { label: 'Try Demo', href: '/playground', description: 'Test with your own flyer in 2 minutes' },
   { label: 'Support', href: '/support', description: 'Documentation and help center' },
 ];
 
@@ -64,10 +65,10 @@ export const HERO = {
   title: ['Answer every visitor.', 'Book the ones who are ready.'],
   body: 'Instant answers from your content. Real bookings into your calendar.\nYour team steps in only when it matters.',
   primaryCta: 'Start free trial',
-  secondaryCta: 'See how it works',
+  secondaryCta: 'Try demo with your flyer (free)',
   trust: [
     'Answers from your own content, and says when it does not know',
-    'Bring your own AI key — zero markup',
+    'Free to start — zero compute cost',
     'Human takeover in one click',
   ],
 };
@@ -304,7 +305,7 @@ export const FAQ = {
     },
     {
       q: 'Do I need my own AI provider account?',
-      a: 'Yes. You connect your own API key from OpenAI, Anthropic, Google Gemini, Groq or another provider. Usage goes directly to them at their rates. We add nothing on top.',
+      a: 'No. You can get started right away using our free built-in engine with zero setup and no card required. If you prefer to connect your own OpenAI, Google Gemini, Anthropic or Groq account, you can plug in your existing key with zero platform markup.',
     },
     {
       q: 'Can a person take over a live conversation?',

@@ -25,12 +25,12 @@ const ARCHITECTURE_STEPS: ArchitectureStep[] = [
   {
     id: 'ingress',
     stepNumber: '01',
-    title: 'Inbound Multimodal Ingress',
-    badge: 'Chat & Webhooks',
-    tagline: 'Every message arrives through a signed, validated request.',
+    title: 'Inbound Messages & Channels',
+    badge: 'Step 1: Visitors',
+    tagline: 'Every message arrives securely from your website, WhatsApp, or Telegram.',
     tone: 'pink',
     description:
-      'Text chat from the web widget, WhatsApp, and Telegram arrives through signed HTTPS requests and webhooks, and is validated before the assistant sees it.',
+      'Customer messages from the website widget, WhatsApp, and Telegram arrive through secure, verified channels and are screened before the assistant responds.',
     specs: [
       { label: 'Protocols', value: 'HTTPS' },
       { label: 'Ingress Latency', value: '< 24ms validation' },
@@ -54,12 +54,12 @@ Payload: {
   {
     id: 'rag',
     stepNumber: '02',
-    title: 'Autonomous Hybrid RAG Memory',
-    badge: 'Vector Engine',
-    tagline: 'Dense vector embeddings fused with BM25 keyword matching.',
+    title: 'Grounded Knowledge & Search',
+    badge: 'Step 2: Knowledge',
+    tagline: 'Answers only from your real documents — no guessing.',
     tone: 'lav',
     description:
-      'Every document, policy guide, and pricing table is segmented into semantic chunks and embedded locally using ONNX `bge-small-en-v1.5`. Crescelo queries dense vectors alongside sparse BM25 indices via Reciprocal Rank Fusion (RRF), guaranteeing strict citations without hallucination.',
+      'Every document, policy guide, and pricing table is analyzed and indexed with strict source citations. Crescelo searches your exact files so your assistant never invents prices or policies.',
     specs: [
       { label: 'Embedding Architecture', value: 'Local ONNX bge-small-en-v1.5' },
       { label: 'Retrieval Algorithm', value: 'Reciprocal Rank Fusion (RRF)' },
@@ -85,12 +85,12 @@ const chunks = await retrieveHybridChunks({
   {
     id: 'mutex',
     stepNumber: '03',
-    title: 'Zero-Collision Mutex Scheduler',
-    badge: 'Scheduling Core',
-    tagline: 'In-memory atomic locking guarantees zero double-bookings.',
+    title: 'Guaranteed No Double-Bookings',
+    badge: 'Step 3: Scheduling',
+    tagline: 'Instant slot locking ensures two customers never grab the same time.',
     tone: 'mint',
     description:
-      'Unlike simple prompt wrappers that pretend to book appointments, Crescelo’s backend features a distributed in-memory mutex lock. When a customer confirms a slot in chat or on a call, Crescelo locks the slot atomically down to the millisecond before writing to Google Calendar or Outlook.',
+      'Unlike simple bots that pretend to book appointments, Crescelo locks the slot instantly the moment a customer confirms, holding it securely before syncing directly to your Google Calendar or Outlook.',
     specs: [
       { label: 'Lock Mechanism', value: 'Atomic In-Memory Mutex + DB State' },
       { label: 'Lock Hold Window', value: '180 seconds hold during checkout' },
@@ -116,12 +116,12 @@ if (!lock.acquired) {
   {
     id: 'byok',
     stepNumber: '04',
-    title: 'BYOK Multi-LLM Routing',
-    badge: 'Inference Layer',
-    tagline: '0% platform token markup. Your keys, your provider.',
+    title: 'Direct AI Brain & Instant Replies',
+    badge: 'Step 4: AI Engine',
+    tagline: 'Zero markup on AI. Instant streaming replies with automatic failover.',
     tone: 'lime',
     description:
-      'Connect your own keys from Groq, OpenAI, Anthropic, or Google Gemini with 0% token tax. Replies stream to the visitor as they are written, and a backup provider takes over if the first is down.',
+      'Run for free out of the box with automatic failover, or connect your own account from Groq, OpenAI, Anthropic, or Google Gemini with 0% token markup. Replies stream to the visitor instantly.',
     specs: [
       { label: 'Token Markup', value: '0% (Wholesale Provider Cost)' },
       { label: 'Fastest First Token', value: '140ms with Groq LPU' },
