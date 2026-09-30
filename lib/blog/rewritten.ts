@@ -42,6 +42,17 @@ import { PILLAR28 } from './rewritten/pillar28';
 import { PILLAR29 } from './rewritten/pillar29';
 import { PILLAR30 } from './rewritten/pillar30';
 import { PILLAR31 } from './rewritten/pillar31';
+import { PILLAR32 } from './rewritten/pillar32';
+import { PILLAR33 } from './rewritten/pillar33';
+import { PILLAR34 } from './rewritten/pillar34';
+import { PILLAR35 } from './rewritten/pillar35';
+import { PILLAR36 } from './rewritten/pillar36';
+import { PILLAR37 } from './rewritten/pillar37';
+import { PILLAR38 } from './rewritten/pillar38';
+import { PILLAR39 } from './rewritten/pillar39';
+import { PILLAR40 } from './rewritten/pillar40';
+import { PILLAR41 } from './rewritten/pillar41';
+import { PILLAR42 } from './rewritten/pillar42';
 
 /** Articles written for readers. They replace the templated placeholder with the same address and are listed in search. */
 export const REWRITTEN_POSTS: BlogPost[] = [...BATCH1, ...BATCH2, ...BATCH3, ...BATCH4, ...BATCH5, ...BATCH6, ...BATCH7, ...BATCH8, ...BATCH9, ...BATCH10, ...BATCH11, ...BATCH12,
@@ -77,4 +88,15 @@ export const REWRITTEN_POSTS: BlogPost[] = [...BATCH1, ...BATCH2, ...BATCH3, ...
   ...PILLAR29,
   ...PILLAR30,
   ...PILLAR31,
+  ...PILLAR32,
+  ...PILLAR33,
+  ...PILLAR34,
+  ...PILLAR35,
+  ...PILLAR36,
+  ...PILLAR37,
+  ...PILLAR38,
+  ...PILLAR39,
+  ...PILLAR40,
+  ...PILLAR41,
+  ...PILLAR42,
 ];

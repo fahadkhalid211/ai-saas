@@ -170,22 +170,6 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
             <div className="mk-article-layout">
               {/* Main Content Column */}
               <article style={{ minWidth: 0 }}>
-                {/* Mobile Table of Contents */}
-                {toc.length > 2 && (
-                  <div className="mk-card mk-mobile-only" style={{ padding: '1.25rem', marginBottom: '2rem', borderRadius: '8px' }}>
-                    <p style={{ fontWeight: 700, marginBottom: '0.6rem', fontSize: '0.95rem' }}>Quick Navigation</p>
-                    <ol style={{ paddingLeft: '1.2rem', listStyle: 'decimal', fontSize: '0.9rem', display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
-                      {toc.map((h) => (
-                        <li key={h.id}>
-                          <a href={`#${h.id}`} className="mk-animated-link" style={{ textDecoration: 'none' }}>
-                            {h.text.replace(/^\d+\.\s*/, '')}
-                          </a>
-                        </li>
-                      ))}
-                    </ol>
-                  </div>
-                )}
-
                 <BlogBody blocks={post.body} />
 
                 {/* Mid-Article / Post-Article Conversion Card */}
