@@ -935,6 +935,92 @@
         transform-origin: center;
         animation: cm-seed-mini 2.8s ease-in-out infinite;
       }
+
+      /* WooCommerce Product Cards & Cart Actions */
+      .crescelo-product-card {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 10px 12px;
+        margin: 8px 0;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+        text-align: left;
+      }
+      .crescelo-product-thumb {
+        width: 52px;
+        height: 52px;
+        border-radius: 8px;
+        object-fit: cover;
+        flex-shrink: 0;
+        background: #f1f5f9;
+        border: 1px solid #e2e8f0;
+      }
+      .crescelo-product-meta {
+        flex: 1;
+        min-width: 0;
+      }
+      .crescelo-product-title {
+        display: block;
+        font-size: 13px;
+        font-weight: 700;
+        color: #0f172a;
+        text-decoration: none;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        margin-bottom: 2px;
+      }
+      .crescelo-product-title:hover {
+        color: var(--primary-color, #2563eb);
+      }
+      .crescelo-price-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 6px;
+      }
+      .crescelo-product-price {
+        font-size: 12.5px;
+        font-weight: 700;
+        color: #059669;
+      }
+      .crescelo-product-stock {
+        font-size: 10.5px;
+        font-weight: 600;
+        padding: 1px 6px;
+        border-radius: 9999px;
+      }
+      .crescelo-product-stock.in-stock {
+        background: #ecfdf5;
+        color: #059669;
+      }
+      .crescelo-add-to-cart-btn {
+        background: var(--primary-color, #2563eb);
+        color: #ffffff;
+        border: none;
+        border-radius: 6px;
+        padding: 5px 10px;
+        font-size: 11.5px;
+        font-weight: 600;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        transition: opacity 0.15s, transform 0.1s;
+      }
+      .crescelo-add-to-cart-btn:hover {
+        opacity: 0.9;
+        transform: translateY(-1px);
+      }
+      .crescelo-add-to-cart-btn.added {
+        background: #10b981;
+      }
+      .crescelo-cart-cta {
+        margin: 6px 0;
+      }
     `;
     shadow.appendChild(style);
 
@@ -1329,6 +1415,51 @@
     if (supportHeaderBtn) {
       supportHeaderBtn.addEventListener('click', function () {
         requestLiveAgent();
+      });
+    }
+
+    // WooCommerce In-Chat Add-to-Cart Action Delegation
+    if (messagesBody) {
+      messagesBody.addEventListener('click', function (e) {
+        var addBtn = e.target.closest('.crescelo-add-to-cart-btn');
+        if (addBtn && !addBtn.disabled) {
+          handleWooAddToCart(addBtn);
+        }
+      });
+    }
+
+    function handleWooAddToCart(btn) {
+      var pid = btn.getAttribute('data-product-id');
+      var title = btn.getAttribute('data-product-title') || 'Item';
+      if (!pid) return;
+
+      btn.disabled = true;
+      var originalHtml = btn.innerHTML;
+      btn.innerHTML = '⏳ Adding to Cart...';
+
+      fetch('/?wc-ajax=add_to_cart', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({ product_id: pid, quantity: 1 }),
+      })
+      .then(function (res) {
+        return res.text();
+      })
+      .then(function () {
+        btn.classList.add('added');
+        btn.innerHTML = '✓ Added! <a href="/cart" target="_blank" rel="noopener noreferrer" style="color:#ffffff;text-decoration:underline;margin-left:6px;font-weight:700;">View Cart &rarr;</a>';
+
+        try {
+          if (window.jQuery) {
+            window.jQuery(document.body).trigger('wc_fragment_refresh');
+            window.jQuery(document.body).trigger('added_to_cart', [null, null, null]);
+          }
+        } catch (evtErr) {}
+      })
+      .catch(function () {
+        window.open('/cart/?add-to-cart=' + encodeURIComponent(pid), '_blank');
+        btn.disabled = false;
+        btn.innerHTML = originalHtml;
       });
     }
 
@@ -1803,6 +1934,46 @@
 
       // Clean up br tags right after block elements
       html = html.replace(/<\/(h[1-4]|ul|ol|blockquote|pre|hr|div|table)><br\/>/g, '</$1>');
+
+      // Parse WooCommerce Product Cards: [PRODUCT_CARD:{...}]
+      html = html.replace(/\[PRODUCT_CARD:\s*(\{[\s\S]*?\})\s*\]/g, function (match, jsonStr) {
+        try {
+          var unescaped = jsonStr.replace(/&quot;/g, '"').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>');
+          var p = JSON.parse(unescaped);
+          var imgHtml = p.image ? ('<img src="' + escapeHtml(p.image) + '" class="crescelo-product-thumb" alt="' + escapeHtml(p.title || '') + '" />') : '';
+          var priceHtml = p.price ? ('<span class="crescelo-product-price">' + escapeHtml(p.price) + '</span>') : '';
+          var stockHtml = p.stock ? ('<span class="crescelo-product-stock in-stock">' + escapeHtml(p.stock) + '</span>') : '';
+          var titleHtml = p.url ? ('<a href="' + escapeHtml(p.url) + '" target="_blank" rel="noopener noreferrer" class="crescelo-product-title">' + escapeHtml(p.title || 'View Product') + ' &#8599;</a>') : ('<span class="crescelo-product-title">' + escapeHtml(p.title || '') + '</span>');
+
+          return '<div class="crescelo-product-card" data-product-id="' + escapeHtml(String(p.id || '')) + '">' +
+            imgHtml +
+            '<div class="crescelo-product-meta">' +
+              titleHtml +
+              '<div class="crescelo-price-row">' + priceHtml + stockHtml + '</div>' +
+              '<button type="button" class="crescelo-add-to-cart-btn" data-product-id="' + escapeHtml(String(p.id || '')) + '" data-product-title="' + escapeHtml(p.title || '') + '">' +
+                '🛒 Add to Cart' +
+              '</button>' +
+            '</div>' +
+          '</div>';
+        } catch (e) {
+          return '';
+        }
+      });
+
+      // Parse Add-to-Cart Call to Action: [ADD_TO_CART:{...}]
+      html = html.replace(/\[ADD_TO_CART:\s*(\{[\s\S]*?\})\s*\]/g, function (match, jsonStr) {
+        try {
+          var unescaped = jsonStr.replace(/&quot;/g, '"').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>');
+          var p = JSON.parse(unescaped);
+          return '<div class="crescelo-cart-cta">' +
+            '<button type="button" class="crescelo-add-to-cart-btn" data-product-id="' + escapeHtml(String(p.id || '')) + '" data-product-title="' + escapeHtml(p.title || '') + '">' +
+              '🛒 Add ' + escapeHtml(p.title || 'Item') + (p.price ? ' (' + escapeHtml(p.price) + ')' : '') + ' to Cart' +
+            '</button>' +
+          '</div>';
+        } catch (e) {
+          return '';
+        }
+      });
 
       return html;
     }
