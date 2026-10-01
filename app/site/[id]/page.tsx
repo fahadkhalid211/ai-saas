@@ -4,6 +4,8 @@ import { Database } from '@/lib/db';
 import { getLandingConfigForSlugOrTemplate } from '@/lib/landing/types';
 import HostedBusinessSiteClient from './HostedBusinessSiteClient';
 
+import { SITE } from '@/components/marketing/content';
+
 interface SitePageProps {
   params: Promise<{ id: string }>;
 }
@@ -18,14 +20,20 @@ export async function generateMetadata({ params }: SitePageProps): Promise<Metad
   const description = config?.seo?.metaDescription || config?.heroSubheadline || '';
 
   const ogImage = config?.seo?.ogImageUrl || config?.heroImageUrl;
+  const canonicalUrl = config?.seo?.canonicalUrl || `/site/${id}`;
+  const absoluteUrl = canonicalUrl.startsWith('http') ? canonicalUrl : `${SITE.url}${canonicalUrl.startsWith('/') ? canonicalUrl : `/${canonicalUrl}`}`;
 
   return {
     title,
     description,
+    alternates: {
+      canonical: canonicalUrl,
+    },
     openGraph: {
       title,
       description,
       type: 'website',
+      url: absoluteUrl,
       images: ogImage ? [ogImage] : undefined,
     },
     twitter: {

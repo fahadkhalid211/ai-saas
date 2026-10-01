@@ -295,6 +295,7 @@ export default function UseCasePage() {
                 return (
                   <button
                     key={ind.id}
+                    id={ind.id}
                     type="button"
                     className={`mk-cockpit-tab ${isActive ? 'is-active' : ''}`}
                     onClick={() => {

@@ -47,6 +47,10 @@ const PAGES: { path: string; priority: number; changeFrequency: 'weekly' | 'mont
   // Guides
   { path: '/guides/add-ai-assistant-to-wordpress',    priority: 0.7, changeFrequency: 'monthly' },
 
+  // Status & Utility
+  { path: '/status',                                   priority: 0.5, changeFrequency: 'weekly'  },
+  { path: '/report-bug',                               priority: 0.4, changeFrequency: 'monthly' },
+
   // Legal (low priority, rarely changes)
   { path: '/terms',            priority: 0.3, changeFrequency: 'yearly' },
   { path: '/privacy',          priority: 0.3, changeFrequency: 'yearly' },
@@ -61,7 +65,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   // A page's date should change only when the page does; stamping "now" on everything teaches Google to ignore it.
   const lastModified = new Date(SITE_UPDATED);
   const pages = PAGES.map((p) => ({
-    url: `${SITE.url}${p.path}`,
+    url: p.path ? `${SITE.url}${p.path}` : `${SITE.url}/`,
     lastModified,
     changeFrequency: p.changeFrequency,
     priority: p.priority,

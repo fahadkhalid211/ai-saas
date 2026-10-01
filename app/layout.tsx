@@ -44,6 +44,7 @@ export const metadata: Metadata = {
     type: 'website',
     siteName: 'Crescelo',
     locale: 'en_US',
+    url: SITE.url,
     title: 'Crescelo: AI website assistant for service businesses',
     description: SITE.description,
   },
