@@ -53,6 +53,42 @@ export interface LandingPageFeatureItem {
   icon?: string;
 }
 
+export interface LandingPageHeroSlide {
+  id: string;
+  imageUrl: string;
+  headline: string;
+  subheadline: string;
+  badge?: string;
+  ctaText?: string;
+  ctaLink?: string;
+}
+
+export interface LandingPagePricingPlan {
+  id: string;
+  name: string;
+  price: string | number;
+  period?: string;
+  description: string;
+  features: string[];
+  popular?: boolean;
+  isPopular?: boolean;
+  badge?: string;
+  ctaText?: string;
+  ctaLink?: string;
+}
+
+export interface LandingPageFaqItem {
+  id: string;
+  question: string;
+  answer: string;
+}
+
+export interface LandingPageStatItem {
+  id?: string;
+  value: string;
+  label: string;
+}
+
 export interface LandingPageConfig {
   id?: string;
   workspaceId?: string;
@@ -103,6 +139,17 @@ export interface LandingPageConfig {
     tiktok?: string;
   };
   logoUrl?: string;
+  heroCarouselSlides?: LandingPageHeroSlide[];
+  timezone?: string;
+  showPricing?: boolean;
+  pricingTitle?: string;
+  pricingSubtitle?: string;
+  pricingPlans?: LandingPagePricingPlan[];
+  faqsTitle?: string;
+  faqsSubtitle?: string;
+  faqs?: LandingPageFaqItem[];
+  stats?: LandingPageStatItem[];
+  secondaryHeroCtaText?: string;
   founderName?: string;
   founderTitle?: string;
   founderRole?: string;
@@ -219,6 +266,59 @@ export const MODERN_DESIGN_ARCHETYPES: DesignArchetype[] = [
 ];
 
 export const INDUSTRY_DESIGN_ARCHETYPES: Record<string, DesignArchetype[]> = {
+  universal: [
+    {
+      id: 'universal_clean_modern',
+      name: 'Universal Clean Precision',
+      tagline: 'Clean, balanced typography, crisp borders, and refined white/dark contrast suited for any business.',
+      category: 'Universal Multi-Industry',
+      aesthetic: 'Clean Modern & Precision Craft',
+      themeColor: '#2563eb',
+      previewImage: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=800&q=80',
+      badge: 'Universal Standard',
+      features: [
+        'Editable Hero Image & Copy Carousel',
+        'Transparent Booking Menu with Timezone',
+        'Toggleable Multi-Tier Pricing Matrix',
+        'Connected Knowledgebase AI Concierge',
+      ],
+      recommendedFor: ['universal', 'general', 'custom', 'consulting'],
+    },
+    {
+      id: 'universal_executive_slate',
+      name: 'Universal Executive Slate',
+      tagline: 'Authoritative deep navy and slate layout with generous whitespace and high-ticket service catalog.',
+      category: 'Executive & Professional Services',
+      aesthetic: 'Deep Slate & Royal Blue',
+      themeColor: '#1e3a8a',
+      previewImage: 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=800&q=80',
+      badge: 'Corporate Standard',
+      features: [
+        'Structured service and retainer tiers',
+        'Client review ratings and social proof',
+        'Timezone-aware calendar booking engine',
+        'Knowledge-grounded assistant trigger',
+      ],
+      recommendedFor: ['universal', 'general', 'saas', 'legal'],
+    },
+    {
+      id: 'universal_high_conversion',
+      name: 'Universal Direct Response',
+      tagline: 'High-contrast conversion engine with prominent CTA buttons, trust badges, and FAQ accordion.',
+      category: 'High-Growth & Local Services',
+      aesthetic: 'Vibrant Accent & High Contrast',
+      themeColor: '#059669',
+      previewImage: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=800&q=80',
+      badge: 'High Conversion',
+      features: [
+        'Rapid booking flow with SMS/Email alerts',
+        'Flexible monthly and annual pricing toggle',
+        'Full image and text customization per section',
+        'Direct 24/7 AI chat assistance',
+      ],
+      recommendedFor: ['universal', 'general', 'clinic', 'gym'],
+    },
+  ],
   legal: [
     {
       id: 'legal_prestige',
@@ -700,6 +800,7 @@ export const INDUSTRY_DESIGN_ARCHETYPES: Record<string, DesignArchetype[]> = {
 
 export function getArchetypesForIndustry(industry?: string): DesignArchetype[] {
   const ind = (industry || 'general').toLowerCase().trim();
+  if (ind.includes('universal') || ind === 'general') return INDUSTRY_DESIGN_ARCHETYPES.universal;
   if (ind.includes('crescelo') || ind === 'website_assistant' || ind === 'ai_assistant_saas') return INDUSTRY_DESIGN_ARCHETYPES.crescelo;
   if (ind.includes('legal') || ind.includes('law')) return INDUSTRY_DESIGN_ARCHETYPES.legal;
   if (ind.includes('barber') || ind.includes('salon')) return INDUSTRY_DESIGN_ARCHETYPES.barbershop;
@@ -1937,7 +2038,265 @@ export const DEFAULT_CRESCELO_CONFIG: LandingPageConfig = {
   },
 };
 
-// 13. General Business / AI Assistant Default
+// 13. Universal Clean Business Template Default
+export const DEFAULT_UNIVERSAL_LANDING_CONFIG: LandingPageConfig = {
+  enabled: true,
+  slug: 'universal-business',
+  businessName: 'Apex Business Solutions',
+  industry: 'universal',
+  themeColor: '#2563eb',
+  tagline: 'Modern Strategy, Execution & Client Growth',
+  badgeText: 'Trusted by 500+ Organizations Worldwide',
+  heroHeadline: 'Elevate Your Business With Next-Generation Services',
+  heroSubheadline: 'We deliver tailored consulting, high-impact implementation, and 24/7 client care. Schedule your appointment or ask our AI concierge anything.',
+  heroCtaText: 'Book An Appointment',
+  secondaryHeroCtaText: 'Ask AI Concierge',
+  heroImageUrl: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1200&q=80',
+  logoUrl: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=120&q=80',
+  timezone: 'America/New_York',
+  menuItems: [
+    { label: 'Services', href: '#services' },
+    { label: 'Features', href: '#features' },
+    { label: 'About', href: '#about' },
+    { label: 'Pricing', href: '#pricing' },
+    { label: 'Testimonials', href: '#testimonials' },
+    { label: 'FAQ', href: '#faq' },
+    { label: 'Contact', href: '#contact' },
+  ],
+  heroCarouselSlides: [
+    {
+      id: 'slide_1',
+      imageUrl: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1600&q=80',
+      badge: 'Award-Winning Business Advisory',
+      headline: 'Elevate Your Business With Next-Generation Services',
+      subheadline: 'We combine seasoned industry expertise with seamless digital convenience to accelerate your growth and customer success.',
+      ctaText: 'Schedule Consultation',
+      ctaLink: '#services',
+    },
+    {
+      id: 'slide_2',
+      imageUrl: 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1600&q=80',
+      badge: 'Transparent Delivery & Precision',
+      headline: 'Dedicated Team. Proven Results. Zero Compromises.',
+      subheadline: 'From tailored strategy audits to daily operational support, our dedicated specialists deliver excellence at every step.',
+      ctaText: 'Explore Service Menu',
+      ctaLink: '#services',
+    },
+    {
+      id: 'slide_3',
+      imageUrl: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1600&q=80',
+      badge: '24/7 Verified Support & AI Concierge',
+      headline: 'Instant Answers & Frictionless Online Booking',
+      subheadline: 'Never wait on hold again. Our verified AI assistant answers your questions in real time and syncs appointments directly into your calendar.',
+      ctaText: 'Book A Meeting Slot',
+      ctaLink: '#services',
+    },
+  ],
+  stats: [
+    { id: 'stat_1', value: '99.8%', label: 'Client Satisfaction' },
+    { id: 'stat_2', value: '15,000+', label: 'Appointments Booked' },
+    { id: 'stat_3', value: '< 60s', label: 'Average Response Time' },
+    { id: 'stat_4', value: '24/7', label: 'Knowledge Concierge' },
+  ],
+  servicesTitle: 'Our Professional Services',
+  servicesSubtitle: 'Select a service below to schedule an appointment directly into our verified team calendar.',
+  services: [
+    {
+      id: 'univ_srv_1',
+      name: 'Initial Strategic Discovery',
+      description: 'A 30-minute deep dive to understand your current challenges, audit requirements, and define an actionable roadmap.',
+      durationMinutes: 30,
+      price: 0,
+      imageUrl: 'https://images.unsplash.com/photo-1551836022-d5d88e9218df?auto=format&fit=crop&w=600&q=80',
+      popular: true,
+    },
+    {
+      id: 'univ_srv_2',
+      name: 'Comprehensive Advisory & Audit',
+      description: 'Full-spectrum review of operations, gap analysis, and tailored recommendations with an executive summary deliverable.',
+      durationMinutes: 60,
+      price: 150,
+      imageUrl: 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=600&q=80',
+      popular: false,
+    },
+    {
+      id: 'univ_srv_3',
+      name: 'Dedicated Implementation Sprint',
+      description: 'Hands-on guided execution session with our senior specialists to implement solutions and configure systems.',
+      durationMinutes: 90,
+      price: 295,
+      imageUrl: 'https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=600&q=80',
+      popular: false,
+    },
+    {
+      id: 'univ_srv_4',
+      name: 'Quarterly Executive Review',
+      description: 'Ongoing performance review, KPI tracking, and strategic refinement for existing clients and long-term partners.',
+      durationMinutes: 45,
+      price: 120,
+      imageUrl: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=600&q=80',
+      popular: false,
+    },
+  ],
+  featuresTitle: 'Why Organizations Choose Us',
+  featuresSubtitle: 'Built on the principles of speed, uncompromising craft, and client-first communication.',
+  features: [
+    {
+      title: 'Real-Time Calendar Booking',
+      description: 'Lock in appointments instantly with timezone intelligence, automated calendar invitations, and zero double-booking.',
+      icon: 'Calendar',
+      badge: 'Frictionless',
+    },
+    {
+      title: 'Knowledge-Grounded AI Concierge',
+      description: 'Our automated assistant is trained on verified company documentation to give accurate, reliable answers at any hour.',
+      icon: 'Bot',
+      badge: '24/7 Available',
+    },
+    {
+      title: 'Transparent Flat-Rate Pricing',
+      description: 'No hidden surcharges, surprise retainers, or fine print. You always know exactly what you are paying for upfront.',
+      icon: 'ShieldCheck',
+      badge: 'Honest Terms',
+    },
+    {
+      title: 'Enterprise Data Security',
+      description: 'Strict confidentiality protocols and privacy controls keep your business data and consultation notes safe.',
+      icon: 'Lock',
+      badge: 'Certified',
+    },
+  ],
+  aboutTitle: 'About Our Mission & Values',
+  aboutSubtitle: 'A relentless commitment to client growth and operational excellence.',
+  aboutText: 'Founded with a clear conviction that businesses deserve clear, honest, and prompt service, we bring together senior industry practitioners to solve critical business problems. Whether you need immediate consultation or a trusted long-term advisory partner, we bring the rigor, modern tools, and accountability needed to deliver outcomes that speak for themselves.',
+  aboutImageUrl: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1000&q=80',
+  showPricing: true,
+  pricingTitle: 'Simple, Flexible Pricing Plans',
+  pricingSubtitle: 'Choose the level of engagement that fits your business stage. Upgrade, downgrade, or cancel anytime.',
+  pricingPlans: [
+    {
+      id: 'plan_starter',
+      name: 'Essential Consultation',
+      price: 99,
+      period: '/ session',
+      description: 'Perfect for small businesses or individuals needing focused advisory on specific challenges.',
+      features: [
+        'Single 45-minute advisory appointment',
+        'Written diagnostic report & next steps',
+        'Email follow-up support for 7 days',
+        'Access to standard resource library',
+      ],
+      popular: false,
+      ctaText: 'Book Essential',
+    },
+    {
+      id: 'plan_growth',
+      name: 'Growth Partnership',
+      price: 299,
+      period: '/ month',
+      description: 'Our most popular tier for growing companies requiring regular strategic advisory and execution guidance.',
+      features: [
+        'Up to 4 appointments per month',
+        'Dedicated senior advisor assignment',
+        'Priority booking calendar slots',
+        'Direct 24/7 AI knowledgebase concierge',
+        'Slack / WhatsApp private channel',
+      ],
+      popular: true,
+      ctaText: 'Start Growth Tier',
+    },
+    {
+      id: 'plan_enterprise',
+      name: 'Enterprise Advisory',
+      price: 799,
+      period: '/ month',
+      description: 'Comprehensive, high-touch support designed for established organizations and scaling teams.',
+      features: [
+        'Unlimited strategic check-ins',
+        'Executive committee quarterly presentations',
+        'Custom workflow implementation sprint',
+        'Guaranteed 1-hour response SLA',
+        'Custom NDAs & master service agreements',
+      ],
+      popular: false,
+      ctaText: 'Contact Enterprise',
+    },
+  ],
+  testimonialsTitle: 'Trusted by Industry Leaders',
+  testimonialsSubtitle: 'See what our clients have to say about working with our team.',
+  testimonials: [
+    {
+      id: 'univ_test_1',
+      clientName: 'Sarah Jenkins',
+      clientRole: 'Managing Director, Horizon Retail',
+      rating: 5,
+      comment: 'Booking a consultation was effortless, and the team provided practical, game-changing recommendations within our first 45 minutes.',
+    },
+    {
+      id: 'univ_test_2',
+      clientName: 'Marcus Vance',
+      clientRole: 'Founder, Vance Logistics',
+      rating: 5,
+      comment: 'Their AI concierge answered all my late-night questions accurately, and the meeting calendar integration prevented any back-and-forth emails.',
+    },
+    {
+      id: 'univ_test_3',
+      clientName: 'Elena Rostova',
+      clientRole: 'Operations Lead, Apex Health',
+      rating: 5,
+      comment: 'The level of professionalism and prompt communication is unmatched. The pricing is 100% transparent and the results exceeded our expectations.',
+    },
+  ],
+  faqsTitle: 'Frequently Asked Questions',
+  faqsSubtitle: 'Everything you need to know about our services, booking process, and policies.',
+  faqs: [
+    {
+      id: 'faq_1',
+      question: 'How do appointment bookings work?',
+      answer: 'Simply choose a service from our menu, select an available date and time slot that fits your schedule, and provide your contact information. You will receive an instant calendar invite and email confirmation.',
+    },
+    {
+      id: 'faq_2',
+      question: 'Can I reschedule or cancel my appointment?',
+      answer: 'Yes! Every confirmation email includes a direct management link allowing you to reschedule or cancel your appointment anytime up to 2 hours prior to the scheduled time.',
+    },
+    {
+      id: 'faq_3',
+      question: 'What timezone are the appointments booked in?',
+      answer: 'Appointments are scheduled in our official business timezone, and our scheduler automatically indicates the corresponding time so you never miss an appointment.',
+    },
+    {
+      id: 'faq_4',
+      question: 'How does the AI Concierge work?',
+      answer: 'Our AI Concierge is directly linked to our verified company knowledgebase. It can answer questions about our service catalog, pricing, policies, and availability 24 hours a day, 7 days a week.',
+    },
+    {
+      id: 'faq_5',
+      question: 'Do you offer custom engagements not listed in the pricing table?',
+      answer: 'Yes. If your organization has unique requirements or needs custom service agreements, please book an Initial Discovery call or message our team.',
+    },
+  ],
+  address: '100 Innovation Way, Suite 400, New York, NY 10001',
+  phone: '+1 (555) 234-5678',
+  email: 'contact@apexsolutions.com',
+  workingHours: [
+    { days: 'Monday – Friday', hours: '8:30 AM – 6:30 PM EST' },
+    { days: 'Saturday', hours: '10:00 AM – 3:00 PM EST' },
+    { days: 'Sunday', hours: 'Closed (AI Concierge Active)' },
+  ],
+  socialLinks: {
+    linkedin: 'https://linkedin.com',
+    twitter: 'https://x.com',
+    facebook: 'https://facebook.com',
+    instagram: 'https://instagram.com',
+  },
+  ctaHeadline: 'Ready to Transform Your Business?',
+  ctaSubheadline: 'Schedule your appointment today or start an instant chat with our AI concierge.',
+  ctaButtonText: 'Book Your Service Now',
+  footerText: 'All rights reserved. Dedicated to delivering high-impact business solutions with speed, clarity, and precision.',
+};
+
+// 14. General Business / AI Assistant Default
 export const DEFAULT_BUSINESS_LANDING_CONFIG: LandingPageConfig = {
   enabled: false,
   slug: 'general',
@@ -1966,6 +2325,11 @@ export const DEFAULT_BUSINESS_LANDING_CONFIG: LandingPageConfig = {
 
 // Preset mapping dictionary
 export const TEMPLATE_LANDING_CONFIGS: Record<string, LandingPageConfig> = {
+  // Universal Clean Business Template
+  'universal': DEFAULT_UNIVERSAL_LANDING_CONFIG,
+  'universal-business': DEFAULT_UNIVERSAL_LANDING_CONFIG,
+  'clean-universal': DEFAULT_UNIVERSAL_LANDING_CONFIG,
+  'template_universal': DEFAULT_UNIVERSAL_LANDING_CONFIG,
   // General / Default
   'general': DEFAULT_BUSINESS_LANDING_CONFIG,
   'default': DEFAULT_BUSINESS_LANDING_CONFIG,

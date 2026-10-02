@@ -59,6 +59,7 @@ import { CreativeAgencyTemplate } from '@/components/landing/templates/CreativeA
 import { FintechTemplate } from '@/components/landing/templates/FintechTemplate';
 import { CustomSkeletonTemplate } from '@/components/landing/templates/CustomSkeletonTemplate';
 import { CresceloTemplate } from '@/components/landing/templates/CresceloTemplate';
+import { UniversalTemplate } from '@/components/landing/templates/UniversalTemplate';
 import { consumeChatStream } from '@/lib/chat/stream';
 import { MarkdownRenderer } from '@/components/markdown-renderer';
 import { ChatBookingCard } from '@/components/chat/ChatBookingCard';
@@ -934,6 +935,9 @@ export default function HostedBusinessSiteClient({
       chatMessagesCount: chatMessages.length,
     };
 
+    if (ind.includes('universal') || ind === 'general' || ind === 'default' || ind === 'business' || ind === 'consulting') {
+      return <UniversalTemplate {...templateProps} />;
+    }
     if (ind.includes('crescelo') || ind === 'website_assistant' || ind === 'ai_assistant_saas') {
       return <CresceloTemplate {...templateProps} />;
     }
@@ -967,7 +971,10 @@ export default function HostedBusinessSiteClient({
     if (ind.includes('health') || ind.includes('dental') || ind.includes('clinic') || ind.includes('medical')) {
       return <HealthcareTemplate {...templateProps} />;
     }
-    return <BarbershopTemplate {...templateProps} />;
+    if (ind.includes('barber') || ind.includes('salon')) {
+      return <BarbershopTemplate {...templateProps} />;
+    }
+    return <UniversalTemplate {...templateProps} />;
   };
 
   const currentUrl = typeof window !== 'undefined' ? window.location.href : '';
@@ -1323,9 +1330,17 @@ export default function HostedBusinessSiteClient({
                       />
                     </div>
                     <div>
-                      <label className={`block text-xs font-semibold ${isDark ? 'text-slate-300' : 'text-slate-700'} mb-1.5`}>
-                        Time Slot * {isLoadingSlots && <span className="text-slate-500 text-[10px]">(checking availability...)</span>}
-                      </label>
+                      <div className="flex items-center justify-between mb-1.5">
+                        <label className={`block text-xs font-semibold ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
+                          Time Slot * {isLoadingSlots && <span className="text-slate-500 text-[10px]">(checking availability...)</span>}
+                        </label>
+                        {landingConfig?.timezone && (
+                          <span className="text-[11px] font-medium text-blue-500 flex items-center gap-1">
+                            <Clock className="w-3 h-3" />
+                            {landingConfig.timezone}
+                          </span>
+                        )}
+                      </div>
                       <select
                         value={bookingTime}
                         onChange={(e) => setBookingTime(e.target.value)}

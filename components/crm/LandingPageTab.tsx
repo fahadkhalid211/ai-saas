@@ -39,6 +39,8 @@ import {
   RotateCcw,
   Layers,
   Palette,
+  Clock,
+  HelpCircle,
 } from 'lucide-react';
 import {
   LandingPageConfig,
@@ -62,6 +64,20 @@ const Youtube = ({ className = 'h-4 w-4' }: { className?: string }) => (
 );
 
 export const LANDING_TEMPLATES_LIST = [
+  {
+    slug: 'universal-business',
+    industryId: 'universal',
+    name: 'Universal Clean Business',
+    category: 'Universal Multi-Industry Design',
+    icon: Globe,
+    colorClass: 'text-blue-600 bg-blue-100 dark:bg-blue-950/60 dark:text-blue-400 border border-blue-500/30',
+    themeHex: '#2563eb',
+    heroImage: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=800&q=80',
+    headline: 'Elevate Your Business With Next-Generation Services',
+    badge: 'Universal Standard · Clean & Non-Vibecoded',
+    servicesSample: ['Strategic Discovery (Free)', 'Comprehensive Advisory ($150)', 'Implementation Sprint ($295)'],
+    description: 'Clean, universal, high-converting layout that every usual business can adapt. Features an editable hero image carousel, timezone calendar booking, toggleable pricing plans, customizable colors, and direct AI knowledgebase chat.',
+  },
   {
     slug: 'crescelo',
     industryId: 'crescelo',
@@ -1025,10 +1041,11 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
                     Industry Type
                   </label>
                   <select
-                    value={landingConfig.industry || 'barbershop'}
+                    value={landingConfig.industry || 'universal'}
                     onChange={(e) => setLandingConfig({ ...landingConfig, industry: e.target.value })}
                     className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
                   >
+                    <option value="universal">Universal Clean Business (All Industries)</option>
                     <option value="crescelo">Crescelo AI Website Assistant</option>
                     <option value="barbershop">Barbershop &amp; Salon</option>
                     <option value="gym">Gym &amp; Fitness Club</option>
@@ -1324,6 +1341,170 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
                   </div>
                 </div>
               )}
+            </div>
+
+            {/* Hero Carousel Slides Editor */}
+            <div className="p-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                    <Sparkles className="h-4 w-4 text-blue-600" />
+                    <span>Hero Carousel Slides (Images &amp; Text)</span>
+                  </h2>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                    Add, edit, or customize the rotating slides in the hero section. Each slide has its own image, headline, subheadline, and badge.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const newSlide = {
+                      id: 'slide_' + Math.random().toString(36).substring(2, 9),
+                      imageUrl: 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1200&q=80',
+                      badge: 'New Highlight',
+                      headline: 'Headline for this Slide',
+                      subheadline: 'Subheadline describing key value proposition or service offering.',
+                      ctaText: 'Explore Offerings',
+                      ctaLink: '#services',
+                    };
+                    const next = [...(landingConfig.heroCarouselSlides || [])];
+                    next.push(newSlide);
+                    setLandingConfig({ ...landingConfig, heroCarouselSlides: next });
+                  }}
+                  className="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer shadow-xs"
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                  <span>Add Slide</span>
+                </button>
+              </div>
+
+              <div className="space-y-4 pt-1">
+                {(landingConfig.heroCarouselSlides && landingConfig.heroCarouselSlides.length > 0
+                  ? landingConfig.heroCarouselSlides
+                  : []
+                ).map((slide, sIdx) => (
+                  <div
+                    key={slide.id || sIdx}
+                    className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40 space-y-3"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
+                        <span className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center text-[10px]">
+                          {sIdx + 1}
+                        </span>
+                        <span>Slide #{sIdx + 1}</span>
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const next = (landingConfig.heroCarouselSlides || []).filter((_, i) => i !== sIdx);
+                          setLandingConfig({ ...landingConfig, heroCarouselSlides: next });
+                        }}
+                        className="text-rose-500 hover:text-rose-700 text-xs font-semibold flex items-center gap-1 cursor-pointer transition"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                        <span>Delete</span>
+                      </button>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="text-[10px] font-semibold text-slate-400 block mb-0.5">Slide Image URL</label>
+                        <input
+                          type="url"
+                          value={slide.imageUrl}
+                          onChange={(e) => {
+                            const next = [...(landingConfig.heroCarouselSlides || [])];
+                            next[sIdx].imageUrl = e.target.value;
+                            setLandingConfig({ ...landingConfig, heroCarouselSlides: next });
+                          }}
+                          placeholder="https://images.unsplash.com/..."
+                          className="w-full text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-900 dark:text-white font-mono"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[10px] font-semibold text-slate-400 block mb-0.5">Slide Badge / Tag</label>
+                        <input
+                          type="text"
+                          value={slide.badge || ''}
+                          onChange={(e) => {
+                            const next = [...(landingConfig.heroCarouselSlides || [])];
+                            next[sIdx].badge = e.target.value;
+                            setLandingConfig({ ...landingConfig, heroCarouselSlides: next });
+                          }}
+                          placeholder="e.g. Award-Winning Excellence"
+                          className="w-full text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-900 dark:text-white"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="text-[10px] font-semibold text-slate-400 block mb-0.5">Headline</label>
+                      <input
+                        type="text"
+                        value={slide.headline}
+                        onChange={(e) => {
+                          const next = [...(landingConfig.heroCarouselSlides || [])];
+                          next[sIdx].headline = e.target.value;
+                          setLandingConfig({ ...landingConfig, heroCarouselSlides: next });
+                        }}
+                        placeholder="Main headline for this slide"
+                        className="w-full font-bold text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-900 dark:text-white"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-[10px] font-semibold text-slate-400 block mb-0.5">Subheadline</label>
+                      <textarea
+                        rows={2}
+                        value={slide.subheadline}
+                        onChange={(e) => {
+                          const next = [...(landingConfig.heroCarouselSlides || [])];
+                          next[sIdx].subheadline = e.target.value;
+                          setLandingConfig({ ...landingConfig, heroCarouselSlides: next });
+                        }}
+                        placeholder="Subheadline copy"
+                        className="w-full text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-600 dark:text-slate-300 resize-none"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="text-[10px] font-semibold text-slate-400 block mb-0.5">CTA Button Text</label>
+                        <input
+                          type="text"
+                          value={slide.ctaText || ''}
+                          onChange={(e) => {
+                            const next = [...(landingConfig.heroCarouselSlides || [])];
+                            next[sIdx].ctaText = e.target.value;
+                            setLandingConfig({ ...landingConfig, heroCarouselSlides: next });
+                          }}
+                          placeholder="e.g. Schedule Consultation"
+                          className="w-full text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-900 dark:text-white"
+                        />
+                      </div>
+                      {slide.imageUrl && (
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] font-semibold text-slate-400">Thumbnail:</span>
+                          <div className="h-10 w-16 rounded-md overflow-hidden border border-slate-200 dark:border-slate-700">
+                            <img src={slide.imageUrl} alt="Thumbnail" className="w-full h-full object-cover" />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+
+                {(!landingConfig.heroCarouselSlides || landingConfig.heroCarouselSlides.length === 0) && (
+                  <div className="p-6 text-center border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-2xl space-y-2">
+                    <Sparkles className="h-6 w-6 text-slate-400 mx-auto" />
+                    <div className="text-xs font-bold text-slate-700 dark:text-slate-300">Using Default Hero Image</div>
+                    <p className="text-[11px] text-slate-500">
+                      Add carousel slides to rotate multiple high-impact hero images, headlines, and calls to action.
+                    </p>
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Social Media Accounts */}
@@ -1966,12 +2147,239 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
                 />
               </div>
             </div>
+
+            {/* Trust Metrics & Key Statistics */}
+            <div className="p-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                    <Activity className="h-4 w-4 text-emerald-600" />
+                    <span>Trust Metrics &amp; Key Statistics</span>
+                  </h2>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                    Display impressive metrics, client counts, or satisfaction rates directly below the hero section.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const next = [...(landingConfig.stats || [])];
+                    next.push({ value: '100+', label: 'Happy Clients' });
+                    setLandingConfig({ ...landingConfig, stats: next });
+                  }}
+                  className="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer shadow-xs"
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                  <span>Add Metric</span>
+                </button>
+              </div>
+
+              <div className="space-y-3 pt-1">
+                {(landingConfig.stats && landingConfig.stats.length > 0 ? landingConfig.stats : []).map((stat, sIdx) => (
+                  <div key={sIdx} className="flex items-center gap-3 p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40">
+                    <div className="w-28">
+                      <label className="text-[10px] font-semibold text-slate-400 block mb-0.5">Metric Value</label>
+                      <input
+                        type="text"
+                        value={stat.value}
+                        placeholder="e.g. 99.8% or 10k+"
+                        onChange={(e) => {
+                          const next = [...(landingConfig.stats || [])];
+                          next[sIdx].value = e.target.value;
+                          setLandingConfig({ ...landingConfig, stats: next });
+                        }}
+                        className="w-full text-xs font-bold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-900 dark:text-white"
+                      />
+                    </div>
+                    <div className="flex-1">
+                      <label className="text-[10px] font-semibold text-slate-400 block mb-0.5">Metric Label</label>
+                      <input
+                        type="text"
+                        value={stat.label}
+                        placeholder="e.g. Client Satisfaction, Verified Cases Won"
+                        onChange={(e) => {
+                          const next = [...(landingConfig.stats || [])];
+                          next[sIdx].label = e.target.value;
+                          setLandingConfig({ ...landingConfig, stats: next });
+                        }}
+                        className="w-full text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-900 dark:text-white"
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const next = (landingConfig.stats || []).filter((_, i) => i !== sIdx);
+                        setLandingConfig({ ...landingConfig, stats: next });
+                      }}
+                      className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg transition cursor-pointer self-end mb-1"
+                      title="Delete metric"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                ))}
+
+                {(!landingConfig.stats || landingConfig.stats.length === 0) && (
+                  <p className="text-xs text-slate-400 text-center py-2">No custom trust metrics added. Click &ldquo;Add Metric&rdquo; to highlight key accomplishments.</p>
+                )}
+              </div>
+            </div>
+
+            {/* Frequently Asked Questions (FAQ) Section */}
+            <div className="p-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                  <h2 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                    <HelpCircle className="h-4 w-4 text-amber-500" />
+                    <span>Frequently Asked Questions (FAQ)</span>
+                  </h2>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                    Answer common visitor questions to build trust and eliminate booking friction.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const next = [...(landingConfig.faqs || [])];
+                    next.push({
+                      id: 'faq_' + Math.random().toString(36).substring(2, 9),
+                      question: 'New Question',
+                      answer: 'Clear, concise explanation for your clients.',
+                    });
+                    setLandingConfig({ ...landingConfig, faqs: next });
+                  }}
+                  className="px-3 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer shadow-xs"
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                  <span>Add Question</span>
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                    FAQ Section Title
+                  </label>
+                  <input
+                    type="text"
+                    value={landingConfig.faqsTitle || ''}
+                    onChange={(e) => setLandingConfig({ ...landingConfig, faqsTitle: e.target.value })}
+                    placeholder="e.g. Frequently Asked Questions"
+                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                    FAQ Section Subtitle
+                  </label>
+                  <input
+                    type="text"
+                    value={landingConfig.faqsSubtitle || ''}
+                    onChange={(e) => setLandingConfig({ ...landingConfig, faqsSubtitle: e.target.value })}
+                    placeholder="e.g. Everything you need to know about our services, process, and policies"
+                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-3 pt-2">
+                {(landingConfig.faqs && landingConfig.faqs.length > 0 ? landingConfig.faqs : []).map((faq, fIdx) => (
+                  <div key={faq.id || fIdx} className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                        Q{fIdx + 1}:
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const next = (landingConfig.faqs || []).filter((_, i) => i !== fIdx);
+                          setLandingConfig({ ...landingConfig, faqs: next });
+                        }}
+                        className="text-rose-500 hover:text-rose-700 text-xs font-semibold flex items-center gap-1 cursor-pointer transition"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                        <span>Delete</span>
+                      </button>
+                    </div>
+                    <input
+                      type="text"
+                      value={faq.question}
+                      placeholder="Question..."
+                      onChange={(e) => {
+                        const next = [...(landingConfig.faqs || [])];
+                        next[fIdx].question = e.target.value;
+                        setLandingConfig({ ...landingConfig, faqs: next });
+                      }}
+                      className="w-full text-xs font-semibold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-900 dark:text-white"
+                    />
+                    <textarea
+                      rows={2}
+                      value={faq.answer}
+                      placeholder="Answer..."
+                      onChange={(e) => {
+                        const next = [...(landingConfig.faqs || [])];
+                        next[fIdx].answer = e.target.value;
+                        setLandingConfig({ ...landingConfig, faqs: next });
+                      }}
+                      className="w-full text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-600 dark:text-slate-300 resize-none"
+                    />
+                  </div>
+                ))}
+
+                {(!landingConfig.faqs || landingConfig.faqs.length === 0) && (
+                  <p className="text-xs text-slate-400 text-center py-2">No FAQ items created. Click &ldquo;Add Question&rdquo; to add answers to common client questions.</p>
+                )}
+              </div>
+            </div>
           </div>
         )}
 
         {/* Tab 3: Services & Pricing */}
         {activeTab === 'services' && (
           <div className="space-y-6 animate-in fade-in duration-150">
+            {/* Booking Calendar Timezone Card */}
+            <div className="p-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                    <Clock className="h-4 w-4 text-blue-600" />
+                    <span>Booking Calendar Timezone</span>
+                  </h2>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                    Appointments for your services will be scheduled and displayed according to this timezone.
+                  </p>
+                </div>
+                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800">
+                  {landingConfig.timezone || 'America/New_York'}
+                </span>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  Select Business Timezone
+                </label>
+                <select
+                  value={landingConfig.timezone || 'America/New_York'}
+                  onChange={(e) => setLandingConfig({ ...landingConfig, timezone: e.target.value })}
+                  className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 cursor-pointer font-medium"
+                >
+                  <option value="America/New_York">Eastern Time (US &amp; Canada) — America/New_York (EST/EDT)</option>
+                  <option value="America/Chicago">Central Time (US &amp; Canada) — America/Chicago (CST/CDT)</option>
+                  <option value="America/Denver">Mountain Time (US &amp; Canada) — America/Denver (MST/MDT)</option>
+                  <option value="America/Los_Angeles">Pacific Time (US &amp; Canada) — America/Los_Angeles (PST/PDT)</option>
+                  <option value="America/Toronto">Eastern Time (Canada) — America/Toronto</option>
+                  <option value="Europe/London">Greenwich Mean Time / BST (UK) — Europe/London</option>
+                  <option value="Europe/Paris">Central European Time — Europe/Paris (CET/CEST)</option>
+                  <option value="Europe/Berlin">Central European Time — Europe/Berlin (CET/CEST)</option>
+                  <option value="Asia/Dubai">Gulf Standard Time (UAE) — Asia/Dubai (GST)</option>
+                  <option value="Asia/Singapore">Singapore Standard Time — Asia/Singapore (SGT)</option>
+                  <option value="Asia/Tokyo">Japan Standard Time — Asia/Tokyo (JST)</option>
+                  <option value="Australia/Sydney">Australian Eastern Time — Australia/Sydney (AEST/AEDT)</option>
+                  <option value="UTC">Coordinated Universal Time (UTC)</option>
+                </select>
+              </div>
+            </div>
+
             <div className="p-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-4">
               <div className="flex items-center justify-between">
                 <div>
@@ -2078,19 +2486,42 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
                       </div>
                     </div>
 
-                    <div>
-                      <label className="text-[10px] font-semibold text-slate-400 block mb-0.5">Service Description</label>
-                      <input
-                        type="text"
-                        value={service.description}
-                        placeholder="Brief description for prospective clients"
-                        onChange={(e) => {
-                          const next = [...(landingConfig.services || [])];
-                          next[sIdx].description = e.target.value;
-                          setLandingConfig({ ...landingConfig, services: next });
-                        }}
-                        className="w-full text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-600 dark:text-slate-300"
-                      />
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="text-[10px] font-semibold text-slate-400 block mb-0.5">Service Description</label>
+                        <input
+                          type="text"
+                          value={service.description}
+                          placeholder="Brief description for prospective clients"
+                          onChange={(e) => {
+                            const next = [...(landingConfig.services || [])];
+                            next[sIdx].description = e.target.value;
+                            setLandingConfig({ ...landingConfig, services: next });
+                          }}
+                          className="w-full text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-600 dark:text-slate-300"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[10px] font-semibold text-slate-400 block mb-0.5">Service Image URL (Optional)</label>
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="url"
+                            value={service.imageUrl || ''}
+                            placeholder="https://images.unsplash.com/..."
+                            onChange={(e) => {
+                              const next = [...(landingConfig.services || [])];
+                              next[sIdx].imageUrl = e.target.value;
+                              setLandingConfig({ ...landingConfig, services: next });
+                            }}
+                            className="flex-1 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-600 dark:text-slate-300 font-mono"
+                          />
+                          {service.imageUrl && (
+                            <div className="h-7 w-7 rounded overflow-hidden shrink-0 border border-slate-200 dark:border-slate-700">
+                              <img src={service.imageUrl} alt="" className="h-full w-full object-cover" />
+                            </div>
+                          )}
+                        </div>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -2103,6 +2534,277 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
                   </div>
                 )}
               </div>
+            </div>
+
+            {/* Pricing Plans & Packages Manager */}
+            <div className="p-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                  <h2 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                    <CreditCard className="h-4 w-4 text-emerald-600" />
+                    <span>Pricing Plans &amp; Packages</span>
+                  </h2>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                    Display transparent pricing tiers and packages. Toggle this section on or off whenever needed.
+                  </p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <label className="flex items-center gap-2 cursor-pointer bg-slate-50 dark:bg-slate-800 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700">
+                    <input
+                      type="checkbox"
+                      checked={landingConfig.showPricing !== false}
+                      onChange={(e) => setLandingConfig({ ...landingConfig, showPricing: e.target.checked })}
+                      className="h-4 w-4 rounded text-blue-600 focus:ring-blue-500 cursor-pointer"
+                    />
+                    <span className="text-xs font-semibold text-slate-800 dark:text-slate-200">
+                      {landingConfig.showPricing !== false ? 'Section Enabled' : 'Section Hidden'}
+                    </span>
+                  </label>
+                  {landingConfig.showPricing !== false && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const newPlan = {
+                          id: 'plan_' + Math.random().toString(36).substring(2, 9),
+                          name: 'Custom Package',
+                          price: '$99',
+                          period: '/month',
+                          description: 'Complete solution designed for expanding operations.',
+                          features: ['Core Consultation', 'Priority Scheduling', 'Dedicated Support'],
+                          isPopular: false,
+                          ctaText: 'Get Started',
+                          ctaLink: '#book',
+                        };
+                        const next = [...(landingConfig.pricingPlans || [])];
+                        next.push(newPlan);
+                        setLandingConfig({ ...landingConfig, pricingPlans: next });
+                      }}
+                      className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer shadow-xs"
+                    >
+                      <Plus className="h-3.5 w-3.5" />
+                      <span>Add Plan</span>
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {landingConfig.showPricing !== false ? (
+                <div className="space-y-4 pt-1">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                        Pricing Section Title
+                      </label>
+                      <input
+                        type="text"
+                        value={landingConfig.pricingTitle || ''}
+                        onChange={(e) => setLandingConfig({ ...landingConfig, pricingTitle: e.target.value })}
+                        placeholder="e.g. Transparent Pricing &amp; Retainers"
+                        className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                        Pricing Section Subtitle
+                      </label>
+                      <input
+                        type="text"
+                        value={landingConfig.pricingSubtitle || ''}
+                        onChange={(e) => setLandingConfig({ ...landingConfig, pricingSubtitle: e.target.value })}
+                        placeholder="e.g. Predictable investments crafted around your operational scale"
+                        className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-4 pt-2">
+                    {(landingConfig.pricingPlans && landingConfig.pricingPlans.length > 0
+                      ? landingConfig.pricingPlans
+                      : []
+                    ).map((plan, pIdx) => (
+                      <div
+                        key={plan.id || pIdx}
+                        className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40 space-y-3"
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <span className="w-5 h-5 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[10px] font-bold">
+                              {pIdx + 1}
+                            </span>
+                            <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                              {plan.name || `Plan #${pIdx + 1}`}
+                            </span>
+                            {plan.isPopular && (
+                              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300">
+                                Most Popular
+                              </span>
+                            )}
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const next = (landingConfig.pricingPlans || []).filter((_, i) => i !== pIdx);
+                              setLandingConfig({ ...landingConfig, pricingPlans: next });
+                            }}
+                            className="text-rose-500 hover:text-rose-700 text-xs font-semibold flex items-center gap-1 cursor-pointer transition"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                            <span>Delete</span>
+                          </button>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                          <div>
+                            <label className="text-[10px] font-semibold text-slate-400 block mb-0.5">Plan Name</label>
+                            <input
+                              type="text"
+                              value={plan.name}
+                              onChange={(e) => {
+                                const next = [...(landingConfig.pricingPlans || [])];
+                                next[pIdx].name = e.target.value;
+                                setLandingConfig({ ...landingConfig, pricingPlans: next });
+                              }}
+                              className="w-full text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-900 dark:text-white"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="text-[10px] font-semibold text-slate-400 block mb-0.5">Price (e.g. $49 or Custom)</label>
+                            <input
+                              type="text"
+                              value={plan.price}
+                              onChange={(e) => {
+                                const next = [...(landingConfig.pricingPlans || [])];
+                                next[pIdx].price = e.target.value;
+                                setLandingConfig({ ...landingConfig, pricingPlans: next });
+                              }}
+                              className="w-full text-xs font-bold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-900 dark:text-white"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="text-[10px] font-semibold text-slate-400 block mb-0.5">Period (e.g. /month, /session)</label>
+                            <input
+                              type="text"
+                              value={plan.period || ''}
+                              onChange={(e) => {
+                                const next = [...(landingConfig.pricingPlans || [])];
+                                next[pIdx].period = e.target.value;
+                                setLandingConfig({ ...landingConfig, pricingPlans: next });
+                              }}
+                              className="w-full text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-900 dark:text-white"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="text-[10px] font-semibold text-slate-400 block mb-0.5">Badge Text (Optional)</label>
+                            <input
+                              type="text"
+                              value={plan.badge || ''}
+                              placeholder="e.g. Best Value"
+                              onChange={(e) => {
+                                const next = [...(landingConfig.pricingPlans || [])];
+                                next[pIdx].badge = e.target.value;
+                                setLandingConfig({ ...landingConfig, pricingPlans: next });
+                              }}
+                              className="w-full text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-900 dark:text-white"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div>
+                            <label className="text-[10px] font-semibold text-slate-400 block mb-0.5">Plan Description</label>
+                            <input
+                              type="text"
+                              value={plan.description}
+                              onChange={(e) => {
+                                const next = [...(landingConfig.pricingPlans || [])];
+                                next[pIdx].description = e.target.value;
+                                setLandingConfig({ ...landingConfig, pricingPlans: next });
+                              }}
+                              className="w-full text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-600 dark:text-slate-300"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="text-[10px] font-semibold text-slate-400 block mb-0.5">Button Call-To-Action</label>
+                            <div className="grid grid-cols-2 gap-2">
+                              <input
+                                type="text"
+                                value={plan.ctaText || ''}
+                                placeholder="Button Text"
+                                onChange={(e) => {
+                                  const next = [...(landingConfig.pricingPlans || [])];
+                                  next[pIdx].ctaText = e.target.value;
+                                  setLandingConfig({ ...landingConfig, pricingPlans: next });
+                                }}
+                                className="w-full text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-900 dark:text-white"
+                              />
+                              <input
+                                type="text"
+                                value={plan.ctaLink || ''}
+                                placeholder="#book or URL"
+                                onChange={(e) => {
+                                  const next = [...(landingConfig.pricingPlans || [])];
+                                  next[pIdx].ctaLink = e.target.value;
+                                  setLandingConfig({ ...landingConfig, pricingPlans: next });
+                                }}
+                                className="w-full text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-900 dark:text-white"
+                              />
+                            </div>
+                          </div>
+                        </div>
+
+                        <div>
+                          <div className="flex items-center justify-between mb-1">
+                            <label className="text-[10px] font-semibold text-slate-400 block">
+                              Included Features (One feature per line)
+                            </label>
+                            <label className="flex items-center gap-1.5 cursor-pointer text-[11px] text-slate-700 dark:text-slate-300">
+                              <input
+                                type="checkbox"
+                                checked={!!plan.isPopular}
+                                onChange={(e) => {
+                                  const next = [...(landingConfig.pricingPlans || [])];
+                                  next[pIdx].isPopular = e.target.checked;
+                                  setLandingConfig({ ...landingConfig, pricingPlans: next });
+                                }}
+                                className="h-3.5 w-3.5 rounded text-blue-600 focus:ring-blue-500 cursor-pointer"
+                              />
+                              <span>Highlight as &ldquo;Most Popular&rdquo;</span>
+                            </label>
+                          </div>
+                          <textarea
+                            rows={3}
+                            value={(plan.features || []).join('\n')}
+                            onChange={(e) => {
+                              const lines = e.target.value.split('\n');
+                              const next = [...(landingConfig.pricingPlans || [])];
+                              next[pIdx].features = lines;
+                              setLandingConfig({ ...landingConfig, pricingPlans: next });
+                            }}
+                            placeholder="Feature 1&#10;Feature 2&#10;Feature 3"
+                            className="w-full text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-700 dark:text-slate-200 resize-none font-mono"
+                          />
+                        </div>
+                      </div>
+                    ))}
+
+                    {(!landingConfig.pricingPlans || landingConfig.pricingPlans.length === 0) && (
+                      <div className="p-6 text-center border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-2xl space-y-1.5">
+                        <CreditCard className="h-6 w-6 text-slate-400 mx-auto" />
+                        <div className="text-xs font-bold text-slate-700 dark:text-slate-300">No Pricing Plans Configured</div>
+                        <p className="text-[11px] text-slate-500">Click &ldquo;Add Plan&rdquo; to create structured tiers with deliverables and pricing.</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700 text-xs text-slate-500 text-center">
+                  The Pricing Plans section is currently hidden from your live landing page. Check &ldquo;Section Enabled&rdquo; above to display it.
+                </div>
+              )}
             </div>
           </div>
         )}
