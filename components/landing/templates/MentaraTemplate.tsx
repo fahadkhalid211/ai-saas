@@ -60,6 +60,67 @@ function LinkedinIcon({ className = 'w-4 h-4' }: { className?: string }) {
   );
 }
 
+function RollupButton({
+  label,
+  onClick,
+  className = '',
+  bgColor = '#eafe45',
+  textColor = '#1e3523',
+  iconBgColor = '#1e3523',
+  iconColor = '#eafe45',
+  size = 'md',
+}: {
+  label: string;
+  onClick?: () => void;
+  className?: string;
+  bgColor?: string;
+  textColor?: string;
+  iconBgColor?: string;
+  iconColor?: string;
+  size?: 'sm' | 'md' | 'lg';
+}) {
+  const isSm = size === 'sm';
+  const isLg = size === 'lg';
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`group relative inline-flex items-center gap-3.5 ${
+        isSm ? 'pl-4 pr-1.5 py-1.5 text-xs sm:text-sm' : isLg ? 'pl-7 pr-2.5 py-2.5 text-lg sm:text-xl' : 'pl-6 pr-2 py-2 text-sm sm:text-base'
+      } rounded-full font-semibold transition-all duration-300 cursor-pointer overflow-hidden shadow-md hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] ${className}`}
+      style={{ backgroundColor: bgColor, color: textColor }}
+    >
+      <div className={`relative overflow-hidden ${isSm ? 'h-4' : isLg ? 'h-7' : 'h-5'} flex items-center`}>
+        <span className="transition-transform duration-400 ease-[cubic-bezier(0.25,1,0.5,1)] group-hover:-translate-y-full block">
+          {label}
+        </span>
+        <span
+          className="absolute inset-0 translate-y-full transition-transform duration-400 ease-[cubic-bezier(0.25,1,0.5,1)] group-hover:translate-y-0 block"
+          style={{ color: textColor }}
+        >
+          {label}
+        </span>
+      </div>
+      <div
+        className={`${
+          isSm ? 'w-7 h-7' : isLg ? 'w-11 h-11' : 'w-9 h-9'
+        } rounded-full flex items-center justify-center overflow-hidden relative shrink-0 transition-transform duration-300`}
+        style={{ backgroundColor: iconBgColor }}
+      >
+        <ArrowUpRight
+          className={`${isSm ? 'w-3.5 h-3.5' : isLg ? 'w-5 h-5' : 'w-4 h-4'} transition-transform duration-400 ease-[cubic-bezier(0.25,1,0.5,1)] group-hover:translate-x-8 group-hover:-translate-y-8`}
+          style={{ color: iconColor }}
+        />
+        <ArrowUpRight
+          className={`${isSm ? 'w-3.5 h-3.5' : isLg ? 'w-5 h-5' : 'w-4 h-4'} absolute -translate-x-8 translate-y-8 transition-transform duration-400 ease-[cubic-bezier(0.25,1,0.5,1)] group-hover:translate-x-0 group-hover:translate-y-0`}
+          style={{ color: iconColor }}
+        />
+      </div>
+    </button>
+  );
+}
+
 interface MentaraTemplateProps {
   config: LandingPageConfig;
   onOpenBooking: (service?: LandingPageServiceItem) => void;
@@ -478,29 +539,15 @@ export function MentaraTemplate({
             )}
 
             {/* Signature Mentara Roll-up CTA Button */}
-            <button
+            <RollupButton
+              label="Let’s Talk"
               onClick={() => onOpenBooking()}
-              className="group relative inline-flex items-center gap-3 pl-6 pr-2 py-2 rounded-full font-semibold text-sm transition-all duration-300 cursor-pointer shadow-lg hover:shadow-[#eafe45]/20 overflow-hidden"
-              style={{
-                backgroundColor: sunnyYellow,
-                color: '#1e3523',
-              }}
-            >
-              <div className="relative overflow-hidden h-5 flex items-center">
-                <span className="transition-transform duration-300 group-hover:-translate-y-full block">
-                  Let’s Talk
-                </span>
-                <span className="absolute inset-0 translate-y-full transition-transform duration-300 group-hover:translate-y-0 text-[#1e3523] block">
-                  Let’s Talk
-                </span>
-              </div>
-              <div
-                className="w-9 h-9 rounded-full flex items-center justify-center transition-transform duration-300 group-hover:scale-105"
-                style={{ backgroundColor: '#1e3523' }}
-              >
-                <ArrowUpRight className="w-4 h-4 text-[#eafe45] transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-              </div>
-            </button>
+              bgColor={sunnyYellow}
+              textColor="#1e3523"
+              iconBgColor="#1e3523"
+              iconColor={sunnyYellow}
+              size="md"
+            />
           </div>
 
           {/* Mobile Menu Hamburger */}
@@ -564,7 +611,7 @@ export function MentaraTemplate({
       </header>
 
       {/* 2. Hero Section */}
-      <section id="home" className="pt-12 sm:pt-16 pb-20 sm:pb-28 overflow-hidden relative">
+      <section id="home" className="pt-14 sm:pt-20 pb-24 sm:pb-36 overflow-hidden relative">
         <div className="max-w-[1240px] mx-auto px-5">
           {/* Hero Top Wrapper */}
           <div className="flex flex-col items-center text-center space-y-6 max-w-4xl mx-auto">
@@ -593,30 +640,19 @@ export function MentaraTemplate({
 
             {/* Timezone Indicator & Instant Booking CTA */}
             <div className="pt-2 flex flex-wrap items-center justify-center gap-4">
-              <button
+              <RollupButton
+                label={config.heroCtaText || 'Schedule An Appointment'}
                 onClick={() => onOpenBooking()}
-                className="group relative inline-flex items-center gap-3 pl-7 pr-2.5 py-3 rounded-full font-bold text-base transition-all duration-300 cursor-pointer shadow-xl hover:shadow-[#eafe45]/25 overflow-hidden"
-                style={{ backgroundColor: sunnyYellow, color: '#1e3523' }}
-              >
-                <div className="relative overflow-hidden h-5 flex items-center">
-                  <span className="transition-transform duration-300 group-hover:-translate-y-full block">
-                    {config.heroCtaText || 'Schedule An Appointment'}
-                  </span>
-                  <span className="absolute inset-0 translate-y-full transition-transform duration-300 group-hover:translate-y-0 block text-[#1e3523]">
-                    {config.heroCtaText || 'Schedule An Appointment'}
-                  </span>
-                </div>
-                <div
-                  className="w-10 h-10 rounded-full flex items-center justify-center"
-                  style={{ backgroundColor: '#1e3523' }}
-                >
-                  <ArrowUpRight className="w-5 h-5 text-[#eafe45]" />
-                </div>
-              </button>
+                bgColor={sunnyYellow}
+                textColor="#1e3523"
+                iconBgColor="#1e3523"
+                iconColor={sunnyYellow}
+                size="lg"
+              />
 
               <button
                 onClick={() => onOpenChat()}
-                className="px-6 py-3.5 rounded-full border border-[#48614b] bg-[#2b4731]/80 hover:bg-[#2b4731] text-[#eff3df] font-semibold text-sm sm:text-base flex items-center gap-2.5 transition cursor-pointer"
+                className="px-6 py-3.5 rounded-full border border-[#48614b] bg-[#2b4731]/80 hover:bg-[#2b4731] hover:border-[#eafe45]/40 text-[#eff3df] font-semibold text-sm sm:text-base flex items-center gap-2.5 transition-all duration-300 cursor-pointer shadow-md hover:shadow-xl"
               >
                 <Bot className="w-5 h-5 text-[#eafe45]" />
                 <span>Ask AI Concierge (24/7)</span>
@@ -685,16 +721,16 @@ export function MentaraTemplate({
       </section>
 
       {/* 3. About Section ("Strong minds, thriving hearts unite.") */}
-      <section id="about" className="py-24 sm:py-32 bg-[#2b4731] border-t border-[#48614b]/40">
+      <section id="about" className="py-24 sm:py-[132px] bg-[#2b4731] border-t border-[#48614b]/40">
         <div className="max-w-[1240px] mx-auto px-5">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
             {/* About Left Image */}
             <div className="lg:col-span-5">
-              <div className="relative rounded-[24px] overflow-hidden border border-[#48614b] shadow-2xl aspect-[4/5] bg-[#1e3523]">
+              <div className="relative rounded-[24px] overflow-hidden border border-[#48614b] shadow-2xl aspect-[4/5] bg-[#1e3523] group">
                 <img
                   src={config.aboutImageUrl || 'https://cdn.prod.website-files.com/6825c2925e24e79e2bf4a9ed/682c4043b56a8fc5bf42cacc_About%20Image.png'}
                   alt={config.aboutTitle || 'About Mentara'}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
                 />
               </div>
             </div>
@@ -717,26 +753,15 @@ export function MentaraTemplate({
 
               {/* Action Button */}
               <div className="pt-2">
-                <button
+                <RollupButton
+                  label="Know Us More"
                   onClick={() => onOpenBooking()}
-                  className="group relative inline-flex items-center gap-3 pl-6 pr-2 py-2 rounded-full font-semibold text-sm transition-all duration-300 cursor-pointer overflow-hidden"
-                  style={{ backgroundColor: sunnyYellow, color: '#1e3523' }}
-                >
-                  <div className="relative overflow-hidden h-5 flex items-center">
-                    <span className="transition-transform duration-300 group-hover:-translate-y-full block">
-                      Know Us More
-                    </span>
-                    <span className="absolute inset-0 translate-y-full transition-transform duration-300 group-hover:translate-y-0 block text-[#1e3523]">
-                      Know Us More
-                    </span>
-                  </div>
-                  <div
-                    className="w-9 h-9 rounded-full flex items-center justify-center"
-                    style={{ backgroundColor: '#1e3523' }}
-                  >
-                    <ArrowUpRight className="w-4 h-4 text-[#eafe45]" />
-                  </div>
-                </button>
+                  bgColor={sunnyYellow}
+                  textColor="#1e3523"
+                  iconBgColor="#1e3523"
+                  iconColor={sunnyYellow}
+                  size="md"
+                />
               </div>
 
               {/* 3 Highlight Item Cards */}
@@ -760,7 +785,7 @@ export function MentaraTemplate({
                 ].map((item, idx) => (
                   <div
                     key={idx}
-                    className="p-5 rounded-[20px] border border-[#48614b] bg-[#35503a] space-y-3"
+                    className="p-5 rounded-[20px] border border-[#48614b] bg-[#35503a] space-y-3 hover:-translate-y-2 hover:border-[#eafe45]/60 hover:shadow-xl transition-all duration-300"
                   >
                     <div className="w-12 h-12 rounded-full bg-[#eff3df] flex items-center justify-center p-2.5">
                       <img src={item.icon} alt="" className="w-full h-full object-contain" />
@@ -782,7 +807,7 @@ export function MentaraTemplate({
               {partnerLogos.map((logo, idx) => (
                 <div
                   key={idx}
-                  className="flex items-center justify-center py-4 px-3 border border-[#48614b]/60 rounded-xl bg-[#1e3523]/40 hover:border-[#eafe45]/40 transition"
+                  className="flex items-center justify-center py-4 px-3 border border-[#48614b]/60 rounded-xl bg-[#1e3523]/40 hover:-translate-y-1 hover:border-[#eafe45]/60 hover:bg-[#2b4731] transition-all duration-300 shadow-xs"
                 >
                   <img src={logo} alt={`Partner ${idx + 1}`} className="h-7 w-auto object-contain filter brightness-110" />
                 </div>
@@ -793,7 +818,7 @@ export function MentaraTemplate({
       </section>
 
       {/* 4. Services Catalog Section */}
-      <section id="services" className="py-24 sm:py-32">
+      <section id="services" className="py-24 sm:py-[132px]">
         <div className="max-w-[1240px] mx-auto px-5">
           {/* Header */}
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
@@ -806,26 +831,16 @@ export function MentaraTemplate({
                 {config.servicesSubtitle || 'Strong minds, thriving hearts unite.'}
               </h2>
             </div>
-            <button
+            <RollupButton
+              label="All Services"
               onClick={() => onOpenBooking()}
-              className="group relative inline-flex items-center gap-3 pl-6 pr-2 py-2 rounded-full font-semibold text-sm transition-all duration-300 cursor-pointer self-start md:self-auto overflow-hidden"
-              style={{ backgroundColor: sunnyYellow, color: '#1e3523' }}
-            >
-              <div className="relative overflow-hidden h-5 flex items-center">
-                <span className="transition-transform duration-300 group-hover:-translate-y-full block">
-                  All Services
-                </span>
-                <span className="absolute inset-0 translate-y-full transition-transform duration-300 group-hover:translate-y-0 block text-[#1e3523]">
-                  All Services
-                </span>
-              </div>
-              <div
-                className="w-9 h-9 rounded-full flex items-center justify-center"
-                style={{ backgroundColor: '#1e3523' }}
-              >
-                <ArrowUpRight className="w-4 h-4 text-[#eafe45]" />
-              </div>
-            </button>
+              bgColor={sunnyYellow}
+              textColor="#1e3523"
+              iconBgColor="#1e3523"
+              iconColor={sunnyYellow}
+              size="md"
+              className="self-start md:self-auto"
+            />
           </div>
 
           {/* Wavy Divider */}
@@ -838,7 +853,7 @@ export function MentaraTemplate({
             {services.map((service, sIdx) => (
               <div
                 key={service.id || sIdx}
-                className="group p-5 rounded-[24px] border border-[#48614b] bg-[#35503a] hover:border-[#eafe45]/60 transition-all duration-300 flex flex-col justify-between"
+                className="group p-5 rounded-[24px] border border-[#48614b] bg-[#35503a] hover:border-[#eafe45]/70 hover:-translate-y-2 hover:shadow-2xl transition-all duration-300 flex flex-col justify-between"
               >
                 <div className="space-y-4">
                   {/* Thumbnail */}
@@ -846,7 +861,7 @@ export function MentaraTemplate({
                     <img
                       src={service.imageUrl || 'https://cdn.prod.website-files.com/682982f2b42d35f376f2394e/6829d494c23b89be6dbf2a48_Thumbnail%20Image%2001.png'}
                       alt={service.name}
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
                     />
                   </div>
 
@@ -873,11 +888,11 @@ export function MentaraTemplate({
 
                   <button
                     onClick={() => onOpenBooking(service)}
-                    className="inline-flex items-center gap-2 text-sm font-semibold text-[#eff3df] group-hover:text-[#eafe45] transition-colors cursor-pointer"
+                    className="group/btn inline-flex items-center gap-2 text-sm font-semibold text-[#eff3df] hover:text-[#eafe45] transition-colors cursor-pointer"
                   >
                     <span>Book Session</span>
-                    <div className="w-7 h-7 rounded-full bg-[#2b4731] border border-[#48614b] flex items-center justify-center group-hover:bg-[#eafe45] group-hover:text-[#1e3523] transition-all">
-                      <ArrowUpRight className="w-3.5 h-3.5" />
+                    <div className="w-7 h-7 rounded-full bg-[#2b4731] border border-[#48614b] flex items-center justify-center group-hover/btn:bg-[#eafe45] group-hover/btn:text-[#1e3523] group-hover/btn:border-[#eafe45] transition-all duration-300">
+                      <ArrowUpRight className="w-3.5 h-3.5 transition-transform duration-300 group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5" />
                     </div>
                   </button>
                 </div>
@@ -887,8 +902,8 @@ export function MentaraTemplate({
         </div>
       </section>
 
-      {/* 5. Process Section ("Our Process - Mental Wellness Journey") */}
-      <section id="process" className="py-24 sm:py-32 bg-[#2b4731] border-t border-[#48614b]/40">
+      {/* 5. Process Section ("Our Process - Mental Wellness Journey") with Sticky Stacked Cards */}
+      <section id="process" className="py-24 sm:py-[132px] bg-[#2b4731] border-t border-[#48614b]/40 relative">
         <div className="max-w-[1240px] mx-auto px-5">
           <div className="flex flex-col items-center text-center space-y-3 mb-6">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#48614b] bg-[#35503a] text-xs font-semibold uppercase tracking-wider text-[#eafe45]">
@@ -904,20 +919,20 @@ export function MentaraTemplate({
             <img src={vectorLineOne} alt="" className="w-full h-auto object-contain opacity-70" />
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-start">
-            {/* Sticky Process Featured Image */}
-            <div className="lg:col-span-5 lg:sticky lg:top-24">
-              <div className="rounded-[24px] overflow-hidden border border-[#48614b] shadow-2xl aspect-[4/5] bg-[#1e3523]">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start relative">
+            {/* Sticky Process Featured Image (Pinned Left) */}
+            <div className="lg:col-span-5 lg:sticky lg:top-28 self-start">
+              <div className="rounded-[20px] sm:rounded-[24px] overflow-hidden border border-[#48614b] shadow-2xl aspect-[4/5] sm:max-h-[640px] bg-[#1e3523]">
                 <img
                   src="https://cdn.prod.website-files.com/6825c2925e24e79e2bf4a9ed/682c6530d9caf9f6917cbfec_Process.png"
-                  alt="Process"
+                  alt="Process Overview"
                   className="w-full h-full object-cover"
                 />
               </div>
             </div>
 
-            {/* Right Numbered Process Cards */}
-            <div className="lg:col-span-7 space-y-6">
+            {/* Right Numbered Process Stacked Cards */}
+            <div className="lg:col-span-7 flex flex-col gap-8 sm:gap-12 relative pb-16">
               {[
                 {
                   number: '/001',
@@ -937,34 +952,41 @@ export function MentaraTemplate({
                   text: 'Taking time for mental calm is essential. It allows individuals to recharge, reflect, and find balance in their busy everyday lives.',
                   image: 'https://cdn.prod.website-files.com/6825c2925e24e79e2bf4a9ed/682eb5125d011d38dd48d69e_Process%20Item%20Image-1.png',
                 },
-              ].map((step, idx) => (
-                <div
-                  key={idx}
-                  className="p-8 rounded-[24px] border border-[#48614b] bg-[#35503a] grid grid-cols-1 sm:grid-cols-12 gap-6 items-center"
-                >
-                  <div className="sm:col-span-7 space-y-3">
-                    <span className="text-sm font-bold tracking-wider text-[#98946f]">
-                      {step.number}
-                    </span>
-                    <h3 className="text-2xl font-medium text-[#eff3df]">
-                      {step.title}
-                    </h3>
-                    <p className="text-sm text-[#b0bca7] leading-relaxed">
-                      {step.text}
-                    </p>
+              ].map((step, idx) => {
+                const topOffset = ['lg:sticky lg:top-28 z-10', 'lg:sticky lg:top-36 z-20', 'lg:sticky lg:top-44 z-30'][idx];
+                return (
+                  <div
+                    key={idx}
+                    className={`${topOffset} rounded-[24px] border border-[#48614b] bg-[#35503a] p-8 sm:p-10 shadow-2xl transition-all duration-300 hover:border-[#eafe45]/60 hover:-translate-y-1 flex flex-col justify-between group`}
+                  >
+                    <div className="mb-6">
+                      <span className="text-sm sm:text-base font-bold tracking-wider text-[#eafe45] block mb-3">
+                        {step.number}
+                      </span>
+                      <h3 className="text-2xl sm:text-3xl font-medium text-[#eff3df] leading-tight mb-3">
+                        {step.title}
+                      </h3>
+                      <p className="text-base text-[#b0bca7] leading-relaxed">
+                        {step.text}
+                      </p>
+                    </div>
+                    <div className="rounded-[18px] sm:rounded-[20px] overflow-hidden w-full aspect-[16/10] bg-[#1e3523] border border-[#48614b]/40">
+                      <img
+                        src={step.image}
+                        alt={step.title}
+                        className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                      />
+                    </div>
                   </div>
-                  <div className="sm:col-span-5 rounded-[18px] overflow-hidden aspect-[4/3] border border-[#48614b]/40">
-                    <img src={step.image} alt={step.title} className="w-full h-full object-cover" />
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </div>
       </section>
 
       {/* 6. Project Showcase Carousel Section */}
-      <section id="projects" className="py-24 sm:py-32">
+      <section id="projects" className="py-24 sm:py-[132px]">
         <div className="max-w-[1240px] mx-auto px-5">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
             <div className="space-y-3">
@@ -983,7 +1005,7 @@ export function MentaraTemplate({
                 onClick={() =>
                   setProjectSlideIndex((prev) => (prev > 0 ? prev - 1 : projects.length - 1))
                 }
-                className="w-11 h-11 rounded-full bg-[#eff3df] text-[#1e3523] hover:bg-[#eafe45] flex items-center justify-center transition cursor-pointer shadow-md"
+                className="w-11 h-11 rounded-full bg-[#eff3df] text-[#1e3523] hover:bg-[#eafe45] flex items-center justify-center transition-all duration-300 cursor-pointer shadow-md hover:scale-105"
                 aria-label="Previous Project"
               >
                 <ChevronLeft className="w-5 h-5" />
@@ -992,7 +1014,7 @@ export function MentaraTemplate({
                 onClick={() =>
                   setProjectSlideIndex((prev) => (prev < projects.length - 1 ? prev + 1 : 0))
                 }
-                className="w-11 h-11 rounded-full bg-[#eff3df] text-[#1e3523] hover:bg-[#eafe45] flex items-center justify-center transition cursor-pointer shadow-md"
+                className="w-11 h-11 rounded-full bg-[#eff3df] text-[#1e3523] hover:bg-[#eafe45] flex items-center justify-center transition-all duration-300 cursor-pointer shadow-md hover:scale-105"
                 aria-label="Next Project"
               >
                 <ChevronRight className="w-5 h-5" />
@@ -1017,23 +1039,23 @@ export function MentaraTemplate({
               .map((proj) => (
                 <div
                   key={proj.id}
-                  className="rounded-[28px] border border-[#48614b] bg-[#2b4731] p-6 space-y-5 hover:border-[#eafe45]/60 transition-all duration-300"
+                  className="group rounded-[28px] border border-[#48614b] bg-[#2b4731] p-6 space-y-5 hover:border-[#eafe45]/70 hover:-translate-y-2 hover:shadow-2xl transition-all duration-300"
                 >
                   <div className="rounded-[20px] overflow-hidden aspect-[16/10] bg-[#1e3523] border border-[#48614b]/40">
                     <img
                       src={proj.image}
                       alt={proj.title}
-                      className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+                      className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
                     />
                   </div>
 
-                  <h3 className="text-2xl font-medium text-[#eff3df]">{proj.title}</h3>
+                  <h3 className="text-2xl font-medium text-[#eff3df] group-hover:text-[#eafe45] transition-colors">{proj.title}</h3>
                   <p className="text-sm text-[#b0bca7] leading-relaxed">{proj.desc}</p>
 
                   <div className="pt-4 border-t border-[#48614b]/60 flex items-center justify-between">
                     <button
                       onClick={() => onOpenBooking()}
-                      className="px-5 py-2.5 rounded-full border border-[#eafe45] bg-[#eafe45] text-[#1e3523] font-semibold text-xs transition hover:bg-transparent hover:text-[#eff3df] cursor-pointer"
+                      className="px-5 py-2.5 rounded-full border border-[#eafe45] bg-[#eafe45] text-[#1e3523] font-semibold text-xs transition-all duration-300 hover:bg-transparent hover:text-[#eff3df] cursor-pointer shadow-sm"
                     >
                       Read More
                     </button>
@@ -1048,7 +1070,7 @@ export function MentaraTemplate({
       </section>
 
       {/* 7. Testimonials Section ("Real People Feedback") */}
-      <section id="testimonials" className="py-24 sm:py-32 bg-[#2b4731] border-t border-[#48614b]/40">
+      <section id="testimonials" className="py-24 sm:py-[132px] bg-[#2b4731] border-t border-[#48614b]/40">
         <div className="max-w-[1240px] mx-auto px-5">
           <div className="flex flex-col items-center text-center space-y-3 mb-6">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#48614b] bg-[#35503a] text-xs font-semibold uppercase tracking-wider text-[#eafe45]">
@@ -1074,10 +1096,10 @@ export function MentaraTemplate({
                   <button
                     key={t.id}
                     onClick={() => setActiveTestimonialTab(idx)}
-                    className={`flex items-center gap-4 p-3.5 rounded-[16px] transition-all cursor-pointer text-left shrink-0 lg:shrink w-[220px] lg:w-full border ${
+                    className={`flex items-center gap-4 p-3.5 rounded-[16px] transition-all duration-300 cursor-pointer text-left shrink-0 lg:shrink w-[220px] lg:w-full border ${
                       isActive
-                        ? 'bg-[#eff3df] text-[#1e3523] border-[#eff3df] shadow-md'
-                        : 'bg-[#1e3523]/60 text-[#eff3df] border-[#48614b]/60 hover:bg-[#35503a]'
+                        ? 'bg-[#eff3df] text-[#1e3523] border-[#eff3df] shadow-lg scale-[1.02]'
+                        : 'bg-[#1e3523]/60 text-[#eff3df] border-[#48614b]/60 hover:border-[#eafe45]/40 hover:bg-[#35503a]'
                     }`}
                   >
                     <img
@@ -1100,7 +1122,7 @@ export function MentaraTemplate({
             <div className="lg:col-span-8">
               <div className="grid grid-cols-1 sm:grid-cols-12 gap-6 items-stretch">
                 {/* Large Featured Photo */}
-                <div className="sm:col-span-5 rounded-[24px] overflow-hidden aspect-[4/5] bg-[#1e3523] border border-[#48614b]">
+                <div className="sm:col-span-5 rounded-[24px] overflow-hidden aspect-[4/5] bg-[#1e3523] border border-[#48614b] shadow-xl">
                   <img
                     src={testimonials[activeTestimonialTab].featuredImage}
                     alt={testimonials[activeTestimonialTab].name}
@@ -1109,7 +1131,7 @@ export function MentaraTemplate({
                 </div>
 
                 {/* Quote Card in Ecru White */}
-                <div className="sm:col-span-7 bg-[#eff3df] text-[#1e3523] rounded-[24px] p-8 flex flex-col justify-between shadow-xl">
+                <div className="sm:col-span-7 bg-[#eff3df] text-[#1e3523] rounded-[24px] p-8 flex flex-col justify-between shadow-2xl">
                   <div className="flex items-center justify-between pb-4 border-b border-[#1e3523]/15">
                     <img
                       src="https://cdn.prod.website-files.com/6825c2925e24e79e2bf4a9ed/682d4ce0ced67090ed189722_quote%20icon.png"
@@ -1149,7 +1171,7 @@ export function MentaraTemplate({
       </section>
 
       {/* 8. Team Members Section ("People Behind The Healing Work") with 3D Flip Cards */}
-      <section id="team" className="py-24 sm:py-32">
+      <section id="team" className="py-24 sm:py-[132px]">
         <div className="max-w-[1240px] mx-auto px-5">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
             <div className="space-y-3">
@@ -1161,26 +1183,16 @@ export function MentaraTemplate({
                 People Behind The Healing Work.
               </h2>
             </div>
-            <button
+            <RollupButton
+              label="Our Therapists"
               onClick={() => onOpenBooking()}
-              className="group relative inline-flex items-center gap-3 pl-6 pr-2 py-2 rounded-full font-semibold text-sm transition-all duration-300 cursor-pointer self-start md:self-auto overflow-hidden"
-              style={{ backgroundColor: sunnyYellow, color: '#1e3523' }}
-            >
-              <div className="relative overflow-hidden h-5 flex items-center">
-                <span className="transition-transform duration-300 group-hover:-translate-y-full block">
-                  Our Therapists
-                </span>
-                <span className="absolute inset-0 translate-y-full transition-transform duration-300 group-hover:translate-y-0 block text-[#1e3523]">
-                  Our Therapists
-                </span>
-              </div>
-              <div
-                className="w-9 h-9 rounded-full flex items-center justify-center"
-                style={{ backgroundColor: '#1e3523' }}
-              >
-                <ArrowUpRight className="w-4 h-4 text-[#eafe45]" />
-              </div>
-            </button>
+              bgColor={sunnyYellow}
+              textColor="#1e3523"
+              iconBgColor="#1e3523"
+              iconColor={sunnyYellow}
+              size="md"
+              className="self-start md:self-auto"
+            />
           </div>
 
           <div className="mb-12">
@@ -1196,11 +1208,11 @@ export function MentaraTemplate({
               >
                 <div className="relative w-full h-full transition-transform duration-700 [transform-style:preserve-3d] group-hover:[transform:rotateY(180deg)] rounded-[24px]">
                   {/* Front Card */}
-                  <div className="absolute inset-0 [backface-visibility:hidden] rounded-[24px] overflow-hidden border border-[#48614b] bg-[#35503a]">
+                  <div className="absolute inset-0 [backface-visibility:hidden] rounded-[24px] overflow-hidden border border-[#48614b] bg-[#35503a] shadow-xl group-hover:border-[#eafe45]/60 transition-colors">
                     <img
                       src={member.image}
                       alt={member.name}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                     />
                     <div className="absolute inset-x-0 bottom-0 p-5 bg-gradient-to-t from-[#1e3523] via-[#1e3523]/80 to-transparent">
                       <h4 className="text-xl font-bold text-[#eff3df]">{member.name}</h4>
@@ -1226,23 +1238,23 @@ export function MentaraTemplate({
 
                     <div className="space-y-3 pt-4 border-t border-[#48614b]">
                       <div className="flex items-center gap-2">
-                        <a href={member.facebook} target="_blank" rel="noreferrer" className="w-8 h-8 rounded-full border border-[#48614b] flex items-center justify-center text-[#eff3df] hover:bg-[#eafe45] hover:text-[#1e3523] transition">
+                        <a href={member.facebook} target="_blank" rel="noreferrer" className="w-8 h-8 rounded-full border border-[#48614b] flex items-center justify-center text-[#eff3df] hover:bg-[#eafe45] hover:text-[#1e3523] transition-colors">
                           <FacebookIcon className="w-3.5 h-3.5" />
                         </a>
-                        <a href={member.instagram} target="_blank" rel="noreferrer" className="w-8 h-8 rounded-full border border-[#48614b] flex items-center justify-center text-[#eff3df] hover:bg-[#eafe45] hover:text-[#1e3523] transition">
+                        <a href={member.instagram} target="_blank" rel="noreferrer" className="w-8 h-8 rounded-full border border-[#48614b] flex items-center justify-center text-[#eff3df] hover:bg-[#eafe45] hover:text-[#1e3523] transition-colors">
                           <InstagramIcon className="w-3.5 h-3.5" />
                         </a>
-                        <a href={member.twitter} target="_blank" rel="noreferrer" className="w-8 h-8 rounded-full border border-[#48614b] flex items-center justify-center text-[#eff3df] hover:bg-[#eafe45] hover:text-[#1e3523] transition">
+                        <a href={member.twitter} target="_blank" rel="noreferrer" className="w-8 h-8 rounded-full border border-[#48614b] flex items-center justify-center text-[#eff3df] hover:bg-[#eafe45] hover:text-[#1e3523] transition-colors">
                           <TwitterIcon className="w-3.5 h-3.5" />
                         </a>
-                        <a href={member.linkedin} target="_blank" rel="noreferrer" className="w-8 h-8 rounded-full border border-[#48614b] flex items-center justify-center text-[#eff3df] hover:bg-[#eafe45] hover:text-[#1e3523] transition">
+                        <a href={member.linkedin} target="_blank" rel="noreferrer" className="w-8 h-8 rounded-full border border-[#48614b] flex items-center justify-center text-[#eff3df] hover:bg-[#eafe45] hover:text-[#1e3523] transition-colors">
                           <LinkedinIcon className="w-3.5 h-3.5" />
                         </a>
                       </div>
 
                       <button
                         onClick={() => onOpenBooking()}
-                        className="w-full py-2.5 rounded-full font-bold text-xs text-center cursor-pointer"
+                        className="w-full py-2.5 rounded-full font-bold text-xs text-center cursor-pointer transition-all hover:scale-[1.02]"
                         style={{ backgroundColor: sunnyYellow, color: '#1e3523' }}
                       >
                         Book With {member.name.split(' ')[1] || 'Doctor'}
@@ -1257,7 +1269,7 @@ export function MentaraTemplate({
       </section>
 
       {/* 9. Blog & News Updates Carousel */}
-      <section id="blog" className="py-24 sm:py-32 bg-[#2b4731] border-t border-[#48614b]/40">
+      <section id="blog" className="py-24 sm:py-[132px] bg-[#2b4731] border-t border-[#48614b]/40">
         <div className="max-w-[1240px] mx-auto px-5">
           <div className="flex flex-col items-center text-center space-y-3 mb-6">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#48614b] bg-[#35503a] text-xs font-semibold uppercase tracking-wider text-[#eafe45]">
@@ -1277,23 +1289,23 @@ export function MentaraTemplate({
             {blogs.map((b, idx) => (
               <div
                 key={idx}
-                className="p-5 rounded-[24px] border border-[#48614b] bg-[#35503a] flex flex-col justify-between hover:border-[#eafe45]/60 transition"
+                className="group p-5 rounded-[24px] border border-[#48614b] bg-[#35503a] flex flex-col justify-between hover:border-[#eafe45]/70 hover:-translate-y-2 hover:shadow-2xl transition-all duration-300"
               >
                 <div className="space-y-4">
                   <div className="rounded-[18px] overflow-hidden aspect-[16/10] bg-[#1e3523]">
-                    <img src={b.image} alt={b.title} className="w-full h-full object-cover" />
+                    <img src={b.image} alt={b.title} className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105" />
                   </div>
-                  <h3 className="text-xl font-medium text-[#eff3df]">{b.title}</h3>
+                  <h3 className="text-xl font-medium text-[#eff3df] group-hover:text-[#eafe45] transition-colors">{b.title}</h3>
                   <p className="text-xs text-[#b0bca7] leading-relaxed line-clamp-2">{b.desc}</p>
                 </div>
 
                 <div className="pt-5 border-t border-[#48614b]/60 flex items-center justify-between">
                   <a
                     href="#blog"
-                    className="inline-flex items-center gap-2 text-xs font-bold text-[#eafe45] hover:underline"
+                    className="inline-flex items-center gap-2 text-xs font-bold text-[#eafe45] group-hover:underline"
                   >
                     <span>Read Article</span>
-                    <ArrowUpRight className="w-3.5 h-3.5" />
+                    <ArrowUpRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                   </a>
                 </div>
               </div>
@@ -1304,7 +1316,7 @@ export function MentaraTemplate({
 
       {/* 10. Toggleable Pricing Plans Section */}
       {config.showPricing !== false && (
-        <section id="pricing" className="py-24 sm:py-32 border-t border-[#48614b]/40">
+        <section id="pricing" className="py-24 sm:py-[132px] border-t border-[#48614b]/40">
           <div className="max-w-[1240px] mx-auto px-5 text-center space-y-12">
             <div className="max-w-2xl mx-auto space-y-3">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#48614b] bg-[#2b4731] text-xs font-semibold uppercase tracking-wider text-[#eafe45]">
@@ -1404,7 +1416,7 @@ export function MentaraTemplate({
                 return (
                   <div
                     key={plan.id || pIdx}
-                    className={`rounded-[28px] p-8 flex flex-col justify-between transition-all duration-300 relative ${
+                    className={`rounded-[28px] p-8 flex flex-col justify-between transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl relative ${
                       isHighlight
                         ? 'border-2 border-[#eafe45] bg-[#35503a] shadow-2xl scale-102'
                         : 'border border-[#48614b] bg-[#2b4731]'
@@ -1446,7 +1458,7 @@ export function MentaraTemplate({
                     <div className="pt-8">
                       <button
                         onClick={() => onOpenBooking()}
-                        className="w-full py-3.5 rounded-full font-bold text-sm text-center transition cursor-pointer"
+                        className="w-full py-3.5 rounded-full font-bold text-sm text-center transition-all duration-300 cursor-pointer shadow-md hover:scale-[1.02]"
                         style={{
                           backgroundColor: isHighlight ? sunnyYellow : '#eff3df',
                           color: '#1e3523',
@@ -1464,7 +1476,7 @@ export function MentaraTemplate({
       )}
 
       {/* 11. High-Impact CTA Section ("Book Your Mental Health Session!") */}
-      <section className="py-20 sm:py-28">
+      <section className="py-20 sm:py-[120px]">
         <div className="max-w-[1240px] mx-auto px-5">
           <div
             className="rounded-[28px] overflow-hidden p-8 sm:p-14 lg:p-16 border border-[#48614b] shadow-2xl relative"
@@ -1489,7 +1501,7 @@ export function MentaraTemplate({
                 </div>
 
                 {/* 99% Mental Check-up Card */}
-                <div className="inline-flex flex-col sm:flex-row items-center gap-4 p-4 rounded-[20px] border border-[#48614b] bg-[#35503a]">
+                <div className="inline-flex flex-col sm:flex-row items-center gap-4 p-4 rounded-[20px] border border-[#48614b] bg-[#35503a] shadow-lg">
                   <img
                     src="https://cdn.prod.website-files.com/6825c2925e24e79e2bf4a9ed/682ac2ca5a97800b4ae09cdf_CTA%20Card%20Image.png"
                     alt=""
@@ -1499,13 +1511,16 @@ export function MentaraTemplate({
                     <div className="text-lg font-bold text-[#eff3df]">99% Mental Check-up!</div>
                     <div className="text-xs text-[#b0bca7]">Verified confidential scheduling</div>
                   </div>
-                  <button
+                  <RollupButton
+                    label="Appointment!"
                     onClick={() => onOpenBooking()}
-                    className="px-5 py-2.5 rounded-full font-bold text-xs cursor-pointer ml-auto"
-                    style={{ backgroundColor: sunnyYellow, color: '#1e3523' }}
-                  >
-                    Appointment!
-                  </button>
+                    bgColor={sunnyYellow}
+                    textColor="#1e3523"
+                    iconBgColor="#1e3523"
+                    iconColor={sunnyYellow}
+                    size="sm"
+                    className="sm:ml-auto"
+                  />
                 </div>
               </div>
 
@@ -1514,7 +1529,7 @@ export function MentaraTemplate({
                 <img
                   src="https://cdn.prod.website-files.com/6825c2925e24e79e2bf4a9ed/682ab89babff5ba0661f06d5_CTA%20Main%20Image.png"
                   alt="Doctor"
-                  className="max-h-[360px] sm:max-h-[460px] w-auto object-contain"
+                  className="max-h-[360px] sm:max-h-[460px] w-auto object-contain drop-shadow-2xl"
                 />
               </div>
             </div>
@@ -1523,7 +1538,7 @@ export function MentaraTemplate({
       </section>
 
       {/* 12. FAQ Section with Video Lightbox */}
-      <section id="faq" className="py-24 sm:py-32 bg-[#2b4731] border-t border-[#48614b]/40">
+      <section id="faq" className="py-24 sm:py-[132px] bg-[#2b4731] border-t border-[#48614b]/40">
         <div className="max-w-[1240px] mx-auto px-5">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start">
             {/* Left: Headline & Video Thumbnail */}
@@ -1544,7 +1559,7 @@ export function MentaraTemplate({
               {/* Video Lightbox Play Trigger */}
               <div
                 onClick={() => setIsVideoOpen(true)}
-                className="relative rounded-[20px] overflow-hidden aspect-[16/9] border border-[#48614b] group cursor-pointer shadow-xl"
+                className="relative rounded-[20px] overflow-hidden aspect-[16/9] border border-[#48614b] group cursor-pointer shadow-xl hover:border-[#eafe45]/60 transition-all duration-300"
                 style={{
                   backgroundImage:
                     'url(https://cdn.prod.website-files.com/6825c2925e24e79e2bf4a9ed/682d75fdaec86986603c7ea1_Video%20Image.png)',
@@ -1599,7 +1614,7 @@ export function MentaraTemplate({
       </section>
 
       {/* 13. AI Concierge Knowledge Base Section */}
-      <section className="py-16 sm:py-20 border-t border-[#48614b]/40 bg-[#1e3523]">
+      <section className="py-20 sm:py-[120px] border-t border-[#48614b]/40 bg-[#1e3523]">
         <div className="max-w-[1240px] mx-auto px-5">
           <div className="rounded-[28px] border border-[#eafe45]/40 bg-[#2b4731] p-8 sm:p-12 flex flex-col md:flex-row items-center justify-between gap-8 shadow-xl">
             <div className="space-y-3 text-center md:text-left">
@@ -1616,7 +1631,7 @@ export function MentaraTemplate({
             </div>
             <button
               onClick={() => onOpenChat()}
-              className="px-8 py-4 rounded-full font-bold text-sm shadow-xl hover:scale-105 transition flex items-center gap-2.5 shrink-0 cursor-pointer"
+              className="px-8 py-4 rounded-full font-bold text-sm shadow-xl hover:scale-105 transition-all duration-300 flex items-center gap-2.5 shrink-0 cursor-pointer"
               style={{ backgroundColor: sunnyYellow, color: '#1e3523' }}
             >
               <MessageSquare className="w-4 h-4 text-[#1e3523]" />
@@ -1627,7 +1642,7 @@ export function MentaraTemplate({
       </section>
 
       {/* 14. Footer Section */}
-      <footer className="pt-24 pb-12 bg-[#2b4731] border-t border-[#48614b]/60">
+      <footer className="pt-24 sm:pt-[132px] pb-12 sm:pb-16 bg-[#2b4731] border-t border-[#48614b]/60">
         <div className="max-w-[1240px] mx-auto px-5">
           {/* Footer Top Logo & Wavy Divider */}
           <div className="flex flex-col items-center mb-16">
@@ -1647,12 +1662,12 @@ export function MentaraTemplate({
             <div className="md:col-span-3 space-y-4">
               <h4 className="text-lg font-semibold text-[#eff3df]">Main Pages</h4>
               <ul className="space-y-2.5 text-sm text-[#b0bca7]">
-                <li><a href="#about" className="hover:text-[#eafe45] transition">About Us</a></li>
-                <li><a href="#services" className="hover:text-[#eafe45] transition">Therapy Services</a></li>
-                <li><a href="#projects" className="hover:text-[#eafe45] transition">Projects &amp; Workshops</a></li>
-                <li><a href="#team" className="hover:text-[#eafe45] transition">Our Therapists</a></li>
-                <li><a href="#faq" className="hover:text-[#eafe45] transition">Frequently Asked Questions</a></li>
-                <li><a href="#pricing" className="hover:text-[#eafe45] transition">Pricing &amp; Retainers</a></li>
+                <li><a href="#about" className="hover:text-[#eafe45] transition-colors">About Us</a></li>
+                <li><a href="#services" className="hover:text-[#eafe45] transition-colors">Therapy Services</a></li>
+                <li><a href="#projects" className="hover:text-[#eafe45] transition-colors">Projects &amp; Workshops</a></li>
+                <li><a href="#team" className="hover:text-[#eafe45] transition-colors">Our Therapists</a></li>
+                <li><a href="#faq" className="hover:text-[#eafe45] transition-colors">Frequently Asked Questions</a></li>
+                <li><a href="#pricing" className="hover:text-[#eafe45] transition-colors">Pricing &amp; Retainers</a></li>
               </ul>
             </div>
 
@@ -1663,16 +1678,18 @@ export function MentaraTemplate({
               </h3>
 
               <div className="flex flex-wrap items-center justify-center gap-3">
-                <button
+                <RollupButton
+                  label="Get Started"
                   onClick={() => onOpenBooking()}
-                  className="px-6 py-2.5 rounded-full font-bold text-xs cursor-pointer"
-                  style={{ backgroundColor: sunnyYellow, color: '#1e3523' }}
-                >
-                  Get Started
-                </button>
+                  bgColor={sunnyYellow}
+                  textColor="#1e3523"
+                  iconBgColor="#1e3523"
+                  iconColor={sunnyYellow}
+                  size="sm"
+                />
                 <button
                   onClick={() => onOpenChat()}
-                  className="px-6 py-2.5 rounded-full border border-[#48614b] bg-[#1e3523] text-[#eff3df] font-semibold text-xs hover:bg-[#35503a] cursor-pointer"
+                  className="px-6 py-2.5 rounded-full border border-[#48614b] bg-[#1e3523] text-[#eff3df] font-semibold text-xs hover:border-[#eafe45]/40 hover:bg-[#35503a] transition-all duration-300 cursor-pointer shadow-sm"
                 >
                   Online Consultation
                 </button>
@@ -1693,7 +1710,7 @@ export function MentaraTemplate({
                       href={s.href}
                       target="_blank"
                       rel="noreferrer"
-                      className="w-12 h-9 rounded-full border border-[#48614b] bg-[#2b4731] hover:bg-[#1e3523] flex items-center justify-center text-[#eff3df] hover:text-[#eafe45] transition"
+                      className="w-12 h-9 rounded-full border border-[#48614b] bg-[#2b4731] hover:bg-[#1e3523] hover:border-[#eafe45]/40 flex items-center justify-center text-[#eff3df] hover:text-[#eafe45] transition-all duration-300"
                     >
                       <Icon className="w-4 h-4" />
                     </a>
