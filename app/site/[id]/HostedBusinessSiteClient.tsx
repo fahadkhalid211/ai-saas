@@ -60,6 +60,7 @@ import { FintechTemplate } from '@/components/landing/templates/FintechTemplate'
 import { CustomSkeletonTemplate } from '@/components/landing/templates/CustomSkeletonTemplate';
 import { CresceloTemplate } from '@/components/landing/templates/CresceloTemplate';
 import { UniversalTemplate } from '@/components/landing/templates/UniversalTemplate';
+import { MentaraTemplate } from '@/components/landing/templates/MentaraTemplate';
 import { consumeChatStream } from '@/lib/chat/stream';
 import { MarkdownRenderer } from '@/components/markdown-renderer';
 import { ChatBookingCard } from '@/components/chat/ChatBookingCard';
@@ -935,6 +936,35 @@ export default function HostedBusinessSiteClient({
       chatMessagesCount: chatMessages.length,
     };
 
+    if (
+      ind.includes('mentara') ||
+      ind === 'therapy' ||
+      ind === 'mental_health' ||
+      (landingConfig.slug || '').toLowerCase().includes('mentara') ||
+      (identifier || '').toLowerCase().includes('mentara') ||
+      (landingConfig.designArchetype || '').toLowerCase().includes('mentara')
+    ) {
+      return (
+        <MentaraTemplate
+          config={landingConfig}
+          onOpenBooking={(service) => {
+            if (service) {
+              openBookingForService(service);
+            } else {
+              openBookingForService(landingConfig.services?.[0] || {
+                id: 'srv_consult',
+                name: 'Initial Clinical Consultation',
+                description: '50-minute clinical session with licensed practitioner',
+                durationMinutes: 50,
+                price: 150,
+              });
+            }
+          }}
+          onOpenChat={() => setIsChatOpen(true)}
+        />
+      );
+    }
+
     if (ind.includes('universal') || ind === 'general' || ind === 'default' || ind === 'business' || ind === 'consulting') {
       return <UniversalTemplate {...templateProps} />;
     }
@@ -1003,12 +1033,22 @@ export default function HostedBusinessSiteClient({
   };
 
   const indLower = (activeConfig?.industry || '').toLowerCase().trim();
+  const slugLower = (activeConfig?.slug || identifier || '').toLowerCase().trim();
+  const archetypeLower = (activeConfig?.designArchetype || '').toLowerCase().trim();
+
   const isCrescelo = indLower.includes('crescelo') || indLower === 'website_assistant' || indLower === 'ai_assistant_saas';
+  const isMentara =
+    indLower.includes('mentara') ||
+    indLower === 'therapy' ||
+    indLower === 'mental_health' ||
+    slugLower.includes('mentara') ||
+    archetypeLower.includes('mentara');
+  const isStandalone = isCrescelo || isMentara;
 
   return (
-    <div className={`min-h-screen ${isCrescelo ? 'bg-[#fffeeb] text-[#1a1a1a]' : isDark ? 'dark bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'} font-sans ${currentTheme.selectionBg} transition-colors duration-200 overflow-x-hidden`}>
+    <div className={`min-h-screen ${isMentara ? 'bg-[#1e3523] text-[#eff3df]' : isCrescelo ? 'bg-[#fffeeb] text-[#1a1a1a]' : isDark ? 'dark bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'} font-sans ${currentTheme.selectionBg} transition-colors duration-200 overflow-x-hidden`}>
       {/* Top Announcement Bar */}
-      {!isCrescelo && (
+      {!isStandalone && (
         <div className={`${currentTheme.badgeBg} py-2 px-4 text-center text-xs font-semibold tracking-wider uppercase flex items-center justify-center gap-2 shadow-xs`}>
           <Sparkles className="w-3.5 h-3.5" />
           <span>{activeConfig.badgeText || 'Verified Excellence & Instant Online Booking'}</span>
@@ -1016,7 +1056,7 @@ export default function HostedBusinessSiteClient({
       )}
 
       {/* Navigation Header */}
-      {!isCrescelo && (
+      {!isStandalone && (
         <header className={`sticky top-0 z-40 ${isDark ? 'bg-slate-950/90 border-slate-800' : 'bg-white/95 border-slate-200 shadow-xs'} backdrop-blur-md border-b transition-colors`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -1128,12 +1168,12 @@ export default function HostedBusinessSiteClient({
       )}
 
       {/* Dynamic Industry-Specific Landing Layout */}
-      <main className={isCrescelo ? '' : 'pb-16'}>
+      <main className={isStandalone ? '' : 'pb-16'}>
         {renderIndustryTemplate()}
       </main>
 
       {/* Footer */}
-      {!isCrescelo && (
+      {!isStandalone && (
       <footer className={`border-t py-12 text-center text-xs ${isDark ? 'bg-slate-950 border-slate-900 text-slate-500' : 'bg-white border-slate-200 text-slate-600'} transition-colors`}>
         <div className="max-w-7xl mx-auto px-4 space-y-4">
           <div className={`flex items-center justify-center gap-2 font-bold text-sm ${isDark ? 'text-white' : 'text-slate-900'}`}>

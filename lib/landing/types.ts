@@ -796,10 +796,64 @@ export const INDUSTRY_DESIGN_ARCHETYPES: Record<string, DesignArchetype[]> = {
       recommendedFor: ['crescelo'],
     },
   ],
+  therapy: [
+    {
+      id: 'mentara',
+      name: 'Mentara — Timber Spruce & Sunny Lime',
+      tagline: 'Faithful clone of mentara.webflow.io with roll-up animations, 3D flip doctor cards, interactive projects slider, and tabbed testimonials.',
+      category: 'Mental Health & Clinical Therapy',
+      aesthetic: 'Timber Green & Sunny Lime (Webflow)',
+      themeColor: '#eafe45',
+      previewImage: 'https://cdn.prod.website-files.com/673c659fa4219db62534a656/67406a6b8c47a544ba389c92_hero-img-p-800.webp',
+      badge: 'Official Webflow Clone',
+      features: [
+        'Roll-up button hover animations',
+        '3D flip therapist bio & credentials cards',
+        'Interactive projects slider & testimonials tabs',
+        'Full CRM editability & timezone booking',
+      ],
+      recommendedFor: ['therapy', 'mental_health', 'healthcare', 'wellness'],
+    },
+    {
+      id: 'mentara_calm',
+      name: 'Serene Sanctuary & Holistic Care',
+      tagline: 'Deep forest green with warm cream cards, mindful breathing widgets, and calm clinical typography.',
+      category: 'Holistic & Integrative Wellness',
+      aesthetic: 'Forest Green & Soft Cream',
+      themeColor: '#2b4731',
+      previewImage: 'https://cdn.prod.website-files.com/673c659fa4219db62534a656/673f4b4ce6337a7b744036bc_about-img-p-800.webp',
+      badge: 'Holistic Standard',
+      features: [
+        'Gentle appointment scheduling workflow',
+        'Transparent clinical consultation fees',
+        'Secure HIPAA-aligned contact triage',
+        'Patient review social proof carousel',
+      ],
+      recommendedFor: ['therapy', 'wellness'],
+    },
+    {
+      id: 'mentara_modern',
+      name: 'Modern Teletherapy & Virtual Clinic',
+      tagline: 'High-contrast conversion layout with instant teletherapy intake, live chat concierge, and digital FAQs.',
+      category: 'Virtual Health & Teletherapy',
+      aesthetic: 'High-Contrast Spruce & Sunny Lime',
+      themeColor: '#eafe45',
+      previewImage: 'https://cdn.prod.website-files.com/673c659fa4219db62534a656/67406c11718ae17702f3073d_hero-banner-img.webp',
+      badge: 'Telehealth Ready',
+      features: [
+        'Zero-wait virtual consultation booking',
+        'Timezone-intelligent calendar synchronization',
+        'Integrated AI clinical concierge',
+        'Evidence-based patient FAQ accordion',
+      ],
+      recommendedFor: ['therapy', 'mental_health', 'healthcare'],
+    },
+  ],
 };
 
 export function getArchetypesForIndustry(industry?: string): DesignArchetype[] {
   const ind = (industry || 'general').toLowerCase().trim();
+  if (ind.includes('mentara') || ind.includes('therapy') || ind.includes('mental_health')) return INDUSTRY_DESIGN_ARCHETYPES.therapy;
   if (ind.includes('universal') || ind === 'general') return INDUSTRY_DESIGN_ARCHETYPES.universal;
   if (ind.includes('crescelo') || ind === 'website_assistant' || ind === 'ai_assistant_saas') return INDUSTRY_DESIGN_ARCHETYPES.crescelo;
   if (ind.includes('legal') || ind.includes('law')) return INDUSTRY_DESIGN_ARCHETYPES.legal;
@@ -824,12 +878,30 @@ export interface ThemePalette {
   btnText: string;
   selectionBg: string;
   focusRing: string;
-  colorHex: string;
+  colorHex?: string;
 }
 
 export function getThemePalette(themeColor?: string, defaultIndustry?: string): ThemePalette {
   const c = (themeColor || '').toLowerCase().trim();
   const ind = (defaultIndustry || '').toLowerCase().trim();
+
+  // Mentara Sunny Chartreuse / Lime (#eafe45)
+  if (c === '#eafe45' || c === 'mentara' || c === '#d4e83f' || ind.includes('mentara') || ind.includes('therapy')) {
+    return {
+      accentBg: 'bg-[#eafe45]',
+      accentHoverBg: 'hover:bg-[#d4e83f]',
+      accentText: 'text-[#eafe45]',
+      accentBorder: 'border-[#eafe45]/30',
+      badgeBg: 'bg-[#eafe45] text-[#1e3523]',
+      lightBg: 'bg-[#eafe45]/10',
+      btnBg: 'bg-[#eafe45]',
+      btnHoverBg: 'hover:bg-[#d4e83f]',
+      btnText: 'text-[#1e3523]',
+      selectionBg: 'selection:bg-[#eafe45] selection:text-[#1e3523]',
+      focusRing: 'focus:border-[#eafe45] focus:ring-1 focus:ring-[#eafe45]',
+      colorHex: '#eafe45',
+    };
+  }
 
   // Blue / Cobalt
   if (c === 'blue' || c === '#2563eb' || c === '#1d4ed8' || c === '#1e40af' || c === '#3b82f6' || c === '#1e3a8a') {
@@ -2296,7 +2368,196 @@ export const DEFAULT_UNIVERSAL_LANDING_CONFIG: LandingPageConfig = {
   footerText: 'All rights reserved. Dedicated to delivering high-impact business solutions with speed, clarity, and precision.',
 };
 
-// 14. General Business / AI Assistant Default
+// 14. Mentara Mental Health & Therapy Template (Exact Webflow Clone)
+export const DEFAULT_MENTARA_LANDING_CONFIG: LandingPageConfig = {
+  enabled: true,
+  slug: 'mentara',
+  businessName: 'Mentara',
+  industry: 'healthcare',
+  designArchetype: 'mentara',
+  themeColor: 'lime', // Chartreuse Yellow #eafe45
+  logoUrl: 'https://cdn.prod.website-files.com/6825c2925e24e79e2bf4a9ed/68281b130900fb3df0e730d4_Main%20Logo.png',
+  tagline: 'Empower your mental health journey!',
+  badgeText: 'Trusted Patients',
+  heroHeadline: 'Empower your mental health journey!',
+  heroSubheadline: 'Personalized, compassionate therapy and mental health support designed to help you regain clarity, balance, and peace of mind.',
+  heroCtaText: 'Schedule An Appointment',
+  secondaryHeroCtaText: 'Ask AI Concierge (24/7)',
+  heroImageUrl: 'https://cdn.prod.website-files.com/6825c2925e24e79e2bf4a9ed/682c1fadbeff220d70632d8e_Hero%20Main%20Image.png',
+  timezone: 'America/New_York',
+  menuItems: [
+    { label: 'Home', href: '#home' },
+    { label: 'About', href: '#about' },
+    { label: 'Services', href: '#services' },
+    { label: 'Process', href: '#process' },
+    { label: 'Projects', href: '#projects' },
+    { label: 'Therapists', href: '#team' },
+    { label: 'FAQs', href: '#faq' },
+  ],
+  aboutTitle: 'About Mentara',
+  aboutSubtitle: 'Strong minds, thriving hearts unite.',
+  aboutText: 'Strong minds and thriving hearts come together to create a supportive community. Together, we can uplift each other, fostering resilience & joy on our journey towards mental wellness.',
+  aboutImageUrl: 'https://cdn.prod.website-files.com/6825c2925e24e79e2bf4a9ed/682c4043b56a8fc5bf42cacc_About%20Image.png',
+  servicesTitle: 'Our Services',
+  servicesSubtitle: 'Strong minds, thriving hearts unite.',
+  services: [
+    {
+      id: 'srv_1',
+      name: 'Mind Wellness Therapy',
+      description: 'Mind Wellness Therapy provides personalized mental health services, for individuals to heal and grow together.',
+      durationMinutes: 50,
+      price: 150,
+      imageUrl: 'https://cdn.prod.website-files.com/682982f2b42d35f376f2394e/6829d494c23b89be6dbf2a48_Thumbnail%20Image%2001.png',
+      popular: true,
+    },
+    {
+      id: 'srv_2',
+      name: 'Couple Therapy',
+      description: 'Couple therapy provides a safe space for communicate, strengthen their emotional connection.',
+      durationMinutes: 60,
+      price: 180,
+      imageUrl: 'https://cdn.prod.website-files.com/682982f2b42d35f376f2394e/6829d4f4e5e6bd02aa04821c_Thumbnail%20Image%2002.png',
+      popular: false,
+    },
+    {
+      id: 'srv_3',
+      name: 'Family Therapy',
+      description: 'Family therapy fosters open communication, families challenges together for a healthier dynamic.',
+      durationMinutes: 75,
+      price: 220,
+      imageUrl: 'https://cdn.prod.website-files.com/682982f2b42d35f376f2394e/6829dc34760cfcbf662544d3_Thumbnail%20Image%2003.png',
+      popular: false,
+    },
+    {
+      id: 'srv_4',
+      name: 'Calm Mind Help',
+      description: 'Calm Mind Help provides accessible mental wellness tools, to embrace their mental health journey.',
+      durationMinutes: 45,
+      price: 120,
+      imageUrl: 'https://cdn.prod.website-files.com/682982f2b42d35f376f2394e/6829de9798479e4f371f8138_Thumbnail%20Image%2004.png',
+      popular: false,
+    },
+    {
+      id: 'srv_5',
+      name: 'Care For Families',
+      description: 'Care For Families provides essential support & resources, families navigating challenges together.',
+      durationMinutes: 60,
+      price: 190,
+      imageUrl: 'https://cdn.prod.website-files.com/682982f2b42d35f376f2394e/6829e088c8bbccc8ee8588f8_Thumbnail%20Image%2005.png',
+      popular: false,
+    },
+    {
+      id: 'srv_6',
+      name: 'Home Heart Healing',
+      description: 'Heart Healing provides nurturing mental health support, & foster emotional resilience every day.',
+      durationMinutes: 50,
+      price: 160,
+      imageUrl: 'https://cdn.prod.website-files.com/682982f2b42d35f376f2394e/6829e0b9031b903cf4242e00_Thumbnail%20Image%2006.png',
+      popular: false,
+    },
+  ],
+  showPricing: true,
+  pricingTitle: 'Simple, Flexible Pricing Plans',
+  pricingSubtitle: 'Choose the level of engagement that fits your personal journey. Upgrade, reschedule, or cancel anytime.',
+  pricingPlans: [
+    {
+      id: 'plan_starter',
+      name: 'Essential Consultation',
+      price: 99,
+      period: '/ session',
+      description: 'Perfect for individuals starting their mental wellness exploration with focused guidance.',
+      features: [
+        'Single 50-minute personal consultation',
+        'Diagnostic wellness report & next steps',
+        'Private messaging support for 7 days',
+        'Access to mindfulness toolkit',
+      ],
+      popular: false,
+      ctaText: 'Book Essential',
+    },
+    {
+      id: 'plan_growth',
+      name: 'Growth Partnership',
+      price: 299,
+      period: '/ month',
+      description: 'Our most popular tier for ongoing emotional resilience, regular sessions, and high-touch support.',
+      features: [
+        'Up to 4 therapy sessions per month',
+        'Dedicated therapist assignment',
+        'Priority calendar booking slots',
+        '24/7 AI Knowledge Base Concierge',
+        'Personalized self-care worksheets',
+      ],
+      popular: true,
+      badge: 'Most Popular',
+      ctaText: 'Start Growth Tier',
+    },
+    {
+      id: 'plan_enterprise',
+      name: 'Comprehensive Care',
+      price: 599,
+      period: '/ month',
+      description: 'Holistic care for families or individuals seeking weekly multi-disciplinary therapeutic support.',
+      features: [
+        'Unlimited guided check-ins',
+        'Couples or family sessions included',
+        'Custom mental wellness blueprint',
+        'Guaranteed same-day response SLA',
+        'Emergency therapist contact hotline',
+      ],
+      popular: false,
+      ctaText: 'Contact Care Team',
+    },
+  ],
+  faqsTitle: 'Frequently Asked Questions',
+  faqsSubtitle: 'Everything you need to know about our mental health services and booking process.',
+  faqs: [
+    {
+      id: 'faq_1',
+      question: 'What is mental health and why it matters?',
+      answer: 'Mental health encompasses emotional, psychological, and social well-being. It affects how we think, feel, and act. Prioritizing mental health is crucial for overall happiness, productivity, and maintaining healthy relationships.',
+    },
+    {
+      id: 'faq_2',
+      question: 'How can I improve my mental health?',
+      answer: 'To enhance your mental health, practice mindfulness, engage in regular exercise, maintain a balanced diet, connect with loved ones, and seek professional support when needed.',
+    },
+    {
+      id: 'faq_3',
+      question: 'What are signs of mental health issues?',
+      answer: 'Signs of mental health issues include persistent sadness, withdrawal from social activities, changes in appetite, difficulty concentrating, and mood swings that disrupt daily life.',
+    },
+    {
+      id: 'faq_4',
+      question: 'How to find a therapist near me?',
+      answer: 'Finding a therapist nearby can be simple. Start by searching online directories, asking for recommendations from friends, or scheduling an appointment directly through our online booking calendar.',
+    },
+    {
+      id: 'faq_5',
+      question: 'Mental wellness resources include therapy.',
+      answer: 'Mental wellness resources, such as therapy, provide essential support for emotional and psychological health, fostering resilience and enhancing overall quality of life.',
+    },
+    {
+      id: 'faq_6',
+      question: 'How can I support a friend’s mental health?',
+      answer: 'To support a friend’s mental health, listen actively, offer encouragement, check in regularly, and suggest professional help if needed. Your presence matters.',
+    },
+  ],
+  ctaHeadline: 'Book Your Mental Health Session!',
+  ctaSubheadline: 'Take the first step towards emotional resilience and well-being. Our licensed therapists are ready to support you.',
+  ctaButtonText: 'Appointment!',
+  footerText: '© 2026 Mentara Mental Health & Therapy. All rights reserved.',
+  phone: '01798952682',
+  email: 'contact@mentara.care',
+  address: '1240 Wellness Blvd, Suite 200, New York, NY 10001',
+  workingHours: [
+    { days: 'Monday – Friday', hours: '8:30 AM – 6:30 PM EST' },
+    { days: 'Saturday', hours: '10:00 AM – 3:00 PM EST' },
+    { days: 'Sunday', hours: 'Emergency & AI Support Only' },
+  ],
+};
+
+// 15. General Business / AI Assistant Default
 export const DEFAULT_BUSINESS_LANDING_CONFIG: LandingPageConfig = {
   enabled: false,
   slug: 'general',
@@ -2325,6 +2586,13 @@ export const DEFAULT_BUSINESS_LANDING_CONFIG: LandingPageConfig = {
 
 // Preset mapping dictionary
 export const TEMPLATE_LANDING_CONFIGS: Record<string, LandingPageConfig> = {
+  // Mentara Webflow Exact Clone Template
+  'mentara': DEFAULT_MENTARA_LANDING_CONFIG,
+  'mentara-clone': DEFAULT_MENTARA_LANDING_CONFIG,
+  'mentara-template': DEFAULT_MENTARA_LANDING_CONFIG,
+  'template_mentara': DEFAULT_MENTARA_LANDING_CONFIG,
+  'therapy': DEFAULT_MENTARA_LANDING_CONFIG,
+  'mental-health': DEFAULT_MENTARA_LANDING_CONFIG,
   // Universal Clean Business Template
   'universal': DEFAULT_UNIVERSAL_LANDING_CONFIG,
   'universal-business': DEFAULT_UNIVERSAL_LANDING_CONFIG,
