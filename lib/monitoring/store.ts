@@ -60,8 +60,15 @@ function loadFromFile(): FileMonitoringState {
     const file = getFilePath();
     if (fs.existsSync(file)) {
       const data = JSON.parse(fs.readFileSync(file, 'utf-8'));
+      const services = { ...inMemoryState.services, ...(data.services || {}) };
+      for (const s of MONITORED_SERVICES_DEF) {
+        if (services[s.id]) {
+          services[s.id].name = s.name;
+          services[s.id].description = s.description;
+        }
+      }
       return {
-        services: { ...inMemoryState.services, ...(data.services || {}) },
+        services,
         incidents: data.incidents || {},
         timeline: data.timeline || {},
         healthChecks: data.healthChecks || [],
@@ -201,17 +208,20 @@ export async function getAllServices(): Promise<MonitoredService[]> {
         if (pool) {
           const res = await pool.query('SELECT * FROM kortex_monitor_services ORDER BY category ASC, name ASC');
           if (res.rows.length > 0) {
-            return res.rows.map((r) => ({
-              id: r.id,
-              name: r.name,
-              category: r.category as any,
-              description: r.description || '',
-              status: r.status as HealthState,
-              latencyMs: Number(r.latency_ms || 0),
-              lastCheckedAt: new Date(r.last_checked_at).toISOString(),
-              uptime30d: Number(r.uptime_30d || 99.9),
-              metadata: r.metadata || {},
-            }));
+            return res.rows.map((r) => {
+              const def = MONITORED_SERVICES_DEF.find((d) => d.id === r.id);
+              return {
+                id: r.id,
+                name: def?.name || r.name.replace(/\s*\(\s*(PostgreSQL|Supabase|\/|\s)+\s*\)/gi, '').trim(),
+                category: r.category as any,
+                description: def?.description || r.description || '',
+                status: r.status as HealthState,
+                latencyMs: Number(r.latency_ms || 0),
+                lastCheckedAt: new Date(r.last_checked_at).toISOString(),
+                uptime30d: Number(r.uptime_30d || 99.9),
+                metadata: r.metadata || {},
+              };
+            });
           }
         }
       }

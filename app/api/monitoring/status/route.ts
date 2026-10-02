@@ -4,16 +4,26 @@ import { HealthState, Incident, SystemStatusSummary } from '@/lib/monitoring/typ
 
 export const dynamic = 'force-dynamic';
 
+function cleanBrandNames(text: string): string {
+  if (!text) return '';
+  return text
+    .replace(/\s*\(\s*PostgreSQL\s*\/\s*Supabase\s*\)/gi, '')
+    .replace(/\bPostgreSQL\b/gi, 'Relational Database')
+    .replace(/\bSupabase\b/gi, 'Database')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+}
+
 function scrubIncident(inc: Incident): Incident {
   return {
     id: inc.id,
     serviceId: inc.serviceId,
-    serviceName: inc.serviceName,
+    serviceName: cleanBrandNames(inc.serviceName),
     severity: inc.severity,
     status: inc.status,
-    title: inc.title,
-    publicMessage: inc.publicMessage,
-    detectedReason: inc.detectedReason,
+    title: cleanBrandNames(inc.title),
+    publicMessage: cleanBrandNames(inc.publicMessage),
+    detectedReason: cleanBrandNames(inc.detectedReason),
     detectedAt: inc.detectedAt,
     resolvedAt: inc.resolvedAt,
     durationSeconds: inc.durationSeconds,
@@ -25,7 +35,7 @@ function scrubIncident(inc: Incident): Incident {
         incidentId: t.incidentId,
         timestamp: t.timestamp,
         status: t.status,
-        message: t.message,
+        message: cleanBrandNames(t.message),
         isPublic: true,
       })),
   };
@@ -54,7 +64,7 @@ export async function GET() {
 
   const uptimeHistory = services.map((s) => ({
     serviceId: s.id,
-    serviceName: s.name,
+    serviceName: cleanBrandNames(s.name),
     days: generateUptimeHistory(s.id, 30),
   }));
 
@@ -64,9 +74,9 @@ export async function GET() {
     lastUpdated: new Date().toISOString(),
     services: services.map((s) => ({
       id: s.id,
-      name: s.name,
+      name: cleanBrandNames(s.name),
       category: s.category,
-      description: s.description,
+      description: cleanBrandNames(s.description),
       status: s.status,
       latencyMs: s.latencyMs,
       lastCheckedAt: s.lastCheckedAt,

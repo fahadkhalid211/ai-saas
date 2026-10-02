@@ -33,7 +33,7 @@ export const MONITORED_SERVICES_DEF = [
   },
   {
     id: 'database',
-    name: 'Database (PostgreSQL / Supabase)',
+    name: 'Database & Persistence Engine',
     category: 'data' as const,
     description: 'Relational database pool, state persistence, embeddings and chunks.',
   },

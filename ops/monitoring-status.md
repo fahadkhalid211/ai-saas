@@ -59,7 +59,7 @@ Crescelo monitors 11 distinct services derived directly from the application arc
 | Service ID | Service Name | Category | Health Probe Logic |
 |------------|--------------|----------|-------------------|
 | `api` | API Gateway & Core Endpoints | `core` | Route latency, JSON serialization, RSS memory |
-| `database` | Database (PostgreSQL / Supabase) | `data` | Lightweight `pingCloudDb()` probe and pool query |
+| `database` | Database & Persistence Engine | `data` | Lightweight `pingCloudDb()` probe and pool query |
 | `auth` | Authentication & Session Engine | `core` | Session signature verification, secret integrity |
 | `chatbot` | Chatbot & Streaming Engine | `ai` | Assistant state accessibility, streaming readiness |
 | `ai` | AI / LLM Provider Gateways | `ai` | Groq, OpenAI, Anthropic, Gemini credentials and gateways |
@@ -97,7 +97,7 @@ Response:
     },
     {
       "id": "database",
-      "name": "Database (PostgreSQL / Supabase)",
+      "name": "Database & Persistence Engine",
       "status": "operational",
       "latencyMs": 14,
       "lastCheckedAt": "2026-09-28T21:49:58.000Z",

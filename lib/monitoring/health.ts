@@ -68,7 +68,7 @@ export async function checkDatabaseService(): Promise<ServiceHealthResult> {
       status: duration > 2000 ? 'degraded' : 'operational',
       latencyMs: duration,
       checkedAt: new Date().toISOString(),
-      message: `Cloud database operational (${provider})`,
+      message: 'Cloud database operational and responsive',
       details: { provider, reachable: true },
     };
   } catch (err: any) {

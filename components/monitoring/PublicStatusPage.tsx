@@ -56,6 +56,16 @@ export const PublicStatusPage: React.FC = () => {
     setExpandedIncidents((prev) => ({ ...prev, [id]: !prev[id] }));
   };
 
+  const scrubPublicText = (text?: string): string => {
+    if (!text) return '';
+    return text
+      .replace(/\s*\(\s*PostgreSQL\s*\/\s*Supabase\s*\)/gi, '')
+      .replace(/\bPostgreSQL\b/gi, 'Relational Database')
+      .replace(/\bSupabase\b/gi, 'Database')
+      .replace(/\s{2,}/g, ' ')
+      .trim();
+  };
+
   const getStatusBadge = (status: HealthState) => {
     switch (status) {
       case 'operational':
@@ -190,14 +200,14 @@ export const PublicStatusPage: React.FC = () => {
                             {incident.severity}
                           </span>
                           <span className="text-xs px-2 py-0.5 rounded font-medium bg-[#08251a] text-[#fffeeb]/80 border border-[#2d6a4f]/40">
-                            {incident.serviceName}
+                            {scrubPublicText(incident.serviceName)}
                           </span>
                           <span className="text-xs text-[#fffeeb]/60">
                             Started {new Date(incident.detectedAt).toLocaleString()}
                           </span>
                         </div>
-                        <h3 className="font-semibold text-base text-[#fffeeb]">{incident.title}</h3>
-                        <p className="text-sm text-[#fffeeb]/80">{incident.publicMessage}</p>
+                        <h3 className="font-semibold text-base text-[#fffeeb]">{scrubPublicText(incident.title)}</h3>
+                        <p className="text-sm text-[#fffeeb]/80">{scrubPublicText(incident.publicMessage)}</p>
                       </div>
 
                       <button className="text-[#fffeeb]/60 hover:text-[#fffeeb] p-1">
@@ -220,7 +230,7 @@ export const PublicStatusPage: React.FC = () => {
                                   minute: '2-digit',
                                 })}
                               </div>
-                              <div className="text-[#fffeeb]/90">{entry.message}</div>
+                              <div className="text-[#fffeeb]/90">{scrubPublicText(entry.message)}</div>
                             </div>
                           ))}
                         </div>
@@ -255,10 +265,10 @@ export const PublicStatusPage: React.FC = () => {
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <h3 className="font-semibold text-sm text-[#fffeeb] flex items-center gap-2">
-                        {service.name}
+                        {scrubPublicText(service.name)}
                       </h3>
                       <p className="text-xs text-[#fffeeb]/60 mt-0.5 line-clamp-1">
-                        {service.description}
+                        {scrubPublicText(service.description)}
                       </p>
                     </div>
                     {getStatusBadge(service.status)}
@@ -326,7 +336,7 @@ export const PublicStatusPage: React.FC = () => {
                       <span className="text-xs px-2 py-0.5 rounded font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                         Resolved
                       </span>
-                      <h3 className="font-semibold text-sm text-[#fffeeb]">{incident.title}</h3>
+                      <h3 className="font-semibold text-sm text-[#fffeeb]">{scrubPublicText(incident.title)}</h3>
                     </div>
                     <span className="text-xs text-[#fffeeb]/50 font-mono">
                       {new Date(incident.detectedAt).toLocaleDateString()} &middot; Duration:{' '}
@@ -334,7 +344,7 @@ export const PublicStatusPage: React.FC = () => {
                     </span>
                   </div>
 
-                  <p className="text-xs text-[#fffeeb]/80">{incident.publicMessage}</p>
+                  <p className="text-xs text-[#fffeeb]/80">{scrubPublicText(incident.publicMessage)}</p>
 
                   {incident.timeline && incident.timeline.length > 0 && (
                     <div className="pt-2 text-[11px] text-[#fffeeb]/60 border-t border-[#1b4332]/50 space-y-1">
@@ -344,7 +354,7 @@ export const PublicStatusPage: React.FC = () => {
                           <span className="font-mono text-[#fffeeb]/40">
                             {new Date(entry.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                           </span>
-                          <span>{entry.message}</span>
+                          <span>{scrubPublicText(entry.message)}</span>
                         </div>
                       ))}
                     </div>
