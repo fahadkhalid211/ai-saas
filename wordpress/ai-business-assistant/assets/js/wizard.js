@@ -121,12 +121,14 @@
             prodCatsContainer.innerHTML = '';
 
             if (scan.woocommerce?.active && scan.woocommerce.total_products > 0) {
-                prodLabel.textContent = scan.woocommerce.total_products;
+                prodLabel.textContent = parseInt(scan.woocommerce.total_products, 10) || 0;
                 if (scan.woocommerce.categories && scan.woocommerce.categories.length > 0) {
                     scan.woocommerce.categories.forEach(function (cat) {
+                        var catId = parseInt(cat.id, 10) || 0;
+                        var catCount = parseInt(cat.count, 10) || 0;
                         var lbl = document.createElement('label');
-                        lbl.innerHTML = '<input type="checkbox" class="cat-item-check" data-cat-id="' + cat.id + '" checked /> ' +
-                            escapeHtml(cat.name) + ' (' + cat.count + ' items)';
+                        lbl.innerHTML = '<input type="checkbox" class="cat-item-check" data-cat-id="' + catId + '" checked /> ' +
+                            escapeHtml(cat.name) + ' (' + catCount + ' items)';
                         prodCatsContainer.appendChild(lbl);
                     });
                 } else {
@@ -140,12 +142,13 @@
             var pagesLabel = document.getElementById('count-pages-label');
             var pagesList = document.getElementById('items-pages-list');
             pagesList.innerHTML = '';
-            pagesLabel.textContent = scan.pages?.count || 0;
+            pagesLabel.textContent = parseInt(scan.pages?.count, 10) || 0;
 
             if (scan.pages?.samples && scan.pages.samples.length > 0) {
                 scan.pages.samples.forEach(function (p) {
+                    var pageId = parseInt(p.id, 10) || 0;
                     var lbl = document.createElement('label');
-                    lbl.innerHTML = '<input type="checkbox" class="page-item-check" value="' + p.id + '" checked /> ' +
+                    lbl.innerHTML = '<input type="checkbox" class="page-item-check" value="' + pageId + '" checked /> ' +
                         escapeHtml(p.title || p.slug);
                     pagesList.appendChild(lbl);
                 });
@@ -159,11 +162,13 @@
             var docsList = document.getElementById('items-docs-list');
             docsList.innerHTML = '';
 
-            if (scan.documents?.count > 0) {
-                docsLabel.textContent = scan.documents.count;
+            var docsCount = parseInt(scan.documents?.count, 10) || 0;
+            if (docsCount > 0) {
+                docsLabel.textContent = docsCount;
                 scan.documents.samples.forEach(function (d) {
+                    var docId = parseInt(d.id, 10) || 0;
                     var lbl = document.createElement('label');
-                    lbl.innerHTML = '<input type="checkbox" class="doc-item-check" value="' + d.id + '" checked /> ' +
+                    lbl.innerHTML = '<input type="checkbox" class="doc-item-check" value="' + docId + '" checked /> ' +
                         escapeHtml(d.title);
                     docsList.appendChild(lbl);
                 });
@@ -359,7 +364,8 @@
                 .replace(/&/g, '&amp;')
                 .replace(/</g, '&lt;')
                 .replace(/>/g, '&gt;')
-                .replace(/"/g, '&quot;');
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
         }
     });
 })();

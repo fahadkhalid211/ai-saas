@@ -395,10 +395,12 @@ $nonce        = wp_create_nonce('crescelo_wizard_nonce');
 </div>
 
 <script>
-window.CresceloWizardData = {
-    ajaxUrl: <?php echo json_encode(admin_url('admin-ajax.php')); ?>,
-    nonce: <?php echo json_encode($nonce); ?>,
-    hostUrl: <?php echo json_encode($host_url); ?>,
-    currentAssistantId: <?php echo json_encode($assistant_id); ?>
-};
+if (!window.CresceloWizardData) {
+    window.CresceloWizardData = {
+        ajaxUrl: <?php echo wp_json_encode(admin_url('admin-ajax.php')); ?>,
+        nonce: <?php echo wp_json_encode($nonce); ?>,
+        hostUrl: <?php echo wp_json_encode(esc_url_raw($host_url)); ?>,
+        currentAssistantId: <?php echo wp_json_encode(sanitize_text_field($assistant_id)); ?>
+    };
+}
 </script>

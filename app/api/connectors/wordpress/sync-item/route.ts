@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import crypto from 'crypto';
 import { Database } from '@/lib/db';
 import { chunkDocument } from '@/lib/rag/chunker';
 import { generateEmbeddingsBatch } from '@/lib/rag/embedder';
@@ -13,9 +14,15 @@ export async function OPTIONS() {
     headers: {
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Methods': 'POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Crescelo-Key',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Crescelo-Key, X-Crescelo-Secret',
     },
   });
+}
+
+function safeSecretCompare(a?: string, b?: string): boolean {
+  if (!a || !b) return false;
+  if (a.length !== b.length) return false;
+  return crypto.timingSafeEqual(Buffer.from(a), Buffer.from(b));
 }
 
 export async function POST(req: NextRequest) {
@@ -39,6 +46,17 @@ export async function POST(req: NextRequest) {
         { success: false, error: 'Assistant not found' },
         { status: 404, headers: { 'Access-Control-Allow-Origin': '*' } }
       );
+    }
+
+    // Authenticate request using configured webhookSecret
+    if (assistant.webhookSecret) {
+      const providedSecret = req.headers.get('x-crescelo-secret') || req.headers.get('x-crescelo-key');
+      if (!providedSecret || !safeSecretCompare(assistant.webhookSecret, providedSecret)) {
+        return NextResponse.json(
+          { success: false, error: 'Unauthorized: Invalid or missing X-Crescelo-Secret' },
+          { status: 401, headers: { 'Access-Control-Allow-Origin': '*' } }
+        );
+      }
     }
 
     const itemIdentifier = `[WP:${batchType}:${item.id}]`;

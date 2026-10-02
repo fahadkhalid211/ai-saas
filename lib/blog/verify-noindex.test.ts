@@ -2,12 +2,12 @@ import { describe, expect, it } from 'vitest';
 import { BLOG_POSTS, PUBLISHED_POSTS, getPost } from './posts';
 import { generateMetadata } from '../../app/(marketing)/blog/[slug]/page';
 
-describe('verify noindex status for all 210 articles', () => {
+describe('verify noindex status for all articles', () => {
   it('has zero thin articles', () => {
     const thinArticles = BLOG_POSTS.filter((p) => p.thin);
     expect(thinArticles.length).toBe(0);
-    expect(BLOG_POSTS.length).toBe(210);
-    expect(PUBLISHED_POSTS.length).toBe(210);
+    expect(BLOG_POSTS.length).toBe(212);
+    expect(PUBLISHED_POSTS.length).toBe(212);
   });
 
   for (const post of BLOG_POSTS) {

@@ -107,6 +107,12 @@ If an answer is unavailable, offer to route their question to the team.`;
   };
 }
 
+function safeSecretCompare(a?: string, b?: string): boolean {
+  if (!a || !b) return false;
+  if (a.length !== b.length) return false;
+  return crypto.timingSafeEqual(Buffer.from(a), Buffer.from(b));
+}
+
 export async function POST(req: NextRequest) {
   try {
     const rateLimit = enforceRateLimit(req, 'wp-register', { windowMs: 60 * 1000, max: 20 });
@@ -130,15 +136,32 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const cleanDomain = siteUrl.replace(/^https?:\/\//i, '').replace(/\/.*$/, '').toLowerCase();
+    const cleanDomain = siteUrl
+      .replace(/^https?:\/\//i, '')
+      .replace(/\/.*$/, '')
+      .replace(/[^a-z0-9.-]/gi, '')
+      .toLowerCase();
     const config = buildPromptsAndConfig(siteName, websiteType, objective, features);
 
     let assistant = null;
     let isNew = false;
+    const providedSecret = req.headers.get('x-crescelo-secret') || body.siteSecret;
 
     // Check if an existing assistant ID was provided
     if (existingAssistantId) {
-      assistant = await Database.getAssistantById(existingAssistantId);
+      const candidate = await Database.getAssistantById(existingAssistantId);
+      if (candidate) {
+        const domainMatches = candidate.allowedDomains?.some((d) => d.toLowerCase() === cleanDomain);
+        const secretMatches = candidate.webhookSecret && providedSecret && safeSecretCompare(candidate.webhookSecret, providedSecret);
+
+        if (!domainMatches && !secretMatches) {
+          return NextResponse.json(
+            { success: false, error: 'Unauthorized: Assistant does not belong to this domain and secret is invalid.' },
+            { status: 403, headers: { 'Access-Control-Allow-Origin': '*' } }
+          );
+        }
+        assistant = candidate;
+      }
     }
 
     // If not found, check if an assistant with matching site domain exists
@@ -151,7 +174,7 @@ export async function POST(req: NextRequest) {
       ) || null;
     }
 
-    const siteSecret = 'cres_sec_' + crypto.randomBytes(16).toString('hex');
+    const siteSecret = assistant?.webhookSecret || ('cres_sec_' + crypto.randomBytes(16).toString('hex'));
 
     if (assistant) {
       // Update existing assistant

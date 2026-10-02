@@ -13,10 +13,21 @@ class Crescelo_Client {
 
     private $host_url;
     private $api_key;
+    private $site_secret;
 
     public function __construct($host_url = null, $api_key = null) {
-        $this->host_url = untrailingslashit($host_url ?: get_option('ai_assistant_host_url', 'http://localhost:3000'));
-        $this->api_key  = $api_key ?: get_option('ai_assistant_api_key', '');
+        $raw_host = $host_url ?: get_option('ai_assistant_host_url', 'http://localhost:3000');
+        $clean_host = esc_url_raw(trim($raw_host));
+        $parsed = wp_parse_url($clean_host);
+
+        if (!empty($parsed['scheme']) && in_array($parsed['scheme'], ['http', 'https'], true)) {
+            $this->host_url = untrailingslashit($clean_host);
+        } else {
+            $this->host_url = 'http://localhost:3000';
+        }
+
+        $this->api_key     = sanitize_text_field($api_key ?: get_option('ai_assistant_api_key', ''));
+        $this->site_secret = sanitize_text_field(get_option('ai_assistant_site_secret', ''));
     }
 
     /**
@@ -26,21 +37,26 @@ class Crescelo_Client {
         $endpoint = $this->host_url . '/api/connectors/wordpress/register';
 
         $body = array_merge([
-            'siteUrl'             => home_url(),
-            'siteName'            => get_bloginfo('name'),
-            'adminEmail'          => get_option('admin_email'),
+            'siteUrl'             => esc_url_raw(home_url()),
+            'siteName'            => sanitize_text_field(get_bloginfo('name')),
+            'adminEmail'          => sanitize_email(get_option('admin_email')),
             'websiteType'         => 'woocommerce',
             'objective'           => 'sales',
             'features'            => [],
-            'existingAssistantId' => get_option('ai_assistant_id', ''),
+            'existingAssistantId' => sanitize_text_field(get_option('ai_assistant_id', '')),
         ], $data);
+
+        $headers = [
+            'Content-Type'   => 'application/json',
+            'X-Crescelo-Key' => $this->api_key,
+        ];
+        if (!empty($this->site_secret)) {
+            $headers['X-Crescelo-Secret'] = $this->site_secret;
+        }
 
         $response = wp_remote_post($endpoint, [
             'timeout'     => 45,
-            'headers'     => [
-                'Content-Type'   => 'application/json',
-                'X-Crescelo-Key' => $this->api_key,
-            ],
+            'headers'     => $headers,
             'body'        => wp_json_encode($body),
             'data_format' => 'body',
         ]);
@@ -48,17 +64,17 @@ class Crescelo_Client {
         if (is_wp_error($response)) {
             return [
                 'success' => false,
-                'error'   => $response->get_error_message(),
+                'error'   => sanitize_text_field($response->get_error_message()),
             ];
         }
 
-        $code = wp_remote_retrieve_response_code($response);
+        $code = (int) wp_remote_retrieve_response_code($response);
         $body = json_decode(wp_remote_retrieve_body($response), true);
 
         if ($code !== 200 || empty($body['success'])) {
             return [
                 'success' => false,
-                'error'   => !empty($body['error']) ? $body['error'] : 'Registration failed with HTTP code ' . $code,
+                'error'   => !empty($body['error']) ? sanitize_text_field($body['error']) : 'Registration failed with HTTP code ' . $code,
             ];
         }
 
@@ -72,17 +88,22 @@ class Crescelo_Client {
         $endpoint = $this->host_url . '/api/connectors/wordpress/sync';
 
         $payload = [
-            'assistantId' => $assistant_id,
-            'batchType'   => $batch_type,
-            'items'       => $items,
+            'assistantId' => sanitize_text_field($assistant_id),
+            'batchType'   => sanitize_key($batch_type),
+            'items'       => is_array($items) ? $items : [],
         ];
+
+        $headers = [
+            'Content-Type'   => 'application/json',
+            'X-Crescelo-Key' => $this->api_key,
+        ];
+        if (!empty($this->site_secret)) {
+            $headers['X-Crescelo-Secret'] = $this->site_secret;
+        }
 
         $response = wp_remote_post($endpoint, [
             'timeout'     => 90,
-            'headers'     => [
-                'Content-Type'   => 'application/json',
-                'X-Crescelo-Key' => $this->api_key,
-            ],
+            'headers'     => $headers,
             'body'        => wp_json_encode($payload),
             'data_format' => 'body',
         ]);
@@ -90,17 +111,17 @@ class Crescelo_Client {
         if (is_wp_error($response)) {
             return [
                 'success' => false,
-                'error'   => $response->get_error_message(),
+                'error'   => sanitize_text_field($response->get_error_message()),
             ];
         }
 
-        $code = wp_remote_retrieve_response_code($response);
+        $code = (int) wp_remote_retrieve_response_code($response);
         $body = json_decode(wp_remote_retrieve_body($response), true);
 
         if ($code !== 200 || empty($body['success'])) {
             return [
                 'success' => false,
-                'error'   => !empty($body['error']) ? $body['error'] : 'Sync failed with HTTP code ' . $code,
+                'error'   => !empty($body['error']) ? sanitize_text_field($body['error']) : 'Sync failed with HTTP code ' . $code,
             ];
         }
 
@@ -114,19 +135,24 @@ class Crescelo_Client {
         $endpoint = $this->host_url . '/api/connectors/wordpress/sync-item';
 
         $payload = [
-            'assistantId' => $assistant_id,
-            'action'      => $action, // 'update' or 'delete'
-            'batchType'   => $batch_type,
-            'item'        => $item,
+            'assistantId' => sanitize_text_field($assistant_id),
+            'action'      => sanitize_key($action), // 'update' or 'delete'
+            'batchType'   => sanitize_key($batch_type),
+            'item'        => is_array($item) ? $item : [],
         ];
+
+        $headers = [
+            'Content-Type'   => 'application/json',
+            'X-Crescelo-Key' => $this->api_key,
+        ];
+        if (!empty($this->site_secret)) {
+            $headers['X-Crescelo-Secret'] = $this->site_secret;
+        }
 
         wp_remote_post($endpoint, [
             'timeout'     => 10,
             'blocking'    => false, // Non-blocking so admin/author doesn't wait
-            'headers'     => [
-                'Content-Type'   => 'application/json',
-                'X-Crescelo-Key' => $this->api_key,
-            ],
+            'headers'     => $headers,
             'body'        => wp_json_encode($payload),
             'data_format' => 'body',
         ]);

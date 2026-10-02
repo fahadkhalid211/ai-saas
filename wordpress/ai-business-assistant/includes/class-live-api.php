@@ -27,32 +27,63 @@ class Crescelo_Live_API {
             'methods'             => 'GET',
             'callback'            => [$this, 'check_stock'],
             'permission_callback' => [$this, 'validate_crescelo_secret'],
+            'args'                => [
+                'product_id' => [
+                    'description'       => 'WooCommerce Product ID',
+                    'type'              => 'integer',
+                    'sanitize_callback' => 'absint',
+                    'validate_callback' => function ($param) {
+                        return is_numeric($param) && $param >= 0;
+                    },
+                ],
+                'sku'        => [
+                    'description'       => 'WooCommerce Product SKU',
+                    'type'              => 'string',
+                    'sanitize_callback' => 'sanitize_text_field',
+                ],
+            ],
         ]);
     }
 
     /**
      * Verify caller using the shared siteSecret generated during registration.
+     * Prevents unauthorized access and brute-force inspection.
      */
     public function validate_crescelo_secret($request) {
-        $stored_secret = get_option('ai_assistant_site_secret', '');
-        if (empty($stored_secret)) {
-            return true; // Allow initial handshake if not set
+        $stored_secret = (string) get_option('ai_assistant_site_secret', '');
+
+        // Secret MUST be configured and at least 16 characters long
+        if (empty($stored_secret) || strlen($stored_secret) < 16) {
+            return new WP_Error(
+                'rest_forbidden',
+                'AI Assistant site secret is not configured. Please complete the setup wizard.',
+                ['status' => 403]
+            );
         }
 
-        $incoming = $request->get_header('x-crescelo-secret');
-        if (!$incoming) {
-            $incoming = $request->get_param('secret');
+        // Header takes precedence, fallback to URL parameter
+        $incoming = (string) $request->get_header('x-crescelo-secret');
+        if (empty($incoming)) {
+            $incoming = (string) $request->get_param('secret');
         }
 
-        return hash_equals($stored_secret, (string) $incoming);
+        if (empty($incoming) || !hash_equals($stored_secret, $incoming)) {
+            return new WP_Error(
+                'rest_forbidden',
+                'Invalid or missing Crescelo authentication secret.',
+                ['status' => 401]
+            );
+        }
+
+        return true;
     }
 
     public function health_check() {
         return rest_ensure_response([
-            'status'     => 'ok',
-            'timestamp'  => current_time('mysql'),
-            'has_woo'    => class_exists('WooCommerce'),
-            'site'       => get_bloginfo('name'),
+            'status'    => 'ok',
+            'timestamp' => current_time('mysql'),
+            'has_woo'   => class_exists('WooCommerce'),
+            'site'      => esc_html(get_bloginfo('name')),
         ]);
     }
 
@@ -64,15 +95,15 @@ class Crescelo_Live_API {
             return new WP_Error('no_woocommerce', 'WooCommerce is not installed on this site', ['status' => 400]);
         }
 
-        $product_id = (int) $request->get_param('product_id');
-        $sku        = sanitize_text_field($request->get_param('sku'));
+        $product_id = absint($request->get_param('product_id'));
+        $sku        = sanitize_text_field($request->get_param('sku') ?? '');
 
         $product = null;
         if ($product_id > 0) {
             $product = wc_get_product($product_id);
         } elseif (!empty($sku)) {
             $pid = wc_get_product_id_by_sku($sku);
-            if ($pid) {
+            if ($pid > 0) {
                 $product = wc_get_product($pid);
             }
         }
@@ -81,19 +112,23 @@ class Crescelo_Live_API {
             return new WP_Error('product_not_found', 'Product was not found by ID or SKU', ['status' => 404]);
         }
 
+        $price         = $product->get_price();
+        $regular_price = $product->get_regular_price();
+        $sale_price    = $product->get_sale_price();
+
         return rest_ensure_response([
-            'id'             => $product->get_id(),
-            'title'          => $product->get_name(),
-            'sku'            => $product->get_sku(),
-            'price'          => $product->get_price(),
-            'regular_price'  => $product->get_regular_price(),
-            'sale_price'     => $product->get_sale_price(),
-            'is_on_sale'     => $product->is_on_sale(),
-            'stock_status'   => $product->get_stock_status(), // 'instock', 'outofstock', 'onbackorder'
-            'stock_quantity' => $product->get_stock_quantity(),
-            'is_in_stock'    => $product->is_in_stock(),
-            'currency'       => get_woocommerce_currency_symbol(),
-            'url'            => get_permalink($product->get_id()),
+            'id'             => absint($product->get_id()),
+            'title'          => esc_html($product->get_name()),
+            'sku'            => esc_attr($product->get_sku()),
+            'price'          => $price !== '' ? floatval($price) : null,
+            'regular_price'  => $regular_price !== '' ? floatval($regular_price) : null,
+            'sale_price'     => $sale_price !== '' ? floatval($sale_price) : null,
+            'is_on_sale'     => (bool) $product->is_on_sale(),
+            'stock_status'   => esc_attr($product->get_stock_status()), // 'instock', 'outofstock', 'onbackorder'
+            'stock_quantity' => $product->get_stock_quantity() !== null ? intval($product->get_stock_quantity()) : null,
+            'is_in_stock'    => (bool) $product->is_in_stock(),
+            'currency'       => esc_html(get_woocommerce_currency_symbol()),
+            'url'            => esc_url_raw(get_permalink($product->get_id())),
         ]);
     }
 }

@@ -53,6 +53,7 @@ import { PILLAR39 } from './rewritten/pillar39';
 import { PILLAR40 } from './rewritten/pillar40';
 import { PILLAR41 } from './rewritten/pillar41';
 import { PILLAR42 } from './rewritten/pillar42';
+import { MONETIZATION_AND_SCALE_POSTS } from './rewritten/monetization-and-scale';
 
 /** Articles written for readers. They replace the templated placeholder with the same address and are listed in search. */
 export const REWRITTEN_POSTS: BlogPost[] = [...BATCH1, ...BATCH2, ...BATCH3, ...BATCH4, ...BATCH5, ...BATCH6, ...BATCH7, ...BATCH8, ...BATCH9, ...BATCH10, ...BATCH11, ...BATCH12,
@@ -99,4 +100,5 @@ export const REWRITTEN_POSTS: BlogPost[] = [...BATCH1, ...BATCH2, ...BATCH3, ...
   ...PILLAR40,
   ...PILLAR41,
   ...PILLAR42,
+  ...MONETIZATION_AND_SCALE_POSTS,
 ];

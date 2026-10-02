@@ -112,18 +112,37 @@ class AIBusinessAssistantPlugin {
             CRESCELO_PLUGIN_VERSION,
             true
         );
+
+        wp_localize_script('crescelo-wizard-js', 'CresceloWizardData', [
+            'ajaxUrl'            => admin_url('admin-ajax.php'),
+            'nonce'              => wp_create_nonce('crescelo_wizard_nonce'),
+            'hostUrl'            => esc_url_raw(get_option('ai_assistant_host_url', 'http://localhost:3000')),
+            'currentAssistantId' => sanitize_text_field(get_option('ai_assistant_id', '')),
+        ]);
     }
 
     public function inject_widget_script() {
-        $enabled = get_option('ai_assistant_enabled', true);
+        $enabled = (bool) get_option('ai_assistant_enabled', true);
         if (!$enabled) return;
 
-        $host_url     = untrailingslashit(get_option('ai_assistant_host_url', 'http://localhost:3000'));
-        $assistant_id = get_option('ai_assistant_id', '');
+        $raw_host = get_option('ai_assistant_host_url', 'http://localhost:3000');
+        $clean_host = esc_url_raw(untrailingslashit($raw_host));
+        $parsed = wp_parse_url($clean_host);
 
+        // Security check: Must be a valid HTTP/HTTPS URL
+        if (empty($parsed['scheme']) || !in_array($parsed['scheme'], ['http', 'https'], true)) {
+            return;
+        }
+
+        $assistant_id = sanitize_text_field(get_option('ai_assistant_id', ''));
         if (empty($assistant_id)) return;
 
-        $widget_src = esc_url($host_url . '/widget.js');
+        // Security check: Ensure assistant ID contains only safe alphanumeric/hyphen/underscore characters
+        if (!preg_match('/^[a-zA-Z0-9_\-]+$/', $assistant_id)) {
+            return;
+        }
+
+        $widget_src = esc_url($clean_host . '/widget.js');
         $ast_id     = esc_attr($assistant_id);
 
         echo "\n<!-- Crescelo AI Business Assistant Widget -->\n";
@@ -132,10 +151,12 @@ class AIBusinessAssistantPlugin {
     }
 
     public function render_admin_page() {
-        if (!current_user_can('manage_options')) return;
+        if (!current_user_can('manage_options')) {
+            wp_die(esc_html__('You do not have sufficient permissions to access this page.', 'ai-business-assistant'), 403);
+        }
 
-        $completed = get_option('ai_assistant_wizard_completed', false);
-        $force_wizard = isset($_GET['view']) && $_GET['view'] === 'wizard';
+        $completed = (bool) get_option('ai_assistant_wizard_completed', false);
+        $force_wizard = isset($_GET['view']) && sanitize_key($_GET['view']) === 'wizard';
 
         if (!$completed || $force_wizard) {
             include CRESCELO_PLUGIN_DIR . 'templates/admin-wizard.php';
