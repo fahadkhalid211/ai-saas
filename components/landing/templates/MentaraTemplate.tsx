@@ -121,6 +121,180 @@ function RollupButton({
   );
 }
 
+function ScrollReveal({
+  children,
+  className = '',
+  delay = 0,
+  direction = 'up',
+  threshold = 0.1,
+}: {
+  children: React.ReactNode;
+  className?: string;
+  delay?: number;
+  direction?: 'up' | 'down' | 'left' | 'right' | 'none';
+  threshold?: number;
+}) {
+  const ref = React.useRef<HTMLDivElement>(null);
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    if (typeof IntersectionObserver === 'undefined') {
+      setIsVisible(true);
+      return;
+    }
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          if (delay) {
+            const timer = setTimeout(() => setIsVisible(true), delay);
+            observer.unobserve(el);
+            return () => clearTimeout(timer);
+          } else {
+            setIsVisible(true);
+            observer.unobserve(el);
+          }
+        }
+      },
+      { threshold, rootMargin: '0px 0px -40px 0px' }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [delay, threshold]);
+
+  const getTransform = () => {
+    if (isVisible) return 'opacity-100 translate-x-0 translate-y-0 scale-100';
+    switch (direction) {
+      case 'up':
+        return 'opacity-0 translate-y-8 scale-[0.99]';
+      case 'down':
+        return 'opacity-0 -translate-y-8 scale-[0.99]';
+      case 'left':
+        return 'opacity-0 translate-x-10';
+      case 'right':
+        return 'opacity-0 -translate-x-10';
+      case 'none':
+      default:
+        return 'opacity-0 scale-95';
+    }
+  };
+
+  return (
+    <div
+      ref={ref}
+      className={`transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${getTransform()} ${className}`}
+    >
+      {children}
+    </div>
+  );
+}
+
+function ProcessCardsStack({
+  steps,
+}: {
+  steps: Array<{
+    number: string;
+    title: string;
+    text: string;
+    image: string;
+  }>;
+}) {
+  const containerRef = React.useRef<HTMLDivElement>(null);
+  const [scales, setScales] = useState<number[]>([1, 1, 1]);
+  const [opacities, setOpacities] = useState<number[]>([1, 1, 1]);
+
+  useEffect(() => {
+    let rafId: number | null = null;
+
+    const handleScroll = () => {
+      if (!containerRef.current) return;
+      const cards = containerRef.current.querySelectorAll<HTMLDivElement>('.process-interactive-card');
+      if (!cards || cards.length < 3) return;
+
+      const newScales = [1, 1, 1];
+      const newOpacities = [1, 1, 1];
+
+      const rect1 = cards[1].getBoundingClientRect();
+      const rect2 = cards[2].getBoundingClientRect();
+
+      const stickyTop1 = 145;
+      const stickyTop2 = 180;
+
+      // When Card 1 approaches sticky point, Card 0 smoothly scales down & dims
+      if (rect1.top <= stickyTop1 + 350) {
+        const progress1 = Math.max(0, Math.min(1, (stickyTop1 + 350 - rect1.top) / 350));
+        newScales[0] = 1 - progress1 * 0.06; // 1.0 -> 0.94
+        newOpacities[0] = 1 - progress1 * 0.15; // 1.0 -> 0.85
+      }
+
+      // When Card 2 approaches sticky point, Card 1 scales down & Card 0 scales down further
+      if (rect2.top <= stickyTop2 + 350) {
+        const progress2 = Math.max(0, Math.min(1, (stickyTop2 + 350 - rect2.top) / 350));
+        newScales[1] = 1 - progress2 * 0.06; // 1.0 -> 0.94
+        newOpacities[1] = 1 - progress2 * 0.15; // 1.0 -> 0.85
+
+        newScales[0] = 0.94 - progress2 * 0.06; // 0.94 -> 0.88
+        newOpacities[0] = 0.85 - progress2 * 0.20; // 0.85 -> 0.65
+      }
+
+      setScales(newScales);
+      setOpacities(newOpacities);
+    };
+
+    const onScroll = () => {
+      if (rafId !== null) cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(handleScroll);
+    };
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    handleScroll();
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      if (rafId !== null) cancelAnimationFrame(rafId);
+    };
+  }, []);
+
+  return (
+    <div ref={containerRef} className="flex flex-col gap-14 sm:gap-20 relative pb-28">
+      {steps.map((step, idx) => {
+        const topOffsets = ['top-[100px] sm:top-[115px]', 'top-[130px] sm:top-[150px]', 'top-[160px] sm:top-[185px]'];
+        const zIndexes = ['z-10', 'z-20', 'z-30'];
+        return (
+          <div
+            key={idx}
+            style={{
+              transform: `scale(${scales[idx]})`,
+              opacity: opacities[idx],
+              transformOrigin: 'top center',
+            }}
+            className={`process-interactive-card sticky ${topOffsets[idx]} ${zIndexes[idx]} rounded-[24px] border border-[#48614b] bg-[#35503a] p-8 sm:p-10 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.6)] transition-all duration-300 hover:border-[#eafe45]/60 hover:-translate-y-1 flex flex-col justify-between group will-change-transform`}
+          >
+            <div className="mb-6">
+              <span className="text-sm sm:text-base font-bold tracking-wider text-[#eafe45] block mb-3">
+                {step.number}
+              </span>
+              <h3 className="text-2xl sm:text-3xl font-medium text-[#eff3df] leading-tight mb-3">
+                {step.title}
+              </h3>
+              <p className="text-base text-[#b0bca7] leading-relaxed">
+                {step.text}
+              </p>
+            </div>
+            <div className="rounded-[18px] sm:rounded-[20px] overflow-hidden w-full aspect-[16/10] bg-[#1e3523] border border-[#48614b]/40">
+              <img
+                src={step.image}
+                alt={step.title}
+                className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+              />
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 interface MentaraTemplateProps {
   config: LandingPageConfig;
   onOpenBooking: (service?: LandingPageServiceItem) => void;
@@ -152,6 +326,13 @@ export function MentaraTemplate({
 
   // Annual vs Monthly Pricing toggle
   const [isAnnualBilling, setIsAnnualBilling] = useState(false);
+
+  // Hero entrance animation state
+  const [heroMounted, setHeroMounted] = useState(false);
+  useEffect(() => {
+    const timer = setTimeout(() => setHeroMounted(true), 60);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Accent color customization
   const themeColor = config.themeColor || 'lime';
@@ -616,7 +797,11 @@ export function MentaraTemplate({
           {/* Hero Top Wrapper */}
           <div className="flex flex-col items-center text-center space-y-6 max-w-4xl mx-auto">
             {/* 500+ Trusted Patients Badge */}
-            <div className="inline-flex items-center gap-3 px-3.5 py-1.5 rounded-full border border-[#48614b] bg-[#2b4731]/60 shadow-xs">
+            <div
+              className={`inline-flex items-center gap-3 px-3.5 py-1.5 rounded-full border border-[#48614b] bg-[#2b4731]/60 shadow-xs transition-all duration-700 ease-out delay-100 ${
+                heroMounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
+              }`}
+            >
               <img
                 src="https://cdn.prod.website-files.com/6825c2925e24e79e2bf4a9ed/682c0d28f4b16c2adf20cf26_5e48f2db85349ba0dcce1015cc0ffc8d_User%20Image.svg"
                 alt="Patients"
@@ -628,18 +813,30 @@ export function MentaraTemplate({
             </div>
 
             {/* Hero Main Headline */}
-            <h1 className="text-4xl sm:text-6xl md:text-7xl lg:text-[80px] font-semibold text-[#eff3df] leading-[1.08] tracking-tight">
+            <h1
+              className={`text-4xl sm:text-6xl md:text-7xl lg:text-[80px] font-semibold text-[#eff3df] leading-[1.08] tracking-tight transition-all duration-700 ease-out delay-200 ${
+                heroMounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+              }`}
+            >
               {config.heroHeadline || 'Empower your mental health journey!'}
             </h1>
 
             {/* Hero Subheadline */}
-            <p className="text-lg sm:text-xl text-[#b0bca7] max-w-2xl font-normal leading-relaxed">
+            <p
+              className={`text-lg sm:text-xl text-[#b0bca7] max-w-2xl font-normal leading-relaxed transition-all duration-700 ease-out delay-300 ${
+                heroMounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
+              }`}
+            >
               {config.heroSubheadline ||
                 'Personalized, compassionate therapy and mental health support designed to help you regain clarity, balance, and peace of mind.'}
             </p>
 
             {/* Timezone Indicator & Instant Booking CTA */}
-            <div className="pt-2 flex flex-wrap items-center justify-center gap-4">
+            <div
+              className={`pt-2 flex flex-wrap items-center justify-center gap-4 transition-all duration-700 ease-out delay-400 ${
+                heroMounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
+              }`}
+            >
               <RollupButton
                 label={config.heroCtaText || 'Schedule An Appointment'}
                 onClick={() => onOpenBooking()}
@@ -659,14 +856,22 @@ export function MentaraTemplate({
               </button>
             </div>
 
-            <div className="text-xs text-[#b0bca7] flex items-center gap-2 pt-1">
+            <div
+              className={`text-xs text-[#b0bca7] flex items-center gap-2 pt-1 transition-all duration-700 ease-out delay-500 ${
+                heroMounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+              }`}
+            >
               <Clock className="w-3.5 h-3.5 text-[#eafe45]" />
               <span>Calendar Timezone: <strong className="text-[#eff3df] font-semibold">{config.timezone || 'America/New_York'}</strong></span>
             </div>
           </div>
 
           {/* Hero Bottom Wrapper: Main Image + Curved Backing + Floating Pill Tags */}
-          <div className="mt-16 sm:mt-24 relative max-w-[1070px] mx-auto flex items-end justify-center">
+          <div
+            className={`mt-16 sm:mt-24 relative max-w-[1070px] mx-auto flex items-end justify-center transition-all duration-1000 ease-out delay-300 ${
+              heroMounted ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-12 scale-[0.97]'
+            }`}
+          >
             {/* Background Arch Graphic */}
             <div className="relative w-full max-w-[960px] aspect-[16/10] flex items-end justify-center">
               <img
@@ -685,7 +890,11 @@ export function MentaraTemplate({
               </div>
 
               {/* Tag 1: Personalized Care (Bottom Left) */}
-              <div className="absolute left-2 sm:left-6 bottom-[26%] sm:bottom-[30%] z-20 flex items-center gap-2.5 px-3.5 py-2 rounded-full border border-[#eff3df]/20 bg-[#eff3df]/10 backdrop-blur-md text-[#eff3df] text-xs sm:text-sm font-medium shadow-lg animate-bounce duration-[4000ms]">
+              <div
+                className={`absolute left-2 sm:left-6 bottom-[26%] sm:bottom-[30%] z-20 flex items-center gap-2.5 px-3.5 py-2 rounded-full border border-[#eff3df]/20 bg-[#eff3df]/10 backdrop-blur-md text-[#eff3df] text-xs sm:text-sm font-medium shadow-lg transition-all duration-700 ease-out delay-700 ${
+                  heroMounted ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-75 translate-y-4'
+                }`}
+              >
                 <div className="w-6 h-6 rounded-full bg-[#eff3df] flex items-center justify-center text-[#1e3523]">
                   <Check className="w-3.5 h-3.5 stroke-[3]" />
                 </div>
@@ -693,7 +902,11 @@ export function MentaraTemplate({
               </div>
 
               {/* Tag 2: Online Consult (Top Left) */}
-              <div className="absolute left-4 sm:left-14 top-[15%] sm:top-[20%] z-20 flex items-center gap-2.5 px-3.5 py-2 rounded-full border border-[#eff3df]/20 bg-[#eff3df]/10 backdrop-blur-md text-[#eff3df] text-xs sm:text-sm font-medium shadow-lg">
+              <div
+                className={`absolute left-4 sm:left-14 top-[15%] sm:top-[20%] z-20 flex items-center gap-2.5 px-3.5 py-2 rounded-full border border-[#eff3df]/20 bg-[#eff3df]/10 backdrop-blur-md text-[#eff3df] text-xs sm:text-sm font-medium shadow-lg transition-all duration-700 ease-out delay-850 ${
+                  heroMounted ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-75 translate-y-4'
+                }`}
+              >
                 <div className="w-6 h-6 rounded-full bg-[#eff3df] flex items-center justify-center text-[#1e3523]">
                   <Calendar className="w-3.5 h-3.5" />
                 </div>
@@ -701,7 +914,11 @@ export function MentaraTemplate({
               </div>
 
               {/* Tag 3: Expert Therapists (Top Right) */}
-              <div className="absolute right-4 sm:right-16 top-[20%] sm:top-[26%] z-20 flex items-center gap-2.5 px-3.5 py-2 rounded-full border border-[#eff3df]/20 bg-[#eff3df]/10 backdrop-blur-md text-[#eff3df] text-xs sm:text-sm font-medium shadow-lg">
+              <div
+                className={`absolute right-4 sm:right-16 top-[20%] sm:top-[26%] z-20 flex items-center gap-2.5 px-3.5 py-2 rounded-full border border-[#eff3df]/20 bg-[#eff3df]/10 backdrop-blur-md text-[#eff3df] text-xs sm:text-sm font-medium shadow-lg transition-all duration-700 ease-out delay-1000 ${
+                  heroMounted ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-75 translate-y-4'
+                }`}
+              >
                 <div className="w-6 h-6 rounded-full bg-[#eff3df] flex items-center justify-center text-[#1e3523]">
                   <Sparkles className="w-3.5 h-3.5 text-[#1e3523]" />
                 </div>
@@ -709,7 +926,11 @@ export function MentaraTemplate({
               </div>
 
               {/* Tag 4: Flexible Scheduling (Bottom Right) */}
-              <div className="absolute right-2 sm:right-8 bottom-[14%] sm:bottom-[18%] z-20 flex items-center gap-2.5 px-3.5 py-2 rounded-full border border-[#eff3df]/20 bg-[#eff3df]/10 backdrop-blur-md text-[#eff3df] text-xs sm:text-sm font-medium shadow-lg">
+              <div
+                className={`absolute right-2 sm:right-8 bottom-[14%] sm:bottom-[18%] z-20 flex items-center gap-2.5 px-3.5 py-2 rounded-full border border-[#eff3df]/20 bg-[#eff3df]/10 backdrop-blur-md text-[#eff3df] text-xs sm:text-sm font-medium shadow-lg transition-all duration-700 ease-out delay-1150 ${
+                  heroMounted ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-75 translate-y-4'
+                }`}
+              >
                 <div className="w-6 h-6 rounded-full bg-[#eff3df] flex items-center justify-center text-[#1e3523]">
                   <Clock className="w-3.5 h-3.5" />
                 </div>
@@ -726,43 +947,47 @@ export function MentaraTemplate({
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
             {/* About Left Image */}
             <div className="lg:col-span-5">
-              <div className="relative rounded-[24px] overflow-hidden border border-[#48614b] shadow-2xl aspect-[4/5] bg-[#1e3523] group">
-                <img
-                  src={config.aboutImageUrl || 'https://cdn.prod.website-files.com/6825c2925e24e79e2bf4a9ed/682c4043b56a8fc5bf42cacc_About%20Image.png'}
-                  alt={config.aboutTitle || 'About Mentara'}
-                  className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
-                />
-              </div>
+              <ScrollReveal direction="right" delay={100}>
+                <div className="relative rounded-[24px] overflow-hidden border border-[#48614b] shadow-2xl aspect-[4/5] bg-[#1e3523] group">
+                  <img
+                    src={config.aboutImageUrl || 'https://cdn.prod.website-files.com/6825c2925e24e79e2bf4a9ed/682c4043b56a8fc5bf42cacc_About%20Image.png'}
+                    alt={config.aboutTitle || 'About Mentara'}
+                    className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                  />
+                </div>
+              </ScrollReveal>
             </div>
 
             {/* About Right Content */}
             <div className="lg:col-span-7 space-y-6">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#48614b] bg-[#35503a] text-xs font-semibold uppercase tracking-wider text-[#eafe45]">
-                <img src={starIcon} alt="" className="w-3.5 h-3.5" />
-                <span>{config.aboutTitle ? 'About Us' : 'About Mentara'}</span>
-              </div>
+              <ScrollReveal direction="left" delay={150}>
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#48614b] bg-[#35503a] text-xs font-semibold uppercase tracking-wider text-[#eafe45] mb-4">
+                  <img src={starIcon} alt="" className="w-3.5 h-3.5" />
+                  <span>{config.aboutTitle ? 'About Us' : 'About Mentara'}</span>
+                </div>
 
-              <h2 className="text-3xl sm:text-5xl font-semibold text-[#eff3df] leading-tight">
-                {config.aboutSubtitle || 'Strong minds, thriving hearts unite.'}
-              </h2>
+                <h2 className="text-3xl sm:text-5xl font-semibold text-[#eff3df] leading-tight mb-4">
+                  {config.aboutSubtitle || 'Strong minds, thriving hearts unite.'}
+                </h2>
 
-              <p className="text-base sm:text-lg text-[#b0bca7] leading-relaxed">
-                {config.aboutText ||
-                  'Strong minds and thriving hearts come together to create a supportive community. Together, we can uplift each other, fostering resilience & joy on our journey towards mental wellness.'}
-              </p>
+                <p className="text-base sm:text-lg text-[#b0bca7] leading-relaxed mb-6">
+                  {config.aboutText ||
+                    'Strong minds and thriving hearts come together to create a supportive community. Together, we can uplift each other, fostering resilience & joy on our journey towards mental wellness.'}
+                </p>
 
-              {/* Action Button */}
-              <div className="pt-2">
-                <RollupButton
-                  label="Know Us More"
-                  onClick={() => onOpenBooking()}
-                  bgColor={sunnyYellow}
-                  textColor="#1e3523"
-                  iconBgColor="#1e3523"
-                  iconColor={sunnyYellow}
-                  size="md"
-                />
-              </div>
+                {/* Action Button */}
+                <div className="pt-2">
+                  <RollupButton
+                    label="Know Us More"
+                    onClick={() => onOpenBooking()}
+                    bgColor={sunnyYellow}
+                    textColor="#1e3523"
+                    iconBgColor="#1e3523"
+                    iconColor={sunnyYellow}
+                    size="md"
+                  />
+                </div>
+              </ScrollReveal>
 
               {/* 3 Highlight Item Cards */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-6">
@@ -783,37 +1008,38 @@ export function MentaraTemplate({
                     icon: 'https://cdn.prod.website-files.com/6825c2925e24e79e2bf4a9ed/682c42ab7ce5a6d303113900_About%20Item%20Icon%2001.svg',
                   },
                 ].map((item, idx) => (
-                  <div
-                    key={idx}
-                    className="p-5 rounded-[20px] border border-[#48614b] bg-[#35503a] space-y-3 hover:-translate-y-2 hover:border-[#eafe45]/60 hover:shadow-xl transition-all duration-300"
-                  >
-                    <div className="w-12 h-12 rounded-full bg-[#eff3df] flex items-center justify-center p-2.5">
-                      <img src={item.icon} alt="" className="w-full h-full object-contain" />
+                  <ScrollReveal key={idx} direction="up" delay={200 + idx * 100}>
+                    <div className="p-5 rounded-[20px] border border-[#48614b] bg-[#35503a] space-y-3 hover:-translate-y-2 hover:border-[#eafe45]/60 hover:shadow-xl transition-all duration-300 h-full">
+                      <div className="w-12 h-12 rounded-full bg-[#eff3df] flex items-center justify-center p-2.5">
+                        <img src={item.icon} alt="" className="w-full h-full object-contain" />
+                      </div>
+                      <h3 className="text-lg font-medium text-[#eff3df]">{item.title}</h3>
+                      <p className="text-xs text-[#b0bca7] leading-relaxed">{item.text}</p>
                     </div>
-                    <h3 className="text-lg font-medium text-[#eff3df]">{item.title}</h3>
-                    <p className="text-xs text-[#b0bca7] leading-relaxed">{item.text}</p>
-                  </div>
+                  </ScrollReveal>
                 ))}
               </div>
             </div>
           </div>
 
           {/* Partner / Trust Logos Bar */}
-          <div className="mt-20 border-t border-[#48614b] pt-12">
-            <p className="text-center text-xs font-semibold uppercase tracking-wider text-[#b0bca7] mb-8">
-              Trusted By Health Networks & Leading Wellness Organizations
-            </p>
-            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-6 items-center justify-center opacity-85">
-              {partnerLogos.map((logo, idx) => (
-                <div
-                  key={idx}
-                  className="flex items-center justify-center py-4 px-3 border border-[#48614b]/60 rounded-xl bg-[#1e3523]/40 hover:-translate-y-1 hover:border-[#eafe45]/60 hover:bg-[#2b4731] transition-all duration-300 shadow-xs"
-                >
-                  <img src={logo} alt={`Partner ${idx + 1}`} className="h-7 w-auto object-contain filter brightness-110" />
-                </div>
-              ))}
+          <ScrollReveal direction="up" delay={250}>
+            <div className="mt-20 border-t border-[#48614b] pt-12">
+              <p className="text-center text-xs font-semibold uppercase tracking-wider text-[#b0bca7] mb-8">
+                Trusted By Health Networks & Leading Wellness Organizations
+              </p>
+              <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-6 items-center justify-center opacity-85">
+                {partnerLogos.map((logo, idx) => (
+                  <div
+                    key={idx}
+                    className="flex items-center justify-center py-4 px-3 border border-[#48614b]/60 rounded-xl bg-[#1e3523]/40 hover:-translate-y-1 hover:border-[#eafe45]/60 hover:bg-[#2b4731] transition-all duration-300 shadow-xs"
+                  >
+                    <img src={logo} alt={`Partner ${idx + 1}`} className="h-7 w-auto object-contain filter brightness-110" />
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
+          </ScrollReveal>
         </div>
       </section>
 
@@ -821,27 +1047,29 @@ export function MentaraTemplate({
       <section id="services" className="py-24 sm:py-[132px]">
         <div className="max-w-[1240px] mx-auto px-5">
           {/* Header */}
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
-            <div className="space-y-3">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#48614b] bg-[#2b4731] text-xs font-semibold uppercase tracking-wider text-[#eafe45]">
-                <img src={starIcon} alt="" className="w-3.5 h-3.5" />
-                <span>{config.servicesTitle || 'Our Services'}</span>
+          <ScrollReveal direction="up">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
+              <div className="space-y-3">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#48614b] bg-[#2b4731] text-xs font-semibold uppercase tracking-wider text-[#eafe45]">
+                  <img src={starIcon} alt="" className="w-3.5 h-3.5" />
+                  <span>{config.servicesTitle || 'Our Services'}</span>
+                </div>
+                <h2 className="text-3xl sm:text-5xl font-semibold text-[#eff3df]">
+                  {config.servicesSubtitle || 'Strong minds, thriving hearts unite.'}
+                </h2>
               </div>
-              <h2 className="text-3xl sm:text-5xl font-semibold text-[#eff3df]">
-                {config.servicesSubtitle || 'Strong minds, thriving hearts unite.'}
-              </h2>
+              <RollupButton
+                label="All Services"
+                onClick={() => onOpenBooking()}
+                bgColor={sunnyYellow}
+                textColor="#1e3523"
+                iconBgColor="#1e3523"
+                iconColor={sunnyYellow}
+                size="md"
+                className="self-start md:self-auto"
+              />
             </div>
-            <RollupButton
-              label="All Services"
-              onClick={() => onOpenBooking()}
-              bgColor={sunnyYellow}
-              textColor="#1e3523"
-              iconBgColor="#1e3523"
-              iconColor={sunnyYellow}
-              size="md"
-              className="self-start md:self-auto"
-            />
-          </div>
+          </ScrollReveal>
 
           {/* Wavy Divider */}
           <div className="mb-12">
@@ -851,52 +1079,51 @@ export function MentaraTemplate({
           {/* Services 3x2 Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {services.map((service, sIdx) => (
-              <div
-                key={service.id || sIdx}
-                className="group p-5 rounded-[24px] border border-[#48614b] bg-[#35503a] hover:border-[#eafe45]/70 hover:-translate-y-2 hover:shadow-2xl transition-all duration-300 flex flex-col justify-between"
-              >
-                <div className="space-y-4">
-                  {/* Thumbnail */}
-                  <div className="rounded-[18px] overflow-hidden aspect-[16/10] bg-[#1e3523] border border-[#48614b]/40">
-                    <img
-                      src={service.imageUrl || 'https://cdn.prod.website-files.com/682982f2b42d35f376f2394e/6829d494c23b89be6dbf2a48_Thumbnail%20Image%2001.png'}
-                      alt={service.name}
-                      className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
-                    />
-                  </div>
-
-                  {/* Title & Price */}
-                  <div className="flex items-start justify-between gap-3">
-                    <h3 className="text-xl font-medium text-[#eff3df] group-hover:text-[#eafe45] transition-colors">
-                      {service.name}
-                    </h3>
-                    <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-[#1e3523] text-[#eafe45] border border-[#48614b]">
-                      ${service.price}
-                    </span>
-                  </div>
-
-                  <p className="text-sm text-[#b0bca7] leading-relaxed line-clamp-2">
-                    {service.description}
-                  </p>
-                </div>
-
-                <div className="pt-6 border-t border-[#48614b]/60 flex items-center justify-between">
-                  <div className="text-xs text-[#b0bca7] flex items-center gap-1.5 font-medium">
-                    <Clock className="w-3.5 h-3.5 text-[#eafe45]" />
-                    <span>{service.durationMinutes} min</span>
-                  </div>
-
-                  <button
-                    onClick={() => onOpenBooking(service)}
-                    className="group/btn inline-flex items-center gap-2 text-sm font-semibold text-[#eff3df] hover:text-[#eafe45] transition-colors cursor-pointer"
-                  >
-                    <span>Book Session</span>
-                    <div className="w-7 h-7 rounded-full bg-[#2b4731] border border-[#48614b] flex items-center justify-center group-hover/btn:bg-[#eafe45] group-hover/btn:text-[#1e3523] group-hover/btn:border-[#eafe45] transition-all duration-300">
-                      <ArrowUpRight className="w-3.5 h-3.5 transition-transform duration-300 group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5" />
+              <ScrollReveal key={service.id || sIdx} direction="up" delay={sIdx * 80}>
+                <div className="group p-5 rounded-[24px] border border-[#48614b] bg-[#35503a] hover:border-[#eafe45]/70 hover:-translate-y-2 hover:shadow-2xl transition-all duration-300 flex flex-col justify-between h-full">
+                  <div className="space-y-4">
+                    {/* Thumbnail */}
+                    <div className="rounded-[18px] overflow-hidden aspect-[16/10] bg-[#1e3523] border border-[#48614b]/40">
+                      <img
+                        src={service.imageUrl || 'https://cdn.prod.website-files.com/682982f2b42d35f376f2394e/6829d494c23b89be6dbf2a48_Thumbnail%20Image%2001.png'}
+                        alt={service.name}
+                        className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                      />
                     </div>
-                  </button>
+
+                    {/* Title & Price */}
+                    <div className="flex items-start justify-between gap-3">
+                      <h3 className="text-xl font-medium text-[#eff3df] group-hover:text-[#eafe45] transition-colors">
+                        {service.name}
+                      </h3>
+                      <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-[#1e3523] text-[#eafe45] border border-[#48614b]">
+                        ${service.price}
+                      </span>
+                    </div>
+
+                    <p className="text-sm text-[#b0bca7] leading-relaxed line-clamp-2">
+                      {service.description}
+                    </p>
+                  </div>
+
+                  <div className="pt-6 border-t border-[#48614b]/60 flex items-center justify-between mt-6">
+                    <div className="text-xs text-[#b0bca7] flex items-center gap-1.5 font-medium">
+                      <Clock className="w-3.5 h-3.5 text-[#eafe45]" />
+                      <span>{service.durationMinutes} min</span>
+                    </div>
+
+                    <button
+                      onClick={() => onOpenBooking(service)}
+                      className="group/btn inline-flex items-center gap-2 text-sm font-semibold text-[#eff3df] hover:text-[#eafe45] transition-colors cursor-pointer"
+                    >
+                      <span>Book Session</span>
+                      <div className="w-7 h-7 rounded-full bg-[#2b4731] border border-[#48614b] flex items-center justify-center group-hover/btn:bg-[#eafe45] group-hover/btn:text-[#1e3523] group-hover/btn:border-[#eafe45] transition-all duration-300">
+                        <ArrowUpRight className="w-3.5 h-3.5 transition-transform duration-300 group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5" />
+                      </div>
+                    </button>
+                  </div>
                 </div>
-              </div>
+              </ScrollReveal>
             ))}
           </div>
         </div>
@@ -905,81 +1132,62 @@ export function MentaraTemplate({
       {/* 5. Process Section ("Our Process - Mental Wellness Journey") with Sticky Stacked Cards */}
       <section id="process" className="py-24 sm:py-[132px] bg-[#2b4731] border-t border-[#48614b]/40 relative">
         <div className="max-w-[1240px] mx-auto px-5">
-          <div className="flex flex-col items-center text-center space-y-3 mb-6">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#48614b] bg-[#35503a] text-xs font-semibold uppercase tracking-wider text-[#eafe45]">
-              <img src={starIcon} alt="" className="w-3.5 h-3.5" />
-              <span>Our Process</span>
+          <ScrollReveal direction="up">
+            <div className="flex flex-col items-center text-center space-y-3 mb-6">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#48614b] bg-[#35503a] text-xs font-semibold uppercase tracking-wider text-[#eafe45]">
+                <img src={starIcon} alt="" className="w-3.5 h-3.5" />
+                <span>Our Process</span>
+              </div>
+              <h2 className="text-3xl sm:text-5xl font-semibold text-[#eff3df]">
+                Mental Wellness Journey
+              </h2>
             </div>
-            <h2 className="text-3xl sm:text-5xl font-semibold text-[#eff3df]">
-              Mental Wellness Journey
-            </h2>
-          </div>
+          </ScrollReveal>
 
           <div className="mb-12 max-w-4xl mx-auto">
             <img src={vectorLineOne} alt="" className="w-full h-auto object-contain opacity-70" />
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start relative">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 relative">
             {/* Sticky Process Featured Image (Pinned Left) */}
-            <div className="lg:col-span-5 lg:sticky lg:top-28 self-start">
-              <div className="rounded-[20px] sm:rounded-[24px] overflow-hidden border border-[#48614b] shadow-2xl aspect-[4/5] sm:max-h-[640px] bg-[#1e3523]">
-                <img
-                  src="https://cdn.prod.website-files.com/6825c2925e24e79e2bf4a9ed/682c6530d9caf9f6917cbfec_Process.png"
-                  alt="Process Overview"
-                  className="w-full h-full object-cover"
-                />
+            <div className="lg:col-span-5 relative">
+              <div className="sticky top-[100px] sm:top-[120px] self-start w-full">
+                <ScrollReveal direction="right" delay={100}>
+                  <div className="rounded-[20px] sm:rounded-[24px] overflow-hidden border border-[#48614b] shadow-2xl aspect-[4/5] sm:max-h-[640px] bg-[#1e3523]">
+                    <img
+                      src="https://cdn.prod.website-files.com/6825c2925e24e79e2bf4a9ed/682c6530d9caf9f6917cbfec_Process.png"
+                      alt="Process Overview"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                </ScrollReveal>
               </div>
             </div>
 
-            {/* Right Numbered Process Stacked Cards */}
-            <div className="lg:col-span-7 flex flex-col gap-8 sm:gap-12 relative pb-16">
-              {[
-                {
-                  number: '/001',
-                  title: 'Your Mental Health',
-                  text: 'Mental health support should be accessible to individuals from all backgrounds and communities everywhere. We start with a comprehensive personal assessment.',
-                  image: 'https://cdn.prod.website-files.com/6825c2925e24e79e2bf4a9ed/682c65ff7461c9577a815b82_Process%20Card%20Image.png',
-                },
-                {
-                  number: '/002',
-                  title: 'Moments of Mental Stillness',
-                  text: 'Access to mental health support must be ensured for individuals across all communities and walks of life, focusing on mindfulness and tailored coping techniques.',
-                  image: 'https://cdn.prod.website-files.com/6825c2925e24e79e2bf4a9ed/682eb512766878e8aae8b737_Process%20Item%20Image.png',
-                },
-                {
-                  number: '/003',
-                  title: 'Mental Calm Time',
-                  text: 'Taking time for mental calm is essential. It allows individuals to recharge, reflect, and find balance in their busy everyday lives.',
-                  image: 'https://cdn.prod.website-files.com/6825c2925e24e79e2bf4a9ed/682eb5125d011d38dd48d69e_Process%20Item%20Image-1.png',
-                },
-              ].map((step, idx) => {
-                const topOffset = ['lg:sticky lg:top-28 z-10', 'lg:sticky lg:top-36 z-20', 'lg:sticky lg:top-44 z-30'][idx];
-                return (
-                  <div
-                    key={idx}
-                    className={`${topOffset} rounded-[24px] border border-[#48614b] bg-[#35503a] p-8 sm:p-10 shadow-2xl transition-all duration-300 hover:border-[#eafe45]/60 hover:-translate-y-1 flex flex-col justify-between group`}
-                  >
-                    <div className="mb-6">
-                      <span className="text-sm sm:text-base font-bold tracking-wider text-[#eafe45] block mb-3">
-                        {step.number}
-                      </span>
-                      <h3 className="text-2xl sm:text-3xl font-medium text-[#eff3df] leading-tight mb-3">
-                        {step.title}
-                      </h3>
-                      <p className="text-base text-[#b0bca7] leading-relaxed">
-                        {step.text}
-                      </p>
-                    </div>
-                    <div className="rounded-[18px] sm:rounded-[20px] overflow-hidden w-full aspect-[16/10] bg-[#1e3523] border border-[#48614b]/40">
-                      <img
-                        src={step.image}
-                        alt={step.title}
-                        className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
-                      />
-                    </div>
-                  </div>
-                );
-              })}
+            {/* Right Numbered Process Stacked Cards with dynamic scroll scale */}
+            <div className="lg:col-span-7 relative">
+              <ProcessCardsStack
+                steps={[
+                  {
+                    number: '/001',
+                    title: 'Your Mental Health',
+                    text: 'Mental health support should be accessible to individuals from all backgrounds and communities everywhere. We start with a comprehensive personal assessment.',
+                    image: 'https://cdn.prod.website-files.com/6825c2925e24e79e2bf4a9ed/682c65ff7461c9577a815b82_Process%20Card%20Image.png',
+                  },
+                  {
+                    number: '/002',
+                    title: 'Moments of Mental Stillness',
+                    text: 'Access to mental health support must be ensured for individuals across all communities and walks of life, focusing on mindfulness and tailored coping techniques.',
+                    image: 'https://cdn.prod.website-files.com/6825c2925e24e79e2bf4a9ed/682eb512766878e8aae8b737_Process%20Item%20Image.png',
+                  },
+                  {
+                    number: '/003',
+                    title: 'Mental Calm Time',
+                    text: 'Taking time for mental calm is essential. It allows individuals to recharge, reflect, and find balance in their busy everyday lives.',
+                    image: 'https://cdn.prod.website-files.com/6825c2925e24e79e2bf4a9ed/682eb5125d011d38dd48d69e_Process%20Item%20Image-1.png',
+                  },
+                ]}
+              />
             </div>
           </div>
         </div>
@@ -988,39 +1196,41 @@ export function MentaraTemplate({
       {/* 6. Project Showcase Carousel Section */}
       <section id="projects" className="py-24 sm:py-[132px]">
         <div className="max-w-[1240px] mx-auto px-5">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
-            <div className="space-y-3">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#48614b] bg-[#2b4731] text-xs font-semibold uppercase tracking-wider text-[#eafe45]">
-                <img src={starIcon} alt="" className="w-3.5 h-3.5" />
-                <span>Project Showcase</span>
+          <ScrollReveal direction="up">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
+              <div className="space-y-3">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#48614b] bg-[#2b4731] text-xs font-semibold uppercase tracking-wider text-[#eafe45]">
+                  <img src={starIcon} alt="" className="w-3.5 h-3.5" />
+                  <span>Project Showcase</span>
+                </div>
+                <h2 className="text-3xl sm:text-5xl font-semibold text-[#eff3df]">
+                  Strong Mind, Calm Heart Project.
+                </h2>
               </div>
-              <h2 className="text-3xl sm:text-5xl font-semibold text-[#eff3df]">
-                Strong Mind, Calm Heart Project.
-              </h2>
-            </div>
 
-            {/* Slider Navigation Arrows */}
-            <div className="flex items-center gap-3 self-start md:self-auto">
-              <button
-                onClick={() =>
-                  setProjectSlideIndex((prev) => (prev > 0 ? prev - 1 : projects.length - 1))
-                }
-                className="w-11 h-11 rounded-full bg-[#eff3df] text-[#1e3523] hover:bg-[#eafe45] flex items-center justify-center transition-all duration-300 cursor-pointer shadow-md hover:scale-105"
-                aria-label="Previous Project"
-              >
-                <ChevronLeft className="w-5 h-5" />
-              </button>
-              <button
-                onClick={() =>
-                  setProjectSlideIndex((prev) => (prev < projects.length - 1 ? prev + 1 : 0))
-                }
-                className="w-11 h-11 rounded-full bg-[#eff3df] text-[#1e3523] hover:bg-[#eafe45] flex items-center justify-center transition-all duration-300 cursor-pointer shadow-md hover:scale-105"
-                aria-label="Next Project"
-              >
-                <ChevronRight className="w-5 h-5" />
-              </button>
+              {/* Slider Navigation Arrows */}
+              <div className="flex items-center gap-3 self-start md:self-auto">
+                <button
+                  onClick={() =>
+                    setProjectSlideIndex((prev) => (prev > 0 ? prev - 1 : projects.length - 1))
+                  }
+                  className="w-11 h-11 rounded-full bg-[#eff3df] text-[#1e3523] hover:bg-[#eafe45] flex items-center justify-center transition-all duration-300 cursor-pointer shadow-md hover:scale-105"
+                  aria-label="Previous Project"
+                >
+                  <ChevronLeft className="w-5 h-5" />
+                </button>
+                <button
+                  onClick={() =>
+                    setProjectSlideIndex((prev) => (prev < projects.length - 1 ? prev + 1 : 0))
+                  }
+                  className="w-11 h-11 rounded-full bg-[#eff3df] text-[#1e3523] hover:bg-[#eafe45] flex items-center justify-center transition-all duration-300 cursor-pointer shadow-md hover:scale-105"
+                  aria-label="Next Project"
+                >
+                  <ChevronRight className="w-5 h-5" />
+                </button>
+              </div>
             </div>
-          </div>
+          </ScrollReveal>
 
           <div className="mb-12">
             <img src={sectionLine01} alt="" className="w-full h-auto object-contain opacity-70" />
@@ -1036,34 +1246,37 @@ export function MentaraTemplate({
                   Math.max(0, projectSlideIndex + 2 - projects.length)
                 )
               )
-              .map((proj) => (
-                <div
-                  key={proj.id}
-                  className="group rounded-[28px] border border-[#48614b] bg-[#2b4731] p-6 space-y-5 hover:border-[#eafe45]/70 hover:-translate-y-2 hover:shadow-2xl transition-all duration-300"
-                >
-                  <div className="rounded-[20px] overflow-hidden aspect-[16/10] bg-[#1e3523] border border-[#48614b]/40">
-                    <img
-                      src={proj.image}
-                      alt={proj.title}
-                      className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
-                    />
-                  </div>
+              .map((proj, idx) => (
+                <ScrollReveal key={proj.id} direction="up" delay={idx * 150}>
+                  <div
+                    className="group rounded-[28px] border border-[#48614b] bg-[#2b4731] p-6 space-y-5 hover:border-[#eafe45]/70 hover:-translate-y-2 hover:shadow-2xl transition-all duration-300 h-full flex flex-col justify-between"
+                  >
+                    <div className="space-y-4">
+                      <div className="rounded-[20px] overflow-hidden aspect-[16/10] bg-[#1e3523] border border-[#48614b]/40">
+                        <img
+                          src={proj.image}
+                          alt={proj.title}
+                          className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                        />
+                      </div>
 
-                  <h3 className="text-2xl font-medium text-[#eff3df] group-hover:text-[#eafe45] transition-colors">{proj.title}</h3>
-                  <p className="text-sm text-[#b0bca7] leading-relaxed">{proj.desc}</p>
+                      <h3 className="text-2xl font-medium text-[#eff3df] group-hover:text-[#eafe45] transition-colors">{proj.title}</h3>
+                      <p className="text-sm text-[#b0bca7] leading-relaxed">{proj.desc}</p>
+                    </div>
 
-                  <div className="pt-4 border-t border-[#48614b]/60 flex items-center justify-between">
-                    <button
-                      onClick={() => onOpenBooking()}
-                      className="px-5 py-2.5 rounded-full border border-[#eafe45] bg-[#eafe45] text-[#1e3523] font-semibold text-xs transition-all duration-300 hover:bg-transparent hover:text-[#eff3df] cursor-pointer shadow-sm"
-                    >
-                      Read More
-                    </button>
-                    <span className="text-xs font-semibold text-[#eafe45] bg-[#1e3523] px-3 py-1 rounded-full border border-[#48614b]">
-                      {proj.duration}
-                    </span>
+                    <div className="pt-4 border-t border-[#48614b]/60 flex items-center justify-between mt-4">
+                      <button
+                        onClick={() => onOpenBooking()}
+                        className="px-5 py-2.5 rounded-full border border-[#eafe45] bg-[#eafe45] text-[#1e3523] font-semibold text-xs transition-all duration-300 hover:bg-transparent hover:text-[#eff3df] cursor-pointer shadow-sm"
+                      >
+                        Read More
+                      </button>
+                      <span className="text-xs font-semibold text-[#eafe45] bg-[#1e3523] px-3 py-1 rounded-full border border-[#48614b]">
+                        {proj.duration}
+                      </span>
+                    </div>
                   </div>
-                </div>
+                </ScrollReveal>
               ))}
           </div>
         </div>
@@ -1072,15 +1285,17 @@ export function MentaraTemplate({
       {/* 7. Testimonials Section ("Real People Feedback") */}
       <section id="testimonials" className="py-24 sm:py-[132px] bg-[#2b4731] border-t border-[#48614b]/40">
         <div className="max-w-[1240px] mx-auto px-5">
-          <div className="flex flex-col items-center text-center space-y-3 mb-6">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#48614b] bg-[#35503a] text-xs font-semibold uppercase tracking-wider text-[#eafe45]">
-              <img src={starIcon} alt="" className="w-3.5 h-3.5" />
-              <span>Testimonials</span>
+          <ScrollReveal direction="up">
+            <div className="flex flex-col items-center text-center space-y-3 mb-6">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#48614b] bg-[#35503a] text-xs font-semibold uppercase tracking-wider text-[#eafe45]">
+                <img src={starIcon} alt="" className="w-3.5 h-3.5" />
+                <span>Testimonials</span>
+              </div>
+              <h2 className="text-3xl sm:text-5xl font-semibold text-[#eff3df]">
+                Real People Feedback.
+              </h2>
             </div>
-            <h2 className="text-3xl sm:text-5xl font-semibold text-[#eff3df]">
-              Real People Feedback.
-            </h2>
-          </div>
+          </ScrollReveal>
 
           <div className="mb-12 max-w-4xl mx-auto">
             <img src={vectorLineOne} alt="" className="w-full h-auto object-contain opacity-70" />
@@ -1089,80 +1304,92 @@ export function MentaraTemplate({
           {/* Testimonial Tabs Navigation + Active Content */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
             {/* Tabs List on Left/Top */}
-            <div className="lg:col-span-4 flex flex-row lg:flex-col gap-3 overflow-x-auto pb-2 lg:pb-0">
-              {testimonials.map((t, idx) => {
-                const isActive = activeTestimonialTab === idx;
-                return (
-                  <button
-                    key={t.id}
-                    onClick={() => setActiveTestimonialTab(idx)}
-                    className={`flex items-center gap-4 p-3.5 rounded-[16px] transition-all duration-300 cursor-pointer text-left shrink-0 lg:shrink w-[220px] lg:w-full border ${
-                      isActive
-                        ? 'bg-[#eff3df] text-[#1e3523] border-[#eff3df] shadow-lg scale-[1.02]'
-                        : 'bg-[#1e3523]/60 text-[#eff3df] border-[#48614b]/60 hover:border-[#eafe45]/40 hover:bg-[#35503a]'
-                    }`}
-                  >
-                    <img
-                      src={t.avatar}
-                      alt={t.name}
-                      className="w-12 h-12 rounded-full object-cover border border-[#48614b]/40 shrink-0"
-                    />
-                    <div>
-                      <div className="font-semibold text-sm leading-tight">{t.name}</div>
-                      <div className={`text-xs ${isActive ? 'text-[#35503a]' : 'text-[#b0bca7]'}`}>
-                        {t.role}
-                      </div>
-                    </div>
-                  </button>
-                );
-              })}
+            <div className="lg:col-span-4">
+              <ScrollReveal direction="right" delay={100}>
+                <div className="flex flex-row lg:flex-col gap-3 overflow-x-auto pb-2 lg:pb-0">
+                  {testimonials.map((t, idx) => {
+                    const isActive = activeTestimonialTab === idx;
+                    return (
+                      <button
+                        key={t.id}
+                        onClick={() => setActiveTestimonialTab(idx)}
+                        className={`flex items-center gap-4 p-3.5 rounded-[16px] transition-all duration-300 cursor-pointer text-left shrink-0 lg:shrink w-[220px] lg:w-full border ${
+                          isActive
+                            ? 'bg-[#eff3df] text-[#1e3523] border-[#eff3df] shadow-lg scale-[1.02]'
+                            : 'bg-[#1e3523]/60 text-[#eff3df] border-[#48614b]/60 hover:border-[#eafe45]/40 hover:bg-[#35503a]'
+                        }`}
+                      >
+                        <img
+                          src={t.avatar}
+                          alt={t.name}
+                          className="w-12 h-12 rounded-full object-cover border border-[#48614b]/40 shrink-0"
+                        />
+                        <div>
+                          <div className="font-semibold text-sm leading-tight">{t.name}</div>
+                          <div className={`text-xs ${isActive ? 'text-[#35503a]' : 'text-[#b0bca7]'}`}>
+                            {t.role}
+                          </div>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </ScrollReveal>
             </div>
 
             {/* Active Testimonial Card Display */}
             <div className="lg:col-span-8">
               <div className="grid grid-cols-1 sm:grid-cols-12 gap-6 items-stretch">
                 {/* Large Featured Photo */}
-                <div className="sm:col-span-5 rounded-[24px] overflow-hidden aspect-[4/5] bg-[#1e3523] border border-[#48614b] shadow-xl">
-                  <img
-                    src={testimonials[activeTestimonialTab].featuredImage}
-                    alt={testimonials[activeTestimonialTab].name}
-                    className="w-full h-full object-cover"
-                  />
+                <div className="sm:col-span-5">
+                  <ScrollReveal direction="right" delay={150}>
+                    <div className="rounded-[24px] overflow-hidden aspect-[4/5] bg-[#1e3523] border border-[#48614b] shadow-xl">
+                      <img
+                        src={testimonials[activeTestimonialTab].featuredImage}
+                        alt={testimonials[activeTestimonialTab].name}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  </ScrollReveal>
                 </div>
 
                 {/* Quote Card in Ecru White */}
-                <div className="sm:col-span-7 bg-[#eff3df] text-[#1e3523] rounded-[24px] p-8 flex flex-col justify-between shadow-2xl">
-                  <div className="flex items-center justify-between pb-4 border-b border-[#1e3523]/15">
-                    <img
-                      src="https://cdn.prod.website-files.com/6825c2925e24e79e2bf4a9ed/682d4ce0ced67090ed189722_quote%20icon.png"
-                      alt="Quote"
-                      className="h-7 w-auto object-contain"
-                    />
-                    <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#1e3523] text-[#eff3df] text-xs font-semibold">
-                      <Star className="w-3.5 h-3.5 fill-[#eafe45] text-[#eafe45]" />
-                      <span>{testimonials[activeTestimonialTab].rating}</span>
-                    </div>
-                  </div>
-
-                  <p className="py-6 text-base sm:text-lg font-medium leading-relaxed italic text-[#1e3523]">
-                    {testimonials[activeTestimonialTab].quote}
-                  </p>
-
-                  <div className="pt-4 border-t border-[#1e3523]/15 flex items-center justify-between">
-                    <div>
-                      <div className="font-bold text-base text-[#1e3523]">
-                        {testimonials[activeTestimonialTab].name}
+                <div className="sm:col-span-7">
+                  <ScrollReveal direction="left" delay={200}>
+                    <div className="bg-[#eff3df] text-[#1e3523] rounded-[24px] p-8 flex flex-col justify-between shadow-2xl h-full">
+                      <div className="flex items-center justify-between pb-4 border-b border-[#1e3523]/15">
+                        <img
+                          src="https://cdn.prod.website-files.com/6825c2925e24e79e2bf4a9ed/682d4ce0ced67090ed189722_quote%20icon.png"
+                          alt="Quote"
+                          className="h-7 w-auto object-contain"
+                        />
+                        <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#1e3523] text-[#eff3df] text-xs font-semibold">
+                          <Star className="w-3.5 h-3.5 fill-[#eafe45] text-[#eafe45]" />
+                          <span>{testimonials[activeTestimonialTab].rating}</span>
+                        </div>
                       </div>
-                      <div className="text-xs text-[#48614b] font-medium">
-                        {testimonials[activeTestimonialTab].role}
+
+                      <p className="py-6 text-base sm:text-lg font-medium leading-relaxed italic text-[#1e3523]">
+                        {testimonials[activeTestimonialTab].quote}
+                      </p>
+
+                      <div className="pt-4 border-t border-[#1e3523]/15 flex items-center justify-between">
+                        <div>
+                          <div className="font-bold text-base text-[#1e3523]">
+                            {testimonials[activeTestimonialTab].name}
+                          </div>
+                          <div className="text-xs text-[#48614b] font-medium">
+                            {testimonials[activeTestimonialTab].role}
+                          </div>
+                        </div>
+                        <img
+                          src={testimonials[activeTestimonialTab].logo}
+                          alt="Verified"
+                          className="h-6 w-auto object-contain opacity-80"
+                        />
                       </div>
                     </div>
-                    <img
-                      src={testimonials[activeTestimonialTab].logo}
-                      alt="Verified"
-                      className="h-6 w-auto object-contain opacity-80"
-                    />
-                  </div>
+                  </ScrollReveal>
                 </div>
               </div>
             </div>
@@ -1173,27 +1400,29 @@ export function MentaraTemplate({
       {/* 8. Team Members Section ("People Behind The Healing Work") with 3D Flip Cards */}
       <section id="team" className="py-24 sm:py-[132px]">
         <div className="max-w-[1240px] mx-auto px-5">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
-            <div className="space-y-3">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#48614b] bg-[#2b4731] text-xs font-semibold uppercase tracking-wider text-[#eafe45]">
-                <img src={starIcon} alt="" className="w-3.5 h-3.5" />
-                <span>Team Member</span>
+          <ScrollReveal direction="up">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
+              <div className="space-y-3">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#48614b] bg-[#2b4731] text-xs font-semibold uppercase tracking-wider text-[#eafe45]">
+                  <img src={starIcon} alt="" className="w-3.5 h-3.5" />
+                  <span>Team Member</span>
+                </div>
+                <h2 className="text-3xl sm:text-5xl font-semibold text-[#eff3df]">
+                  People Behind The Healing Work.
+                </h2>
               </div>
-              <h2 className="text-3xl sm:text-5xl font-semibold text-[#eff3df]">
-                People Behind The Healing Work.
-              </h2>
+              <RollupButton
+                label="Our Therapists"
+                onClick={() => onOpenBooking()}
+                bgColor={sunnyYellow}
+                textColor="#1e3523"
+                iconBgColor="#1e3523"
+                iconColor={sunnyYellow}
+                size="md"
+                className="self-start md:self-auto"
+              />
             </div>
-            <RollupButton
-              label="Our Therapists"
-              onClick={() => onOpenBooking()}
-              bgColor={sunnyYellow}
-              textColor="#1e3523"
-              iconBgColor="#1e3523"
-              iconColor={sunnyYellow}
-              size="md"
-              className="self-start md:self-auto"
-            />
-          </div>
+          </ScrollReveal>
 
           <div className="mb-12">
             <img src={sectionLine01} alt="" className="w-full h-auto object-contain opacity-70" />
@@ -1202,67 +1431,68 @@ export function MentaraTemplate({
           {/* 3D Flip Cards Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {teamMembers.map((member, mIdx) => (
-              <div
-                key={mIdx}
-                className="group [perspective:1000px] h-[460px] cursor-pointer"
-              >
-                <div className="relative w-full h-full transition-transform duration-700 [transform-style:preserve-3d] group-hover:[transform:rotateY(180deg)] rounded-[24px]">
-                  {/* Front Card */}
-                  <div className="absolute inset-0 [backface-visibility:hidden] rounded-[24px] overflow-hidden border border-[#48614b] bg-[#35503a] shadow-xl group-hover:border-[#eafe45]/60 transition-colors">
-                    <img
-                      src={member.image}
-                      alt={member.name}
-                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                    />
-                    <div className="absolute inset-x-0 bottom-0 p-5 bg-gradient-to-t from-[#1e3523] via-[#1e3523]/80 to-transparent">
-                      <h4 className="text-xl font-bold text-[#eff3df]">{member.name}</h4>
-                      <p className="text-xs text-[#eafe45] font-semibold">{member.experience}</p>
-                    </div>
-                  </div>
-
-                  {/* Back Card (Flipped) */}
-                  <div className="absolute inset-0 [backface-visibility:hidden] [transform:rotateY(180deg)] rounded-[24px] p-6 border border-[#eafe45]/60 bg-[#2b4731] flex flex-col justify-between shadow-2xl">
-                    <div className="space-y-4">
-                      <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-[#eafe45] bg-[#1e3523]">
-                        <img src={member.image} alt={member.name} className="w-full h-full object-cover" />
+              <ScrollReveal key={mIdx} direction="up" delay={mIdx * 100}>
+                <div
+                  className="group [perspective:1000px] h-[460px] cursor-pointer"
+                >
+                  <div className="relative w-full h-full transition-transform duration-700 [transform-style:preserve-3d] group-hover:[transform:rotateY(180deg)] rounded-[24px]">
+                    {/* Front Card */}
+                    <div className="absolute inset-0 [backface-visibility:hidden] rounded-[24px] overflow-hidden border border-[#48614b] bg-[#35503a] shadow-xl group-hover:border-[#eafe45]/60 transition-colors">
+                      <img
+                        src={member.image}
+                        alt={member.name}
+                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                      />
+                      <div className="absolute inset-x-0 bottom-0 p-5 bg-gradient-to-t from-[#1e3523] via-[#1e3523]/80 to-transparent">
+                        <h4 className="text-xl font-bold text-[#eff3df]">{member.name}</h4>
+                        <p className="text-xs text-[#eafe45] font-semibold">{member.experience}</p>
                       </div>
-                      <div>
-                        <h4 className="text-2xl font-bold text-[#eff3df]">{member.name}</h4>
-                        <div className="text-xs text-[#eafe45] font-semibold mt-1">Specialist Experience</div>
-                        <p className="text-sm text-[#b0bca7] mt-1">{member.experience}</p>
-                      </div>
-                      <p className="text-xs text-[#b0bca7] leading-relaxed">
-                        Dedicated practitioner providing evidence-based compassionate therapy, confidential patient guidance, and personalized care strategies.
-                      </p>
                     </div>
 
-                    <div className="space-y-3 pt-4 border-t border-[#48614b]">
-                      <div className="flex items-center gap-2">
-                        <a href={member.facebook} target="_blank" rel="noreferrer" className="w-8 h-8 rounded-full border border-[#48614b] flex items-center justify-center text-[#eff3df] hover:bg-[#eafe45] hover:text-[#1e3523] transition-colors">
-                          <FacebookIcon className="w-3.5 h-3.5" />
-                        </a>
-                        <a href={member.instagram} target="_blank" rel="noreferrer" className="w-8 h-8 rounded-full border border-[#48614b] flex items-center justify-center text-[#eff3df] hover:bg-[#eafe45] hover:text-[#1e3523] transition-colors">
-                          <InstagramIcon className="w-3.5 h-3.5" />
-                        </a>
-                        <a href={member.twitter} target="_blank" rel="noreferrer" className="w-8 h-8 rounded-full border border-[#48614b] flex items-center justify-center text-[#eff3df] hover:bg-[#eafe45] hover:text-[#1e3523] transition-colors">
-                          <TwitterIcon className="w-3.5 h-3.5" />
-                        </a>
-                        <a href={member.linkedin} target="_blank" rel="noreferrer" className="w-8 h-8 rounded-full border border-[#48614b] flex items-center justify-center text-[#eff3df] hover:bg-[#eafe45] hover:text-[#1e3523] transition-colors">
-                          <LinkedinIcon className="w-3.5 h-3.5" />
-                        </a>
+                    {/* Back Card (Flipped) */}
+                    <div className="absolute inset-0 [backface-visibility:hidden] [transform:rotateY(180deg)] rounded-[24px] p-6 border border-[#eafe45]/60 bg-[#2b4731] flex flex-col justify-between shadow-2xl">
+                      <div className="space-y-4">
+                        <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-[#eafe45] bg-[#1e3523]">
+                          <img src={member.image} alt={member.name} className="w-full h-full object-cover" />
+                        </div>
+                        <div>
+                          <h4 className="text-2xl font-bold text-[#eff3df]">{member.name}</h4>
+                          <div className="text-xs text-[#eafe45] font-semibold mt-1">Specialist Experience</div>
+                          <p className="text-sm text-[#b0bca7] mt-1">{member.experience}</p>
+                        </div>
+                        <p className="text-xs text-[#b0bca7] leading-relaxed">
+                          Dedicated practitioner providing evidence-based compassionate therapy, confidential patient guidance, and personalized care strategies.
+                        </p>
                       </div>
 
-                      <button
-                        onClick={() => onOpenBooking()}
-                        className="w-full py-2.5 rounded-full font-bold text-xs text-center cursor-pointer transition-all hover:scale-[1.02]"
-                        style={{ backgroundColor: sunnyYellow, color: '#1e3523' }}
-                      >
-                        Book With {member.name.split(' ')[1] || 'Doctor'}
-                      </button>
+                      <div className="space-y-3 pt-4 border-t border-[#48614b]">
+                        <div className="flex items-center gap-2">
+                          <a href={member.facebook} target="_blank" rel="noreferrer" className="w-8 h-8 rounded-full border border-[#48614b] flex items-center justify-center text-[#eff3df] hover:bg-[#eafe45] hover:text-[#1e3523] transition-colors">
+                            <FacebookIcon className="w-3.5 h-3.5" />
+                          </a>
+                          <a href={member.instagram} target="_blank" rel="noreferrer" className="w-8 h-8 rounded-full border border-[#48614b] flex items-center justify-center text-[#eff3df] hover:bg-[#eafe45] hover:text-[#1e3523] transition-colors">
+                            <InstagramIcon className="w-3.5 h-3.5" />
+                          </a>
+                          <a href={member.twitter} target="_blank" rel="noreferrer" className="w-8 h-8 rounded-full border border-[#48614b] flex items-center justify-center text-[#eff3df] hover:bg-[#eafe45] hover:text-[#1e3523] transition-colors">
+                            <TwitterIcon className="w-3.5 h-3.5" />
+                          </a>
+                          <a href={member.linkedin} target="_blank" rel="noreferrer" className="w-8 h-8 rounded-full border border-[#48614b] flex items-center justify-center text-[#eff3df] hover:bg-[#eafe45] hover:text-[#1e3523] transition-colors">
+                            <LinkedinIcon className="w-3.5 h-3.5" />
+                          </a>
+                        </div>
+
+                        <button
+                          onClick={() => onOpenBooking()}
+                          className="w-full py-2.5 rounded-full font-bold text-xs text-center cursor-pointer transition-all hover:scale-[1.02]"
+                          style={{ backgroundColor: sunnyYellow, color: '#1e3523' }}
+                        >
+                          Book With {member.name.split(' ')[1] || 'Doctor'}
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
+              </ScrollReveal>
             ))}
           </div>
         </div>
@@ -1271,15 +1501,17 @@ export function MentaraTemplate({
       {/* 9. Blog & News Updates Carousel */}
       <section id="blog" className="py-24 sm:py-[132px] bg-[#2b4731] border-t border-[#48614b]/40">
         <div className="max-w-[1240px] mx-auto px-5">
-          <div className="flex flex-col items-center text-center space-y-3 mb-6">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#48614b] bg-[#35503a] text-xs font-semibold uppercase tracking-wider text-[#eafe45]">
-              <img src={starIcon} alt="" className="w-3.5 h-3.5" />
-              <span>Blog &amp; News</span>
+          <ScrollReveal direction="up">
+            <div className="flex flex-col items-center text-center space-y-3 mb-6">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#48614b] bg-[#35503a] text-xs font-semibold uppercase tracking-wider text-[#eafe45]">
+                <img src={starIcon} alt="" className="w-3.5 h-3.5" />
+                <span>Blog &amp; News</span>
+              </div>
+              <h2 className="text-3xl sm:text-5xl font-semibold text-[#eff3df]">
+                Wellness Blog Updates
+              </h2>
             </div>
-            <h2 className="text-3xl sm:text-5xl font-semibold text-[#eff3df]">
-              Wellness Blog Updates
-            </h2>
-          </div>
+          </ScrollReveal>
 
           <div className="mb-12 max-w-4xl mx-auto">
             <img src={vectorLineOne} alt="" className="w-full h-auto object-contain opacity-70" />
@@ -1287,28 +1519,29 @@ export function MentaraTemplate({
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {blogs.map((b, idx) => (
-              <div
-                key={idx}
-                className="group p-5 rounded-[24px] border border-[#48614b] bg-[#35503a] flex flex-col justify-between hover:border-[#eafe45]/70 hover:-translate-y-2 hover:shadow-2xl transition-all duration-300"
-              >
-                <div className="space-y-4">
-                  <div className="rounded-[18px] overflow-hidden aspect-[16/10] bg-[#1e3523]">
-                    <img src={b.image} alt={b.title} className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105" />
+              <ScrollReveal key={idx} direction="up" delay={idx * 120}>
+                <div
+                  className="group p-5 rounded-[24px] border border-[#48614b] bg-[#35503a] flex flex-col justify-between hover:border-[#eafe45]/70 hover:-translate-y-2 hover:shadow-2xl transition-all duration-300 h-full"
+                >
+                  <div className="space-y-4">
+                    <div className="rounded-[18px] overflow-hidden aspect-[16/10] bg-[#1e3523]">
+                      <img src={b.image} alt={b.title} className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105" />
+                    </div>
+                    <h3 className="text-xl font-medium text-[#eff3df] group-hover:text-[#eafe45] transition-colors">{b.title}</h3>
+                    <p className="text-xs text-[#b0bca7] leading-relaxed line-clamp-2">{b.desc}</p>
                   </div>
-                  <h3 className="text-xl font-medium text-[#eff3df] group-hover:text-[#eafe45] transition-colors">{b.title}</h3>
-                  <p className="text-xs text-[#b0bca7] leading-relaxed line-clamp-2">{b.desc}</p>
-                </div>
 
-                <div className="pt-5 border-t border-[#48614b]/60 flex items-center justify-between">
-                  <a
-                    href="#blog"
-                    className="inline-flex items-center gap-2 text-xs font-bold text-[#eafe45] group-hover:underline"
-                  >
-                    <span>Read Article</span>
-                    <ArrowUpRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-                  </a>
+                  <div className="pt-5 border-t border-[#48614b]/60 flex items-center justify-between mt-4">
+                    <a
+                      href="#blog"
+                      className="inline-flex items-center gap-2 text-xs font-bold text-[#eafe45] group-hover:underline"
+                    >
+                      <span>Read Article</span>
+                      <ArrowUpRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                    </a>
+                  </div>
                 </div>
-              </div>
+              </ScrollReveal>
             ))}
           </div>
         </div>
@@ -1318,45 +1551,47 @@ export function MentaraTemplate({
       {config.showPricing !== false && (
         <section id="pricing" className="py-24 sm:py-[132px] border-t border-[#48614b]/40">
           <div className="max-w-[1240px] mx-auto px-5 text-center space-y-12">
-            <div className="max-w-2xl mx-auto space-y-3">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#48614b] bg-[#2b4731] text-xs font-semibold uppercase tracking-wider text-[#eafe45]">
-                <Zap className="w-3.5 h-3.5" />
-                <span>Transparent Plans</span>
-              </div>
-              <h2 className="text-3xl sm:text-5xl font-semibold text-[#eff3df]">
-                {config.pricingTitle || 'Simple, Flexible Pricing Plans'}
-              </h2>
-              <p className="text-base text-[#b0bca7] leading-relaxed">
-                {config.pricingSubtitle ||
-                  'Choose the level of engagement that fits your personal journey. Upgrade, reschedule, or cancel anytime.'}
-              </p>
+            <ScrollReveal direction="up">
+              <div className="max-w-2xl mx-auto space-y-3">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#48614b] bg-[#2b4731] text-xs font-semibold uppercase tracking-wider text-[#eafe45]">
+                  <Zap className="w-3.5 h-3.5" />
+                  <span>Transparent Plans</span>
+                </div>
+                <h2 className="text-3xl sm:text-5xl font-semibold text-[#eff3df]">
+                  {config.pricingTitle || 'Simple, Flexible Pricing Plans'}
+                </h2>
+                <p className="text-base text-[#b0bca7] leading-relaxed">
+                  {config.pricingSubtitle ||
+                    'Choose the level of engagement that fits your personal journey. Upgrade, reschedule, or cancel anytime.'}
+                </p>
 
-              {/* Monthly vs Annual Toggle */}
-              <div className="pt-4 flex items-center justify-center gap-3">
-                <span className={`text-sm font-semibold ${!isAnnualBilling ? 'text-[#eff3df]' : 'text-[#b0bca7]'}`}>
-                  Per Session / Monthly
-                </span>
-                <button
-                  type="button"
-                  onClick={() => setIsAnnualBilling(!isAnnualBilling)}
-                  className="w-12 h-6 rounded-full p-1 transition-colors relative flex items-center cursor-pointer"
-                  style={{ backgroundColor: isAnnualBilling ? sunnyYellow : '#35503a' }}
-                  aria-label="Toggle annual billing"
-                >
-                  <div
-                    className={`w-4 h-4 rounded-full bg-[#1e3523] transition-transform ${
-                      isAnnualBilling ? 'translate-x-6' : 'translate-x-0'
-                    }`}
-                  />
-                </button>
-                <span className={`text-sm font-semibold flex items-center gap-1.5 ${isAnnualBilling ? 'text-[#eff3df]' : 'text-[#b0bca7]'}`}>
-                  Quarterly / Annual
-                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#eafe45] text-[#1e3523]">
-                    Save 20%
+                {/* Monthly vs Annual Toggle */}
+                <div className="pt-4 flex items-center justify-center gap-3">
+                  <span className={`text-sm font-semibold ${!isAnnualBilling ? 'text-[#eff3df]' : 'text-[#b0bca7]'}`}>
+                    Per Session / Monthly
                   </span>
-                </span>
+                  <button
+                    type="button"
+                    onClick={() => setIsAnnualBilling(!isAnnualBilling)}
+                    className="w-12 h-6 rounded-full p-1 transition-colors relative flex items-center cursor-pointer"
+                    style={{ backgroundColor: isAnnualBilling ? sunnyYellow : '#35503a' }}
+                    aria-label="Toggle annual billing"
+                  >
+                    <div
+                      className={`w-4 h-4 rounded-full bg-[#1e3523] transition-transform ${
+                        isAnnualBilling ? 'translate-x-6' : 'translate-x-0'
+                      }`}
+                    />
+                  </button>
+                  <span className={`text-sm font-semibold flex items-center gap-1.5 ${isAnnualBilling ? 'text-[#eff3df]' : 'text-[#b0bca7]'}`}>
+                    Quarterly / Annual
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#eafe45] text-[#1e3523]">
+                      Save 20%
+                    </span>
+                  </span>
+                </div>
               </div>
-            </div>
+            </ScrollReveal>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch text-left">
               {(config.pricingPlans && config.pricingPlans.length > 0 ? config.pricingPlans : [
@@ -1414,60 +1649,61 @@ export function MentaraTemplate({
                 const finalPrice = isAnnualBilling ? Math.round(priceNum * 0.8) : priceNum;
 
                 return (
-                  <div
-                    key={plan.id || pIdx}
-                    className={`rounded-[28px] p-8 flex flex-col justify-between transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl relative ${
-                      isHighlight
-                        ? 'border-2 border-[#eafe45] bg-[#35503a] shadow-2xl scale-102'
-                        : 'border border-[#48614b] bg-[#2b4731]'
-                    }`}
-                  >
-                    {isHighlight && (
-                      <div className="absolute -top-3.5 right-6 px-3 py-1 rounded-full text-xs font-bold bg-[#eafe45] text-[#1e3523] uppercase tracking-wider shadow-md">
-                        {plan.badge || 'Most Popular'}
-                      </div>
-                    )}
+                  <ScrollReveal key={plan.id || pIdx} direction="up" delay={pIdx * 120}>
+                    <div
+                      className={`rounded-[28px] p-8 flex flex-col justify-between transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl relative h-full ${
+                        isHighlight
+                          ? 'border-2 border-[#eafe45] bg-[#35503a] shadow-2xl scale-102'
+                          : 'border border-[#48614b] bg-[#2b4731]'
+                      }`}
+                    >
+                      {isHighlight && (
+                        <div className="absolute -top-3.5 right-6 px-3 py-1 rounded-full text-xs font-bold bg-[#eafe45] text-[#1e3523] uppercase tracking-wider shadow-md">
+                          {plan.badge || 'Most Popular'}
+                        </div>
+                      )}
 
-                    <div className="space-y-6">
-                      <div>
-                        <h3 className="text-xl font-bold text-[#eff3df]">{plan.name}</h3>
-                        <p className="text-xs text-[#b0bca7] mt-1">{plan.description}</p>
+                      <div className="space-y-6">
+                        <div>
+                          <h3 className="text-xl font-bold text-[#eff3df]">{plan.name}</h3>
+                          <p className="text-xs text-[#b0bca7] mt-1">{plan.description}</p>
+                        </div>
+
+                        <div className="flex items-baseline gap-2">
+                          <span className="text-4xl sm:text-5xl font-extrabold text-[#eff3df]">
+                            ${finalPrice}
+                          </span>
+                          <span className="text-sm font-semibold text-[#b0bca7]">
+                            {plan.period || '/ month'}
+                          </span>
+                        </div>
+
+                        <ul className="space-y-3 pt-4 border-t border-[#48614b]">
+                          {(plan.features || []).map((feat, fIdx) => (
+                            <li key={fIdx} className="flex items-center gap-3 text-sm text-[#eff3df]">
+                              <div className="w-5 h-5 rounded-full bg-[#1e3523] flex items-center justify-center shrink-0">
+                                <Check className="w-3.5 h-3.5 text-[#eafe45]" />
+                              </div>
+                              <span>{feat}</span>
+                            </li>
+                          ))}
+                        </ul>
                       </div>
 
-                      <div className="flex items-baseline gap-2">
-                        <span className="text-4xl sm:text-5xl font-extrabold text-[#eff3df]">
-                          ${finalPrice}
-                        </span>
-                        <span className="text-sm font-semibold text-[#b0bca7]">
-                          {plan.period || '/ month'}
-                        </span>
+                      <div className="pt-8 mt-4">
+                        <button
+                          onClick={() => onOpenBooking()}
+                          className="w-full py-3.5 rounded-full font-bold text-sm text-center transition-all duration-300 cursor-pointer shadow-md hover:scale-[1.02]"
+                          style={{
+                            backgroundColor: isHighlight ? sunnyYellow : '#eff3df',
+                            color: '#1e3523',
+                          }}
+                        >
+                          {plan.ctaText || 'Get Started'}
+                        </button>
                       </div>
-
-                      <ul className="space-y-3 pt-4 border-t border-[#48614b]">
-                        {(plan.features || []).map((feat, fIdx) => (
-                          <li key={fIdx} className="flex items-center gap-3 text-sm text-[#eff3df]">
-                            <div className="w-5 h-5 rounded-full bg-[#1e3523] flex items-center justify-center shrink-0">
-                              <Check className="w-3.5 h-3.5 text-[#eafe45]" />
-                            </div>
-                            <span>{feat}</span>
-                          </li>
-                        ))}
-                      </ul>
                     </div>
-
-                    <div className="pt-8">
-                      <button
-                        onClick={() => onOpenBooking()}
-                        className="w-full py-3.5 rounded-full font-bold text-sm text-center transition-all duration-300 cursor-pointer shadow-md hover:scale-[1.02]"
-                        style={{
-                          backgroundColor: isHighlight ? sunnyYellow : '#eff3df',
-                          color: '#1e3523',
-                        }}
-                      >
-                        {plan.ctaText || 'Get Started'}
-                      </button>
-                    </div>
-                  </div>
+                  </ScrollReveal>
                 );
               })}
             </div>
@@ -1478,62 +1714,64 @@ export function MentaraTemplate({
       {/* 11. High-Impact CTA Section ("Book Your Mental Health Session!") */}
       <section className="py-20 sm:py-[120px]">
         <div className="max-w-[1240px] mx-auto px-5">
-          <div
-            className="rounded-[28px] overflow-hidden p-8 sm:p-14 lg:p-16 border border-[#48614b] shadow-2xl relative"
-            style={{
-              backgroundImage:
-                'url(https://cdn.prod.website-files.com/6825c2925e24e79e2bf4a9ed/682ab86c54dca6d6afb46a63_CTA%20BG.png)',
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-            }}
-          >
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
-              {/* Left Content */}
-              <div className="lg:col-span-7 space-y-8 text-left">
-                <div className="space-y-3">
-                  <h2 className="text-3xl sm:text-5xl lg:text-6xl font-semibold text-[#eff3df] leading-tight">
-                    {config.ctaHeadline || 'Book Your Mental Health Session!'}
-                  </h2>
-                  <p className="text-base sm:text-lg text-[#b0bca7]">
-                    {config.ctaSubheadline ||
-                      'Take the first step towards emotional resilience and well-being. Our licensed therapists are ready to support you.'}
-                  </p>
-                </div>
-
-                {/* 99% Mental Check-up Card */}
-                <div className="inline-flex flex-col sm:flex-row items-center gap-4 p-4 rounded-[20px] border border-[#48614b] bg-[#35503a] shadow-lg">
-                  <img
-                    src="https://cdn.prod.website-files.com/6825c2925e24e79e2bf4a9ed/682ac2ca5a97800b4ae09cdf_CTA%20Card%20Image.png"
-                    alt=""
-                    className="w-14 h-14 rounded-xl object-cover"
-                  />
-                  <div>
-                    <div className="text-lg font-bold text-[#eff3df]">99% Mental Check-up!</div>
-                    <div className="text-xs text-[#b0bca7]">Verified confidential scheduling</div>
+          <ScrollReveal direction="up">
+            <div
+              className="rounded-[28px] overflow-hidden p-8 sm:p-14 lg:p-16 border border-[#48614b] shadow-2xl relative"
+              style={{
+                backgroundImage:
+                  'url(https://cdn.prod.website-files.com/6825c2925e24e79e2bf4a9ed/682ab86c54dca6d6afb46a63_CTA%20BG.png)',
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+              }}
+            >
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+                {/* Left Content */}
+                <div className="lg:col-span-7 space-y-8 text-left">
+                  <div className="space-y-3">
+                    <h2 className="text-3xl sm:text-5xl lg:text-6xl font-semibold text-[#eff3df] leading-tight">
+                      {config.ctaHeadline || 'Book Your Mental Health Session!'}
+                    </h2>
+                    <p className="text-base sm:text-lg text-[#b0bca7]">
+                      {config.ctaSubheadline ||
+                        'Take the first step towards emotional resilience and well-being. Our licensed therapists are ready to support you.'}
+                    </p>
                   </div>
-                  <RollupButton
-                    label="Appointment!"
-                    onClick={() => onOpenBooking()}
-                    bgColor={sunnyYellow}
-                    textColor="#1e3523"
-                    iconBgColor="#1e3523"
-                    iconColor={sunnyYellow}
-                    size="sm"
-                    className="sm:ml-auto"
+
+                  {/* 99% Mental Check-up Card */}
+                  <div className="inline-flex flex-col sm:flex-row items-center gap-4 p-4 rounded-[20px] border border-[#48614b] bg-[#35503a] shadow-lg">
+                    <img
+                      src="https://cdn.prod.website-files.com/6825c2925e24e79e2bf4a9ed/682ac2ca5a97800b4ae09cdf_CTA%20Card%20Image.png"
+                      alt=""
+                      className="w-14 h-14 rounded-xl object-cover"
+                    />
+                    <div>
+                      <div className="text-lg font-bold text-[#eff3df]">99% Mental Check-up!</div>
+                      <div className="text-xs text-[#b0bca7]">Verified confidential scheduling</div>
+                    </div>
+                    <RollupButton
+                      label="Appointment!"
+                      onClick={() => onOpenBooking()}
+                      bgColor={sunnyYellow}
+                      textColor="#1e3523"
+                      iconBgColor="#1e3523"
+                      iconColor={sunnyYellow}
+                      size="sm"
+                      className="sm:ml-auto"
+                    />
+                  </div>
+                </div>
+
+                {/* Right Cutout Image */}
+                <div className="lg:col-span-5 flex justify-center lg:justify-end">
+                  <img
+                    src="https://cdn.prod.website-files.com/6825c2925e24e79e2bf4a9ed/682ab89babff5ba0661f06d5_CTA%20Main%20Image.png"
+                    alt="Doctor"
+                    className="max-h-[360px] sm:max-h-[460px] w-auto object-contain drop-shadow-2xl"
                   />
                 </div>
-              </div>
-
-              {/* Right Cutout Image */}
-              <div className="lg:col-span-5 flex justify-center lg:justify-end">
-                <img
-                  src="https://cdn.prod.website-files.com/6825c2925e24e79e2bf4a9ed/682ab89babff5ba0661f06d5_CTA%20Main%20Image.png"
-                  alt="Doctor"
-                  className="max-h-[360px] sm:max-h-[460px] w-auto object-contain drop-shadow-2xl"
-                />
               </div>
             </div>
-          </div>
+          </ScrollReveal>
         </div>
       </section>
 
@@ -1543,36 +1781,38 @@ export function MentaraTemplate({
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start">
             {/* Left: Headline & Video Thumbnail */}
             <div className="lg:col-span-5 space-y-6">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#48614b] bg-[#35503a] text-xs font-semibold uppercase tracking-wider text-[#eafe45]">
-                <img src={starIcon} alt="" className="w-3.5 h-3.5" />
-                <span>FAQ’s</span>
-              </div>
+              <ScrollReveal direction="right" delay={100}>
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#48614b] bg-[#35503a] text-xs font-semibold uppercase tracking-wider text-[#eafe45] mb-3">
+                  <img src={starIcon} alt="" className="w-3.5 h-3.5" />
+                  <span>FAQ’s</span>
+                </div>
 
-              <h2 className="text-3xl sm:text-5xl font-semibold text-[#eff3df] leading-tight">
-                Frequently Asked Questions?
-              </h2>
+                <h2 className="text-3xl sm:text-5xl font-semibold text-[#eff3df] leading-tight mb-4">
+                  Frequently Asked Questions?
+                </h2>
 
-              <p className="text-sm text-[#b0bca7]">
-                Watch our short orientation video to discover our mental wellness approach and answers to common patient questions.
-              </p>
+                <p className="text-sm text-[#b0bca7] mb-6">
+                  Watch our short orientation video to discover our mental wellness approach and answers to common patient questions.
+                </p>
 
-              {/* Video Lightbox Play Trigger */}
-              <div
-                onClick={() => setIsVideoOpen(true)}
-                className="relative rounded-[20px] overflow-hidden aspect-[16/9] border border-[#48614b] group cursor-pointer shadow-xl hover:border-[#eafe45]/60 transition-all duration-300"
-                style={{
-                  backgroundImage:
-                    'url(https://cdn.prod.website-files.com/6825c2925e24e79e2bf4a9ed/682d75fdaec86986603c7ea1_Video%20Image.png)',
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center',
-                }}
-              >
-                <div className="absolute inset-0 bg-[#1e3523]/30 group-hover:bg-[#1e3523]/10 transition-colors flex items-center justify-center">
-                  <div className="w-14 h-14 rounded-full bg-[#eff3df]/40 backdrop-blur-md border border-[#eff3df]/40 flex items-center justify-center group-hover:scale-110 transition-transform">
-                    <Play className="w-6 h-6 fill-[#eafe45] text-[#eafe45] ml-0.5" />
+                {/* Video Lightbox Play Trigger */}
+                <div
+                  onClick={() => setIsVideoOpen(true)}
+                  className="relative rounded-[20px] overflow-hidden aspect-[16/9] border border-[#48614b] group cursor-pointer shadow-xl hover:border-[#eafe45]/60 transition-all duration-300"
+                  style={{
+                    backgroundImage:
+                      'url(https://cdn.prod.website-files.com/6825c2925e24e79e2bf4a9ed/682d75fdaec86986603c7ea1_Video%20Image.png)',
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                  }}
+                >
+                  <div className="absolute inset-0 bg-[#1e3523]/30 group-hover:bg-[#1e3523]/10 transition-colors flex items-center justify-center">
+                    <div className="w-14 h-14 rounded-full bg-[#eff3df]/40 backdrop-blur-md border border-[#eff3df]/40 flex items-center justify-center group-hover:scale-110 transition-transform">
+                      <Play className="w-6 h-6 fill-[#eafe45] text-[#eafe45] ml-0.5" />
+                    </div>
                   </div>
                 </div>
-              </div>
+              </ScrollReveal>
             </div>
 
             {/* Right: Accordion Items with Rotating + / - */}
@@ -1580,32 +1820,33 @@ export function MentaraTemplate({
               {faqs.map((faq, fIdx) => {
                 const isOpen = activeFaq === fIdx;
                 return (
-                  <div
-                    key={faq.id || fIdx}
-                    className="border-b border-[#48614b] pb-5 transition-all"
-                  >
-                    <button
-                      onClick={() => setActiveFaq(isOpen ? null : fIdx)}
-                      className="w-full flex items-center justify-between text-left gap-4 py-2 cursor-pointer group"
+                  <ScrollReveal key={faq.id || fIdx} direction="left" delay={fIdx * 70}>
+                    <div
+                      className="border-b border-[#48614b] pb-5 transition-all"
                     >
-                      <h3 className="text-lg sm:text-xl font-medium text-[#eff3df] group-hover:text-[#eafe45] transition-colors">
-                        {faq.question}
-                      </h3>
-                      <div className="w-8 h-8 rounded-full border border-[#48614b] bg-[#1e3523] flex items-center justify-center shrink-0">
-                        <div
-                          className={`w-3.5 h-0.5 bg-[#eafe45] transition-transform duration-300 ${
-                            isOpen ? 'rotate-180' : 'rotate-0'
-                          }`}
-                        />
-                      </div>
-                    </button>
+                      <button
+                        onClick={() => setActiveFaq(isOpen ? null : fIdx)}
+                        className="w-full flex items-center justify-between text-left gap-4 py-2 cursor-pointer group"
+                      >
+                        <h3 className="text-lg sm:text-xl font-medium text-[#eff3df] group-hover:text-[#eafe45] transition-colors">
+                          {faq.question}
+                        </h3>
+                        <div className="w-8 h-8 rounded-full border border-[#48614b] bg-[#1e3523] flex items-center justify-center shrink-0">
+                          <div
+                            className={`w-3.5 h-0.5 bg-[#eafe45] transition-transform duration-300 ${
+                              isOpen ? 'rotate-180' : 'rotate-0'
+                            }`}
+                          />
+                        </div>
+                      </button>
 
-                    {isOpen && (
-                      <div className="pt-2 pb-1 text-sm sm:text-base text-[#b0bca7] leading-relaxed animate-in fade-in duration-200">
-                        {faq.answer}
-                      </div>
-                    )}
-                  </div>
+                      {isOpen && (
+                        <div className="pt-2 pb-1 text-sm sm:text-base text-[#b0bca7] leading-relaxed animate-in fade-in duration-200">
+                          {faq.answer}
+                        </div>
+                      )}
+                    </div>
+                  </ScrollReveal>
                 );
               })}
             </div>
@@ -1616,28 +1857,30 @@ export function MentaraTemplate({
       {/* 13. AI Concierge Knowledge Base Section */}
       <section className="py-20 sm:py-[120px] border-t border-[#48614b]/40 bg-[#1e3523]">
         <div className="max-w-[1240px] mx-auto px-5">
-          <div className="rounded-[28px] border border-[#eafe45]/40 bg-[#2b4731] p-8 sm:p-12 flex flex-col md:flex-row items-center justify-between gap-8 shadow-xl">
-            <div className="space-y-3 text-center md:text-left">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#1e3523] border border-[#eafe45]/40 text-xs font-semibold text-[#eafe45]">
-                <Bot className="w-3.5 h-3.5" />
-                <span>Grounded AI Knowledge Base</span>
+          <ScrollReveal direction="up">
+            <div className="rounded-[28px] border border-[#eafe45]/40 bg-[#2b4731] p-8 sm:p-12 flex flex-col md:flex-row items-center justify-between gap-8 shadow-xl">
+              <div className="space-y-3 text-center md:text-left">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#1e3523] border border-[#eafe45]/40 text-xs font-semibold text-[#eafe45]">
+                  <Bot className="w-3.5 h-3.5" />
+                  <span>Grounded AI Knowledge Base</span>
+                </div>
+                <h3 className="text-2xl sm:text-3xl font-bold text-[#eff3df]">
+                  Have Questions Right Now? Ask Our 24/7 AI Concierge
+                </h3>
+                <p className="text-sm text-[#b0bca7] max-w-xl">
+                  Trained directly on our therapy methodologies, practitioner credentials, and booking policies to provide instant, confidential answers.
+                </p>
               </div>
-              <h3 className="text-2xl sm:text-3xl font-bold text-[#eff3df]">
-                Have Questions Right Now? Ask Our 24/7 AI Concierge
-              </h3>
-              <p className="text-sm text-[#b0bca7] max-w-xl">
-                Trained directly on our therapy methodologies, practitioner credentials, and booking policies to provide instant, confidential answers.
-              </p>
+              <button
+                onClick={() => onOpenChat()}
+                className="px-8 py-4 rounded-full font-bold text-sm shadow-xl hover:scale-105 transition-all duration-300 flex items-center gap-2.5 shrink-0 cursor-pointer"
+                style={{ backgroundColor: sunnyYellow, color: '#1e3523' }}
+              >
+                <MessageSquare className="w-4 h-4 text-[#1e3523]" />
+                <span>Start Live Chat</span>
+              </button>
             </div>
-            <button
-              onClick={() => onOpenChat()}
-              className="px-8 py-4 rounded-full font-bold text-sm shadow-xl hover:scale-105 transition-all duration-300 flex items-center gap-2.5 shrink-0 cursor-pointer"
-              style={{ backgroundColor: sunnyYellow, color: '#1e3523' }}
-            >
-              <MessageSquare className="w-4 h-4 text-[#1e3523]" />
-              <span>Start Live Chat</span>
-            </button>
-          </div>
+          </ScrollReveal>
         </div>
       </section>
 
