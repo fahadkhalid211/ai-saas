@@ -3,7 +3,7 @@ import { SITE } from '@/components/marketing/content';
 import { PUBLISHED_POSTS } from '@/lib/blog/posts';
 
 /** Bump this when the marketing pages change in a way worth re-crawling. */
-const SITE_UPDATED = '2026-09-25';
+const SITE_UPDATED = '2026-10-07';
 
 /** Every public page that should be in search results. Sign-in and private areas are left out on purpose. */
 const PAGES: { path: string; priority: number; changeFrequency: 'weekly' | 'monthly' | 'yearly' }[] = [
