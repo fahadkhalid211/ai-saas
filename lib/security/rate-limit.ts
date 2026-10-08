@@ -77,10 +77,13 @@ function hasTrustedProxy(): boolean {
 }
 
 export function getClientIp(req: Request): string {
-  // Cloudflare's edge always overwrites this header itself, so it is safe to
-  // trust whenever the request actually came through Cloudflare.
-  const cfIp = req.headers.get('cf-connecting-ip');
-  if (cfIp && cfIp.trim()) return cfIp.trim();
+  // Cloudflare overwrites this header at its edge, but only if Cloudflare is actually in front of the app. Anywhere else
+  // (Vercel directly, for example) the caller can set it to anything and would get a fresh rate-limit bucket per request,
+  // so it is read only when the deployment says Cloudflare is in front (TRUST_CLOUDFLARE=true).
+  if (process.env.TRUST_CLOUDFLARE === 'true') {
+    const cfIp = req.headers.get('cf-connecting-ip');
+    if (cfIp && cfIp.trim()) return cfIp.trim();
+  }
 
   if (hasTrustedProxy()) {
     const forwarded = req.headers.get('x-forwarded-for');

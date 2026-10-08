@@ -1943,7 +1943,7 @@
           var imgHtml = p.image ? ('<img src="' + escapeHtml(p.image) + '" class="crescelo-product-thumb" alt="' + escapeHtml(p.title || '') + '" />') : '';
           var priceHtml = p.price ? ('<span class="crescelo-product-price">' + escapeHtml(p.price) + '</span>') : '';
           var stockHtml = p.stock ? ('<span class="crescelo-product-stock in-stock">' + escapeHtml(p.stock) + '</span>') : '';
-          var titleHtml = p.url ? ('<a href="' + escapeHtml(p.url) + '" target="_blank" rel="noopener noreferrer" class="crescelo-product-title">' + escapeHtml(p.title || 'View Product') + ' &#8599;</a>') : ('<span class="crescelo-product-title">' + escapeHtml(p.title || '') + '</span>');
+          var titleHtml = (p.url && /^(https?:\/\/|\/)/i.test(String(p.url).trim())) ? ('<a href="' + escapeHtml(String(p.url).trim()) + '" target="_blank" rel="noopener noreferrer" class="crescelo-product-title">' + escapeHtml(p.title || 'View Product') + ' &#8599;</a>') : ('<span class="crescelo-product-title">' + escapeHtml(p.title || '') + '</span>');
 
           return '<div class="crescelo-product-card" data-product-id="' + escapeHtml(String(p.id || '')) + '">' +
             imgHtml +
@@ -2288,7 +2288,7 @@
 
       if (config.bookingProvider === 'calendly' || config.bookingProvider === 'cal_com') {
         var isCalCom = config.bookingProvider === 'cal_com';
-        var calUrl = config.bookingUrl || (isCalCom ? 'https://cal.com' : 'https://calendly.com');
+        var calUrl = /^https?:\/\//i.test(String(config.bookingUrl || '').trim()) ? String(config.bookingUrl).trim() : (isCalCom ? 'https://cal.com' : 'https://calendly.com'); // never a javascript: or data: link
         var providerName = isCalCom ? 'Cal.com' : 'Calendly';
         card.innerHTML = `
           <div class="booking-header">

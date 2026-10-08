@@ -21,9 +21,21 @@ export const metadata: Metadata = withSocial(
   '/blog'
 );
 
+/** Every article grouped by topic, as plain links. The hub above pages through articles in the browser, so without this
+ *  only the first page of posts has a link a crawler can follow. */
+function groupByTopic(posts: ReturnType<typeof sortedPosts>) {
+  const groups = new Map<string, typeof posts>();
+  for (const p of posts) {
+    const key = p.clusterName || 'More guides';
+    groups.set(key, [...(groups.get(key) || []), p]);
+  }
+  return [...groups.entries()].sort((a, b) => b[1].length - a[1].length);
+}
+
 export default function BlogIndexPage() {
   const posts = sortedPosts();
   const clusters = getClusters();
+  const topics = groupByTopic(posts);
 
   return (
     <>
@@ -48,6 +60,26 @@ export default function BlogIndexPage() {
               align="center"
             />
             <BlogGlossaryHub posts={posts} clusters={clusters} />
+
+            <nav aria-labelledby="all-articles" style={{ marginTop: '4rem' }}>
+              <h2 id="all-articles" className="mk-h3" style={{ marginBottom: '1.5rem' }}>
+                All {posts.length} articles by topic
+              </h2>
+              {topics.map(([topic, list]) => (
+                <section key={topic} style={{ marginBottom: '2rem' }}>
+                  <h3 style={{ fontWeight: 700, marginBottom: '0.5rem' }}>
+                    {topic} <span style={{ fontWeight: 400, color: 'var(--mk-muted)' }}>({list.length})</span>
+                  </h3>
+                  <ul style={{ columns: '18rem', columnGap: '2rem', margin: 0, paddingLeft: '1.1rem', lineHeight: 1.7 }}>
+                    {list.map((p) => (
+                      <li key={p.slug} style={{ breakInside: 'avoid', listStyle: 'disc' }}>
+                        <a href={`/blog/${p.slug}`} style={{ textDecoration: 'underline' }}>{p.title}</a>
+                      </li>
+                    ))}
+                  </ul>
+                </section>
+              ))}
+            </nav>
           </div>
         </section>
       </main>

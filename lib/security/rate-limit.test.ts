@@ -2,11 +2,19 @@ import { describe, it, expect } from 'vitest';
 import { checkRateLimit, enforceRateLimit, getClientIp } from './rate-limit';
 
 describe('Rate Limiting Module', () => {
-  it('should trust cf-connecting-ip unconditionally (Cloudflare overwrites it at the edge)', () => {
-    const req = new Request('http://localhost', {
-      headers: { 'cf-connecting-ip': '203.0.113.195', 'x-forwarded-for': '9.9.9.9' },
-    });
-    expect(getClientIp(req)).toBe('203.0.113.195');
+  it('trusts cf-connecting-ip only when the deployment says Cloudflare is in front (TRUST_CLOUDFLARE)', () => {
+    const req = () => new Request('http://localhost', { headers: { 'cf-connecting-ip': '203.0.113.195', 'x-forwarded-for': '9.9.9.9' } });
+    const original = process.env.TRUST_CLOUDFLARE;
+    try {
+      // anywhere else the caller can send any value, which would give every request its own rate-limit bucket
+      delete process.env.TRUST_CLOUDFLARE;
+      expect(getClientIp(req())).toBe('untrusted-direct-client');
+      process.env.TRUST_CLOUDFLARE = 'true';
+      expect(getClientIp(req())).toBe('203.0.113.195');
+    } finally {
+      if (original === undefined) delete process.env.TRUST_CLOUDFLARE;
+      else process.env.TRUST_CLOUDFLARE = original;
+    }
   });
 
   it('should ignore spoofable x-forwarded-for/x-real-ip when no trusted proxy is configured', () => {

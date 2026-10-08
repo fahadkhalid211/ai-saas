@@ -13,6 +13,7 @@ import {
 } from '@/lib/connectors/verify';
 import { logged } from '@/lib/logging/route';
 import { sanitizeCostCap } from '@/lib/ai/spend/guard';
+import { validateUrl } from '@/lib/security/validation';
 
 const GETHandler = withAdminAuth(async (
   req: Request,
@@ -63,6 +64,15 @@ const PUTHandler = withRoleAuth(['owner', 'admin'], async (
       updatedAt: _forbiddenUpdatedAt,
       ...safeUpdates
     } = body;
+
+    // Links the widget and hosted pages render must be web addresses: a javascript: or data: link would run in a visitor's browser.
+    for (const field of ['bookingUrl', 'customBrandingUrl'] as const) {
+      if (safeUpdates[field] !== undefined && safeUpdates[field] !== null) {
+        const urlCheck = validateUrl(safeUpdates[field], true, field === 'bookingUrl' ? 'Booking link' : 'Branding link');
+        if (!urlCheck.valid) return NextResponse.json({ error: urlCheck.error }, { status: 400 });
+        safeUpdates[field] = urlCheck.value;
+      }
+    }
 
     // Monthly cost cap on the customer's own AI key
     if (safeUpdates.costCap !== undefined) {
