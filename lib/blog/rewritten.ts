@@ -61,6 +61,7 @@ import { AI_RECRUITMENT_POSTS } from './rewritten/ai-recruitment-screening';
 import { AI_RECRUITMENT_BATCH2_POSTS } from './rewritten/ai-recruitment-screening-batch2';
 import { AI_RECRUITMENT_BATCH3_POSTS } from './rewritten/ai-recruitment-screening-batch3';
 import { AI_RECRUITMENT_BATCH4_POSTS } from './rewritten/ai-recruitment-screening-batch4';
+import { HOW_TO_BUILD_CHATBOT_POST } from './rewritten/how-to-build-and-train-website-chatbot';
 
 /** Articles written for readers. They replace the templated placeholder with the same address and are listed in search. */
 export const REWRITTEN_POSTS: BlogPost[] = [...BATCH1, ...BATCH2, ...BATCH3, ...BATCH4, ...BATCH5, ...BATCH6, ...BATCH7, ...BATCH8, ...BATCH9, ...BATCH10, ...BATCH11, ...BATCH12,
@@ -115,4 +116,5 @@ export const REWRITTEN_POSTS: BlogPost[] = [...BATCH1, ...BATCH2, ...BATCH3, ...
   ...AI_RECRUITMENT_BATCH2_POSTS,
   ...AI_RECRUITMENT_BATCH3_POSTS,
   ...AI_RECRUITMENT_BATCH4_POSTS,
+  HOW_TO_BUILD_CHATBOT_POST,
 ];

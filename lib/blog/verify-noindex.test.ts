@@ -6,8 +6,8 @@ describe('verify noindex status for all articles', () => {
   it('has zero thin articles', () => {
     const thinArticles = BLOG_POSTS.filter((p) => p.thin);
     expect(thinArticles.length).toBe(0);
-    expect(BLOG_POSTS.length).toBe(274);
-    expect(PUBLISHED_POSTS.length).toBe(274);
+    expect(BLOG_POSTS.length).toBe(275);
+    expect(PUBLISHED_POSTS.length).toBe(275);
   });
 
   for (const post of BLOG_POSTS) {
