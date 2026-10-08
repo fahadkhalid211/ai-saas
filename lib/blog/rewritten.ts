@@ -58,6 +58,7 @@ import { MICRO_NICHE_POSTS } from './rewritten/micro-niches';
 import { CITY_NICHE_POSTS } from './rewritten/city-niches';
 import { CITY_NICHE_BATCH2_POSTS } from './rewritten/city-niches-batch2';
 import { AI_RECRUITMENT_POSTS } from './rewritten/ai-recruitment-screening';
+import { AI_RECRUITMENT_BATCH2_POSTS } from './rewritten/ai-recruitment-screening-batch2';
 
 /** Articles written for readers. They replace the templated placeholder with the same address and are listed in search. */
 export const REWRITTEN_POSTS: BlogPost[] = [...BATCH1, ...BATCH2, ...BATCH3, ...BATCH4, ...BATCH5, ...BATCH6, ...BATCH7, ...BATCH8, ...BATCH9, ...BATCH10, ...BATCH11, ...BATCH12,
@@ -109,4 +110,5 @@ export const REWRITTEN_POSTS: BlogPost[] = [...BATCH1, ...BATCH2, ...BATCH3, ...
   ...CITY_NICHE_POSTS,
   ...CITY_NICHE_BATCH2_POSTS,
   ...AI_RECRUITMENT_POSTS,
+  ...AI_RECRUITMENT_BATCH2_POSTS,
 ];
