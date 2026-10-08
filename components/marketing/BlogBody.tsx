@@ -6,6 +6,7 @@ const LINK = /\[([^\]]+)\]\((https?:\/\/[^)\s]+|\/[^)\s]*)\)/g;
 
 /** Turns "[label](/path)" or "[label](https://site)" into links, and "**bold**" into <strong>, splitting newlines with <br />. */
 export function inline(text: string): ReactNode[] {
+  if (!text) return [];
   const lines = text.split('\n');
   const out: ReactNode[] = [];
 
