@@ -1,3 +1,4 @@
+import { Analytics } from '@vercel/analytics/next';
 import { CookieConsent } from '@/components/legal/CookieConsent';
 import { AccessibilityMenu } from '@/components/a11y/AccessibilityMenu';
 import { PageAccessibility } from '@/components/a11y/PageAccessibility';
@@ -87,6 +88,7 @@ export default function RootLayout({
         <PageAccessibility />
         <AccessibilityMenu />
         <CookieConsent />
+        <Analytics />
       </body>
     </html>
   );
