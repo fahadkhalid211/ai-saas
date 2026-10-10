@@ -64,6 +64,10 @@ async function PATCHHandler(req: Request) {
     if (!ctx.authenticated) {
       return NextResponse.json({ error: 'Unauthorized: Session invalid or expired' }, { status: 401 });
     }
+    // the platform owner troubleshooting a customer's workspace must not change that customer's name or password
+    if (ctx.supportAccess) {
+      return NextResponse.json({ error: 'Not available during support access: sign-in details can only be changed by the account owner.' }, { status: 403 });
+    }
 
     const body = await req.json();
     const { name, title, avatarUrl, currentPassword, newPassword } = body;

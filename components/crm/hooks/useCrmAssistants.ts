@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { showErrorModal } from '@/lib/ui/notify';
+import { showErrorModal, SUBSCRIPTION_REQUIRED_EVENT } from '@/lib/ui/notify';
 import { Assistant } from '@/types/crm';
 
 export function useCrmAssistants() {
@@ -16,21 +16,32 @@ export function useCrmAssistants() {
   const [showNewModal, setShowNewModal] = useState(false);
   const [newAssistantName, setNewAssistantName] = useState('');
 
-  const fetchAssistants = async (preferredId?: string) => {
-    try {
-      const res = await fetch('/api/assistants');
-      const data = await res.json();
-      if (data.assistants && data.assistants.length > 0) {
-        setAssistants(data.assistants);
-        const targetId = preferredId || activeAssistant?.id;
-        const matched = targetId ? data.assistants.find((a: Assistant) => a.id === targetId) : null;
-        const chosen = matched || data.assistants[0];
-        setActiveAssistant(chosen);
-        setFormData(chosen);
+  /**
+   * Loads the workspace's assistants and returns the one that became active (null when none could be loaded).
+   * Right after sign-up a request can fail for a moment, so a failed load is tried again a few times instead of
+   * leaving the dashboard with no assistant (which made every Save button do nothing).
+   */
+  const fetchAssistants = async (preferredId?: string, attempts: number = 3): Promise<Assistant | null> => {
+    for (let attempt = 1; attempt <= attempts; attempt++) {
+      try {
+        const res = await fetch('/api/assistants', { cache: 'no-store' });
+        const data = await res.json().catch(() => ({}));
+        if (res.ok && Array.isArray(data.assistants) && data.assistants.length > 0) {
+          setAssistants(data.assistants);
+          const targetId = preferredId || activeAssistant?.id;
+          const matched = targetId ? data.assistants.find((a: Assistant) => a.id === targetId) : null;
+          const chosen = matched || data.assistants[0];
+          setActiveAssistant(chosen);
+          setFormData(chosen);
+          return chosen;
+        }
+        if (res.ok) return null; // loaded fine, the workspace simply has no assistant
+      } catch (err) {
+        console.error('Failed to fetch assistants:', err);
       }
-    } catch (err) {
-      console.error('Failed to fetch assistants:', err);
+      if (attempt < attempts) await new Promise((r) => setTimeout(r, 1200 * attempt));
     }
+    return null;
   };
 
   const handleCreateAssistant = async (e: React.FormEvent) => {
@@ -59,32 +70,53 @@ export function useCrmAssistants() {
   };
 
   const handleSaveSettings = async () => {
-    if (!activeAssistant) return;
     setIsSaving(true);
     setSaveError(null);
     try {
-      const res = await fetch(`/api/assistants/${activeAssistant.id}`, {
+      // The assistant list may not have loaded (a failed request on page load): load it now instead of doing nothing.
+      let target = activeAssistant;
+      const edits = formData;
+      if (!target) {
+        target = await fetchAssistants(undefined, 2);
+        if (!target) {
+          throw Object.assign(new Error('Your assistant could not be loaded, so there is nothing to save to yet.'), {
+            hint: 'Check your connection and reload the page. If this keeps happening, contact support from the Support tab.',
+          });
+        }
+      }
+      const res = await fetch(`/api/assistants/${target.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({ ...edits, id: target.id }),
       });
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
+      if (res.status === 401) {
+        throw Object.assign(new Error('You have been signed out.'), { hint: 'Sign in again, then save your changes.' });
+      }
+      if (res.status === 402 || data.subscriptionRequired) {
+        // No plan yet (or it ended): show the plan screen so the owner can start a trial, pay, or enter an access code.
+        window.dispatchEvent(new CustomEvent(SUBSCRIPTION_REQUIRED_EVENT));
+        setSaveError(data.error || 'Choose a plan to save changes.');
+        setTimeout(() => setSaveError(null), 5000);
+        return;
+      }
       if (!res.ok || data.error) {
         throw new Error(data.error || 'Failed to save settings');
       }
-      if (data.assistant) {
-        setActiveAssistant(data.assistant);
-        setFormData(data.assistant);
-        setAssistants((prev) =>
-          prev.map((a) => (a.id === data.assistant.id ? data.assistant : a))
-        );
-        setSaveSuccess(true);
-        setTimeout(() => setSaveSuccess(false), 3500);
+      if (!data.assistant) {
+        throw new Error('The server did not confirm the save.');
       }
+      setActiveAssistant(data.assistant);
+      setFormData(data.assistant);
+      setAssistants((prev) =>
+        prev.map((a) => (a.id === data.assistant.id ? data.assistant : a))
+      );
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 3500);
     } catch (err: any) {
       console.error('Failed to save settings:', err);
       setSaveError(err?.message || 'Failed to save settings');
-      showErrorModal({ title: "Settings weren't saved", message: err?.message || 'Failed to save settings', hint: 'Fix the value above and press Save again. Nothing was changed.' });
+      showErrorModal({ title: "Settings weren't saved", message: err?.message || 'Failed to save settings', hint: err?.hint || 'Fix the value above and press Save again. Nothing was changed.' });
       setTimeout(() => setSaveError(null), 5000);
     } finally {
       setIsSaving(false);

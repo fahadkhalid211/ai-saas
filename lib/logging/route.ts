@@ -28,6 +28,18 @@ function levelForStatus(status: number): 'info' | 'warn' | 'error' {
   return 'info';
 }
 
+/** The error text of a failed JSON response (its "error" or "message" field), or undefined. Never throws, never consumes the response. */
+async function failureReason(response: Response): Promise<string | undefined> {
+  try {
+    if (!(response.headers.get('content-type') || '').includes('application/json')) return undefined;
+    const body = await response.clone().json();
+    const reason = typeof body?.error === 'string' ? body.error : typeof body?.message === 'string' ? body.message : '';
+    return reason ? reason.slice(0, 300) : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 /**
  * Wraps a route handler so that every request is recorded with who made it, what it was, how it ended and how long it took,
  * and so that anything written to the log while it runs carries the same request id. The handler keeps its exact signature.
@@ -64,7 +76,7 @@ export function logged<R extends Request, A extends unknown[]>(
       if (auth.authenticated) {
         ctx.userId = auth.memberId || undefined;
         ctx.workspaceId = auth.workspaceId || undefined;
-        ctx.role = auth.isMasterAdmin ? 'master' : auth.role;
+        ctx.role = auth.isMasterAdmin ? 'master' : auth.supportAccess ? 'support' : auth.role;
       }
     } catch {
       // an unconfigured secret must not stop the request from being served (or logged)
@@ -95,6 +107,8 @@ export function logged<R extends Request, A extends unknown[]>(
           event: 'http.request',
           status,
           durationMs: performance.now() - started,
+          // why it failed, in the words the caller was given (many handlers answer with an error instead of throwing)
+          message: status >= 400 ? await failureReason(response) : undefined,
           meta: { contentLength: Number(req.headers.get('content-length')) || undefined },
         });
       }

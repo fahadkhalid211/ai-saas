@@ -27,3 +27,39 @@ describe('sessions follow the account', () => {
     expect((await getAuthContext(req(token))).role).toBe('viewer');
   });
 });
+
+describe('an account this server has not heard of yet', () => {
+  it('reloads the accounts once before deciding the session is invalid (sign-up handled by another server)', async () => {
+    const { vi } = await import('vitest');
+    const token = await tokenFor('owner', 'tm_fresh_1', 'ws_fresh');
+    const state = await Database.getState();
+    const member = state.teamMembers!.find((m) => m.id === 'tm_fresh_1')!;
+    // this server's copy predates the sign-up...
+    state.teamMembers = state.teamMembers!.filter((m) => m.id !== 'tm_fresh_1');
+    // ...and the shared database has it
+    const refresh = vi.spyOn(Database, 'refreshState').mockImplementation(async () => {
+      state.teamMembers!.push(member);
+      return true;
+    });
+    try {
+      const ctx = await getAuthContext(req(token));
+      expect(refresh).toHaveBeenCalledTimes(1);
+      expect(ctx).toMatchObject({ authenticated: true, memberId: 'tm_fresh_1', workspaceId: 'ws_fresh' });
+    } finally {
+      refresh.mockRestore();
+    }
+  });
+
+  it('stays signed out when the account really is gone', async () => {
+    const { vi } = await import('vitest');
+    const token = await tokenFor('owner', 'tm_fresh_2', 'ws_fresh');
+    const state = await Database.getState();
+    state.teamMembers = state.teamMembers!.filter((m) => m.id !== 'tm_fresh_2');
+    const refresh = vi.spyOn(Database, 'refreshState').mockResolvedValue(true);
+    try {
+      expect((await getAuthContext(req(token))).authenticated).toBe(false);
+    } finally {
+      refresh.mockRestore();
+    }
+  });
+});

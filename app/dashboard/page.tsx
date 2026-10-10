@@ -43,6 +43,8 @@ import { WidgetTab } from '@/components/crm/WidgetTab';
 import { AppointmentsTab } from '@/components/crm/AppointmentsTab';
 import { ProfileTab } from '@/components/crm/ProfileTab';
 import { SystemLogsTab } from '@/components/crm/SystemLogsTab';
+import { CustomersTab } from '@/components/crm/CustomersTab';
+import { showErrorModal } from '@/lib/ui/notify';
 import { SupportTab } from '@/components/crm/SupportTab';
 import { BlogAdminTab } from '@/components/crm/BlogAdminTab';
 import { AccessCodesTab } from '@/components/crm/AccessCodesTab';
@@ -87,9 +89,12 @@ export default function DashboardPage() {
   // Enterprise Admin Authentication & Session state
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(true);
   const [isAuthChecking, setIsAuthChecking] = useState<boolean>(true);
+  // The platform owner is inside a customer's workspace to troubleshoot it (started from the Customers tab)
+  const [supportAccess, setSupportAccess] = useState<{ workspaceName: string } | null>(null);
+  const [leavingSupport, setLeavingSupport] = useState(false);
 
   const [activeTab, setActiveTab] = useState<
-    'overview' | 'profile' | 'analytics' | 'billing' | 'landing_page' | 'team' | 'security' | 'audit' | 'system_logs' | 'blog_admin' | 'access_codes' | 'support' | 'knowledge' | 'engine' | 'behavior' | 'widget' | 'channels' | 'playground' | 'leads' | 'appointments' | 'docs' | 'templates' | 'history'
+    'overview' | 'profile' | 'analytics' | 'billing' | 'landing_page' | 'team' | 'security' | 'audit' | 'customers' | 'system_logs' | 'blog_admin' | 'access_codes' | 'support' | 'knowledge' | 'engine' | 'behavior' | 'widget' | 'channels' | 'playground' | 'leads' | 'appointments' | 'docs' | 'templates' | 'history'
   >('overview');
   const [selectedIntegration, setSelectedIntegration] = useState<IntegrationId>('slack');
 
@@ -354,6 +359,24 @@ export default function DashboardPage() {
   // Billing Hook
   const billing = useCrmBilling();
 
+  // First sign-in: the tour opens by itself, once per member (remembered on the account, so not again on another device).
+  // It waits until the dashboard is usable: an assistant is loaded and the plan screen is not covering the page.
+  const tourAutoOpened = useRef(false);
+  useEffect(() => {
+    if (tourAutoOpened.current || isMasterAdmin || supportAccess || isAuthChecking || !currentUser?.id || !activeAssistant) return;
+    if (currentUser.tourSeenAt) return;
+    const status = billing.billingData?.trial?.status;
+    if (!status || status === 'needs_card' || status === 'expired') return;
+    // members who joined before the tour opened by itself are not interrupted now
+    const joined = currentUser.createdAt ? new Date(currentUser.createdAt).getTime() : NaN;
+    if (!Number.isFinite(joined) || Date.now() - joined > 30 * 24 * 60 * 60 * 1000) return;
+    tourAutoOpened.current = true;
+    setActiveTab('overview');
+    setTourStepIndex(0);
+    setIsTourOpen(true);
+    fetch('/api/profile/tour', { method: 'POST' }).catch(() => undefined);
+  }, [isMasterAdmin, isAuthChecking, currentUser?.id, currentUser?.tourSeenAt, activeAssistant?.id, billing.billingData?.trial?.status]);
+
   // Channels Hook
   const channels = useCrmChannels({ playNotificationChime });
 
@@ -542,6 +565,7 @@ export default function DashboardPage() {
         if (data.authenticated) {
           setIsAuthenticated(true);
           setIsMasterAdmin(Boolean(data.isMasterAdmin));
+          setSupportAccess(data.supportAccess ? { workspaceName: data.workspace?.name || 'this workspace' } : null);
           if (data.member) {
             setCurrentUser(data.member);
           }
@@ -595,7 +619,7 @@ export default function DashboardPage() {
   // a link such as /dashboard?tab=support (support e-mails) or ?tab=billing opens that tab directly
   useEffect(() => {
     const tab = new URLSearchParams(window.location.search).get('tab');
-    const valid = ['overview', 'profile', 'analytics', 'billing', 'landing_page', 'team', 'security', 'audit', 'support', 'knowledge', 'engine', 'behavior', 'widget', 'channels', 'playground', 'leads', 'appointments', 'docs', 'templates', 'history'];
+    const valid = ['customers', 'system_logs', 'overview', 'profile', 'analytics', 'billing', 'landing_page', 'team', 'security', 'audit', 'support', 'knowledge', 'engine', 'behavior', 'widget', 'channels', 'playground', 'leads', 'appointments', 'docs', 'templates', 'history'];
     if (tab && valid.includes(tab)) setActiveTab(tab as any);
   }, []);
 
@@ -708,7 +732,33 @@ export default function DashboardPage() {
           onBillingChanged={() => billing.fetchBilling()}
         />
 
-        <SubscriptionGate isMasterAdmin={isMasterAdmin} onLogout={handleLogout} onOpenBilling={() => setActiveTab('billing')} onOpenSupport={() => setActiveTab('support')} />
+        {supportAccess && (
+          <div role="status" className="flex flex-wrap items-center justify-between gap-2 bg-amber-300 px-4 py-2 text-xs font-semibold text-slate-950 shrink-0">
+            <span>
+              Support access: you are inside &ldquo;{supportAccess.workspaceName}&rdquo; as its owner. Changes you make here are real and are recorded in this customer&apos;s audit trail.
+            </span>
+            <button
+              type="button"
+              disabled={leavingSupport}
+              onClick={async () => {
+                setLeavingSupport(true);
+                try {
+                  const res = await fetch('/api/master/support-access', { method: 'DELETE' });
+                  if (!res.ok) throw new Error('Your master session has ended. Sign in again at /master.');
+                  window.location.href = '/dashboard?tab=customers';
+                } catch (err) {
+                  setLeavingSupport(false);
+                  showErrorModal({ title: "Couldn't return to the master account", message: (err as Error).message });
+                }
+              }}
+              className="rounded-lg bg-slate-950 px-3 py-1 text-[11px] font-bold text-white hover:bg-slate-800 disabled:opacity-60 cursor-pointer"
+            >
+              {leavingSupport ? 'Returning…' : 'Return to master account'}
+            </button>
+          </div>
+        )}
+
+        <SubscriptionGate isMasterAdmin={isMasterAdmin || Boolean(supportAccess)} onLogout={handleLogout} onOpenBilling={() => setActiveTab('billing')} onOpenSupport={() => setActiveTab('support')} />
 
         {/* Missing AI API Key Notification Banner */}
         {!hasConnectedAiKey(activeAssistant) && activeAssistant && (
@@ -903,6 +953,7 @@ export default function DashboardPage() {
 
             {/* TAB: AUDIT TRAIL */}
             {/* TAB: SYSTEM LOGS (platform owner only) */}
+            {activeTab === 'customers' && isMasterAdmin && <CustomersTab />}
             {activeTab === 'system_logs' && isMasterAdmin && <SystemLogsTab />}
             {activeTab === 'blog_admin' && isMasterAdmin && <BlogAdminTab />}
             {activeTab === 'access_codes' && isMasterAdmin && <AccessCodesTab />}

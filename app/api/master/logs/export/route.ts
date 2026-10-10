@@ -3,6 +3,7 @@ import { denyUnlessMaster } from '@/lib/logging/access';
 import { logged } from '@/lib/logging/route';
 import { logEvent } from '@/lib/logging/logger';
 import { csvCell } from '@/lib/logging/csv';
+import { describeLog } from '@/lib/logging/describe';
 import { parseFilters, queryLogs, type LogEntry } from '@/lib/logging/query';
 
 export const dynamic = 'force-dynamic';
@@ -31,13 +32,17 @@ async function GETHandler(req: Request) {
   const stream = new ReadableStream({
     async start(controller) {
       try {
-        if (format === 'csv') controller.enqueue(encoder.encode(CSV_COLUMNS.join(',') + '\n'));
+        if (format === 'csv') controller.enqueue(encoder.encode(['description', ...CSV_COLUMNS].join(',') + '\n'));
         let before = base.before;
         while (exported < MAX_ROWS) {
           const { entries, nextCursor } = await queryLogs({ ...base, before });
           for (const e of entries) {
             controller.enqueue(
-              encoder.encode(format === 'csv' ? CSV_COLUMNS.map((c) => csvCell(e[c])).join(',') + '\n' : JSON.stringify(e) + '\n')
+              encoder.encode(
+                format === 'csv'
+                  ? [csvCell(describeLog(e)), ...CSV_COLUMNS.map((c) => csvCell(e[c]))].join(',') + '\n'
+                  : JSON.stringify({ description: describeLog(e), ...e }) + '\n'
+              )
             );
             exported++;
           }

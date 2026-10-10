@@ -73,6 +73,6 @@ describe('the log is visible to the master admin only', () => {
     expect(csv.status).toBe(200);
     expect(csv.headers.get('content-type')).toContain('text/csv');
     expect(csv.headers.get('content-disposition')).toContain('attachment');
-    expect((await csv.text()).startsWith('ts,level,category')).toBe(true);
+    expect((await csv.text()).startsWith('description,ts,level,category')).toBe(true);
   });
 });

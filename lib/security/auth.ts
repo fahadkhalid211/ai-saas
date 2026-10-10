@@ -78,7 +78,9 @@ export function generateSessionToken(
   memberId?: string,
   workspaceId: string = 'default-workspace',
   isMasterAdmin?: boolean,
-  sessionVersion: number = 0
+  sessionVersion: number = 0,
+  /** Support access by the platform owner (lib/security/support-access.ts): marked in the token and short-lived. */
+  support?: { ttlMs: number }
 ): string {
   const masterKey = getAdminKey();
   const computedIsMaster =
@@ -92,8 +94,9 @@ export function generateSessionToken(
     workspaceId: workspaceId || 'default-workspace',
     isMasterAdmin: computedIsMaster,
     sv: sessionVersion || 0,
+    ...(support ? { imp: true } : {}),
     iat: Date.now(),
-    exp: Date.now() + 7 * 24 * 60 * 60 * 1000,
+    exp: Date.now() + (support ? support.ttlMs : 7 * 24 * 60 * 60 * 1000),
   };
   const payloadB64 = Buffer.from(JSON.stringify(payload)).toString('base64url');
   const signature = crypto
@@ -149,6 +152,7 @@ export function getSessionPayload(token: string): {
   workspaceId: string;
   isMasterAdmin: boolean;
   sessionVersion: number;
+  supportAccess: boolean;
 } | null {
   if (!token || typeof token !== 'string') return null;
   const parts = token.split('.');
@@ -167,6 +171,7 @@ export function getSessionPayload(token: string): {
       workspaceId: payload.workspaceId || 'default-workspace',
       isMasterAdmin: isMaster,
       sessionVersion: Number(payload.sv) || 0,
+      supportAccess: payload.imp === true && !isMaster,
     };
   } catch {
     return null;
@@ -179,6 +184,8 @@ export interface AuthContext {
   memberId: string;
   workspaceId: string;
   isMasterAdmin: boolean;
+  /** The platform owner is inside this workspace to troubleshoot it (never true together with isMasterAdmin). */
+  supportAccess?: boolean;
 }
 
 const GUEST: AuthContext = { authenticated: false, role: 'guest', memberId: '', workspaceId: 'default-workspace', isMasterAdmin: false };
@@ -195,7 +202,19 @@ async function resolveSession(session: NonNullable<ReturnType<typeof getSessionP
   if (session.isMasterAdmin) {
     return { authenticated: true, role: session.role, memberId: session.memberId, workspaceId: session.workspaceId, isMasterAdmin: true };
   }
-  const member = await Database.findTeamMember(session.memberId);
+  if (session.supportAccess) {
+    // The platform owner inside a customer's workspace: valid while that workspace exists, whatever happens to its members.
+    const state = await Database.getState();
+    if (session.workspaceId === '*' || !(state.workspaces || []).some((w) => w.id === session.workspaceId)) return GUEST;
+    return { authenticated: true, role: 'owner', memberId: session.memberId, workspaceId: session.workspaceId, isMasterAdmin: false, supportAccess: true };
+  }
+  let member = await Database.findTeamMember(session.memberId);
+  // Each server keeps its own copy of the accounts for up to a minute. A sign-up, or a new sign-in after a password change,
+  // handled by another server is not in this copy yet: load the latest accounts once before treating the session as invalid.
+  const unknownHere = member ? (member.sessionVersion || 0) < session.sessionVersion : !NON_MEMBER_IDS.has(session.memberId);
+  if (unknownHere && (await Database.refreshState())) {
+    member = await Database.findTeamMember(session.memberId);
+  }
   if (!member) {
     if (NON_MEMBER_IDS.has(session.memberId)) {
       return { authenticated: true, role: session.role, memberId: session.memberId, workspaceId: session.workspaceId, isMasterAdmin: false };

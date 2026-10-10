@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { AlertTriangle, CreditCard, LogOut, Sparkles, Send, CheckCircle2 } from 'lucide-react';
 import { BILLING_PLANS, annualSavingsPercent, planAnnualSavingsDollars } from '@/lib/billing/plans';
 import { readSelectedPlan } from '@/lib/analytics/track';
-import { showErrorModal } from '@/lib/ui/notify';
+import { showErrorModal, SUBSCRIPTION_REQUIRED_EVENT } from '@/lib/ui/notify';
 import { SaveButton } from '@/components/ui/SaveButton';
 import { TRIAL_DAYS, type TrialInfo } from '@/lib/billing/trial';
 
@@ -47,7 +47,7 @@ export function SubscriptionGate({ isMasterAdmin, onLogout, onOpenBilling, onOpe
   const [codeBusy, setCodeBusy] = useState(false);
   const [codeError, setCodeError] = useState('');
 
-  const load = useCallback(async () => {
+  const loadOnce = useCallback(async () => {
     try {
       const r = await fetch('/api/billing', { cache: 'no-store' });
       if (!r.ok) return null;
@@ -58,6 +58,25 @@ export function SubscriptionGate({ isMasterAdmin, onLogout, onOpenBilling, onOpe
       return null;
     }
   }, []);
+
+  // A failed request must not leave a new account without its plan screen (it once made the dashboard look usable when
+  // nothing could be saved), so the plan status is asked for again a few times.
+  const load = useCallback(async () => {
+    for (let attempt = 1; attempt <= 4; attempt++) {
+      const d = await loadOnce();
+      if (d) return d;
+      if (attempt < 4) await new Promise((r) => setTimeout(r, 1500 * attempt));
+    }
+    return null;
+  }, [loadOnce]);
+
+  // A save was refused because there is no active plan: show the current plan status (and so the plan choice) right away
+  useEffect(() => {
+    if (isMasterAdmin) return;
+    const onRequired = () => void loadOnce();
+    window.addEventListener(SUBSCRIPTION_REQUIRED_EVENT, onRequired);
+    return () => window.removeEventListener(SUBSCRIPTION_REQUIRED_EVENT, onRequired);
+  }, [isMasterAdmin, loadOnce]);
 
   useEffect(() => {
     if (isMasterAdmin) return;
@@ -78,7 +97,7 @@ export function SubscriptionGate({ isMasterAdmin, onLogout, onOpenBilling, onOpe
     let tries = 0;
     const timer = window.setInterval(async () => {
       tries += 1;
-      const d = await load();
+      const d = await loadOnce();
       if ((d && d.trial.status !== 'needs_card' && d.trial.status !== 'expired') || tries >= 20) {
         window.clearInterval(timer);
         setConfirming(false);
@@ -86,7 +105,7 @@ export function SubscriptionGate({ isMasterAdmin, onLogout, onOpenBilling, onOpe
       }
     }, 1500);
     return () => window.clearInterval(timer);
-  }, [isMasterAdmin, load]);
+  }, [isMasterAdmin, loadOnce]);
 
   const startCheckout = async () => {
     setBusy(true);

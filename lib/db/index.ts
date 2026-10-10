@@ -46,6 +46,7 @@ import { isPostgresConfigured, disablePostgresTemporarily, isConnectionError } f
 import * as Relational from './relational';
 import * as ChunkStore from './chunk-store';
 import { BILLING_PLANS } from '../billing/plans';
+import { describeLog } from '../logging/describe';
 import { TRIAL_PLAN_ID, type SubscriptionStatus } from '../billing/trial';
 import { pgVectorStoreEnabled } from './chunk-store';
 import { isRedisConfigured, redisGet, redisSet, CACHE_KEYS } from '../cache/redis';
@@ -386,6 +387,8 @@ export interface TeamMemberData {
   sessionVersion?: number;
   title?: string;
   avatarUrl?: string;
+  /** When the product tour was shown to this member; absent until their first sign-in to the dashboard. */
+  tourSeenAt?: string;
   createdAt: string;
   updatedAt?: string;
 }
@@ -879,6 +882,7 @@ function assistantInWorkspace(state: DatabaseState, assistantId: string | null, 
 }
 
 let lastCloudFetchTime = 0;
+let lastForcedRefresh = 0;
 let lastKnownCloudUpdatedAt: string | null = null;
 const CLOUD_CACHE_TTL_MS = 60_000;
 let cloudSyncPromise: Promise<void> | null = null;
@@ -2947,6 +2951,37 @@ export class Database {
   }
 
   /** Plain lookup: unlike getTeamMemberById it never invents a member. Used to check a session against the account it names. */
+  /**
+   * Loads the shared state from the database now, instead of trusting this server's copy (which can be up to a minute old).
+   * Used when a signed session names an account this server does not know: another server may have just created it.
+   * At most one forced load every few seconds, so a deleted account's old session cannot make every request hit the database.
+   * Returns false when nothing was reloaded.
+   */
+  static async refreshState(minIntervalMs: number = 3000): Promise<boolean> {
+    if (!isCloudDbConfigured()) return false;
+    const now = Date.now();
+    if (now - lastForcedRefresh < minIntervalMs) return false;
+    lastForcedRefresh = now;
+    try {
+      await ensureInitialized(true);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  /** Marks the product tour as shown to this member (kept on the account, so it holds on every device). */
+  static async markTourSeen(id: string): Promise<string | null> {
+    const state = await ensureInitialized();
+    const member = (state.teamMembers || []).find((m) => m.id === id);
+    if (!member) return null;
+    if (!member.tourSeenAt) {
+      member.tourSeenAt = new Date().toISOString();
+      await saveState(state);
+    }
+    return member.tourSeenAt;
+  }
+
   static async findTeamMember(id: string): Promise<TeamMemberData | null> {
     const state = await ensureInitialized();
     return (state.teamMembers || []).find((m) => m.id === id) || null;
@@ -3180,6 +3215,8 @@ export class Database {
       level: /fail|denied|blocked|invalid|lockout/i.test(entry.action) ? 'warn' : 'info',
       category: entry.action.startsWith('auth.') ? 'auth' : 'audit',
       event: entry.action,
+      // a plain sentence, so the log can be read (and searched) without knowing the event codes
+      message: describeLog({ event: entry.action, userId: actor.id, meta: { actorName: actor.name, email: actor.email, details: entry.details } }),
       userId: actor.id,
       workspaceId: entry.workspaceId || entry.details?.workspaceId,
       ip: actor.ip,

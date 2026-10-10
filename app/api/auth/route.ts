@@ -10,6 +10,7 @@ import {
 } from '@/lib/security/auth';
 import { getClientIp } from '@/lib/security/rate-limit';
 import { updateLogContext } from '@/lib/logging/context';
+import { clearMasterReturnCookie } from '@/lib/security/support-access';
 import { enforceDistributedRateLimit, enforceDistributedRateLimitByKey } from '@/lib/security/rate-limit-redis';
 import { getMasterEmail } from '@/lib/security/master';
 import { Database, sanitizeTeamMember } from '@/lib/db';
@@ -66,6 +67,8 @@ async function GETHandler(req: Request) {
       memberId: ctx.memberId,
       workspaceId: ctx.workspaceId,
       isMasterAdmin: ctx.isMasterAdmin,
+      // the platform owner is inside this workspace for support: the dashboard shows a banner with a way back
+      supportAccess: Boolean(ctx.supportAccess),
       member: sanitizeTeamMember(member) || {
         id: ctx.memberId,
         workspaceId: ctx.workspaceId,
@@ -375,19 +378,15 @@ async function DELETEHandler(req: Request) {
   const clearHeader = createClearCookieHeader();
   if (new URL(req.url).searchParams.get('all') === '1') {
     const ctx = await getAuthContext(req);
-    if (ctx.authenticated && !ctx.isMasterAdmin) {
+    // "sign out everywhere" during support access would sign the customer out of their own account
+    if (ctx.authenticated && !ctx.isMasterAdmin && !ctx.supportAccess) {
       await Database.bumpSessionVersion(ctx.memberId);
     }
   }
-  return NextResponse.json(
-    { success: true, message: 'Logged out successfully' },
-    {
-      status: 200,
-      headers: {
-        'Set-Cookie': clearHeader,
-      },
-    }
-  );
+  const res = NextResponse.json({ success: true, message: 'Logged out successfully' }, { status: 200 });
+  res.headers.append('Set-Cookie', clearHeader);
+  res.headers.append('Set-Cookie', clearMasterReturnCookie()); // signing out during support access ends the master session too
+  return res;
 }
 
 export const GET = logged(GETHandler, { route: '/api/auth', sample: 0.2 });

@@ -2,6 +2,7 @@
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Activity, AlertTriangle, Clock, Download, RefreshCw, Search, ShieldAlert, Users, X, Zap } from 'lucide-react';
+import { describeLog, technicalLine } from '@/lib/logging/describe';
 
 /** Master-admin only. The server enforces this (404 for everyone else); the tab is also only shown to the master admin. */
 
@@ -95,6 +96,33 @@ export const SystemLogsTab: React.FC = () => {
   const [route, setRoute] = useState('');
   const [fingerprint, setFingerprint] = useState('');
   const [view, setView] = useState<'events' | 'groups' | 'routes'>('events');
+
+  // Names for the ids in the log (from the Customers list), so rows say who did something instead of showing an id
+  const [people, setPeople] = useState<Record<string, string>>({});
+  const [workspaces, setWorkspaces] = useState<Record<string, string>>({});
+  useEffect(() => {
+    let cancelled = false;
+    fetch('/api/master/customers', { cache: 'no-store' })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((out) => {
+        if (cancelled || !out?.customers) return;
+        const p: Record<string, string> = {};
+        const w: Record<string, string> = {};
+        for (const c of out.customers) {
+          w[c.id] = c.name;
+          for (const m of c.members || []) p[m.id] = m.name ? `${m.name} (${m.email})` : m.email;
+        }
+        setPeople(p);
+        setWorkspaces(w);
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+  const namesFor = (e: LogEntry) => ({ user: e.userId ? people[e.userId] : null, workspace: e.workspaceId ? workspaces[e.workspaceId] : null });
+  const whoFor = (e: LogEntry) =>
+    e.role === 'master' || e.userId === 'master-admin' ? 'Platform owner' : e.userId ? people[e.userId] || e.userId : 'Not signed in';
 
   const [entries, setEntries] = useState<LogEntry[]>([]);
   const [cursor, setCursor] = useState<string | null>(null);
@@ -370,6 +398,14 @@ export const SystemLogsTab: React.FC = () => {
                   </button>
                 ))}
               </div>
+              <button
+                type="button"
+                onClick={() => setCategory(category === 'auth' ? '' : 'auth')}
+                aria-pressed={category === 'auth'}
+                className={`px-2.5 py-1.5 rounded-lg border text-xs font-semibold cursor-pointer ${category === 'auth' ? 'border-blue-600 bg-blue-600 text-white' : 'border-slate-300 dark:border-slate-600 text-slate-800 dark:text-slate-100'}`}
+              >
+                Sign-ups and sign-ins
+              </button>
               <select value={category} onChange={(e) => setCategory(e.target.value)} className={inputClass} aria-label="Category">
                 <option value="">All categories</option>
                 {CATEGORIES.map((c) => (
@@ -412,11 +448,11 @@ export const SystemLogsTab: React.FC = () => {
                   <tr>
                     <th className="py-2.5 px-3">Time</th>
                     <th className="py-2.5 px-3">Level</th>
-                    <th className="py-2.5 px-3">Event</th>
+                    <th className="py-2.5 px-3">What happened</th>
                     <th className="py-2.5 px-3">Route</th>
                     <th className="py-2.5 px-3">Status</th>
                     <th className="py-2.5 px-3">Time taken</th>
-                    <th className="py-2.5 px-3">User</th>
+                    <th className="py-2.5 px-3">Who</th>
                     <th className="py-2.5 px-3">Request</th>
                   </tr>
                 </thead>
@@ -437,13 +473,18 @@ export const SystemLogsTab: React.FC = () => {
                           <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold uppercase ${LEVEL_STYLE[e.level]}`}>{e.level}</span>
                         </td>
                         <td className="py-2 px-3">
-                          <div className="font-semibold text-slate-900 dark:text-white">{e.event}</div>
-                          <div className="text-slate-500 dark:text-slate-400 max-w-md truncate">{e.errorMessage || e.message || ''}</div>
+                          <div className="max-w-md text-slate-900 dark:text-white">{describeLog(e, namesFor(e))}</div>
+                          {technicalLine(e) && <div className="mt-0.5 max-w-md truncate font-mono text-[11px] text-rose-700 dark:text-rose-300" title={technicalLine(e)}>{technicalLine(e)}</div>}
+                          <div className="mt-0.5 font-mono text-[10.5px] text-slate-500 dark:text-slate-400">{e.event}</div>
                         </td>
                         <td className="py-2 px-3 font-mono text-[11px] text-slate-600 dark:text-slate-300">{e.method ? `${e.method} ` : ''}{e.route || ''}</td>
                         <td className="py-2 px-3 font-mono">{e.status ?? ''}</td>
                         <td className="py-2 px-3 font-mono">{e.durationMs !== null ? `${e.durationMs} ms` : ''}</td>
-                        <td className="py-2 px-3 font-mono text-[11px] text-slate-600 dark:text-slate-300 max-w-[9rem] truncate" title={e.userId || ''}>{e.userId || '-'}</td>
+                        <td className="py-2 px-3 text-[11px] text-slate-700 dark:text-slate-200 max-w-[12rem]" title={e.userId || ''}>
+                          <div className="break-words">{whoFor(e)}</div>
+                          {e.workspaceId && workspaces[e.workspaceId] && <div className="text-slate-500 dark:text-slate-400 break-words">{workspaces[e.workspaceId]}</div>}
+                          {e.role === 'support' && <div className="font-semibold text-amber-700 dark:text-amber-300">Support access</div>}
+                        </td>
                         <td className="py-2 px-3 font-mono text-[11px] text-slate-500">{e.requestId ? e.requestId.slice(0, 8) : ''}</td>
                       </tr>
                       {expanded === e.id && (
@@ -464,6 +505,7 @@ export const SystemLogsTab: React.FC = () => {
                               )}
                               <button type="button" onClick={() => void copy(JSON.stringify(e, null, 2), e.id)} className="px-2.5 py-1 rounded-md border border-slate-300 dark:border-slate-600 text-[11px] font-semibold cursor-pointer">{copied === e.id ? 'Copied' : 'Copy JSON'}</button>
                             </div>
+                            <p className="mb-2 text-xs text-slate-900 dark:text-white">{describeLog(e, namesFor(e))}</p>
                             <dl className="grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-1 text-[11px] mb-2">
                               {([['Request id', e.requestId], ['User', e.userId], ['Workspace', e.workspaceId], ['Role', e.role], ['IP', e.ip], ['Path', e.path], ['Category', e.category], ['Deployment', e.deployment]] as const).map(([k, v]) => (
                                 <div key={k}>
@@ -598,7 +640,8 @@ export const SystemLogsTab: React.FC = () => {
                     {e.status !== null && <span className="font-mono">{e.status}</span>}
                     {e.durationMs !== null && <span className="font-mono text-slate-500">{e.durationMs} ms</span>}
                   </div>
-                  {(e.errorMessage || e.message) && <div className="mt-1 text-slate-600 dark:text-slate-300 break-words">{e.errorMessage || e.message}</div>}
+                  <div className="mt-1 text-slate-800 dark:text-slate-100 break-words">{describeLog(e, namesFor(e))}</div>
+                  {technicalLine(e) && <div className="mt-1 font-mono text-[11px] text-rose-700 dark:text-rose-300 break-words">{technicalLine(e)}</div>}
                   {e.errorStack && <pre className="mt-1 text-[10.5px] whitespace-pre-wrap break-all text-slate-500 max-h-40 overflow-auto">{e.errorStack}</pre>}
                   {e.meta && <pre className="mt-1 text-[10.5px] bg-slate-50 dark:bg-slate-950/40 rounded p-1.5 overflow-auto max-h-32">{JSON.stringify(e.meta)}</pre>}
                 </li>

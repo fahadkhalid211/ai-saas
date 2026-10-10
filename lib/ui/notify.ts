@@ -9,6 +9,9 @@ export interface ErrorNotice {
 
 export const ERROR_EVENT = 'crescelo:error';
 
+/** Fired when the server refuses a change because the workspace has no active plan; SubscriptionGate listens and shows the plans. */
+export const SUBSCRIPTION_REQUIRED_EVENT = 'crescelo:subscription_required';
+
 export function showErrorModal(notice: ErrorNotice | string): void {
   if (typeof window === 'undefined') return;
   const detail: ErrorNotice = typeof notice === 'string' ? { message: notice } : notice;

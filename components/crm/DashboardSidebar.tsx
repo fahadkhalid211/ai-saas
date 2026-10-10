@@ -165,6 +165,7 @@ export function DashboardSidebar({
         { id: 'security', label: 'Security', icon: ShieldCheck },
         ...(canViewAudit ? [{ id: 'audit', label: 'Audit Trail', icon: ClipboardList, count: auditCount }] : []),
         // The system log is for the platform owner only (the API refuses everyone else with a 404).
+        ...(isMasterAdmin ? [{ id: 'customers', label: 'Customers', icon: Users }] : []),
         ...(isMasterAdmin ? [{ id: 'system_logs', label: 'System Logs', icon: Activity }] : []),
         ...(isMasterAdmin ? [{ id: 'blog_admin', label: 'Blog Articles', icon: Newspaper }] : []),
         ...(isMasterAdmin ? [{ id: 'access_codes', label: 'Access Codes', icon: Ticket }] : []),

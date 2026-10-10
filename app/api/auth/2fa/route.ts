@@ -63,6 +63,10 @@ async function POSTHandler(req: NextRequest) {
     if (!ctx.authenticated) {
       return NextResponse.json({ error: 'Unauthorized: Admin access required' }, { status: 401 });
     }
+    // the platform owner troubleshooting a customer's workspace must not change that customer's two-factor settings
+    if (ctx.supportAccess) {
+      return NextResponse.json({ error: 'Not available during support access: sign-in details can only be changed by the account owner.' }, { status: 403 });
+    }
 
     const members = await Database.getTeamMembers(ctx.workspaceId !== '*' ? ctx.workspaceId : undefined);
     const targetMember = (ctx.memberId && ctx.memberId !== 'admin' && ctx.memberId !== 'master-admin')

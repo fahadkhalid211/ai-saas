@@ -12,6 +12,7 @@ import {
   verifyWebhookConnection,
 } from '@/lib/connectors/verify';
 import { logged } from '@/lib/logging/route';
+import { serviceBlocked } from '@/lib/billing/trial';
 import { sanitizeCostCap } from '@/lib/ai/spend/guard';
 import { validateUrl } from '@/lib/security/validation';
 
@@ -54,6 +55,18 @@ const PUTHandler = withRoleAuth(['owner', 'admin'], async (
     const existing = await requireWorkspaceAssistant(ctx, id);
     if (!existing) {
       return NextResponse.json({ error: 'Assistant not found' }, { status: 404 });
+    }
+
+    // No plan yet, or it ended: the dashboard shows the plan screen in this state, and the server says so too, so a save
+    // can never look like it worked (or do nothing) while the workspace cannot use the assistant.
+    if (!ctx.isMasterAdmin && !ctx.supportAccess) {
+      const billing = await Database.getWorkspaceBilling(existing.workspaceId || ctx.workspaceId);
+      if (serviceBlocked(billing)) {
+        return NextResponse.json(
+          { error: 'Choose a plan or enter an access code to save changes to your assistant.', subscriptionRequired: true },
+          { status: 402 }
+        );
+      }
     }
 
     const body = await req.json();
