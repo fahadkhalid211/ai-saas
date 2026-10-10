@@ -6,6 +6,12 @@ const nextConfig: NextConfig = {
   distDir: process.env.NEXT_DIST_DIR || '.next',
   // Do not advertise the framework in every response.
   poweredByHeader: false,
+  // The local AI search model (@xenova/transformers) runs on onnxruntime-node, whose native binding opens a shared library
+  // next to it at run time. File tracing follows imports, not that, so the library was left out of the server functions and
+  // the model never loaded in production ("libonnxruntime.so.1.14.0: cannot open shared object file").
+  outputFileTracingIncludes: {
+    '/api/**/*': ['./node_modules/onnxruntime-node/bin/napi-v3/linux/x64/**/*'],
+  },
   async rewrites() {
     return {
       beforeFiles: [

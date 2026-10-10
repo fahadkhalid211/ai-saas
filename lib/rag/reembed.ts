@@ -21,6 +21,14 @@ export async function reembedStaleChunks(options: { limit?: number; budgetMs?: n
   const started = Date.now();
   let done = 0;
 
+  // Vectors stored while the model could not load are stand-ins; queue them for a rebuild even if they were tagged as real.
+  try {
+    const retagged = await Database.markPlaceholderVectors();
+    if (retagged > 0) console.warn(`[Reembed] ${retagged} stored passages had stand-in vectors and were queued for a rebuild.`);
+  } catch (err) {
+    console.warn('[Reembed] Could not check for stand-in vectors:', (err as Error)?.message);
+  }
+
   const waiting = await Database.countStaleEmbeddingChunks();
   if (waiting === 0) return { reembedded: 0, remaining: 0, profile: profile.id };
 

@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
 import { cosineSimilarity, keywordRelevance, reciprocalRankFusion } from '../rag/vector-math';
-import { chunkProfileId, embeddingProfile } from '../rag/embedding-profile';
+import { chunkProfileId, embeddingProfile, vectorTag } from '../rag/embedding-profile';
 import { SearchResultChunk } from '../rag/types';
 import { clearRetrievalCache } from '../rag/cache';
 import { encryptSecret, decryptSecret } from '../security/crypto';
@@ -1142,9 +1142,12 @@ export const DEFAULT_CRESCELO_KNOWLEDGE_CHUNKS: ChunkRecord[] = guideChunks();
 /**
  * Universal Database Layer
  */
-/** Marks fresh vectors with the embedding profile that made them, so search never compares vectors from different models. */
+/**
+ * Marks fresh vectors with the embedding profile that made them, so search never compares vectors from different models.
+ * While the model is not working the vectors are stand-ins and get the placeholder tag, which queues them for a rebuild.
+ */
 function tagEmbeddings<T extends { embedding?: number[]; metadata: Record<string, any> }>(chunks: T[]): T[] {
-  const id = embeddingProfile().id;
+  const id = vectorTag();
   return chunks.map((c) => (c.embedding && c.embedding.length > 0 ? { ...c, metadata: { ...c.metadata, embModel: id } } : c));
 }
 
@@ -1663,6 +1666,15 @@ export class Database {
     return all.filter((c) => chunkProfileId(c.metadata) !== profileId).slice(0, limit);
   }
 
+  /**
+   * Finds stored vectors that are stand-ins (made while the model could not load) but are tagged as real, and tags them
+   * as placeholders so they are rebuilt. Returns how many were re-tagged. Only the pgvector store needs this.
+   */
+  static async markPlaceholderVectors(): Promise<number> {
+    if (!pgVectorStoreEnabled()) return 0;
+    return ChunkStore.markPlaceholderVectors();
+  }
+
   static async countStaleEmbeddingChunks(): Promise<number> {
     const profileId = embeddingProfile().id;
     if (pgVectorStoreEnabled()) return ChunkStore.countStaleEmbeddingChunks(profileId);
@@ -1840,7 +1852,7 @@ export class Database {
 
     // only vectors made by the current model are comparable with the question's vector; older ones are rebuilt by /api/cron/reembed
     const vectorScored = assistantChunks
-      .filter((chunk) => chunkProfileId(chunk.metadata) === profile.id)
+      .filter((chunk) => chunkProfileId(chunk.metadata) === vectorTag())
       .map((chunk) => ({
         ...chunk,
         score: cosineSimilarity(queryEmbedding, chunk.embedding),

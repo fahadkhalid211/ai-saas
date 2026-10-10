@@ -78,3 +78,27 @@ export const embeddingProfiles = () => PROFILES.map((p) => ({ id: p.id, model: p
 export const chunkProfileId = (metadata?: Record<string, any> | null) => (metadata && typeof metadata.embModel === 'string' && metadata.embModel) || LEGACY_PROFILE_ID;
 
 export const chunkNeedsEmbedding = (metadata?: Record<string, any> | null, profileId = embeddingProfile().id) => chunkProfileId(metadata) !== profileId;
+
+/**
+ * Tag for vectors that are NOT real embeddings: when the model cannot load, the embedder returns a stand-in vector built from
+ * the characters of the text. Stand-ins are stored under this tag, so they are never compared with real vectors and the
+ * rebuild job (/api/cron/reembed) replaces them as soon as the model works.
+ */
+export const PLACEHOLDER_PROFILE_ID = 'placeholder';
+
+let modelWorking: boolean | null = null;
+
+/** Called by the embedder each time it produced a vector: true for a real embedding, false for a stand-in. */
+export function markEmbeddingModel(working: boolean): void {
+  modelWorking = working;
+}
+
+/** The tag for vectors being produced right now: the current profile, or the placeholder tag while the model is not working. */
+export function vectorTag(): string {
+  return modelWorking === false ? PLACEHOLDER_PROFILE_ID : embeddingProfile().id;
+}
+
+/** Test helper. */
+export function _resetEmbeddingModelStateForTesting(): void {
+  modelWorking = null;
+}

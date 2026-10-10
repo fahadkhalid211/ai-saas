@@ -1,7 +1,7 @@
 import { getPostgresPool, isConnectionError, isPostgresConfigured } from './postgres';
 import type { ChunkRecord } from './index';
 import type { SearchResultChunk } from '../rag/types';
-import { embeddingProfile } from '../rag/embedding-profile';
+import { embeddingProfile, vectorTag, PLACEHOLDER_PROFILE_ID } from '../rag/embedding-profile';
 
 /**
  * Knowledge-base passages in Postgres with pgvector: an HNSW index for meaning, a full-text index for words, both
@@ -206,6 +206,24 @@ export async function staleEmbeddingChunks(profileId: string, limit: number): Pr
   return r.rows.map(rowToRecord);
 }
 
+/**
+ * Re-tags stand-in vectors that were stored as if a model had made them. A real embedding always has negative components;
+ * a stand-in (counts of characters, normalised) never does, which is how they are told apart. Returns the number re-tagged.
+ */
+export async function markPlaceholderVectors(): Promise<number> {
+  const p = await pool();
+  const t = chunkTable();
+  const r = await p.query({
+    text: `UPDATE ${t} SET metadata = jsonb_set(COALESCE(metadata, '{}'::jsonb), '{embModel}', to_jsonb($1::text))
+           WHERE COALESCE(metadata->>'embModel', '') <> $1
+             AND embedding IS NOT NULL
+             AND NOT EXISTS (SELECT 1 FROM unnest(embedding::real[]) AS x WHERE x < 0)`,
+    values: [PLACEHOLDER_PROFILE_ID],
+    query_timeout: 60_000,
+  } as any);
+  return r.rowCount ?? 0;
+}
+
 export async function countStaleEmbeddingChunks(profileId: string): Promise<number> {
   const p = await pool();
   const r = await p.query(`SELECT COUNT(*)::int AS n FROM ${chunkTable()} WHERE COALESCE(metadata->>'embModel', 'bge-small-en-v1.5') <> $1`, [profileId]);
@@ -314,7 +332,7 @@ export async function hybridSearch(assistantId: string, query: string, queryEmbe
       );
       tunedClients.add(client);
     }
-    const res = await client.query({ text: sql, values: [vec, assistantId, tsq, topK, profile.vectorCutoffWithKeyword, profile.vectorCutoffAlone, profile.id], query_timeout: 15_000 } as any);
+    const res = await client.query({ text: sql, values: [vec, assistantId, tsq, topK, profile.vectorCutoffWithKeyword, profile.vectorCutoffAlone, vectorTag()], query_timeout: 15_000 } as any);
     return res.rows.map((r: any) => ({
       ...rowToResult(r, Number(r.rrf) || 0),
       vectorScore: Number(r.vscore) || 0,

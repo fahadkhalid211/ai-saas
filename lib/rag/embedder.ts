@@ -1,5 +1,7 @@
 // Open-source embedding pipeline running locally with @xenova/transformers (384 dimensions for every supported profile)
-import { embeddingProfile } from './embedding-profile';
+import os from 'node:os';
+import path from 'node:path';
+import { embeddingProfile, markEmbeddingModel } from './embedding-profile';
 
 let extractorPromise: Promise<any> | null = null;
 
@@ -11,6 +13,10 @@ async function getExtractor() {
         // Configure local caching
         env.allowLocalModels = false;
         env.useBrowserCache = false;
+        // The package's own folder is read-only on serverless hosts; the temp folder is the one place a download can be kept.
+        if (process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME) {
+          env.cacheDir = path.join(os.tmpdir(), 'transformers-cache');
+        }
         
         const modelName = embeddingProfile().model;
         console.log(`[Embedder] Initializing local embedding pipeline with ${modelName}...`);
@@ -20,6 +26,7 @@ async function getExtractor() {
         });
       } catch (err) {
         console.error('[Embedder] Failed to initialize @xenova/transformers pipeline:', err);
+        markEmbeddingModel(false);
         return null;
       }
     })();
@@ -69,13 +76,16 @@ export async function generateEmbedding(text: string, kind: EmbeddingKind = 'que
         if (firstKey) embeddingCache.delete(firstKey);
       }
       embeddingCache.set(cacheKey, vec);
+      markEmbeddingModel(true);
       return vec;
     }
   } catch (error) {
     console.error('[Embedder] Error generating real embedding:', error);
   }
 
-  // Resilient fallback: deterministic pseudo-vector (384 dims) if local runtime is initializing or fails
+  // Resilient fallback: deterministic pseudo-vector (384 dims) if local runtime is initializing or fails.
+  // It is stored under the placeholder tag (see vectorTag), never as if the model had made it.
+  markEmbeddingModel(false);
   return fallbackEmbedding(clean, 384);
 }
 
