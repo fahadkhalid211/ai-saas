@@ -612,7 +612,8 @@ export default function DashboardPage() {
         teamSecurity.fetchAuditLogs();
       }
       fetchNotifications();
-      channels.fetchSmtpSettings();
+      // the platform's mail settings are for the platform owner only; asking as anyone else is refused (and logged as a warning)
+      if (isMasterAdmin) channels.fetchSmtpSettings();
     }
   }, [activeAssistant?.id]);
 

@@ -50,17 +50,14 @@ export function I18nProvider({
   initialLocale?: SupportedLocale;
   initialCountry?: string;
 }) {
-  const [locale, setLocaleState] = useState<SupportedLocale>(() => {
-    if (initialLocale && isValidLocale(initialLocale)) return initialLocale;
-    const cookieVal = readCookie(LOCALE_COOKIE);
-    if (cookieVal && isValidLocale(cookieVal)) return cookieVal;
-    return DEFAULT_LOCALE;
-  });
+  // The first render must be identical on the server and in the browser, or React reports a hydration error (#418) and
+  // re-renders the page. The server cannot see the visitor's saved language, so the first render never reads it either:
+  // it uses what the page passed in (or the default), and the saved language is applied right after, in the effect below.
+  const [locale, setLocaleState] = useState<SupportedLocale>(() =>
+    initialLocale && isValidLocale(initialLocale) ? initialLocale : DEFAULT_LOCALE
+  );
 
-  const [country, setCountryState] = useState<string>(() => {
-    if (initialCountry) return initialCountry;
-    return readCookie(COUNTRY_COOKIE) || 'US';
-  });
+  const [country, setCountryState] = useState<string>(() => initialCountry || 'US');
 
   const [isAutoDetected, setIsAutoDetected] = useState<boolean>(false);
   const [bannerVisible, setBannerVisible] = useState<boolean>(false);
@@ -73,6 +70,8 @@ export function I18nProvider({
 
       if (savedLocale && isValidLocale(savedLocale)) {
         setLocaleState(savedLocale);
+        const savedCountry = readCookie(COUNTRY_COOKIE);
+        if (savedCountry) setCountryState(savedCountry);
         document.documentElement.lang = savedLocale;
         return;
       }
