@@ -11,6 +11,8 @@ import {
   isPostgresConfigured,
   fetchPostgresState,
   persistPostgresState,
+  toCloudPayload,
+  PersistStateResult,
   fetchPostgresChunks,
   persistPostgresChunks,
   fetchPostgresStateUpdatedAt,
@@ -18,7 +20,8 @@ import {
   CloudStateResult,
 } from './postgres';
 
-export type { CloudStateResult };
+export type { CloudStateResult, PersistStateResult };
+export { toCloudPayload };
 
 export function isCloudDbConfigured(): boolean {
   return isPostgresConfigured() || isSupabaseConfigured();
@@ -94,17 +97,19 @@ export interface PersistCloudStateOptions {
   deletedAssistantId?: string;
   deletedLandingPageId?: string;
   deletedLandingPageSlug?: string;
+  /** The payload this instance last loaded or saved, for the three-way merge (lib/db/state-merge.ts). */
+  base?: Record<string, any> | null;
 }
 
 export async function persistCloudState(
   state: any,
-  _options?: PersistCloudStateOptions
-): Promise<{ ok: boolean; updatedAt?: string }> {
+  options?: PersistCloudStateOptions
+): Promise<PersistStateResult> {
   if (!isCloudDbConfigured()) return { ok: false };
 
   try {
     if (isPostgresConfigured()) {
-      const res = await persistPostgresState(state);
+      const res = await persistPostgresState(state, { base: options?.base });
       if (res.ok) return res;
     }
     if (isSupabaseConfigured()) {

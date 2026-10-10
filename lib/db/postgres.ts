@@ -1,4 +1,5 @@
 import { Pool } from 'pg';
+import { mergeState } from './state-merge';
 
 /** Records a database event in the system log. Lazy require: the log store imports this module. */
 function dbLog(input: Record<string, unknown>): void {
@@ -298,74 +299,141 @@ export async function fetchPostgresState(): Promise<CloudStateResult> {
   }
 }
 
-export async function persistPostgresState(state: any): Promise<{ ok: boolean; updatedAt?: string }> {
+/** The six collections that live in their own tables in relational mode; the copies inside the state row are frozen leftovers. */
+const RELATIONAL_KEYS = ['conversations', 'messages', 'leads', 'appointments', 'notifications', 'unansweredQueries'] as const;
+
+const relationalMode = () => process.env.DB_RELATIONAL_MODE === 'true';
+
+/**
+ * The part of the in-memory state that is stored in the state row: no vectors, the log-like lists cut to their newest
+ * entries and, in relational mode, without the collections that have their own tables. Applying it twice changes nothing.
+ */
+export function toCloudPayload(state: any): Record<string, any> {
+  const {
+    chunks: _chunks,
+    pageViews: rawPageViews,
+    messages: rawMessages,
+    auditLogs: rawAuditLogs,
+    notifications: rawNotifications,
+    ...transactional
+  } = state || {};
+
+  const cloudData: Record<string, any> = {
+    ...transactional,
+    messages: Array.isArray(rawMessages) ? rawMessages.slice(-100) : [],
+    auditLogs: Array.isArray(rawAuditLogs) ? rawAuditLogs.slice(-50) : [],
+    notifications: Array.isArray(rawNotifications) ? rawNotifications.slice(-50) : [],
+    pageViews: Array.isArray(rawPageViews) ? rawPageViews.slice(0, 50) : [],
+  };
+  if (relationalMode()) {
+    for (const key of RELATIONAL_KEYS) delete cloudData[key];
+  }
+  return cloudData;
+}
+
+export interface PersistStateOptions {
+  /** The payload this instance last loaded or saved (see lib/db/state-merge.ts). Null or absent: only add and update, never remove. */
+  base?: Record<string, any> | null;
+}
+
+export interface PersistStateResult {
+  ok: boolean;
+  updatedAt?: string;
+  /** What is stored now: this instance's changes on top of what the other instances had saved. */
+  merged?: Record<string, any>;
+  /** True when other instances had saved something this one did not have. */
+  changedByOthers?: boolean;
+}
+
+/** The minimum of a pg client this needs (so the transaction can be tested without a database). */
+export interface StateClient {
+  query(text: string, values?: unknown[]): Promise<{ rows: any[] }>;
+}
+
+/**
+ * Saves the state row without undoing other instances' saves: inside one transaction the row is locked and read, this
+ * instance's changes (payload compared with base) are applied on top of what is stored, and the result is written.
+ * Two instances saving at the same moment wait for each other on the row lock, so neither works from a stale read.
+ */
+export async function writeStateMerged(client: StateClient, payload: Record<string, any>, base: Record<string, any> | null | undefined): Promise<PersistStateResult> {
+  const relational = relationalMode();
+  await client.query('BEGIN');
+  try {
+    await client.query("SET LOCAL lock_timeout = '10s'");
+    const current = await client.query('SELECT data FROM kortex_app_state WHERE id = $1 FOR UPDATE', ['default']);
+
+    let toWrite = payload;
+    let changedByOthers = false;
+    if (current.rows.length > 0 && current.rows[0].data && typeof current.rows[0].data === 'object') {
+      const stored = { ...current.rows[0].data };
+      if (relational) for (const key of RELATIONAL_KEYS) delete stored[key];
+      const result = mergeState(base ?? null, payload, stored);
+      toWrite = result.merged;
+      changedByOthers = result.changedByOthers;
+    }
+
+    const result = relational
+      ? // Conversations, messages, leads, appointments, notifications and unanswered questions live in their own tables. The state
+        // row carries only settings, assistants, workspaces and the like; whatever it already holds for those six collections is
+        // kept as it is (a frozen copy that makes switching back possible) instead of being sent again on every save.
+        await client.query(
+          `INSERT INTO kortex_app_state (id, data, updated_at)
+           VALUES ($1, $2::jsonb, NOW())
+           ON CONFLICT (id) DO UPDATE
+           SET data = EXCLUDED.data || jsonb_build_object(
+                 'conversations', COALESCE(kortex_app_state.data->'conversations', '[]'::jsonb),
+                 'messages', COALESCE(kortex_app_state.data->'messages', '[]'::jsonb),
+                 'leads', COALESCE(kortex_app_state.data->'leads', '[]'::jsonb),
+                 'appointments', COALESCE(kortex_app_state.data->'appointments', '[]'::jsonb),
+                 'notifications', COALESCE(kortex_app_state.data->'notifications', '[]'::jsonb),
+                 'unansweredQueries', COALESCE(kortex_app_state.data->'unansweredQueries', '[]'::jsonb)
+               ),
+               updated_at = NOW()
+           RETURNING updated_at`,
+          ['default', JSON.stringify(toWrite)]
+        )
+      : await client.query(
+          `INSERT INTO kortex_app_state (id, data, updated_at)
+           VALUES ($1, $2, NOW())
+           ON CONFLICT (id) DO UPDATE
+           SET data = EXCLUDED.data, updated_at = NOW()
+           RETURNING updated_at`,
+          ['default', JSON.stringify(toWrite)]
+        );
+    await client.query('COMMIT');
+    const updatedAt = result.rows[0]?.updated_at ? new Date(result.rows[0].updated_at).toISOString() : new Date().toISOString();
+    return { ok: true, updatedAt, merged: toWrite, changedByOthers };
+  } catch (err) {
+    await client.query('ROLLBACK').catch(() => undefined);
+    throw err;
+  }
+}
+
+export async function persistPostgresState(state: any, options: PersistStateOptions = {}): Promise<PersistStateResult> {
   const pool = getPostgresPool();
   if (!pool) return { ok: false };
 
   try {
     const initialized = await ensurePostgresSchema();
     if (!initialized) return { ok: false };
-    const {
-      chunks: _chunks,
-      pageViews: rawPageViews,
-      messages: rawMessages,
-      auditLogs: rawAuditLogs,
-      notifications: rawNotifications,
-      ...transactional
-    } = state;
-
-    const cloudPageViews = Array.isArray(rawPageViews) ? rawPageViews.slice(0, 50) : [];
-    const cloudMessages = Array.isArray(rawMessages) ? rawMessages.slice(-100) : [];
-    const cloudAuditLogs = Array.isArray(rawAuditLogs) ? rawAuditLogs.slice(-50) : [];
-    const cloudNotifications = Array.isArray(rawNotifications) ? rawNotifications.slice(-50) : [];
-
-    const cloudData = {
-      ...transactional,
-      messages: cloudMessages,
-      auditLogs: cloudAuditLogs,
-      notifications: cloudNotifications,
-      pageViews: cloudPageViews,
-    };
+    const payload = toCloudPayload(state);
 
     const writeStarted = performance.now();
-    let result;
-    if (process.env.DB_RELATIONAL_MODE === 'true') {
-      // Conversations, messages, leads, appointments, notifications and unanswered questions live in their own tables. The state
-      // row carries only settings, assistants, workspaces and the like; whatever it already holds for those six collections is
-      // kept as it is (a frozen copy that makes switching back possible) instead of being sent again on every save.
-      const { conversations: _c, messages: _m, leads: _l, appointments: _a, notifications: _n, unansweredQueries: _u, ...rest } = cloudData as any;
-      result = await pool.query(
-        `INSERT INTO kortex_app_state (id, data, updated_at)
-         VALUES ($1, $2::jsonb, NOW())
-         ON CONFLICT (id) DO UPDATE
-         SET data = EXCLUDED.data || jsonb_build_object(
-               'conversations', COALESCE(kortex_app_state.data->'conversations', '[]'::jsonb),
-               'messages', COALESCE(kortex_app_state.data->'messages', '[]'::jsonb),
-               'leads', COALESCE(kortex_app_state.data->'leads', '[]'::jsonb),
-               'appointments', COALESCE(kortex_app_state.data->'appointments', '[]'::jsonb),
-               'notifications', COALESCE(kortex_app_state.data->'notifications', '[]'::jsonb),
-               'unansweredQueries', COALESCE(kortex_app_state.data->'unansweredQueries', '[]'::jsonb)
-             ),
-             updated_at = NOW()
-         RETURNING updated_at`,
-        ['default', JSON.stringify(rest)]
-      );
-    } else {
-      result = await pool.query(
-        `INSERT INTO kortex_app_state (id, data, updated_at)
-         VALUES ($1, $2, NOW())
-         ON CONFLICT (id) DO UPDATE
-         SET data = EXCLUDED.data, updated_at = NOW()
-         RETURNING updated_at`,
-        ['default', JSON.stringify(cloudData)]
-      );
+    const client = await pool.connect(); // the transaction and its row lock belong to one connection
+    let result: PersistStateResult;
+    try {
+      result = await writeStateMerged(client, payload, options.base);
+    } finally {
+      client.release();
     }
     const writeMs = performance.now() - writeStarted;
     if (writeMs > 500) {
-      dbLog({ level: 'warn', event: 'db.slow_state_write', durationMs: writeMs, meta: { bytes: JSON.stringify(cloudData).length } });
+      dbLog({ level: 'warn', event: 'db.slow_state_write', durationMs: writeMs, meta: { bytes: JSON.stringify(result.merged || payload).length } });
     }
-    const updatedAt = result.rows[0]?.updated_at ? new Date(result.rows[0].updated_at).toISOString() : new Date().toISOString();
-    return { ok: true, updatedAt };
+    if (result.changedByOthers) {
+      dbLog({ level: 'info', event: 'db.state_merged', message: 'A save was merged with changes another server instance had saved in the meantime.' });
+    }
+    return result;
   } catch (err: any) {
     console.warn('[Postgres] Exception persisting state:', err?.message || err);
     if (isConnectionError(err)) {

@@ -37,6 +37,7 @@ import {
   fetchCloudState,
   fetchCloudStateUpdatedAt,
   persistCloudState,
+  toCloudPayload,
   PersistCloudStateOptions,
   fetchCloudChunks,
   persistCloudChunks,
@@ -47,6 +48,7 @@ import * as Relational from './relational';
 import * as ChunkStore from './chunk-store';
 import { BILLING_PLANS } from '../billing/plans';
 import { describeLog } from '../logging/describe';
+import { applyMerged, mergeState } from './state-merge';
 import { TRIAL_PLAN_ID, type SubscriptionStatus } from '../billing/trial';
 import { pgVectorStoreEnabled } from './chunk-store';
 import { isRedisConfigured, redisGet, redisSet, CACHE_KEYS } from '../cache/redis';
@@ -833,22 +835,59 @@ function saveLocalStateSync(state: DatabaseState): void {
   } catch {}
 }
 
+/**
+ * For each loaded state object, the payload it was last in step with the database on (after a load or a save). A save sends
+ * only what changed since then, so it cannot undo what other server instances saved meanwhile (lib/db/state-merge.ts).
+ * Keyed by the object, because a request may still be holding (and saving) an object this instance has since reloaded.
+ */
+const syncedPayloads = new WeakMap<object, Record<string, any>>();
+
+const cloneJson = <T>(value: T): T => JSON.parse(JSON.stringify(value));
+
+/** Call right after a state object was loaded from (or first written to) the cloud database. */
+function markInSync(state: DatabaseState | null): void {
+  if (!state) return;
+  try {
+    syncedPayloads.set(state, cloneJson(toCloudPayload(state)));
+  } catch {
+    // without a record of what was loaded, saves fall back to add-and-update only (nothing stored is removed)
+  }
+}
+
+/** Saves of one instance run one after another, so each starts from the result of the previous one. */
+let saveQueue: Promise<void> = Promise.resolve();
+
 async function saveState(state: DatabaseState, options?: PersistCloudStateOptions): Promise<void> {
   saveLocalStateSync(state);
 
   if (isCloudDbConfigured()) {
-    try {
-      const res = await persistCloudState(state, options);
-      lastCloudFetchTime = Date.now();
-      if (res && res.updatedAt) {
-        lastKnownCloudUpdatedAt = res.updatedAt;
+    const run = async () => {
+      try {
+        // what this save is about, fixed now: anything the app changes while the save is in flight belongs to the next save
+        const snapshot = cloneJson(toCloudPayload(state));
+        const res = await persistCloudState(snapshot, { ...options, base: syncedPayloads.get(state) ?? null });
+        lastCloudFetchTime = Date.now();
+        if (res && res.updatedAt) {
+          lastKnownCloudUpdatedAt = res.updatedAt;
+        }
+        if (res && res.ok && res.merged) {
+          if (res.changedByOthers) {
+            // other instances had saved something: bring it into this copy, keeping anything changed here since the snapshot
+            const { merged: next } = mergeState(snapshot, toCloudPayload(state), res.merged);
+            applyMerged(state as unknown as Record<string, any>, next);
+          }
+          syncedPayloads.set(state, cloneJson(res.merged));
+        }
+        if (isRedisConfigured()) {
+          redisSet(CACHE_KEYS.STATE, { state, updatedAt: lastKnownCloudUpdatedAt }, 300).catch(() => {});
+        }
+      } catch (err) {
+        console.warn('[Database] Failed to sync state to Cloud DB:', err);
       }
-      if (isRedisConfigured()) {
-        redisSet(CACHE_KEYS.STATE, { state, updatedAt: lastKnownCloudUpdatedAt }, 300).catch(() => {});
-      }
-    } catch (err) {
-      console.warn('[Database] Failed to sync state to Cloud DB:', err);
-    }
+    };
+    const mine = saveQueue.then(run, run);
+    saveQueue = mine;
+    await mine;
   } else if (isRedisConfigured()) {
     redisSet(CACHE_KEYS.STATE, { state, updatedAt: new Date().toISOString() }, 300).catch(() => {});
   }
@@ -924,6 +963,7 @@ async function ensureInitialized(forceFresh = false): Promise<DatabaseState> {
             const redisCached = await redisGet<{ state: DatabaseState; updatedAt?: string }>(CACHE_KEYS.STATE);
             if (redisCached && redisCached.state && Array.isArray(redisCached.state.workspaces)) {
               cachedState = redisCached.state;
+              markInSync(cachedState);
               if (redisCached.updatedAt) {
                 lastKnownCloudUpdatedAt = redisCached.updatedAt;
               }
@@ -970,6 +1010,7 @@ async function ensureInitialized(forceFresh = false): Promise<DatabaseState> {
               cachedState.notifications = [];
               cachedState.unansweredQueries = [];
             }
+            markInSync(cachedState);
             const remoteMaster = (cachedState.teamMembers || []).find((m) => m.id === 'tm_owner');
             if (remoteMaster && remoteMaster.email !== getMasterEmail()) {
               remoteMaster.email = getMasterEmail();
@@ -984,6 +1025,7 @@ async function ensureInitialized(forceFresh = false): Promise<DatabaseState> {
               lastKnownCloudUpdatedAt = persistRes.updatedAt;
             }
             cachedState = localState;
+            if (persistRes && persistRes.ok) markInSync(cachedState);
             if (isRedisConfigured() && cachedState) {
               redisSet(CACHE_KEYS.STATE, { state: cachedState, updatedAt: lastKnownCloudUpdatedAt }, 300).catch(() => {});
             }
