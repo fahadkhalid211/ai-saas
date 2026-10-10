@@ -6,6 +6,8 @@ import { useId, useState, type FormEvent } from 'react';
 import Link from 'next/link';
 import { FAQ, FINAL_CTA, FOOTER, LOGIN_HREF, SIGNUP_HREF, SITE } from './content';
 import { ButtonLink, Logo, Reveal, SectionHead } from './ui';
+import { LanguageSwitcher } from '@/components/i18n/LanguageSwitcher';
+import { useI18n } from '@/lib/i18n/context';
 
 export function Faq() {
   const [open, setOpen] = useState<number | null>(0);
@@ -122,6 +124,7 @@ function Newsletter() {
 }
 
 export function Footer() {
+  const { dict } = useI18n();
   return (
     <footer className="mk-footer">
       <div className="mk-wrap">
@@ -130,7 +133,7 @@ export function Footer() {
             <Logo />
             <p>{FOOTER.blurb}</p>
             <a href="/support/contact" className="mk-footer-mail">
-              Contact support
+              {dict.footer.contactSupport}
             </a>
             {SITE.socials.length > 0 && (
               <ul className="mk-social" aria-label="Official community channels">
@@ -158,10 +161,13 @@ export function Footer() {
           ))}
           <Newsletter />
         </div>
-        <div className="mk-footer-bottom">
-          <span>© {new Date().getFullYear()} {LEGAL.operatorLine}. All rights reserved.</span>
+        <div className="mk-footer-bottom flex flex-wrap items-center justify-between gap-4">
+          <span>© {new Date().getFullYear()} {LEGAL.operatorLine}. {dict.footer.allRightsReserved}</span>
           <span>{FOOTER.legalNote}</span>
-          <CookieSettingsLink className="underline cursor-pointer" />
+          <div className="flex items-center gap-3">
+            <LanguageSwitcher variant="footer" />
+            <CookieSettingsLink className="underline cursor-pointer" />
+          </div>
         </div>
         <div className="mk-footer-giant-word" aria-hidden="true">
           <svg viewBox="0 0 1000 195" width="100%" preserveAspectRatio="xMidYMid meet" className="mk-footer-wordmark-svg">

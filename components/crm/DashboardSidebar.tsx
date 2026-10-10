@@ -41,6 +41,7 @@ import {
   GoogleSheetsIcon,
 } from '@/components/crm/ChannelsTab';
 import { ADVANCED_ONLY_TABS } from '@/lib/ui/simple-mode';
+import { LanguageSwitcher } from '@/components/i18n/LanguageSwitcher';
 
 function renderIntegrationIcon(id: IntegrationId) {
   switch (id) {
@@ -60,6 +61,8 @@ function renderIntegrationIcon(id: IntegrationId) {
       return <Mail className="h-3.5 w-3.5 text-blue-500 shrink-0" />;
     case 'whitelabel':
       return <Shield className="h-3.5 w-3.5 text-purple-500 shrink-0" />;
+    case 'mcp':
+      return <Cpu className="h-3.5 w-3.5 text-purple-500 shrink-0" />;
     default:
       return <Share2 className="h-3.5 w-3.5 text-slate-400 shrink-0" />;
   }
@@ -302,6 +305,11 @@ export function DashboardSidebar({
           <p className="text-xs text-slate-600 dark:text-slate-400 leading-normal">
             Your assistant is ready to answer customers.
           </p>
+        </div>
+
+        {/* Language Selection */}
+        <div className="pt-1">
+          <LanguageSwitcher variant="sidebar" />
         </div>
       </div>
 

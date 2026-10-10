@@ -1,6 +1,8 @@
 import { CookieConsent } from '@/components/legal/CookieConsent';
 import { AccessibilityMenu } from '@/components/a11y/AccessibilityMenu';
 import { PageAccessibility } from '@/components/a11y/PageAccessibility';
+import { I18nProvider } from '@/lib/i18n/context';
+import { GeoLanguageBanner } from '@/components/i18n/GeoLanguageBanner';
 import { SITE } from '@/components/marketing/content';
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
@@ -83,10 +85,13 @@ export default function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: A11Y_BOOT }} />
       </head>
       <body className="min-h-full flex flex-col bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 selection:bg-blue-600 selection:text-white font-sans">
-        {children}
-        <PageAccessibility />
-        <AccessibilityMenu />
-        <CookieConsent />
+        <I18nProvider>
+          <GeoLanguageBanner />
+          {children}
+          <PageAccessibility />
+          <AccessibilityMenu />
+          <CookieConsent />
+        </I18nProvider>
       </body>
     </html>
   );

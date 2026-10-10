@@ -7,6 +7,8 @@ import { ArrowRight, ChevronDown } from 'lucide-react';
 import { LOGIN_HREF, SIGNUP_HREF } from './content';
 import { ButtonLink, Logo } from './ui';
 import { MEGA_DIRECT_LINKS, MEGA_MENUS, type MegaMenu } from './mega-menu-data';
+import { LanguageSwitcher } from '@/components/i18n/LanguageSwitcher';
+import { useI18n } from '@/lib/i18n/context';
 import './mega-menu.css';
 
 type MenuId = MegaMenu['id'];
@@ -84,6 +86,7 @@ function MegaPanel({ menu, onNavigate, id }: { menu: MegaMenu; onNavigate: () =>
 }
 
 export function Header() {
+  const { dict } = useI18n();
   const pathname = usePathname();
   const [open, setOpen] = useState(false); // mobile menu
   const [scrolled, setScrolled] = useState(false);
@@ -225,12 +228,13 @@ export function Header() {
             {active ? <MegaPanel key={active.id} menu={active} id={`mk-mega-${active.id}`} onNavigate={closeMenu} /> : null}
           </div>
 
-          <div className="mk-header-actions">
+          <div className="mk-header-actions flex items-center gap-2 sm:gap-3">
+            <LanguageSwitcher variant="navbar" />
             <Link href={LOGIN_HREF} className="mk-nav-link mk-login">
-              Log in
+              {dict.nav.login}
             </Link>
             <ButtonLink href={SIGNUP_HREF} className="mk-btn-sm mk-cta-desktop">
-              Start free trial
+              {dict.nav.signup}
             </ButtonLink>
             <button
               ref={toggleRef}
@@ -304,10 +308,14 @@ export function Header() {
               <span>Contact support</span>
             </Link>
           </nav>
-          <div className="mk-mobile-actions">
-            <ButtonLink href={SIGNUP_HREF}>Start free trial</ButtonLink>
+          <div className="mk-mobile-actions space-y-2">
+            <div className="flex items-center justify-between px-1 pb-1">
+              <span className="text-xs text-slate-500 font-medium">{dict.switcher.language}</span>
+              <LanguageSwitcher variant="navbar" />
+            </div>
+            <ButtonLink href={SIGNUP_HREF}>{dict.nav.signup}</ButtonLink>
             <ButtonLink href={LOGIN_HREF} variant="ghost">
-              Log in
+              {dict.nav.login}
             </ButtonLink>
           </div>
         </div>

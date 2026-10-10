@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { checkRateLimit, getClientIp } from './lib/security/rate-limit';
 import { logEvent } from './lib/logging/logger';
+import { resolveGeoLocale, isValidLocale } from './lib/i18n/config';
 
 interface RouteLimitConfig {
   prefix: string;
@@ -194,10 +195,40 @@ export function proxy(request: NextRequest) {
     return withWidgetCors(response, pathname);
   }
 
-  // For non-API routes, pass through with standard security headers
+  // For non-API routes, pass through with standard security and geo headers
   const response = NextResponse.next();
   response.headers.set('X-Content-Type-Options', 'nosniff');
   response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+
+  // Geo-location detection & language resolution
+  const rawCountry =
+    request.headers.get('x-vercel-ip-country') ||
+    request.headers.get('cf-ipcountry') ||
+    request.headers.get('x-country-code');
+  const acceptLang = request.headers.get('accept-language');
+  const userLocaleCookie = request.cookies.get('crescelo_locale')?.value;
+
+  const geo = resolveGeoLocale(rawCountry, acceptLang);
+  const activeLocale =
+    userLocaleCookie && isValidLocale(userLocaleCookie)
+      ? userLocaleCookie
+      : geo.locale;
+
+  response.headers.set('x-crescelo-country', geo.country);
+  response.headers.set('x-crescelo-locale', activeLocale);
+
+  if (!userLocaleCookie && geo.isAutoDetected) {
+    response.cookies.set('crescelo_locale', activeLocale, {
+      path: '/',
+      maxAge: 60 * 60 * 24 * 365,
+      sameSite: 'lax',
+    });
+    response.cookies.set('crescelo_country', geo.country, {
+      path: '/',
+      maxAge: 60 * 60 * 24 * 365,
+      sameSite: 'lax',
+    });
+  }
   // only the signed-in areas refuse to be framed; public pages and /embed/ may be shown inside other sites
   if (pathname === '/master' || pathname === '/login' || pathname === '/dashboard' || /^\/(master|login|dashboard)\//.test(pathname)) {
     response.headers.set('X-Frame-Options', 'SAMEORIGIN');
