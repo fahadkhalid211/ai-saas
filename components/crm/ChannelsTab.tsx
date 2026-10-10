@@ -36,6 +36,9 @@ import {
 import { CresceloMark } from '@/components/brand/CresceloMark';
 import { GOOGLE_APPS_SCRIPT_TEMPLATE } from '@/lib/integrations/google-sheets-template';
 
+import { Cpu } from 'lucide-react';
+import { McpIntegrationPanel } from './mcp/McpIntegrationPanel';
+
 export type IntegrationId =
   | 'slack'
   | 'google-sheets'
@@ -44,7 +47,8 @@ export type IntegrationId =
   | 'phone'
   | 'webhooks'
   | 'smtp'
-  | 'whitelabel';
+  | 'whitelabel'
+  | 'mcp';
 
 export interface IntegrationConfigItem {
   id: IntegrationId;
@@ -111,6 +115,14 @@ export const INTEGRATIONS_CONFIG: IntegrationConfigItem[] = [
     category: 'Reseller & Agency',
     badge: 'Client Branding',
     summary: 'Remove Crescelo branding and display your agency watermark and backlink.',
+  },
+  {
+    id: 'mcp',
+    name: 'ChatGPT & Claude (MCP)',
+    shortName: 'ChatGPT & Claude',
+    category: 'AI Agent Ecosystem',
+    badge: 'Model Context Protocol',
+    summary: 'Connect ChatGPT, Claude, Cursor, and autonomous agents to your knowledge base, calendar, and CRM.',
   },
 ];
 
@@ -487,6 +499,15 @@ export const ChannelsTab: React.FC<ChannelsTabProps> = ({
       summary: 'Remove Crescelo branding and display your agency watermark and backlink.',
       icon: <Shield className="h-5 w-5 text-purple-500" />,
       isActive: Boolean(formData.whiteLabelEnabled),
+    },
+    {
+      id: 'mcp' as const,
+      name: 'ChatGPT & Claude (MCP)',
+      category: 'AI Agent Ecosystem',
+      badge: 'Model Context Protocol',
+      summary: 'Connect ChatGPT, Claude, Cursor, and autonomous agents to your knowledge base, calendar, and CRM.',
+      icon: <Cpu className="h-5 w-5 text-purple-500" />,
+      isActive: true,
     },
   ];
 
@@ -1944,6 +1965,13 @@ export const ChannelsTab: React.FC<ChannelsTabProps> = ({
               </div>
             )}
           </div>
+        )}
+
+        {/* ======================================================== */}
+        {/* INTEGRATION 8: CHATGPT & CLAUDE (MCP)                   */}
+        {/* ======================================================== */}
+        {selectedIntegration === 'mcp' && (
+          <McpIntegrationPanel activeSubTab={activeSubTab} />
         )}
       </div>
 

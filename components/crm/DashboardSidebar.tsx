@@ -43,8 +43,8 @@ import {
 import { ADVANCED_ONLY_TABS } from '@/lib/ui/simple-mode';
 import { LanguageSwitcher } from '@/components/i18n/LanguageSwitcher';
 
-function renderIntegrationIcon(id: IntegrationId) {
-  switch (id) {
+function renderIntegrationIcon(id: IntegrationId | string) {
+  switch (id as string) {
     case 'slack':
       return <SlackIcon className="h-3.5 w-3.5 shrink-0" />;
     case 'google-sheets':

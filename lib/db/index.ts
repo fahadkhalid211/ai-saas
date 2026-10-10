@@ -49,6 +49,8 @@ import { BILLING_PLANS } from '../billing/plans';
 import { TRIAL_PLAN_ID, type SubscriptionStatus } from '../billing/trial';
 import { pgVectorStoreEnabled } from './chunk-store';
 import { isRedisConfigured, redisGet, redisSet, CACHE_KEYS } from '../cache/redis';
+import type { McpTokenRecord, McpAuditLogRecord } from '../mcp/types';
+export type { McpTokenRecord, McpAuditLogRecord } from '../mcp/types';
 export { isCloudDbConfigured, getCloudDbProvider, isSupabaseConfigured };
 
 /**
@@ -504,6 +506,8 @@ interface DatabaseState {
   pageViews?: PageViewEventData[];
   processedWebhookEvents?: string[];
   pushTokens?: DevicePushTokenRecord[];
+  mcpTokens?: McpTokenRecord[];
+  mcpAuditLogs?: McpAuditLogRecord[];
 }
 
 const DATA_DIR = resolveDataDir();
@@ -746,6 +750,8 @@ function loadState(): DatabaseState {
   if (!state.notifications) state.notifications = [];
   if (!state.landingPages) state.landingPages = [];
   if (!state.pageViews) state.pageViews = [];
+  if (!state.mcpTokens) state.mcpTokens = [];
+  if (!state.mcpAuditLogs) state.mcpAuditLogs = [];
 
   // AUTOMATED ZERO-DOWNTIME MIGRATION:
   // If db.json contains vector chunks, migrate them to vectors.json and strip from db.json
@@ -946,6 +952,8 @@ async function ensureInitialized(forceFresh = false): Promise<DatabaseState> {
               landingPagesInitialized: remoteState.landingPagesInitialized !== undefined ? remoteState.landingPagesInitialized : true,
               smtpSettings: remoteState.smtpSettings,
               pageViews: Array.isArray(remoteState.pageViews) ? remoteState.pageViews : (cachedState?.pageViews || []),
+              mcpTokens: Array.isArray(remoteState.mcpTokens) ? remoteState.mcpTokens : [],
+              mcpAuditLogs: Array.isArray(remoteState.mcpAuditLogs) ? remoteState.mcpAuditLogs : [],
             };
             if (isRelationalModeEnabled()) {
               // these live in their own tables now; the copies inside the state row are stale leftovers from before the migration
@@ -4774,6 +4782,82 @@ export class Database {
     cachedState = state;
     lastCloudFetchTime = Date.now();
     return updated;
+  }
+
+  // ---------------------------------------------------------------------------
+  // MCP (Model Context Protocol) Tokens & Audit Logs
+  // ---------------------------------------------------------------------------
+
+  static async getMcpTokens(workspaceId: string): Promise<McpTokenRecord[]> {
+    const state = await ensureInitialized();
+    const all = state.mcpTokens || [];
+    if (workspaceId === '*') return all;
+    return all.filter((t) => t.workspaceId === workspaceId);
+  }
+
+  static async getMcpTokenByHash(tokenHash: string): Promise<McpTokenRecord | null> {
+    const state = await ensureInitialized();
+    const token = (state.mcpTokens || []).find((t) => t.tokenHash === tokenHash);
+    return token || null;
+  }
+
+  static async saveMcpToken(token: McpTokenRecord): Promise<void> {
+    const state = await ensureInitialized();
+    if (!state.mcpTokens) state.mcpTokens = [];
+    const idx = state.mcpTokens.findIndex((t) => t.id === token.id);
+    if (idx >= 0) {
+      state.mcpTokens[idx] = token;
+    } else {
+      state.mcpTokens.unshift(token);
+    }
+    await saveState(state);
+    cachedState = state;
+    lastCloudFetchTime = Date.now();
+  }
+
+  static async revokeMcpToken(id: string, workspaceId: string): Promise<boolean> {
+    const state = await ensureInitialized();
+    if (!state.mcpTokens) state.mcpTokens = [];
+    const token = state.mcpTokens.find((t) => t.id === id && (workspaceId === '*' || t.workspaceId === workspaceId));
+    if (!token) return false;
+    token.status = 'revoked';
+    await saveState(state);
+    cachedState = state;
+    lastCloudFetchTime = Date.now();
+    return true;
+  }
+
+  static async touchMcpToken(id: string): Promise<void> {
+    const state = await ensureInitialized();
+    if (!state.mcpTokens) return;
+    const token = state.mcpTokens.find((t) => t.id === id);
+    if (!token) return;
+    token.lastUsedAt = new Date().toISOString();
+    scheduleDeferredBlobSync(state);
+  }
+
+  static async saveMcpAuditLog(entry: Omit<McpAuditLogRecord, 'id' | 'timestamp'>): Promise<McpAuditLogRecord> {
+    const state = await ensureInitialized();
+    if (!state.mcpAuditLogs) state.mcpAuditLogs = [];
+    const log: McpAuditLogRecord = {
+      id: 'mcp_log_' + crypto.randomBytes(8).toString('hex'),
+      timestamp: new Date().toISOString(),
+      ...entry,
+    };
+    state.mcpAuditLogs.unshift(log);
+    // Keep most recent 5,000 logs in memory/state
+    if (state.mcpAuditLogs.length > 5000) {
+      state.mcpAuditLogs = state.mcpAuditLogs.slice(0, 5000);
+    }
+    scheduleDeferredBlobSync(state);
+    return log;
+  }
+
+  static async getMcpAuditLogs(workspaceId: string, limit: number = 100): Promise<McpAuditLogRecord[]> {
+    const state = await ensureInitialized();
+    const all = state.mcpAuditLogs || [];
+    const filtered = workspaceId === '*' ? all : all.filter((l) => l.workspaceId === workspaceId);
+    return filtered.slice(0, Math.max(1, Math.min(limit, 500)));
   }
 }
 

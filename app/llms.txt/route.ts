@@ -29,6 +29,7 @@ Crescelo is a website assistant for service businesses (salons and barbershops, 
 - Books appointments with slot locking so two visitors cannot take the same time.
 - Captures leads and sends them to email, webhooks (Zapier, Make), Slack and Google Sheets.
 - Hands over to a human in one click.
+- Model Context Protocol (MCP) server at ${u}/api/mcp: AI agents (ChatGPT, Claude Desktop, Cursor) can interact with customer knowledge bases, live appointments, and CRM leads via 13 verified tools.
 - Bring your own AI provider (OpenAI, Anthropic, Google Gemini, Groq, DeepSeek or a self-hosted model). Crescelo adds no markup to AI usage; the provider bills the customer directly.
 
 ## Pricing
