@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { Database } from '@/lib/db';
 import { logged } from '@/lib/logging/route';
+import { widgetTitleFor } from '@/lib/widget/title';
 
 export async function OPTIONS() {
   return new NextResponse(null, {
@@ -34,7 +35,8 @@ async function GETHandler(
     // Public sanitized config
     const publicConfig = {
       id: assistant.id,
-      name: assistant.name,
+      // what visitors see at the top of the chat: the owner's short title, or the assistant's name
+      name: widgetTitleFor(assistant),
       welcomeMessage: assistant.welcomeMessage,
       primaryColor: assistant.primaryColor || '#2563eb',
       launcherPosition: assistant.launcherPosition || 'bottom-right',

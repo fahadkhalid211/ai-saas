@@ -15,6 +15,7 @@ export interface Assistant {
   apiKeyEncrypted?: string;
   customBaseUrl?: string;
   primaryColor: string;
+  widgetTitle?: string;
   launcherPosition: string;
   starterQuestions: string[];
   collectLeadEmail: boolean;

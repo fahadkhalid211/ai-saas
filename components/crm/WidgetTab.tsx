@@ -1,5 +1,6 @@
 import { SaveButton } from '@/components/ui/SaveButton';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { WIDGET_TITLE_MAX, starterQuestionsFromText, widgetTitleFor } from '@/lib/widget/title';
 import {
   RefreshCw,
   CheckCircle2,
@@ -39,6 +40,15 @@ export const WidgetTab: React.FC<WidgetTabProps> = ({
   saveSuccess,
   saveError,
 }) => {
+  // The starter questions are edited as plain text. Deriving the box from the saved list on every keystroke dropped the
+  // empty line that Enter creates, so a second question could never be started.
+  const [starterText, setStarterText] = useState<string>((formData.starterQuestions || []).join('\n'));
+  useEffect(() => {
+    // another assistant was opened, or the saved list changed outside this box
+    const saved = (formData.starterQuestions || []).join('\n');
+    setStarterText((current) => (starterQuestionsFromText(current).join('\n') === saved ? current : saved));
+  }, [formData.id, (formData.starterQuestions || []).join('\n')]);
+
   const [newFieldLabel, setNewFieldLabel] = useState('');
   const [newFieldType, setNewFieldType] = useState<'text' | 'textarea' | 'tel' | 'select'>('text');
   const [newFieldRequired, setNewFieldRequired] = useState(false);
@@ -109,6 +119,25 @@ export const WidgetTab: React.FC<WidgetTabProps> = ({
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   {/* Configuration controls */}
                   <div className="space-y-5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-xs">
+                    {/* Chat title */}
+                    <div>
+                      <label htmlFor="widget-title" className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1.5">
+                        Chat title
+                      </label>
+                      <input
+                        id="widget-title"
+                        type="text"
+                        maxLength={WIDGET_TITLE_MAX}
+                        value={formData.widgetTitle || ''}
+                        onChange={(e) => setFormData({ ...formData, widgetTitle: e.target.value })}
+                        placeholder={formData.name || 'AI Assistant'}
+                        className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-2.5 py-2 text-xs text-slate-900 dark:text-slate-100 outline-none focus:border-blue-500"
+                      />
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
+                        The name visitors see at the top of the chat, up to {WIDGET_TITLE_MAX} characters. Leave it empty to show &ldquo;{formData.name || 'AI Assistant'}&rdquo;.
+                      </p>
+                    </div>
+
                     {/* Brand Color */}
                     <div>
                       <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-2">
@@ -160,18 +189,18 @@ export const WidgetTab: React.FC<WidgetTabProps> = ({
 
                     {/* Starter Questions */}
                     <div>
-                      <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1.5">
+                      <label htmlFor="widget-starters" className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1.5">
                         Suggested Starter Questions (1 per line)
                       </label>
                       <textarea
-                        rows={3}
-                        value={(formData.starterQuestions || []).join('\n')}
-                        onChange={(e) =>
-                          setFormData({
-                            ...formData,
-                            starterQuestions: e.target.value.split('\n').filter((q) => q.trim() !== ''),
-                          })
-                        }
+                        id="widget-starters"
+                        rows={4}
+                        value={starterText}
+                        onChange={(e) => {
+                          setStarterText(e.target.value);
+                          setFormData({ ...formData, starterQuestions: starterQuestionsFromText(e.target.value) });
+                        }}
+                        placeholder={'What are your prices?\nWhat are your opening hours?'}
                         className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-2.5 text-xs text-slate-900 dark:text-slate-100 outline-none focus:border-blue-500"
                       />
                     </div>
@@ -661,7 +690,7 @@ export const WidgetTab: React.FC<WidgetTabProps> = ({
                             AI
                           </div>
                           <div>
-                            <div className="text-xs font-bold leading-tight">{formData.name || 'Business AI'}</div>
+                            <div className="text-xs font-bold leading-tight">{widgetTitleFor(formData)}</div>
                             <div className="text-[10px] opacity-85 flex items-center gap-1">
                               <span className="h-1.5 w-1.5 rounded-full bg-emerald-300"></span> Online
                             </div>

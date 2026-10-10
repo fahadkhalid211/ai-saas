@@ -14,6 +14,7 @@ import {
 import { logged } from '@/lib/logging/route';
 import { serviceBlocked } from '@/lib/billing/trial';
 import { sanitizeCostCap } from '@/lib/ai/spend/guard';
+import { sanitizeWidgetTitle, starterQuestionsFromText } from '@/lib/widget/title';
 import { validateUrl } from '@/lib/security/validation';
 
 const GETHandler = withAdminAuth(async (
@@ -85,6 +86,14 @@ const PUTHandler = withRoleAuth(['owner', 'admin'], async (
         if (!urlCheck.valid) return NextResponse.json({ error: urlCheck.error }, { status: 400 });
         safeUpdates[field] = urlCheck.value;
       }
+    }
+
+    // Chat widget title and starter questions: one short line, and a clean list
+    if (safeUpdates.widgetTitle !== undefined) {
+      safeUpdates.widgetTitle = sanitizeWidgetTitle(safeUpdates.widgetTitle);
+    }
+    if (Array.isArray(safeUpdates.starterQuestions)) {
+      safeUpdates.starterQuestions = starterQuestionsFromText(safeUpdates.starterQuestions.filter((q: unknown) => typeof q === 'string').join('\n'));
     }
 
     // Monthly cost cap on the customer's own AI key

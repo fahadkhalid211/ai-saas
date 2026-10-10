@@ -127,6 +127,8 @@ export interface AssistantData {
   /** Monthly spending limit on the customer's own AI key (see lib/ai/spend/guard.ts). */
   costCap?: CostCapSettings;
   primaryColor: string;
+  /** Short name shown at the top of the chat widget instead of the assistant's own name (lib/widget/title.ts). */
+  widgetTitle?: string;
   avatarUrl?: string;
   launcherPosition: string;
   starterQuestions: string[];
