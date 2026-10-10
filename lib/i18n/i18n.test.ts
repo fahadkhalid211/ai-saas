@@ -88,16 +88,43 @@ describe('i18n and Geo-Detection Engine', () => {
     expect(isValidLocale('')).toBe(false);
   });
 
-  it('provides complete dictionaries for all 5 languages', () => {
+  it('provides complete dictionaries for all 5 languages including Phase 2 marketing and auth sections', () => {
     const locales: SupportedLocale[] = ['en', 'sv', 'fi', 'it', 'es'];
     for (const loc of locales) {
       const dict = getDictionary(loc);
+      // Phase 1
       expect(dict.nav.login).toBeDefined();
       expect(dict.nav.signup).toBeDefined();
       expect(dict.geoBanner.visitingFrom).toBeDefined();
       expect(dict.geoBanner.keep).toBeDefined();
       expect(dict.geoBanner.switchToEnglish).toBeDefined();
       expect(dict.footer.allRightsReserved).toBeDefined();
+
+      // Phase 2 Marketing
+      expect(dict.hero.eyebrow).toBeDefined();
+      expect(dict.hero.title[0]).toBeDefined();
+      expect(dict.hero.title[1]).toBeDefined();
+      expect(dict.hero.primaryCta).toBeDefined();
+      expect(dict.hero.turns.length).toBeGreaterThanOrEqual(3);
+
+      expect(dict.story.title).toBeDefined();
+      expect(dict.story.before.length).toBeGreaterThanOrEqual(4);
+      expect(dict.story.after.length).toBeGreaterThanOrEqual(3);
+
+      expect(dict.demo.question).toBeDefined();
+      expect(dict.demo.groundedText).toBeDefined();
+
+      expect(dict.useCases.items.length).toBeGreaterThanOrEqual(4);
+      expect(dict.pricing.monthly).toBeDefined();
+      expect(dict.pricing.annual).toBeDefined();
+      expect(dict.faq.items.length).toBeGreaterThanOrEqual(8);
+      expect(dict.finalCta.primary).toBeDefined();
+
+      // Phase 2 Auth
+      expect(dict.auth.registerTitle).toBeDefined();
+      expect(dict.auth.loginTitle).toBeDefined();
+      expect(dict.auth.continueWithGoogle).toBeDefined();
+      expect(dict.auth.businessNameLabel).toBeDefined();
     }
   });
 });

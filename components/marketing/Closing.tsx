@@ -10,14 +10,18 @@ import { LanguageSwitcher } from '@/components/i18n/LanguageSwitcher';
 import { useI18n } from '@/lib/i18n/context';
 
 export function Faq() {
+  const { dict } = useI18n();
+  const faq = dict?.faq || FAQ;
+  const items = faq.items || FAQ.items;
   const [open, setOpen] = useState<number | null>(0);
   const base = useId();
+
   return (
     <section id="faq" className="mk-section" aria-labelledby="mk-faq-title">
       <div className="mk-wrap mk-faq-grid">
-        <SectionHead id="mk-faq-title" eyebrow={FAQ.eyebrow} title={FAQ.title} />
+        <SectionHead id="mk-faq-title" eyebrow={faq.eyebrow} title={faq.title} />
         <Reveal className="mk-faq">
-          {FAQ.items.map((it, i) => {
+          {items.map((it, i) => {
             const isOpen = open === i;
             const btnId = `${base}-b-${i}`;
             const panelId = `${base}-p-${i}`;
@@ -50,18 +54,21 @@ export function Faq() {
 }
 
 export function FinalCta() {
+  const { dict } = useI18n();
+  const cta = dict?.finalCta || FINAL_CTA;
+
   return (
     <section className="mk-final" aria-labelledby="mk-final-title">
       <div className="mk-wrap">
         <Reveal className="mk-final-inner">
           <h2 id="mk-final-title" className="mk-h2 mk-h2-wide">
-            {FINAL_CTA.title}
+            {cta.title}
           </h2>
-          <p className="mk-lead">{FINAL_CTA.body}</p>
+          <p className="mk-lead">{cta.body}</p>
           <div className="mk-cta-row">
-            <ButtonLink href={SIGNUP_HREF}>{FINAL_CTA.primary}</ButtonLink>
+            <ButtonLink href={SIGNUP_HREF}>{cta.primary}</ButtonLink>
             <ButtonLink href={LOGIN_HREF} variant="ghost">
-              {FINAL_CTA.secondary}
+              {cta.secondary}
             </ButtonLink>
           </div>
         </Reveal>
@@ -72,11 +79,9 @@ export function FinalCta() {
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
-/**
- * No newsletter provider is connected yet. A valid address opens a pre-filled email to
- * the contact address instead of pretending to subscribe. Swap `onSubmit` for a real endpoint later.
- */
 function Newsletter() {
+  const { dict } = useI18n();
+  const news = dict?.newsletter;
   const [email, setEmail] = useState('');
   const [error, setError] = useState('');
   const [sent, setSent] = useState(false);
@@ -86,26 +91,25 @@ function Newsletter() {
     e.preventDefault();
     const v = email.trim();
     if (!EMAIL_RE.test(v) || v.length > 254) {
-      setError('Enter a valid email address, like name@example.com.');
+      setError(news?.error || 'Enter a valid email address, like name@example.com.');
       setSent(false);
       return;
     }
     setError('');
     setSent(true);
-    // no public mailbox: the sign-up goes through the contact form, which opens a ticket
     window.location.href = `/support/contact?topic=newsletter&email=${encodeURIComponent(v)}`;
   };
 
   return (
     <form className="mk-news" onSubmit={submit} noValidate>
-      <label htmlFor="mk-news-email">Email updates</label>
+      <label htmlFor="mk-news-email">{news?.title || 'Email updates'}</label>
       <div className="mk-news-row">
         <input
           id="mk-news-email"
           type="email"
           inputMode="email"
           autoComplete="email"
-          placeholder="you@company.com"
+          placeholder={news?.placeholder || 'you@company.com'}
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           aria-invalid={error ? true : undefined}
@@ -113,11 +117,11 @@ function Newsletter() {
           maxLength={254}
         />
         <button type="submit" className="mk-btn mk-btn-primary mk-btn-sm">
-          Subscribe
+          {news?.button || 'Subscribe'}
         </button>
       </div>
       <p id={errId} className="mk-news-msg" role={error ? 'alert' : 'status'}>
-        {error || (sent ? 'Thank you! You have been subscribed to Crescelo updates.' : '')}
+        {error || (sent ? (news?.success || 'Thank you! You have been subscribed to Crescelo updates.') : '')}
       </p>
     </form>
   );
@@ -131,7 +135,7 @@ export function Footer() {
         <div className="mk-footer-top">
           <div className="mk-footer-brand">
             <Logo />
-            <p>{FOOTER.blurb}</p>
+            <p>{dict?.footer?.blurb || FOOTER.blurb}</p>
             <a href="/support/contact" className="mk-footer-mail">
               {dict.footer.contactSupport}
             </a>
@@ -163,7 +167,7 @@ export function Footer() {
         </div>
         <div className="mk-footer-bottom flex flex-wrap items-center justify-between gap-4">
           <span>© {new Date().getFullYear()} {LEGAL.operatorLine}. {dict.footer.allRightsReserved}</span>
-          <span>{FOOTER.legalNote}</span>
+          <span>{dict?.footer?.legalNote || FOOTER.legalNote}</span>
           <div className="flex items-center gap-3">
             <LanguageSwitcher variant="footer" />
             <CookieSettingsLink className="underline cursor-pointer" />

@@ -4,6 +4,7 @@ import { useEffect, useRef } from 'react';
 import { STORY } from './content';
 import { Eyebrow, Reveal } from './ui';
 import { usePrefersReducedMotion } from './hooks';
+import { useI18n } from '@/lib/i18n/context';
 
 const TONES = ['lav', 'pink', 'amber', 'coral'] as const;
 const clamp = (n: number, a: number, b: number) => Math.min(b, Math.max(a, n));
@@ -13,9 +14,12 @@ const clamp = (n: number, a: number, b: number) => Math.min(b, Math.max(a, n));
  * A smoothed scroll index drives every card; transforms are written straight to the DOM.
  */
 function ProblemStack() {
+  const { dict } = useI18n();
+  const story = dict?.story || STORY;
+  const before = story.before || STORY.before;
   const outerRef = useRef<HTMLDivElement>(null);
   const cardRefs = useRef<(HTMLElement | null)[]>([]);
-  const n = STORY.before.length;
+  const n = before.length;
 
   useEffect(() => {
     const outer = outerRef.current;
@@ -85,7 +89,7 @@ function ProblemStack() {
   return (
     <div ref={outerRef} className="mk-stack-outer" style={{ height: `calc(100vh + ${(n - 1) * 70}vh)` }}>
       <div className="mk-stack-stage">
-        {STORY.before.map((item, i) => (
+        {before.map((item, i) => (
           <article
             key={item.title}
             ref={(el) => {
@@ -107,15 +111,17 @@ function ProblemStack() {
 }
 
 export function ProblemSolution() {
+  const { dict } = useI18n();
+  const story = dict?.story || STORY;
   const reduced = usePrefersReducedMotion();
 
   return (
     <section id="problem" className="mk-section mk-story" aria-labelledby="mk-story-title">
       <div className="mk-wrap">
         <Reveal className="mk-center-head mk-story-head">
-          <Eyebrow>{STORY.eyebrow}</Eyebrow>
+          <Eyebrow>{story.eyebrow}</Eyebrow>
           <h2 id="mk-story-title" className="mk-h2 mk-h2-center">
-            {STORY.title}
+            {story.title}
           </h2>
         </Reveal>
       </div>
@@ -123,7 +129,7 @@ export function ProblemSolution() {
       {reduced ? (
         <div className="mk-wrap">
           <ol className="mk-stack-static">
-            {STORY.before.map((item, i) => (
+            {story.before.map((item, i) => (
               <li key={item.title} className="mk-stack-card is-static" data-tone={TONES[i % TONES.length]}>
                 <span className="mk-stack-num" aria-hidden="true">
                   0{i + 1}
@@ -140,12 +146,12 @@ export function ProblemSolution() {
 
       <div className="mk-wrap">
         <Reveal className="mk-center-head mk-story-turn">
-          <Eyebrow>{STORY.afterEyebrow}</Eyebrow>
-          <h2 className="mk-h2 mk-h2-center">{STORY.afterTitle}</h2>
+          <Eyebrow>{story.afterEyebrow}</Eyebrow>
+          <h2 className="mk-h2 mk-h2-center">{story.afterTitle}</h2>
         </Reveal>
 
         <ul className="mk-cards">
-          {STORY.after.map((item, i) => (
+          {story.after.map((item, i) => (
             <Reveal as="li" key={item.title} delay={i * 90} className="mk-card">
               <h3>{item.title}</h3>
               <p>{item.body}</p>

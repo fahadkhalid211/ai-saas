@@ -3,13 +3,16 @@
 import { useRef, useState, type KeyboardEvent } from 'react';
 import { METRICS, SECURITY, USE_CASES } from './content';
 import { Check, Counter, Reveal, SectionHead } from './ui';
+import { useI18n } from '@/lib/i18n/context';
 
 /* ------------------------------ Use cases ------------------------------ */
 
 export function UseCases() {
+  const { dict } = useI18n();
+  const uc = dict?.useCases || USE_CASES;
   const [active, setActive] = useState(0);
   const refs = useRef<(HTMLButtonElement | null)[]>([]);
-  const items = USE_CASES.items;
+  const items = uc.items || USE_CASES.items;
   const onKey = (e: KeyboardEvent) => {
     let n = active;
     if (e.key === 'ArrowDown' || e.key === 'ArrowRight') n = (active + 1) % items.length;
@@ -19,11 +22,11 @@ export function UseCases() {
     setActive(n);
     refs.current[n]?.focus();
   };
-  const cur = items[active];
+  const cur = items[active] || items[0] || USE_CASES.items[0];
   return (
     <section id="use-cases" className="mk-section" aria-labelledby="mk-uc-title">
       <div className="mk-wrap">
-        <SectionHead id="mk-uc-title" eyebrow={USE_CASES.eyebrow} title={USE_CASES.title} />
+        <SectionHead id="mk-uc-title" eyebrow={uc.eyebrow} title={uc.title} />
         <Reveal className="mk-uc">
           <div role="tablist" aria-label="Business type" aria-orientation="vertical" className="mk-uc-tabs" onKeyDown={onKey}>
             {items.map((it, i) => (
@@ -66,12 +69,16 @@ export function UseCases() {
 /* ------------------------------ Metrics ------------------------------ */
 
 export function Metrics() {
+  const { dict } = useI18n();
+  const met = dict?.metrics || METRICS;
+  const items = met.items || METRICS.items;
+
   return (
     <section id="metrics" className="mk-section" aria-labelledby="mk-m-title">
       <div className="mk-wrap">
-        <SectionHead id="mk-m-title" eyebrow={METRICS.eyebrow} title={METRICS.title} />
+        <SectionHead id="mk-m-title" eyebrow={met.eyebrow} title={met.title} />
         <dl className="mk-metrics">
-          {METRICS.items.map((m, i) => (
+          {items.map((m, i) => (
             <Reveal key={m.label} delay={i * 70} className="mk-metric">
               <dd className="mk-metric-value">
                 <Counter end={m.value} suffix={m.suffix} />
@@ -80,7 +87,7 @@ export function Metrics() {
             </Reveal>
           ))}
         </dl>
-        <p className="mk-footnote">{METRICS.footnote}</p>
+        <p className="mk-footnote">{met.footnote || METRICS.footnote}</p>
       </div>
     </section>
   );
@@ -89,12 +96,16 @@ export function Metrics() {
 /* ------------------------------ Security ------------------------------ */
 
 export function Security() {
+  const { dict } = useI18n();
+  const sec = dict?.security || SECURITY;
+  const items = sec.items || SECURITY.items;
+
   return (
     <section id="security" className="mk-section" aria-labelledby="mk-sec-title">
       <div className="mk-wrap">
-        <SectionHead id="mk-sec-title" eyebrow={SECURITY.eyebrow} title={SECURITY.title} intro={SECURITY.intro} />
+        <SectionHead id="mk-sec-title" eyebrow={sec.eyebrow} title={sec.title} intro={sec.intro} />
         <ul className="mk-sec-grid">
-          {SECURITY.items.map((s, i) => (
+          {items.map((s, i) => (
             <Reveal as="li" key={s.title} delay={i * 50} className="mk-sec-item">
               <span className="mk-sec-icon" aria-hidden="true">
                 <Check />

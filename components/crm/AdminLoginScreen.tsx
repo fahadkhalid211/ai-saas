@@ -17,6 +17,8 @@ import { EMAIL_REGEX } from '@/lib/security/validation';
 import Link from 'next/link';
 import { brandFontClasses } from '@/lib/brand-fonts';
 import { GoogleRecaptchaNotice } from '@/components/security/GoogleRecaptcha';
+import { useI18n } from '@/lib/i18n/context';
+import { LanguageSwitcher } from '@/components/i18n/LanguageSwitcher';
 
 const GoogleIcon: React.FC<{ className?: string }> = ({ className = 'h-4 w-4' }) => (
   <svg viewBox="0 0 24 24" className={className}>
@@ -93,6 +95,8 @@ export function AdminLoginScreen({
   handleSSOLogin,
   onBackToHome,
 }: AdminLoginScreenProps) {
+  const { dict } = useI18n();
+  const auth = dict?.auth;
   const [showSsoPrompt, setShowSsoPrompt] = useState(false);
   const [ssoInput, setSsoInput] = useState('');
 
@@ -124,29 +128,32 @@ export function AdminLoginScreen({
             href="/"
             className="text-xs font-semibold text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300 flex items-center gap-1 transition"
           >
-            <span>&larr; View our website</span>
+            <span>&larr; {auth?.viewWebsite || 'View our website'}</span>
           </Link>
-          {onBackToHome && (
-            <button
-              type="button"
-              onClick={onBackToHome}
-              className="text-xs font-semibold text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition cursor-pointer"
-            >
-              <span>Back</span>
-            </button>
-          )}
+          <div className="flex items-center gap-2">
+            <LanguageSwitcher variant="compact" />
+            {onBackToHome && (
+              <button
+                type="button"
+                onClick={onBackToHome}
+                className="text-xs font-semibold text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition cursor-pointer"
+              >
+                <span>{auth?.back || 'Back'}</span>
+              </button>
+            )}
+          </div>
         </div>
         <div className="flex flex-col items-center text-center space-y-1.5">
           <div className="h-12 w-12 rounded-2xl bg-[#abff44]/40 border border-[#08251a]/15 flex items-center justify-center text-[#08251a] mb-0.5">
             {authLoginMode === 'register' ? <Building2 className="h-6 w-6" /> : <ShieldCheck className="h-6 w-6" />}
           </div>
           <h2 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">
-            {authLoginMode === 'register' ? 'Create Business Account' : 'Crescelo Management'}
+            {authLoginMode === 'register' ? (auth?.registerTitle || 'Create Business Account') : (auth?.loginTitle || 'Crescelo Management')}
           </h2>
           <p className="text-xs text-slate-500 dark:text-slate-400 max-w-xs leading-relaxed">
             {authLoginMode === 'register'
-              ? 'Create your account, then add a card to start your 14-day free trial. Charged after 14 days unless you cancel. Cancel any time.'
-              : 'Sign in to access your business assistant, CRM leads, and live conversations.'}
+              ? (auth?.registerSubtitle || 'Create your account, then add a card to start your 14-day free trial. Charged after 14 days unless you cancel. Cancel any time.')
+              : (auth?.loginSubtitle || 'Sign in to access your business assistant, CRM leads, and live conversations.')}
           </p>
           {authLoginMode === 'register' && selectedPlanNote && (
             <p className="text-[11px] font-semibold text-slate-700 dark:text-slate-200 rounded-full border border-slate-200 dark:border-slate-700 px-3 py-1" role="status">
@@ -171,7 +178,7 @@ export function AdminLoginScreen({
             className="w-full py-2.5 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/80 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs font-semibold shadow-xs flex items-center justify-center gap-2.5 transition disabled:opacity-50 cursor-pointer"
           >
             <GoogleIcon className="h-4 w-4 shrink-0" />
-            <span>Continue with Google</span>
+            <span>{auth?.continueWithGoogle || 'Continue with Google'}</span>
           </button>
 
           {/* SSO button temporarily hidden per user request */}
@@ -179,7 +186,7 @@ export function AdminLoginScreen({
           <div className="relative flex items-center justify-center my-2">
             <div className="border-t border-slate-200 dark:border-slate-800 w-full"></div>
             <span className="bg-white dark:bg-slate-900 px-2.5 text-[10px] font-bold uppercase tracking-wider text-slate-400 shrink-0">
-              or continue with email
+              {auth?.orWithEmail || 'or continue with email'}
             </span>
           </div>
         </div>
@@ -196,7 +203,7 @@ export function AdminLoginScreen({
             }`}
           >
             <Sparkles className="h-3 w-3" />
-            <span>Register</span>
+            <span>{auth?.registerTab || 'Register'}</span>
           </button>
           <button
             type="button"
@@ -208,7 +215,7 @@ export function AdminLoginScreen({
             }`}
           >
             <Users className="h-3 w-3" />
-            <span>Sign In</span>
+            <span>{auth?.loginTab || 'Sign In'}</span>
           </button>
         </div>
 
@@ -217,7 +224,9 @@ export function AdminLoginScreen({
           {authLoginMode === 'register' && (
             <div className="space-y-3">
               <div className="space-y-1">
-                <label htmlFor="reg-business" className="text-xs font-semibold text-slate-700 dark:text-slate-300">Business / Company Name</label>
+                <label htmlFor="reg-business" className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                  {auth?.businessNameLabel || 'Business / Company Name'}
+                </label>
                 <input
                   type="text"
                   value={regBusinessNameInput}
@@ -227,7 +236,7 @@ export function AdminLoginScreen({
                   aria-invalid={!isRegBusinessNameValid}
                   aria-describedby={!isRegBusinessNameValid ? 'reg-business-error' : undefined}
                   onChange={(e) => setRegBusinessNameInput(e.target.value)}
-                  placeholder="e.g. Apex Health Clinic"
+                  placeholder={auth?.businessNamePlaceholder || 'e.g. Apex Health Clinic'}
                   className={`w-full px-3.5 py-2.5 rounded-xl border ${
                     !isRegBusinessNameValid
                       ? 'border-rose-400 dark:border-rose-600 focus:ring-rose-500'
@@ -237,12 +246,16 @@ export function AdminLoginScreen({
                   required
                 />
                 {!isRegBusinessNameValid && (
-                  <p id="reg-business-error" role="alert" className="text-[10.5px] text-rose-500 font-medium">Business name must be at least 2 characters.</p>
+                  <p id="reg-business-error" role="alert" className="text-[10.5px] text-rose-500 font-medium">
+                    {auth?.businessNameError || 'Business name must be at least 2 characters.'}
+                  </p>
                 )}
               </div>
 
               <div className="space-y-1">
-                <label htmlFor="reg-email" className="text-xs font-semibold text-slate-700 dark:text-slate-300">Owner Work Email</label>
+                <label htmlFor="reg-email" className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                  {auth?.ownerEmailLabel || 'Owner Work Email'}
+                </label>
                 <input
                   type="email"
                   value={regEmailInput}
@@ -252,7 +265,7 @@ export function AdminLoginScreen({
                   aria-invalid={!isRegEmailValid}
                   aria-describedby={!isRegEmailValid ? 'reg-email-error' : undefined}
                   onChange={(e) => setRegEmailInput(e.target.value)}
-                  placeholder="owner@company.com"
+                  placeholder={auth?.ownerEmailPlaceholder || 'owner@company.com'}
                   className={`w-full px-3.5 py-2.5 rounded-xl border ${
                     !isRegEmailValid
                       ? 'border-rose-400 dark:border-rose-600 focus:ring-rose-500'
@@ -261,12 +274,16 @@ export function AdminLoginScreen({
                   required
                 />
                 {!isRegEmailValid && (
-                  <p id="reg-email-error" role="alert" className="text-[10.5px] text-rose-500 font-medium">Please enter a valid email address.</p>
+                  <p id="reg-email-error" role="alert" className="text-[10.5px] text-rose-500 font-medium">
+                    {auth?.ownerEmailError || 'Please enter a valid email address.'}
+                  </p>
                 )}
               </div>
 
               <div className="space-y-1">
-                <label htmlFor="reg-password" className="text-xs font-semibold text-slate-700 dark:text-slate-300">Account Password</label>
+                <label htmlFor="reg-password" className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                  {auth?.passwordLabel || 'Account Password'}
+                </label>
                 <input
                   type="password"
                   value={regPasswordInput}
@@ -276,7 +293,7 @@ export function AdminLoginScreen({
                   aria-invalid={!isRegPasswordValid}
                   aria-describedby={!isRegPasswordValid ? 'reg-password-error' : undefined}
                   onChange={(e) => setRegPasswordInput(e.target.value)}
-                  placeholder="At least 6 characters..."
+                  placeholder={auth?.passwordPlaceholder || 'At least 6 characters...'}
                   className={`w-full px-3.5 py-2.5 rounded-xl border ${
                     !isRegPasswordValid
                       ? 'border-rose-400 dark:border-rose-600 focus:ring-rose-500'
@@ -285,7 +302,9 @@ export function AdminLoginScreen({
                   required
                 />
                 {!isRegPasswordValid && (
-                  <p id="reg-password-error" role="alert" className="text-[10.5px] text-rose-500 font-medium">Password must be at least 6 characters.</p>
+                  <p id="reg-password-error" role="alert" className="text-[10.5px] text-rose-500 font-medium">
+                    {auth?.passwordError || 'Password must be at least 6 characters.'}
+                  </p>
                 )}
               </div>
             </div>
@@ -295,7 +314,9 @@ export function AdminLoginScreen({
           {authLoginMode === 'staff' && (
             <div className="space-y-3">
               <div className="space-y-1.5">
-                <label htmlFor="staff-email" className="text-xs font-semibold text-slate-700 dark:text-slate-300">Account Email Address</label>
+                <label htmlFor="staff-email" className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                  {auth?.staffEmailLabel || 'Account Email Address'}
+                </label>
                 <input
                   type="email"
                   value={staffEmailInput}
@@ -305,7 +326,7 @@ export function AdminLoginScreen({
                   aria-invalid={!isStaffEmailValid}
                   aria-describedby={!isStaffEmailValid ? 'staff-email-error' : undefined}
                   onChange={(e) => setStaffEmailInput(e.target.value)}
-                  placeholder="owner@company.com or staff@crescelo.com"
+                  placeholder={auth?.staffEmailPlaceholder || 'owner@company.com or staff@crescelo.com'}
                   className={`w-full px-3.5 py-2.5 rounded-xl border ${
                     !isStaffEmailValid
                       ? 'border-rose-400 dark:border-rose-600 focus:ring-rose-500'
@@ -315,12 +336,14 @@ export function AdminLoginScreen({
                   required
                 />
                 {!isStaffEmailValid && (
-                  <p id="staff-email-error" role="alert" className="text-[10.5px] text-rose-500 font-medium">Please enter a valid email address.</p>
+                  <p id="staff-email-error" role="alert" className="text-[10.5px] text-rose-500 font-medium">
+                    {auth?.ownerEmailError || 'Please enter a valid email address.'}
+                  </p>
                 )}
               </div>
               <div className="space-y-1.5">
                 <label htmlFor="staff-password" className="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center justify-between">
-                  <span>Password or Access Code</span>
+                  <span>{auth?.staffPasswordLabel || 'Password or Access Code'}</span>
                 </label>
                 <input
                   id="staff-password"
@@ -329,7 +352,7 @@ export function AdminLoginScreen({
                   type="password"
                   value={staffPasswordInput}
                   onChange={(e) => setStaffPasswordInput(e.target.value)}
-                  placeholder="Enter password or access code..."
+                  placeholder={auth?.staffPasswordPlaceholder || 'Enter password or access code...'}
                   className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white text-xs placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
                   required
                 />
@@ -364,14 +387,14 @@ export function AdminLoginScreen({
             {isLoggingIn ? (
               <>
                 <RefreshCw className="h-3.5 w-3.5 animate-spin" />
-                <span>Processing request...</span>
+                <span>{auth?.signingIn || 'Processing request...'}</span>
               </>
             ) : (
               <>
                 {authLoginMode === 'register' && <Sparkles className="h-3.5 w-3.5" />}
                 {authLoginMode === 'staff' && <Users className="h-3.5 w-3.5" />}
                 <span>
-                  {authLoginMode === 'register' ? 'Start Free Trial' : 'Sign In to Workspace'}
+                  {authLoginMode === 'register' ? (auth?.createAccountBtn || 'Start Free Trial') : (auth?.signInBtn || 'Sign In to Workspace')}
                 </span>
               </>
             )}

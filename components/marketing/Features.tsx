@@ -3,6 +3,7 @@
 import { useCallback, useRef, useState, type CSSProperties, type KeyboardEvent, type PointerEvent } from 'react';
 import { DEMO } from './content';
 import { Reveal, SectionHead } from './ui';
+import { useI18n } from '@/lib/i18n/context';
 
 /** Before/after comparison slider, keyboard operable (arrow keys, Home, End). */
 export function Demo() {
@@ -38,18 +39,31 @@ export function Demo() {
     e.preventDefault();
   };
 
+  const { dict } = useI18n();
+  const demo = dict?.demo || DEMO;
+
   const bad = Math.min(1, Math.max(0, (pos - 72) / 20)); // generic reply fully showing
   const good = Math.min(1, Math.max(0, (28 - pos) / 20)); // Crescelo reply fully showing
-  const status = bad > 0.6 ? `Generic chatbot only. ${DEMO.bad.words.join('. ')}.` : good > 0.6 ? `Crescelo only. ${DEMO.good.words.join('. ')}.` : '';
+  const badWords = demo?.badWords || DEMO.bad.words;
+  const goodWords = demo?.goodWords || DEMO.good.words;
+  const groundedLabel = demo?.groundedLabel || DEMO.grounded.label;
+  const groundedText = demo?.groundedText || DEMO.grounded.text;
+  const groundedNote = demo?.groundedNote || DEMO.grounded.note;
+  const genericLabel = demo?.genericLabel || DEMO.generic.label;
+  const genericText = demo?.genericText || DEMO.generic.text;
+  const genericNote = demo?.genericNote || DEMO.generic.note;
+  const goodTitle = demo?.goodTitle || DEMO.good.title;
+  const badTitle = demo?.badTitle || DEMO.bad.title;
+  const status = bad > 0.6 ? `Generic chatbot only. ${badWords.join('. ')}.` : good > 0.6 ? `Crescelo only. ${goodWords.join('. ')}.` : '';
 
   return (
     <section id="demo" className="mk-section mk-section-tint" aria-labelledby="mk-demo-title">
       <div className="mk-wrap">
-        <SectionHead id="mk-demo-title" eyebrow={DEMO.eyebrow} title={DEMO.title} intro={DEMO.intro} />
+        <SectionHead id="mk-demo-title" eyebrow={demo.eyebrow} title={demo.title} intro={demo.intro} />
         <Reveal>
           <p className="mk-demo-q">
-            <span>Visitor asks</span>
-            {DEMO.question}
+            <span>{demo.visitorAsks || 'Visitor asks'}</span>
+            {demo.question}
           </p>
           <div
             ref={boxRef}
@@ -61,18 +75,18 @@ export function Demo() {
             onPointerCancel={onUp}
           >
             <div className="mk-compare-pane mk-compare-grounded">
-              <span className="mk-pill mk-pill-good">{DEMO.grounded.label}</span>
-              <p>{DEMO.grounded.text}</p>
-              <small>{DEMO.grounded.note}</small>
+              <span className="mk-pill mk-pill-good">{groundedLabel}</span>
+              <p>{groundedText}</p>
+              <small>{groundedNote}</small>
               <div className="mk-react is-good" aria-hidden="true">
                 <span className="mk-react-icon">
                   <svg viewBox="0 0 24 24" width="30" height="30">
                     <path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 </span>
-                <p className="mk-react-title">{DEMO.good.title}</p>
+                <p className="mk-react-title">{goodTitle}</p>
                 <ul>
-                  {DEMO.good.words.map((w, i) => (
+                  {goodWords.map((w, i) => (
                     <li key={w} style={{ '--dl': `${i * -0.9}s`, '--d': `${4 + i * 0.7}s` } as CSSProperties}>
                       {w}
                     </li>
@@ -81,18 +95,18 @@ export function Demo() {
               </div>
             </div>
             <div className="mk-compare-pane mk-compare-generic" aria-hidden={pos < 8 ? 'true' : undefined}>
-              <span className="mk-pill">{DEMO.generic.label}</span>
-              <p>{DEMO.generic.text}</p>
-              <small>{DEMO.generic.note}</small>
+              <span className="mk-pill">{genericLabel}</span>
+              <p>{genericText}</p>
+              <small>{genericNote}</small>
               <div className="mk-react is-bad" aria-hidden="true">
                 <span className="mk-react-icon">
                   <svg viewBox="0 0 24 24" width="30" height="30">
                     <path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
                   </svg>
                 </span>
-                <p className="mk-react-title">{DEMO.bad.title}</p>
+                <p className="mk-react-title">{badTitle}</p>
                 <ul>
-                  {DEMO.bad.words.map((w, i) => (
+                  {badWords.map((w, i) => (
                     <li key={w} style={{ '--dl': `${i * -0.9}s`, '--d': `${4.4 + i * 0.6}s` } as CSSProperties}>
                       {w}
                     </li>
