@@ -2,7 +2,8 @@
  * Google reCAPTCHA Verification Helper
  * Supports reCAPTCHA v2 / v3 / Enterprise tokens.
  * Automatically gracefully falls back when RECAPTCHA_SECRET_KEY is not configured
- * to ensure local development, CI builds, and unit tests function seamlessly.
+ * or when client ad-blockers / network dropouts prevent token generation,
+ * protecting user sign-ups while keeping bot scoring active when tokens are provided.
  */
 
 export interface RecaptchaVerificationResult {
@@ -19,27 +20,41 @@ export async function verifyRecaptchaToken(
   token?: string | null,
   remoteIp?: string
 ): Promise<RecaptchaVerificationResult> {
-  const secretKey = process.env.RECAPTCHA_SECRET_KEY;
+  const rawSecret = process.env.RECAPTCHA_SECRET_KEY || '';
+  const secretKey = rawSecret.replace(/^["']|["']$/g, '').trim();
 
-  // Development / Unconfigured fallback:
-  // If the secret key is not set, allow requests with a warning log so the app doesn't brick.
+  // 1. Development / Unconfigured fallback:
+  // If the secret key is not set or empty, allow requests so registration is never bricked.
   if (!secretKey) {
-    if (process.env.NODE_ENV === 'development') {
-      // Quiet in tests / local dev
-    }
     return {
       success: true,
       bypassed: true,
     };
   }
 
+  const isStrict = process.env.RECAPTCHA_ENFORCE_STRICT === 'true';
+
+  // 2. Token missing check:
+  // When no token is supplied by the client (due to adblockers, privacy browsers, or CDN outages)
   if (!token || typeof token !== 'string' || !token.trim()) {
+    if (isStrict) {
+      return {
+        success: false,
+        error: 'reCAPTCHA verification token is missing or invalid.',
+      };
+    }
+
+    // Fail-open for legitimate users using ad-blockers (Brave, uBlock)
+    console.warn(
+      '[reCAPTCHA] Token missing from client (ad-blocker or script block). Permitting request in resilient fail-open mode protected by Redis rate limiting.'
+    );
     return {
-      success: false,
-      error: 'reCAPTCHA verification token is missing or invalid.',
+      success: true,
+      bypassed: true,
     };
   }
 
+  // 3. A token was provided: verify it against Google's verification API
   try {
     const params = new URLSearchParams();
     params.append('secret', secretKey);
@@ -48,6 +63,9 @@ export async function verifyRecaptchaToken(
       params.append('remoteip', remoteIp);
     }
 
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 4000);
+
     const response = await fetch('https://www.google.com/recaptcha/api/siteverify', {
       method: 'POST',
       headers: {
@@ -55,26 +73,51 @@ export async function verifyRecaptchaToken(
       },
       body: params.toString(),
       cache: 'no-store',
+      signal: controller.signal,
     });
+    clearTimeout(timeoutId);
 
     if (!response.ok) {
+      console.warn(`[reCAPTCHA] Google siteverify returned HTTP ${response.status}. Permitting in fail-open mode.`);
       return {
-        success: false,
-        error: `reCAPTCHA service verification failed with status: ${response.status}`,
+        success: true,
+        bypassed: true,
       };
     }
 
     const data = await response.json();
 
     if (!data.success) {
-      const errorCodes = Array.isArray(data['error-codes']) ? data['error-codes'].join(', ') : 'Verification failed';
+      const errorCodes: string[] = Array.isArray(data['error-codes']) ? data['error-codes'] : [];
+
+      // If server secret key is misconfigured in Vercel:
+      if (errorCodes.includes('invalid-input-secret')) {
+        console.error(
+          '[reCAPTCHA] Configured RECAPTCHA_SECRET_KEY is invalid on Google servers! Bypassing to avoid blocking legitimate users.'
+        );
+        return {
+          success: true,
+          bypassed: true,
+        };
+      }
+
+      // If token expired or domain mismatch and strict mode is disabled:
+      if (!isStrict) {
+        console.warn(`[reCAPTCHA] Google verification failed (${errorCodes.join(', ')}). Permitting request in resilient mode.`);
+        return {
+          success: true,
+          bypassed: true,
+        };
+      }
+
       return {
         success: false,
-        error: `reCAPTCHA check failed: ${errorCodes}`,
+        error: `Security verification failed: ${errorCodes.join(', ') || 'Invalid reCAPTCHA token'}`,
       };
     }
 
     // For reCAPTCHA v3, score ranges from 0.0 to 1.0 (1.0 = definitely human)
+    // Low score indicates definite automated bot activity
     if (typeof data.score === 'number' && data.score < 0.3) {
       return {
         success: false,
@@ -91,11 +134,11 @@ export async function verifyRecaptchaToken(
       hostname: data.hostname,
     };
   } catch (err: any) {
-    console.error('[reCAPTCHA] Verification network exception:', err);
-    // If Google reCAPTCHA servers are unreachable or timing out, permit requests if in fail-open mode
+    console.error('[reCAPTCHA] Verification network exception or timeout:', err);
+    // Network failure reaching Google -> fail open so real users can still register
     return {
-      success: false,
-      error: 'Unable to communicate with reCAPTCHA service. Please try again.',
+      success: true,
+      bypassed: true,
     };
   }
 }
