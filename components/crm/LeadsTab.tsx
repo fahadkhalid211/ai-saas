@@ -1,5 +1,6 @@
 'use client';
 
+import { T, useT } from '@/lib/i18n/context';
 import React from 'react';
 import { RefreshCw, Download } from 'lucide-react';
 
@@ -28,19 +29,20 @@ export const LeadsTab: React.FC<LeadsTabProps> = ({
   activeAssistant,
   setSelectedLeadModal,
 }) => {
+  const __t = useT();
   return (
     <div className="max-w-6xl space-y-6 mx-auto">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Leads</h1>
+                    <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white"><T>Leads</T></h1>
                     <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                       View contact details and inquiries automatically captured by your assistant.
+                       <T>View contact details and inquiries automatically captured by your assistant.</T>
                      </p>
                   </div>
                   <div className="flex items-center gap-2">
                     <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800 text-[11px] text-emerald-700 dark:text-emerald-300 font-medium">
                       <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                      <span>Live Sync Active</span>
+                      <span><T>Live Sync Active</T></span>
                     </div>
 
                     <button
@@ -48,10 +50,10 @@ export const LeadsTab: React.FC<LeadsTabProps> = ({
                       onClick={handleManualSyncLeads}
                       disabled={isSyncingLeads}
                       className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800/60 text-slate-700 dark:text-slate-300 text-xs font-semibold shadow-xs disabled:opacity-50 transition cursor-pointer"
-                      title="Fetch newest leads right now"
+                      title={__t("Fetch newest leads right now")}
                     >
                       <RefreshCw className={`h-3.5 w-3.5 ${isSyncingLeads ? 'animate-spin text-blue-600' : 'text-slate-500'}`} />
-                      <span>{isSyncingLeads ? 'Syncing...' : 'Sync Now'}</span>
+                      <span>{isSyncingLeads ? <T>{'Syncing...'}</T> : <T>{'Sync Now'}</T>}</span>
                     </button>
 
                     <button
@@ -78,7 +80,7 @@ export const LeadsTab: React.FC<LeadsTabProps> = ({
                       className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs disabled:opacity-50 transition cursor-pointer"
                     >
                       <Download className="h-3.5 w-3.5" />
-                      <span>Export CSV</span>
+                      <span><T>Export CSV</T></span>
                     </button>
                   </div>
                 </div>
@@ -86,18 +88,18 @@ export const LeadsTab: React.FC<LeadsTabProps> = ({
                 <div className="border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-900 shadow-xs overflow-hidden">
                   {leads.length === 0 ? (
                     <div className="p-8 text-center text-xs text-slate-500 dark:text-slate-400">
-                      No leads or support requests captured yet. When visitors use the support form in the widget, submissions will appear here.
+                      <T>No leads or support requests captured yet. When visitors use the support form in the widget, submissions will appear here.</T>
                     </div>
                   ) : (
                     <table className="w-full text-left text-xs">
                       <thead className="bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 font-semibold border-b border-slate-200 dark:border-slate-800">
                         <tr>
-                          <th className="py-3 px-5">Visitor Contact</th>
-                          <th className="py-3 px-5">Phone</th>
-                          <th className="py-3 px-5">Comments / Notes</th>
-                          <th className="py-3 px-5">Custom Fields</th>
-                          <th className="py-3 px-5">Date</th>
-                          <th className="py-3 px-5 text-right">Actions</th>
+                          <th className="py-3 px-5"><T>Visitor Contact</T></th>
+                          <th className="py-3 px-5"><T>Phone</T></th>
+                          <th className="py-3 px-5"><T>Comments / Notes</T></th>
+                          <th className="py-3 px-5"><T>Custom Fields</T></th>
+                          <th className="py-3 px-5"><T>Date</T></th>
+                          <th className="py-3 px-5 text-right"><T>Actions</T></th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -107,7 +109,7 @@ export const LeadsTab: React.FC<LeadsTabProps> = ({
                             <tr key={lead.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition">
                               <td className="py-3.5 px-5">
                                 <div className="font-semibold text-slate-900 dark:text-white">
-                                  {lead.name || 'Website Visitor'}
+                                  {lead.name || <T>{'Website Visitor'}</T>}
                                 </div>
                                 <div className="text-blue-600 dark:text-blue-400 font-mono text-[11px]">
                                   {lead.email}
@@ -122,7 +124,7 @@ export const LeadsTab: React.FC<LeadsTabProps> = ({
                                     {lead.notes}
                                   </span>
                                 ) : (
-                                  <span className="text-slate-400 italic">None</span>
+                                  <span className="text-slate-400 italic"><T>None</T></span>
                                 )}
                               </td>
                               <td className="py-3.5 px-5">
@@ -153,7 +155,7 @@ export const LeadsTab: React.FC<LeadsTabProps> = ({
                                   onClick={() => setSelectedLeadModal(lead)}
                                   className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/60 px-2.5 py-1 rounded transition cursor-pointer"
                                 >
-                                  Details
+                                  <T>Details</T>
                                 </button>
                               </td>
                             </tr>

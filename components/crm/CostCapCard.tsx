@@ -1,5 +1,6 @@
 'use client';
 
+import { T, useT } from '@/lib/i18n/context';
 import React, { useEffect, useState } from 'react';
 import { ShieldCheck, RefreshCw } from 'lucide-react';
 
@@ -26,6 +27,7 @@ const money = (n: number) => (n > 0 && n < 0.01 ? '<$0.01' : `$${n.toFixed(2)}`)
  * estimated spend. Saved with the rest of the AI Engine settings.
  */
 export function CostCapCard({ formData, setFormData, activeAssistant }: CostCapCardProps) {
+  const __t = useT();
   const cap = formData.costCap || { enabled: false, monthlyUsd: 100, onLimit: 'fallback_groq' };
   const setCap = (patch: Partial<typeof cap>) => setFormData({ ...formData, costCap: { ...cap, ...patch } });
 
@@ -65,19 +67,19 @@ export function CostCapCard({ formData, setFormData, activeAssistant }: CostCapC
         <div>
           <div className="flex items-center gap-2 text-xs font-semibold text-slate-800 dark:text-slate-100">
             <ShieldCheck className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-            Monthly cost cap
+            <T>Monthly cost cap</T>
           </div>
           <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 max-w-md">
-            Set a monthly limit on what this assistant can spend on your key. We warn you at 80%, and at 100% the
-            assistant switches to the free Groq model or stops replying, whichever you choose.
+            <T>Set a monthly limit on what this assistant can spend on your key. We warn you at 80%, and at 100% the
+            assistant switches to the free Groq model or stops replying, whichever you choose.</T>
           </p>
         </div>
         <label className="inline-flex items-center gap-2 cursor-pointer shrink-0">
-          <span className="text-[11px] font-semibold text-slate-600 dark:text-slate-300">{cap.enabled ? 'On' : 'Off'}</span>
+          <span className="text-[11px] font-semibold text-slate-600 dark:text-slate-300">{cap.enabled ? <T>{'On'}</T> : <T>{'Off'}</T>}</span>
           <input
             type="checkbox"
             role="switch"
-            aria-label="Enable monthly cost cap"
+            aria-label={__t("Enable monthly cost cap")}
             checked={Boolean(cap.enabled)}
             onChange={(e) => setCap({ enabled: e.target.checked })}
             className="h-4 w-4 accent-emerald-600 cursor-pointer"
@@ -89,7 +91,7 @@ export function CostCapCard({ formData, setFormData, activeAssistant }: CostCapC
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
             <label htmlFor="cost-cap-amount" className="text-[11px] font-semibold text-slate-700 dark:text-slate-300">
-              Cap per month (USD)
+              <T>Cap per month (USD)</T>
             </label>
             <div className="relative mt-1">
               <span className="absolute left-3 top-2 text-xs text-slate-400">$</span>
@@ -106,12 +108,12 @@ export function CostCapCard({ formData, setFormData, activeAssistant }: CostCapC
               />
             </div>
             <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1">
-              Warning e-mail and notification at {editedCap ? money(editedCap * 0.8) : '80%'}.
+              <T>Warning e-mail and notification at</T> {editedCap ? money(editedCap * 0.8) : '80%'}.
             </p>
           </div>
 
           <fieldset>
-            <legend className="text-[11px] font-semibold text-slate-700 dark:text-slate-300">When the cap is reached</legend>
+            <legend className="text-[11px] font-semibold text-slate-700 dark:text-slate-300"><T>When the cap is reached</T></legend>
             <div className="mt-1 space-y-1.5">
               {[
                 { value: 'fallback_groq', label: 'Switch to the free Groq model', hint: 'Visitors keep getting answers at no cost to you.' },
@@ -127,8 +129,8 @@ export function CostCapCard({ formData, setFormData, activeAssistant }: CostCapC
                     className="mt-0.5 accent-emerald-600"
                   />
                   <span>
-                    <span className="block text-xs text-slate-800 dark:text-slate-100">{o.label}</span>
-                    <span className="block text-[10px] text-slate-500 dark:text-slate-400">{o.hint}</span>
+                    <span className="block text-xs text-slate-800 dark:text-slate-100"><T>{o.label}</T></span>
+                    <span className="block text-[10px] text-slate-500 dark:text-slate-400"><T>{o.hint}</T></span>
                   </span>
                 </label>
               ))}
@@ -140,14 +142,14 @@ export function CostCapCard({ formData, setFormData, activeAssistant }: CostCapC
       <div>
         <div className="flex items-center justify-between text-[11px] mb-1">
           <span className="font-semibold text-slate-700 dark:text-slate-300">
-            Estimated spend this month: {money(spent)}
-            {cap.enabled && editedCap ? ` of ${money(editedCap)}` : ''}
+            <T>Estimated spend this month:</T> {money(spent)}
+            {cap.enabled && editedCap ? __t(" of {n1}", { n1: money(editedCap) }) : ''}
           </span>
           <button
             type="button"
             onClick={() => activeAssistant?.id && load(activeAssistant.id)}
             className="inline-flex items-center gap-1 text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 cursor-pointer"
-            aria-label="Refresh spend"
+            aria-label={__t("Refresh spend")}
           >
             <RefreshCw className={`h-3 w-3 ${loading ? 'animate-spin' : ''}`} />
           </button>
@@ -159,12 +161,12 @@ export function CostCapCard({ formData, setFormData, activeAssistant }: CostCapC
         ) : null}
         {state === 'reached' && (
           <p className="text-[11px] font-semibold text-rose-600 dark:text-rose-400 mt-1.5">
-            Cap reached: {cap.onLimit === 'stop' ? 'the assistant is not replying' : 'replies use the free Groq model'}. Raise
-            the cap and save to switch back to your key.
+            <T>Cap reached:</T> {cap.onLimit === 'stop' ? <T>{'the assistant is not replying'}</T> : <T>{'replies use the free Groq model'}</T>}<T>. Raise
+            the cap and save to switch back to your key.</T>
           </p>
         )}
         <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1.5">
-          Estimated from the tokens your provider reports; your provider&apos;s invoice may differ slightly. Resets on {resets} (UTC).
+          <T>Estimated from the tokens your provider reports; your provider&apos;s invoice may differ slightly. Resets on</T> {resets} <T>(UTC).</T>
         </p>
       </div>
     </div>

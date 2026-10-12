@@ -1,5 +1,6 @@
 'use client';
 
+import { T, useT } from '@/lib/i18n/context';
 import React, { useState, useEffect, useRef } from 'react';
 import { X, Send, RefreshCw, Check, Copy, Minus, ChevronDown, MessageSquare } from 'lucide-react';
 import { CresceloOrb, type OrbState } from '@/components/brand/CresceloOrb';
@@ -69,6 +70,7 @@ interface FloatingPlatformChatbotProps {
 }
 
 export function FloatingPlatformChatbot({ variant = 'floating', onNavigate, onBillingChanged }: FloatingPlatformChatbotProps = {}) {
+  const __t = useT();
   const inHeader = variant === 'header';
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([
@@ -406,7 +408,7 @@ export function FloatingPlatformChatbot({ variant = 'floating', onNavigate, onBi
           onClick={() => setIsOpen((o) => !o)}
           aria-expanded={isOpen}
           aria-label={isOpen ? 'Minimize the Crescelo assistant' : 'Open the Crescelo assistant'}
-          title="Ask the Crescelo assistant"
+          title={__t("Ask the Crescelo assistant")}
           className={`relative flex items-center gap-2 rounded-xl border px-2.5 py-1.5 text-xs font-semibold transition cursor-pointer shadow-2xs ${
             isOpen
               ? 'border-[#abff44]/60 bg-[#08251a] text-[#e9ffc2]'
@@ -414,7 +416,7 @@ export function FloatingPlatformChatbot({ variant = 'floating', onNavigate, onBi
           }`}
         >
           <CresceloOrb size={22} mark state={isLoading ? 'thinking' : 'idle'} />
-          <span className="hidden sm:inline">Assistant</span>
+          <span className="hidden sm:inline"><T>Assistant</T></span>
           <ChevronDown className={`h-3.5 w-3.5 opacity-70 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
           {hasUnread && !isOpen && (
             <span className="absolute -top-1 -right-1 flex h-3 w-3">
@@ -431,14 +433,14 @@ export function FloatingPlatformChatbot({ variant = 'floating', onNavigate, onBi
           onClick={() => setIsOpen(true)}
           style={{ backgroundColor: '#08251a', color: '#fffeeb' }}
           className="mk-chat-launcher group relative flex items-center gap-3 pl-2.5 pr-4 py-2 sm:pl-3 sm:pr-4.5 sm:py-2.5 rounded-full cursor-pointer select-none bg-[#08251a] text-[#fffeeb] border-2 border-[#1a1a1a] shadow-[0_0.25rem_0_#1a1a1a,0_0.625rem_1.5rem_rgba(8,37,26,0.28)] transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_0.375rem_0_#1a1a1a,0_0.875rem_1.875rem_rgba(8,37,26,0.35)] active:translate-y-0.5 active:shadow-[0_0.125rem_0_#1a1a1a] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#abff44] max-w-[calc(100vw-2rem)]"
-          aria-label="Open Crescelo AI assistant - Instant answers & booking"
+          aria-label={__t("Open Crescelo AI assistant - Instant answers & booking")}
         >
           {/* Orb avatar with live pulse indicator */}
           <div className="relative shrink-0 flex items-center justify-center">
             <div className="transition-transform duration-300 group-hover:scale-105">
               <CresceloOrb size={42} state="idle" followPointer />
             </div>
-            <span className="absolute -bottom-0.5 -right-0.5 flex h-3 w-3" title="Online now">
+            <span className="absolute -bottom-0.5 -right-0.5 flex h-3 w-3" title={__t("Online now")}>
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#abff44] opacity-80" />
               <span className="relative inline-flex h-3 w-3 rounded-full bg-[#abff44] ring-2 ring-[#08251a]" />
             </span>
@@ -448,14 +450,14 @@ export function FloatingPlatformChatbot({ variant = 'floating', onNavigate, onBi
           <div className="flex flex-col text-left leading-tight min-w-0 pr-1">
             <div className="flex items-center gap-1.5">
               <span className="font-bold text-xs sm:text-sm tracking-tight text-[#fffeeb] group-hover:text-[#abff44] transition-colors">
-                Chat with Crescelo
+                <T>Chat with Crescelo</T>
               </span>
               <span className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-[#abff44] text-[#08251a] text-[10px] font-extrabold uppercase tracking-wider leading-none shadow-xs">
-                AI
+                <T>AI</T>
               </span>
             </div>
             <span className="text-[11px] sm:text-xs text-[#fffeeb]/75 truncate font-medium">
-              Ask anything or book a demo
+              <T>Ask anything or book a demo</T>
             </span>
           </div>
 
@@ -476,7 +478,7 @@ export function FloatingPlatformChatbot({ variant = 'floating', onNavigate, onBi
       {isOpen && (
         <div
           role="dialog"
-          aria-label="Crescelo assistant"
+          aria-label={__t("Crescelo assistant")}
           data-lenis-prevent
           style={{ backgroundColor: '#1a1918', color: '#e8e5dc' }}
           className={`mk-chat-panel flex flex-col bg-[#1f1e1d] ${
@@ -496,10 +498,10 @@ export function FloatingPlatformChatbot({ variant = 'floating', onNavigate, onBi
               <CresceloOrb size={44} state={orbState} />
               <div>
                 <h3 className="text-[19px] leading-none text-[#faf9f5] tracking-tight" style={serif}>
-                  Crescelo
+                  <T>Crescelo</T>
                 </h3>
                 <p className="mt-1 text-[11px] text-[#a19f96]" aria-live="polite">
-                  {orbState === 'thinking' ? 'Thinking…' : orbState === 'speaking' ? 'Answering…' : inHeader ? 'Ask about your plan or any setup guide' : 'Ask about pricing, setup or features'}
+                  {orbState === 'thinking' ? <T>{'Thinking…'}</T> : orbState === 'speaking' ? <T>{'Answering…'}</T> : inHeader ? <T>{'Ask about your plan or any setup guide'}</T> : <T>{'Ask about pricing, setup or features'}</T>}
                 </p>
               </div>
             </div>
@@ -519,8 +521,8 @@ export function FloatingPlatformChatbot({ variant = 'floating', onNavigate, onBi
                   ]);
                   setConversationId(null);
                 }}
-                title="Start over"
-                aria-label="Start over"
+                title={__t("Start over")}
+                aria-label={__t("Start over")}
                 className="p-2 text-[#a19f96] hover:text-[#faf9f5] hover:bg-white/[0.06] rounded-xl transition"
               >
                 <RefreshCw className="w-4 h-4" />
@@ -563,7 +565,7 @@ export function FloatingPlatformChatbot({ variant = 'floating', onNavigate, onBi
                     {m.content ? (
                       m.role === 'assistant' ? renderRich(actionsOf(m.content).text) : m.content
                     ) : (
-                      <span className="flex items-center gap-1 py-1" aria-label="Thinking">
+                      <span className="flex items-center gap-1 py-1" aria-label={__t("Thinking")}>
                         {[0, 1, 2].map((i) => (
                           <span key={i} className="h-1.5 w-1.5 rounded-full bg-[#abff44] animate-pulse" style={{ animationDelay: `${i * 180}ms`, animationDuration: '1.1s' }} />
                         ))}
@@ -580,7 +582,7 @@ export function FloatingPlatformChatbot({ variant = 'floating', onNavigate, onBi
                         {a.human ? (
                           <div className="inline-flex items-center gap-2 text-[12px] font-semibold text-[#abff44]" role="status">
                             <span className="h-1.5 w-1.5 rounded-full bg-[#abff44]" />
-                            Live agent notified. Someone will join this chat shortly.
+                            <T>Live agent notified. Someone will join this chat shortly.</T>
                           </div>
                         ) : (
                           <button
@@ -589,7 +591,7 @@ export function FloatingPlatformChatbot({ variant = 'floating', onNavigate, onBi
                             disabled={isLoading}
                             className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/[0.05] px-3 py-1.5 text-[12px] font-medium text-[#e8e5dc] transition hover:border-[#abff44]/50 hover:bg-white/[0.09] disabled:opacity-40"
                           >
-                            Talk to a live agent
+                            <T>Talk to a live agent</T>
                           </button>
                         )}
                       </div>
@@ -613,7 +615,7 @@ export function FloatingPlatformChatbot({ variant = 'floating', onNavigate, onBi
                                 : 'inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/[0.05] px-3 py-1.5 text-[12px] font-medium text-[#e8e5dc] transition hover:border-[#abff44]/50 hover:bg-white/[0.09] disabled:opacity-40'
                             }
                           >
-                            {busyAction === key ? 'Working…' : a.label}
+                            {busyAction === key ? <T>{'Working…'}</T> : <T>{a.label}</T>}
                           </button>
                         );
                       })}
@@ -624,8 +626,8 @@ export function FloatingPlatformChatbot({ variant = 'floating', onNavigate, onBi
                     <button
                       type="button"
                       onClick={() => handleCopy(m.id, actionsOf(m.content).text)}
-                      title="Copy answer"
-                      aria-label="Copy answer"
+                      title={__t("Copy answer")}
+                      aria-label={__t("Copy answer")}
                       className="absolute -bottom-2 right-2 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 p-1 text-[#a19f96] hover:text-[#faf9f5] bg-[#33322f] border border-white/10 rounded-md transition"
                     >
                       {copiedId === m.id ? <Check className="w-3 h-3 text-[#abff44]" /> : <Copy className="w-3 h-3" />}
@@ -638,7 +640,7 @@ export function FloatingPlatformChatbot({ variant = 'floating', onNavigate, onBi
             {/* Suggestions on the first view */}
             {messages.length <= 2 && !isLoading && (
               <div className="pt-1">
-                <p className="text-[10.5px] font-semibold text-[#8b8981] uppercase tracking-[0.14em] mb-2">Try asking</p>
+                <p className="text-[10.5px] font-semibold text-[#8b8981] uppercase tracking-[0.14em] mb-2"><T>Try asking</T></p>
                 <div className="flex flex-wrap gap-1.5">
                   {(inHeader ? DASHBOARD_SUGGESTIONS : DEFAULT_SUGGESTIONS).map((sug, i) => (
                     <button
@@ -676,7 +678,7 @@ export function FloatingPlatformChatbot({ variant = 'floating', onNavigate, onBi
                 onKeyDown={handleKeyDown}
                 placeholder={inHeader ? 'Ask about your plan, or how to set something up…' : 'Ask anything about Crescelo…'}
                 disabled={isLoading}
-                aria-label="Your question"
+                aria-label={__t("Your question")}
                 style={{ outline: 'none', boxShadow: 'none' }}
                 className="flex-1 bg-transparent text-[13px] text-[#faf9f5] placeholder-[#8b8981] outline-none focus:outline-none focus-visible:outline-none selection:bg-white/20 selection:text-white py-1.5"
               />
@@ -685,15 +687,15 @@ export function FloatingPlatformChatbot({ variant = 'floating', onNavigate, onBi
                 disabled={!input.trim() || isLoading}
                 style={{ backgroundColor: '#abff44', color: '#08251a' }}
                 className="grid place-items-center h-9 w-9 rounded-xl bg-[#abff44] text-[#08251a] hover:brightness-105 active:scale-95 disabled:opacity-30 disabled:hover:brightness-100 transition shrink-0"
-                aria-label="Send message"
+                aria-label={__t("Send message")}
               >
                 <Send className="w-4 h-4" />
               </button>
             </form>
-            <p className="mt-2 text-center text-[10.5px] leading-snug text-[#8b8981]">AI assistant, replies may be inaccurate. Messages are processed as described in our <a href="/privacy" className="underline">Privacy Policy</a>.</p>
+            <p className="mt-2 text-center text-[10.5px] leading-snug text-[#8b8981]"><T>AI assistant, replies may be inaccurate. Messages are processed as described in our</T> <a href="/privacy" className="underline"><T>Privacy Policy</T></a>.</p>
             <div className="mt-2 pt-2 border-t border-white/[0.06] flex items-center justify-center gap-1.5 text-[10px] text-[#8b8981]">
               <CresceloMark size={13} motion="draw" />
-              <span>Powered by <strong className="font-semibold text-[#faf9f5]">Crescelo</strong></span>
+              <span><T>Powered by</T> <strong className="font-semibold text-[#faf9f5]"><T>Crescelo</T></strong></span>
             </div>
           </div>
         </div>

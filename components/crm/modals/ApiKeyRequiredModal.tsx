@@ -1,5 +1,6 @@
 'use client';
 
+import { T, useT } from '@/lib/i18n/context';
 import React, { useState } from 'react';
 import {
   X,
@@ -32,6 +33,7 @@ export const ApiKeyRequiredModal: React.FC<ApiKeyRequiredModalProps> = ({
   onOpenEngineSettings,
   featureName,
 }) => {
+  const __t = useT();
   const [apiKey, setApiKey] = useState('');
   const [showKey, setShowKey] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -118,15 +120,15 @@ export const ApiKeyRequiredModal: React.FC<ApiKeyRequiredModalProps> = ({
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-base font-bold text-slate-900 dark:text-white">Connect Your Groq API Key</h2>
+                <h2 className="text-base font-bold text-slate-900 dark:text-white"><T>Connect Your Groq API Key</T></h2>
                 <span className="bg-emerald-100 dark:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 font-bold px-2 py-0.5 rounded text-[10px] border border-emerald-200 dark:border-emerald-700">
-                  100% FREE
+                  <T>100% FREE</T>
                 </span>
               </div>
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                 {featureName
-                  ? `To use ${featureName}, connect your free Groq API key.`
-                  : 'Connect your free Groq API key to activate your AI assistant.'}
+                  ? __t("To use {featureName}, connect your free Groq API key.", { featureName: featureName })
+                  : <T>{'Connect your free Groq API key to activate your AI assistant.'}</T>}
               </p>
             </div>
           </div>
@@ -142,11 +144,11 @@ export const ApiKeyRequiredModal: React.FC<ApiKeyRequiredModalProps> = ({
         <div className="rounded-xl border border-emerald-200 dark:border-emerald-900/60 bg-emerald-50/60 dark:bg-emerald-950/30 p-4 space-y-2 text-xs">
           <div className="font-bold text-emerald-900 dark:text-emerald-300 flex items-center gap-1.5">
             <Sparkles className="h-4 w-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
-            <span>Why Groq? (Zero-Cost &amp; Blazing Fast)</span>
+            <span><T>Why Groq? (Zero-Cost &amp; Blazing Fast)</T></span>
           </div>
           <p className="text-emerald-800/90 dark:text-emerald-300/90 leading-relaxed text-[11.5px]">
-            Groq delivers sub-second inference (~500+ tokens/second). Their official developer tier gives you{' '}
-            <strong>14,400 free requests every day</strong> ($0 compute cost) with <strong>no credit card required</strong>.
+            <T>Groq delivers sub-second inference (~500+ tokens/second). Their official developer tier gives you</T>{' '}
+            <strong><T>14,400 free requests every day</T></strong> <T>($0 compute cost) with</T> <strong><T>no credit card required</T></strong>.
           </p>
           <div className="pt-1 flex items-center gap-2">
             <a
@@ -155,7 +157,7 @@ export const ApiKeyRequiredModal: React.FC<ApiKeyRequiredModalProps> = ({
               rel="noreferrer"
               className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-700 dark:text-emerald-300 bg-white dark:bg-emerald-900/50 hover:bg-emerald-100 dark:hover:bg-emerald-900/80 px-3 py-1.5 rounded-lg border border-emerald-300 dark:border-emerald-700 transition shadow-xs"
             >
-              <span>1. Get Free Key at console.groq.com</span>
+              <span><T>1. Get Free Key at console.groq.com</T></span>
               <ExternalLink className="h-3 w-3" />
             </a>
           </div>
@@ -167,9 +169,9 @@ export const ApiKeyRequiredModal: React.FC<ApiKeyRequiredModalProps> = ({
             <div className="flex items-center justify-between mb-1.5">
               <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
                 <Key className="h-3.5 w-3.5 text-slate-400" />
-                <span>2. Paste Your Groq API Key</span>
+                <span><T>2. Paste Your Groq API Key</T></span>
               </label>
-              <span className="text-[10px] text-slate-400 font-mono">Starts with gsk_...</span>
+              <span className="text-[10px] text-slate-400 font-mono"><T>Starts with gsk_...</T></span>
             </div>
 
             <div className="relative">
@@ -177,7 +179,7 @@ export const ApiKeyRequiredModal: React.FC<ApiKeyRequiredModalProps> = ({
                 type={showKey ? 'text' : 'password'}
                 value={apiKey}
                 onChange={(e) => setApiKey(e.target.value)}
-                placeholder="gsk_..."
+                placeholder={__t("gsk_...")}
                 className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3.5 py-2.5 pr-10 text-xs text-slate-900 dark:text-slate-100 font-mono outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition"
                 autoFocus
               />
@@ -202,7 +204,7 @@ export const ApiKeyRequiredModal: React.FC<ApiKeyRequiredModalProps> = ({
           {successMessage && (
             <div className="rounded-xl border border-emerald-200 dark:border-emerald-900/60 bg-emerald-50 dark:bg-emerald-950/40 p-3 text-xs text-emerald-700 dark:text-emerald-300 flex items-start gap-2">
               <CheckCircle2 className="h-4 w-4 shrink-0 mt-0.5" />
-              <div className="leading-snug">{successMessage}</div>
+              <div className="leading-snug"><T>{successMessage}</T></div>
             </div>
           )}
 
@@ -217,7 +219,7 @@ export const ApiKeyRequiredModal: React.FC<ApiKeyRequiredModalProps> = ({
                 }}
                 className="text-[11px] font-semibold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 cursor-pointer order-2 sm:order-1"
               >
-                <span>Or use OpenAI, Gemini, Claude</span>
+                <span><T>Or use OpenAI, Gemini, Claude</T></span>
                 <ArrowRight className="h-3 w-3" />
               </button>
             )}
@@ -229,7 +231,7 @@ export const ApiKeyRequiredModal: React.FC<ApiKeyRequiredModalProps> = ({
                 disabled={isLoading}
                 className="flex-1 sm:flex-none px-3.5 py-2 text-xs font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition cursor-pointer"
               >
-                Cancel
+                <T>Cancel</T>
               </button>
               <button
                 type="submit"
@@ -239,12 +241,12 @@ export const ApiKeyRequiredModal: React.FC<ApiKeyRequiredModalProps> = ({
                 {isLoading ? (
                   <>
                     <div className="h-3.5 w-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    <span>Verifying &amp; Saving...</span>
+                    <span><T>Verifying &amp; Saving...</T></span>
                   </>
                 ) : (
                   <>
                     <ShieldCheck className="h-4 w-4" />
-                    <span>Connect &amp; Activate</span>
+                    <span><T>Connect &amp; Activate</T></span>
                   </>
                 )}
               </button>

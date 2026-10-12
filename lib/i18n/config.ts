@@ -8,6 +8,8 @@ import {
 
 export const LOCALE_COOKIE = 'crescelo_locale';
 export const COUNTRY_COOKIE = 'crescelo_country';
+/** "auto" when the proxy chose the language from the visitor's country, "user" once they picked one themselves. */
+export const LOCALE_SOURCE_COOKIE = 'crescelo_locale_src';
 export const GEO_BANNER_DISMISSED_KEY = 'crescelo_geo_banner_dismissed';
 
 export const DEFAULT_LOCALE: SupportedLocale = 'en';
@@ -53,21 +55,18 @@ export function resolveGeoLocale(
     };
   }
 
-  // 2. Secondary check via browser accept-language if country was unknown
-  if (acceptLanguage) {
-    const lang = acceptLanguage.toLowerCase();
-    if (lang.includes('sv')) {
-      return { locale: 'sv', country: 'SE', countryName: 'Sweden', nativeCountryName: 'Sverige', isAutoDetected: true };
-    }
-    if (lang.includes('fi')) {
-      return { locale: 'fi', country: 'FI', countryName: 'Finland', nativeCountryName: 'Suomi', isAutoDetected: true };
-    }
-    if (lang.includes('it')) {
-      return { locale: 'it', country: 'IT', countryName: 'Italy', nativeCountryName: 'Italia', isAutoDetected: true };
-    }
-    if (lang.includes('es')) {
-      return { locale: 'es', country: 'ES', countryName: 'Spain', nativeCountryName: 'España', isAutoDetected: true };
-    }
+  // 2. No usable country (local development, a privacy network): the browser's own first-choice language
+  const fromBrowser = pickBrowserLocale(acceptLanguage);
+  if (fromBrowser && fromBrowser !== 'en') {
+    const info = SUPPORTED_LOCALES[fromBrowser];
+    const c = COUNTRY_MAPPING[info.defaultCountry];
+    return {
+      locale: fromBrowser,
+      country: info.defaultCountry,
+      countryName: c?.name || info.defaultCountry,
+      nativeCountryName: c?.nativeName || info.defaultCountry,
+      isAutoDetected: true,
+    };
   }
 
   // 3. Fallback to English
@@ -78,4 +77,23 @@ export function resolveGeoLocale(
     nativeCountryName: code ? code : 'Global',
     isAutoDetected: false,
   };
+}
+
+/**
+ * The best-liked language of an Accept-Language header that we have a translation for, or null. Only the top choice counts:
+ * "en-US,en;q=0.9,sv;q=0.8" is an English reader who happens to also know Swedish, not a Swedish reader.
+ */
+export function pickBrowserLocale(acceptLanguage?: string | null): SupportedLocale | null {
+  if (!acceptLanguage) return null;
+  const ranked = acceptLanguage
+    .split(',')
+    .map((part, index) => {
+      const [tag, ...params] = part.trim().split(';');
+      const q = Number(params.find((p) => p.trim().startsWith('q='))?.split('=')[1] ?? 1);
+      return { primary: tag.trim().toLowerCase().split('-')[0], q: Number.isFinite(q) ? q : 0, index };
+    })
+    .filter((x) => x.primary && x.primary !== '*' && x.q > 0)
+    .sort((a, b) => b.q - a.q || a.index - b.index);
+  const top = ranked[0]?.primary;
+  return top && isValidLocale(top) ? top : null;
 }

@@ -1,5 +1,6 @@
 'use client';
 
+import { T, useT } from '@/lib/i18n/context';
 import React, { useState, useRef, useEffect } from 'react';
 import { BrandMark } from '@/components/brand/BrandMark';
 import { FloatingPlatformChatbot } from '@/components/chat/FloatingPlatformChatbot';
@@ -77,6 +78,7 @@ export function DashboardHeader({
   onOpenTour,
   onBillingChanged,
 }: DashboardHeaderProps) {
+  const __t = useT();
   const [isAssistantMenuOpen, setIsAssistantMenuOpen] = useState(false);
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
 
@@ -106,16 +108,16 @@ export function DashboardHeader({
       {/* Left Section: Brand & Assistant Dropdown */}
       <div className="flex items-center gap-4 sm:gap-6">
         {/* Brand Logo */}
-        <button type="button" className="flex items-center gap-3 cursor-pointer text-left rounded-lg" aria-label="Crescelo overview" onClick={() => setActiveTab('overview')}>
+        <button type="button" className="flex items-center gap-3 cursor-pointer text-left rounded-lg" aria-label={__t("Crescelo overview")} onClick={() => setActiveTab('overview')}>
           <BrandMark size={34} showWord={false} />
           <div className="hidden sm:block">
             <div className="flex items-center gap-2">
-              <span className="kx-brand-word">Crescelo</span>
+              <span className="kx-brand-word"><T>Crescelo</T></span>
               <span className="text-[10px] font-semibold bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800 px-1.5 py-0.5 rounded">
-                Enterprise
+                <T>Enterprise</T>
               </span>
             </div>
-            <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">Business Knowledge Engine</p>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium"><T>Business Knowledge Engine</T></p>
           </div>
         </button>
 
@@ -130,12 +132,12 @@ export function DashboardHeader({
               setIsAccountMenuOpen(false);
             }}
             className="flex items-center gap-2.5 rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-50 hover:bg-slate-100 dark:bg-slate-800/70 dark:hover:bg-slate-800 px-3 py-1.5 text-xs font-semibold text-slate-800 dark:text-slate-200 transition shadow-2xs cursor-pointer"
-            title="Switch Active AI Assistant"
+            title={__t("Switch Active AI Assistant")}
           >
             <span className="h-2 w-2 rounded-full bg-emerald-500 shrink-0" />
             <div className="flex items-center gap-1.5 text-left">
-              <span className="text-slate-500 dark:text-slate-400 font-normal hidden lg:inline text-[11px]">Bot:</span>
-              <span className="max-w-[130px] sm:max-w-[170px] truncate">{activeAssistant?.name || 'Select Bot'}</span>
+              <span className="text-slate-500 dark:text-slate-400 font-normal hidden lg:inline text-[11px]"><T>Bot:</T></span>
+              <span className="max-w-[130px] sm:max-w-[170px] truncate">{activeAssistant?.name || <T>{'Select Bot'}</T>}</span>
             </div>
             <ChevronDown className={`h-3.5 w-3.5 text-slate-400 transition-transform duration-200 ${isAssistantMenuOpen ? 'rotate-180' : ''}`} />
           </button>
@@ -145,11 +147,11 @@ export function DashboardHeader({
             <div className="absolute left-0 mt-2 w-72 sm:w-80 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl p-2 z-50 animate-in fade-in zoom-in-95 duration-100">
               <div className="px-3 py-2 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
                 <div>
-                  <span className="font-bold text-xs text-slate-900 dark:text-white">Switch AI Assistant</span>
-                  <p className="text-[10.5px] text-slate-500 dark:text-slate-400">Isolated knowledge base &amp; memory</p>
+                  <span className="font-bold text-xs text-slate-900 dark:text-white"><T>Switch AI Assistant</T></span>
+                  <p className="text-[10.5px] text-slate-500 dark:text-slate-400"><T>Isolated knowledge base &amp; memory</T></p>
                 </div>
                 <span className="px-1.5 py-0.5 rounded text-[10px] font-mono bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
-                  {assistants.length} bot{assistants.length !== 1 ? 's' : ''}
+                  {assistants.length} <T>bot</T>{assistants.length !== 1 ? 's' : ''}
                 </span>
               </div>
 
@@ -176,11 +178,11 @@ export function DashboardHeader({
                         </div>
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-1.5">
-                            <span className="truncate">{ast.name}</span>
+                            <span className="truncate"><T>{ast.name}</T></span>
                             {isCurrent && <Check className="h-3 w-3 text-blue-600 dark:text-blue-400 shrink-0" />}
                           </div>
                           <div className="text-[10px] text-slate-500 dark:text-slate-400 font-mono truncate">
-                            {ast.provider?.toUpperCase() || 'GEMINI'} · {ast.id}
+                            {ast.provider?.toUpperCase() || <T>{'GEMINI'}</T>} · {ast.id}
                           </div>
                         </div>
                       </div>
@@ -215,7 +217,7 @@ export function DashboardHeader({
                   className="w-full flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-xl border border-blue-200 dark:border-blue-900 bg-blue-50/50 hover:bg-blue-100/70 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300 text-xs font-semibold transition cursor-pointer"
                 >
                   <Plus className="h-3.5 w-3.5" />
-                  <span>New Bot</span>
+                  <span><T>New Bot</T></span>
                 </button>
               </div>
             </div>
@@ -231,10 +233,10 @@ export function DashboardHeader({
           title={`Database: ${dbStatus?.connected ? (dbStatus.provider === 'postgres' ? 'PostgreSQL' : 'Supabase') : 'Ephemeral'} | Engine: ${activeAssistant?.provider?.toUpperCase() || 'GEMINI'}`}
         >
           <span className={`h-2 w-2 rounded-full ${dbStatus?.connected ? 'bg-emerald-500' : 'bg-amber-500 animate-pulse'}`} />
-          <span>{dbStatus?.connected ? 'Live Cloud' : 'Ephemeral'}</span>
+          <span>{dbStatus?.connected ? <T>{'Live Cloud'}</T> : <T>{'Ephemeral'}</T>}</span>
           <span className="text-slate-300 dark:text-slate-600">·</span>
           <span className="font-semibold text-blue-600 dark:text-blue-400 font-mono uppercase">
-            {activeAssistant?.provider || 'GEMINI'}
+            {activeAssistant?.provider || <T>{'GEMINI'}</T>}
           </span>
         </div>
 
@@ -247,10 +249,10 @@ export function DashboardHeader({
             type="button"
             onClick={onOpenTour}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-slate-800/80 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold shadow-2xs transition cursor-pointer"
-            title="Product Tour"
+            title={__t("Product Tour")}
           >
             <Compass className="h-3.5 w-3.5" />
-            <span className="hidden sm:inline">Tour</span>
+            <span className="hidden sm:inline"><T>Tour</T></span>
           </button>
         )}
 
@@ -259,10 +261,10 @@ export function DashboardHeader({
           type="button"
           onClick={() => setShowEmbedModal(true)}
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-2xs transition cursor-pointer"
-          title="Deploy Chatbot Widget &amp; WordPress Integration"
+          title={__t("Deploy Chatbot Widget &amp; WordPress Integration")}
         >
           <Globe className="h-3.5 w-3.5" />
-          <span className="hidden sm:inline">Deploy</span>
+          <span className="hidden sm:inline"><T>Deploy</T></span>
         </button>
 
         {/* Notification Bell */}
@@ -275,7 +277,7 @@ export function DashboardHeader({
               setIsAccountMenuOpen(false);
             }}
             className="relative flex items-center justify-center p-2 rounded-xl border border-slate-200 dark:border-slate-700/80 bg-white hover:bg-slate-50 dark:bg-slate-800/80 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 transition shadow-2xs cursor-pointer"
-            title="Activity Notifications"
+            title={__t("Activity Notifications")}
           >
             <Bell className="h-4 w-4" />
             {unreadNotifCount > 0 && (
@@ -291,21 +293,21 @@ export function DashboardHeader({
               <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
                 <div className="flex items-center gap-2">
                   <Bell className="h-4 w-4 text-blue-600" />
-                  <span className="font-bold text-xs text-slate-900 dark:text-white">Activity Notifications</span>
+                  <span className="font-bold text-xs text-slate-900 dark:text-white"><T>Activity Notifications</T></span>
                 </div>
                 {unreadNotifCount > 0 && (
                   <button
                     onClick={handleMarkAllNotificationsRead}
                     className="text-[11px] text-blue-600 dark:text-blue-400 hover:underline font-semibold cursor-pointer"
                   >
-                    Mark all read
+                    <T>Mark all read</T>
                   </button>
                 )}
               </div>
 
               <div className="max-h-72 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800/60 text-xs">
                 {notifications.length === 0 ? (
-                  <div className="py-6 text-center text-slate-400">No activity yet</div>
+                  <div className="py-6 text-center text-slate-400"><T>No activity yet</T></div>
                 ) : (
                   notifications.map((n) => {
                     const isCostCap = n.type === 'cost_cap_warning' || n.type === 'cost_cap_reached';
@@ -323,8 +325,8 @@ export function DashboardHeader({
                         />
                       </div>
                       <div className="flex-1 space-y-0.5">
-                        <div className="font-semibold text-slate-800 dark:text-slate-200 text-xs">{n.title}</div>
-                        <div className="text-slate-500 text-[11px] leading-relaxed">{n.message}</div>
+                        <div className="font-semibold text-slate-800 dark:text-slate-200 text-xs"><T>{n.title}</T></div>
+                        <div className="text-slate-500 text-[11px] leading-relaxed"><T>{n.message}</T></div>
                         <div className="text-[10px] text-slate-400 font-mono">{new Date(n.createdAt).toLocaleTimeString()}</div>
                       </div>
                     </div>
@@ -345,7 +347,7 @@ export function DashboardHeader({
               setIsAssistantMenuOpen(false);
             }}
             className="flex items-center gap-2 pl-1.5 pr-2 py-1 rounded-xl border border-slate-200 dark:border-slate-700/80 bg-white hover:bg-slate-50 dark:bg-slate-800/80 dark:hover:bg-slate-800 transition shadow-2xs cursor-pointer text-left"
-            title="Account &amp; System Settings"
+            title={__t("Account &amp; System Settings")}
           >
             <div className="h-7 w-7 rounded-lg bg-blue-600 overflow-hidden flex items-center justify-center text-white text-[10.5px] font-bold shrink-0">
               {currentUser?.avatarUrl ? (
@@ -359,16 +361,16 @@ export function DashboardHeader({
                 <span>
                   {currentUser?.name
                     ? currentUser.name.slice(0, 2).toUpperCase()
-                    : 'ME'}
+                    : <T>{'ME'}</T>}
                 </span>
               )}
             </div>
             <div className="hidden sm:block leading-tight">
               <div className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate max-w-[100px]">
-                {currentUser?.name || 'My Profile'}
+                {currentUser?.name || <T>{'My Profile'}</T>}
               </div>
               <div className="text-[10px] text-blue-600 dark:text-blue-400 font-medium truncate max-w-[100px]">
-                {currentUser?.title || (currentUser?.role === 'owner' ? 'Owner' : 'Admin')}
+                {currentUser?.title || (currentUser?.role === 'owner' ? <T>{'Owner'}</T> : <T>{'Admin'}</T>)}
               </div>
             </div>
             <ChevronDown className={`h-3 w-3 text-slate-400 transition-transform duration-200 ${isAccountMenuOpen ? 'rotate-180' : ''}`} />
@@ -380,17 +382,17 @@ export function DashboardHeader({
               {/* Account Header */}
               <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800/80">
                 <div className="text-xs font-bold text-slate-900 dark:text-white truncate">
-                  {currentUser?.name || 'Administrator'}
+                  {currentUser?.name || <T>{'Administrator'}</T>}
                 </div>
                 <div className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
-                  {currentUser?.email || 'admin@crescelo.com'}
+                  {currentUser?.email || <T>{'admin@crescelo.com'}</T>}
                 </div>
                 <div className="mt-1 flex items-center gap-1.5">
                   <span className="px-1.5 py-0.5 rounded text-[9.5px] font-semibold bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300">
-                    {currentUser?.role === 'owner' ? 'Workspace Owner' : 'Team Admin'}
+                    {currentUser?.role === 'owner' ? <T>{'Workspace Owner'}</T> : <T>{'Team Admin'}</T>}
                   </span>
                   <span className="text-[10px] text-slate-400 font-mono">
-                    {currentUser?.title || 'Lead'}
+                    {currentUser?.title || <T>{'Lead'}</T>}
                   </span>
                 </div>
               </div>
@@ -406,7 +408,7 @@ export function DashboardHeader({
                   className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
                 >
                   <User className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                  <span>Profile &amp; Settings</span>
+                  <span><T>Profile &amp; Settings</T></span>
                 </button>
 
                 <button
@@ -422,7 +424,7 @@ export function DashboardHeader({
                     ) : (
                       <Moon className="h-4 w-4 text-blue-400" />
                     )}
-                    <span>Appearance</span>
+                    <span><T>Appearance</T></span>
                   </div>
                   <span className="text-[11px] text-slate-400 font-mono capitalize">{theme}</span>
                 </button>
@@ -436,7 +438,7 @@ export function DashboardHeader({
                   className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
                 >
                   <Globe className="h-4 w-4 text-emerald-500" />
-                  <span>Deploy &amp; Widget Snippet</span>
+                  <span><T>Deploy &amp; Widget Snippet</T></span>
                 </button>
 
                 <button
@@ -448,7 +450,7 @@ export function DashboardHeader({
                   className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
                 >
                   <ShieldCheck className="h-4 w-4 text-purple-500" />
-                  <span>Team &amp; Access Control</span>
+                  <span><T>Team &amp; Access Control</T></span>
                 </button>
               </div>
 
@@ -463,7 +465,7 @@ export function DashboardHeader({
                   className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 transition cursor-pointer"
                 >
                   <Lock className="h-4 w-4 text-red-500" />
-                  <span>Lock Session / Sign Out</span>
+                  <span><T>Lock Session / Sign Out</T></span>
                 </button>
               </div>
             </div>

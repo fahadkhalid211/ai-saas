@@ -1,0 +1,150 @@
+1800	Quick replies:
+1801	Refresh Logs
+1802	Review past conversations and step in to chat live when needed.
+1803	Select a conversation from the left to inspect the transcript.
+1804	Send Booking Form
+1805	Session:
+1806	Solved
+1807	Started
+1808	Support Agent
+1809	Take Over Chat
+1810	Type reply to take over chat from AI bot...
+1811	Type reply to visitor as Live Agent (AI is paused)...
+1812	Visitor
+1813	Visitor requested human assistance. Click to take over and start typing real-time responses.
+1814	Waiting
+1815	Web Source
+1816	Web Sources:
+1817	When visitors start chatting with your bot in the widget or Testing Studio, full transcripts will appear here.
+1818	Your display name to the customer
+1819	(UTC).
+1820	Cap per month (USD)
+1821	Cap reached:
+1822	Enable monthly cost cap
+1823	Estimated from the tokens your provider reports; your provider's invoice may differ slightly. Resets on
+1824	Estimated spend this month:
+1825	Monthly cost cap
+1826	of {n1}
+1827	Off
+1828	Refresh spend
+1829	replies use the free Groq model
+1830	Set a monthly limit on what this assistant can spend on your key. We warn you at 80%, and at 100% the assistant switches to the free Groq model or stops replying, whichever you choose.
+1831	Stop replying
+1832	Switch to the free Groq model
+1833	the assistant is not replying
+1834	UTC
+1835	Visitors keep getting answers at no cost to you.
+1836	Visitors see a "temporarily unavailable" message.
+1837	Warning e-mail and notification at
+1838	When the cap is reached
+1839	· invited, not joined yet
+1840	· joined
+1841	· last sign-in
+1842	· two-factor on
+1843	Admin
+1844	AI engine:
+1845	Assistants
+1846	Assistants (
+1847	Billing manager
+1848	Cancel
+1849	Changes you make are real changes to their account.
+1850	Couldn't open the account
+1851	Customers
+1852	does, for up to 60 minutes. A bar at the top takes you back to your master account.
+1853	Everyone registered on Crescelo, by workspace: who they are, their assistants and their plan. Open an account to see exactly what the customer sees and fix a problem for them.
+1854	Joined
+1855	Last sign-in
+1856	Loading…
+1857	more team
+1858	No account attached
+1859	no API key added
+1860	No assistants.
+1861	No customers yet.
+1862	No name
+1863	Nobody matches that search.
+1864	Nobody yet.
+1865	None
+1866	Open
+1867	Open access
+1868	Open account
+1869	Owner
+1870	Paying
+1871	Payment failed
+1872	people ·
+1873	People (
+1874	Plan
+1875	Search by name, e-mail, workspace or assistant
+1876	Search customers
+1877	Signed up, no plan chosen
+1878	Support agent
+1879	The visit is written to their audit trail as “Crescelo Support”.
+1880	their own API key
+1881	Trial or plan ended
+1882	Unknown
+1883	Viewer
+1884	Workspace and owner
+1885	Workspace ID:
+1886	workspaces ·
+1887	You cannot change their password or two-factor settings.
+1888	You will see this workspace exactly as its owner
+1889	Account &amp; System Settings
+1890	Activity Notifications
+1891	admin@crescelo.com
+1892	Administrator
+1893	Appearance
+1894	Bot:
+1895	Business Knowledge Engine
+1896	Crescelo overview
+1897	Deploy & Widget Snippet
+1898	Deploy Chatbot Widget &amp; WordPress Integration
+1899	Enterprise
+1900	Ephemeral
+1901	GEMINI
+1902	Isolated knowledge base & memory
+1903	Lead
+1904	Live Cloud
+1905	Lock Session / Sign Out
+1906	Mark all read
+1907	ME
+1908	My Profile
+1909	New Bot
+1910	No activity yet
+1911	Product Tour
+1912	Profile & Settings
+1913	Select Bot
+1914	Switch Active AI Assistant
+1915	Switch AI Assistant
+1916	Team & Access Control
+1917	Team Admin
+1918	Tour
+1919	Workspace Owner
+1920	Access Codes
+1921	Add to My Website
+1922	Advanced view
+1923	Analytics & KPIs
+1924	Assistant status
+1925	Audit Trail
+1926	Behavior & Rules
+1927	Blog Articles
+1928	Customize & Channels
+1929	Get Started
+1930	Grow & Engage
+1931	Guided tour
+1932	Guides & Docs
+1933	Leads
+1934	My Documents
+1935	Settings & Account
+1936	Showing a simple view with the everyday tabs only. Click to see every setting.
+1937	Showing every setting. Click to go back to the simple view.
+1938	Simple view
+1939	Support Inbox
+1940	System Logs
+1941	Try It Out
+1942	Your assistant is ready to answer customers.
+1943	Add the WhatsApp product to your app.
+1944	Adding Web Pages
+1945	After updating source material (new FAQ, updated policy), delete the old knowledge source and re-upload the new file. The AI uses what's indexed — stale data = stale answers.
+1946	Agency
+1947	AI & Knowledge Tips
+1948	Automation
+1949	Be specific: tell the AI its role ("You are a support agent for Acme Gym"), what it should and shouldn't answer, and what tone to use. Short and clear beats long and vague.

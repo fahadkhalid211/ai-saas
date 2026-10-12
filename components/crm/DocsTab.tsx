@@ -1,5 +1,6 @@
 'use client';
 
+import { T } from '@/lib/i18n/context';
 import React from 'react';
 import {
   BookOpen,
@@ -25,17 +26,17 @@ export const DocsTab: React.FC = () => {
                 <div>
                   <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
                     <BookOpen className="h-5 w-5 text-blue-600" />
-                    Guides &amp; Documentation
+                    <T>Guides &amp; Documentation</T>
                   </h2>
                   <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-                    Step-by-step guides to set up integrations, train your AI, and get the most out of Crescelo.
+                    <T>Step-by-step guides to set up integrations, train your AI, and get the most out of Crescelo.</T>
                   </p>
                 </div>
 
                 {/* Section: Getting Started */}
                 <div>
                   <div className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-3">
-                    Getting Started
+                    <T>Getting Started</T>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {[
@@ -74,7 +75,7 @@ export const DocsTab: React.FC = () => {
                           <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${guide.badgeColor}`}>
                             {guide.badge}
                           </span>
-                          <h3 className="font-semibold text-slate-800 dark:text-slate-100 text-sm">{guide.title}</h3>
+                          <h3 className="font-semibold text-slate-800 dark:text-slate-100 text-sm"><T>{guide.title}</T></h3>
                         </div>
                         <ol className="space-y-1.5 mb-3">
                           {guide.steps.map((step, i) => (
@@ -100,7 +101,7 @@ export const DocsTab: React.FC = () => {
                 {/* Section: Integrations */}
                 <div>
                   <div className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-3">
-                    Integrations
+                    <T>Integrations</T>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {[
@@ -171,7 +172,7 @@ export const DocsTab: React.FC = () => {
                           <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${guide.badgeColor}`}>
                             {guide.badge}
                           </span>
-                          <h3 className="font-semibold text-slate-800 dark:text-slate-100 text-sm">{guide.title}</h3>
+                          <h3 className="font-semibold text-slate-800 dark:text-slate-100 text-sm"><T>{guide.title}</T></h3>
                         </div>
                         <ol className="space-y-1.5 mb-3">
                           {guide.steps.map((step, i) => (
@@ -197,7 +198,7 @@ export const DocsTab: React.FC = () => {
                 {/* Section: AI & Knowledge Tips */}
                 <div>
                   <div className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-3">
-                    AI & Knowledge Tips
+                    <T>AI & Knowledge Tips</T>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     {[
@@ -244,7 +245,7 @@ export const DocsTab: React.FC = () => {
                           {card.iconName === 'youtube' && <Youtube className="h-5 w-5 text-red-500" />}
                           {card.iconName === 'eye' && <Eye className="h-5 w-5 text-purple-500" />}
                         </div>
-                        <h4 className="font-semibold text-slate-800 dark:text-slate-100 text-xs mb-1.5">{card.title}</h4>
+                        <h4 className="font-semibold text-slate-800 dark:text-slate-100 text-xs mb-1.5"><T>{card.title}</T></h4>
                         <p className="text-[11.5px] text-slate-500 dark:text-slate-400 leading-relaxed">{card.body}</p>
                       </div>
                     ))}
@@ -254,7 +255,7 @@ export const DocsTab: React.FC = () => {
                 {/* Section: Lead Capture */}
                 <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-xs">
                   <h3 className="font-semibold text-slate-800 dark:text-slate-100 text-sm mb-3 flex items-center gap-2">
-                    <span className="flex items-center gap-1.5"><ClipboardList className="h-4 w-4 text-blue-500 inline" /><span>Setting Up Lead Capture</span></span>
+                    <span className="flex items-center gap-1.5"><ClipboardList className="h-4 w-4 text-blue-500 inline" /><span><T>Setting Up Lead Capture</T></span></span>
                   </h3>
                   <ol className="space-y-2">
                     {[

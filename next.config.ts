@@ -12,24 +12,7 @@ const nextConfig: NextConfig = {
   outputFileTracingIncludes: {
     '/api/**/*': ['./node_modules/onnxruntime-node/bin/napi-v3/linux/x64/**/*'],
   },
-  async rewrites() {
-    return {
-      beforeFiles: [
-        {
-          source: '/:path*',
-          has: [
-            {
-              type: 'host',
-              value: 'status\\.crescelo\\.com',
-            },
-          ],
-          destination: '/status/:path*',
-        },
-      ],
-      afterFiles: [],
-      fallback: [],
-    };
-  },
+  // status.crescelo.com is routed to the status page by the proxy (proxy.ts), together with the language handling.
   async redirects() {
     // The marketing page moved from /welcome to the site root.
     return [

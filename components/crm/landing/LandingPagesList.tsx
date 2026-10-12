@@ -1,5 +1,6 @@
 'use client';
 
+import { T, useT } from '@/lib/i18n/context';
 import React, { useState } from 'react';
 import {
   Globe,
@@ -96,7 +97,7 @@ function IndustryBadge({ industry }: { industry?: string }) {
   return (
     <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10.5px] font-semibold border ${color}`}>
       <Icon className="h-3 w-3" />
-      <span>{label}</span>
+      <span><T>{label}</T></span>
     </span>
   );
 }
@@ -121,6 +122,7 @@ export function LandingPagesList({
   setPagePendingDelete,
   handleConfirmDeleteLandingPage,
 }: LandingPagesListProps) {
+  const __t = useT();
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
   const copyLiveLink = (slug: string) => {
@@ -144,13 +146,13 @@ export function LandingPagesList({
             </div>
             <div>
               <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
-                <span>Landing Pages</span>
+                <span><T>Landing Pages</T></span>
                 <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
-                  Multi-Site Studio
+                  <T>Multi-Site Studio</T>
                 </span>
               </h1>
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                Manage your hosted websites, live links, service menus, and connect isolated AI knowledge bases.
+                <T>Manage your hosted websites, live links, service menus, and connect isolated AI knowledge bases.</T>
               </p>
             </div>
           </div>
@@ -164,7 +166,7 @@ export function LandingPagesList({
             className="flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition shadow-xs cursor-pointer"
           >
             <LayoutTemplate className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-            <span>Browse Templates</span>
+            <span><T>Browse Templates</T></span>
           </button>
           <button
             type="button"
@@ -172,7 +174,7 @@ export function LandingPagesList({
             className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-md shadow-blue-600/20 transition cursor-pointer"
           >
             <Sparkles className="h-4 w-4" />
-            <span>+ Create Landing Page with AI</span>
+            <span><T>+ Create Landing Page with AI</T></span>
           </button>
         </div>
       </div>
@@ -181,12 +183,12 @@ export function LandingPagesList({
       <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="space-y-1.5 flex-1">
           <div className="flex items-center gap-2">
-            <span className="text-xs font-bold text-slate-900 dark:text-white">Workspace Website Quota</span>
+            <span className="text-xs font-bold text-slate-900 dark:text-white"><T>Workspace Website Quota</T></span>
             <span className="text-[11px] font-mono px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
-              {landingPageLimits.currentCount} of {landingPageLimits.totalAllowed} page{landingPageLimits.totalAllowed !== 1 ? 's' : ''} used
+              {landingPageLimits.currentCount} <T>of</T> {landingPageLimits.totalAllowed} <T>page</T>{landingPageLimits.totalAllowed !== 1 ? 's' : ''} <T>used</T>
             </span>
             <span className="text-[10.5px] uppercase font-semibold text-blue-600 dark:text-blue-400">
-              ({landingPageLimits.planTier} Tier)
+              ({landingPageLimits.planTier} <T>Tier)</T>
             </span>
           </div>
           {/* Progress Bar */}
@@ -207,17 +209,17 @@ export function LandingPagesList({
             onClick={handlePurchaseExtraLandingPage}
             disabled={isPurchasingAddon}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-amber-300 dark:border-amber-800 bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/40 text-amber-900 dark:text-amber-200 text-xs font-semibold transition cursor-pointer disabled:opacity-50"
-            title="Add 1 extra landing page slot for $100"
+            title={__t("Add 1 extra landing page slot for $100")}
           >
             {isPurchasingAddon ? (
               <>
                 <RefreshCw className="h-3.5 w-3.5 animate-spin text-amber-600" />
-                <span>Processing...</span>
+                <span><T>Processing...</T></span>
               </>
             ) : (
               <>
                 <CreditCard className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
-                <span>+ Extra Slot ($100)</span>
+                <span><T>+ Extra Slot ($100)</T></span>
               </>
             )}
           </button>
@@ -231,9 +233,9 @@ export function LandingPagesList({
             <Globe className="h-6 w-6" />
           </div>
           <div className="max-w-md mx-auto space-y-1">
-            <h3 className="text-base font-bold text-slate-900 dark:text-white">No Landing Pages Designed Yet</h3>
+            <h3 className="text-base font-bold text-slate-900 dark:text-white"><T>No Landing Pages Designed Yet</T></h3>
             <p className="text-xs text-slate-500 dark:text-slate-400">
-              Launch an AI-designed high-conversion business website with appointment booking and concierge in under 60 seconds.
+              <T>Launch an AI-designed high-conversion business website with appointment booking and concierge in under 60 seconds.</T>
             </p>
           </div>
           <button
@@ -242,7 +244,7 @@ export function LandingPagesList({
             className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold transition cursor-pointer"
           >
             <Sparkles className="h-4 w-4" />
-            <span>Create Your First Landing Page with AI</span>
+            <span><T>Create Your First Landing Page with AI</T></span>
           </button>
         </div>
       ) : (
@@ -273,17 +275,17 @@ export function LandingPagesList({
                       <IndustryBadge industry={page.industry} />
                       <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-black/60 backdrop-blur-md text-emerald-400 border border-emerald-500/30">
                         <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                        <span>Live</span>
+                        <span><T>Live</T></span>
                       </span>
                     </div>
 
                     {/* Site Title Overlay */}
                     <div className="absolute bottom-2.5 left-3 right-3">
                       <h3 className="text-sm font-bold text-white truncate drop-shadow-sm">
-                        {page.businessName || 'Business Website'}
+                        {page.businessName || <T>{'Business Website'}</T>}
                       </h3>
                       <div className="flex items-center gap-1.5 text-[11px] text-slate-200 font-mono truncate mt-0.5">
-                        <span>/site/{page.slug}</span>
+                        <span><T>/site/</T>{page.slug}</span>
                         {page.customDomain && (
                           <span className="px-1.5 py-0.2 rounded text-[9.5px] bg-emerald-950/80 text-emerald-300 border border-emerald-800/60">
                             {page.customDomain}
@@ -297,13 +299,13 @@ export function LandingPagesList({
                   <div className="p-4 space-y-4">
                     {/* Tagline / Headline */}
                     <p className="text-xs text-slate-600 dark:text-slate-300 line-clamp-2 leading-relaxed">
-                      {page.heroHeadline || page.tagline || 'High-converting business website with instant scheduling and AI customer care.'}
+                      {page.heroHeadline || <T>{page.tagline}</T> || <T>{'High-converting business website with instant scheduling and AI customer care.'}</T>}
                     </p>
 
                     {/* Live Link & Copy Box */}
                     <div className="flex items-center justify-between gap-2 p-2 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800">
                       <span className="text-[11px] text-slate-500 dark:text-slate-400 font-mono truncate">
-                        /site/{page.slug}
+                        <T>/site/</T>{page.slug}
                       </span>
                       <button
                         type="button"
@@ -311,7 +313,7 @@ export function LandingPagesList({
                         className="flex items-center gap-1 text-[10.5px] font-semibold text-blue-600 dark:text-blue-400 hover:underline cursor-pointer shrink-0"
                       >
                         {isCopied ? <Check className="h-3 w-3 text-emerald-500" /> : <Copy className="h-3 w-3" />}
-                        <span>{isCopied ? 'Copied' : 'Copy'}</span>
+                        <span>{isCopied ? <T>{'Copied'}</T> : <T>{'Copy'}</T>}</span>
                       </button>
                     </div>
 
@@ -320,15 +322,15 @@ export function LandingPagesList({
                       <div className="flex items-center justify-between">
                         <label className="text-[11px] font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
                           <Bot className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
-                          <span>Connected Knowledgebase</span>
+                          <span><T>Connected Knowledgebase</T></span>
                         </label>
                         {page.assistantId ? (
                           <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium flex items-center gap-1">
                             <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                            <span>Isolated</span>
+                            <span><T>Isolated</T></span>
                           </span>
                         ) : (
-                          <span className="text-[10px] text-slate-400 font-medium">No bot</span>
+                          <span className="text-[10px] text-slate-400 font-medium"><T>No bot</T></span>
                         )}
                       </div>
 
@@ -337,7 +339,7 @@ export function LandingPagesList({
                         onChange={(e) => handleQuickUpdateKnowledgeBase(pageId, e.target.value)}
                         className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-2.5 py-1.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 cursor-pointer font-medium"
                       >
-                        <option value="">None / Disconnected (No Chatbot)</option>
+                        <option value="">{__t("None / Disconnected (No Chatbot)")}</option>
                         {assistants.length > 0 && (
                           <optgroup label="Available AI Assistants">
                             {assistants.map((ast) => (
@@ -351,7 +353,7 @@ export function LandingPagesList({
 
                       {connectedBot && setActiveAssistant && setActiveTab && (
                         <div className="flex items-center justify-between text-[10.5px] text-slate-500 pt-0.5">
-                          <span>Bot: {connectedBot.name}</span>
+                          <span><T>Bot:</T> <T>{connectedBot.name}</T></span>
                           <button
                             type="button"
                             onClick={() => {
@@ -360,7 +362,7 @@ export function LandingPagesList({
                             }}
                             className="text-blue-600 dark:text-blue-400 hover:underline font-semibold cursor-pointer"
                           >
-                            Manage Documents
+                            <T>Manage Documents</T>
                           </button>
                         </div>
                       )}
@@ -376,20 +378,20 @@ export function LandingPagesList({
                       target="_blank"
                       rel="noopener noreferrer"
                       className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-semibold hover:bg-slate-100 dark:hover:bg-slate-700 transition"
-                      title="Open Live Website in New Tab"
+                      title={__t("Open Live Website in New Tab")}
                     >
                       <Eye className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
-                      <span>View</span>
+                      <span><T>View</T></span>
                     </a>
 
                     <button
                       type="button"
                       onClick={() => handleSelectPageForEdit(page)}
                       className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold transition cursor-pointer shadow-2xs"
-                      title="Edit Every Text, Image, Services and SEO for this page"
+                      title={__t("Edit Every Text, Image, Services and SEO for this page")}
                     >
                       <Sliders className="h-3.5 w-3.5" />
-                      <span>Edit Page</span>
+                      <span><T>Edit Page</T></span>
                     </button>
                   </div>
 
@@ -399,7 +401,7 @@ export function LandingPagesList({
                       disabled={Boolean(deletingPageId)}
                       onClick={() => handleDeleteLandingPage(page)}
                       className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 transition cursor-pointer disabled:opacity-50"
-                      title="Delete this landing page"
+                      title={__t("Delete this landing page")}
                     >
                       {deletingPageId && (deletingPageId === page.id || deletingPageId === page.slug) ? (
                         <RefreshCw className="h-3.5 w-3.5 animate-spin text-rose-600" />
@@ -415,10 +417,10 @@ export function LandingPagesList({
                   <div className="absolute inset-0 z-30 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xs flex flex-col items-center justify-center p-5 text-center animate-in fade-in duration-150">
                     <RefreshCw className="h-7 w-7 text-rose-600 dark:text-rose-400 animate-spin mb-2" />
                     <p className="text-xs font-bold text-slate-900 dark:text-white">
-                      Deleting Landing Page...
+                      <T>Deleting Landing Page...</T>
                     </p>
                     <p className="text-[11px] text-slate-500 dark:text-slate-400 font-mono mt-0.5 max-w-[220px] truncate">
-                      {deleteStatusMessage || 'Unbinding routes...'}
+                      {deleteStatusMessage || <T>{'Unbinding routes...'}</T>}
                     </p>
                     <div className="w-48 h-2 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden mt-3 border border-slate-200 dark:border-slate-700">
                       <div

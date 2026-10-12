@@ -1,0 +1,150 @@
+0	Acceptable Use Policy | Crescelo
+1	Accessibility Statement | Crescelo
+2	✓ Fact-Checked & Grounded
+3	ANSWER EVERY VISITOR. BOOK THE ONES WHO ARE READY.
+4	Blog & Glossary
+5	Browse all 200 guides →
+6	Crescelo
+7	Crescelo installs on WordPress, Webflow, Squarespace, or plain HTML in minutes.
+8	Deploy Crescelo on your website in 15 minutes
+9	Guide
+10	Home
+11	Knowledge Hub
+12	min read
+13	MORE IN THIS TOPIC
+14	Published by
+15	Recommended Next Reading
+16	Start Free Trial
+17	Stop missing bookings
+18	TABLE OF CONTENTS
+19	Train your assistant on your price lists, documents, and service policies. Enable 24/7 grounded answers and conflict-free in-chat appointment booking.
+20	View Pricing & Plans
+21	All {count} articles by topic
+22	Blog
+23	Knowledge Hub: AI Assistants, Booking & Leads | Crescelo
+24	Practical guides for service businesses
+25	Cookie Policy | Crescelo
+26	Data Processing Addendum | Crescelo
+27	Support
+28	WordPress guide
+29	← Back to Help Center
+30	Add it to every page with a plugin (recommended)
+31	Add the Crescelo chat assistant to a WordPress site and check it is working.
+32	Caching plugins and host caches (SiteGround, WP Rocket, Cloudflare and others) keep serving the old page. Purge them after adding the snippet, then reload the page in a private window.
+33	Check that it is installed
+34	Clear the cache
+35	Contact support
+36	Copy your embed code
+37	Edit the page, drag an "HTML" widget onto it, paste the script and update the page. Use the HTML widget, not the text editor: the text editor and the classic block editor remove script tags.
+38	How to add an AI assistant to WordPress
+39	In the Crescelo dashboard open your assistant, then Overview and "Add to website" (or the Deploy button in the top bar). Copy the one-line script. It already contains your assistant ID and the correct address; the example below shows its shape.
+40	Install a snippet plugin such as WPCode or Insert Headers and Footers. Create a new snippet, choose "HTML", paste the script, set the location to "Site Wide Footer" and save. This survives theme changes and works with any page builder.
+41	Open your page, view the page source (Ctrl+U) and search for "widget.js". If it is there, the chat bubble appears in the bottom corner within a second or two. If not, the script was not saved on that page or the cached copy is old.
+42	Or add it to one page with Elementor
+43	Start free trial
+44	STEP
+45	Still stuck?
+46	Troubleshooting
+47	Calendar, Messaging & AI Integrations | Crescelo
+48	Integrations
+49	*Email:* jordan@acme.com
+50	*Lead Name:* Jordan Rivera
+51	*Phone:* +1 (555) 438-9210
+52	*Source:* Website Live Chat
+53	< 200ms message delivery
+54	< 50ms webhook dispatch
+55	🎯 New Lead Captured: Jordan Rivera (jordan@acme.com)
+56	🎯 New Lead Captured!
+57	🔒 Security & Protocol
+58	0% platform markup: pay wholesale direct to Groq
+59	120ms append latency
+60	140ms first token
+61	14KB gzipped bundle with zero external dependencies
+62	2:30 PM
+63	220ms first token
+64	24-hour customer service window management
+65	260ms first token
+66	290ms first token
+67	4:00 PM
+68	60ms delivery latency
+69	95ms webhook turnaround
+70	A single 14KB script tag embed that runs on WordPress, Shopify, Webflow, Squarespace, Wix, or custom React/HTML apps. Features customizable brand themes, proactive greetings, sound effects, and inline calendar booking.
+71	AI Engines (BYOK)
+72	AI Providers (BYOK)
+73	Alex
+74	All Ecosystem
+75	Answering inbound phone calls is under development.
+76	Anthropic Claude
+77	API keys stored in AES-256 encrypted database vaults
+78	Auto-appends structured 12-column customer rows in real time
+79	Automated fallback routing if rate limits occur
+80	Automatic conversation history persistence
+81	Automatically append structured tabular rows into any Google Sheet the instant an appointment is booked or a lead is captured. Includes an auto-header creation template with customer contact details, service types, scheduled dates, and notes for immediate team collaboration without paid database tools.
+82	Book an onboarding call
+83	Bring your own OpenAI API key to power your assistant with GPT-4o, GPT-4o-mini, or o3-mini. Perfect for multi-lingual international clientele, complex constraint satisfaction, and nuanced service negotiation.
+84	Build your autonomous stack with Crescelo.
+85	BYOK
+86	BYOK model: zero platform token surcharges
+87	Calendar
+88	Calendar Booking
+89	Calendar feed (Google Calendar, Outlook, Apple)
+90	Calendars
+91	Calendars, messaging apps, AI providers, webhooks — Crescelo connects to your existing setup without you having to rebuild anything.
+92	Can I book a consultation for Thursday?
+93	Claude 3.5 Sonnet & Haiku 3.5 support
+94	Coming soon
+95	Concurrency lock protection preventing row collisions
+96	Configurable per-assistant channel routing via Incoming Webhooks
+97	Confirmation and reminder emails with self-service reschedule links
+98	Confirmed slot via Web Chat
+99	Connect any Telegram bot token. The assistant processes incoming queries, conducts preliminary intake questionnaires, links to verified knowledge sources, and triggers appointment booking without requiring any external server.
+100	Connect Claude 3.5 Sonnet or Haiku for articulate, human-like dialogue. Claude excels at adhering strictly to negative constraints, maintaining polite boundary enforcement, and avoiding hallucinations.
+101	Content Security Policy compliant, sandboxed iframe option
+102	Core Capabilities
+103	Corporate Concierge
+104	Cost-effective high-token throughput
+105	Crescelo to your calendar (read-only)
+106	CRM & Storage
+107	Custom CSS variable theming matching your site brand
+108	Data & Webhooks
+109	Deploy your assistant directly on your official WhatsApp Business number via Meta Cloud API. Send interactive slot selection buttons, rich list messages, and automatic booking reminders straight to customer chat threads.
+110	Direct integration via Google Cloud AI platform or Gemini API
+111	Embeddable Web Widget
+112	Empathetic tone of voice with steerable guidelines.
+113	Encrypted storage with optional client-side API key masking
+114	Every assistant has a private calendar feed (iCalendar, .ics). Add its address to Google Calendar, Outlook or Apple Calendar with "subscribe from URL" and new bookings appear there. The feed is read-only: events you add in your calendar do not block times in Crescelo, and there is no two-way sync yet (see the roadmap).
+115	Feed address contains a secret token; regenerate it in the dashboard if it leaks
+116	Filtered trigger events (leads only, bookings only, all turns)
+117	Gemini 2.5 Flash and Pro support
+118	Google Cloud IAM or API key with per-workspace quotas
+119	Google Gemini
+120	Google Sheets
+121	Groq LPU Inference
+122	Haircut & Styling
+123	Hi, I need an appointment for a haircut tomorrow afternoon.
+124	High-throughput streaming for real-time telephony
+125	HMAC-SHA256 signature verification header (`X-Crescelo-Signature`)
+126	How It Works in Crescelo
+127	Includes 30-second copy-paste Google Apps Script Web App template
+128	Inline keyboard slot selection
+129	Instant 24/7 client assistant inside Telegram.
+130	Instant alerts for lead.created and appointment.created events
+131	Instant Block Kit cards in team channels for leads & bookings.
+132	Instant bot token setup in Crescelo dashboard
+133	Instant script initialization
+134	INTEGRATIONS
+135	Interactive quick-reply buttons and list pickers
+136	Interactive Slack Block Kit rich card formatting
+137	Interested in enterprise voice worker deployment
+138	Letting your assistant answer phone calls from the same knowledge base is under development and is not available yet. It is on the roadmap; the details below are the plan, not a shipped feature.
+139	Leverage Google Gemini 2.5 Flash and Pro with up to 1M+ token context windows. Allows assistants to reason across entire product catalogs, medical protocols, and hundreds of pages of company SOPs with high fidelity.
+140	Lightweight zero-dependency chat widget for any website.
+141	Llama 3.3 70B & 8B model selection
+142	Marcus Brody
+143	marcus@brody.io
+144	Massive context retrieval across extensive PDF collections
+145	Massive context windows for comprehensive manuals and policy books.
+146	Messaging Channels
+147	Meta App Secret Proof and SHA-256 HMAC payload verification
+148	Native
+149	Native support for GPT-4o and lightweight mini models

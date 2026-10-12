@@ -1,5 +1,6 @@
 'use client';
 
+import { T, useT } from '@/lib/i18n/context';
 import React, { useState } from 'react';
 import {
   X,
@@ -59,6 +60,7 @@ export const OnboardingWizardModal: React.FC<OnboardingWizardModalProps> = ({
   onGoToTab,
   onOpenEmbed,
 }) => {
+  const __t = useT();
   const [step, setStep] = useState(0);
 
   if (!isOpen) return null;
@@ -94,10 +96,10 @@ export const OnboardingWizardModal: React.FC<OnboardingWizardModalProps> = ({
           <div className="flex items-start justify-between">
             <div>
               <p className="text-[11px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-widest mb-1">
-                Getting Started — Step {step + 1} of {STEPS.length}
+                <T>Getting Started — Step</T> {step + 1} <T>of</T> {STEPS.length}
               </p>
               <h2 className="text-lg font-bold text-slate-900 dark:text-white">
-                {assistantName ? `Set up ${assistantName}` : 'Set up your assistant'}
+                {assistantName ? __t("Set up {assistantName}", { assistantName: assistantName }) : <T>{'Set up your assistant'}</T>}
               </h2>
             </div>
             <button
@@ -131,10 +133,10 @@ export const OnboardingWizardModal: React.FC<OnboardingWizardModalProps> = ({
               <div className="p-2.5 rounded-xl bg-blue-100 dark:bg-blue-900/50">
                 <Icon className="h-5 w-5 text-blue-600 dark:text-blue-400" />
               </div>
-              <span className="text-sm font-bold text-slate-900 dark:text-white">{current.label}</span>
+              <span className="text-sm font-bold text-slate-900 dark:text-white"><T>{current.label}</T></span>
             </div>
             <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-              {current.description}
+              <T>{current.description}</T>
             </p>
             <div className="flex items-start gap-2 p-2.5 rounded-lg bg-blue-50 dark:bg-blue-950/40 border border-blue-100 dark:border-blue-900">
               <CheckCircle2 className="h-3.5 w-3.5 text-blue-500 mt-0.5 shrink-0" />
@@ -150,7 +152,7 @@ export const OnboardingWizardModal: React.FC<OnboardingWizardModalProps> = ({
                 return (
                   <div key={s.id} className="flex items-center gap-2 text-[11px] text-slate-400 dark:text-slate-500">
                     <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
-                    <span>{s.label} — done</span>
+                    <span><T>{s.label}</T> <T>— done</T></span>
                   </div>
                 );
               })}
@@ -174,7 +176,7 @@ export const OnboardingWizardModal: React.FC<OnboardingWizardModalProps> = ({
                 onClick={() => setStep((s) => s + 1)}
                 className="flex items-center gap-1 px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-xs font-medium hover:bg-slate-50 dark:hover:bg-slate-700 transition cursor-pointer"
               >
-                Skip
+                <T>Skip</T>
                 <ChevronRight className="h-3.5 w-3.5" />
               </button>
             ) : (
@@ -183,7 +185,7 @@ export const OnboardingWizardModal: React.FC<OnboardingWizardModalProps> = ({
                 onClick={onClose}
                 className="px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-xs font-medium hover:bg-slate-50 dark:hover:bg-slate-700 transition cursor-pointer"
               >
-                Close
+                <T>Close</T>
               </button>
             )}
           </div>

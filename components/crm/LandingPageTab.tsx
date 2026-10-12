@@ -1,3 +1,4 @@
+import { T, useT } from '@/lib/i18n/context';
 import { SaveButton } from '@/components/ui/SaveButton';
 import React, { useState } from 'react';
 import {
@@ -352,6 +353,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
   showQuotaModal: propShowQuotaModal,
   setShowQuotaModal: propSetShowQuotaModal,
 }) => {
+  const __t = useT();
   const [localViewMode, setLocalViewMode] = React.useState<'list' | 'create_wizard' | 'editor'>('list');
   const viewMode = propViewMode ?? localViewMode;
   const setViewMode = propSetViewMode ?? setLocalViewMode;
@@ -534,16 +536,16 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
           className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-750 text-xs font-semibold text-slate-700 dark:text-slate-200 transition cursor-pointer self-start sm:self-auto"
         >
           <ArrowLeft className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-          <span>Back to All Landing Pages</span>
+          <span><T>Back to All Landing Pages</T></span>
         </button>
 
         <div className="flex items-center gap-2.5 text-xs text-slate-500 dark:text-slate-400">
-          <span>Editing:</span>
+          <span><T>Editing:</T></span>
           <span className="font-bold text-slate-900 dark:text-white truncate max-w-[200px]">
-            {landingConfig.businessName || 'Business Website'}
+            {landingConfig.businessName || <T>{'Business Website'}</T>}
           </span>
           <span className="px-2 py-0.5 rounded font-mono text-[11px] bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300">
-            /site/{landingConfig.slug}
+            <T>/site/</T>{landingConfig.slug}
           </span>
         </div>
       </div>
@@ -553,10 +555,10 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2.5">
             <Globe className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-            <span>Landing Page Studio</span>
+            <span><T>Landing Page Studio</T></span>
           </h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-            Configure your hosted business website, customize service catalogs, connect custom domains, and fine-tune AI booking concierges.
+            <T>Configure your hosted business website, customize service catalogs, connect custom domains, and fine-tune AI booking concierges.</T>
           </p>
         </div>
         <div className="flex items-center gap-2.5">
@@ -566,7 +568,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-blue-200 dark:border-blue-900/50 bg-blue-50 dark:bg-blue-950/40 text-xs font-semibold text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/60 transition shadow-2xs cursor-pointer"
           >
             <LayoutTemplate className="h-3.5 w-3.5" />
-            <span>Browse Templates</span>
+            <span><T>Browse Templates</T></span>
           </button>
           <button
             type="button"
@@ -574,7 +576,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition shadow-xs"
           >
             <QrCode className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
-            <span>In-Store QR Code</span>
+            <span><T>In-Store QR Code</T></span>
           </button>
           <a
             href={`/site/${landingConfig.slug || activeAssistant?.id || 'demo-assistant'}`}
@@ -583,7 +585,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
             className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs transition"
           >
             <ExternalLink className="h-3.5 w-3.5" />
-            <span>View Live Site</span>
+            <span><T>View Live Site</T></span>
           </a>
         </div>
       </div>
@@ -599,10 +601,10 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
             <div className="min-w-0">
               <div className="flex items-center gap-2">
                 <span className="text-xs font-bold text-slate-900 dark:text-white truncate">
-                  {landingConfig.businessName || 'Your Business Website'}
+                  {landingConfig.businessName || <T>{'Your Business Website'}</T>}
                 </span>
                 <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
-                  /site/{landingConfig.slug}
+                  <T>/site/</T>{landingConfig.slug}
                 </span>
                 {landingConfig.customDomain && (
                   <span className="px-1.5 py-0.5 rounded text-[9.5px] font-mono bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300">
@@ -628,7 +630,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition cursor-pointer"
             >
               {copiedLandingUrl ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5 text-slate-500" />}
-              <span>{copiedLandingUrl ? 'Copied Link' : 'Copy Link'}</span>
+              <span>{copiedLandingUrl ? <T>{'Copied Link'}</T> : <T>{'Copy Link'}</T>}</span>
             </button>
 
             <button
@@ -641,12 +643,12 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
               {isPurchasingAddon ? (
                 <>
                   <RefreshCw className="h-3.5 w-3.5 animate-spin text-amber-600" />
-                  <span>Processing...</span>
+                  <span><T>Processing...</T></span>
                 </>
               ) : (
                 <>
                   <CreditCard className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
-                  <span>+ Extra Slot ($100)</span>
+                  <span><T>+ Extra Slot ($100)</T></span>
                 </>
               )}
             </button>
@@ -663,7 +665,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold transition cursor-pointer"
             >
               <Plus className="h-3.5 w-3.5" />
-              <span>Create Page</span>
+              <span><T>Create Page</T></span>
             </button>
 
             {handleDeleteLandingPage && (
@@ -677,12 +679,12 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
                 {deletingPageId && (deletingPageId === landingConfig.id || deletingPageId === landingConfig.slug) ? (
                   <>
                     <RefreshCw className="h-3.5 w-3.5 animate-spin" />
-                    <span>Deleting ({deleteProgress || 0}%)...</span>
+                    <span><T>Deleting (</T>{deleteProgress || 0}%)...</span>
                   </>
                 ) : (
                   <>
                     <Trash2 className="h-3.5 w-3.5" />
-                    <span>Delete Page</span>
+                    <span><T>Delete Page</T></span>
                   </>
                 )}
               </button>
@@ -693,7 +695,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
         {/* Multi-Page Switcher Buttons (if multiple pages exist) */}
         {allLandingPages && allLandingPages.length > 1 && (
           <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center gap-2 overflow-x-auto pb-1">
-            <span className="text-[11px] font-semibold text-slate-500 shrink-0">Switch Page:</span>
+            <span className="text-[11px] font-semibold text-slate-500 shrink-0"><T>Switch Page:</T></span>
             {allLandingPages.map((pg) => {
               const isCurrent = landingConfig.slug === pg.slug || landingConfig.id === pg.id;
               return (
@@ -722,11 +724,11 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
         {/* Quota Indicator */}
         <div className="pt-1 flex items-center justify-between text-[10.5px] text-slate-500 font-mono">
           <span>
-            Workspace Quota: {landingPageLimits.currentCount} of {landingPageLimits.totalAllowed} page(s) allocated ({landingPageLimits.planTier} tier)
+            <T>Workspace Quota:</T> {landingPageLimits.currentCount} <T>of</T> {landingPageLimits.totalAllowed} <T>page(s) allocated (</T>{landingPageLimits.planTier} <T>tier)</T>
           </span>
           {landingPageLimits.extraSlots > 0 && (
             <span className="text-amber-600 dark:text-amber-400">
-              +{landingPageLimits.extraSlots} paid add-on slot(s)
+              +{landingPageLimits.extraSlots} <T>paid add-on slot(s)</T>
             </span>
           )}
         </div>
@@ -743,7 +745,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
       {saveLandingSuccess && (
         <div className="p-3.5 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-xl text-xs text-emerald-800 dark:text-emerald-300 flex items-center gap-2 font-medium animate-in fade-in">
           <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600" />
-          <span>Landing page configuration successfully saved and published!</span>
+          <span><T>Landing page configuration successfully saved and published!</T></span>
         </div>
       )}
 
@@ -780,7 +782,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
           }`}
         >
           <Briefcase className="h-4 w-4" />
-          <span>Identity &amp; Design</span>
+          <span><T>Identity &amp; Design</T></span>
         </button>
 
         <button
@@ -793,7 +795,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
           }`}
         >
           <Sparkles className="h-4 w-4" />
-          <span>Hero &amp; Social</span>
+          <span><T>Hero &amp; Social</T></span>
         </button>
 
         <button
@@ -806,9 +808,9 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
           }`}
         >
           <Menu className="h-4 w-4" />
-          <span>Navigation Menu</span>
+          <span><T>Navigation Menu</T></span>
           <span className="ml-1 px-1.5 py-0.2 rounded-full text-[10px] bg-slate-100 dark:bg-slate-800 font-mono text-slate-600 dark:text-slate-300">
-            {(landingConfig.menuItems || []).length || 'Auto'}
+            {(landingConfig.menuItems || []).length || <T>{'Auto'}</T>}
           </span>
         </button>
 
@@ -822,7 +824,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
           }`}
         >
           <FileText className="h-4 w-4" />
-          <span>Page Text Sections</span>
+          <span><T>Page Text Sections</T></span>
         </button>
 
         <button
@@ -835,7 +837,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
           }`}
         >
           <Scissors className="h-4 w-4" />
-          <span>Services &amp; Pricing</span>
+          <span><T>Services &amp; Pricing</T></span>
           <span className="ml-1 px-1.5 py-0.2 rounded-full text-[10px] bg-slate-100 dark:bg-slate-800 font-mono text-slate-600 dark:text-slate-300">
             {(landingConfig.services || []).length}
           </span>
@@ -851,7 +853,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
           }`}
         >
           <Search className="h-4 w-4" />
-          <span>Contact, SEO &amp; Analytics</span>
+          <span><T>Contact, SEO &amp; Analytics</T></span>
         </button>
       </div>
 
@@ -869,10 +871,10 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
                   </div>
                   <div>
                     <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-                      Assigned AI Concierge &amp; Knowledge Base
+                      <T>Assigned AI Concierge &amp; Knowledge Base</T>
                     </h3>
                     <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                      The chatbot on this landing page only answers questions from this bot's knowledge base.
+                      <T>The chatbot on this landing page only answers questions from this bot's knowledge base.</T>
                     </p>
                   </div>
                 </div>
@@ -890,7 +892,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
                     }}
                     className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-blue-300 dark:border-blue-700 bg-white dark:bg-slate-800 text-xs font-semibold text-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-slate-700 transition shadow-2xs cursor-pointer self-start sm:self-auto"
                   >
-                    <span>Manage Bot Knowledge Base</span>
+                    <span><T>Manage Bot Knowledge Base</T></span>
                   </button>
                 )}
               </div>
@@ -899,7 +901,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                      Connected AI Bot &amp; Knowledge Base
+                      <T>Connected AI Bot &amp; Knowledge Base</T>
                     </label>
                     <select
                       value={landingConfig.assistantId ?? ''}
@@ -922,12 +924,12 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
                       {landingConfig.assistantId ? (
                         <div className="flex items-center gap-1.5 text-[11px] text-emerald-600 dark:text-emerald-400 font-medium">
                           <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                          <span>Knowledge base connected &amp; isolated</span>
+                          <span><T>Knowledge base connected &amp; isolated</T></span>
                         </div>
                       ) : (
                         <div className="flex items-center gap-1.5 text-[11px] text-slate-500 dark:text-slate-400 font-medium">
                           <span className="h-2 w-2 rounded-full bg-slate-400" />
-                          <span>Disconnected (Chatbot disabled on site)</span>
+                          <span><T>Disconnected (Chatbot disabled on site)</T></span>
                         </div>
                       )}
 
@@ -939,7 +941,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
                           title="Remove bot and knowledge base from this landing page"
                         >
                           <X className="h-3 w-3" />
-                          <span>Disconnect</span>
+                          <span><T>Disconnect</T></span>
                         </button>
                       )}
                     </div>
@@ -948,10 +950,10 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
                   <div className="flex flex-col justify-center p-3 rounded-xl bg-white/80 dark:bg-slate-800/80 border border-blue-100 dark:border-blue-900/40 text-[11.5px] text-slate-600 dark:text-slate-300 space-y-1.5">
                     <div className="flex items-center gap-1.5 font-semibold text-blue-700 dark:text-blue-300">
                       <ShieldCheck className="h-4 w-4 shrink-0" />
-                      <span>Strict Knowledge Base Separation</span>
+                      <span><T>Strict Knowledge Base Separation</T></span>
                     </div>
                     <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
-                      Connect a dedicated bot to provide website visitors with an AI concierge trained exclusively on this landing page's documents and catalog. Disconnecting disables the chatbot on this website.
+                      <T>Connect a dedicated bot to provide website visitors with an AI concierge trained exclusively on this landing page's documents and catalog. Disconnecting disables the chatbot on this website.</T>
                     </p>
                   </div>
                 </div>
@@ -961,13 +963,13 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
             <div className="p-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-4">
               <h2 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
                 <Briefcase className="h-4 w-4 text-blue-600" />
-                <span>Business Identity &amp; Positioning</span>
+                <span><T>Business Identity &amp; Positioning</T></span>
               </h2>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                    Business Name
+                    <T>Business Name</T>
                   </label>
                   <input
                     type="text"
@@ -979,7 +981,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                    Website URL Slug (/site/[slug])
+                    <T>Website URL Slug (/site/[slug])</T>
                   </label>
                   <input
                     type="text"
@@ -999,7 +1001,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                    Brand Logo URL
+                    <T>Brand Logo URL</T>
                   </label>
                   <input
                     type="url"
@@ -1011,7 +1013,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                    Founder / Lead Practitioner Name
+                    <T>Founder / Lead Practitioner Name</T>
                   </label>
                   <input
                     type="text"
@@ -1025,7 +1027,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
 
               <div>
                 <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                  Tagline / Subtitle
+                  <T>Tagline / Subtitle</T>
                 </label>
                 <input
                   type="text"
@@ -1038,7 +1040,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
 
               <div>
                 <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                  Trust Badge Text (Top Banner)
+                  <T>Trust Badge Text (Top Banner)</T>
                 </label>
                 <input
                   type="text"
@@ -1052,7 +1054,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                    Industry Type
+                    <T>Industry Type</T>
                   </label>
                   <select
                     value={landingConfig.industry || 'universal'}
@@ -1076,7 +1078,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                    Accent Theme Color
+                    <T>Accent Theme Color</T>
                   </label>
                   <select
                     value={landingConfig.themeColor || 'amber'}
@@ -1105,14 +1107,14 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
                 <div>
                   <h2 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
                     <Layers className="h-4 w-4 text-blue-600" />
-                    <span>Visual Design Archetype ({getArchetypesForIndustry(landingConfig.industry).length} Styles Available)</span>
+                    <span><T>Visual Design Archetype (</T>{getArchetypesForIndustry(landingConfig.industry).length} <T>Styles Available)</T></span>
                   </h2>
                   <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                    Choose from 3 tailored design archetypes specifically crafted for your industry.
+                    <T>Choose from 3 tailored design archetypes specifically crafted for your industry.</T>
                   </p>
                 </div>
                 <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-900">
-                  Instant Preview
+                  <T>Instant Preview</T>
                 </span>
               </div>
 
@@ -1148,10 +1150,10 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
                       <div className="p-3.5 space-y-2.5 flex-1 flex flex-col justify-between">
                         <div>
                           <div className="text-xs font-bold text-slate-900 dark:text-white mb-0.5 truncate">
-                            {arch.name}
+                            <T>{arch.name}</T>
                           </div>
                           <p className="text-[11px] text-slate-600 dark:text-slate-300 leading-snug line-clamp-2">
-                            {arch.tagline}
+                            <T>{arch.tagline}</T>
                           </p>
                         </div>
 
@@ -1174,7 +1176,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
                             className="flex-1 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition flex items-center justify-center gap-1 cursor-pointer"
                           >
                             <Eye className="w-3.5 h-3.5" />
-                            <span>Preview</span>
+                            <span><T>Preview</T></span>
                           </button>
                           <button
                             type="button"
@@ -1184,7 +1186,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
                                 : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200'
                             }`}
                           >
-                            {isActive ? 'Active' : 'Apply'}
+                            {isActive ? <T>{'Active'}</T> : <T>{'Apply'}</T>}
                           </button>
                         </div>
                       </div>
@@ -1199,21 +1201,21 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
               <div className="flex items-center justify-between">
                 <h2 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
                   <Globe className="h-4 w-4 text-emerald-500" />
-                  <span>Branded Custom Domain</span>
+                  <span><T>Branded Custom Domain</T></span>
                 </h2>
                 <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
-                  SSL Auto-Provisioned
+                  <T>SSL Auto-Provisioned</T>
                 </span>
               </div>
 
               <p className="text-xs text-slate-500 dark:text-slate-400">
-                Connect your branded domain (e.g. <span className="font-mono text-slate-700 dark:text-slate-300 font-semibold">booking.yourbrand.com</span> or <span className="font-mono text-slate-700 dark:text-slate-300 font-semibold">mybarbershop.com</span>). Your landing page will be served directly under your domain with zero third-party branding.
+                <T>Connect your branded domain (e.g.</T> <span className="font-mono text-slate-700 dark:text-slate-300 font-semibold"><T>booking.yourbrand.com</T></span> <T>or</T> <span className="font-mono text-slate-700 dark:text-slate-300 font-semibold"><T>mybarbershop.com</T></span><T>). Your landing page will be served directly under your domain with zero third-party branding.</T>
               </p>
 
               <div className="space-y-3">
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                    Custom Domain Name
+                    <T>Custom Domain Name</T>
                   </label>
                   <div className="flex gap-2">
                     <input
@@ -1236,7 +1238,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
                         className="px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 text-xs font-semibold flex items-center gap-1.5 transition"
                       >
                         <ExternalLink className="h-3.5 w-3.5" />
-                        <span>Test Domain</span>
+                        <span><T>Test Domain</T></span>
                       </a>
                     )}
                   </div>
@@ -1246,21 +1248,21 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
                 <div className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/50 space-y-2 text-xs">
                   <div className="font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
                     <Link2 className="h-3.5 w-3.5 text-blue-500" />
-                    <span>Required DNS Records at Registrar (GoDaddy, Namecheap, Cloudflare)</span>
+                    <span><T>Required DNS Records at Registrar (GoDaddy, Namecheap, Cloudflare)</T></span>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 font-mono text-[11px]">
                     <div className="p-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
-                      <span className="text-slate-400 block text-[9.5px]">RECORD TYPE</span>
-                      <span className="font-bold text-slate-900 dark:text-white">CNAME</span>
+                      <span className="text-slate-400 block text-[9.5px]"><T>RECORD TYPE</T></span>
+                      <span className="font-bold text-slate-900 dark:text-white"><T>CNAME</T></span>
                     </div>
                     <div className="p-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
-                      <span className="text-slate-400 block text-[9.5px]">HOST / SUBDOMAIN</span>
-                      <span className="font-bold text-slate-900 dark:text-white">booking (or @)</span>
+                      <span className="text-slate-400 block text-[9.5px]"><T>HOST / SUBDOMAIN</T></span>
+                      <span className="font-bold text-slate-900 dark:text-white"><T>booking (or @)</T></span>
                     </div>
                     <div className="p-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-center justify-between">
                       <div>
-                        <span className="text-slate-400 block text-[9.5px]">TARGET / VALUE</span>
-                        <span className="font-bold text-slate-900 dark:text-white truncate">domains.crescelo.com</span>
+                        <span className="text-slate-400 block text-[9.5px]"><T>TARGET / VALUE</T></span>
+                        <span className="font-bold text-slate-900 dark:text-white truncate"><T>domains.crescelo.com</T></span>
                       </div>
                       <button
                         type="button"
@@ -1273,7 +1275,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
                     </div>
                   </div>
                   <p className="text-[10.5px] text-slate-500 dark:text-slate-400">
-                    For root apex domains (e.g. <span className="font-mono">yourbrand.com</span>), point an A record to <span className="font-mono font-semibold text-slate-700 dark:text-slate-300">76.76.21.21</span>. DNS updates typically propagate within 5 to 15 minutes.
+                    <T>For root apex domains (e.g.</T> <span className="font-mono"><T>yourbrand.com</T></span><T>), point an A record to</T> <span className="font-mono font-semibold text-slate-700 dark:text-slate-300">76.76.21.21</span><T>. DNS updates typically propagate within 5 to 15 minutes.</T>
                   </p>
                 </div>
               </div>
@@ -1287,12 +1289,12 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
             <div className="p-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-4">
               <h2 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
                 <Sparkles className="h-4 w-4 text-amber-500" />
-                <span>Hero Section Copy &amp; Imagery</span>
+                <span><T>Hero Section Copy &amp; Imagery</T></span>
               </h2>
 
               <div>
                 <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                  Hero Main Headline
+                  <T>Hero Main Headline</T>
                 </label>
                 <input
                   type="text"
@@ -1305,7 +1307,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
 
               <div>
                 <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                  Hero Subheadline
+                  <T>Hero Subheadline</T>
                 </label>
                 <textarea
                   rows={2}
@@ -1319,7 +1321,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                    Call To Action Button Text
+                    <T>Call To Action Button Text</T>
                   </label>
                   <input
                     type="text"
@@ -1331,7 +1333,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                    Hero Image URL
+                    <T>Hero Image URL</T>
                   </label>
                   <input
                     type="url"
@@ -1345,7 +1347,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
 
               {landingConfig.heroImageUrl && (
                 <div className="pt-2">
-                  <span className="text-[10px] font-semibold text-slate-400 block mb-1">Hero Image Preview:</span>
+                  <span className="text-[10px] font-semibold text-slate-400 block mb-1"><T>Hero Image Preview:</T></span>
                   <div className="h-28 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 relative w-full sm:w-80">
                     <img
                       src={landingConfig.heroImageUrl}
@@ -1363,10 +1365,10 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
                 <div>
                   <h2 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
                     <Sparkles className="h-4 w-4 text-blue-600" />
-                    <span>Hero Carousel Slides (Images &amp; Text)</span>
+                    <span><T>Hero Carousel Slides (Images &amp; Text)</T></span>
                   </h2>
                   <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                    Add, edit, or customize the rotating slides in the hero section. Each slide has its own image, headline, subheadline, and badge.
+                    <T>Add, edit, or customize the rotating slides in the hero section. Each slide has its own image, headline, subheadline, and badge.</T>
                   </p>
                 </div>
                 <button
@@ -1388,7 +1390,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
                   className="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer shadow-xs"
                 >
                   <Plus className="h-3.5 w-3.5" />
-                  <span>Add Slide</span>
+                  <span><T>Add Slide</T></span>
                 </button>
               </div>
 
@@ -1406,7 +1408,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
                         <span className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center text-[10px]">
                           {sIdx + 1}
                         </span>
-                        <span>Slide #{sIdx + 1}</span>
+                        <span><T>Slide #</T>{sIdx + 1}</span>
                       </span>
                       <button
                         type="button"
@@ -1417,13 +1419,13 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
                         className="text-rose-500 hover:text-rose-700 text-xs font-semibold flex items-center gap-1 cursor-pointer transition"
                       >
                         <Trash2 className="h-3.5 w-3.5" />
-                        <span>Delete</span>
+                        <span><T>Delete</T></span>
                       </button>
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div>
-                        <label className="text-[10px] font-semibold text-slate-400 block mb-0.5">Slide Image URL</label>
+                        <label className="text-[10px] font-semibold text-slate-400 block mb-0.5"><T>Slide Image URL</T></label>
                         <input
                           type="url"
                           value={slide.imageUrl}
@@ -1437,7 +1439,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
                         />
                       </div>
                       <div>
-                        <label className="text-[10px] font-semibold text-slate-400 block mb-0.5">Slide Badge / Tag</label>
+                        <label className="text-[10px] font-semibold text-slate-400 block mb-0.5"><T>Slide Badge / Tag</T></label>
                         <input
                           type="text"
                           value={slide.badge || ''}
@@ -1453,7 +1455,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
                     </div>
 
                     <div>
-                      <label className="text-[10px] font-semibold text-slate-400 block mb-0.5">Headline</label>
+                      <label className="text-[10px] font-semibold text-slate-400 block mb-0.5"><T>Headline</T></label>
                       <input
                         type="text"
                         value={slide.headline}
@@ -1468,7 +1470,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
                     </div>
 
                     <div>
-                      <label className="text-[10px] font-semibold text-slate-400 block mb-0.5">Subheadline</label>
+                      <label className="text-[10px] font-semibold text-slate-400 block mb-0.5"><T>Subheadline</T></label>
                       <textarea
                         rows={2}
                         value={slide.subheadline}
@@ -1484,7 +1486,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div>
-                        <label className="text-[10px] font-semibold text-slate-400 block mb-0.5">CTA Button Text</label>
+                        <label className="text-[10px] font-semibold text-slate-400 block mb-0.5"><T>CTA Button Text</T></label>
                         <input
                           type="text"
                           value={slide.ctaText || ''}
@@ -1499,7 +1501,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
                       </div>
                       {slide.imageUrl && (
                         <div className="flex items-center gap-2">
-                          <span className="text-[10px] font-semibold text-slate-400">Thumbnail:</span>
+                          <span className="text-[10px] font-semibold text-slate-400"><T>Thumbnail:</T></span>
                           <div className="h-10 w-16 rounded-md overflow-hidden border border-slate-200 dark:border-slate-700">
                             <img src={slide.imageUrl} alt="Thumbnail" className="w-full h-full object-cover" />
                           </div>
@@ -1512,9 +1514,9 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
                 {(!landingConfig.heroCarouselSlides || landingConfig.heroCarouselSlides.length === 0) && (
                   <div className="p-6 text-center border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-2xl space-y-2">
                     <Sparkles className="h-6 w-6 text-slate-400 mx-auto" />
-                    <div className="text-xs font-bold text-slate-700 dark:text-slate-300">Using Default Hero Image</div>
+                    <div className="text-xs font-bold text-slate-700 dark:text-slate-300"><T>Using Default Hero Image</T></div>
                     <p className="text-[11px] text-slate-500">
-                      Add carousel slides to rotate multiple high-impact hero images, headlines, and calls to action.
+                      <T>Add carousel slides to rotate multiple high-impact hero images, headlines, and calls to action.</T>
                     </p>
                   </div>
                 )}
@@ -1526,17 +1528,17 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
               <div className="flex items-center justify-between">
                 <h2 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
                   <Share2 className="h-4 w-4 text-pink-500" />
-                  <span>Social Media Accounts &amp; Public Profiles</span>
+                  <span><T>Social Media Accounts &amp; Public Profiles</T></span>
                 </h2>
                 <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-pink-50 dark:bg-pink-950/40 text-pink-700 dark:text-pink-400 border border-pink-200 dark:border-pink-800">
-                  Header &amp; Footer Icons
+                  <T>Header &amp; Footer Icons</T>
                 </span>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                    Instagram URL
+                    <T>Instagram URL</T>
                   </label>
                   <input
                     type="url"
@@ -1554,7 +1556,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
 
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                    Facebook URL
+                    <T>Facebook URL</T>
                   </label>
                   <input
                     type="url"
@@ -1572,7 +1574,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
 
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                    X / Twitter URL
+                    <T>X / Twitter URL</T>
                   </label>
                   <input
                     type="url"
@@ -1590,7 +1592,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
 
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                    LinkedIn URL
+                    <T>LinkedIn URL</T>
                   </label>
                   <input
                     type="url"
@@ -1608,7 +1610,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
 
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                    YouTube URL
+                    <T>YouTube URL</T>
                   </label>
                   <input
                     type="url"
@@ -1626,7 +1628,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
 
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                    TikTok URL
+                    <T>TikTok URL</T>
                   </label>
                   <input
                     type="url"
@@ -1654,10 +1656,10 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
                 <div>
                   <h2 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
                     <Menu className="h-4 w-4 text-blue-600" />
-                    <span>Navigation Menu Links</span>
+                    <span><T>Navigation Menu Links</T></span>
                   </h2>
                   <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                    Customize the top navigation links displayed in the header navbar of your live page.
+                    <T>Customize the top navigation links displayed in the header navbar of your live page.</T>
                   </p>
                 </div>
                 <button
@@ -1666,7 +1668,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
                   className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs font-semibold transition cursor-pointer self-start sm:self-auto"
                 >
                   <RotateCcw className="h-3.5 w-3.5" />
-                  <span>Restore Default Navigation</span>
+                  <span><T>Restore Default Navigation</T></span>
                 </button>
               </div>
 
@@ -1674,16 +1676,16 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
                 <div className="p-4 rounded-xl border border-dashed border-blue-200 dark:border-blue-900/50 bg-blue-50/50 dark:bg-blue-950/20 text-xs text-blue-800 dark:text-blue-300 space-y-2">
                   <div className="font-semibold flex items-center gap-2">
                     <Info className="h-4 w-4 text-blue-600 shrink-0" />
-                    <span>Auto-Generated Default Menu Active</span>
+                    <span><T>Auto-Generated Default Menu Active</T></span>
                   </div>
                   <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
-                    Your site is currently displaying intelligent default navigation items (e.g. Services, About Us, Reviews, Book Appointment). You can define bespoke navigation items below to override the defaults with custom anchors or external URLs.
+                    <T>Your site is currently displaying intelligent default navigation items (e.g. Services, About Us, Reviews, Book Appointment). You can define bespoke navigation items below to override the defaults with custom anchors or external URLs.</T>
                   </p>
                 </div>
               ) : (
                 <div className="space-y-3">
                   <span className="text-xs font-semibold text-slate-700 dark:text-slate-300 block">
-                    Configured Menu Links ({landingConfig.menuItems.length})
+                    <T>Configured Menu Links (</T>{landingConfig.menuItems.length})
                   </span>
                   <div className="space-y-2">
                     {landingConfig.menuItems.map((item, idx) => (
@@ -1694,7 +1696,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
                         <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-2">
                           <div>
                             <label className="block text-[10px] font-semibold text-slate-400 mb-0.5">
-                              Link Label
+                              <T>Link Label</T>
                             </label>
                             <input
                               type="text"
@@ -1706,7 +1708,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
                           </div>
                           <div>
                             <label className="block text-[10px] font-semibold text-slate-400 mb-0.5">
-                              Target URL or Section Anchor
+                              <T>Target URL or Section Anchor</T>
                             </label>
                             <input
                               type="text"
@@ -1735,12 +1737,12 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
               <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 space-y-3">
                 <span className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
                   <Plus className="h-3.5 w-3.5 text-blue-600" />
-                  <span>Add Navigation Link</span>
+                  <span><T>Add Navigation Link</T></span>
                 </span>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                      Link Label
+                      <T>Link Label</T>
                     </label>
                     <input
                       type="text"
@@ -1752,7 +1754,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
                   </div>
                   <div>
                     <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                      Link URL or Anchor
+                      <T>Link URL or Anchor</T>
                     </label>
                     <div className="flex gap-2">
                       <input
@@ -1769,7 +1771,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
                         className="px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white text-xs font-semibold transition cursor-pointer flex items-center gap-1 shrink-0"
                       >
                         <Plus className="h-3.5 w-3.5" />
-                        <span>Add</span>
+                        <span><T>Add</T></span>
                       </button>
                     </div>
                   </div>
@@ -1777,7 +1779,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
 
                 {/* Quick Presets */}
                 <div className="pt-2 flex flex-wrap items-center gap-1.5">
-                  <span className="text-[10px] font-semibold text-slate-400 mr-1">Quick Anchors:</span>
+                  <span className="text-[10px] font-semibold text-slate-400 mr-1"><T>Quick Anchors:</T></span>
                   {[
                     { label: 'Services', href: '#services' },
                     { label: 'About Us', href: '#about' },
@@ -1796,7 +1798,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
                       }}
                       className="px-2 py-0.5 rounded-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-[11px] text-slate-600 dark:text-slate-400 hover:border-blue-500 hover:text-blue-600 transition cursor-pointer"
                     >
-                      {preset.label} ({preset.href})
+                      <T>{preset.label}</T> ({preset.href})
                     </button>
                   ))}
                 </div>
@@ -1813,17 +1815,17 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
               <div className="flex items-center justify-between">
                 <h2 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
                   <FileText className="h-4 w-4 text-blue-600" />
-                  <span>About Us Section</span>
+                  <span><T>About Us Section</T></span>
                 </h2>
                 <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800">
-                  #about anchor
+                  <T>#about anchor</T>
                 </span>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                    About Section Title
+                    <T>About Section Title</T>
                   </label>
                   <input
                     type="text"
@@ -1835,7 +1837,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                    About Section Subtitle / Tagline
+                    <T>About Section Subtitle / Tagline</T>
                   </label>
                   <input
                     type="text"
@@ -1849,7 +1851,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
 
               <div>
                 <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                  About Body Narrative
+                  <T>About Body Narrative</T>
                 </label>
                 <textarea
                   rows={4}
@@ -1862,7 +1864,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
 
               <div>
                 <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                  About Section Feature Image URL
+                  <T>About Section Feature Image URL</T>
                 </label>
                 <input
                   type="url"
@@ -1888,16 +1890,16 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
               <div className="flex items-center justify-between">
                 <h2 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
                   <Scissors className="h-4 w-4 text-indigo-600" />
-                  <span>Services Section Header</span>
+                  <span><T>Services Section Header</T></span>
                 </h2>
                 <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800">
-                  #services anchor
+                  <T>#services anchor</T>
                 </span>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                    Services Section Title
+                    <T>Services Section Title</T>
                   </label>
                   <input
                     type="text"
@@ -1909,7 +1911,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                    Services Section Subtitle
+                    <T>Services Section Subtitle</T>
                   </label>
                   <input
                     type="text"
@@ -1921,7 +1923,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
                 </div>
               </div>
               <p className="text-[11px] text-slate-500 italic">
-                Note: Specific service cards, pricing tiers, and durations can be edited in the Services &amp; Pricing tab.
+                <T>Note: Specific service cards, pricing tiers, and durations can be edited in the Services &amp; Pricing tab.</T>
               </p>
             </div>
 
@@ -1930,16 +1932,16 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
               <div className="flex items-center justify-between">
                 <h2 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
                   <Sparkles className="h-4 w-4 text-emerald-600" />
-                  <span>Features &amp; Highlights Section Header</span>
+                  <span><T>Features &amp; Highlights Section Header</T></span>
                 </h2>
                 <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
-                  Value Propositions
+                  <T>Value Propositions</T>
                 </span>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                    Features Section Title
+                    <T>Features Section Title</T>
                   </label>
                   <input
                     type="text"
@@ -1951,7 +1953,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                    Features Section Subtitle
+                    <T>Features Section Subtitle</T>
                   </label>
                   <input
                     type="text"
@@ -1969,17 +1971,17 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
               <div className="flex items-center justify-between">
                 <h2 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
                   <Briefcase className="h-4 w-4 text-amber-600" />
-                  <span>Founder Story &amp; Leadership</span>
+                  <span><T>Founder Story &amp; Leadership</T></span>
                 </h2>
                 <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800">
-                  #founder anchor
+                  <T>#founder anchor</T>
                 </span>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                    Founder / Principal Name
+                    <T>Founder / Principal Name</T>
                   </label>
                   <input
                     type="text"
@@ -1991,7 +1993,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                    Founder Role / Title
+                    <T>Founder Role / Title</T>
                   </label>
                   <input
                     type="text"
@@ -2005,7 +2007,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
 
               <div>
                 <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                  Founder Narrative / Bio
+                  <T>Founder Narrative / Bio</T>
                 </label>
                 <textarea
                   rows={3}
@@ -2018,7 +2020,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
 
               <div>
                 <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                  Founder Portrait / Headshot URL
+                  <T>Founder Portrait / Headshot URL</T>
                 </label>
                 <input
                   type="url"
@@ -2043,13 +2045,13 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
             <div className="p-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-4">
               <h2 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
                 <MessageSquare className="h-4 w-4 text-violet-600" />
-                <span>Testimonials &amp; Gallery Headers</span>
+                <span><T>Testimonials &amp; Gallery Headers</T></span>
               </h2>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                    Testimonials Section Title
+                    <T>Testimonials Section Title</T>
                   </label>
                   <input
                     type="text"
@@ -2061,7 +2063,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                    Testimonials Section Subtitle
+                    <T>Testimonials Section Subtitle</T>
                   </label>
                   <input
                     type="text"
@@ -2076,7 +2078,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-slate-100 dark:border-slate-800">
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                    Gallery Section Title
+                    <T>Gallery Section Title</T>
                   </label>
                   <input
                     type="text"
@@ -2088,7 +2090,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                    Gallery Section Subtitle
+                    <T>Gallery Section Subtitle</T>
                   </label>
                   <input
                     type="text"
@@ -2105,13 +2107,13 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
             <div className="p-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-4">
               <h2 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
                 <Sparkles className="h-4 w-4 text-amber-500" />
-                <span>Call To Action Banner &amp; Footer Copyright</span>
+                <span><T>Call To Action Banner &amp; Footer Copyright</T></span>
               </h2>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                    CTA Banner Main Headline
+                    <T>CTA Banner Main Headline</T>
                   </label>
                   <input
                     type="text"
@@ -2123,7 +2125,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                    CTA Button Text
+                    <T>CTA Button Text</T>
                   </label>
                   <input
                     type="text"
@@ -2137,7 +2139,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
 
               <div>
                 <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                  CTA Banner Subheadline
+                  <T>CTA Banner Subheadline</T>
                 </label>
                 <input
                   type="text"
@@ -2150,7 +2152,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
 
               <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
                 <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                  Footer Legal &amp; Copyright Notice
+                  <T>Footer Legal &amp; Copyright Notice</T>
                 </label>
                 <input
                   type="text"
@@ -2168,10 +2170,10 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
                 <div>
                   <h2 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
                     <Activity className="h-4 w-4 text-emerald-600" />
-                    <span>Trust Metrics &amp; Key Statistics</span>
+                    <span><T>Trust Metrics &amp; Key Statistics</T></span>
                   </h2>
                   <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                    Display impressive metrics, client counts, or satisfaction rates directly below the hero section.
+                    <T>Display impressive metrics, client counts, or satisfaction rates directly below the hero section.</T>
                   </p>
                 </div>
                 <button
@@ -2184,7 +2186,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
                   className="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer shadow-xs"
                 >
                   <Plus className="h-3.5 w-3.5" />
-                  <span>Add Metric</span>
+                  <span><T>Add Metric</T></span>
                 </button>
               </div>
 
@@ -2192,7 +2194,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
                 {(landingConfig.stats && landingConfig.stats.length > 0 ? landingConfig.stats : []).map((stat, sIdx) => (
                   <div key={sIdx} className="flex items-center gap-3 p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40">
                     <div className="w-28">
-                      <label className="text-[10px] font-semibold text-slate-400 block mb-0.5">Metric Value</label>
+                      <label className="text-[10px] font-semibold text-slate-400 block mb-0.5"><T>Metric Value</T></label>
                       <input
                         type="text"
                         value={stat.value}
@@ -2206,7 +2208,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
                       />
                     </div>
                     <div className="flex-1">
-                      <label className="text-[10px] font-semibold text-slate-400 block mb-0.5">Metric Label</label>
+                      <label className="text-[10px] font-semibold text-slate-400 block mb-0.5"><T>Metric Label</T></label>
                       <input
                         type="text"
                         value={stat.label}
@@ -2234,7 +2236,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
                 ))}
 
                 {(!landingConfig.stats || landingConfig.stats.length === 0) && (
-                  <p className="text-xs text-slate-400 text-center py-2">No custom trust metrics added. Click &ldquo;Add Metric&rdquo; to highlight key accomplishments.</p>
+                  <p className="text-xs text-slate-400 text-center py-2"><T>No custom trust metrics added. Click &ldquo;Add Metric&rdquo; to highlight key accomplishments.</T></p>
                 )}
               </div>
             </div>
@@ -2245,10 +2247,10 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
                 <div>
                   <h2 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
                     <HelpCircle className="h-4 w-4 text-amber-500" />
-                    <span>Frequently Asked Questions (FAQ)</span>
+                    <span><T>Frequently Asked Questions (FAQ)</T></span>
                   </h2>
                   <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                    Answer common visitor questions to build trust and eliminate booking friction.
+                    <T>Answer common visitor questions to build trust and eliminate booking friction.</T>
                   </p>
                 </div>
                 <button
@@ -2265,14 +2267,14 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
                   className="px-3 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer shadow-xs"
                 >
                   <Plus className="h-3.5 w-3.5" />
-                  <span>Add Question</span>
+                  <span><T>Add Question</T></span>
                 </button>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                    FAQ Section Title
+                    <T>FAQ Section Title</T>
                   </label>
                   <input
                     type="text"
@@ -2284,7 +2286,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                    FAQ Section Subtitle
+                    <T>FAQ Section Subtitle</T>
                   </label>
                   <input
                     type="text"
@@ -2312,7 +2314,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
                         className="text-rose-500 hover:text-rose-700 text-xs font-semibold flex items-center gap-1 cursor-pointer transition"
                       >
                         <Trash2 className="h-3.5 w-3.5" />
-                        <span>Delete</span>
+                        <span><T>Delete</T></span>
                       </button>
                     </div>
                     <input
@@ -2341,7 +2343,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
                 ))}
 
                 {(!landingConfig.faqs || landingConfig.faqs.length === 0) && (
-                  <p className="text-xs text-slate-400 text-center py-2">No FAQ items created. Click &ldquo;Add Question&rdquo; to add answers to common client questions.</p>
+                  <p className="text-xs text-slate-400 text-center py-2"><T>No FAQ items created. Click &ldquo;Add Question&rdquo; to add answers to common client questions.</T></p>
                 )}
               </div>
             </div>
@@ -2357,20 +2359,20 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
                 <div>
                   <h2 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
                     <Clock className="h-4 w-4 text-blue-600" />
-                    <span>Booking Calendar Timezone</span>
+                    <span><T>Booking Calendar Timezone</T></span>
                   </h2>
                   <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                    Appointments for your services will be scheduled and displayed according to this timezone.
+                    <T>Appointments for your services will be scheduled and displayed according to this timezone.</T>
                   </p>
                 </div>
                 <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800">
-                  {landingConfig.timezone || 'America/New_York'}
+                  {landingConfig.timezone || <T>{'America/New_York'}</T>}
                 </span>
               </div>
 
               <div>
                 <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                  Select Business Timezone
+                  <T>Select Business Timezone</T>
                 </label>
                 <select
                   value={landingConfig.timezone || 'America/New_York'}
@@ -2399,10 +2401,10 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
                 <div>
                   <h2 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
                     <Scissors className="h-4 w-4 text-amber-500" />
-                    <span>Services &amp; Pricing Menu</span>
+                    <span><T>Services &amp; Pricing Menu</T></span>
                   </h2>
                   <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                    These items populate your website catalog and provide live pricing for the AI assistant and interactive booking modal.
+                    <T>These items populate your website catalog and provide live pricing for the AI assistant and interactive booking modal.</T>
                   </p>
                 </div>
                 <button
@@ -2423,7 +2425,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
                   className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs transition cursor-pointer"
                 >
                   <Plus className="h-3.5 w-3.5" />
-                  <span>Add Service</span>
+                  <span><T>Add Service</T></span>
                 </button>
               </div>
 
@@ -2435,7 +2437,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
                   >
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                       <div className="flex-1">
-                        <label className="text-[10px] font-semibold text-slate-400 block mb-0.5">Service Name</label>
+                        <label className="text-[10px] font-semibold text-slate-400 block mb-0.5"><T>Service Name</T></label>
                         <input
                           type="text"
                           value={service.name}
@@ -2451,7 +2453,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
 
                       <div className="flex items-center gap-3">
                         <div>
-                          <label className="text-[10px] font-semibold text-slate-400 block mb-0.5">Price ($)</label>
+                          <label className="text-[10px] font-semibold text-slate-400 block mb-0.5"><T>Price ($)</T></label>
                           <div className="flex items-center gap-1">
                             <span className="text-xs font-semibold text-slate-500">$</span>
                             <input
@@ -2468,7 +2470,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
                         </div>
 
                         <div>
-                          <label className="text-[10px] font-semibold text-slate-400 block mb-0.5">Duration</label>
+                          <label className="text-[10px] font-semibold text-slate-400 block mb-0.5"><T>Duration</T></label>
                           <div className="flex items-center gap-1">
                             <input
                               type="number"
@@ -2480,7 +2482,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
                               }}
                               className="w-16 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1.5 text-slate-900 dark:text-white text-right"
                             />
-                            <span className="text-[11px] text-slate-400">min</span>
+                            <span className="text-[11px] text-slate-400"><T>min</T></span>
                           </div>
                         </div>
 
@@ -2502,7 +2504,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div>
-                        <label className="text-[10px] font-semibold text-slate-400 block mb-0.5">Service Description</label>
+                        <label className="text-[10px] font-semibold text-slate-400 block mb-0.5"><T>Service Description</T></label>
                         <input
                           type="text"
                           value={service.description}
@@ -2516,7 +2518,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
                         />
                       </div>
                       <div>
-                        <label className="text-[10px] font-semibold text-slate-400 block mb-0.5">Service Image URL (Optional)</label>
+                        <label className="text-[10px] font-semibold text-slate-400 block mb-0.5"><T>Service Image URL (Optional)</T></label>
                         <div className="flex items-center gap-2">
                           <input
                             type="url"
@@ -2543,8 +2545,8 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
                 {(!landingConfig.services || landingConfig.services.length === 0) && (
                   <div className="p-8 text-center border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-2xl space-y-2">
                     <Scissors className="h-8 w-8 text-slate-400 mx-auto" />
-                    <div className="text-xs font-bold text-slate-700 dark:text-slate-300">No Services Added Yet</div>
-                    <p className="text-[11px] text-slate-500">Add service items to showcase your menu and enable instant online scheduling.</p>
+                    <div className="text-xs font-bold text-slate-700 dark:text-slate-300"><T>No Services Added Yet</T></div>
+                    <p className="text-[11px] text-slate-500"><T>Add service items to showcase your menu and enable instant online scheduling.</T></p>
                   </div>
                 )}
               </div>
@@ -2556,10 +2558,10 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
                 <div>
                   <h2 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
                     <CreditCard className="h-4 w-4 text-emerald-600" />
-                    <span>Pricing Plans &amp; Packages</span>
+                    <span><T>Pricing Plans &amp; Packages</T></span>
                   </h2>
                   <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                    Display transparent pricing tiers and packages. Toggle this section on or off whenever needed.
+                    <T>Display transparent pricing tiers and packages. Toggle this section on or off whenever needed.</T>
                   </p>
                 </div>
                 <div className="flex items-center gap-3">
@@ -2571,7 +2573,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
                       className="h-4 w-4 rounded text-blue-600 focus:ring-blue-500 cursor-pointer"
                     />
                     <span className="text-xs font-semibold text-slate-800 dark:text-slate-200">
-                      {landingConfig.showPricing !== false ? 'Section Enabled' : 'Section Hidden'}
+                      {landingConfig.showPricing !== false ? <T>{'Section Enabled'}</T> : <T>{'Section Hidden'}</T>}
                     </span>
                   </label>
                   {landingConfig.showPricing !== false && (
@@ -2596,7 +2598,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
                       className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer shadow-xs"
                     >
                       <Plus className="h-3.5 w-3.5" />
-                      <span>Add Plan</span>
+                      <span><T>Add Plan</T></span>
                     </button>
                   )}
                 </div>
@@ -2607,7 +2609,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                        Pricing Section Title
+                        <T>Pricing Section Title</T>
                       </label>
                       <input
                         type="text"
@@ -2619,7 +2621,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
                     </div>
                     <div>
                       <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                        Pricing Section Subtitle
+                        <T>Pricing Section Subtitle</T>
                       </label>
                       <input
                         type="text"
@@ -2646,11 +2648,11 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
                               {pIdx + 1}
                             </span>
                             <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
-                              {plan.name || `Plan #${pIdx + 1}`}
+                              {plan.name || __t("Plan #{n1}", { n1: pIdx + 1 })}
                             </span>
                             {plan.isPopular && (
                               <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300">
-                                Most Popular
+                                <T>Most Popular</T>
                               </span>
                             )}
                           </div>
@@ -2663,13 +2665,13 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
                             className="text-rose-500 hover:text-rose-700 text-xs font-semibold flex items-center gap-1 cursor-pointer transition"
                           >
                             <Trash2 className="h-3.5 w-3.5" />
-                            <span>Delete</span>
+                            <span><T>Delete</T></span>
                           </button>
                         </div>
 
                         <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
                           <div>
-                            <label className="text-[10px] font-semibold text-slate-400 block mb-0.5">Plan Name</label>
+                            <label className="text-[10px] font-semibold text-slate-400 block mb-0.5"><T>Plan Name</T></label>
                             <input
                               type="text"
                               value={plan.name}
@@ -2683,7 +2685,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
                           </div>
 
                           <div>
-                            <label className="text-[10px] font-semibold text-slate-400 block mb-0.5">Price (e.g. $49 or Custom)</label>
+                            <label className="text-[10px] font-semibold text-slate-400 block mb-0.5"><T>Price (e.g. $49 or Custom)</T></label>
                             <input
                               type="text"
                               value={plan.price}
@@ -2697,7 +2699,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
                           </div>
 
                           <div>
-                            <label className="text-[10px] font-semibold text-slate-400 block mb-0.5">Period (e.g. /month, /session)</label>
+                            <label className="text-[10px] font-semibold text-slate-400 block mb-0.5"><T>Period (e.g. /month, /session)</T></label>
                             <input
                               type="text"
                               value={plan.period || ''}
@@ -2711,7 +2713,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
                           </div>
 
                           <div>
-                            <label className="text-[10px] font-semibold text-slate-400 block mb-0.5">Badge Text (Optional)</label>
+                            <label className="text-[10px] font-semibold text-slate-400 block mb-0.5"><T>Badge Text (Optional)</T></label>
                             <input
                               type="text"
                               value={plan.badge || ''}
@@ -2728,7 +2730,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                           <div>
-                            <label className="text-[10px] font-semibold text-slate-400 block mb-0.5">Plan Description</label>
+                            <label className="text-[10px] font-semibold text-slate-400 block mb-0.5"><T>Plan Description</T></label>
                             <input
                               type="text"
                               value={plan.description}
@@ -2742,7 +2744,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
                           </div>
 
                           <div>
-                            <label className="text-[10px] font-semibold text-slate-400 block mb-0.5">Button Call-To-Action</label>
+                            <label className="text-[10px] font-semibold text-slate-400 block mb-0.5"><T>Button Call-To-Action</T></label>
                             <div className="grid grid-cols-2 gap-2">
                               <input
                                 type="text"
@@ -2773,7 +2775,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
                         <div>
                           <div className="flex items-center justify-between mb-1">
                             <label className="text-[10px] font-semibold text-slate-400 block">
-                              Included Features (One feature per line)
+                              <T>Included Features (One feature per line)</T>
                             </label>
                             <label className="flex items-center gap-1.5 cursor-pointer text-[11px] text-slate-700 dark:text-slate-300">
                               <input
@@ -2786,7 +2788,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
                                 }}
                                 className="h-3.5 w-3.5 rounded text-blue-600 focus:ring-blue-500 cursor-pointer"
                               />
-                              <span>Highlight as &ldquo;Most Popular&rdquo;</span>
+                              <span><T>Highlight as &ldquo;Most Popular&rdquo;</T></span>
                             </label>
                           </div>
                           <textarea
@@ -2808,15 +2810,15 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
                     {(!landingConfig.pricingPlans || landingConfig.pricingPlans.length === 0) && (
                       <div className="p-6 text-center border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-2xl space-y-1.5">
                         <CreditCard className="h-6 w-6 text-slate-400 mx-auto" />
-                        <div className="text-xs font-bold text-slate-700 dark:text-slate-300">No Pricing Plans Configured</div>
-                        <p className="text-[11px] text-slate-500">Click &ldquo;Add Plan&rdquo; to create structured tiers with deliverables and pricing.</p>
+                        <div className="text-xs font-bold text-slate-700 dark:text-slate-300"><T>No Pricing Plans Configured</T></div>
+                        <p className="text-[11px] text-slate-500"><T>Click &ldquo;Add Plan&rdquo; to create structured tiers with deliverables and pricing.</T></p>
                       </div>
                     )}
                   </div>
                 </div>
               ) : (
                 <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700 text-xs text-slate-500 text-center">
-                  The Pricing Plans section is currently hidden from your live landing page. Check &ldquo;Section Enabled&rdquo; above to display it.
+                  <T>The Pricing Plans section is currently hidden from your live landing page. Check &ldquo;Section Enabled&rdquo; above to display it.</T>
                 </div>
               )}
             </div>
@@ -2830,13 +2832,13 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
             <div className="p-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-4">
               <h2 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
                 <MapPin className="h-4 w-4 text-rose-500" />
-                <span>Contact &amp; Location Information</span>
+                <span><T>Contact &amp; Location Information</T></span>
               </h2>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                    Phone Number
+                    <T>Phone Number</T>
                   </label>
                   <input
                     type="text"
@@ -2848,7 +2850,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                    Contact Email
+                    <T>Contact Email</T>
                   </label>
                   <input
                     type="email"
@@ -2860,7 +2862,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                    Google Maps Link
+                    <T>Google Maps Link</T>
                   </label>
                   <input
                     type="url"
@@ -2874,7 +2876,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
 
               <div>
                 <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                  Full Physical Address
+                  <T>Full Physical Address</T>
                 </label>
                 <input
                   type="text"
@@ -2891,10 +2893,10 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
               <div className="flex items-center justify-between">
                 <h2 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
                   <Search className="h-4 w-4 text-indigo-500" />
-                  <span>SEO &amp; Search Engine Optimization</span>
+                  <span><T>SEO &amp; Search Engine Optimization</T></span>
                 </h2>
                 <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800">
-                  Google Search Ready
+                  <T>Google Search Ready</T>
                 </span>
               </div>
 
@@ -2902,7 +2904,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <div className="flex items-center justify-between mb-1">
-                      <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Meta Title Tag</label>
+                      <label className="text-xs font-semibold text-slate-700 dark:text-slate-300"><T>Meta Title Tag</T></label>
                       <span className="text-[10px] font-mono text-slate-400">
                         {(landingConfig.seo?.metaTitle || landingConfig.businessName || '').length} / 60
                       </span>
@@ -2923,8 +2925,8 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
 
                   <div>
                     <div className="flex items-center justify-between mb-1">
-                      <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Keywords</label>
-                      <span className="text-[10px] text-slate-400">Comma separated</span>
+                      <label className="text-xs font-semibold text-slate-700 dark:text-slate-300"><T>Keywords</T></label>
+                      <span className="text-[10px] text-slate-400"><T>Comma separated</T></span>
                     </div>
                     <input
                       type="text"
@@ -2943,7 +2945,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
 
                 <div>
                   <div className="flex items-center justify-between mb-1">
-                    <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Meta Description</label>
+                    <label className="text-xs font-semibold text-slate-700 dark:text-slate-300"><T>Meta Description</T></label>
                     <span className="text-[10px] font-mono text-slate-400">
                       {(landingConfig.seo?.metaDescription || landingConfig.heroSubheadline || '').length} / 160
                     </span>
@@ -2965,7 +2967,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                      Social Share Image URL (OpenGraph)
+                      <T>Social Share Image URL (OpenGraph)</T>
                     </label>
                     <input
                       type="url"
@@ -2982,7 +2984,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
                   </div>
                   <div>
                     <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                      Canonical URL Override (Optional)
+                      <T>Canonical URL Override (Optional)</T>
                     </label>
                     <input
                       type="url"
@@ -3002,17 +3004,17 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
                 {/* Google Search Snippet Live Preview */}
                 <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40 space-y-2">
                   <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 block uppercase tracking-wider">
-                    Google Search SERP Preview
+                    <T>Google Search SERP Preview</T>
                   </span>
                   <div className="p-3 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 space-y-1">
                     <div className="text-[11px] text-slate-500 dark:text-slate-400 font-mono">
-                      https://{landingConfig.customDomain || 'crescelo.com/site/' + (landingConfig.slug || 'business')}
+                      <T>https://</T>{landingConfig.customDomain || 'crescelo.com/site/' + (landingConfig.slug || 'business')}
                     </div>
                     <div className="text-sm font-medium text-blue-600 dark:text-blue-400 hover:underline">
-                      {landingConfig.seo?.metaTitle || landingConfig.businessName || 'Your Business Name'} | Official Booking &amp; Services
+                      {landingConfig.seo?.metaTitle || landingConfig.businessName || <T>{'Your Business Name'}</T>} <T>| Official Booking &amp; Services</T>
                     </div>
                     <div className="text-xs text-slate-600 dark:text-slate-300 line-clamp-2">
-                      {landingConfig.seo?.metaDescription || landingConfig.heroSubheadline || 'Book services, view transparent pricing, and schedule appointments online 24/7 with our AI concierge.'}
+                      {landingConfig.seo?.metaDescription || landingConfig.heroSubheadline || <T>{'Book services, view transparent pricing, and schedule appointments online 24/7 with our AI concierge.'}</T>}
                     </div>
                   </div>
                 </div>
@@ -3024,17 +3026,17 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
               <div className="flex items-center justify-between">
                 <h2 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
                   <Activity className="h-4 w-4 text-cyan-500" />
-                  <span>Meta Pixels &amp; Google Analytics</span>
+                  <span><T>Meta Pixels &amp; Google Analytics</T></span>
                 </h2>
                 <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-cyan-50 dark:bg-cyan-950/40 text-cyan-700 dark:text-cyan-400 border border-cyan-200 dark:border-cyan-800">
-                  Ad Attribution &amp; Conversions
+                  <T>Ad Attribution &amp; Conversions</T>
                 </span>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                    Google Analytics 4 Measurement ID
+                    <T>Google Analytics 4 Measurement ID</T>
                   </label>
                   <input
                     type="text"
@@ -3048,12 +3050,12 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
                     }
                     className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white font-mono focus:outline-none focus:border-blue-500"
                   />
-                  <span className="text-[10px] text-slate-400 mt-1 block">Found in Google Analytics &gt; Admin &gt; Data Streams</span>
+                  <span className="text-[10px] text-slate-400 mt-1 block"><T>Found in Google Analytics &gt; Admin &gt; Data Streams</T></span>
                 </div>
 
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                    Meta / Facebook Pixel ID
+                    <T>Meta / Facebook Pixel ID</T>
                   </label>
                   <input
                     type="text"
@@ -3067,7 +3069,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
                     }
                     className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white font-mono focus:outline-none focus:border-blue-500"
                   />
-                  <span className="text-[10px] text-slate-400 mt-1 block">Found in Meta Events Manager &gt; Data Sources</span>
+                  <span className="text-[10px] text-slate-400 mt-1 block"><T>Found in Meta Events Manager &gt; Data Sources</T></span>
                 </div>
               </div>
             </div>
@@ -3078,10 +3080,10 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
                 <div>
                   <h2 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
                     <MessageSquare className="h-4 w-4 text-blue-600" />
-                    <span>Chatbot Starter Questions (Visitor Quick Chips)</span>
+                    <span><T>Chatbot Starter Questions (Visitor Quick Chips)</T></span>
                   </h2>
                   <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                    Chips displayed inside the chatbot widget. Clicking instantly sends the question and answers using your knowledge base.
+                    <T>Chips displayed inside the chatbot widget. Clicking instantly sends the question and answers using your knowledge base.</T>
                   </p>
                 </div>
                 <button
@@ -3096,7 +3098,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
                   className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs font-semibold text-blue-600 dark:text-blue-400 hover:bg-slate-100 transition cursor-pointer"
                 >
                   <Plus className="h-3.5 w-3.5" />
-                  <span>Add Question</span>
+                  <span><T>Add Question</T></span>
                 </button>
               </div>
 
@@ -3135,7 +3137,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
         <div className="sticky bottom-4 z-20 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md shadow-lg flex flex-col sm:flex-row items-center justify-between gap-3">
           <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 font-mono">
             <Globe className="h-4 w-4 text-blue-600" />
-            <span>Editing: <strong className="text-slate-900 dark:text-white">{landingConfig.businessName}</strong> (/site/{landingConfig.slug})</span>
+            <span><T>Editing:</T> <strong className="text-slate-900 dark:text-white">{landingConfig.businessName}</strong> <T>(/site/</T>{landingConfig.slug})</span>
           </div>
 
           <SaveButton type="submit" saving={isSavingLanding} idleLabel="Save & Publish Landing Page" savingLabel="Publishing…" savedLabel="Published" icon={<Check className="h-4 w-4" />} className="w-full sm:w-auto px-6 py-2.5" />
@@ -3151,10 +3153,10 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
               <div>
                 <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
                   <LayoutTemplate className="h-5 w-5 text-blue-600" />
-                  <span>Pre-Built Industry Templates ({LANDING_TEMPLATES_LIST.length})</span>
+                  <span><T>Pre-Built Industry Templates (</T>{LANDING_TEMPLATES_LIST.length})</span>
                 </h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                  Choose a pre-built industry template to instantly populate tailored services, copywriting, and layout themes.
+                  <T>Choose a pre-built industry template to instantly populate tailored services, copywriting, and layout themes.</T>
                 </p>
               </div>
               <button
@@ -3205,7 +3207,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
                         : 'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100'
                     }`}
                   >
-                    {cat.label}
+                    <T>{cat.label}</T>
                   </button>
                 ))}
               </div>
@@ -3247,7 +3249,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
 
                       <div className="absolute inset-0 bg-slate-950/60 backdrop-blur-2xs opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1.5 text-white">
                         <Eye className="h-4 w-4 text-blue-400" />
-                        <span className="text-xs font-semibold">Inspect Snapshot</span>
+                        <span className="text-xs font-semibold"><T>Inspect Snapshot</T></span>
                       </div>
                     </div>
 
@@ -3260,19 +3262,19 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
                               <IconComponent className="h-3.5 w-3.5" />
                             </div>
                             <span className="text-xs font-bold text-slate-900 dark:text-white truncate">
-                              {tpl.name}
+                              <T>{tpl.name}</T>
                             </span>
                           </div>
                           {isActive && (
                             <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-blue-600 text-white shrink-0">
                               <Check className="h-2.5 w-2.5" />
-                              <span>Active</span>
+                              <span><T>Active</T></span>
                             </span>
                           )}
                         </div>
 
                         <p className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed">
-                          {tpl.description}
+                          <T>{tpl.description}</T>
                         </p>
 
                         <div className="flex flex-wrap gap-1 pt-0.5">
@@ -3306,7 +3308,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
                           }}
                           className="flex-1 py-1.5 px-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold transition text-center cursor-pointer shadow-2xs"
                         >
-                          Apply Preset
+                          <T>Apply Preset</T>
                         </button>
                         <button
                           type="button"
@@ -3347,13 +3349,13 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
                 </div>
                 <div>
                   <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                    <span>{inspectingSnapshot.name}</span>
+                    <span><T>{inspectingSnapshot.name}</T></span>
                     <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-semibold">
                       {inspectingSnapshot.category}
                     </span>
                   </h3>
                   <p className="text-[11px] text-slate-400 font-mono">
-                    site.crescelo.com/{inspectingSnapshot.slug}
+                    <T>site.crescelo.com/</T>{inspectingSnapshot.slug}
                   </p>
                 </div>
               </div>
@@ -3385,14 +3387,14 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
                       {inspectingSnapshot.headline}
                     </h2>
                     <p className="text-xs text-slate-200 line-clamp-2 max-w-md">
-                      {inspectingSnapshot.description}
+                      <T>{inspectingSnapshot.description}</T>
                     </p>
                     <div className="pt-1">
                       <span
                         style={{ backgroundColor: inspectingSnapshot.themeHex }}
                         className="inline-block px-4 py-1.5 rounded-xl text-white font-bold text-xs shadow-md"
                       >
-                        Book Appointment &rarr;
+                        <T>Book Appointment &rarr;</T>
                       </span>
                     </div>
                   </div>
@@ -3402,7 +3404,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
               {/* Catalog Highlights */}
               <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30 space-y-2">
                 <div className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
-                  Included Services &amp; Pricing Menu
+                  <T>Included Services &amp; Pricing Menu</T>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                   {inspectingSnapshot.servicesSample?.map((svc: string, idx: number) => (
@@ -3427,7 +3429,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
                 className="px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-200 flex items-center gap-1.5 transition"
               >
                 <ExternalLink className="h-3.5 w-3.5" />
-                <span>Open Full Interactive Site</span>
+                <span><T>Open Full Interactive Site</T></span>
               </a>
               <div className="flex items-center gap-2">
                 <button
@@ -3435,7 +3437,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
                   onClick={() => setInspectingSnapshot(null)}
                   className="px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 cursor-pointer"
                 >
-                  Cancel
+                  <T>Cancel</T>
                 </button>
                 <button
                   type="button"
@@ -3455,7 +3457,7 @@ export const LandingPageTab: React.FC<LandingPageTabProps> = ({
                   }}
                   className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-md shadow-blue-600/20 transition cursor-pointer"
                 >
-                  Load This Preset
+                  <T>Load This Preset</T>
                 </button>
               </div>
             </div>

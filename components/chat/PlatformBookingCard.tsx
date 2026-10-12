@@ -1,5 +1,6 @@
 'use client';
 
+import { T, useT } from '@/lib/i18n/context';
 import React, { useEffect, useMemo, useState } from 'react';
 import { Check, CalendarDays } from 'lucide-react';
 
@@ -32,6 +33,7 @@ function isoDate(d: Date): string {
  * It uses the same endpoints as the customer widget (/api/appointments), so a booking lands in the same place.
  */
 export function PlatformBookingCard({ assistantId, config, note }: { assistantId: string; config: BookingConfig; note?: string }) {
+  const __t = useT();
   const duration = config.bookingSlotDuration || 30;
   const allowed = config.bookingAvailableDays?.length ? config.bookingAvailableDays : ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
 
@@ -112,10 +114,10 @@ export function PlatformBookingCard({ assistantId, config, note }: { assistantId
       <div className="mt-2 rounded-2xl border border-[#abff44]/30 bg-[#abff44]/[0.07] p-3.5 text-[13px] text-[#e8e5dc]" role="status">
         <div className="flex items-center gap-2 font-semibold text-[#abff44]">
           <Check className="w-4 h-4" />
-          <span>You are booked</span>
+          <span><T>You are booked</T></span>
         </div>
         <p className="mt-1.5 leading-relaxed">
-          {done.date} at {done.slot}. A confirmation is on its way to {email.trim()}.
+          {done.date} <T>at</T> {done.slot}<T>. A confirmation is on its way to</T> {email.trim()}.
         </p>
       </div>
     );
@@ -125,10 +127,10 @@ export function PlatformBookingCard({ assistantId, config, note }: { assistantId
     'w-full rounded-xl border border-white/10 bg-[#262624] px-3 py-2 text-[13px] text-[#faf9f5] placeholder-[#8b8981] outline-none focus:border-[#abff44]/50 selection:bg-white/20';
 
   return (
-    <form onSubmit={submit} className="mt-2 rounded-2xl border border-white/10 bg-[#262624]/70 p-3.5 space-y-3" aria-label="Book a time">
+    <form onSubmit={submit} className="mt-2 rounded-2xl border border-white/10 bg-[#262624]/70 p-3.5 space-y-3" aria-label={__t("Book a time")}>
       <div className="flex items-center gap-2 text-[12px] font-semibold text-[#faf9f5]">
         <CalendarDays className="w-4 h-4 text-[#abff44]" />
-        <span>Pick a day and time</span>
+        <span><T>Pick a day and time</T></span>
       </div>
 
       <div className="flex gap-1.5 overflow-x-auto pb-1 [scrollbar-width:none]">
@@ -178,18 +180,18 @@ export function PlatformBookingCard({ assistantId, config, note }: { assistantId
       </div>
 
       <div className="space-y-2">
-        <input className={field} placeholder="Your name" value={name} onChange={(e) => setName(e.target.value)} aria-label="Your name" autoComplete="name" />
-        <input className={field} type="email" placeholder="Your email for the confirmation" value={email} onChange={(e) => setEmail(e.target.value)} aria-label="Your email" autoComplete="email" />
+        <input className={field} placeholder={__t("Your name")} value={name} onChange={(e) => setName(e.target.value)} aria-label={__t("Your name")} autoComplete="name" />
+        <input className={field} type="email" placeholder={__t("Your email for the confirmation")} value={email} onChange={(e) => setEmail(e.target.value)} aria-label={__t("Your email")} autoComplete="email" />
       </div>
 
-      {error && <p className="text-[12px] text-rose-300" role="alert">{error}</p>}
+      {error && <p className="text-[12px] text-rose-300" role="alert"><T>{error}</T></p>}
 
       <button
         type="submit"
         disabled={!canSubmit}
         className="w-full rounded-xl bg-[#abff44] py-2.5 text-[13px] font-semibold text-[#08251a] transition hover:brightness-105 active:scale-[0.99] disabled:opacity-35"
       >
-        {busy ? 'Booking…' : 'Confirm booking'}
+        {busy ? <T>{'Booking…'}</T> : <T>{'Confirm booking'}</T>}
       </button>
     </form>
   );

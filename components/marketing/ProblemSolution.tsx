@@ -1,5 +1,6 @@
 'use client';
 
+import { T } from '@/lib/i18n/context';
 import { useEffect, useRef } from 'react';
 import { STORY } from './content';
 import { Eyebrow, Reveal } from './ui';
@@ -101,8 +102,8 @@ function ProblemStack() {
             <span className="mk-stack-num" aria-hidden="true">
               0{i + 1}
             </span>
-            <h3>{item.title}</h3>
-            <p>{item.body}</p>
+            <h3><T>{item.title}</T></h3>
+            <p><T>{item.body}</T></p>
           </article>
         ))}
       </div>
@@ -119,9 +120,9 @@ export function ProblemSolution() {
     <section id="problem" className="mk-section mk-story" aria-labelledby="mk-story-title">
       <div className="mk-wrap">
         <Reveal className="mk-center-head mk-story-head">
-          <Eyebrow>{story.eyebrow}</Eyebrow>
+          <Eyebrow><T>{story.eyebrow}</T></Eyebrow>
           <h2 id="mk-story-title" className="mk-h2 mk-h2-center">
-            {story.title}
+            <T>{story.title}</T>
           </h2>
         </Reveal>
       </div>
@@ -134,8 +135,8 @@ export function ProblemSolution() {
                 <span className="mk-stack-num" aria-hidden="true">
                   0{i + 1}
                 </span>
-                <h3>{item.title}</h3>
-                <p>{item.body}</p>
+                <h3><T>{item.title}</T></h3>
+                <p><T>{item.body}</T></p>
               </li>
             ))}
           </ol>
@@ -146,15 +147,15 @@ export function ProblemSolution() {
 
       <div className="mk-wrap">
         <Reveal className="mk-center-head mk-story-turn">
-          <Eyebrow>{story.afterEyebrow}</Eyebrow>
-          <h2 className="mk-h2 mk-h2-center">{story.afterTitle}</h2>
+          <Eyebrow><T>{story.afterEyebrow}</T></Eyebrow>
+          <h2 className="mk-h2 mk-h2-center"><T>{story.afterTitle}</T></h2>
         </Reveal>
 
         <ul className="mk-cards">
           {story.after.map((item, i) => (
             <Reveal as="li" key={item.title} delay={i * 90} className="mk-card">
-              <h3>{item.title}</h3>
-              <p>{item.body}</p>
+              <h3><T>{item.title}</T></h3>
+              <p><T>{item.body}</T></p>
             </Reveal>
           ))}
         </ul>

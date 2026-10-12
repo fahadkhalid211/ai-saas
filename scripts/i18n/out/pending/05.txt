@@ -1,0 +1,150 @@
+4018	sources to add
+4019	Standard cut
+4020	Streaming replies
+4021	Take over a conversation as it happens, with a sound alert.
+4022	Team
+4023	Team roles, two-factor sign-in and encrypted keys.
+4024	Test the live assistant engine. Each stage activates in real time as your question flows through grounded embeddings, reciprocal rank fusion, and mutex-locked action execution.
+4025	The best passages are re-ordered and duplicates removed.
+4026	The question arrives from the widget or a messaging app.
+4027	The question is turned into a meaning vector and its keywords are read.
+4028	The reply is written only from the chosen passages, with the source shown.
+4029	The right person, at exactly the right moment
+4030	The same assistant answers in your messaging apps.
+4031	The toolkit
+4032	There is free street parking on Market Street and a public car park two minutes away. The shop is step-free and wheelchair accessible.
+4033	Tools to get you
+4034	Try it
+4035	Try it now
+4036	Try the demo
+4037	Typical FAQ bot
+4038	Under the hood
+4039	Understand
+4040	Upload documents, paste web pages, drop in a YouTube link. Crescelo reads and indexes everything so answers come straight from your material.
+4041	Varies
+4042	Varies by plan
+4043	Via integrations or links
+4044	Visitor message
+4045	Visitors pick a real slot and confirm without leaving the chat.
+4046	Walk-ins are welcome when a chair is free, but booking ahead guarantees your time. Cancel or reschedule up to 24 hours before your visit at no charge.
+4047	Watch it think.
+4048	We accept card and cash. Gift vouchers are available at the shop.
+4049	We are open Monday to Friday from 9:00 to 17:00 and Saturday from 9:00 to 16:00. We are closed on Sundays and public holidays.
+4050	Web pages and video
+4051	Website widget
+4052	WhatsApp and Telegram
+4053	While you are with a client, in a meeting, or off the clock, Crescelo handles the enquiry, offers the booking, and writes up the lead — so you come back to work that is already done.
+4054	Why teams use it
+4055	Working while you sleep,
+4056	Yes
+4057	Yes (Atomic Mutex Lock)
+4058	Yes, and says when it does not know
+4059	Yes, email and phone are detected
+4060	Yes, native webhook connectors
+4061	Yes, with instant audio alert
+4062	Yes, with open-slot picker
+4063	Your own AI key
+4064	Your team steps into the same conversation, with the full history visible. No context lost.
+4065	"What time works for you?" turns into five emails. Every exchange is a chance for the person to lose interest.
+4066	A front desk that answers at 2am and knows exactly when to get you involved.
+4067	A prospect asks about pricing at 9pm. You reply the next morning. They booked with whoever answered first.
+4068	A website assistant that answers from your content, books real appointments and hands off to your team — any time, any channel.
+4069	Acceptable Use
+4070	Accessibility
+4071	Account passwords are stored as salted scrypt hashes, never in plain text.
+4072	Agencies
+4073	AI assistants for service businesses.
+4074	AI keys are encrypted at rest
+4075	All Industries
+4076	An AI website assistant for service businesses: answers visitors from your own content, books appointments, captures leads and hands over to your team.
+4077	An embeddable website widget, a hosted business page, WhatsApp and Telegram. One assistant, four channels.
+4078	Answer customers in Telegram
+4079	Answer customers in WhatsApp
+4080	Answer every visitor.
+4081	Answer the first round of scope and process questions automatically, then move serious enquiries to a discovery call with your team.
+4082	Answers from your content
+4083	Answers from your own content
+4084	Answers from your own content, and says when it does not know
+4085	Appointment businesses
+4086	Architecture
+4087	Asks the next step
+4088	Auto repair
+4089	Automated reminders by email
+4090	Barbershops
+4091	Book the ones who are ready.
+4092	Booking confirmations and reminders
+4093	Bookings get stuck in back-and-forth
+4094	Books into your real calendar
+4095	Building for several clients
+4096	Built around how your business takes enquiries.
+4097	Built for service businesses like these
+4098	Built to protect your customers and your business.
+4099	Calendar feed
+4100	Can a person take over a live conversation?
+4101	Channels: web widget, WhatsApp, Telegram
+4102	Clinics & Wellness
+4103	Connect calendars, CRM and channels
+4104	Consultancies
+4105	Consultants, agencies and advisers
+4106	Contractors and home services
+4107	Cookie Policy
+4108	Crescelo, from your content
+4109	Data Processing Addendum
+4110	Dental clinics
+4111	Discovery-call scheduling
+4112	Do I need my own AI provider account?
+4113	Do you do same-day repairs on flat roofs?
+4114	Documentation and help center
+4115	Email (SMTP)
+4116	Engaged and guided
+4117	Every lead added as a row
+4118	Every plan starts with a 14-day free trial of all Growth features. A card is required to start; you are not charged during the trial. Cancel any time before it ends and you pay nothing. Prices are in US dollars. Annual billing shows the monthly equivalent.
+4119	Everything you need, already built.
+4120	FAQ
+4121	Features and how it works
+4122	Figures describe product capabilities, not projected customer outcomes.
+4123	Fitness studios
+4124	Flat roof repairs are usually scheduled within 2 working days. Same-day visits are only offered for active leaks. Would you like to book an inspection?
+4125	Free to start — zero compute cost
+4126	From the content you add — documents, pages and notes. If the answer is not in your material, it says so instead of guessing. Every unanswered question is logged so you can fill the gap.
+4127	Generic chatbot
+4128	Grounded in your uploaded policy doc and automatically offers the booking step.
+4129	Hands over without losing context
+4130	Home services
+4131	Hosted page per client
+4132	How do I cancel?
+4133	How does it avoid double bookings?
+4134	Industry starter templates
+4135	Inspection slot booking
+4136	Instant answers from your content. Real bookings into your calendar. Your team steps in only when it matters.
+4137	Is Crescelo certified for HIPAA, SOC 2 or similar?
+4138	Is there a free trial?
+4139	Law firms
+4140	Lead capture with custom fields
+4141	Leads fall through the cracks
+4142	Leaves visitors guessing
+4143	Multiple independent assistants
+4144	Names and numbers end up scattered across Instagram DMs, missed calls and email threads — nowhere anyone can act on them.
+4145	Never asks a follow-up
+4146	New leads posted to a channel
+4147	No certifications are claimed at this time. The security section lists exactly what controls are in place today.
+4148	No compliance certifications are claimed at this time. Here is exactly what the product does to keep your data safe.
+4149	No engagement
+4150	No. You can get started right away using our free built-in engine with zero setup and no card required. If you prefer to connect your own OpenAI, Google Gemini, Anthropic or Groq account, you can plug in your existing key with zero platform markup.
+4151	Offers a real booking
+4152	Only integrations that exist in the product are listed here.
+4153	Opening hours, deposit policy, service areas. Good people spending good time on questions that could be answered automatically.
+4154	Outgoing webhooks carry a signature your systems can verify to confirm they came from us.
+4155	Overview
+4156	Passwords are hashed
+4157	Phone calls
+4158	Plain answers to the questions that come up first.
+4159	Plugs into the tools you already use.
+4160	Policy and process answers from your docs
+4161	Predictable plans, zero token tax
+4162	Privacy Policy
+4163	Professional services
+4164	Promises what it cannot check
+4165	Questions arrive after hours
+4166	Quote-led trades
+4167	Rate limiting on all endpoints

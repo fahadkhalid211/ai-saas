@@ -1,5 +1,6 @@
 'use client';
 
+import { T, useT } from '@/lib/i18n/context';
 import React, { useState, useEffect } from 'react';
 import {
   Shield,
@@ -40,6 +41,7 @@ interface AuditLogItem {
 }
 
 export function McpIntegrationPanel({ activeSubTab }: { activeSubTab: 'settings' | 'guide' }) {
+  const __t = useT();
   const [tokens, setTokens] = useState<TokenItem[]>([]);
   const [auditLogs, setAuditLogs] = useState<AuditLogItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -177,10 +179,10 @@ export function McpIntegrationPanel({ activeSubTab }: { activeSubTab: 'settings'
             </div>
             <div>
               <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-                Connecting External AI Agents via Model Context Protocol (MCP)
+                <T>Connecting External AI Agents via Model Context Protocol (MCP)</T>
               </h3>
               <p className="text-xs text-slate-500 dark:text-slate-400">
-                Allow ChatGPT, Claude, Cursor, and Windsurf to securely interact with your Crescelo knowledge base, booking calendar, and CRM.
+                <T>Allow ChatGPT, Claude, Cursor, and Windsurf to securely interact with your Crescelo knowledge base, booking calendar, and CRM.</T>
               </p>
             </div>
           </div>
@@ -188,25 +190,25 @@ export function McpIntegrationPanel({ activeSubTab }: { activeSubTab: 'settings'
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
             <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 space-y-2">
               <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-blue-600 text-white text-xs font-bold">1</span>
-              <h4 className="text-xs font-bold text-slate-900 dark:text-white">Generate an MCP Token</h4>
+              <h4 className="text-xs font-bold text-slate-900 dark:text-white"><T>Generate an MCP Token</T></h4>
               <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
-                Create a scoped token for your external AI agent. Granular scopes guarantee the agent can only access allowed data.
+                <T>Create a scoped token for your external AI agent. Granular scopes guarantee the agent can only access allowed data.</T>
               </p>
             </div>
 
             <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 space-y-2">
               <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-blue-600 text-white text-xs font-bold">2</span>
-              <h4 className="text-xs font-bold text-slate-900 dark:text-white">Configure Your AI Client</h4>
+              <h4 className="text-xs font-bold text-slate-900 dark:text-white"><T>Configure Your AI Client</T></h4>
               <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
-                Add the Crescelo server endpoint <code className="text-[10px] bg-slate-200 dark:bg-slate-700 px-1 py-0.5 rounded">/api/mcp</code> to your AI client configuration with Bearer authorization.
+                <T>Add the Crescelo server endpoint</T> <code className="text-[10px] bg-slate-200 dark:bg-slate-700 px-1 py-0.5 rounded">/api/mcp</code> <T>to your AI client configuration with Bearer authorization.</T>
               </p>
             </div>
 
             <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 space-y-2">
               <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-blue-600 text-white text-xs font-bold">3</span>
-              <h4 className="text-xs font-bold text-slate-900 dark:text-white">Verify Real-Time Tools</h4>
+              <h4 className="text-xs font-bold text-slate-900 dark:text-white"><T>Verify Real-Time Tools</T></h4>
               <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
-                Your AI agent now has 13 native tools for booking appointments, searching docs, capturing leads, and answering client questions.
+                <T>Your AI agent now has 13 native tools for booking appointments, searching docs, capturing leads, and answering client questions.</T>
               </p>
             </div>
           </div>
@@ -227,14 +229,14 @@ export function McpIntegrationPanel({ activeSubTab }: { activeSubTab: 'settings'
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-                  Model Context Protocol (MCP) Server
+                  <T>Model Context Protocol (MCP) Server</T>
                 </h3>
                 <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
-                  Ready &amp; Operational
+                  <T>Ready &amp; Operational</T>
                 </span>
               </div>
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                Official high-speed MCP gateway for ChatGPT, Claude Desktop, Cursor, and autonomous AI agents.
+                <T>Official high-speed MCP gateway for ChatGPT, Claude Desktop, Cursor, and autonomous AI agents.</T>
               </p>
             </div>
           </div>
@@ -257,7 +259,7 @@ export function McpIntegrationPanel({ activeSubTab }: { activeSubTab: 'settings'
             className="flex items-center justify-center gap-2 px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs cursor-pointer transition"
           >
             <Plus className="h-3.5 w-3.5" />
-            <span>Generate New Token</span>
+            <span><T>Generate New Token</T></span>
           </button>
         </div>
 
@@ -266,9 +268,9 @@ export function McpIntegrationPanel({ activeSubTab }: { activeSubTab: 'settings'
           <div className="flex items-center justify-between text-xs">
             <span className="font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
               <Layers className="h-3.5 w-3.5 text-blue-500" />
-              Public MCP Endpoint URL
+              <T>Public MCP Endpoint URL</T>
             </span>
-            <span className="text-[11px] text-slate-400">Supports Streamable HTTP &amp; SSE</span>
+            <span className="text-[11px] text-slate-400"><T>Supports Streamable HTTP &amp; SSE</T></span>
           </div>
 
           <div className="flex items-center gap-2">
@@ -285,7 +287,7 @@ export function McpIntegrationPanel({ activeSubTab }: { activeSubTab: 'settings'
               className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-medium cursor-pointer transition shrink-0"
             >
               {copiedUrl ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5" />}
-              <span>{copiedUrl ? 'Copied' : 'Copy URL'}</span>
+              <span>{copiedUrl ? <T>{'Copied'}</T> : <T>{'Copy URL'}</T>}</span>
             </button>
           </div>
         </div>
@@ -295,7 +297,7 @@ export function McpIntegrationPanel({ activeSubTab }: { activeSubTab: 'settings'
           <div className="flex items-center justify-between">
             <h4 className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
               <Terminal className="h-3.5 w-3.5 text-slate-500" />
-              Client Configuration Snippets
+              <T>Client Configuration Snippets</T>
             </h4>
             <div className="flex items-center gap-1 p-0.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-[11px] font-semibold">
               <button
@@ -303,21 +305,21 @@ export function McpIntegrationPanel({ activeSubTab }: { activeSubTab: 'settings'
                 onClick={() => setActiveClientTab('chatgpt')}
                 className={`px-2.5 py-1 rounded-md transition ${activeClientTab === 'chatgpt' ? 'bg-white dark:bg-slate-900 text-blue-600 shadow-xs' : 'text-slate-500'}`}
               >
-                ChatGPT Actions
+                <T>ChatGPT Actions</T>
               </button>
               <button
                 type="button"
                 onClick={() => setActiveClientTab('claude')}
                 className={`px-2.5 py-1 rounded-md transition ${activeClientTab === 'claude' ? 'bg-white dark:bg-slate-900 text-blue-600 shadow-xs' : 'text-slate-500'}`}
               >
-                Claude Desktop
+                <T>Claude Desktop</T>
               </button>
               <button
                 type="button"
                 onClick={() => setActiveClientTab('cursor')}
                 className={`px-2.5 py-1 rounded-md transition ${activeClientTab === 'cursor' ? 'bg-white dark:bg-slate-900 text-blue-600 shadow-xs' : 'text-slate-500'}`}
               >
-                Cursor / Windsurf
+                <T>Cursor / Windsurf</T>
               </button>
             </div>
           </div>
@@ -339,16 +341,16 @@ export function McpIntegrationPanel({ activeSubTab }: { activeSubTab: 'settings'
               className="absolute top-3 right-3 flex items-center gap-1 px-2.5 py-1 rounded-md bg-slate-800 hover:bg-slate-700 text-[11px] text-slate-300 transition"
             >
               {copiedSnippet ? <Check className="h-3 w-3 text-emerald-400" /> : <Copy className="h-3 w-3" />}
-              <span>{copiedSnippet ? 'Copied' : 'Copy'}</span>
+              <span>{copiedSnippet ? <T>{'Copied'}</T> : <T>{'Copy'}</T>}</span>
             </button>
 
             {activeClientTab === 'chatgpt' && (
               <div className="space-y-1.5 text-[11px] text-slate-300">
-                <p className="text-emerald-400 font-bold"># ChatGPT Custom GPTs Setup:</p>
-                <p>1. Open ChatGPT → Explore GPTs → Create a GPT → Configure → Actions.</p>
-                <p>2. Set Authentication Type to <span className="text-purple-300">API Key</span> with Auth Type: <span className="text-purple-300">Bearer</span>.</p>
-                <p>3. Paste your Crescelo MCP Token as the API Key.</p>
-                <p>4. Point schema URL to: <span className="text-blue-400">{mcpEndpointUrl}</span></p>
+                <p className="text-emerald-400 font-bold"><T># ChatGPT Custom GPTs Setup:</T></p>
+                <p><T>1. Open ChatGPT → Explore GPTs → Create a GPT → Configure → Actions.</T></p>
+                <p><T>2. Set Authentication Type to</T> <span className="text-purple-300"><T>API Key</T></span> <T>with Auth Type:</T> <span className="text-purple-300"><T>Bearer</T></span>.</p>
+                <p><T>3. Paste your Crescelo MCP Token as the API Key.</T></p>
+                <p><T>4. Point schema URL to:</T> <span className="text-blue-400">{mcpEndpointUrl}</span></p>
               </div>
             )}
 
@@ -369,17 +371,17 @@ export function McpIntegrationPanel({ activeSubTab }: { activeSubTab: 'settings'
           <div>
             <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
               <Key className="h-4 w-4 text-blue-500" />
-              Active Workspace MCP Tokens
+              <T>Active Workspace MCP Tokens</T>
             </h3>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-              Tokens authenticate external agents to this workspace. Secret tokens are never stored in plain text.
+              <T>Tokens authenticate external agents to this workspace. Secret tokens are never stored in plain text.</T>
             </p>
           </div>
           <button
             type="button"
             onClick={loadData}
             className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 transition"
-            title="Refresh"
+            title={__t("Refresh")}
           >
             <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} />
           </button>
@@ -387,26 +389,26 @@ export function McpIntegrationPanel({ activeSubTab }: { activeSubTab: 'settings'
 
         {tokens.length === 0 ? (
           <div className="py-8 text-center text-xs text-slate-500 border border-dashed border-slate-200 dark:border-slate-800 rounded-xl">
-            No MCP tokens generated yet. Click &quot;Generate New Token&quot; above to connect your first AI agent.
+            <T>No MCP tokens generated yet. Click &quot;Generate New Token&quot; above to connect your first AI agent.</T>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
               <thead>
                 <tr className="border-b border-slate-100 dark:border-slate-800 text-slate-400 text-[11px]">
-                  <th className="pb-2 font-semibold">Name</th>
-                  <th className="pb-2 font-semibold">Token Prefix</th>
-                  <th className="pb-2 font-semibold">Scopes</th>
-                  <th className="pb-2 font-semibold">Created</th>
-                  <th className="pb-2 font-semibold">Last Used</th>
-                  <th className="pb-2 font-semibold text-right">Actions</th>
+                  <th className="pb-2 font-semibold"><T>Name</T></th>
+                  <th className="pb-2 font-semibold"><T>Token Prefix</T></th>
+                  <th className="pb-2 font-semibold"><T>Scopes</T></th>
+                  <th className="pb-2 font-semibold"><T>Created</T></th>
+                  <th className="pb-2 font-semibold"><T>Last Used</T></th>
+                  <th className="pb-2 font-semibold text-right"><T>Actions</T></th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
                 {tokens.map((token) => (
                   <tr key={token.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/20">
                     <td className="py-3 font-semibold text-slate-900 dark:text-white">
-                      {token.name}
+                      <T>{token.name}</T>
                     </td>
                     <td className="py-3 font-mono text-slate-500 dark:text-slate-400">
                       {token.tokenPrefix}
@@ -427,14 +429,14 @@ export function McpIntegrationPanel({ activeSubTab }: { activeSubTab: 'settings'
                       {new Date(token.createdAt).toLocaleDateString()}
                     </td>
                     <td className="py-3 text-slate-500">
-                      {token.lastUsedAt ? new Date(token.lastUsedAt).toLocaleDateString() : 'Never'}
+                      {token.lastUsedAt ? new Date(token.lastUsedAt).toLocaleDateString() : <T>{'Never'}</T>}
                     </td>
                     <td className="py-3 text-right">
                       <button
                         type="button"
                         onClick={() => handleRevokeToken(token.id)}
                         className="p-1 text-rose-500 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded transition"
-                        title="Revoke Token"
+                        title={__t("Revoke Token")}
                       >
                         <Trash2 className="h-3.5 w-3.5" />
                       </button>
@@ -453,27 +455,27 @@ export function McpIntegrationPanel({ activeSubTab }: { activeSubTab: 'settings'
           <div>
             <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
               <Activity className="h-4 w-4 text-purple-500" />
-              Live MCP Tool Execution Audit Stream
+              <T>Live MCP Tool Execution Audit Stream</T>
             </h3>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-              Real-time audit log of tools called by connected AI agents for compliance and observability.
+              <T>Real-time audit log of tools called by connected AI agents for compliance and observability.</T>
             </p>
           </div>
         </div>
 
         {auditLogs.length === 0 ? (
           <div className="py-6 text-center text-xs text-slate-500 border border-dashed border-slate-200 dark:border-slate-800 rounded-xl">
-            No external agent calls recorded yet. Tool calls will appear here in real time.
+            <T>No external agent calls recorded yet. Tool calls will appear here in real time.</T>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
               <thead>
                 <tr className="border-b border-slate-100 dark:border-slate-800 text-slate-400 text-[11px]">
-                  <th className="pb-2 font-semibold">Tool</th>
-                  <th className="pb-2 font-semibold">Status</th>
-                  <th className="pb-2 font-semibold">Duration</th>
-                  <th className="pb-2 font-semibold text-right">Time</th>
+                  <th className="pb-2 font-semibold"><T>Tool</T></th>
+                  <th className="pb-2 font-semibold"><T>Status</T></th>
+                  <th className="pb-2 font-semibold"><T>Duration</T></th>
+                  <th className="pb-2 font-semibold text-right"><T>Time</T></th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 font-mono text-[11px]">
@@ -485,16 +487,16 @@ export function McpIntegrationPanel({ activeSubTab }: { activeSubTab: 'settings'
                     <td className="py-2.5">
                       {log.success ? (
                         <span className="px-2 py-0.5 rounded text-[10px] bg-emerald-50 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
-                          SUCCESS
+                          <T>SUCCESS</T>
                         </span>
                       ) : (
                         <span className="px-2 py-0.5 rounded text-[10px] bg-rose-50 dark:bg-rose-950 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-800">
-                          {log.errorCode || 'FAILED'}
+                          {log.errorCode || <T>{'FAILED'}</T>}
                         </span>
                       )}
                     </td>
                     <td className="py-2.5 text-slate-500">
-                      {Math.round(log.durationMs)}ms
+                      {Math.round(log.durationMs)}<T>ms</T>
                     </td>
                     <td className="py-2.5 text-right text-slate-400">
                       {new Date(log.timestamp).toLocaleTimeString()}
@@ -518,9 +520,9 @@ export function McpIntegrationPanel({ activeSubTab }: { activeSubTab: 'settings'
                     <Check className="h-5 w-5" />
                   </div>
                   <div>
-                    <h3 className="text-sm font-bold text-slate-900 dark:text-white">Token Generated Successfully</h3>
+                    <h3 className="text-sm font-bold text-slate-900 dark:text-white"><T>Token Generated Successfully</T></h3>
                     <p className="text-xs text-rose-500 font-semibold mt-0.5">
-                      Copy this token now! It will never be shown again.
+                      <T>Copy this token now! It will never be shown again.</T>
                     </p>
                   </div>
                 </div>
@@ -540,7 +542,7 @@ export function McpIntegrationPanel({ activeSubTab }: { activeSubTab: 'settings'
                     className="flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold transition"
                   >
                     {copiedNewToken ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-                    <span>{copiedNewToken ? 'Copied to Clipboard' : 'Copy Token'}</span>
+                    <span>{copiedNewToken ? <T>{'Copied to Clipboard'}</T> : <T>{'Copy Token'}</T>}</span>
                   </button>
                   <button
                     type="button"
@@ -550,7 +552,7 @@ export function McpIntegrationPanel({ activeSubTab }: { activeSubTab: 'settings'
                     }}
                     className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-semibold hover:bg-slate-200 transition"
                   >
-                    Done
+                    <T>Done</T>
                   </button>
                 </div>
               </div>
@@ -558,21 +560,21 @@ export function McpIntegrationPanel({ activeSubTab }: { activeSubTab: 'settings'
               <form onSubmit={handleCreateToken} className="space-y-4">
                 <div>
                   <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-                    Generate New MCP Token
+                    <T>Generate New MCP Token</T>
                   </h3>
                   <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                    Configure granular permissions for an external AI agent connecting to this workspace.
+                    <T>Configure granular permissions for an external AI agent connecting to this workspace.</T>
                   </p>
                 </div>
 
                 <div className="space-y-1.5">
                   <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                    Client Name
+                    <T>Client Name</T>
                   </label>
                   <input
                     type="text"
                     required
-                    placeholder="e.g. ChatGPT Agent or Claude Desktop"
+                    placeholder={__t("e.g. ChatGPT Agent or Claude Desktop")}
                     value={tokenName}
                     onChange={(e) => setTokenName(e.target.value)}
                     className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs text-slate-900 dark:text-white"
@@ -581,24 +583,24 @@ export function McpIntegrationPanel({ activeSubTab }: { activeSubTab: 'settings'
 
                 <div className="space-y-1.5">
                   <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                    Expiration
+                    <T>Expiration</T>
                   </label>
                   <select
                     value={expiresInDays}
                     onChange={(e) => setExpiresInDays(parseInt(e.target.value, 10))}
                     className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs text-slate-900 dark:text-white"
                   >
-                    <option value={30}>30 Days</option>
-                    <option value={90}>90 Days (Recommended)</option>
-                    <option value={180}>180 Days</option>
-                    <option value={365}>1 Year</option>
-                    <option value={0}>Never Expire</option>
+                    <option value={30}>{__t("30 Days")}</option>
+                    <option value={90}>{__t("90 Days (Recommended)")}</option>
+                    <option value={180}>{__t("180 Days")}</option>
+                    <option value={365}>{__t("1 Year")}</option>
+                    <option value={0}>{__t("Never Expire")}</option>
                   </select>
                 </div>
 
                 <div className="space-y-2">
                   <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                    Permitted Scopes
+                    <T>Permitted Scopes</T>
                   </label>
                   <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto p-1">
                     {ALL_MCP_SCOPES.map((scope) => {
@@ -633,14 +635,14 @@ export function McpIntegrationPanel({ activeSubTab }: { activeSubTab: 'settings'
                     onClick={() => setShowGenerateModal(false)}
                     className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-semibold hover:bg-slate-200 transition"
                   >
-                    Cancel
+                    <T>Cancel</T>
                   </button>
                   <button
                     type="submit"
                     disabled={isGenerating || !tokenName.trim()}
                     className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold disabled:opacity-50 transition"
                   >
-                    {isGenerating ? 'Generating...' : 'Generate Token'}
+                    {isGenerating ? <T>{'Generating...'}</T> : <T>{'Generate Token'}</T>}
                   </button>
                 </div>
               </form>

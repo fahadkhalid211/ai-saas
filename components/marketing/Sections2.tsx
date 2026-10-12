@@ -1,5 +1,7 @@
 'use client';
 
+import { T, useT } from '@/lib/i18n/context';
+import { A } from '@/components/i18n/A';
 import { useEffect, useRef, type CSSProperties } from 'react';
 import { INTEGRATIONS } from './content';
 import { COMPARE, DIAGONAL, PATHS, STORIES } from './content-extra';
@@ -109,11 +111,11 @@ export function DiagonalBenefits() {
       data-tone={c.tone}
     >
       <div className="mk-diag-stat">
-        <b>{c.stat}</b>
-        <span>{c.statLabel}</span>
+        <b><T>{c.stat}</T></b>
+        <span><T>{c.statLabel}</T></span>
       </div>
-      <h3>{c.title}</h3>
-      <p>{c.body}</p>
+      <h3><T>{c.title}</T></h3>
+      <p><T>{c.body}</T></p>
     </article>
   );
 
@@ -121,11 +123,11 @@ export function DiagonalBenefits() {
     <section id="benefits" className="mk-diag-section" aria-labelledby="mk-diag-title">
       <div className="mk-wrap">
         <Reveal className="mk-center-head">
-          <Eyebrow>{DIAGONAL.eyebrow}</Eyebrow>
+          <Eyebrow><T>{DIAGONAL.eyebrow}</T></Eyebrow>
           <h2 id="mk-diag-title" className="mk-h2 mk-h2-center">
-            {DIAGONAL.titleLine}
+            <T>{DIAGONAL.titleLine}</T>
             <br />
-            <em>{DIAGONAL.titleEm}</em>
+            <em><T>{DIAGONAL.titleEm}</T></em>
           </h2>
         </Reveal>
       </div>
@@ -136,11 +138,11 @@ export function DiagonalBenefits() {
             {DIAGONAL.cards.map((c) => (
               <li key={c.title} className="mk-diag-card is-static" data-tone={c.tone}>
                 <div className="mk-diag-stat">
-                  <b>{c.stat}</b>
-                  <span>{c.statLabel}</span>
+                  <b><T>{c.stat}</T></b>
+                  <span><T>{c.statLabel}</T></span>
                 </div>
-                <h3>{c.title}</h3>
-                <p>{c.body}</p>
+                <h3><T>{c.title}</T></h3>
+                <p><T>{c.body}</T></p>
               </li>
             ))}
           </ul>
@@ -162,7 +164,7 @@ export function DiagonalBenefits() {
           </div>
         </div>
       )}
-      <p className="mk-footnote mk-center-note">{DIAGONAL.note}</p>
+      <p className="mk-footnote mk-center-note"><T>{DIAGONAL.note}</T></p>
     </section>
   );
 }
@@ -176,10 +178,10 @@ export function Paths() {
     <section id="how-it-works" className="mk-section mk-paths" aria-labelledby="mk-paths-title">
       <div className="mk-wrap">
         <Reveal className="mk-center-head">
-          <Eyebrow>{PATHS.eyebrow}</Eyebrow>
+          <Eyebrow><T>{PATHS.eyebrow}</T></Eyebrow>
           <h2 id="mk-paths-title" className="mk-h2 mk-h2-center">
-            <span className="mk-block">{PATHS.titleLines[0]}</span>
-            <span className="mk-block mk-em">{PATHS.echo}</span>
+            <span className="mk-block"><T>{PATHS.titleLines[0]}</T></span>
+            <span className="mk-block mk-em"><T>{PATHS.echo}</T></span>
           </h2>
         </Reveal>
 
@@ -189,16 +191,16 @@ export function Paths() {
               <article className={`mk-path ${i % 2 ? 'is-flip' : ''}`} data-tone={r.tone}>
                 <div className="mk-path-copy">
                   <span className="mk-path-step" aria-hidden="true">
-                    {r.step}
+                    <T>{r.step}</T>
                   </span>
-                  <h3 className="mk-path-title">{r.title}</h3>
-                  <p>{r.body}</p>
-                  <a href={r.href} className="mk-btn mk-btn-primary mk-btn-sm">
-                    {r.cta}
+                  <h3 className="mk-path-title"><T>{r.title}</T></h3>
+                  <p><T>{r.body}</T></p>
+                  <A href={r.href} className="mk-btn mk-btn-primary mk-btn-sm">
+                    <T>{r.cta}</T>
                     <span aria-hidden="true" className="mk-arrow">
                       →
                     </span>
-                  </a>
+                  </A>
                 </div>
                 <div className="mk-path-visual">
                   <FeatureVisual kind={PATH_VISUAL[r.id]} />
@@ -215,30 +217,31 @@ export function Paths() {
 /* ------------------------------ Stories carousel ------------------------------ */
 
 export function Stories() {
+  const __t = useT();
   const items = [...STORIES.items, ...STORIES.items];
   return (
     <section id="customers" className="mk-section mk-stories" aria-labelledby="mk-stories-title">
       <div className="mk-wrap">
         <Reveal className="mk-center-head">
-          <Eyebrow>{STORIES.eyebrow}</Eyebrow>
+          <Eyebrow><T>{STORIES.eyebrow}</T></Eyebrow>
           <h2 id="mk-stories-title" className="mk-h2 mk-h2-center">
-            {STORIES.title}
+            <T>{STORIES.title}</T>
           </h2>
-          <p className="mk-lead">{STORIES.notice}</p>
+          <p className="mk-lead"><T>{STORIES.notice}</T></p>
         </Reveal>
       </div>
-      <div className="mk-story-viewport" role="region" aria-label="Customer stories" tabIndex={0}>
+      <div className="mk-story-viewport" role="region" aria-label={__t("Customer stories")} tabIndex={0}>
         <ul className="mk-story-track">
           {items.map((s, i) => (
             <li key={i} className="mk-story-li" aria-hidden={i >= STORIES.items.length ? 'true' : undefined}>
               <article className="mk-story-card" data-tone={s.tone}>
-                <p className="mk-story-stat">{s.stat}</p>
-                <p className="mk-story-label">{s.label}</p>
+                <p className="mk-story-stat"><T>{s.stat}</T></p>
+                <p className="mk-story-label"><T>{s.label}</T></p>
                 <div className="mk-story-person">
                   <span className="mk-avatar" aria-hidden="true" />
                   <span>
-                    <b>{s.name}</b>
-                    <small>{s.role}</small>
+                    <b><T>{s.name}</T></b>
+                    <small><T>{s.role}</T></small>
                   </span>
                 </div>
               </article>
@@ -255,26 +258,27 @@ export function Stories() {
 const isYes = (v: string) => /^yes/i.test(v);
 
 export function Compare() {
+  const __t = useT();
   return (
     <section id="compare" className="mk-section mk-compare-section" aria-labelledby="mk-cmp-title">
       <div className="mk-wrap">
         <Reveal className="mk-center-head">
-          <Eyebrow>{COMPARE.eyebrow}</Eyebrow>
+          <Eyebrow><T>{COMPARE.eyebrow}</T></Eyebrow>
           <h2 id="mk-cmp-title" className="mk-h2 mk-h2-center">
-            {COMPARE.title}
+            <T>{COMPARE.title}</T>
           </h2>
-          <p className="mk-lead">{COMPARE.intro}</p>
+          <p className="mk-lead"><T>{COMPARE.intro}</T></p>
         </Reveal>
         <Reveal>
-          <div className="mk-cmp-wrap" role="region" aria-label="Feature comparison table" tabIndex={0}>
+          <div className="mk-cmp-wrap" role="region" aria-label={__t("Feature comparison table")} tabIndex={0}>
             <table className="mk-cmp">
-              <caption className="mk-sr">Crescelo compared with Chatbase, typical FAQ bots and basic live-chat widgets</caption>
+              <caption className="mk-sr"><T>Crescelo compared with Chatbase, typical FAQ bots and basic live-chat widgets</T></caption>
               <thead>
                 <tr>
-                  <th scope="col">Capability</th>
+                  <th scope="col"><T>Capability</T></th>
                   {COMPARE.columns.map((c, i) => (
                     <th key={c} scope="col" className={i === 0 ? 'is-crescelo' : ''}>
-                      {c}
+                      <T>{c}</T>
                     </th>
                   ))}
                 </tr>
@@ -282,11 +286,11 @@ export function Compare() {
               <tbody>
                 {COMPARE.rows.map((r) => (
                   <tr key={r.feature}>
-                    <th scope="row">{r.feature}</th>
+                    <th scope="row"><T>{r.feature}</T></th>
                     {r.values.map((v, i) => (
                       <td key={i} className={i === 0 ? 'is-crescelo' : ''}>
                         {i === 0 && isYes(v) ? <Check /> : null}
-                        <span>{v}</span>
+                        <span><T>{v}</T></span>
                       </td>
                     ))}
                   </tr>
@@ -295,7 +299,7 @@ export function Compare() {
             </table>
           </div>
         </Reveal>
-        <p className="mk-footnote mk-center-note">{COMPARE.footnote}</p>
+        <p className="mk-footnote mk-center-note"><T>{COMPARE.footnote}</T></p>
       </div>
     </section>
   );
@@ -318,11 +322,11 @@ export function IntegrationsStage() {
       items={ORBIT}
       head={
         <>
-          <Eyebrow>{INTEGRATIONS.eyebrow}</Eyebrow>
+          <Eyebrow><T>{INTEGRATIONS.eyebrow}</T></Eyebrow>
           <h2 id="mk-int-title" className="mk-h2 mk-h2-center">
-            {INTEGRATIONS.title}
+            <T>{INTEGRATIONS.title}</T>
           </h2>
-          <p className="mk-lead">{INTEGRATIONS.intro}</p>
+          <p className="mk-lead"><T>{INTEGRATIONS.intro}</T></p>
         </>
       }
     />

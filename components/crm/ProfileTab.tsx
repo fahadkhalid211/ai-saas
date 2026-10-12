@@ -1,5 +1,6 @@
 'use client';
 
+import { T, useT } from '@/lib/i18n/context';
 import React, { useState, useEffect, useRef } from 'react';
 import { showErrorModal } from '@/lib/ui/notify';
 import { SaveButton } from '@/components/ui/SaveButton';
@@ -46,6 +47,7 @@ interface ProfileTabProps {
 }
 
 export function ProfileTab({ currentUser, onProfileUpdated }: ProfileTabProps) {
+  const __t = useT();
   const [profile, setProfile] = useState<UserProfileData | null>(currentUser || null);
   const [workspace, setWorkspace] = useState<WorkspaceData | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(!currentUser);
@@ -253,7 +255,7 @@ export function ProfileTab({ currentUser, onProfileUpdated }: ProfileTabProps) {
       <div className="p-8 flex items-center justify-center min-h-[400px]">
         <div className="flex items-center gap-3 text-slate-500 dark:text-slate-400">
           <Loader2 className="h-5 w-5 animate-spin text-blue-600" />
-          <span className="text-sm font-medium">Loading profile credentials...</span>
+          <span className="text-sm font-medium"><T>Loading profile credentials...</T></span>
         </div>
       </div>
     );
@@ -265,19 +267,19 @@ export function ProfileTab({ currentUser, onProfileUpdated }: ProfileTabProps) {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-5">
         <div>
           <h1 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">
-            Account &amp; User Profile
+            <T>Account &amp; User Profile</T>
           </h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-            Manage your personal profile, professional role title, avatar, and account authentication credentials.
+            <T>Manage your personal profile, professional role title, avatar, and account authentication credentials.</T>
           </p>
         </div>
         <div className="flex items-center gap-2">
           <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold uppercase tracking-wider bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-400 border border-blue-200 dark:border-blue-800">
-            {profile?.role === 'owner' ? 'Workspace Owner' : profile?.role === 'admin' ? 'Administrator' : 'Team Member'}
+            {profile?.role === 'owner' ? <T>{'Workspace Owner'}</T> : profile?.role === 'admin' ? <T>{'Administrator'}</T> : <T>{'Team Member'}</T>}
           </span>
           {workspace && (
             <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
-              {workspace.name}
+              <T>{workspace.name}</T>
             </span>
           )}
         </div>
@@ -306,7 +308,7 @@ export function ProfileTab({ currentUser, onProfileUpdated }: ProfileTabProps) {
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
                 className="absolute bottom-0 right-0 p-2 rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-lg transition cursor-pointer"
-                title="Upload Profile Picture"
+                title={__t("Upload Profile Picture")}
               >
                 <Camera className="h-4 w-4" />
               </button>
@@ -322,13 +324,13 @@ export function ProfileTab({ currentUser, onProfileUpdated }: ProfileTabProps) {
 
             <div className="mt-4 space-y-1">
               <h2 className="text-base font-bold text-slate-900 dark:text-white">
-                {name || profile?.name || 'Your Name'}
+                {name || profile?.name || <T>{'Your Name'}</T>}
               </h2>
               <p className="text-xs text-blue-600 dark:text-blue-400 font-medium">
-                {title || profile?.title || 'Professional Title Not Set'}
+                {title || <T>{profile?.title}</T> || <T>{'Professional Title Not Set'}</T>}
               </p>
               <p className="text-xs text-slate-500 dark:text-slate-400 font-mono">
-                {profile?.email || 'user@crescelo.com'}
+                {profile?.email || <T>{'user@crescelo.com'}</T>}
               </p>
             </div>
 
@@ -339,7 +341,7 @@ export function ProfileTab({ currentUser, onProfileUpdated }: ProfileTabProps) {
                 className="mt-4 inline-flex items-center gap-1.5 text-xs text-rose-600 dark:text-rose-400 hover:underline cursor-pointer"
               >
                 <Trash2 className="h-3.5 w-3.5" />
-                <span>Remove Profile Picture</span>
+                <span><T>Remove Profile Picture</T></span>
               </button>
             )}
 
@@ -347,30 +349,30 @@ export function ProfileTab({ currentUser, onProfileUpdated }: ProfileTabProps) {
               <div className="flex items-center justify-between text-xs">
                 <span className="text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
                   <Shield className="h-3.5 w-3.5 text-slate-400" />
-                  Role
+                  <T>Role</T>
                 </span>
                 <span className="font-semibold text-slate-800 dark:text-slate-200 capitalize">
-                  {profile?.role || 'Member'}
+                  {profile?.role || <T>{'Member'}</T>}
                 </span>
               </div>
 
               <div className="flex items-center justify-between text-xs">
                 <span className="text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
                   <Building className="h-3.5 w-3.5 text-slate-400" />
-                  Workspace
+                  <T>Workspace</T>
                 </span>
                 <span className="font-semibold text-slate-800 dark:text-slate-200 truncate max-w-[140px]" title={workspace?.name}>
-                  {workspace?.name || 'Workspace'}
+                  {workspace?.name || <T>{'Workspace'}</T>}
                 </span>
               </div>
 
               <div className="flex items-center justify-between text-xs">
                 <span className="text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
                   <Calendar className="h-3.5 w-3.5 text-slate-400" />
-                  Member Since
+                  <T>Member Since</T>
                 </span>
                 <span className="font-mono text-slate-700 dark:text-slate-300">
-                  {profile?.createdAt ? new Date(profile.createdAt).toLocaleDateString() : 'Active'}
+                  {profile?.createdAt ? new Date(profile.createdAt).toLocaleDateString() : <T>{'Active'}</T>}
                 </span>
               </div>
             </div>
@@ -385,10 +387,10 @@ export function ProfileTab({ currentUser, onProfileUpdated }: ProfileTabProps) {
               <div className="flex items-center gap-2.5">
                 <User className="h-4 w-4 text-blue-600" />
                 <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-                  Personal Information
+                  <T>Personal Information</T>
                 </h3>
               </div>
-              <span className="text-[11px] text-slate-400">Updates reflected across your team</span>
+              <span className="text-[11px] text-slate-400"><T>Updates reflected across your team</T></span>
             </div>
 
             {profileSuccessMsg && (
@@ -409,13 +411,13 @@ export function ProfileTab({ currentUser, onProfileUpdated }: ProfileTabProps) {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                    Full Name
+                    <T>Full Name</T>
                   </label>
                   <input
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    placeholder="e.g. Alex Morgan"
+                    placeholder={__t("e.g. Alex Morgan")}
                     className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-3.5 py-2.5 text-xs text-slate-900 dark:text-slate-100 outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition"
                     required
                   />
@@ -423,14 +425,14 @@ export function ProfileTab({ currentUser, onProfileUpdated }: ProfileTabProps) {
 
                 <div className="space-y-1.5">
                   <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                    Professional Role / Title
+                    <T>Professional Role / Title</T>
                   </label>
                   <div className="relative">
                     <input
                       type="text"
                       value={title}
                       onChange={(e) => setTitle(e.target.value)}
-                      placeholder="e.g. Master Barber, Managing Director, Head of Legal"
+                      placeholder={__t("e.g. Master Barber, Managing Director, Head of Legal")}
                       className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 pl-3.5 pr-8 py-2.5 text-xs text-slate-900 dark:text-slate-100 outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition"
                     />
                     <Briefcase className="h-3.5 w-3.5 text-slate-400 absolute right-3 top-3 pointer-events-none" />
@@ -440,7 +442,7 @@ export function ProfileTab({ currentUser, onProfileUpdated }: ProfileTabProps) {
 
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                  Email Address
+                  <T>Email Address</T>
                 </label>
                 <div className="relative">
                   <input
@@ -452,13 +454,13 @@ export function ProfileTab({ currentUser, onProfileUpdated }: ProfileTabProps) {
                   <Mail className="h-3.5 w-3.5 text-slate-400 absolute right-3 top-3 pointer-events-none" />
                 </div>
                 <p className="text-[11px] text-slate-400">
-                  Account email address is verified and permanently linked to your workspace authorization.
+                  <T>Account email address is verified and permanently linked to your workspace authorization.</T>
                 </p>
               </div>
 
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                  Profile Picture URL (Optional)
+                  <T>Profile Picture URL (Optional)</T>
                 </label>
                 <input
                   type="url"
@@ -467,11 +469,11 @@ export function ProfileTab({ currentUser, onProfileUpdated }: ProfileTabProps) {
                     setAvatarUrl(e.target.value);
                     setAvatarPreview(e.target.value);
                   }}
-                  placeholder="https://example.com/avatar.jpg or upload via camera icon"
+                  placeholder={__t("https://example.com/avatar.jpg or upload via camera icon")}
                   className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-3.5 py-2.5 text-xs text-slate-900 dark:text-slate-100 outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition"
                 />
                 <p className="text-[11px] text-slate-400">
-                  You can paste a direct web image URL or click the camera button on your avatar to upload from your device.
+                  <T>You can paste a direct web image URL or click the camera button on your avatar to upload from your device.</T>
                 </p>
               </div>
 
@@ -487,7 +489,7 @@ export function ProfileTab({ currentUser, onProfileUpdated }: ProfileTabProps) {
               <div className="flex items-center gap-2.5">
                 <KeyRound className="h-4 w-4 text-blue-600" />
                 <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-                  Security &amp; Password
+                  <T>Security &amp; Password</T>
                 </h3>
               </div>
               <button
@@ -495,7 +497,7 @@ export function ProfileTab({ currentUser, onProfileUpdated }: ProfileTabProps) {
                 onClick={() => setShowPasswordSection(!showPasswordSection)}
                 className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
               >
-                {showPasswordSection ? 'Cancel Password Change' : 'Change Password'}
+                {showPasswordSection ? <T>{'Cancel Password Change'}</T> : <T>{'Change Password'}</T>}
               </button>
             </div>
 
@@ -517,14 +519,14 @@ export function ProfileTab({ currentUser, onProfileUpdated }: ProfileTabProps) {
               <form onSubmit={handleChangePassword} className="space-y-4">
                 <div className="space-y-1.5">
                   <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                    Current Password / Admin Key
+                    <T>Current Password / Admin Key</T>
                   </label>
                   <div className="relative">
                     <input
                       type="password"
                       value={currentPassword}
                       onChange={(e) => setCurrentPassword(e.target.value)}
-                      placeholder="Enter your current password"
+                      placeholder={__t("Enter your current password")}
                       className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 pl-3.5 pr-8 py-2.5 text-xs text-slate-900 dark:text-slate-100 outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition"
                       required
                     />
@@ -535,13 +537,13 @@ export function ProfileTab({ currentUser, onProfileUpdated }: ProfileTabProps) {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
                     <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                      New Password
+                      <T>New Password</T>
                     </label>
                     <input
                       type="password"
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
-                      placeholder="Minimum 6 characters"
+                      placeholder={__t("Minimum 6 characters")}
                       className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-3.5 py-2.5 text-xs text-slate-900 dark:text-slate-100 outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition"
                       required
                     />
@@ -549,13 +551,13 @@ export function ProfileTab({ currentUser, onProfileUpdated }: ProfileTabProps) {
 
                   <div className="space-y-1.5">
                     <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                      Confirm New Password
+                      <T>Confirm New Password</T>
                     </label>
                     <input
                       type="password"
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
-                      placeholder="Confirm new password"
+                      placeholder={__t("Confirm new password")}
                       className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-3.5 py-2.5 text-xs text-slate-900 dark:text-slate-100 outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition"
                       required
                     />
@@ -571,10 +573,10 @@ export function ProfileTab({ currentUser, onProfileUpdated }: ProfileTabProps) {
                     {isUpdatingPassword ? (
                       <>
                         <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                        <span>Updating Password...</span>
+                        <span><T>Updating Password...</T></span>
                       </>
                     ) : (
-                      <span>Update Password</span>
+                      <span><T>Update Password</T></span>
                     )}
                   </button>
                 </div>
@@ -583,10 +585,10 @@ export function ProfileTab({ currentUser, onProfileUpdated }: ProfileTabProps) {
               <div className="flex items-center justify-between text-xs py-1">
                 <div>
                   <div className="font-semibold text-slate-800 dark:text-slate-200">
-                    Account Password
+                    <T>Account Password</T>
                   </div>
                   <div className="text-slate-500 dark:text-slate-400 text-[11px] mt-0.5">
-                    Secures your personal login and authorized workspace access.
+                    <T>Secures your personal login and authorized workspace access.</T>
                   </div>
                 </div>
                 <button
@@ -594,7 +596,7 @@ export function ProfileTab({ currentUser, onProfileUpdated }: ProfileTabProps) {
                   onClick={() => setShowPasswordSection(true)}
                   className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition"
                 >
-                  Change
+                  <T>Change</T>
                 </button>
               </div>
             )}

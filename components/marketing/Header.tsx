@@ -1,7 +1,9 @@
 'use client';
 
+import { T, useT } from '@/lib/i18n/context';
+import { A } from '@/components/i18n/A';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import Link from 'next/link';
+import Link from '@/components/i18n/Link';
 import { usePathname } from 'next/navigation';
 import { ArrowRight, ChevronDown } from 'lucide-react';
 import { LOGIN_HREF, SIGNUP_HREF } from './content';
@@ -21,7 +23,7 @@ function MegaPanel({ menu, onNavigate, id }: { menu: MegaMenu; onNavigate: () =>
         <div className="mk-mega-cols" style={{ gridTemplateColumns: `repeat(${menu.columns.length}, minmax(0, 1fr))` }}>
           {menu.columns.map((col) => (
             <div key={col.title} className="mk-mega-col">
-              <p className="mk-mega-col-title">{col.title}</p>
+              <p className="mk-mega-col-title"><T>{col.title}</T></p>
               <ul>
                 {col.links.map((l) => {
                   const Icon = l.icon;
@@ -33,10 +35,10 @@ function MegaPanel({ menu, onNavigate, id }: { menu: MegaMenu; onNavigate: () =>
                         </span>
                         <span className="mk-mega-text">
                           <span className="mk-mega-label">
-                            {l.label}
-                            {l.badge ? <em className="mk-mega-badge">{l.badge}</em> : null}
+                            <T>{l.label}</T>
+                            {l.badge ? <em className="mk-mega-badge"><T>{l.badge}</T></em> : null}
                           </span>
-                          <span className="mk-mega-desc">{l.description}</span>
+                          <span className="mk-mega-desc"><T>{l.description}</T></span>
                         </span>
                       </Link>
                     </li>
@@ -51,21 +53,21 @@ function MegaPanel({ menu, onNavigate, id }: { menu: MegaMenu; onNavigate: () =>
           <span className="mk-mega-glow" aria-hidden="true" />
           {menu.feature.preview ? (
             <div className="mk-mega-chat" aria-hidden="true">
-              <span className="mk-mega-bubble is-visitor">{menu.feature.preview.visitor}</span>
-              <span className="mk-mega-bubble is-bot">{menu.feature.preview.assistant}</span>
+              <span className="mk-mega-bubble is-visitor"><T>{menu.feature.preview.visitor}</T></span>
+              <span className="mk-mega-bubble is-bot"><T>{menu.feature.preview.assistant}</T></span>
             </div>
           ) : null}
-          <p className="mk-mega-feature-eyebrow">{menu.feature.eyebrow}</p>
-          <p className="mk-mega-feature-title">{menu.feature.title}</p>
-          <p className="mk-mega-feature-body">{menu.feature.body}</p>
+          <p className="mk-mega-feature-eyebrow"><T>{menu.feature.eyebrow}</T></p>
+          <p className="mk-mega-feature-title"><T>{menu.feature.title}</T></p>
+          <p className="mk-mega-feature-body"><T>{menu.feature.body}</T></p>
           <div className="mk-mega-feature-actions">
             <Link href={menu.feature.cta.href} className="mk-mega-feature-cta" onClick={onNavigate}>
-              {menu.feature.cta.label}
+              <T>{menu.feature.cta.label}</T>
               <ArrowRight size={16} aria-hidden="true" />
             </Link>
             {menu.feature.secondary ? (
               <Link href={menu.feature.secondary.href} className="mk-mega-feature-secondary" onClick={onNavigate}>
-                {menu.feature.secondary.label}
+                <T>{menu.feature.secondary.label}</T>
               </Link>
             ) : null}
           </div>
@@ -76,7 +78,7 @@ function MegaPanel({ menu, onNavigate, id }: { menu: MegaMenu; onNavigate: () =>
         <div className="mk-mega-footer">
           {menu.footerLinks.map((f) => (
             <Link key={f.href + f.label} href={f.href} onClick={onNavigate}>
-              {f.label} <ArrowRight size={14} aria-hidden="true" />
+              <T>{f.label}</T> <ArrowRight size={14} aria-hidden="true" />
             </Link>
           ))}
         </div>
@@ -86,6 +88,7 @@ function MegaPanel({ menu, onNavigate, id }: { menu: MegaMenu; onNavigate: () =>
 }
 
 export function Header() {
+  const __t = useT();
   const { dict } = useI18n();
   const pathname = usePathname();
   const [open, setOpen] = useState(false); // mobile menu
@@ -186,9 +189,9 @@ export function Header() {
 
   return (
     <header className={`mk-header ${scrolled ? 'is-scrolled' : ''}`}>
-      <a href="#main" className="mk-skip">
-        Skip to content
-      </a>
+      <A href="#main" className="mk-skip">
+        <T>Skip to content</T>
+      </A>
       <div className="mk-wrap mk-header-wrap">
         <div className="mk-header-row">
           <Link href="/" aria-label="Crescelo home" className="mk-logo-link">
@@ -196,7 +199,7 @@ export function Header() {
           </Link>
 
           <div ref={navRef} className="mk-nav-desktop" onMouseLeave={hoverClose} onMouseEnter={clearTimer}>
-            <nav aria-label="Primary" className="mk-nav-list">
+            <nav aria-label={__t("Primary")} className="mk-nav-list">
               {MEGA_MENUS.map((m) => (
                 <button
                   key={m.id}
@@ -215,13 +218,13 @@ export function Header() {
                     }
                   }}
                 >
-                  {m.label}
+                  <T>{m.label}</T>
                   <ChevronDown size={15} aria-hidden="true" className="mk-nav-chevron" />
                 </button>
               ))}
               {MEGA_DIRECT_LINKS.map((l) => (
                 <Link key={l.href} href={l.href} className="mk-nav-link" onMouseEnter={hoverClose}>
-                  {l.label}
+                  <T>{l.label}</T>
                 </Link>
               ))}
             </nav>
@@ -252,8 +255,8 @@ export function Header() {
       </div>
 
       {open ? (
-        <div id="mk-mobile-menu" ref={menuRef} className="mk-mobile" role="dialog" aria-label="Menu">
-          <nav aria-label="Mobile" className="mk-mobile-nav">
+        <div id="mk-mobile-menu" ref={menuRef} className="mk-mobile" role="dialog" aria-label={__t("Menu")}>
+          <nav aria-label={__t("Mobile")} className="mk-mobile-nav">
             {MEGA_MENUS.map((m) => {
               const expanded = mobileGroup === m.id;
               return (
@@ -265,13 +268,13 @@ export function Header() {
                     aria-controls={`mk-acc-${m.id}`}
                     onClick={() => setMobileGroup(expanded ? null : m.id)}
                   >
-                    <span>{m.label}</span>
+                    <span><T>{m.label}</T></span>
                     <ChevronDown size={20} aria-hidden="true" className="mk-acc-chevron" />
                   </button>
                   <div id={`mk-acc-${m.id}`} className="mk-acc-body" hidden={!expanded}>
                     {m.columns.map((col) => (
                       <div key={col.title} className="mk-acc-group">
-                        <p className="mk-mega-col-title">{col.title}</p>
+                        <p className="mk-mega-col-title"><T>{col.title}</T></p>
                         <ul>
                           {col.links.map((l) => {
                             const Icon = l.icon;
@@ -283,10 +286,10 @@ export function Header() {
                                   </span>
                                   <span className="mk-mega-text">
                                     <span className="mk-mega-label">
-                                      {l.label}
-                                      {l.badge ? <em className="mk-mega-badge">{l.badge}</em> : null}
+                                      <T>{l.label}</T>
+                                      {l.badge ? <em className="mk-mega-badge"><T>{l.badge}</T></em> : null}
                                     </span>
-                                    <span className="mk-mega-desc">{l.description}</span>
+                                    <span className="mk-mega-desc"><T>{l.description}</T></span>
                                   </span>
                                 </Link>
                               </li>
@@ -301,11 +304,11 @@ export function Header() {
             })}
             {MEGA_DIRECT_LINKS.map((l) => (
               <Link key={l.href} href={l.href} className="mk-mobile-link" onClick={() => setOpen(false)}>
-                <span>{l.label}</span>
+                <span><T>{l.label}</T></span>
               </Link>
             ))}
             <Link href="/support/contact" className="mk-mobile-link" onClick={() => setOpen(false)}>
-              <span>Contact support</span>
+              <span><T>Contact support</T></span>
             </Link>
           </nav>
           <div className="mk-mobile-actions space-y-2">

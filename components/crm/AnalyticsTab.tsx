@@ -1,3 +1,4 @@
+import { T } from '@/lib/i18n/context';
 import React, { useState } from 'react';
 import {
   BarChart3,
@@ -125,18 +126,18 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({
           <div className="flex items-center gap-2.5">
             <BarChart3 className="h-6 w-6 text-blue-600 dark:text-blue-400" />
             <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
-              Analytics
+              <T>Analytics</T>
             </h1>
             <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-[11px] font-semibold text-emerald-700 dark:text-emerald-300">
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
               </span>
-              <span>{realtimeActive} Active Now</span>
+              <span>{realtimeActive} <T>Active Now</T></span>
             </div>
           </div>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-            Track real-time chatbot conversations, user engagement, and appointment bookings.
+            <T>Track real-time chatbot conversations, user engagement, and appointment bookings.</T>
           </p>
         </div>
 
@@ -164,7 +165,7 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                 }`}
               >
-                {rng.label}
+                <T>{rng.label}</T>
               </button>
             ))}
           </div>
@@ -177,7 +178,7 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({
             title="Export Analytics Data as CSV"
           >
             <Download className="h-3.5 w-3.5 text-slate-500" />
-            <span className="hidden sm:inline">Export CSV</span>
+            <span className="hidden sm:inline"><T>Export CSV</T></span>
           </button>
 
           {/* Refresh Button */}
@@ -188,7 +189,7 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold transition shadow-xs cursor-pointer"
           >
             <RefreshCw className={`h-3.5 w-3.5 ${isLoadingAnalytics ? 'animate-spin' : ''}`} />
-            <span>Refresh</span>
+            <span><T>Refresh</T></span>
           </button>
         </div>
       </div>
@@ -198,84 +199,84 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({
         {/* KPI 1: Chatbot Conversations */}
         <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-1">
           <div className="flex items-center justify-between text-slate-500 text-xs">
-            <span>Conversations</span>
+            <span><T>Conversations</T></span>
             <MessageSquare className="h-4 w-4 text-blue-500" />
           </div>
           <div className="text-xl font-bold text-slate-900 dark:text-white font-mono">
             {totalConversations.toLocaleString()}
           </div>
           <div className="text-[10.5px] text-blue-600 dark:text-blue-400 font-semibold flex items-center gap-1 truncate">
-            <span>{totalMessages.toLocaleString()} messages</span>
+            <span>{totalMessages.toLocaleString()} <T>messages</T></span>
           </div>
         </div>
 
         {/* KPI 2: Total Bookings */}
         <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-1">
           <div className="flex items-center justify-between text-slate-500 text-xs">
-            <span>Total Bookings</span>
+            <span><T>Total Bookings</T></span>
             <CalendarCheck className="h-4 w-4 text-indigo-500" />
           </div>
           <div className="text-xl font-bold text-slate-900 dark:text-white font-mono">
             {totalBookings.toLocaleString()}
           </div>
           <div className="text-[10.5px] text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1 truncate">
-            <span>{confirmedBookings} confirmed</span>
+            <span>{confirmedBookings} <T>confirmed</T></span>
           </div>
         </div>
 
         {/* KPI 3: Chat-to-Booking Rate */}
         <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-1">
           <div className="flex items-center justify-between text-slate-500 text-xs">
-            <span>Conversion Rate</span>
+            <span><T>Conversion Rate</T></span>
             <Target className="h-4 w-4 text-emerald-500" />
           </div>
           <div className="text-xl font-bold text-slate-900 dark:text-white font-mono">
             {conversionRate}%
           </div>
           <div className="text-[10.5px] text-emerald-600 dark:text-emerald-400 font-semibold truncate">
-            Chat to booking
+            <T>Chat to booking</T>
           </div>
         </div>
 
         {/* KPI 4: AI Resolution Rate */}
         <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-1">
           <div className="flex items-center justify-between text-slate-500 text-xs">
-            <span>AI Resolution</span>
+            <span><T>AI Resolution</T></span>
             <Bot className="h-4 w-4 text-purple-500" />
           </div>
           <div className="text-xl font-bold text-slate-900 dark:text-white font-mono">
             {resolutionRate}%
           </div>
           <div className="text-[10.5px] text-slate-400 truncate">
-            {unansweredCount} flagged gaps
+            {unansweredCount} <T>flagged gaps</T>
           </div>
         </div>
 
         {/* KPI 5: Booking Revenue */}
         <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-1">
           <div className="flex items-center justify-between text-slate-500 text-xs">
-            <span>Booking Revenue</span>
+            <span><T>Booking Revenue</T></span>
             <DollarSign className="h-4 w-4 text-amber-500" />
           </div>
           <div className="text-xl font-bold text-slate-900 dark:text-white font-mono">
             ${pipelineRevenue.toLocaleString()}
           </div>
           <div className="text-[10.5px] text-slate-400 truncate">
-            Avg ${avgBookingValue}/booking
+            <T>Avg $</T>{avgBookingValue}<T>/booking</T>
           </div>
         </div>
 
         {/* KPI 6: Captured Leads */}
         <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-1">
           <div className="flex items-center justify-between text-slate-500 text-xs">
-            <span>Captured Leads</span>
+            <span><T>Captured Leads</T></span>
             <Users className="h-4 w-4 text-rose-500" />
           </div>
           <div className="text-xl font-bold text-slate-900 dark:text-white font-mono">
             {totalLeads.toLocaleString()}
           </div>
           <div className="text-[10.5px] text-slate-400 truncate">
-            {totalClients} client profiles
+            {totalClients} <T>client profiles</T>
           </div>
         </div>
       </div>
@@ -302,7 +303,7 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({
               }`}
             >
               <Icon className="h-4 w-4" />
-              <span>{tb.label}</span>
+              <span><T>{tb.label}</T></span>
             </button>
           );
         })}
@@ -318,11 +319,11 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({
                 <div className="flex items-center gap-2">
                   <TrendingUp className="h-4 w-4 text-blue-500" />
                   <h2 className="text-sm font-bold text-slate-900 dark:text-white">
-                    Daily Chatbot Conversation Activity
+                    <T>Daily Chatbot Conversation Activity</T>
                   </h2>
                 </div>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                  Daily trajectory of user conversations, incoming inquiries, and captured leads.
+                  <T>Daily trajectory of user conversations, incoming inquiries, and captured leads.</T>
                 </p>
               </div>
 
@@ -337,7 +338,7 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({
                       : 'text-slate-500 dark:text-slate-400'
                   }`}
                 >
-                  Conversations &amp; Messages
+                  <T>Conversations &amp; Messages</T>
                 </button>
                 <button
                   type="button"
@@ -348,7 +349,7 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({
                       : 'text-slate-500 dark:text-slate-400'
                   }`}
                 >
-                  Leads &amp; Inquiries
+                  <T>Leads &amp; Inquiries</T>
                 </button>
               </div>
             </div>
@@ -359,7 +360,7 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({
               if (series.length === 0) {
                 return (
                   <div className="py-12 text-center text-xs text-slate-400">
-                    No conversation events recorded for this selected time range yet.
+                    <T>No conversation events recorded for this selected time range yet.</T>
                   </div>
                 );
               }
@@ -387,10 +388,10 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({
                           <div className="absolute bottom-full mb-2 hidden group-hover:flex flex-col items-center z-20 pointer-events-none">
                             <div className="p-2 rounded-lg bg-slate-900 text-white text-[10px] whitespace-nowrap shadow-lg border border-slate-700">
                               <div className="font-bold text-slate-200">{item.date}</div>
-                              <div>Conversations: <span className="text-blue-400 font-mono font-bold">{item.conversations || 0}</span></div>
-                              <div>Messages: <span className="text-indigo-300 font-mono font-bold">{item.messages || 0}</span></div>
-                              <div>Leads: <span className="text-rose-300 font-mono font-bold">{item.leads || 0}</span></div>
-                              <div>Bookings: <span className="text-emerald-400 font-mono font-bold">{item.bookings || 0}</span></div>
+                              <div><T>Conversations:</T> <span className="text-blue-400 font-mono font-bold">{item.conversations || 0}</span></div>
+                              <div><T>Messages:</T> <span className="text-indigo-300 font-mono font-bold">{item.messages || 0}</span></div>
+                              <div><T>Leads:</T> <span className="text-rose-300 font-mono font-bold">{item.leads || 0}</span></div>
+                              <div><T>Bookings:</T> <span className="text-emerald-400 font-mono font-bold">{item.bookings || 0}</span></div>
                             </div>
                           </div>
 
@@ -420,12 +421,12 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({
                     <div className="flex items-center gap-4">
                       <div className="flex items-center gap-1.5">
                         <span className={`h-2.5 w-2.5 rounded-sm ${chatChartMetric === 'conversations' ? 'bg-blue-500' : 'bg-indigo-500'}`} />
-                        <span>{chatChartMetric === 'conversations' ? 'Daily Conversations' : 'Captured Leads'}</span>
+                        <span>{chatChartMetric === 'conversations' ? <T>{'Daily Conversations'}</T> : <T>{'Captured Leads'}</T>}</span>
                       </div>
                       <span className="text-slate-300 dark:text-slate-700">|</span>
-                      <span>Hover over any day bar for granular breakdown</span>
+                      <span><T>Hover over any day bar for granular breakdown</T></span>
                     </div>
-                    <span className="font-mono">Range: Last {analyticsRange} Days</span>
+                    <span className="font-mono"><T>Range: Last</T> {analyticsRange} <T>Days</T></span>
                   </div>
                 </div>
               );
@@ -439,13 +440,13 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <PieChart className="h-4 w-4 text-blue-500" />
-                  <h2 className="text-sm font-bold text-slate-900 dark:text-white">Visitor Sentiment Analysis</h2>
+                  <h2 className="text-sm font-bold text-slate-900 dark:text-white"><T>Visitor Sentiment Analysis</T></h2>
                 </div>
-                <span className="text-[11px] text-slate-400">Real-time Tone AI</span>
+                <span className="text-[11px] text-slate-400"><T>Real-time Tone AI</T></span>
               </div>
 
               <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                AI continuously scans visitor conversations for frustration, urgent escalations, or positive satisfaction.
+                <T>AI continuously scans visitor conversations for frustration, urgent escalations, or positive satisfaction.</T>
               </p>
 
               {/* Progress Bar Distribution */}
@@ -470,7 +471,7 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({
                     <div className="grid grid-cols-3 gap-2 text-center">
                       <div className="p-2.5 rounded-xl border border-emerald-100 dark:border-emerald-900/40 bg-emerald-50/50 dark:bg-emerald-950/20">
                         <div className="flex items-center justify-center gap-1 text-[11px] font-semibold text-emerald-700 dark:text-emerald-400">
-                          <ThumbsUp className="h-3 w-3" /> Positive
+                          <ThumbsUp className="h-3 w-3" /> <T>Positive</T>
                         </div>
                         <div className="text-base font-bold font-mono text-emerald-900 dark:text-emerald-300 mt-0.5">{pos}</div>
                         <div className="text-[10px] text-emerald-700">{posPct}%</div>
@@ -478,7 +479,7 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({
 
                       <div className="p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40">
                         <div className="flex items-center justify-center gap-1 text-[11px] font-semibold text-slate-600 dark:text-slate-400">
-                          <MessageSquare className="h-3 w-3" /> Neutral
+                          <MessageSquare className="h-3 w-3" /> <T>Neutral</T>
                         </div>
                         <div className="text-base font-bold font-mono text-slate-900 dark:text-white mt-0.5">{neu}</div>
                         <div className="text-[10px] text-slate-400">{neuPct}%</div>
@@ -486,7 +487,7 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({
 
                       <div className="p-2.5 rounded-xl border border-rose-100 dark:border-rose-900/40 bg-rose-50/50 dark:bg-rose-950/20">
                         <div className="flex items-center justify-center gap-1 text-[11px] font-semibold text-rose-700 dark:text-rose-400">
-                          <AlertCircle className="h-3 w-3" /> Urgent
+                          <AlertCircle className="h-3 w-3" /> <T>Urgent</T>
                         </div>
                         <div className="text-base font-bold font-mono text-rose-900 dark:text-rose-300 mt-0.5">{urg}</div>
                         <div className="text-[10px] text-rose-700 dark:text-rose-400">{urgPct}%</div>
@@ -502,13 +503,13 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <TrendingUp className="h-4 w-4 text-emerald-500" />
-                  <h2 className="text-sm font-bold text-slate-900 dark:text-white">7-Day Conversation Activity</h2>
+                  <h2 className="text-sm font-bold text-slate-900 dark:text-white"><T>7-Day Conversation Activity</T></h2>
                 </div>
-                <span className="text-[11px] text-slate-400">Last 7 Days</span>
+                <span className="text-[11px] text-slate-400"><T>Last 7 Days</T></span>
               </div>
 
               <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                Daily conversation volume and lead capture frequency across your assistant.
+                <T>Daily conversation volume and lead capture frequency across your assistant.</T>
               </p>
 
               <div className="grid grid-cols-7 gap-2 pt-2 items-end h-36">
@@ -549,9 +550,9 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({
                 <Target className="h-5 w-5 text-amber-600 dark:text-amber-400" />
               </div>
               <div>
-                <h3 className="text-xs font-bold text-slate-900 dark:text-white">Knowledge Gap Engine</h3>
+                <h3 className="text-xs font-bold text-slate-900 dark:text-white"><T>Knowledge Gap Engine</T></h3>
                 <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                  {unansweredCount} queries currently flagged where the AI had low retrieval confidence.
+                  {unansweredCount} <T>queries currently flagged where the AI had low retrieval confidence.</T>
                 </p>
               </div>
             </div>
@@ -560,7 +561,7 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({
               onClick={() => setActiveTab('overview')}
               className="px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 dark:bg-slate-100 dark:hover:bg-white text-white dark:text-slate-900 text-xs font-semibold transition cursor-pointer"
             >
-              View Gap Resolution &rarr;
+              <T>View Gap Resolution &rarr;</T>
             </button>
           </div>
         </div>
@@ -576,11 +577,11 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({
                 <div className="flex items-center gap-2">
                   <CalendarCheck className="h-4 w-4 text-emerald-500" />
                   <h2 className="text-sm font-bold text-slate-900 dark:text-white">
-                    Bookings &amp; Revenue Trajectory
+                    <T>Bookings &amp; Revenue Trajectory</T>
                   </h2>
                 </div>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                  Track revenue generated from confirmed client appointments over time.
+                  <T>Track revenue generated from confirmed client appointments over time.</T>
                 </p>
               </div>
 
@@ -595,7 +596,7 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({
                       : 'text-slate-500 dark:text-slate-400'
                   }`}
                 >
-                  Pipeline Revenue ($)
+                  <T>Pipeline Revenue ($)</T>
                 </button>
                 <button
                   type="button"
@@ -606,7 +607,7 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({
                       : 'text-slate-500 dark:text-slate-400'
                   }`}
                 >
-                  Booking Count
+                  <T>Booking Count</T>
                 </button>
               </div>
             </div>
@@ -617,7 +618,7 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({
               if (series.length === 0) {
                 return (
                   <div className="py-12 text-center text-xs text-slate-400">
-                    No bookings recorded for this selected time range yet.
+                    <T>No bookings recorded for this selected time range yet.</T>
                   </div>
                 );
               }
@@ -645,8 +646,8 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({
                           <div className="absolute bottom-full mb-2 hidden group-hover:flex flex-col items-center z-20 pointer-events-none">
                             <div className="p-2 rounded-lg bg-slate-900 text-white text-[10px] whitespace-nowrap shadow-lg border border-slate-700">
                               <div className="font-bold text-slate-200">{item.date}</div>
-                              <div>Revenue: <span className="text-emerald-400 font-mono font-bold">${item.revenue || item.bookings * 45}</span></div>
-                              <div>Bookings: <span className="text-blue-400 font-mono font-bold">{item.bookings || 0}</span></div>
+                              <div><T>Revenue:</T> <span className="text-emerald-400 font-mono font-bold">${item.revenue || item.bookings * 45}</span></div>
+                              <div><T>Bookings:</T> <span className="text-blue-400 font-mono font-bold">{item.bookings || 0}</span></div>
                             </div>
                           </div>
 
@@ -672,12 +673,12 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({
                     <div className="flex items-center gap-4">
                       <div className="flex items-center gap-1.5">
                         <span className="h-2.5 w-2.5 rounded-sm bg-emerald-500" />
-                        <span>{bookingChartMetric === 'revenue' ? 'Pipeline Revenue ($)' : 'Confirmed Bookings'}</span>
+                        <span>{bookingChartMetric === 'revenue' ? <T>{'Pipeline Revenue ($)'}</T> : <T>{'Confirmed Bookings'}</T>}</span>
                       </div>
                       <span className="text-slate-300 dark:text-slate-700">|</span>
-                      <span>Hover over any day bar for granular breakdown</span>
+                      <span><T>Hover over any day bar for granular breakdown</T></span>
                     </div>
-                    <span className="font-mono">Range: Last {analyticsRange} Days</span>
+                    <span className="font-mono"><T>Range: Last</T> {analyticsRange} <T>Days</T></span>
                   </div>
                 </div>
               );
@@ -688,53 +689,53 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-1">
               <div className="flex items-center justify-between text-xs text-slate-500">
-                <span>Confirmed</span>
+                <span><T>Confirmed</T></span>
                 <CheckCircle2 className="h-4 w-4 text-emerald-500" />
               </div>
               <div className="text-xl font-bold font-mono text-slate-900 dark:text-white">
                 {confirmedBookings}
               </div>
               <div className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold">
-                Scheduled &amp; Active
+                <T>Scheduled &amp; Active</T>
               </div>
             </div>
 
             <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-1">
               <div className="flex items-center justify-between text-xs text-slate-500">
-                <span>Completed</span>
+                <span><T>Completed</T></span>
                 <Award className="h-4 w-4 text-blue-500" />
               </div>
               <div className="text-xl font-bold font-mono text-slate-900 dark:text-white">
                 {completedBookings}
               </div>
               <div className="text-[10px] text-blue-600 dark:text-blue-400 font-semibold">
-                Fulfilled Appointments
+                <T>Fulfilled Appointments</T>
               </div>
             </div>
 
             <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-1">
               <div className="flex items-center justify-between text-xs text-slate-500">
-                <span>Pending</span>
+                <span><T>Pending</T></span>
                 <Clock className="h-4 w-4 text-amber-500" />
               </div>
               <div className="text-xl font-bold font-mono text-slate-900 dark:text-white">
                 {pendingBookings}
               </div>
               <div className="text-[10px] text-amber-600 dark:text-amber-400 font-semibold">
-                Awaiting Confirmation
+                <T>Awaiting Confirmation</T>
               </div>
             </div>
 
             <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-1">
               <div className="flex items-center justify-between text-xs text-slate-500">
-                <span>Cancelled</span>
+                <span><T>Cancelled</T></span>
                 <XCircle className="h-4 w-4 text-rose-500" />
               </div>
               <div className="text-xl font-bold font-mono text-slate-900 dark:text-white">
                 {cancelledBookings}
               </div>
               <div className="text-[10px] text-rose-600 dark:text-rose-400 font-semibold">
-                Rescheduled / Voided
+                <T>Rescheduled / Voided</T>
               </div>
             </div>
           </div>
@@ -745,14 +746,14 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({
               <div>
                 <h2 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
                   <CalendarCheck className="h-4 w-4 text-emerald-500" />
-                  <span>Booked Services &amp; Appointment Performance</span>
+                  <span><T>Booked Services &amp; Appointment Performance</T></span>
                 </h2>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                  Breakdown of client appointment volume, booking share, and revenue per service.
+                  <T>Breakdown of client appointment volume, booking share, and revenue per service.</T>
                 </p>
               </div>
               <span className="text-xs font-mono text-slate-400">
-                {totalBookings} Total Bookings
+                {totalBookings} <T>Total Bookings</T>
               </span>
             </div>
 
@@ -761,7 +762,7 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({
               if (services.length === 0) {
                 return (
                   <div className="py-12 text-center text-xs text-slate-400">
-                    No services have been booked yet. Appointments scheduled through your chatbot will appear here.
+                    <T>No services have been booked yet. Appointments scheduled through your chatbot will appear here.</T>
                   </div>
                 );
               }
@@ -771,11 +772,11 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({
                   <table className="w-full text-left text-xs">
                     <thead className="bg-slate-50 dark:bg-slate-800/60 text-slate-500 font-semibold border-b border-slate-200 dark:border-slate-800">
                       <tr>
-                        <th className="px-4 py-3">Service Name</th>
-                        <th className="px-4 py-3">Bookings</th>
-                        <th className="px-4 py-3">Booking Share</th>
-                        <th className="px-4 py-3">Total Revenue</th>
-                        <th className="px-4 py-3">Average Price</th>
+                        <th className="px-4 py-3"><T>Service Name</T></th>
+                        <th className="px-4 py-3"><T>Bookings</T></th>
+                        <th className="px-4 py-3"><T>Booking Share</T></th>
+                        <th className="px-4 py-3"><T>Total Revenue</T></th>
+                        <th className="px-4 py-3"><T>Average Price</T></th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -841,7 +842,7 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({
                       : 'bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700'
                   }`}
                 >
-                  {st === 'all' ? 'All' : st}
+                  {st === 'all' ? <T>{'All'}</T> : st}
                 </button>
               ))}
             </div>
@@ -870,39 +871,39 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({
                   <div>
                     <h2 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
                       <Users className="h-4 w-4 text-blue-500" />
-                      <span>Client &amp; Booking CRM Directory</span>
+                      <span><T>Client &amp; Booking CRM Directory</T></span>
                     </h2>
                     <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                      Showing {filtered.length} client profile(s) with booking frequency and spend tracking.
+                      <T>Showing</T> {filtered.length} <T>client profile(s) with booking frequency and spend tracking.</T>
                     </p>
                   </div>
                   <span className="text-xs font-mono text-slate-400">
-                    {wa?.overview?.repeatRate ?? 0}% Repeat Client Rate
+                    {wa?.overview?.repeatRate ?? 0}<T>% Repeat Client Rate</T>
                   </span>
                 </div>
 
                 {filtered.length === 0 ? (
                   <div className="py-12 text-center text-xs text-slate-400">
-                    No client profiles match your search criteria.
+                    <T>No client profiles match your search criteria.</T>
                   </div>
                 ) : (
                   <div className="overflow-x-auto">
                     <table className="w-full text-left text-xs">
                       <thead className="bg-slate-50 dark:bg-slate-800/60 text-slate-500 font-semibold border-b border-slate-200 dark:border-slate-800">
                         <tr>
-                          <th className="px-4 py-3">Client</th>
-                          <th className="px-4 py-3">Status</th>
-                          <th className="px-4 py-3">Bookings</th>
-                          <th className="px-4 py-3">Total Spend</th>
-                          <th className="px-4 py-3">Preferred Services</th>
-                          <th className="px-4 py-3">Last Visit</th>
+                          <th className="px-4 py-3"><T>Client</T></th>
+                          <th className="px-4 py-3"><T>Status</T></th>
+                          <th className="px-4 py-3"><T>Bookings</T></th>
+                          <th className="px-4 py-3"><T>Total Spend</T></th>
+                          <th className="px-4 py-3"><T>Preferred Services</T></th>
+                          <th className="px-4 py-3"><T>Last Visit</T></th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                         {filtered.map((client: any, idx: number) => (
                           <tr key={idx} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition">
                             <td className="px-4 py-3 font-medium">
-                              <div className="text-slate-900 dark:text-white font-bold">{client.name}</div>
+                              <div className="text-slate-900 dark:text-white font-bold"><T>{client.name}</T></div>
                               <div className="text-[11px] text-slate-400 font-mono">{client.email}</div>
                               {client.phone && (
                                 <div className="text-[10px] text-slate-500 font-mono">{client.phone}</div>
@@ -919,7 +920,7 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({
                                 }`}
                               >
                                 {client.status === 'VIP' && <Award className="h-3 w-3" />}
-                                <span>{client.status}</span>
+                                <span><T>{client.status}</T></span>
                               </span>
                             </td>
                             <td className="px-4 py-3 font-mono font-bold text-slate-900 dark:text-white">
@@ -929,7 +930,7 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({
                               ${client.totalSpend}
                             </td>
                             <td className="px-4 py-3 text-slate-600 dark:text-slate-300 max-w-[240px] truncate">
-                              {(client.preferredServices || []).join(', ') || 'General Consultation'}
+                              {(client.preferredServices || []).join(', ') || <T>{'General Consultation'}</T>}
                             </td>
                             <td className="px-4 py-3 font-mono text-[11px] text-slate-400">
                               {client.lastBooking ? new Date(client.lastBooking).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A'}
@@ -955,14 +956,14 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({
               <div className="flex items-center gap-2">
                 <Target className="h-4 w-4 text-purple-500" />
                 <h2 className="text-sm font-bold text-slate-900 dark:text-white">
-                  Chat-to-Booking Conversion Funnel
+                  <T>Chat-to-Booking Conversion Funnel</T>
                 </h2>
               </div>
-              <span className="text-[11px] text-slate-400">Visitor Drop-off Analysis</span>
+              <span className="text-[11px] text-slate-400"><T>Visitor Drop-off Analysis</T></span>
             </div>
 
             <p className="text-xs text-slate-500 dark:text-slate-400">
-              Tracks visitor progression from their first chat session down to confirmed appointment booking.
+              <T>Tracks visitor progression from their first chat session down to confirmed appointment booking.</T>
             </p>
 
             <div className="space-y-3 pt-2">
@@ -979,15 +980,15 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({
                   <div key={idx} className="space-y-1">
                     <div className="flex items-center justify-between text-xs">
                       <span className="font-semibold text-slate-800 dark:text-slate-200">
-                        Stage {idx + 1}: {st.step}
+                        <T>Stage</T> {idx + 1}: {st.step}
                       </span>
                       <div className="flex items-center gap-2">
                         <span className="font-mono font-bold text-slate-900 dark:text-white">
-                          {st.count} {idx === 3 ? 'bookings' : 'users'}
+                          {st.count} {idx === 3 ? <T>{'bookings'}</T> : <T>{'users'}</T>}
                         </span>
                         {idx > 0 && (
                           <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-800">
-                            {st.dropOffPercent}% drop-off
+                            {st.dropOffPercent}<T>% drop-off</T>
                           </span>
                         )}
                       </div>
@@ -1017,10 +1018,10 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({
             <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
               <h2 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
                 <CalendarCheck className="h-4 w-4 text-emerald-500" />
-                <span>Service Booking Performance</span>
+                <span><T>Service Booking Performance</T></span>
               </h2>
               <span className="text-xs text-slate-400">
-                {(wa?.servicePerformance || []).length} active service(s)
+                {(wa?.servicePerformance || []).length} <T>active service(s)</T>
               </span>
             </div>
 
@@ -1028,18 +1029,18 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({
               <table className="w-full text-left text-xs">
                 <thead className="bg-slate-50 dark:bg-slate-800/60 text-slate-500 font-semibold border-b border-slate-200 dark:border-slate-800">
                   <tr>
-                    <th className="px-4 py-3">Service Name</th>
-                    <th className="px-4 py-3">Total Bookings</th>
-                    <th className="px-4 py-3">Booking Share</th>
-                    <th className="px-4 py-3">Total Revenue</th>
-                    <th className="px-4 py-3">Avg Booking Value</th>
+                    <th className="px-4 py-3"><T>Service Name</T></th>
+                    <th className="px-4 py-3"><T>Total Bookings</T></th>
+                    <th className="px-4 py-3"><T>Booking Share</T></th>
+                    <th className="px-4 py-3"><T>Total Revenue</T></th>
+                    <th className="px-4 py-3"><T>Avg Booking Value</T></th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                   {(wa?.servicePerformance || []).length === 0 ? (
                     <tr>
                       <td colSpan={5} className="py-8 text-center text-xs text-slate-400">
-                        No service bookings recorded yet.
+                        <T>No service bookings recorded yet.</T>
                       </td>
                     </tr>
                   ) : (

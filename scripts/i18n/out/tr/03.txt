@@ -1,0 +1,150 @@
+450¦Triage mellan akut och rutin¦Päivystys- ja rutiinitapausten luokittelu¦Triage tra urgenze e visite di routine¦Triaje entre urgencias y consultas rutinarias
+451¦Krypterad kanal för leads¦Salattu liidikanava¦Canale lead cifrato¦Canal de leads cifrado
+452¦Tidslinje och milstolpar för genomförandet.¦Toteutuksen aikajana ja välitavoitteet.¦Cronologia di esecuzione e traguardi.¦Cronograma de ejecución e hitos.
+453¦Låsning av chefens kalender¦Johtajan kalenterin lukitus¦Blocco dell'agenda del dirigente¦Bloqueo de la agenda del ejecutivo
+454¦Utökad byråarbetsyta med kundkonton och behörigheter¦Laajennettu toimistotyötila asiakastilien luonnilla ja käyttöoikeuksilla¦Workspace agenzia ampliato con creazione dei clienti e permessi¦Espacio de trabajo de agencia ampliado con alta de clientes y permisos
+455¦Funktionsstatus granskad september 2026¦Ominaisuuksien tila tarkistettu syyskuussa 2026¦Stato delle funzioni verificato a settembre 2026¦Estado de las funciones revisado en septiembre de 2026
+456¦Fintech och kapital¦Fintech ja pääoma¦Fintech e capitali¦Fintech y capital
+457¦Gym och idrottsklubb¦Kuntosali ja urheiluseura¦Palestra e club sportivo¦Gimnasio y club deportivo
+458¦Fullständig 1:1-upplevelse av flaggskeppet med interaktiv demo, problemkort och muspekarmaskot.¦Täysi 1:1-lippulaivakokemus interaktiivisella kehotedemolla, ongelmakorttipinolla ja hiirtä seuraavalla maskotilla.¦Esperienza di punta completa 1:1 con demo interattiva dei prompt, pila di schede dei problemi e mascotte del cursore.¦Experiencia insignia completa 1:1 con demo interactiva de prompts, pila de tarjetas de problemas y mascota del cursor.
+459¦Hälsa och medlemskap¦Terveys ja jäsenyydet¦Salute e abbonamenti¦Salud y membresías
+460¦Hälsa och välbefinnande¦Terveys ja hyvinvointi¦Sanità e benessere¦Salud y bienestar
+461¦Exklusiv designstudio med skräddarsydda portföljkort och uppskattning av projektets omfattning.¦Huippuluokan suunnittelutoimiston esittely räätälöidyillä portfoliokorteilla ja projektin laajuuden arviolla.¦Vetrina di uno studio di design di alto livello con schede portfolio su misura e stima dell'ambito del progetto.¦Escaparate de un estudio de diseño de alta gama con tarjetas de portafolio a medida y estimación del alcance del proyecto.
+462¦Snabbväxande B2B-SaaS¦Nopeasti kasvava B2B-SaaS¦SaaS B2B ad alta crescita¦SaaS B2B de alto crecimiento
+463¦Höga ordervärden och juridik¦Korkean hintaluokan palvelut ja lakiasiat¦Servizi di fascia alta e legale¦Servicios de alto valor y legal
+464¦Kartläggning av budget för dyra köp¦Korkean hintaluokan ostosten budjetin kartoitus¦Rilevamento del budget per acquisti di valore elevato¦Exploración del presupuesto en compras de alto valor
+465¦Försäljning av dyra produkter och tjänster¦Korkean hintaluokan myynti¦Vendite di fascia alta¦Ventas de alto valor
+466¦Kunskapsgränser med hänsyn till HIPAA¦HIPAA huomioivat tietopohjan rajat¦Limiti della conoscenza attenti all'HIPAA¦Límites de conocimiento con criterio HIPAA
+467¦=
+468¦Om din verksamhet eller byrå arbetar inom en specialiserad bransch som inte finns med ovan, berätta det för vårt produktutvecklingsteam. Vi bygger och finjusterar färdigtränade samtalsmallar utifrån partnernas efterfrågan.¦Jos yrityksesi tai toimistosi palvelee erikoistunutta alaa, jota ei ole lueteltu yllä, kerro siitä tuotekehitystiimillemme. Rakennamme ja hienosäädämme valmiiksi koulutettuja keskustelumalleja kumppaneiden kysynnän mukaan.¦Se la tua azienda o agenzia opera in un settore specializzato non elencato sopra, comunicalo al nostro team di ingegneria del prodotto. Costruiamo e calibriamo schemi conversazionali pre-addestrati in base alla richiesta dei partner.¦Si tu negocio o agencia atiende a un sector especializado que no aparece arriba, díselo a nuestro equipo de ingeniería de producto. Creamos y ajustamos esquemas conversacionales preentrenados según la demanda de los socios.
+469¦Under utveckling¦Kehitteillä¦In sviluppo¦En desarrollo
+470¦Under utveckling¦Kehitteillä¦In sviluppo¦En desarrollo
+471¦Under finslipning¦Viimeistelyssä¦In rifinitura¦En pulido
+472¦UNDER FINSLIPNING OCH BETATESTNING¦VIIMEISTELYSSÄ JA BEETATESTAUKSESSA¦IN RIFINITURA E BETA TEST¦EN PULIDO Y PRUEBAS BETA
+473¦Inkommande telefonassistent (röstsamtal)¦Saapuvien puhelujen avustaja (äänipuhelut)¦Assistente telefonico in entrata (chiamate vocali)¦Asistente telefónico entrante (llamadas de voz)
+474¦Ingående arketyp-DNA¦Sisältyvä arkkityypin DNA¦DNA dell'archetipo incluso¦ADN del arquetipo incluido
+475¦Ingår i alla planer om inte planen anger något annat.¦Sisältyy kaikkiin paketteihin, ellei paketin kohdalla toisin mainita.¦Incluso in tutti i piani, salvo diversa indicazione del piano.¦Incluido en todos los planes, salvo que el plan indique lo contrario.
+476¦Branschmallar för vanliga tjänsteföretag¦Toimialakohtaiset aloituspohjat yleisille palveluyrityksille¦Modelli di partenza per i settori di servizi più comuni¦Plantillas iniciales por sector para negocios de servicios habituales
+477¦Insamling av uppgifter för försäkringskontroll¦Vakuutustietojen esitarkistuksen keruu¦Raccolta dei dati per la verifica preliminare dell'assicurazione¦Recogida de datos para la comprobación previa del seguro
+478¦Interaktivt API-sandlådesvar, företagssäkerhet och bokning av demo med säljare.¦Vuorovaikutteiset API-hiekkalaatikon vastaukset, yritystason tietoturva ja esittelyn ajanvaraus myyjän kanssa.¦Risposte interattive dalla sandbox API, livello di sicurezza enterprise e prenotazione di demo con il commerciale.¦Respuestas interactivas del sandbox de API, postura de seguridad empresarial y reserva de demos con el equipo comercial.
+479¦Interaktiva förfrågningar om objekt¦Vuorovaikutteiset kohdetiedustelut¦Richieste interattive sugli immobili¦Consultas interactivas sobre inmuebles
+480¦Överlämning till personal och aviseringar¦Siirto henkilökunnalle ja ilmoitukset¦Passaggio a un operatore e notifiche¦Traspaso a una persona y notificaciones
+481¦Levande tjänsteutforskare med flera flikar¦Elävä monivälilehtinen palveluselain¦Esploratore di servizi dal vivo con più schede¦Explorador de servicios en vivo con varias pestañas
+482¦Lokala tjänster och bokningar¦Paikalliset palvelut ja ajanvaraukset¦Servizi locali e appuntamenti¦Servicios locales y citas
+483¦Lyxfastigheter och mäkleri¦Luksuskiinteistöt ja välitys¦Immobili di lusso e intermediazione¦Inmobiliaria y corretaje de lujo
+484¦Förklaring av medlemsnivåer¦Jäsentasojen selitys¦Spiegazione dei livelli di abbonamento¦Explicación de los niveles de membresía
+485¦Modern e-handel¦Moderni verkkokauppa¦E-commerce moderno¦Tienda online moderna
+486¦Fler meddelandekanaler¦Lisää viestintäkanavia¦Altri canali di messaggistica¦Más canales de mensajería
+487¦Schema för flera frisörer¦Usean parturin työvuorolista¦Turni di più barbieri¦Plantilla de varios barberos
+488¦Multimodal inläsning av dokument som menyer och prislistor¦Multimodaalinen dokumenttien lukeminen, kuten ruokalistat ja hintaluettelot¦Importazione multimodale di documenti come menu e listini prezzi¦Lectura multimodal de documentos como cartas y listas de precios
+489¦Inbyggd tvåvägssynkronisering med HubSpot, Salesforce och Pipedrive¦Natiivi kaksisuuntainen synkronointi HubSpotin, Salesforcen ja Pipedriven kanssa¦Sincronizzazione bidirezionale nativa con HubSpot, Salesforce e Pipedrive¦Sincronización bidireccional nativa con HubSpot, Salesforce y Pipedrive
+490¦Behöver du en egen branschmall?¦Tarvitsetko oman toimialakohtaisen arkkityypin?¦Ti serve un archetipo di settore personalizzato?¦¿Necesitas un arquetipo sectorial a medida?
+491¦Triage vid nya patienter, frågor om försäkringsskydd och dirigering till rätt läkare.¦Uusien potilaiden esitietojen luokittelu, vakuutuskatteen kyselyt ja lääkärikonsultaation ohjaus.¦Triage per i nuovi pazienti, richieste sulla copertura assicurativa e smistamento verso il medico giusto.¦Triaje de nuevos pacientes, consultas sobre la cobertura del seguro y derivación a la consulta con el médico.
+492¦Nästa på tur:¦Seuraavana jonossa:¦Prossimi in coda:¦Siguiente en la cola:
+493¦=
+494¦Finns på listan men inte påbörjat. Prioriteringar ändras med kundernas återkoppling.¦On listalla, mutta ei aloitettu. Prioriteetit muuttuvat asiakaspalautteen mukaan.¦È nell'elenco ma non è stato avviato. Le priorità cambiano in base al feedback dei clienti.¦Está en la lista, pero no se ha empezado. Las prioridades cambian con los comentarios de los clientes.
+495¦Verifiering av ordernummer¦Tilausnumeron tarkistus¦Verifica del numero d'ordine¦Verificación del número de pedido
+496¦Orderspårning, storleksrekommendationer och snabb dirigering av returer och återbetalningar.¦Tilausseuranta, kokosuositukset ja nopea palautusten ja hyvitysten ohjaus.¦Tracciamento degli ordini, consigli sulle taglie e instradamento immediato di resi e rimborsi.¦Seguimiento de pedidos, recomendaciones de talla y derivación inmediata de devoluciones y reembolsos.
+497¦Fastnålad stapel med problemkort¦Kiinnitetty ongelmakorttipino¦Pila fissa di schede dei problemi¦Pila fija de tarjetas de problemas
+498¦Planerat¦Suunniteltu¦In programma¦Previsto
+499¦Plattformsöversikt¦Alustan yleiskatsaus¦Panoramica della piattaforma¦Resumen de la plataforma
+500¦Förkonfigurerade landningssidor för olika branscher.¦Valmiiksi määritetyt toimialakohtaiset laskeutumissivut.¦Landing page di settore preconfigurate.¦Páginas de aterrizaje sectoriales preconfiguradas.
+501¦Exakt stolsbokning, val av frisör och en servicemeny i realtid.¦Tarkka tuolivaraus, parturin valinta ja reaaliaikainen palveluvalikko.¦Prenotazione precisa della poltrona, scelta del barbiere e menu dei servizi in tempo reale.¦Reserva precisa de sillón, elección de barbero y carta de servicios en tiempo real.
+502¦=
+503¦Bokning av privata visningar¦Yksityisten esittelyjen ajanvaraus¦Prenotazione di visite private¦Reserva de visitas privadas
+504¦Sökning i produktkatalogen¦Tuoteluettelon haku¦Ricerca nel catalogo prodotti¦Búsqueda en el catálogo de productos
+505¦FÄRDPLAN OCH FUNKTIONSSTATUS¦TUOTEKARTTA JA OMINAISUUKSIEN TILA¦ROADMAP E STATO DELLE FUNZIONI¦HOJA DE RUTA Y ESTADO DE LAS FUNCIONES
+506¦Professionella tjänster¦Asiantuntijapalvelut¦Servizi professionali¦Servicios profesionales
+507¦Bokning av visningar, kvalificering efter prisklass och snabb tilldelning av mäklare.¦Kiinteistönäyttöjen varaus, hintaluokan mukainen kelpoisuus ja välitön välittäjän ohjaus.¦Prenotazione delle visite, qualificazione per fascia di prezzo e assegnazione immediata dell'agente.¦Reserva de visitas a inmuebles, cualificación por rango de precio y asignación inmediata de agente.
+508¦Be om en branschmall¦Pyydä toimialakohtaista arkkityyppiä¦Richiedi un archetipo di settore¦Solicita un arquetipo sectorial
+509¦Detaljhandel och varumärken¦Vähittäiskauppa ja brändit¦Retail e marchi¦Comercio minorista y marcas
+510¦SaaS och modern teknik¦SaaS ja moderni teknologia¦SaaS e tecnologia moderna¦SaaS y tecnología moderna
+511¦Levererat¦Julkaistu¦Rilasciato¦Lanzado
+512¦Svar om SOC2/GDPR-efterlevnad¦Vastaukset SOC2- ja GDPR-vaatimustenmukaisuuteen¦Risposte sulla conformità SOC2/GDPR¦Respuestas sobre cumplimiento de SOC2/GDPR
+513¦Prisräknare för teamplatser¦Tiimipaikkojen hintalaskuri¦Calcolatore dei prezzi per postazioni del team¦Calculadora de precios por puestos de equipo
+514¦Kärnassistenten¦Avustajan ydin¦L'assistente di base¦El asistente principal
+515¦Lås för lediga tider¦Aikavälien saatavuuslukot¦Blocchi di disponibilità degli slot¦Bloqueos de disponibilidad de huecos
+516¦Tvåvägssynkronisering av tillgänglighet med Google Kalender och Outlook 365¦Kaksisuuntainen saatavuuden synkronointi Google-kalenterin ja Outlook 365:n kanssa¦Sincronizzazione bidirezionale della disponibilità con Google Calendar e Outlook 365¦Sincronización bidireccional de disponibilidad con Google Calendar y Outlook 365
+517¦Supersnabb mörk arbetsyta för GPU-kluster, API-token och orkestrering av vektortjänster.¦Erittäin nopea tumman tilan työtila GPU-klustereille, API-tokeneille ja vektoripalveluiden orkestroinnille.¦Canvas in modalità scura ultraveloce per cluster GPU, token API e orchestrazione di servizi vettoriali.¦Lienzo en modo oscuro ultrarrápido para clústeres de GPU, tokens de API y orquestación de servicios vectoriales.
+518¦Djurkliniker, bilvård, arkitektbyråer och revisionsbyråer.¦Eläinlääkäriasemat, auton viimeistely, arkkitehtitoimistot ja veroasiantuntijat.¦Cliniche veterinarie, cura dell'auto, studi di architettura e studi di consulenza fiscale.¦Clínicas veterinarias, detallado de coches, estudios de arquitectura y asesorías fiscales.
+519¦Provpass för VIP, frågor om klasstider och bokning av personlig tränare.¦VIP-kokeilupassin hankinta, ryhmätuntien aikataulukyselyt ja henkilökohtaisen valmentajan varaus.¦Pass di prova VIP, richieste sugli orari dei corsi e prenotazione del personal trainer.¦Obtención de pase de prueba VIP, consultas del horario de clases y reserva de entrenador personal.
+520¦Leverans av leads och bokningar via webhooks, Slack och Google Kalkylark¦Liidien ja varausten toimitus webhookeilla, Slackiin ja Google Sheetsiin¦Consegna di lead e prenotazioni tramite webhook, Slack e Fogli Google¦Entrega de leads y reservas mediante webhooks, Slack y hojas de Google
+521¦Det som fungerar idag,¦Mikä toimii tänään,¦Cosa funziona oggi,¦Lo que funciona hoy,
+522¦WhatsApp Cloud API och Telegram-botar: du skapar kontona och kopplar webhooks själv¦WhatsApp Cloud API ja Telegram-botit: luot tilit ja yhdistät webhookit itse¦WhatsApp Cloud API e bot Telegram: crei tu gli account e colleghi i webhook¦API en la nube de WhatsApp y bots de Telegram: tú creas las cuentas y conectas los webhooks
+523¦Förfrågningstratt för grossister¦Tukkutiedustelujen suppilo¦Funnel delle richieste all'ingrosso¦Embudo de consultas mayoristas
+524¦Pågående arbete. Datum är mål, inte åtaganden.¦Työ on kesken. Päivämäärät ovat tavoitteita, eivät sitoumuksia.¦Lavori in corso. Le date sono obiettivi, non impegni.¦Trabajo en curso. Las fechas son objetivos, no compromisos.
+525¦Fungerar, med förutsättningar som du själv ordnar. Vi lyfter fram dem så att ingen köper och förväntar sig mer.¦Toimii, mutta edellytykset hoidat itse. Tuomme ne esiin, jotta kukaan ei osta odottaen enemmän.¦Funziona, con prerequisiti che devi fornire tu. Li evidenziamo perché nessuno acquisti aspettandosi di più.¦Funciona, con requisitos previos que aportas tú. Los señalamos para que nadie compre esperando más.
+526¦Ingen cachelagring av tokendata¦Ei tokenidatan välimuistitallennusta¦Nessuna cache dei dati dei token¦Sin caché de datos de tokens
+527¦BYOK-arkitektur utan påslag på tokens¦BYOK-arkkitehtuuri ilman tokenien lisämaksua¦Architettura BYOK senza ricarico sui token¦Arquitectura BYOK sin recargo sobre los tokens
+528¦Kodavsnitt utan fördröjning¦Koodinpätkät ilman viivettä¦Snippet di codice a latenza zero¦Fragmentos de código sin latencia
+529¦Om den här listan¦Tietoja tästä luettelosta¦Informazioni su questo elenco¦Acerca de esta lista
+530¦Crescelo använder leverantörerna nedan för att driva tjänsten. Var och en är bunden av dataskyddsvillkor som är minst lika skyddande som vårt databehandlingsavtal (/dpa). Kunder som kopplar sin egen AI-leverantör, kalender eller annat verktyg styr den kopplingen själva.¦Crescelo käyttää alla olevia palveluntarjoajia palvelun tuottamiseen. Jokaista sitovat tietosuojaehdot, jotka ovat vähintään yhtä suojaavat kuin tietojenkäsittelysopimuksemme (/dpa). Asiakkaat, jotka yhdistävät oman tekoälypalveluntarjoajansa, kalenterinsa tai muun työkalun, hallitsevat tätä yhteyttä itse.¦Crescelo utilizza i fornitori indicati qui sotto per erogare il servizio. Ciascuno è vincolato da condizioni di protezione dei dati non meno tutelanti del nostro Accordo sul trattamento dei dati (/dpa). I clienti che collegano il proprio provider IA, calendario o altro strumento controllano autonomamente quel collegamento.¦Crescelo utiliza los proveedores que figuran a continuación para prestar el servicio. Cada uno está sujeto a condiciones de protección de datos no menos protectoras que nuestra Adenda de tratamiento de datos (/dpa). Los clientes que conectan su propio proveedor de IA, calendario u otra herramienta controlan esa conexión por su cuenta.
+531¦Nuvarande underbiträden¦Nykyiset alikäsittelijät¦Sub-responsabili del trattamento attuali¦Subencargados del tratamiento actuales
+532¦Juridik¦Lakitiedot¦Note legali¦Legal
+533¦Underbiträden¦Alikäsittelijät¦Sub-responsabili del trattamento¦Subencargados del tratamiento
+534¦Underbiträden | Crescelo¦Alikäsittelijät | Crescelo¦Sub-responsabili del trattamento | Crescelo¦Subencargados del tratamiento | Crescelo
+535¦De leverantörer som kan behandla personuppgifter för Crescelos och dess kunders räkning, och vad var och en används till.¦Palveluntarjoajat, jotka voivat käsitellä henkilötietoja Crescelon ja sen asiakkaiden puolesta, sekä se, mihin kutakin käytetään.¦I fornitori che possono trattare dati personali per conto di Crescelo e dei suoi clienti e lo scopo per cui ciascuno è utilizzato.¦Los proveedores que pueden tratar datos personales por cuenta de Crescelo y de sus clientes, y para qué se usa cada uno.
+536¦De leverantörer som behandlar personuppgifter för Crescelos och dess kunders räkning, vad de gör, vilka uppgifter de ser och var de verkar.¦Palveluntarjoajat, jotka käsittelevät henkilötietoja Crescelon ja sen asiakkaiden puolesta, mitä ne tekevät, mitä tietoja ne näkevät ja missä ne toimivat.¦I fornitori che trattano dati personali per conto di Crescelo e dei suoi clienti, cosa fanno, quali dati vedono e dove operano.¦Los proveedores que tratan datos personales por cuenta de Crescelo y de sus clientes, qué hacen, qué datos ven y dónde operan.
+537¦, gå till¦, siirry kohtaan¦, vai a¦, ve a
+538¦+ Skapa nyckel¦+ Luo avain¦+ Crea chiave¦+ Crear clave
+539¦3–4 minuter¦3–4 minuuttia¦3–4 minuti¦3–4 minutos
+540¦Aktivera Claude i Crescelo:¦Ota Claude käyttöön Crescelosa:¦Attiva Claude in Crescelo:¦Activa Claude en Crescelo:
+541¦Lägg in ett startsaldo (t.ex. 5–10 USD).¦Lisää alkusaldo (esim. 5–10 dollaria).¦Aggiungi un credito iniziale (ad es. da 5 a 10 dollari).¦Añade un saldo inicial (p. ej., de 5 a 10 dólares).
+542¦Lägg till betalningsmetod¦Lisää maksutapa¦Aggiungi metodo di pagamento¦Añadir método de pago
+543¦AI-kopplingar¦Tekoälyliitännät¦Connettori IA¦Conectores de IA
+544¦AI-kopplingar¦Tekoälyliitännät¦Connettori IA¦Conectores de IA
+545¦AI-inställningar¦Tekoälyasetukset¦Impostazioni IA¦Ajustes de IA
+546¦och ange dina företags betalningsuppgifter.¦ja anna yrityksesi maksutiedot.¦e inserisci i dati di pagamento della tua azienda.¦e introduce los datos de pago de tu empresa.
+547¦Konto i Anthropic Console¦Anthropic Console -tili¦Account Anthropic Console¦Cuenta de Anthropic Console
+548¦Anthropic hanterar sina utvecklar-API:er via Anthropic Console:¦Anthropic hallinnoi kehittäjärajapintojaan Anthropic Consolen kautta:¦Anthropic gestisce le proprie API per sviluppatori tramite la Anthropic Console:¦Anthropic gestiona sus API para desarrolladores a través de Anthropic Console:
+549¦Anthropic använder förbetalda krediter för API-anrop:¦Anthropic käyttää API-kutsuihin ennakkoon maksettuja hyvityksiä:¦Anthropic usa crediti prepagati per le chiamate API:¦Anthropic usa créditos prepagados para las llamadas a la API:
+550¦API-nycklar¦API-avaimet¦Chiavi API¦Claves API
+551¦som din leverantör.¦palveluntarjoajaksesi.¦come tuo provider.¦como tu proveedor.
+552¦Claude 3.5 Sonnet och Haiku erbjuder branschledande nyanser i samtalet och trohet mot fakta. Så här skapar du din Anthropic API-nyckel och ställer in din assistent på under 4 minuter.¦Claude 3.5 Sonnet ja Haiku tarjoavat alan parhaan keskustelun vivahteikkuuden ja faktatarkkuuden. Näin luot Anthropic API -avaimesi ja määrität avustajasi alle 4 minuutissa.¦Claude 3.5 Sonnet e Haiku offrono sfumature conversazionali e aderenza ai fatti ai vertici del settore. Ecco come generare la tua chiave API Anthropic e configurare il tuo assistente in meno di 4 minuti.¦Claude 3.5 Sonnet y Haiku ofrecen matices conversacionales y fidelidad a los hechos líderes del sector. Así se genera tu clave API de Anthropic y se configura tu asistente en menos de 4 minutos.
+553¦claude-3-5-haiku (0,80 USD/1 M)¦claude-3-5-haiku (0,80 $/1 M)¦claude-3-5-haiku (0,80 $/1 M)¦claude-3-5-haiku (0,80 $/1 M)
+554¦Klicka på¦Napsauta¦Fai clic su¦Haz clic en
+555¦Klicka på¦Napsauta kohtaa¦Fai clic su¦Haz clic en
+556¦Klicka på¦Napsauta¦Fai clic sul¦Haz clic en el
+557¦Komplett steg-för-steg-guide för att skapa ett konto i Anthropic Console, skapa en Claude API-nyckel och koppla Claude 3.5 Sonnet eller Haiku till Crescelo utan påslag.¦Täydellinen vaiheittainen opas Anthropic Console -tilin luomiseen, Claude API -avaimen luomiseen ja Claude 3.5 Sonnetin tai Haikun yhdistämiseen Crescelo-palveluun ilman lisämaksua.¦Guida completa passo per passo per creare un account Anthropic Console, generare una chiave API Claude e collegare Claude 3.5 Sonnet o Haiku a Crescelo senza ricarichi.¦Guía completa paso a paso para crear una cuenta de Anthropic Console, generar una clave API de Claude y conectar Claude 3.5 Sonnet o Haiku a Crescelo sin recargos.
+558¦Koppla Anthropic Claude till Crescelo: guide för API-nyckel¦Yhdistä Anthropic Claude Crescelo-palveluun: API-avaimen opas¦Collega Anthropic Claude a Crescelo: guida alla chiave API¦Conecta Anthropic Claude a Crescelo: guía de la clave API
+559¦Kontakta en supportingenjör¦Ota yhteyttä tukiasiantuntijaan¦Contatta un tecnico del supporto¦Contacta con un ingeniero de soporte
+560¦Kopiera direkt:¦Kopioi heti:¦Copia subito:¦Cópiala enseguida:
+561¦Kopiera nyckelsträngen (den börjar med¦Kopioi avainmerkkijono (se alkaa merkeillä¦Copia la stringa della chiave (inizia con¦Copia la cadena de la clave (empieza por
+562¦Skapa en egen nyckel för din Crescelo-assistent:¦Luo oma avain Crescelo-avustajallesi:¦Crea una chiave dedicata per il tuo assistente Crescelo:¦Crea una clave exclusiva para tu asistente de Crescelo:
+563¦Skapa ett konto med din företagsmejl eller ditt Google-konto. Observera: Claude Pro-prenumerationer för privatpersoner är något annat än utvecklar-API:et i Console.¦Luo tili yrityssähköpostillasi tai Google-tililläsi. Huomaa: kuluttajille tarkoitetut Claude Pro -tilaukset ovat eri asia kuin Consolen kehittäjärajapinta.¦Crea un account con la tua e-mail aziendale o con un account Google. Nota: gli abbonamenti Claude Pro per i consumatori sono separati dall'API per sviluppatori della Console.¦Crea una cuenta con tu correo de empresa o tu cuenta de Google. Nota: las suscripciones Claude Pro para consumidores son distintas de la API para desarrolladores de Console.
+564¦Crescelos dashboard¦Crescelon hallintapaneeli¦Dashboard di Crescelo¦Panel de Crescelo
+565¦Crescelo skickar dina frågor direkt till Anthropics rena API-slutpunkter med AES-256-GCM-krypterade nycklar.¦Crescelo reitittää kehotteet suoraan Anthropicin raakoihin API-päätepisteisiin AES-256-GCM-salatuilla avaimilla.¦Crescelo instrada i prompt direttamente agli endpoint API nativi di Anthropic con chiavi cifrate AES-256-GCM.¦Crescelo envía los prompts directamente a los endpoints nativos de la API de Anthropic con claves cifradas con AES-256-GCM.
+566¦Beräknad tid¦Arvioitu aika¦Tempo stimato¦Tiempo estimado
+567¦för djup teknisk vägledning.¦saadaksesi syvällistä teknistä ohjausta.¦per una guida tecnica approfondita.¦para una orientación técnica en profundidad.
+568¦för blixtsnabba kundchattar, eller¦salamannopeisiin asiakaschatteihin tai¦per chat con i clienti velocissime, oppure¦para chats con clientes ultrarrápidos, o
+569¦Fyll på saldot i Console¦Lisää saldoa Consoleen¦Ricarica il saldo della Console¦Añade saldo a tu Console
+570¦Skapa nyckel¦Luo avain¦Genera chiave¦Generar clave
+571¦Skapa din Claude API-nyckel¦Luo Claude API -avaimesi¦Genera la tua chiave API Claude¦Genera tu clave API de Claude
+572¦Hjälpcenter¦Ohjekeskus¦Centro assistenza¦Centro de ayuda
+573¦Så kopplar du¦Näin yhdistät¦Come collegare¦Cómo conectar
+574¦i sidomenyn eller inställningarna uppe till höger.¦vasemmasta sivupalkista tai oikean yläkulman asetuksista.¦nella barra laterale a sinistra o nelle impostazioni in alto a destra.¦en la barra lateral izquierda o en los ajustes de arriba a la derecha.
+575¦i navigeringsmenyn.¦navigointivalikossa.¦nel menu di navigazione.¦en el menú de navegación.
+576¦I din¦Avaa¦Nella tua¦En tu
+577¦nyckeln i fältet för API-nyckel.¦avain API-avain-kenttään.¦nel campo della chiave API.¦en el campo de la clave API.
+578¦Ge den ett namn (t.ex.¦Nimeä se (esim.¦Assegnale un nome (ad es.¦Ponle un nombre (p. ej.
+579¦Nyanserad ton • Människolik professionell empati¦Vivahteikas sävy • Ihmismäinen ammatillinen empatia¦Tono sfumato • Empatia professionale e naturale¦Tono matizado • Empatía profesional y humana
+580¦Öppna console.anthropic.com¦Avaa console.anthropic.com¦Apri console.anthropic.com¦Abre console.anthropic.com
+581¦Valfritt: ställ in månadsvisa budgetgränser för att undvika oavsiktliga överskridanden.¦Valinnainen: aseta kuukausittaiset budjettirajat estääksesi vahingossa tapahtuvat ylitykset.¦Facoltativo: imposta limiti di budget mensili per evitare superamenti accidentali.¦Opcional: establece límites de presupuesto mensuales para evitar excesos accidentales.
+582¦Klistra in nyckeln i Crescelos inställningar¦Liitä avain Crescelon asetuksiin¦Incolla la chiave nelle impostazioni di Crescelo¦Pega la clave en los ajustes de Crescelo
+583¦Klistra in din¦Liitä¦Incolla la tua¦Pega tu
+584¦Planer och fakturering¦Paketit ja laskutus¦Piani e fatturazione¦Planes y facturación
+585¦Förutsättningar¦Edellytykset¦Prerequisiti¦Requisitos previos
+586¦Rekommenderad modell¦Suositeltu malli¦Modello consigliato¦Modelo recomendado
+587¦Spara AI-inställningar¦Tallenna tekoälyasetukset¦Salva le impostazioni IA¦Guardar ajustes de IA
+588¦Välj¦Valitse¦Seleziona¦Selecciona
+589¦Inställningar¦Asetukset¦Impostazioni¦Ajustes
+590¦Logga in i Anthropic Console¦Kirjaudu Anthropic Consoleen¦Accedi alla Anthropic Console¦Inicia sesión en Anthropic Console
+591¦Nyckeln kan inte visas igen när du stänger fönstret.¦Avainta ei voi näyttää uudelleen, kun suljet ikkunan.¦La chiave non può essere visualizzata di nuovo dopo aver chiuso la finestra.¦La clave no se puede volver a ver una vez que cierres la ventana.
+592¦till Crescelo.¦Crescelo-palveluun.¦a Crescelo.¦a Crescelo.
+593¦Visa alla guider för AI-kopplingar¦Näytä kaikki tekoälyliitäntöjen oppaat¦Vedi tutte le guide ai connettori IA¦Ver todas las guías de conectores de IA
+594¦Inga påslag på tokens:¦Ei tokenien lisämaksua:¦Nessun ricarico sui token:¦Sin recargo sobre los tokens:
+595¦(Valfritt) Du kan klistra in antingen en gratis Groq-nyckel eller en gratis Gemini-nyckel för att lyfta hastighetsgränserna, eller lämna rutan tom för att använda systemets gratiskanaler.¦(Valinnainen) Voit liittää joko ilmaisen Groq-avaimen tai ilmaisen Gemini-avaimen nopeusrajoitusten poistamiseksi, tai jättää kentän tyhjäksi käyttääksesi järjestelmän ilmaisia kanavia.¦(Facoltativo) Puoi incollare una chiave Groq gratuita o una chiave Gemini gratuita per alzare i limiti di frequenza, oppure lasciare il campo vuoto per usare i canali gratuiti del sistema.¦(Opcional) Puedes pegar una clave gratuita de Groq o de Gemini para ampliar los límites de velocidad, o dejar el campo vacío para usar los canales gratuitos del sistema.
+596¦0,00 $ (gratisnivåer)¦0,00 $ (ilmaiset tasot)¦0,00 $ (piani gratuiti)¦0,00 $ (niveles gratuitos)
+597¦100 % gratis • Flera leverantörer i kaskad • 0 $ i beräkningskostnad¦100 % ilmainen • Usean palveluntarjoajan kaskadi • 0 $ laskentakulut¦100% gratuito • Cascata multi-provider • 0 $ di calcolo¦100 % gratis • Cascada multiproveedor • 0 $ de cómputo
+598¦Kreditkort krävs¦Luottokortti vaaditaan¦Carta di credito richiesta¦Se necesita tarjeta de crédito
+599¦Se till att¦Varmista, että¦Assicurati che¦Asegúrate de que

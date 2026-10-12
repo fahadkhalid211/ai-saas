@@ -2,7 +2,9 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { checkRateLimit, getClientIp } from './lib/security/rate-limit';
 import { logEvent } from './lib/logging/logger';
-import { resolveGeoLocale, isValidLocale } from './lib/i18n/config';
+import { decideRoute } from './lib/i18n/routing';
+import { LOCALE_COOKIE } from './lib/i18n/config';
+import translatedBlog from './lib/i18n/blog-manifest.json';
 
 interface RouteLimitConfig {
   prefix: string;
@@ -195,40 +197,35 @@ export function proxy(request: NextRequest) {
     return withWidgetCors(response, pathname);
   }
 
-  // For non-API routes, pass through with standard security and geo headers
-  const response = NextResponse.next();
+  // Language: which version of the page this address gets (see lib/i18n/routing.ts).
+  const decision = decideRoute({
+    pathname,
+    search: request.nextUrl.search,
+    method: request.method.toUpperCase(),
+    host: request.headers.get('host') || '',
+    cookies: { locale: request.cookies.get(LOCALE_COOKIE)?.value },
+    country: request.headers.get('x-vercel-ip-country') || request.headers.get('cf-ipcountry'),
+    acceptLanguage: request.headers.get('accept-language'),
+    userAgent: request.headers.get('user-agent'),
+    accept: request.headers.get('accept'),
+    translatedBlog: translatedBlog as Record<string, string[]>,
+  });
+
+  let response: NextResponse;
+  if (decision.action === 'redirect') {
+    response = NextResponse.redirect(new URL(decision.to, request.url), decision.status);
+    for (const c of decision.cookies || []) {
+      response.cookies.set(c.name, c.value, { path: '/', maxAge: 60 * 60 * 24 * 365, sameSite: 'lax' });
+    }
+    // an answer that depends on who is asking must not be cached for the next person
+    if (decision.private) response.headers.set('Cache-Control', 'private, no-store');
+  } else if (decision.action === 'rewrite') {
+    response = NextResponse.rewrite(new URL(decision.to, request.url));
+  } else {
+    response = NextResponse.next();
+  }
   response.headers.set('X-Content-Type-Options', 'nosniff');
   response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
-
-  // Geo-location detection & language resolution
-  const rawCountry =
-    request.headers.get('x-vercel-ip-country') ||
-    request.headers.get('cf-ipcountry') ||
-    request.headers.get('x-country-code');
-  const acceptLang = request.headers.get('accept-language');
-  const userLocaleCookie = request.cookies.get('crescelo_locale')?.value;
-
-  const geo = resolveGeoLocale(rawCountry, acceptLang);
-  const activeLocale =
-    userLocaleCookie && isValidLocale(userLocaleCookie)
-      ? userLocaleCookie
-      : geo.locale;
-
-  response.headers.set('x-crescelo-country', geo.country);
-  response.headers.set('x-crescelo-locale', activeLocale);
-
-  if (!userLocaleCookie && geo.isAutoDetected) {
-    response.cookies.set('crescelo_locale', activeLocale, {
-      path: '/',
-      maxAge: 60 * 60 * 24 * 365,
-      sameSite: 'lax',
-    });
-    response.cookies.set('crescelo_country', geo.country, {
-      path: '/',
-      maxAge: 60 * 60 * 24 * 365,
-      sameSite: 'lax',
-    });
-  }
   // only the signed-in areas refuse to be framed; public pages and /embed/ may be shown inside other sites
   if (pathname === '/master' || pathname === '/login' || pathname === '/dashboard' || /^\/(master|login|dashboard)\//.test(pathname)) {
     response.headers.set('X-Frame-Options', 'SAMEORIGIN');

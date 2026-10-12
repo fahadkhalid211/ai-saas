@@ -1,7 +1,9 @@
 'use client';
 
+import { T, useT } from '@/lib/i18n/context';
+import { A } from '@/components/i18n/A';
 import { useEffect, useRef, useState, type PointerEvent } from 'react';
-import Link from 'next/link';
+import Link from '@/components/i18n/Link';
 import { BEHIND, CAROUSEL, TOOLS } from './content-extra';
 import { Eyebrow, Reveal } from './ui';
 import { Glyph, ToolArt } from './art';
@@ -15,11 +17,11 @@ export function Tools() {
     <section id="product" className="mk-section mk-tools" aria-labelledby="mk-tools-title">
       <div className="mk-wrap">
         <Reveal className="mk-center-head">
-          <Eyebrow>{TOOLS.eyebrow}</Eyebrow>
+          <Eyebrow><T>{TOOLS.eyebrow}</T></Eyebrow>
           <h2 id="mk-tools-title" className="mk-h2 mk-h2-center">
-            <span className="mk-block">{TOOLS.titleLines[0]}</span>
-            <span className="mk-block">{TOOLS.titleLines[1]}</span>
-            <span className="mk-block mk-em">{TOOLS.echo}</span>
+            <span className="mk-block"><T>{TOOLS.titleLines[0]}</T></span>
+            <span className="mk-block"><T>{TOOLS.titleLines[1]}</T></span>
+            <span className="mk-block mk-em"><T>{TOOLS.echo}</T></span>
           </h2>
         </Reveal>
 
@@ -33,15 +35,15 @@ export function Tools() {
                   </div>
                 </div>
                 <div className="mk-tool-body">
-                  <p className="mk-tool-kicker">{c.kicker}</p>
-                  <h3 className="mk-tool-title">{c.title}</h3>
-                  <p>{c.body}</p>
-                  <a href={c.href} className="mk-btn mk-btn-primary mk-btn-sm">
-                    {c.cta}
+                  <p className="mk-tool-kicker"><T>{c.kicker}</T></p>
+                  <h3 className="mk-tool-title"><T>{c.title}</T></h3>
+                  <p><T>{c.body}</T></p>
+                  <A href={c.href} className="mk-btn mk-btn-primary mk-btn-sm">
+                    <T>{c.cta}</T>
                     <span aria-hidden="true" className="mk-arrow">
                       →
                     </span>
-                  </a>
+                  </A>
                 </div>
               </article>
             </Reveal>
@@ -69,16 +71,16 @@ export function BehindTheScenes() {
       items={BEHIND_ITEMS}
       head={
         <>
-          <Eyebrow>{BEHIND.eyebrow}</Eyebrow>
+          <Eyebrow><T>{BEHIND.eyebrow}</T></Eyebrow>
           <h2 id="mk-agent-title" className="mk-h2 mk-h2-center mk-h2-oneline">
-            {BEHIND.titleLines[0]} <span className="mk-em">{BEHIND.titleLines[1]}</span>
+            <T>{BEHIND.titleLines[0]}</T> <span className="mk-em"><T>{BEHIND.titleLines[1]}</T></span>
           </h2>
-          <p className="mk-lead">{BEHIND.body}</p>
+          <p className="mk-lead"><T>{BEHIND.body}</T></p>
           <Link href={BEHIND.ctaHref} className="mk-vbtn">
             <span className="mk-vbtn-stroke" aria-hidden="true" />
-            <span className="mk-vbtn-label">{BEHIND.cta}</span>
+            <span className="mk-vbtn-label"><T>{BEHIND.cta}</T></span>
           </Link>
-          <p className="mk-orbit-legend">{BEHIND.caption}</p>
+          <p className="mk-orbit-legend"><T>{BEHIND.caption}</T></p>
         </>
       }
     />
@@ -92,6 +94,7 @@ const CAR_RESUME_MS = 1500; // pause after the visitor scrolls, drags or presses
 const CAR_COPIES = 3; // enough copies that a jump of one set is never visible
 
 export function FeatureCarousel() {
+  const __t = useT();
   const trackRef = useRef<HTMLDivElement>(null);
   const reduced = usePrefersReducedMotion();
   const drag = useRef({ down: false, x: 0, left: 0 });
@@ -212,11 +215,11 @@ export function FeatureCarousel() {
     <section id="carousel" className="mk-section mk-carousel" aria-labelledby="mk-car-title">
       <div className="mk-wrap">
         <Reveal className="mk-center-head">
-          <Eyebrow>{CAROUSEL.eyebrow}</Eyebrow>
+          <Eyebrow><T>{CAROUSEL.eyebrow}</T></Eyebrow>
           <h2 id="mk-car-title" className="mk-h2 mk-h2-center">
-            {CAROUSEL.title}
+            <T>{CAROUSEL.title}</T>
           </h2>
-          <p className="mk-lead">{CAROUSEL.intro}</p>
+          <p className="mk-lead"><T>{CAROUSEL.intro}</T></p>
           <button
             type="button"
             className="mk-btn mk-btn-sm mk-btn-ghost"
@@ -224,7 +227,7 @@ export function FeatureCarousel() {
             aria-pressed={userPaused}
             onClick={() => setUserPaused((v) => !v)}
           >
-            {userPaused ? 'Resume movement' : 'Pause movement'}
+            <T>{userPaused ? 'Resume movement' : 'Pause movement'}</T>
           </button>
         </Reveal>
       </div>
@@ -234,7 +237,7 @@ export function FeatureCarousel() {
         ref={trackRef}
         role="region"
         aria-roledescription="carousel"
-        aria-label="Product features"
+        aria-label={__t("Product features")}
         tabIndex={0}
         onPointerEnter={(e) => {
           if (e.pointerType === 'mouse') hold.current.hover = true;
@@ -272,21 +275,21 @@ export function FeatureCarousel() {
                   <Glyph kind={it.glyph} />
                 </span>
               </div>
-              <span className="mk-car-tag">{it.tag}</span>
-              <h3>{it.title}</h3>
-              <p>{it.body}</p>
+              <span className="mk-car-tag"><T>{it.tag}</T></span>
+              <h3><T>{it.title}</T></h3>
+              <p><T>{it.body}</T></p>
             </article>
           ))
         )}
       </div>
 
       <div className="mk-wrap mk-car-controls">
-        <p className="mk-car-hint">Drifts on its own. Hover to pause, drag or use the arrows to go either way.</p>
+        <p className="mk-car-hint"><T>Drifts on its own. Hover to pause, drag or use the arrows to go either way.</T></p>
         <div className="mk-car-arrows">
-          <button type="button" className="mk-icon-btn" aria-label="Previous features" onClick={() => step(-1)}>
+          <button type="button" className="mk-icon-btn" aria-label={__t("Previous features")} onClick={() => step(-1)}>
             ←
           </button>
-          <button type="button" className="mk-icon-btn" aria-label="Next features" onClick={() => step(1)}>
+          <button type="button" className="mk-icon-btn" aria-label={__t("Next features")} onClick={() => step(1)}>
             →
           </button>
         </div>

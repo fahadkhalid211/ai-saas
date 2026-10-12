@@ -1,5 +1,6 @@
 'use client';
 
+import { T } from '@/lib/i18n/context';
 import React from 'react';
 import { CresceloMark } from '@/components/brand/CresceloMark';
 
@@ -29,7 +30,7 @@ export function CresceloLoader({ size = 'md', label, fullscreen = false, classNa
           style={{ fontFamily: 'system-ui, -apple-system, sans-serif', fontSize: size === 'sm' ? '12px' : '14px', fontWeight: 600, letterSpacing: '0.02em' }}
           className="text-[#08251a] dark:text-slate-300"
         >
-          {label}
+          <T>{label}</T>
         </span>
       )}
     </div>
@@ -42,7 +43,7 @@ export function CresceloLoader({ size = 'md', label, fullscreen = false, classNa
       style={{ position: 'fixed', inset: 0, zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
       className="bg-[#fffeeb] dark:bg-[#1f1e1d]"
     >
-      {content}
+      <T>{content}</T>
     </div>
   );
 }

@@ -1,5 +1,6 @@
 'use client';
 
+import { T, useT } from '@/lib/i18n/context';
 import React, { useState, useEffect } from 'react';
 import {
   Wand2,
@@ -30,6 +31,7 @@ export const CorrectionModal: React.FC<CorrectionModalProps> = ({
   activeAssistantId,
   onSuccess,
 }) => {
+  const __t = useT();
   const [correctionTab, setCorrectionTab] = useState<'replace' | 'override' | 'editor' | 'history'>('replace');
   const [findText, setFindText] = useState('');
   const [replaceText, setReplaceText] = useState('');
@@ -152,14 +154,14 @@ export const CorrectionModal: React.FC<CorrectionModalProps> = ({
                   <div>
                     <div className="flex items-center gap-2">
                       <h2 className="text-sm font-bold text-slate-900 dark:text-white">
-                        Knowledge Correction &amp; Fact Patching
+                        <T>Knowledge Correction &amp; Fact Patching</T>
                       </h2>
                       <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-semibold uppercase bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
                         {correctSource.type}
                       </span>
                     </div>
                     <p className="text-xs text-slate-500 dark:text-slate-400 truncate max-w-md" title={correctSource.title}>
-                      {correctSource.title} · {sourceChunks.length || correctSource.chunkCount} active vector chunks
+                      <T>{correctSource.title}</T> · {sourceChunks.length || correctSource.chunkCount} <T>active vector chunks</T>
                     </p>
                   </div>
                 </div>
@@ -184,7 +186,7 @@ export const CorrectionModal: React.FC<CorrectionModalProps> = ({
                   }`}
                 >
                   <Wand2 className="h-3.5 w-3.5" />
-                  <span>Phonetic &amp; Term Replace</span>
+                  <span><T>Phonetic &amp; Term Replace</T></span>
                 </button>
                 <button
                   type="button"
@@ -196,7 +198,7 @@ export const CorrectionModal: React.FC<CorrectionModalProps> = ({
                   }`}
                 >
                   <ShieldCheck className="h-3.5 w-3.5" />
-                  <span>Authoritative Fact Override</span>
+                  <span><T>Authoritative Fact Override</T></span>
                 </button>
                 <button
                   type="button"
@@ -208,7 +210,7 @@ export const CorrectionModal: React.FC<CorrectionModalProps> = ({
                   }`}
                 >
                   <FileEdit className="h-3.5 w-3.5" />
-                  <span>Direct Text Editor</span>
+                  <span><T>Direct Text Editor</T></span>
                 </button>
                 <button
                   type="button"
@@ -220,7 +222,7 @@ export const CorrectionModal: React.FC<CorrectionModalProps> = ({
                   }`}
                 >
                   <HistoryIcon className="h-3.5 w-3.5" />
-                  <span>History</span>
+                  <span><T>History</T></span>
                   {pastCorrections.length > 0 && (
                     <span className="ml-1 px-1.5 py-0.2 rounded-full text-[10px] font-mono font-bold bg-indigo-100 dark:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300">
                       {pastCorrections.length}
@@ -248,7 +250,7 @@ export const CorrectionModal: React.FC<CorrectionModalProps> = ({
                 {isLoadingCorrectionData ? (
                   <div className="py-12 flex flex-col items-center justify-center text-slate-400 space-y-2">
                     <RefreshCw className="h-6 w-6 animate-spin text-indigo-500" />
-                    <span className="text-xs">Loading chunks and vectors...</span>
+                    <span className="text-xs"><T>Loading chunks and vectors...</T></span>
                   </div>
                 ) : (
                   <>
@@ -257,35 +259,35 @@ export const CorrectionModal: React.FC<CorrectionModalProps> = ({
                       <div className="space-y-4">
                         <div className="bg-indigo-50/60 dark:bg-indigo-950/30 border border-indigo-100 dark:border-indigo-900/40 rounded-xl p-3.5 text-xs text-slate-600 dark:text-slate-300">
                           <p className="font-semibold text-indigo-950 dark:text-indigo-200 mb-1">
-                            Fix Misheard Words &amp; Typos Across Embeddings
+                            <T>Fix Misheard Words &amp; Typos Across Embeddings</T>
                           </p>
                           <p className="text-[11px] leading-relaxed text-slate-500 dark:text-slate-400">
-                            Did speech-to-text transcribe someone&apos;s name or product incorrectly (e.g. &ldquo;Jon Dough&rdquo; instead of &ldquo;John Doe&rdquo;)? Enter the misheard phrase and the correct term. We will update the text across all chunks and automatically recalculate high-dimensional vector embeddings in-place without re-uploading the file.
+                            <T>Did speech-to-text transcribe someone&apos;s name or product incorrectly (e.g. &ldquo;Jon Dough&rdquo; instead of &ldquo;John Doe&rdquo;)? Enter the misheard phrase and the correct term. We will update the text across all chunks and automatically recalculate high-dimensional vector embeddings in-place without re-uploading the file.</T>
                           </p>
                         </div>
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                           <div>
                             <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                              Word / Phrase to Find
+                              <T>Word / Phrase to Find</T>
                             </label>
                             <input
                               type="text"
                               value={findText}
                               onChange={(e) => setFindText(e.target.value)}
-                              placeholder="e.g. Jon Dough or $49"
+                              placeholder={__t("e.g. Jon Dough or $49")}
                               className="w-full px-3 py-2 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
                             />
                           </div>
                           <div>
                             <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                              Corrected Replacement
+                              <T>Corrected Replacement</T>
                             </label>
                             <input
                               type="text"
                               value={replaceText}
                               onChange={(e) => setReplaceText(e.target.value)}
-                              placeholder="e.g. John Doe or $59"
+                              placeholder={__t("e.g. John Doe or $59")}
                               className="w-full px-3 py-2 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
                             />
                           </div>
@@ -316,12 +318,12 @@ export const CorrectionModal: React.FC<CorrectionModalProps> = ({
                               <span className="flex items-center gap-1.5 font-medium">
                                 <Search className="h-3.5 w-3.5" />
                                 {occurrences > 0
-                                  ? `Found ${occurrences} occurrence(s) across ${matchingChunks} chunk(s)`
-                                  : `No occurrences of "${findText.trim()}" found in current chunks`}
+                                  ? __t("Found {occurrences} occurrence(s) across {matchingChunks} chunk(s)", { occurrences: occurrences, matchingChunks: matchingChunks })
+                                  : __t("No occurrences of \"{n1}\" found in current chunks", { n1: findText.trim() })}
                               </span>
                               {occurrences > 0 && replaceText && (
                                 <span className="text-[11px] font-mono text-indigo-600 dark:text-indigo-400">
-                                  Will replace with &ldquo;{replaceText}&rdquo;
+                                  <T>Will replace with &ldquo;</T>{replaceText}&rdquo;
                                 </span>
                               )}
                             </div>
@@ -337,12 +339,12 @@ export const CorrectionModal: React.FC<CorrectionModalProps> = ({
                           {isSavingCorrection ? (
                             <>
                               <RefreshCw className="h-3.5 w-3.5 animate-spin" />
-                              <span>Updating Chunks &amp; Vector Embeddings...</span>
+                              <span><T>Updating Chunks &amp; Vector Embeddings...</T></span>
                             </>
                           ) : (
                             <>
                               <Wand2 className="h-3.5 w-3.5" />
-                              <span>Apply Replacement &amp; Re-Index Vectors</span>
+                              <span><T>Apply Replacement &amp; Re-Index Vectors</T></span>
                             </>
                           )}
                         </button>
@@ -354,22 +356,22 @@ export const CorrectionModal: React.FC<CorrectionModalProps> = ({
                       <div className="space-y-4">
                         <div className="bg-emerald-50/60 dark:bg-emerald-950/30 border border-emerald-100 dark:border-emerald-900/40 rounded-xl p-3.5 text-xs text-slate-600 dark:text-slate-300">
                           <p className="font-semibold text-emerald-950 dark:text-emerald-200 mb-1">
-                            Official Fact &amp; Knowledge Override
+                            <T>Official Fact &amp; Knowledge Override</T>
                           </p>
                           <p className="text-[11px] leading-relaxed text-slate-500 dark:text-slate-400">
-                            Have an authoritative policy change or crucial fact that should supersede any outdated audio/video transcription or legacy document statement? Write it here. An official override banner will be injected into this source&apos;s vector embeddings with maximum retrieval weight.
+                            <T>Have an authoritative policy change or crucial fact that should supersede any outdated audio/video transcription or legacy document statement? Write it here. An official override banner will be injected into this source&apos;s vector embeddings with maximum retrieval weight.</T>
                           </p>
                         </div>
 
                         <div>
                           <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                            Official Correction / Rule
+                            <T>Official Correction / Rule</T>
                           </label>
                           <textarea
                             rows={4}
                             value={overrideNote}
                             onChange={(e) => setOverrideNote(e.target.value)}
-                            placeholder="e.g. As of 2026, the gym closes at 11 PM on weekends instead of 10 PM. Personal training sessions are $65/hr."
+                            placeholder={__t("e.g. As of 2026, the gym closes at 11 PM on weekends instead of 10 PM. Personal training sessions are $65/hr.")}
                             className="w-full px-3 py-2 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
                           />
                         </div>
@@ -383,12 +385,12 @@ export const CorrectionModal: React.FC<CorrectionModalProps> = ({
                           {isSavingCorrection ? (
                             <>
                               <RefreshCw className="h-3.5 w-3.5 animate-spin" />
-                              <span>Embedding Override Rule...</span>
+                              <span><T>Embedding Override Rule...</T></span>
                             </>
                           ) : (
                             <>
                               <ShieldCheck className="h-3.5 w-3.5" />
-                              <span>Inject Authoritative Override &amp; Re-Index</span>
+                              <span><T>Inject Authoritative Override &amp; Re-Index</T></span>
                             </>
                           )}
                         </button>
@@ -400,16 +402,16 @@ export const CorrectionModal: React.FC<CorrectionModalProps> = ({
                       <div className="space-y-4">
                         <div className="bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700 rounded-xl p-3.5 text-xs text-slate-600 dark:text-slate-300">
                           <p className="font-semibold text-slate-900 dark:text-white mb-1">
-                            Full Document Text Editor
+                            <T>Full Document Text Editor</T>
                           </p>
                           <p className="text-[11px] leading-relaxed text-slate-500 dark:text-slate-400">
-                            View or edit the full synthesized text of this knowledge source. Saving will regenerate chunk boundaries and fresh vector embeddings across the entire document.
+                            <T>View or edit the full synthesized text of this knowledge source. Saving will regenerate chunk boundaries and fresh vector embeddings across the entire document.</T>
                           </p>
                         </div>
 
                         <div>
                           <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                            Document Content ({fullSourceText.length} characters)
+                            <T>Document Content (</T>{fullSourceText.length} <T>characters)</T>
                           </label>
                           <textarea
                             rows={10}
@@ -428,12 +430,12 @@ export const CorrectionModal: React.FC<CorrectionModalProps> = ({
                           {isSavingCorrection ? (
                             <>
                               <RefreshCw className="h-3.5 w-3.5 animate-spin" />
-                              <span>Re-chunking &amp; Re-indexing Vectors...</span>
+                              <span><T>Re-chunking &amp; Re-indexing Vectors...</T></span>
                             </>
                           ) : (
                             <>
                               <FileEdit className="h-3.5 w-3.5" />
-                              <span>Save &amp; Re-chunk Entire Document</span>
+                              <span><T>Save &amp; Re-chunk Entire Document</T></span>
                             </>
                           )}
                         </button>
@@ -445,7 +447,7 @@ export const CorrectionModal: React.FC<CorrectionModalProps> = ({
                       <div className="space-y-3">
                         {pastCorrections.length === 0 ? (
                           <div className="py-8 text-center text-slate-400 text-xs">
-                            No corrections or overrides have been applied to this knowledge source yet.
+                            <T>No corrections or overrides have been applied to this knowledge source yet.</T>
                           </div>
                         ) : (
                           <div className="space-y-2">
@@ -456,20 +458,20 @@ export const CorrectionModal: React.FC<CorrectionModalProps> = ({
                               >
                                 <div className="flex items-center justify-between">
                                   <span className="font-semibold uppercase tracking-wider text-[10px] px-2 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800">
-                                    {corr.type === 'replace' ? 'Term Replacement' : corr.type === 'note' ? 'Fact Override' : 'Text Edit'}
+                                    {corr.type === 'replace' ? <T>{'Term Replacement'}</T> : corr.type === 'note' ? <T>{'Fact Override'}</T> : <T>{'Text Edit'}</T>}
                                   </span>
                                   <span className="text-[10px] text-slate-400">
-                                    {corr.appliedAt ? new Date(corr.appliedAt).toLocaleString() : 'Recent'}
+                                    {corr.appliedAt ? new Date(corr.appliedAt).toLocaleString() : <T>{'Recent'}</T>}
                                   </span>
                                 </div>
                                 {corr.findText && (
                                   <div className="text-slate-600 dark:text-slate-300 text-[11px]">
-                                    Replaced <code className="text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 px-1 py-0.5 rounded">{corr.findText}</code> with <code className="text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-1 py-0.5 rounded">{corr.replaceText}</code>
+                                    <T>Replaced</T> <code className="text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 px-1 py-0.5 rounded">{corr.findText}</code> <T>with</T> <code className="text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-1 py-0.5 rounded">{corr.replaceText}</code>
                                   </div>
                                 )}
                                 {corr.note && (
                                   <p className="text-slate-600 dark:text-slate-300 text-[11px] italic">
-                                    &ldquo;{corr.note}&rdquo;
+                                    &ldquo;<T>{corr.note}</T>&rdquo;
                                   </p>
                                 )}
                               </div>
@@ -489,7 +491,7 @@ export const CorrectionModal: React.FC<CorrectionModalProps> = ({
                   onClick={() => onClose()}
                   className="px-4 py-1.5 text-xs font-semibold rounded-lg bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-700 transition cursor-pointer"
                 >
-                  Close
+                  <T>Close</T>
                 </button>
               </div>
             </div>

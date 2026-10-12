@@ -1,5 +1,6 @@
 'use client';
 
+import { T } from '@/lib/i18n/context';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Loader2 } from 'lucide-react';
 import { ERROR_EVENT } from '@/lib/ui/notify';
@@ -93,7 +94,7 @@ export function SaveButton({
         </svg>
       )}
       {state === 'idle' && icon}
-      <span>{state === 'saving' ? savingLabel : state === 'saved' ? savedLabel : state === 'failed' ? failedLabel : idleLabel}</span>
+      <span>{state === 'saving' ? <T>{savingLabel}</T> : state === 'saved' ? <T>{savedLabel}</T> : state === 'failed' ? failedLabel : <T>{idleLabel}</T>}</span>
     </button>
   );
 }

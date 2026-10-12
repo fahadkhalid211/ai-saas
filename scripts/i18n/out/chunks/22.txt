@@ -1,0 +1,150 @@
+3300	Master Certified
+3301	Mobile View (375px)
+3302	Movement screen, metabolic rate analysis, baseline strength benchmarking, and initial targets.
+3303	Next Week
+3304	Over 850+ Verified Reservations
+3305	Personalized 12-Week Transformation Plan
+3306	Precision Haircut & Beard Sculpting
+3307	Precision plaque removal, enamel polishing, fluoride remineralization, and gum health scoring.
+3308	Prestige Editorial
+3309	Private matter review, legal risk exposure assessment, and tailored litigation strategy roadmap.
+3310	Rapid production engineering, custom model integration, API connectors, and automated test suite.
+3311	Realtime Sync
+3312	Reserve
+3313	Reserve VIP Experience
+3314	Reserve Your Slot
+3315	Royal Head & Beard Grooming Ritual
+3316	Same-Week Access
+3317	Schedule Appointment
+3318	Select & Apply
+3319	Select This Design
+3320	Signature Smile Restoration & Cosmetic Plan
+3321	Sprint Implementation & MVP Build
+3322	Studio
+3323	Studio Capabilities & Services
+3324	Testimonials
+3325	Tiered Packages & Pricing
+3326	Today
+3327	Tomorrow
+3328	Top Tier Specialists
+3329	Unlimited bi-weekly maintenance cuts, priority walk-in reservations, and complimentary styling pack.
+3330	Unlimited studio access, 8 monthly private 1-on-1 sessions, recovery suite perks, and app tracker.
+3331	Verified Clients & Discerning Patrons
+3332	View Service Menu
+3333	VIP Retainer & Priority Advisory
+3334	+ Unlock 1 Extra Slot ($100)
+3335	Activating Slot...
+3336	Add 1 permanent landing page slot immediately to your active workspace without changing your plan tier.
+3337	Allocated Website Slots
+3338	Close modal
+3339	Get higher landing page limits, increased AI message quotas, and team seats.
+3340	Instant Extra Slot Add-on
+3341	Landing Page Capacity Reached
+3342	Tier
+3343	To publish an additional landing page with a dedicated AI assistant and custom booking calendar, expand your workspace capacity below.
+3344	Upgrade Workspace Plan
+3345	used (
+3346	View Plans
+3347	Your workspace website allocation is fully utilized.
+3348	+ Create Landing Page with AI
+3349	+ Extra Slot ($100)
+3350	Add 1 extra landing page slot for $100
+3351	Available AI Assistants
+3352	Browse Templates
+3353	Business Website
+3354	Connected Knowledgebase
+3355	Create Your First Landing Page with AI
+3356	Delete this landing page
+3357	Edit Every Text, Image, Services and SEO for this page
+3358	Edit Page
+3359	High-converting business website with instant scheduling and AI customer care.
+3360	Isolated
+3361	Landing Pages
+3362	Launch an AI-designed high-conversion business website with appointment booking and concierge in under 60 seconds.
+3363	Manage Documents
+3364	Manage your hosted websites, live links, service menus, and connect isolated AI knowledge bases.
+3365	Multi-Site Studio
+3366	No bot
+3367	No Landing Pages Designed Yet
+3368	None / Disconnected (No Chatbot)
+3369	Open Live Website in New Tab
+3370	Processing...
+3371	Tier)
+3372	Unbinding routes...
+3373	View
+3374	Workspace Website Quota
+3375	1 Year
+3376	1. Open ChatGPT → Explore GPTs → Create a GPT → Configure → Actions.
+3377	180 Days
+3378	2. Set Authentication Type to
+3379	3. Paste your Crescelo MCP Token as the API Key.
+3380	30 Days
+3381	4. Point schema URL to:
+3382	90 Days (Recommended)
+3383	Active Workspace MCP Tokens
+3384	Add the Crescelo server endpoint
+3385	Allow ChatGPT, Claude, Cursor, and Windsurf to securely interact with your Crescelo knowledge base, booking calendar, and CRM.
+3386	API Key
+3387	Bearer
+3388	Bearer cres_mcp_YOUR_TOKEN
+3389	ChatGPT Actions
+3390	Claude Desktop
+3391	Client Configuration Snippets
+3392	Client Name
+3393	Configure granular permissions for an external AI agent connecting to this workspace.
+3394	Configure Your AI Client
+3395	Connecting External AI Agents via Model Context Protocol (MCP)
+3396	Copied to Clipboard
+3397	Copy this token now! It will never be shown again.
+3398	Copy Token
+3399	Copy URL
+3400	Create a scoped token for your external AI agent. Granular scopes guarantee the agent can only access allowed data.
+3401	Cursor / Windsurf
+3402	Done
+3403	e.g. ChatGPT Agent or Claude Desktop
+3404	Expiration
+3405	FAILED
+3406	Generate an MCP Token
+3407	Generate New MCP Token
+3408	Generate New Token
+3409	Generate Token
+3410	Generating...
+3411	Last Used
+3412	Live MCP Tool Execution Audit Stream
+3413	Model Context Protocol (MCP) Server
+3414	Never
+3415	Never Expire
+3416	No external agent calls recorded yet. Tool calls will appear here in real time.
+3417	No MCP tokens generated yet. Click "Generate New Token" above to connect your first AI agent.
+3418	Official high-speed MCP gateway for ChatGPT, Claude Desktop, Cursor, and autonomous AI agents.
+3419	Permitted Scopes
+3420	Public MCP Endpoint URL
+3421	Ready & Operational
+3422	Real-time audit log of tools called by connected AI agents for compliance and observability.
+3423	Revoke Token
+3424	Scopes
+3425	SUCCESS
+3426	Supports Streamable HTTP & SSE
+3427	to your AI client configuration with Bearer authorization.
+3428	Token Generated Successfully
+3429	Token Prefix
+3430	Tokens authenticate external agents to this workspace. Secret tokens are never stored in plain text.
+3431	Tool
+3432	Verify Real-Time Tools
+3433	with Auth Type:
+3434	Your AI agent now has 13 native tools for booking appointments, searching docs, capturing leads, and answering client questions.
+3435	($0 compute cost) with
+3436	1. Get Free Key at console.groq.com
+3437	14,400 free requests every day
+3438	2. Paste Your Groq API Key
+3439	Connect & Activate
+3440	Connect your free Groq API key to activate your AI assistant.
+3441	Connect Your Groq API Key
+3442	Failed to connect Groq API key.
+3443	Groq API key connected and verified successfully! Your assistant is now active.
+3444	Groq delivers sub-second inference (~500+ tokens/second). Their official developer tier gives you
+3445	No active assistant selected. Please reload the dashboard.
+3446	no credit card required
+3447	Or use OpenAI, Gemini, Claude
+3448	Please enter your Groq API key.
+3449	Starts with gsk_...

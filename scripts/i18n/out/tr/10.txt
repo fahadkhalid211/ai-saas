@@ -1,0 +1,150 @@
+1500¦1. Verifiera bottoken¦1. Vahvista bottitunnus¦1. Verifica il token del bot¦1. Verifica el token del bot
+1501¦10:42¦10.42¦10:42¦10:42
+1502¦10:42 · ✓✓¦10.42 · ✓✓¦10:42 · ✓✓¦10:42 · ✓✓
+1503¦12 kolumner skapas automatiskt¦12 saraketta luodaan automaattisesti¦12 colonne generate automaticamente¦12 columnas generadas automáticamente
+1504¦=
+1505¦2. Registrera webhook¦2. Rekisteröi webhook¦2. Registra il webhook¦2. Registra el webhook
+1506¦Konfigurera Google Apps Script på 30 sekunder¦Google Apps Scriptin käyttöönotto 30 sekunnissa¦Configurazione di Google Apps Script in 30 secondi¦Configuración de Google Apps Script en 30 segundos
+1507¦Snabbguide i 5 steg¦5 vaiheen pikaopas¦Guida rapida in 5 passaggi¦Guía rápida en 5 pasos
+1508¦En ny potentiell kund har precis börjat prata med¦Uusi potentiaalinen asiakas aloitti juuri keskustelun:¦Un nuovo potenziale cliente ha appena iniziato a interagire con¦Un nuevo cliente potencial acaba de interactuar con
+1509¦ovan för att tillämpa dina integrationsändringar på den aktiva boten.¦yllä ottaaksesi integraatiomuutokset käyttöön toimivassa botissa.¦qui sopra per applicare le modifiche all'integrazione al bot attivo.¦arriba para aplicar los cambios de integración al bot activo.
+1510¦=
+1511¦Aktivera och lägg till i arbetsytan:¦Aktivoi ja lisää työtilaan:¦Attiva e aggiungi al workspace:¦Activa y añade al espacio de trabajo:
+1512¦Lägg till ny webhook i arbetsytan¦Lisää uusi webhook työtilaan¦Aggiungi un nuovo webhook al workspace¦Añadir nuevo webhook al espacio de trabajo
+1513¦admin@dindomän.se¦admin@sinunverkkotunnus.fi¦admin@iltuodominio.it¦admin@tudominio.com
+1514¦Byråns länkadress (backlink)¦Toimiston paluulinkin osoite¦URL di backlink dell'agenzia¦URL de enlace de retorno de la agencia
+1515¦Byrå – eget varumärke (white-label)¦Toimisto – oma brändi (white-label)¦Agenzia white-label¦Agencia con marca blanca (white-label)
+1516¦Byråns white-label och eget varumärke¦Toimiston white-label ja oma brändäys¦White-label dell'agenzia e branding personalizzato¦Marca blanca de la agencia e imagen de marca propia
+1517¦Ekosystem för AI-agenter¦Tekoälyagenttien ekosysteemi¦Ecosistema di agenti IA¦Ecosistema de agentes de IA
+1518¦AI-assistent¦Tekoälyavustaja¦Assistente IA¦Asistente de IA
+1519¦Aviseringar och samarbete¦Ilmoitukset ja yhteistyö¦Avvisi e collaborazione¦Alertas y colaboración
+1520¦Tillåt¦Salli¦Consenti¦Permitir
+1521¦och klicka på¦ja napsauta¦e fai clic su¦y haz clic en
+1522¦och välj¦ja valitse¦e seleziona¦y selecciona
+1523¦och logga in med ditt Meta-konto.¦ja kirjaudu Meta-tililläsi.¦e accedi con il tuo account Meta.¦e inicia sesión con tu cuenta de Meta.
+1524¦och den tillfälliga/system-token i fliken Inställningar.¦ja tilapäinen/järjestelmätunnus Asetukset-välilehdelle.¦e il token temporaneo/di sistema nella scheda Impostazioni.¦y el token temporal/de sistema en la pestaña Ajustes.
+1525¦Vem som helst¦Kuka tahansa¦Chiunque¦Cualquiera
+1526¦API-inställning¦API-määritys¦Configurazione API¦Configuración de la API
+1527¦apikey eller user@domain.com¦apikey tai user@domain.com¦apikey o user@domain.com¦apikey o user@domain.com
+1528¦Appspecifikt lösenord eller API-nyckel¦Sovelluskohtainen salasana tai API-avain¦Password per app o chiave API¦Contraseña de aplicación o clave API
+1529¦Lägg till formaterade kundrader med 12 kolumner direkt i valfritt Google Kalkylark.¦Lisää muotoillut 12-sarakkeiset asiakasrivit suoraan mihin tahansa Google Sheets -taulukkoon.¦Aggiungi righe cliente formattate a 12 colonne direttamente a qualsiasi Foglio Google.¦Añade filas de cliente con formato de 12 columnas directamente a cualquier hoja de Google.
+1530¦Lägg till testrad¦Lisää testirivi¦Aggiungi riga di prova¦Añadir fila de prueba
+1531¦assistent@dindomän.se¦avustaja@sinunverkkotunnus.fi¦assistente@iltuodominio.it¦asistente@tudominio.com
+1532¦Lägger automatiskt till rader med 12 kolumner för varje lead och bokning i ditt kalkylblad.¦Lisää automaattisesti 12-sarakkeiset rivit jokaisesta liidistä ja varauksesta taulukkoosi.¦Aggiunge automaticamente righe a 12 colonne per ogni lead e prenotazione nel tuo foglio di calcolo.¦Añade automáticamente filas de 12 columnas por cada lead y reserva en tu hoja de cálculo.
+1533¦Automation och CRM¦Automaatio ja CRM¦Automazione e CRM¦Automatización y CRM
+1534¦Autonom kundassistent dygnet runt som svarar på frågor och bokar i Telegram.¦Itsenäinen asiakasavustaja ympäri vuorokauden, joka vastaa kysymyksiin ja varaa aikoja Telegramissa.¦Assistente clienti autonomo 24 ore su 24 che risponde alle domande e prenota su Telegram.¦Asistente de clientes autónomo 24 horas que responde preguntas y reserva citas en Telegram.
+1535¦Autonoma meddelanden¦Itsenäinen viestintä¦Messaggistica autonoma¦Mensajería autónoma
+1536¦BotFather svarar med en¦BotFather vastaa:¦BotFather risponderà con un¦BotFather responderá con un
+1537¦Egen avsändare¦Oma lähettäjä¦Mittente personalizzato¦Remitente con tu marca
+1538¦Samtalsstyrning / telefonnummer¦Puheluiden ohjaus / puhelinnumerot¦Controllo chiamate / numeri di telefono¦Control de llamadas / números de teléfono
+1539¦Callback-URL:¦Callback-URL:¦URL di callback:¦URL de callback:
+1540¦Kanalinställningar sparade¦Kanava-asetukset tallennettu¦Impostazioni del canale salvate¦Ajustes del canal guardados
+1541¦Kanaler och integrationer¦Kanavat ja integraatiot¦Canali e integrazioni¦Canales e integraciones
+1542¦ChatGPT och Claude¦ChatGPT ja Claude¦ChatGPT e Claude¦ChatGPT y Claude
+1543¦ChatGPT och Claude (MCP)¦ChatGPT ja Claude (MCP)¦ChatGPT e Claude (MCP)¦ChatGPT y Claude (MCP)
+1544¦Klicka på "Incoming Webhooks":¦Napsauta "Incoming Webhooks":¦Fai clic su "Incoming Webhooks":¦Haz clic en "Incoming Webhooks":
+1545¦Klicka på kugghjulet bredvid¦Napsauta rataskuvaketta kohdan vieressä¦Fai clic sull'icona a ingranaggio accanto a¦Haz clic en el icono de engranaje junto a
+1546¦Kundens varumärke¦Asiakkaan brändäys¦Branding del cliente¦Marca del cliente
+1547¦Konfiguration > Webhook¦Määritykset > Webhook¦Configurazione > Webhook¦Configuración > Webhook
+1548¦Ställ in webhook-URL:en för röst på:¦Aseta äänen webhook-URL:ksi:¦Imposta l'URL del webhook vocale su:¦Configura la URL del webhook de voz en:
+1549¦Bekräftad tid kl. 14.30¦Vahvistettu aika klo 14.30¦Slot confermato alle 14:30¦Hueco confirmado a las 14:30
+1550¦Koppla ChatGPT, Claude, Cursor och autonoma agenter till din kunskapsbas, kalender och CRM.¦Yhdistä ChatGPT, Claude, Cursor ja itsenäiset agentit tietopohjaasi, kalenteriisi ja CRM:ääsi.¦Collega ChatGPT, Claude, Cursor e agenti autonomi alla tua base di conoscenza, al calendario e al CRM.¦Conecta ChatGPT, Claude, Cursor y agentes autónomos a tu base de conocimiento, tu calendario y tu CRM.
+1551¦Koppla officiella Meta Cloud API-uppgifter för att driva kundsamtal i WhatsApp.¦Yhdistä viralliset Meta Cloud API -tunnukset WhatsApp-asiakaskeskustelujen käyttöön.¦Collega le credenziali ufficiali di Meta Cloud API per gestire le conversazioni coi clienti su WhatsApp.¦Conecta las credenciales oficiales de la API en la nube de Meta para impulsar las conversaciones con clientes en WhatsApp.
+1552¦Koppla officiella Meta Cloud API-uppgifter för att driva kundsamtal i WhatsApp direkt från ditt registrerade företagsnummer.¦Yhdistä viralliset Meta Cloud API -tunnukset WhatsApp-asiakaskeskustelujen käyttöön suoraan rekisteröidystä yritysnumerostasi.¦Collega le credenziali ufficiali di Meta Cloud API per gestire le conversazioni coi clienti su WhatsApp direttamente dal numero aziendale registrato.¦Conecta las credenciales oficiales de la API en la nube de Meta para impulsar las conversaciones con clientes en WhatsApp directamente desde el número registrado de tu empresa.
+1553¦Koppla din Telegram-bottoken för att ge automatiska svar direkt i Telegram-chattar.¦Yhdistä Telegram-bottitunnuksesi antaaksesi automaattisia vastauksia suoraan Telegram-keskusteluissa.¦Collega il token del tuo bot Telegram per fornire risposte automatiche direttamente nelle chat Telegram.¦Conecta el token de tu bot de Telegram para ofrecer respuestas automáticas directamente en los chats de Telegram.
+1554¦Ansluten¦Yhdistetty¦Collegato¦Conectado
+1555¦Ansluten och aktiv¦Yhdistetty ja aktiivinen¦Collegato e attivo¦Conectado y activo
+1556¦Ansluter och skickar...¦Yhdistetään ja lähetetään...¦Connessione e invio in corso...¦Conectando y enviando...
+1557¦Koppla till Zapier, Make.com eller egna bakändar¦Yhdistäminen Zapieriin, Make.comiin tai omiin taustajärjestelmiin¦Collegamento a Zapier, Make.com o backend personalizzati¦Conexión con Zapier, Make.com o backends propios
+1558¦Kopierat¦Kopioitu¦Copiato¦Copiado
+1559¦Kopierat till Urklipp!¦Kopioitu leikepöydälle!¦Copiato negli appunti!¦¡Copiado al portapapeles!
+1560¦Kopiera och klistra in:¦Kopioi ja liitä:¦Copia e incolla:¦Copia y pega:
+1561¦Kopiera hela skriptet¦Kopioi koko skripti¦Copia lo script completo¦Copiar el script completo
+1562¦Kopiera den token, byt till¦Kopioi tunnus, vaihda kohtaan¦Copia quel token, passa a¦Copia ese token, cambia a
+1563¦Kopiera den skapade webhook-URL:en (format:¦Kopioi luotu webhook-URL (muoto:¦Copia l'URL del webhook generato (formato:¦Copia la URL del webhook generada (formato:
+1564¦Kopiera webhook-URL:en från Zapier/Make och klistra in den i¦Kopioi Zapierin/Maken antama webhook-URL ja liitä se kohtaan¦Copia l'URL del webhook fornito da Zapier/Make e incollalo in¦Copia la URL del webhook que proporcionan Zapier/Make y pégala en
+1565¦Kopiera och klistra in Google Apps Script-koden:¦Kopioi ja liitä Google Apps Script -koodi:¦Copia e incolla il codice Google Apps Script:¦Copia y pega el código de Google Apps Script:
+1566¦Skapa ett nytt kalkylblad på¦Luo uusi taulukko osoitteessa¦Crea un nuovo foglio di calcolo su¦Crea una hoja de cálculo nueva en
+1567¦Skapa en webhook¦Luo webhook¦Crea un webhook¦Crear un webhook
+1568¦Skapa ny app¦Luo uusi sovellus¦Crea una nuova app¦Crear nueva aplicación
+1569¦Crescelo AI¦Crescelo AI¦Crescelo AI¦Crescelo AI
+1570¦Crescelo Concierge¦Crescelo Concierge¦Crescelo Concierge¦Crescelo Concierge
+1571¦Crescelo ansluter till teleoperatörer i grossistledet (Telnyx / Twilio) via TeXML och ljudströmmar över WebSocket. Faster-whisper transkriberar den som ringer, din assistent formulerar svar utifrån kunskapsbasen och Piper syntetiserar neuralt tal på under 400 ms.¦Crescelo yhdistyy tukkutelepalveluntarjoajiin (Telnyx / Twilio) TeXML:n ja WebSocket-äänivirtojen kautta. Faster-whisper litteroi soittajan puheen, avustajasi muotoilee vastaukset tietopohjan perusteella ja Piper syntetisoi neuraalisen puheen alle 400 ms:ssa.¦Crescelo si collega a provider di telefonia all'ingrosso (Telnyx / Twilio) tramite TeXML e flussi audio WebSocket. Faster-whisper trascrive l'audio di chi chiama, il tuo assistente formula le risposte dalla base di conoscenza e Piper sintetizza il parlato neurale in meno di 400 ms.¦Crescelo se conecta a proveedores de telefonía mayoristas (Telnyx / Twilio) mediante TeXML y flujos de audio WebSocket. Faster-whisper transcribe el audio de quien llama, tu asistente elabora las respuestas desde la base de conocimiento y Piper sintetiza voz neuronal en menos de 400 ms.
+1572¦Egen vattenstämpeltext i sidfoten¦Mukautettu alatunnisteen vesileimateksti¦Testo personalizzato della filigrana nel piè di pagina¦Texto personalizado de la marca de agua del pie de página
+1573¦Inställningar för egen utgående SMTP-server¦Oman lähtevän SMTP-palvelimen asetukset¦Impostazioni del server SMTP in uscita personalizzato¦Ajustes del servidor SMTP saliente propio
+1574¦Egen SMTP¦Oma SMTP¦SMTP personalizzato¦SMTP propio
+1575¦Egen webhook¦Oma webhook¦Webhook personalizzato¦Webhook personalizado
+1576¦Kundens namn¦Asiakkaan nimi¦Nome del cliente¦Nombre del cliente
+1577¦Standardvarumärke¦Oletusbrändäys¦Branding predefinito¦Marca predeterminada
+1578¦Ta bort eventuell startkod och klistra in hela skriptet nedan.¦Poista kaikki valmiiksi oleva koodi ja liitä alla oleva koko skripti.¦Elimina il codice iniziale e incolla lo script completo qui sotto.¦Borra el código inicial y pega el script completo de abajo.
+1579¦Leveranstestet misslyckades¦Toimitustesti epäonnistui¦Test di consegna non riuscito¦La prueba de entrega ha fallado
+1580¦Leverans verifierad¦Toimitus vahvistettu¦Consegna verificata¦Entrega verificada
+1581¦Publicera¦Julkaise¦Pubblica¦Implementar
+1582¦Publicera > Ny publicering¦Julkaise > Uusi julkaisu¦Deploy > Nuova distribuzione¦Implementar > Nueva implementación
+1583¦Publicera det här lättviktiga Google Apps Script direkt i ditt kalkylblad. Det hanterar samtidighet, skapar automatiskt formaterade rubriker i nya blad och lägger till inkommande kundrader.¦Julkaise tämä kevyt Google Apps Script suoraan taulukkoosi. Se hoitaa samanaikaisuuden, luo automaattisesti muotoillut otsikot uusille välilehdille ja lisää saapuvat asiakasrivit.¦Distribuisci questo leggero Google Apps Script direttamente nel tuo foglio di calcolo. Gestisce la concorrenza, inizializza automaticamente le intestazioni formattate nei nuovi fogli e aggiunge le righe cliente in arrivo.¦Implementa este ligero Google Apps Script directamente en tu hoja de cálculo. Gestiona la concurrencia, inicializa automáticamente los encabezados con formato en las hojas nuevas y añade las filas de clientes entrantes.
+1584¦Ring numret från din mobiltelefon för att testa de levande samtalssvaren!¦Soita numeroon matkapuhelimellasi testataksesi keskusteluvastaukset livenä!¦Chiama il numero dal tuo cellulare per provare le risposte conversazionali dal vivo!¦¡Llama al número desde tu móvil para probar las respuestas conversacionales en vivo!
+1585¦Inaktiverad¦Pois käytöstä¦Disattivato¦Desactivado
+1586¦Skicka JSON-data signerad med HMAC-SHA256 till Zapier, Make, n8n eller ditt CRM.¦Lähetä HMAC-SHA256:lla allekirjoitettu JSON-sisältö Zapieriin, Makeen, n8n:ään tai CRM-järjestelmääsi.¦Invia payload JSON firmati con HMAC-SHA256 a Zapier, Make, n8n o al tuo CRM.¦Envía cargas JSON firmadas con HMAC-SHA256 a Zapier, Make, n8n o a tu CRM.
+1587¦Skickade händelser¦Lähetetyt tapahtumat¦Eventi inviati¦Eventos enviados
+1588¦Oroa dig inte för "OAuth Scopes" eller "Bot Tokens"¦Älä huoli "OAuth Scopes"- tai "Bot Tokens" -asetuksista¦Non preoccuparti di "OAuth Scopes" o "Bot Tokens"¦No te preocupes por los "OAuth Scopes" ni los "Bot Tokens"
+1589¦=
+1590¦Redigera¦Muokkaa¦Modifica¦Editar
+1591¦=
+1592¦E-postadress:¦Sähköpostiosoite:¦Indirizzo e-mail:¦Dirección de correo:
+1593¦E-postleverans¦Sähköpostin toimitus¦Consegna delle e-mail¦Entrega de correo
+1594¦Ange ett appnamn (t.ex.¦Anna sovelluksen nimi (esim.¦Inserisci il nome dell'app (ad es.¦Introduce un nombre de aplicación (p. ej.
+1595¦Ange byråns namn i¦Anna toimistosi nimi kohtaan¦Inserisci il nome della tua agenzia in¦Escribe el nombre de tu agencia en
+1596¦Ange din Slack-URL för inkommande webhooks för att skicka aviseringar till teamets kanal.¦Anna Slackin Incoming Webhook -URL lähettääksesi ilmoitukset tiimisi kanavalle.¦Inserisci l'URL del webhook in entrata di Slack per inviare gli avvisi al canale del tuo team.¦Introduce la URL del webhook entrante de Slack para enviar alertas al canal de tu equipo.
+1597¦Ange din webbplats-URL i¦Anna verkkosivustosi URL-osoite kohtaan¦Inserisci l'URL del tuo sito in¦Introduce la URL de tu sitio web en
+1598¦Företagskonsultation¦Yrityskonsultaatio¦Consulenza enterprise¦Consulta empresarial
+1599¦Händelse¦Tapahtuma¦Evento¦Evento
+1600¦Händelseström¦Tapahtumavirta¦Flusso di eventi¦Flujo de eventos
+1601¦-händelsen. Din assistent är nu redo att ta emot WhatsApp-meddelanden!¦-tapahtuma. Avustajasi on nyt valmis vastaanottamaan WhatsApp-viestejä!¦. Il tuo assistente è ora pronto a ricevere messaggi WhatsApp!¦. ¡Tu asistente ya está listo para recibir mensajes de WhatsApp!
+1602¦Kör som:¦Suorita käyttäjänä:¦Esegui come:¦Ejecutar como:
+1603¦Tillägg > Apps Script¦Laajennukset > Apps Script¦Estensioni > Apps Script¦Extensiones > Apps Script
+1604¦Det gick inte att registrera webhooken¦Webhookin rekisteröinti epäonnistui¦Registrazione del webhook non riuscita¦No se pudo registrar el webhook
+1605¦Det gick inte att skicka testkortet till Slack¦Testikortin lähetys Slackiin epäonnistui¦Invio della scheda di prova a Slack non riuscito¦No se pudo enviar la tarjeta de prueba a Slack
+1606¦Det gick inte att skicka testraden till Google Kalkylark¦Testirivin lähetys Google Sheetsiin epäonnistui¦Invio della riga di prova a Fogli Google non riuscito¦No se pudo enviar la fila de prueba a Hojas de cálculo de Google
+1607¦Det gick inte att testa webhookens ping¦Webhookin ping-testi epäonnistui¦Test del ping del webhook non riuscito¦No se pudo probar el ping del webhook
+1608¦Funktioner¦Ominaisuudet¦Funzionalità¦Funciones
+1609¦Följ anvisningarna och välj ett visningsnamn (t.ex.¦Seuraa ohjeita ja valitse näyttönimi (esim.¦Segui le indicazioni e scegli un nome visualizzato (ad es.¦Sigue las indicaciones y elige un nombre visible (p. ej.
+1610¦Från början¦Tyhjästä¦Da zero¦Desde cero
+1611¦Gmail / Google Workspace¦Gmail / Google Workspace¦Gmail / Google Workspace¦Gmail / Google Workspace
+1612¦Webbadress till Google Apps Script-webbappen¦Google Apps Script -verkkosovelluksen URL¦URL della Web App di Google Apps Script¦URL de la aplicación web de Google Apps Script
+1613¦Synkroniseringen till Google Kalkylark misslyckades¦Google Sheets -synkronointi epäonnistui¦Sincronizzazione con Fogli Google non riuscita¦Falló la sincronización con Hojas de cálculo de Google
+1614¦Testraden till Google Kalkylark misslyckades¦Google Sheets -testirivi epäonnistui¦Riga di prova su Fogli Google non riuscita¦Falló la fila de prueba en Hojas de cálculo de Google
+1615¦Konfiguration av Google Kalkylark-webbapp¦Google Sheets -verkkosovelluksen määritys¦Configurazione della Web App di Fogli Google¦Configuración de la aplicación web de Hojas de cálculo de Google
+1616¦Hej! Vilka är era konsultationstider och priser?¦Hei! Mitkä ovat konsultaatioaikanne ja hintanne?¦Salve! Quali sono i vostri orari e le tariffe delle consulenze?¦¡Hola! ¿Cuáles son sus horarios y tarifas de consulta?
+1617¦Värd:¦Palvelin:¦Host:¦Host:
+1618¦Så fungerar Crescelos inkommande AI-röst¦Näin Crescelon saapuva tekoälyääni toimii¦Come funziona la voce IA in entrata di Crescelo¦Cómo funciona la voz de IA entrante de Crescelo
+1619¦Så fungerar inkommande webhooks i Slack¦Näin Slackin Incoming Webhookit toimivat¦Come funzionano i webhook in entrata di Slack¦Cómo funcionan los webhooks entrantes de Slack
+1620¦Så skapar du en Telegram-bot på 2 minuter¦Näin luot Telegram-botin 2 minuutissa¦Come creare un bot Telegram in 2 minuti¦Cómo crear un bot de Telegram en 2 minutos
+1621¦HTTP API-token¦HTTP API -tunnus¦Token API HTTP¦Token de la API HTTP
+1622¦Om du besöker Slacks¦Jos käyt Slackin¦Se visiti la pagina di Slack¦Si visitas el de Slack
+1623¦I¦Kohdassa¦In¦En
+1624¦i Crescelo för att testa utlösaren och fastställa dataschemat!¦Crescelossa testataksesi laukaisinta ja luodaksesi tietoskeeman!¦in Crescelo per testare il trigger e stabilire lo schema dei dati!¦en Crescelo para probar el disparador y establecer el esquema de datos.
+1625¦I sidomenyn under¦Vasemmassa sivupalkissa kohdassa¦Nella barra laterale sinistra, sotto¦En la barra lateral izquierda, bajo
+1626¦Klicka i den övre menyn på¦Napsauta ylävalikossa¦Nel menu in alto, fai clic su¦En el menú superior, haz clic en
+1627¦i det övre högra hörnet.¦oikeassa yläkulmassa.¦nell'angolo in alto a destra.¦en la esquina superior derecha.
+1628¦Leta upp följande i din appdashboard:¦Etsi sovelluksesi hallintapaneelista:¦Nella dashboard della tua app, trova¦En el panel de tu aplicación, busca
+1629¦Gå till följande i din Telnyx Mission Control Portal / Twilio Console:¦Siirry Telnyx Mission Control Portalissa / Twilio Consolessa kohtaan¦Nel Telnyx Mission Control Portal / Twilio Console, vai a¦En tu Telnyx Mission Control Portal / Twilio Console, ve a
+1630¦Inkommande webhooks¦Saapuvat webhookit¦Webhook in entrata¦Webhooks entrantes
+1631¦Inkommande webhooks kräver ingen manuell konfiguration av behörigheter. När du klickar på¦Saapuvat webhookit eivät vaadi manuaalista käyttöoikeuksien määritystä. Kun napsautat¦I webhook in entrata non richiedono alcuna configurazione manuale degli scope. Quando fai clic su¦Los webhooks entrantes no requieren configurar manualmente ningún ámbito. Cuando haces clic en
+1632¦Ogiltig bottoken¦Virheellinen bottitunnus¦Token del bot non valido¦Token de bot no válido
+1633¦=
+1634¦=
+1635¦Leadets namn:¦Liidin nimi:¦Nome del lead:¦Nombre del lead:
+1636¦Automatisk livesynk¦Automaattinen live-synkronointi¦Sincronizzazione automatica dal vivo¦Sincronización automática en vivo
+1637¦Live-diagnostik för SMTP-avsändare¦SMTP-lähettäjän live-diagnostiikka¦Diagnostica dal vivo del mittente SMTP¦Diagnóstico en vivo del remitente SMTP
+1638¦Förhandsvisning av widgetens sidfot:¦Widgetin alatunnisteen esikatselu:¦Anteprima del piè di pagina del widget:¦Vista previa del pie del widget:
+1639¦=
+1640¦Jag¦Minä¦Io¦Yo
+1641¦Meta Business¦Meta Business¦Meta Business¦Meta Business
+1642¦Meta-webhookuppgifter att klistra in i Meta:¦Meta-webhook-tunnukset liitettäväksi Metaan:¦Credenziali webhook Meta da incollare in Meta:¦Credenciales de webhook de Meta para pegar en Meta:
+1643¦Meta WhatsApp Business Cloud API¦Meta WhatsApp Business Cloud API¦API Meta WhatsApp Business Cloud¦API en la nube de Meta WhatsApp Business
+1644¦Meta WhatsApp Business-installation¦Meta WhatsApp Business -käyttöönotto¦Configurazione di Meta WhatsApp Business¦Configuración de Meta WhatsApp Business
+1645¦=
+1646¦-modulen och klicka på¦-moduuli ja napsauta¦e fai clic su¦y haz clic en
+1647¦ms svarstid¦ms viive¦ms di latenza¦ms de latencia
+1648¦Mina appar > Skapa app¦Omat sovellukset > Luo sovellus¦Le mie app > Crea app¦Mis aplicaciones > Crear aplicación
+1649¦Ge din app ett namn:¦Nimeä sovelluksesi:¦Dai un nome alla tua app:¦Ponle nombre a tu aplicación:

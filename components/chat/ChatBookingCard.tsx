@@ -1,5 +1,6 @@
 'use client';
 
+import { T, useT } from '@/lib/i18n/context';
 import React, { useState } from 'react';
 import { Calendar, Clock, Check, RefreshCw, ExternalLink } from 'lucide-react';
 import { generateGoogleCalendarUrl } from '@/lib/calendar/ical';
@@ -23,6 +24,7 @@ export function ChatBookingCard({
   conversationId,
   source = 'chat',
 }: ChatBookingCardProps) {
+  const __t = useT();
   const tomorrow = new Date(Date.now() + 86400000).toISOString().slice(0, 10);
   const [date, setDate] = useState(tomorrow);
   const [timeSlot, setTimeSlot] = useState('10:00 AM - 10:30 AM');
@@ -121,11 +123,11 @@ export function ChatBookingCard({
           <div className="p-1 rounded-full bg-emerald-100 dark:bg-emerald-900/60 border border-emerald-300 dark:border-emerald-700">
             <Check className="h-4 w-4" />
           </div>
-          <span>Appointment Confirmed</span>
+          <span><T>Appointment Confirmed</T></span>
         </div>
         <p className="text-slate-700 dark:text-slate-300">
-          Thank you, <strong>{successData.name || name}</strong>! We have reserved your appointment for{' '}
-          <strong>{successData.date || date}</strong> at <strong>{successData.timeSlot || timeSlot}</strong>.
+          <T>Thank you,</T> <strong>{successData.name || name}</strong><T>! We have reserved your appointment for</T>{' '}
+          <strong>{successData.date || date}</strong> <T>at</T> <strong>{successData.timeSlot || timeSlot}</strong>.
         </p>
         <div className="flex items-center gap-2 pt-1">
           <a
@@ -135,7 +137,7 @@ export function ChatBookingCard({
             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-semibold transition"
           >
             <ExternalLink className="h-3.5 w-3.5" />
-            <span>Add to Google Calendar</span>
+            <span><T>Add to Google Calendar</T></span>
           </a>
         </div>
       </div>
@@ -146,12 +148,12 @@ export function ChatBookingCard({
     <div className="mt-3 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 shadow-sm text-xs space-y-3.5">
       <div className="flex items-center gap-2 font-bold text-slate-900 dark:text-white pb-2 border-b border-slate-100 dark:border-slate-800">
         <Calendar className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-        <span>Schedule an Appointment</span>
+        <span><T>Schedule an Appointment</T></span>
       </div>
 
       {error && (
         <div className="p-2.5 rounded-lg bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-900 text-rose-700 dark:text-rose-300 text-[11px]">
-          {error}
+          <T>{error}</T>
         </div>
       )}
 
@@ -159,7 +161,7 @@ export function ChatBookingCard({
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
           <div>
             <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-1">
-              Select Date *
+              <T>Select Date *</T>
             </label>
             <input
               type="date"
@@ -173,7 +175,7 @@ export function ChatBookingCard({
 
           <div>
             <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-1">
-              Time Slot *
+              <T>Time Slot *</T>
             </label>
             <select
               value={timeSlot}
@@ -192,11 +194,11 @@ export function ChatBookingCard({
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
           <div>
             <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-1">
-              Full Name *
+              <T>Full Name *</T>
             </label>
             <input
               type="text"
-              placeholder="Your Name"
+              placeholder={__t("Your Name")}
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
@@ -206,11 +208,11 @@ export function ChatBookingCard({
 
           <div>
             <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-1">
-              Email Address *
+              <T>Email Address *</T>
             </label>
             <input
               type="email"
-              placeholder="name@company.com"
+              placeholder={__t("name@company.com")}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -222,7 +224,7 @@ export function ChatBookingCard({
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
           <div>
             <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-1">
-              Phone Number (Optional)
+              <T>Phone Number (Optional)</T>
             </label>
             <input
               type="tel"
@@ -235,11 +237,11 @@ export function ChatBookingCard({
 
           <div>
             <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-1">
-              Meeting Notes (Optional)
+              <T>Meeting Notes (Optional)</T>
             </label>
             <input
               type="text"
-              placeholder="Purpose of appointment..."
+              placeholder={__t("Purpose of appointment...")}
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white outline-none focus:border-blue-500 text-xs"
@@ -257,12 +259,12 @@ export function ChatBookingCard({
             {isSubmitting ? (
               <>
                 <RefreshCw className="h-3.5 w-3.5 animate-spin" />
-                <span>Confirming Appointment...</span>
+                <span><T>Confirming Appointment...</T></span>
               </>
             ) : (
               <>
                 <Clock className="h-3.5 w-3.5" />
-                <span>Confirm Appointment</span>
+                <span><T>Confirm Appointment</T></span>
               </>
             )}
           </button>

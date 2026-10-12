@@ -1,0 +1,150 @@
+600	Free AI Engine for Your Assistant | Crescelo
+601	Free engine
+602	Google Gemini Flash Free Tier
+603	Groq Cloud Free Tier (Sub-Second Llama 3.3 70B)
+604	How the
+605	How the Cascade Routing Works
+606	How to Enable the Zero-Cost Engine
+607	If both cloud free tiers are unreachable, Crescelo attempts to dispatch to any running local Ollama instance on your machine.
+608	If Groq hits a momentary tokens-per-minute ceiling, requests seamlessly cascade to Google Gemini Flash with massive 1M context.
+609	Instant (0 Seconds)
+610	is selected (it is the default for all new accounts).
+611	Learn how Crescelo’s built-in Zero-Cost Inference Engine cascades requests across Groq Free Tier, Google Gemini Flash, and local Ollama for $0 compute cost.
+612	Local Ollama Server
+613	No Credit Card Required
+614	Open your
+615	Priority 1
+616	Priority 2 (Failover)
+617	Priority 3 (Local Fallback)
+618	Processes the request in ~300ms using Groq’s ultrafast LPU hardware. Provides up to 14,400 free requests per day.
+619	Setup Time
+620	Token Cost
+621	When a customer asks a question, Crescelo’s orchestrator attempts inference through a priority tier chain:
+622	You don't need an OpenAI credit balance or paid subscription to launch a production-grade AI concierge. Crescelo includes an intelligent multi-provider cascade that runs on free tiers forever.
+623	Zero-Cost Engine
+624	Zero-Cost Free Engine
+625	(R1) for intricate multi-step problem solving.
+626	(V3) for real-time customer conversations or
+627	$0.14 / 1M tokens
+628	3 Minutes
+629	95% Cheaper than GPT-4o • High-Precision Reasoning
+630	A $5 deposit gives you roughly 35,000,000 tokens — enough for months of intense business traffic.
+631	and name it
+632	API keys
+633	Complete step-by-step guide to create a DeepSeek Platform account, generate an API key, and run DeepSeek-V3 and R1 reasoning on Crescelo at raw wholesale rates.
+634	Connect DeepSeek to Crescelo: API Key Guide
+635	Copy the generated key (starts with
+636	Create an Account on DeepSeek Open Platform
+637	Create API key
+638	DeepSeek
+639	DeepSeek operates on a prepaid usage model:
+640	DeepSeek supports international payment cards, PayPal, and WeChat/Alipay.
+641	DeepSeek-V3 and DeepSeek-R1 deliver frontier-class intelligence at a fraction of standard LLM pricing ($0.14 per 1M input tokens). Here is how to set up your API connection in minutes.
+642	Generate and Copy Your API Key
+643	Go to
+644	in the left sidebar menu.
+645	in the left sidebar.
+646	Open DeepSeek’s official developer platform:
+647	Open platform.deepseek.com
+648	Paste your API key into the field.
+649	Register using your email or phone number.
+650	Supported Models
+651	Top up
+652	Top-up Prepaid Balance
+653	Wholesale Rate
+654	with no third-party middleware fees.
+655	Your queries route directly to
+656	(or choose an existing Google Cloud project if you have one).
+657	(recommended) or
+658	100% Free Tier Available • Massive 1M+ Context Window
+659	2 Minutes
+660	button at the top.
+661	Click “Create API key”
+662	Click the blue
+663	Connect Google Gemini to Crescelo: API Key Guide
+664	Copy
+665	Cost
+666	Create API key in new project
+667	Free Tier (15 RPM)
+668	Gemini models support over 1,000,000 tokens of context, meaning your assistant can reference hundreds of pages of complex manuals without truncation.
+669	gemini-2.5-flash / 1.5-flash
+670	Generating a key takes just one click:
+671	Google AI Studio is Google’s dedicated developer playground for obtaining Gemini API keys:
+672	Google AI Studio offers one of the most generous free tiers in the industry with Gemini Flash. Here is how to get your free API key in under 2 minutes.
+673	Google will generate a key starting with
+674	in seconds.
+675	key into the API key box.
+676	Massive Context Advantage:
+677	Open aistudio.google.com/app/apikey
+678	Open Google AI Studio
+679	Save the key in your Crescelo assistant:
+680	Set the model to
+681	Sign in with any standard Google Account or Google Workspace account.
+682	Step-by-step guide to get a free Google AI Studio API key and connect Gemini 1.5 Flash or Gemini 2.0 Flash to Crescelo with massive context windows.
+683	, navigate to
+684	~550 tokens/second
+685	90 Seconds
+686	Add the key in your Crescelo engine settings:
+687	Built-in Rate Limit Protection:
+688	Click “Create API Key”
+689	Click the orange
+690	Connect Groq Cloud to Crescelo: Free API Key Guide
+691	Create API Key
+692	Crescelo automatically monitors Groq TPM (Tokens Per Minute) quotas and cascades safely without interruption.
+693	Default model is automatically set to high-accuracy Llama 3.3.
+694	Enter a name like
+695	Free Tier (14,400 req/day)
+696	Generate your Groq secret key:
+697	Groq Cloud
+698	Groq’s Language Processing Unit (LPU) hardware streams responses so fast they feel instantaneous. Follow this 2-minute guide to get your free API key with zero credit card required.
+699	Log in to Groq Console
+700	No credit card is required to sign up or use the generous free tier.
+701	Open console.groq.com/keys
+702	Speed Benchmark
+703	Step-by-step guide to get a free Groq API key and achieve sub-second Llama 3.3 70B inference (500+ tokens/sec) on Crescelo for free.
+704	Submit
+705	to copy your key (starts with
+706	Visit Groq’s developer console. You can sign in instantly with your Google or GitHub account:
+707	World's Fastest Inference (~500+ tokens/sec) • 100% Free Tier
+708	, save, and run
+709	(or your custom server IP).
+710	→ Click OK → Restart Ollama.
+711	→ Variable name:
+712	→ Variable value:
+713	$0.00 Forever
+714	100% Air-Gapped Privacy • Zero Cloud Dependencies
+715	100% Data Confidentiality:
+716	5 Minutes
+717	Add under [Service]:
+718	box, enter the model tag you pulled (e.g.
+719	By default, Ollama only accepts requests originating from localhost applications. To allow your Crescelo web dashboard to send prompts to your local Ollama server, you must set the
+720	Cloud Cost
+721	Complete guide to install Ollama, pull local open-source models (Llama 3.2, Mistral), configure CORS origins, and run 100% private offline inference on Crescelo.
+722	Configure CORS Allowed Origins (Crucial Step)
+723	Connect a Local Ollama Model to Crescelo
+724	Connect to Crescelo
+725	Download & Install Ollama
+726	Download from ollama.com
+727	Download the free Ollama installer for your operating system:
+728	environment variable:
+729	In the
+730	llama3.2:3b / llama3.1:8b
+731	Local Ollama
+732	Local Server (Ollama)
+733	Model Name
+734	New
+735	ollama run llama3.2
+736	Ollama runs locally on macOS (Apple Silicon M1/M2/M3/M4 is exceptionally fast), Windows, and Linux.
+737	Ollama will download Llama 3.2 (~2.0 GB) and boot the local server. You can also pull larger models such as
+738	On Linux (systemd):
+739	On macOS:
+740	On Windows:
+741	Open your terminal (Terminal on Mac/Linux, PowerShell or Command Prompt on Windows) and run:
+742	Pull Your Desired Open-Source Model
+743	Quit Ollama from the Windows taskbar tray → Search “Edit environment variables for your account” → Click
+744	Run Llama 3.2, Mistral, or Qwen entirely on your own hardware. Follow this step-by-step guide to download Ollama, configure cross-origin permissions, and connect your assistant.
+745	Then restart the Ollama desktop app from your top menu bar.
+746	Verify the host URL is set to
+747	When running Ollama, prompt text and customer inquiries never leave your local device or internal network.
+748	, click
+749	(gear icon) →

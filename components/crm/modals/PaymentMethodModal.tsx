@@ -1,5 +1,6 @@
 'use client';
 
+import { T, useT } from '@/lib/i18n/context';
 import React from 'react';
 import { CreditCard, X, RefreshCw, Check } from 'lucide-react';
 
@@ -36,6 +37,7 @@ export const PaymentMethodModal: React.FC<PaymentMethodModalProps> = ({
   setBillingEmailInput,
   isUpdatingCard,
 }) => {
+  const __t = useT();
   if (!isOpen) return null;
 
   return (
@@ -44,7 +46,7 @@ export const PaymentMethodModal: React.FC<PaymentMethodModalProps> = ({
         <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
           <div className="flex items-center gap-2.5">
             <CreditCard className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-            <h2 className="text-base font-bold text-slate-900 dark:text-white">Update Payment Details</h2>
+            <h2 className="text-base font-bold text-slate-900 dark:text-white"><T>Update Payment Details</T></h2>
           </div>
           <button
             type="button"
@@ -57,21 +59,21 @@ export const PaymentMethodModal: React.FC<PaymentMethodModalProps> = ({
 
         <form onSubmit={onSubmit} className="space-y-4 text-xs">
           <div>
-            <label className="block text-slate-700 dark:text-slate-300 font-semibold mb-1">Card Brand</label>
+            <label className="block text-slate-700 dark:text-slate-300 font-semibold mb-1"><T>Card Brand</T></label>
             <select
               value={cardBrand}
               onChange={(e) => setCardBrand(e.target.value)}
               className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-slate-800 dark:text-slate-100 outline-none focus:border-blue-500"
             >
-              <option value="Visa">Visa</option>
-              <option value="Mastercard">Mastercard</option>
-              <option value="American Express">American Express</option>
-              <option value="Discover">Discover</option>
+              <option value="Visa">{__t("Visa")}</option>
+              <option value="Mastercard">{__t("Mastercard")}</option>
+              <option value="American Express">{__t("American Express")}</option>
+              <option value="Discover">{__t("Discover")}</option>
             </select>
           </div>
 
           <div>
-            <label className="block text-slate-700 dark:text-slate-300 font-semibold mb-1">Last 4 Digits</label>
+            <label className="block text-slate-700 dark:text-slate-300 font-semibold mb-1"><T>Last 4 Digits</T></label>
             <input
               type="text"
               maxLength={4}
@@ -85,7 +87,7 @@ export const PaymentMethodModal: React.FC<PaymentMethodModalProps> = ({
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-slate-700 dark:text-slate-300 font-semibold mb-1">Exp Month</label>
+              <label className="block text-slate-700 dark:text-slate-300 font-semibold mb-1"><T>Exp Month</T></label>
               <input
                 type="number"
                 min={1}
@@ -97,7 +99,7 @@ export const PaymentMethodModal: React.FC<PaymentMethodModalProps> = ({
               />
             </div>
             <div>
-              <label className="block text-slate-700 dark:text-slate-300 font-semibold mb-1">Exp Year</label>
+              <label className="block text-slate-700 dark:text-slate-300 font-semibold mb-1"><T>Exp Year</T></label>
               <input
                 type="number"
                 min={2026}
@@ -111,7 +113,7 @@ export const PaymentMethodModal: React.FC<PaymentMethodModalProps> = ({
           </div>
 
           <div>
-            <label className="block text-slate-700 dark:text-slate-300 font-semibold mb-1">Billing Email Address</label>
+            <label className="block text-slate-700 dark:text-slate-300 font-semibold mb-1"><T>Billing Email Address</T></label>
             <input
               type="email"
               value={billingEmailInput}
@@ -127,7 +129,7 @@ export const PaymentMethodModal: React.FC<PaymentMethodModalProps> = ({
               onClick={onClose}
               className="px-4 py-2 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 font-semibold cursor-pointer"
             >
-              Cancel
+              <T>Cancel</T>
             </button>
             <button
               type="submit"
@@ -135,7 +137,7 @@ export const PaymentMethodModal: React.FC<PaymentMethodModalProps> = ({
               className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold transition cursor-pointer shadow-xs disabled:opacity-50"
             >
               {isUpdatingCard ? <RefreshCw className="h-3.5 w-3.5 animate-spin" /> : <Check className="h-3.5 w-3.5" />}
-              <span>Save Card</span>
+              <span><T>Save Card</T></span>
             </button>
           </div>
         </form>

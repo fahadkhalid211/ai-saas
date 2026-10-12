@@ -1,0 +1,150 @@
+2100¦Standard (rekommenderas)¦Vakio (suositeltu)¦Standard (consigliato)¦Estándar (recomendado)
+2101¦Strikt och saklig¦Tiukka ja asiallinen¦Rigoroso e fattuale¦Estricto y factual
+2102¦Byter till¦Vaihdetaan:¦Passaggio a¦Cambiando a
+2103¦Testa anslutningen¦Testaa yhteys¦Prova la connessione¦Probar la conexión
+2104¦Testa Ollama-anslutningen¦Testaa Ollama-yhteys¦Prova la connessione a Ollama¦Probar la conexión con Ollama
+2105¦Testar…¦Testataan…¦Test in corso…¦Probando…
+2106¦AI:n bakom ChatGPT¦ChatGPT:n takana oleva tekoäly¦L'IA dietro ChatGPT¦La IA detrás de ChatGPT
+2107¦AI:n bakom ChatGPT, till OpenAI:s eget pris.¦ChatGPT:n takana oleva tekoäly OpenAI:n omaan hintaan.¦L'IA dietro ChatGPT, al prezzo di OpenAI.¦La IA detrás de ChatGPT, al precio de OpenAI.
+2108¦den här leverantören¦tämä palveluntarjoaja¦questo provider¦este proveedor
+2109¦för att tillåta CORS-förfrågningar från webbläsaren.¦sallitaksesi selaimen CORS-pyynnöt.¦per consentire le richieste CORS del browser.¦para permitir las peticiones CORS del navegador.
+2110¦Provar en gratistjänst och sedan en annan om den första är upptagen¦Kokeilee ilmaista palvelua ja sitten toista, jos ensimmäinen on varattu¦Prova un servizio gratuito e poi un altro se il primo è occupato¦Prueba un servicio gratuito y luego otro si el primero está ocupado
+2111¦Provar en annan gratistjänst om den första är upptagen.¦Kokeilee toista ilmaista palvelua, jos ensimmäinen on varattu.¦Prova un altro servizio gratuito se il primo è occupato.¦Prueba otro servicio gratuito si el primero está ocupado.
+2112¦Övre gräns för svarslängd. 2048 tokens motsvarar cirka 1 500 ord.¦Vastauksen pituuden yläraja. 2048 tokenia vastaa noin 1 500 sanaa.¦Limite massimo alla lunghezza della risposta. 2048 token corrispondono a circa 1.500 parole.¦Límite máximo de la longitud de la respuesta. 2048 tokens equivalen a unas 1.500 palabras.
+2113¦Använd gratisalternativet nedan så kostar det ingenting. Eller koppla ditt eget konto hos en av de betalda tjänsterna och betala dem deras vanliga pris direkt – vi lägger aldrig något ovanpå.¦Käytä alla olevaa ilmaista vaihtoehtoa, niin se ei maksa mitään. Tai yhdistä oma tilisi johonkin maksulliseen palveluun ja maksa heille heidän tavallinen hintansa suoraan – emme koskaan lisää siihen mitään.¦Usa l'opzione gratuita qui sotto e non costa nulla. Oppure collega il tuo account a uno dei servizi a pagamento e paga loro direttamente il prezzo normale: non aggiungiamo mai nulla.¦Usa la opción gratuita de abajo y no cuesta nada. O conecta tu propia cuenta de uno de los servicios de pago y págales directamente su precio normal: nunca añadimos nada.
+2114¦Verifierar och sparar…¦Vahvistetaan ja tallennetaan…¦Verifica e salvataggio in corso…¦Verificando y guardando…
+2115¦Mycket snabba svar¦Erittäin nopeat vastaukset¦Risposte velocissime¦Respuestas muy rápidas
+2116¦Visa hela steg-för-steg-guiden för anslutning¦Näytä koko vaiheittainen yhdistämisopas¦Vedi la guida completa passo per passo alla connessione¦Ver la guía completa paso a paso de conexión
+2117¦När detta är aktiverat kan din assistent slå upp aktuell information på webben om en besökare frågar om något som inte finns i din kunskapsbas.¦Kun tämä on käytössä, avustajasi voi hakea ajantasaista tietoa verkosta, jos kävijä kysyy jotain, mikä ei ole tietopohjassasi.¦Se attivata, il tuo assistente può cercare informazioni aggiornate sul web quando un visitatore chiede qualcosa che non è nella tua base di conoscenza.¦Si se activa, tu asistente puede buscar información en tiempo real en la web cuando un visitante pregunta algo que no está en tu base de conocimiento.
+2118¦Direktfakturering till grossistpris (0 % påslag)¦Suora laskutus tukkuhintaan (0 % lisämaksu)¦Fatturazione diretta all'ingrosso (0% di ricarico)¦Facturación mayorista directa (0 % de recargo)
+2119¦Du kan ändra detta när som helst¦Voit muuttaa tämän milloin tahansa¦Puoi cambiarlo in qualsiasi momento¦Puedes cambiarlo en cualquier momento
+2120¦Du betalar Anthropic direkt – inget påslag¦Maksat Anthropicille suoraan – ei lisämaksua¦Paghi direttamente Anthropic: nessun ricarico¦Pagas directamente a Anthropic: sin recargo
+2121¦Du betalar DeepSeek direkt – mycket låg kostnad¦Maksat DeepSeekille suoraan – erittäin matala hinta¦Paghi direttamente DeepSeek: costo molto basso¦Pagas directamente a DeepSeek: coste muy bajo
+2122¦Du betalar OpenAI direkt – inget påslag¦Maksat OpenAI:lle suoraan – ei lisämaksua¦Paghi direttamente OpenAI: nessun ricarico¦Pagas directamente a OpenAI: sin recargo
+2123¦Du debiteras aldrig för själva AI:n¦Sinua ei koskaan veloiteta itse tekoälystä¦Non ti viene mai addebitata l'IA in sé¦Nunca se te cobra por la IA en sí
+2124¦Din API-nyckel är säkert krypterad i vila med AES-256-GCM och delas eller loggas aldrig.¦API-avaimesi on turvallisesti salattu levossa AES-256-GCM:llä, eikä sitä koskaan jaeta tai kirjata lokiin.¦La tua chiave API è cifrata in modo sicuro a riposo con AES-256-GCM e non viene mai condivisa né registrata nei log.¦Tu clave API está cifrada de forma segura en reposo con AES-256-GCM y nunca se comparte ni se registra.
+2125¦Din nyckel är kopplad¦Avaimesi on yhdistetty¦La tua chiave è collegata¦Tu clave está conectada
+2126¦Din egen dator¦Oma tietokoneesi¦Il tuo computer¦Tu propio ordenador
+2127¦Din egen dator (avancerat)¦Oma tietokoneesi (edistynyt)¦Il tuo computer (avanzato)¦Tu propio ordenador (avanzado)
+2128¦Automatisk reserv utan kostnad testar din nyckel först med Groq, sedan Gemini, och faller tillbaka på lokala Ollama.¦Nollakustannuksen varavaihto testaa avaimesi ensin Groqilla, sitten Geminillä ja siirtyy lopuksi paikalliseen Ollamaan.¦Il failover a costo zero prova la tua chiave prima con Groq, poi con Gemini, e ripiega su Ollama locale.¦La conmutación sin coste prueba tu clave primero con Groq, después con Gemini, y recurre a Ollama local.
+2129¦? Alla tillhörande vektorbitar och tränade inbäddningar tas bort permanent från din AI-assistent.¦? Kaikki liittyvät vektorikatkelmat ja koulutetut upotukset poistetaan pysyvästi tekoälyavustajaltasi.¦? Tutti i frammenti vettoriali associati e gli embedding addestrati verranno rimossi definitivamente dal tuo assistente IA.¦? Todos los fragmentos vectoriales asociados y los embeddings entrenados se eliminarán de forma permanente de tu asistente de IA.
+2130¦"Se vad du ska göra"¦"Katso, mitä tehdä"¦"Vedi cosa fare"¦"Ver qué hacer"
+2131¦(Innehåll ändrat av användaren)¦(Käyttäjän muokkaama sisältö)¦(Contenuto modificato dall'utente)¦(Contenido modificado por el usuario)
+2132¦% klart (¦% valmiina (¦% pronto (¦% listo (
+2133¦% använt)¦% käytetty)¦% utilizzato)¦% usado)
+2134¦0,00 $ / mån¦0,00 $ / kk¦0,00 $ / mese¦0,00 $ / mes
+2135¦0 MB¦0 Mt¦0 MB¦0 MB
+2136¦50 MB¦50 Mt¦50 MB¦50 MB
+2137¦En YouTube-video, en sida på din webbplats eller en direkt video-/ljudfil – på vilket språk som helst.¦YouTube-video, verkkosivustosi sivu tai suora video-/äänitiedosto – millä kielellä tahansa.¦Un video YouTube, una pagina del tuo sito o un file video/audio diretto, in qualsiasi lingua.¦Un vídeo de YouTube, una página de tu sitio web o un archivo directo de vídeo/audio, en cualquier idioma.
+2138¦Lägg till direkt¦Lisää suoraan¦Aggiungi direttamente¦Añadir directamente
+2139¦Lägg till detta¦Lisää tämä¦Aggiungi questo¦Añadir esto
+2140¦Lägger till dokument för:¦Lisätään dokumentteja:¦Aggiunta di documenti per:¦Añadiendo documentos para:
+2141¦Lägger till...¦Lisätään...¦Aggiunta in corso...¦Añadiendo...
+2142¦Allt klart att använda¦Kaikki valmiina käyttöön¦Tutto pronto all'uso¦Todo listo para usar
+2143¦Alltid gratis, oavsett hur mycket du laddar upp¦Aina ilmainen, riippumatta siitä kuinka paljon lataat¦Sempre gratuito, a prescindere da quanto carichi¦Siempre gratis, por mucho que subas
+2144¦Är du säker på att du vill ta bort¦Oletko varma, että haluat poistaa¦Sei sicuro di voler eliminare¦¿Seguro que quieres eliminar
+2145¦Assistent-ID (behövs bara om supporten ber om det):¦Avustajan tunnus (tarvitaan vain, jos tuki pyytää sitä):¦ID dell'assistente (serve solo se il supporto lo chiede):¦ID del asistente (solo si soporte lo pide):
+2146¦LJUD¦ÄÄNI¦AUDIO¦AUDIO
+2147¦Textavsnitt¦Katkelmat¦Frammenti¦Fragmentos
+2148¦Rensa valda filer¦Tyhjennä valitut tiedostot¦Cancella i file selezionati¦Borrar los archivos seleccionados
+2149¦Klicka för att se vad som gick fel och hur du åtgärdar det¦Napsauta nähdäksesi, mikä meni pieleen ja miten sen voi korjata¦Fai clic per vedere cosa è andato storto e come risolverlo¦Haz clic para ver qué salió mal y cómo solucionarlo
+2150¦Korrigera¦Korjaa¦Correggi¦Corregir
+2151¦Rätta felhörda ljud-/OCR-ord, lägg till faktaändringar eller redigera texten¦Korjaa väärin kuullut ääni-/OCR-sanat, lisää faktakorjauksia tai muokkaa tekstiä¦Correggi parole sentite male dall'audio o dall'OCR, aggiungi correzioni di fatti o modifica il testo¦Corrige palabras mal oídas del audio/OCR, añade correcciones de datos o edita el texto
+2152¦Kostnad för att läsa dina dokument¦Dokumenttiesi lukemisen kustannus¦Costo per leggere i tuoi documenti¦Coste de leer tus documentos
+2153¦Skapa ytterligare en assistent¦Luo toinen avustaja¦Crea un altro assistente¦Crear otro asistente
+2154¦Egen titel (valfritt)¦Oma otsikko (valinnainen)¦Titolo personalizzato (facoltativo)¦Título personalizado (opcional)
+2155¦Standardassistent¦Oletusavustaja¦Assistente predefinito¦Asistente predeterminado
+2156¦Ta bort kunskapskällan?¦Poistetaanko tietolähde?¦Eliminare la fonte di conoscenza?¦¿Eliminar la fuente de conocimiento?
+2157¦Ta bort källa¦Poista lähde¦Elimina fonte¦Eliminar fuente
+2158¦Ta bort den här assistenten¦Poista tämä avustaja¦Elimina questo assistente¦Eliminar este asistente
+2159¦Borttagen¦Poistettu¦Eliminato¦Eliminado
+2160¦Tar bort...¦Poistetaan...¦Eliminazione in corso...¦Eliminando...
+2161¦Släng utkastet¦Hylkää luonnos¦Scarta la bozza¦Descartar el borrador
+2162¦Dokumentnamn¦Dokumentin nimi¦Nome del documento¦Nombre del documento
+2163¦Dokumentets titel i kunskapsbasen¦Dokumentin otsikko tietopohjassa¦Titolo del documento nella base di conoscenza¦Título del documento en la base de conocimiento
+2164¦Släpp filer här eller klicka för att bläddra¦Pudota tiedostot tähän tai selaa napsauttamalla¦Trascina qui i file o fai clic per sfogliare¦Suelta los archivos aquí o haz clic para examinar
+2165¦Ange en titel för dokumentet...¦Anna dokumentille otsikko...¦Inserisci un titolo per questo documento...¦Introduce un título para este documento...
+2166¦allt du laddar upp här lär bara¦kaikki, mitä lataat tänne, opettaa vain¦tutto ciò che carichi qui addestra solo¦todo lo que subes aquí solo enseña a
+2167¦Utvunnet innehåll (helt redigerbart)¦Poimittu sisältö (täysin muokattavissa)¦Contenuto estratto (completamente modificabile)¦Contenido extraído (totalmente editable)
+2168¦Utvunnen kunskapsutskrift...¦Poimittu tietokirjaus...¦Trascrizione della conoscenza estratta...¦Transcripción del conocimiento extraído...
+2169¦fil(er) hade problem.¦tiedostolla oli ongelma.¦file hanno avuto un problema.¦archivo(s) tuvieron un problema.
+2170¦fil(er):¦tiedosto(a):¦file:¦archivo(s):
+2171¦Hittar svar även vid stavfel eller annan formulering¦Löytää vastauksia kirjoitusvirheistä tai erilaisesta sanamuodosta huolimatta¦Trova le risposte anche con errori di battitura o formulazioni diverse¦Encuentra respuestas incluso con erratas o con otra redacción
+2172¦Skapar textavsnitt och sparar...¦Luodaan katkelmia ja tallennetaan...¦Generazione dei frammenti e salvataggio in corso...¦Generando fragmentos y guardando...
+2173¦Så söker den¦Näin se hakee¦Come cerca¦Cómo busca
+2174¦Hybridsökning: cosinuslikhet + BM25-nyckelord, sammanfogade med Reciprocal Rank Fusion.¦Hybridihaku: kosinuksen samankaltaisuus + BM25-avainsanat, yhdistetty Reciprocal Rank Fusion -menetelmällä.¦Recupero ibrido: similarità del coseno + parole chiave BM25, unite con Reciprocal Rank Fusion.¦Recuperación híbrida: similitud del coseno + palabras clave BM25, combinadas con Reciprocal Rank Fusion.
+2175¦Importera från en länk¦Tuo linkistä¦Importa da un link¦Importar desde un enlace
+2176¦i listan nedan för exakt orsak och hur du åtgärdar det.¦alla olevasta luettelosta nähdäksesi tarkan syyn ja korjausohjeen.¦nell'elenco qui sotto per il motivo esatto e come risolvere.¦en la lista de abajo para ver el motivo exacto y cómo solucionarlo.
+2177¦Hålls åtskilda:¦Pidetään erillään:¦Tenuti separati:¦Se mantienen separados:
+2178¦Kunskapsbas¦Tietopohja¦Base di conoscenza¦Base de conocimiento
+2179¦Kunskapen sparad¦Tieto tallennettu¦Conoscenza salvata¦Conocimiento guardado
+2180¦Gränsen är nådd¦Raja saavutettu¦Limite raggiunto¦Límite alcanzado
+2181¦Lokala processorinbäddningar: 0,00 $/mån oavsett kostnader för AI-leverantören.¦Paikalliset suoritinupotukset: 0,00 $/kk riippumatta tekoälypalveluntarjoajan kustannuksista.¦Embedding locali su CPU: 0,00 $/mese a prescindere dai costi del provider IA.¦Embeddings locales en CPU: 0,00 $/mes sea cual sea el coste del proveedor de IA.
+2182¦MB tillgängligt¦Mt käytettävissä¦MB disponibili¦MB disponibles
+2183¦behöver åtgärdas)¦vaatii huomiota)¦richiedono attenzione)¦requieren atención)
+2184¦Inga dokument hittades som matchar ditt filter "¦Suodattimeesi ei löytynyt dokumentteja: "¦Nessun documento corrisponde al filtro "¦No se encontraron documentos que coincidan con tu filtro "
+2185¦Inga ännu – lägg till ett nedan¦Ei vielä yhtään – lisää yksi alla¦Ancora nessuno: aggiungine uno qui sotto¦Ninguno todavía: añade uno abajo
+2186¦Inget uppladdat för¦Mitään ei ole ladattu kohteelle¦Nulla caricato per¦No se ha subido nada para
+2187¦Eller skriv in det direkt¦Tai kirjoita se suoraan¦Oppure scrivilo direttamente¦O simplemente escríbelo
+2188¦Klistra in företagsinstruktioner, vanliga frågor, fraktinformation eller företagsbakgrund...¦Liitä yrityksen ohjeet, UKK, toimitustiedot tai yrityksen taustatiedot...¦Incolla istruzioni aziendali, FAQ, dettagli di spedizione o informazioni sull'azienda...¦Pega instrucciones del negocio, preguntas frecuentes, datos de envío o información de la empresa...
+2189¦Ta bort den här assistenten och alla dess dokument permanent¦Poista tämä avustaja ja kaikki sen dokumentit pysyvästi¦Rimuovi definitivamente questo assistente e tutti i suoi documenti¦Elimina de forma permanente este asistente y todos sus documentos
+2190¦Förhandsgranska först¦Esikatsele ensin¦Anteprima prima¦Vista previa primero
+2191¦Bearbetar¦Käsitellään¦Elaborazione¦Procesando
+2192¦Läser...¦Luetaan...¦Lettura in corso...¦Leyendo...
+2193¦Redo att söka direkt¦Valmis haettavaksi heti¦Pronto per la ricerca immediata¦Listo para buscar al instante
+2194¦Spara i kunskapsbasen¦Tallenna tietopohjaan¦Salva nella base di conoscenza¦Guardar en la base de conocimiento
+2195¦Sök källor...¦Hae lähteitä...¦Cerca fonti...¦Buscar fuentes...
+2196¦Avsnittets titel (t.ex. Returpolicy, Öppettider, Kontaktuppgifter)¦Osion otsikko (esim. Palautuskäytäntö, Aukioloajat, Yhteystiedot)¦Titolo della sezione (ad es. Politica di reso, Orari di apertura, Contatti)¦Título de la sección (p. ej., Política de devoluciones, Horario, Contacto)
+2197¦Se vad du ska göra¦Katso, mitä tehdä¦Vedi cosa fare¦Ver qué hacer
+2198¦Vald¦Valittu¦Selezionato¦Seleccionado
+2199¦Smart sökning¦Älykäs haku¦Ricerca intelligente¦Búsqueda inteligente
+2200¦Steg 2: Granska och redigera den utvunna kunskapen¦Vaihe 2: Tarkista ja muokkaa poimittua tietoa¦Passo 2: Rivedi e modifica la conoscenza estratta¦Paso 2: Revisa y edita el conocimiento extraído
+2201¦läses fortfarande)¦luetaan vielä)¦ancora in lettura)¦aún leyéndose)
+2202¦Använt lagringsutrymme¦Käytetty tallennustila¦Archiviazione utilizzata¦Almacenamiento usado
+2203¦Lagring:¦Tallennustila:¦Archiviazione:¦Almacenamiento:
+2204¦Lagras som inbäddningar med 384 dimensioner (BGE-small) för sökning.¦Tallennetaan 384-ulotteisina upotuksina (BGE-small) hakua varten.¦Archiviato come embedding a 384 dimensioni (BGE-small) per il recupero.¦Se guarda como embeddings de 384 dimensiones (BGE-small) para la recuperación.
+2205¦Synka källor¦Synkronoi lähteet¦Sincronizza le fonti¦Sincronizar fuentes
+2206¦Synkar källor...¦Synkronoidaan lähteitä...¦Sincronizzazione delle fonti in corso...¦Sincronizando fuentes...
+2207¦Det här kan inte ångras.¦Tätä ei voi perua.¦Questa azione non può essere annullata.¦Esta acción no se puede deshacer.
+2208¦den här assistenten¦tämä avustaja¦questo assistente¦este asistente
+2209¦Träna din assistent genom att ladda upp företagsdokument, webblänkar eller vanliga frågor så att den kan svara korrekt på kundfrågor.¦Kouluta avustajasi lataamalla yritysdokumentteja, verkkolinkkejä tai UKK:ita, jotta se voi vastata asiakkaiden kysymyksiin oikein.¦Addestra il tuo assistente caricando documenti aziendali, link web o FAQ, così potrà rispondere con precisione alle domande dei clienti.¦Entrena a tu asistente subiendo documentos de la empresa, enlaces web o preguntas frecuentes para que pueda responder con precisión a las preguntas de los clientes.
+2210¦Typ¦Tyyppi¦Tipo¦Tipo
+2211¦Uppladdningen misslyckades:¦Lataus epäonnistui:¦Elaborazione del caricamento non riuscita:¦Falló el procesamiento de la subida:
+2212¦Använd panelerna ovan för att lägga till ett dokument, en webbsida eller en videolänk. Det används bara för att svara för den här assistenten.¦Käytä yllä olevia paneeleja lisätäksesi dokumentin, verkkosivun tai videolinkin. Sitä käytetään vain tämän avustajan vastauksiin.¦Usa i pannelli qui sopra per aggiungere un documento, una pagina web o un link video. Verrà usato solo per le risposte di questo assistente.¦Usa los paneles de arriba para añadir un documento, una página web o un enlace de vídeo. Solo se usará para las respuestas de este asistente.
+2213¦Kontrollera den utvunna texten nedan. Redigera namn, terminologi eller priser innan du sparar i kunskapsbasen.¦Tarkista alla oleva poimittu teksti. Muokkaa nimet, terminologia tai hinnat ennen tallentamista tietopohjaan.¦Verifica il testo estratto qui sotto. Modifica nomi, terminologia o prezzi prima di salvare nella base di conoscenza.¦Verifica el texto extraído de abajo. Edita nombres, terminología o precios antes de guardar en la base de conocimiento.
+2214¦VIDEO¦VIDEO¦VIDEO¦VÍDEO
+2215¦Video-/ljudlänk¦Video-/äänilinkki¦Link video/audio¦Enlace de vídeo/audio
+2216¦WEBB¦VERKKO¦WEB¦WEB
+2217¦Webbsida¦Verkkosivu¦Pagina web¦Página web
+2218¦Vad du bör göra härnäst:¦Mitä sinun pitäisi tehdä seuraavaksi:¦Cosa fare ora:¦Qué hacer a continuación:
+2219¦Varför det misslyckades:¦Miksi se epäonnistui:¦Perché non è riuscito:¦Por qué falló:
+2220¦ord •¦sanaa •¦parole •¦palabras •
+2221¦Fungerar med PDF, Word, kalkylblad, ren text, bilder, ljud- och videofiler¦Toimii PDF-, Word-, taulukko-, teksti-, kuva-, ääni- ja videotiedostojen kanssa¦Funziona con PDF, Word, fogli di calcolo, testo semplice, immagini, file audio e video¦Funciona con PDF, Word, hojas de cálculo, texto sin formato, imágenes, audio y vídeo
+2222¦Ja, ta bort källan¦Kyllä, poista lähde¦Sì, elimina la fonte¦Sí, eliminar la fuente
+2223¦Dina dokument¦Dokumenttisi¦I tuoi documenti¦Tus documentos
+2224¦YOUTUBE¦YOUTUBE¦YOUTUBE¦YOUTUBE
+2225¦YouTube-video¦YouTube-video¦Video YouTube¦Vídeo de YouTube
+2226¦=
+2227¦), peka en A-post till¦), osoita A-tietue kohteeseen¦), punta un record A verso¦), apunta un registro A a
+2228¦). Din landningssida visas direkt under din domän utan någon tredjepartsbranding.¦). Laskeutumissivusi tarjoillaan suoraan verkkotunnuksesi alla ilman kolmannen osapuolen brändäystä.¦). La tua landing page verrà servita direttamente sotto il tuo dominio, senza alcun branding di terze parti.¦). Tu página de aterrizaje se servirá directamente bajo tu dominio sin ninguna marca de terceros.
+2229¦=
+2230¦=
+2231¦=
+2232¦=
+2233¦=
+2234¦=
+2235¦=
+2236¦=
+2237¦=
+2238¦Om Body Narrative¦Tietoa: Body Narrative¦Informazioni su Body Narrative¦Acerca de Body Narrative
+2239¦Webbadress till funktionsbild i avsnittet Om oss¦Om oss -osion pääkuvan URL¦URL dell'immagine in evidenza della sezione Chi siamo¦URL de la imagen destacada de la sección Sobre nosotros
+2240¦Underrubrik / slogan för avsnittet Om oss¦Om oss -osion alaotsikko / slogan¦Sottotitolo / slogan della sezione Chi siamo¦Subtítulo / eslogan de la sección Sobre nosotros
+2241¦Rubrik för avsnittet Om oss¦Om oss -osion otsikko¦Titolo della sezione Chi siamo¦Título de la sección Sobre nosotros
+2242¦Om oss¦Tietoa meistä¦Chi siamo¦Sobre nosotros
+2243¦Avsnittet Om oss¦Tietoa meistä -osio¦Sezione Chi siamo¦Sección Sobre nosotros
+2244¦Accentfärg för temat¦Teeman korostusväri¦Colore di accento del tema¦Color de acento del tema
+2245¦Annonsattribuering och konverteringar¦Mainosten attribuutio ja konversiot¦Attribuzione degli annunci e conversioni¦Atribución de anuncios y conversiones
+2246¦Lägg till karusellbilder för att rotera flera slagkraftiga huvudbilder, rubriker och uppmaningar.¦Lisää karusellidioita vaihtaaksesi useita tehokkaita pääkuvia, otsikoita ja toimintakehotteita.¦Aggiungi slide al carosello per ruotare più immagini hero, titoli e call to action di grande impatto.¦Añade diapositivas al carrusel para rotar varias imágenes principales, titulares y llamadas a la acción de gran impacto.
+2247¦Lägg till nyckeltal¦Lisää mittari¦Aggiungi metrica¦Añadir métrica
+2248¦Lägg till navigeringslänk¦Lisää navigointilinkki¦Aggiungi link di navigazione¦Añadir enlace de navegación
+2249¦Lägg till plan¦Lisää paketti¦Aggiungi piano¦Añadir plan

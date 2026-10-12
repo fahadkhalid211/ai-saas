@@ -1,0 +1,150 @@
+3000¦Nätverksfel vid hämtning av innehåll från webbadressen.¦Verkkovirhe poimittaessa sisältöä URL-osoitteesta.¦Errore di rete durante l'estrazione del contenuto dall'URL.¦Error de red al extraer el contenido de la URL.
+3001¦Nätverksfel vid import av webbadressen.¦Verkkovirhe URL-osoitetta tuotaessa.¦Errore di rete durante l'importazione dell'URL.¦Error de red al importar la URL.
+3002¦Nätverksfel när kunskapen sparades.¦Verkkovirhe tietoa tallennettaessa.¦Errore di rete durante il salvataggio della conoscenza.¦Error de red al guardar el conocimiento.
+3003¦Kontrollera filformatet och kraven, eller konvertera dokumentet och försök igen.¦Tarkista tiedostomuoto ja vaatimukset tai muunna dokumentti ja yritä uudelleen.¦Controlla il formato del file e i requisiti, oppure converti il documento e riprova.¦Comprueba el formato del archivo y los requisitos, o convierte el documento e inténtalo de nuevo.
+3004¦Kontrollera dina AI-motorinställningar och att filen går att läsa.¦Tarkista tekoälymoottorin asetukset ja varmista, että tiedosto on luettavissa.¦Controlla le impostazioni del motore IA e verifica che il file sia leggibile.¦Revisa los ajustes de tu motor de IA y comprueba que el archivo se pueda leer.
+3005¦Kontrollera din anslutning, att dokumentet inte är skadat, och försök igen.¦Tarkista yhteytesi, varmista ettei dokumentti ole vioittunut, ja yritä uudelleen.¦Controlla la connessione, verifica che il documento non sia danneggiato e riprova.¦Comprueba tu conexión, verifica que el documento no esté dañado e inténtalo de nuevo.
+3006¦Kontrollera din nätverksanslutning och serverstatus och försök igen.¦Tarkista verkkoyhteytesi ja palvelimen tila ja yritä uudelleen.¦Controlla la connessione di rete e lo stato del server, poi riprova.¦Comprueba tu conexión de red y el estado del servidor e inténtalo de nuevo.
+3007¦Se till att din video innehåller talat ljud, eller exportera ljudet som MP3/M4A och försök igen.¦Varmista, että videossasi on puhuttua ääntä, tai vie ääni MP3/M4A-muodossa ja yritä uudelleen.¦Assicurati che il video contenga parlato, oppure esporta l'audio in MP3/M4A e riprova.¦Asegúrate de que tu vídeo contenga diálogo hablado, o exporta el audio como MP3/M4A e inténtalo de nuevo.
+3008¦Se till att din video har hörbar talröst, eller exportera ljudet som MP3/M4A och försök igen.¦Varmista, että videossasi on kuuluva puheääni, tai vie ääni MP3/M4A-muodossa ja yritä uudelleen.¦Assicurati che il video abbia una voce udibile, oppure esporta l'audio in MP3/M4A e riprova.¦Asegúrate de que tu vídeo tenga una voz audible, o exporta el audio como MP3/M4A e inténtalo de nuevo.
+3009¦Kontrollera serverstatus och försök igen.¦Tarkista palvelimen tila ja yritä uudelleen.¦Verifica lo stato del server e riprova.¦Comprueba el estado del servidor e inténtalo de nuevo.
+3010¦Kontrollera din anslutning och försök igen.¦Tarkista yhteytesi ja yritä uudelleen.¦Controlla la connessione e riprova.¦Comprueba tu conexión e inténtalo de nuevo.
+3011¦Det gick inte att uppdatera landningssidan¦Laskeutumissivun päivitys epäonnistui¦Aggiornamento della landing page non riuscito¦No se pudo actualizar la página de aterrizaje
+3012¦Landningssidan sparades inte¦Laskeutumissivua ei tallennettu¦La landing page non è stata salvata¦No se guardó la página de aterrizaje
+3013¦Nätverksfel när landningssidan sparades¦Verkkovirhe laskeutumissivua tallennettaessa¦Errore di rete durante il salvataggio della landing page¦Error de red al guardar la página de aterrizaje
+3014¦Fel: Det går inte att ansluta till AI-tjänsten. Kontrollera dina leverantörsinställningar.¦Virhe: Yhteyttä tekoälypalveluun ei saada. Tarkista palveluntarjoajan asetukset.¦Errore: impossibile connettersi al servizio IA. Verifica le impostazioni del provider.¦Error: no se puede conectar con el servicio de IA. Verifica los ajustes de tu proveedor.
+3015¦Röstdiktering stöds inte i den här webbläsaren. Använd Google Chrome, Edge eller Safari.¦Sanelua ei tueta tässä selaimessa. Käytä Google Chromea, Edgeä tai Safaria.¦La dettatura vocale non è supportata da questo browser. Usa Google Chrome, Edge o Safari.¦El dictado por voz no es compatible con este navegador. Usa Google Chrome, Edge o Safari.
+3016¦). Alla dokument, vanliga frågor och filer som du tränar i din arbetsyta driver direkt din webbplats AI-chattbot.¦). Kaikki dokumentit, UKK:t ja tiedostot, joilla koulutat työtilassasi, ovat heti sivustosi tekoälychatbotin käytössä.¦). Tutti i documenti, le FAQ e i file che addestri nel tuo workspace alimenteranno subito il chatbot IA del tuo sito.¦). Todos los documentos, preguntas frecuentes y archivos con los que entrenes tu espacio de trabajo alimentarán de inmediato el chatbot de IA de tu sitio.
+3017¦← Tillbaka till alla landningssidor¦← Takaisin kaikkiin laskeutumissivuihin¦← Torna a tutte le landing page¦← Volver a todas las páginas de aterrizaje
+3018¦← Tillbaka till designarketyp¦← Takaisin suunnitteluarkkityyppiin¦← Torna all'archetipo di design¦← Volver al arquetipo de diseño
+3019¦← Tillbaka till bransch¦← Takaisin toimialaan¦← Torna al settore¦← Volver al sector
+3020¦=
+3021¦1. Bransch¦1. Toimiala¦1. Settore¦1. Sector
+3022¦=
+3023¦2. Design¦2. Suunnittelu¦2. Design¦2. Diseño
+3024¦3. Varumärkesinnehåll¦3. Brändisisältö¦3. Contenuti del brand¦3. Contenido de marca
+3025¦=
+3026¦=
+3027¦=
+3028¦Lägg till¦Lisää¦Aggiungi¦Añadir
+3029¦AI bygger din företagswebbplats för hög konvertering, skriver egna texter och kopplar en bokningsconcierge.¦Tekoäly rakentaa korkean konversion yrityssivustosi, kirjoittaa mukautetut tekstit ja yhdistää ajanvarausconciergen.¦L'IA progetta il tuo sito aziendale ad alta conversione, scrive testi su misura e collega un concierge di prenotazione.¦La IA diseña tu sitio web de empresa de alta conversión, redacta textos a medida y conecta un conserje de reservas.
+3030¦AI-concierge och kunskapsbas¦Tekoälyconcierge ja tietopohja¦Concierge IA e base di conoscenza¦Conserje de IA y base de conocimiento
+3031¦AI använder den här berättelsen för att skapa rubriker, texter till avsnittet Om oss och startfrågor.¦Tekoäly käyttää tätä kertomusta otsikoiden, Tietoa meistä -osion tekstin ja aloituskysymysten laatimiseen.¦L'IA usa questa narrazione per creare titoli, testi della sezione Chi siamo e domande iniziali.¦La IA usa esta narración para crear titulares, el texto de la sección Sobre nosotros y las preguntas iniciales.
+3032¦AI-webbarkitekt¦Tekoälyverkkoarkkitehti¦Architetto web IA¦Arquitecto web de IA
+3033¦AI justerar textens ton, bokningsflöden och triage för bokningar för just din bransch.¦Tekoäly säätää tekstin sävyn, palveluvarausprosessit ja ajanvarausten luokittelun juuri sinun toimialallesi.¦L'IA calibra il tono dei testi, i flussi di prenotazione dei servizi e il triage degli appuntamenti per il tuo settore specifico.¦La IA ajusta el tono de los textos, los flujos de reserva de servicios y el triaje de citas para tu sector concreto.
+3034¦=
+3035¦=
+3036¦Analyserar varumärkesberättelse och målgrupp för "{n1}"...¦Analysoidaan brändin tarinaa ja kohdeasiakkaita: "{n1}"...¦Analisi della narrazione del brand e della clientela target per "{n1}"...¦Analizando la narrativa de marca y la clientela objetivo de "{n1}"...
+3037¦Skapa och publicera webbplatsen nu¦Rakenna ja julkaise sivusto nyt¦Progetta e pubblica il sito ora¦Diseñar y publicar el sitio web ahora
+3038¦Bygger det digitala systemet¦Rakennetaan digitaalista järjestelmää¦Progettazione del sistema digitale¦Diseñando el sistema digital
+3039¦Arkitekturfunktioner:¦Arkkitehtuuriominaisuudet:¦Funzionalità architetturali:¦Funciones de arquitectura:
+3040¦Konfigureras automatiskt¦Määritetään automaattisesti¦Configurato automaticamente¦Configurado automáticamente
+3041¦=
+3042¦B2B-SaaS och mjukvaruplattform¦B2B-SaaS ja ohjelmistoalusta¦SaaS B2B e piattaforma software¦SaaS B2B y plataforma de software
+3043¦Tillbaka till listan över landningssidor¦Takaisin laskeutumissivujen luetteloon¦Torna all'elenco delle landing page¦Volver a la lista de páginas de aterrizaje
+3044¦Barberare och frisörsalong¦Parturi ja kampaamo¦Barbiere e salone di bellezza¦Barbería y salón de peluquería
+3045¦=
+3046¦=
+3047¦Varumärkesidentitet och berättelse¦Brändin identiteetti ja tarina¦Identità e storia del brand¦Identidad e historia de marca
+3048¦=
+3049¦Webbadress till varumärkets logotypbild (valfritt)¦Brändin logokuvan URL (valinnainen)¦URL dell'immagine del logo del brand (facoltativo)¦URL de la imagen del logotipo de la marca (opcional)
+3050¦Företagsnamn *¦Yrityksen nimi *¦Nome dell'attività *¦Nombre del negocio *
+3051¦Verksamhetens syfte och berättelse *¦Liiketoiminnan tarkoitus ja tarina *¦Scopo e storia dell'attività *¦Propósito y narrativa del negocio *
+3052¦=
+3053¦=
+3054¦=
+3055¦=
+3056¦Färgestetik¦Väriestetiikka¦Estetica dei colori¦Estética de color
+3057¦=
+3058¦=
+3059¦=
+3060¦=
+3061¦=
+3062¦=
+3063¦=
+3064¦Koppla standardkunskapsbasen (¦Yhdistä oletustietopohja (¦Collega la base di conoscenza predefinita (¦Conectar la base de conocimiento predeterminada (
+3065¦Kopplad AI-concierge:¦Yhdistetty tekoälyconcierge:¦Concierge IA collegato:¦Conserje de IA conectado:
+3066¦Kontakt och plats¦Yhteystiedot ja sijainti¦Contatti e sede¦Contacto y ubicación
+3067¦=
+3068¦=
+3069¦=
+3070¦=
+3071¦Skapar din skräddarsydda digitala upplevelse¦Rakennetaan räätälöityä digitaalista kokemustasi¦Creazione della tua esperienza digitale su misura¦Creando tu experiencia digital a medida
+3072¦Skapa en ny kunskapsbas för den här sidan¦Luo uusi tietopohja tälle sivulle¦Crea una nuova base di conoscenza per questa pagina¦Crear una base de conocimiento nueva para esta página
+3073¦Skapar ny bot¦Luo uuden botin¦Crea un nuovo bot¦Crea un bot nuevo
+3074¦=
+3075¦=
+3076¦Crescelo AI-webbassistent¦Crescelo-tekoälyverkkoavustaja¦Assistente web IA Crescelo¦Asistente web de IA de Crescelo
+3077¦Anpassad / skräddarsydd yta¦Mukautettu / räätälöity pohja¦Canvas personalizzato / su misura¦Lienzo personalizado / a medida
+3078¦Egen yta¦Oma pohja¦Canvas personalizzato¦Lienzo personalizado
+3079¦=
+3080¦=
+3081¦=
+3082¦Mörkt skiffer- och elektriskt limetema som matchar crescelo.com, med interaktiv demo, omloppsdiagram och funktionskarusell.¦Tumma liuske- ja sähköinen lime-teema, joka vastaa crescelo.comia, interaktiivisella esittelyllä, kiertoratakaavioilla ja ominaisuuskarusellilla.¦Tema slate scuro e lime elettrico in linea con crescelo.com, con demo interattiva, diagrammi orbitali e carosello delle funzioni.¦Tema pizarra oscuro y lima eléctrico a juego con crescelo.com, con demo interactiva, diagramas orbitales y carrusel de funciones.
+3083¦Dedikerad bot ({assistantId})¦Oma botti ({assistantId})¦Bot dedicato ({assistantId})¦Bot dedicado ({assistantId})
+3084¦=
+3085¦=
+3086¦Standardkunskapsbas¦Oletustietopohja¦Base di conoscenza predefinita¦Base de conocimiento predeterminada
+3087¦standardtjänster¦oletuspalvelut¦servizi predefiniti¦servicios predeterminados
+3088¦=
+3089¦=
+3090¦=
+3091¦=
+3092¦E-handel och detaljhandelsvarumärke¦Verkkokauppa ja vähittäiskaupan brändi¦E-commerce e brand retail¦Comercio electrónico y marca minorista
+3093¦t.ex. Apex Athletics Club eller Crown Barbers¦esim. Apex Athletics Club tai Crown Barbers¦es. Apex Athletics Club o Crown Barbers¦p. ej., Apex Athletics Club o Crown Barbers
+3094¦=
+3095¦=
+3096¦=
+3097¦=
+3098¦=
+3099¦=
+3100¦Befintlig kunskapsbas ({n1})¦Olemassa oleva tietopohja ({n1})¦Base di conoscenza esistente ({n1})¦Base de conocimiento existente ({n1})
+3101¦Grundarens / ägarens namn¦Perustajan / omistajan nimi¦Nome del fondatore / titolare¦Nombre del fundador / propietario
+3102¦=
+3103¦=
+3104¦=
+3105¦Helt modulär¦Täysin modulaarinen¦Completamente modulare¦Totalmente modular
+3106¦=
+3107¦=
+3108¦=
+3109¦=
+3110¦=
+3111¦Gym och elitstudio för fitness¦Kuntosali ja huippuluokan kuntoilustudio¦Palestra e studio fitness d'élite¦Gimnasio y estudio de fitness de élite
+3112¦=
+3113¦Framhävd¦Korostettu¦In evidenza¦Destacado
+3114¦=
+3115¦=
+3116¦=
+3117¦=
+3118¦=
+3119¦=
+3120¦=
+3121¦=
+3122¦är live!¦on käytössä!¦è online!¦¡está en línea!
+3123¦Juridisk verksamhet och advokatbyrå¦Lakiasiaintoimisto ja lakitoimisto¦Studio legale e attività forense¦Despacho de abogados y práctica jurídica
+3124¦Live och publicerad¦Käytössä ja julkaistu¦Online e pubblicato¦En línea y publicado
+3125¦Live interaktiv agentdemo¦Interaktiivinen live-agenttiesittely¦Demo interattiva dell'agente dal vivo¦Demo interactiva del agente en vivo
+3126¦Live interaktiv produktdemo¦Interaktiivinen live-tuote-esittely¦Demo interattiva del prodotto dal vivo¦Demo interactiva del producto en vivo
+3127¦=
+3128¦Medicinsk klinik och tandklinik¦Lääkäri- ja hammasklinikka¦Clinica medica e dentistica¦Clínica médica y dental
+3129¦=
+3130¦=
+3131¦Måndag–lördag¦Maanantai–lauantai¦Dal lunedì al sabato¦De lunes a sábado
+3132¦=
+3133¦=
+3134¦Nästa: varumärkesuppgifter och syfte¦Seuraava: brändin tiedot ja tarkoitus¦Avanti: dettagli e scopo del brand¦Siguiente: detalles y propósito de la marca
+3135¦Nästa: välj modern designarketyp¦Seuraava: valitse moderni suunnitteluarkkityyppi¦Avanti: scegli l'archetipo di design moderno¦Siguiente: elige el arquetipo de diseño moderno
+3136¦Ingen chattbot (endast webbplats)¦Ei chatbottia (vain verkkosivusto)¦Nessun chatbot (solo sito web)¦Sin chatbot (solo sitio web)
+3137¦Ingen / inaktiverad¦Ei mitään / pois käytöstä¦Nessuno / disattivato¦Ninguno / desactivado
+3138¦Öppna den visuella anpassaren¦Avaa visuaalinen mukautin¦Apri il personalizzatore visivo¦Abrir el personalizador visual
+3139¦Öppettider¦Aukioloajat¦Orari di apertura¦Horario de apertura
+3140¦Optimerar responsiv layout, SEO-metadata och publicerar den skarpa webbplatsen...¦Optimoidaan responsiivista ulkoasua ja SEO-metatietoja sekä julkaistaan tuotantosivusto...¦Ottimizzazione del layout responsive e dei metadati SEO, e pubblicazione del sito in produzione...¦Optimizando el diseño adaptable y los metadatos SEO, y publicando el sitio en producción...
+3141¦Sida nr¦Sivu nro¦Pagina n.¦Página n.º
+3142¦=
+3143¦Telefon¦Puhelin¦Telefono¦Teléfono
+3144¦Fysisk adress¦Käyntiosoite¦Indirizzo fisico¦Dirección física
+3145¦=
+3146¦=
+3147¦=
+3148¦=
+3149¦Förhandsgranska design¦Esikatsele suunnittelua¦Anteprima del design¦Vista previa del diseño

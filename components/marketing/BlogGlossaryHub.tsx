@@ -1,17 +1,24 @@
 'use client';
 
+import { T, useT, useI18n } from '@/lib/i18n/context';
+import { DATE_LOCALE } from '@/lib/i18n/format';
 import React, { useState, useMemo } from 'react';
-import Link from 'next/link';
+import Link from '@/components/i18n/Link';
 import type { BlogPost, ClusterSummary } from '@/lib/blog/posts';
 
 interface BlogGlossaryHubProps {
   posts: BlogPost[];
   clusters: ClusterSummary[];
+  /** Slugs that exist in the page's language; articles not listed are linked in English. */
+  translated?: string[];
 }
 
 const POSTS_PER_PAGE = 12;
 
-export function BlogGlossaryHub({ posts, clusters }: BlogGlossaryHubProps) {
+export function BlogGlossaryHub({ posts, clusters, translated }: BlogGlossaryHubProps) {
+  const __t = useT();
+  const { locale } = useI18n();
+  const inLanguage = useMemo(() => (translated ? new Set(translated) : null), [translated]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedClusterId, setSelectedClusterId] = useState<number | null>(null);
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -98,7 +105,7 @@ export function BlogGlossaryHub({ posts, clusters }: BlogGlossaryHubProps) {
       >
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
           <label htmlFor="glossary-search" style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--mk-ink)' }}>
-            Search Knowledge Hub & Glossary
+            <T>Search Knowledge Hub & Glossary</T>
           </label>
           <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
             <span
@@ -120,7 +127,7 @@ export function BlogGlossaryHub({ posts, clusters }: BlogGlossaryHubProps) {
                 setSearchQuery(e.target.value);
                 setCurrentPage(1);
               }}
-              placeholder="Search 200+ guides by keyword, topic, or industry (e.g. appointment booking, dental, plumbing, RAG, BYOK)..."
+              placeholder={__t("Search 200+ guides by keyword, topic, or industry (e.g. appointment booking, dental, plumbing, RAG, BYOK)...")}
               style={{
                 width: '100%',
                 padding: '0.85rem 2.8rem 0.85rem 3rem',
@@ -149,7 +156,7 @@ export function BlogGlossaryHub({ posts, clusters }: BlogGlossaryHubProps) {
                   fontSize: '1.2rem',
                   padding: '0.2rem 0.5rem',
                 }}
-                aria-label="Clear search"
+                aria-label={__t("Clear search")}
               >
                 ✕
               </button>
@@ -168,7 +175,7 @@ export function BlogGlossaryHub({ posts, clusters }: BlogGlossaryHubProps) {
             }}
           >
             <div>
-              Showing{' '}
+              <T>Showing</T>{' '}
               <strong>
                 {filteredPosts.length === 0
                   ? 0
@@ -177,14 +184,14 @@ export function BlogGlossaryHub({ posts, clusters }: BlogGlossaryHubProps) {
                       filteredPosts.length
                     )}`}
               </strong>{' '}
-              of {filteredPosts.length} articles
+              <T>of</T> <T>{filteredPosts.length}</T> <T>articles</T>
               {activeClusterName && (
                 <span>
                   {' '}
-                  in <strong>{activeClusterName}</strong>
+                  <T>in</T> <strong><T>{activeClusterName}</T></strong>
                 </span>
               )}
-              {searchQuery && <span> matching &ldquo;{searchQuery}&rdquo;</span>}
+              {searchQuery && <span> <T>matching &ldquo;</T><T>{searchQuery}</T>&rdquo;</span>}
             </div>
             {(selectedClusterId !== null || searchQuery) && (
               <button
@@ -200,7 +207,7 @@ export function BlogGlossaryHub({ posts, clusters }: BlogGlossaryHubProps) {
                   fontSize: '0.85rem',
                 }}
               >
-                Clear all filters
+                <T>Clear all filters</T>
               </button>
             )}
           </div>
@@ -211,7 +218,7 @@ export function BlogGlossaryHub({ posts, clusters }: BlogGlossaryHubProps) {
       <div className="mk-glossary-layout">
         {/* Left Sticky Sidebar: Topic Clusters */}
         <aside
-          aria-label="Topic Clusters"
+          aria-label={__t("Topic Clusters")}
           className="mk-sidebar-sticky mk-sidebar-scroll"
           style={{
             padding: '1.25rem',
@@ -231,7 +238,7 @@ export function BlogGlossaryHub({ posts, clusters }: BlogGlossaryHubProps) {
                 marginBottom: '0.6rem',
               }}
             >
-              TOPIC CLUSTERS
+              <T>TOPIC CLUSTERS</T>
             </p>
             <ul
               style={{
@@ -263,8 +270,8 @@ export function BlogGlossaryHub({ posts, clusters }: BlogGlossaryHubProps) {
                     alignItems: 'center',
                   }}
                 >
-                  <span>All Topics</span>
-                  <span style={{ fontSize: '0.75rem', opacity: 0.7 }}>({posts.length})</span>
+                  <span><T>All Topics</T></span>
+                  <span style={{ fontSize: '0.75rem', opacity: 0.7 }}>(<T>{posts.length}</T>)</span>
                 </button>
               </li>
               {clusters.map((c) => {
@@ -299,9 +306,9 @@ export function BlogGlossaryHub({ posts, clusters }: BlogGlossaryHubProps) {
                           paddingRight: '0.4rem',
                         }}
                       >
-                        {c.name}
+                        <T>{c.name}</T>
                       </span>
-                      <span style={{ fontSize: '0.75rem', opacity: 0.7, flexShrink: 0 }}>{c.count}</span>
+                      <span style={{ fontSize: '0.75rem', opacity: 0.7, flexShrink: 0 }}><T>{c.count}</T></span>
                     </button>
                   </li>
                 );
@@ -317,9 +324,9 @@ export function BlogGlossaryHub({ posts, clusters }: BlogGlossaryHubProps) {
               fontSize: '0.85rem',
             }}
           >
-            <p style={{ fontWeight: 700, marginBottom: '0.3rem' }}>Deploy on Your Website</p>
+            <p style={{ fontWeight: 700, marginBottom: '0.3rem' }}><T>Deploy on Your Website</T></p>
             <p style={{ color: 'var(--mk-muted)', lineHeight: 1.5, marginBottom: '0.75rem' }}>
-              Turn visitors into confirmed appointments 24/7.
+              <T>Turn visitors into confirmed appointments 24/7.</T>
             </p>
             <Link
               href="/login?mode=register"
@@ -331,7 +338,7 @@ export function BlogGlossaryHub({ posts, clusters }: BlogGlossaryHubProps) {
                 textDecoration: 'underline',
               }}
             >
-              Start 14-day trial →
+              <T>Start 14-day trial →</T>
             </Link>
           </div>
         </aside>
@@ -349,10 +356,10 @@ export function BlogGlossaryHub({ posts, clusters }: BlogGlossaryHubProps) {
               }}
             >
               <p style={{ fontSize: '1.2rem', fontWeight: 600, marginBottom: '0.5rem', color: 'var(--mk-ink)' }}>
-                No guides match your search criteria.
+                <T>No guides match your search criteria.</T>
               </p>
               <p style={{ marginBottom: '1.25rem' }}>
-                Try different keywords, or reset your filters to browse the full directory.
+                <T>Try different keywords, or reset your filters to browse the full directory.</T>
               </p>
               <button
                 type="button"
@@ -367,7 +374,7 @@ export function BlogGlossaryHub({ posts, clusters }: BlogGlossaryHubProps) {
                   cursor: 'pointer',
                 }}
               >
-                Reset all filters
+                <T>Reset all filters</T>
               </button>
             </div>
           ) : (
@@ -405,28 +412,29 @@ export function BlogGlossaryHub({ posts, clusters }: BlogGlossaryHubProps) {
                             textTransform: 'uppercase',
                           }}
                         >
-                          {p.clusterName}
+                          <T>{p.clusterName}</T>
                         </span>
                       )}
                       <span style={{ color: 'var(--mk-muted)', fontWeight: 600 }}>
-                        ⏱️ {p.readMinutes} MIN READ
+                        ⏱️ <T>{p.readMinutes}</T> <T>MIN READ</T>
                       </span>
                     </div>
 
                     <h2 style={{ fontSize: '1.35rem', margin: '0.4rem 0 0.5rem', lineHeight: 1.35 }}>
                       <Link
                         href={`/blog/${p.slug}`}
+                        locale={inLanguage && !inLanguage.has(p.slug) ? 'en' : undefined}
                         className="mk-animated-link"
                         style={{
                           color: 'var(--mk-ink, #0f172a)',
                         }}
                       >
-                        {p.title}
+                        <T>{p.title}</T>
                       </Link>
                     </h2>
 
                     <p style={{ color: 'var(--mk-muted)', lineHeight: 1.6, fontSize: '0.95rem', marginBottom: '0.85rem' }}>
-                      {p.excerpt}
+                      <T>{p.excerpt}</T>
                     </p>
 
                     <div
@@ -440,7 +448,7 @@ export function BlogGlossaryHub({ posts, clusters }: BlogGlossaryHubProps) {
                       }}
                     >
                       <time dateTime={p.datePublished} style={{ color: 'var(--mk-muted)' }}>
-                        {new Date(p.datePublished).toLocaleDateString('en-US', {
+                        {new Date(p.datePublished).toLocaleDateString(DATE_LOCALE[locale], {
                           month: 'short',
                           day: 'numeric',
                           year: 'numeric',
@@ -448,13 +456,14 @@ export function BlogGlossaryHub({ posts, clusters }: BlogGlossaryHubProps) {
                       </time>
                       <Link
                         href={`/blog/${p.slug}`}
+                        locale={inLanguage && !inLanguage.has(p.slug) ? 'en' : undefined}
                         className="mk-animated-link"
                         style={{
                           fontWeight: 700,
                           color: '#2563eb',
                         }}
                       >
-                        Read guide →
+                        <T>Read guide →</T>
                       </Link>
                     </div>
                   </article>
@@ -464,7 +473,7 @@ export function BlogGlossaryHub({ posts, clusters }: BlogGlossaryHubProps) {
               {/* Pagination Controls */}
               {totalPages > 1 && (
                 <nav
-                  aria-label="Blog pagination"
+                  aria-label={__t("Blog pagination")}
                   className="mk-card"
                   style={{
                     marginTop: '2.5rem',
@@ -492,7 +501,7 @@ export function BlogGlossaryHub({ posts, clusters }: BlogGlossaryHubProps) {
                       fontSize: '0.88rem',
                     }}
                   >
-                    ← Previous
+                    <T>← Previous</T>
                   </button>
 
                   <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.35rem' }}>
@@ -526,7 +535,7 @@ export function BlogGlossaryHub({ posts, clusters }: BlogGlossaryHubProps) {
                                 justifyContent: 'center',
                               }}
                             >
-                              {pageNum}
+                              <T>{pageNum}</T>
                             </button>
                           </React.Fragment>
                         );
@@ -548,7 +557,7 @@ export function BlogGlossaryHub({ posts, clusters }: BlogGlossaryHubProps) {
                       fontSize: '0.88rem',
                     }}
                   >
-                    Next →
+                    <T>Next →</T>
                   </button>
                 </nav>
               )}

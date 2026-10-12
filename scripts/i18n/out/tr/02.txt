@@ -1,0 +1,150 @@
+300¦Konfliktfrekvens¦Ristiriitojen osuus¦Tasso di conflitti¦Tasa de conflictos
+301¦Kryptering av inloggningsuppgifter¦Tunnistetietojen salaus¦Cifratura delle credenziali¦Cifrado de credenciales
+302¦=
+303¦Kundmeddelanden från webbwidgeten, WhatsApp och Telegram kommer in via säkra, verifierade kanaler och granskas innan assistenten svarar.¦Asiakasviestit verkkosivuston widgetistä, WhatsAppista ja Telegramista saapuvat turvallisten, vahvistettujen kanavien kautta ja ne tarkistetaan ennen kuin avustaja vastaa.¦I messaggi dei clienti dal widget del sito, da WhatsApp e da Telegram arrivano tramite canali sicuri e verificati e vengono controllati prima che l'assistente risponda.¦Los mensajes de los clientes desde el widget del sitio, WhatsApp y Telegram llegan por canales seguros y verificados y se revisan antes de que el asistente responda.
+304¦Ta din autonoma assistent i drift på under 5 minuter.¦Ota itsenäinen avustajasi käyttöön alle 5 minuutissa.¦Metti in funzione il tuo assistente autonomo in meno di 5 minuti.¦Pon en marcha tu asistente autónomo en menos de 5 minutos.
+305¦Direkt AI-hjärna och omedelbara svar¦Suora tekoälyaivo ja välittömät vastaukset¦Cervello IA diretto e risposte immediate¦Cerebro de IA directo y respuestas inmediatas
+306¦Flexibla buffertar mellan bokningar (t.ex. 15 minuters förberedelse)¦Joustavat puskuriajat varausten välillä (esim. 15 minuutin valmistelu)¦Intervalli di buffer dinamici tra gli appuntamenti (es. 15 minuti di preparazione)¦Márgenes flexibles entre citas (p. ej., 15 minutos de preparación)
+307¦Arkitektur för inbäddningar¦Upotusten arkkitehtuuri¦Architettura degli embedding¦Arquitectura de embeddings
+308¦Kryptering¦Salaus¦Cifratura¦Cifrado
+309¦Varje dokument, riktlinje och pristabell analyseras och indexeras med strikta källhänvisningar. Crescelo söker i dina exakta filer så att din assistent aldrig hittar på priser eller regler.¦Jokainen dokumentti, ohjeistus ja hintataulukko analysoidaan ja indeksoidaan tiukoilla lähdeviitteillä. Crescelo hakee täsmälleen tiedostoistasi, joten avustajasi ei koskaan keksi hintoja tai sääntöjä.¦Ogni documento, guida alle politiche e tabella dei prezzi viene analizzato e indicizzato con citazioni rigorose delle fonti. Crescelo cerca nei tuoi file esatti, così il tuo assistente non inventa mai prezzi o regole.¦Cada documento, guía de políticas y tabla de precios se analiza e indexa con citas estrictas de la fuente. Crescelo busca en tus archivos exactos para que tu asistente nunca invente precios ni normas.
+310¦Varje meddelande kommer in säkert från din webbplats, WhatsApp eller Telegram.¦Jokainen viesti saapuu turvallisesti verkkosivustoltasi, WhatsAppista tai Telegramista.¦Ogni messaggio arriva in modo sicuro dal tuo sito, da WhatsApp o da Telegram.¦Cada mensaje llega de forma segura desde tu sitio web, WhatsApp o Telegram.
+311¦Varje svar bygger på innehåll du har laddat upp. Varje bokning kontrolleras mot en verklig ledig tid i kalendern. Varje AI-anrop går direkt till din leverantör – inga mellanhänder, inga påslag.¦Jokainen vastaus perustuu lataamaasi sisältöön. Jokainen varaus tarkistetaan todellista kalenteriaikaa vasten. Jokainen tekoälykutsu menee suoraan palveluntarjoajallesi – ei välikäsiä, ei lisämaksuja.¦Ogni risposta si basa sui contenuti che hai caricato. Ogni prenotazione viene verificata su uno slot reale del calendario. Ogni chiamata IA va direttamente al tuo provider: nessun intermediario, nessun ricarico.¦Cada respuesta se basa en el contenido que subiste. Cada reserva se comprueba con un hueco real del calendario. Cada llamada a la IA va directa a tu proveedor: sin intermediarios y sin recargos.
+312¦Extra belastning vid körning¦Suoritusrasite¦Sovraccarico di esecuzione¦Sobrecarga de ejecución
+313¦Snabbaste första token¦Nopein ensimmäinen token¦Primo token più veloce¦Primer token más rápido
+314¦Förankrad kunskap och sökning¦Lähteisiin perustuva tieto ja haku¦Conoscenza fondata sulle fonti e ricerca¦Conocimiento basado en fuentes y búsqueda
+315¦SÅ FUNGERAR DET UNDER HUVEN¦NÄIN SE TOIMII KULISSIEN TAKANA¦COME FUNZIONA SOTTO IL COFANO¦CÓMO FUNCIONA POR DENTRO
+316¦Ta över samtalet själv med ett klick¦Ota keskustelu itse hoitoon yhdellä napsautuksella¦Subentra tu nella conversazione con un clic¦Toma el control de la conversación con un clic
+317¦Inkommande meddelanden och kanaler¦Saapuvat viestit ja kanavat¦Messaggi in arrivo e canali¦Mensajes entrantes y canales
+318¦Mottagningsfördröjning¦Vastaanoton viive¦Latenza di ricezione¦Latencia de entrada
+319¦Gå igenom de fyra stegen i den autonoma körmotorn.¦Tutustu itsenäisen suoritusmoottorin neljään vaiheeseen.¦Esamina le quattro fasi del motore di esecuzione autonomo.¦Revisa las cuatro etapas del motor de ejecución autónomo.
+320¦Direkt låsning av tiden gör att två kunder aldrig kan ta samma tid.¦Ajan välitön lukitus varmistaa, ettei kaksi asiakasta koskaan saa samaa aikaa.¦Il blocco istantaneo dello slot garantisce che due clienti non prendano mai lo stesso orario.¦El bloqueo instantáneo del hueco garantiza que dos clientes nunca cojan la misma hora.
+321¦Hålltid för låset¦Lukituksen kesto¦Durata del blocco¦Duración del bloqueo
+322¦Låsmekanism¦Lukitusmekanismi¦Meccanismo di blocco¦Mecanismo de bloqueo
+323¦Reservkedja mellan flera modeller om en extern AI-leverantör har driftstopp¦Usean mallin varaketju, jos ulkoisella tekoälypalveluntarjoajalla on käyttökatko¦Cascata di riserva tra più modelli se un provider IA esterno è fuori servizio¦Cascada de respaldo entre varios modelos si un proveedor de IA externo sufre una caída
+324¦Tvingande förbud: avstår från att svara om det saknas källa¦Pakotetut kiellot: kieltäytyy vastaamasta, jos lähdettä ei ole¦Applicazione dei divieti: rifiuta di rispondere se non esiste una fonte¦Restricciones obligatorias: se niega a responder si no existe una fuente
+325¦aldrig gissa.¦älä koskaan arvaa.¦mai tirare a indovinare.¦nunca adivinar.
+326¦Inga påhitt – svarar bara utifrån ditt innehåll¦Ei keksittyä – vastaa vain sisältösi perusteella¦Nessuna allucinazione: risponde solo dai tuoi contenuti¦Sin alucinaciones: responde solo a partir de tu contenido
+327¦Webbskrapa med ett klick och inläsning av PDF-filer med flera sidor¦Yhden napsautuksen verkkosivuhaku ja monisivuisten PDF-tiedostojen luku¦Scraper di siti web con un clic e importazione di PDF di più pagine¦Extractor web con un clic y lectura de PDF de varias páginas
+328¦=
+329¦OpenAI, Groq, Gemini, Claude, Ollama¦OpenAI, Groq, Gemini, Claude, Ollama¦OpenAI, Groq, Gemini, Claude, Ollama¦OpenAI, Groq, Gemini, Claude, Ollama
+330¦Telefonsamtal är under utveckling.¦Puhelut ovat kehitteillä.¦Le chiamate telefoniche sono in fase di sviluppo.¦Las llamadas telefónicas están en desarrollo.
+331¦Produkt¦Tuote¦Prodotto¦Producto
+332¦Protokoll¦Protokollat¦Protocolli¦Protocolos
+333¦Verklig låsning av kalendertid – inga dubbelbokningar¦Todellinen kalenteriajan lukitus – ei kaksoisvarauksia¦Blocco reale dello slot del calendario: nessuna doppia prenotazione¦Bloqueo real del hueco en el calendario: sin dobles reservas
+334¦Sökalgoritm¦Hakualgoritmi¦Algoritmo di ricerca¦Algoritmo de recuperación
+335¦Kör gratis direkt med automatisk reservväxling, eller koppla ditt eget konto från Groq, OpenAI, Anthropic eller Google Gemini utan påslag på tokens. Svaren strömmas till besökaren direkt.¦Käytä ilmaiseksi heti automaattisella varavaihdolla tai yhdistä oma tilisi Groqista, OpenAI:sta, Anthropicilta tai Google Geminiltä ilman tokenien lisämaksua. Vastaukset virtaavat kävijälle välittömästi.¦Usalo gratis da subito con failover automatico, oppure collega il tuo account Groq, OpenAI, Anthropic o Google Gemini senza ricarico sui token. Le risposte arrivano al visitatore in streaming, all'istante.¦Úsalo gratis desde el primer momento con conmutación automática por error, o conecta tu propia cuenta de Groq, OpenAI, Anthropic o Google Gemini sin recargo sobre los tokens. Las respuestas llegan al visitante al instante.
+336¦Körs lokalt på processorn med ONNX Runtime, utan kostnader för externa vektor-API:er¦Toimii paikallisesti suorittimella ONNX-ajoympäristössä ilman ulkoisten vektoriapien kuluja¦Funziona in locale sulla CPU con ONNX Runtime, senza costi per API vettoriali esterne¦Se ejecuta en local en la CPU con ONNX Runtime, sin costes de API vectoriales externas
+337¦Säkerhet¦Tietoturva¦Sicurezza¦Seguridad
+338¦Steg¦Vaihe¦Fase¦Etapa
+339¦Steg 1: Besökare¦Vaihe 1: Kävijät¦Passo 1: Visitatori¦Paso 1: Visitantes
+340¦Steg 2: Kunskap¦Vaihe 2: Tietämys¦Passo 2: Conoscenza¦Paso 2: Conocimiento
+341¦Steg 3: Schemaläggning¦Vaihe 3: Aikataulutus¦Passo 3: Pianificazione¦Paso 3: Programación
+342¦Steg 4: AI-motor¦Vaihe 4: Tekoälymoottori¦Passo 4: Motore IA¦Paso 4: Motor de IA
+343¦Stödda leverantörer¦Tuetut palveluntarjoajat¦Provider supportati¦Proveedores compatibles
+344¦Påslag på tokens¦Tokenien lisämaksu¦Ricarico sui token¦Recargo sobre los tokens
+345¦Prova live¦Kokeile livenä¦Provalo dal vivo¦Pruébalo en vivo
+346¦Till skillnad från enkla botar som låtsas boka tider låser Crescelo tiden direkt när en kund bekräftar och håller den säkert innan den synkas till din Google Kalender eller Outlook.¦Toisin kuin yksinkertaiset botit, jotka vain esittävät varaavansa aikoja, Crescelo lukitsee ajan heti, kun asiakas vahvistaa, ja pitää sen turvassa ennen kuin se synkronoidaan suoraan Google-kalenteriisi tai Outlookiisi.¦A differenza dei semplici bot che fingono di prenotare, Crescelo blocca lo slot nell'istante in cui il cliente conferma e lo mantiene al sicuro prima di sincronizzarlo con il tuo Google Calendar o Outlook.¦A diferencia de los bots simples que fingen reservar citas, Crescelo bloquea el hueco en el instante en que el cliente confirma y lo mantiene a salvo antes de sincronizarlo con tu Google Calendar u Outlook.
+347¦Ladda upp dina dokument, testa bokningsmotorn och lägg widgeten på din webbplats.¦Lataa dokumenttisi, testaa varausmoottori ja lisää widget verkkosivustollesi.¦Carica i tuoi documenti, prova il motore di prenotazione e aggiungi il widget al tuo sito.¦Sube tus documentos, prueba el motor de reservas y añade el widget a tu sitio web.
+348¦Se prisplaner¦Katso hintapaketit¦Vedi i piani tariffari¦Ver planes de precios
+349¦Besökare begränsas i antal anrop för att stoppa missbruk¦Kävijöiden pyyntömäärää rajoitetaan väärinkäytön estämiseksi¦I visitatori hanno un limite di richieste per impedire gli abusi¦Los visitantes tienen un límite de peticiones para evitar abusos
+350¦Webb, WhatsApp och Telegram delar en gemensam samtalshistorik¦Verkko, WhatsApp ja Telegram jakavat yhteisen keskusteluhistorian¦Web, WhatsApp e Telegram condividono un'unica cronologia delle conversazioni¦Web, WhatsApp y Telegram comparten un único historial de conversaciones
+351¦Webhook-signaturer verifieras innan något bearbetas¦Webhook-allekirjoitukset tarkistetaan ennen kuin mitään käsitellään¦Le firme dei webhook vengono verificate prima di elaborare qualsiasi cosa¦Las firmas de los webhooks se verifican antes de procesar nada
+352¦Inga påslag på AI. Direkta strömmande svar med automatisk reservväxling.¦Ei lisämaksua tekoälystä. Välittömät suoratoistovastaukset automaattisella varavaihdolla.¦Nessun ricarico sull'IA. Risposte in streaming istantanee con failover automatico.¦Sin recargo sobre la IA. Respuestas en streaming instantáneas con conmutación automática por error.
+353¦Ingen lagring av privata kunduppgifter på tredjeparters servrar¦Yksityisiä asiakastietoja ei säilytetä kolmansien osapuolten palvelimilla¦Nessuna conservazione dei dati privati dei clienti su server di terze parti¦Sin conservación de datos privados de clientes en servidores de terceros
+354¦Inga påslag på tokens – din nyckel, ditt pris¦Ei tokenien lisämaksua – sinun avaimesi, sinun hintasi¦Nessun ricarico sui token: la tua chiave, la tua tariffa¦Sin recargo sobre los tokens: tu clave, tu tarifa
+355¦Rapportera en bugg¦Ilmoita virheestä¦Segnala un bug¦Informa de un error
+356¦Rapportera en bugg | Crescelo SaaS¦Ilmoita virheestä | Crescelo SaaS¦Segnala un bug | Crescelo SaaS¦Informa de un error | Crescelo SaaS
+357¦! Vi har loggat din buggrapport i vår ärendekö och skickat en bekräftelselänk till¦! Olemme kirjanneet virheilmoituksesi ongelmajonoomme ja lähettäneet vahvistuslinkin osoitteeseen¦! Abbiamo registrato la tua segnalazione nella nostra coda di ticket e inviato un link di conferma a¦! Hemos registrado tu informe de error en nuestra cola de incidencias y enviado un enlace de confirmación a
+358¦(Samlas in automatiskt för felsökning)¦(Kerätään automaattisesti virheenkorjausta varten)¦(Raccolto automaticamente per il debug)¦(Se recoge automáticamente para depurar)
+359¦(Valfritt)¦(Valinnainen)¦(Facoltativo)¦(Opcional)
+360¦(Visningsområde:¦(Näkymä:¦(Viewport:¦(Ventana de visualización:
+361¦=
+362¦Faktiskt beteende¦Todellinen toiminta¦Comportamento effettivo¦Comportamiento real
+363¦Berörd komponent / område *¦Vaikuttava komponentti / alue *¦Componente / area interessata *¦Componente / área afectada *
+364¦Alla buggrapporter skapar ett ärende med en privat länk som skickas till din e-post.¦Kaikista virheilmoituksista luodaan tiketti, jonka yksityinen linkki lähetetään sähköpostiisi.¦Ogni segnalazione crea un ticket con un link privato inviato alla tua e-mail.¦Cada informe de error crea una incidencia con un enlace privado que se envía a tu correo.
+365¦Tiden bör bokas och en bekräftelse bör visas.¦Ajan pitäisi varautua ja vahvistusilmoituksen pitäisi näkyä.¦L'appuntamento dovrebbe essere creato e dovrebbe comparire il messaggio di conferma.¦La cita debería crearse y mostrarse el aviso de confirmación.
+366¦Webbläsare:¦Selain:¦Browser:¦Navegador:
+367¦Buggdetaljer¦Virheen tiedot¦Dettagli del bug¦Detalles del error
+368¦Buggärende¦Virhetiketti¦Ticket del bug¦Incidencia de error
+369¦Företag / arbetsyta¦Yritys / työtila¦Azienda / workspace¦Empresa / espacio de trabajo
+370¦Skapad¦Luotu¦Creato¦Creado
+371¦Kritisk¦Kriittinen¦Critico¦Crítico
+372¦Identifierar...¦Tunnistetaan...¦Rilevamento in corso...¦Detectando...
+373¦Enhetstyp:¦Laitetyyppi:¦Tipo di dispositivo:¦Tipo de dispositivo:
+374¦t.ex. Chattwidgeten kraschar i Safari på iOS när man trycker på röstknappen¦esim. Chat-widget kaatuu iOS:n Safarissa, kun painetaan ääninappia¦es. Il widget della chat si blocca su Safari iOS quando si tocca il pulsante vocale¦p. ej., El widget del chat se bloquea en Safari de iOS al pulsar el botón de voz
+375¦E-postadress *¦Sähköpostiosoite *¦Indirizzo e-mail *¦Dirección de correo electrónico *
+376¦Felmeddelanden eller konsolloggar¦Virheilmoitukset tai konsolilokit¦Messaggi di errore o log della console¦Mensajes de error o registros de la consola
+377¦Förväntat beteende¦Odotettu toiminta¦Comportamento previsto¦Comportamiento esperado
+378¦Hög¦Korkea¦Alta¦Alta
+379¦En viktig funktion är nedsatt; arbetet störs¦Tärkeä ominaisuus on heikentynyt; työ häiriintyy¦Una funzione importante è compromessa; il lavoro ne risente¦Una función importante está afectada; el trabajo se ve interrumpido
+380¦Typ av problem¦Ongelman luokitus¦Classificazione del problema¦Clasificación del problema
+381¦Ärende / sammanfattning *¦Ongelman otsikko / yhteenveto *¦Titolo / riepilogo del problema *¦Título / resumen del problema *
+382¦=
+383¦jordan@company.com¦jordan@company.com¦jordan@company.com¦jordan@company.com
+384¦Låg¦Matala¦Bassa¦Baja
+385¦Mindre visuellt fel, kosmetisk brist eller stavfel¦Pieni visuaalinen häiriö, ulkoasuvirhe tai kirjoitusvirhe¦Piccolo difetto visivo, imperfezione estetica o refuso¦Pequeño fallo visual, defecto estético o errata
+386¦Normal¦Normaali¦Normale¦Normal
+387¦Ingenting händer, konsolen visar internt serverfel 500.¦Mitään ei tapahdu, konsoli näyttää sisäisen palvelinvirheen 500.¦Non succede nulla, la console mostra un errore interno del server 500.¦No pasa nada, la consola muestra un error interno del servidor 500.
+388¦Operativsystem / plattform:¦Käyttöjärjestelmä / alusta:¦Sistema operativo / piattaforma:¦SO / plataforma:
+389¦Sidans webbadress där buggen uppstod:¦Sivun osoite, jossa virhe ilmeni:¦URL della pagina in cui si è verificato il bug:¦URL de la página donde ocurrió el error:
+390¦Klistra in felmeddelanden, röda konsolloggar eller stackspår här...¦Liitä tähän virheilmoitukset, punaiset konsolilokit tai pinon jäljet...¦Incolla qui messaggi di errore, log rossi della console o stack trace...¦Pega aquí los mensajes de error, los registros rojos de la consola o la traza de pila...
+391¦Ange numrerade steg som gör att vi kan se buggen själva:¦Anna numeroidut vaiheet, joiden avulla voimme nähdä virheen itse:¦Fornisci istruzioni numerate passo per passo che ci permettano di osservare il bug:¦Indica instrucciones numeradas paso a paso que nos permitan ver el error:
+392¦Rapportera ett problem. Hjälp oss att uppnå perfektion.¦Ilmoita ongelmasta. Auta meitä tavoittelemaan täydellisyyttä.¦Segnala un problema. Aiutaci a raggiungere la perfezione.¦Informa de un problema. Ayúdanos a lograr la perfección.
+393¦Rapportera ett problem till¦Ilmoita toisesta ongelmasta¦Segnala un altro problema¦Informar de otro problema
+394¦Skärm:¦Näyttö:¦Schermo:¦Pantalla:
+395¦Länk till skärmdump / skärminspelning¦Linkki kuvakaappaukseen / näytön tallenteeseen¦URL dello screenshot / della registrazione dello schermo¦URL de la captura / grabación de pantalla
+396¦Allvarlighetsgrad *¦Vakavuusaste *¦Livello di gravità *¦Nivel de gravedad *
+397¦Steg för att återskapa *¦Toistamisen vaiheet *¦Passaggi per riprodurre *¦Pasos para reproducirlo *
+398¦Skicka buggrapport¦Lähetä virheilmoitus¦Invia la segnalazione¦Enviar informe de error
+399¦Skickar...¦Lähetetään...¦Invio in corso...¦Enviando...
+400¦Systemdiagnostik¦Järjestelmädiagnostiikka¦Diagnostica di sistema¦Diagnóstico del sistema
+401¦Systemavbrott som blockerar bokningar eller leder till dataförlust¦Järjestelmäkatko, joka estää varaukset tai johtaa tietojen menetykseen¦Interruzione del sistema che blocca le prenotazioni o causa perdita di dati¦Caída del sistema que bloquea las citas o provoca pérdida de datos
+402¦Tack,¦Kiitos,¦Grazie,¦Gracias,
+403¦Oväntat fel eller irritationsmoment med en genväg¦Odottamaton häiriö tai ärsytys, jolle on kiertotie¦Problema o fastidio imprevisto con una soluzione alternativa¦Fallo o molestia inesperados con una solución alternativa
+404¦Visa ärendestatus¦Näytä tiketin tila¦Vedi lo stato del ticket¦Ver el estado de la incidencia
+405¦Webbplats¦Verkkosivusto¦Sito web¦Sitio web
+406¦Dina uppgifter¦Omat tietosi¦I tuoi dati¦Tus datos
+407¦Ditt namn *¦Nimesi *¦Il tuo nome *¦Tu nombre *
+408¦Crescelos färdplan och lanseringsstatus¦Crescelon tiekartta ja julkaisutilanne¦Roadmap del prodotto Crescelo e stato dei rilasci¦Hoja de ruta de producto de Crescelo y estado de lanzamientos
+409¦Färdplan¦Tiekartta¦Roadmap¦Hoja de ruta
+410¦Insamling av leads med endagspass¦Liidien keruu päiväpassilla¦Acquisizione di lead con pass di un giorno¦Captación de leads con pase de un día
+411¦En enkel lista över vad som finns nu, vad som kräver inställning från din sida, vad vi bygger och vad som bara är planerat. Senast granskad september 2026.¦Selkeä lista siitä, mitä on nyt saatavilla, mikä vaatii asetuksia sinun puoleltasi, mitä rakennamme ja mikä on vasta suunnitteilla. Viimeksi tarkistettu syyskuussa 2026.¦Un elenco chiaro di ciò che è disponibile ora, di ciò che richiede configurazione da parte tua, di ciò che stiamo costruendo e di ciò che è solo in programma. Ultima revisione: settembre 2026.¦Una lista clara de lo que está disponible ahora, lo que requiere configuración por tu parte, lo que estamos construyendo y lo que solo está planificado. Última revisión: septiembre de 2026.
+412¦Granskning av ackrediterade investerare¦Hyväksyttyjen sijoittajien tarkistus¦Verifica degli investitori accreditati¦Verificación de inversores acreditados
+413¦=
+414¦Byråer och integrationer¦Toimistot ja integraatiot¦Agenzie e integrazioni¦Agencias e integraciones
+415¦AI-plattform och concierge¦Tekoälyalusta ja concierge¦Piattaforma IA e concierge¦Plataforma de IA y conserje
+416¦Alla 11 arketyper¦Kaikki 11 arkkityyppiä¦Tutti gli 11 archetipi¦Los 11 arquetipos
+417¦och vad som kommer härnäst¦ja mitä tulee seuraavaksi¦e cosa arriverà dopo¦y qué viene después
+418¦Svar från dina egna dokument, med hybridsökning och en "jag vet inte"-väg som erbjuder en bokning eller en person¦Vastaukset omista dokumenteistasi hybridihaulla ja "en tiedä" -polulla, joka tarjoaa varauksen tai ihmisen¦Risposte dai tuoi documenti, con ricerca ibrida e un percorso "non lo so" che propone una prenotazione o una persona¦Respuestas a partir de tus propios documentos, con búsqueda híbrida y una vía de "no lo sé" que ofrece una reserva o una persona
+419¦Tidsbokning i chatten med låsning av tiden för att förhindra dubbelbokningar¦Ajanvaraus chatissa ajan lukituksella kaksoisvarausten estämiseksi¦Prenotazione di appuntamenti in chat con blocco dello slot per evitare doppie prenotazioni¦Reserva de citas en el chat con bloqueo del hueco para evitar dobles reservas
+420¦Bokningar och kliniker¦Ajanvaraukset ja klinikat¦Appuntamenti e cliniche¦Citas y clínicas
+421¦=
+422¦Kvalificering efter förvaltat kapital¦Hallinnoitavan omaisuuden tason mukainen kelpoisuus¦Qualificazione per fascia di patrimonio gestito¦Cualificación por nivel de activos gestionados
+423¦Automatiska SMS-/e-postbekräftelser¦Automaattiset tekstiviesti- ja sähköpostivahvistukset¦Conferme automatiche via SMS/e-mail¦Confirmaciones automáticas por SMS/correo electrónico
+424¦Tillgängligt idag¦Saatavilla tänään¦Disponibile oggi¦Disponible hoy
+425¦Tillgängligt, kräver inställning¦Saatavilla, vaatii asetukset¦Disponibile, richiede configurazione¦Disponible, requiere configuración
+426¦B2B-programvara¦B2B-ohjelmisto¦Software B2B¦Software B2B
+427¦Använd din egen AI-leverantör (OpenAI, Anthropic, Google Gemini, Groq, DeepSeek eller en egen modell) utan påslag på användningen¦Käytä omaa tekoälypalveluntarjoajaasi (OpenAI, Anthropic, Google Gemini, Groq, DeepSeek tai itse ylläpitämäsi malli) ilman käyttölisää¦Usa il tuo provider IA (OpenAI, Anthropic, Google Gemini, Groq, DeepSeek o un modello self-hosted) senza ricarico sull'utilizzo¦Usa tu propio proveedor de IA (OpenAI, Anthropic, Google Gemini, Groq, DeepSeek o un modelo alojado por ti) sin recargo sobre el uso
+428¦Dirigering mellan köpare och säljare¦Ostajan ja myyjän ohjaus¦Instradamento acquirente/venditore¦Enrutamiento comprador/vendedor
+429¦Kalender: bokningar exporteras som ett kalenderflöde du prenumererar på; tvåvägssynkronisering med Google Kalender eller Outlook finns ännu inte¦Kalenteri: varaukset viedään kalenterisyötteenä, jonka tilaat; kaksisuuntaista synkronointia Google-kalenterin tai Outlookin kanssa ei vielä ole¦Calendario: le prenotazioni vengono esportate come feed del calendario a cui ti iscrivi; la sincronizzazione bidirezionale con Google Calendar o Outlook non è ancora disponibile¦Calendario: las reservas se exportan como un feed de calendario al que te suscribes; la sincronización bidireccional con Google Calendar u Outlook todavía no está disponible
+430¦Kanaler: WhatsApp och Telegram¦Kanavat: WhatsApp ja Telegram¦Canali: WhatsApp e Telegram¦Canales: WhatsApp y Telegram
+431¦Kontroll av gruppers kapacitet¦Ryhmäkapasiteetin tarkistukset¦Verifica della capienza dei corsi¦Comprobación del aforo de las clases
+432¦Karuseller med kundreferenser¦Asiakasesittelykarusellit¦Caroselli di vetrina clienti¦Carruseles de clientes destacados
+433¦COMMUNITYNS RÖSTNING¦YHTEISÖN ÄÄNESTYS¦VOTAZIONE DELLA COMMUNITY¦VOTACIÓN DE LA COMUNIDAD
+434¦Intagsformulär utan krockar¦Päällekkäisyydettömät esitietolomakkeet¦Questionari di raccolta informazioni senza conflitti¦Cuestionarios de admisión sin conflictos
+435¦Formulär om projektets omfattning¦Luovan työn laajuuden kartoituslomake¦Questionario sull'ambito creativo¦Cuestionario sobre el alcance creativo
+436¦Crescelos flaggskeppsupplevelse¦Crescelon lippulaivakokemus¦Esperienza Crescelo di punta¦Experiencia insignia de Crescelo
+437¦Maskot som följer muspekaren¦Hiirtä seuraava maskotti¦Mascotte che segue il cursore¦Mascota que sigue el cursor
+438¦Egna domäner för värdade företagssidor med automatiskt SSL¦Omat verkkotunnukset isännöidyille yrityssivuille automaattisella SSL:llä¦Domini personalizzati per le pagine aziendali ospitate, con SSL automatico¦Dominios propios para las páginas de empresa alojadas, con SSL automático
+439¦Egen WebGL-estetik¦Mukautettu WebGL-estetiikka¦Estetica WebGL personalizzata¦Estética WebGL personalizada
+440¦Deep tech och beräkning¦Syväteknologia ja laskenta¦Deep tech e calcolo¦Deep tech y computación
+441¦Bredare stöd för kalendrar och domäner¦Laajempi kalenteri- ja verkkotunnustuki¦Supporto più ampio per calendari e domini¦Mayor compatibilidad con calendarios y dominios
+442¦Tandvård och sjukvårdsmottagning¦Hammashoito ja terveydenhuollon vastaanotto¦Studio dentistico e sanitario¦Clínica dental y sanitaria
+443¦Design och byrå¦Design ja toimisto¦Design e agenzia¦Diseño y agencia
+444¦Terminaltema för utvecklare¦Kehittäjälähtöinen terminaaliteema¦Tema terminale pensato per gli sviluppatori¦Tema de terminal pensado para desarrolladores
+445¦Direkt synkronisering med advokatens kalender¦Suora synkronointi lakimiehen kalenterin kanssa¦Sincronizzazione diretta con il calendario dell'avvocato¦Sincronización directa con la agenda del abogado
+446¦Diskret mottagning av nya kunder för family offices, private equity och förmögenhetsförvaltare.¦Huomaavainen asiakkaiden perehdytys family officeille, pääomasijoitusyhtiöille ja varainhoitajille.¦Accoglienza discreta dei clienti per family office, private equity e wealth manager.¦Incorporación discreta de clientes para family offices, capital privado y gestores patrimoniales.
+447¦Diskreta första bedömningar av ärenden, guider till rättsområden och konfidentiella konsultationer.¦Huomaavaiset ensimmäiset asian arvioinnit, oikeudenalojen oppaat ja luottamukselliset konsultaatiot.¦Prime valutazioni riservate dei casi, guide alle aree di pratica e consulenze confidenziali.¦Primeras valoraciones discretas de casos, guías de áreas de práctica y consultas confidenciales.
+448¦Varje arketyp innehåller en dedikerad värdad yta med hög konvertering, anpassad branschkunskap, prisstrukturer för tjänster och kalenderlås för bokningar. Vi finslipar dem innan den breda lanseringen.¦Jokainen arkkityyppi sisältää oman, korkean konversion isännöidyn pinnan, mukautetun toimialatiedon, palveluiden hinnoittelurakenteet ja kalenterin varauslukot. Viimeistelemme ne ennen laajaa julkaisua.¦Ogni archetipo comprende una superficie ospitata dedicata ad alta conversione, conoscenze di settore personalizzate, strutture di prezzo dei servizi e blocchi del calendario per le prenotazioni. Li stiamo rifinendo prima del rilascio generale.¦Cada arquetipo incluye una superficie alojada dedicada de alta conversión, conocimiento sectorial personalizado, jerarquías de precios de servicios y bloqueos de calendario para las reservas. Los estamos puliendo antes del lanzamiento general.
+449¦Inbäddningsbar chattwidget, värdad företagssida och insamling av leads¦Upotettava chat-widget, isännöity yrityssivu ja liidien keruu¦Widget di chat incorporabile, pagina aziendale ospitata e acquisizione di lead¦Widget de chat insertable, página de empresa alojada y captación de leads

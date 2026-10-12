@@ -1,5 +1,6 @@
 'use client';
 
+import { T, useT } from '@/lib/i18n/context';
 import { useState } from 'react';
 export type VisualKind = 'sources' | 'retrieval' | 'calendar' | 'channels' | 'inbox' | 'config';
 
@@ -8,6 +9,7 @@ export type VisualKind = 'sources' | 'retrieval' | 'calendar' | 'channels' | 'in
 /* ----------------------- Feature visuals ----------------------- */
 
 function SourcesVisual() {
+  const __t = useT();
   const rows = [
     { name: 'Price list.pdf', kind: 'PDF', state: 'Ready' },
     { name: 'about-us (web page)', kind: 'URL', state: 'Ready' },
@@ -17,8 +19,8 @@ function SourcesVisual() {
   const [selected, setSelected] = useState(0);
   return (
     <div className="mk-mock">
-      <p className="mk-mock-label">Knowledge sources</p>
-      <ul className="mk-rows" role="tablist" aria-label="Knowledge sources">
+      <p className="mk-mock-label"><T>Knowledge sources</T></p>
+      <ul className="mk-rows" role="tablist" aria-label={__t("Knowledge sources")}>
         {rows.map((r, i) => (
           <li key={r.name} role="presentation">
             <button
@@ -28,9 +30,9 @@ function SourcesVisual() {
               className={`mk-row ${selected === i ? 'is-active' : ''}`}
               onClick={() => setSelected(i)}
             >
-              <span className="mk-row-kind">{r.kind}</span>
-              <span className="mk-row-name">{r.name}</span>
-              <span className={`mk-row-state ${r.state === 'Indexing' ? 'is-busy' : ''}`}>{r.state}</span>
+              <span className="mk-row-kind"><T>{r.kind}</T></span>
+              <span className="mk-row-name"><T>{r.name}</T></span>
+              <span className={`mk-row-state ${r.state === 'Indexing' ? 'is-busy' : ''}`}><T>{r.state}</T></span>
             </button>
           </li>
         ))}
@@ -40,25 +42,26 @@ function SourcesVisual() {
 }
 
 function RetrievalVisual() {
+  const __t = useT();
   const [mode, setMode] = useState<'keyword' | 'hybrid'>('hybrid');
   return (
     <div className="mk-mock">
-      <p className="mk-mock-label">Visitor asks: “what does it cost?”</p>
-      <div className="mk-toggle" role="group" aria-label="Search method">
+      <p className="mk-mock-label"><T>Visitor asks: “what does it cost?”</T></p>
+      <div className="mk-toggle" role="group" aria-label={__t("Search method")}>
         {(['keyword', 'hybrid'] as const).map((m) => (
           <button key={m} type="button" aria-pressed={mode === m} className={mode === m ? 'is-on' : ''} onClick={() => setMode(m)}>
-            {m === 'keyword' ? 'Keyword only' : 'Meaning + keyword'}
+            <T>{m === 'keyword' ? 'Keyword only' : 'Meaning + keyword'}</T>
           </button>
         ))}
       </div>
       <div className="mk-passage-stack">
         <div className={`mk-passage ${mode === 'hybrid' ? 'is-hit' : 'is-miss'}`}>
-          <b>Pricing</b>
-          <span>{mode === 'hybrid' ? 'Found: related word “pricing” matches “cost”.' : 'Missed: the word “cost” is not on this page.'}</span>
+          <b><T>Pricing</T></b>
+          <span><T>{mode === 'hybrid' ? 'Found: related word “pricing” matches “cost”.' : 'Missed: the word “cost” is not on this page.'}</T></span>
         </div>
         <div className="mk-passage">
-          <b>About us</b>
-          <span>Ranked lower.</span>
+          <b><T>About us</T></b>
+          <span><T>Ranked lower.</T></span>
         </div>
       </div>
     </div>
@@ -71,7 +74,7 @@ function CalendarVisual() {
   const taken = new Set(['11:00', '15:30']);
   return (
     <div className="mk-mock">
-      <p className="mk-mock-label">Live calendar slot picker</p>
+      <p className="mk-mock-label"><T>Live calendar slot picker</T></p>
       <div className="mk-slots">
         {times.map((t) => (
           <button
@@ -82,34 +85,35 @@ function CalendarVisual() {
             className={`mk-slot ${picked === t ? 'is-picked' : ''} ${taken.has(t) ? 'is-taken' : ''}`}
             onClick={() => setPicked(t)}
           >
-            {t}
+            <T>{t}</T>
           </button>
         ))}
       </div>
       <p className="mk-logline" aria-live="polite">
-        {picked ? `Slot ${picked} would be held, then checked again on confirm.` : 'Greyed slots are already taken.'}
+        <T>{picked ? `Slot ${picked} would be held, then checked again on confirm.` : 'Greyed slots are already taken.'}</T>
       </p>
     </div>
   );
 }
 
 function ChannelsVisual() {
+  const __t = useT();
   const chans = ['Web widget', 'Hosted page', 'WhatsApp', 'Telegram'];
   const [active, setActive] = useState(0);
   return (
     <div className="mk-mock">
-      <p className="mk-mock-label">One assistant, several places</p>
-      <div className="mk-toggle mk-toggle-wrap" role="tablist" aria-label="Channel">
+      <p className="mk-mock-label"><T>One assistant, several places</T></p>
+      <div className="mk-toggle mk-toggle-wrap" role="tablist" aria-label={__t("Channel")}>
         {chans.map((c, i) => (
           <button key={c} role="tab" type="button" aria-selected={active === i} className={active === i ? 'is-on' : ''} onClick={() => setActive(i)}>
-            {c}
+            <T>{c}</T>
           </button>
         ))}
       </div>
-      <p className="mk-bubble mk-bubble-user">Do you have space this week?</p>
+      <p className="mk-bubble mk-bubble-user"><T>Do you have space this week?</T></p>
       <p className="mk-bubble mk-bubble-bot">
-        Yes, Thursday has openings.
-        <span className="mk-source">Answering in: {chans[active]}</span>
+        <T>Yes, Thursday has openings.</T>
+        <span className="mk-source"><T>Answering in:</T> <T>{chans[active]}</T></span>
       </p>
     </div>
   );
@@ -124,14 +128,14 @@ function InboxVisual() {
   const [sel, setSel] = useState(0);
   return (
     <div className="mk-mock">
-      <p className="mk-mock-label">Live conversations</p>
+      <p className="mk-mock-label"><T>Live conversations</T></p>
       <ul className="mk-rows">
         {items.map((it, i) => (
           <li key={it.who}>
             <button type="button" className={`mk-row ${sel === i ? 'is-active' : ''}`} aria-pressed={sel === i} onClick={() => setSel(i)}>
-              <span className="mk-row-name">{it.who}</span>
-              <span className="mk-row-kind">{it.what}</span>
-              {it.live ? <span className="mk-row-state is-busy">Live</span> : null}
+              <span className="mk-row-name"><T>{it.who}</T></span>
+              <span className="mk-row-kind"><T>{it.what}</T></span>
+              {it.live ? <span className="mk-row-state is-busy"><T>Live</T></span> : null}
             </button>
           </li>
         ))}
@@ -149,31 +153,32 @@ function Switch({ on, set, label }: { on: boolean; set: (v: boolean) => void; la
 }
 
 function ConfigVisual() {
+  const __t = useT();
   const [tone, setTone] = useState<'Friendly' | 'Formal'>('Friendly');
   const [sound, setSound] = useState(true);
   const [handover, setHandover] = useState(true);
   return (
     <div className="mk-mock">
-      <p className="mk-mock-label">Assistant configuration</p>
+      <p className="mk-mock-label"><T>Assistant configuration</T></p>
       <div className="mk-set">
-        <span>Tone of voice</span>
-        <div className="mk-toggle" role="group" aria-label="Tone of voice">
+        <span><T>Tone of voice</T></span>
+        <div className="mk-toggle" role="group" aria-label={__t("Tone of voice")}>
           {(['Friendly', 'Formal'] as const).map((t) => (
             <button key={t} type="button" aria-pressed={tone === t} className={tone === t ? 'is-on' : ''} onClick={() => setTone(t)}>
-              {t}
+              <T>{t}</T>
             </button>
           ))}
         </div>
       </div>
       <div className="mk-set">
-        <span>Sound on new message</span>
+        <span><T>Sound on new message</T></span>
         <Switch on={sound} set={setSound} label="Sound on new message" />
       </div>
       <div className="mk-set">
-        <span>Offer a person when asked</span>
+        <span><T>Offer a person when asked</T></span>
         <Switch on={handover} set={setHandover} label="Offer a person when asked" />
       </div>
-      <p className="mk-bubble mk-bubble-bot">{tone === 'Friendly' ? 'Hi! How can I help today?' : 'Good day. How may I assist you?'}</p>
+      <p className="mk-bubble mk-bubble-bot"><T>{tone === 'Friendly' ? 'Hi! How can I help today?' : 'Good day. How may I assist you?'}</T></p>
     </div>
   );
 }

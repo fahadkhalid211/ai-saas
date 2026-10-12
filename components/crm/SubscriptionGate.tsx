@@ -1,5 +1,6 @@
 'use client';
 
+import { T, TRich, useT } from '@/lib/i18n/context';
 import { useCallback, useEffect, useState } from 'react';
 import { AlertTriangle, CreditCard, LogOut, Sparkles, Send, CheckCircle2 } from 'lucide-react';
 import { BILLING_PLANS, annualSavingsPercent, planAnnualSavingsDollars } from '@/lib/billing/plans';
@@ -30,6 +31,7 @@ const fmtDate = (iso: string | null) => (iso ? new Date(iso).toLocaleDateString(
  * Nothing is shown to older workspaces or to the platform owner.
  */
 export function SubscriptionGate({ isMasterAdmin, onLogout, onOpenBilling, onOpenSupport }: { isMasterAdmin: boolean; onLogout: () => void; onOpenBilling: () => void; onOpenSupport?: () => void }) {
+  const __t = useT();
   const [data, setData] = useState<BillingSummary | null>(null);
   const [planId, setPlanId] = useState<string>('growth');
   const [interval, setInterval] = useState<'monthly' | 'annual'>('annual');
@@ -210,9 +212,9 @@ export function SubscriptionGate({ isMasterAdmin, onLogout, onOpenBilling, onOpe
       <div role="status" className="flex flex-wrap items-center justify-between gap-2 bg-slate-900 px-4 py-2 text-xs font-medium text-slate-50 dark:bg-slate-800">
         <span className="flex items-center gap-2">
           <Sparkles className="h-4 w-4" />
-          {`Free access with your code: ${trial.daysLeft} ${trial.daysLeft === 1 ? 'day' : 'days'} left, no card needed. It ends on ${fmtDate(trial.endsAt)}. To keep your assistants running after that, choose a plan.`}
+          {__t("Free access with your code: {daysLeft} {n2} left, no card needed. It ends on {n3}. To keep your assistants running after that, choose a plan.", { daysLeft: trial.daysLeft, n2: trial.daysLeft === 1 ? __t("day") : __t("days"), n3: fmtDate(trial.endsAt) })}
         </span>
-        <button type="button" onClick={onOpenBilling} className="rounded-lg bg-white/95 px-3 py-1 text-[11px] font-bold text-slate-900 hover:bg-white cursor-pointer">Plans</button>
+        <button type="button" onClick={onOpenBilling} className="rounded-lg bg-white/95 px-3 py-1 text-[11px] font-bold text-slate-900 hover:bg-white cursor-pointer"><T>Plans</T></button>
       </div>
     );
   }
@@ -222,9 +224,9 @@ export function SubscriptionGate({ isMasterAdmin, onLogout, onOpenBilling, onOpe
       <div role="status" className="flex flex-wrap items-center justify-between gap-2 bg-slate-900 px-4 py-2 text-xs font-medium text-slate-50 dark:bg-slate-800">
         <span className="flex items-center gap-2">
           <Sparkles className="h-4 w-4" />
-          {`Early-bird trial: ${trial.daysLeft} ${trial.daysLeft === 1 ? 'day' : 'days'} left, no card needed. To keep your assistants running after ${fmtDate(trial.endsAt)}, message us and we will set up payment.`}
+          {__t("Early-bird trial: {daysLeft} {n2} left, no card needed. To keep your assistants running after {n3}, message us and we will set up payment.", { daysLeft: trial.daysLeft, n2: trial.daysLeft === 1 ? __t("day") : __t("days"), n3: fmtDate(trial.endsAt) })}
         </span>
-        <button type="button" onClick={onOpenSupport || onOpenBilling} className="rounded-lg bg-white/95 px-3 py-1 text-[11px] font-bold text-slate-900 hover:bg-white cursor-pointer">Contact us to pay</button>
+        <button type="button" onClick={onOpenSupport || onOpenBilling} className="rounded-lg bg-white/95 px-3 py-1 text-[11px] font-bold text-slate-900 hover:bg-white cursor-pointer"><T>Contact us to pay</T></button>
       </div>
     );
   }
@@ -237,17 +239,17 @@ export function SubscriptionGate({ isMasterAdmin, onLogout, onOpenBilling, onOpe
         <span className="flex items-center gap-2">
           {warn ? <AlertTriangle className="h-4 w-4" /> : <Sparkles className="h-4 w-4" />}
           {warn
-            ? 'Your last payment failed. Update your card to keep your assistants running.'
+            ? <T>{'Your last payment failed. Update your card to keep your assistants running.'}</T>
             : cancelling
-              ? `Your subscription is cancelled and ends on ${fmtDate(subscription.nextChargeDate)}. You will not be charged again.`
+              ? __t("Your subscription is cancelled and ends on {n1}. You will not be charged again.", { n1: fmtDate(subscription.nextChargeDate) })
               : trial.status === 'trialing'
-                ? `Free trial: ${trial.daysLeft} ${trial.daysLeft === 1 ? 'day' : 'days'} left. Your card will be charged $${subscription.nextChargeAmount} on ${fmtDate(subscription.nextChargeDate)} unless you cancel first.`
+                ? __t("Free trial: {daysLeft} {n2} left. Your card will be charged ${nextChargeAmount} on {n4} unless you cancel first.", { daysLeft: trial.daysLeft, n2: trial.daysLeft === 1 ? __t("day") : __t("days"), nextChargeAmount: subscription.nextChargeAmount, n4: fmtDate(subscription.nextChargeDate) })
                 : ''}
         </span>
         <span className="flex gap-2">
-          <button type="button" onClick={onOpenBilling} className="rounded-lg bg-white/15 px-3 py-1 text-[11px] font-bold hover:bg-white/25 cursor-pointer">Plans</button>
+          <button type="button" onClick={onOpenBilling} className="rounded-lg bg-white/15 px-3 py-1 text-[11px] font-bold hover:bg-white/25 cursor-pointer"><T>Plans</T></button>
           <button type="button" onClick={openPortal} className="rounded-lg bg-white/95 px-3 py-1 text-[11px] font-bold text-slate-900 hover:bg-white cursor-pointer">
-            {warn ? 'Update card' : cancelling ? 'Resume' : 'Cancel or manage'}
+            {warn ? <T>{'Update card'}</T> : cancelling ? <T>{'Resume'}</T> : <T>{'Cancel or manage'}</T>}
           </button>
         </span>
       </div>
@@ -266,31 +268,31 @@ export function SubscriptionGate({ isMasterAdmin, onLogout, onOpenBilling, onOpe
       <div className="mx-auto my-8 w-full max-w-3xl rounded-3xl border border-[#08251a]/10 bg-white ring-1 ring-[#08251a]/10 shadow-[0_30px_80px_-30px_rgba(8,37,26,0.45)] p-6 text-[#08251a] shadow-2xl sm:p-8">
         {confirming ? (
           <div className="py-16 text-center" role="status">
-            <p className="text-lg font-semibold text-[#08251a]">Confirming your card…</p>
-            <p className="mt-2 text-sm text-[#4b5d54]">This takes a few seconds. Please do not close this page.</p>
+            <p className="text-lg font-semibold text-[#08251a]"><T>Confirming your card…</T></p>
+            <p className="mt-2 text-sm text-[#4b5d54]"><T>This takes a few seconds. Please do not close this page.</T></p>
           </div>
         ) : (
           <>
             <div className="text-center">
               <span className="inline-flex items-center gap-2 rounded-full border border-[#08251a]/20 bg-[#abff44]/40 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#0d5b2a]">
-                <CreditCard className="h-3.5 w-3.5" /> {expired ? 'Subscription ended' : `${TRIAL_DAYS}-day free trial`}
+                <CreditCard className="h-3.5 w-3.5" /> {expired ? <T>{'Subscription ended'}</T> : __t("{TRIAL_DAYS}-day free trial", { TRIAL_DAYS: TRIAL_DAYS })}
               </span>
               <h1 id="sg-title" className="mt-3 text-3xl text-[#08251a]" style={{ fontFamily: 'var(--kx-serif, Georgia, serif)' }}>
-                {expired ? 'Choose a plan to switch your assistants back on' : earlyBird && !cardsWork ? 'Early birds, this one is on us 🐣' : 'Start your free trial'}
+                {expired ? <T>{'Choose a plan to switch your assistants back on'}</T> : earlyBird && !cardsWork ? <T>{'Early birds, this one is on us 🐣'}</T> : <T>{'Start your free trial'}</T>}
               </h1>
               <p className="mx-auto mt-2 max-w-xl text-sm leading-relaxed text-[#33473d]">
                 {expired
-                  ? 'Your assistants are paused. Your data is kept for 30 days. Pick a plan, or message us below and we will arrange payment by hand.'
+                  ? <T>{'Your assistants are paused. Your data is kept for 30 days. Pick a plan, or message us below and we will arrange payment by hand.'}</T>
                   : earlyBird && !cardsWork
-                    ? `We are just launching, and our card payments are still getting their wings. So instead of making you hop through hoops, early birds get ${TRIAL_DAYS} free days with every Growth feature. No card, no catch. Build your assistant, put it on your site and see what it can do.`
-                    : `You pay nothing today. Your ${TRIAL_DAYS}-day trial includes every Growth feature. If you do not cancel before it ends, your card is charged automatically. Cancel any time and you are never charged for the trial.`}
+                    ? __t("We are just launching, and our card payments are still getting their wings. So instead of making you hop through hoops, early birds get {TRIAL_DAYS} free days with every Growth feature. No card, no catch. Build your assistant, put it on your site and see what it can do.", { TRIAL_DAYS: TRIAL_DAYS })
+                    : __t("You pay nothing today. Your {TRIAL_DAYS}-day trial includes every Growth feature. If you do not cancel before it ends, your card is charged automatically. Cancel any time and you are never charged for the trial.", { TRIAL_DAYS: TRIAL_DAYS })}
               </p>
             </div>
 
-            <div className="mt-5 flex justify-center" role="group" aria-label="Billing period">
+            <div className="mt-5 flex justify-center" role="group" aria-label={__t("Billing period")}>
               {(['annual', 'monthly'] as const).map((i) => (
                 <button key={i} type="button" onClick={() => setInterval(i)} aria-pressed={interval === i} className={`px-4 py-1.5 text-xs font-semibold first:rounded-l-full last:rounded-r-full border border-[#08251a]/15 cursor-pointer ${interval === i ? 'bg-[#abff44] text-[#08251a]' : 'bg-[#f5f3dd] text-[#08251a]'}`}>
-                  {i === 'annual' ? `Annual · save ${annualSavingsPercent()}%` : 'Monthly'}
+                  {i === 'annual' ? __t("Annual · save {n1}%", { n1: annualSavingsPercent() }) : <T>{'Monthly'}</T>}
                 </button>
               ))}
             </div>
@@ -302,10 +304,14 @@ export function SubscriptionGate({ isMasterAdmin, onLogout, onOpenBilling, onOpe
                 return (
                   <button key={p.id} type="button" onClick={() => setPlanId(p.id)} aria-pressed={on} className={`rounded-2xl border p-4 text-left transition cursor-pointer ${on ? 'border-[#abff44] bg-[#abff44]/25' : 'border-[#08251a]/10 bg-[#faf9ea] hover:border-[#08251a]/40'}`}>
                     <p className="text-sm font-bold text-[#08251a]">{p.name}</p>
-                    <p className="mt-1 text-2xl font-semibold text-[#08251a]">${monthly}<span className="text-xs font-normal text-[#4b5d54]"> / month</span></p>
-                    <p className="mt-1 text-[11px] text-[#4b5d54]">{interval === 'annual' ? `Billed $${p.annualMonthlyPrice * 12} per year` : 'Billed monthly'}</p>
-                    {interval === 'annual' && <p className="mt-1 text-[11px] font-semibold text-[#0d5b2a]">You save ${planAnnualSavingsDollars(p)} a year</p>}
-                    <p className="mt-2 text-[11px] leading-snug text-[#33473d]">{p.chatSessionsLimit.toLocaleString('en-US')} chat sessions, {p.botLimit === 'Unlimited' ? 'unlimited' : p.botLimit} {p.botLimit === 1 ? 'assistant' : 'assistants'}</p>
+                    <p className="mt-1 text-2xl font-semibold text-[#08251a]">${monthly}<span className="text-xs font-normal text-[#4b5d54]"> <T>/ month</T></span></p>
+                    <p className="mt-1 text-[11px] text-[#4b5d54]">{interval === 'annual' ? __t("Billed ${n1} per year", { n1: p.annualMonthlyPrice * 12 }) : <T>{'Billed monthly'}</T>}</p>
+                    {interval === 'annual' && <p className="mt-1 text-[11px] font-semibold text-[#0d5b2a]">{__t("You save ${amount} a year", { amount: planAnnualSavingsDollars(p) })}</p>}
+                    <p className="mt-2 text-[11px] leading-snug text-[#33473d]">{p.botLimit === 1
+                      ? __t("{sessions} chat sessions, 1 assistant", { sessions: p.chatSessionsLimit.toLocaleString('en-US') })
+                      : p.botLimit === 'Unlimited'
+                        ? __t("{sessions} chat sessions, unlimited assistants", { sessions: p.chatSessionsLimit.toLocaleString('en-US') })
+                        : __t("{sessions} chat sessions, {bots} assistants", { sessions: p.chatSessionsLimit.toLocaleString('en-US'), bots: p.botLimit })}</p>
                   </button>
                 );
               })}
@@ -313,12 +319,12 @@ export function SubscriptionGate({ isMasterAdmin, onLogout, onOpenBilling, onOpe
 
             <div className="mt-5 rounded-2xl border border-[#08251a]/10 bg-[#f5f3dd] p-4 text-sm leading-relaxed text-[#08251a]">
               {earlyBird && !cardsWork ? (
-                <p>Today: <strong>$0</strong>, and no card asked for. Your {TRIAL_DAYS} early-bird days run until <strong>{fmtDate(new Date(Date.now() + TRIAL_DAYS * 86400000).toISOString())}</strong>. Loving it? Message us below and we will set up payment together.</p>
+                <p><TRich text="Today: **$0**, and no card asked for. Your {days} early-bird days run until **{date}**. Loving it? Message us below and we will set up payment together." values={{ days: TRIAL_DAYS, date: fmtDate(new Date(Date.now() + TRIAL_DAYS * 86400000).toISOString()) }} /></p>
               ) : expired ? (
-                <p>Today: <strong>${price}</strong> for {plan.name}, then every {interval === 'annual' ? 'year' : 'month'} until you cancel.</p>
+                <p><TRich text={interval === 'annual' ? "Today: **${price}** for {plan}, then every year until you cancel." : "Today: **${price}** for {plan}, then every month until you cancel."} values={{ price, plan: plan.name }} /></p>
               ) : (
                 <p>
-                  Today: <strong>$0</strong>. After {TRIAL_DAYS} days ({fmtDate(new Date(Date.now() + TRIAL_DAYS * 86400000).toISOString())}): <strong>${price}</strong> for {plan.name}, charged automatically every {interval === 'annual' ? 'year' : 'month'} until you cancel. Cancel before that date and you pay nothing.
+                  <TRich text={interval === 'annual' ? "Today: **$0**. After {days} days ({date}): **${price}** for {plan}, charged automatically every year until you cancel. Cancel before that date and you pay nothing." : "Today: **$0**. After {days} days ({date}): **${price}** for {plan}, charged automatically every month until you cancel. Cancel before that date and you pay nothing."} values={{ days: TRIAL_DAYS, date: fmtDate(new Date(Date.now() + TRIAL_DAYS * 86400000).toISOString()), price, plan: plan.name }} />
                 </p>
               )}
             </div>
@@ -330,14 +336,14 @@ export function SubscriptionGate({ isMasterAdmin, onLogout, onOpenBilling, onOpe
               {cardsWork && !(earlyBird && checkoutFailed) ? (
                 <SaveButton onClick={startCheckout} saving={busy} idleLabel={expired ? `Subscribe to ${plan.name}` : earlyBird ? 'Start free trial with a card' : 'Start free trial'} savingLabel="Opening secure checkout…" savedLabel="Opening…" className="px-6 py-3 text-sm" />
               ) : null}
-              <p className="text-[11px] text-[#4b5d54]">{cardsWork ? 'Secure payment by Stripe. ' : ''}By continuing you agree to the <a className="underline" href="/terms" target="_blank" rel="noopener noreferrer">Terms</a> and <a className="underline" href="/privacy" target="_blank" rel="noopener noreferrer">Privacy Policy</a>.</p>
+              <p className="text-[11px] text-[#4b5d54]">{cardsWork ? <T>{'Secure payment by Stripe. '}</T> : ''}<T>By continuing you agree to the</T> <a className="underline" href="/terms" target="_blank" rel="noopener noreferrer"><T>Terms</T></a> <T>and</T> <a className="underline" href="/privacy" target="_blank" rel="noopener noreferrer"><T>Privacy Policy</T></a>.</p>
               {data.complimentary?.canRedeem ? (
                 <div className="w-full max-w-sm text-center">
                   {!codeOpen ? (
-                    <button type="button" onClick={() => setCodeOpen(true)} className="text-xs font-semibold text-[#0d5b2a] underline cursor-pointer">Have an access code?</button>
+                    <button type="button" onClick={() => setCodeOpen(true)} className="text-xs font-semibold text-[#0d5b2a] underline cursor-pointer"><T>Have an access code?</T></button>
                   ) : (
                     <form onSubmit={(e) => { e.preventDefault(); redeemCode(); }} className="rounded-2xl border border-[#08251a]/15 bg-[#f5f3dd] p-3 text-left">
-                      <label htmlFor="sg-code" className="block text-xs font-semibold text-[#08251a]">Access code</label>
+                      <label htmlFor="sg-code" className="block text-xs font-semibold text-[#08251a]"><T>Access code</T></label>
                       <div className="mt-1.5 flex gap-2">
                         <input
                           id="sg-code"
@@ -348,19 +354,19 @@ export function SubscriptionGate({ isMasterAdmin, onLogout, onOpenBilling, onOpe
                           autoCapitalize="characters"
                           spellCheck={false}
                           maxLength={40}
-                          placeholder="For example FRIEND-7K3Q9X"
+                          placeholder={__t("For example FRIEND-7K3Q9X")}
                           aria-describedby={codeError ? 'sg-code-error' : undefined}
                           aria-invalid={codeError ? true : undefined}
                           className="min-w-0 flex-1 rounded-lg border border-[#08251a]/25 bg-white px-3 py-2 text-sm uppercase tracking-wide text-[#08251a] outline-none focus:border-[#0d5b2a]"
                         />
-                        <button type="submit" disabled={codeBusy} className="rounded-lg bg-[#08251a] px-4 py-2 text-xs font-bold text-white disabled:opacity-60 cursor-pointer">{codeBusy ? 'Checking…' : 'Apply'}</button>
+                        <button type="submit" disabled={codeBusy} className="rounded-lg bg-[#08251a] px-4 py-2 text-xs font-bold text-white disabled:opacity-60 cursor-pointer">{codeBusy ? <T>{'Checking…'}</T> : <T>{'Apply'}</T>}</button>
                       </div>
-                      {codeError ? <p id="sg-code-error" role="alert" className="mt-2 text-xs font-medium text-rose-700">{codeError}</p> : <p className="mt-2 text-[11px] text-[#4b5d54]">A code gives you free access to a plan without a card.</p>}
+                      {codeError ? <p id="sg-code-error" role="alert" className="mt-2 text-xs font-medium text-rose-700">{codeError}</p> : <p className="mt-2 text-[11px] text-[#4b5d54]"><T>A code gives you free access to a plan without a card.</T></p>}
                     </form>
                   )}
                 </div>
               ) : null}
-              <button type="button" onClick={onLogout} className="inline-flex items-center gap-1.5 text-[11px] text-[#4b5d54] underline cursor-pointer"><LogOut className="h-3 w-3" /> Sign out</button>
+              <button type="button" onClick={onLogout} className="inline-flex items-center gap-1.5 text-[11px] text-[#4b5d54] underline cursor-pointer"><LogOut className="h-3 w-3" /> <T>Sign out</T></button>
             </div>
 
             {showManual && (
@@ -368,15 +374,15 @@ export function SubscriptionGate({ isMasterAdmin, onLogout, onOpenBilling, onOpe
                 {ticketRef ? (
                   <div className="text-center" role="status">
                     <CheckCircle2 className="mx-auto h-8 w-8 text-[#0d5b2a]" />
-                    <p className="mt-2 text-base font-semibold text-[#08251a]">Got it, thank you!</p>
-                    <p className="mt-1 text-sm text-[#33473d]">{ticketRef !== 'sent' ? `Ticket ${ticketRef} is open. ` : ''}We will email you shortly to arrange payment. You can follow the conversation in the Support tab.</p>
-                    {onOpenSupport && <button type="button" onClick={onOpenSupport} className="mt-3 rounded-full border border-[#08251a]/20 px-4 py-1.5 text-xs font-semibold text-[#08251a] hover:bg-[#08251a]/5 cursor-pointer">Open Support</button>}
+                    <p className="mt-2 text-base font-semibold text-[#08251a]"><T>Got it, thank you!</T></p>
+                    <p className="mt-1 text-sm text-[#33473d]">{ticketRef !== 'sent' ? __t("Ticket {ticketRef} is open. ", { ticketRef: ticketRef }) : ''}<T>We will email you shortly to arrange payment. You can follow the conversation in the Support tab.</T></p>
+                    {onOpenSupport && <button type="button" onClick={onOpenSupport} className="mt-3 rounded-full border border-[#08251a]/20 px-4 py-1.5 text-xs font-semibold text-[#08251a] hover:bg-[#08251a]/5 cursor-pointer"><T>Open Support</T></button>}
                   </div>
                 ) : (
                   <>
-                    <h2 className="text-lg text-[#08251a]" style={{ fontFamily: 'var(--kx-serif, Georgia, serif)' }}>Prefer to pay now? Let us sort it out by hand.</h2>
-                    <p className="mt-1 text-sm leading-relaxed text-[#33473d]">Our automatic card payments are still on their way. Until they land, we will happily arrange payment with you directly. Tell us which plan you want and anything we should know, and we will reply by email with the next step.</p>
-                    <label htmlFor="sg-note" className="mt-4 block text-[11px] font-semibold uppercase tracking-[0.12em] text-[#4b5d54]">Your message</label>
+                    <h2 className="text-lg text-[#08251a]" style={{ fontFamily: 'var(--kx-serif, Georgia, serif)' }}><T>Prefer to pay now? Let us sort it out by hand.</T></h2>
+                    <p className="mt-1 text-sm leading-relaxed text-[#33473d]"><T>Our automatic card payments are still on their way. Until they land, we will happily arrange payment with you directly. Tell us which plan you want and anything we should know, and we will reply by email with the next step.</T></p>
+                    <label htmlFor="sg-note" className="mt-4 block text-[11px] font-semibold uppercase tracking-[0.12em] text-[#4b5d54]"><T>Your message</T></label>
                     <textarea
                       id="sg-note"
                       rows={3}
@@ -388,7 +394,7 @@ export function SubscriptionGate({ isMasterAdmin, onLogout, onOpenBilling, onOpe
                     />
                     {noteError && <p role="alert" className="mt-1 text-xs text-rose-300">{noteError}</p>}
                     <button type="button" onClick={sendNote} disabled={sending} className="mt-3 inline-flex items-center gap-2 rounded-full bg-[#abff44] px-5 py-2 text-sm font-semibold text-[#08251a] hover:brightness-105 disabled:opacity-60 cursor-pointer">
-                      <Send className="h-4 w-4" /> {sending ? 'Sending…' : 'Send to the team'}
+                      <Send className="h-4 w-4" /> {sending ? <T>{'Sending…'}</T> : <T>{'Send to the team'}</T>}
                     </button>
                   </>
                 )}

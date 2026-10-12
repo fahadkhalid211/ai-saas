@@ -1,0 +1,150 @@
+1500	1. Verify Bot Token
+1501	10:42 AM
+1502	10:42 AM · ✓✓
+1503	12 Columns Auto-Generated
+1504	123456789:ABCdefGhIJKlmNoPQRsTUVwxyZ
+1505	2. Register Webhook
+1506	30-Second Google Apps Script Setup
+1507	5-Step Quick Setup Guide
+1508	A new prospective customer just engaged with
+1509	above to apply your integration updates to the live bot.
+1510	Acme Concierge
+1511	Activate and Add to Workspace:
+1512	Add New Webhook to Workspace
+1513	admin@yourdomain.com
+1514	Agency Backlink URL
+1515	Agency White-Label
+1516	Agency White-Labeling & Custom Branding
+1517	AI Agent Ecosystem
+1518	AI Assistant
+1519	Alerts & Collaboration
+1520	Allow
+1521	and click
+1522	and select
+1523	and sign in with your Meta account.
+1524	and temporary/system token into the Settings tab.
+1525	Anyone
+1526	API Setup
+1527	apikey or user@domain.com
+1528	App Password or API key
+1529	Append formatted 12-column customer rows directly to any Google Sheet.
+1530	Append Test Row
+1531	assistant@yourdomain.com
+1532	Automatically appends 12-column rows for every lead and booking into your spreadsheet.
+1533	Automation & CRM
+1534	Autonomous 24/7 client assistant answering questions and booking on Telegram.
+1535	Autonomous Messaging
+1536	BotFather will reply with an
+1537	Branded Sender
+1538	Call Control / Phone Numbers
+1539	Callback URL:
+1540	Channel Settings Saved
+1541	Channels & Integrations
+1542	ChatGPT & Claude
+1543	ChatGPT & Claude (MCP)
+1544	Click "Incoming Webhooks":
+1545	Click the gear icon next to
+1546	Client Branding
+1547	Configuration > Webhook
+1548	Configure the Voice Webhook URL to:
+1549	Confirmed slot 2:30 PM
+1550	Connect ChatGPT, Claude, Cursor, and autonomous agents to your knowledge base, calendar, and CRM.
+1551	Connect official Meta Cloud API credentials to power WhatsApp client conversations.
+1552	Connect official Meta Cloud API credentials to power WhatsApp customer conversations directly from your registered company number.
+1553	Connect your Telegram bot token to provide automated answers directly in Telegram chats.
+1554	Connected
+1555	Connected & Active
+1556	Connecting & Sending...
+1557	Connecting to Zapier, Make.com, or Custom Backends
+1558	Copied
+1559	Copied to Clipboard!
+1560	Copy & Paste:
+1561	Copy Complete Script
+1562	Copy that token, switch to the
+1563	Copy the generated Webhook URL (format:
+1564	Copy the webhook URL provided by Zapier/Make and paste it into the
+1565	Copy-Paste Google Apps Script Code:
+1566	Create a new spreadsheet at
+1567	Create a Webhook
+1568	Create New App
+1569	Crescelo AI
+1570	Crescelo Concierge
+1571	Crescelo connects to wholesale telephony providers (Telnyx / Twilio) using TeXML and WebSocket audio streams. Faster-whisper transcribes caller audio, your assistant formulates knowledge responses, and Piper synthesizes neural speech in under 400ms.
+1572	Custom Footer Watermark Text
+1573	Custom Outbound SMTP Server Settings
+1574	Custom SMTP
+1575	Custom Webhook
+1576	Customer Name
+1577	Default Branding
+1578	Delete any starter code, and paste the complete script below.
+1579	Delivery Test Failed
+1580	Delivery Verified
+1581	Deploy
+1582	Deploy > New deployment
+1583	Deploy this lightweight Google Apps Script directly in your spreadsheet. It handles concurrency, automatically initializes formatted headers on new sheets, and appends incoming customer rows.
+1584	Dial the number from your mobile phone to test live conversational answering!
+1585	Disabled
+1586	Dispatch HMAC-SHA256 signed JSON payloads to Zapier, Make, n8n, or your CRM.
+1587	Dispatched Events
+1588	Don't Worry About "OAuth Scopes" or "Bot Tokens"
+1589	EAAG...
+1590	Edit
+1591	elena@techlabs.co
+1592	Email Address:
+1593	Email Delivery
+1594	Enter an App Name (e.g.
+1595	Enter your agency name in
+1596	Enter your Slack Incoming Webhook URL to stream alerts to your team channel.
+1597	Enter your website URL in
+1598	Enterprise Consultation
+1599	Event
+1600	Event Stream
+1601	event. Your assistant is now ready to receive WhatsApp messages!
+1602	Execute as:
+1603	Extensions > Apps Script
+1604	Failed to register webhook
+1605	Failed to send test card to Slack
+1606	Failed to send test row to Google Sheets
+1607	Failed to test webhook ping
+1608	Features
+1609	Follow prompts to choose a display name (e.g.
+1610	From scratch
+1611	Gmail / Google Workspace
+1612	Google Apps Script Web App URL
+1613	Google Sheets Sync Failed
+1614	Google Sheets test row failed
+1615	Google Sheets Web App Configuration
+1616	Hello! What are your consultation hours and rates?
+1617	Host:
+1618	How Crescelo Inbound AI Voice Works
+1619	How Slack Incoming Webhooks Work
+1620	How to Create a Telegram Bot in 2 Minutes
+1621	HTTP API Token
+1622	If you visit Slack's
+1623	In
+1624	in Crescelo to test the trigger and establish data schema!
+1625	In the left sidebar under
+1626	In the top menu, click
+1627	in the top right corner.
+1628	In your app dashboard, find
+1629	In your Telnyx Mission Control Portal / Twilio Console, navigate to
+1630	Incoming Webhooks
+1631	Incoming Webhooks require zero manual scope configuration. When you click
+1632	Invalid Bot Token
+1633	Jordan Rivera
+1634	jordan@acme-enterprises.com
+1635	Lead Name:
+1636	Live Auto-Sync
+1637	Live SMTP Diagnostic Sender
+1638	Live Widget Footer Preview:
+1639	Make.com
+1640	Me
+1641	Meta Business
+1642	Meta Webhook Credentials to Paste in Meta:
+1643	Meta WhatsApp Business Cloud API
+1644	Meta WhatsApp Business Setup
+1645	Model Context Protocol
+1646	module and click
+1647	ms latency
+1648	My Apps > Create App
+1649	Name your app:

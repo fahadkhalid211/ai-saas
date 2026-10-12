@@ -1,3 +1,4 @@
+import { T, useT } from '@/lib/i18n/context';
 import React from 'react';
 import {
   RefreshCw,
@@ -149,6 +150,7 @@ export const KnowledgeTab: React.FC<KnowledgeTabProps> = ({
   handleDiscardReviewDraft,
   handleExtractUrl,
 }) => {
+  const __t = useT();
   const totalChunks = sources.reduce((sum, s) => sum + (s.chunkCount || 0), 0);
   const readySources = sources.filter((s) => s.status === 'ready');
   const failedSources = sources.filter((s) => s.status === 'failed');
@@ -161,9 +163,9 @@ export const KnowledgeTab: React.FC<KnowledgeTabProps> = ({
               <div className="max-w-5xl space-y-6 mx-auto">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Knowledge Base</h1>
+                    <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white"><T>Knowledge Base</T></h1>
                     <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                       Train your assistant by uploading business documents, website links, or FAQs so it can answer customer questions accurately.
+                       <T>Train your assistant by uploading business documents, website links, or FAQs so it can answer customer questions accurately.</T>
                      </p>
                   </div>
                   <button
@@ -174,7 +176,7 @@ export const KnowledgeTab: React.FC<KnowledgeTabProps> = ({
                     className="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 transition shadow-xs flex items-center gap-1.5 disabled:opacity-60 disabled:cursor-not-allowed"
                   >
                     <RefreshCw className={`h-3.5 w-3.5 text-slate-500 ${isSyncingSources ? 'animate-spin text-blue-600' : ''}`} />
-                    <span>{isSyncingSources ? 'Syncing Sources...' : 'Sync Sources'}</span>
+                    <span>{isSyncingSources ? <T>{'Syncing Sources...'}</T> : <T>{'Sync Sources'}</T>}</span>
                   </button>
                 </div>
 
@@ -188,7 +190,7 @@ export const KnowledgeTab: React.FC<KnowledgeTabProps> = ({
                       <div>
                         <div className="flex items-center gap-2">
                           <span className="text-sm font-bold text-slate-900 dark:text-white">
-                            Adding documents for:
+                            <T>Adding documents for:</T>
                           </span>
                           {assistants && assistants.length > 1 ? (
                             <select
@@ -210,12 +212,12 @@ export const KnowledgeTab: React.FC<KnowledgeTabProps> = ({
                             </select>
                           ) : (
                             <span className="text-sm font-bold text-blue-700 dark:text-blue-400">
-                              {activeAssistant?.name || 'Default Assistant'}
+                              {activeAssistant?.name || <T>{'Default Assistant'}</T>}
                             </span>
                           )}
                         </div>
                         <p className="text-xs text-slate-500 dark:text-slate-500 mt-0.5">
-                          Assistant ID (only needed if support asks for it): <span className="font-mono text-slate-600 dark:text-slate-400">{activeAssistant?.id || 'demo-assistant'}</span>
+                          <T>Assistant ID (only needed if support asks for it):</T> <span className="font-mono text-slate-600 dark:text-slate-400">{activeAssistant?.id || <T>{'demo-assistant'}</T>}</span>
                         </p>
                       </div>
                     </div>
@@ -233,7 +235,7 @@ export const KnowledgeTab: React.FC<KnowledgeTabProps> = ({
                           title="Permanently remove this assistant and all its documents"
                         >
                           <Trash2 className="h-3.5 w-3.5 text-rose-600 dark:text-rose-400" />
-                          <span>Delete this assistant</span>
+                          <span><T>Delete this assistant</T></span>
                         </button>
                       )}
                       {onOpenNewAssistantModal && (
@@ -243,7 +245,7 @@ export const KnowledgeTab: React.FC<KnowledgeTabProps> = ({
                           className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold shadow-xs transition cursor-pointer"
                         >
                           <Plus className="h-3.5 w-3.5" />
-                          <span>Create another assistant</span>
+                          <span><T>Create another assistant</T></span>
                         </button>
                       )}
                     </div>
@@ -252,7 +254,7 @@ export const KnowledgeTab: React.FC<KnowledgeTabProps> = ({
                   <div className="flex items-center gap-2 pt-2 border-t border-blue-100 dark:border-blue-900/40 text-sm text-blue-900 dark:text-blue-200">
                     <ShieldCheck className="h-4 w-4 text-blue-600 dark:text-blue-400 shrink-0" />
                     <span>
-                      <strong>Kept separate:</strong> everything you upload here only teaches <strong>{activeAssistant?.name || 'this assistant'}</strong>. If you have more than one assistant, they never see each other&apos;s documents.
+                      <strong><T>Kept separate:</T></strong> <T>everything you upload here only teaches</T> <strong>{activeAssistant?.name || <T>{'this assistant'}</T>}</strong><T>. If you have more than one assistant, they never see each other&apos;s documents.</T>
                     </span>
                   </div>
                 </div>
@@ -260,40 +262,40 @@ export const KnowledgeTab: React.FC<KnowledgeTabProps> = ({
                 {/* Plain-language summary cards. Hover any card for the technical detail behind it. */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5">
                   <div className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs">
-                    <div className="text-xs font-medium text-slate-600 dark:text-slate-400">Your documents</div>
+                    <div className="text-xs font-medium text-slate-600 dark:text-slate-400"><T>Your documents</T></div>
                     <div className="text-base font-semibold text-slate-900 dark:text-white mt-0.5">
-                      {sources.length} {sources.length === 1 ? 'file' : 'files'}
+                      {sources.length} {sources.length === 1 ? <T>{'file'}</T> : <T>{'files'}</T>}
                     </div>
                     <div className="text-xs mt-0.5 font-medium">
                       {sources.length === 0 ? (
-                        <span className="text-slate-500 dark:text-slate-500">None yet — add one below</span>
+                        <span className="text-slate-500 dark:text-slate-500"><T>None yet — add one below</T></span>
                       ) : failedSources.length > 0 ? (
-                        <span className="text-rose-700 dark:text-rose-400">{pctIndexed}% ready ({failedSources.length} need attention)</span>
+                        <span className="text-rose-700 dark:text-rose-400">{pctIndexed}<T>% ready (</T>{failedSources.length} <T>need attention)</T></span>
                       ) : processingSources.length > 0 ? (
-                        <span className="text-amber-700 dark:text-amber-400">{pctIndexed}% ready ({processingSources.length} still reading)</span>
+                        <span className="text-amber-700 dark:text-amber-400">{pctIndexed}<T>% ready (</T>{processingSources.length} <T>still reading)</T></span>
                       ) : (
-                        <span className="text-emerald-700 dark:text-emerald-400">All ready to use</span>
+                        <span className="text-emerald-700 dark:text-emerald-400"><T>All ready to use</T></span>
                       )}
                     </div>
                   </div>
 
                   <div className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs" title="Stored as 384-dimensional embeddings (BGE-small) for retrieval.">
-                    <div className="text-xs font-medium text-slate-600 dark:text-slate-400">Knowledge saved</div>
+                    <div className="text-xs font-medium text-slate-600 dark:text-slate-400"><T>Knowledge saved</T></div>
                     <div className="text-base font-semibold text-slate-900 dark:text-white mt-0.5">
-                      {totalChunks} {totalChunks === 1 ? 'passage' : 'passages'}
+                      {totalChunks} {totalChunks === 1 ? <T>{'passage'}</T> : <T>{'passages'}</T>}
                     </div>
-                    <div className="text-xs text-slate-600 dark:text-slate-400 mt-0.5">Ready to search instantly</div>
+                    <div className="text-xs text-slate-600 dark:text-slate-400 mt-0.5"><T>Ready to search instantly</T></div>
                   </div>
 
                   <div className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-1">
                     <div className="flex items-center justify-between text-xs font-medium text-slate-600 dark:text-slate-400">
-                      <span>Storage used</span>
+                      <span><T>Storage used</T></span>
                       <HardDrive className="h-3.5 w-3.5 text-blue-500" />
                     </div>
                     <div className="text-base font-semibold text-slate-900 dark:text-white mt-0.5 font-mono">
-                      {storageUsage ? `${storageUsage.usedMb} MB` : '0 MB'}
+                      {storageUsage ? __t("{usedMb} MB", { usedMb: storageUsage.usedMb }) : <T>{'0 MB'}</T>}
                       <span className="text-xs font-normal text-slate-500 font-sans">
-                        {' '}/ {storageUsage ? `${storageUsage.limitMb} MB` : '50 MB'}
+                        {' '}/ {storageUsage ? __t("{limitMb} MB", { limitMb: storageUsage.limitMb }) : <T>{'50 MB'}</T>}
                       </span>
                     </div>
                     <div className="space-y-0.5">
@@ -310,26 +312,26 @@ export const KnowledgeTab: React.FC<KnowledgeTabProps> = ({
                         />
                       </div>
                       <div className="text-xs text-slate-500 flex justify-between font-mono">
-                        <span>{storageUsage?.percentUsed ?? 0}% used</span>
-                        <span>{storageUsage?.planName || 'Plan'}</span>
+                        <span>{storageUsage?.percentUsed ?? 0}<T>% used</T></span>
+                        <span>{storageUsage?.planName || <T>{'Plan'}</T>}</span>
                       </div>
                     </div>
                   </div>
 
                   <div className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs" title="Hybrid retrieval: cosine similarity + BM25 keywords, merged with reciprocal rank fusion.">
-                    <div className="text-xs font-medium text-slate-600 dark:text-slate-400">How it searches</div>
+                    <div className="text-xs font-medium text-slate-600 dark:text-slate-400"><T>How it searches</T></div>
                     <div className="text-base font-semibold text-blue-700 dark:text-blue-400 mt-0.5">
-                      Smart search
+                      <T>Smart search</T>
                     </div>
-                    <div className="text-xs text-slate-600 dark:text-slate-400 mt-0.5">Finds answers even with typos or different wording</div>
+                    <div className="text-xs text-slate-600 dark:text-slate-400 mt-0.5"><T>Finds answers even with typos or different wording</T></div>
                   </div>
 
                   <div className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs" title="Local CPU embeddings: $0.00/mo regardless of AI provider costs.">
-                    <div className="text-xs font-medium text-slate-600 dark:text-slate-400">Cost to read your documents</div>
+                    <div className="text-xs font-medium text-slate-600 dark:text-slate-400"><T>Cost to read your documents</T></div>
                     <div className="text-base font-semibold text-slate-900 dark:text-white mt-0.5">
-                      $0.00 / mo
+                      <T>$0.00 / mo</T>
                     </div>
-                    <div className="text-xs text-emerald-700 dark:text-emerald-400 mt-0.5 font-medium">Always free, however much you upload</div>
+                    <div className="text-xs text-emerald-700 dark:text-emerald-400 mt-0.5 font-medium"><T>Always free, however much you upload</T></div>
                   </div>
                 </div>
 
@@ -357,7 +359,7 @@ export const KnowledgeTab: React.FC<KnowledgeTabProps> = ({
                     <div className="flex-1 space-y-1.5 text-xs">
                       <div className="flex items-center justify-between">
                         <span className="font-bold text-rose-900 dark:text-rose-200">
-                          Upload Processing Failed: {uploadFailureAlert.title}
+                          <T>Upload Processing Failed:</T> <T>{uploadFailureAlert.title}</T>
                         </span>
                         <button
                           type="button"
@@ -368,10 +370,10 @@ export const KnowledgeTab: React.FC<KnowledgeTabProps> = ({
                         </button>
                       </div>
                       <div className="text-rose-800 dark:text-rose-300 leading-relaxed">
-                        <strong>Why it failed:</strong> {uploadFailureAlert.reason}
+                        <strong><T>Why it failed:</T></strong> {uploadFailureAlert.reason}
                       </div>
                       <div className="p-2.5 rounded-lg bg-white/70 dark:bg-slate-900/60 border border-rose-200 dark:border-rose-900/50 text-slate-700 dark:text-slate-300">
-                        <strong className="text-rose-700 dark:text-rose-400">What you should do next:</strong>{' '}
+                        <strong className="text-rose-700 dark:text-rose-400"><T>What you should do next:</T></strong>{' '}
                         {uploadFailureAlert.whatToDoNext}
                       </div>
                     </div>
@@ -389,25 +391,25 @@ export const KnowledgeTab: React.FC<KnowledgeTabProps> = ({
                     </div>
                     <div>
                       <span className="text-sm font-semibold text-slate-800 dark:text-slate-200">
-                        Drop files here or click to browse
+                        <T>Drop files here or click to browse</T>
                       </span>
                       <p className="text-sm text-slate-600 dark:text-slate-400 mt-0.5">
-                        Works with PDF, Word, spreadsheets, plain text, images, audio and video files
+                        <T>Works with PDF, Word, spreadsheets, plain text, images, audio and video files</T>
                       </p>
                     </div>
                     {storageUsage && (
                       <div className="inline-flex items-center gap-2 text-xs text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-800/80 px-3 py-1 rounded-full border border-slate-200 dark:border-slate-700">
                         <HardDrive className="h-3.5 w-3.5 text-blue-500 shrink-0" />
                         <span>
-                          Storage: <strong>{storageUsage.usedMb} MB</strong> / <strong>{storageUsage.limitMb} MB</strong> ({storageUsage.percentUsed}% used)
+                          <T>Storage:</T> <strong>{storageUsage.usedMb} <T>MB</T></strong> / <strong>{storageUsage.limitMb} <T>MB</T></strong> ({storageUsage.percentUsed}<T>% used)</T>
                         </span>
                         {storageUsage.isAtLimit ? (
                           <span className="px-1.5 py-0.2 rounded text-[10px] font-bold bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-300">
-                            Limit Reached
+                            <T>Limit Reached</T>
                           </span>
                         ) : (
                           <span className="text-[11px] text-slate-400">
-                            • {Math.max(0, storageUsage.limitMb - storageUsage.usedMb).toFixed(1)} MB available
+                            • {Math.max(0, storageUsage.limitMb - storageUsage.usedMb).toFixed(1)} <T>MB available</T>
                           </span>
                         )}
                       </div>
@@ -423,7 +425,7 @@ export const KnowledgeTab: React.FC<KnowledgeTabProps> = ({
                     {selectedFiles && selectedFiles.length > 0 && (
                       <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-xs text-emerald-800 dark:text-emerald-300">
                         <span className="font-semibold">
-                          Selected {selectedFiles.length} file(s):
+                          <T>Selected</T> {selectedFiles.length} <T>file(s):</T>
                         </span>
                         <span className="font-mono text-[11px] truncate max-w-xs">
                           {Array.from(selectedFiles).map((f) => f.name).join(', ')}
@@ -445,7 +447,7 @@ export const KnowledgeTab: React.FC<KnowledgeTabProps> = ({
                   <div className="relative flex py-1 items-center">
                     <div className="flex-grow border-t border-slate-200 dark:border-slate-800"></div>
                     <span className="flex-shrink mx-4 text-xs text-slate-500 dark:text-slate-500 uppercase font-semibold">
-                      Or just type it in
+                      <T>Or just type it in</T>
                     </span>
                     <div className="flex-grow border-t border-slate-200 dark:border-slate-800"></div>
                   </div>
@@ -476,17 +478,17 @@ export const KnowledgeTab: React.FC<KnowledgeTabProps> = ({
                       {isExtracting ? (
                         <>
                           <RefreshCw className="h-3.5 w-3.5 animate-spin" />
-                          <span>{extractionStatusText || 'Reading...'}</span>
+                          <span>{extractionStatusText || <T>{'Reading...'}</T>}</span>
                         </>
                       ) : isUploading ? (
                         <>
                           <RefreshCw className="h-3.5 w-3.5 animate-spin" />
-                          <span>{uploadStatusText || 'Adding...'}</span>
+                          <span>{uploadStatusText || <T>{'Adding...'}</T>}</span>
                         </>
                       ) : (
                         <>
                           <Sparkles className="h-3.5 w-3.5" />
-                          <span>Add this</span>
+                          <span><T>Add this</T></span>
                         </>
                       )}
                     </button>
@@ -523,26 +525,26 @@ export const KnowledgeTab: React.FC<KnowledgeTabProps> = ({
                         <div>
                           <div className="flex items-center gap-2">
                             <span className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
-                              Step 2: Review &amp; Edit Extracted Knowledge
+                              <T>Step 2: Review &amp; Edit Extracted Knowledge</T>
                             </span>
                             <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
                               {reviewDraft.type.toUpperCase()}
                             </span>
                           </div>
                           <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
-                            Verify the extracted text below. Edit any names, terminology, or prices before saving to the knowledge base.
+                            <T>Verify the extracted text below. Edit any names, terminology, or prices before saving to the knowledge base.</T>
                           </p>
                         </div>
                       </div>
                       <div className="text-[11px] text-slate-500 dark:text-slate-400 font-mono self-start sm:self-auto bg-slate-50 dark:bg-slate-800 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700">
-                        {reviewDraft.content.trim() ? reviewDraft.content.trim().split(/\s+/).length : 0} words &bull; {reviewDraft.content.length} chars
+                        {reviewDraft.content.trim() ? reviewDraft.content.trim().split(/\s+/).length : 0} <T>words &bull;</T> {reviewDraft.content.length} <T>chars</T>
                       </div>
                     </div>
 
                     {/* Title Input */}
                     <div className="space-y-1">
                       <label className="text-[11px] font-semibold text-slate-700 dark:text-slate-300">
-                        Document Title in Knowledge Base
+                        <T>Document Title in Knowledge Base</T>
                       </label>
                       <input
                         type="text"
@@ -560,11 +562,11 @@ export const KnowledgeTab: React.FC<KnowledgeTabProps> = ({
                       <div className="flex items-center justify-between">
                         <label className="text-[11px] font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
                           <Edit3 className="h-3 w-3 text-blue-500" />
-                          <span>Extracted Content (Fully Editable)</span>
+                          <span><T>Extracted Content (Fully Editable)</T></span>
                         </label>
                         {reviewDraft.isEdited && (
                           <span className="text-[10px] text-amber-600 dark:text-amber-400 font-medium">
-                            (Content modified by user)
+                            <T>(Content modified by user)</T>
                           </span>
                         )}
                       </div>
@@ -587,7 +589,7 @@ export const KnowledgeTab: React.FC<KnowledgeTabProps> = ({
                         disabled={isSavingDraft}
                         className="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-xs text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-50 transition cursor-pointer"
                       >
-                        Discard Draft
+                        <T>Discard Draft</T>
                       </button>
 
                       <div className="flex items-center gap-2">
@@ -600,12 +602,12 @@ export const KnowledgeTab: React.FC<KnowledgeTabProps> = ({
                           {isSavingDraft ? (
                             <>
                               <RefreshCw className="h-3.5 w-3.5 animate-spin" />
-                              <span>Generating Chunks &amp; Saving...</span>
+                              <span><T>Generating Chunks &amp; Saving...</T></span>
                             </>
                           ) : (
                             <>
                               <Check className="h-3.5 w-3.5" />
-                              <span>Save to Knowledge Base</span>
+                              <span><T>Save to Knowledge Base</T></span>
                             </>
                           )}
                         </button>
@@ -626,10 +628,10 @@ export const KnowledgeTab: React.FC<KnowledgeTabProps> = ({
                       </div>
                       <div>
                         <span className="text-sm font-bold text-slate-900 dark:text-white">
-                          Import from a link
+                          <T>Import from a link</T>
                         </span>
                         <p className="text-xs text-slate-500 dark:text-slate-500">
-                          A YouTube video, a page on your website, or a direct video/audio file — in any language.
+                          <T>A YouTube video, a page on your website, or a direct video/audio file — in any language.</T>
                         </p>
                       </div>
                     </div>
@@ -637,10 +639,10 @@ export const KnowledgeTab: React.FC<KnowledgeTabProps> = ({
                     {urlInput.trim() && (
                       <span className="text-xs font-mono px-2 py-0.5 rounded-full font-semibold border bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700">
                         {/(?:youtube\.com|youtu\.be)/i.test(urlInput)
-                          ? 'YouTube video'
+                          ? <T>{'YouTube video'}</T>
                           : /\.(mp4|webm|mov|mkv|avi|mp3|wav|m4a|ogg|flac)$/i.test(urlInput.split('?')[0])
-                          ? 'Video/audio link'
-                          : 'Web page'}
+                          ? <T>{'Video/audio link'}</T>
+                          : <T>{'Web page'}</T>}
                       </span>
                     )}
                   </div>
@@ -680,7 +682,7 @@ export const KnowledgeTab: React.FC<KnowledgeTabProps> = ({
                       ) : (
                         <AlertTriangle className="h-4 w-4 shrink-0 text-rose-600" />
                       )}
-                      <span>{urlFeedback.message}</span>
+                      <span><T>{urlFeedback.message}</T></span>
                     </div>
                   )}
 
@@ -695,12 +697,12 @@ export const KnowledgeTab: React.FC<KnowledgeTabProps> = ({
                         {isExtracting ? (
                           <>
                             <RefreshCw className="h-3.5 w-3.5 animate-spin" />
-                            <span>Reading...</span>
+                            <span><T>Reading...</T></span>
                           </>
                         ) : (
                           <>
                             <FileText className="h-3.5 w-3.5 text-blue-500" />
-                            <span>Preview first</span>
+                            <span><T>Preview first</T></span>
                           </>
                         )}
                       </button>
@@ -713,12 +715,12 @@ export const KnowledgeTab: React.FC<KnowledgeTabProps> = ({
                       {isImportingUrl ? (
                         <>
                           <RefreshCw className="h-3.5 w-3.5 animate-spin" />
-                          <span>Adding...</span>
+                          <span><T>Adding...</T></span>
                         </>
                       ) : (
                         <>
                           <Globe className="h-3.5 w-3.5" />
-                          <span>Add directly</span>
+                          <span><T>Add directly</T></span>
                         </>
                       )}
                     </button>
@@ -731,9 +733,9 @@ export const KnowledgeTab: React.FC<KnowledgeTabProps> = ({
                     <AlertTriangle className="w-4 h-4 text-rose-600 dark:text-rose-400 shrink-0 mt-0.5" />
                     <div className="flex-1 text-slate-700 dark:text-slate-300">
                       <span className="font-semibold text-rose-900 dark:text-rose-200">
-                        {sources.filter((s) => s.status === 'failed').length} file(s) had a problem.
+                        {sources.filter((s) => s.status === 'failed').length} <T>file(s) had a problem.</T>
                       </span>{' '}
-                      Click <span className="font-semibold text-rose-700 dark:text-rose-400">&ldquo;See what to do&rdquo;</span> in the list below for the exact reason and how to fix it.
+                      <T>Click</T> <span className="font-semibold text-rose-700 dark:text-rose-400"><T>&ldquo;See what to do&rdquo;</T></span> <T>in the list below for the exact reason and how to fix it.</T>
                     </div>
                   </div>
                 )}
@@ -742,7 +744,7 @@ export const KnowledgeTab: React.FC<KnowledgeTabProps> = ({
                 <div className="border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-900 shadow-xs overflow-hidden">
                   <div className="px-5 py-3.5 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <span className="text-sm font-bold text-slate-900 dark:text-white">Your documents</span>
+                      <span className="text-sm font-bold text-slate-900 dark:text-white"><T>Your documents</T></span>
                       <span className="text-sm text-slate-500 dark:text-slate-400 font-mono">({sources.length})</span>
                     </div>
                     <div className="relative">
@@ -763,26 +765,26 @@ export const KnowledgeTab: React.FC<KnowledgeTabProps> = ({
                         <FileText className="w-5 h-5" />
                       </div>
                       <div className="text-sm font-semibold text-slate-800 dark:text-slate-200">
-                        Nothing uploaded for {activeAssistant?.name || 'this assistant'} yet
+                        <T>Nothing uploaded for</T> {activeAssistant?.name || <T>{'this assistant'}</T>} <T>yet</T>
                       </div>
                       <p className="text-sm text-slate-600 dark:text-slate-400 max-w-sm mx-auto">
-                        Use the panels above to add a document, a web page or a video link. It will only be used to answer for this assistant.
+                        <T>Use the panels above to add a document, a web page or a video link. It will only be used to answer for this assistant.</T>
                       </p>
                     </div>
                   ) : filteredSources.length === 0 ? (
                     <div className="p-8 text-center text-xs text-slate-500 dark:text-slate-400">
-                      No documents found matching your filter "{sourceFilter}".
+                      <T>No documents found matching your filter "</T>{sourceFilter}".
                     </div>
                   ) : (
                     <table className="w-full text-left text-xs">
                       <thead className="bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 font-semibold border-b border-slate-200 dark:border-slate-800">
                         <tr>
-                          <th className="py-3 px-5">Document Name</th>
-                          <th className="py-3 px-5">Type</th>
-                          <th className="py-3 px-5">Chunks</th>
-                          <th className="py-3 px-5">Status</th>
-                          <th className="py-3 px-5">Date</th>
-                          <th className="py-3 px-5 text-right">Actions</th>
+                          <th className="py-3 px-5"><T>Document Name</T></th>
+                          <th className="py-3 px-5"><T>Type</T></th>
+                          <th className="py-3 px-5"><T>Chunks</T></th>
+                          <th className="py-3 px-5"><T>Status</T></th>
+                          <th className="py-3 px-5"><T>Date</T></th>
+                          <th className="py-3 px-5 text-right"><T>Actions</T></th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-100 dark:divide-slate-800/80">
@@ -807,38 +809,38 @@ export const KnowledgeTab: React.FC<KnowledgeTabProps> = ({
                                   : 'bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800'
                               }`}>
                                 {source.type === 'youtube'
-                                  ? 'YOUTUBE'
+                                  ? <T>{'YOUTUBE'}</T>
                                   : source.type === 'web'
-                                  ? 'WEB'
+                                  ? <T>{'WEB'}</T>
                                   : ['mp4', 'webm', 'mov', 'mkv', 'avi', 'm4v', 'video'].includes(source.type.toLowerCase())
-                                  ? 'VIDEO'
+                                  ? <T>{'VIDEO'}</T>
                                   : ['mp3', 'wav', 'm4a', 'ogg', 'flac', 'aac', 'audio'].includes(source.type.toLowerCase())
-                                  ? 'AUDIO'
+                                  ? <T>{'AUDIO'}</T>
                                   : source.type.toUpperCase()}
                               </span>
-                              <span className="truncate max-w-[280px]" title={source.title}>{source.title}</span>
+                              <span className="truncate max-w-[280px]" title={source.title}><T>{source.title}</T></span>
                             </td>
                             <td className="py-3.5 px-5 text-slate-500 dark:text-slate-400 uppercase font-mono text-[11px]">
                               {source.type}
                             </td>
                             <td className="py-3.5 px-5 font-mono text-blue-600 dark:text-blue-400 font-bold">
-                              {source.chunkCount} chunks
+                              {source.chunkCount} <T>chunks</T>
                             </td>
                             <td className="py-3.5 px-5">
                               {(source.status === 'deleted' || recentlyDeletedIds?.[source.id]) ? (
                                 <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-rose-100 dark:bg-rose-950/80 text-rose-700 dark:text-rose-300 border border-rose-300 dark:border-rose-800 font-bold text-[11px] animate-pulse">
                                   <CheckCircle2 className="h-3 w-3 text-rose-600 dark:text-rose-400" />
-                                  Deleted
+                                  <T>Deleted</T>
                                 </span>
                               ) : source.status === 'ready' ? (
                                 <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 font-semibold text-[11px]">
                                   <span className="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
-                                  Ready
+                                  <T>Ready</T>
                                 </span>
                               ) : source.status === 'processing' ? (
                                 <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800 font-semibold text-[11px]">
                                   <RefreshCw className="h-2.5 w-2.5 animate-spin" />
-                                  Processing
+                                  <T>Processing</T>
                                 </span>
                               ) : (
                                 <button
@@ -848,7 +850,7 @@ export const KnowledgeTab: React.FC<KnowledgeTabProps> = ({
                                   title="Click to see what went wrong and how to fix it"
                                 >
                                   <AlertTriangle className="h-3 w-3 text-rose-500" />
-                                  <span>See what to do</span>
+                                  <span><T>See what to do</T></span>
                                 </button>
                               )}
                             </td>
@@ -864,7 +866,7 @@ export const KnowledgeTab: React.FC<KnowledgeTabProps> = ({
                                     title="Correct misheard audio/OCR words, add fact overrides, or edit text"
                                   >
                                     <Wand2 className="h-3.5 w-3.5 text-indigo-500" />
-                                    <span>Correct</span>
+                                    <span><T>Correct</T></span>
                                     {source.corrections && source.corrections.length > 0 && (
                                       <span className="ml-0.5 px-1.5 py-0.2 rounded-full text-[10px] font-mono font-bold bg-indigo-200 dark:bg-indigo-800 text-indigo-800 dark:text-indigo-200">
                                         {source.corrections.length}
@@ -904,12 +906,12 @@ export const KnowledgeTab: React.FC<KnowledgeTabProps> = ({
                           <Trash2 className="h-5 w-5" />
                         </div>
                         <div>
-                          <h3 className="text-base font-bold text-slate-900 dark:text-white">Delete Knowledge Source?</h3>
-                          <p className="text-xs text-slate-500 dark:text-slate-400">This action cannot be undone.</p>
+                          <h3 className="text-base font-bold text-slate-900 dark:text-white"><T>Delete Knowledge Source?</T></h3>
+                          <p className="text-xs text-slate-500 dark:text-slate-400"><T>This action cannot be undone.</T></p>
                         </div>
                       </div>
                       <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-                        Are you sure you want to delete <strong className="text-slate-900 dark:text-white font-semibold">&ldquo;{deleteConfirmSource.title}&rdquo;</strong>? All associated vector chunks and trained embeddings will be permanently removed from your AI assistant.
+                        <T>Are you sure you want to delete</T> <strong className="text-slate-900 dark:text-white font-semibold">&ldquo;<T>{deleteConfirmSource.title}</T>&rdquo;</strong><T>? All associated vector chunks and trained embeddings will be permanently removed from your AI assistant.</T>
                       </p>
                       <div className="flex justify-end gap-2.5 pt-2">
                         <button
@@ -918,7 +920,7 @@ export const KnowledgeTab: React.FC<KnowledgeTabProps> = ({
                           onClick={() => setDeleteConfirmSource?.(null)}
                           className="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-750 transition cursor-pointer"
                         >
-                          Cancel
+                          <T>Cancel</T>
                         </button>
                         <button
                           type="button"
@@ -929,12 +931,12 @@ export const KnowledgeTab: React.FC<KnowledgeTabProps> = ({
                           {isDeletingSource ? (
                             <>
                               <RefreshCw className="h-3.5 w-3.5 animate-spin" />
-                              <span>Deleting...</span>
+                              <span><T>Deleting...</T></span>
                             </>
                           ) : (
                             <>
                               <Trash2 className="h-3.5 w-3.5" />
-                              <span>Yes, Delete Source</span>
+                              <span><T>Yes, Delete Source</T></span>
                             </>
                           )}
                         </button>

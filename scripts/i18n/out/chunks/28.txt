@@ -1,0 +1,150 @@
+4200	Test with your own flyer in 2 minutes
+4201	The assistant explains what you cover, gathers the details you need for a quote, and logs the enquiry as a lead — ready for you to follow up.
+4202	The fix
+4203	The problem
+4204	The slot is checked and locked the moment a visitor confirms. If someone else just took it, they are immediately offered the next available time.
+4205	The visitor leaves
+4206	The visitor stays
+4207	Through the Stripe billing portal in your account. Cancel any time — no penalty, no waiting.
+4208	Try Demo
+4209	Try demo with your flyer (free)
+4210	Two-factor sign-in
+4211	Upload your documents, paste your web pages, add a YouTube link. Every reply is grounded in what you wrote — and it says so when it does not know.
+4212	Visitors ask about services and pricing, choose a slot, and the booking lands in your calendar — complete with their contact details.
+4213	Visitors pick a slot inside the chat. The moment they confirm, the time is checked and held — no double bookings.
+4214	Ways to add knowledge: files, URLs, video, text, images
+4215	Webhooks
+4216	Website assistant for service businesses
+4217	What is inside
+4218	WhatsApp
+4219	When a visitor asks for a person, your team joins the live conversation with every earlier message already in view.
+4220	Where does the assistant get its answers?
+4221	Which channels does it work on?
+4222	Who it is for
+4223	Who It's For
+4224	Yes — 14 days with all Growth features. Add a card to start; you are not charged during the trial. Cancel any time before it ends and you pay nothing. After the trial, your plan billing starts automatically.
+4225	Yes! We offer fast, high quality roof repairs at competitive prices. Contact us for a free quote today.
+4226	Yes. Visitors can ask for a human at any point. Your team gets an alert, joins the same chat thread, and can see everything that was already said.
+4227	You bring your own AI key — model usage is billed directly by your provider at their rates. We do not mark it up.
+4228	Your AI provider keys are encrypted with AES-256-GCM before storage.
+4229	Your team answers the same ten questions, daily
+4230	Your website is open 24 hours. Your team is not.
+4231	Zapier, Make or your own systems
+4232	14-day free trial
+4233	Add it to WordPress
+4234	Add your prices and services, then watch it book a real appointment.
+4235	AI website assistant
+4236	Answer product questions and onboard trials
+4237	Answering calls is under development
+4238	Answers visitors from your own content
+4239	Any openings tomorrow afternoon?
+4240	Appointment booking
+4241	Built for service businesses
+4242	By industry
+4243	Calendar booking guide
+4244	Clinics and dental
+4245	Cloud or fully local models
+4246	Connect Claude models
+4247	Connect your AI provider
+4248	Do you take walk-ins on Saturday?
+4249	Every request gets a ticket you can follow. We reply by email.
+4250	Explore solutions
+4251	Fast, low-cost answers
+4252	Fill chairs while your hands are busy
+4253	Find the setup for your industry
+4254	Groq, DeepSeek and Ollama
+4255	Guides on AI assistants and booking
+4256	Handle intake and appointment questions
+4257	How do I connect my own OpenAI key?
+4258	Human handover
+4259	Install the assistant step by step
+4260	Law and professional practices
+4261	Learn
+4262	Live slots that cannot be double-booked
+4263	More industries
+4264	Need a hand?
+4265	One script tag on any site
+4266	Open a support ticket
+4267	Phone voice agent
+4268	Qualify buyers and book viewings
+4269	Read the guides
+4270	Real estate
+4271	Reply on the apps customers already use
+4272	Resources
+4273	Roadmap and feature status
+4274	SaaS and startups
+4275	Salons and barbershops
+4276	Screen enquiries and book consultations
+4277	See a sample chat and how bookings reach your calendar.
+4278	See it answer your visitors
+4279	Send leads to email, Slack, Sheets or webhooks
+4280	Settings, AI, paste the key. Guide below.
+4281	Setup guides and documentation
+4282	Soon
+4283	Take over any conversation in one click
+4284	Talk to us
+4285	The assistant
+4286	Trial classes, memberships and schedules
+4287	Try
+4288	Try the playground
+4289	Upload documents and pages it learns from
+4290	Upload your docs and quiz the assistant
+4291	Use your own API key
+4292	View pricing
+4293	Website chat widget
+4294	What is live and what is next
+4295	Where it works
+4296	Yes, 3:15 PM is free. Booked for you.
+4297	Yes, from 10 to 4. Want a reserved slot instead?
+4298	About us
+4299	about-us (web page)
+4300	Answering in:
+4301	Asked for a person
+4302	Assistant configuration
+4303	Booked Thu 10:00
+4304	Channel
+4305	Do you have space this week?
+4306	Found: related word “pricing” matches “cost”.
+4307	Good day. How may I assist you?
+4308	Greyed slots are already taken.
+4309	Hi! How can I help today?
+4310	Indexing
+4311	Intro video
+4312	Keyword only
+4313	Knowledge sources
+4314	Live
+4315	Live calendar slot picker
+4316	Live conversations
+4317	Meaning + keyword
+4318	Missed: the word “cost” is not on this page.
+4319	Offer a person when asked
+4320	One assistant, several places
+4321	Policies.docx
+4322	Price list.pdf
+4323	Question not in sources
+4324	Ranked lower.
+4325	Ready
+4326	Search method
+4327	Sound on new message
+4328	Tone of voice
+4329	Visitor 1039
+4330	Visitor 1041
+4331	Visitor 1042
+4332	Visitor asks: “what does it cost?”
+4333	Yes, Thursday has openings.
+4334	Confidence too low. The assistant says it does not know instead of guessing.
+4335	Handover message prepared.
+4336	I don't have that in my knowledge, so I won't guess. I've logged the question for the team. Would you like me to bring in a person?
+4337	No action.
+4338	No booking needed for this question.
+4339	No searchable keywords in this message.
+4340	Nothing to look up for this message.
+4341	Nothing to rank.
+4342	Of course. I have asked a team member to join this chat and they can see everything we have said.
+4343	Question logged as unanswered so the team can add it to the knowledge.
+4344	Short reply, no source needed.
+4345	Skipped: the visitor asked for a person.
+4346	Skipped.
+4347	Team notified with the conversation so far.
+4348	The visitor wants to book, so the reply offers a booking card.
+4349	You are welcome! Anything else I can help with?

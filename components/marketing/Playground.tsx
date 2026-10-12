@@ -1,5 +1,6 @@
 'use client';
 
+import { T, useT } from '@/lib/i18n/context';
 import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react';
 import { PIPELINE, PLAYGROUND, type PipelineStage } from './content-extra';
 import { Eyebrow, Reveal } from './ui';
@@ -49,6 +50,7 @@ function BookingCard({
   disabled: boolean;
   onConfirm: (c: { service: Service; start: Date; name: string; email: string }) => string | null;
 }) {
+  const __t = useT();
   const [service, setService] = useState<Service>(PLAYGROUND.services[0]);
   const [days] = useState(() => openDays(7));
   const [day, setDay] = useState(0);
@@ -77,9 +79,9 @@ function BookingCard({
   };
 
   return (
-    <form className="mk-bk" onSubmit={submit} noValidate aria-label="Booking form (demo)">
+    <form className="mk-bk" onSubmit={submit} noValidate aria-label={__t("Booking form (demo)")}>
       <fieldset disabled={disabled}>
-        <legend>1 · Service</legend>
+        <legend><T>1 · Service</T></legend>
         <div className="mk-bk-row">
           {PLAYGROUND.services.map((s) => (
             <button
@@ -92,9 +94,9 @@ function BookingCard({
                 setTime(null);
               }}
             >
-              {s.name}
+              <T>{s.name}</T>
               <small>
-                {s.minutes} min · ${s.price}
+                <T>{s.minutes}</T> <T>min · $</T><T>{s.price}</T>
               </small>
             </button>
           ))}
@@ -102,7 +104,7 @@ function BookingCard({
       </fieldset>
 
       <fieldset disabled={disabled}>
-        <legend>2 · Day</legend>
+        <legend><T>2 · Day</T></legend>
         <div className="mk-bk-row mk-bk-days">
           {days.map((d, i) => (
             <button
@@ -123,9 +125,9 @@ function BookingCard({
       </fieldset>
 
       <fieldset disabled={disabled}>
-        <legend>3 · Time</legend>
+        <legend><T>3 · Time</T></legend>
         {slots.length === 0 ? (
-          <p className="mk-bk-empty">No times left this day. Try another day.</p>
+          <p className="mk-bk-empty"><T>No times left this day. Try another day.</T></p>
         ) : (
           <div className="mk-bk-slots">
             {slots.map((s) => (
@@ -137,46 +139,46 @@ function BookingCard({
                 className={`mk-bk-slot ${time === s.time ? 'is-on' : ''}`}
                 onClick={() => setTime(s.time)}
               >
-                {s.time}
+                <T>{s.time}</T>
               </button>
             ))}
           </div>
         )}
         {errors.slot ? (
           <p className="mk-bk-err" role="alert">
-            {errors.slot}
+            <T>{errors.slot}</T>
           </p>
         ) : null}
       </fieldset>
 
       <fieldset disabled={disabled}>
-        <legend>4 · Your details</legend>
+        <legend><T>4 · Your details</T></legend>
         <div className="mk-bk-fields">
           <label>
-            <span>Name</span>
+            <span><T>Name</T></span>
             <input value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" maxLength={80} aria-invalid={errors.name ? true : undefined} />
-            {errors.name ? <em role="alert">{errors.name}</em> : null}
+            {errors.name ? <em role="alert"><T>{errors.name}</T></em> : null}
           </label>
           <label>
-            <span>Email</span>
+            <span><T>Email</T></span>
             <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" autoComplete="email" maxLength={254} aria-invalid={errors.email ? true : undefined} />
-            {errors.email ? <em role="alert">{errors.email}</em> : null}
+            {errors.email ? <em role="alert"><T>{errors.email}</T></em> : null}
           </label>
         </div>
       </fieldset>
 
       <div className="mk-bk-foot">
         <p aria-live="polite">
-          {time ? (
+          <T>{time ? (
             <>
-              <b>{service.name}</b> · {days[day].toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })} at {time} · ${service.price}
+              <b><T>{service.name}</T></b> · {days[day].toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })} <T>at</T> <T>{time}</T> · $<T>{service.price}</T>
             </>
           ) : (
             'Nothing selected yet'
-          )}
+          )}</T>
         </p>
         <button type="submit" className="mk-btn mk-btn-primary mk-btn-sm" disabled={disabled}>
-          Confirm booking
+          <T>Confirm booking</T>
         </button>
       </div>
     </form>
@@ -201,17 +203,17 @@ function ConfirmedCard({ c, onAgain }: { c: Confirmation; onAgain: () => void })
         </svg>
       </span>
       <div>
-        <p className="mk-bk-done-title">Booked for {c.name.split(' ')[0]}</p>
+        <p className="mk-bk-done-title"><T>Booked for</T> <T>{c.name.split(' ')[0]}</T></p>
         <p>
-          {c.service.name} · {fmtWhen(c.start)} · ${c.service.price}
+          <T>{c.service.name}</T> · {fmtWhen(c.start)} · $<T>{c.service.price}</T>
         </p>
-        <p className="mk-bk-ref">Reference {c.ref} (demo)</p>
+        <p className="mk-bk-ref"><T>Reference</T> <T>{c.ref}</T> <T>(demo)</T></p>
         <div className="mk-bk-actions">
           <button type="button" className="mk-btn mk-btn-ghost mk-btn-sm" onClick={download}>
-            Add to calendar
+            <T>Add to calendar</T>
           </button>
           <button type="button" className="mk-btn mk-btn-sm mk-btn-ghost" onClick={onAgain}>
-            Book another
+            <T>Book another</T>
           </button>
         </div>
       </div>
@@ -222,6 +224,7 @@ function ConfirmedCard({ c, onAgain }: { c: Confirmation; onAgain: () => void })
 /* ------------------------------ Playground ------------------------------ */
 
 export function Playground() {
+  const __t = useT();
   const reduced = usePrefersReducedMotion();
   const rootRef = useRef<HTMLDivElement>(null);
   const logRef = useRef<HTMLDivElement>(null);
@@ -358,11 +361,11 @@ export function Playground() {
     <section id="playground" className="mk-section mk-pg-section" aria-labelledby="mk-pg-title">
       <div className="mk-wrap">
         <Reveal className="mk-center-head">
-          <Eyebrow>{PIPELINE.eyebrow}</Eyebrow>
+          <Eyebrow><T>{PIPELINE.eyebrow}</T></Eyebrow>
           <h2 id="mk-pg-title" className="mk-h2 mk-h2-center">
-            {PIPELINE.title}
+            <T>{PIPELINE.title}</T>
           </h2>
-          <p className="mk-lead">{PIPELINE.intro}</p>
+          <p className="mk-lead"><T>{PIPELINE.intro}</T></p>
         </Reveal>
 
         <Reveal className="mk-pg" >
@@ -372,26 +375,26 @@ export function Playground() {
               <div className="mk-pg-chat-top">
                 <CresceloOrb size={42} />
                 <div>
-                  <b>{PLAYGROUND.business}</b>
-                  <small>{PLAYGROUND.disclaimer}</small>
+                  <b><T>{PLAYGROUND.business}</T></b>
+                  <small><T>{PLAYGROUND.disclaimer}</T></small>
                 </div>
               </div>
-              <div className="mk-pg-log" data-lenis-prevent ref={logRef} role="log" aria-live="polite" aria-label="Demo conversation" tabIndex={0}>
+              <div className="mk-pg-log" data-lenis-prevent ref={logRef} role="log" aria-live="polite" aria-label={__t("Demo conversation")} tabIndex={0}>
                 {msgs.length === 0 ? (
                   <div className="mk-pg-empty">
-                    <p>Ask something, or try booking. Watch the pipeline react.</p>
+                    <p><T>Ask something, or try booking. Watch the pipeline react.</T></p>
                   </div>
                 ) : null}
                 {msgs.map((m) =>
                   m.role === 'system' ? (
                     <p key={m.id} className="mk-logline mk-pop">
-                      {m.text}
+                      <T>{m.text}</T>
                     </p>
                   ) : (
                     <div key={m.id} className={`mk-pg-row is-${m.role} mk-pop`}>
                       <p className={`mk-bubble ${m.role === 'user' ? 'mk-bubble-user' : 'mk-bubble-bot'}`}>
-                        {m.text}
-                        {m.source ? <span className="mk-source">Source: {m.source}</span> : null}
+                        <T>{m.text}</T>
+                        {m.source ? <span className="mk-source"><T>Source:</T> <T>{m.source}</T></span> : null}
                       </p>
                       {m.card === 'booking' ? (
                         <BookingCard booked={booked} disabled={busy || m.id !== lastCardId} onConfirm={confirmBooking} />
@@ -401,7 +404,7 @@ export function Playground() {
                   )
                 )}
                 {busy ? (
-                  <div className="mk-typing" aria-label="Assistant is typing">
+                  <div className="mk-typing" aria-label={__t("Assistant is typing")}>
                     <i />
                     <i />
                     <i />
@@ -411,7 +414,7 @@ export function Playground() {
               <div className="mk-pg-chips">
                 {PLAYGROUND.starters.map((s) => (
                   <button key={s} type="button" className="mk-chip" disabled={busy} onClick={() => send(s)}>
-                    {s}
+                    <T>{s}</T>
                   </button>
                 ))}
               </div>
@@ -423,25 +426,25 @@ export function Playground() {
                 }}
               >
                 <label className="mk-sr" htmlFor="mk-pg-input">
-                  Message the demo assistant
+                  <T>Message the demo assistant</T>
                 </label>
                 <input
                   id="mk-pg-input"
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
-                  placeholder="Type a message"
+                  placeholder={__t("Type a message")}
                   maxLength={300}
                   autoComplete="off"
                   enterKeyHint="send"
                 />
                 <button type="submit" className="mk-btn mk-btn-primary mk-btn-sm" disabled={busy || !input.trim()}>
-                  Send
+                  <T>Send</T>
                 </button>
               </form>
             </div>
 
             {/* Pipeline */}
-            <div className="mk-pg-pipe" aria-label="How the assistant processes each message">
+            <div className="mk-pg-pipe" aria-label={__t("How the assistant processes each message")}>
               <p className="mk-pg-pipe-title">
                 <span className={`mk-live ${busy ? 'is-fast' : ''}`} aria-hidden="true">
                   <i />
@@ -449,7 +452,7 @@ export function Playground() {
                   <i />
                   <i />
                 </span>
-                {busy ? 'Processing your message' : hasRun ? 'Last message processed' : 'Waiting for a message'}
+                <T>{busy ? 'Processing your message' : hasRun ? 'Last message processed' : 'Waiting for a message'}</T>
               </p>
               <ol className="mk-pg-stages">
                 {STAGES.map((s, i) => {
@@ -460,17 +463,17 @@ export function Playground() {
                         {st === 'done' ? '✓' : i + 1}
                       </span>
                       <div>
-                        <b>{s.label}</b>
-                        <p>{hasRun && trace[s.id].note ? trace[s.id].note : st === 'active' ? s.detail : ''}</p>
+                        <b><T>{s.label}</T></b>
+                        <p><T>{hasRun && trace[s.id].note ? trace[s.id].note : st === 'active' ? s.detail : ''}</T></p>
                       </div>
                     </li>
                   );
                 })}
               </ol>
               <p className="mk-sr" aria-live="polite">
-                {currentNote}
+                <T>{currentNote}</T>
               </p>
-              <p className="mk-pg-foot">Verified knowledge base: {PLAYGROUND.knowledge.length} indexed passages. Real-time RAG inference.</p>
+              <p className="mk-pg-foot"><T>Verified knowledge base:</T> <T>{PLAYGROUND.knowledge.length}</T> <T>indexed passages. Real-time RAG inference.</T></p>
             </div>
           </div>
         </Reveal>

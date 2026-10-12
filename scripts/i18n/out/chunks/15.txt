@@ -1,0 +1,150 @@
+2250	Add Question
+2251	Add Service
+2252	Add service items to showcase your menu and enable instant online scheduling.
+2253	Add Slide
+2254	Add, edit, or customize the rotating slides in the hero section. Each slide has its own image, headline, subheadline, and badge.
+2255	Advanced Strategy ($250)
+2256	Aether Capital & Wealth
+2257	AI Tech
+2258	AI Website Assistant & SaaS
+2259	America/New_York
+2260	Answer common visitor questions to build trust and eliminate booking friction.
+2261	Answer Every Visitor. Book The Ones Who Are Ready.
+2262	Answer...
+2263	Apply
+2264	Apply Preset
+2265	Appointments for your services will be scheduled and displayed according to this timezone.
+2266	Architecture Review ($500)
+2267	Assigned AI Concierge & Knowledge Base
+2268	Auto
+2269	Auto-Generated Default Menu Active
+2270	Autonomous neural agents, enterprise LLM orchestration, vector pipeline audits, and API demos.
+2271	Avant-Garde Digital & Motion Direction
+2272	Awwwards Agency Nominee
+2273	B2B SaaS & Tech
+2274	Back to All Landing Pages
+2275	Badge Text (Optional)
+2276	Beacon Family Dental
+2277	Beard Sculpt ($25)
+2278	Book Appointment →
+2279	Book appointments online 24/7 with instant confirmation.
+2280	Book services, view transparent pricing, and schedule appointments online 24/7 with our AI concierge.
+2281	booking (or @)
+2282	Booking Calendar Timezone
+2283	Brand identity, 3D motion design, immersive WebGL art direction, and client portfolio intake.
+2284	Brand Logo URL
+2285	Brand Sprint ($3,500)
+2286	Branded Custom Domain
+2287	Brief description for prospective clients
+2288	Business Identity & Positioning
+2289	Business Name
+2290	Button Call-To-Action
+2291	Button Text
+2292	Buyer Advisory ($0)
+2293	Call To Action Banner & Footer Copyright
+2294	Call To Action Button Text
+2295	Canonical URL Override (Optional)
+2296	Case Evaluation ($0)
+2297	Chatbot Starter Questions (Visitor Quick Chips)
+2298	Chips displayed inside the chatbot widget. Clicking instantly sends the question and answers using your knowledge base.
+2299	Choose a pre-built industry template to instantly populate tailored services, copywriting, and layout themes.
+2300	Choose from 3 tailored design archetypes specifically crafted for your industry.
+2301	Classic Barbershop
+2302	Clean wireframe skeleton for any custom industry, agency, consulting firm, or bespoke business.
+2303	Clean, universal, high-converting layout that every usual business can adapt. Features an editable hero image carousel, timezone calendar booking, toggleable pricing plans, customizable colors, and direct AI knowledgebase chat.
+2304	Clear, concise explanation for your clients.
+2305	Click “Add Plan” to create structured tiers with deliverables and pricing.
+2306	Clinic
+2307	CloudScale Engine
+2308	CNAME
+2309	Cold Plunge Pass ($25)
+2310	Comma separated
+2311	Complete solution designed for expanding operations.
+2312	Complimentary White-Glove Delivery
+2313	Comprehensive Advisory ($150)
+2314	Confidential case intake, litigation consultations, NDA reviews, and retainer scheduling.
+2315	Configure your hosted business website, customize service catalogs, connect custom domains, and fine-tune AI booking concierges.
+2316	Configured Menu Links (
+2317	Connect a dedicated bot to provide website visitors with an AI concierge trained exclusively on this landing page's documents and catalog. Disconnecting disables the chatbot on this website.
+2318	Connect your branded domain (e.g.
+2319	Connected AI Bot & Knowledge Base
+2320	Contact & Location Information
+2321	Contact Email
+2322	Contact, SEO & Analytics
+2323	contact@yourbusiness.com
+2324	Contract Audit ($350)
+2325	Copied Link
+2326	Copy Link
+2327	Copy Target
+2328	Core Consultation
+2329	Core Service Tier ($150)
+2330	Couples Counseling ($160)
+2331	Create Page
+2332	Creative Consult ($0)
+2333	Crescelo AI Assistant
+2334	CTA Banner Main Headline
+2335	CTA Banner Subheadline
+2336	CTA Button Text
+2337	Curated Scandinavian Furniture & Decor
+2338	Custom
+2339	Custom Blank Canvas
+2340	Custom Domain Name
+2341	Custom Implementation ($499)
+2342	Custom Package
+2343	Custom Skeleton · Fully Modular Blueprint
+2344	Custom Swatch Box ($15)
+2345	Custom Vector Tuning ($500)
+2346	Customize the top navigation links displayed in the header navbar of your live page.
+2347	Dark slate & electric lime theme matching crescelo.com with interactive demo, orbit diagrams, and horizontal carousel.
+2348	Dedicated Support
+2349	Delete
+2350	Delete metric
+2351	Delete Page
+2352	Delete service
+2353	Describe your service proposition, atmosphere, or key differentiators.
+2354	Design & Motion Agency
+2355	Detail your organization's mission, history, standards, or team background.
+2356	Disconnect
+2357	Disconnected (Chatbot disabled on site)
+2358	Display impressive metrics, client counts, or satisfaction rates directly below the hero section.
+2359	Display transparent pricing tiers and packages. Toggle this section on or off whenever needed.
+2360	E-Commerce & Retail
+2361	e.g. (c) 2026 Pendelton Legal Group LLP. All rights reserved. Attorney Advertising.
+2362	e.g. 99.8% or 10k+
+2363	e.g. About Our Firm, Our Heritage
+2364	e.g. All communications are protected by strict attorney-client privilege.
+2365	e.g. An inside look at our facilities and heritage
+2366	e.g. Arthur Pendelton, Esq.
+2367	e.g. Award-Winning Excellence
+2368	e.g. Bespoke counsel and comprehensive trial defense
+2369	e.g. Best Value
+2370	e.g. Book Your Haircut Now
+2371	e.g. Built on trust, excellence, and relentless advocacy
+2372	e.g. Case Studies, About, Instagram
+2373	e.g. Client Endorsements &amp; Verdicts
+2374	e.g. Client Satisfaction, Verified Cases Won
+2375	e.g. Decades of trial-tested pedigree and dedicated advocate access
+2376	e.g. Everything you need to know about our services, process, and policies
+2377	e.g. Frequently Asked Questions
+2378	e.g. Look Sharp. Feel Confident. The Premier Grooming Experience.
+2379	e.g. Marcus Vance
+2380	e.g. Master Fades, Traditional Hot Towel Shaves & Modern Grooming
+2381	e.g. Master Haircut & Styling
+2382	e.g. Our Chambers &amp; Courtroom Presence
+2383	e.g. Our Practice Areas, Precision Grooming Menu
+2384	e.g. Practice Areas
+2385	e.g. Predictable investments crafted around your operational scale
+2386	e.g. Read verified feedback from our clients and partners
+2387	e.g. Ready to Secure Senior Counsel?
+2388	e.g. Schedule Case Review
+2389	e.g. Schedule Consultation
+2390	e.g. Senior Managing Partner &amp; Lead Trial Litigator
+2391	e.g. Top Rated in New York · 5.0 Stars (280+ Reviews)
+2392	e.g. Transparent Pricing &amp; Retainers
+2393	e.g. Why Discerning Clients Choose Our Chambers
+2394	Editing:
+2395	Elevate Your Business With Next-Generation Services
+2396	Enterprise Demo ($0)
+2397	Enterprise Setup ($3,500)
+2398	Exact faithful clone of mentara.webflow.io with signature roll-up hover animations, 3D flip doctor cards, interactive projects slider, tabbed testimonials, video lightbox, and FAQ accordion.
+2399	Exam & Cleaning ($180)

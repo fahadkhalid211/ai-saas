@@ -1,6 +1,8 @@
 'use client';
 
-import Link from 'next/link';
+import { T } from '@/lib/i18n/context';
+import { A } from '@/components/i18n/A';
+import Link from '@/components/i18n/Link';
 import type { CSSProperties, ReactNode } from 'react';
 import { useCountUp, useInView } from './hooks';
 import { CresceloMark } from '@/components/brand/CresceloMark';
@@ -59,14 +61,14 @@ export function SectionHead({
   return (
     <Reveal className={`mk-head ${align === 'center' ? 'is-center' : ''}`}>
       <p className="mk-eyebrow mk-rise" style={{ ['--mk-delay' as string]: '0ms' }}>
-        {eyebrow}
+        <T>{eyebrow}</T>
       </p>
       <Tag id={id} className="mk-h2 mk-rise" style={{ ['--mk-delay' as string]: '140ms' }}>
-        {title}
+        <T>{title}</T>
       </Tag>
       {intro ? (
         <p className="mk-lead mk-rise" style={{ ['--mk-delay' as string]: '260ms' }}>
-          {intro}
+          <T>{intro}</T>
         </p>
       ) : null}
     </Reveal>
@@ -91,9 +93,9 @@ export function ButtonLink({
   const cls = `mk-btn mk-btn-${variant} ${className}`;
   if (href.startsWith('#')) {
     return (
-      <a href={href} className={cls} style={style} onClick={onClick}>
+      <A href={href} className={cls} style={style} onClick={onClick}>
         {children}
-      </a>
+      </A>
     );
   }
   return (
@@ -109,12 +111,12 @@ export function Counter({ end, suffix = '' }: { end: number; suffix?: string }) 
   return (
     <span ref={ref}>
       <span className="mk-sr">
-        {end}
-        {suffix}
+        <T>{end}</T>
+        <T>{suffix}</T>
       </span>
       <span aria-hidden="true">
-        {value}
-        {suffix}
+        <T>{value}</T>
+        <T>{suffix}</T>
       </span>
     </span>
   );
@@ -132,7 +134,7 @@ export function Logo({ className = '' }: { className?: string }) {
   return (
     <span className={`mk-logo ${className}`}>
       <CresceloMark size={30} />
-      <span>Crescelo</span>
+      <span><T>Crescelo</T></span>
     </span>
   );
 }

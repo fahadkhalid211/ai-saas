@@ -1,0 +1,150 @@
+3150¦Pris¦Hinta¦Prezzo¦Precio
+3151¦Huvudassistent¦Ensisijainen avustaja¦Assistente principale¦Asistente principal
+3152¦Huvudmeny för tjänster och priser¦Pääpalvelu- ja hintavalikko¦Menu principale di servizi e prezzi¦Carta principal de servicios y precios
+3153¦=
+3154¦=
+3155¦=
+3156¦Ange ditt varumärkesnamn, kärnsyfte, kontaktuppgifter och tjänster. AI skapar övertygande texter och rubrikkrokar och startar din AI-concierge.¦Anna brändisi nimi, ydintarkoitus, yhteystiedot ja palvelut. Tekoäly luo vakuuttavat tekstit ja otsikkokoukut ja käynnistää tekoälyconciergesi.¦Fornisci il nome del brand, lo scopo principale, i contatti e i servizi. L'IA creerà testi convincenti, titoli accattivanti e avvierà il tuo concierge IA.¦Indica el nombre de tu marca, su propósito principal, los datos de contacto y los servicios. La IA creará textos convincentes y titulares atractivos y pondrá en marcha tu conserje de IA.
+3157¦Offentlig URL:¦Julkinen URL:¦URL pubblico:¦URL pública:
+3158¦=
+3159¦Fastigheter och lyxbostäder¦Kiinteistöt ja luksuskohteet¦Immobiliare e proprietà di lusso¦Inmobiliaria y propiedades de lujo
+3160¦Ta bort tjänst¦Poista palvelu¦Rimuovi servizio¦Quitar servicio
+3161¦Gå tillbaka till formuläret och försök igen¦Palaa lomakkeeseen ja yritä uudelleen¦Torna al modulo e riprova¦Vuelve al formulario e inténtalo de nuevo
+3162¦Återanvänder dokument¦Käyttää dokumentit uudelleen¦Riutilizza i documenti¦Reutiliza documentos
+3163¦=
+3164¦=
+3165¦Välj assistent / kunskapsbas:¦Valitse avustaja / tietopohja:¦Seleziona assistente / base di conoscenza:¦Selecciona asistente / base de conocimiento:
+3166¦Välj en av de tre egna designarketyperna som är skapade för¦Valitse yksi kolmesta mukautetusta suunnitteluarkkityypistä, jotka on tehty kohteelle¦Seleziona uno dei 3 archetipi di design personalizzati creati per¦Elige uno de los 3 arquetipos de diseño personalizados creados para
+3167¦Tjänstens namn (t.ex. VIP-konsultation)¦Palvelun nimi (esim. VIP-konsultaatio)¦Nome del servizio (ad es. Consulenza VIP)¦Nombre del servicio (p. ej., Consulta VIP)
+3168¦Tjänster som lagts in:¦Lisätyt palvelut:¦Servizi inseriti:¦Servicios añadidos:
+3169¦Delar dokument, vanliga frågor och företagsträningsdata från en befintlig assistent så att du inte behöver ladda upp filerna igen.¦Jakaa dokumentit, UKK:t ja yrityskoulutusdatan olemassa olevalta avustajalta, jotta sinun ei tarvitse ladata tiedostoja uudelleen.¦Condivide documenti, FAQ e dati di addestramento aziendali di un assistente esistente, così non devi ricaricare i file.¦Comparte documentos, preguntas frecuentes y datos de entrenamiento del negocio de un asistente existente para que no tengas que volver a subir los archivos.
+3170¦=
+3171¦=
+3172¦Startar en helt ny, dedikerad AI-bot med en isolerad kunskapsbas. Rekommenderas om webbplatsen gäller ett helt annat varumärke, företag eller bransch.¦Käynnistää aivan uuden, oman tekoälybotin eristetyllä tietopohjalla. Suositeltu, jos sivusto on tarkoitettu kokonaan toiselle brändille, yritykselle tai toimialalle.¦Avvia un bot IA nuovo e dedicato con una base di conoscenza isolata. Consigliato se questo sito riguarda un brand, un'azienda o un settore completamente diverso.¦Crea un bot de IA totalmente nuevo y dedicado con una base de conocimiento aislada. Recomendado si este sitio web es de una marca, empresa o sector completamente distinto.
+3173¦=
+3174¦Steg 1: Välj din bransch¦Vaihe 1: Valitse toimialasi¦Passo 1: scegli il tuo settore¦Paso 1: elige tu sector
+3175¦Steg 2: Välj designarketyp och estetik (3 tillgängliga)¦Vaihe 2: Valitse suunnitteluarkkityyppi ja estetiikka (3 saatavilla)¦Passo 2: scegli archetipo di design ed estetica (3 disponibili)¦Paso 2: elige arquetipo de diseño y estética (3 disponibles)
+3176¦Steg 3: Berätta för AI om din verksamhet och ditt syfte¦Vaihe 3: Kerro tekoälylle yrityksestäsi ja tarkoituksestasi¦Passo 3: racconta all'IA la tua attività e il tuo scopo¦Paso 3: cuéntale a la IA sobre tu negocio y tu propósito
+3177¦Strukturerar skräddarsydda tjänstepaket, pristabeller och bokningskalender...¦Rakennetaan räätälöityjä palvelupaketteja, hintataulukoita ja ajanvarauskalenteria...¦Strutturazione di pacchetti di servizi su misura, tabelle dei prezzi e calendario di prenotazione...¦Estructurando paquetes de servicios a medida, tablas de precios y calendario de reservas...
+3178¦Studiogenerering¦Studiogenerointi¦Generazione dello studio¦Generación en el estudio
+3179¦Sammanställer egen typografi, färgsystem och en konverteringsoptimerad hierarki...¦Muodostetaan omaa typografiaa, värijärjestelmiä ja konversioon optimoitua hierarkiaa...¦Sintesi di tipografia personalizzata, sistemi di colore e gerarchia ottimizzata per la conversione...¦Sintetizando tipografía propia, sistemas de color y una jerarquía optimizada para la conversión...
+3180¦=
+3181¦Den publicerade webbplatsen fungerar utan en flytande chattwidget.¦Julkaistu sivusto toimii ilman kelluvaa chat-widgetiä.¦Il sito live funzionerà senza un widget di chat flottante.¦El sitio publicado funcionará sin un widget de chat flotante.
+3182¦Den här landningssidan använder automatiskt din standardkunskapsbas för AI (¦Tämä laskeutumissivu käyttää automaattisesti oletustekoälytietopohjaasi (¦Questa landing page userà automaticamente la tua base di conoscenza IA predefinita (¦Esta página de aterrizaje usará automáticamente tu base de conocimiento de IA predeterminada (
+3183¦=
+3184¦=
+3185¦=
+3186¦=
+3187¦Använd tidigare / befintlig kunskapsbas (rekommenderas)¦Käytä aiempaa / olemassa olevaa tietopohjaa (suositeltu)¦Usa la base di conoscenza precedente / esistente (consigliato)¦Usar la base de conocimiento anterior / existente (recomendado)
+3188¦Visa den publicerade webbplatsen¦Näytä julkaistu sivusto¦Vedi il sito live¦Ver el sitio web publicado
+3189¦=
+3190¦Besökarnas frågor och bokningar hanteras med din befintliga tränade kunskap.¦Kävijöiden tiedustelut ja ajanvaraukset hoidetaan olemassa olevalla koulutetulla tiedollasi.¦Le richieste dei visitatori e le prenotazioni vengono gestite con la conoscenza già addestrata.¦Las consultas de los visitantes y las reservas se gestionan con tu conocimiento ya entrenado.
+3191¦Besökare kan boka de här tjänsterna direkt via din interaktiva kalender eller AI-concierge.¦Kävijät voivat varata nämä palvelut suoraan interaktiivisen kalenterisi tai tekoälyconciergen kautta.¦I visitatori possono prenotare questi servizi direttamente tramite il calendario interattivo o il concierge IA.¦Los visitantes pueden reservar estos servicios directamente a través de tu calendario interactivo o del conserje de IA.
+3192¦Webbplatsens URL-slug (/site/[slug]) *¦Sivuston URL-tunniste (/site/[slug]) *¦Slug URL del sito (/site/[slug]) *¦Slug de la URL del sitio (/site/[slug]) *
+3193¦Vilka är era öppettider och prispaket?¦Mitkä ovat aukioloaikanne ja hintapakettinne?¦Quali sono i vostri orari e i pacchetti tariffari?¦¿Cuáles son sus horarios y paquetes de precios?
+3194¦Vad gör din verksamhet speciell? t.ex. Vi erbjuder precisionsrakning för män och rakning med varm handduk i en exklusiv loungemiljö i Brooklyn sedan 2018...¦Mikä tekee yrityksestäsi erityisen? esim. Tarjoamme tarkkaa miesten parturointia ja kuumapyyhepartauksia ylellisessä lounge-tunnelmassa Brooklynissa vuodesta 2018...¦Cosa rende speciale la tua attività? es. Offriamo grooming maschile di precisione e rasature con asciugamano caldo in un'atmosfera da lounge esclusiva a Brooklyn dal 2018...¦¿Qué hace especial a tu negocio? p. ej., Ofrecemos cuidado masculino de precisión y afeitados con toalla caliente en un ambiente de lounge exclusivo en Brooklyn desde 2018...
+3195¦Vill du att den nya sidan ska använda din tidigare kunskapsbas eller skapa en ny dedikerad?¦Haluatko, että tämä uusi sivu käyttää aiempaa tietopohjaasi vai luoda uuden oman?¦Vuoi che questa nuova pagina usi la tua base di conoscenza precedente o ne crei una nuova dedicata?¦¿Quieres que esta página nueva use tu base de conocimiento anterior o que cree una nueva dedicada?
+3196¦Din AI-designade webbplats är publicerad med responsiva layouter, bokningskalender och stöd för en isolerad kunskapsbas.¦Tekoälyn suunnittelema sivustosi on julkaistu responsiivisilla ulkoasuilla, ajanvarauskalenterilla ja eristetyn tietopohjan tuella.¦Il tuo sito progettato dall'IA è pubblicato con layout responsive, calendario degli appuntamenti e supporto per una base di conoscenza isolata.¦Tu sitio web diseñado por IA está publicado con diseños adaptables, calendario de citas y soporte para una base de conocimiento aislada.
+3197¦din verksamhet¦yrityksesi¦la tua attività¦tu negocio
+3198¦din bransch¦toimialasi¦il tuo settore¦tu sector
+3208¦Tjänster¦Palvelut¦Servizi¦Servicios
+3213¦, koppla bort eventuell ansluten AI-concierge och ta bort bokningstider.¦, katkaisee mahdollisen liitetyn tekoälyconciergen ja poistaa varausajat.¦, scollegare l'eventuale concierge IA collegato e rimuovere gli slot di prenotazione.¦, desconectar cualquier conserje de IA asociado y eliminar los huecos de reserva.
+3214¦Rensar molnresurser och kopplar loss rutter...¦Puretaan pilviresursseja ja irrotetaan reittejä...¦Smantellamento delle risorse cloud e scollegamento dei percorsi...¦Desmontando los recursos en la nube y desvinculando las rutas...
+3215¦Ta bort landningssidan?¦Poistetaanko laskeutumissivu?¦Eliminare la landing page?¦¿Eliminar la página de aterrizaje?
+3216¦Tar bort (¦Poistetaan (¦Eliminazione di (¦Eliminando (
+3217¦Tar bort landningssidan...¦Poistetaan laskeutumissivua...¦Eliminazione della landing page in corso...¦Eliminando la página de aterrizaje...
+3218¦Om du tar bort sidan stängs den offentliga åtkomsten omedelbart till¦Sivun poistaminen sulkee julkisen pääsyn välittömästi osoitteeseen¦Eliminando questa pagina si disattiva subito l'accesso pubblico a¦Al eliminar esta página se desactiva al instante el acceso público a
+3219¦Värdad företagslandningssida.¦Isännöity yrityksen laskeutumissivu.¦Landing page aziendale ospitata.¦Página de aterrizaje de empresa alojada.
+3220¦Aktiv adress:¦Aktiivinen reitti:¦Percorso live:¦Ruta activa:
+3221¦Vänta medan databasen och molnresurserna tas bort permanent.¦Odota, kun tietokanta ja pilviresurssit vapautetaan pysyvästi.¦Attendi mentre il database e le risorse cloud vengono rimossi definitivamente.¦Espera mientras la base de datos y los recursos en la nube se liberan de forma permanente.
+3222¦Förhandsvisning¦Esikatselu¦Anteprima¦Vista previa
+3223¦Bearbetar borttagningen...¦Käsitellään poistoa...¦Elaborazione dell'eliminazione in corso...¦Procesando la eliminación...
+3224¦Det här kan inte ångras. All offentlig trafik och alla bokningsrutter tas bort.¦Tätä ei voi perua. Kaikki julkinen liikenne ja varausreitit poistetaan.¦Questa azione non può essere annullata. Tutto il traffico pubblico e i percorsi di prenotazione verranno rimossi.¦Esta acción no se puede deshacer. Se eliminará todo el tráfico público y las rutas de reserva.
+3225¦Namnlös sida¦Nimetön sivu¦Pagina senza titolo¦Página sin título
+3226¦Ja, ta bort landningssidan¦Kyllä, poista laskeutumissivu¦Sì, elimina la landing page¦Sí, eliminar la página de aterrizaje
+3256¦Boka nu¦Varaa nyt¦Prenota ora¦Reservar ahora
+3280¦Längd:¦Kesto:¦Durata:¦Duración:
+3334¦+ Lås upp 1 extra plats (100 $)¦+ Avaa 1 lisäpaikka (100 $)¦+ Sblocca 1 slot extra (100 $)¦+ Desbloquear 1 plaza extra (100 $)
+3335¦Aktiverar plats...¦Aktivoidaan paikkaa...¦Attivazione dello slot in corso...¦Activando la plaza...
+3336¦Lägg till 1 permanent plats för landningssida direkt i din aktiva arbetsyta utan att ändra din plannivå.¦Lisää 1 pysyvä laskeutumissivupaikka heti aktiiviseen työtilaasi muuttamatta pakettitasoasi.¦Aggiungi subito 1 slot permanente di landing page al tuo workspace attivo senza cambiare livello di piano.¦Añade al instante 1 plaza permanente de página de aterrizaje a tu espacio de trabajo activo sin cambiar de nivel de plan.
+3337¦Tilldelade webbplatsplatser¦Varatut sivustopaikat¦Slot sito assegnati¦Plazas de sitio web asignadas
+3338¦Stäng fönstret¦Sulje ikkuna¦Chiudi la finestra¦Cerrar la ventana
+3339¦Få högre gränser för landningssidor, fler AI-meddelanden och fler teamplatser.¦Saat korkeammat laskeutumissivurajat, enemmän tekoälyviestikiintiötä ja lisää tiimipaikkoja.¦Ottieni limiti più alti per le landing page, più quote di messaggi IA e più postazioni per il team.¦Consigue límites más altos de páginas de aterrizaje, más cuota de mensajes de IA y más puestos de equipo.
+3340¦Direkt tilläggsplats¦Välitön lisäpaikka¦Slot extra istantaneo¦Plaza extra instantánea
+3341¦Gränsen för landningssidor är nådd¦Laskeutumissivujen raja saavutettu¦Capacità delle landing page raggiunta¦Capacidad de páginas de aterrizaje alcanzada
+3342¦Nivå¦Taso¦Livello¦Nivel
+3343¦För att publicera ytterligare en landningssida med en egen AI-assistent och bokningskalender behöver du utöka arbetsytans kapacitet nedan.¦Julkaistaksesi lisää laskeutumissivun omalla tekoälyavustajalla ja varauskalenterilla, laajenna työtilasi kapasiteettia alla.¦Per pubblicare un'altra landing page con un assistente IA dedicato e un calendario di prenotazione personalizzato, amplia la capacità del tuo workspace qui sotto.¦Para publicar otra página de aterrizaje con un asistente de IA dedicado y un calendario de reservas propio, amplía la capacidad de tu espacio de trabajo abajo.
+3344¦Uppgradera arbetsytans plan¦Päivitä työtilan paketti¦Passa a un piano superiore del workspace¦Mejorar el plan del espacio de trabajo
+3345¦använt (¦käytetty (¦utilizzato (¦usado (
+3346¦Visa planer¦Näytä paketit¦Vedi i piani¦Ver planes
+3347¦Din arbetsytas kvot för webbplatser är fullt utnyttjad.¦Työtilasi verkkosivustokiintiö on käytetty kokonaan.¦La quota di siti web del tuo workspace è completamente utilizzata.¦La cuota de sitios web de tu espacio de trabajo está completamente utilizada.
+3348¦+ Skapa landningssida med AI¦+ Luo laskeutumissivu tekoälyllä¦+ Crea una landing page con l'IA¦+ Crear página de aterrizaje con IA
+3349¦+ Extra plats (100 $)¦+ Lisäpaikka (100 $)¦+ Slot extra (100 $)¦+ Plaza extra (100 $)
+3350¦Lägg till 1 extra plats för landningssida för 100 $¦Lisää 1 ylimääräinen laskeutumissivupaikka hintaan 100 $¦Aggiungi 1 slot extra di landing page per 100 $¦Añade 1 plaza extra de página de aterrizaje por 100 $
+3351¦Tillgängliga AI-assistenter¦Käytettävissä olevat tekoälyavustajat¦Assistenti IA disponibili¦Asistentes de IA disponibles
+3352¦Bläddra bland mallar¦Selaa pohjia¦Sfoglia i modelli¦Explorar plantillas
+3353¦Företagswebbplats¦Yrityssivusto¦Sito aziendale¦Sitio web de empresa
+3354¦Kopplad kunskapsbas¦Yhdistetty tietopohja¦Base di conoscenza collegata¦Base de conocimiento conectada
+3355¦Skapa din första landningssida med AI¦Luo ensimmäinen laskeutumissivusi tekoälyllä¦Crea la tua prima landing page con l'IA¦Crea tu primera página de aterrizaje con IA
+3356¦Ta bort den här landningssidan¦Poista tämä laskeutumissivu¦Elimina questa landing page¦Eliminar esta página de aterrizaje
+3357¦Redigera all text, alla bilder, tjänster och SEO för den här sidan¦Muokkaa tämän sivun kaikkea tekstiä, kuvia, palveluita ja hakukoneoptimointia¦Modifica tutti i testi, le immagini, i servizi e la SEO di questa pagina¦Edita todos los textos, imágenes, servicios y SEO de esta página
+3358¦Redigera sida¦Muokkaa sivua¦Modifica la pagina¦Editar página
+3359¦Företagswebbplats med hög konvertering, direkt bokning och AI-kundservice.¦Korkean konversion yrityssivusto välittömällä ajanvarauksella ja tekoälyasiakaspalvelulla.¦Sito aziendale ad alta conversione con prenotazione immediata e assistenza clienti IA.¦Sitio web de empresa de alta conversión con reserva instantánea y atención al cliente con IA.
+3360¦Isolerad¦Eristetty¦Isolata¦Aislada
+3361¦Landningssidor¦Laskeutumissivut¦Landing page¦Páginas de aterrizaje
+3362¦Lansera en AI-designad företagswebbplats med hög konvertering, tidsbokning och concierge på under 60 sekunder.¦Käynnistä tekoälyn suunnittelema korkean konversion yrityssivusto ajanvarauksella ja conciergella alle 60 sekunnissa.¦Lancia in meno di 60 secondi un sito aziendale progettato dall'IA e ad alta conversione, con prenotazione di appuntamenti e concierge.¦Lanza en menos de 60 segundos un sitio web de empresa de alta conversión diseñado por IA, con reserva de citas y conserje.
+3363¦Hantera dokument¦Hallitse dokumentteja¦Gestisci i documenti¦Gestionar documentos
+3364¦Hantera dina värdade webbplatser, aktiva länkar, tjänstemenyer och koppla isolerade AI-kunskapsbaser.¦Hallitse isännöityjä sivustojasi, live-linkkejä ja palveluvalikoita sekä yhdistä eristettyjä tekoälytietopohjia.¦Gestisci i tuoi siti ospitati, i link live, i menu dei servizi e collega basi di conoscenza IA isolate.¦Gestiona tus sitios alojados, enlaces activos y cartas de servicios, y conecta bases de conocimiento de IA aisladas.
+3365¦Studio för flera webbplatser¦Usean sivuston studio¦Studio multi-sito¦Estudio multisitio
+3366¦Ingen bot¦Ei bottia¦Nessun bot¦Sin bot
+3367¦Inga landningssidor har designats ännu¦Laskeutumissivuja ei ole vielä suunniteltu¦Nessuna landing page ancora progettata¦Todavía no se ha diseñado ninguna página de aterrizaje
+3368¦Ingen / frånkopplad (ingen chattbot)¦Ei mitään / yhteys katkaistu (ei chatbottia)¦Nessuno / scollegato (nessun chatbot)¦Ninguno / desconectado (sin chatbot)
+3369¦Öppna den publicerade webbplatsen i en ny flik¦Avaa julkaistu sivusto uudessa välilehdessä¦Apri il sito live in una nuova scheda¦Abrir el sitio publicado en una pestaña nueva
+3370¦Bearbetar...¦Käsitellään...¦Elaborazione in corso...¦Procesando...
+3371¦nivå)¦taso)¦livello)¦nivel)
+3372¦Kopplar loss rutter...¦Irrotetaan reittejä...¦Scollegamento dei percorsi...¦Desvinculando rutas...
+3373¦Visa¦Näytä¦Vedi¦Ver
+3374¦Arbetsytans webbplatskvot¦Työtilan verkkosivustokiintiö¦Quota di siti web del workspace¦Cuota de sitios web del espacio de trabajo
+3375¦1 år¦1 vuosi¦1 anno¦1 año
+3376¦1. Öppna ChatGPT → Explore GPTs → Create a GPT → Configure → Actions.¦1. Avaa ChatGPT → Explore GPTs → Create a GPT → Configure → Actions.¦1. Apri ChatGPT → Explore GPTs → Create a GPT → Configure → Actions.¦1. Abre ChatGPT → Explore GPTs → Create a GPT → Configure → Actions.
+3377¦180 dagar¦180 päivää¦180 giorni¦180 días
+3378¦2. Ställ in Authentication Type på¦2. Aseta Authentication Typeksi¦2. Imposta Authentication Type su¦2. Establece Authentication Type en
+3379¦3. Klistra in din Crescelo MCP-token som API-nyckel.¦3. Liitä Crescelo MCP -tunnuksesi API-avaimeksi.¦3. Incolla il tuo token MCP di Crescelo come chiave API.¦3. Pega tu token MCP de Crescelo como clave API.
+3380¦30 dagar¦30 päivää¦30 giorni¦30 días
+3381¦4. Peka schema-URL:en på:¦4. Osoita skeeman URL kohteeseen:¦4. Punta l'URL dello schema a:¦4. Apunta la URL del esquema a:
+3382¦90 dagar (rekommenderas)¦90 päivää (suositeltu)¦90 giorni (consigliato)¦90 días (recomendado)
+3383¦Aktiva MCP-token för arbetsytan¦Työtilan aktiiviset MCP-tunnukset¦Token MCP attivi del workspace¦Tokens MCP activos del espacio de trabajo
+3384¦Lägg till Crescelos serverslutpunkt¦Lisää Crescelon palvelimen päätepiste¦Aggiungi l'endpoint del server Crescelo¦Añade el endpoint del servidor de Crescelo
+3385¦Låt ChatGPT, Claude, Cursor och Windsurf på ett säkert sätt använda din Crescelo-kunskapsbas, bokningskalender och CRM.¦Anna ChatGPT:n, Clauden, Cursorin ja Windsurfin olla turvallisesti vuorovaikutuksessa Crescelon tietopohjan, varauskalenterin ja CRM:n kanssa.¦Consenti a ChatGPT, Claude, Cursor e Windsurf di interagire in modo sicuro con la tua base di conoscenza Crescelo, il calendario di prenotazione e il CRM.¦Permite que ChatGPT, Claude, Cursor y Windsurf interactúen de forma segura con tu base de conocimiento de Crescelo, tu calendario de reservas y tu CRM.
+3386¦API-nyckel¦API-avain¦Chiave API¦Clave API
+3387¦=
+3388¦=
+3389¦ChatGPT Actions¦ChatGPT Actions¦ChatGPT Actions¦ChatGPT Actions
+3390¦=
+3391¦Konfigurationsexempel för klienter¦Asiakasohjelmien määrityskatkelmat¦Snippet di configurazione dei client¦Fragmentos de configuración de clientes
+3392¦Klientnamn¦Asiakasohjelman nimi¦Nome del client¦Nombre del cliente
+3393¦Konfigurera detaljerade behörigheter för en extern AI-agent som ansluter till den här arbetsytan.¦Määritä tarkat käyttöoikeudet ulkoiselle tekoälyagentille, joka yhdistää tähän työtilaan.¦Configura permessi granulari per un agente IA esterno che si collega a questo workspace.¦Configura permisos granulares para un agente de IA externo que se conecta a este espacio de trabajo.
+3394¦Konfigurera din AI-klient¦Määritä tekoälyasiakasohjelmasi¦Configura il tuo client IA¦Configura tu cliente de IA
+3395¦Koppla externa AI-agenter via Model Context Protocol (MCP)¦Ulkoisten tekoälyagenttien yhdistäminen Model Context Protocolin (MCP) kautta¦Collegare agenti IA esterni tramite Model Context Protocol (MCP)¦Conectar agentes de IA externos mediante Model Context Protocol (MCP)
+3396¦Kopierat till Urklipp¦Kopioitu leikepöydälle¦Copiato negli appunti¦Copiado al portapapeles
+3397¦Kopiera token nu! Den visas aldrig igen.¦Kopioi tunnus nyt! Sitä ei näytetä enää koskaan.¦Copia il token adesso! Non verrà mai più mostrato.¦¡Copia el token ahora! No se volverá a mostrar nunca.
+3398¦Kopiera token¦Kopioi tunnus¦Copia il token¦Copiar token
+3399¦Kopiera URL¦Kopioi URL¦Copia l'URL¦Copiar URL
+3400¦Skapa en begränsad token för din externa AI-agent. Detaljerade behörigheter garanterar att agenten bara kommer åt tillåtna data.¦Luo rajattu tunnus ulkoiselle tekoälyagentillesi. Tarkat oikeudet takaavat, että agentti pääsee vain sallittuihin tietoihin.¦Crea un token con ambito limitato per il tuo agente IA esterno. I permessi granulari garantiscono che l'agente acceda solo ai dati consentiti.¦Crea un token con alcance limitado para tu agente de IA externo. Los permisos granulares garantizan que el agente solo acceda a los datos permitidos.
+3401¦=
+3402¦Klar¦Valmis¦Fatto¦Listo
+3403¦t.ex. ChatGPT Agent eller Claude Desktop¦esim. ChatGPT Agent tai Claude Desktop¦es. ChatGPT Agent o Claude Desktop¦p. ej., ChatGPT Agent o Claude Desktop
+3404¦Giltighetstid¦Voimassaoloaika¦Scadenza¦Caducidad
+3405¦MISSLYCKADES¦EPÄONNISTUI¦NON RIUSCITO¦FALLIDO
+3406¦Skapa en MCP-token¦Luo MCP-tunnus¦Genera un token MCP¦Generar un token MCP
+3407¦Skapa ny MCP-token¦Luo uusi MCP-tunnus¦Genera un nuovo token MCP¦Generar un nuevo token MCP
+3408¦Skapa ny token¦Luo uusi tunnus¦Genera un nuovo token¦Generar un nuevo token
+3409¦Skapa token¦Luo tunnus¦Genera il token¦Generar token
+3410¦Skapar...¦Luodaan...¦Generazione in corso...¦Generando...
+3411¦Senast använd¦Viimeksi käytetty¦Ultimo utilizzo¦Último uso
+3412¦Ström över körningar av MCP-verktyg i realtid¦MCP-työkalujen suoritusten live-virta¦Flusso di controllo in tempo reale delle esecuzioni degli strumenti MCP¦Flujo de auditoría en vivo de las ejecuciones de herramientas MCP
+3413¦Model Context Protocol (MCP)-server¦Model Context Protocol (MCP) -palvelin¦Server Model Context Protocol (MCP)¦Servidor Model Context Protocol (MCP)
+3414¦Aldrig¦Ei koskaan¦Mai¦Nunca
+3415¦Går aldrig ut¦Ei vanhene koskaan¦Non scade mai¦No caduca nunca
+3416¦Inga anrop från externa agenter har registrerats ännu. Verktygsanrop visas här i realtid.¦Ulkoisten agenttien kutsuja ei ole vielä kirjattu. Työkalukutsut näkyvät tässä reaaliajassa.¦Nessuna chiamata di agenti esterni registrata finora. Le chiamate agli strumenti compariranno qui in tempo reale.¦Todavía no hay llamadas de agentes externos registradas. Las llamadas a herramientas aparecerán aquí en tiempo real.
+3417¦Inga MCP-token har skapats ännu. Klicka på "Skapa ny token" ovan för att koppla din första AI-agent.¦MCP-tunnuksia ei ole vielä luotu. Napsauta yllä "Luo uusi tunnus" yhdistääksesi ensimmäisen tekoälyagenttisi.¦Nessun token MCP ancora generato. Fai clic su "Genera un nuovo token" qui sopra per collegare il tuo primo agente IA.¦Todavía no se ha generado ningún token MCP. Haz clic en "Generar un nuevo token" arriba para conectar tu primer agente de IA.

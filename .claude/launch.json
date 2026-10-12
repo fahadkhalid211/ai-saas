@@ -36,6 +36,30 @@
         "MASTER_ADMIN_EMAIL": "owner@test.local",
         "RESEND_API_KEY": ""
       }
+    },
+    {
+      "name": "next-dev-isolated-2",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "dev",
+        "--",
+        "-p",
+        "3102"
+      ],
+      "port": 3102,
+      "env": {
+        "NEXT_DIST_DIR": ".next-iso2",
+        "DATABASE_URL": "",
+        "POSTGRES_URL": "",
+        "UPSTASH_REDIS_REST_URL": "",
+        "UPSTASH_REDIS_REST_TOKEN": "",
+        "RECAPTCHA_SECRET_KEY": "",
+        "NEXT_PUBLIC_RECAPTCHA_SITE_KEY": "",
+        "ADMIN_API_KEY": "browser-test-master-key",
+        "MASTER_ADMIN_EMAIL": "owner@test.local",
+        "RESEND_API_KEY": ""
+      }
     }
   ]
 }

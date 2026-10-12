@@ -1,3 +1,4 @@
+import { T, useT } from '@/lib/i18n/context';
 import { SaveButton } from '@/components/ui/SaveButton';
 import React, { useState } from 'react';
 import { PhoneChannelCard } from '@/components/crm/PhoneChannelCard';
@@ -195,6 +196,7 @@ export const ChannelsTab: React.FC<ChannelsTabProps> = ({
   selectedIntegration: propSelectedIntegration,
   setSelectedIntegration: propSetSelectedIntegration,
 }) => {
+  const __t = useT();
   // Navigation State
   const [internalSelectedIntegration, setInternalSelectedIntegration] = useState<IntegrationId>('slack');
   const rawSelected = propSelectedIntegration ?? internalSelectedIntegration;
@@ -520,20 +522,20 @@ export const ChannelsTab: React.FC<ChannelsTabProps> = ({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-5">
         <div>
           <div className="flex items-center gap-2 text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">
-            <span>Channels &amp; Integrations</span>
+            <span><T>Channels &amp; Integrations</T></span>
             <span>/</span>
-            <span className="font-semibold text-blue-600 dark:text-blue-400">{currentItem.name}</span>
+            <span className="font-semibold text-blue-600 dark:text-blue-400"><T>{currentItem.name}</T></span>
           </div>
           <div className="flex items-center gap-2.5">
             <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
-              {currentItem.name}
+              <T>{currentItem.name}</T>
             </h1>
             <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-800 dark:bg-blue-900/60 dark:text-blue-300 uppercase tracking-wider">
-              {activeCount} of {INTEGRATION_LIST.length} Connected
+              {activeCount} <T>of</T> {INTEGRATION_LIST.length} <T>Connected</T>
             </span>
           </div>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-            {currentItem.summary}
+            <T>{currentItem.summary}</T>
           </p>
         </div>
 
@@ -552,7 +554,7 @@ export const ChannelsTab: React.FC<ChannelsTabProps> = ({
             <div>
               <div className="flex items-center gap-2.5">
                 <h2 className="text-lg font-bold text-slate-900 dark:text-white">
-                  {currentItem.name}
+                  <T>{currentItem.name}</T>
                 </h2>
                 <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-900/60">
                   {currentItem.badge}
@@ -564,11 +566,11 @@ export const ChannelsTab: React.FC<ChannelsTabProps> = ({
                       : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
                   }`}
                 >
-                  {currentItem.isActive ? 'Connected & Active' : 'Setup Required'}
+                  {currentItem.isActive ? <T>{'Connected & Active'}</T> : <T>{'Setup Required'}</T>}
                 </span>
               </div>
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                {currentItem.summary}
+                <T>{currentItem.summary}</T>
               </p>
             </div>
           </div>
@@ -585,7 +587,7 @@ export const ChannelsTab: React.FC<ChannelsTabProps> = ({
               }`}
             >
               <Settings className="h-3.5 w-3.5" />
-              <span>Settings &amp; Test</span>
+              <span><T>Settings &amp; Test</T></span>
             </button>
             <button
               type="button"
@@ -597,7 +599,7 @@ export const ChannelsTab: React.FC<ChannelsTabProps> = ({
               }`}
             >
               <BookOpen className="h-3.5 w-3.5" />
-              <span>Step-by-Step Guide</span>
+              <span><T>Step-by-Step Guide</T></span>
             </button>
           </div>
         </div>
@@ -614,10 +616,10 @@ export const ChannelsTab: React.FC<ChannelsTabProps> = ({
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-200 dark:border-slate-800">
                   <div>
                     <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-                      Slack Incoming Webhook Configuration
+                      <T>Slack Incoming Webhook Configuration</T>
                     </h3>
                     <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                      Enter your Slack Incoming Webhook URL to stream alerts to your team channel.
+                      <T>Enter your Slack Incoming Webhook URL to stream alerts to your team channel.</T>
                     </p>
                   </div>
 
@@ -633,7 +635,7 @@ export const ChannelsTab: React.FC<ChannelsTabProps> = ({
                       ) : (
                         <Send className="h-3.5 w-3.5 text-rose-600 dark:text-rose-400" />
                       )}
-                      <span>Send Live Test Ping</span>
+                      <span><T>Send Live Test Ping</T></span>
                     </button>
 
                     <label className="relative inline-flex items-center cursor-pointer select-none">
@@ -645,7 +647,7 @@ export const ChannelsTab: React.FC<ChannelsTabProps> = ({
                       />
                       <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-800 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-slate-600 peer-checked:bg-emerald-600"></div>
                       <span className="ml-2.5 text-xs font-semibold text-slate-700 dark:text-slate-300">
-                        {formData.slackEnabled ? 'Active' : 'Disabled'}
+                        {formData.slackEnabled ? <T>{'Active'}</T> : <T>{'Disabled'}</T>}
                       </span>
                     </label>
                   </div>
@@ -655,7 +657,7 @@ export const ChannelsTab: React.FC<ChannelsTabProps> = ({
                   <div className="space-y-4">
                     <div>
                       <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                        Slack Incoming Webhook URL
+                        <T>Slack Incoming Webhook URL</T>
                       </label>
                       <input
                         type="url"
@@ -665,13 +667,13 @@ export const ChannelsTab: React.FC<ChannelsTabProps> = ({
                         className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-3.5 py-2.5 text-xs font-mono text-slate-900 dark:text-slate-100 outline-none focus:border-rose-500"
                       />
                       <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
-                        Need a webhook URL? Switch to the <strong>Step-by-Step Guide</strong> tab above.
+                        <T>Need a webhook URL? Switch to the</T> <strong><T>Step-by-Step Guide</T></strong> <T>tab above.</T>
                       </p>
                     </div>
 
                     <div>
                       <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-2">
-                        Notified Slack Events
+                        <T>Notified Slack Events</T>
                       </label>
                       <div className="space-y-2">
                         <label className="flex items-center gap-2 text-xs text-slate-700 dark:text-slate-300 cursor-pointer">
@@ -687,7 +689,7 @@ export const ChannelsTab: React.FC<ChannelsTabProps> = ({
                             }}
                             className="rounded text-rose-600 focus:ring-rose-500 dark:bg-slate-950 dark:border-slate-800"
                           />
-                          <span><strong className="font-semibold">lead.created</strong> — Post rich card when a visitor submits contact information</span>
+                          <span><strong className="font-semibold"><T>lead.created</T></strong> <T>— Post rich card when a visitor submits contact information</T></span>
                         </label>
 
                         <label className="flex items-center gap-2 text-xs text-slate-700 dark:text-slate-300 cursor-pointer">
@@ -703,7 +705,7 @@ export const ChannelsTab: React.FC<ChannelsTabProps> = ({
                             }}
                             className="rounded text-rose-600 focus:ring-rose-500 dark:bg-slate-950 dark:border-slate-800"
                           />
-                          <span><strong className="font-semibold">appointment.created</strong> — Post schedule alert with customer details &amp; meeting links</span>
+                          <span><strong className="font-semibold"><T>appointment.created</T></strong> <T>— Post schedule alert with customer details &amp; meeting links</T></span>
                         </label>
                       </div>
                     </div>
@@ -723,14 +725,14 @@ export const ChannelsTab: React.FC<ChannelsTabProps> = ({
                             ) : (
                               <AlertTriangle className="h-4 w-4 text-rose-600 dark:text-rose-400" />
                             )}
-                            <span>{slackTestStatus.success ? 'Slack Webhook Verified (HTTP 200 OK)' : 'Slack Dispatch Failed'}</span>
+                            <span>{slackTestStatus.success ? <T>{'Slack Webhook Verified (HTTP 200 OK)'}</T> : <T>{'Slack Dispatch Failed'}</T>}</span>
                           </div>
                           {slackTestStatus.latencyMs !== undefined && (
-                            <span className="font-mono text-[11px] opacity-80">{slackTestStatus.latencyMs}ms latency</span>
+                            <span className="font-mono text-[11px] opacity-80">{slackTestStatus.latencyMs}<T>ms latency</T></span>
                           )}
                         </div>
                         {slackTestStatus.error && (
-                          <p className="mt-1 text-[11px] font-mono opacity-90">{slackTestStatus.error}</p>
+                          <p className="mt-1 text-[11px] font-mono opacity-90"><T>{slackTestStatus.error}</T></p>
                         )}
                       </div>
                     )}
@@ -741,41 +743,41 @@ export const ChannelsTab: React.FC<ChannelsTabProps> = ({
                     <div className="flex items-center justify-between text-xs font-semibold text-slate-400 pb-2 border-b border-[#2C3136]">
                       <span className="flex items-center gap-2">
                         <SlackIcon className="h-4 w-4" />
-                        <span className="text-white font-medium">#general-leads channel</span>
+                        <span className="text-white font-medium"><T>#general-leads channel</T></span>
                       </span>
-                      <span className="text-[10px] uppercase font-mono tracking-wider text-slate-400">Slack Block Kit</span>
+                      <span className="text-[10px] uppercase font-mono tracking-wider text-slate-400"><T>Slack Block Kit</T></span>
                     </div>
 
                     <div className="bg-[#222529] p-3.5 rounded-lg border-l-4 border-emerald-500 space-y-2.5 text-xs">
                       <div className="text-sm font-bold text-white flex items-center gap-1.5">
-                        <span>🎯 New Lead Captured!</span>
+                        <span><T>🎯 New Lead Captured!</T></span>
                       </div>
                       <p className="text-slate-300 text-[11px]">
-                        A new prospective customer just engaged with <strong className="text-white">{activeAssistant?.name || 'AI Assistant'}</strong>:
+                        <T>A new prospective customer just engaged with</T> <strong className="text-white">{activeAssistant?.name || <T>{'AI Assistant'}</T>}</strong>:
                       </p>
                       <div className="grid grid-cols-2 gap-2 bg-[#1A1D21] p-2.5 rounded text-[11px]">
                         <div>
-                          <span className="text-slate-400 block font-semibold">Lead Name:</span>
-                          <span className="text-white font-medium">Jordan Rivera</span>
+                          <span className="text-slate-400 block font-semibold"><T>Lead Name:</T></span>
+                          <span className="text-white font-medium"><T>Jordan Rivera</T></span>
                         </div>
                         <div>
-                          <span className="text-slate-400 block font-semibold">Email Address:</span>
-                          <span className="text-sky-400 font-medium">jordan@acme-enterprises.com</span>
+                          <span className="text-slate-400 block font-semibold"><T>Email Address:</T></span>
+                          <span className="text-sky-400 font-medium"><T>jordan@acme-enterprises.com</T></span>
                         </div>
                         <div>
-                          <span className="text-slate-400 block font-semibold">Phone Number:</span>
+                          <span className="text-slate-400 block font-semibold"><T>Phone Number:</T></span>
                           <span className="text-white font-medium">+1 (555) 438-9210</span>
                         </div>
                         <div>
-                          <span className="text-slate-400 block font-semibold">Source:</span>
-                          <span className="text-emerald-400 font-medium">Website Live Chat</span>
+                          <span className="text-slate-400 block font-semibold"><T>Source:</T></span>
+                          <span className="text-emerald-400 font-medium"><T>Website Live Chat</T></span>
                         </div>
                       </div>
                       <div className="border-l-2 border-slate-600 pl-2 text-[11px] text-slate-300 italic">
-                        "Looking to automate appointment scheduling for our 12-location clinic network."
+                        <T>"Looking to automate appointment scheduling for our 12-location clinic network."</T>
                       </div>
                       <div className="text-[10px] text-slate-500 pt-1">
-                        🤖 {activeAssistant?.name || 'Crescelo AI'} • Just now
+                        🤖 {activeAssistant?.name || <T>{'Crescelo AI'}</T>} <T>• Just now</T>
                       </div>
                     </div>
                   </div>
@@ -788,10 +790,10 @@ export const ChannelsTab: React.FC<ChannelsTabProps> = ({
                   <Info className="h-5 w-5 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
                   <div>
                     <h4 className="font-bold text-blue-900 dark:text-blue-200 text-sm">
-                      How Slack Incoming Webhooks Work
+                      <T>How Slack Incoming Webhooks Work</T>
                     </h4>
                     <p className="text-slate-600 dark:text-slate-300 mt-1 leading-relaxed">
-                      Slack Incoming Webhooks provide a secure HTTPS endpoint where Crescelo posts real-time customer activity directly into a channel of your choice. No bot hosting or paid Slack apps required.
+                      <T>Slack Incoming Webhooks provide a secure HTTPS endpoint where Crescelo posts real-time customer activity directly into a channel of your choice. No bot hosting or paid Slack apps required.</T>
                     </p>
                   </div>
                 </div>
@@ -801,42 +803,42 @@ export const ChannelsTab: React.FC<ChannelsTabProps> = ({
                   <AlertCircle className="h-5 w-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
                   <div className="space-y-1">
                     <h4 className="font-bold text-amber-900 dark:text-amber-200 text-sm">
-                      Don&apos;t Worry About &quot;OAuth Scopes&quot; or &quot;Bot Tokens&quot;
+                      <T>Don&apos;t Worry About &quot;OAuth Scopes&quot; or &quot;Bot Tokens&quot;</T>
                     </h4>
                     <p className="text-amber-800/90 dark:text-amber-300/90 leading-relaxed">
-                      If you visit Slack&apos;s <em>OAuth &amp; Permissions</em> tab, Slack shows warnings asking you to configure Bot Scopes, User Scopes, or Redirect URLs. <strong>You can completely ignore all of that!</strong> Incoming Webhooks require zero manual scope configuration. When you click <em>&quot;Add New Webhook to Workspace&quot;</em> under <strong>Incoming Webhooks</strong>, Slack automatically grants the <code className="font-mono bg-amber-100 dark:bg-amber-900/60 px-1 py-0.5 rounded text-amber-900 dark:text-amber-200 font-semibold">incoming-webhook</code> permission behind the scenes.
+                      <T>If you visit Slack&apos;s</T> <em><T>OAuth &amp; Permissions</T></em> <T>tab, Slack shows warnings asking you to configure Bot Scopes, User Scopes, or Redirect URLs.</T> <strong><T>You can completely ignore all of that!</T></strong> <T>Incoming Webhooks require zero manual scope configuration. When you click</T> <em><T>&quot;Add New Webhook to Workspace&quot;</T></em> <T>under</T> <strong><T>Incoming Webhooks</T></strong><T>, Slack automatically grants the</T> <code className="font-mono bg-amber-100 dark:bg-amber-900/60 px-1 py-0.5 rounded text-amber-900 dark:text-amber-200 font-semibold">incoming-webhook</code> <T>permission behind the scenes.</T>
                     </p>
                   </div>
                 </div>
 
                 <div className="space-y-4">
                   <h4 className="font-bold text-slate-900 dark:text-white text-sm">
-                    5-Step Quick Setup Guide
+                    <T>5-Step Quick Setup Guide</T>
                   </h4>
                   <ol className="space-y-3.5 list-decimal list-inside text-slate-700 dark:text-slate-300 leading-relaxed">
                     <li className="pl-1">
-                      <strong>Open Slack API Dashboard:</strong> Navigate to{' '}
+                      <strong><T>Open Slack API Dashboard:</T></strong> <T>Navigate to</T>{' '}
                       <a
                         href="https://api.slack.com/apps"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-blue-600 dark:text-blue-400 hover:underline font-semibold inline-flex items-center gap-1"
                       >
-                        api.slack.com/apps <ExternalLink className="h-3 w-3 inline" />
+                        <T>api.slack.com/apps</T> <ExternalLink className="h-3 w-3 inline" />
                       </a>{' '}
-                      and click <strong>Create New App</strong> &gt; <em>From scratch</em>.
+                      <T>and click</T> <strong><T>Create New App</T></strong> &gt; <em><T>From scratch</T></em>.
                     </li>
                     <li className="pl-1">
-                      <strong>Name your app:</strong> Enter an App Name (e.g. <code className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 font-mono">Crescelo Alerts</code>) and select your Slack workspace.
+                      <strong><T>Name your app:</T></strong> <T>Enter an App Name (e.g.</T> <code className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 font-mono">Crescelo Alerts</code><T>) and select your Slack workspace.</T>
                     </li>
                     <li className="pl-1">
-                      <strong>Click &quot;Incoming Webhooks&quot;:</strong> In the left sidebar under <strong>Features</strong>, click <strong>Incoming Webhooks</strong> <em>(do not click OAuth &amp; Permissions)</em>.
+                      <strong><T>Click &quot;Incoming Webhooks&quot;:</T></strong> <T>In the left sidebar under</T> <strong><T>Features</T></strong><T>, click</T> <strong><T>Incoming Webhooks</T></strong> <em><T>(do not click OAuth &amp; Permissions)</T></em>.
                     </li>
                     <li className="pl-1">
-                      <strong>Activate and Add to Workspace:</strong> Toggle the switch to <strong>On</strong> (&quot;Activate Incoming Webhooks&quot;). Then scroll down to the bottom of the page and click the green button <strong>Add New Webhook to Workspace</strong>. Choose the destination channel (e.g. <code className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 font-mono">#leads</code> or <code className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 font-mono">#general</code>), and click <em>Allow</em>.
+                      <strong><T>Activate and Add to Workspace:</T></strong> <T>Toggle the switch to</T> <strong><T>On</T></strong> <T>(&quot;Activate Incoming Webhooks&quot;). Then scroll down to the bottom of the page and click the green button</T> <strong><T>Add New Webhook to Workspace</T></strong><T>. Choose the destination channel (e.g.</T> <code className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 font-mono">#leads</code> <T>or</T> <code className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 font-mono">#general</code><T>), and click</T> <em><T>Allow</T></em>.
                     </li>
                     <li className="pl-1">
-                      <strong>Copy &amp; Paste:</strong> Copy the generated Webhook URL (format: <code className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 font-mono">https://hooks.slack.com/services/T.../B.../...</code>), switch back to the <strong>Settings &amp; Test</strong> tab above, paste it into the field, and click <strong>Send Live Test Ping</strong>!
+                      <strong><T>Copy &amp; Paste:</T></strong> <T>Copy the generated Webhook URL (format:</T> <code className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 font-mono">https://hooks.slack.com/services/T.../B.../...</code><T>), switch back to the</T> <strong><T>Settings &amp; Test</T></strong> <T>tab above, paste it into the field, and click</T> <strong><T>Send Live Test Ping</T></strong>!
                     </li>
                   </ol>
                 </div>
@@ -855,10 +857,10 @@ export const ChannelsTab: React.FC<ChannelsTabProps> = ({
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-200 dark:border-slate-800">
                   <div>
                     <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-                      Google Sheets Web App Configuration
+                      <T>Google Sheets Web App Configuration</T>
                     </h3>
                     <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                      Automatically appends 12-column rows for every lead and booking into your spreadsheet.
+                      <T>Automatically appends 12-column rows for every lead and booking into your spreadsheet.</T>
                     </p>
                   </div>
 
@@ -874,7 +876,7 @@ export const ChannelsTab: React.FC<ChannelsTabProps> = ({
                       ) : (
                         <FileSpreadsheet className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
                       )}
-                      <span>Append Test Row</span>
+                      <span><T>Append Test Row</T></span>
                     </button>
 
                     <label className="relative inline-flex items-center cursor-pointer select-none">
@@ -886,7 +888,7 @@ export const ChannelsTab: React.FC<ChannelsTabProps> = ({
                       />
                       <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-800 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-slate-600 peer-checked:bg-emerald-600"></div>
                       <span className="ml-2.5 text-xs font-semibold text-slate-700 dark:text-slate-300">
-                        {formData.googleSheetsEnabled ? 'Active' : 'Disabled'}
+                        {formData.googleSheetsEnabled ? <T>{'Active'}</T> : <T>{'Disabled'}</T>}
                       </span>
                     </label>
                   </div>
@@ -896,7 +898,7 @@ export const ChannelsTab: React.FC<ChannelsTabProps> = ({
                   <div className="space-y-4">
                     <div>
                       <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                        Google Apps Script Web App URL
+                        <T>Google Apps Script Web App URL</T>
                       </label>
                       <input
                         type="url"
@@ -906,13 +908,13 @@ export const ChannelsTab: React.FC<ChannelsTabProps> = ({
                         className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-3.5 py-2.5 text-xs font-mono text-slate-900 dark:text-slate-100 outline-none focus:border-emerald-500"
                       />
                       <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
-                        Need the Apps Script template? Click the <strong>Step-by-Step Guide</strong> tab above.
+                        <T>Need the Apps Script template? Click the</T> <strong><T>Step-by-Step Guide</T></strong> <T>tab above.</T>
                       </p>
                     </div>
 
                     <div>
                       <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-2">
-                        Synced Events
+                        <T>Synced Events</T>
                       </label>
                       <div className="space-y-2">
                         <label className="flex items-center gap-2 text-xs text-slate-700 dark:text-slate-300 cursor-pointer">
@@ -928,7 +930,7 @@ export const ChannelsTab: React.FC<ChannelsTabProps> = ({
                             }}
                             className="rounded text-emerald-600 focus:ring-emerald-500 dark:bg-slate-950 dark:border-slate-800"
                           />
-                          <span><strong className="font-semibold">lead.created</strong> — Append row when a new contact lead is captured</span>
+                          <span><strong className="font-semibold"><T>lead.created</T></strong> <T>— Append row when a new contact lead is captured</T></span>
                         </label>
 
                         <label className="flex items-center gap-2 text-xs text-slate-700 dark:text-slate-300 cursor-pointer">
@@ -944,7 +946,7 @@ export const ChannelsTab: React.FC<ChannelsTabProps> = ({
                             }}
                             className="rounded text-emerald-600 focus:ring-emerald-500 dark:bg-slate-950 dark:border-slate-800"
                           />
-                          <span><strong className="font-semibold">appointment.created</strong> — Append row with booking date, time, and service</span>
+                          <span><strong className="font-semibold"><T>appointment.created</T></strong> <T>— Append row with booking date, time, and service</T></span>
                         </label>
                       </div>
                     </div>
@@ -964,14 +966,14 @@ export const ChannelsTab: React.FC<ChannelsTabProps> = ({
                             ) : (
                               <AlertTriangle className="h-4 w-4 text-rose-600 dark:text-rose-400" />
                             )}
-                            <span>{googleSheetsTestStatus.success ? 'Row Appended Successfully (HTTP 200 OK)' : 'Google Sheets Sync Failed'}</span>
+                            <span>{googleSheetsTestStatus.success ? <T>{'Row Appended Successfully (HTTP 200 OK)'}</T> : <T>{'Google Sheets Sync Failed'}</T>}</span>
                           </div>
                           {googleSheetsTestStatus.latencyMs !== undefined && (
-                            <span className="font-mono text-[11px] opacity-80">{googleSheetsTestStatus.latencyMs}ms latency</span>
+                            <span className="font-mono text-[11px] opacity-80">{googleSheetsTestStatus.latencyMs}<T>ms latency</T></span>
                           )}
                         </div>
                         {googleSheetsTestStatus.error && (
-                          <p className="mt-1 text-[11px] font-mono opacity-90">{googleSheetsTestStatus.error}</p>
+                          <p className="mt-1 text-[11px] font-mono opacity-90"><T>{googleSheetsTestStatus.error}</T></p>
                         )}
                       </div>
                     )}
@@ -982,39 +984,39 @@ export const ChannelsTab: React.FC<ChannelsTabProps> = ({
                     <div className="flex items-center justify-between text-xs font-semibold text-slate-400 pb-2 border-b border-slate-800">
                       <span className="flex items-center gap-2">
                         <GoogleSheetsIcon className="h-4 w-4" />
-                        <span className="text-white font-medium">Spreadsheet Auto-Sync View</span>
+                        <span className="text-white font-medium"><T>Spreadsheet Auto-Sync View</T></span>
                       </span>
-                      <span className="text-[10px] uppercase font-mono tracking-wider text-emerald-400">12 Columns Auto-Generated</span>
+                      <span className="text-[10px] uppercase font-mono tracking-wider text-emerald-400"><T>12 Columns Auto-Generated</T></span>
                     </div>
 
                     <div className="overflow-x-auto text-[11px]">
                       <table className="w-full text-left border-collapse">
                         <thead>
                           <tr className="bg-[#08251a] text-[#abff44] font-semibold border-b border-emerald-900/50">
-                            <th className="p-2 whitespace-nowrap">Timestamp</th>
-                            <th className="p-2 whitespace-nowrap">Event</th>
-                            <th className="p-2 whitespace-nowrap">Customer Name</th>
-                            <th className="p-2 whitespace-nowrap">Email</th>
-                            <th className="p-2 whitespace-nowrap">Service</th>
-                            <th className="p-2 whitespace-nowrap">Notes</th>
+                            <th className="p-2 whitespace-nowrap"><T>Timestamp</T></th>
+                            <th className="p-2 whitespace-nowrap"><T>Event</T></th>
+                            <th className="p-2 whitespace-nowrap"><T>Customer Name</T></th>
+                            <th className="p-2 whitespace-nowrap"><T>Email</T></th>
+                            <th className="p-2 whitespace-nowrap"><T>Service</T></th>
+                            <th className="p-2 whitespace-nowrap"><T>Notes</T></th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-800 font-mono text-[10px] text-slate-300">
                           <tr className="hover:bg-slate-900/60">
                             <td className="p-2 whitespace-nowrap text-slate-400">{new Date().toISOString().slice(0, 16)}</td>
-                            <td className="p-2 whitespace-nowrap text-emerald-400">lead.created</td>
-                            <td className="p-2 whitespace-nowrap text-white font-sans">Elena Rostova</td>
-                            <td className="p-2 whitespace-nowrap">elena@techlabs.co</td>
-                            <td className="p-2 whitespace-nowrap">Enterprise Consultation</td>
-                            <td className="p-2 whitespace-nowrap truncate max-w-[120px]">Requested custom demo</td>
+                            <td className="p-2 whitespace-nowrap text-emerald-400"><T>lead.created</T></td>
+                            <td className="p-2 whitespace-nowrap text-white font-sans"><T>Elena Rostova</T></td>
+                            <td className="p-2 whitespace-nowrap"><T>elena@techlabs.co</T></td>
+                            <td className="p-2 whitespace-nowrap"><T>Enterprise Consultation</T></td>
+                            <td className="p-2 whitespace-nowrap truncate max-w-[120px]"><T>Requested custom demo</T></td>
                           </tr>
                           <tr className="hover:bg-slate-900/60">
                             <td className="p-2 whitespace-nowrap text-slate-400">{new Date(Date.now() - 3600000).toISOString().slice(0, 16)}</td>
-                            <td className="p-2 whitespace-nowrap text-sky-400">appointment.created</td>
-                            <td className="p-2 whitespace-nowrap text-white font-sans">Marcus Brody</td>
-                            <td className="p-2 whitespace-nowrap">marcus@brody.io</td>
-                            <td className="p-2 whitespace-nowrap">Haircut &amp; Styling</td>
-                            <td className="p-2 whitespace-nowrap truncate max-w-[120px]">Confirmed slot 2:30 PM</td>
+                            <td className="p-2 whitespace-nowrap text-sky-400"><T>appointment.created</T></td>
+                            <td className="p-2 whitespace-nowrap text-white font-sans"><T>Marcus Brody</T></td>
+                            <td className="p-2 whitespace-nowrap"><T>marcus@brody.io</T></td>
+                            <td className="p-2 whitespace-nowrap"><T>Haircut &amp; Styling</T></td>
+                            <td className="p-2 whitespace-nowrap truncate max-w-[120px]"><T>Confirmed slot 2:30 PM</T></td>
                           </tr>
                         </tbody>
                       </table>
@@ -1029,32 +1031,32 @@ export const ChannelsTab: React.FC<ChannelsTabProps> = ({
                   <FileSpreadsheet className="h-5 w-5 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
                   <div>
                     <h4 className="font-bold text-emerald-900 dark:text-emerald-200 text-sm">
-                      30-Second Google Apps Script Setup
+                      <T>30-Second Google Apps Script Setup</T>
                     </h4>
                     <p className="text-slate-600 dark:text-slate-300 mt-1 leading-relaxed">
-                      Deploy this lightweight Google Apps Script directly in your spreadsheet. It handles concurrency, automatically initializes formatted headers on new sheets, and appends incoming customer rows.
+                      <T>Deploy this lightweight Google Apps Script directly in your spreadsheet. It handles concurrency, automatically initializes formatted headers on new sheets, and appends incoming customer rows.</T>
                     </p>
                   </div>
                 </div>
 
                 <div className="space-y-3.5">
                   <h4 className="font-bold text-slate-900 dark:text-white text-sm">
-                    Step-by-Step Instructions:
+                    <T>Step-by-Step Instructions:</T>
                   </h4>
                   <ol className="list-decimal list-inside space-y-2 text-slate-700 dark:text-slate-300 leading-relaxed">
-                    <li>Create a new spreadsheet at <strong>sheets.new</strong> (or open an existing one).</li>
-                    <li>In the top menu, click <strong>Extensions &gt; Apps Script</strong>.</li>
-                    <li>Delete any starter code, and paste the complete script below.</li>
-                    <li>Click <strong>Deploy &gt; New deployment</strong> in the top right corner.</li>
-                    <li>Click the gear icon next to <em>Select type</em> and select <strong>Web app</strong>.</li>
-                    <li>Set <strong>Execute as:</strong> <em>Me</em>, and <strong>Who has access:</strong> <em>Anyone</em> (required so Crescelo can post rows).</li>
-                    <li>Click <strong>Deploy</strong>, grant account permissions, and copy the <strong>Web app URL</strong>.</li>
-                    <li>Paste the URL into the <em>Settings &amp; Test</em> tab above and click <strong>Append Test Row</strong>!</li>
+                    <li><T>Create a new spreadsheet at</T> <strong><T>sheets.new</T></strong> <T>(or open an existing one).</T></li>
+                    <li><T>In the top menu, click</T> <strong><T>Extensions &gt; Apps Script</T></strong>.</li>
+                    <li><T>Delete any starter code, and paste the complete script below.</T></li>
+                    <li><T>Click</T> <strong><T>Deploy &gt; New deployment</T></strong> <T>in the top right corner.</T></li>
+                    <li><T>Click the gear icon next to</T> <em><T>Select type</T></em> <T>and select</T> <strong><T>Web app</T></strong>.</li>
+                    <li><T>Set</T> <strong><T>Execute as:</T></strong> <em><T>Me</T></em><T>, and</T> <strong><T>Who has access:</T></strong> <em><T>Anyone</T></em> <T>(required so Crescelo can post rows).</T></li>
+                    <li><T>Click</T> <strong><T>Deploy</T></strong><T>, grant account permissions, and copy the</T> <strong><T>Web app URL</T></strong>.</li>
+                    <li><T>Paste the URL into the</T> <em><T>Settings &amp; Test</T></em> <T>tab above and click</T> <strong><T>Append Test Row</T></strong>!</li>
                   </ol>
 
                   <div className="relative pt-2">
                     <div className="flex items-center justify-between pb-2">
-                      <span className="font-semibold text-slate-700 dark:text-slate-300 text-xs">Copy-Paste Google Apps Script Code:</span>
+                      <span className="font-semibold text-slate-700 dark:text-slate-300 text-xs"><T>Copy-Paste Google Apps Script Code:</T></span>
                       <button
                         type="button"
                         onClick={() => {
@@ -1067,12 +1069,12 @@ export const ChannelsTab: React.FC<ChannelsTabProps> = ({
                         {copiedGoogleScript ? (
                           <>
                             <Check className="h-3.5 w-3.5" />
-                            <span>Copied to Clipboard!</span>
+                            <span><T>Copied to Clipboard!</T></span>
                           </>
                         ) : (
                           <>
                             <Copy className="h-3.5 w-3.5" />
-                            <span>Copy Complete Script</span>
+                            <span><T>Copy Complete Script</T></span>
                           </>
                         )}
                       </button>
@@ -1097,10 +1099,10 @@ export const ChannelsTab: React.FC<ChannelsTabProps> = ({
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-200 dark:border-slate-800">
                   <div>
                     <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-                      Telegram Bot Token &amp; Webhook
+                      <T>Telegram Bot Token &amp; Webhook</T>
                     </h3>
                     <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                      Connect your Telegram bot token to provide automated answers directly in Telegram chats.
+                      <T>Connect your Telegram bot token to provide automated answers directly in Telegram chats.</T>
                     </p>
                   </div>
 
@@ -1113,7 +1115,7 @@ export const ChannelsTab: React.FC<ChannelsTabProps> = ({
                     />
                     <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-800 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-slate-600 peer-checked:bg-sky-600"></div>
                     <span className="ml-2.5 text-xs font-semibold text-slate-700 dark:text-slate-300">
-                      {formData.telegramBotEnabled ? 'Active' : 'Disabled'}
+                      {formData.telegramBotEnabled ? <T>{'Active'}</T> : <T>{'Disabled'}</T>}
                     </span>
                   </label>
                 </div>
@@ -1122,7 +1124,7 @@ export const ChannelsTab: React.FC<ChannelsTabProps> = ({
                   <div className="space-y-4">
                     <div>
                       <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                        Telegram Bot API Token
+                        <T>Telegram Bot API Token</T>
                       </label>
                       <div className="relative">
                         <input
@@ -1154,7 +1156,7 @@ export const ChannelsTab: React.FC<ChannelsTabProps> = ({
                         ) : (
                           <ShieldCheck className="h-3.5 w-3.5 text-sky-600" />
                         )}
-                        <span>1. Verify Bot Token</span>
+                        <span><T>1. Verify Bot Token</T></span>
                       </button>
 
                       <button
@@ -1168,7 +1170,7 @@ export const ChannelsTab: React.FC<ChannelsTabProps> = ({
                         ) : (
                           <Zap className="h-3.5 w-3.5" />
                         )}
-                        <span>2. Register Webhook</span>
+                        <span><T>2. Register Webhook</T></span>
                       </button>
                     </div>
 
@@ -1182,16 +1184,16 @@ export const ChannelsTab: React.FC<ChannelsTabProps> = ({
                       >
                         <div className="flex items-center gap-1.5 font-semibold">
                           {telegramStatus.success ? <CheckCircle2 className="h-4 w-4" /> : <AlertTriangle className="h-4 w-4" />}
-                          <span>{telegramStatus.success ? `Verified: @${telegramStatus.botInfo?.username}` : 'Verification Failed'}</span>
+                          <span>{telegramStatus.success ? __t("Verified: @{username}", { username: telegramStatus.botInfo?.username }) : <T>{'Verification Failed'}</T>}</span>
                         </div>
-                        {telegramStatus.error && <p className="mt-1 text-[11px] font-mono">{telegramStatus.error}</p>}
+                        {telegramStatus.error && <p className="mt-1 text-[11px] font-mono"><T>{telegramStatus.error}</T></p>}
                       </div>
                     )}
 
                     {telegramWebhookStatus.message && (
                       <div className="p-3 rounded-xl border bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 text-emerald-800 dark:text-emerald-300 text-xs flex items-center gap-2">
                         <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600" />
-                        <span>{telegramWebhookStatus.message}</span>
+                        <span><T>{telegramWebhookStatus.message}</T></span>
                       </div>
                     )}
                   </div>
@@ -1201,24 +1203,24 @@ export const ChannelsTab: React.FC<ChannelsTabProps> = ({
                     <div className="flex items-center justify-between text-xs pb-2 border-b border-slate-800 text-slate-400">
                       <span className="flex items-center gap-2">
                         <SendHorizontal className="h-4 w-4 text-sky-400" />
-                        <span className="text-white font-medium">Telegram Chat Mockup</span>
+                        <span className="text-white font-medium"><T>Telegram Chat Mockup</T></span>
                       </span>
-                      <span className="text-[10px] text-sky-400">@bot live view</span>
+                      <span className="text-[10px] text-sky-400"><T>@bot live view</T></span>
                     </div>
 
                     <div className="space-y-3 pt-2 text-xs">
                       <div className="bg-[#182533] p-3 rounded-2xl rounded-tl-sm max-w-[85%] space-y-1">
                         <p className="text-slate-200 text-[11px]">
-                          Hello! What are your consultation hours and rates?
+                          <T>Hello! What are your consultation hours and rates?</T>
                         </p>
-                        <span className="text-[9px] text-slate-400 block text-right">10:42 AM</span>
+                        <span className="text-[9px] text-slate-400 block text-right"><T>10:42 AM</T></span>
                       </div>
 
                       <div className="bg-[#2B5278] p-3 rounded-2xl rounded-tr-sm max-w-[85%] ml-auto space-y-1">
                         <p className="text-white text-[11px] font-medium">
-                          We are open Monday–Saturday from 9:00 AM to 7:00 PM. Would you like me to reserve a consultation slot for you?
+                          <T>We are open Monday–Saturday from 9:00 AM to 7:00 PM. Would you like me to reserve a consultation slot for you?</T>
                         </p>
-                        <span className="text-[9px] text-sky-200 block text-right">10:42 AM · ✓✓</span>
+                        <span className="text-[9px] text-sky-200 block text-right"><T>10:42 AM · ✓✓</T></span>
                       </div>
                     </div>
                   </div>
@@ -1231,21 +1233,21 @@ export const ChannelsTab: React.FC<ChannelsTabProps> = ({
                   <SendHorizontal className="h-5 w-5 text-sky-600 dark:text-sky-400 shrink-0 mt-0.5" />
                   <div>
                     <h4 className="font-bold text-sky-900 dark:text-sky-200 text-sm">
-                      How to Create a Telegram Bot in 2 Minutes
+                      <T>How to Create a Telegram Bot in 2 Minutes</T>
                     </h4>
                     <p className="text-slate-600 dark:text-slate-300 mt-1 leading-relaxed">
-                      Telegram allows developers to create free autonomous bots through the official @BotFather. No credit card or developer fees required.
+                      <T>Telegram allows developers to create free autonomous bots through the official @BotFather. No credit card or developer fees required.</T>
                     </p>
                   </div>
                 </div>
 
                 <ol className="list-decimal list-inside space-y-3 text-slate-700 dark:text-slate-300 leading-relaxed">
-                  <li>Open Telegram and search for <strong>@BotFather</strong> (verified with blue checkmark).</li>
-                  <li>Send the command <code className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 font-mono text-sky-600">/newbot</code>.</li>
-                  <li>Follow prompts to choose a display name (e.g. <em>Crescelo Concierge</em>) and a username ending in <code className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 font-mono">bot</code> (e.g. <em>acme_clinic_bot</em>).</li>
-                  <li>BotFather will reply with an <strong>HTTP API Token</strong> (e.g. <code className="font-mono">712938192:AAHj...</code>).</li>
-                  <li>Copy that token, switch to the <strong>Settings &amp; Test</strong> tab above, paste it, and click <strong>Verify Bot Token</strong>.</li>
-                  <li>Click <strong>Register Webhook</strong> to bind your bot to Crescelo. Messages sent to your bot will now receive instant AI responses!</li>
+                  <li><T>Open Telegram and search for</T> <strong><T>@BotFather</T></strong> <T>(verified with blue checkmark).</T></li>
+                  <li><T>Send the command</T> <code className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 font-mono text-sky-600">/newbot</code>.</li>
+                  <li><T>Follow prompts to choose a display name (e.g.</T> <em><T>Crescelo Concierge</T></em><T>) and a username ending in</T> <code className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 font-mono">bot</code> (e.g. <em><T>acme_clinic_bot</T></em>).</li>
+                  <li><T>BotFather will reply with an</T> <strong><T>HTTP API Token</T></strong> (e.g. <code className="font-mono">712938192:AAHj...</code>).</li>
+                  <li><T>Copy that token, switch to the</T> <strong><T>Settings &amp; Test</T></strong> <T>tab above, paste it, and click</T> <strong><T>Verify Bot Token</T></strong>.</li>
+                  <li><T>Click</T> <strong><T>Register Webhook</T></strong> <T>to bind your bot to Crescelo. Messages sent to your bot will now receive instant AI responses!</T></li>
                 </ol>
               </div>
             )}
@@ -1262,10 +1264,10 @@ export const ChannelsTab: React.FC<ChannelsTabProps> = ({
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-200 dark:border-slate-800">
                   <div>
                     <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-                      Meta WhatsApp Business Cloud API
+                      <T>Meta WhatsApp Business Cloud API</T>
                     </h3>
                     <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                      Connect official Meta Cloud API credentials to power WhatsApp client conversations.
+                      <T>Connect official Meta Cloud API credentials to power WhatsApp client conversations.</T>
                     </p>
                   </div>
 
@@ -1278,7 +1280,7 @@ export const ChannelsTab: React.FC<ChannelsTabProps> = ({
                     />
                     <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-800 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-slate-600 peer-checked:bg-emerald-600"></div>
                     <span className="ml-2.5 text-xs font-semibold text-slate-700 dark:text-slate-300">
-                      {formData.whatsappEnabled ? 'Active' : 'Disabled'}
+                      {formData.whatsappEnabled ? <T>{'Active'}</T> : <T>{'Disabled'}</T>}
                     </span>
                   </label>
                 </div>
@@ -1287,7 +1289,7 @@ export const ChannelsTab: React.FC<ChannelsTabProps> = ({
                   <div className="space-y-4">
                     <div>
                       <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                        WhatsApp Phone Number ID
+                        <T>WhatsApp Phone Number ID</T>
                       </label>
                       <input
                         type="text"
@@ -1300,7 +1302,7 @@ export const ChannelsTab: React.FC<ChannelsTabProps> = ({
 
                     <div>
                       <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                        System User Access Token (Permanent)
+                        <T>System User Access Token (Permanent)</T>
                       </label>
                       <div className="relative">
                         <input
@@ -1322,7 +1324,7 @@ export const ChannelsTab: React.FC<ChannelsTabProps> = ({
 
                     <div>
                       <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                        Webhook Verify Token
+                        <T>Webhook Verify Token</T>
                       </label>
                       <input
                         type="text"
@@ -1336,10 +1338,10 @@ export const ChannelsTab: React.FC<ChannelsTabProps> = ({
 
                   {/* Callback URL Card */}
                   <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 space-y-3 text-xs">
-                    <h4 className="font-bold text-slate-900 dark:text-white">Meta Webhook Credentials to Paste in Meta:</h4>
+                    <h4 className="font-bold text-slate-900 dark:text-white"><T>Meta Webhook Credentials to Paste in Meta:</T></h4>
                     
                     <div>
-                      <span className="text-[11px] font-semibold text-slate-500">Callback URL:</span>
+                      <span className="text-[11px] font-semibold text-slate-500"><T>Callback URL:</T></span>
                       <div className="flex items-center gap-2 mt-1">
                         <input
                           readOnly
@@ -1355,13 +1357,13 @@ export const ChannelsTab: React.FC<ChannelsTabProps> = ({
                           }}
                           className="px-3 py-1.5 rounded-lg bg-emerald-600 text-white font-semibold text-xs transition cursor-pointer"
                         >
-                          {copiedWaWebhookUrl ? 'Copied' : 'Copy'}
+                          {copiedWaWebhookUrl ? <T>{'Copied'}</T> : <T>{'Copy'}</T>}
                         </button>
                       </div>
                     </div>
 
                     <div>
-                      <span className="text-[11px] font-semibold text-slate-500">Verify Token:</span>
+                      <span className="text-[11px] font-semibold text-slate-500"><T>Verify Token:</T></span>
                       <div className="flex items-center gap-2 mt-1">
                         <input
                           readOnly
@@ -1377,7 +1379,7 @@ export const ChannelsTab: React.FC<ChannelsTabProps> = ({
                           }}
                           className="px-3 py-1.5 rounded-lg bg-emerald-600 text-white font-semibold text-xs transition cursor-pointer"
                         >
-                          {copiedWaVerifyToken ? 'Copied' : 'Copy'}
+                          {copiedWaVerifyToken ? <T>{'Copied'}</T> : <T>{'Copy'}</T>}
                         </button>
                       </div>
                     </div>
@@ -1391,21 +1393,21 @@ export const ChannelsTab: React.FC<ChannelsTabProps> = ({
                   <Radio className="h-5 w-5 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
                   <div>
                     <h4 className="font-bold text-emerald-900 dark:text-emerald-200 text-sm">
-                      Meta WhatsApp Business Setup
+                      <T>Meta WhatsApp Business Setup</T>
                     </h4>
                     <p className="text-slate-600 dark:text-slate-300 mt-1 leading-relaxed">
-                      Connect official Meta Cloud API credentials to power WhatsApp customer conversations directly from your registered company number.
+                      <T>Connect official Meta Cloud API credentials to power WhatsApp customer conversations directly from your registered company number.</T>
                     </p>
                   </div>
                 </div>
 
                 <ol className="list-decimal list-inside space-y-2.5 text-slate-700 dark:text-slate-300 leading-relaxed">
-                  <li>Go to <strong>developers.facebook.com</strong> and sign in with your Meta account.</li>
-                  <li>Click <strong>My Apps &gt; Create App</strong>, select <em>Other &gt; Business</em>.</li>
-                  <li>In your app dashboard, find <strong>WhatsApp</strong> and click <em>Set up</em>.</li>
-                  <li>Under <em>API Setup</em>, copy your <strong>Phone Number ID</strong> and temporary/system token into the Settings tab.</li>
-                  <li>Under <em>Configuration &gt; Webhook</em>, click <strong>Edit</strong>. Paste your Callback URL and Verify Token from the Settings tab.</li>
-                  <li>Under <em>Webhook fields</em>, subscribe to the <strong>messages</strong> event. Your assistant is now ready to receive WhatsApp messages!</li>
+                  <li><T>Go to</T> <strong><T>developers.facebook.com</T></strong> <T>and sign in with your Meta account.</T></li>
+                  <li><T>Click</T> <strong><T>My Apps &gt; Create App</T></strong><T>, select</T> <em><T>Other &gt; Business</T></em>.</li>
+                  <li><T>In your app dashboard, find</T> <strong><T>WhatsApp</T></strong> <T>and click</T> <em><T>Set up</T></em>.</li>
+                  <li><T>Under</T> <em><T>API Setup</T></em><T>, copy your</T> <strong><T>Phone Number ID</T></strong> <T>and temporary/system token into the Settings tab.</T></li>
+                  <li><T>Under</T> <em><T>Configuration &gt; Webhook</T></em><T>, click</T> <strong><T>Edit</T></strong><T>. Paste your Callback URL and Verify Token from the Settings tab.</T></li>
+                  <li><T>Under</T> <em><T>Webhook fields</T></em><T>, subscribe to the</T> <strong><T>messages</T></strong> <T>event. Your assistant is now ready to receive WhatsApp messages!</T></li>
                 </ol>
               </div>
             )}
@@ -1433,21 +1435,21 @@ export const ChannelsTab: React.FC<ChannelsTabProps> = ({
                   <PhoneCall className="h-5 w-5 text-indigo-600 dark:text-indigo-400 shrink-0 mt-0.5" />
                   <div>
                     <h4 className="font-bold text-indigo-900 dark:text-indigo-200 text-sm">
-                      How Crescelo Inbound AI Voice Works
+                      <T>How Crescelo Inbound AI Voice Works</T>
                     </h4>
                     <p className="text-slate-600 dark:text-slate-300 mt-1 leading-relaxed">
-                      Crescelo connects to wholesale telephony providers (Telnyx / Twilio) using TeXML and WebSocket audio streams. Faster-whisper transcribes caller audio, your assistant formulates knowledge responses, and Piper synthesizes neural speech in under 400ms.
+                      <T>Crescelo connects to wholesale telephony providers (Telnyx / Twilio) using TeXML and WebSocket audio streams. Faster-whisper transcribes caller audio, your assistant formulates knowledge responses, and Piper synthesizes neural speech in under 400ms.</T>
                     </p>
                   </div>
                 </div>
 
                 <ol className="list-decimal list-inside space-y-2.5 text-slate-700 dark:text-slate-300 leading-relaxed">
-                  <li>Obtain an E.164 phone number from Telnyx (recommended for wholesale pricing) or Twilio.</li>
-                  <li>In your Telnyx Mission Control Portal / Twilio Console, navigate to <strong>Call Control / Phone Numbers</strong>.</li>
-                  <li>Configure the Voice Webhook URL to: <code className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 font-mono text-indigo-600">{typeof window !== 'undefined' ? `${window.location.origin}/api/channels/voice` : '/api/channels/voice'}</code></li>
-                  <li>Set HTTP method to <strong>POST</strong>.</li>
-                  <li>In the <em>Settings</em> tab, assign the phone number to your assistant, set your greeting, and choose a neural voice.</li>
-                  <li>Dial the number from your mobile phone to test live conversational answering!</li>
+                  <li><T>Obtain an E.164 phone number from Telnyx (recommended for wholesale pricing) or Twilio.</T></li>
+                  <li><T>In your Telnyx Mission Control Portal / Twilio Console, navigate to</T> <strong><T>Call Control / Phone Numbers</T></strong>.</li>
+                  <li><T>Configure the Voice Webhook URL to:</T> <code className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 font-mono text-indigo-600">{typeof window !== 'undefined' ? `${window.location.origin}/api/channels/voice` : '/api/channels/voice'}</code></li>
+                  <li><T>Set HTTP method to</T> <strong><T>POST</T></strong>.</li>
+                  <li><T>In the</T> <em><T>Settings</T></em> <T>tab, assign the phone number to your assistant, set your greeting, and choose a neural voice.</T></li>
+                  <li><T>Dial the number from your mobile phone to test live conversational answering!</T></li>
                 </ol>
               </div>
             )}
@@ -1464,10 +1466,10 @@ export const ChannelsTab: React.FC<ChannelsTabProps> = ({
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-200 dark:border-slate-800">
                   <div>
                     <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-                      Outbound Webhooks (Zapier, Make.com, n8n, CRM)
+                      <T>Outbound Webhooks (Zapier, Make.com, n8n, CRM)</T>
                     </h3>
                     <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                      Stream captured leads and booking events into third-party automation tools with HMAC signatures.
+                      <T>Stream captured leads and booking events into third-party automation tools with HMAC signatures.</T>
                     </p>
                   </div>
 
@@ -1482,7 +1484,7 @@ export const ChannelsTab: React.FC<ChannelsTabProps> = ({
                     ) : (
                       <Activity className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
                     )}
-                    <span>Send Live Test Ping</span>
+                    <span><T>Send Live Test Ping</T></span>
                   </button>
                 </div>
 
@@ -1490,7 +1492,7 @@ export const ChannelsTab: React.FC<ChannelsTabProps> = ({
                   <div className="space-y-4">
                     <div>
                       <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                        Target Webhook URL
+                        <T>Target Webhook URL</T>
                       </label>
                       <input
                         type="url"
@@ -1503,7 +1505,7 @@ export const ChannelsTab: React.FC<ChannelsTabProps> = ({
 
                     <div>
                       <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                        Webhook Signing Secret (Optional)
+                        <T>Webhook Signing Secret (Optional)</T>
                       </label>
                       <div className="relative">
                         <input
@@ -1525,7 +1527,7 @@ export const ChannelsTab: React.FC<ChannelsTabProps> = ({
 
                     <div>
                       <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-2">
-                        Dispatched Events
+                        <T>Dispatched Events</T>
                       </label>
                       <div className="space-y-2">
                         <label className="flex items-center gap-2 text-xs text-slate-700 dark:text-slate-300 cursor-pointer">
@@ -1541,7 +1543,7 @@ export const ChannelsTab: React.FC<ChannelsTabProps> = ({
                             }}
                             className="rounded text-amber-600 focus:ring-amber-500 dark:bg-slate-950 dark:border-slate-800"
                           />
-                          <span><strong className="font-semibold">lead.created</strong> — Fired when a visitor submits contact details</span>
+                          <span><strong className="font-semibold"><T>lead.created</T></strong> <T>— Fired when a visitor submits contact details</T></span>
                         </label>
 
                         <label className="flex items-center gap-2 text-xs text-slate-700 dark:text-slate-300 cursor-pointer">
@@ -1557,7 +1559,7 @@ export const ChannelsTab: React.FC<ChannelsTabProps> = ({
                             }}
                             className="rounded text-amber-600 focus:ring-amber-500 dark:bg-slate-950 dark:border-slate-800"
                           />
-                          <span><strong className="font-semibold">conversation.escalated</strong> — Fired when a human agent is requested</span>
+                          <span><strong className="font-semibold"><T>conversation.escalated</T></strong> <T>— Fired when a human agent is requested</T></span>
                         </label>
                       </div>
                     </div>
@@ -1573,13 +1575,13 @@ export const ChannelsTab: React.FC<ChannelsTabProps> = ({
                         <div className="flex items-center justify-between font-semibold">
                           <div className="flex items-center gap-1.5">
                             {webhookTestStatus.success ? <CheckCircle2 className="h-4 w-4" /> : <AlertTriangle className="h-4 w-4" />}
-                            <span>{webhookTestStatus.success ? 'Webhook 200 OK Received' : 'Ping Failed'}</span>
+                            <span>{webhookTestStatus.success ? <T>{'Webhook 200 OK Received'}</T> : <T>{'Ping Failed'}</T>}</span>
                           </div>
                           {webhookTestStatus.latencyMs !== undefined && (
-                            <span className="font-mono text-[11px] opacity-80">{webhookTestStatus.latencyMs}ms latency</span>
+                            <span className="font-mono text-[11px] opacity-80">{webhookTestStatus.latencyMs}<T>ms latency</T></span>
                           )}
                         </div>
-                        {webhookTestStatus.error && <p className="mt-1 text-[11px] font-mono">{webhookTestStatus.error}</p>}
+                        {webhookTestStatus.error && <p className="mt-1 text-[11px] font-mono"><T>{webhookTestStatus.error}</T></p>}
                       </div>
                     )}
                   </div>
@@ -1589,9 +1591,9 @@ export const ChannelsTab: React.FC<ChannelsTabProps> = ({
                     <div className="flex items-center justify-between text-xs font-semibold text-slate-300 pb-2 border-b border-slate-800">
                       <span className="flex items-center gap-1.5">
                         <FileCode className="h-3.5 w-3.5 text-amber-400" />
-                        <span>Sample Outbound Payload</span>
+                        <span><T>Sample Outbound Payload</T></span>
                       </span>
-                      <span className="text-[10px] font-mono text-slate-400 uppercase">POST / JSON</span>
+                      <span className="text-[10px] font-mono text-slate-400 uppercase"><T>POST / JSON</T></span>
                     </div>
                     <pre className="text-[11px] font-mono text-emerald-400 leading-relaxed overflow-x-auto whitespace-pre-wrap">
 {`{
@@ -1619,20 +1621,20 @@ export const ChannelsTab: React.FC<ChannelsTabProps> = ({
                   <Webhook className="h-5 w-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
                   <div>
                     <h4 className="font-bold text-amber-900 dark:text-amber-200 text-sm">
-                      Connecting to Zapier, Make.com, or Custom Backends
+                      <T>Connecting to Zapier, Make.com, or Custom Backends</T>
                     </h4>
                     <p className="text-slate-600 dark:text-slate-300 mt-1 leading-relaxed">
-                      Whenever an event fires, Crescelo sends an HTTPS POST request containing JSON data and an optional HMAC SHA-256 header (<code className="font-mono">X-Crescelo-Signature</code>).
+                      <T>Whenever an event fires, Crescelo sends an HTTPS POST request containing JSON data and an optional HMAC SHA-256 header (</T><code className="font-mono">X-Crescelo-Signature</code>).
                     </p>
                   </div>
                 </div>
 
                 <ol className="list-decimal list-inside space-y-2.5 text-slate-700 dark:text-slate-300 leading-relaxed">
-                  <li>In <strong>Zapier</strong>, create a Zap and select <strong>Webhooks by Zapier &gt; Catch Hook</strong>.</li>
-                  <li>In <strong>Make.com</strong>, add a <strong>Custom Webhook</strong> module and click <em>Create a Webhook</em>.</li>
-                  <li>Copy the webhook URL provided by Zapier/Make and paste it into the <em>Settings</em> tab above.</li>
-                  <li>(Optional) Define a signing secret to verify payload authenticity on your server.</li>
-                  <li>Click <strong>Send Live Test Ping</strong> in Crescelo to test the trigger and establish data schema!</li>
+                  <li><T>In</T> <strong><T>Zapier</T></strong><T>, create a Zap and select</T> <strong><T>Webhooks by Zapier &gt; Catch Hook</T></strong>.</li>
+                  <li><T>In</T> <strong><T>Make.com</T></strong><T>, add a</T> <strong><T>Custom Webhook</T></strong> <T>module and click</T> <em><T>Create a Webhook</T></em>.</li>
+                  <li><T>Copy the webhook URL provided by Zapier/Make and paste it into the</T> <em><T>Settings</T></em> <T>tab above.</T></li>
+                  <li><T>(Optional) Define a signing secret to verify payload authenticity on your server.</T></li>
+                  <li><T>Click</T> <strong><T>Send Live Test Ping</T></strong> <T>in Crescelo to test the trigger and establish data schema!</T></li>
                 </ol>
               </div>
             )}
@@ -1649,10 +1651,10 @@ export const ChannelsTab: React.FC<ChannelsTabProps> = ({
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-200 dark:border-slate-800">
                   <div>
                     <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-                      Custom Outbound SMTP Server Settings
+                      <T>Custom Outbound SMTP Server Settings</T>
                     </h3>
                     <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                      Send lead notifications and calendar booking emails from your custom business email address.
+                      <T>Send lead notifications and calendar booking emails from your custom business email address.</T>
                     </p>
                   </div>
 
@@ -1667,7 +1669,7 @@ export const ChannelsTab: React.FC<ChannelsTabProps> = ({
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                       <div className="sm:col-span-2">
                         <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                          SMTP Host
+                          <T>SMTP Host</T>
                         </label>
                         <input
                           type="text"
@@ -1679,7 +1681,7 @@ export const ChannelsTab: React.FC<ChannelsTabProps> = ({
                       </div>
                       <div>
                         <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                          Port
+                          <T>Port</T>
                         </label>
                         <input
                           type="number"
@@ -1694,7 +1696,7 @@ export const ChannelsTab: React.FC<ChannelsTabProps> = ({
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div>
                         <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                          SMTP Username
+                          <T>SMTP Username</T>
                         </label>
                         <input
                           type="text"
@@ -1706,7 +1708,7 @@ export const ChannelsTab: React.FC<ChannelsTabProps> = ({
                       </div>
                       <div>
                         <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                          SMTP Password
+                          <T>SMTP Password</T>
                         </label>
                         <div className="relative">
                           <input
@@ -1730,7 +1732,7 @@ export const ChannelsTab: React.FC<ChannelsTabProps> = ({
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div>
                         <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                          Sender Name
+                          <T>Sender Name</T>
                         </label>
                         <input
                           type="text"
@@ -1742,7 +1744,7 @@ export const ChannelsTab: React.FC<ChannelsTabProps> = ({
                       </div>
                       <div>
                         <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                          Sender Email
+                          <T>Sender Email</T>
                         </label>
                         <input
                           type="email"
@@ -1760,15 +1762,15 @@ export const ChannelsTab: React.FC<ChannelsTabProps> = ({
                     <div>
                       <div className="flex items-center gap-2 pb-2 border-b border-slate-200 dark:border-slate-800 text-xs font-bold text-slate-900 dark:text-white">
                         <Send className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
-                        <span>Live SMTP Diagnostic Sender</span>
+                        <span><T>Live SMTP Diagnostic Sender</T></span>
                       </div>
                       <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-2">
-                        Send a test email to verify credentials, TLS handshake, and DNS sender authentication.
+                        <T>Send a test email to verify credentials, TLS handshake, and DNS sender authentication.</T>
                       </p>
 
                       <div className="mt-3">
                         <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                          Recipient Email Address
+                          <T>Recipient Email Address</T>
                         </label>
                         <input
                           type="email"
@@ -1791,8 +1793,8 @@ export const ChannelsTab: React.FC<ChannelsTabProps> = ({
                             <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
                           )}
                           <div className="flex-1 min-w-0">
-                            <span className="font-semibold">{smtpTestResult.success ? 'Delivery Verified' : 'Delivery Test Failed'}:</span>{' '}
-                            <span>{smtpTestResult.message}</span>
+                            <span className="font-semibold">{smtpTestResult.success ? <T>{'Delivery Verified'}</T> : <T>{'Delivery Test Failed'}</T>}:</span>{' '}
+                            <span><T>{smtpTestResult.message}</T></span>
                           </div>
                         </div>
                       )}
@@ -1807,12 +1809,12 @@ export const ChannelsTab: React.FC<ChannelsTabProps> = ({
                       {smtpTesting ? (
                         <>
                           <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                          <span>Connecting &amp; Sending...</span>
+                          <span><T>Connecting &amp; Sending...</T></span>
                         </>
                       ) : (
                         <>
                           <Send className="w-3.5 h-3.5" />
-                          <span>Send Live Test Email</span>
+                          <span><T>Send Live Test Email</T></span>
                         </>
                       )}
                     </button>
@@ -1826,24 +1828,24 @@ export const ChannelsTab: React.FC<ChannelsTabProps> = ({
                   <Mail className="h-5 w-5 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
                   <div>
                     <h4 className="font-bold text-blue-900 dark:text-blue-200 text-sm">
-                      Recommended SMTP Providers &amp; Ports
+                      <T>Recommended SMTP Providers &amp; Ports</T>
                     </h4>
                     <p className="text-slate-600 dark:text-slate-300 mt-1 leading-relaxed">
-                      Use port 587 with STARTTLS or port 465 with SSL. For Gmail, generate a 16-character App Password under Google Account Security.
+                      <T>Use port 587 with STARTTLS or port 465 with SSL. For Gmail, generate a 16-character App Password under Google Account Security.</T>
                     </p>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 space-y-1.5">
-                    <h5 className="font-bold text-slate-900 dark:text-white">Gmail / Google Workspace</h5>
-                    <p className="text-slate-600 dark:text-slate-400 text-[11px]">Host: <code className="font-mono">smtp.gmail.com</code> | Port: 587</p>
-                    <p className="text-slate-600 dark:text-slate-400 text-[11px]">Password: Create a 16-letter App Password at <em>myaccount.google.com/apppasswords</em>.</p>
+                    <h5 className="font-bold text-slate-900 dark:text-white"><T>Gmail / Google Workspace</T></h5>
+                    <p className="text-slate-600 dark:text-slate-400 text-[11px]"><T>Host:</T> <code className="font-mono">smtp.gmail.com</code> <T>| Port: 587</T></p>
+                    <p className="text-slate-600 dark:text-slate-400 text-[11px]"><T>Password: Create a 16-letter App Password at</T> <em><T>myaccount.google.com/apppasswords</T></em>.</p>
                   </div>
                   <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 space-y-1.5">
-                    <h5 className="font-bold text-slate-900 dark:text-white">SendGrid / Twilio</h5>
-                    <p className="text-slate-600 dark:text-slate-400 text-[11px]">Host: <code className="font-mono">smtp.sendgrid.net</code> | Port: 587</p>
-                    <p className="text-slate-600 dark:text-slate-400 text-[11px]">Username: <code className="font-mono">apikey</code> | Password: Your SendGrid API Key.</p>
+                    <h5 className="font-bold text-slate-900 dark:text-white"><T>SendGrid / Twilio</T></h5>
+                    <p className="text-slate-600 dark:text-slate-400 text-[11px]"><T>Host:</T> <code className="font-mono">smtp.sendgrid.net</code> <T>| Port: 587</T></p>
+                    <p className="text-slate-600 dark:text-slate-400 text-[11px]"><T>Username:</T> <code className="font-mono">apikey</code> <T>| Password: Your SendGrid API Key.</T></p>
                   </div>
                 </div>
               </div>
@@ -1861,10 +1863,10 @@ export const ChannelsTab: React.FC<ChannelsTabProps> = ({
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-200 dark:border-slate-800">
                   <div>
                     <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-                      Agency White-Labeling &amp; Custom Branding
+                      <T>Agency White-Labeling &amp; Custom Branding</T>
                     </h3>
                     <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                      Remove "Powered by Crescelo" and replace with your agency watermark and backlink.
+                      <T>Remove "Powered by Crescelo" and replace with your agency watermark and backlink.</T>
                     </p>
                   </div>
 
@@ -1877,7 +1879,7 @@ export const ChannelsTab: React.FC<ChannelsTabProps> = ({
                     />
                     <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-800 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-slate-600 peer-checked:bg-purple-600"></div>
                     <span className="ml-2.5 text-xs font-semibold text-slate-700 dark:text-slate-300">
-                      {formData.whiteLabelEnabled ? 'White-Label Active' : 'Default Branding'}
+                      {formData.whiteLabelEnabled ? <T>{'White-Label Active'}</T> : <T>{'Default Branding'}</T>}
                     </span>
                   </label>
                 </div>
@@ -1886,7 +1888,7 @@ export const ChannelsTab: React.FC<ChannelsTabProps> = ({
                   <div className="space-y-4">
                     <div>
                       <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                        Custom Footer Watermark Text
+                        <T>Custom Footer Watermark Text</T>
                       </label>
                       <input
                         type="text"
@@ -1899,7 +1901,7 @@ export const ChannelsTab: React.FC<ChannelsTabProps> = ({
 
                     <div>
                       <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                        Agency Backlink URL
+                        <T>Agency Backlink URL</T>
                       </label>
                       <input
                         type="url"
@@ -1914,7 +1916,7 @@ export const ChannelsTab: React.FC<ChannelsTabProps> = ({
                   {/* White-Label Preview */}
                   <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 flex flex-col justify-between space-y-3">
                     <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                      Live Widget Footer Preview:
+                      <T>Live Widget Footer Preview:</T>
                     </span>
                     <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 text-center shadow-xs">
                       <span className="text-[11px] text-slate-500 dark:text-slate-400">
@@ -1930,13 +1932,13 @@ export const ChannelsTab: React.FC<ChannelsTabProps> = ({
                         ) : (
                           <span className="inline-flex items-center gap-1.5">
                             <CresceloMark size={14} motion="draw" />
-                            <span>Powered by <strong className="text-slate-800 dark:text-slate-200">Crescelo AI</strong></span>
+                            <span><T>Powered by</T> <strong className="text-slate-800 dark:text-slate-200"><T>Crescelo AI</T></strong></span>
                           </span>
                         )}
                       </span>
                     </div>
                     <p className="text-[10px] text-slate-500 dark:text-slate-400">
-                      This watermark renders at the bottom of web widgets and landing pages.
+                      <T>This watermark renders at the bottom of web widgets and landing pages.</T>
                     </p>
                   </div>
                 </div>
@@ -1948,19 +1950,19 @@ export const ChannelsTab: React.FC<ChannelsTabProps> = ({
                   <Shield className="h-5 w-5 text-purple-600 dark:text-purple-400 shrink-0 mt-0.5" />
                   <div>
                     <h4 className="font-bold text-purple-900 dark:text-purple-200 text-sm">
-                      Reselling Chatbots Under Your Agency Brand
+                      <T>Reselling Chatbots Under Your Agency Brand</T>
                     </h4>
                     <p className="text-slate-600 dark:text-slate-300 mt-1 leading-relaxed">
-                      White-labeling allows marketing agencies and consultants to deliver AI concierge systems to client websites without displaying Crescelo branding.
+                      <T>White-labeling allows marketing agencies and consultants to deliver AI concierge systems to client websites without displaying Crescelo branding.</T>
                     </p>
                   </div>
                 </div>
 
                 <ol className="list-decimal list-inside space-y-2.5 text-slate-700 dark:text-slate-300 leading-relaxed">
-                  <li>Toggle <strong>White-Label Active</strong> on in the Settings tab.</li>
-                  <li>Enter your agency name in <strong>Custom Footer Watermark Text</strong> (e.g. <em>Powered by Hyperion Growth</em>).</li>
-                  <li>Enter your website URL in <strong>Agency Backlink URL</strong>.</li>
-                  <li>Click <strong>Save Channel Settings</strong>. All widget scripts will immediately render your agency credit and link.</li>
+                  <li><T>Toggle</T> <strong><T>White-Label Active</T></strong> <T>on in the Settings tab.</T></li>
+                  <li><T>Enter your agency name in</T> <strong><T>Custom Footer Watermark Text</T></strong> (e.g. <em><T>Powered by Hyperion Growth</T></em>).</li>
+                  <li><T>Enter your website URL in</T> <strong><T>Agency Backlink URL</T></strong>.</li>
+                  <li><T>Click</T> <strong><T>Save Channel Settings</T></strong><T>. All widget scripts will immediately render your agency credit and link.</T></li>
                 </ol>
               </div>
             )}
@@ -1980,7 +1982,7 @@ export const ChannelsTab: React.FC<ChannelsTabProps> = ({
         <div className="flex items-center gap-2.5 text-xs text-blue-900 dark:text-blue-200">
           <Info className="h-4 w-4 text-blue-600 shrink-0" />
           <span>
-            Remember to click <strong>Save Channel Settings</strong> above to apply your integration updates to the live bot.
+            <T>Remember to click</T> <strong><T>Save Channel Settings</T></strong> <T>above to apply your integration updates to the live bot.</T>
           </span>
         </div>
         <SaveButton onClick={handleSaveSettings} saving={isSaving} error={saveError} idleLabel="Save Settings" savedLabel="Settings Saved" className="shrink-0" />

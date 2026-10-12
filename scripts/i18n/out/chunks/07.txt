@@ -1,0 +1,150 @@
+1050	Fri 10:00 AM
+1051	from missed calls & night traffic
+1052	Grounded strictly in verified medical practice documents, Crescelo triages inquiries, answers preparation questions without hallucinating, and reserves consultation slots on doctor schedules.
+1053	Healthcare & Wellness Clinics
+1054	Hey! Do you have any openings for a skin fade and beard trim tomorrow around 3 PM?
+1055	High-intent enterprise prospects bounce when forced to fill out a 10-field static demo form and wait 2 business days for SDR outreach.
+1056	I saw the 2-bed loft on 4th Street. Can I schedule a private tour this Saturday?
+1057	In-chat booking (phone voice coming soon)
+1058	Increase in after-hours appointment revenue
+1059	Increase in completed discovery demos
+1060	Industry Profile
+1061	Initial corporate IP consultations are 45 minutes at a flat fee of $350. Partner David Vance has slots available this Thursday. Shall I book your intake call?
+1062	Instant CRM lead push with complete conversation brief
+1063	Instant escalation routing to nursing staff
+1064	instant slot locking
+1065	Introductory HIIT is on Wednesday at 6:30 PM with Coach Tyler. It is beginner-friendly with low-impact modifications. Would you like to reserve a guest trial spot?
+1066	Introductory HIIT Trial Class
+1067	Join forward-thinking studios, clinics, and service businesses that run autonomous front desks with Crescelo.
+1068	Law Firm Fee Schedule & Practice Areas
+1069	Legal, Accounting & Advisory
+1070	Live Assistant Simulation
+1071	Live class timetable lookup & slot reservation
+1072	Marcus has an open slot at 3:15 PM and Elena has one at 3:45 PM tomorrow. Would you like me to reserve Marcus at 3:15 PM?
+1073	Marcus Vance
+1074	Membership tier explanation with zero token markup
+1075	Monthly recovered revenue from dropped signups
+1076	Never miss a booking while your hands are busy with a client.
+1077	Partners waste valuable billable hours fielding general inquiries and manual intake calls from unqualified leads.
+1078	per month
+1079	Personal trainer calendar synchronization
+1080	Pick your industry and watch it work.
+1081	Potential members abandon gym websites when class schedules are buried in PDFs or membership inquiries require waiting for a callback.
+1082	Pre-screen retainer inquiries and book paid initial consultations.
+1083	Pre-visit intake questionnaire collection
+1084	Private Showing: Loft #402
+1085	Property Listing Sheet #849-4th
+1086	Prospective buyers browse listings at night. If an inquiry sits unanswered until morning, they contact another agent and the viewing is lost.
+1087	Qualify buyers and schedule property showings instantly.
+1088	Rachel Adams (Solutions Architect)
+1089	Real Estate & Property Management
+1090	Receptionists spend 60% of their workday repeating parking directions, pre-visit fasting instructions, and accepted insurance plans.
+1091	Reclaimed weekly per clinic location
+1092	Recovered Revenue
+1093	Relieve front-desk burnout with verified intake answers.
+1094	Replace static demo forms with instant live pipeline scheduling.
+1095	Retainer and consultation booking workflow
+1096	Round-robin Account Executive calendar booking
+1097	Salons, Spas & Barbershops
+1098	Sarah Jenkins (Broker)
+1099	Sat 1:00 PM
+1100	Sat 11:30 AM
+1101	Sat 2:15 PM
+1102	Sat 9:30 AM
+1103	Saturday at 11:30 AM with Sarah
+1104	Schedule onboarding call
+1105	Secure document collection upload links
+1106	Security Whitepaper & Architecture Specs v3.2
+1107	Self-service reschedule & cancellation links
+1108	Senior partner billable time saved monthly
+1109	Skin Fade + Beard Trim (45m)
+1110	Staff Time Reclaimed
+1111	Start capturing appointments 24 hours a day.
+1112	Strict grounding (never invents clinical advice)
+1113	Studio Class Schedule & Instructor Roster
+1114	Stylist-specific calendar assignment
+1115	Stylists lose hundreds in daily revenue because they cannot answer phone calls or Instagram DMs while holding shears or mixing color.
+1116	Syncing to
+1117	Syncs directly to Outlook and Google Calendar
+1118	The 4th Street loft is available for private showings this Saturday between 11:00 AM and 2:00 PM. Are you currently pre-approved for financing?
+1119	Thu 2:00 PM
+1120	Thu 4:30 PM
+1121	Thu 7:00 AM
+1122	Thursday at 2:00 PM with David Vance
+1123	Today 4:00 PM
+1124	Tomorrow 11:00 AM
+1125	Tomorrow 3:00 PM
+1126	Tomorrow at 11:00 AM with Solutions Team
+1127	Tomorrow at 3:15 PM with Marcus
+1128	Tomorrow at 8:30 AM with Dr. Aris
+1129	Turn casual website visitors into trial class attendees.
+1130	var(--mk-deep)
+1131	Verified Grounding
+1132	Visitors choose a workout time, confirm their fitness goals, and lock in a trial class reservation in under 45 seconds with automated reminder sequences.
+1133	We need advice on an intellectual property licensing agreement. What is your consultation fee?
+1134	Wed 6:30 PM
+1135	Wednesday at 6:30 PM with Coach Tyler
+1136	Weekly Inquiries & Phone Calls:
+1137	What time is your introductory HIIT class on Wednesday? Can beginners attend?
+1138	WhatsApp and SMS notifications to field agents
+1139	Yes. Our clinical protocol requires an 8-hour water-only fast before metabolic panels. You can take your routine morning medications with water.
+1140	Yes. We support self-hosted PostgreSQL with pgvector, and our platform is fully SOC2 Type II certified with zero third-party data retention.
+1141	Your assistant.
+1142	Your industry. Your rules.
+1143	Dashboard | Crescelo
+1144	” as its owner. Changes you make here are real and are recorded in this customer's audit trail.
+1145	AI Key Required
+1146	AI Settings →
+1147	Autonomous industry landing pages are currently in active beta polish. Check out the 11 beta archetypes and milestones on our public roadmap.
+1148	Back to Overview
+1149	Cloud database is not connected. Booked appointments and chats are currently in temporary serverless memory and reset across requests. Set
+1150	Connect Free Key
+1151	Connect your free Groq API key to activate AI replies and testing (14,400 free requests/day, $0 compute, no credit card required).
+1152	Couldn't return to the master account
+1153	Dismiss
+1154	Groq API key not connected:
+1155	Landing Page Studio Moving to Next Update
+1156	or Supabase variables in Vercel to persist permanently.
+1157	Return to master account
+1158	Returning…
+1159	Storage Warning
+1160	Support access: you are inside “
+1161	this workspace
+1162	Verifying workspace session...
+1163	View Roadmap ↗
+1164	Sign in | Crescelo
+1165	Sign in to your Crescelo workspace or create an account.
+1166	6-digit code
+1167	Back to sign in
+1168	Google confirmed it is you. Enter the 6-digit code from your authenticator app, or a recovery code, to finish signing in.
+1169	Two-step verification
+1170	Verify and sign in
+1171	Verifying...
+1172	Help center
+1173	Page not found | Crescelo
+1174	Product and features
+1175	Solutions by industry
+1176	The page you are looking for does not exist or has moved.
+1177	Accessibility options
+1178	Accessibility options: read this page aloud, text size and colours
+1179	Accessibility statement
+1180	activates,
+1181	back,
+1182	Close accessibility options
+1183	Display
+1184	Everything on this site can be used with a keyboard:
+1185	Listen to this page
+1186	moves forward,
+1187	Pause
+1188	Paused
+1189	Read page aloud
+1190	Read selected text
+1191	Reset all
+1192	Resume
+1193	Speed
+1194	Stop
+1195	Uses your browser's built-in voice. Nothing is sent to us or anyone else. The block being read is highlighted.
+1196	Voice
+1197	Your browser cannot read pages aloud. Chrome, Edge, Safari and Firefox can.
+1198	! We have reserved your appointment for
+1199	Appointment Confirmed

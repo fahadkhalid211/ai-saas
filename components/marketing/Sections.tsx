@@ -1,5 +1,6 @@
 'use client';
 
+import { T, useT } from '@/lib/i18n/context';
 import { useRef, useState, type KeyboardEvent } from 'react';
 import { METRICS, SECURITY, USE_CASES } from './content';
 import { Check, Counter, Reveal, SectionHead } from './ui';
@@ -8,6 +9,7 @@ import { useI18n } from '@/lib/i18n/context';
 /* ------------------------------ Use cases ------------------------------ */
 
 export function UseCases() {
+  const __t = useT();
   const { dict } = useI18n();
   const uc = dict?.useCases || USE_CASES;
   const [active, setActive] = useState(0);
@@ -28,7 +30,7 @@ export function UseCases() {
       <div className="mk-wrap">
         <SectionHead id="mk-uc-title" eyebrow={uc.eyebrow} title={uc.title} />
         <Reveal className="mk-uc">
-          <div role="tablist" aria-label="Business type" aria-orientation="vertical" className="mk-uc-tabs" onKeyDown={onKey}>
+          <div role="tablist" aria-label={__t("Business type")} aria-orientation="vertical" className="mk-uc-tabs" onKeyDown={onKey}>
             {items.map((it, i) => (
               <button
                 key={it.id}
@@ -44,18 +46,18 @@ export function UseCases() {
                 className={`mk-uc-tab ${active === i ? 'is-on' : ''}`}
                 onClick={() => setActive(i)}
               >
-                {it.label}
+                <T>{it.label}</T>
               </button>
             ))}
           </div>
           <div role="tabpanel" id="mk-uc-panel" aria-labelledby={`mk-uc-tab-${cur.id}`} className="mk-uc-panel">
-            <h3 className="mk-h3">{cur.title}</h3>
-            <p className="mk-body">{cur.body}</p>
+            <h3 className="mk-h3"><T>{cur.title}</T></h3>
+            <p className="mk-body"><T>{cur.body}</T></p>
             <ul className="mk-ticks">
               {cur.points.map((p) => (
                 <li key={p}>
                   <Check />
-                  {p}
+                  <T>{p}</T>
                 </li>
               ))}
             </ul>
@@ -83,11 +85,11 @@ export function Metrics() {
               <dd className="mk-metric-value">
                 <Counter end={m.value} suffix={m.suffix} />
               </dd>
-              <dt>{m.label}</dt>
+              <dt><T>{m.label}</T></dt>
             </Reveal>
           ))}
         </dl>
-        <p className="mk-footnote">{met.footnote || METRICS.footnote}</p>
+        <p className="mk-footnote"><T>{met.footnote || METRICS.footnote}</T></p>
       </div>
     </section>
   );
@@ -110,8 +112,8 @@ export function Security() {
               <span className="mk-sec-icon" aria-hidden="true">
                 <Check />
               </span>
-              <h3>{s.title}</h3>
-              <p>{s.body}</p>
+              <h3><T>{s.title}</T></h3>
+              <p><T>{s.body}</T></p>
             </Reveal>
           ))}
         </ul>

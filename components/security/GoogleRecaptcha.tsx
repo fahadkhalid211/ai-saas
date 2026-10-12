@@ -1,5 +1,6 @@
 'use client';
 
+import { T } from '@/lib/i18n/context';
 import React, { useEffect, useState, useCallback } from 'react';
 import { ShieldCheck } from 'lucide-react';
 
@@ -153,23 +154,23 @@ export function GoogleRecaptchaNotice({ className = '' }: { className?: string }
     >
       <ShieldCheck className="w-3.5 h-3.5 text-blue-400 shrink-0" />
       <span>
-        Protected by{' '}
+        <T>Protected by</T>{' '}
         <a
           href="https://policies.google.com/privacy"
           target="_blank"
           rel="noopener noreferrer"
           className="text-slate-300 hover:text-white underline underline-offset-2"
         >
-          reCAPTCHA
+          <T>reCAPTCHA</T>
         </a>{' '}
-        &amp; Google{' '}
+        <T>&amp; Google</T>{' '}
         <a
           href="https://policies.google.com/terms"
           target="_blank"
           rel="noopener noreferrer"
           className="text-slate-300 hover:text-white underline underline-offset-2"
         >
-          Terms
+          <T>Terms</T>
         </a>
       </span>
     </div>

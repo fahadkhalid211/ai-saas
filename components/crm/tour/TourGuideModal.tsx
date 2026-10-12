@@ -1,5 +1,6 @@
 'use client';
 
+import { T, useT } from '@/lib/i18n/context';
 import React, { useEffect } from 'react';
 import {
   X,
@@ -27,6 +28,7 @@ export const TourGuideModal: React.FC<TourGuideModalProps> = ({
   onClose,
   onGoToStep,
 }) => {
+  const __t = useT();
   const step = TOUR_STEPS[stepIndex];
   const total = TOUR_STEPS.length;
   const isFirst = stepIndex === 0;
@@ -67,7 +69,7 @@ export const TourGuideModal: React.FC<TourGuideModalProps> = ({
             <div className="flex items-center gap-2">
               <Compass className="h-4 w-4 text-blue-600 dark:text-blue-400" />
               <span className="text-[11px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-widest">
-                Product Tour
+                <T>Product Tour</T>
               </span>
               <span className="text-[11px] text-slate-400 dark:text-slate-500">
                 {stepIndex + 1} / {total}
@@ -76,7 +78,7 @@ export const TourGuideModal: React.FC<TourGuideModalProps> = ({
             <button
               onClick={onClose}
               className="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
-              title="Exit tour"
+              title={__t("Exit tour")}
             >
               <X className="h-4 w-4" />
             </button>
@@ -84,7 +86,7 @@ export const TourGuideModal: React.FC<TourGuideModalProps> = ({
 
           {/* Step content */}
           <div className="space-y-2">
-            <h3 className="text-base font-bold text-slate-900 dark:text-white">{step.title}</h3>
+            <h3 className="text-base font-bold text-slate-900 dark:text-white"><T>{step.title}</T></h3>
             <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">{step.body}</p>
           </div>
 
@@ -123,11 +125,11 @@ export const TourGuideModal: React.FC<TourGuideModalProps> = ({
               className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs font-medium hover:bg-slate-50 dark:hover:bg-slate-700 transition cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
             >
               <ChevronLeft className="h-3.5 w-3.5" />
-              Back
+              <T>Back</T>
             </button>
 
             <p className="text-[10px] text-slate-400 dark:text-slate-500 hidden sm:block">
-              Use arrow keys to navigate
+              <T>Use arrow keys to navigate</T>
             </p>
 
             {isLast ? (
@@ -136,7 +138,7 @@ export const TourGuideModal: React.FC<TourGuideModalProps> = ({
                 onClick={onClose}
                 className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold shadow-xs transition cursor-pointer"
               >
-                Finish Tour
+                <T>Finish Tour</T>
               </button>
             ) : (
               <button
@@ -144,7 +146,7 @@ export const TourGuideModal: React.FC<TourGuideModalProps> = ({
                 onClick={onNext}
                 className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs transition cursor-pointer"
               >
-                Next
+                <T>Next</T>
                 <ChevronRight className="h-3.5 w-3.5" />
               </button>
             )}

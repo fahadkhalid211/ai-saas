@@ -1,6 +1,9 @@
 import type { MetadataRoute } from 'next';
 import { SITE } from '@/components/marketing/content';
 import { PUBLISHED_POSTS } from '@/lib/blog/posts';
+import { blogLanguages } from '@/lib/blog/translated';
+import { HREFLANG, LOCALES, isLocalizablePath, localizeHref } from '@/lib/i18n/paths';
+import type { SupportedLocale } from '@/lib/i18n/types';
 
 /** Bump this when the marketing pages change in a way worth re-crawling. */
 const SITE_UPDATED = '2026-10-07';
@@ -47,6 +50,9 @@ const PAGES: { path: string; priority: number; changeFrequency: 'weekly' | 'mont
   // Guides
   { path: '/guides/add-ai-assistant-to-wordpress',    priority: 0.7, changeFrequency: 'monthly' },
 
+  // Free tools
+  { path: '/tools/llm-cost-calculator',                priority: 0.8, changeFrequency: 'monthly' },
+
   // Status & Utility
   { path: '/status',                                   priority: 0.5, changeFrequency: 'weekly'  },
   { path: '/report-bug',                               priority: 0.4, changeFrequency: 'monthly' },
@@ -61,20 +67,24 @@ const PAGES: { path: string; priority: number; changeFrequency: 'weekly' | 'mont
   { path: '/subprocessors',    priority: 0.2, changeFrequency: 'yearly' },
 ];
 
+/** One entry per language, each listing its counterparts so search engines show every visitor the right one. */
+function entries(path: string, languages: readonly SupportedLocale[], rest: { lastModified: Date; changeFrequency: 'weekly' | 'monthly' | 'yearly'; priority: number }) {
+  const base = path || '/';
+  const urlFor = (l: SupportedLocale) => {
+    const p = localizeHref(base, l);
+    return `${SITE.url}${p === '/' ? '/' : p}`;
+  };
+  if (!isLocalizablePath(base)) return [{ url: urlFor('en'), ...rest }];
+  const alternates = { languages: { ...Object.fromEntries(languages.map((l) => [HREFLANG[l], urlFor(l)])), 'x-default': urlFor('en') } };
+  return languages.map((l) => ({ url: urlFor(l), ...rest, alternates }));
+}
+
 export default function sitemap(): MetadataRoute.Sitemap {
   // A page's date should change only when the page does; stamping "now" on everything teaches Google to ignore it.
   const lastModified = new Date(SITE_UPDATED);
-  const pages = PAGES.map((p) => ({
-    url: p.path ? `${SITE.url}${p.path}` : `${SITE.url}/`,
-    lastModified,
-    changeFrequency: p.changeFrequency,
-    priority: p.priority,
-  }));
-  const posts = PUBLISHED_POSTS.map((b) => ({
-    url: `${SITE.url}/blog/${b.slug}`,
-    lastModified: new Date(b.dateModified),
-    changeFrequency: 'monthly' as const,
-    priority: 0.6,
-  }));
+  const pages = PAGES.flatMap((p) => entries(p.path, LOCALES, { lastModified, changeFrequency: p.changeFrequency, priority: p.priority }));
+  const posts = PUBLISHED_POSTS.flatMap((b) =>
+    entries(`/blog/${b.slug}`, blogLanguages(b.slug), { lastModified: new Date(b.dateModified), changeFrequency: 'monthly' as const, priority: 0.6 })
+  );
   return [...pages, ...posts];
 }

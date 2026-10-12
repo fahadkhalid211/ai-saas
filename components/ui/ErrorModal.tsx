@@ -1,5 +1,6 @@
 'use client';
 
+import { T } from '@/lib/i18n/context';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { CresceloMark } from '@/components/brand/CresceloMark';
@@ -51,7 +52,7 @@ export function ErrorModalHost() {
 
         <div className="relative mb-5 flex items-center justify-center gap-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#a19f96]">
           <CresceloMark size={20} />
-          <span>Crescelo</span>
+          <span><T>Crescelo</T></span>
         </div>
 
         <div className="relative mx-auto mb-5 em-badge" aria-hidden="true">
@@ -67,12 +68,12 @@ export function ErrorModalHost() {
         </div>
 
         <h2 id="em-title" className="relative text-[22px] leading-tight text-[#faf9f5]" style={{ fontFamily: 'var(--kx-serif, Georgia, serif)' }}>
-          {notice.title || 'Something went wrong'}
+          {notice.title || <T>{'Something went wrong'}</T>}
         </h2>
         <p id="em-message" className="relative mt-2 break-words text-[13.5px] leading-relaxed text-[#d8d5cb]">
-          {notice.message}
+          <T>{notice.message}</T>
         </p>
-        {notice.hint && <p className="relative mt-2 text-[12px] leading-relaxed text-[#a19f96]">{notice.hint}</p>}
+        {notice.hint && <p className="relative mt-2 text-[12px] leading-relaxed text-[#a19f96]"><T>{notice.hint}</T></p>}
 
         <button
           ref={closeRef}
@@ -80,7 +81,7 @@ export function ErrorModalHost() {
           onClick={close}
           className="relative mt-6 w-full rounded-xl bg-[#abff44] px-4 py-2.5 text-[13px] font-semibold text-[#08251a] transition hover:brightness-105 active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#abff44]"
         >
-          Got it
+          <T>Got it</T>
         </button>
       </div>
     </div>,

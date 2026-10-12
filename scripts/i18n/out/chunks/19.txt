@@ -1,0 +1,150 @@
+2850	No tickets match.
+2851	No tickets yet. Use "New ticket" or "Report a bug" to contact the Crescelo team.
+2852	Please describe the problem or question in a little more detail (at least 10 characters).
+2853	Reply and resolve
+2854	Reply to the customer (sent by e-mail)
+2855	Report a bug
+2856	Save note
+2857	Search ref, e-mail, subject
+2858	Select a ticket to read the conversation.
+2859	Subject
+2860	Submit ticket
+2861	Support inbox
+2862	Technical Support
+2863	This ticket is closed. Open a new ticket if you still need help.
+2864	We reply by e-mail to your account address, and you can follow the conversation here.
+2865	Write a reply
+2866	2FA Status
+2867	Access Role
+2868	Active Collaborators (
+2869	alex@company.com
+2870	Assigned Role
+2871	Billing & Viewer
+2872	Full administrative control: add/edit assistants, update billing, invite teammates, and view security audits.
+2873	Invite Team Member
+2874	Invite team members and manage their access to the dashboard.
+2875	Inviting...
+2876	Member Name
+2877	Not Setup
+2878	Operational access: take over live chats, manage appointments, and respond to captured visitor leads.
+2879	Owner & Admin
+2880	Remove Member
+2881	Send Invite
+2882	Specialized access: invoices and payment methods for Billing Managers; read-only analytics for Viewers.
+2883	AI Bot Personas & Presets
+2884	Applying Template...
+2885	Booking Ready
+2886	Configure
+2887	Included Starter Questions:
+2888	Industry Bot Templates Library
+2889	Lead Capture
+2890	Sample Docs
+2891	Search bot templates by industry or keywords...
+2892	Use This Bot Template
+2893	with pre-built system prompts, conversation starters, lead capture schemas, and sample knowledge bases.
+2894	your AI bot
+2895	1 Hour
+2896	15 Mins
+2897	2 Hours
+2898	30 Mins
+2899	45 Mins
+2900	90 Mins
+2901	Add Custom Field
+2902	Add Field
+2903	AI
+2904	Allows visitors to schedule calls, consultations, tours, and demos directly inside the chat widget.
+2905	Appointment Slot Duration
+2906	Ask a question...
+2907	Ask visitor for email address during chat
+2908	Automatically pops up a friendly message bubble above the closed launcher to greet visitors.
+2909	Available Working Days
+2910	Booking Prompt Button Text
+2911	Booking Provider
+2912	Brand Accent Color
+2913	Built-in slot picker
+2914	Cal.com
+2915	Cal.com link
+2916	Cal.com Scheduling URL
+2917	Calendly
+2918	Calendly booking link
+2919	Calendly Booking URL
+2920	CC Notification Emails (Optional)
+2921	Change how the chat button looks on your website — colors, position, greeting, and logo.
+2922	characters. Leave it empty to show “
+2923	Chat title
+2924	Comma-separated list of additional team emails to CC on every lead/support alert.
+2925	Daily End Time
+2926	Daily Start Time
+2927	Default: Name, Email, Phone (Required) & Comments (Optional).
+2928	Direct Date Picker
+2929	Dropdown Options (comma-separated)
+2930	e.g. alerts@company.com, team@company.com
+2931	e.g. Billing, Technical Support, Sales
+2932	e.g. Company Name
+2933	e.g. Have questions about our pricing or plans? I'm here to help!
+2934	e.g. Schedule a Free 15-Minute Consultation
+2935	e.g. support@yourcompany.com
+2936	Field Label *
+2937	Field Type
+2938	Interactive Calendar & Appointment Booking
+2939	Launcher Position
+2940	Lead Capture Form
+2941	Live Widget Preview
+2942	New Custom Field
+2943	No custom fields added yet.
+2944	Online
+2945	Optional
+2946	options)
+2947	Popup Message Text
+2948	Proactive Chat Popup (Conversion Booster)
+2949	Receiver Email Address
+2950	Remove Field
+2951	Required
+2952	Required field
+2953	Save Widget & Support Settings
+2954	Save Widget Settings
+2955	Saved Successfully
+2956	Saving Settings…
+2957	seconds after page loads
+2958	Suggested Starter Questions (1 per line)
+2959	Support Form Custom Fields
+2960	Support Handoff & Lead Email Alerts
+2961	Support inquiries submitted by visitors are sent directly to this address.
+2962	The name visitors see at the top of the chat, up to
+2963	Trigger Delay (Seconds)
+2964	Visitors will be presented with a direct button to open your Cal.com event page.
+2965	Visitors will be presented with a direct button to open your Calendly booking page.
+2966	What are your prices? What are your opening hours?
+2967	When visitors ask to connect with support, the widget displays a sleek form and immediately dispatches an email notification.
+2968	Widget & Branding
+2969	Widget & support settings saved successfully!
+2970	Check your connection and reload the page. If this keeps happening, contact support from the Support tab.
+2971	Choose a plan to save changes.
+2972	Failed to delete assistant
+2973	Failed to save settings
+2974	Fix the value above and press Save again. Nothing was changed.
+2975	Settings weren't saved
+2976	Sign in again, then save your changes.
+2977	You must have at least one assistant in your workspace. Create a new bot before removing this one.
+2978	Customer portal is available after active Stripe checkout.
+2979	Failed to initialize checkout session
+2980	Failed to open customer portal
+2981	Network error updating plan
+2982	! Check inbox or spam folder.
+2983	Email sending failed. Please verify credentials.
+2984	Failed to save SMTP settings
+2985	Network error sending test email
+2986	SMTP settings weren't saved
+2987	Test email dispatched to
+2988	A network error occurred while uploading.
+2989	Business Knowledge Description
+2990	Content extracted! Please review and verify the text below before saving.
+2991	Content extraction failed
+2992	Extraction Error
+2993	Failed to extract content from file.
+2994	Failed to extract content from this URL.
+2995	Failed to extract knowledge from this URL.
+2996	Failed to process and index knowledge content.
+2997	Knowledge Source
+2998	Knowledge storage quota exceeded.
+2999	Navigate to the Billing tab to upgrade your plan and expand your Knowledge Base storage quota.

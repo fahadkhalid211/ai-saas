@@ -1,0 +1,150 @@
+300	Conflict Rate
+301	Credential Encryption
+302	crescelo-engine ~
+303	Customer messages from the website widget, WhatsApp, and Telegram arrive through secure, verified channels and are screened before the assistant responds.
+304	Deploy your autonomous assistant in under 5 minutes.
+305	Direct AI Brain & Instant Replies
+306	Dynamic buffer periods between appointments (e.g. 15-minute prep)
+307	Embedding Architecture
+308	Encryption
+309	Every document, policy guide, and pricing table is analyzed and indexed with strict source citations. Crescelo searches your exact files so your assistant never invents prices or policies.
+310	Every message arrives securely from your website, WhatsApp, or Telegram.
+311	Every reply is grounded in content you uploaded. Every booking is checked against a real calendar slot. Every AI call goes directly to your provider — no middleman, no markup.
+312	Execution Overhead
+313	Fastest First Token
+314	Grounded Knowledge & Search
+315	HOW IT WORKS UNDER THE HOOD
+316	Human takeover in one click
+317	Inbound Messages & Channels
+318	Ingress Latency
+319	Inspect the four stages of the autonomous execution engine.
+320	Instant slot locking ensures two customers never grab the same time.
+321	Lock Hold Window
+322	Lock Mechanism
+323	Multi-model fallback cascades if an external AI provider has downtime
+324	Negative constraint enforcement: declines to answer if no source exists
+325	never guess.
+326	No hallucinations — answers from your content only
+327	One-click website scraper and multi-page PDF ingestion engine
+328	ONNX bge-small-en-v1.5 (Local)
+329	OpenAI, Groq, Gemini, Claude, Ollama
+330	Phone calls are under development.
+331	Product
+332	Protocols
+333	Real calendar slot locking — no double bookings
+334	Retrieval Algorithm
+335	Run for free out of the box with automatic failover, or connect your own account from Groq, OpenAI, Anthropic, or Google Gemini with 0% token markup. Replies stream to the visitor instantly.
+336	Runs locally on CPU with ONNX runtime without external vector API costs
+337	Security
+338	Stage
+339	Step 1: Visitors
+340	Step 2: Knowledge
+341	Step 3: Scheduling
+342	Step 4: AI Engine
+343	Supported Providers
+344	Token Markup
+345	Try it live
+346	Unlike simple bots that pretend to book appointments, Crescelo locks the slot instantly the moment a customer confirms, holding it securely before syncing directly to your Google Calendar or Outlook.
+347	Upload your documents, test the booking engine, and add the widget to your site.
+348	View pricing plans
+349	Visitors are rate limited to stop abuse
+350	Web, WhatsApp and Telegram share one conversation history
+351	Webhook signatures are verified before anything is processed
+352	Zero markup on AI. Instant streaming replies with automatic failover.
+353	Zero retention of private customer data on third-party servers
+354	Zero token markup — your key, your rate
+355	Report a Bug
+356	Report a Bug | Crescelo SaaS
+357	! We logged your bug report in our issue tracking queue and sent a confirmation link to
+358	(Auto-collected for debugging)
+359	(Optional)
+360	(Viewport:
+361	Acme Health
+362	Actual Behavior
+363	Affected Component / Area *
+364	All bug reports create a ticket with private link delivered to your email.
+365	Appointment should be created and confirmation toast displayed.
+366	Browser:
+367	Bug Details
+368	Bug Ticket
+369	Company / Workspace
+370	Created
+371	Critical
+372	Detecting...
+373	Device Type:
+374	e.g. Chat widget crashes on Safari iOS when tapping voice button
+375	Email Address *
+376	Error Messages or Console Logs
+377	Expected Behavior
+378	High
+379	Important feature impaired; work disrupted
+380	Issue Classification
+381	Issue Title / Summary *
+382	Jordan Lee
+383	jordan@company.com
+384	Low
+385	Minor visual glitch, cosmetic flaw, or typo
+386	Normal
+387	Nothing happens, console shows 500 internal server error.
+388	OS / Platform:
+389	Page URL where bug occurred:
+390	Paste any error message, red console logs, or stack trace here...
+391	Please provide numbered step-by-step instructions that allow us to observe the bug:
+392	Report an issue. Help us engineer perfection.
+393	Report another issue
+394	Screen:
+395	Screenshot / Screen Recording URL
+396	Severity Level *
+397	Steps to Reproduce *
+398	Submit Bug Report
+399	Submitting...
+400	System Diagnostics
+401	System outage, blocking appointments or data loss
+402	Thank you,
+403	Unexpected glitch or annoyance with workaround
+404	View Ticket Status
+405	Website
+406	Your Information
+407	Your Name *
+408	Crescelo Product Roadmap & Release Status
+409	Roadmap
+410	1-Day pass lead capture
+411	A plain list of what is available now, what needs setup on your side, what we are building and what is only planned. Last reviewed September 2026.
+412	Accredited investor vetting
+413	Aether Private Wealth & Capital
+414	Agencies and integrations
+415	AI Platform & Concierge
+416	All 11 Archetypes
+417	and what comes next
+418	Answers from your own documents, with hybrid search and an "I do not know" path that offers a booking or a person
+419	Appointment booking in the chat with slot locking to prevent double bookings
+420	Appointments & Clinics
+421	Artisanal Barbershop & Grooming
+422	AUM tier qualification
+423	Automated SMS/Email confirmations
+424	Available today
+425	Available, setup required
+426	B2B Software
+427	Bring your own AI provider (OpenAI, Anthropic, Google Gemini, Groq, DeepSeek or a self-hosted model) with no markup on usage
+428	Buyer vs seller routing
+429	Calendar: bookings are exported as a calendar feed you subscribe to; two-way sync with Google Calendar or Outlook is not available yet
+430	Channels: WhatsApp and Telegram
+431	Class capacity checks
+432	Client showcase carousels
+433	COMMUNITY VOTING
+434	Conflict-free intake questionnaires
+435	Creative scope questionnaire
+436	Crescelo Flagship Experience
+437	Cursor mascot tracker
+438	Custom domain mapping for hosted business pages with automatic SSL
+439	Custom WebGL aesthetics
+440	Deep Tech & Compute
+441	Deeper calendar and domain support
+442	Dental & Healthcare Practice
+443	Design & Agency
+444	Developer-first terminal theme
+445	Direct attorney calendar sync
+446	Discreet client onboarding for family offices, private equity, and wealth managers.
+447	Discreet initial case evaluations, practice area guides, and confidential consultations.
+448	Each archetype bundles a dedicated high-conversion hosted surface, customized domain knowledge, service pricing hierarchies, and calendar booking mutex locks. We are polishing these before wide release.
+449	Embeddable chat widget, hosted business page and lead capture

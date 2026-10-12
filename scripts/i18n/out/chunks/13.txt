@@ -1,0 +1,150 @@
+1950	Best File Formats
+1951	BotFather gives you a Bot Token — copy it.
+1952	Click "Send Test Ping" to verify your endpoint receives data.
+1953	Click "Set Webhook" — this connects Telegram to your Crescelo assistant.
+1954	Click "Upload File" — supports PDF, CSV, DOCX, TXT, PNG/JPG images.
+1955	Connect Telegram
+1956	Connect WhatsApp
+1957	Core
+1958	Embedding the Widget on Your Site
+1959	Enable the bot and save. Users can now chat your AI via Telegram.
+1960	Enable WhatsApp in Crescelo and save.
+1961	Enter your brand name (e.g. "Powered by Acme AI") in Custom Branding Text.
+1962	Enter your brand URL for the clickable link.
+1963	Enter your endpoint URL (e.g. a Zapier Webhook, Make.com, or your own server).
+1964	For large datasets, use CSV files with column headers. The AI understands tabular data like member lists, product catalogs, and FAQs.
+1965	For WordPress: use a plugin like "Insert Headers and Footers" to paste the script.
+1966	Getting Started
+1967	Go to Channels & Integrations → Outbound Webhooks.
+1968	Go to Channels & Integrations → White-Label Agency Branding.
+1969	Go to Crescelo → Channels & Integrations → Telegram Bot.
+1970	Go to Knowledge Base in the sidebar.
+1971	Go to Meta for Developers → create a new app → choose "Business" type.
+1972	Go to Widget & Styling → click "Embed on Your Site".
+1973	Guides & Documentation
+1974	Image Text (OCR)
+1975	In Crescelo → Channels & Integrations → WhatsApp, paste both values.
+1976	In Meta Dashboard → WhatsApp → Configuration, set Webhook URL to the one shown in Crescelo and use your same Verify Token.
+1977	Open Telegram and search for @BotFather.
+1978	Or paste a URL / YouTube link to extract content automatically.
+1979	Outbound Webhooks
+1980	Paste a YouTube URL to extract the video transcript. Great for indexing explainer videos, tutorials, and interviews. Only works if captions are available on the video.
+1981	Paste your Bot Token and click "Test Connection" to verify it works.
+1982	PDFs and CSVs give the best accuracy. For member data, use a CSV with headers like Name, Email, DOB, Plan. Avoid scanned images when possible — use real text PDFs.
+1983	Re-training After Updates
+1984	Save — the widget footer now shows your brand instead of Crescelo.
+1985	Save. Every matching event will now POST JSON to your URL.
+1986	Select which events to send: Lead Captured, Message Sent, etc.
+1987	Send /newbot and follow the prompts to name your bot.
+1988	Set a Webhook Secret — this signs each request with HMAC SHA-256 for security.
+1989	Set the Verify Token to any string you choose (e.g. "crescelo2024").
+1990	Setting Up Lead Capture
+1991	Setup
+1992	Step-by-step guides to set up integrations, train your AI, and get the most out of Crescelo.
+1993	Subscribe to the "messages" webhook field and click Verify.
+1994	Test it instantly in Testing Studio by asking questions.
+1995	The widget loads asynchronously — it won't slow down your page. Works on any site.
+1996	Toggle "Enable White-Label" to ON.
+1997	Training Your AI with Data
+1998	Under WhatsApp → Getting Started: copy your Phone Number ID and temporary Access Token.
+1999	Upload PNG/JPG files — the AI extracts printed text from the image. Works best on clear, high-contrast text. Handwritten notes and low-quality scans may not extract well.
+2000	Use a permanent System User token for production instead of the temporary token which expires.
+2001	Use the URL field to scrape any public webpage — product pages, terms, about pages. Works best on pages without JavaScript-rendered content (static HTML).
+2002	Verify the X-Crescelo-Signature header on your receiving server to prevent spoofed requests.
+2003	Wait for status to turn "Ready" (green). This means the AI has indexed the data.
+2004	WhatsApp Cloud API
+2005	White-Label / Agency Branding
+2006	Writing a Good System Prompt
+2007	You can leave the URL blank to disable the link and just show your brand text.
+2008	Your Telegram bot is public by default. Consider setting /setprivacy with BotFather to control group access.
+2009	YouTube Transcripts
+2010	A capable model at a low price
+2011	A capable model at a low price.
+2012	A lower-cost AI model. You pay DeepSeek its normal (low) price directly; we add nothing on top.
+2013	Advanced — technical users
+2014	Advanced Technical Settings
+2015	Allow Live Web Search
+2016	Answering your customers right now
+2017	Answers strictly from your uploaded knowledge. Zero guessing or creative extrapolation.
+2018	Anthropic's Claude models. You pay Anthropic its normal price directly; we add nothing on top.
+2019	Balanced
+2020	Balanced (Recommended)
+2021	Best balance of thoroughness and response speed.
+2022	Bring your own key
+2023	Choose which AI answers your customers
+2024	Choose which AI answers your customers, and how it should sound. The free option below works fine for most businesses — you can always change this later.
+2025	Comprehensive
+2026	Connect a key before this can talk to customers
+2027	Connect your own OpenAI account. You pay OpenAI its normal price for what your assistant uses; Crescelo adds nothing on top. Your key is stored encrypted.
+2028	Connection test failed.
+2029	Connection verified successfully!
+2030	Conversational, helpful, and friendly while sticking accurately to your business facts.
+2031	Costs nothing and needs no card. It answers using Groq's free plan, and if that is ever busy, it quietly tries Google Gemini's free plan instead, so your assistant keeps working either way.
+2032	Creative
+2033	Currently active AI
+2034	Custom host address for self-hosted local model instances.
+2035	Deep multi-topic search across larger document sets.
+2036	Default model for
+2037	DISABLED
+2038	Download Ollama (free)
+2039	e.g. gpt-4o-mini, gemini-3.6-flash
+2040	ENABLED
+2041	Ensure you have launched Ollama with
+2042	Expressive and engaging phrasing with varied wording.
+2043	Failed to reach verification endpoint.
+2044	Fast, and free for normal use. No card needed.
+2045	Fastest answers. Searches top 3 most relevant passages.
+2046	Fine-Tuning Temperature (
+2047	Focused
+2048	For technical users
+2049	For technical users only. It runs on a computer you set up yourself, so nothing about your customers' questions ever leaves your building. If that sentence didn't mean much to you, one of the other options above is a better fit.
+2050	Free — automatic
+2051	Free — no card needed
+2052	Free — recommended
+2053	Free (up to 14,400 replies a day)
+2054	Free engine (automatic)
+2055	Free plan available
+2056	Free Tier API Key (Optional)
+2057	Get a free Gemini key
+2058	Get a free Groq key
+2059	Get a free key
+2060	Good with very large documents
+2061	Google's AI. Good with very large documents.
+2062	Google's AI. Its free plan is generous and it handles long documents and catalogues especially well.
+2063	Groq
+2064	Groq answers almost instantly. Its free plan covers 14,400 replies a day at no cost, and doesn't ask for a card.
+2065	Groq is free, up to 14,400 replies a day, and does not ask for a card.
+2066	Help with this page ↗
+2067	Here's how to get your
+2068	Here's how to set up local Ollama & configure CORS (Guide ↗)
+2069	How much knowledge to search per answer
+2070	How the free engine works
+2071	How to connect Claude
+2072	How to connect DeepSeek
+2073	How to connect OpenAI
+2074	How to get a free Gemini key
+2075	How to get a free Groq key (about 90 seconds)
+2076	How to set this up
+2077	It can't answer questions or be tested until then.
+2078	key (Guide ↗)
+2079	Known for a careful, natural tone
+2080	Known for a careful, natural tone.
+2081	Local Ollama Endpoint URL (Fallback)
+2082	Max Response Tokens (
+2083	Model Identifier Override
+2084	No key connected yet
+2085	No markup
+2086	Ollama Server Endpoint URL
+2087	once you save
+2088	Open Console
+2089	Open your Anthropic account
+2090	Open your DeepSeek account
+2091	Open your OpenAI account
+2092	Paste your API key here...
+2093	Paste your free Groq (gsk_...) or Gemini (AIza...) key, or leave blank...
+2094	Paste your key below, then click “Save”.
+2095	Response Style
+2096	Runs on hardware you control, not the internet
+2097	Runs on hardware you set up yourself.
+2098	Saving will verify your connection before applying — a bad key will be rejected with an error.
+2099	Setup Guide ↗

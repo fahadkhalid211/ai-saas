@@ -351,6 +351,7 @@ export const FOOTER = {
       links: [
         { label: 'Overview', href: '/product' },
         { label: 'Playground', href: '/playground' },
+        { label: 'LLM cost calculator', href: '/tools/llm-cost-calculator' },
         { label: 'Architecture', href: '/product#pipeline-stages' },
         { label: 'Roadmap', href: '/roadmap' },
         { label: 'Integrations', href: '/integrations' },

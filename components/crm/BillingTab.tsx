@@ -1,3 +1,4 @@
+import { T, useT } from '@/lib/i18n/context';
 import React from 'react';
 import { annualSavingsPercent } from '@/lib/billing/plans';
 import {
@@ -61,16 +62,17 @@ export const BillingTab: React.FC<BillingTabProps> = ({
   handleDownloadInvoice,
   handleOpenCustomerPortal,
 }) => {
+  const __t = useT();
   return (
     <div className="max-w-6xl space-y-7 mx-auto">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2.5">
             <CreditCard className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-            <span>Plans, Usage &amp; Billing</span>
+            <span><T>Plans, Usage &amp; Billing</T></span>
           </h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-            Chat-session based billing. Never pay per message—pay only for engaged customer conversations ($0.50/chat overage).
+            <T>Chat-session based billing. Never pay per message—pay only for engaged customer conversations ($0.50/chat overage).</T>
           </p>
         </div>
         <button
@@ -80,7 +82,7 @@ export const BillingTab: React.FC<BillingTabProps> = ({
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition shadow-xs cursor-pointer"
         >
           <RefreshCw className={`h-3.5 w-3.5 ${isLoadingBilling ? 'animate-spin text-blue-600' : 'text-slate-500'}`} />
-          <span>Refresh Billing</span>
+          <span><T>Refresh Billing</T></span>
         </button>
       </div>
 
@@ -95,7 +97,7 @@ export const BillingTab: React.FC<BillingTabProps> = ({
         >
           <div className="flex items-center gap-2">
             <CheckCircle2 className="h-4 w-4 shrink-0" />
-            <span className="font-semibold">{planChangeMsg.text}</span>
+            <span className="font-semibold"><T>{planChangeMsg.text}</T></span>
           </div>
           <button
             type="button"
@@ -112,24 +114,24 @@ export const BillingTab: React.FC<BillingTabProps> = ({
         {/* Card 1: Active Subscription */}
         <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-2">
           <div className="flex items-center justify-between text-xs text-slate-500">
-            <span>Active Plan</span>
+            <span><T>Active Plan</T></span>
             <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-semibold text-[10px] uppercase">
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              Active
+              <T>Active</T>
             </span>
           </div>
           <div className="text-xl font-bold text-slate-900 dark:text-white capitalize">
-            {billingData?.planName || 'Starter'}
+            {billingData?.planName || <T>{'Starter'}</T>}
           </div>
           <div className="text-[11px] text-slate-400">
-            Renews {new Date(billingData?.currentPeriodEnd || Date.now()).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+            <T>Renews</T> {new Date(billingData?.currentPeriodEnd || Date.now()).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
           </div>
         </div>
 
         {/* Card 2: Chat Sessions Meter */}
         <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-2">
           <div className="flex items-center justify-between text-xs text-slate-500">
-            <span>Chat Sessions Quota</span>
+            <span><T>Chat Sessions Quota</T></span>
             <MessageSquare className="h-4 w-4 text-blue-500" />
           </div>
           <div className="flex items-baseline gap-1.5">
@@ -137,7 +139,7 @@ export const BillingTab: React.FC<BillingTabProps> = ({
               {billingData?.chatsUsed ?? 0}
             </span>
             <span className="text-xs text-slate-400 font-mono">
-              / {billingData?.monthlyChatLimit ?? 100} chats
+              / {billingData?.monthlyChatLimit ?? 100} <T>chats</T>
             </span>
           </div>
           <div className="space-y-1">
@@ -154,8 +156,8 @@ export const BillingTab: React.FC<BillingTabProps> = ({
               />
             </div>
             <div className="flex justify-between text-[10px] text-slate-400 font-mono">
-              <span>{billingData?.percentUsed ?? 0}% used</span>
-              <span>{billingData?.remainingChats ?? 100} chats left</span>
+              <span>{billingData?.percentUsed ?? 0}<T>% used</T></span>
+              <span>{billingData?.remainingChats ?? 100} <T>chats left</T></span>
             </div>
           </div>
         </div>
@@ -163,7 +165,7 @@ export const BillingTab: React.FC<BillingTabProps> = ({
         {/* Card 3: Knowledge Base Storage Meter */}
         <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-2">
           <div className="flex items-center justify-between text-xs text-slate-500">
-            <span>Knowledge Storage</span>
+            <span><T>Knowledge Storage</T></span>
             <HardDrive className="h-4 w-4 text-purple-500" />
           </div>
           <div className="flex items-baseline gap-1.5">
@@ -171,7 +173,7 @@ export const BillingTab: React.FC<BillingTabProps> = ({
               {billingData?.knowledgeStorage?.usedMb ?? 0}
             </span>
             <span className="text-xs text-slate-400 font-mono">
-              / {billingData?.knowledgeStorage?.limitMb ?? 50} MB
+              / {billingData?.knowledgeStorage?.limitMb ?? 50} <T>MB</T>
             </span>
           </div>
           <div className="space-y-1">
@@ -188,13 +190,13 @@ export const BillingTab: React.FC<BillingTabProps> = ({
               />
             </div>
             <div className="flex justify-between text-[10px] text-slate-400 font-mono">
-              <span>{billingData?.knowledgeStorage?.percentUsed ?? 0}% used</span>
+              <span>{billingData?.knowledgeStorage?.percentUsed ?? 0}<T>% used</T></span>
               <span>
                 {Math.max(
                   0,
                   (billingData?.knowledgeStorage?.limitMb ?? 50) - (billingData?.knowledgeStorage?.usedMb ?? 0)
                 ).toFixed(1)}{' '}
-                MB free
+                <T>MB free</T>
               </span>
             </div>
           </div>
@@ -203,31 +205,31 @@ export const BillingTab: React.FC<BillingTabProps> = ({
         {/* Card 4: Overages & Unit Rate */}
         <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-2">
           <div className="flex items-center justify-between text-xs text-slate-500">
-            <span>Overage Protection</span>
+            <span><T>Overage Protection</T></span>
             <Zap className="h-4 w-4 text-amber-500" />
           </div>
           <div className="text-xl font-bold text-slate-900 dark:text-white font-mono">
             ${(billingData?.overageRatePerChat ?? 0.50).toFixed(2)}
-            <span className="text-xs text-slate-400 font-normal"> / chat</span>
+            <span className="text-xs text-slate-400 font-normal"> <T>/ chat</T></span>
           </div>
           <div className="text-[11px] text-slate-400">
             {billingData?.overagesCount > 0
-              ? `${billingData.overagesCount} extra chats (${billingData.overageCost})`
-              : '0 overage chats this cycle'}
+              ? __t("{overagesCount} extra chats ({overageCost})", { overagesCount: billingData.overagesCount, overageCost: billingData.overageCost })
+              : <T>{'0 overage chats this cycle'}</T>}
           </div>
         </div>
 
         {/* Card 5: Value Delivered / ROI */}
         <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-2">
           <div className="flex items-center justify-between text-xs text-slate-500">
-            <span>Value Delivered</span>
+            <span><T>Value Delivered</T></span>
             <TrendingUp className="h-4 w-4 text-emerald-500" />
           </div>
           <div className="text-xl font-bold text-emerald-600 dark:text-emerald-400 font-mono">
             ~${billingData?.estimatedDollarSavings ?? 0}
           </div>
           <div className="text-[11px] text-slate-400">
-            Saved {billingData?.estimatedHoursSaved ?? 0}h of human live chat
+            <T>Saved</T> {billingData?.estimatedHoursSaved ?? 0}<T>h of human live chat</T>
           </div>
         </div>
       </div>
@@ -235,9 +237,9 @@ export const BillingTab: React.FC<BillingTabProps> = ({
       {/* Monthly vs Annual Billing Toggle */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
         <div>
-          <h2 className="text-base font-bold text-slate-900 dark:text-white">Choose the Right Plan for Your Scale</h2>
+          <h2 className="text-base font-bold text-slate-900 dark:text-white"><T>Choose the Right Plan for Your Scale</T></h2>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-            Predictable chat pricing. Upgrade or downgrade anytime with zero lock-in contracts.
+            <T>Predictable chat pricing. Upgrade or downgrade anytime with zero lock-in contracts.</T>
           </p>
         </div>
         <div className="inline-flex items-center p-1 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs">
@@ -250,7 +252,7 @@ export const BillingTab: React.FC<BillingTabProps> = ({
                 : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
             }`}
           >
-            Monthly
+            <T>Monthly</T>
           </button>
           <button
             type="button"
@@ -261,9 +263,9 @@ export const BillingTab: React.FC<BillingTabProps> = ({
                 : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
             }`}
           >
-            <span>Annual</span>
+            <span><T>Annual</T></span>
             <span className="bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 text-[10px] px-1.5 py-0.2 rounded-full font-bold">
-              Save {annualSavingsPercent()}%
+              <T>Save</T> {annualSavingsPercent()}%
             </span>
           </button>
         </div>
@@ -287,20 +289,20 @@ export const BillingTab: React.FC<BillingTabProps> = ({
             >
               {plan.popular && (
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-blue-600 px-3 py-0.5 text-[10.5px] font-bold uppercase tracking-wider text-white shadow-xs">
-                  Most Popular
+                  <T>Most Popular</T>
                 </div>
               )}
 
               <div className="space-y-4">
                 <div>
                   <div className="flex items-center justify-between">
-                    <h3 className="text-base font-bold text-slate-900 dark:text-white">{plan.name}</h3>
+                    <h3 className="text-base font-bold text-slate-900 dark:text-white"><T>{plan.name}</T></h3>
                     <span className="text-[11px] font-mono font-semibold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
                       {plan.highlight}
                     </span>
                   </div>
                   <p className="text-xs text-slate-500 dark:text-slate-400 mt-1.5 leading-relaxed min-h-[36px]">
-                    {plan.tagline}
+                    <T>{plan.tagline}</T>
                   </p>
                 </div>
 
@@ -310,20 +312,20 @@ export const BillingTab: React.FC<BillingTabProps> = ({
                     <span className="text-3xl font-black text-slate-900 dark:text-white font-mono">
                       ${price}
                     </span>
-                    <span className="text-xs text-slate-400">/ month</span>
+                    <span className="text-xs text-slate-400"><T>/ month</T></span>
                   </div>
                   <div className="text-[11px] text-slate-400 mt-0.5">
                     {billingInterval === 'annual'
-                      ? `Billed $${price * 12}/year (${plan.chatSessionsLimit.toLocaleString()} chats included)`
-                      : `${plan.chatSessionsLimit.toLocaleString()} chat sessions included / month`}
+                      ? __t("Billed ${n1}/year ({n2} chats included)", { n1: price * 12, n2: plan.chatSessionsLimit.toLocaleString() })
+                      : __t("{n1} chat sessions included / month", { n1: plan.chatSessionsLimit.toLocaleString() })}
                   </div>
                   <div className="flex items-center gap-1.5 text-[11.5px] text-blue-600 dark:text-blue-400 font-semibold mt-1.5">
                     <HardDrive className="h-3.5 w-3.5 shrink-0" />
                     <span>
                       {plan.knowledgeStorageLimitMb >= 1000
-                        ? `${plan.knowledgeStorageLimitMb / 1000} GB`
-                        : `${plan.knowledgeStorageLimitMb} MB`}{' '}
-                      Knowledge Storage Included
+                        ? __t("{n1} GB", { n1: plan.knowledgeStorageLimitMb / 1000 })
+                        : __t("{knowledgeStorageLimitMb} MB", { knowledgeStorageLimitMb: plan.knowledgeStorageLimitMb })}{' '}
+                      <T>Knowledge Storage Included</T>
                     </span>
                   </div>
                 </div>
@@ -331,7 +333,7 @@ export const BillingTab: React.FC<BillingTabProps> = ({
                 {/* Features List */}
                 <div className="space-y-2 pt-3 border-t border-slate-100 dark:border-slate-800">
                   <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
-                    Included Features:
+                    <T>Included Features:</T>
                   </div>
                   <ul className="space-y-2 text-xs text-slate-600 dark:text-slate-300">
                     {plan.features.map((feat, fIdx) => (
@@ -361,19 +363,19 @@ export const BillingTab: React.FC<BillingTabProps> = ({
                   {isChanging ? (
                     <>
                       <RefreshCw className="h-3.5 w-3.5 animate-spin" />
-                      <span>Activating Plan...</span>
+                      <span><T>Activating Plan...</T></span>
                     </>
                   ) : isCurrent ? (
                     <>
                       <CheckCircle2 className="h-4 w-4 text-emerald-500" />
-                      <span>Current Active Plan</span>
+                      <span><T>Current Active Plan</T></span>
                     </>
                   ) : (
-                    <span>Switch to {plan.name} &rarr;</span>
+                    <span><T>Switch to</T> <T>{plan.name}</T> &rarr;</span>
                   )}
                 </button>
                 <div className="flex items-center justify-center gap-1.5 pt-2 text-[10px] text-slate-400">
-                  <span>Cards</span>
+                  <span><T>Cards</T></span>
                   <span>•</span>
                   <span className="inline-flex items-center text-slate-700 dark:text-slate-200 font-semibold" title="Google Pay supported">
                     <GooglePayIcon className="h-2.5 w-auto" />
@@ -396,7 +398,7 @@ export const BillingTab: React.FC<BillingTabProps> = ({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2.5">
               <CreditCard className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-              <h2 className="text-sm font-bold text-slate-900 dark:text-white">Payment Method</h2>
+              <h2 className="text-sm font-bold text-slate-900 dark:text-white"><T>Payment Method</T></h2>
             </div>
             <div className="flex items-center gap-2">
               {handleOpenCustomerPortal && billingData?.stripeCustomerId && (
@@ -405,7 +407,7 @@ export const BillingTab: React.FC<BillingTabProps> = ({
                   onClick={handleOpenCustomerPortal}
                   className="text-xs text-blue-600 dark:text-blue-400 hover:underline font-semibold cursor-pointer"
                 >
-                  Stripe Portal
+                  <T>Stripe Portal</T>
                 </button>
               )}
               <button
@@ -413,14 +415,14 @@ export const BillingTab: React.FC<BillingTabProps> = ({
                 onClick={() => setShowPaymentModal(true)}
                 className="text-xs text-blue-600 dark:text-blue-400 hover:underline font-semibold cursor-pointer"
               >
-                Update Card
+                <T>Update Card</T>
               </button>
             </div>
           </div>
 
           {/* 1-Click Wallets Badge */}
           <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800 flex items-center justify-between text-[11px] text-slate-600 dark:text-slate-400">
-            <span className="font-semibold text-[10.5px]">1-Click Checkout:</span>
+            <span className="font-semibold text-[10.5px]"><T>1-Click Checkout:</T></span>
             <div className="flex items-center gap-2">
               <span className="px-2 py-0.5 rounded-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 flex items-center">
                 <GooglePayIcon className="h-2.5 w-auto text-slate-700 dark:text-slate-200" />
@@ -434,26 +436,26 @@ export const BillingTab: React.FC<BillingTabProps> = ({
           <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="h-10 w-12 rounded-lg bg-slate-900 text-white dark:bg-white dark:text-slate-900 flex items-center justify-center font-bold text-xs font-mono">
-                {billingData?.paymentMethod?.brand || 'VISA'}
+                {billingData?.paymentMethod?.brand || <T>{'VISA'}</T>}
               </div>
               <div>
                 <div className="text-xs font-bold text-slate-900 dark:text-white font-mono">
                   •••• •••• •••• {billingData?.paymentMethod?.last4 || '4242'}
                 </div>
                 <div className="text-[11px] text-slate-500 dark:text-slate-400">
-                  Expires {billingData?.paymentMethod?.expMonth || 12}/{billingData?.paymentMethod?.expYear || 2028}
+                  <T>Expires</T> {billingData?.paymentMethod?.expMonth || 12}/{billingData?.paymentMethod?.expYear || 2028}
                 </div>
               </div>
             </div>
             <span className="rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 px-2 py-0.5 text-[10px] font-bold">
-              Default
+              <T>Default</T>
             </span>
           </div>
 
           <div className="text-xs space-y-1 pt-1">
-            <div className="text-slate-500 dark:text-slate-400">Billing Email:</div>
+            <div className="text-slate-500 dark:text-slate-400"><T>Billing Email:</T></div>
             <div className="font-semibold text-slate-800 dark:text-slate-200 font-mono text-[11px]">
-              {billingData?.billingEmail || 'billing@crescelo.com'}
+              {billingData?.billingEmail || <T>{'billing@crescelo.com'}</T>}
             </div>
           </div>
         </div>
@@ -461,19 +463,19 @@ export const BillingTab: React.FC<BillingTabProps> = ({
         {/* Right Column: Invoices & Receipts */}
         <div className="lg:col-span-7 rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-xs space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-sm font-bold text-slate-900 dark:text-white">Billing History &amp; Receipts</h2>
-            <span className="text-[11px] text-slate-400">Past cycles</span>
+            <h2 className="text-sm font-bold text-slate-900 dark:text-white"><T>Billing History &amp; Receipts</T></h2>
+            <span className="text-[11px] text-slate-400"><T>Past cycles</T></span>
           </div>
 
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
               <thead>
                 <tr className="border-b border-slate-100 dark:border-slate-800 text-[10.5px] uppercase font-semibold text-slate-400">
-                  <th className="pb-2.5">Date</th>
-                  <th className="pb-2.5">Description</th>
-                  <th className="pb-2.5">Amount</th>
-                  <th className="pb-2.5">Status</th>
-                  <th className="pb-2.5 text-right">Receipt</th>
+                  <th className="pb-2.5"><T>Date</T></th>
+                  <th className="pb-2.5"><T>Description</T></th>
+                  <th className="pb-2.5"><T>Amount</T></th>
+                  <th className="pb-2.5"><T>Status</T></th>
+                  <th className="pb-2.5 text-right"><T>Receipt</T></th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -487,7 +489,7 @@ export const BillingTab: React.FC<BillingTabProps> = ({
                     <td className="py-3 font-mono font-bold text-slate-900 dark:text-white">${inv.amount}.00</td>
                     <td className="py-3">
                       <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
-                        Paid
+                        <T>Paid</T>
                       </span>
                     </td>
                     <td className="py-3 text-right">
@@ -497,7 +499,7 @@ export const BillingTab: React.FC<BillingTabProps> = ({
                         className="inline-flex items-center gap-1 text-[11px] font-semibold text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
                       >
                         <Download className="h-3 w-3" />
-                        <span>Receipt</span>
+                        <span><T>Receipt</T></span>
                       </button>
                     </td>
                   </tr>

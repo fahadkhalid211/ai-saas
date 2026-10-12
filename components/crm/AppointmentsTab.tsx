@@ -1,3 +1,4 @@
+import { T } from '@/lib/i18n/context';
 import React, { useState } from 'react';
 import {
   Calendar,
@@ -68,16 +69,16 @@ export const AppointmentsTab: React.FC<AppointmentsTabProps> = ({
                   <div>
                     <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2.5">
                       <Calendar className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
-                      <span>Appointments</span>
+                      <span><T>Appointments</T></span>
                     </h1>
                     <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                      View and manage bookings made by customers through your assistant.
+                      <T>View and manage bookings made by customers through your assistant.</T>
                     </p>
                   </div>
                   <div className="flex items-center gap-2 flex-wrap">
                     <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800 text-[11px] text-emerald-700 dark:text-emerald-300 font-medium">
                       <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                      <span>Live Sync Active</span>
+                      <span><T>Live Sync Active</T></span>
                     </div>
 
                     <button
@@ -87,7 +88,7 @@ export const AppointmentsTab: React.FC<AppointmentsTabProps> = ({
                       title="Get the Crescelo Android Mobile App"
                     >
                       <Smartphone className="h-3.5 w-3.5 text-lime-800 dark:text-lime-400" />
-                      <span>Android App</span>
+                      <span><T>Android App</T></span>
                     </button>
 
                     <button
@@ -97,7 +98,7 @@ export const AppointmentsTab: React.FC<AppointmentsTabProps> = ({
                       title="Sync with Google Calendar, Outlook, and Apple Calendar"
                     >
                       <Share2 className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
-                      <span>Calendar Sync (.ics)</span>
+                      <span><T>Calendar Sync (.ics)</T></span>
                     </button>
 
                     <button
@@ -108,7 +109,7 @@ export const AppointmentsTab: React.FC<AppointmentsTabProps> = ({
                       title="Fetch newest appointments"
                     >
                       <RefreshCw className={`h-3.5 w-3.5 ${isSyncingAppointments ? 'animate-spin text-emerald-600' : 'text-slate-500'}`} />
-                      <span>{isSyncingAppointments ? 'Syncing...' : 'Sync Now'}</span>
+                      <span>{isSyncingAppointments ? <T>{'Syncing...'}</T> : <T>{'Sync Now'}</T>}</span>
                     </button>
 
                     <button
@@ -133,7 +134,7 @@ export const AppointmentsTab: React.FC<AppointmentsTabProps> = ({
                       className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold shadow-xs disabled:opacity-50 transition cursor-pointer"
                     >
                       <Download className="h-3.5 w-3.5" />
-                      <span>Export CSV</span>
+                      <span><T>Export CSV</T></span>
                     </button>
                   </div>
                 </div>
@@ -142,45 +143,45 @@ export const AppointmentsTab: React.FC<AppointmentsTabProps> = ({
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
                   <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs">
                     <div className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                      Total Bookings
+                      <T>Total Bookings</T>
                     </div>
                     <div className="text-2xl font-bold text-slate-900 dark:text-white mt-1">
                       {appointments.length}
                     </div>
-                    <div className="text-[10px] text-slate-400 mt-0.5">All-time appointments</div>
+                    <div className="text-[10px] text-slate-400 mt-0.5"><T>All-time appointments</T></div>
                   </div>
 
                   <div className="p-4 rounded-xl border border-emerald-200 dark:border-emerald-900/50 bg-emerald-50/40 dark:bg-emerald-950/20 shadow-xs">
                     <div className="text-[11px] font-semibold text-emerald-700 dark:text-emerald-300 uppercase tracking-wider flex items-center justify-between">
-                      <span>Confirmed</span>
+                      <span><T>Confirmed</T></span>
                       <span className="h-2 w-2 rounded-full bg-emerald-500"></span>
                     </div>
                     <div className="text-2xl font-bold text-emerald-700 dark:text-emerald-300 mt-1">
                       {appointments.filter((a) => a.status === 'confirmed').length}
                     </div>
-                    <div className="text-[10px] text-emerald-700 dark:text-emerald-400/75 mt-0.5">Ready for call/meeting</div>
+                    <div className="text-[10px] text-emerald-700 dark:text-emerald-400/75 mt-0.5"><T>Ready for call/meeting</T></div>
                   </div>
 
                   <div className="p-4 rounded-xl border border-amber-200 dark:border-amber-900/50 bg-amber-50/40 dark:bg-amber-950/20 shadow-xs">
                     <div className="text-[11px] font-semibold text-amber-700 dark:text-amber-300 uppercase tracking-wider flex items-center justify-between">
-                      <span>Pending</span>
+                      <span><T>Pending</T></span>
                       <span className="h-2 w-2 rounded-full bg-amber-500"></span>
                     </div>
                     <div className="text-2xl font-bold text-amber-700 dark:text-amber-300 mt-1">
                       {appointments.filter((a) => a.status === 'pending').length}
                     </div>
-                    <div className="text-[10px] text-amber-700 dark:text-amber-400/75 mt-0.5">Awaiting team review</div>
+                    <div className="text-[10px] text-amber-700 dark:text-amber-400/75 mt-0.5"><T>Awaiting team review</T></div>
                   </div>
 
                   <div className="p-4 rounded-xl border border-blue-200 dark:border-blue-900/50 bg-blue-50/40 dark:bg-blue-950/20 shadow-xs">
                     <div className="text-[11px] font-semibold text-blue-700 dark:text-blue-300 uppercase tracking-wider flex items-center justify-between">
-                      <span>Completed</span>
+                      <span><T>Completed</T></span>
                       <CheckCircle2 className="h-3 w-3 text-blue-500" />
                     </div>
                     <div className="text-2xl font-bold text-blue-700 dark:text-blue-300 mt-1">
                       {appointments.filter((a) => a.status === 'completed').length}
                     </div>
-                    <div className="text-[10px] text-blue-700 dark:text-blue-400/75 mt-0.5">Consultations finished</div>
+                    <div className="text-[10px] text-blue-700 dark:text-blue-400/75 mt-0.5"><T>Consultations finished</T></div>
                   </div>
                 </div>
 
@@ -204,7 +205,7 @@ export const AppointmentsTab: React.FC<AppointmentsTabProps> = ({
                             : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
                         }`}
                       >
-                        <span>{f.label}</span>
+                        <span><T>{f.label}</T></span>
                         <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono ${
                           appointmentFilter === f.id ? 'bg-emerald-700 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300'
                         }`}>
@@ -242,9 +243,9 @@ export const AppointmentsTab: React.FC<AppointmentsTabProps> = ({
                       <div className="flex h-12 w-12 mx-auto items-center justify-center rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
                         <Calendar className="h-6 w-6" />
                       </div>
-                      <div className="text-sm font-bold text-slate-900 dark:text-white">No appointments booked yet</div>
+                      <div className="text-sm font-bold text-slate-900 dark:text-white"><T>No appointments booked yet</T></div>
                       <p className="text-xs text-slate-500 dark:text-slate-400 max-w-md mx-auto">
-                        Visitors can book calls, consultations, and demos directly through the AI chat widget or by asking the bot to book a slot.
+                        <T>Visitors can book calls, consultations, and demos directly through the AI chat widget or by asking the bot to book a slot.</T>
                       </p>
                       <div className="flex justify-center gap-3 pt-2">
                         <button
@@ -252,14 +253,14 @@ export const AppointmentsTab: React.FC<AppointmentsTabProps> = ({
                           onClick={() => setActiveTab('widget')}
                           className="px-3.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs font-semibold transition cursor-pointer"
                         >
-                          Configure Slot Duration &amp; Hours
+                          <T>Configure Slot Duration &amp; Hours</T>
                         </button>
                         <button
                           type="button"
                           onClick={() => setActiveTab('playground')}
                           className="px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold shadow-xs transition cursor-pointer"
                         >
-                          Test in Studio
+                          <T>Test in Studio</T>
                         </button>
                       </div>
                     </div>
@@ -268,14 +269,14 @@ export const AppointmentsTab: React.FC<AppointmentsTabProps> = ({
                       <table className="w-full text-left text-xs">
                         <thead className="bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 font-semibold border-b border-slate-200 dark:border-slate-800">
                           <tr>
-                            <th className="py-3 px-5">Client / Contact</th>
-                            <th className="py-3 px-5">Landing Page / Source</th>
-                            <th className="py-3 px-5">Date &amp; Time Slot</th>
-                            <th className="py-3 px-5">Duration</th>
-                            <th className="py-3 px-5">Meeting Topic / Notes</th>
-                            <th className="py-3 px-5">Status</th>
-                            <th className="py-3 px-5">Booked On</th>
-                            <th className="py-3 px-5 text-right">Actions</th>
+                            <th className="py-3 px-5"><T>Client / Contact</T></th>
+                            <th className="py-3 px-5"><T>Landing Page / Source</T></th>
+                            <th className="py-3 px-5"><T>Date &amp; Time Slot</T></th>
+                            <th className="py-3 px-5"><T>Duration</T></th>
+                            <th className="py-3 px-5"><T>Meeting Topic / Notes</T></th>
+                            <th className="py-3 px-5"><T>Status</T></th>
+                            <th className="py-3 px-5"><T>Booked On</T></th>
+                            <th className="py-3 px-5 text-right"><T>Actions</T></th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -301,7 +302,7 @@ export const AppointmentsTab: React.FC<AppointmentsTabProps> = ({
                                 <tr key={apt.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition">
                                   <td className="py-3.5 px-5">
                                     <div className="font-semibold text-slate-900 dark:text-white flex items-center gap-1.5">
-                                      <span>{apt.name}</span>
+                                      <span><T>{apt.name}</T></span>
                                     </div>
                                     <div className="flex items-center gap-1.5 mt-0.5">
                                       <a
@@ -335,7 +336,7 @@ export const AppointmentsTab: React.FC<AppointmentsTabProps> = ({
                                     ) : (
                                       <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
                                         <Bot className="h-3 w-3 text-slate-400" />
-                                        <span>Direct Widget</span>
+                                        <span><T>Direct Widget</T></span>
                                       </span>
                                     )}
                                   </td>
@@ -358,7 +359,7 @@ export const AppointmentsTab: React.FC<AppointmentsTabProps> = ({
 
                                   <td className="py-3.5 px-5 max-w-xs">
                                     <div className="text-slate-700 dark:text-slate-300 line-clamp-2">
-                                      {apt.notes || <span className="text-slate-400 italic">No notes attached</span>}
+                                      {apt.notes || <span className="text-slate-400 italic"><T>No notes attached</T></span>}
                                     </div>
                                   </td>
 
@@ -397,7 +398,7 @@ export const AppointmentsTab: React.FC<AppointmentsTabProps> = ({
                                         onClick={() => setSelectedAppointmentModal(apt)}
                                         className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/60 px-2.5 py-1 rounded transition cursor-pointer"
                                       >
-                                        Details
+                                        <T>Details</T>
                                       </button>
                                       <button
                                         type="button"
@@ -429,10 +430,10 @@ export const AppointmentsTab: React.FC<AppointmentsTabProps> = ({
                           </div>
                           <div>
                             <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-                              Live Calendar Sync (iCal / Webcal)
+                              <T>Live Calendar Sync (iCal / Webcal)</T>
                             </h3>
                             <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                              Real-time two-way synchronization with Google Calendar, Outlook, and Apple Calendar.
+                              <T>Real-time two-way synchronization with Google Calendar, Outlook, and Apple Calendar.</T>
                             </p>
                           </div>
                         </div>
@@ -448,7 +449,7 @@ export const AppointmentsTab: React.FC<AppointmentsTabProps> = ({
                       <div className="space-y-4 text-xs">
                         <div>
                           <label className="text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider block mb-1.5">
-                            Your Live Calendar Subscription Feed URL
+                            <T>Your Live Calendar Subscription Feed URL</T>
                           </label>
                         {(() => {
                           const feedTokenParam = activeAssistant?.calendarFeedToken
@@ -478,7 +479,7 @@ export const AppointmentsTab: React.FC<AppointmentsTabProps> = ({
                                   className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-semibold shadow-xs transition cursor-pointer shrink-0"
                                 >
                                   {copiedFeedUrl ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
-                                  <span>{copiedFeedUrl ? 'Copied!' : 'Copy Feed'}</span>
+                                  <span>{copiedFeedUrl ? <T>{'Copied!'}</T> : <T>{'Copy Feed'}</T>}</span>
                                 </button>
                               </div>
 
@@ -490,7 +491,7 @@ export const AppointmentsTab: React.FC<AppointmentsTabProps> = ({
                                   className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold transition cursor-pointer"
                                 >
                                   <Download className="h-3.5 w-3.5 text-slate-500" />
-                                  <span>Download Offline .ics</span>
+                                  <span><T>Download Offline .ics</T></span>
                                 </a>
 
                                 <a
@@ -502,7 +503,7 @@ export const AppointmentsTab: React.FC<AppointmentsTabProps> = ({
                                   className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 text-xs font-semibold transition cursor-pointer"
                                 >
                                   <Calendar className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
-                                  <span>Subscribe in Apple / Outlook Calendar</span>
+                                  <span><T>Subscribe in Apple / Outlook Calendar</T></span>
                                 </a>
                               </div>
                             </>
@@ -513,37 +514,37 @@ export const AppointmentsTab: React.FC<AppointmentsTabProps> = ({
                         {/* Setup Instructions Cards */}
                         <div className="space-y-2.5 pt-2">
                           <div className="text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
-                            How to Subscribe by App
+                            <T>How to Subscribe by App</T>
                           </div>
 
                           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
                             <div className="p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 space-y-1">
                               <div className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
                                 <span className="h-2 w-2 rounded-full bg-blue-500"></span>
-                                <span>Google Calendar</span>
+                                <span><T>Google Calendar</T></span>
                               </div>
                               <p className="text-[11px] text-slate-600 dark:text-slate-400 leading-relaxed">
-                                Open Google Calendar &gt; Other calendars (+) &gt; <strong>From URL</strong> &gt; Paste your feed URL and click Add calendar.
+                                <T>Open Google Calendar &gt; Other calendars (+) &gt;</T> <strong><T>From URL</T></strong> <T>&gt; Paste your feed URL and click Add calendar.</T>
                               </p>
                             </div>
 
                             <div className="p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 space-y-1">
                               <div className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
                                 <span className="h-2 w-2 rounded-full bg-sky-500"></span>
-                                <span>Microsoft Outlook</span>
+                                <span><T>Microsoft Outlook</T></span>
                               </div>
                               <p className="text-[11px] text-slate-600 dark:text-slate-400 leading-relaxed">
-                                Go to Outlook Calendar &gt; <strong>Add Calendar</strong> &gt; <strong>Subscribe from web</strong> &gt; Paste URL &gt; Click Import.
+                                <T>Go to Outlook Calendar &gt;</T> <strong><T>Add Calendar</T></strong> &gt; <strong><T>Subscribe from web</T></strong> <T>&gt; Paste URL &gt; Click Import.</T>
                               </p>
                             </div>
 
                             <div className="p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 space-y-1">
                               <div className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
                                 <span className="h-2 w-2 rounded-full bg-purple-500"></span>
-                                <span>Apple Calendar</span>
+                                <span><T>Apple Calendar</T></span>
                               </div>
                               <p className="text-[11px] text-slate-600 dark:text-slate-400 leading-relaxed">
-                                In Calendar, click <strong>File &gt; New Calendar Subscription</strong> &gt; Paste URL &gt; Choose refresh interval.
+                                <T>In Calendar, click</T> <strong><T>File &gt; New Calendar Subscription</T></strong> <T>&gt; Paste URL &gt; Choose refresh interval.</T>
                               </p>
                             </div>
                           </div>
@@ -555,7 +556,7 @@ export const AppointmentsTab: React.FC<AppointmentsTabProps> = ({
                             onClick={() => setShowCalendarSyncModal(false)}
                             className="rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 px-4 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-200 transition cursor-pointer"
                           >
-                            Close
+                            <T>Close</T>
                           </button>
                         </div>
                       </div>
@@ -572,13 +573,13 @@ export const AppointmentsTab: React.FC<AppointmentsTabProps> = ({
                           <CresceloMark size={48} motion="still" />
                           <div>
                             <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                              <span>Crescelo for Android</span>
+                              <span><T>Crescelo for Android</T></span>
                               <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-[#abff44]/20 text-[#abff44] border border-[#abff44]/30">
-                                Native App
+                                <T>Native App</T>
                               </span>
                             </h3>
                             <p className="text-xs text-[#94a3b8] mt-0.5">
-                              Manage client bookings & get push notifications on your phone
+                              <T>Manage client bookings & get push notifications on your phone</T>
                             </p>
                           </div>
                         </div>
@@ -596,9 +597,9 @@ export const AppointmentsTab: React.FC<AppointmentsTabProps> = ({
                         <div className="p-3 rounded-xl bg-[#0c2e20] border border-[#174834] flex items-start gap-3">
                           <span className="text-lg">🔔</span>
                           <div>
-                            <div className="text-xs font-bold text-white">Instant Push Notifications</div>
+                            <div className="text-xs font-bold text-white"><T>Instant Push Notifications</T></div>
                             <div className="text-[11px] text-[#94a3b8]">
-                              Receive alerts the moment a customer books, reschedules, or cancels.
+                              <T>Receive alerts the moment a customer books, reschedules, or cancels.</T>
                             </div>
                           </div>
                         </div>
@@ -606,9 +607,9 @@ export const AppointmentsTab: React.FC<AppointmentsTabProps> = ({
                         <div className="p-3 rounded-xl bg-[#0c2e20] border border-[#174834] flex items-start gap-3">
                           <span className="text-lg">📞</span>
                           <div>
-                            <div className="text-xs font-bold text-white">1-Tap Customer Contact</div>
+                            <div className="text-xs font-bold text-white"><T>1-Tap Customer Contact</T></div>
                             <div className="text-[11px] text-[#94a3b8]">
-                              Direct phone dialer and email shortcuts for fast client communication.
+                              <T>Direct phone dialer and email shortcuts for fast client communication.</T>
                             </div>
                           </div>
                         </div>
@@ -616,9 +617,9 @@ export const AppointmentsTab: React.FC<AppointmentsTabProps> = ({
                         <div className="p-3 rounded-xl bg-[#0c2e20] border border-[#174834] flex items-start gap-3">
                           <span className="text-lg">🔄</span>
                           <div>
-                            <div className="text-xs font-bold text-white">2-Way Live Sync</div>
+                            <div className="text-xs font-bold text-white"><T>2-Way Live Sync</T></div>
                             <div className="text-[11px] text-[#94a3b8]">
-                              Status updates, completions, and cancellations sync in real time.
+                              <T>Status updates, completions, and cancellations sync in real time.</T>
                             </div>
                           </div>
                         </div>
@@ -627,17 +628,17 @@ export const AppointmentsTab: React.FC<AppointmentsTabProps> = ({
                       {/* Quick Start Instructions */}
                       <div className="p-3.5 rounded-xl bg-[#04140d] border border-[#174834] space-y-2">
                         <div className="text-[11px] font-bold text-[#abff44] uppercase tracking-wider">
-                          How to Launch on Your Android Phone
+                          <T>How to Launch on Your Android Phone</T>
                         </div>
                         <ol className="text-xs text-slate-300 space-y-1.5 list-decimal list-inside leading-relaxed">
-                          <li>Install free <strong>Expo Go</strong> app from Google Play Store.</li>
-                          <li>In your computer terminal, start the mobile dev server:</li>
+                          <li><T>Install free</T> <strong><T>Expo Go</T></strong> <T>app from Google Play Store.</T></li>
+                          <li><T>In your computer terminal, start the mobile dev server:</T></li>
                         </ol>
                         <div className="p-2 rounded bg-black/50 font-mono text-[11px] text-[#abff44] select-all">
-                          cd mobile && npx expo start
+                          <T>cd mobile && npx expo start</T>
                         </div>
                         <p className="text-[11px] text-[#94a3b8]">
-                          Scan the displayed QR code with Expo Go to run on your phone.
+                          <T>Scan the displayed QR code with Expo Go to run on your phone.</T>
                         </p>
                       </div>
 
@@ -647,7 +648,7 @@ export const AppointmentsTab: React.FC<AppointmentsTabProps> = ({
                           onClick={() => setShowMobileAppModal(false)}
                           className="rounded-lg bg-[#abff44] hover:bg-[#bbfd66] px-5 py-2 text-xs font-bold text-[#04140d] transition cursor-pointer"
                         >
-                          Got it
+                          <T>Got it</T>
                         </button>
                       </div>
                     </div>

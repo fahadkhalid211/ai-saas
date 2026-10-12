@@ -1,5 +1,6 @@
 'use client';
 
+import { T, useT } from '@/lib/i18n/context';
 import React, { useCallback, useEffect, useState } from 'react';
 import { LifeBuoy, Plus, RefreshCw, Send, Lock, CheckCircle2, Search, Bug } from 'lucide-react';
 
@@ -47,6 +48,7 @@ const fmt = (iso: string) => new Date(iso).toLocaleString(undefined, { dateStyle
 const input = 'w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 dark:[color-scheme:dark] [&>option]:bg-white [&>option]:text-slate-900 dark:[&>option]:bg-slate-800 dark:[&>option]:text-white';
 
 export function SupportTab({ master }: { master: boolean }) {
+  const __t = useT();
   const base = master ? '/api/master/tickets' : '/api/support/tickets';
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [counts, setCounts] = useState<Record<Status, number> | null>(null);
@@ -148,10 +150,10 @@ export function SupportTab({ master }: { master: boolean }) {
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <div className="flex items-center gap-2">
           <LifeBuoy className="h-5 w-5 text-blue-600" />
-          <h2 className="text-base font-bold text-slate-900 dark:text-white">{master ? 'Support inbox' : 'Support'}</h2>
+          <h2 className="text-base font-bold text-slate-900 dark:text-white">{master ? <T>{'Support inbox'}</T> : <T>{'Support'}</T>}</h2>
         </div>
         <div className="flex items-center gap-2">
-          <button type="button" onClick={loadList} className="p-2 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer" aria-label="Refresh">
+          <button type="button" onClick={loadList} className="p-2 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer" aria-label={__t("Refresh")}>
             <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} />
           </button>
           {!master && (
@@ -165,7 +167,7 @@ export function SupportTab({ master }: { master: boolean }) {
                 }}
                 className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-rose-200 dark:border-rose-900/60 bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 hover:bg-rose-100 dark:hover:bg-rose-900/60 text-xs font-semibold cursor-pointer transition-colors"
               >
-                <Bug className="h-3.5 w-3.5" /> Report a bug
+                <Bug className="h-3.5 w-3.5" /> <T>Report a bug</T>
               </button>
               <button
                 type="button"
@@ -176,7 +178,7 @@ export function SupportTab({ master }: { master: boolean }) {
                 }}
                 className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold cursor-pointer transition-colors"
               >
-                <Plus className="h-3.5 w-3.5" /> New ticket
+                <Plus className="h-3.5 w-3.5" /> <T>New ticket</T>
               </button>
             </div>
           )}
@@ -198,14 +200,14 @@ export function SupportTab({ master }: { master: boolean }) {
           ))}
           <div className="relative ml-auto">
             <Search className="h-3.5 w-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
-            <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search ref, e-mail, subject" className={`${input} pl-8 w-56`} />
+            <input value={q} onChange={(e) => setQ(e.target.value)} placeholder={__t("Search ref, e-mail, subject")} className={`${input} pl-8 w-56`} />
           </div>
         </div>
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
         <div className="lg:col-span-2 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 divide-y divide-slate-100 dark:divide-slate-800 max-h-[70vh] overflow-y-auto">
-          {tickets.length === 0 && <p className="p-6 text-xs text-slate-500 text-center">{loading ? 'Loading...' : master ? 'No tickets match.' : 'No tickets yet. Use "New ticket" or "Report a bug" to contact the Crescelo team.'}</p>}
+          {tickets.length === 0 && <p className="p-6 text-xs text-slate-500 text-center">{loading ? <T>{'Loading...'}</T> : master ? <T>{'No tickets match.'}</T> : <T>{'No tickets yet. Use "New ticket" or "Report a bug" to contact the Crescelo team.'}</T>}</p>}
           {tickets.map((t) => (
             <button
               key={t.ref}
@@ -218,11 +220,11 @@ export function SupportTab({ master }: { master: boolean }) {
                   <span className="text-[11px] font-mono text-slate-500">{t.ref}</span>
                   {t.category === 'Bug Report' && (
                     <span className="px-1.5 py-0.5 rounded text-[9px] font-semibold bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300 border border-rose-200 dark:border-rose-900/60">
-                      Bug
+                      <T>Bug</T>
                     </span>
                   )}
                 </div>
-                <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${STATUS_STYLE[t.status]}`}>{t.status}</span>
+                <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${STATUS_STYLE[t.status]}`}><T>{t.status}</T></span>
               </div>
               <div className="text-xs font-semibold text-slate-900 dark:text-white line-clamp-1">{t.subject}</div>
               <div className="text-[11px] text-slate-500 flex items-center justify-between gap-2">
@@ -230,7 +232,7 @@ export function SupportTab({ master }: { master: boolean }) {
                 <span className={PRIORITY_STYLE[t.priority]}>{t.priority}</span>
               </div>
               <div className="text-[10px] text-slate-400">
-                {fmt(t.updatedAt)}{master && t.status === 'open' && t.lastReplyBy === 'customer' ? ' · needs a reply' : ''}
+                {fmt(t.updatedAt)}{master && t.status === 'open' && t.lastReplyBy === 'customer' ? <T>{' · needs a reply'}</T> : ''}
               </div>
             </button>
           ))}
@@ -239,8 +241,8 @@ export function SupportTab({ master }: { master: boolean }) {
         <div className="lg:col-span-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 min-h-[20rem]">
           {composing && !master && (
             <div className="space-y-3">
-              <h3 className="text-sm font-bold text-slate-900 dark:text-white">New ticket</h3>
-              <p className="text-[11px] text-slate-500">We reply by e-mail to your account address, and you can follow the conversation here.</p>
+              <h3 className="text-sm font-bold text-slate-900 dark:text-white"><T>New ticket</T></h3>
+              <p className="text-[11px] text-slate-500"><T>We reply by e-mail to your account address, and you can follow the conversation here.</T></p>
               <div className="grid grid-cols-2 gap-3">
                 <select className={input} value={draft.category} onChange={(e) => setDraft({ ...draft, category: e.target.value })}>
                   {CATEGORIES.map((c) => <option key={c}>{c}</option>)}
@@ -249,19 +251,19 @@ export function SupportTab({ master }: { master: boolean }) {
                   {['low', 'normal', 'high', 'urgent'].map((p) => <option key={p}>{p}</option>)}
                 </select>
               </div>
-              <input className={input} placeholder="Subject" maxLength={120} value={draft.subject} onChange={(e) => setDraft({ ...draft, subject: e.target.value })} />
-              <textarea className={input} rows={7} maxLength={5000} placeholder="Describe the problem or question" value={draft.message} onChange={(e) => setDraft({ ...draft, message: e.target.value })} />
-              {error && <p className="text-xs text-rose-500">{error}</p>}
+              <input className={input} placeholder={__t("Subject")} maxLength={120} value={draft.subject} onChange={(e) => setDraft({ ...draft, subject: e.target.value })} />
+              <textarea className={input} rows={7} maxLength={5000} placeholder={__t("Describe the problem or question")} value={draft.message} onChange={(e) => setDraft({ ...draft, message: e.target.value })} />
+              {error && <p className="text-xs text-rose-500"><T>{error}</T></p>}
               <div className="flex gap-2">
                 <button type="button" disabled={busy} onClick={create} className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white text-xs font-semibold cursor-pointer">
-                  {busy ? 'Sending...' : 'Submit ticket'}
+                  {busy ? <T>{'Sending...'}</T> : <T>{'Submit ticket'}</T>}
                 </button>
-                <button type="button" onClick={() => setComposing(false)} className="px-4 py-2 rounded-xl text-xs text-slate-500 cursor-pointer">Cancel</button>
+                <button type="button" onClick={() => setComposing(false)} className="px-4 py-2 rounded-xl text-xs text-slate-500 cursor-pointer"><T>Cancel</T></button>
               </div>
             </div>
           )}
 
-          {!composing && !detail && <p className="text-xs text-slate-500 text-center py-16">Select a ticket to read the conversation.</p>}
+          {!composing && !detail && <p className="text-xs text-slate-500 text-center py-16"><T>Select a ticket to read the conversation.</T></p>}
 
           {!composing && detail && (
             <div className="space-y-4">
@@ -269,7 +271,7 @@ export function SupportTab({ master }: { master: boolean }) {
                 <div>
                   <div className="text-[11px] font-mono text-slate-500">{detail.ticket.ref} · {detail.ticket.category}</div>
                   <h3 className="text-sm font-bold text-slate-900 dark:text-white">{detail.ticket.subject}</h3>
-                  {master && <div className="text-[11px] text-slate-500 mt-0.5">{detail.ticket.name} · {detail.ticket.email}{detail.ticket.business ? ` · ${detail.ticket.business}` : ''}</div>}
+                  {master && <div className="text-[11px] text-slate-500 mt-0.5"><T>{detail.ticket.name}</T> · {detail.ticket.email}{detail.ticket.business ? ` · ${detail.ticket.business}` : ''}</div>}
                 </div>
                 {master ? (
                   <div className="flex items-center gap-2">
@@ -281,7 +283,7 @@ export function SupportTab({ master }: { master: boolean }) {
                     </select>
                   </div>
                 ) : (
-                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${STATUS_STYLE[detail.ticket.status]}`}>{detail.ticket.status}</span>
+                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${STATUS_STYLE[detail.ticket.status]}`}><T>{detail.ticket.status}</T></span>
                 )}
               </div>
 
@@ -289,7 +291,7 @@ export function SupportTab({ master }: { master: boolean }) {
                 {detail.messages.map((m) => (
                   <div key={m.id} className={`rounded-xl p-3 text-xs ${m.internal ? 'bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900' : m.author === 'staff' ? 'bg-blue-50 dark:bg-blue-950/30' : 'bg-slate-50 dark:bg-slate-800/50'}`}>
                     <div className="flex justify-between gap-3 text-[10px] text-slate-500 mb-1">
-                      <span className="font-semibold">{m.internal ? 'Internal note' : m.author === 'staff' ? 'Crescelo Support' : m.authorName}</span>
+                      <span className="font-semibold">{m.internal ? <T>{'Internal note'}</T> : m.author === 'staff' ? <T>{'Crescelo Support'}</T> : m.authorName}</span>
                       <span>{fmt(m.createdAt)}</span>
                     </div>
                     <div className="whitespace-pre-wrap text-slate-800 dark:text-slate-200 leading-relaxed">{m.body}</div>
@@ -300,25 +302,25 @@ export function SupportTab({ master }: { master: boolean }) {
               {detail.ticket.status !== 'closed' || master ? (
                 <div className="space-y-2">
                   <textarea className={input} rows={4} maxLength={5000} placeholder={master ? (internal ? 'Internal note (not e-mailed, not shown to the customer)' : 'Reply to the customer (sent by e-mail)') : 'Write a reply'} value={reply} onChange={(e) => setReply(e.target.value)} />
-                  {error && <p className="text-xs text-rose-500">{error}</p>}
+                  {error && <p className="text-xs text-rose-500"><T>{error}</T></p>}
                   <div className="flex items-center gap-2 flex-wrap">
                     <button type="button" disabled={busy || !reply.trim()} onClick={() => send()} className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white text-xs font-semibold cursor-pointer">
-                      {internal ? <Lock className="h-3.5 w-3.5" /> : <Send className="h-3.5 w-3.5" />} {internal ? 'Save note' : 'Send reply'}
+                      {internal ? <Lock className="h-3.5 w-3.5" /> : <Send className="h-3.5 w-3.5" />} {internal ? <T>{'Save note'}</T> : <T>{'Send reply'}</T>}
                     </button>
                     {master && (
                       <>
                         <button type="button" disabled={busy || !reply.trim() || internal} onClick={() => send({ resolve: true })} className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-emerald-300 text-emerald-700 dark:text-emerald-300 disabled:opacity-40 text-xs font-semibold cursor-pointer">
-                          <CheckCircle2 className="h-3.5 w-3.5" /> Reply and resolve
+                          <CheckCircle2 className="h-3.5 w-3.5" /> <T>Reply and resolve</T>
                         </button>
                         <label className="flex items-center gap-1.5 text-[11px] text-slate-500 cursor-pointer">
-                          <input type="checkbox" checked={internal} onChange={(e) => setInternal(e.target.checked)} /> Internal note
+                          <input type="checkbox" checked={internal} onChange={(e) => setInternal(e.target.checked)} /> <T>Internal note</T>
                         </label>
                       </>
                     )}
                   </div>
                 </div>
               ) : (
-                <p className="text-xs text-slate-500">This ticket is closed. Open a new ticket if you still need help.</p>
+                <p className="text-xs text-slate-500"><T>This ticket is closed. Open a new ticket if you still need help.</T></p>
               )}
             </div>
           )}

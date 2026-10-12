@@ -1,0 +1,150 @@
+150¦Naturlig samtalsrytm för kundsupport¦Luonnollinen keskustelurytmi asiakastukeen¦Cadenza di conversazione naturale per l'assistenza clienti¦Ritmo de conversación natural para atención al cliente
+151¦Ingen inlåsning hos leverantören. Inga påslag per minut. Full kontroll över ditt schema och dina kundrelationer.¦Ei toimittajalukkoa. Ei minuuttikohtaisia lisämaksuja. Täysi omistus aikatauluusi ja asiakassuhteisiisi.¦Nessun vincolo con il fornitore. Nessun sovrapprezzo al minuto. Controllo totale su agenda e rapporti con i clienti.¦Sin dependencia de un proveedor. Sin recargos por minuto. Control total sobre tu agenda y la relación con tus clientes.
+152¦Inte tillgängligt ännu¦Ei vielä saatavilla¦Non ancora disponibile¦Todavía no disponible
+153¦En assistent. Alla kanaler.¦Yksi avustaja. Kaikki kanavat.¦Un assistente. Tutti i canali.¦Un asistente. Todos los canales.
+154¦OpenAI (GPT-4o och o3)¦OpenAI (GPT-4o ja o3)¦OpenAI (GPT-4o e o3)¦OpenAI (GPT-4o y o3)
+155¦Utgående webhooks och Zapier¦Lähtevät webhookit ja Zapier¦Webhook in uscita e Zapier¦Webhooks salientes y Zapier
+156¦Telefon och röst¦Puhelin ja ääni¦Telefono e voce¦Teléfono y voz
+157¦Telefon och röst (snart)¦Puhelin ja ääni (pian)¦Telefono e voce (presto)¦Teléfono y voz (próximamente)
+158¦Telefonsamtal (Telnyx)¦Puhelut (Telnyx)¦Chiamate telefoniche (Telnyx)¦Llamadas telefónicas (Telnyx)
+159¦Planerat: svara på samtal utifrån din kunskapsbas¦Suunniteltu: vastaa puheluihin tietopohjasi perusteella¦In programma: rispondere alle chiamate dalla tua base di conoscenza¦Previsto: contestar llamadas desde tu base de conocimiento
+160¦Planerat: boka tider via telefon¦Suunniteltu: varaa aikoja puhelimitse¦In programma: prenotare appuntamenti al telefono¦Previsto: reservar citas por teléfono
+161¦Planerat: sammanfattningar och utskrifter av samtal¦Suunniteltu: puheluiden yhteenvedot ja kirjaukset¦In programma: riassunti e trascrizioni delle chiamate¦Previsto: resúmenes y transcripciones de las llamadas
+162¦Kopplas till de¦Yhdistyy¦Si collega agli strumenti¦Se conecta con las herramientas
+163¦Färdiga mallar för Zapier och Make.com¦Valmiiksi määritetyt Zapier- ja Make.com-mallit¦Modelli Zapier e Make.com preconfigurati¦Plantillas de Zapier y Make.com preconfiguradas
+164¦Privat, tokenskyddad flödesadress för varje assistent¦Yksityinen, tunnisteella suojattu syöteosoite jokaiselle avustajalle¦Indirizzo del feed privato e protetto da token per ogni assistente¦Dirección de feed privada y protegida con token para cada asistente
+165¦Proaktiva utlösarregler baserade på URL-sökväg och hur långt besökaren scrollat¦Proaktiiviset laukaisusäännöt URL-polun ja vierityssyvyyden perusteella¦Regole di attivazione proattive basate sul percorso URL e sulla profondità di scorrimento¦Reglas proactivas según la ruta de la URL y la profundidad de desplazamiento
+166¦Läs guiden om kalenderbokning¦Lue kalenterivarausopas¦Leggi la guida alla prenotazione con calendario¦Lee la guía de reservas con calendario
+167¦HTTPS POST-leverans i realtid med nya försök och exponentiell backoff¦Reaaliaikainen HTTPS POST -toimitus uudelleenyrityksillä ja eksponentiaalisella viiveellä¦Consegna HTTPS POST in tempo reale con nuovi tentativi a backoff esponenziale¦Entrega HTTPS POST en tiempo real con reintentos de espera exponencial
+168¦JSON-händelser i realtid till HubSpot, Slack och Make.com.¦JSON-tapahtumien lähetys reaaliajassa HubSpotiin, Slackiin ja Make.comiin.¦Invio in tempo reale di eventi JSON a HubSpot, Slack e Make.com.¦Envío de eventos JSON en tiempo real a HubSpot, Slack y Make.com.
+169¦Uppdateringsfrekvensen bestäms av din kalenderapp¦Päivitystiheys määräytyy kalenterisovelluksesi mukaan¦La frequenza di aggiornamento è decisa dalla tua app di calendario¦La frecuencia de actualización la decide tu aplicación de calendario
+170¦Föreslå en integration¦Pyydä integraatiota¦Richiedi un'integrazione¦Solicita una integración
+171¦Hantering av rika medier (PDF-prislistor, bilder, platser)¦Rikkaan median käsittely (PDF-hinnastot, kuvat, sijainnit)¦Gestione di contenuti multimediali (listini PDF, immagini, posizioni)¦Gestión de contenido multimedia (listas de precios en PDF, imágenes, ubicaciones)
+172¦Kör blixtsnabba öppna modeller med över 500 tokens per sekund på Groq LPU. Ger omedelbar strömning av svar för talsyntes och chatt i realtid utan påslag på tokens.¦Aja salamannopeita avoimen painon malleja yli 500 tokenia sekunnissa Groqin LPU-piireillä. Tarjoaa välittömän vastausten suoratoiston puhesynteesiin ja reaaliaikaiseen chattiin ilman tokenien lisämaksua.¦Esegui modelli open-weight velocissimi a oltre 500 token al secondo sulle LPU di Groq. Offre lo streaming istantaneo delle risposte per la sintesi vocale e la chat in tempo reale, senza ricarico sui token.¦Ejecuta modelos de pesos abiertos ultrarrápidos a más de 500 tokens por segundo en las LPU de Groq. Ofrece transmisión instantánea de respuestas para síntesis de voz y chat en tiempo real, sin recargo sobre los tokens.
+173¦Exempel på händelsedata¦Esimerkki tapahtuman sisällöstä¦Esempio di payload di un evento¦Ejemplo de carga de un evento
+174¦=
+175¦=
+176¦Sök integrationer...¦Hae integraatioita...¦Cerca integrazioni...¦Buscar integraciones...
+177¦Se färdplanen¦Katso tiekartta¦Vedi la roadmap¦Ver la hoja de ruta
+178¦Välj en integration för att läsa specifikationerna (¦Valitse integraatio nähdäksesi tekniset tiedot (¦Seleziona un'integrazione per leggere le specifiche (¦Selecciona una integración para leer las especificaciones (
+179¦Skicka strukturerade, användbara aviseringar direkt till valfri Slack-kanal varje gång en potentiell kund lämnar kontaktuppgifter eller bokar en tid. Teamet ser direkt formaterade leaduppgifter, kontaktlänkar och bokningsanteckningar utan att behöva byta sammanhang.¦Lähetä jäsenneltyjä, toimintakelpoisia ilmoituksia suoraan mille tahansa Slack-kanavalle aina, kun mahdollinen asiakas jättää yhteystietonsa tai varaa ajan. Tiimi näkee heti muotoillut liiditiedot, yhteystietolinkit ja varausmuistiinpanot ilman, että työ katkeaa.¦Invia notifiche strutturate e utili direttamente a qualsiasi canale Slack ogni volta che un potenziale cliente lascia i propri contatti o fissa un appuntamento. Il team vede subito i dettagli del lead formattati, i link di contatto e le note di prenotazione, senza cambiare contesto.¦Envía notificaciones estructuradas y útiles directamente a cualquier canal de Slack cada vez que un posible cliente deja sus datos de contacto o reserva una cita. El equipo ve al instante los datos del lead con formato, los enlaces de contacto y las notas de la reserva, sin cambiar de contexto.
+180¦Signerade data med skydd mot upprepade attacker via tidsstämpel¦Allekirjoitetut tiedot ja aikaleimaan perustuva suoja toistohyökkäyksiä vastaan¦Payload firmati con protezione dagli attacchi di replay tramite timestamp¦Cargas firmadas con protección contra ataques de repetición mediante marca de tiempo
+181¦=
+182¦Tidsluckor låses så att två besökare inte kan ta samma tid¦Aikavälit lukitaan, jotta kaksi kävijää ei voi varata samaa aikaa¦Blocco dello slot, così due visitatori non possono prendere lo stesso orario¦Bloqueo del hueco para que dos visitantes no puedan coger la misma hora
+183¦Toppmodern flerspråkig konversation och slutledning.¦Huippuluokan monikielinen keskustelu ja päättely.¦Conversazione e ragionamento multilingue all'avanguardia.¦Conversación y razonamiento multilingües de última generación.
+184¦Lagras i en säker enklav och förnyas vid behov¦Tallennetaan suojattuun tilaan ja päivitetään tarvittaessa¦Archiviato in un enclave sicuro e aggiornato su richiesta¦Se guarda en un enclave seguro y se renueva cuando hace falta
+185¦Följer strikta begränsningar och undviker medicinska/juridiska avvikelser¦Noudattaa tiukkoja rajoitteita eikä poikkea lääketieteellisiin tai juridisiin neuvoihin¦Rispetta rigorosamente i vincoli, senza scivolare in consigli medici o legali¦Cumple estrictamente las restricciones y evita desviarse hacia consejos médicos o legales
+186¦Strukturerade svar genom tvingande JSON-schema¦Jäsennellyt vastaukset JSON-skeeman pakotuksella¦Output strutturati tramite JSON Schema obbligatorio¦Respuestas estructuradas mediante esquema JSON obligatorio
+187¦Svar med under 200 ms till första token med Llama 3.3.¦Vastaus alle 200 ms:ssa ensimmäiseen tokeniin Llama 3.3:lla.¦Generazione con meno di 200 ms al primo token con Llama 3.3.¦Generación con menos de 200 ms hasta el primer token con Llama 3.3.
+188¦Under 200 ms till första token (TTFT)¦Alle 200 ms ensimmäiseen tokeniin (TTFT)¦Meno di 200 ms al primo token (TTFT)¦Menos de 200 ms hasta el primer token (TTFT)
+189¦Aviseringar levereras på under 80 ms, med automatiskt SSRF-skydd¦Ilmoitukset toimitetaan alle 80 ms:ssa automaattisella SSRF-suojauksella¦Consegna delle notifiche in meno di 80 ms con protezione SSRF automatica¦Entrega de notificaciones en menos de 80 ms con protección SSRF automática
+190¦Prenumerera på dina bokningar i valfri kalenderapp.¦Tilaa varauksesi mihin tahansa kalenterisovellukseen.¦Iscriviti alle tue prenotazioni da qualsiasi app di calendario.¦Suscríbete a tus reservas desde cualquier aplicación de calendario.
+191¦=
+192¦Validering av Telegram-botens hemliga token för alla inkommande uppdateringar¦Telegram-botin salaisen tunnisteen tarkistus kaikissa saapuvissa päivityksissä¦Convalida del token segreto del bot Telegram su tutti gli aggiornamenti in arrivo¦Validación del token secreto del bot de Telegram en todas las actualizaciones entrantes
+193¦TLS-krypterad överföring med webbappsbehörighet enligt minsta möjliga behörighet¦TLS-salattu siirto ja web-sovelluksen valtuutus vähimpien oikeuksien periaatteella¦Trasporto cifrato TLS con autorizzazione della Web App al minimo privilegio¦Transporte cifrado con TLS y autorización de la aplicación web con privilegios mínimos
+194¦Utlös egna HTTPS POST-webhooks varje gång en tid bokas, ett lead med hög köpavsikt fångas eller ett ärende eskaleras. Skicka verifierade händelsedata direkt till Zapier, Make.com, HubSpot eller ditt eget interna API.¦Laukaise omia HTTPS POST -webhookeja aina, kun aika varataan, korkean ostoaikeen liidi tallentuu tai asia eskaloituu. Ohjaa vahvistetut tapahtumatiedot suoraan Zapieriin, Make.comiin, HubSpotiin tai omaan sisäiseen rajapintaasi.¦Attiva webhook HTTPS POST personalizzati ogni volta che viene prenotato un appuntamento, acquisito un lead ad alto interesse o avviata un'escalation. Invia payload di eventi verificati direttamente a Zapier, Make.com, HubSpot o alla tua API interna.¦Activa webhooks HTTPS POST personalizados cada vez que se reserve una cita, se capte un lead con alta intención o se produzca una escalada. Envía cargas de eventos verificadas directamente a Zapier, Make.com, HubSpot o a tu API interna.
+195¦Förvandla WhatsApp-konversationer till bokade tider.¦Muuta WhatsApp-keskustelut varatuiksi ajoiksi.¦Trasforma le conversazioni WhatsApp in appuntamenti fissati.¦Convierte las conversaciones de WhatsApp en citas programadas.
+196¦Under utveckling¦Kehitteillä¦In sviluppo¦En desarrollo
+197¦Validerad ingångspunkt för inkommande webhooks med SSRF- och privat IP-filtrering¦Vahvistettu saapuvan webhookin päätepiste SSRF- ja yksityisten IP-osoitteiden suodatuksella¦Endpoint webhook in entrata convalidato, con filtro SSRF e per IP privati¦Endpoint de webhook entrante validado, con filtrado de SSRF e IP privadas
+198¦Verifierad webhook-dirigering från Meta Cloud API¦Vahvistettu webhook-reititys Meta Cloud API:sta¦Instradamento verificato dei webhook di Meta Cloud API¦Enrutamiento verificado de webhooks de la API en la nube de Meta
+199¦Visa installationsdokumentationen¦Näytä asennusohjeet¦Vedi la documentazione di configurazione¦Ver la documentación de configuración
+200¦Taligenkänning för röstmeddelanden¦Puheviestien puheesta tekstiksi -käsittely¦Trascrizione vocale dei messaggi vocali¦Conversión de voz a texto para notas de voz
+201¦Tillgänglig enligt WCAG 2.1 AA med full tangentbordsnavigering¦WCAG 2.1 AA -saavutettava, täysi näppäimistökäyttö¦Accessibile secondo WCAG 2.1 AA con navigazione completa da tastiera¦Accesible según WCAG 2.1 AA con navegación completa por teclado
+202¦=
+203¦Vad kostar en konsultation på helgen?¦Paljonko konsultaatio maksaa viikonloppuna?¦Quanto costano le consulenze nel fine settimana?¦¿Cuánto cuestan las consultas en fin de semana?
+204¦=
+205¦Grossistpriser med egen nyckel (BYOK) direkt i din Anthropic-konsol¦Tukkuhinnat omalla avaimella (BYOK) suoraan Anthropic-konsolissasi¦Prezzi all'ingrosso con chiave propria (BYOK) direttamente nella tua console Anthropic¦Precios mayoristas con tu propia clave (BYOK) directamente en tu consola de Anthropic
+206¦Fungerar med prenumerationer från Google Kalender, Outlook och Apple Kalender¦Toimii Google-kalenterin, Outlookin ja Applen kalenterin tilausten kanssa¦Funziona con le iscrizioni a Google Calendar, Outlook e Apple Calendar¦Funciona con suscripciones de Google Calendar, Outlook y Apple Calendar
+207¦du redan använder.¦jota jo käytät.¦che già usi.¦que ya usas.
+208¦Inga kostnader per användare eller för tredjepartsverktyg för automation¦Ei käyttäjäkohtaisia eikä kolmannen osapuolen automaatiotyökalujen kuluja¦Nessun costo per utente né per strumenti di automazione di terze parti¦Sin costes por usuario ni por herramientas de automatización de terceros
+209¦Automatisk synkronisering utan kod som lägger till formaterade rader i realtid.¦Kooditon automaattinen synkronointi, joka lisää muotoiltuja rivejä reaaliajassa.¦Sincronizzazione automatica senza codice che aggiunge righe formattate in tempo reale.¦Sincronización automática sin código que añade filas con formato en tiempo real.
+210¦Crescelo: AI-assistent för tjänsteföretags webbplatser¦Crescelo: tekoälyavustaja palveluyritysten verkkosivuille¦Crescelo: assistente IA per il sito web delle aziende di servizi¦Crescelo: asistente de IA web para empresas de servicios
+211¦Måste jag registrera mig?¦Pitääkö minun rekisteröityä?¦Devo registrarmi?¦¿Tengo que registrarme?
+212¦Hittar den på saker?¦Keksiikö se asioita?¦Si inventa le cose?¦¿Se inventa cosas?
+213¦Hur länge sparas mina dokument?¦Kuinka kauan dokumenttini säilytetään?¦Per quanto tempo vengono conservati i miei documenti?¦¿Cuánto tiempo se conservan mis documentos?
+214¦Nej. Ange ditt namn och din e-postadress så öppnas lekplatsen direkt. Inget lösenord och inget kort.¦Ei. Anna nimesi ja sähköpostiosoitteesi, niin kokeilualue aukeaa heti. Ei salasanaa eikä korttia.¦No. Inserisci nome ed e-mail e il playground si apre subito. Nessuna password e nessuna carta.¦No. Indícanos tu nombre y tu correo y el playground se abre al instante. Sin contraseña y sin tarjeta.
+215¦PDF-, Word- (.docx), text-, Markdown-, CSV- och JSON-filer upp till 5 MB, inklistrad text eller adressen till en webbsida. Upp till fem källor åt gången.¦PDF-, Word- (.docx), teksti-, Markdown-, CSV- ja JSON-tiedostoja enintään 5 Mt, liitettyä tekstiä tai verkkosivun osoite. Enintään viisi lähdettä kerrallaan.¦File PDF, Word (.docx), di testo, Markdown, CSV e JSON fino a 5 MB, testo incollato o l'indirizzo di una pagina web. Fino a cinque fonti alla volta.¦Archivos PDF, Word (.docx), de texto, Markdown, CSV y JSON de hasta 5 MB, texto pegado o la dirección de una página web. Hasta cinco fuentes a la vez.
+216¦=
+217¦Sju dagar, sedan raderas de automatiskt. Du kan ta bort vilken källa som helst själv när du vill.¦Seitsemän päivää, minkä jälkeen ne poistetaan automaattisesti. Voit poistaa minkä tahansa lähteen itse milloin tahansa.¦Sette giorni, poi vengono eliminati automaticamente. Puoi rimuovere qualsiasi fonte da solo in qualsiasi momento.¦Siete días, luego se eliminan automáticamente. Puedes borrar cualquier fuente tú mismo en cualquier momento.
+218¦Starta en gratis provperiod, koppla samma dokument och lägg assistenten på din webbplats med en enda kodrad.¦Aloita ilmainen kokeilu, yhdistä samat dokumentit ja lisää avustaja verkkosivustollesi yhdellä koodirivillä.¦Avvia una prova gratuita, collega gli stessi documenti e metti l'assistente sul tuo sito con una sola riga di codice.¦Empieza una prueba gratuita, conecta los mismos documentos y pon al asistente en tu sitio web con una sola línea de código.
+219¦Assistenten i lekplatsen svarar bara utifrån det du gett den. Finns svaret inte i dina dokument säger den det och föreslår vad du kan lägga till.¦Playgroundin avustaja vastaa vain sen perusteella, mitä olet antanut. Jos vastausta ei löydy dokumenteistasi, se kertoo sen ja ehdottaa, mitä lisätä.¦L'assistente del playground risponde solo in base a ciò che gli hai fornito. Se la risposta non è nei tuoi documenti, lo dice e suggerisce cosa aggiungere.¦El asistente del playground responde solo a partir de lo que le has dado. Si la respuesta no está en tus documentos, lo dice y sugiere qué añadir.
+220¦Vad kan jag ladda upp?¦Mitä voin ladata?¦Cosa posso caricare?¦¿Qué puedo subir?
+221¦Vad händer när jag gillar den?¦Mitä tapahtuu, kun pidän siitä?¦Cosa succede dopo che mi piace?¦¿Qué pasa cuando me gusta?
+222¦Crescelos priser | Planer och användningskostnader¦Crescelon hinnat | Paketit ja käyttökustannukset¦Prezzi di Crescelo | Piani e costi di utilizzo¦Precios de Crescelo | Planes y costes de uso
+223¦Priser¦Hinnat¦Prezzi¦Precios
+224¦1 bot¦1 botti¦1 bot¦1 bot
+225¦100 / mån¦100 / kk¦100 / mese¦100 / mes
+226¦2 000 / mån¦2 000 / kk¦2.000 / mese¦2.000 / mes
+227¦5 botar¦5 bottia¦5 bot¦5 bots
+228¦5 GB¦5 Gt¦5 GB¦5 GB
+229¦50 MB (ca 50 000 sidor)¦50 Mt (n. 50 000 sivua)¦50 MB (circa 50.000 pagine)¦50 MB (unas 50.000 páginas)
+230¦500 / mån¦500 / kk¦500 / mese¦500 / mes
+231¦500 MB¦500 Mt¦500 MB¦500 MB
+232¦Byrå / Skala¦Toimisto / Skaalaus¦Agenzia / Scale¦Agencia / Scale
+233¦Årsbetalning¦Vuosilasku¦Fatturazione annuale¦Facturación anual
+234¦Svarar strikt utifrån dina dokument (inga påhittade fakta)¦Vastaa tiukasti dokumenttiesi perusteella (ei keksittyjä faktoja)¦Risponde solo in base ai tuoi documenti (nessun fatto inventato)¦Responde solo a partir de tus documentos (sin datos inventados)
+235¦Ställ en fråga om fakturering¦Kysy laskutuksesta¦Fai una domanda sulla fatturazione¦Haz una pregunta sobre facturación
+236¦Assistentbotar¦Avustajabotit¦Bot assistente¦Bots asistentes
+237¦Ljud + skrivbord¦Ääni + työpöytä¦Audio + desktop¦Audio + escritorio
+238¦Automatiska aviseringar och webhooks¦Automaattiset ilmoitukset ja webhookit¦Notifiche e webhook automatici¦Notificaciones y webhooks automáticos
+239¦Grundläggande låsning¦Perusluku¦Blocco di base¦Bloqueo básico
+240¦Faktureras månad för månad¦Laskutetaan kuukausittain¦Fatturato mese per mese¦Se factura mes a mes
+241¦Kan jag avsluta eller byta plan när som helst?¦Voinko peruuttaa tai vaihtaa pakettia milloin tahansa?¦Posso annullare o cambiare piano in qualsiasi momento?¦¿Puedo cancelar o cambiar de plan en cualquier momento?
+242¦Välj¦Valitse¦Scegli¦Elegir
+243¦Jämför planernas funktioner sida vid sida.¦Vertaile pakettien ominaisuuksia rinnakkain.¦Confronta le funzioni dei piani fianco a fianco.¦Compara las funciones de los planes lado a lado.
+244¦Egen webbadress (t.ex. chat.dinbutik.se)¦Oma verkko-osoite (esim. chat.kauppasi.fi)¦Indirizzo web personalizzato (es. chat.iltuonegozio.it)¦Dirección web propia (p. ej., chat.tutienda.com)
+245¦Dedikerade webhooks¦Omat webhookit¦Webhook dedicati¦Webhooks dedicados
+246¦Endast e-post¦Vain sähköposti¦Solo e-mail¦Solo correo electrónico
+247¦Funktion¦Ominaisuus¦Funzione¦Función
+248¦Vanliga frågor om fakturering.¦Usein kysyttyä laskutuksesta.¦Domande frequenti sulla fatturazione.¦Preguntas frecuentes sobre facturación.
+249¦KOM IGÅNG¦ALOITA¦INIZIA¦EMPIEZA
+250¦Synkronisering med Google Kalender och Outlook¦Google-kalenterin ja Outlookin synkronointi¦Sincronizzazione con Google Calendar e Outlook¦Sincronización con Google Calendar y Outlook
+251¦Growth¦Growth¦Growth¦Growth
+252¦Garanterat inga dubbelbokningar¦Taatusti ei kaksoisvarauksia¦Nessuna doppia prenotazione garantita¦Sin dobles reservas garantizado
+253¦Hög frekvens¦Korkea taajuus¦Alta frequenza¦Alta frecuencia
+254¦Hur fungerar Bring-Your-Own-Key (BYOK)?¦Miten Bring-Your-Own-Key (BYOK) toimii?¦Come funziona il Bring-Your-Own-Key (BYOK)?¦¿Cómo funciona el Bring-Your-Own-Key (BYOK)?
+255¦Inkommande telefonsamtal med röst¦Saapuvat puhelut äänellä¦Chiamate vocali telefoniche in entrata¦Llamadas telefónicas de voz entrantes
+256¦Ingår¦Sisältyy¦Incluso¦Incluido
+257¦Ingår (flera domäner)¦Sisältyy (useita verkkotunnuksia)¦Incluso (più domini)¦Incluido (varios dominios)
+258¦Inkluderade chattsessioner¦Sisältyvät chat-istunnot¦Sessioni di chat incluse¦Sesiones de chat incluidas
+259¦Omedelbar låsning av tid¦Välitön ajan lukitus¦Blocco istantaneo dello slot¦Bloqueo instantáneo del hueco
+260¦Lagring för kunskapsbas¦Tietopohjan tallennustila¦Spazio per la base di conoscenza¦Almacenamiento de la base de conocimiento
+261¦Ljudsignaler för personalen och möjlighet att ta över chatten¦Henkilökunnan äänimerkit ja keskustelun ylösotto¦Segnali acustici per lo staff e subentro nella chat¦Avisos sonoros para el personal y toma de control del chat
+262¦Månadsbetalning¦Kuukausilasku¦Fatturazione mensile¦Facturación mensual
+263¦Mest populär¦Suosituin¦Più popolare¦Más popular
+264¦Betala för de samtal din assistent hanterar. Använd din egen AI-nyckel så går modellkostnaderna direkt till din leverantör – vi lägger inget på. Spara 20 % med årsbetalning.¦Maksat avustajasi hoitamista keskusteluista. Käytä omaa tekoälyavaintasi, niin mallikustannukset menevät suoraan palveluntarjoajallesi – emme lisää niihin mitään. Säästä 20 % vuosilaskutuksella.¦Paghi per le conversazioni gestite dal tuo assistente. Usa la tua chiave IA e i costi del modello vanno direttamente al tuo provider: noi non aggiungiamo nulla. Risparmia il 20% con la fatturazione annuale.¦Pagas por las conversaciones que gestiona tu asistente. Usa tu propia clave de IA y los costes del modelo van directamente a tu proveedor: nosotros no añadimos nada. Ahorra un 20 % con la facturación anual.
+265¦PRISER¦HINNAT¦PREZZI¦PRECIOS
+266¦Prioriterad, flera användare¦Ensisijainen, useita käyttäjiä¦Prioritario, più utenti¦Prioritario, varios usuarios
+267¦SPARA¦SÄÄSTÄ¦RISPARMIA¦AHORRA
+268¦Skapa din assistent, träna den på dina tjänster och börja ta emot bokningar redan idag.¦Luo avustajasi, opeta se palveluistasi ja ala ottaa varauksia vastaan jo tänään.¦Configura il tuo assistente, addestralo sui tuoi servizi e inizia a ricevere prenotazioni oggi stesso.¦Crea tu asistente, entrénalo con tus servicios y empieza a recibir reservas hoy mismo.
+269¦Enkla priser.¦Yksinkertaiset hinnat.¦Prezzi semplici.¦Precios sencillos.
+270¦Standard¦Vakio¦Standard¦Estándar
+271¦Börja ta emot bokningar på autopilot.¦Ala ottaa varauksia vastaan automaattisesti.¦Inizia a ricevere prenotazioni in automatico.¦Empieza a recibir reservas en piloto automático.
+272¦Starter¦Starter¦Starter¦Starter
+273¦Obegränsat¦Rajoittamaton¦Illimitato¦Ilimitado
+274¦=
+275¦Vad händer om jag överskrider mina månatliga chattsessioner?¦Mitä tapahtuu, jos ylitän kuukausittaiset chat-istuntoni?¦Cosa succede se supero le sessioni di chat mensili?¦¿Qué pasa si supero mis sesiones de chat mensuales?
+276¦Vad som ingår¦Mitä sisältyy¦Cosa è incluso¦Qué incluye
+277¦WhatsApp- och Telegram-botar¦WhatsApp- ja Telegram-botit¦Bot WhatsApp e Telegram¦Bots de WhatsApp y Telegram
+278¦Ja. Alla betalningar och prenumerationer hanteras säkert via Stripes kundportal. Du kan byta plan, ladda ner fakturor eller avsluta med ett enda klick.¦Kyllä. Kaikki maksut ja tilaukset hoidetaan turvallisesti Stripen asiakasportaalin kautta. Voit vaihtaa pakettia, ladata laskuja tai peruuttaa yhdellä napsautuksella.¦Sì. Tutti i pagamenti e gli abbonamenti sono gestiti in modo sicuro tramite il portale clienti di Stripe. Puoi cambiare piano, scaricare le fatture o annullare con un solo clic.¦Sí. Todos los pagos y suscripciones se gestionan de forma segura a través del portal de clientes de Stripe. Puedes cambiar de plan, descargar facturas o cancelar con un solo clic.
+279¦Du klistrar in din egen API-nyckel (Groq, OpenAI, Anthropic eller Google Gemini) i assistentens dashboard. När besökare pratar med din assistent faktureras körningen direkt av din leverantör till grossistpris. Crescelo tar ingen andel av din tokenförbrukning.¦Liität oman API-avaimesi (Groq, OpenAI, Anthropic tai Google Gemini) avustajasi hallintapaneeliin. Kun kävijät keskustelevat avustajasi kanssa, palveluntarjoajasi laskuttaa päättelyn suoraan tukkuhintaan. Crescelo ei ota osuutta tokenien kulutuksestasi.¦Incolli la tua chiave API (Groq, OpenAI, Anthropic o Google Gemini) nella dashboard del tuo assistente. Quando i visitatori conversano con il tuo assistente, l'elaborazione viene fatturata direttamente dal tuo provider a tariffa all'ingrosso. Crescelo non trattiene nulla sul tuo consumo di token.¦Pegas tu propia clave API (Groq, OpenAI, Anthropic o Google Gemini) en el panel de tu asistente. Cuando los visitantes conversan con tu asistente, la inferencia la factura directamente tu proveedor a precio mayorista. Crescelo no se queda con nada de tu consumo de tokens.
+280¦Din assistent avbryter aldrig besökare mitt i en bokning. Extra sessioner faktureras helt enkelt enligt planens överskridandetaxa (0,50 USD för Starter, 0,40 USD för Growth, 0,30 USD för Scale). Du kan också uppgradera nivå när som helst.¦Avustajasi ei koskaan katkaise kävijöitä kesken varauksen. Lisäistunnot laskutetaan yksinkertaisesti paketin ylityshinnan mukaan (0,50 $ Starter, 0,40 $ Growth, 0,30 $ Scale). Voit myös päivittää pakettia milloin tahansa.¦Il tuo assistente non interrompe mai i visitatori nel mezzo di una prenotazione. Le sessioni extra vengono semplicemente fatturate alla tariffa di eccedenza del piano (0,50 $ per Starter, 0,40 $ per Growth, 0,30 $ per Scale). Puoi anche passare a un livello superiore in qualsiasi momento.¦Tu asistente nunca corta a los visitantes en mitad de una reserva. Las sesiones extra se facturan simplemente a la tarifa de exceso del plan (0,50 $ en Starter, 0,40 $ en Growth, 0,30 $ en Scale). También puedes subir de nivel en cualquier momento.
+281¦Noll¦Nolla¦Zero¦Cero
+282¦Inget påslag på AI-kostnader (BYOK)¦Ei lisämaksua tekoälykuluissa (BYOK)¦Nessun ricarico sui costi IA (BYOK)¦Sin recargo sobre los costes de IA (BYOK)
+283¦Integritetspolicy | Crescelo¦Tietosuojakäytäntö | Crescelo¦Informativa sulla privacy | Crescelo¦Política de privacidad | Crescelo
+284¦AI-chattbot och tidsbokning – funktioner | Crescelo¦Tekoälychatbot ja ajanvaraus – ominaisuudet | Crescelo¦Chatbot IA e prenotazione appuntamenti: funzionalità | Crescelo¦Chatbot de IA y reserva de citas: funciones | Crescelo
+285¦● AKTIV¦● AKTIIVINEN¦● ATTIVO¦● ACTIVO
+286¦0 % (leverantörens grossistpris)¦0 % (palveluntarjoajan tukkuhinta)¦0% (costo all'ingrosso del provider)¦0 % (coste mayorista del proveedor)
+287¦AES-256 GCM-valv med salt¦AES-256 GCM -holvi suolalla¦Vault AES-256 GCM con salt¦Caja fuerte AES-256 GCM con sal
+288¦Svarar bara utifrån dina egna dokument – ingen gissning.¦Vastaa vain oikeiden dokumenttiesi perusteella – ei arvailua.¦Risponde solo dai tuoi documenti reali, senza tirare a indovinare.¦Responde solo a partir de tus documentos reales, sin adivinar.
+289¦Atomära mutex-lås i minnet¦Atomiset mutex-lukot muistissa¦Lock mutex atomici in memoria¦Bloqueos mutex atómicos en memoria
+290¦Obesvarade kundfrågor loggas automatiskt och larmar personalen¦Vastaamattomat asiakaskysymykset kirjataan automaattisesti ja henkilökuntaa varoitetaan¦Le domande dei clienti senza risposta vengono registrate automaticamente e avvisano lo staff¦Las preguntas de clientes sin respuesta se registran automáticamente y avisan al personal
+291¦Bokningsaviseringar till ditt team via e-post och i dashboarden¦Varausilmoitukset tiimillesi sähköpostitse ja hallintapaneelissa¦Notifiche di prenotazione al tuo team via e-mail e nella dashboard¦Avisos de reservas a tu equipo por correo electrónico y en el panel
+292¦Byggd för full kontroll och regelefterlevnad.¦Rakennettu täyteen hallintaan ja säädösten noudattamiseen.¦Progettato per il pieno controllo e la conformità.¦Creado para el control total y el cumplimiento normativo.
+293¦Byggd för att svara, boka och¦Rakennettu vastaamaan, varaamaan ja¦Creato per rispondere, prenotare e¦Creado para responder, reservar y
+294¦Kalenderflöde samt länkar till Calendly och Cal.com¦Kalenterisyöte sekä Calendly- ja Cal.com-linkit¦Feed del calendario e link a Calendly e Cal.com¦Feed de calendario y enlaces de Calendly y Cal.com
+295¦Kalenderleverantörer¦Kalenteripalvelut¦Provider di calendario¦Proveedores de calendario
+296¦Gräns för cosinuslikhet per textavsnitt¦Tekstikatkelmien kosinusrajoitus¦Soglia di coseno per i frammenti¦Umbral de coseno por fragmento
+297¦Full äganderätt: betala grossistpris direkt till modellleverantörerna¦Täysi omistajuus: maksa tukkuhinta suoraan mallien toimittajille¦Controllo totale: paghi il prezzo all'ingrosso direttamente ai provider dei modelli¦Control total: paga el precio mayorista directamente a los proveedores de modelos
+298¦Samtidighetsmotor¦Samanaikaisuusmoottori¦Motore di concorrenza¦Motor de concurrencia
+299¦Bekräftelsemejl med länkar för att boka om eller avboka själv¦Vahvistussähköpostit, joissa on itsepalvelulinkit ajan siirtämiseen ja peruuttamiseen¦E-mail di conferma con link per riprogrammare o annullare in autonomia¦Correos de confirmación con enlaces para reprogramar o cancelar por cuenta propia

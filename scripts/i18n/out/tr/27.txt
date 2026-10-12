@@ -1,0 +1,150 @@
+4168¦Redo att sluta missa besökare?¦Valmis lopettamaan kävijöiden menettämisen?¦Pronto a smettere di perdere visitatori?¦¿Listo para dejar de perder visitantes?
+4169¦Fastigheter¦Kiinteistöt¦Immobiliare¦Inmobiliaria
+4170¦Fastighetsmäklare¦Kiinteistönvälittäjät¦Agenti immobiliari¦Agentes inmobiliarios
+4171¦Rollbaserad åtkomst¦Roolipohjainen käyttöoikeus¦Accesso basato sui ruoli¦Acceso basado en roles
+4172¦Takläggare¦Kattourakoitsijat¦Imprese di coperture¦Empresas de tejados
+4173¦Kör separata assistenter och värdade sidor för varje kund, var och en med egen kunskapsbas, eget varumärke och egna inställningar.¦Aja erillisiä avustajia ja isännöityjä sivuja jokaiselle asiakkaalle, kullakin oma tietopohja, brändäys ja asetukset.¦Gestisci assistenti e pagine ospitate separati per ogni cliente, ciascuno con la propria base di conoscenza, il proprio brand e le proprie impostazioni.¦Gestiona asistentes y páginas alojadas separados para cada cliente, cada uno con su propia base de conocimiento, imagen de marca y ajustes.
+4174¦SaaS och startups¦SaaS ja startup-yritykset¦SaaS e startup¦SaaS y startups
+4175¦Salonger och spa¦Kampaamot ja kylpylät¦Saloni e spa¦Salones y spas
+4176¦Salonger och spa¦Kampaamot ja kylpylät¦Saloni e spa¦Salones y spas
+4177¦Salonger, kliniker och studior¦Kampaamot, klinikat ja studiot¦Saloni, cliniche e studi¦Salones, clínicas y estudios
+4178¦Smidig överlämning till personal för komplexa ärenden¦Saumaton siirto ihmiselle monimutkaisissa tapauksissa¦Subentro umano fluido per i casi complessi¦Traspaso fluido a una persona en casos complejos
+4179¦Kombinerade sökmetoder: semantisk och nyckelord¦Yhdistetyt hakumenetelmät: semanttinen ja avainsana¦Metodi di ricerca combinati: semantica e per parole chiave¦Métodos de búsqueda combinados: semántico y por palabras clave
+4180¦Se hur en vanlig chattbots svammel står sig mot Crescelos förankrade svar. Dra i reglaget för att jämföra.¦Katso, miten tavallisen chatbotin täytepuhe vertautuu Crescelon lähteisiin perustuvaan vastaukseen. Vedä liukusäädintä tarkastellaksesi.¦Guarda come le chiacchiere di un chatbot standard si confrontano con la risposta fondata di Crescelo. Trascina il cursore per ispezionare.¦Mira cómo se compara la palabrería de un chatbot estándar con la respuesta basada en fuentes de Crescelo. Arrastra el control para inspeccionar.
+4181¦Se skillnaden ett förankrat svar gör.¦Katso, mitä eroa lähteisiin perustuva vastaus tekee.¦Scopri la differenza che fa una risposta fondata sulle fonti.¦Mira la diferencia que marca una respuesta basada en fuentes.
+4182¦Länkar för att själv omboka¦Itsepalvelulinkit ajan siirtoon¦Link per riprogrammare in autonomia¦Enlaces para reprogramar por cuenta propia
+4183¦Tjänstelista med längder och priser¦Palveluluettelo kestoineen ja hintoineen¦Elenco dei servizi con durate e prezzi¦Lista de servicios con duraciones y precios
+4184¦Svar om serviceområde och täckning¦Vastaukset palvelualueesta ja kattavuudesta¦Risposte su area di servizio e copertura¦Respuestas sobre zona de servicio y cobertura
+4185¦Ställ in din assistent på några minuter. Lägg till ditt innehåll, testa själv och gå live – allt innan din provperiod på 14 dagar tar slut. Avsluta när som helst, du betalar ingenting om du gör det.¦Määritä avustajasi muutamassa minuutissa. Lisää sisältösi, testaa itse ja julkaise – kaikki ennen 14 päivän kokeilun päättymistä. Peruuta milloin tahansa, etkä maksa mitään.¦Configura il tuo assistente in pochi minuti. Aggiungi i tuoi contenuti, provalo tu stesso e mettilo online, tutto prima della fine della prova di 14 giorni. Annulla in qualsiasi momento e non paghi nulla.¦Configura tu asistente en minutos. Añade tu contenido, pruébalo tú mismo y ponlo en marcha, todo antes de que termine tu prueba de 14 días. Cancela cuando quieras y no pagas nada.
+4186¦Logga in¦Kirjaudu sisään¦Accedi¦Iniciar sesión
+4187¦Inloggning och offentliga slutpunkter har begränsat antal anrop för att bromsa brute force-försök.¦Kirjautumisen ja julkisten päätepisteiden pyyntömääriä rajoitetaan raa'an voiman yritysten hidastamiseksi.¦Accesso ed endpoint pubblici hanno un limite di richieste per rallentare i tentativi di forza bruta.¦El inicio de sesión y los endpoints públicos tienen un límite de peticiones para frenar los intentos de fuerza bruta.
+4188¦Signerade webhooks¦Allekirjoitetut webhookit¦Webhook firmati¦Webhooks firmados
+4189¦Enkla priser. Inga överraskningar.¦Yksinkertaiset hinnat. Ei yllätyksiä.¦Prezzi semplici. Nessuna sorpresa.¦Precios sencillos. Sin sorpresas.
+4190¦Lösningar¦Ratkaisut¦Soluzioni¦Soluciones
+4191¦Låter säker, förbinder sig till saker som ingen skrivit ned.¦Kuulostaa varmalta, sitoutuu asioihin, joita kukaan ei ole kirjoittanut ylös.¦Suona sicuro, si impegna su cose che nessuno ha scritto.¦Suena seguro y se compromete a cosas que nadie dejó por escrito.
+4192¦Prenumerera från Google, Apple eller Outlook¦Tilaa Googlesta, Applelta tai Outlookista¦Iscriviti da Google, Apple o Outlook¦Suscríbete desde Google, Apple o Outlook
+4193¦Support och juridik¦Tuki ja lakitiedot¦Supporto e note legali¦Soporte y legal
+4194¦Anpassat efter typ av verksamhet¦Räätälöity yritystyypin mukaan¦Su misura per tipo di attività¦Adaptado al tipo de negocio
+4195¦Teamkonton kan kräva en tidsbaserad engångskod som andra steg vid inloggning.¦Tiimitilit voivat vaatia aikapohjaisen kertakoodin kirjautumisen toisena vaiheena.¦Gli account del team possono richiedere un codice monouso a tempo come secondo passaggio all'accesso.¦Las cuentas de equipo pueden exigir un código de un solo uso basado en el tiempo como segundo paso al iniciar sesión.
+4196¦Teammedlemmar tilldelas roller som begränsar vad de kan se, redigera eller ändra.¦Tiimin jäsenille annetaan rooleja, jotka rajoittavat sitä, mitä he voivat nähdä, muokata tai muuttaa.¦Ai membri del team vengono assegnati ruoli che limitano cosa possono vedere, modificare o cambiare.¦A los miembros del equipo se les asignan roles que limitan lo que pueden ver, editar o cambiar.
+4197¦Teamroller och behörigheter¦Tiimiroolit ja käyttöoikeudet¦Ruoli e permessi del team¦Roles y permisos del equipo
+4198¦=
+4199¦Användarvillkor¦Käyttöehdot¦Termini di servizio¦Términos del servicio
+4200¦Testa med din egen flyer på 2 minuter¦Testaa omalla flyerillasi 2 minuutissa¦Prova con il tuo volantino in 2 minuti¦Prueba con tu propio folleto en 2 minutos
+4201¦Assistenten förklarar vad du erbjuder, samlar in uppgifterna som behövs för en offert och loggar förfrågan som ett lead – redo för dig att följa upp.¦Avustaja selittää, mitä katat, kerää tarjouksen tarvitsemat tiedot ja kirjaa tiedustelun liidiksi – valmiina jatkotoimiisi.¦L'assistente spiega cosa copri, raccoglie i dettagli necessari per un preventivo e registra la richiesta come lead, pronta per il tuo follow-up.¦El asistente explica lo que cubres, recoge los datos necesarios para un presupuesto y registra la consulta como lead, lista para tu seguimiento.
+4202¦Lösningen¦Ratkaisu¦La soluzione¦La solución
+4203¦Problemet¦Ongelma¦Il problema¦El problema
+4204¦Tiden kontrolleras och låses i samma ögonblick som en besökare bekräftar. Om någon annan precis tagit den erbjuds besökaren direkt nästa lediga tid.¦Aika tarkistetaan ja lukitaan samalla hetkellä, kun kävijä vahvistaa. Jos joku toinen ehti juuri ottaa sen, kävijälle tarjotaan heti seuraavaa vapaata aikaa.¦Lo slot viene verificato e bloccato nel momento in cui il visitatore conferma. Se qualcun altro l'ha appena preso, gli viene subito proposto il successivo disponibile.¦El hueco se comprueba y se bloquea en el momento en que el visitante confirma. Si otra persona acaba de cogerlo, se le ofrece de inmediato la siguiente hora disponible.
+4205¦Besökaren lämnar¦Kävijä lähtee¦Il visitatore se ne va¦El visitante se marcha
+4206¦Besökaren stannar¦Kävijä jää¦Il visitatore resta¦El visitante se queda
+4207¦Via Stripes faktureringsportal i ditt konto. Avsluta när som helst – ingen avgift, ingen väntan.¦Stripen laskutusportaalin kautta tililläsi. Peruuta milloin tahansa – ei sanktiota, ei odottelua.¦Tramite il portale di fatturazione Stripe nel tuo account. Annulla in qualsiasi momento: nessuna penale, nessuna attesa.¦A través del portal de facturación de Stripe en tu cuenta. Cancela cuando quieras: sin penalización y sin esperas.
+4208¦Prova demon¦Kokeile esittelyä¦Prova la demo¦Prueba la demo
+4209¦Prova demon med din egen flyer (gratis)¦Kokeile esittelyä omalla flyerillasi (ilmainen)¦Prova la demo con il tuo volantino (gratis)¦Prueba la demo con tu folleto (gratis)
+4210¦Tvåstegsinloggning¦Kaksivaiheinen kirjautuminen¦Accesso in due passaggi¦Inicio de sesión en dos pasos
+4211¦Ladda upp dina dokument, klistra in dina webbsidor, lägg till en YouTube-länk. Varje svar bygger på det du skrivit – och den säger till när den inte vet.¦Lataa dokumenttisi, liitä verkkosivusi, lisää YouTube-linkki. Jokainen vastaus perustuu siihen, mitä olet kirjoittanut – ja se kertoo, kun se ei tiedä.¦Carica i tuoi documenti, incolla le tue pagine web, aggiungi un link YouTube. Ogni risposta si fonda su ciò che hai scritto, e dice quando non sa.¦Sube tus documentos, pega tus páginas web, añade un enlace de YouTube. Cada respuesta se basa en lo que has escrito, y dice cuándo no lo sabe.
+4212¦Besökare frågar om tjänster och priser, väljer en tid och bokningen hamnar i din kalender – komplett med deras kontaktuppgifter.¦Kävijät kysyvät palveluista ja hinnoista, valitsevat ajan ja varaus päätyy kalenteriisi – yhteystietoineen.¦I visitatori chiedono di servizi e prezzi, scelgono uno slot e la prenotazione arriva nel tuo calendario, completa dei dati di contatto.¦Los visitantes preguntan por servicios y precios, eligen un hueco y la reserva llega a tu calendario, con sus datos de contacto incluidos.
+4213¦Besökare väljer en tid i chatten. I samma stund de bekräftar kontrolleras och hålls tiden – inga dubbelbokningar.¦Kävijät valitsevat ajan chatissa. Heti kun he vahvistavat, aika tarkistetaan ja varataan – ei kaksoisvarauksia.¦I visitatori scelgono uno slot in chat. Nel momento in cui confermano, l'orario viene verificato e bloccato: nessuna doppia prenotazione.¦Los visitantes eligen un hueco en el chat. En el momento en que confirman, la hora se comprueba y se retiene: sin dobles reservas.
+4214¦Sätt att lägga till kunskap: filer, webbadresser, video, text, bilder¦Tapoja lisätä tietoa: tiedostot, URL-osoitteet, video, teksti, kuvat¦Modi per aggiungere conoscenza: file, URL, video, testo, immagini¦Formas de añadir conocimiento: archivos, URL, vídeo, texto, imágenes
+4215¦Webhooks¦Webhookit¦Webhook¦Webhooks
+4216¦Webbassistent för tjänsteföretag¦Verkkosivuston avustaja palveluyrityksille¦Assistente web per le aziende di servizi¦Asistente web para empresas de servicios
+4217¦Vad som ingår¦Mitä sisältyy¦Cosa c'è dentro¦Qué incluye
+4218¦=
+4219¦När en besökare ber om en person går ditt team med i det pågående samtalet med alla tidigare meddelanden synliga.¦Kun kävijä pyytää ihmistä, tiimisi liittyy käynnissä olevaan keskusteluun kaikki aiemmat viestit näkyvillä.¦Quando un visitatore chiede di una persona, il tuo team entra nella conversazione dal vivo con tutti i messaggi precedenti già visibili.¦Cuando un visitante pide hablar con una persona, tu equipo se une a la conversación en vivo con todos los mensajes anteriores a la vista.
+4220¦Var får assistenten sina svar ifrån?¦Mistä avustaja saa vastauksensa?¦Da dove prende le risposte l'assistente?¦¿De dónde saca el asistente sus respuestas?
+4221¦Vilka kanaler fungerar den i?¦Millä kanavilla se toimii?¦Su quali canali funziona?¦¿En qué canales funciona?
+4222¦Vem den är till för¦Kenelle se on tarkoitettu¦Per chi è¦Para quién es
+4223¦Vem den är till för¦Kenelle se on tarkoitettu¦Per chi è¦Para quién es
+4224¦Ja – 14 dagar med alla Growth-funktioner. Lägg till ett kort för att börja; du debiteras inte under provperioden. Avsluta när som helst innan den tar slut så betalar du ingenting. Efter provperioden startar fakturering av din plan automatiskt.¦Kyllä – 14 päivää kaikilla Growth-ominaisuuksilla. Lisää kortti aloittaaksesi; sinua ei veloiteta kokeilun aikana. Peruuta milloin tahansa ennen sen päättymistä, niin et maksa mitään. Kokeilun jälkeen pakettisi laskutus alkaa automaattisesti.¦Sì: 14 giorni con tutte le funzioni Growth. Aggiungi una carta per iniziare; non ti viene addebitato nulla durante la prova. Annulla in qualsiasi momento prima della fine e non paghi nulla. Dopo la prova, la fatturazione del piano parte automaticamente.¦Sí: 14 días con todas las funciones de Growth. Añade una tarjeta para empezar; no se te cobra durante la prueba. Cancela en cualquier momento antes de que termine y no pagas nada. Tras la prueba, la facturación de tu plan empieza automáticamente.
+4225¦Ja! Vi erbjuder snabba takreparationer av hög kvalitet till konkurrenskraftiga priser. Kontakta oss för en kostnadsfri offert redan idag.¦Kyllä! Tarjoamme nopeita, laadukkaita kattokorjauksia kilpailukykyiseen hintaan. Ota yhteyttä saadaksesi ilmaisen tarjouksen jo tänään.¦Sì! Offriamo riparazioni del tetto rapide e di alta qualità a prezzi competitivi. Contattaci oggi per un preventivo gratuito.¦¡Sí! Ofrecemos reparaciones de tejados rápidas y de alta calidad a precios competitivos. Contáctanos hoy mismo para un presupuesto gratuito.
+4226¦Ja. Besökare kan be om en person när som helst. Ditt team får en avisering, går med i samma chatt och ser allt som redan sagts.¦Kyllä. Kävijät voivat pyytää ihmistä milloin tahansa. Tiimisi saa hälytyksen, liittyy samaan keskusteluun ja näkee kaiken, mitä on jo sanottu.¦Sì. I visitatori possono chiedere una persona in qualsiasi momento. Il tuo team riceve un avviso, entra nella stessa chat e vede tutto ciò che è già stato detto.¦Sí. Los visitantes pueden pedir una persona en cualquier momento. Tu equipo recibe un aviso, se une al mismo chat y ve todo lo que ya se ha dicho.
+4227¦Du använder din egen AI-nyckel – modellanvändningen faktureras direkt av din leverantör enligt deras priser. Vi lägger inget på.¦Käytät omaa tekoälyavaintasi – mallin käytön laskuttaa suoraan palveluntarjoajasi hintojensa mukaan. Emme lisää siihen mitään.¦Usi la tua chiave IA: l'utilizzo del modello è fatturato direttamente dal tuo provider alle sue tariffe. Noi non applichiamo ricarichi.¦Usas tu propia clave de IA: el uso del modelo lo factura directamente tu proveedor a sus tarifas. Nosotros no añadimos recargos.
+4228¦Dina AI-leverantörsnycklar krypteras med AES-256-GCM innan de lagras.¦Tekoälypalveluntarjoajan avaimesi salataan AES-256-GCM:llä ennen tallennusta.¦Le chiavi del tuo provider IA vengono cifrate con AES-256-GCM prima di essere archiviate.¦Las claves de tu proveedor de IA se cifran con AES-256-GCM antes de guardarse.
+4229¦Ditt team svarar på samma tio frågor varje dag¦Tiimisi vastaa samoihin kymmeneen kysymykseen joka päivä¦Il tuo team risponde ogni giorno alle stesse dieci domande¦Tu equipo responde cada día a las mismas diez preguntas
+4230¦Din webbplats är öppen dygnet runt. Ditt team är det inte.¦Verkkosivustosi on auki ympäri vuorokauden. Tiimisi ei ole.¦Il tuo sito è aperto 24 ore su 24. Il tuo team no.¦Tu sitio web está abierto las 24 horas. Tu equipo no.
+4231¦Zapier, Make eller dina egna system¦Zapier, Make tai omat järjestelmäsi¦Zapier, Make o i tuoi sistemi¦Zapier, Make o tus propios sistemas
+4232¦14 dagars gratis provperiod¦14 päivän ilmainen kokeilu¦Prova gratuita di 14 giorni¦Prueba gratuita de 14 días
+4233¦Lägg till den i WordPress¦Lisää se WordPressiin¦Aggiungilo a WordPress¦Añádelo a WordPress
+4234¦Lägg till dina priser och tjänster och se hur den bokar en riktig tid.¦Lisää hintasi ja palvelusi ja katso, miten se varaa oikean ajan.¦Aggiungi prezzi e servizi e guardalo prenotare un vero appuntamento.¦Añade tus precios y servicios y míralo reservar una cita real.
+4235¦AI-webbassistent¦Tekoälyverkkoavustaja¦Assistente web IA¦Asistente web de IA
+4236¦Besvara produktfrågor och introducera provanvändare¦Vastaa tuotekysymyksiin ja perehdytä kokeilijat¦Rispondi alle domande sul prodotto e guida gli utenti in prova¦Responde preguntas sobre el producto e incorpora a quienes prueban
+4237¦Att svara på samtal är under utveckling¦Puheluihin vastaaminen on kehitteillä¦La risposta alle chiamate è in fase di sviluppo¦Contestar llamadas está en desarrollo
+4238¦Svarar besökare utifrån ditt eget innehåll¦Vastaa kävijöille omasta sisällöstäsi¦Risponde ai visitatori dai tuoi contenuti¦Responde a los visitantes con tu propio contenido
+4239¦Har ni några lediga tider i morgon eftermiddag?¦Onko teillä vapaita aikoja huomenna iltapäivällä?¦Avete posti liberi domani pomeriggio?¦¿Tienen huecos mañana por la tarde?
+4240¦Tidsbokning¦Ajanvaraus¦Prenotazione di appuntamenti¦Reserva de citas
+4241¦Byggt för tjänsteföretag¦Rakennettu palveluyrityksille¦Pensato per le aziende di servizi¦Creado para negocios de servicios
+4242¦Per bransch¦Toimialoittain¦Per settore¦Por sector
+4243¦Guide till kalenderbokning¦Kalenterivarausopas¦Guida alla prenotazione con calendario¦Guía de reservas con calendario
+4244¦Kliniker och tandvård¦Klinikat ja hammashoito¦Cliniche e dentisti¦Clínicas y dentistas
+4245¦Molnet eller helt lokala modeller¦Pilvi tai täysin paikalliset mallit¦Cloud o modelli completamente locali¦Nube o modelos totalmente locales
+4246¦Koppla Claude-modeller¦Yhdistä Claude-mallit¦Collega i modelli Claude¦Conectar modelos Claude
+4247¦Koppla din AI-leverantör¦Yhdistä tekoälypalveluntarjoajasi¦Collega il tuo provider IA¦Conecta tu proveedor de IA
+4248¦Tar ni emot drop-in-kunder på lördagar?¦Otatteko vastaan ilman ajanvarausta saapuvia lauantaisin?¦Accettate clienti senza appuntamento il sabato?¦¿Atienden sin cita los sábados?
+4249¦Varje förfrågan får ett ärende som du kan följa. Vi svarar via e-post.¦Jokaisesta pyynnöstä tulee tiketti, jota voit seurata. Vastaamme sähköpostitse.¦Ogni richiesta ottiene un ticket che puoi seguire. Rispondiamo per e-mail.¦Cada solicitud recibe una incidencia que puedes seguir. Respondemos por correo.
+4250¦Utforska lösningar¦Tutustu ratkaisuihin¦Esplora le soluzioni¦Explora las soluciones
+4251¦Snabba svar till låg kostnad¦Nopeat ja edulliset vastaukset¦Risposte rapide a basso costo¦Respuestas rápidas y baratas
+4252¦Fyll stolarna medan dina händer är upptagna¦Täytä tuolit, kun kätesi ovat täynnä työtä¦Riempi le poltrone mentre hai le mani occupate¦Llena los sillones mientras tienes las manos ocupadas
+4253¦Hitta lösningen för din bransch¦Löydä oman toimialasi ratkaisu¦Trova la configurazione per il tuo settore¦Encuentra la configuración para tu sector
+4254¦Groq, DeepSeek och Ollama¦Groq, DeepSeek ja Ollama¦Groq, DeepSeek e Ollama¦Groq, DeepSeek y Ollama
+4255¦Guider om AI-assistenter och bokning¦Oppaita tekoälyavustajista ja ajanvarauksesta¦Guide su assistenti IA e prenotazioni¦Guías sobre asistentes de IA y reservas
+4256¦Hantera intag och bokningsfrågor¦Hoida esitiedot ja ajanvarauskysymykset¦Gestisci l'ammissione e le domande sugli appuntamenti¦Gestiona la admisión y las preguntas sobre citas
+4257¦Hur kopplar jag min egen OpenAI-nyckel?¦Miten yhdistän oman OpenAI-avaimeni?¦Come collego la mia chiave OpenAI?¦¿Cómo conecto mi propia clave de OpenAI?
+4258¦Överlämning till personal¦Siirto ihmiselle¦Passaggio a una persona¦Traspaso a una persona
+4259¦Installera assistenten steg för steg¦Asenna avustaja vaihe vaiheelta¦Installa l'assistente passo per passo¦Instala el asistente paso a paso
+4260¦Juridik och professionella byråer¦Lakiasiat ja asiantuntijatoimistot¦Studi legali e professionali¦Despachos jurídicos y profesionales
+4261¦Lär dig¦Opi¦Impara¦Aprende
+4262¦Lediga tider som inte kan dubbelbokas¦Vapaat ajat, joita ei voi varata kahdesti¦Slot liberi che non possono essere prenotati due volte¦Huecos libres que no se pueden reservar dos veces
+4263¦Fler branscher¦Lisää toimialoja¦Altri settori¦Más sectores
+4264¦Behöver du hjälp?¦Tarvitsetko apua?¦Hai bisogno di una mano?¦¿Necesitas ayuda?
+4265¦En skripttagg på vilken webbplats som helst¦Yksi skriptitunniste millä tahansa sivustolla¦Un solo tag script su qualsiasi sito¦Una sola etiqueta script en cualquier sitio
+4266¦Öppna ett supportärende¦Avaa tukitiketti¦Apri un ticket di supporto¦Abrir una incidencia de soporte
+4267¦Röstagent i telefon¦Puhelinääniagentti¦Agente vocale telefonico¦Agente de voz telefónico
+4268¦Kvalificera köpare och boka visningar¦Arvioi ostajat ja varaa näytöt¦Qualifica gli acquirenti e prenota le visite¦Cualifica a compradores y reserva visitas
+4269¦Läs guiderna¦Lue oppaat¦Leggi le guide¦Lee las guías
+4270¦Fastigheter¦Kiinteistöt¦Immobiliare¦Inmobiliaria
+4271¦Svara i de appar kunderna redan använder¦Vastaa sovelluksissa, joita asiakkaat jo käyttävät¦Rispondi nelle app che i clienti usano già¦Responde en las aplicaciones que los clientes ya usan
+4272¦Resurser¦Resurssit¦Risorse¦Recursos
+4273¦Färdplan och funktionsstatus¦Tiekartta ja ominaisuuksien tila¦Roadmap e stato delle funzioni¦Hoja de ruta y estado de las funciones
+4274¦SaaS och startups¦SaaS ja startup-yritykset¦SaaS e startup¦SaaS y startups
+4275¦Salonger och barberare¦Kampaamot ja parturit¦Saloni e barbieri¦Salones y barberías
+4276¦Sålla förfrågningar och boka konsultationer¦Seulo tiedustelut ja varaa konsultaatiot¦Filtra le richieste e prenota le consulenze¦Filtra consultas y reserva consultas
+4277¦Se ett exempel på en chatt och hur bokningar når din kalender.¦Katso esimerkkichatti ja miten varaukset saapuvat kalenteriisi.¦Guarda una chat di esempio e come le prenotazioni arrivano nel tuo calendario.¦Mira un chat de ejemplo y cómo llegan las reservas a tu calendario.
+4278¦Se hur den svarar dina besökare¦Katso, miten se vastaa kävijöillesi¦Guarda come risponde ai tuoi visitatori¦Mira cómo responde a tus visitantes
+4279¦Skicka leads till e-post, Slack, Sheets eller webhooks¦Lähetä liidit sähköpostiin, Slackiin, Sheetsiin tai webhookeihin¦Invia i lead a e-mail, Slack, Fogli o webhook¦Envía los leads a correo, Slack, Sheets o webhooks
+4280¦Inställningar, AI, klistra in nyckeln. Guide nedan.¦Asetukset, tekoäly, liitä avain. Opas alla.¦Impostazioni, IA, incolla la chiave. Guida qui sotto.¦Ajustes, IA, pega la clave. Guía abajo.
+4281¦Installationsguider och dokumentation¦Käyttöönotto-oppaat ja dokumentaatio¦Guide di configurazione e documentazione¦Guías de configuración y documentación
+4282¦Snart¦Pian¦Presto¦Próximamente
+4283¦Ta över vilket samtal som helst med ett klick¦Ota mikä tahansa keskustelu hoitoon yhdellä napsautuksella¦Subentra in qualsiasi conversazione con un clic¦Toma el control de cualquier conversación con un clic
+4284¦Prata med oss¦Puhu kanssamme¦Parla con noi¦Habla con nosotros
+4285¦Assistenten¦Avustaja¦L'assistente¦El asistente
+4286¦Provpass, medlemskap och scheman¦Kokeilutunnit, jäsenyydet ja aikataulut¦Lezioni di prova, abbonamenti e orari¦Clases de prueba, membresías y horarios
+4287¦Prova¦Kokeile¦Prova¦Prueba
+4288¦Prova lekplatsen¦Kokeile kokeilualuetta¦Prova il playground¦Prueba el playground
+4289¦Ladda upp dokument och sidor den lär sig av¦Lataa dokumentteja ja sivuja, joista se oppii¦Carica documenti e pagine da cui impara¦Sube documentos y páginas de los que aprende
+4290¦Ladda upp dina dokument och testa assistenten¦Lataa dokumenttisi ja kokeile avustajaa kysymyksillä¦Carica i tuoi documenti e metti alla prova l'assistente¦Sube tus documentos y pon a prueba al asistente
+4291¦Använd din egen API-nyckel¦Käytä omaa API-avaintasi¦Usa la tua chiave API¦Usa tu propia clave API
+4292¦Se priser¦Katso hinnat¦Vedi i prezzi¦Ver precios
+4293¦Chattwidget för webbplatsen¦Verkkosivuston chat-widget¦Widget di chat per il sito web¦Widget de chat para sitio web
+4294¦Vad som är live och vad som kommer härnäst¦Mikä on käytössä ja mikä tulee seuraavaksi¦Cosa è online e cosa arriva dopo¦Qué está disponible y qué viene después
+4295¦Där den fungerar¦Missä se toimii¦Dove funziona¦Dónde funciona
+4296¦Ja, kl. 15.15 är ledig. Bokad åt dig.¦Kyllä, klo 15.15 on vapaa. Varattu sinulle.¦Sì, le 15:15 sono libere. Prenotato per te.¦Sí, las 15:15 están libres. Reservado para ti.
+4297¦Ja, kl. 10–16. Vill du hellre ha en reserverad tid?¦Kyllä, klo 10–16. Haluatko mieluummin varatun ajan?¦Sì, dalle 10 alle 16. Preferisci uno slot riservato?¦Sí, de 10 a 16. ¿Prefieres un hueco reservado?
+4298¦Om oss¦Tietoa meistä¦Chi siamo¦Sobre nosotros
+4299¦om-oss (webbsida)¦tietoa-meista (verkkosivu)¦chi-siamo (pagina web)¦sobre-nosotros (página web)
+4300¦Svarar på:¦Vastaa kielellä:¦Risponde in:¦Responde en:
+4301¦Bad om en person¦Pyysi ihmistä¦Ha chiesto una persona¦Pidió una persona
+4302¦Assistentkonfiguration¦Avustajan määritykset¦Configurazione dell'assistente¦Configuración del asistente
+4303¦Bokad tors 10:00¦Varattu to 10.00¦Prenotato gio 10:00¦Reservado jue 10:00
+4304¦Kanal¦Kanava¦Canale¦Canal
+4305¦Har ni plats den här veckan?¦Onko teillä tilaa tällä viikolla?¦Avete posto questa settimana?¦¿Tienen espacio esta semana?
+4306¦Hittade: besläktade ordet "priser" matchar "kostnad".¦Löytyi: samankaltainen sana "hinnat" vastaa sanaa "kustannus".¦Trovato: la parola correlata "prezzi" corrisponde a "costo".¦Encontrado: la palabra relacionada "precios" coincide con "coste".
+4307¦God dag. Hur kan jag hjälpa dig?¦Hyvää päivää. Miten voin auttaa?¦Buongiorno. Come posso aiutarla?¦Buenos días. ¿En qué puedo ayudarle?
+4308¦Gråa tider är redan upptagna.¦Harmaat ajat on jo varattu.¦Gli slot in grigio sono già occupati.¦Los huecos en gris ya están ocupados.
+4309¦Hej! Hur kan jag hjälpa dig idag?¦Hei! Miten voin auttaa tänään?¦Ciao! Come posso aiutarti oggi?¦¡Hola! ¿En qué puedo ayudarte hoy?
+4310¦Indexering¦Indeksointi¦Indicizzazione¦Indexación
+4311¦Introduktionsvideo¦Esittelyvideo¦Video introduttivo¦Vídeo de introducción
+4312¦Endast nyckelord¦Vain avainsanat¦Solo parole chiave¦Solo palabras clave
+4313¦Kunskapskällor¦Tietolähteet¦Fonti di conoscenza¦Fuentes de conocimiento
+4314¦Live¦Käytössä¦Online¦Activo
+4315¦Väljare för lediga tider i kalendern i realtid¦Kalenterin vapaiden aikojen valitsin reaaliajassa¦Selettore di slot del calendario dal vivo¦Selector de huecos del calendario en vivo
+4316¦Pågående samtal¦Käynnissä olevat keskustelut¦Conversazioni in corso¦Conversaciones en curso
+4317¦Betydelse + nyckelord¦Merkitys + avainsanat¦Significato + parole chiave¦Significado + palabras clave

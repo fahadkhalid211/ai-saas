@@ -1,5 +1,7 @@
 'use client';
 
+import { T, useT } from '@/lib/i18n/context';
+import { A } from '@/components/i18n/A';
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { RATES, chunkText, voicesForLanguage, withPause } from '@/lib/a11y/read-aloud';
@@ -72,6 +74,7 @@ function readableBlocks(): { el: HTMLElement; text: string }[] {
 type ReadState = 'idle' | 'reading' | 'paused';
 
 export function AccessibilityMenu() {
+  const __t = useT();
   const pathname = usePathname();
   const uid = useId();
   const [open, setOpen] = useState(false);
@@ -238,11 +241,11 @@ export function AccessibilityMenu() {
 
   const choice = <K extends keyof Prefs>(k: K, label: string, options: [Prefs[K], string][]) => (
     <fieldset className="a11y-group">
-      <legend>{label}</legend>
+      <legend><T>{label}</T></legend>
       <div className="a11y-row">
         {options.map(([v, text]) => (
           <button key={String(v)} type="button" aria-pressed={prefs[k] === v} onClick={() => update({ [k]: v } as Partial<Prefs>)}>
-            {text}
+            <T>{text}</T>
           </button>
         ))}
       </div>
@@ -264,14 +267,14 @@ export function AccessibilityMenu() {
           <circle cx="12" cy="4.5" r="1.8" />
           <path d="M5 8.5l7 1.5 7-1.5M12 10v4.5M12 14.5l-3 6M12 14.5l3 6" />
         </svg>
-        <span className="a11y-only">Accessibility options: read this page aloud, text size and colours</span>
+        <span className="a11y-only"><T>Accessibility options: read this page aloud, text size and colours</T></span>
       </button>
 
       {open ? (
-        <div ref={panel} id={`${uid}-panel`} role="dialog" aria-label="Accessibility options" className="a11y-panel">
+        <div ref={panel} id={`${uid}-panel`} role="dialog" aria-label={__t("Accessibility options")} className="a11y-panel">
           <div className="a11y-head">
-            <h2>Accessibility</h2>
-            <button type="button" className="a11y-close" onClick={close} aria-label="Close accessibility options">
+            <h2><T>Accessibility</T></h2>
+            <button type="button" className="a11y-close" onClick={close} aria-label={__t("Close accessibility options")}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden="true">
                 <path d="M6 6l12 12M18 6L6 18" />
               </svg>
@@ -279,22 +282,22 @@ export function AccessibilityMenu() {
           </div>
 
           <section aria-labelledby={`${uid}-listen`} className="a11y-section">
-            <h3 id={`${uid}-listen`}>Listen to this page</h3>
+            <h3 id={`${uid}-listen`}><T>Listen to this page</T></h3>
             {supported ? (
               <>
                 <div className="a11y-row">
                   {state === 'idle' ? (
-                    <button type="button" className="a11y-primary" onClick={readPage}>Read page aloud</button>
+                    <button type="button" className="a11y-primary" onClick={readPage}><T>Read page aloud</T></button>
                   ) : (
                     <>
-                      <button type="button" className="a11y-primary" onClick={pauseResume}>{state === 'paused' ? 'Resume' : 'Pause'}</button>
-                      <button type="button" onClick={stop}>Stop</button>
+                      <button type="button" className="a11y-primary" onClick={pauseResume}><T>{state === 'paused' ? 'Resume' : 'Pause'}</T></button>
+                      <button type="button" onClick={stop}><T>Stop</T></button>
                     </>
                   )}
-                  {hasSelection && state === 'idle' ? <button type="button" onClick={readSelection}>Read selected text</button> : null}
+                  {hasSelection && state === 'idle' ? <button type="button" onClick={readSelection}><T>Read selected text</T></button> : null}
                 </div>
                 <label className="a11y-field">
-                  <span>Speed</span>
+                  <span><T>Speed</T></span>
                   <select value={rate} onChange={(e) => setRate(Number(e.target.value))}>
                     {RATES.map((r) => (
                       <option key={r} value={r}>{r === 1 ? 'Normal' : `${r}x`}</option>
@@ -303,7 +306,7 @@ export function AccessibilityMenu() {
                 </label>
                 {pageVoices.length > 1 ? (
                   <label className="a11y-field">
-                    <span>Voice</span>
+                    <span><T>Voice</T></span>
                     <select value={voiceName || pageVoices[0]?.name} onChange={(e) => setVoiceName(e.target.value)}>
                       {pageVoices.map((v) => (
                         <option key={v.name} value={v.name}>{v.name} ({v.lang})</option>
@@ -311,16 +314,16 @@ export function AccessibilityMenu() {
                     </select>
                   </label>
                 ) : null}
-                <p className="a11y-help">Uses your browser&apos;s built-in voice. Nothing is sent to us or anyone else. The block being read is highlighted.</p>
+                <p className="a11y-help"><T>Uses your browser&apos;s built-in voice. Nothing is sent to us or anyone else. The block being read is highlighted.</T></p>
               </>
             ) : (
-              <p className="a11y-help">Your browser cannot read pages aloud. Chrome, Edge, Safari and Firefox can.</p>
+              <p className="a11y-help"><T>Your browser cannot read pages aloud. Chrome, Edge, Safari and Firefox can.</T></p>
             )}
-            <p className="a11y-live" role="status" aria-live="polite">{note || (state === 'reading' ? 'Reading…' : state === 'paused' ? 'Paused' : '')}</p>
+            <p className="a11y-live" role="status" aria-live="polite"><T>{note || (state === 'reading' ? 'Reading…' : state === 'paused' ? 'Paused' : '')}</T></p>
           </section>
 
           <section aria-labelledby={`${uid}-display`} className="a11y-section">
-            <h3 id={`${uid}-display`}>Display</h3>
+            <h3 id={`${uid}-display`}><T>Display</T></h3>
             {choice('text', 'Text size', [['100', 'Normal'], ['125', 'Large'], ['150', 'Larger'], ['175', 'Largest']])}
             {choice('contrast', 'Contrast', [['normal', 'Standard'], ['high', 'High']])}
             {choice('cvd', 'Colour-blind friendly colours', [['off', 'Off'], ['on', 'On']])}
@@ -328,11 +331,11 @@ export function AccessibilityMenu() {
             {choice('links', 'Links', [['normal', 'Standard'], ['underline', 'Always underlined']])}
             {choice('focus', 'Keyboard focus outline', [['normal', 'Standard'], ['strong', 'Extra thick']])}
             {choice('motion', 'Animation', [['normal', 'Standard'], ['reduce', 'Reduce motion']])}
-            <button type="button" className="a11y-reset" onClick={() => { setPrefs({ ...DEFAULTS }); apply(DEFAULTS); save(DEFAULTS); }}>Reset all</button>
+            <button type="button" className="a11y-reset" onClick={() => { setPrefs({ ...DEFAULTS }); apply(DEFAULTS); save(DEFAULTS); }}><T>Reset all</T></button>
           </section>
 
           <p className="a11y-help">
-            Everything on this site can be used with a keyboard: <kbd>Tab</kbd> moves forward, <kbd>Shift</kbd>+<kbd>Tab</kbd> back, <kbd>Enter</kbd> or <kbd>Space</kbd> activates, <kbd>Esc</kbd> closes. <a href="/accessibility">Accessibility statement</a>
+            <T>Everything on this site can be used with a keyboard:</T> <kbd>Tab</kbd> <T>moves forward,</T> <kbd>Shift</kbd>+<kbd>Tab</kbd> <T>back,</T> <kbd>Enter</kbd> <T>or</T> <kbd>Space</kbd> <T>activates,</T> <kbd>Esc</kbd> <T>closes.</T> <A href="/accessibility"><T>Accessibility statement</T></A>
           </p>
         </div>
       ) : null}

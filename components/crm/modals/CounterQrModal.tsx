@@ -1,5 +1,6 @@
 'use client';
 
+import { T, useT } from '@/lib/i18n/context';
 import React from 'react';
 import { X, QrCode } from 'lucide-react';
 
@@ -16,6 +17,7 @@ export const CounterQrModal: React.FC<CounterQrModalProps> = ({
   slug,
   assistantId,
 }) => {
+  const __t = useT();
   if (!isOpen) return null;
 
   const targetUrl = typeof window !== 'undefined'
@@ -38,17 +40,17 @@ export const CounterQrModal: React.FC<CounterQrModalProps> = ({
 
         <div>
           <h3 className="text-base font-bold text-slate-900 dark:text-white">
-            In-Store Countertop QR Code
+            <T>In-Store Countertop QR Code</T>
           </h3>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-            Print and place this on your reception desk for walk-in booking and live prices.
+            <T>Print and place this on your reception desk for walk-in booking and live prices.</T>
           </p>
         </div>
 
         <div className="p-4 bg-white rounded-2xl border border-slate-200 flex items-center justify-center shadow-inner">
           <img
             src={`https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${encodeURIComponent(targetUrl)}`}
-            alt="Countertop QR Code"
+            alt={__t("Countertop QR Code")}
             className="w-52 h-52 rounded-lg"
           />
         </div>
@@ -59,14 +61,14 @@ export const CounterQrModal: React.FC<CounterQrModalProps> = ({
             onClick={() => window.print()}
             className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl text-xs transition shadow-xs cursor-pointer"
           >
-            Print Countertop Display
+            <T>Print Countertop Display</T>
           </button>
           <button
             type="button"
             onClick={onClose}
             className="w-full py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-medium rounded-xl text-xs transition cursor-pointer"
           >
-            Close
+            <T>Close</T>
           </button>
         </div>
       </div>

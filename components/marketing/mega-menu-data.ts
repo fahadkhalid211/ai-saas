@@ -1,6 +1,7 @@
 import type { LucideIcon } from 'lucide-react';
 import {
   Bot,
+  Calculator,
   CalendarCheck,
   UserPlus,
   BookOpen,
@@ -149,6 +150,7 @@ export const MEGA_MENUS: MegaMenu[] = [
           { label: 'Help center', description: 'Setup guides and documentation', href: '/support', icon: LifeBuoy, tone: 'mint' },
           { label: 'Add it to WordPress', description: 'Install the assistant step by step', href: '/guides/add-ai-assistant-to-wordpress', icon: Plug, tone: 'lav' },
           { label: 'Roadmap', description: 'What is live and what is next', href: '/roadmap', icon: Map, tone: 'amber' },
+          { label: 'LLM cost calculator', description: 'What a chatbot costs per conversation', href: '/tools/llm-cost-calculator', icon: Calculator, tone: 'pink', badge: 'Free' },
         ],
       },
       {

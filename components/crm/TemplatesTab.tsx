@@ -1,5 +1,6 @@
 'use client';
 
+import { T, useT } from '@/lib/i18n/context';
 import React, { useState, useMemo } from 'react';
 import {
   LayoutTemplate,
@@ -51,6 +52,7 @@ export const TemplatesTab: React.FC<TemplatesTabProps> = ({
   activeAssistant,
   setActiveTab,
 }) => {
+  const __t = useT();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedIndustry, setSelectedIndustry] = useState<string>('all');
 
@@ -111,13 +113,13 @@ export const TemplatesTab: React.FC<TemplatesTabProps> = ({
         <div className="space-y-1.5 max-w-xl">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-xs font-bold text-blue-600 dark:text-blue-400">
             <LayoutTemplate className="w-3.5 h-3.5" />
-            <span>AI Bot Personas &amp; Presets</span>
+            <span><T>AI Bot Personas &amp; Presets</T></span>
           </div>
           <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">
-            Industry Bot Templates Library
+            <T>Industry Bot Templates Library</T>
           </h2>
           <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
-            Configure {activeAssistant?.name ? `"${activeAssistant.name}"` : 'your AI bot'} with pre-built system prompts, conversation starters, lead capture schemas, and sample knowledge bases.
+            <T>Configure</T> {activeAssistant?.name ? `"${activeAssistant.name}"` : <T>{'your AI bot'}</T>} <T>with pre-built system prompts, conversation starters, lead capture schemas, and sample knowledge bases.</T>
           </p>
         </div>
       </div>
@@ -137,7 +139,7 @@ export const TemplatesTab: React.FC<TemplatesTabProps> = ({
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             <input
               type="text"
-              placeholder="Search bot templates by industry or keywords..."
+              placeholder={__t("Search bot templates by industry or keywords...")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-10 pr-4 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-xs font-medium focus:ring-2 focus:ring-blue-500 focus:outline-hidden"
@@ -145,7 +147,7 @@ export const TemplatesTab: React.FC<TemplatesTabProps> = ({
           </div>
 
           <span className="text-xs text-slate-500 font-medium self-end sm:self-center">
-            Showing {filteredTemplates.length} of {BOT_TEMPLATES.length} templates
+            <T>Showing</T> {filteredTemplates.length} <T>of</T> {BOT_TEMPLATES.length} <T>templates</T>
           </span>
         </div>
 
@@ -162,7 +164,7 @@ export const TemplatesTab: React.FC<TemplatesTabProps> = ({
                   : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
-              {ind === 'all' ? 'All Industries' : ind}
+              {ind === 'all' ? <T>{'All Industries'}</T> : ind}
             </button>
           ))}
         </div>
@@ -185,7 +187,7 @@ export const TemplatesTab: React.FC<TemplatesTabProps> = ({
                     </div>
                     <div>
                       <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-                        {tmpl.name}
+                        <T>{tmpl.name}</T>
                       </h3>
                       <span className="text-[10.5px] font-semibold text-slate-500 dark:text-slate-400">
                         {tmpl.industry}
@@ -200,16 +202,16 @@ export const TemplatesTab: React.FC<TemplatesTabProps> = ({
                 </div>
 
                 <p className="text-xs font-medium text-slate-700 dark:text-slate-300 leading-snug">
-                  {tmpl.tagline}
+                  <T>{tmpl.tagline}</T>
                 </p>
 
                 <p className="text-[11.5px] text-slate-500 dark:text-slate-400 leading-relaxed">
-                  {tmpl.description}
+                  <T>{tmpl.description}</T>
                 </p>
 
                 <div className="pt-2 border-t border-slate-100 dark:border-slate-800 space-y-1.5">
                   <div className="text-[11px] font-semibold text-slate-700 dark:text-slate-300">
-                    Included Starter Questions:
+                    <T>Included Starter Questions:</T>
                   </div>
                   <div className="flex flex-wrap gap-1.5">
                     {tmpl.starterQuestions.slice(0, 3).map((q, idx) => (
@@ -226,16 +228,16 @@ export const TemplatesTab: React.FC<TemplatesTabProps> = ({
                 <div className="flex items-center gap-2 text-[10.5px] text-slate-500 dark:text-slate-400 pt-1">
                   {tmpl.bookingEnabled && (
                     <span className="flex items-center gap-1 font-medium text-emerald-600 dark:text-emerald-400">
-                      <Calendar className="h-3 w-3" /> Booking Ready
+                      <Calendar className="h-3 w-3" /> <T>Booking Ready</T>
                     </span>
                   )}
                   {tmpl.collectLeadEmail && (
                     <span className="flex items-center gap-1 font-medium text-blue-600 dark:text-blue-400">
-                      <Users className="h-3 w-3" /> Lead Capture
+                      <Users className="h-3 w-3" /> <T>Lead Capture</T>
                     </span>
                   )}
                   <span className="flex items-center gap-1">
-                    <BookOpen className="h-3 w-3" /> {tmpl.sampleKnowledge.length} Sample Docs
+                    <BookOpen className="h-3 w-3" /> {tmpl.sampleKnowledge.length} <T>Sample Docs</T>
                   </span>
                 </div>
               </div>
@@ -250,12 +252,12 @@ export const TemplatesTab: React.FC<TemplatesTabProps> = ({
                   {isApplying ? (
                     <>
                       <RefreshCw className="h-3.5 w-3.5 animate-spin" />
-                      <span>Applying Template...</span>
+                      <span><T>Applying Template...</T></span>
                     </>
                   ) : (
                     <>
                       <Check className="h-3.5 w-3.5" />
-                      <span>Use This Bot Template</span>
+                      <span><T>Use This Bot Template</T></span>
                     </>
                   )}
                 </button>

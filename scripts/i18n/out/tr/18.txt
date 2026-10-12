@@ -1,0 +1,150 @@
+2700¦Chatta med din assistent i realtid för att testa svaren innan dina kunder ser dem.¦Keskustele avustajasi kanssa reaaliajassa ja testaa vastaukset, ennen kuin asiakkaasi näkevät ne.¦Chatta con il tuo assistente in tempo reale per provare le risposte prima che le vedano i clienti.¦Chatea con tu asistente en tiempo real para probar las respuestas antes de que las vean tus clientes.
+2701¦Rensa chatten¦Tyhjennä chat¦Cancella la chat¦Borrar el chat
+2702¦Koppla din API-nyckel¦Yhdistä API-avaimesi¦Collega la tua chiave API¦Conecta tu clave API
+2703¦Koppla din gratis Groq API-nyckel (14 400 gratis förfrågningar/dag, 0 $ i beräkningskostnad) för att testa chatten.¦Yhdistä ilmainen Groq API -avaimesi (14 400 ilmaista pyyntöä/päivä, 0 $ laskentakulut) testataksesi chattia.¦Collega la tua chiave API Groq gratuita (14.400 richieste gratuite al giorno, 0 $ di calcolo) per provare la chat.¦Conecta tu clave API gratuita de Groq (14.400 peticiones gratuitas al día, 0 $ de cómputo) para probar el chat.
+2704¦Kostnad för inbäddning:¦Upotuksen kustannus:¦Costo dell'embedding:¦Coste del embedding:
+2705¦Filen är för stor. Maxstorleken är 15 MB.¦Tiedosto on liian suuri. Enimmäiskoko on 15 Mt.¦Il file è troppo grande. La dimensione massima è 15 MB.¦El archivo es demasiado grande. El tamaño máximo es de 15 MB.
+2706¦Groq API-nyckel krävs:¦Groq API -avain vaaditaan:¦Chiave API Groq richiesta:¦Se necesita la clave API de Groq:
+2707¦Hej! Hur kan jag hjälpa dig idag?¦Hei! Miten voin auttaa sinua tänään?¦Ciao! Come posso aiutarti oggi?¦¡Hola! ¿En qué puedo ayudarte hoy?
+2708¦kB)¦kt)¦KB)¦KB)
+2709¦Saknas (anslut)¦Puuttuu (yhdistä)¦Mancante (collega)¦Falta (conectar)
+2710¦Ingen AI-motor är ansluten ännu¦Tekoälymoottoria ei ole vielä yhdistetty¦Nessun motore IA è ancora collegato¦Todavía no hay ningún motor de IA conectado
+2711¦RAG-inspektör¦RAG-tarkastaja¦Ispettore RAG¦Inspector RAG
+2712¦Hämtade textavsnitt (¦Haetut katkelmat (¦Frammenti recuperati (¦Fragmentos recuperados (
+2713¦Hämtar sammanhang och genererar svar i strömmen...¦Haetaan kontekstia ja luodaan suoratoistovastausta...¦Recupero del contesto e generazione della risposta in streaming...¦Recuperando contexto y generando la respuesta en streaming...
+2714¦Tala / röstdiktering¦Puhu / sanelu¦Parla / dettatura vocale¦Hablar / dictado por voz
+2715¦Stoppa röstdiktering¦Lopeta sanelu¦Interrompi la dettatura vocale¦Detener el dictado por voz
+2716¦Testa din assistent¦Testaa avustajaasi¦Prova il tuo assistente¦Prueba tu asistente
+2717¦Det här är inte ett riktigt svar – AI-motorn hade ett problem¦Tämä ei ole oikea vastaus – tekoälymoottorilla oli ongelma¦Questa non è una risposta vera: il motore IA ha avuto un problema¦Esto no es una respuesta real: el motor de IA tuvo un problema
+2718¦Skriv ett meddelande för att testa din kunskapsbas...¦Kirjoita viesti testataksesi tietopohjaasi...¦Scrivi un messaggio per provare la tua base di conoscenza...¦Escribe un mensaje para probar tu base de conocimiento...
+2719¦Vektordimensioner:¦Vektorin ulottuvuudet:¦Dimensioni vettoriali:¦Dimensiones del vector:
+2720¦Besök¦Käy osoitteessa¦Visita¦Visita
+2721¦Konto och användarprofil¦Tili ja käyttäjäprofiili¦Account e profilo utente¦Cuenta y perfil de usuario
+2722¦Kontots e-postadress är verifierad och permanent kopplad till din arbetsytas behörighet.¦Tilin sähköpostiosoite on vahvistettu ja pysyvästi sidottu työtilasi valtuutukseen.¦L'indirizzo e-mail dell'account è verificato e collegato in modo permanente all'autorizzazione del tuo workspace.¦La dirección de correo de la cuenta está verificada y vinculada de forma permanente a la autorización de tu espacio de trabajo.
+2723¦Kontolösenord¦Tilin salasana¦Password dell'account¦Contraseña de la cuenta
+2724¦Avbryt lösenordsbyte¦Peruuta salasanan vaihto¦Annulla il cambio password¦Cancelar el cambio de contraseña
+2725¦Ändra¦Muuta¦Modifica¦Cambiar
+2726¦Byt lösenord¦Vaihda salasana¦Cambia password¦Cambiar contraseña
+2727¦Bekräfta nytt lösenord¦Vahvista uusi salasana¦Conferma la nuova password¦Confirma la nueva contraseña
+2728¦Bekräfta nytt lösenord¦Vahvista uusi salasana¦Conferma la nuova password¦Confirma la nueva contraseña
+2729¦Nuvarande lösenord / adminnyckel¦Nykyinen salasana / ylläpitäjän avain¦Password attuale / chiave amministratore¦Contraseña actual / clave de administrador
+2730¦t.ex. Alex Morgan¦esim. Alex Morgan¦es. Alex Morgan¦p. ej., Alex Morgan
+2731¦t.ex. Frisörmästare, VD, Chefsjurist¦esim. Parturimestari, toimitusjohtaja, lakiasiainjohtaja¦es. Maestro barbiere, Amministratore delegato, Responsabile legale¦p. ej., Maestro barbero, Director general, Responsable jurídico
+2732¦Ange ditt nuvarande lösenord¦Anna nykyinen salasanasi¦Inserisci la password attuale¦Introduce tu contraseña actual
+2733¦Det gick inte att uppdatera profilen.¦Profiilin päivitys epäonnistui.¦Errore durante l'aggiornamento del profilo.¦Error al actualizar el perfil.
+2734¦Fullständigt namn¦Koko nimi¦Nome completo¦Nombre completo
+2735¦Fullständigt namn får inte vara tomt.¦Koko nimi ei voi olla tyhjä.¦Il nome completo non può essere vuoto.¦El nombre completo no puede estar vacío.
+2736¦Laddar profiluppgifter...¦Ladataan profiilitietoja...¦Caricamento dei dati del profilo...¦Cargando los datos del perfil...
+2737¦Hantera din personliga profil, yrkestitel, avatar och kontots inloggningsuppgifter.¦Hallitse henkilökohtaista profiiliasi, ammattinimikettäsi, avatariasi ja tilisi kirjautumistietoja.¦Gestisci il tuo profilo personale, il titolo professionale, l'avatar e le credenziali di accesso dell'account.¦Gestiona tu perfil personal, tu cargo profesional, tu avatar y las credenciales de acceso de tu cuenta.
+2738¦Medlem¦Jäsen¦Membro¦Miembro
+2739¦Medlem sedan¦Jäsen alkaen¦Membro dal¦Miembro desde
+2740¦Minst 6 tecken¦Vähintään 6 merkkiä¦Minimo 6 caratteri¦Mínimo 6 caracteres
+2741¦Namn krävs¦Nimi vaaditaan¦Il nome è obbligatorio¦El nombre es obligatorio
+2742¦Nytt lösenord¦Uusi salasana¦Nuova password¦Nueva contraseña
+2743¦Personuppgifter¦Henkilötiedot¦Informazioni personali¦Información personal
+2744¦Yrkesroll / titel¦Ammattirooli / titteli¦Ruolo / titolo professionale¦Cargo / título profesional
+2745¦Yrkestitel ej angiven¦Ammattinimikettä ei ole asetettu¦Titolo professionale non impostato¦Cargo profesional sin establecer
+2746¦Webbadress till profilbild (valfritt)¦Profiilikuvan URL (valinnainen)¦URL dell'immagine del profilo (facoltativo)¦URL de la foto de perfil (opcional)
+2747¦Profilen sparades¦Profiili tallennettu¦Profilo salvato¦Perfil guardado
+2748¦Profilen sparades inte¦Profiilia ei tallennettu¦Il profilo non è stato salvato¦No se guardó el perfil
+2749¦Ta bort profilbild¦Poista profiilikuva¦Rimuovi l'immagine del profilo¦Quitar la foto de perfil
+2750¦Roll¦Rooli¦Ruolo¦Rol
+2751¦Spara profiländringar¦Tallenna profiilin muutokset¦Salva le modifiche al profilo¦Guardar cambios del perfil
+2752¦Skyddar din personliga inloggning och behöriga åtkomst till arbetsytan.¦Suojaa henkilökohtaisen kirjautumisesi ja valtuutetun pääsysi työtilaan.¦Protegge il tuo accesso personale e l'accesso autorizzato al workspace.¦Protege tu inicio de sesión personal y el acceso autorizado al espacio de trabajo.
+2753¦Säkerhet och lösenord¦Tietoturva ja salasana¦Sicurezza e password¦Seguridad y contraseña
+2754¦Teammedlem¦Tiimin jäsen¦Membro del team¦Miembro del equipo
+2755¦Uppdatera lösenord¦Päivitä salasana¦Aggiorna la password¦Actualizar contraseña
+2756¦Ändringar syns i hela ditt team¦Muutokset näkyvät koko tiimillesi¦Le modifiche sono visibili a tutto il tuo team¦Los cambios se reflejan en todo tu equipo
+2757¦Uppdaterar lösenord...¦Päivitetään salasanaa...¦Aggiornamento della password in corso...¦Actualizando la contraseña...
+2758¦Ladda upp profilbild¦Lataa profiilikuva¦Carica l'immagine del profilo¦Subir foto de perfil
+2759¦=
+2760¦Arbetsyta¦Työtila¦Workspace¦Espacio de trabajo
+2761¦Du kan klistra in en direkt webbadress till en bild eller klicka på kameraknappen på din avatar för att ladda upp från din enhet.¦Voit liittää suoran kuvan verkko-osoitteen tai napsauttaa avatarisi kamerapainiketta ladataksesi laitteeltasi.¦Puoi incollare l'URL diretto di un'immagine web o fare clic sul pulsante della fotocamera sul tuo avatar per caricarla dal dispositivo.¦Puedes pegar la URL directa de una imagen web o hacer clic en el botón de la cámara de tu avatar para subirla desde tu dispositivo.
+2762¦Ditt namn¦Nimesi¦Il tuo nome¦Tu nombre
+2763¦Hemligt valv med AES-256 GCM¦AES-256 GCM -salaisuusholvi¦Vault segreto AES-256 GCM¦Caja fuerte secreta AES-256 GCM
+2764¦Alla API-nycklar till LLM-leverantörer och webhook-hemligheter krypteras i vila med PBKDF2-saltning.¦Kaikki LLM-palveluntarjoajien API-avaimet ja webhook-salaisuudet salataan levossa PBKDF2-suolauksella.¦Tutte le chiavi API dei provider LLM e i segreti dei webhook sono cifrati a riposo con derivazione del salt PBKDF2.¦Todas las claves API de proveedores de LLM y los secretos de webhooks se cifran en reposo con derivación de sal PBKDF2.
+2765¦Bekräfta och aktivera tvåstegsverifiering¦Vahvista ja ota kaksivaiheinen todennus käyttöön¦Conferma e attiva la 2FA¦Confirmar y activar la 2FA
+2766¦Stäng av tvåstegsverifiering¦Poista kaksivaiheinen todennus käytöstä¦Disattiva la 2FA¦Desactivar la 2FA
+2767¦Reservkoder för nödåterställning¦Hätäpalautuksen varakoodit¦Codici di backup per il ripristino di emergenza¦Códigos de respaldo para recuperación de emergencia
+2768¦Aktivera skydd med tvåstegsverifiering¦Ota kaksivaiheisen todennuksen suojaus käyttöön¦Attiva la protezione 2FA¦Activar la protección de 2FA
+2769¦Avslutar alla sessioner för ditt konto på alla enheter, även den här. Använd det om en enhet har tappats bort eller om du tror att någon annan har kommit in.¦Päättää tilisi kaikki istunnot kaikilla laitteilla, myös tällä. Käytä sitä, jos laite on kadonnut tai epäilet jonkun muun päässeen sisään.¦Termina tutte le sessioni del tuo account su ogni dispositivo, compreso questo. Usalo se un dispositivo è andato perso o pensi che qualcun altro sia entrato.¦Cierra todas las sesiones de tu cuenta en todos los dispositivos, incluido este. Úsalo si se pierde un dispositivo o crees que otra persona ha entrado.
+2770¦IP-hastighetsbegränsning och DDoS-skydd¦IP-nopeusrajoitus ja DDoS-suojaus¦Limitazione per IP e protezione anti-DDoS¦Limitación de tasa por IP y protección anti-DDoS
+2771¦Manuell Base32-hemlig nyckel¦Manuaalinen Base32-salainen avain¦Chiave segreta Base32 manuale¦Clave secreta Base32 manual
+2772¦Öppna din autentiseringsapp (Google Authenticator, Microsoft Authenticator eller 1Password) och skanna QR-koden till vänster.¦Avaa todennussovelluksesi (Google Authenticator, Microsoft Authenticator tai 1Password) ja skannaa vasemmalla oleva QR-koodi.¦Apri la tua app di autenticazione (Google Authenticator, Microsoft Authenticator o 1Password) e scansiona il codice QR a sinistra.¦Abre tu aplicación de autenticación (Google Authenticator, Microsoft Authenticator o 1Password) y escanea el código QR de la izquierda.
+2773¦Skydda ditt konto med tvåstegsverifiering och granska inloggningsaktivitet.¦Suojaa tilisi kaksivaiheisella todennuksella ja tarkista kirjautumistoiminta.¦Proteggi il tuo account con l'autenticazione a due fattori e controlla l'attività di accesso.¦Protege tu cuenta con la autenticación en dos pasos y revisa la actividad de inicio de sesión.
+2774¦Kräver 6-siffriga koder från Google Authenticator, Authy eller Apple Nyckelring vid inloggning.¦Vaatii kirjautumisessa 6-numeroiset koodit Google Authenticatorista, Authysta tai Applen avainnipusta.¦Richiede al login i codici a 6 cifre di Google Authenticator, Authy o Portachiavi Apple.¦Requiere en el inicio de sesión códigos de 6 dígitos de Google Authenticator, Authy o Llavero de Apple.
+2775¦Hemligheten har kopierats till Urklipp!¦Salaisuus kopioitu leikepöydälle!¦Segreto copiato negli appunti!¦¡Secreto copiado al portapapeles!
+2776¦Logga ut överallt¦Kirjaudu ulos kaikkialta¦Esci ovunque¦Cerrar sesión en todas partes
+2777¦Begränsning med glidande tidsfönster stoppar missbrukande anrop mot chatt, uppladdning och kalenderbokning.¦Liukuvaan aikaikkunaan perustuva rajoitus estää väärinkäyttävät pyynnöt chattiin, latauksiin ja kalenterivarauksiin.¦La limitazione a finestra scorrevole blocca le richieste abusive agli endpoint di chat, caricamento e prenotazione del calendario.¦La limitación de ventana deslizante frena las peticiones abusivas a los endpoints de chat, subida y reserva de calendario.
+2778¦Steg 1: Skanna QR-koden eller kopiera den hemliga nyckeln¦Vaihe 1: Skannaa QR-koodi tai kopioi salainen avain¦Passo 1: scansiona il codice QR o copia la chiave segreta¦Paso 1: escanea el código QR o copia la clave secreta
+2779¦Steg 2: Verifiera den sexsiffriga koden¦Vaihe 2: Vahvista 6-numeroinen koodi¦Passo 2: verifica il codice a 6 cifre¦Paso 2: verifica el código de 6 dígitos
+2780¦Tvåstegsverifiering (TOTP)¦Kaksivaiheinen todennus (TOTP)¦Autenticazione a due fattori (TOTP)¦Autenticación en dos pasos (TOTP)
+2781¦En kod ger dig gratis åtkomst till en plan utan kort.¦Koodi antaa sinulle ilmaisen pääsyn pakettiin ilman korttia.¦Un codice ti dà accesso gratuito a un piano senza carta.¦Un código te da acceso gratuito a un plan sin tarjeta.
+2782¦Åtkomstkod¦Käyttökoodi¦Codice di accesso¦Código de acceso
+2783¦Årsbetalning · spara {n1} %¦Vuosilasku · säästä {n1} %¦Annuale · risparmia il {n1}%¦Anual · ahorra un {n1} %
+2784¦Faktureras {n1} $ per år¦Laskutetaan {n1} $ vuodessa¦Fatturato {n1} $ all'anno¦Se factura {n1} $ al año
+2785¦Faktureras månadsvis¦Laskutetaan kuukausittain¦Fatturato mensilmente¦Se factura mensualmente
+2786¦Fakturering och betalningar¦Laskutus ja maksut¦Fatturazione e pagamenti¦Facturación y pagos
+2787¦Genom att fortsätta godkänner du¦Jatkamalla hyväksyt¦Continuando accetti¦Al continuar aceptas
+2788¦Avsluta eller hantera¦Peruuta tai hallitse¦Annulla o gestisci¦Cancelar o gestionar
+2789¦Kortbetalning är inte redo ännu¦Korttimaksu ei ole vielä valmis¦Il pagamento con carta non è ancora pronto¦El pago con tarjeta aún no está listo
+2790¦Kontrollerar…¦Tarkistetaan…¦Verifica in corso…¦Comprobando…
+2791¦Kassan kunde inte startas.¦Kassaa ei voitu käynnistää.¦Impossibile avviare il pagamento.¦No se pudo iniciar el pago.
+2792¦Välj en plan för att slå på dina assistenter igen¦Valitse paketti kytkeäksesi avustajasi takaisin päälle¦Scegli un piano per riattivare i tuoi assistenti¦Elige un plan para volver a activar tus asistentes
+2793¦Bekräftar ditt kort…¦Vahvistetaan korttiasi…¦Conferma della carta in corso…¦Confirmando tu tarjeta…
+2794¦Kontakta oss för att betala¦Ota yhteyttä maksaaksesi¦Contattaci per pagare¦Contáctanos para pagar
+2795¦Det gick inte att öppna faktureringsportalen¦Laskutusportaalia ei voitu avata¦Impossibile aprire il portale di fatturazione¦No se pudo abrir el portal de facturación
+2796¦Det gick inte att starta din gratis provperiod¦Ilmaisen kokeilun aloittaminen epäonnistui¦Impossibile avviare la prova gratuita¦No se pudo iniciar tu prueba gratuita
+2797¦Tidiga fåglar, den här bjuder vi på 🐣¦Aikaiset linnut, tämä on meidän tarjoamamme 🐣¦Per i primi arrivati, questa la offriamo noi 🐣¦Para los madrugadores, esta corre de nuestra cuenta 🐣
+2798¦Tidig provperiod: {daysLeft} {n2} kvar, inget kort behövs. För att hålla dina assistenter igång efter {n3}, skriv till oss så ordnar vi betalningen.¦Aikaisen kokeilun jäljellä: {daysLeft} {n2}, korttia ei tarvita. Jotta avustajasi pysyvät käynnissä {n3} jälkeen, lähetä meille viesti, niin sovimme maksusta.¦Prova anticipata: restano {daysLeft} {n2}, nessuna carta necessaria. Per mantenere in funzione i tuoi assistenti dopo il {n3}, scrivici e organizzeremo il pagamento.¦Prueba anticipada: quedan {daysLeft} {n2}, no hace falta tarjeta. Para que tus asistentes sigan funcionando después del {n3}, escríbenos y organizaremos el pago.
+2799¦Till exempel FRIEND-7K3Q9X¦Esimerkiksi FRIEND-7K3Q9X¦Ad esempio FRIEND-7K3Q9X¦Por ejemplo FRIEND-7K3Q9X
+2800¦Gratis åtkomst med din kod: {daysLeft} {n2} kvar, inget kort behövs. Den upphör {n3}. För att hålla dina assistenter igång därefter, välj en plan.¦Ilmainen pääsy koodillasi: {daysLeft} {n2} jäljellä, korttia ei tarvita. Se päättyy {n3}. Jotta avustajasi pysyvät käynnissä sen jälkeen, valitse paketti.¦Accesso gratuito con il tuo codice: restano {daysLeft} {n2}, nessuna carta necessaria. Termina il {n3}. Per mantenere in funzione i tuoi assistenti dopo quella data, scegli un piano.¦Acceso gratuito con tu código: quedan {daysLeft} {n2}, no hace falta tarjeta. Termina el {n3}. Para que tus asistentes sigan funcionando después, elige un plan.
+2801¦Gratis provperiod: {daysLeft} {n2} kvar. Ditt kort debiteras {nextChargeAmount} $ den {n4} om du inte avslutar innan dess.¦Ilmainen kokeilu: {daysLeft} {n2} jäljellä. Korttiisi veloitetaan {nextChargeAmount} $ {n4}, ellet peruuta sitä ennen.¦Prova gratuita: restano {daysLeft} {n2}. Sulla tua carta verranno addebitati {nextChargeAmount} $ il {n4} se non annulli prima.¦Prueba gratuita: quedan {daysLeft} {n2}. Se cobrarán {nextChargeAmount} $ en tu tarjeta el {n4} si no cancelas antes.
+2802¦Gör allt redo…¦Valmistellaan…¦Preparazione in corso…¦Preparándolo todo…
+2803¦Uppfattat, tack!¦Selvä, kiitos!¦Ricevuto, grazie!¦¡Entendido, gracias!
+2804¦Har du en åtkomstkod?¦Onko sinulla käyttökoodi?¦Hai un codice di accesso?¦¿Tienes un código de acceso?
+2805¦Nätverksfel.¦Verkkovirhe.¦Errore di rete.¦Error de red.
+2806¦Inget har debiterats. Alternativen nedan fungerar fortfarande.¦Mitään ei veloitettu. Alla olevat vaihtoehdot toimivat edelleen.¦Non è stato addebitato nulla. Le opzioni qui sotto funzionano ancora.¦No se ha cobrado nada. Las opciones de abajo siguen funcionando.
+2807¦Inget har debiterats. Du kan starta din gratis provperiod utan kort, eller be oss ordna betalningen: alternativen finns precis nedan.¦Mitään ei veloitettu. Voit aloittaa ilmaisen kokeilun ilman korttia tai pyytää meitä sopimaan maksusta: vaihtoehdot ovat heti alla.¦Non è stato addebitato nulla. Puoi iniziare la prova gratuita senza carta, oppure chiederci di organizzare il pagamento: le opzioni sono qui sotto.¦No se ha cobrado nada. Puedes empezar tu prueba gratuita sin tarjeta o pedirnos que organicemos el pago: las opciones están justo debajo.
+2808¦Öppna support¦Avaa tuki¦Apri il supporto¦Abrir soporte
+2809¦Öppnar säker kassa…¦Avataan turvallista kassaa…¦Apertura del pagamento sicuro…¦Abriendo el pago seguro…
+2810¦Våra automatiska kortbetalningar är på väg men inte klara ännu. Tills de är det hjälper vi gärna till att ordna betalningen direkt med dig. Berätta vilken plan du vill ha och allt vi bör veta, så svarar vi via e-post med nästa steg.¦Automaattiset korttimaksumme ovat tulossa mutta eivät ole vielä valmiita. Siihen asti sovimme mielellämme maksusta suoraan kanssasi. Kerro, minkä paketin haluat ja kaikki, mitä meidän pitäisi tietää, niin vastaamme sähköpostitse seuraavalla askeleella.¦I nostri pagamenti automatici con carta sono in arrivo ma non ancora pronti. Fino ad allora organizziamo volentieri il pagamento direttamente con te. Dicci quale piano vuoi e tutto ciò che dovremmo sapere, e ti risponderemo via e-mail con il passo successivo.¦Nuestros pagos automáticos con tarjeta están en camino, pero aún no están listos. Hasta entonces, organizaremos el pago directamente contigo con mucho gusto. Cuéntanos qué plan quieres y lo que debamos saber, y te responderemos por correo con el siguiente paso.
+2811¦Planer¦Paketit¦Piani¦Planes
+2812¦Försök igen eller använd kontaktformuläret nedan.¦Yritä uudelleen tai käytä alla olevaa yhteydenottolomaketta.¦Riprova oppure usa il modulo di contatto qui sotto.¦Inténtalo de nuevo o usa el formulario de contacto de abajo.
+2813¦Vill du hellre betala nu? Låt oss ordna det för hand.¦Haluatko mieluummin maksaa nyt? Hoidetaan se käsin.¦Preferisci pagare subito? Lo sistemiamo a mano.¦¿Prefieres pagar ahora? Lo resolvemos a mano.
+2814¦Säker betalning via Stripe.¦Turvallinen maksu Stripen kautta.¦Pagamento sicuro tramite Stripe.¦Pago seguro con Stripe.
+2815¦Skicka till teamet¦Lähetä tiimille¦Invia al team¦Enviar al equipo
+2816¦Skickar…¦Lähetetään…¦Invio in corso…¦Enviando…
+2817¦Logga ut¦Kirjaudu ulos¦Esci¦Cerrar sesión
+2818¦Starta gratis provperiod med kort¦Aloita ilmainen kokeilu kortilla¦Inizia la prova gratuita con una carta¦Empezar la prueba gratuita con tarjeta
+2819¦Starta din gratis provperiod¦Aloita ilmainen kokeilusi¦Inizia la prova gratuita¦Empieza tu prueba gratuita
+2820¦Prenumerationen har avslutats¦Tilaus on päättynyt¦Abbonamento terminato¦Suscripción finalizada
+2821¦Villkoren¦käyttöehdot¦Termini¦Términos
+2822¦Faktureringsportalen är inte tillgänglig ännu.¦Laskutusportaali ei ole vielä käytettävissä.¦Il portale di fatturazione non è ancora disponibile.¦El portal de facturación aún no está disponible.
+2823¦Det här tar några sekunder. Stäng inte den här sidan.¦Tämä kestää muutaman sekunnin. Älä sulje tätä sivua.¦Ci vorranno pochi secondi. Non chiudere questa pagina.¦Esto tarda unos segundos. No cierres esta página.
+2824¦Ärende {ticketRef} är öppet.¦Tiketti {ticketRef} on avoinna.¦Il ticket {ticketRef} è aperto.¦La incidencia {ticketRef} está abierta.
+2825¦Idag: **{price} $** för {plan}, därefter varje månad tills du avslutar.¦Tänään: **{price} $** paketista {plan}, sen jälkeen joka kuukausi, kunnes peruutat.¦Oggi: **{price} $** per {plan}, poi ogni mese fino a quando annulli.¦Hoy: **{price} $** por {plan}, y después cada mes hasta que canceles.
+2826¦Idag: **{price} $** för {plan}, därefter varje år tills du avslutar.¦Tänään: **{price} $** paketista {plan}, sen jälkeen joka vuosi, kunnes peruutat.¦Oggi: **{price} $** per {plan}, poi ogni anno fino a quando annulli.¦Hoy: **{price} $** por {plan}, y después cada año hasta que canceles.
+2827¦Idag: **0 $**, och inget kort efterfrågas. Dina {days} tidiga dagar gäller till **{date}**. Gillar du det? Skriv till oss nedan så ordnar vi betalningen tillsammans.¦Tänään: **0 $**, eikä korttia pyydetä. Aikaiset {days} päiväsi kestävät **{date}** asti. Pidätkö siitä? Lähetä meille viesti alla, niin sovimme maksusta yhdessä.¦Oggi: **0 $**, senza che ti venga chiesta una carta. I tuoi {days} giorni anticipati durano fino al **{date}**. Ti piace? Scrivici qui sotto e organizziamo insieme il pagamento.¦Hoy: **0 $**, y sin pedirte tarjeta. Tus {days} días anticipados duran hasta el **{date}**. ¿Te gusta? Escríbenos abajo y organizaremos juntos el pago.
+2828¦Idag: **0 $**. Efter {days} dagar ({date}): **{price} $** för {plan}, debiteras automatiskt varje månad tills du avslutar. Avsluta före det datumet så betalar du ingenting.¦Tänään: **0 $**. {days} päivän jälkeen ({date}): **{price} $** paketista {plan}, veloitetaan automaattisesti joka kuukausi, kunnes peruutat. Peruuta ennen tuota päivää, niin et maksa mitään.¦Oggi: **0 $**. Dopo {days} giorni ({date}): **{price} $** per {plan}, addebitati automaticamente ogni mese fino a quando annulli. Annulla prima di quella data e non paghi nulla.¦Hoy: **0 $**. Pasados {days} días ({date}): **{price} $** por {plan}, cobrados automáticamente cada mes hasta que canceles. Cancela antes de esa fecha y no pagas nada.
+2829¦Idag: **0 $**. Efter {days} dagar ({date}): **{price} $** för {plan}, debiteras automatiskt varje år tills du avslutar. Avsluta före det datumet så betalar du ingenting.¦Tänään: **0 $**. {days} päivän jälkeen ({date}): **{price} $** paketista {plan}, veloitetaan automaattisesti joka vuosi, kunnes peruutat. Peruuta ennen tuota päivää, niin et maksa mitään.¦Oggi: **0 $**. Dopo {days} giorni ({date}): **{price} $** per {plan}, addebitati automaticamente ogni anno fino a quando annulli. Annulla prima di quella data e non paghi nulla.¦Hoy: **0 $**. Pasados {days} días ({date}): **{price} $** por {plan}, cobrados automáticamente cada año hasta que canceles. Cancela antes de esa fecha y no pagas nada.
+2830¦Uppdatera kort¦Päivitä kortti¦Aggiorna la carta¦Actualizar tarjeta
+2831¦Vi har precis lanserat och våra kortbetalningar är ännu inte helt på plats. Så i stället för att ställa dig inför krångel får tidiga användare {TRIAL_DAYS} gratis dagar med alla Growth-funktioner. Inget kort, inga haken. Bygg din assistent, lägg den på din webbplats och se vad den kan.¦Olemme juuri lanseeraamassa, eivätkä korttimaksumme ole vielä täysin valmiita. Joten sen sijaan, että pakottaisimme sinut vaivalloisiin vaiheisiin, aikaiset käyttäjät saavat {TRIAL_DAYS} ilmaista päivää kaikilla Growth-ominaisuuksilla. Ei korttia, ei koukkuja. Rakenna avustajasi, lisää se sivustollesi ja katso, mihin se pystyy.¦Siamo appena partiti e i pagamenti con carta non sono ancora del tutto pronti. Perciò, invece di farti passare attraverso mille ostacoli, i primi utenti ricevono {TRIAL_DAYS} giorni gratuiti con tutte le funzioni Growth. Nessuna carta, nessuna trappola. Crea il tuo assistente, mettilo sul tuo sito e scopri cosa sa fare.¦Acabamos de lanzar y nuestros pagos con tarjeta aún no están del todo listos. Así que, en lugar de hacerte pasar por trámites, los primeros usuarios reciben {TRIAL_DAYS} días gratis con todas las funciones de Growth. Sin tarjeta y sin trampas. Crea tu asistente, ponlo en tu sitio web y descubre lo que puede hacer.
+2832¦Vi mejlar dig inom kort för att ordna betalningen. Du kan följa samtalet på fliken Support.¦Lähetämme sinulle pian sähköpostia maksun sopimiseksi. Voit seurata keskustelua Tuki-välilehdellä.¦Ti scriveremo a breve via e-mail per organizzare il pagamento. Puoi seguire la conversazione nella scheda Supporto.¦Te escribiremos pronto por correo para organizar el pago. Puedes seguir la conversación en la pestaña Soporte.
+2833¦Välkommen ombord!¦Tervetuloa mukaan!¦Benvenuto a bordo!¦¡Bienvenido a bordo!
+2834¦Du betalar ingenting idag. Din provperiod på {TRIAL_DAYS} dagar innehåller alla Growth-funktioner. Om du inte avslutar innan den tar slut debiteras ditt kort automatiskt. Avsluta när som helst så debiteras du aldrig för provperioden.¦Et maksa mitään tänään. {TRIAL_DAYS} päivän kokeilusi sisältää kaikki Growth-ominaisuudet. Jos et peruuta ennen sen päättymistä, korttiisi veloitetaan automaattisesti. Peruuta milloin tahansa, niin sinua ei koskaan veloiteta kokeilusta.¦Oggi non paghi nulla. La tua prova di {TRIAL_DAYS} giorni include tutte le funzioni Growth. Se non annulli prima della fine, la tua carta viene addebitata automaticamente. Annulla in qualsiasi momento e non ti verrà mai addebitata la prova.¦Hoy no pagas nada. Tu prueba de {TRIAL_DAYS} días incluye todas las funciones de Growth. Si no cancelas antes de que termine, se cobra automáticamente tu tarjeta. Cancela cuando quieras y nunca se te cobra la prueba.
+2835¦Du sparar {amount} $ per år¦Säästät {amount} $ vuodessa¦Risparmi {amount} $ all'anno¦Ahorras {amount} $ al año
+2836¦Dina assistenter är pausade. Dina data sparas i 30 dagar. Välj en plan, eller skriv till oss nedan så ordnar vi betalningen för hand.¦Avustajasi ovat tauolla. Tietosi säilytetään 30 päivää. Valitse paketti tai lähetä meille viesti alla, niin sovimme maksusta käsin.¦I tuoi assistenti sono in pausa. I tuoi dati vengono conservati per 30 giorni. Scegli un piano oppure scrivici qui sotto e organizzeremo il pagamento a mano.¦Tus asistentes están en pausa. Tus datos se conservan durante 30 días. Elige un plan o escríbenos abajo y organizaremos el pago a mano.
+2837¦Din senaste betalning misslyckades. Uppdatera ditt kort så att dina assistenter fortsätter fungera.¦Viimeisin maksusi epäonnistui. Päivitä korttisi, jotta avustajasi pysyvät käynnissä.¦L'ultimo pagamento non è riuscito. Aggiorna la carta per mantenere in funzione i tuoi assistenti.¦Tu último pago falló. Actualiza tu tarjeta para que tus asistentes sigan funcionando.
+2838¦Ditt meddelande¦Viestisi¦Il tuo messaggio¦Tu mensaje
+2839¦Din prenumeration är avslutad och upphör den {n1}. Du debiteras inte igen.¦Tilauksesi on peruttu ja päättyy {n1}. Sinua ei veloiteta enää.¦Il tuo abbonamento è annullato e termina il {n1}. Non ti verrà addebitato altro.¦Tu suscripción está cancelada y termina el {n1}. No se te volverá a cobrar.
+2840¦· behöver svar¦· tarvitsee vastauksen¦· richiede una risposta¦· necesita respuesta
+2841¦Bugg¦Virhe¦Bug¦Error
+2842¦Buggrapport¦Virheilmoitus¦Segnalazione di bug¦Informe de error
+2843¦Det gick inte att skapa ärendet.¦Tikettiä ei voitu luoda.¦Impossibile creare il ticket.¦No se pudo crear la incidencia.
+2844¦Det gick inte att skicka.¦Lähetys epäonnistui.¦Impossibile inviare.¦No se pudo enviar.
+2845¦Beskriv problemet eller frågan¦Kuvaile ongelma tai kysymys¦Descrivi il problema o la domanda¦Describe el problema o la pregunta
+2846¦Intern anteckning¦Sisäinen muistiinpano¦Nota interna¦Nota interna
+2847¦Intern anteckning (skickas inte med e-post, visas inte för kunden)¦Sisäinen muistiinpano (ei lähetetä sähköpostitse, ei näy asiakkaalle)¦Nota interna (non inviata per e-mail, non visibile al cliente)¦Nota interna (no se envía por correo ni se muestra al cliente)
+2848¦Laddar...¦Ladataan...¦Caricamento...¦Cargando...
+2849¦Nytt ärende¦Uusi tiketti¦Nuovo ticket¦Nueva incidencia

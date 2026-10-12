@@ -1,0 +1,150 @@
+3450	To use {featureName}, connect your free Groq API key.
+3451	Verifying & Saving...
+3452	Why Groq? (Zero-Cost & Blazing Fast)
+3453	Add to Google Calendar
+3454	Add to Outlook
+3455	Appointment Details
+3456	Booking Status
+3457	Change Status:
+3458	Download .ics
+3459	Email Address
+3460	Email Client
+3461	Export & Calendar Sync
+3462	ID:
+3463	Meeting Notes / Visitor Inquiries
+3464	No notes provided for this booking.
+3465	Scheduled Time Slot
+3466	active vector chunks
+3467	Apply Replacement & Re-Index Vectors
+3468	Authoritative Fact Override
+3469	characters)
+3470	Corrected Replacement
+3471	Did speech-to-text transcribe someone's name or product incorrectly (e.g. “Jon Dough” instead of “John Doe”)? Enter the misheard phrase and the correct term. We will update the text across all chunks and automatically recalculate high-dimensional vector embeddings in-place without re-uploading the file.
+3472	Direct Text Editor
+3473	Document Content (
+3474	e.g. As of 2026, the gym closes at 11 PM on weekends instead of 10 PM. Personal training sessions are $65/hr.
+3475	e.g. John Doe or $59
+3476	e.g. Jon Dough or $49
+3477	Embedding Override Rule...
+3478	Fact Override
+3479	Fix Misheard Words & Typos Across Embeddings
+3480	Found {occurrences} occurrence(s) across {matchingChunks} chunk(s)
+3481	Full Document Text Editor
+3482	Have an authoritative policy change or crucial fact that should supersede any outdated audio/video transcription or legacy document statement? Write it here. An official override banner will be injected into this source's vector embeddings with maximum retrieval weight.
+3483	History
+3484	Inject Authoritative Override & Re-Index
+3485	Knowledge Correction & Fact Patching
+3486	Loading chunks and vectors...
+3487	No corrections or overrides have been applied to this knowledge source yet.
+3488	No occurrences of "{n1}" found in current chunks
+3489	Official Correction / Rule
+3490	Official Fact & Knowledge Override
+3491	Phonetic & Term Replace
+3492	Re-chunking & Re-indexing Vectors...
+3493	Recent
+3494	Replaced
+3495	Save & Re-chunk Entire Document
+3496	Term Replacement
+3497	Text Edit
+3498	Updating Chunks & Vector Embeddings...
+3499	View or edit the full synthesized text of this knowledge source. Saving will regenerate chunk boundaries and fresh vector embeddings across the entire document.
+3500	Will replace with “
+3501	Word / Phrase to Find
+3502	Countertop QR Code
+3503	In-Store Countertop QR Code
+3504	Print and place this on your reception desk for walk-in booking and live prices.
+3505	Print Countertop Display
+3506	File Indexing Diagnostic
+3507	Got It
+3508	Logged:
+3509	Remove Failed Record
+3510	Size:
+3511	Type:
+3512	View Technical Log Details
+3513	What You Should Do Next:
+3514	Why This File Failed:
+3515	Add the chat bubble to your website
+3516	Advanced: embed it inside a page instead of a floating bubble
+3517	Email this to my web developer
+3518	If you can edit your website's HTML directly, paste this one line just before
+3519	Inline frame
+3520	on any page. The chat bubble appears automatically — nothing else to configure.
+3521	One short line of code makes it appear on your site.
+3522	Or do it yourself — one line of code
+3523	Shows the chat as a fixed box in the middle of a page, instead of a button in the corner. Only use this if that is really what you want — most businesses should use the code above.
+3524	Someone else looks after your website?
+3525	Using WordPress, Wix, Squarespace or Shopify? Read the step-by-step guide
+3526	You don't need to touch any code yourself. This opens an email, already written, that you can send to your web designer, developer or nephew — whoever usually updates your site.
+3527	Call
+3528	No additional comments provided.
+3529	Not provided
+3530	Reply Email
+3531	Submission Date
+3532	Visitor Comments / Message
+3533	AI assistant bot. You are currently using
+3534	Assistant Bot Limit Reached
+3535	Assistant Name
+3536	bot slots.
+3537	Bots Used
+3538	Create an isolated assistant with its own knowledge base, prompt instructions, and website widget.
+3539	Create Assistant
+3540	Create New Business Assistant
+3541	e.g. Sales Specialist, Store Support AI
+3542	Plan ·
+3543	plan (unlimited bots).
+3544	plan (up to 5 bots) or
+3545	plan, which includes up to
+3546	Scale
+3547	To create additional isolated bots with dedicated knowledge bases and service catalogs, upgrade to the
+3548	Upgrade to Growth
+3549	Your workspace is on the
+3550	A new dedicated assistant will be created with an isolated knowledge base exclusively for this page.
+3551	Add a dedicated hosted website for your business or campaign.
+3552	Aether Finance & Wealth Management
+3553	AI Chatbot & Knowledge Base
+3554	Base Industry Template
+3555	Beacon Family Dental Clinic
+3556	CloudScale B2B SaaS
+3557	Create Landing Page
+3558	Create new knowledge base (dedicated bot for this page)
+3559	Create New Landing Page
+3560	Custom Blank Canvas (Modular Skeleton)
+3561	e.g. Apex Health & Aesthetics
+3562	e.g. apex-health
+3563	Fitness & Athletics Gym
+3564	Hyperion Creative Agency
+3565	LuxeLiving Retail E-Commerce
+3566	Nexus AI Technology Platform
+3567	No chatbot (website only)
+3568	Prestige Living Real Estate
+3569	Reuses documents and training data from your selected assistant without creating extra bots.
+3570	Sterling & Vance Legal Counsel
+3571	URL Slug (/site/[slug])
+3572	Your first landing page connects to your default knowledge base so your trained documents and FAQs are immediately used.
+3573	American Express
+3574	Billing Email Address
+3575	Card Brand
+3576	Discover
+3577	Exp Month
+3578	Exp Year
+3579	Last 4 Digits
+3580	Mastercard
+3581	Save Card
+3582	Update Payment Details
+3583	Visa
+3584	— done
+3585	Add to Your Website
+3586	Add Your Content
+3587	Ask it something a real customer might ask. If the answer is off, add more content to your Knowledge Base.
+3588	Chat with your assistant right now to make sure it gives accurate answers before customers see it.
+3589	Copy one line of code and paste it into your website. The chat button will appear within seconds.
+3590	Get Embed Code
+3591	Getting Started — Step
+3592	Go to Knowledge Base
+3593	Open Test Chat
+3594	Set up {assistantName}
+3595	Set up your assistant
+3596	Skip
+3597	Start with your most common questions — a one-page FAQ is enough to get started.
+3598	Test It Out
+3599	Upload documents, paste website links, or add FAQs so your assistant knows how to answer customer questions.

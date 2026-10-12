@@ -1,5 +1,6 @@
 'use client';
 
+import { T, useT } from '@/lib/i18n/context';
 import React, { useState } from 'react';
 import {
   X,
@@ -169,6 +170,7 @@ export const DesignPreviewModal: React.FC<DesignPreviewModalProps> = ({
   industryName = 'Industry',
   onSelectArchetype,
 }) => {
+  const __t = useT();
   const [viewport, setViewport] = useState<'desktop' | 'mobile'>('desktop');
   const [selectedDayTab, setSelectedDayTab] = useState<'today' | 'tomorrow' | 'next_week'>('today');
 
@@ -212,14 +214,14 @@ export const DesignPreviewModal: React.FC<DesignPreviewModalProps> = ({
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="text-sm font-bold text-white flex items-center gap-1.5">
-                  <span>{archetype.name}</span>
+                  <span><T>{archetype.name}</T></span>
                 </h3>
                 <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-800 text-slate-300 border border-slate-700">
                   {archetype.badge}
                 </span>
               </div>
               <p className="text-xs text-slate-400">
-                {industryName} &middot; Layout: {archetypeIndex === 0 ? 'Prestige Editorial' : archetypeIndex === 1 ? 'High-Velocity Split' : 'Immersive Media Showcase'} &middot; Aesthetic: {archetype.aesthetic}
+                {industryName} <T>&middot; Layout:</T> {archetypeIndex === 0 ? <T>{'Prestige Editorial'}</T> : archetypeIndex === 1 ? <T>{'High-Velocity Split'}</T> : <T>{'Immersive Media Showcase'}</T>} <T>&middot; Aesthetic:</T> {archetype.aesthetic}
               </p>
             </div>
           </div>
@@ -236,10 +238,10 @@ export const DesignPreviewModal: React.FC<DesignPreviewModalProps> = ({
                     ? 'bg-blue-600 text-white shadow-xs'
                     : 'text-slate-400 hover:text-white'
                 }`}
-                title="Desktop View (1200px)"
+                title={__t("Desktop View (1200px)")}
               >
                 <Monitor className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">Desktop</span>
+                <span className="hidden sm:inline"><T>Desktop</T></span>
               </button>
               <button
                 type="button"
@@ -249,10 +251,10 @@ export const DesignPreviewModal: React.FC<DesignPreviewModalProps> = ({
                     ? 'bg-blue-600 text-white shadow-xs'
                     : 'text-slate-400 hover:text-white'
                 }`}
-                title="Mobile View (375px)"
+                title={__t("Mobile View (375px)")}
               >
                 <Smartphone className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">Mobile</span>
+                <span className="hidden sm:inline"><T>Mobile</T></span>
               </button>
             </div>
 
@@ -267,7 +269,7 @@ export const DesignPreviewModal: React.FC<DesignPreviewModalProps> = ({
                 className="flex items-center gap-1.5 px-4 py-1.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs font-bold shadow-md shadow-blue-600/25 transition cursor-pointer"
               >
                 <Check className="w-3.5 h-3.5" />
-                <span>Select This Design</span>
+                <span><T>Select This Design</T></span>
               </button>
             )}
 
@@ -276,7 +278,7 @@ export const DesignPreviewModal: React.FC<DesignPreviewModalProps> = ({
               type="button"
               onClick={onClose}
               className="p-1.5 text-slate-400 hover:text-white rounded-xl hover:bg-slate-800 transition cursor-pointer"
-              aria-label="Close preview"
+              aria-label={__t("Close preview")}
             >
               <X className="w-5 h-5" />
             </button>
@@ -300,7 +302,7 @@ export const DesignPreviewModal: React.FC<DesignPreviewModalProps> = ({
 
               <div className="flex items-center gap-1.5 px-3 py-0.5 rounded-md bg-slate-900 border border-slate-800 text-[10px] font-mono text-slate-400 w-1/2 justify-center truncate">
                 <Lock className="w-2.5 h-2.5 text-emerald-400 shrink-0" />
-                <span className="truncate">https://yourbrand.online/site/preview</span>
+                <span className="truncate"><T>https://yourbrand.online/site/preview</T></span>
               </div>
 
               <div className="w-10" />
@@ -328,7 +330,7 @@ export const DesignPreviewModal: React.FC<DesignPreviewModalProps> = ({
                       isLuxurySerif ? 'font-serif tracking-wide text-base' : 'font-sans'
                     }`}
                   >
-                    {archetype.name.split(' ')[0]} Studio
+                    {archetype.name.split(' ')[0]} <T>Studio</T>
                   </span>
                 </div>
 
@@ -338,10 +340,10 @@ export const DesignPreviewModal: React.FC<DesignPreviewModalProps> = ({
                       isDarkAesthetic ? 'text-slate-400' : 'text-slate-600'
                     }`}
                   >
-                    <span>Services</span>
-                    <span>Experience</span>
-                    <span>Testimonials</span>
-                    <span>Contact</span>
+                    <span><T>Services</T></span>
+                    <span><T>Experience</T></span>
+                    <span><T>Testimonials</T></span>
+                    <span><T>Contact</T></span>
                   </div>
                 )}
 
@@ -349,7 +351,7 @@ export const DesignPreviewModal: React.FC<DesignPreviewModalProps> = ({
                   className="px-3.5 py-1.5 rounded-xl text-xs font-bold text-white shadow-sm"
                   style={{ backgroundColor: themeColor }}
                 >
-                  Book Appointment
+                  <T>Book Appointment</T>
                 </div>
               </nav>
 
@@ -371,7 +373,7 @@ export const DesignPreviewModal: React.FC<DesignPreviewModalProps> = ({
                         isLuxurySerif ? 'font-serif text-4xl sm:text-5xl' : 'font-sans'
                       }`}
                     >
-                      {archetype.name}
+                      <T>{archetype.name}</T>
                     </h1>
 
                     <p
@@ -379,7 +381,7 @@ export const DesignPreviewModal: React.FC<DesignPreviewModalProps> = ({
                         isDarkAesthetic ? 'text-slate-400' : 'text-slate-600'
                       }`}
                     >
-                      {archetype.tagline}
+                      <T>{archetype.tagline}</T>
                     </p>
 
                     <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
@@ -387,7 +389,7 @@ export const DesignPreviewModal: React.FC<DesignPreviewModalProps> = ({
                         className="px-5 py-2.5 rounded-xl text-xs font-bold text-white shadow-md flex items-center gap-2 cursor-pointer"
                         style={{ backgroundColor: themeColor }}
                       >
-                        <span>Reserve Your Slot</span>
+                        <span><T>Reserve Your Slot</T></span>
                         <ArrowRight className="w-3.5 h-3.5" />
                       </div>
 
@@ -398,7 +400,7 @@ export const DesignPreviewModal: React.FC<DesignPreviewModalProps> = ({
                             : 'border-slate-300 text-slate-700 hover:bg-slate-50'
                         }`}
                       >
-                        View Service Menu
+                        <T>View Service Menu</T>
                       </div>
                     </div>
 
@@ -409,10 +411,10 @@ export const DesignPreviewModal: React.FC<DesignPreviewModalProps> = ({
                           <Star key={i} className="w-3.5 h-3.5 fill-current" />
                         ))}
                       </div>
-                      <span className="font-bold">5.0 Star Rating</span>
+                      <span className="font-bold"><T>5.0 Star Rating</T></span>
                       <span className="text-slate-500">&middot;</span>
                       <span className={isDarkAesthetic ? 'text-slate-400' : 'text-slate-600'}>
-                        Verified Clients &amp; Discerning Patrons
+                        <T>Verified Clients &amp; Discerning Patrons</T>
                       </span>
                     </div>
                   </div>
@@ -425,23 +427,23 @@ export const DesignPreviewModal: React.FC<DesignPreviewModalProps> = ({
                   >
                     <div className="space-y-1">
                       <Award className="w-4 h-4 mx-auto text-amber-500" />
-                      <div className="text-xs font-bold">Master Certified</div>
-                      <div className="text-[10px] text-slate-400">Top Tier Specialists</div>
+                      <div className="text-xs font-bold"><T>Master Certified</T></div>
+                      <div className="text-[10px] text-slate-400"><T>Top Tier Specialists</T></div>
                     </div>
                     <div className="space-y-1">
                       <ShieldCheck className="w-4 h-4 mx-auto text-emerald-500" />
-                      <div className="text-xs font-bold">Confidential &amp; Private</div>
-                      <div className="text-[10px] text-slate-400">Discreet Experience</div>
+                      <div className="text-xs font-bold"><T>Confidential &amp; Private</T></div>
+                      <div className="text-[10px] text-slate-400"><T>Discreet Experience</T></div>
                     </div>
                     <div className="space-y-1">
                       <Star className="w-4 h-4 mx-auto text-amber-400" />
-                      <div className="text-xs font-bold">5.0 Star Average</div>
-                      <div className="text-[10px] text-slate-400">100% Client Endorsed</div>
+                      <div className="text-xs font-bold"><T>5.0 Star Average</T></div>
+                      <div className="text-[10px] text-slate-400"><T>100% Client Endorsed</T></div>
                     </div>
                     <div className="space-y-1">
                       <Calendar className="w-4 h-4 mx-auto text-blue-500" />
-                      <div className="text-xs font-bold">Same-Week Access</div>
-                      <div className="text-[10px] text-slate-400">Direct Concierge Booking</div>
+                      <div className="text-xs font-bold"><T>Same-Week Access</T></div>
+                      <div className="text-[10px] text-slate-400"><T>Direct Concierge Booking</T></div>
                     </div>
                   </div>
 
@@ -453,10 +455,10 @@ export const DesignPreviewModal: React.FC<DesignPreviewModalProps> = ({
                           isLuxurySerif ? 'font-serif text-2xl' : 'font-sans'
                         }`}
                       >
-                        Featured Service Offerings
+                        <T>Featured Service Offerings</T>
                       </h3>
                       <p className={`text-xs ${isDarkAesthetic ? 'text-slate-400' : 'text-slate-600'}`}>
-                        Curated experiences delivered with utmost precision and dedication.
+                        <T>Curated experiences delivered with utmost precision and dedication.</T>
                       </p>
                     </div>
 
@@ -479,7 +481,7 @@ export const DesignPreviewModal: React.FC<DesignPreviewModalProps> = ({
                             style={{ backgroundColor: themeColor }}
                           />
                           <div className="flex items-start justify-between gap-2">
-                            <h4 className="text-xs font-bold leading-snug">{svc.title}</h4>
+                            <h4 className="text-xs font-bold leading-snug"><T>{svc.title}</T></h4>
                             <span className="text-sm font-extrabold text-blue-500 shrink-0">
                               {svc.price}
                             </span>
@@ -489,7 +491,7 @@ export const DesignPreviewModal: React.FC<DesignPreviewModalProps> = ({
                               isDarkAesthetic ? 'text-slate-400' : 'text-slate-600'
                             }`}
                           >
-                            {svc.desc}
+                            <T>{svc.desc}</T>
                           </p>
                           <div className="pt-2 flex items-center justify-between text-[10.5px] font-semibold text-slate-500 border-t border-slate-100 dark:border-slate-800">
                             <span className="flex items-center gap-1">
@@ -500,7 +502,7 @@ export const DesignPreviewModal: React.FC<DesignPreviewModalProps> = ({
                               className="font-bold cursor-pointer hover:underline flex items-center gap-0.5"
                               style={{ color: themeColor }}
                             >
-                              <span>Reserve</span>
+                              <span><T>Reserve</T></span>
                               <ChevronRight className="w-3 h-3" />
                             </span>
                           </div>
@@ -523,11 +525,11 @@ export const DesignPreviewModal: React.FC<DesignPreviewModalProps> = ({
                     <div className={`${viewport === 'desktop' ? 'col-span-7' : 'col-span-1'} space-y-4`}>
                       <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-xs font-bold text-emerald-500">
                         <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                        <span>Live Availability Today</span>
+                        <span><T>Live Availability Today</T></span>
                       </div>
 
                       <h1 className="text-2xl sm:text-3xl font-extrabold leading-tight tracking-tight">
-                        {archetype.name}
+                        <T>{archetype.name}</T>
                       </h1>
 
                       <p
@@ -535,7 +537,7 @@ export const DesignPreviewModal: React.FC<DesignPreviewModalProps> = ({
                           isDarkAesthetic ? 'text-slate-400' : 'text-slate-600'
                         }`}
                       >
-                        {archetype.tagline}
+                        <T>{archetype.tagline}</T>
                       </p>
 
                       <div className="flex flex-wrap items-center gap-3 pt-2">
@@ -544,7 +546,7 @@ export const DesignPreviewModal: React.FC<DesignPreviewModalProps> = ({
                           style={{ backgroundColor: themeColor }}
                         >
                           <Zap className="w-3.5 h-3.5" />
-                          <span>Instant 1-Click Booking</span>
+                          <span><T>Instant 1-Click Booking</T></span>
                         </div>
 
                         <div
@@ -554,7 +556,7 @@ export const DesignPreviewModal: React.FC<DesignPreviewModalProps> = ({
                               : 'border-slate-300 text-slate-700 hover:bg-slate-50'
                           }`}
                         >
-                          Explore Tiers
+                          <T>Explore Tiers</T>
                         </div>
                       </div>
 
@@ -567,7 +569,7 @@ export const DesignPreviewModal: React.FC<DesignPreviewModalProps> = ({
                         <span className="font-bold">4.9 / 5.0</span>
                         <span className="text-slate-500">&middot;</span>
                         <span className={isDarkAesthetic ? 'text-slate-400' : 'text-slate-600'}>
-                          Over 850+ Verified Reservations
+                          <T>Over 850+ Verified Reservations</T>
                         </span>
                       </div>
                     </div>
@@ -584,10 +586,10 @@ export const DesignPreviewModal: React.FC<DesignPreviewModalProps> = ({
                         <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
                           <span className="font-bold text-xs flex items-center gap-1.5">
                             <Calendar className="w-3.5 h-3.5 text-blue-500" />
-                            <span>Schedule Appointment</span>
+                            <span><T>Schedule Appointment</T></span>
                           </span>
                           <span className="text-[10px] text-emerald-500 font-bold uppercase tracking-wider">
-                            Realtime Sync
+                            <T>Realtime Sync</T>
                           </span>
                         </div>
 
@@ -602,7 +604,7 @@ export const DesignPreviewModal: React.FC<DesignPreviewModalProps> = ({
                                 : 'text-slate-500'
                             }`}
                           >
-                            Today
+                            <T>Today</T>
                           </button>
                           <button
                             type="button"
@@ -613,7 +615,7 @@ export const DesignPreviewModal: React.FC<DesignPreviewModalProps> = ({
                                 : 'text-slate-500'
                             }`}
                           >
-                            Tomorrow
+                            <T>Tomorrow</T>
                           </button>
                           <button
                             type="button"
@@ -624,42 +626,42 @@ export const DesignPreviewModal: React.FC<DesignPreviewModalProps> = ({
                                 : 'text-slate-500'
                             }`}
                           >
-                            Next Week
+                            <T>Next Week</T>
                           </button>
                         </div>
 
                         {/* Time Slot Grid */}
                         <div className="space-y-1.5">
                           <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                            Available Time Slots:
+                            <T>Available Time Slots:</T>
                           </div>
                           <div className="grid grid-cols-2 gap-2">
                             <div
                               className="py-2 px-2.5 rounded-xl text-center font-bold text-xs text-white shadow-xs cursor-pointer"
                               style={{ backgroundColor: themeColor }}
                             >
-                              10:00 AM (Selected)
+                              <T>10:00 AM (Selected)</T>
                             </div>
                             <div
                               className={`py-2 px-2.5 rounded-xl text-center font-semibold text-xs border cursor-pointer hover:border-blue-500 ${
                                 isDarkAesthetic ? 'border-slate-800 text-slate-300' : 'border-slate-200'
                               }`}
                             >
-                              01:30 PM
+                              <T>01:30 PM</T>
                             </div>
                             <div
                               className={`py-2 px-2.5 rounded-xl text-center font-semibold text-xs border cursor-pointer hover:border-blue-500 ${
                                 isDarkAesthetic ? 'border-slate-800 text-slate-300' : 'border-slate-200'
                               }`}
                             >
-                              03:15 PM
+                              <T>03:15 PM</T>
                             </div>
                             <div
                               className={`py-2 px-2.5 rounded-xl text-center font-semibold text-xs border cursor-pointer hover:border-blue-500 ${
                                 isDarkAesthetic ? 'border-slate-800 text-slate-300' : 'border-slate-200'
                               }`}
                             >
-                              05:00 PM
+                              <T>05:00 PM</T>
                             </div>
                           </div>
                         </div>
@@ -667,7 +669,7 @@ export const DesignPreviewModal: React.FC<DesignPreviewModalProps> = ({
                         {/* Confirmation Bar */}
                         <div className="p-2.5 rounded-xl bg-blue-50/50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900/50 flex items-center justify-between text-[11px]">
                           <span className="text-slate-600 dark:text-slate-300">
-                            Instant confirmation via SMS &amp; Email
+                            <T>Instant confirmation via SMS &amp; Email</T>
                           </span>
                           <CheckCircle2 className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 shrink-0" />
                         </div>
@@ -678,9 +680,9 @@ export const DesignPreviewModal: React.FC<DesignPreviewModalProps> = ({
                   {/* Tiered Pricing Cards */}
                   <div className="space-y-4">
                     <div>
-                      <h3 className="text-lg font-bold">Tiered Packages &amp; Pricing</h3>
+                      <h3 className="text-lg font-bold"><T>Tiered Packages &amp; Pricing</T></h3>
                       <p className={`text-xs ${isDarkAesthetic ? 'text-slate-400' : 'text-slate-600'}`}>
-                        Choose the tier that matches your scope and timeline.
+                        <T>Choose the tier that matches your scope and timeline.</T>
                       </p>
                     </div>
 
@@ -704,13 +706,13 @@ export const DesignPreviewModal: React.FC<DesignPreviewModalProps> = ({
                           >
                             {isFeatured && (
                               <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-600 text-white shadow-xs">
-                                Most Popular
+                                <T>Most Popular</T>
                               </div>
                             )}
 
                             <div className="space-y-2">
                               <div className="flex items-start justify-between gap-2">
-                                <h4 className="text-xs font-bold leading-snug">{svc.title}</h4>
+                                <h4 className="text-xs font-bold leading-snug"><T>{svc.title}</T></h4>
                                 <span className="text-sm font-extrabold text-blue-500 shrink-0">
                                   {svc.price}
                                 </span>
@@ -720,11 +722,11 @@ export const DesignPreviewModal: React.FC<DesignPreviewModalProps> = ({
                                   isDarkAesthetic ? 'text-slate-400' : 'text-slate-600'
                                 }`}
                               >
-                                {svc.desc}
+                                <T>{svc.desc}</T>
                               </p>
                               <div className="text-[10px] font-medium text-slate-500 flex items-center gap-1">
                                 <Clock className="w-3 h-3" />
-                                <span>Duration: {svc.duration}</span>
+                                <span><T>Duration:</T> {svc.duration}</span>
                               </div>
                             </div>
 
@@ -738,7 +740,7 @@ export const DesignPreviewModal: React.FC<DesignPreviewModalProps> = ({
                                   : 'bg-slate-100 text-slate-800 hover:bg-slate-200'
                               }`}
                             >
-                              Choose Plan
+                              <T>Choose Plan</T>
                             </button>
                           </div>
                         );
@@ -763,15 +765,15 @@ export const DesignPreviewModal: React.FC<DesignPreviewModalProps> = ({
                     <div className="relative z-10 space-y-4 max-w-2xl">
                       <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-500/20 backdrop-blur-md border border-blue-400/30 text-xs font-bold text-blue-300">
                         <Sparkles className="w-3.5 h-3.5 text-blue-400" />
-                        <span>{archetype.badge} &middot; Signature Experience</span>
+                        <span>{archetype.badge} <T>&middot; Signature Experience</T></span>
                       </div>
 
                       <h1 className="text-3xl sm:text-4xl font-extrabold text-white leading-tight tracking-tight drop-shadow-md">
-                        {archetype.name}
+                        <T>{archetype.name}</T>
                       </h1>
 
                       <p className="text-xs sm:text-sm text-slate-200 leading-relaxed max-w-xl drop-shadow-sm">
-                        {archetype.tagline}
+                        <T>{archetype.tagline}</T>
                       </p>
 
                       <div className="flex flex-wrap items-center gap-3 pt-2">
@@ -779,7 +781,7 @@ export const DesignPreviewModal: React.FC<DesignPreviewModalProps> = ({
                           className="px-5 py-2.5 rounded-xl text-xs font-bold text-white shadow-lg flex items-center gap-2 cursor-pointer"
                           style={{ backgroundColor: themeColor }}
                         >
-                          <span>Reserve VIP Experience</span>
+                          <span><T>Reserve VIP Experience</T></span>
                           <ArrowRight className="w-3.5 h-3.5" />
                         </div>
                       </div>
@@ -794,27 +796,27 @@ export const DesignPreviewModal: React.FC<DesignPreviewModalProps> = ({
                   >
                     <div className="space-y-1 text-center sm:text-left">
                       <div className="text-xl font-extrabold text-blue-500">99.4%</div>
-                      <div className="text-xs font-bold">Client Satisfaction</div>
-                      <div className="text-[10.5px] text-slate-400">Based on verified reviews</div>
+                      <div className="text-xs font-bold"><T>Client Satisfaction</T></div>
+                      <div className="text-[10.5px] text-slate-400"><T>Based on verified reviews</T></div>
                     </div>
                     <div className="space-y-1 text-center sm:text-left">
                       <div className="text-xl font-extrabold text-emerald-500">1,500+</div>
-                      <div className="text-xs font-bold">Confirmed Reservations</div>
-                      <div className="text-[10.5px] text-slate-400">Handled automatically</div>
+                      <div className="text-xs font-bold"><T>Confirmed Reservations</T></div>
+                      <div className="text-[10.5px] text-slate-400"><T>Handled automatically</T></div>
                     </div>
                     <div className="space-y-1 text-center sm:text-left">
-                      <div className="text-xl font-extrabold text-indigo-500">&lt; 15 sec</div>
-                      <div className="text-xs font-bold">AI Concierge Triage</div>
-                      <div className="text-[10.5px] text-slate-400">Instant answers 24/7</div>
+                      <div className="text-xl font-extrabold text-indigo-500"><T>&lt; 15 sec</T></div>
+                      <div className="text-xs font-bold"><T>AI Concierge Triage</T></div>
+                      <div className="text-[10.5px] text-slate-400"><T>Instant answers 24/7</T></div>
                     </div>
                   </div>
 
                   {/* Horizontal Capability / Service Rows */}
                   <div className="space-y-4">
                     <div>
-                      <h3 className="text-lg font-bold">Studio Capabilities &amp; Services</h3>
+                      <h3 className="text-lg font-bold"><T>Studio Capabilities &amp; Services</T></h3>
                       <p className={`text-xs ${isDarkAesthetic ? 'text-slate-400' : 'text-slate-600'}`}>
-                        Comprehensive services designed to deliver peak satisfaction.
+                        <T>Comprehensive services designed to deliver peak satisfaction.</T>
                       </p>
                     </div>
 
@@ -830,7 +832,7 @@ export const DesignPreviewModal: React.FC<DesignPreviewModalProps> = ({
                         >
                           <div className="space-y-1">
                             <div className="flex items-center gap-2">
-                              <h4 className="text-xs font-bold">{svc.title}</h4>
+                              <h4 className="text-xs font-bold"><T>{svc.title}</T></h4>
                               <span className="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
                                 {svc.duration}
                               </span>
@@ -840,21 +842,21 @@ export const DesignPreviewModal: React.FC<DesignPreviewModalProps> = ({
                                 isDarkAesthetic ? 'text-slate-400' : 'text-slate-600'
                               }`}
                             >
-                              {svc.desc}
+                              <T>{svc.desc}</T>
                             </p>
                           </div>
 
                           <div className="flex items-center gap-3 shrink-0 self-end sm:self-center">
                             <div className="text-right">
                               <div className="text-sm font-extrabold text-blue-500">{svc.price}</div>
-                              <div className="text-[9px] text-slate-400">All-Inclusive</div>
+                              <div className="text-[9px] text-slate-400"><T>All-Inclusive</T></div>
                             </div>
                             <button
                               type="button"
                               className="px-3.5 py-1.5 rounded-xl text-xs font-bold text-white shadow-xs cursor-pointer"
                               style={{ backgroundColor: themeColor }}
                             >
-                              Book Now
+                              <T>Book Now</T>
                             </button>
                           </div>
                         </div>
@@ -873,7 +875,7 @@ export const DesignPreviewModal: React.FC<DesignPreviewModalProps> = ({
                 }`}
               >
                 <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                  Archetype Architectural Specs:
+                  <T>Archetype Architectural Specs:</T>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
                   {archetype.features.map((feat, fIdx) => (
@@ -900,7 +902,7 @@ export const DesignPreviewModal: React.FC<DesignPreviewModalProps> = ({
             onClick={onClose}
             className="px-4 py-2 rounded-xl border border-slate-700 text-xs font-semibold text-slate-300 hover:bg-slate-800 transition cursor-pointer"
           >
-            Back to Design Archetypes
+            <T>Back to Design Archetypes</T>
           </button>
 
           {onSelectArchetype && (
@@ -913,7 +915,7 @@ export const DesignPreviewModal: React.FC<DesignPreviewModalProps> = ({
               className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 hover:from-blue-500 hover:to-indigo-500 text-white text-xs font-bold shadow-md shadow-blue-600/30 transition cursor-pointer"
             >
               <Check className="w-4 h-4" />
-              <span>Select &amp; Apply {archetype.name}</span>
+              <span><T>Select &amp; Apply</T> <T>{archetype.name}</T></span>
             </button>
           )}
         </div>

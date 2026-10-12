@@ -1,3 +1,4 @@
+import { T } from '@/lib/i18n/context';
 import React from 'react';
 import { ShieldCheck, CheckCircle2, AlertCircle, KeyRound, Copy } from 'lucide-react';
 
@@ -36,10 +37,10 @@ export const SecurityTab: React.FC<SecurityTabProps> = ({
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2.5">
             <ShieldCheck className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-            <span>Security</span>
+            <span><T>Security</T></span>
           </h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-            Protect your account with two-factor authentication and review login activity.
+            <T>Protect your account with two-factor authentication and review login activity.</T>
           </p>
         </div>
       </div>
@@ -67,10 +68,10 @@ export const SecurityTab: React.FC<SecurityTabProps> = ({
             </div>
             <div>
               <h2 className="text-sm font-bold text-slate-900 dark:text-white">
-                Two-Factor Authentication (TOTP)
+                <T>Two-Factor Authentication (TOTP)</T>
               </h2>
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                Requires Google Authenticator, Authy, or Apple Keychain 6-digit codes on login.
+                <T>Requires Google Authenticator, Authy, or Apple Keychain 6-digit codes on login.</T>
               </p>
             </div>
           </div>
@@ -83,7 +84,7 @@ export const SecurityTab: React.FC<SecurityTabProps> = ({
                 disabled={twoFactorLoading}
                 className="px-4 py-2 rounded-xl bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800 text-xs font-semibold hover:bg-rose-100 transition cursor-pointer"
               >
-                Disable 2FA
+                <T>Disable 2FA</T>
               </button>
             ) : (
               <button
@@ -93,7 +94,7 @@ export const SecurityTab: React.FC<SecurityTabProps> = ({
                 className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs transition flex items-center gap-1.5 cursor-pointer"
               >
                 <ShieldCheck className="h-4 w-4" />
-                <span>Enable 2FA Protection</span>
+                <span><T>Enable 2FA Protection</T></span>
               </button>
             )}
           </div>
@@ -103,7 +104,7 @@ export const SecurityTab: React.FC<SecurityTabProps> = ({
         {twoFactorSetupData && !twoFactorEnabled && (
           <div className="mt-6 pt-6 border-t border-slate-200 dark:border-slate-800 space-y-6">
             <div className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
-              Step 1: Scan QR Code or Copy Secret Key
+              <T>Step 1: Scan QR Code or Copy Secret Key</T>
             </div>
 
             <div className="flex flex-col sm:flex-row items-center gap-6">
@@ -117,11 +118,11 @@ export const SecurityTab: React.FC<SecurityTabProps> = ({
 
               <div className="space-y-3 flex-1 text-xs">
                 <p className="text-slate-600 dark:text-slate-300 leading-relaxed">
-                  Open your authenticator app (Google Authenticator, Microsoft Authenticator, or 1Password) and scan the QR code to the left.
+                  <T>Open your authenticator app (Google Authenticator, Microsoft Authenticator, or 1Password) and scan the QR code to the left.</T>
                 </p>
 
                 <div>
-                  <label className="block text-[11px] font-semibold text-slate-500 mb-1">Manual Base32 Secret Key</label>
+                  <label className="block text-[11px] font-semibold text-slate-500 mb-1"><T>Manual Base32 Secret Key</T></label>
                   <div className="flex items-center gap-2">
                     <code className="px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white font-mono text-xs font-bold tracking-widest">
                       {twoFactorSetupData.secret}
@@ -141,7 +142,7 @@ export const SecurityTab: React.FC<SecurityTabProps> = ({
 
                 {/* Recovery Codes */}
                 <div>
-                  <div className="text-[11px] font-semibold text-slate-500 mb-1">Emergency Recovery Backup Codes</div>
+                  <div className="text-[11px] font-semibold text-slate-500 mb-1"><T>Emergency Recovery Backup Codes</T></div>
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
                     {twoFactorSetupData.recoveryCodes.map((code: string, i: number) => (
                       <span key={i} className="px-2 py-1 bg-slate-100 dark:bg-slate-800 font-mono text-[10.5px] rounded text-slate-700 dark:text-slate-300 text-center">
@@ -156,7 +157,7 @@ export const SecurityTab: React.FC<SecurityTabProps> = ({
             {/* Step 2: Verification Input */}
             <div className="pt-4 border-t border-slate-200 dark:border-slate-800 space-y-3">
               <div className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
-                Step 2: Verify 6-Digit Code
+                <T>Step 2: Verify 6-Digit Code</T>
               </div>
               <div className="flex items-center gap-3">
                 <input
@@ -173,7 +174,7 @@ export const SecurityTab: React.FC<SecurityTabProps> = ({
                   disabled={twoFactorCodeInput.length !== 6 || twoFactorLoading}
                   className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded-xl shadow-xs transition disabled:opacity-50 cursor-pointer"
                 >
-                  {twoFactorLoading ? 'Verifying...' : 'Confirm & Activate 2FA'}
+                  {twoFactorLoading ? <T>{'Verifying...'}</T> : <T>{'Confirm & Activate 2FA'}</T>}
                 </button>
               </div>
             </div>
@@ -183,8 +184,8 @@ export const SecurityTab: React.FC<SecurityTabProps> = ({
 
       <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs flex items-center justify-between gap-4">
         <div>
-          <span className="text-xs font-bold text-slate-900 dark:text-white">Sign out everywhere</span>
-          <p className="text-[11px] text-slate-500 dark:text-slate-400">Ends every session of your account on every device, including this one. Use it if a device is lost or you think someone else got in.</p>
+          <span className="text-xs font-bold text-slate-900 dark:text-white"><T>Sign out everywhere</T></span>
+          <p className="text-[11px] text-slate-500 dark:text-slate-400"><T>Ends every session of your account on every device, including this one. Use it if a device is lost or you think someone else got in.</T></p>
         </div>
         <button
           type="button"
@@ -194,7 +195,7 @@ export const SecurityTab: React.FC<SecurityTabProps> = ({
           }}
           className="shrink-0 px-3 py-2 rounded-xl border border-rose-200 dark:border-rose-900 text-rose-600 text-xs font-semibold hover:bg-rose-50 dark:hover:bg-rose-950/40 cursor-pointer"
         >
-          Sign out everywhere
+          <T>Sign out everywhere</T>
         </button>
       </div>
 
@@ -202,21 +203,21 @@ export const SecurityTab: React.FC<SecurityTabProps> = ({
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-900 dark:text-white">AES-256 GCM Secret Vault</span>
-            <span className="px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 font-bold text-[10px]">Active</span>
+            <span className="text-xs font-bold text-slate-900 dark:text-white"><T>AES-256 GCM Secret Vault</T></span>
+            <span className="px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 font-bold text-[10px]"><T>Active</T></span>
           </div>
           <p className="text-[11px] text-slate-500 dark:text-slate-400">
-            All LLM provider API keys and webhook secrets are encrypted at rest with PBKDF2 salt derivation.
+            <T>All LLM provider API keys and webhook secrets are encrypted at rest with PBKDF2 salt derivation.</T>
           </p>
         </div>
 
         <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-900 dark:text-white">IP Rate Limiting &amp; Anti-DDoS</span>
-            <span className="px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 font-bold text-[10px]">Active</span>
+            <span className="text-xs font-bold text-slate-900 dark:text-white"><T>IP Rate Limiting &amp; Anti-DDoS</T></span>
+            <span className="px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 font-bold text-[10px]"><T>Active</T></span>
           </div>
           <p className="text-[11px] text-slate-500 dark:text-slate-400">
-            Sliding window throttling limits abusive requests on chat, upload, and calendar booking endpoints.
+            <T>Sliding window throttling limits abusive requests on chat, upload, and calendar booking endpoints.</T>
           </p>
         </div>
       </div>

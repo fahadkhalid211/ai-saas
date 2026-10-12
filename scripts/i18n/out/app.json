@@ -1,0 +1,942 @@
+{
+ "Returning…": [
+  "app/[locale]/dashboard/page.tsx"
+ ],
+ "Return to master account": [
+  "app/[locale]/dashboard/page.tsx"
+ ],
+ "Verifying...": [
+  "app/[locale]/login/page.tsx",
+  "components/crm/SecurityTab.tsx"
+ ],
+ "Verify and sign in": [
+  "app/[locale]/login/page.tsx"
+ ],
+ "Daily Conversations": [
+  "components/crm/AnalyticsTab.tsx"
+ ],
+ "Captured Leads": [
+  "components/crm/AnalyticsTab.tsx"
+ ],
+ "Pipeline Revenue ($)": [
+  "components/crm/AnalyticsTab.tsx"
+ ],
+ "Confirmed Bookings": [
+  "components/crm/AnalyticsTab.tsx"
+ ],
+ "All": [
+  "components/crm/AnalyticsTab.tsx"
+ ],
+ "General Consultation": [
+  "components/crm/AnalyticsTab.tsx"
+ ],
+ "bookings": [
+  "components/crm/AnalyticsTab.tsx"
+ ],
+ "users": [
+  "components/crm/AnalyticsTab.tsx"
+ ],
+ "Syncing...": [
+  "components/crm/AppointmentsTab.tsx"
+ ],
+ "Sync Now": [
+  "components/crm/AppointmentsTab.tsx"
+ ],
+ "Copied!": [
+  "components/crm/AppointmentsTab.tsx",
+  "components/crm/modals/EmbedModal.tsx",
+  "components/crm/modals/EmbedModal.tsx",
+  "components/crm/OverviewTab.tsx"
+ ],
+ "Copy Feed": [
+  "components/crm/AppointmentsTab.tsx"
+ ],
+ "Starter": [
+  "components/crm/BillingTab.tsx"
+ ],
+ "{overagesCount} extra chats ({overageCost})": [
+  "components/crm/BillingTab.tsx"
+ ],
+ "0 overage chats this cycle": [
+  "components/crm/BillingTab.tsx"
+ ],
+ "Billed ${n1}/year ({n2} chats included)": [
+  "components/crm/BillingTab.tsx"
+ ],
+ "{n1} chat sessions included / month": [
+  "components/crm/BillingTab.tsx"
+ ],
+ "{n1} GB": [
+  "components/crm/BillingTab.tsx"
+ ],
+ "{knowledgeStorageLimitMb} MB": [
+  "components/crm/BillingTab.tsx"
+ ],
+ "VISA": [
+  "components/crm/BillingTab.tsx"
+ ],
+ "billing@crescelo.com": [
+  "components/crm/BillingTab.tsx"
+ ],
+ "Connected & Active": [
+  "components/crm/ChannelsTab.tsx"
+ ],
+ "Setup Required": [
+  "components/crm/ChannelsTab.tsx"
+ ],
+ "Active": [
+  "components/crm/ChannelsTab.tsx",
+  "components/crm/ChannelsTab.tsx",
+  "components/crm/ChannelsTab.tsx",
+  "components/crm/ChannelsTab.tsx",
+  "components/crm/LandingPageTab.tsx",
+  "components/crm/ProfileTab.tsx"
+ ],
+ "Disabled": [
+  "components/crm/ChannelsTab.tsx",
+  "components/crm/ChannelsTab.tsx",
+  "components/crm/ChannelsTab.tsx",
+  "components/crm/ChannelsTab.tsx",
+  "components/crm/PhoneChannelCard.tsx"
+ ],
+ "Slack Webhook Verified (HTTP 200 OK)": [
+  "components/crm/ChannelsTab.tsx"
+ ],
+ "Slack Dispatch Failed": [
+  "components/crm/ChannelsTab.tsx"
+ ],
+ "AI Assistant": [
+  "components/crm/ChannelsTab.tsx",
+  "components/crm/WidgetTab.tsx"
+ ],
+ "Crescelo AI": [
+  "components/crm/ChannelsTab.tsx"
+ ],
+ "Row Appended Successfully (HTTP 200 OK)": [
+  "components/crm/ChannelsTab.tsx"
+ ],
+ "Google Sheets Sync Failed": [
+  "components/crm/ChannelsTab.tsx"
+ ],
+ "Verified: @{username}": [
+  "components/crm/ChannelsTab.tsx"
+ ],
+ "Verification Failed": [
+  "components/crm/ChannelsTab.tsx"
+ ],
+ "Copied": [
+  "components/crm/ChannelsTab.tsx",
+  "components/crm/ChannelsTab.tsx",
+  "components/crm/landing/LandingPagesList.tsx",
+  "components/crm/mcp/McpIntegrationPanel.tsx",
+  "components/crm/mcp/McpIntegrationPanel.tsx",
+  "components/markdown-renderer.tsx"
+ ],
+ "Copy": [
+  "components/crm/ChannelsTab.tsx",
+  "components/crm/ChannelsTab.tsx",
+  "components/crm/landing/LandingPagesList.tsx",
+  "components/crm/mcp/McpIntegrationPanel.tsx",
+  "components/crm/modals/EmbedModal.tsx",
+  "components/crm/modals/EmbedModal.tsx",
+  "components/markdown-renderer.tsx"
+ ],
+ "Webhook 200 OK Received": [
+  "components/crm/ChannelsTab.tsx"
+ ],
+ "Ping Failed": [
+  "components/crm/ChannelsTab.tsx"
+ ],
+ "Delivery Verified": [
+  "components/crm/ChannelsTab.tsx"
+ ],
+ "Delivery Test Failed": [
+  "components/crm/ChannelsTab.tsx"
+ ],
+ "White-Label Active": [
+  "components/crm/ChannelsTab.tsx"
+ ],
+ "Default Branding": [
+  "components/crm/ChannelsTab.tsx"
+ ],
+ "On": [
+  "components/crm/CostCapCard.tsx"
+ ],
+ "Off": [
+  "components/crm/CostCapCard.tsx"
+ ],
+ "of {n1}": [
+  "components/crm/CostCapCard.tsx"
+ ],
+ "the assistant is not replying": [
+  "components/crm/CostCapCard.tsx"
+ ],
+ "replies use the free Groq model": [
+  "components/crm/CostCapCard.tsx"
+ ],
+ "Loading…": [
+  "components/crm/CustomersTab.tsx"
+ ],
+ "Nobody matches that search.": [
+  "components/crm/CustomersTab.tsx"
+ ],
+ "No customers yet.": [
+  "components/crm/CustomersTab.tsx"
+ ],
+ "No name": [
+  "components/crm/CustomersTab.tsx",
+  "components/crm/CustomersTab.tsx"
+ ],
+ "member": [
+  "components/crm/CustomersTab.tsx"
+ ],
+ "members": [
+  "components/crm/CustomersTab.tsx"
+ ],
+ "Unknown": [
+  "components/crm/CustomersTab.tsx"
+ ],
+ "· invited, not joined yet": [
+  "components/crm/CustomersTab.tsx"
+ ],
+ "· two-factor on": [
+  "components/crm/CustomersTab.tsx"
+ ],
+ "their own API key": [
+  "components/crm/CustomersTab.tsx"
+ ],
+ "no API key added": [
+  "components/crm/CustomersTab.tsx"
+ ],
+ "Opening…": [
+  "components/crm/CustomersTab.tsx"
+ ],
+ "Open account": [
+  "components/crm/CustomersTab.tsx"
+ ],
+ "Select Bot": [
+  "components/crm/DashboardHeader.tsx"
+ ],
+ "GEMINI": [
+  "components/crm/DashboardHeader.tsx",
+  "components/crm/DashboardHeader.tsx"
+ ],
+ "Live Cloud": [
+  "components/crm/DashboardHeader.tsx"
+ ],
+ "Ephemeral": [
+  "components/crm/DashboardHeader.tsx"
+ ],
+ "ME": [
+  "components/crm/DashboardHeader.tsx"
+ ],
+ "My Profile": [
+  "components/crm/DashboardHeader.tsx"
+ ],
+ "Owner": [
+  "components/crm/DashboardHeader.tsx"
+ ],
+ "Admin": [
+  "components/crm/DashboardHeader.tsx"
+ ],
+ "Administrator": [
+  "components/crm/DashboardHeader.tsx",
+  "components/crm/ProfileTab.tsx"
+ ],
+ "admin@crescelo.com": [
+  "components/crm/DashboardHeader.tsx"
+ ],
+ "Workspace Owner": [
+  "components/crm/DashboardHeader.tsx",
+  "components/crm/ProfileTab.tsx"
+ ],
+ "Team Admin": [
+  "components/crm/DashboardHeader.tsx"
+ ],
+ "Lead": [
+  "components/crm/DashboardHeader.tsx"
+ ],
+ "Simple view": [
+  "components/crm/DashboardSidebar.tsx"
+ ],
+ "Advanced view": [
+  "components/crm/DashboardSidebar.tsx"
+ ],
+ "Your key is connected": [
+  "components/crm/EngineTab.tsx"
+ ],
+ "No key connected yet": [
+  "components/crm/EngineTab.tsx"
+ ],
+ "Groq is free, up to 14,400 replies a day, and does not ask for a card.": [
+  "components/crm/EngineTab.tsx"
+ ],
+ "Get a free key": [
+  "components/crm/EngineTab.tsx"
+ ],
+ "Open Console": [
+  "components/crm/EngineTab.tsx"
+ ],
+ "Free Tier API Key (Optional)": [
+  "components/crm/EngineTab.tsx"
+ ],
+ "{n1} API Key": [
+  "components/crm/EngineTab.tsx"
+ ],
+ "Zero-cost failover automatically tests your key with Groq, then Gemini, and falls back to local Ollama.": [
+  "components/crm/EngineTab.tsx"
+ ],
+ "Your API key is securely encrypted at rest using AES-256-GCM and never shared or logged.": [
+  "components/crm/EngineTab.tsx"
+ ],
+ "Testing…": [
+  "components/crm/EngineTab.tsx",
+  "components/crm/EngineTab.tsx"
+ ],
+ "Test Connection": [
+  "components/crm/EngineTab.tsx"
+ ],
+ "Test Ollama Connection": [
+  "components/crm/EngineTab.tsx"
+ ],
+ "Strict & Factual": [
+  "components/crm/EngineTab.tsx"
+ ],
+ "Balanced (Recommended)": [
+  "components/crm/EngineTab.tsx"
+ ],
+ "Creative": [
+  "components/crm/EngineTab.tsx"
+ ],
+ "this provider": [
+  "components/crm/EngineTab.tsx"
+ ],
+ "Syncing Sources...": [
+  "components/crm/KnowledgeTab.tsx"
+ ],
+ "Sync Sources": [
+  "components/crm/KnowledgeTab.tsx"
+ ],
+ "Default Assistant": [
+  "components/crm/KnowledgeTab.tsx"
+ ],
+ "demo-assistant": [
+  "components/crm/KnowledgeTab.tsx"
+ ],
+ "this assistant": [
+  "components/crm/KnowledgeTab.tsx",
+  "components/crm/KnowledgeTab.tsx"
+ ],
+ "file": [
+  "components/crm/KnowledgeTab.tsx",
+  "components/crm/OverviewTab.tsx"
+ ],
+ "files": [
+  "components/crm/KnowledgeTab.tsx",
+  "components/crm/OverviewTab.tsx"
+ ],
+ "passage": [
+  "components/crm/KnowledgeTab.tsx",
+  "components/crm/OverviewTab.tsx"
+ ],
+ "passages": [
+  "components/crm/KnowledgeTab.tsx",
+  "components/crm/OverviewTab.tsx"
+ ],
+ "{usedMb} MB": [
+  "components/crm/KnowledgeTab.tsx"
+ ],
+ "0 MB": [
+  "components/crm/KnowledgeTab.tsx"
+ ],
+ "{limitMb} MB": [
+  "components/crm/KnowledgeTab.tsx"
+ ],
+ "50 MB": [
+  "components/crm/KnowledgeTab.tsx"
+ ],
+ "Plan": [
+  "components/crm/KnowledgeTab.tsx"
+ ],
+ "Reading...": [
+  "components/crm/KnowledgeTab.tsx"
+ ],
+ "Adding...": [
+  "components/crm/KnowledgeTab.tsx"
+ ],
+ "YouTube video": [
+  "components/crm/KnowledgeTab.tsx"
+ ],
+ "Video/audio link": [
+  "components/crm/KnowledgeTab.tsx"
+ ],
+ "Web page": [
+  "components/crm/KnowledgeTab.tsx"
+ ],
+ "YOUTUBE": [
+  "components/crm/KnowledgeTab.tsx"
+ ],
+ "WEB": [
+  "components/crm/KnowledgeTab.tsx"
+ ],
+ "VIDEO": [
+  "components/crm/KnowledgeTab.tsx"
+ ],
+ "AUDIO": [
+  "components/crm/KnowledgeTab.tsx"
+ ],
+ "Fully Modular": [
+  "components/crm/landing/AiLandingWizard.tsx"
+ ],
+ "Auto-configured": [
+  "components/crm/landing/AiLandingWizard.tsx"
+ ],
+ "your industry": [
+  "components/crm/landing/AiLandingWizard.tsx"
+ ],
+ "Primary Assistant": [
+  "components/crm/landing/AiLandingWizard.tsx",
+  "components/crm/landing/AiLandingWizard.tsx"
+ ],
+ "Analyzing brand narrative and target clientele for \"{n1}\"...": [
+  "components/crm/landing/AiLandingWizard.tsx"
+ ],
+ "Dedicated Bot ({assistantId})": [
+  "components/crm/landing/AiLandingWizard.tsx"
+ ],
+ "Existing Knowledge Base ({n1})": [
+  "components/crm/landing/AiLandingWizard.tsx"
+ ],
+ "None / Disabled": [
+  "components/crm/landing/AiLandingWizard.tsx"
+ ],
+ "Template": [
+  "components/crm/landing/ArchetypeDesignPreview.tsx"
+ ],
+ "Verified Architecture": [
+  "components/crm/landing/ArchetypeDesignPreview.tsx"
+ ],
+ "Deleting Landing Page...": [
+  "components/crm/landing/DeleteLandingPageModal.tsx"
+ ],
+ "Delete Landing Page?": [
+  "components/crm/landing/DeleteLandingPageModal.tsx"
+ ],
+ "Deconstructing cloud assets and unbinding routes...": [
+  "components/crm/landing/DeleteLandingPageModal.tsx"
+ ],
+ "This action cannot be undone. All public traffic and booking routes will be removed.": [
+  "components/crm/landing/DeleteLandingPageModal.tsx"
+ ],
+ "Untitled Page": [
+  "components/crm/landing/DeleteLandingPageModal.tsx"
+ ],
+ "Hosted business landing page.": [
+  "components/crm/landing/DeleteLandingPageModal.tsx"
+ ],
+ "Processing deletion...": [
+  "components/crm/landing/DeleteLandingPageModal.tsx"
+ ],
+ "Prestige Editorial": [
+  "components/crm/landing/DesignPreviewModal.tsx"
+ ],
+ "High-Velocity Split": [
+  "components/crm/landing/DesignPreviewModal.tsx"
+ ],
+ "Immersive Media Showcase": [
+  "components/crm/landing/DesignPreviewModal.tsx"
+ ],
+ "Business Website": [
+  "components/crm/landing/LandingPagesList.tsx",
+  "components/crm/LandingPageTab.tsx"
+ ],
+ "High-converting business website with instant scheduling and AI customer care.": [
+  "components/crm/landing/LandingPagesList.tsx"
+ ],
+ "Unbinding routes...": [
+  "components/crm/landing/LandingPagesList.tsx"
+ ],
+ "Your Business Website": [
+  "components/crm/LandingPageTab.tsx"
+ ],
+ "Copied Link": [
+  "components/crm/LandingPageTab.tsx"
+ ],
+ "Copy Link": [
+  "components/crm/LandingPageTab.tsx"
+ ],
+ "Auto": [
+  "components/crm/LandingPageTab.tsx"
+ ],
+ "Apply": [
+  "components/crm/LandingPageTab.tsx",
+  "components/crm/SubscriptionGate.tsx"
+ ],
+ "America/New_York": [
+  "components/crm/LandingPageTab.tsx"
+ ],
+ "Section Enabled": [
+  "components/crm/LandingPageTab.tsx"
+ ],
+ "Section Hidden": [
+  "components/crm/LandingPageTab.tsx"
+ ],
+ "Plan #{n1}": [
+  "components/crm/LandingPageTab.tsx"
+ ],
+ "Your Business Name": [
+  "components/crm/LandingPageTab.tsx"
+ ],
+ "Book services, view transparent pricing, and schedule appointments online 24/7 with our AI concierge.": [
+  "components/crm/LandingPageTab.tsx"
+ ],
+ "Copy URL": [
+  "components/crm/mcp/McpIntegrationPanel.tsx"
+ ],
+ "Never": [
+  "components/crm/mcp/McpIntegrationPanel.tsx"
+ ],
+ "FAILED": [
+  "components/crm/mcp/McpIntegrationPanel.tsx"
+ ],
+ "Copied to Clipboard": [
+  "components/crm/mcp/McpIntegrationPanel.tsx"
+ ],
+ "Copy Token": [
+  "components/crm/mcp/McpIntegrationPanel.tsx"
+ ],
+ "Generating...": [
+  "components/crm/mcp/McpIntegrationPanel.tsx"
+ ],
+ "Generate Token": [
+  "components/crm/mcp/McpIntegrationPanel.tsx"
+ ],
+ "To use {featureName}, connect your free Groq API key.": [
+  "components/crm/modals/ApiKeyRequiredModal.tsx"
+ ],
+ "Connect your free Groq API key to activate your AI assistant.": [
+  "components/crm/modals/ApiKeyRequiredModal.tsx"
+ ],
+ "{n1} Hour(s)": [
+  "components/crm/modals/AppointmentDetailsModal.tsx",
+  "components/crm/WidgetTab.tsx"
+ ],
+ "{durationMinutes} Minutes": [
+  "components/crm/modals/AppointmentDetailsModal.tsx"
+ ],
+ "Found {occurrences} occurrence(s) across {matchingChunks} chunk(s)": [
+  "components/crm/modals/CorrectionModal.tsx"
+ ],
+ "No occurrences of \"{n1}\" found in current chunks": [
+  "components/crm/modals/CorrectionModal.tsx"
+ ],
+ "Term Replacement": [
+  "components/crm/modals/CorrectionModal.tsx"
+ ],
+ "Fact Override": [
+  "components/crm/modals/CorrectionModal.tsx"
+ ],
+ "Text Edit": [
+  "components/crm/modals/CorrectionModal.tsx"
+ ],
+ "Recent": [
+  "components/crm/modals/CorrectionModal.tsx"
+ ],
+ "Website Visitor": [
+  "components/crm/modals/LeadDetailsModal.tsx"
+ ],
+ "Not provided": [
+  "components/crm/modals/LeadDetailsModal.tsx"
+ ],
+ "Your first landing page connects to your default knowledge base so your trained documents and FAQs are immediately used.": [
+  "components/crm/modals/NewLandingPageModal.tsx"
+ ],
+ "A new dedicated assistant will be created with an isolated knowledge base exclusively for this page.": [
+  "components/crm/modals/NewLandingPageModal.tsx"
+ ],
+ "Reuses documents and training data from your selected assistant without creating extra bots.": [
+  "components/crm/modals/NewLandingPageModal.tsx"
+ ],
+ "Open Live Chat": [
+  "components/crm/NotificationToast.tsx"
+ ],
+ "View Chat": [
+  "components/crm/NotificationToast.tsx"
+ ],
+ "Set up {assistantName}": [
+  "components/crm/onboarding/OnboardingWizardModal.tsx"
+ ],
+ "Set up your assistant": [
+  "components/crm/onboarding/OnboardingWizardModal.tsx"
+ ],
+ "Cancel": [
+  "components/crm/OverviewTab.tsx"
+ ],
+ "Answer it": [
+  "components/crm/OverviewTab.tsx"
+ ],
+ "Saving...": [
+  "components/crm/OverviewTab.tsx"
+ ],
+ "Save this answer": [
+  "components/crm/OverviewTab.tsx"
+ ],
+ "Copy code": [
+  "components/crm/OverviewTab.tsx"
+ ],
+ "Enabled": [
+  "components/crm/PhoneChannelCard.tsx"
+ ],
+ "Not assigned yet": [
+  "components/crm/PhoneChannelCard.tsx"
+ ],
+ "International format. Must match the number bought from the carrier. Each number belongs to one assistant.": [
+  "components/crm/PhoneChannelCard.tsx"
+ ],
+ "Numbers are assigned by the Crescelo team. Contact support to get one.": [
+  "components/crm/PhoneChannelCard.tsx"
+ ],
+ "In progress": [
+  "components/crm/PhoneChannelCard.tsx"
+ ],
+ "Answered": [
+  "components/crm/PhoneChannelCard.tsx"
+ ],
+ "No AI engine is connected yet": [
+  "components/crm/PlaygroundTab.tsx"
+ ],
+ "This isn't a real answer — the AI engine had a problem": [
+  "components/crm/PlaygroundTab.tsx"
+ ],
+ "Groq": [
+  "components/crm/PlaygroundTab.tsx"
+ ],
+ "openai/gpt-oss-120b": [
+  "components/crm/PlaygroundTab.tsx"
+ ],
+ "Team Member": [
+  "components/crm/ProfileTab.tsx"
+ ],
+ "Your Name": [
+  "components/crm/ProfileTab.tsx"
+ ],
+ "Professional Title Not Set": [
+  "components/crm/ProfileTab.tsx"
+ ],
+ "user@crescelo.com": [
+  "components/crm/ProfileTab.tsx"
+ ],
+ "Member": [
+  "components/crm/ProfileTab.tsx"
+ ],
+ "Workspace": [
+  "components/crm/ProfileTab.tsx"
+ ],
+ "Cancel Password Change": [
+  "components/crm/ProfileTab.tsx"
+ ],
+ "Change Password": [
+  "components/crm/ProfileTab.tsx"
+ ],
+ "Confirm & Activate 2FA": [
+  "components/crm/SecurityTab.tsx"
+ ],
+ "day": [
+  "components/crm/SubscriptionGate.tsx",
+  "components/crm/SubscriptionGate.tsx",
+  "components/crm/SubscriptionGate.tsx"
+ ],
+ "days": [
+  "components/crm/SubscriptionGate.tsx",
+  "components/crm/SubscriptionGate.tsx",
+  "components/crm/SubscriptionGate.tsx"
+ ],
+ "Free access with your code: {daysLeft} {n2} left, no card needed. It ends on {n3}. To keep your assistants running after that, choose a plan.": [
+  "components/crm/SubscriptionGate.tsx"
+ ],
+ "Plans": [
+  "components/crm/SubscriptionGate.tsx",
+  "components/crm/SubscriptionGate.tsx"
+ ],
+ "Early-bird trial: {daysLeft} {n2} left, no card needed. To keep your assistants running after {n3}, message us and we will set up payment.": [
+  "components/crm/SubscriptionGate.tsx"
+ ],
+ "Contact us to pay": [
+  "components/crm/SubscriptionGate.tsx"
+ ],
+ "Your last payment failed. Update your card to keep your assistants running.": [
+  "components/crm/SubscriptionGate.tsx"
+ ],
+ "Your subscription is cancelled and ends on {n1}. You will not be charged again.": [
+  "components/crm/SubscriptionGate.tsx"
+ ],
+ "Free trial: {daysLeft} {n2} left. Your card will be charged ${nextChargeAmount} on {n4} unless you cancel first.": [
+  "components/crm/SubscriptionGate.tsx"
+ ],
+ "Update card": [
+  "components/crm/SubscriptionGate.tsx"
+ ],
+ "Resume": [
+  "components/crm/SubscriptionGate.tsx"
+ ],
+ "Cancel or manage": [
+  "components/crm/SubscriptionGate.tsx"
+ ],
+ "Confirming your card…": [
+  "components/crm/SubscriptionGate.tsx"
+ ],
+ "This takes a few seconds. Please do not close this page.": [
+  "components/crm/SubscriptionGate.tsx"
+ ],
+ "Subscription ended": [
+  "components/crm/SubscriptionGate.tsx"
+ ],
+ "{TRIAL_DAYS}-day free trial": [
+  "components/crm/SubscriptionGate.tsx"
+ ],
+ "Choose a plan to switch your assistants back on": [
+  "components/crm/SubscriptionGate.tsx"
+ ],
+ "Early birds, this one is on us 🐣": [
+  "components/crm/SubscriptionGate.tsx"
+ ],
+ "Start your free trial": [
+  "components/crm/SubscriptionGate.tsx"
+ ],
+ "Your assistants are paused. Your data is kept for 30 days. Pick a plan, or message us below and we will arrange payment by hand.": [
+  "components/crm/SubscriptionGate.tsx"
+ ],
+ "We are just launching, and our card payments are still getting their wings. So instead of making you hop through hoops, early birds get {TRIAL_DAYS} free days with every Growth feature. No card, no catch. Build your assistant, put it on your site and see what it can do.": [
+  "components/crm/SubscriptionGate.tsx"
+ ],
+ "You pay nothing today. Your {TRIAL_DAYS}-day trial includes every Growth feature. If you do not cancel before it ends, your card is charged automatically. Cancel any time and you are never charged for the trial.": [
+  "components/crm/SubscriptionGate.tsx"
+ ],
+ "Billing period": [
+  "components/crm/SubscriptionGate.tsx"
+ ],
+ "Annual · save {n1}%": [
+  "components/crm/SubscriptionGate.tsx"
+ ],
+ "Monthly": [
+  "components/crm/SubscriptionGate.tsx"
+ ],
+ "/ month": [
+  "components/crm/SubscriptionGate.tsx"
+ ],
+ "Billed ${n1} per year": [
+  "components/crm/SubscriptionGate.tsx"
+ ],
+ "Billed monthly": [
+  "components/crm/SubscriptionGate.tsx"
+ ],
+ "You save $": [
+  "components/crm/SubscriptionGate.tsx"
+ ],
+ "a year": [
+  "components/crm/SubscriptionGate.tsx"
+ ],
+ "chat sessions,": [
+  "components/crm/SubscriptionGate.tsx"
+ ],
+ "unlimited": [
+  "components/crm/SubscriptionGate.tsx"
+ ],
+ "assistant": [
+  "components/crm/SubscriptionGate.tsx"
+ ],
+ "assistants": [
+  "components/crm/SubscriptionGate.tsx"
+ ],
+ "Today:": [
+  "components/crm/SubscriptionGate.tsx",
+  "components/crm/SubscriptionGate.tsx",
+  "components/crm/SubscriptionGate.tsx"
+ ],
+ ", and no card asked for. Your": [
+  "components/crm/SubscriptionGate.tsx"
+ ],
+ "early-bird days run until": [
+  "components/crm/SubscriptionGate.tsx"
+ ],
+ ". Loving it? Message us below and we will set up payment together.": [
+  "components/crm/SubscriptionGate.tsx"
+ ],
+ "for": [
+  "components/crm/SubscriptionGate.tsx",
+  "components/crm/SubscriptionGate.tsx"
+ ],
+ ", then every": [
+  "components/crm/SubscriptionGate.tsx"
+ ],
+ "year": [
+  "components/crm/SubscriptionGate.tsx",
+  "components/crm/SubscriptionGate.tsx"
+ ],
+ "month": [
+  "components/crm/SubscriptionGate.tsx",
+  "components/crm/SubscriptionGate.tsx"
+ ],
+ "until you cancel.": [
+  "components/crm/SubscriptionGate.tsx"
+ ],
+ ". After": [
+  "components/crm/SubscriptionGate.tsx"
+ ],
+ "days (": [
+  "components/crm/SubscriptionGate.tsx"
+ ],
+ ", charged automatically every": [
+  "components/crm/SubscriptionGate.tsx"
+ ],
+ "until you cancel. Cancel before that date and you pay nothing.": [
+  "components/crm/SubscriptionGate.tsx"
+ ],
+ "Secure payment by Stripe.": [
+  "components/crm/SubscriptionGate.tsx"
+ ],
+ "By continuing you agree to the": [
+  "components/crm/SubscriptionGate.tsx"
+ ],
+ "Terms": [
+  "components/crm/SubscriptionGate.tsx"
+ ],
+ "and": [
+  "components/crm/SubscriptionGate.tsx"
+ ],
+ "Privacy Policy": [
+  "components/crm/SubscriptionGate.tsx"
+ ],
+ "Have an access code?": [
+  "components/crm/SubscriptionGate.tsx"
+ ],
+ "Access code": [
+  "components/crm/SubscriptionGate.tsx"
+ ],
+ "For example FRIEND-7K3Q9X": [
+  "components/crm/SubscriptionGate.tsx"
+ ],
+ "Checking…": [
+  "components/crm/SubscriptionGate.tsx"
+ ],
+ "A code gives you free access to a plan without a card.": [
+  "components/crm/SubscriptionGate.tsx"
+ ],
+ "Sign out": [
+  "components/crm/SubscriptionGate.tsx"
+ ],
+ "Got it, thank you!": [
+  "components/crm/SubscriptionGate.tsx"
+ ],
+ "Ticket {ticketRef} is open.": [
+  "components/crm/SubscriptionGate.tsx"
+ ],
+ "We will email you shortly to arrange payment. You can follow the conversation in the Support tab.": [
+  "components/crm/SubscriptionGate.tsx"
+ ],
+ "Open Support": [
+  "components/crm/SubscriptionGate.tsx"
+ ],
+ "Prefer to pay now? Let us sort it out by hand.": [
+  "components/crm/SubscriptionGate.tsx"
+ ],
+ "Our automatic card payments are still on their way. Until they land, we will happily arrange payment with you directly. Tell us which plan you want and anything we should know, and we will reply by email with the next step.": [
+  "components/crm/SubscriptionGate.tsx"
+ ],
+ "Your message": [
+  "components/crm/SubscriptionGate.tsx"
+ ],
+ "Sending…": [
+  "components/crm/SubscriptionGate.tsx"
+ ],
+ "Send to the team": [
+  "components/crm/SubscriptionGate.tsx"
+ ],
+ "Support inbox": [
+  "components/crm/SupportTab.tsx"
+ ],
+ "Support": [
+  "components/crm/SupportTab.tsx"
+ ],
+ "Loading...": [
+  "components/crm/SupportTab.tsx"
+ ],
+ "No tickets match.": [
+  "components/crm/SupportTab.tsx"
+ ],
+ "No tickets yet. Use \"New ticket\" or \"Report a bug\" to contact the Crescelo team.": [
+  "components/crm/SupportTab.tsx"
+ ],
+ "· needs a reply": [
+  "components/crm/SupportTab.tsx"
+ ],
+ "Sending...": [
+  "components/crm/SupportTab.tsx"
+ ],
+ "Submit ticket": [
+  "components/crm/SupportTab.tsx"
+ ],
+ "Internal note": [
+  "components/crm/SupportTab.tsx"
+ ],
+ "Crescelo Support": [
+  "components/crm/SupportTab.tsx"
+ ],
+ "Save note": [
+  "components/crm/SupportTab.tsx"
+ ],
+ "Send reply": [
+  "components/crm/SupportTab.tsx"
+ ],
+ "Inviting...": [
+  "components/crm/TeamTab.tsx"
+ ],
+ "Send Invite": [
+  "components/crm/TeamTab.tsx"
+ ],
+ "your AI bot": [
+  "components/crm/TemplatesTab.tsx"
+ ],
+ "All Industries": [
+  "components/crm/TemplatesTab.tsx"
+ ],
+ "{n1} Mins": [
+  "components/crm/WidgetTab.tsx"
+ ],
+ "Close": [
+  "components/crm/WidgetTab.tsx"
+ ],
+ "Add Custom Field": [
+  "components/crm/WidgetTab.tsx"
+ ],
+ "Hello! How can I assist you today?": [
+  "components/crm/WidgetTab.tsx"
+ ],
+ "Thinking…": [
+  "components/chat/FloatingPlatformChatbot.tsx"
+ ],
+ "Answering…": [
+  "components/chat/FloatingPlatformChatbot.tsx"
+ ],
+ "Ask about your plan or any setup guide": [
+  "components/chat/FloatingPlatformChatbot.tsx"
+ ],
+ "Ask about pricing, setup or features": [
+  "components/chat/FloatingPlatformChatbot.tsx"
+ ],
+ "Working…": [
+  "components/chat/FloatingPlatformChatbot.tsx"
+ ],
+ "Booking…": [
+  "components/chat/PlatformBookingCard.tsx"
+ ],
+ "Confirm booking": [
+  "components/chat/PlatformBookingCard.tsx"
+ ],
+ "Something went wrong": [
+  "components/ui/ErrorModal.tsx"
+ ],
+ "code": [
+  "components/markdown-renderer.tsx"
+ ]
+}

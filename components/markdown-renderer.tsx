@@ -1,5 +1,6 @@
 'use client';
 
+import { T } from '@/lib/i18n/context';
 import React, { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -166,13 +167,13 @@ function CodeBlock({ code, language }: { code: string; language: string }) {
   return (
     <div className="relative my-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-950 text-slate-200 overflow-hidden text-[11px] font-mono shadow-xs">
       <div className="flex items-center justify-between px-3 py-1 bg-slate-900 border-b border-slate-800 text-slate-400 text-[10px]">
-        <span>{language || 'code'}</span>
+        <span>{language || <T>{'code'}</T>}</span>
         <button
           onClick={handleCopy}
           className="flex items-center gap-1 hover:text-slate-200 transition cursor-pointer"
         >
           {copied ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
-          <span>{copied ? 'Copied' : 'Copy'}</span>
+          <span>{copied ? <T>{'Copied'}</T> : <T>{'Copy'}</T>}</span>
         </button>
       </div>
       <pre className="p-3 overflow-x-auto text-slate-100">

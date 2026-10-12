@@ -1,5 +1,6 @@
 'use client';
 
+import { T } from '@/lib/i18n/context';
 import { useEffect, useRef, type CSSProperties, type ReactNode } from 'react';
 import { usePrefersReducedMotion } from './hooks';
 
@@ -107,25 +108,25 @@ export function OrbitStage({
     <section id={id} className={`mk-orbit-section ${panel ? 'is-panel' : ''}`} aria-labelledby={titleId}>
       <div ref={outerRef} className="mk-orbit-outer">
         <div ref={stageRef} className="mk-orbit-stage" style={{ ['--e' as string]: reduced ? 1 : 0 } as CSSProperties}>
-          <div className="mk-orbit-head">{head}</div>
+          <div className="mk-orbit-head"><T>{head}</T></div>
 
           <div className="mk-orbit-field">
             <div className="mk-orbit-core" aria-hidden="true">
               <span className="mk-orbit-ring r1" />
               <span className="mk-orbit-ring r2" />
               <span className="mk-orbit-ring r3" />
-              <span className="mk-orbit-disc">{core}</span>
+              <span className="mk-orbit-disc"><T>{core}</T></span>
             </div>
             <ul className="mk-orbit-items">
               {items.map((it, i) => (
                 <li key={it.id} className="mk-orbit-item" style={place(it, i)}>
                   <span className={`mk-orbit-pill ${it.ring === 'inner' ? 'is-inner' : ''}`} data-i={i % 5} tabIndex={0}>
                     <span className={`mk-orbit-badge ${it.icon ? 'has-icon' : ''}`} style={it.iconBg ? { background: it.iconBg } : undefined} aria-hidden="true">
-                      {it.icon ?? it.label[0]}
+                      <T>{it.icon ?? it.label[0]}</T>
                     </span>
                     <span>
-                      <b>{it.label}</b>
-                      {it.note ? <small>{it.note}</small> : null}
+                      <b><T>{it.label}</T></b>
+                      {it.note ? <small><T>{it.note}</T></small> : null}
                     </span>
                   </span>
                 </li>

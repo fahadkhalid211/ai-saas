@@ -1,0 +1,150 @@
+2250¦Lägg till fråga¦Lisää kysymys¦Aggiungi domanda¦Añadir pregunta
+2251¦Lägg till tjänst¦Lisää palvelu¦Aggiungi servizio¦Añadir servicio
+2252¦Lägg till tjänster för att visa din meny och möjliggöra direkt onlinebokning.¦Lisää palvelut esitelläksesi valikoimasi ja ottaaksesi käyttöön välittömän verkkovarauksen.¦Aggiungi i servizi per mostrare il tuo menu e abilitare la prenotazione online immediata.¦Añade servicios para mostrar tu carta y activar la reserva online instantánea.
+2253¦Lägg till bild¦Lisää dia¦Aggiungi slide¦Añadir diapositiva
+2254¦Lägg till, redigera eller anpassa de roterande bilderna i huvudavsnittet. Varje bild har egen bild, rubrik, underrubrik och etikett.¦Lisää, muokkaa tai mukauta pääosion vaihtuvia kuvia. Jokaisella diassa on oma kuva, otsikko, alaotsikko ja merkki.¦Aggiungi, modifica o personalizza le slide a rotazione della sezione hero. Ogni slide ha la propria immagine, titolo, sottotitolo e badge.¦Añade, edita o personaliza las diapositivas rotatorias de la sección principal. Cada diapositiva tiene su propia imagen, titular, subtítulo e insignia.
+2255¦=
+2256¦=
+2257¦AI-teknik¦Tekoäly ja teknologia¦Tecnologia IA¦Tecnología de IA
+2258¦AI-webbassistent och SaaS¦Tekoälyverkkoavustaja ja SaaS¦Assistente web IA e SaaS¦Asistente web de IA y SaaS
+2259¦=
+2260¦Besvara vanliga besökarfrågor för att bygga förtroende och ta bort hinder för bokning.¦Vastaa kävijöiden yleisiin kysymyksiin rakentaaksesi luottamusta ja poistaaksesi varauksen esteitä.¦Rispondi alle domande più comuni dei visitatori per creare fiducia ed eliminare gli ostacoli alla prenotazione.¦Responde a las preguntas habituales de los visitantes para generar confianza y eliminar fricciones en la reserva.
+2261¦Svara alla besökare. Boka dem som är redo.¦Vastaa jokaiselle kävijälle. Varaa aika niille, jotka ovat valmiita.¦Rispondi a ogni visitatore. Prenota chi è pronto.¦Responde a cada visitante. Reserva cita a quien está listo.
+2262¦Svar...¦Vastaus...¦Risposta...¦Respuesta...
+2263¦Tillämpa¦Käytä¦Applica¦Aplicar
+2264¦Tillämpa förinställning¦Käytä esiasetusta¦Applica il preset¦Aplicar preajuste
+2265¦Bokningar för dina tjänster schemaläggs och visas enligt den här tidszonen.¦Palveluidesi varaukset aikataulutetaan ja näytetään tämän aikavyöhykkeen mukaan.¦Gli appuntamenti per i tuoi servizi verranno programmati e mostrati in base a questo fuso orario.¦Las citas de tus servicios se programarán y mostrarán según esta zona horaria.
+2266¦=
+2267¦Tilldelad AI-concierge och kunskapsbas¦Määritetty tekoälyconcierge ja tietopohja¦Concierge IA e base di conoscenza assegnati¦Conserje de IA y base de conocimiento asignados
+2268¦Auto¦Automaattinen¦Auto¦Auto
+2269¦Automatiskt genererad standardmeny aktiv¦Automaattisesti luotu oletusvalikko käytössä¦Menu predefinito generato automaticamente attivo¦Menú predeterminado generado automáticamente activo
+2270¦Autonoma neurala agenter, orkestrering av företags-LLM, granskning av vektorflöden och API-demos.¦Itsenäiset neuroagentit, yritystason LLM-orkestrointi, vektoriputkien auditoinnit ja API-esittelyt.¦Agenti neurali autonomi, orchestrazione di LLM enterprise, audit di pipeline vettoriali e demo API.¦Agentes neuronales autónomos, orquestación de LLM empresariales, auditorías de canalizaciones vectoriales y demos de API.
+2271¦=
+2272¦=
+2273¦B2B-SaaS och teknik¦B2B-SaaS ja teknologia¦SaaS B2B e tecnologia¦SaaS B2B y tecnología
+2274¦Tillbaka till alla landningssidor¦Takaisin kaikkiin laskeutumissivuihin¦Torna a tutte le landing page¦Volver a todas las páginas de aterrizaje
+2275¦Etikettext (valfritt)¦Merkin teksti (valinnainen)¦Testo del badge (facoltativo)¦Texto de la insignia (opcional)
+2276¦=
+2277¦=
+2278¦Boka tid →¦Varaa aika →¦Prenota un appuntamento →¦Reservar cita →
+2279¦Boka tider online dygnet runt med direkt bekräftelse.¦Varaa aikoja verkossa ympäri vuorokauden välittömällä vahvistuksella.¦Prenota appuntamenti online 24 ore su 24 con conferma immediata.¦Reserva citas online las 24 horas con confirmación instantánea.
+2280¦Boka tjänster, se tydliga priser och boka tider online dygnet runt med vår AI-concierge.¦Varaa palveluita, katso läpinäkyvät hinnat ja varaa aikoja verkossa ympäri vuorokauden tekoälyconciergemme kanssa.¦Prenota servizi, consulta i prezzi trasparenti e fissa appuntamenti online 24 ore su 24 con il nostro concierge IA.¦Reserva servicios, consulta precios transparentes y programa citas online las 24 horas con nuestro conserje de IA.
+2281¦bokning (eller @)¦varaus (tai @)¦prenotazione (o @)¦reserva (o @)
+2282¦Tidszon för bokningskalendern¦Varauskalenterin aikavyöhyke¦Fuso orario del calendario di prenotazione¦Zona horaria del calendario de reservas
+2283¦Varumärkesidentitet, 3D-rörelsedesign, immersiv WebGL-konstnärlig ledning och intag av kundportföljer.¦Brändi-identiteetti, 3D-liikesuunnittelu, immersiivinen WebGL-taiteellinen ohjaus ja asiakasportfolioiden vastaanotto.¦Identità di marca, motion design 3D, direzione artistica WebGL immersiva e raccolta dei portfolio dei clienti.¦Identidad de marca, diseño de movimiento 3D, dirección de arte WebGL inmersiva y recepción de portafolios de clientes.
+2284¦Webbadress till varumärkets logotyp¦Brändin logon URL¦URL del logo del brand¦URL del logotipo de la marca
+2285¦=
+2286¦Egen domän med ditt varumärke¦Oma brändätty verkkotunnus¦Dominio personalizzato con il tuo brand¦Dominio propio con tu marca
+2287¦Kort beskrivning för potentiella kunder¦Lyhyt kuvaus potentiaalisille asiakkaille¦Breve descrizione per i potenziali clienti¦Breve descripción para posibles clientes
+2288¦Verksamhetens identitet och positionering¦Yrityksen identiteetti ja asemointi¦Identità e posizionamento dell'attività¦Identidad y posicionamiento del negocio
+2289¦Företagsnamn¦Yrityksen nimi¦Nome dell'attività¦Nombre del negocio
+2290¦Knapp med uppmaning till handling¦Toimintakehotepainike¦Pulsante call to action¦Botón de llamada a la acción
+2291¦Knapptext¦Painikkeen teksti¦Testo del pulsante¦Texto del botón
+2292¦=
+2293¦Banner med uppmaning och upphovsrätt i sidfoten¦Toimintakehotebanneri ja alatunnisteen tekijänoikeusteksti¦Banner call to action e copyright nel piè di pagina¦Banner de llamada a la acción y copyright del pie de página
+2294¦Text på uppmaningsknappen¦Toimintakehotepainikkeen teksti¦Testo del pulsante call to action¦Texto del botón de llamada a la acción
+2295¦Åsidosätt kanonisk URL (valfritt)¦Ohita kanoninen URL (valinnainen)¦Sostituisci l'URL canonico (facoltativo)¦Sustituir la URL canónica (opcional)
+2296¦=
+2297¦Startfrågor till chattboten (snabbval för besökare)¦Chatbotin aloituskysymykset (kävijöiden pikavalinnat)¦Domande iniziali del chatbot (chip rapidi per i visitatori)¦Preguntas iniciales del chatbot (atajos rápidos para visitantes)
+2298¦Snabbval som visas i chattwidgeten. Ett klick skickar frågan direkt och svaret hämtas ur din kunskapsbas.¦Pikavalinnat näkyvät chat-widgetissä. Napsautus lähettää kysymyksen heti ja vastaus haetaan tietopohjastasi.¦Chip mostrati nel widget del chatbot. Un clic invia subito la domanda e la risposta arriva dalla tua base di conoscenza.¦Atajos que se muestran dentro del widget del chatbot. Un clic envía la pregunta al instante y se responde con tu base de conocimiento.
+2299¦Välj en färdig branschmall för att direkt fylla i anpassade tjänster, texter och layouttema.¦Valitse valmis toimialapohja täyttääksesi heti räätälöidyt palvelut, tekstit ja ulkoasuteemat.¦Scegli un modello di settore già pronto per popolare subito servizi, testi e temi di layout su misura.¦Elige una plantilla sectorial ya preparada para rellenar al instante servicios, textos y temas de diseño a medida.
+2300¦Välj bland tre skräddarsydda designarketyper som är gjorda för just din bransch.¦Valitse kolmesta räätälöidystä suunnitteluarkkityypistä, jotka on tehty nimenomaan toimialallesi.¦Scegli tra 3 archetipi di design su misura pensati per il tuo settore.¦Elige entre 3 arquetipos de diseño a medida creados específicamente para tu sector.
+2301¦=
+2302¦Ren trådramsskiss för vilken egen bransch, byrå, konsultfirma eller specialverksamhet som helst.¦Siisti rautalankapohja mille tahansa omalle alalle, toimistolle, konsulttiyritykselle tai erikoisliiketoiminnalle.¦Struttura wireframe pulita per qualsiasi settore, agenzia, società di consulenza o attività su misura.¦Estructura limpia para cualquier sector, agencia, consultoría o negocio a medida.
+2303¦Ren, universell layout med hög konvertering som passar alla vanliga verksamheter. Har en redigerbar bildkarusell, tidszonsstyrd kalenderbokning, prisplaner som kan slås av och på, anpassningsbara färger och direkt chatt mot AI-kunskapsbasen.¦Siisti, yleiskäyttöinen ja konversiota tehostava ulkoasu, johon jokainen tavallinen yritys voi sopeutua. Sisältää muokattavan hero-kuvakarusellin, aikavyöhykkeellisen kalenterivarauksen, päälle ja pois kytkettävät hintapaketit, mukautettavat värit ja suoran chatin tekoälyn tietopohjaan.¦Layout pulito, universale e ad alta conversione, adattabile a qualsiasi attività. Include un carosello di immagini hero modificabile, prenotazione con calendario per fuso orario, piani tariffari attivabili o disattivabili, colori personalizzabili e chat diretta con la base di conoscenza IA.¦Diseño limpio, universal y de alta conversión que cualquier negocio habitual puede adaptar. Incluye un carrusel de imágenes principal editable, reserva con calendario por zona horaria, planes de precios que se pueden activar o desactivar, colores personalizables y chat directo con la base de conocimiento de IA.
+2304¦Tydlig och kortfattad förklaring för dina kunder.¦Selkeä ja ytimekäs selitys asiakkaillesi.¦Spiegazione chiara e concisa per i tuoi clienti.¦Explicación clara y concisa para tus clientes.
+2305¦Klicka på "Lägg till plan" för att skapa strukturerade nivåer med leveranser och priser.¦Napsauta "Lisää paketti" luodaksesi jäsennellyt tasot toimituksineen ja hintoineen.¦Fai clic su "Aggiungi piano" per creare livelli strutturati con deliverable e prezzi.¦Haz clic en "Añadir plan" para crear niveles estructurados con entregables y precios.
+2306¦Klinik¦Klinikka¦Clinica¦Clínica
+2307¦=
+2308¦=
+2309¦=
+2310¦Kommaseparerade¦Pilkuilla erotettu¦Separati da virgola¦Separados por comas
+2311¦Komplett lösning för växande verksamheter.¦Kattava ratkaisu kasvaville toiminnoille.¦Soluzione completa pensata per attività in espansione.¦Solución completa pensada para negocios en crecimiento.
+2312¦=
+2313¦=
+2314¦Konfidentiellt intag av ärenden, processrådgivning, granskning av sekretessavtal och bokning av uppdrag.¦Luottamuksellinen asioiden vastaanotto, oikeudenkäyntikonsultaatiot, salassapitosopimusten tarkistukset ja toimeksiantojen ajanvaraus.¦Accoglienza riservata dei casi, consulenze contenziose, revisioni di NDA e pianificazione degli incarichi.¦Admisión confidencial de casos, consultas de litigio, revisiones de acuerdos de confidencialidad y programación de encargos.
+2315¦Konfigurera din värdade företagswebbplats, anpassa tjänstekataloger, koppla egna domäner och finjustera AI-conciergens bokning.¦Määritä isännöity yrityssivustosi, mukauta palveluluettelot, yhdistä omat verkkotunnukset ja hienosäädä tekoälyconciergen varausta.¦Configura il tuo sito aziendale ospitato, personalizza i cataloghi dei servizi, collega domini personalizzati e rifinisci i concierge IA di prenotazione.¦Configura tu sitio web de empresa alojado, personaliza los catálogos de servicios, conecta dominios propios y ajusta los conserjes de IA de reservas.
+2316¦Konfigurerade menylänkar (¦Määritetyt valikkolinkit (¦Link di menu configurati (¦Enlaces de menú configurados (
+2317¦Koppla en dedikerad bot som ger webbplatsens besökare en AI-concierge tränad enbart på den här landningssidans dokument och katalog. Om du kopplar bort den stängs chattboten av på webbplatsen.¦Yhdistä oma botti, joka tarjoaa verkkosivuston kävijöille tekoälyconciergen, joka on koulutettu yksinomaan tämän laskeutumissivun dokumenteilla ja luettelolla. Yhteyden katkaiseminen poistaa chatbotin käytöstä tällä sivustolla.¦Collega un bot dedicato per offrire ai visitatori del sito un concierge IA addestrato esclusivamente sui documenti e sul catalogo di questa landing page. Scollegarlo disattiva il chatbot su questo sito.¦Conecta un bot dedicado para ofrecer a los visitantes del sitio un conserje de IA entrenado exclusivamente con los documentos y el catálogo de esta página de aterrizaje. Al desconectarlo se desactiva el chatbot en este sitio web.
+2318¦Koppla din egen domän (t.ex.¦Yhdistä oma brändätty verkkotunnuksesi (esim.¦Collega il tuo dominio (ad es.¦Conecta tu dominio (p. ej.
+2319¦Kopplad AI-bot och kunskapsbas¦Yhdistetty tekoälybotti ja tietopohja¦Bot IA e base di conoscenza collegati¦Bot de IA y base de conocimiento conectados
+2320¦Kontakt- och platsuppgifter¦Yhteys- ja sijaintitiedot¦Informazioni di contatto e sede¦Información de contacto y ubicación
+2321¦Kontakt-e-post¦Yhteyssähköposti¦E-mail di contatto¦Correo de contacto
+2322¦Kontakt, SEO och analys¦Yhteystiedot, hakukoneoptimointi ja analytiikka¦Contatti, SEO e analisi¦Contacto, SEO y analítica
+2323¦=
+2324¦=
+2325¦Länken kopierad¦Linkki kopioitu¦Link copiato¦Enlace copiado
+2326¦Kopiera länk¦Kopioi linkki¦Copia il link¦Copiar el enlace
+2327¦Kopiera mål¦Kopioi kohde¦Copia la destinazione¦Copiar destino
+2328¦Grundkonsultation¦Peruskonsultaatio¦Consulenza di base¦Consulta básica
+2329¦=
+2330¦=
+2331¦Skapa sida¦Luo sivu¦Crea pagina¦Crear página
+2332¦=
+2333¦Crescelo AI-assistent¦Crescelo-tekoälyavustaja¦Assistente IA Crescelo¦Asistente de IA de Crescelo
+2334¦Huvudrubrik i bannern med uppmaning¦Toimintakehotebannerin pääotsikko¦Titolo principale del banner call to action¦Titular principal del banner de llamada a la acción
+2335¦Underrubrik i bannern med uppmaning¦Toimintakehotebannerin alaotsikko¦Sottotitolo del banner call to action¦Subtítulo del banner de llamada a la acción
+2336¦Text på knappen i bannern¦Bannerin painikkeen teksti¦Testo del pulsante del banner¦Texto del botón del banner
+2337¦=
+2338¦Anpassad¦Mukautettu¦Personalizzato¦Personalizado
+2339¦Tom anpassad yta¦Tyhjä mukautettu pohja¦Tela bianca personalizzata¦Lienzo en blanco personalizado
+2340¦Eget domännamn¦Oma verkkotunnus¦Nome di dominio personalizzato¦Nombre de dominio propio
+2341¦=
+2342¦=
+2343¦Anpassat skelett · helt modulärt underlag¦Mukautettu runko · täysin modulaarinen pohja¦Scheletro personalizzato · Progetto completamente modulare¦Esqueleto personalizado · Plano totalmente modular
+2344¦=
+2345¦=
+2346¦Anpassa navigeringslänkarna som visas i huvudmenyn på din publicerade sida.¦Mukauta julkaistun sivusi ylävalikossa näkyviä navigointilinkkejä.¦Personalizza i link di navigazione mostrati nella barra di navigazione della tua pagina pubblicata.¦Personaliza los enlaces de navegación que aparecen en la barra superior de tu página publicada.
+2347¦Mörkt skiffer- och elektriskt limetema som matchar crescelo.com, med interaktiv demo, omloppsdiagram och horisontell karusell.¦Tumma liuske- ja sähköinen lime-teema, joka vastaa crescelo.comia, interaktiivisella esittelyllä, kiertoratakaavioilla ja vaakasuuntaisella karusellilla.¦Tema slate scuro e lime elettrico in linea con crescelo.com, con demo interattiva, diagrammi orbitali e carosello orizzontale.¦Tema pizarra oscuro y lima eléctrico a juego con crescelo.com, con demo interactiva, diagramas orbitales y carrusel horizontal.
+2348¦Dedikerad support¦Oma tuki¦Supporto dedicato¦Soporte dedicado
+2349¦Ta bort¦Poista¦Elimina¦Eliminar
+2350¦Ta bort nyckeltal¦Poista mittari¦Elimina metrica¦Eliminar métrica
+2351¦Ta bort sida¦Poista sivu¦Elimina pagina¦Eliminar página
+2352¦Ta bort tjänst¦Poista palvelu¦Elimina servizio¦Eliminar servicio
+2353¦Beskriv ditt tjänsteerbjudande, din atmosfär eller dina viktigaste särdrag.¦Kuvaile palvelutarjoomasi, tunnelmasi tai tärkeimmät erottuvat tekijäsi.¦Descrivi la tua proposta di servizio, l'atmosfera o i principali elementi distintivi.¦Describe tu propuesta de servicio, tu ambiente o tus principales rasgos diferenciales.
+2354¦Design- och rörelsebyrå¦Suunnittelu- ja liikegrafiikkatoimisto¦Agenzia di design e motion¦Agencia de diseño y animación
+2355¦Beskriv organisationens uppdrag, historia, standarder eller teamets bakgrund.¦Kuvaile organisaatiosi missio, historia, standardit tai tiimin tausta.¦Descrivi la missione, la storia, gli standard o il background del team della tua organizzazione.¦Detalla la misión, la historia, los estándares o el perfil del equipo de tu organización.
+2356¦Koppla bort¦Katkaise yhteys¦Scollega¦Desconectar
+2357¦Frånkopplad (chattboten är avstängd på webbplatsen)¦Yhteys katkaistu (chatbot poissa käytöstä sivustolla)¦Scollegato (chatbot disattivato sul sito)¦Desconectado (chatbot desactivado en el sitio)
+2358¦Visa imponerande nyckeltal, kundantal eller nöjdhetssiffror direkt under huvudavsnittet.¦Näytä vaikuttavia mittareita, asiakasmääriä tai tyytyväisyysprosentteja suoraan hero-osion alapuolella.¦Mostra metriche di impatto, numero di clienti o tassi di soddisfazione subito sotto la sezione hero.¦Muestra métricas destacadas, número de clientes o índices de satisfacción justo debajo de la sección principal.
+2359¦Visa tydliga prisnivåer och paket. Slå på eller av avsnittet när du vill.¦Näytä läpinäkyvät hintatasot ja paketit. Kytke osio päälle tai pois tarvittaessa.¦Mostra livelli di prezzo e pacchetti trasparenti. Attiva o disattiva questa sezione quando serve.¦Muestra niveles de precios y paquetes transparentes. Activa o desactiva esta sección cuando quieras.
+2360¦E-handel och detaljhandel¦Verkkokauppa ja vähittäiskauppa¦E-commerce e retail¦Comercio electrónico y minorista
+2361¦=
+2362¦=
+2363¦=
+2364¦=
+2365¦=
+2366¦=
+2367¦=
+2368¦=
+2369¦=
+2370¦=
+2371¦=
+2372¦=
+2373¦=
+2374¦=
+2375¦=
+2376¦=
+2377¦=
+2378¦=
+2379¦=
+2380¦=
+2381¦=
+2382¦=
+2383¦=
+2384¦=
+2385¦=
+2386¦=
+2387¦=
+2388¦=
+2389¦=
+2390¦=
+2391¦=
+2392¦=
+2393¦=
+2394¦Redigerar:¦Muokataan:¦Modifica in corso:¦Editando:
+2395¦=
+2396¦=
+2397¦=
+2398¦Exakt trogen kopia av mentara.webflow.io med signaturanimationer vid hovring, vändbara 3D-läkarkort, interaktivt projektreglage, omdömen i flikar, videolightbox och FAQ-dragspel.¦Täsmällinen uskollinen kopio sivustosta mentara.webflow.io tunnusomaisine hover-animaatioineen, 3D-käännettävine lääkärikortteineen, interaktiivisine projektikaruselleineen, välilehdillä jaettuine suosituksineen, videovalolaatikkoineen ja UKK-haitareineen.¦Clone fedele di mentara.webflow.io con le animazioni distintive al passaggio del mouse, schede dei medici con rotazione 3D, slider interattivo dei progetti, testimonianze a schede, lightbox video e fisarmonica delle FAQ.¦Clon fiel de mentara.webflow.io con sus animaciones características al pasar el ratón, tarjetas de médicos con giro 3D, deslizador interactivo de proyectos, testimonios en pestañas, lightbox de vídeo y acordeón de preguntas frecuentes.
+2399¦=

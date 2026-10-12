@@ -1,0 +1,150 @@
+2100	Standard (Recommended)
+2101	Strict & Factual
+2102	Switching to
+2103	Test Connection
+2104	Test Ollama Connection
+2105	Testing…
+2106	The AI behind ChatGPT
+2107	The AI behind ChatGPT, at OpenAI's own price.
+2108	this provider
+2109	to permit browser CORS requests.
+2110	Tries a free service, then another if the first is busy
+2111	Tries another free service if the first is busy.
+2112	Upper limit on answer length. 2048 tokens is ~1,500 words.
+2113	Use the free option below and it costs nothing. Or connect your own account with one of the paid services and pay them their normal price directly — we don't add anything on top, ever.
+2114	Verifying & Saving…
+2115	Very fast replies
+2116	View Full Step-by-Step Connection Guide
+2117	When enabled, your assistant can look up real-time information from the web if a visitor asks about something not in your knowledge base.
+2118	Wholesale Direct Billing (0% Markup)
+2119	You can change this any time
+2120	You pay Anthropic directly — no markup
+2121	You pay DeepSeek directly — very low cost
+2122	You pay OpenAI directly — no markup
+2123	You're never charged for the AI itself
+2124	Your API key is securely encrypted at rest using AES-256-GCM and never shared or logged.
+2125	Your key is connected
+2126	Your own computer
+2127	Your own computer (advanced)
+2128	Zero-cost failover automatically tests your key with Groq, then Gemini, and falls back to local Ollama.
+2129	? All associated vector chunks and trained embeddings will be permanently removed from your AI assistant.
+2130	“See what to do”
+2131	(Content modified by user)
+2132	% ready (
+2133	% used)
+2134	$0.00 / mo
+2135	0 MB
+2136	50 MB
+2137	A YouTube video, a page on your website, or a direct video/audio file — in any language.
+2138	Add directly
+2139	Add this
+2140	Adding documents for:
+2141	Adding...
+2142	All ready to use
+2143	Always free, however much you upload
+2144	Are you sure you want to delete
+2145	Assistant ID (only needed if support asks for it):
+2146	AUDIO
+2147	Chunks
+2148	Clear selected files
+2149	Click to see what went wrong and how to fix it
+2150	Correct
+2151	Correct misheard audio/OCR words, add fact overrides, or edit text
+2152	Cost to read your documents
+2153	Create another assistant
+2154	Custom Title (optional)
+2155	Default Assistant
+2156	Delete Knowledge Source?
+2157	Delete source
+2158	Delete this assistant
+2159	Deleted
+2160	Deleting...
+2161	Discard Draft
+2162	Document Name
+2163	Document Title in Knowledge Base
+2164	Drop files here or click to browse
+2165	Enter title for this document...
+2166	everything you upload here only teaches
+2167	Extracted Content (Fully Editable)
+2168	Extracted knowledge transcript...
+2169	file(s) had a problem.
+2170	file(s):
+2171	Finds answers even with typos or different wording
+2172	Generating Chunks & Saving...
+2173	How it searches
+2174	Hybrid retrieval: cosine similarity + BM25 keywords, merged with reciprocal rank fusion.
+2175	Import from a link
+2176	in the list below for the exact reason and how to fix it.
+2177	Kept separate:
+2178	Knowledge Base
+2179	Knowledge saved
+2180	Limit Reached
+2181	Local CPU embeddings: $0.00/mo regardless of AI provider costs.
+2182	MB available
+2183	need attention)
+2184	No documents found matching your filter "
+2185	None yet — add one below
+2186	Nothing uploaded for
+2187	Or just type it in
+2188	Paste business instructions, FAQs, shipping details, or company background...
+2189	Permanently remove this assistant and all its documents
+2190	Preview first
+2191	Processing
+2192	Reading...
+2193	Ready to search instantly
+2194	Save to Knowledge Base
+2195	Search sources...
+2196	Section Title (e.g. Return Policy, Store Hours, Contact Info)
+2197	See what to do
+2198	Selected
+2199	Smart search
+2200	Step 2: Review & Edit Extracted Knowledge
+2201	still reading)
+2202	Storage used
+2203	Storage:
+2204	Stored as 384-dimensional embeddings (BGE-small) for retrieval.
+2205	Sync Sources
+2206	Syncing Sources...
+2207	This action cannot be undone.
+2208	this assistant
+2209	Train your assistant by uploading business documents, website links, or FAQs so it can answer customer questions accurately.
+2210	Type
+2211	Upload Processing Failed:
+2212	Use the panels above to add a document, a web page or a video link. It will only be used to answer for this assistant.
+2213	Verify the extracted text below. Edit any names, terminology, or prices before saving to the knowledge base.
+2214	VIDEO
+2215	Video/audio link
+2216	WEB
+2217	Web page
+2218	What you should do next:
+2219	Why it failed:
+2220	words •
+2221	Works with PDF, Word, spreadsheets, plain text, images, audio and video files
+2222	Yes, Delete Source
+2223	Your documents
+2224	YOUTUBE
+2225	YouTube video
+2226	(/site/
+2227	), point an A record to
+2228	). Your landing page will be served directly under your domain with zero third-party branding.
+2229	| Official Booking & Services
+2230	$250M+ In Portfolio Sales
+2231	1-on-1 Personal Training ($75)
+2232	1-on-1 personal training, HIIT conditioning, cold plunge passes, and membership triage.
+2233	100% Confidential · Evidence-Based Practice
+2234	3D Motion Reel ($7,500)
+2235	40+ Years Combined Trial Experience
+2236	452 Atlantic Avenue, Brooklyn, NY 11217
+2237	5.0 Stars (280+ Reviews)
+2238	About Body Narrative
+2239	About Section Feature Image URL
+2240	About Section Subtitle / Tagline
+2241	About Section Title
+2242	About Us
+2243	About Us Section
+2244	Accent Theme Color
+2245	Ad Attribution & Conversions
+2246	Add carousel slides to rotate multiple high-impact hero images, headlines, and calls to action.
+2247	Add Metric
+2248	Add Navigation Link
+2249	Add Plan

@@ -1,5 +1,6 @@
 'use client';
 
+import { T, useT } from '@/lib/i18n/context';
 import { useEffect, useRef, useState } from 'react';
 import { HERO, SIGNUP_HREF } from './content';
 import { ButtonLink } from './ui';
@@ -35,6 +36,7 @@ const TURNS: Turn[] = [
 ];
 
 function PromptDemo() {
+  const __t = useT();
   const { dict } = useI18n();
   const turns = dict?.hero?.turns || TURNS;
   const heroDict = dict?.hero;
@@ -92,43 +94,43 @@ function PromptDemo() {
             <i />
             <i />
           </span>
-          <span>{heroDict?.sampleBadge || 'Live visitor conversation • Apex Barbers'}</span>
+          <span><T>{heroDict?.sampleBadge || 'Live visitor conversation • Apex Barbers'}</T></span>
         </div>
-        <div className="mk-prompt-body" role="log" aria-live="polite" aria-label="Customer conversation preview">
+        <div className="mk-prompt-body" role="log" aria-live="polite" aria-label={__t("Customer conversation preview")}>
           <p className="mk-prompt-q">
-            {question}
+            <T>{question}</T>
             {!isStatic && typed < cur.q.length ? <span className="mk-caret" aria-hidden="true" /> : null}
           </p>
           {answerVisible ? (
             <div className="mk-prompt-a">
               <p>
-                {cur.a}
-                <span className="mk-source">{cur.source}</span>
+                <T>{cur.a}</T>
+                <span className="mk-source"><T>{cur.source}</T></span>
               </p>
               {cur.booking ? (
                 <div className="mk-booking-card">
                   <div>
-                    <strong>Sat, 10:00 – 10:30</strong>
-                    <span>Standard cut · $35</span>
+                    <strong><T>Sat, 10:00 – 10:30</T></strong>
+                    <span><T>Standard cut · $35</T></span>
                   </div>
                   <button type="button" className="mk-btn mk-btn-primary mk-btn-sm" onClick={() => setConfirmed(true)} disabled={confirmed}>
-                    {confirmed ? (heroDict?.confirmed || 'Confirmed') : (heroDict?.confirmBooking || 'Confirm')}
+                    <T>{confirmed ? (heroDict?.confirmed || 'Confirmed') : (heroDict?.confirmBooking || 'Confirm')}</T>
                   </button>
                 </div>
               ) : null}
-              {cur.booking && confirmed ? <p className="mk-logline">Booking confirmed and synced to Google Calendar.</p> : null}
+              {cur.booking && confirmed ? <p className="mk-logline"><T>Booking confirmed and synced to Google Calendar.</T></p> : null}
             </div>
           ) : null}
         </div>
-        <div className="mk-chips" aria-label="Suggested customer inquiries">
+        <div className="mk-chips" aria-label={__t("Suggested customer inquiries")}>
           {turns.map((t, i) => (
             <button key={t.q} type="button" className={`mk-chip ${i === turn ? 'is-on' : ''}`} aria-pressed={i === turn} onClick={() => pick(i)}>
-              {t.q}
+              <T>{t.q}</T>
             </button>
           ))}
         </div>
       </div>
-      <p className="mk-caption">{heroDict?.interactiveCaption || 'Interactive demo. Select an inquiry above to test autonomous grounded responses.'}</p>
+      <p className="mk-caption"><T>{heroDict?.interactiveCaption || 'Interactive demo. Select an inquiry above to test autonomous grounded responses.'}</T></p>
     </div>
   );
 }
@@ -142,30 +144,30 @@ export function Hero() {
       <div className="mk-hero-glow" aria-hidden="true" />
       <div className="mk-wrap mk-hero-inner">
         <p className="mk-eyebrow mk-rise" style={{ ['--mk-delay' as string]: '0ms' }}>
-          {hero.eyebrow}
+          <T>{hero.eyebrow}</T>
         </p>
         <h1 id="mk-hero-title" className="mk-h1">
           <span className="mk-echo" style={{ ['--mk-delay' as string]: '140ms' }}>
-            {hero.title[0]}
+            <T>{hero.title[0]}</T>
           </span>
           <span className="mk-echo mk-echo-em" style={{ ['--mk-delay' as string]: '360ms' }}>
-            {hero.title[1]}
+            <T>{hero.title[1]}</T>
           </span>
         </h1>
         <p className="mk-lead mk-rise" style={{ ['--mk-delay' as string]: '520ms' }}>
           {hero.body.split('\n').map((line, i, arr) => (
-            <span key={i}>{line}{i < arr.length - 1 && <br />}</span>
+            <span key={i}><T>{line}</T>{i < arr.length - 1 && <br />}</span>
           ))}
         </p>
         <div className="mk-cta-row mk-rise" style={{ ['--mk-delay' as string]: '640ms' }}>
-          <ButtonLink href={SIGNUP_HREF}>{hero.primaryCta}</ButtonLink>
+          <ButtonLink href={SIGNUP_HREF}><T>{hero.primaryCta}</T></ButtonLink>
           <ButtonLink href="/playground" variant="ghost">
-            {hero.secondaryCta}
+            <T>{hero.secondaryCta}</T>
           </ButtonLink>
         </div>
         <ul className="mk-trust mk-rise" style={{ ['--mk-delay' as string]: '760ms' }}>
           {hero.trust.map((t) => (
-            <li key={t}>{t}</li>
+            <li key={t}><T>{t}</T></li>
           ))}
         </ul>
         <PromptDemo />

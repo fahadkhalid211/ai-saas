@@ -1,8 +1,10 @@
 'use client';
 
+import { useT } from '@/lib/i18n/context';
 import { useEffect, useState } from 'react';
 
 export function ScrollToTop() {
+  const __t = useT();
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -35,8 +37,8 @@ export function ScrollToTop() {
       type="button"
       className={`mk-scroll-top ${visible ? 'is-visible' : ''}`}
       onClick={handleClick}
-      aria-label="Scroll to top of page"
-      title="Beam up to top ↑"
+      aria-label={__t("Scroll to top of page")}
+      title={__t("Beam up to top ↑")}
     >
       <svg
         viewBox="0 0 24 24"

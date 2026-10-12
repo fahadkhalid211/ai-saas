@@ -1,5 +1,6 @@
 'use client';
 
+import { T } from '@/lib/i18n/context';
 import React from 'react';
 import { AlertTriangle, X, Trash2 } from 'lucide-react';
 import { diagnoseKnowledgeFailure } from '@/lib/rag/diagnostics';
@@ -44,10 +45,10 @@ export const DiagnosticModal: React.FC<DiagnosticModalProps> = ({
             </div>
             <div>
               <h2 className="text-sm font-bold text-slate-900 dark:text-white">
-                File Indexing Diagnostic
+                <T>File Indexing Diagnostic</T>
               </h2>
               <p className="text-xs text-slate-500 dark:text-slate-400 truncate max-w-sm" title={failedSource.title}>
-                {failedSource.title}
+                <T>{failedSource.title}</T>
               </p>
             </div>
           </div>
@@ -66,7 +67,7 @@ export const DiagnosticModal: React.FC<DiagnosticModalProps> = ({
           <div className="p-4 rounded-xl border border-rose-200 dark:border-rose-900/50 bg-rose-50/60 dark:bg-rose-950/20 space-y-1.5">
             <div className="flex items-center gap-2 text-rose-800 dark:text-rose-300 font-bold">
               <span className="h-1.5 w-1.5 rounded-full bg-rose-500"></span>
-              Why This File Failed:
+              <T>Why This File Failed:</T>
             </div>
             <p className="text-rose-900 dark:text-rose-200 leading-relaxed">
               {diag.reason}
@@ -77,7 +78,7 @@ export const DiagnosticModal: React.FC<DiagnosticModalProps> = ({
           <div className="p-4 rounded-xl border border-emerald-200 dark:border-emerald-900/50 bg-emerald-50/60 dark:bg-emerald-950/20 space-y-2">
             <div className="flex items-center gap-2 text-emerald-800 dark:text-emerald-300 font-bold">
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
-              What You Should Do Next:
+              <T>What You Should Do Next:</T>
             </div>
             <p className="text-slate-800 dark:text-slate-200 leading-relaxed font-medium">
               {diag.whatToDoNext}
@@ -87,15 +88,15 @@ export const DiagnosticModal: React.FC<DiagnosticModalProps> = ({
           {/* Metadata summary */}
           <div className="p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 flex flex-wrap gap-4 text-[11px] text-slate-500 dark:text-slate-400 font-mono">
             <div>
-              Type: <span className="font-semibold uppercase text-slate-700 dark:text-slate-200">{failedSource.type}</span>
+              <T>Type:</T> <span className="font-semibold uppercase text-slate-700 dark:text-slate-200">{failedSource.type}</span>
             </div>
             {failedSource.fileSizeBytes && (
               <div>
-                Size: <span className="font-semibold text-slate-700 dark:text-slate-200">{formatBytes(failedSource.fileSizeBytes)}</span>
+                <T>Size:</T> <span className="font-semibold text-slate-700 dark:text-slate-200">{formatBytes(failedSource.fileSizeBytes)}</span>
               </div>
             )}
             <div>
-              Logged: <span className="text-slate-700 dark:text-slate-200">{new Date(failedSource.createdAt).toLocaleDateString()}</span>
+              <T>Logged:</T> <span className="text-slate-700 dark:text-slate-200">{new Date(failedSource.createdAt).toLocaleDateString()}</span>
             </div>
           </div>
 
@@ -103,7 +104,7 @@ export const DiagnosticModal: React.FC<DiagnosticModalProps> = ({
           {failedSource.errorMessage && (
             <details className="text-[11px] text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/40 p-2.5 rounded-lg border border-slate-200 dark:border-slate-800">
               <summary className="cursor-pointer font-semibold hover:text-slate-800 dark:hover:text-slate-200">
-                View Technical Log Details
+                <T>View Technical Log Details</T>
               </summary>
               <pre className="mt-2 p-2 bg-slate-100 dark:bg-slate-900 rounded text-[10px] font-mono text-slate-700 dark:text-slate-300 overflow-x-auto whitespace-pre-wrap">
                 {failedSource.errorMessage}
@@ -123,14 +124,14 @@ export const DiagnosticModal: React.FC<DiagnosticModalProps> = ({
             className="inline-flex items-center gap-1.5 text-xs text-rose-600 dark:text-rose-400 hover:text-rose-700 dark:hover:text-rose-300 font-semibold transition cursor-pointer"
           >
             <Trash2 className="h-3.5 w-3.5" />
-            <span>Remove Failed Record</span>
+            <span><T>Remove Failed Record</T></span>
           </button>
           <button
             type="button"
             onClick={onClose}
             className="rounded-lg bg-blue-600 hover:bg-blue-500 px-4 py-1.5 text-xs font-semibold text-white shadow-xs transition cursor-pointer"
           >
-            Got It
+            <T>Got It</T>
           </button>
         </div>
       </div>

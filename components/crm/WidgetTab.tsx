@@ -1,3 +1,4 @@
+import { T, useT } from '@/lib/i18n/context';
 import { SaveButton } from '@/components/ui/SaveButton';
 import React, { useEffect, useState } from 'react';
 import { WIDGET_TITLE_MAX, starterQuestionsFromText, widgetTitleFor } from '@/lib/widget/title';
@@ -40,6 +41,7 @@ export const WidgetTab: React.FC<WidgetTabProps> = ({
   saveSuccess,
   saveError,
 }) => {
+  const __t = useT();
   // The starter questions are edited as plain text. Deriving the box from the saved list on every keystroke dropped the
   // empty line that Enter creates, so a second question could never be started.
   const [starterText, setStarterText] = useState<string>((formData.starterQuestions || []).join('\n'));
@@ -94,9 +96,9 @@ export const WidgetTab: React.FC<WidgetTabProps> = ({
               <div className="max-w-5xl space-y-6 mx-auto">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Widget &amp; Branding</h1>
+                    <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white"><T>Widget &amp; Branding</T></h1>
                     <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                      Change how the chat button looks on your website — colors, position, greeting, and logo.
+                      <T>Change how the chat button looks on your website — colors, position, greeting, and logo.</T>
                     </p>
                   </div>
                   <SaveButton onClick={handleSaveSettings} saving={isSaving} idleLabel="Save Widget Settings" savingLabel="Saving Settings…" savedLabel="Saved Successfully" icon={<CheckCircle2 className="h-3.5 w-3.5" />} className="self-start sm:self-auto" />
@@ -105,14 +107,14 @@ export const WidgetTab: React.FC<WidgetTabProps> = ({
                 {saveSuccess && (
                   <div className="flex items-center gap-2 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 p-3 text-xs text-emerald-700 dark:text-emerald-300">
                     <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                    <span>Widget &amp; support settings saved successfully!</span>
+                    <span><T>Widget &amp; support settings saved successfully!</T></span>
                   </div>
                 )}
 
                 {saveError && (
                   <div className="flex items-center gap-2 rounded-lg bg-rose-50 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-800 p-3 text-xs text-rose-700 dark:text-rose-300">
                     <AlertTriangle className="h-4 w-4 text-rose-600 dark:text-rose-400 shrink-0" />
-                    <span>{saveError}</span>
+                    <span><T>{saveError}</T></span>
                   </div>
                 )}
 
@@ -122,7 +124,7 @@ export const WidgetTab: React.FC<WidgetTabProps> = ({
                     {/* Chat title */}
                     <div>
                       <label htmlFor="widget-title" className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1.5">
-                        Chat title
+                        <T>Chat title</T>
                       </label>
                       <input
                         id="widget-title"
@@ -134,14 +136,14 @@ export const WidgetTab: React.FC<WidgetTabProps> = ({
                         className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-2.5 py-2 text-xs text-slate-900 dark:text-slate-100 outline-none focus:border-blue-500"
                       />
                       <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
-                        The name visitors see at the top of the chat, up to {WIDGET_TITLE_MAX} characters. Leave it empty to show &ldquo;{formData.name || 'AI Assistant'}&rdquo;.
+                        <T>The name visitors see at the top of the chat, up to</T> {WIDGET_TITLE_MAX} <T>characters. Leave it empty to show &ldquo;</T>{formData.name || <T>{'AI Assistant'}</T>}&rdquo;.
                       </p>
                     </div>
 
                     {/* Brand Color */}
                     <div>
                       <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-2">
-                        Brand Accent Color
+                        <T>Brand Accent Color</T>
                       </label>
                       <div className="flex items-center gap-3">
                         {['#2563eb', '#7c3aed', '#059669', '#e11d48', '#d97706', '#0f172a'].map((c) => (
@@ -167,7 +169,7 @@ export const WidgetTab: React.FC<WidgetTabProps> = ({
                     {/* Launcher Position */}
                     <div>
                       <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1.5">
-                        Launcher Position
+                        <T>Launcher Position</T>
                       </label>
                       <div className="flex gap-3">
                         {['bottom-right', 'bottom-left'].map((pos) => (
@@ -190,7 +192,7 @@ export const WidgetTab: React.FC<WidgetTabProps> = ({
                     {/* Starter Questions */}
                     <div>
                       <label htmlFor="widget-starters" className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1.5">
-                        Suggested Starter Questions (1 per line)
+                        <T>Suggested Starter Questions (1 per line)</T>
                       </label>
                       <textarea
                         id="widget-starters"
@@ -208,8 +210,8 @@ export const WidgetTab: React.FC<WidgetTabProps> = ({
                     {/* Lead Capture Toggle */}
                     <div className="flex items-center justify-between rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 p-3.5">
                       <div>
-                        <div className="text-xs font-semibold text-slate-900 dark:text-white">Lead Capture Form</div>
-                        <div className="text-[11px] text-slate-500 dark:text-slate-400">Ask visitor for email address during chat</div>
+                        <div className="text-xs font-semibold text-slate-900 dark:text-white"><T>Lead Capture Form</T></div>
+                        <div className="text-[11px] text-slate-500 dark:text-slate-400"><T>Ask visitor for email address during chat</T></div>
                       </div>
                       <input
                         type="checkbox"
@@ -225,10 +227,10 @@ export const WidgetTab: React.FC<WidgetTabProps> = ({
                         <div>
                           <div className="text-xs font-semibold text-slate-900 dark:text-white flex items-center gap-1.5">
                             <Zap className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
-                            <span>Proactive Chat Popup (Conversion Booster)</span>
+                            <span><T>Proactive Chat Popup (Conversion Booster)</T></span>
                           </div>
                           <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
-                            Automatically pops up a friendly message bubble above the closed launcher to greet visitors.
+                            <T>Automatically pops up a friendly message bubble above the closed launcher to greet visitors.</T>
                           </div>
                         </div>
                         <input
@@ -243,7 +245,7 @@ export const WidgetTab: React.FC<WidgetTabProps> = ({
                         <div className="space-y-3 pt-2 border-t border-blue-100 dark:border-blue-900/40 animate-in fade-in duration-150">
                           <div>
                             <label className="text-[11px] font-semibold text-slate-700 dark:text-slate-300 block mb-1">
-                              Popup Message Text
+                              <T>Popup Message Text</T>
                             </label>
                             <input
                               type="text"
@@ -255,7 +257,7 @@ export const WidgetTab: React.FC<WidgetTabProps> = ({
                           </div>
                           <div>
                             <label className="text-[11px] font-semibold text-slate-700 dark:text-slate-300 block mb-1">
-                              Trigger Delay (Seconds)
+                              <T>Trigger Delay (Seconds)</T>
                             </label>
                             <div className="flex items-center gap-3">
                               <input
@@ -268,7 +270,7 @@ export const WidgetTab: React.FC<WidgetTabProps> = ({
                                 }
                                 className="w-20 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-xs text-slate-900 dark:text-slate-100 font-mono outline-none"
                               />
-                              <span className="text-[11px] text-slate-500 dark:text-slate-400">seconds after page loads</span>
+                              <span className="text-[11px] text-slate-500 dark:text-slate-400"><T>seconds after page loads</T></span>
                             </div>
                           </div>
                         </div>
@@ -281,10 +283,10 @@ export const WidgetTab: React.FC<WidgetTabProps> = ({
                         <div>
                           <div className="text-xs font-semibold text-slate-900 dark:text-white flex items-center gap-1.5">
                             <Calendar className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
-                            <span>Interactive Calendar &amp; Appointment Booking</span>
+                            <span><T>Interactive Calendar &amp; Appointment Booking</T></span>
                           </div>
                           <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
-                            Allows visitors to schedule calls, consultations, tours, and demos directly inside the chat widget.
+                            <T>Allows visitors to schedule calls, consultations, tours, and demos directly inside the chat widget.</T>
                           </div>
                         </div>
                         <input
@@ -299,7 +301,7 @@ export const WidgetTab: React.FC<WidgetTabProps> = ({
                         <div className="space-y-3 pt-2 border-t border-emerald-100 dark:border-emerald-900/40 animate-in fade-in duration-150">
                           <div>
                             <label className="text-[11px] font-semibold text-slate-700 dark:text-slate-300 block mb-1">
-                              Booking Prompt Button Text
+                              <T>Booking Prompt Button Text</T>
                             </label>
                             <input
                               type="text"
@@ -312,7 +314,7 @@ export const WidgetTab: React.FC<WidgetTabProps> = ({
 
                           <div>
                             <label className="text-[11px] font-semibold text-slate-700 dark:text-slate-300 block mb-1.5">
-                              Booking Provider
+                              <T>Booking Provider</T>
                             </label>
                             <div className="grid grid-cols-3 gap-2">
                               {[
@@ -330,8 +332,8 @@ export const WidgetTab: React.FC<WidgetTabProps> = ({
                                       : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-50'
                                   }`}
                                 >
-                                  <div className="text-xs">{p.label}</div>
-                                  <div className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">{p.desc}</div>
+                                  <div className="text-xs"><T>{p.label}</T></div>
+                                  <div className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5"><T>{p.desc}</T></div>
                                 </button>
                               ))}
                             </div>
@@ -342,12 +344,12 @@ export const WidgetTab: React.FC<WidgetTabProps> = ({
                               <div>
                                 <div className="flex items-center justify-between mb-1.5">
                                   <label className="text-[11px] font-semibold text-slate-700 dark:text-slate-300">
-                                    Appointment Slot Duration
+                                    <T>Appointment Slot Duration</T>
                                   </label>
                                   <span className="text-[10px] text-emerald-700 dark:text-emerald-300 font-bold px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-900/60">
                                     {(formData.bookingSlotDuration || 30) >= 60 
-                                      ? `${(formData.bookingSlotDuration || 30) / 60} Hour(s)` 
-                                      : `${formData.bookingSlotDuration || 30} Mins`}
+                                      ? __t("{n1} Hour(s)", { n1: (formData.bookingSlotDuration || 30) / 60 }) 
+                                      : __t("{n1} Mins", { n1: formData.bookingSlotDuration || 30 })}
                                   </span>
                                 </div>
                                 <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
@@ -369,7 +371,7 @@ export const WidgetTab: React.FC<WidgetTabProps> = ({
                                           : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'
                                       }`}
                                     >
-                                      {opt.label}
+                                      <T>{opt.label}</T>
                                     </button>
                                   ))}
                                 </div>
@@ -378,7 +380,7 @@ export const WidgetTab: React.FC<WidgetTabProps> = ({
                               <div className="grid grid-cols-2 gap-3">
                                 <div>
                                   <label className="text-[11px] font-semibold text-slate-700 dark:text-slate-300 block mb-1">
-                                    Daily Start Time
+                                    <T>Daily Start Time</T>
                                   </label>
                                   <input
                                     type="time"
@@ -389,7 +391,7 @@ export const WidgetTab: React.FC<WidgetTabProps> = ({
                                 </div>
                                 <div>
                                   <label className="text-[11px] font-semibold text-slate-700 dark:text-slate-300 block mb-1">
-                                    Daily End Time
+                                    <T>Daily End Time</T>
                                   </label>
                                   <input
                                     type="time"
@@ -402,7 +404,7 @@ export const WidgetTab: React.FC<WidgetTabProps> = ({
 
                               <div>
                                 <label className="text-[11px] font-semibold text-slate-700 dark:text-slate-300 block mb-1.5">
-                                  Available Working Days
+                                  <T>Available Working Days</T>
                                 </label>
                                 <div className="flex flex-wrap gap-1.5">
                                   {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map((day) => {
@@ -436,7 +438,7 @@ export const WidgetTab: React.FC<WidgetTabProps> = ({
                           {formData.bookingProvider === 'cal_com' && (
                             <div className="animate-in fade-in duration-150">
                               <label className="text-[11px] font-semibold text-slate-700 dark:text-slate-300 block mb-1">
-                                Cal.com Scheduling URL
+                                <T>Cal.com Scheduling URL</T>
                               </label>
                               <input
                                 type="url"
@@ -446,7 +448,7 @@ export const WidgetTab: React.FC<WidgetTabProps> = ({
                                 className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-xs text-slate-900 dark:text-slate-100 font-mono outline-none focus:border-emerald-500"
                               />
                               <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1">
-                                Visitors will be presented with a direct button to open your Cal.com event page.
+                                <T>Visitors will be presented with a direct button to open your Cal.com event page.</T>
                               </p>
                             </div>
                           )}
@@ -454,7 +456,7 @@ export const WidgetTab: React.FC<WidgetTabProps> = ({
                           {formData.bookingProvider === 'calendly' && (
                             <div className="animate-in fade-in duration-150">
                               <label className="text-[11px] font-semibold text-slate-700 dark:text-slate-300 block mb-1">
-                                Calendly Booking URL
+                                <T>Calendly Booking URL</T>
                               </label>
                               <input
                                 type="url"
@@ -464,7 +466,7 @@ export const WidgetTab: React.FC<WidgetTabProps> = ({
                                 className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-xs text-slate-900 dark:text-slate-100 font-mono outline-none focus:border-emerald-500"
                               />
                               <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1">
-                                Visitors will be presented with a direct button to open your Calendly booking page.
+                                <T>Visitors will be presented with a direct button to open your Calendly booking page.</T>
                               </p>
                             </div>
                           )}
@@ -476,17 +478,17 @@ export const WidgetTab: React.FC<WidgetTabProps> = ({
                     <div className="space-y-4 pt-3 border-t border-slate-200 dark:border-slate-800">
                       <div>
                         <h2 className="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-1.5">
-                          <span className="flex items-center gap-1.5"><Mail className="h-4 w-4 text-blue-500 inline" /><span>Support Handoff &amp; Lead Email Alerts</span></span>
+                          <span className="flex items-center gap-1.5"><Mail className="h-4 w-4 text-blue-500 inline" /><span><T>Support Handoff &amp; Lead Email Alerts</T></span></span>
                         </h2>
                         <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
-                          When visitors ask to connect with support, the widget displays a sleek form and immediately dispatches an email notification.
+                          <T>When visitors ask to connect with support, the widget displays a sleek form and immediately dispatches an email notification.</T>
                         </p>
                       </div>
 
                       {/* Receiver Email */}
                       <div>
                         <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1">
-                          Receiver Email Address
+                          <T>Receiver Email Address</T>
                         </label>
                         <input
                           type="email"
@@ -496,14 +498,14 @@ export const WidgetTab: React.FC<WidgetTabProps> = ({
                           className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3 py-2 text-xs text-slate-900 dark:text-slate-100 outline-none focus:border-blue-500 font-mono"
                         />
                         <p className="text-[10.5px] text-slate-500 dark:text-slate-400 mt-1">
-                          Support inquiries submitted by visitors are sent directly to this address.
+                          <T>Support inquiries submitted by visitors are sent directly to this address.</T>
                         </p>
                       </div>
 
                       {/* CC Emails */}
                       <div>
                         <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1">
-                          CC Notification Emails (Optional)
+                          <T>CC Notification Emails (Optional)</T>
                         </label>
                         <input
                           type="text"
@@ -518,7 +520,7 @@ export const WidgetTab: React.FC<WidgetTabProps> = ({
                           className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3 py-2 text-xs text-slate-900 dark:text-slate-100 outline-none focus:border-blue-500 font-mono"
                         />
                         <p className="text-[10.5px] text-slate-500 dark:text-slate-400 mt-1">
-                          Comma-separated list of additional team emails to CC on every lead/support alert.
+                          <T>Comma-separated list of additional team emails to CC on every lead/support alert.</T>
                         </p>
                       </div>
 
@@ -527,10 +529,10 @@ export const WidgetTab: React.FC<WidgetTabProps> = ({
                         <div className="flex items-center justify-between">
                           <div>
                             <span className="text-xs font-semibold text-slate-800 dark:text-slate-200">
-                              Support Form Custom Fields
+                              <T>Support Form Custom Fields</T>
                             </span>
                             <p className="text-[10.5px] text-slate-500 dark:text-slate-400">
-                              Default: Name, Email, Phone (Required) &amp; Comments (Optional).
+                              <T>Default: Name, Email, Phone (Required) &amp; Comments (Optional).</T>
                             </p>
                           </div>
                           <button
@@ -539,7 +541,7 @@ export const WidgetTab: React.FC<WidgetTabProps> = ({
                             className="flex items-center gap-1 text-[11px] font-semibold text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
                           >
                             <Plus className="h-3 w-3" />
-                            <span>{showAddFieldForm ? 'Close' : 'Add Custom Field'}</span>
+                            <span>{showAddFieldForm ? <T>{'Close'}</T> : <T>{'Add Custom Field'}</T>}</span>
                           </button>
                         </div>
 
@@ -552,20 +554,20 @@ export const WidgetTab: React.FC<WidgetTabProps> = ({
                                 className="flex items-center justify-between p-2 rounded-lg bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-xs"
                               >
                                 <div className="flex items-center gap-2">
-                                  <span className="font-semibold text-slate-800 dark:text-slate-200">{cf.label}</span>
+                                  <span className="font-semibold text-slate-800 dark:text-slate-200"><T>{cf.label}</T></span>
                                   <span className="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300">
                                     {cf.type}
                                   </span>
                                   {cf.required ? (
                                     <span className="text-[10px] font-bold text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-900 px-1.5 py-0.5 rounded">
-                                      Required
+                                      <T>Required</T>
                                     </span>
                                   ) : (
-                                    <span className="text-[10px] text-slate-500 px-1 py-0.5">Optional</span>
+                                    <span className="text-[10px] text-slate-500 px-1 py-0.5"><T>Optional</T></span>
                                   )}
                                   {cf.type === 'select' && cf.options && cf.options.length > 0 && (
                                     <span className="text-[10px] text-slate-400 font-mono">
-                                      ({cf.options.length} options)
+                                      ({cf.options.length} <T>options)</T>
                                     </span>
                                   )}
                                 </div>
@@ -581,19 +583,19 @@ export const WidgetTab: React.FC<WidgetTabProps> = ({
                             ))}
                           </div>
                         ) : (
-                          <p className="text-[11px] text-slate-400 italic">No custom fields added yet.</p>
+                          <p className="text-[11px] text-slate-400 italic"><T>No custom fields added yet.</T></p>
                         )}
 
                         {/* Add Field Form */}
                         {showAddFieldForm && (
                           <div className="p-3 rounded-xl border border-blue-200 dark:border-blue-900/60 bg-blue-50/40 dark:bg-blue-950/30 space-y-2.5 animate-in fade-in duration-150">
                             <div className="text-[11px] font-bold text-blue-900 dark:text-blue-300 uppercase tracking-wide">
-                              New Custom Field
+                              <T>New Custom Field</T>
                             </div>
                             <div className="grid grid-cols-2 gap-2">
                               <div>
                                 <label className="text-[10.5px] font-medium text-slate-600 dark:text-slate-300 block mb-1">
-                                  Field Label *
+                                  <T>Field Label *</T>
                                 </label>
                                 <input
                                   type="text"
@@ -605,7 +607,7 @@ export const WidgetTab: React.FC<WidgetTabProps> = ({
                               </div>
                               <div>
                                 <label className="text-[10.5px] font-medium text-slate-600 dark:text-slate-300 block mb-1">
-                                  Field Type
+                                  <T>Field Type</T>
                                 </label>
                                 <select
                                   value={newFieldType}
@@ -623,7 +625,7 @@ export const WidgetTab: React.FC<WidgetTabProps> = ({
                             {newFieldType === 'select' && (
                               <div>
                                 <label className="text-[10.5px] font-medium text-slate-600 dark:text-slate-300 block mb-1">
-                                  Dropdown Options (comma-separated)
+                                  <T>Dropdown Options (comma-separated)</T>
                                 </label>
                                 <input
                                   type="text"
@@ -643,7 +645,7 @@ export const WidgetTab: React.FC<WidgetTabProps> = ({
                                   onChange={(e) => setNewFieldRequired(e.target.checked)}
                                   className="rounded accent-blue-600"
                                 />
-                                <span>Required field</span>
+                                <span><T>Required field</T></span>
                               </label>
                               <div className="flex gap-2">
                                 <button
@@ -651,7 +653,7 @@ export const WidgetTab: React.FC<WidgetTabProps> = ({
                                   onClick={() => setShowAddFieldForm(false)}
                                   className="px-2.5 py-1 text-xs text-slate-500 hover:text-slate-700"
                                 >
-                                  Cancel
+                                  <T>Cancel</T>
                                 </button>
                                 <button
                                   type="button"
@@ -659,7 +661,7 @@ export const WidgetTab: React.FC<WidgetTabProps> = ({
                                   disabled={!newFieldLabel.trim()}
                                   className="px-3 py-1 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold disabled:opacity-50"
                                 >
-                                  Add Field
+                                  <T>Add Field</T>
                                 </button>
                               </div>
                             </div>
@@ -676,7 +678,7 @@ export const WidgetTab: React.FC<WidgetTabProps> = ({
                   {/* Live Preview Frame */}
                   <div className="flex flex-col items-center justify-center rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-100/60 dark:bg-slate-900/40 p-6 shadow-xs">
                     <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-4 font-mono uppercase">
-                      Live Widget Preview
+                      <T>Live Widget Preview</T>
                     </div>
 
                     {/* Simulated Widget Window */}
@@ -687,12 +689,12 @@ export const WidgetTab: React.FC<WidgetTabProps> = ({
                       >
                         <div className="flex items-center gap-2.5">
                           <div className="h-7 w-7 rounded-full bg-white/20 flex items-center justify-center text-xs font-bold">
-                            AI
+                            <T>AI</T>
                           </div>
                           <div>
                             <div className="text-xs font-bold leading-tight">{widgetTitleFor(formData)}</div>
                             <div className="text-[10px] opacity-85 flex items-center gap-1">
-                              <span className="h-1.5 w-1.5 rounded-full bg-emerald-300"></span> Online
+                              <span className="h-1.5 w-1.5 rounded-full bg-emerald-300"></span> <T>Online</T>
                             </div>
                           </div>
                         </div>
@@ -700,7 +702,7 @@ export const WidgetTab: React.FC<WidgetTabProps> = ({
 
                       <div className="p-4 bg-slate-50 dark:bg-slate-950 space-y-3 min-h-[220px]">
                         <div className="bg-white dark:bg-slate-800 p-3 rounded-xl rounded-bl-xs text-xs shadow-xs border border-slate-200/60 dark:border-slate-700 text-slate-800 dark:text-slate-200 max-w-[85%]">
-                          {formData.welcomeMessage || 'Hello! How can I assist you today?'}
+                          {formData.welcomeMessage || <T>{'Hello! How can I assist you today?'}</T>}
                         </div>
 
                         <div className="space-y-1.5 pt-1">
@@ -717,7 +719,7 @@ export const WidgetTab: React.FC<WidgetTabProps> = ({
 
                       <div className="p-2.5 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 flex items-center gap-2">
                         <div className="flex-1 text-xs text-slate-400 dark:text-slate-300 px-3 py-1.5 bg-slate-100 dark:bg-slate-800 border border-transparent dark:border-slate-700 rounded-full">
-                          Ask a question...
+                          <T>Ask a question...</T>
                         </div>
                         <div
                           style={{ backgroundColor: formData.primaryColor || '#2563eb' }}
@@ -736,7 +738,7 @@ export const WidgetTab: React.FC<WidgetTabProps> = ({
                         ) : (
                           <div className="inline-flex items-center gap-1.5 opacity-80">
                             <CresceloMark size={13} motion="draw" />
-                            <span>Powered by <strong className="font-semibold text-slate-600 dark:text-slate-300">Crescelo</strong></span>
+                            <span><T>Powered by</T> <strong className="font-semibold text-slate-600 dark:text-slate-300"><T>Crescelo</T></strong></span>
                           </div>
                         )}
                       </div>

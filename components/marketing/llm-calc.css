@@ -1,0 +1,37 @@
+/* LLM cost calculator (/tools/llm-cost-calculator). Colours come from the marketing tokens. */
+.lc-grid { display: grid; gap: 1.5rem; align-items: start; }
+@media (min-width: 960px) { .lc-grid { grid-template-columns: minmax(0, 22rem) minmax(0, 1fr); gap: 2rem; } }
+
+.lc-panel { display: grid; gap: 1rem; padding: 1.5rem; background: var(--mk-surface); border: 1.5px solid var(--mk-ink); border-radius: var(--mk-radius); }
+.lc-title { font-family: var(--mk-serif); font-weight: 500; font-size: 1.7rem; line-height: 1.15; }
+.lc-field { display: grid; gap: 0.3rem; }
+.lc-field label { font-weight: 700; font-size: 0.9rem; }
+.lc-field input { width: 100%; padding: 0.65rem 0.8rem; border-radius: 0.75rem; border: 1.5px solid var(--mk-ink); background: var(--mk-bg); color: var(--mk-ink); font: inherit; font-variant-numeric: tabular-nums; }
+.lc-field small, .lc-note { color: var(--mk-muted); font-size: 0.8125rem; line-height: 1.5; }
+.lc-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem 1rem; }
+.lc-reset { font: inherit; font-size: 0.875rem; font-weight: 700; color: var(--mk-accent); text-decoration: underline; min-height: 2.5rem; padding: 0 0.25rem; }
+
+.lc-results { min-width: 0; }
+.lc-stats { display: grid; gap: 0.75rem; grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr)); }
+.lc-stat { display: grid; gap: 0.15rem; padding: 1rem 1.15rem; border: 1.5px solid var(--mk-ink); border-radius: 1rem; background: var(--mk-lime-soft); }
+.lc-stat:nth-child(2) { background: var(--mk-lav); }
+.lc-stat:nth-child(3) { background: var(--mk-bg-tint); }
+.lc-stat span { font-size: 0.8125rem; font-weight: 700; }
+.lc-stat b { font-family: var(--mk-serif); font-weight: 500; font-size: 2rem; line-height: 1.1; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.lc-stat small { color: var(--mk-muted); font-size: 0.8125rem; }
+
+.lc-table-wrap { margin-top: 1.25rem; }
+.lc-table-wrap .mk-table { min-width: 32rem; }
+.mk-table .lc-num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.mk-table tbody th { color: var(--mk-ink); }
+.lc-model { display: block; font-weight: 700; }
+.lc-provider, .mk-table .lc-rate { color: var(--mk-muted); font-size: 0.8125rem; }
+.lc-note { margin-top: 0.85rem; max-width: 70ch; }
+
+.lc-faq { max-width: 44rem; margin: 2rem auto 0; display: grid; gap: 0.7rem; }
+.lc-faq-item { background: var(--mk-surface); border: 1.5px solid var(--mk-ink); border-radius: 1rem; padding: 0.9rem 1.1rem; }
+.lc-faq-item summary { cursor: pointer; font-weight: 700; }
+.lc-faq-item p { margin-top: 0.6rem; line-height: 1.6; color: var(--mk-muted); }
+
+.lc-cta { max-width: 44rem; margin: 3rem auto 0; text-align: center; }
+.lc-cta p { margin-top: 0.6rem; color: var(--mk-muted); line-height: 1.6; }

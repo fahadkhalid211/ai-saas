@@ -1,5 +1,6 @@
 'use client';
 
+import { T, useT } from '@/lib/i18n/context';
 import { useCallback, useRef, useState, type CSSProperties, type KeyboardEvent, type PointerEvent } from 'react';
 import { DEMO } from './content';
 import { Reveal, SectionHead } from './ui';
@@ -7,6 +8,7 @@ import { useI18n } from '@/lib/i18n/context';
 
 /** Before/after comparison slider, keyboard operable (arrow keys, Home, End). */
 export function Demo() {
+  const __t = useT();
   const [pos, setPos] = useState(50);
   const boxRef = useRef<HTMLDivElement>(null);
   const dragging = useRef(false);
@@ -62,8 +64,8 @@ export function Demo() {
         <SectionHead id="mk-demo-title" eyebrow={demo.eyebrow} title={demo.title} intro={demo.intro} />
         <Reveal>
           <p className="mk-demo-q">
-            <span>{demo.visitorAsks || 'Visitor asks'}</span>
-            {demo.question}
+            <span><T>{demo.visitorAsks || 'Visitor asks'}</T></span>
+            <T>{demo.question}</T>
           </p>
           <div
             ref={boxRef}
@@ -75,40 +77,40 @@ export function Demo() {
             onPointerCancel={onUp}
           >
             <div className="mk-compare-pane mk-compare-grounded">
-              <span className="mk-pill mk-pill-good">{groundedLabel}</span>
-              <p>{groundedText}</p>
-              <small>{groundedNote}</small>
+              <span className="mk-pill mk-pill-good"><T>{groundedLabel}</T></span>
+              <p><T>{groundedText}</T></p>
+              <small><T>{groundedNote}</T></small>
               <div className="mk-react is-good" aria-hidden="true">
                 <span className="mk-react-icon">
                   <svg viewBox="0 0 24 24" width="30" height="30">
                     <path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 </span>
-                <p className="mk-react-title">{goodTitle}</p>
+                <p className="mk-react-title"><T>{goodTitle}</T></p>
                 <ul>
                   {goodWords.map((w, i) => (
                     <li key={w} style={{ '--dl': `${i * -0.9}s`, '--d': `${4 + i * 0.7}s` } as CSSProperties}>
-                      {w}
+                      <T>{w}</T>
                     </li>
                   ))}
                 </ul>
               </div>
             </div>
             <div className="mk-compare-pane mk-compare-generic" aria-hidden={pos < 8 ? 'true' : undefined}>
-              <span className="mk-pill">{genericLabel}</span>
-              <p>{genericText}</p>
-              <small>{genericNote}</small>
+              <span className="mk-pill"><T>{genericLabel}</T></span>
+              <p><T>{genericText}</T></p>
+              <small><T>{genericNote}</T></small>
               <div className="mk-react is-bad" aria-hidden="true">
                 <span className="mk-react-icon">
                   <svg viewBox="0 0 24 24" width="30" height="30">
                     <path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
                   </svg>
                 </span>
-                <p className="mk-react-title">{badTitle}</p>
+                <p className="mk-react-title"><T>{badTitle}</T></p>
                 <ul>
                   {badWords.map((w, i) => (
                     <li key={w} style={{ '--dl': `${i * -0.9}s`, '--d': `${4.4 + i * 0.6}s` } as CSSProperties}>
-                      {w}
+                      <T>{w}</T>
                     </li>
                   ))}
                 </ul>
@@ -118,7 +120,7 @@ export function Demo() {
               className="mk-handle"
               role="slider"
               tabIndex={0}
-              aria-label="Compare generic chatbot and Crescelo answers"
+              aria-label={__t("Compare generic chatbot and Crescelo answers")}
               aria-valuemin={0}
               aria-valuemax={100}
               aria-valuenow={Math.round(pos)}
@@ -129,7 +131,7 @@ export function Demo() {
             </div>
           </div>
           <p className="mk-sr" aria-live="polite">
-            {status}
+            <T>{status}</T>
           </p>
         </Reveal>
       </div>

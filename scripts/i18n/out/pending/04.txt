@@ -1,0 +1,150 @@
+3868	Previous features
+3869	Product features
+3870	Resume movement
+3871	Alex joined the chat
+3872	Booked · Thu 10:00
+3873	Can I talk to someone?
+3874	Hi, happy to help. What are you planning?
+3875	It comes off your final bill and is refundable for 24 hours.
+3876	Source: Booking policy
+3877	What does a deposit cover?
+3878	"Cost" finds your page on "pricing".
+3879	0% token tax (Wholesale BYOK)
+3880	A $10 deposit is taken when booking online and is deducted from your final bill. It is refundable until 24 hours before the visit.
+3881	A human arranges it
+3882	A ready page for the business, with the assistant built in.
+3883	A standard cut is $35 and takes about 30 minutes. A beard trim is $15 and takes 20 minutes. Cut and beard together is $45 and takes 45 minutes. Prices include tax.
+3884	Accuracy
+3885	Act
+3886	Add a second location or a new service by uploading content — not by adding headcount.
+3887	Add a website URL or a YouTube video and its transcript is indexed.
+3888	Add knowledge
+3889	Add your content
+3890	AI provider pricing
+3891	Always on
+3892	Analytics
+3893	and handing over
+3894	Answer
+3895	answering, booking
+3896	Answers from your own documents
+3897	Answers from your own documents, pages and notes — instantly, accurately, and with the source shown.
+3898	Apex Barbershop
+3899	Are you open on Sundays?
+3900	Based on each vendor’s public documentation as of September 2026. Products change, so check each vendor for current features and plans.
+3901	Basic live-chat widget
+3902	Beard trim
+3903	Book or capture
+3904	Booking
+3905	Booking details and lead info land in your inbox already filled in, ready to act on — no data entry.
+3906	Booking engine
+3907	Booking policy
+3908	Books appointments inside the chat
+3909	Bring your provider key. Model usage is billed by your provider.
+3910	Bundled into message credits
+3911	Captured contacts and unanswered questions, in one inbox.
+3912	Captures leads from the conversation
+3913	Catch visitors while they are interested
+3914	Channels
+3915	chat to a booking
+3916	Chatbase
+3917	Check which questions went unanswered, fill the gaps, and add more channels as your business grows.
+3918	Checks a slot again before confirming
+3919	Compare
+3920	Confirmations and reminders go out by email, with a calendar feed.
+3921	Control
+3922	Crescelo books real appointments, locks slots against your calendar, and answers strictly from your content. Here is how that compares to the alternatives.
+3923	Cut and beard
+3924	David Reynolds
+3925	Depends on the integration
+3926	Do you take walk-ins?
+3927	Documents and files
+3928	Dr. Sarah Lin
+3929	Elena Rostova
+3930	Email confirmations
+3931	Email reminders
+3932	Embeddings
+3933	Encrypted keys
+3934	Every question your assistant could not answer is logged. Fix it once, answer it forever.
+3935	Everything included
+3936	faster lead response
+3937	Figures on these cards describe how the product works, not individual customer results.
+3938	Find us
+3939	Fixed question list
+3940	Form fields
+3941	From "interested" to "confirmed" in one chat
+3942	front desk
+3943	Grounded answer
+3944	Grounded answers
+3945	Grow without hiring
+3946	Hosted business page
+3947	How it works
+3948	How much is a beard trim?
+3949	Human takeover of a live chat
+3950	Hybrid search
+3951	I want to book a haircut
+3952	If the visitor wants to book, slots are offered and checked. Contact details become a lead.
+3953	In-chat booking
+3954	Insight
+3955	Jordan Hayes
+3956	Kill the copy-paste
+3957	Knowledge
+3958	Knowledge assistant
+3959	Lead capture
+3960	Leads and gaps
+3961	Learn and improve
+3962	Less repeating yourself.
+3963	Let's answer
+3964	Let's book
+3965	Let's hand over
+3966	Lime: what your visitors experience. Dark: what runs behind it.
+3967	Limited
+3968	Link out to a form
+3969	Live handover
+3970	Live in four steps.
+3971	Live interactive sandbox: test grounded answers, slot availability, and instant booking confirmation in real time.
+3972	Live takeover
+3973	Meaning and keyword search are combined, then re-ranked.
+3974	Meaning and keyword search look through your knowledge together.
+3975	Measured performance from businesses running Crescelo assistants.
+3976	Message
+3977	Mon–Fri 9:00–17:00, Sat 9:00–16:00, closed Sunday
+3978	monthly revenue recovered
+3979	More of the work only you can do.
+3980	Name the assistant, set the tone, add your services and hours, connect your own AI key. Takes about ten minutes.
+3981	No
+3982	No more "I will check and get back to you"
+3983	Not a focus
+3984	Not just another chatbot.
+3985	OCR and extraction
+3986	of gaps logged
+3987	Often unsupported
+3988	One assistant.
+3989	One product. Every feature you need.
+3990	One script tag puts the assistant on any site.
+3991	Opening hours
+3992	Paste one script tag on your site or share the hosted page. Visitors start getting answers and bookings immediately.
+3993	PDF, Word and text files become searchable passages.
+3994	People ask questions when they are ready to buy. Answer them instantly instead of the next morning.
+3995	Per-seat plans
+3996	Price list
+3997	Proven Results
+3998	Put it live
+3999	Rank
+4000	Rank and dedupe
+4001	Re-ranking
+4002	ready when you wake
+4003	Real outcomes across modern service teams
+4004	Reclaim your time
+4005	Related words
+4006	Related-word matching
+4007	Retrieve
+4008	Roles and 2FA
+4009	Routine questions get answered without anyone stopping what they are doing. Your team stays focused.
+4010	saved weekly per clinic
+4011	Scroll through every capability in Crescelo — from knowledge ingestion to live team handover.
+4012	See conversations, bookings and leads over time.
+4013	See exactly what your website misses
+4014	See pricing
+4015	See the controls
+4016	Set it up your way
+4017	Shows real available slots inside the conversation and double-checks each one before confirming.

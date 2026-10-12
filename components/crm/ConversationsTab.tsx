@@ -1,3 +1,4 @@
+import { T } from '@/lib/i18n/context';
 import React, { useState, useEffect, useRef } from 'react';
 import { MarkdownRenderer } from '@/components/markdown-renderer';
 import {
@@ -337,10 +338,10 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
                   <div>
                     <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2.5">
                       <History className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-                      <span>Chat History</span>
+                      <span><T>Chat History</T></span>
                     </h1>
                     <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                      Review past conversations and step in to chat live when needed.
+                      <T>Review past conversations and step in to chat live when needed.</T>
                     </p>
                   </div>
                   <button
@@ -350,7 +351,7 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
                     className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 transition shadow-xs"
                   >
                     <RefreshCw className={`h-3.5 w-3.5 ${isLoadingConversations ? 'animate-spin text-blue-600' : 'text-slate-500'}`} />
-                    <span>Refresh Logs</span>
+                    <span><T>Refresh Logs</T></span>
                   </button>
                 </div>
 
@@ -359,15 +360,15 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
                     <div className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400">
                       <MessageSquare className="h-6 w-6" />
                     </div>
-                    <h3 className="text-sm font-semibold text-slate-900 dark:text-white">No Conversations Recorded Yet</h3>
+                    <h3 className="text-sm font-semibold text-slate-900 dark:text-white"><T>No Conversations Recorded Yet</T></h3>
                     <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm mx-auto">
-                      When visitors start chatting with your bot in the widget or Testing Studio, full transcripts will appear here.
+                      <T>When visitors start chatting with your bot in the widget or Testing Studio, full transcripts will appear here.</T>
                     </p>
                     <button
                       onClick={() => setActiveTab('playground')}
                       className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs transition"
                     >
-                      <span>Open Testing Studio &rarr;</span>
+                      <span><T>Open Testing Studio &rarr;</T></span>
                     </button>
                   </div>
                 ) : (
@@ -376,7 +377,7 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
                     <div className="lg:col-span-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden shadow-xs">
                       <div className="p-3.5 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40 flex items-center justify-between">
                         <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                          {sortedConversations.length} Active Sessions
+                          {sortedConversations.length} <T>Active Sessions</T>
                         </span>
                         <select
                             value={conversationSentimentFilter}
@@ -423,39 +424,39 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
                                 <div className="flex items-center gap-1.5">
                                   {conv.status === 'waiting_for_agent' && !conv.isLiveTakeover && (
                                     <span className="flex items-center gap-0.5 rounded-full bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 px-1.5 py-0.5 text-[9px] font-bold border border-amber-300 dark:border-amber-800 animate-pulse">
-                                      <Headphones className="h-2.5 w-2.5" /> Waiting
+                                      <Headphones className="h-2.5 w-2.5" /> <T>Waiting</T>
                                     </span>
                                   )}
                                   {conv.isLiveTakeover && (
                                     <span className="flex items-center gap-0.5 rounded-full bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 px-1.5 py-0.5 text-[9px] font-bold border border-purple-300 dark:border-purple-800">
-                                      <Headphones className="h-2.5 w-2.5" /> Live Agent
+                                      <Headphones className="h-2.5 w-2.5" /> <T>Live Agent</T>
                                     </span>
                                   )}
                                   {conv.sentiment === 'urgent' && conv.status !== 'waiting_for_agent' && (
                                     <span className="flex items-center gap-0.5 rounded-full bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 px-1.5 py-0.5 text-[9px] font-bold border border-rose-200 dark:border-rose-800">
-                                      <AlertCircle className="h-2.5 w-2.5" /> Urgent
+                                      <AlertCircle className="h-2.5 w-2.5" /> <T>Urgent</T>
                                     </span>
                                   )}
                                   {conv.sentiment === 'positive' && (
                                     <span className="flex items-center gap-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 px-1.5 py-0.5 text-[9px] font-bold border border-emerald-200 dark:border-emerald-800">
-                                      <ThumbsUp className="h-2.5 w-2.5" /> Positive
+                                      <ThumbsUp className="h-2.5 w-2.5" /> <T>Positive</T>
                                     </span>
                                   )}
                                   {conv.resolved && (
                                     <span className="flex items-center gap-0.5 rounded-full bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 px-1.5 py-0.5 text-[9px] font-bold border border-blue-200 dark:border-blue-800">
-                                      <CheckCircle2 className="h-2.5 w-2.5" /> Solved
+                                      <CheckCircle2 className="h-2.5 w-2.5" /> <T>Solved</T>
                                     </span>
                                   )}
                                   <span className="rounded-full bg-slate-100 dark:bg-slate-800 px-2 py-0.5 text-[10px] font-bold text-slate-600 dark:text-slate-400">
-                                    {msgCount} msgs
+                                    {msgCount} <T>msgs</T>
                                   </span>
                                 </div>
                               </div>
                               <div className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-1">
-                                {lastMsg ? lastMsg.content : 'No messages'}
+                                {lastMsg ? lastMsg.content : <T>{'No messages'}</T>}
                               </div>
                               <div className="text-[10px] text-slate-400">
-                                {new Date(conv.createdAt).toLocaleDateString()} at {new Date(conv.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                {new Date(conv.createdAt).toLocaleDateString()} <T>at</T> {new Date(conv.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                               </div>
                             </button>
                           );
@@ -470,15 +471,15 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
                           <div className="pb-3 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
                             <div>
                               <div className="text-xs font-bold text-slate-900 dark:text-white font-mono">
-                                Session: {selectedConversation.id}
+                                <T>Session:</T> {selectedConversation.id}
                               </div>
                               <div className="text-[11px] text-slate-400 mt-0.5">
-                                Started {new Date(selectedConversation.createdAt).toLocaleString()}
+                                <T>Started</T> {new Date(selectedConversation.createdAt).toLocaleString()}
                               </div>
                             </div>
                             <div className="flex items-center gap-2">
                               <span className="rounded-full bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 font-semibold px-2.5 py-1 text-[11px] whitespace-nowrap">
-                                {selectedConversation.messages?.length || 0} Messages
+                                {selectedConversation.messages?.length || 0} <T>Messages</T>
                               </span>
                               <button
                                 type="button"
@@ -491,7 +492,7 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
                                 title={selectedConversation.isLiveTakeover ? "Click to release back to AI bot" : "Click to pause AI and take over as live human agent"}
                               >
                                 <Headphones className="h-3.5 w-3.5" />
-                                <span>{selectedConversation.isLiveTakeover ? 'Live Agent (AI Paused)' : 'Take Over Chat'}</span>
+                                <span>{selectedConversation.isLiveTakeover ? <T>{'Live Agent (AI Paused)'}</T> : <T>{'Take Over Chat'}</T>}</span>
                               </button>
                               <button
                                 type="button"
@@ -503,7 +504,7 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
                                 }`}
                               >
                                 <CheckCircle2 className={`h-3.5 w-3.5 ${selectedConversation.resolved ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400'}`} />
-                                <span>{selectedConversation.resolved ? 'Resolved' : 'Mark Resolved'}</span>
+                                <span>{selectedConversation.resolved ? <T>{'Resolved'}</T> : <T>{'Mark Resolved'}</T>}</span>
                               </button>
                               <button
                                 type="button"
@@ -512,7 +513,7 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
                                 title="Download chat transcript as TXT"
                               >
                                 <Download className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
-                                <span>Download Chat</span>
+                                <span><T>Download Chat</T></span>
                               </button>
                             </div>
                           </div>
@@ -528,10 +529,10 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
                                 <div>
                                   <div className="font-bold text-amber-900 dark:text-amber-200 flex items-center gap-1.5">
                                     <Headphones className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
-                                    <span>Customer Waiting for Live Agent</span>
+                                    <span><T>Customer Waiting for Live Agent</T></span>
                                   </div>
                                   <p className="text-[11px] text-amber-700 dark:text-amber-300 mt-0.5">
-                                    Visitor requested human assistance. Click to take over and start typing real-time responses.
+                                    <T>Visitor requested human assistance. Click to take over and start typing real-time responses.</T>
                                   </p>
                                 </div>
                               </div>
@@ -541,7 +542,7 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
                                 className="px-3.5 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs shadow-xs transition shrink-0 cursor-pointer flex items-center gap-1.5"
                               >
                                 <Headphones className="h-3.5 w-3.5" />
-                                <span>Accept &amp; Take Over</span>
+                                <span><T>Accept &amp; Take Over</T></span>
                               </button>
                             </div>
                           )}
@@ -555,7 +556,7 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
                                   <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
                                 </span>
                                 <span className="font-semibold text-purple-900 dark:text-purple-200">
-                                  Live Operator Mode Active &bull; Assigned to: <strong>{selectedConversation.assignedAgentName || agentNameInput}</strong>
+                                  <T>Live Operator Mode Active &bull; Assigned to:</T> <strong>{selectedConversation.assignedAgentName || agentNameInput}</strong>
                                 </span>
                               </div>
                               <button
@@ -564,7 +565,7 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
                                 className="text-[11px] font-semibold text-purple-700 dark:text-purple-300 bg-white dark:bg-slate-900 border border-purple-200 dark:border-purple-700 hover:bg-purple-100 dark:hover:bg-purple-950/60 px-3 py-1 rounded-lg transition cursor-pointer flex items-center gap-1"
                               >
                                 <Bot className="h-3 w-3 text-purple-500" />
-                                <span>Hand Back to AI</span>
+                                <span><T>Hand Back to AI</T></span>
                               </button>
                             </div>
                           )}
@@ -580,7 +581,7 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
                                 >
                                   <div className="text-[10px] text-slate-400 mb-1 px-1 flex items-center gap-1">
                                     <span>
-                                      {isUser ? 'Visitor' : isAgent ? (m.senderName || 'Live Agent') : 'AI Assistant'}
+                                      {isUser ? <T>{'Visitor'}</T> : isAgent ? (m.senderName || <T>{'Live Agent'}</T>) : <T>{'AI Assistant'}</T>}
                                     </span>
                                     <span>&bull;</span>
                                     <span>{new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
@@ -597,7 +598,7 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
                                     {isAgent && (
                                       <div className="flex items-center gap-1.5 text-[10.5px] font-bold text-purple-700 dark:text-purple-300 mb-1 border-b border-purple-200/60 dark:border-purple-800/60 pb-1">
                                         <Headphones className="h-3 w-3" />
-                                        <span>{m.senderName || 'Live Support Agent'}</span>
+                                        <span>{m.senderName || <T>{'Live Support Agent'}</T>}</span>
                                       </div>
                                     )}
                                     {isUser ? (
@@ -616,7 +617,7 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
                                         <div className="mt-2 pt-2 border-t border-slate-200 dark:border-slate-700 text-[10.5px]">
                                           <div className="font-semibold text-slate-500 dark:text-slate-400 mb-1 flex items-center gap-1">
                                             <Globe className="h-3 w-3 text-sky-500" />
-                                            <span>Web Sources:</span>
+                                            <span><T>Web Sources:</T></span>
                                           </div>
                                           <div className="space-y-1">
                                             {webCitations.map((cite: any, cIdx: number) => (
@@ -628,7 +629,7 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
                                                   rel="noopener noreferrer"
                                                   className="hover:underline flex items-center gap-1 font-semibold"
                                                 >
-                                                  <span>{cite.sourceTitle || 'Web Source'}</span>
+                                                  <span>{cite.sourceTitle || <T>{'Web Source'}</T>}</span>
                                                   <span>↗</span>
                                                 </a>
                                               </div>
@@ -647,7 +648,7 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
                           <div className="pt-3 border-t border-slate-100 dark:border-slate-800 space-y-2">
                             {/* Quick canned replies */}
                             <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-[10px]">
-                              <span className="text-slate-400 shrink-0 font-medium">Quick replies:</span>
+                              <span className="text-slate-400 shrink-0 font-medium"><T>Quick replies:</T></span>
                               {[
                                 'Hello! How can I assist you today?',
                                 'Checking on that right now for you!',
@@ -702,7 +703,7 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
                                 title="Insert appointment booking card into chat for customer"
                               >
                                 <Calendar className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
-                                <span className="hidden sm:inline">Send Booking Form</span>
+                                <span className="hidden sm:inline"><T>Send Booking Form</T></span>
                               </button>
                               <button
                                 type="button"
@@ -711,14 +712,14 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
                                 className="flex items-center gap-1.5 px-3.5 py-2 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white rounded-lg text-xs font-semibold transition shadow-xs cursor-pointer"
                               >
                                 <Send className="h-3.5 w-3.5" />
-                                <span>{isSendingAgentMessage ? 'Sending...' : 'Send'}</span>
+                                <span>{isSendingAgentMessage ? <T>{'Sending...'}</T> : <T>{'Send'}</T>}</span>
                               </button>
                             </div>
                           </div>
                         </div>
                       ) : (
                         <div className="py-20 text-center text-xs text-slate-400">
-                          Select a conversation from the left to inspect the transcript.
+                          <T>Select a conversation from the left to inspect the transcript.</T>
                         </div>
                       )}
                     </div>

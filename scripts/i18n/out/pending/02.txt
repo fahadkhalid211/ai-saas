@@ -1,0 +1,150 @@
+3568	Prestige Living Real Estate
+3569	Reuses documents and training data from your selected assistant without creating extra bots.
+3570	Sterling & Vance Legal Counsel
+3571	URL Slug (/site/[slug])
+3572	Your first landing page connects to your default knowledge base so your trained documents and FAQs are immediately used.
+3573	American Express
+3574	Billing Email Address
+3575	Card Brand
+3576	Discover
+3577	Exp Month
+3578	Exp Year
+3579	Last 4 Digits
+3580	Mastercard
+3581	Save Card
+3582	Update Payment Details
+3583	Visa
+3584	— done
+3585	Add to Your Website
+3586	Add Your Content
+3587	Ask it something a real customer might ask. If the answer is off, add more content to your Knowledge Base.
+3588	Chat with your assistant right now to make sure it gives accurate answers before customers see it.
+3589	Copy one line of code and paste it into your website. The chat button will appear within seconds.
+3590	Get Embed Code
+3591	Getting Started — Step
+3592	Go to Knowledge Base
+3593	Open Test Chat
+3594	Set up {assistantName}
+3595	Set up your assistant
+3596	Skip
+3597	Start with your most common questions — a one-page FAQ is enough to get started.
+3598	Test It Out
+3599	Upload documents, paste website links, or add FAQs so your assistant knows how to answer customer questions.
+3600	Works on any website — HTML, WordPress, Shopify, Webflow, and more.
+3601	Back
+3602	Exit tour
+3603	Finish Tour
+3604	Next
+3605	Use arrow keys to navigate
+3606	Add more channels
+3607	Add team members and assign them roles: Admins can change settings, Members can view leads and conversations. Everyone gets their own login.
+3608	Audit trail
+3609	Browse by industry using the filter buttons at the top.
+3610	Captured leads
+3611	Change the chat button color, greeting message, launcher position, and logo so the widget feels like part of your website — not a third-party tool.
+3612	Chat history
+3613	Choose how your assistant communicates: Strict keeps answers factual and conservative, Balanced is warm but accurate, Creative adds a more conversational tone. Most businesses do well with Balanced.
+3614	Click "Add Source" to upload a PDF, DOCX, CSV, or paste a website link.
+3615	Click "Edit Page" to open the landing page builder.
+3616	Click "Enable 2FA" and follow the instructions — you will need an authenticator app on your phone.
+3617	Click "Invite Team Member" to send an email invitation.
+3618	Click any conversation row to open the full transcript.
+3619	Connect your assistant to WhatsApp, Telegram, or trigger webhooks to Zapier and your CRM whenever a lead is captured or an appointment is booked.
+3620	Each integration has a simple on/off toggle and a field for your API key or webhook URL.
+3621	Enable two-factor authentication to prevent unauthorized access to your dashboard. It takes about 60 seconds to set up.
+3622	Every action taken in your workspace is logged here — logins, settings changes, team invitations, and plan changes. Useful if you share access with others.
+3623	Every assistant gets a free hosted page at your domain — perfect for sharing on social media or in email campaigns. Customize the design, add your services, and publish in minutes.
+3624	Every conversation your assistant has is saved here. You can read transcripts, filter by date, and jump into a live conversation to take over from the assistant at any time.
+3625	Every time the assistant collects a name, email, or phone number from a visitor, it appears here automatically. No forms to manage — it happens in conversation.
+3626	Getting around
+3627	Hit the "Deploy" button in the top bar to get your embed code. Paste one line of code into your website and your assistant is live. That is it — you are set up.
+3628	Hosted landing pages
+3629	How your assistant is performing
+3630	If you offer appointments, your assistant can handle the entire booking flow — asking for the date, time, and contact details — and the booking shows up here.
+3631	Instead of configuring everything from scratch, pick an industry template (barbershop, dental clinic, gym, etc.) and your assistant will be pre-configured with relevant prompts and FAQs.
+3632	Invite your team
+3633	Keep your account secure
+3634	Knowledge Base — teach your assistant
+3635	Leads are listed with the date and the message they sent.
+3636	Match your brand
+3637	Notice the four sections in the left sidebar.
+3638	Personality and guardrails
+3639	Ready to go live?
+3640	Response style
+3641	See how many visitors your assistant talked to, how many became leads, and which pages drove the most conversations. Use this to decide where to focus next.
+3642	Set your assistant's name, a brief description of your business, and what it should say when it doesn't know the answer. This prevents it from making things up.
+3643	Start with a template
+3644	Start with your most common questions: pricing, hours, services, policies. A one-page FAQ document is enough to make your assistant useful on day one.
+3645	Test before going live
+3646	The "Fallback message" field controls what the assistant says when it is unsure.
+3647	The blue "Deploy" button is always visible in the top right corner.
+3648	The left sidebar is organized into four sections: Get Started (your core setup), Grow & Engage (conversations and bookings), Customize (how the assistant looks and behaves), and Settings (account, team, billing).
+3649	The log is sorted newest-first and can be filtered by action type.
+3650	The Overview tab shows a live snapshot of how your assistant is performing.
+3651	The preview on the right updates in real time as you change settings.
+3652	The status badge next to each source turns green when the assistant has finished learning from it.
+3653	The three Response Style cards let you switch tone with one click.
+3654	The top stat cards give you the numbers at a glance.
+3655	The usage bar shows how many of your monthly sessions you have used.
+3656	This is your command center. From here you can train your assistant, review conversations, and add it to your website. This tour will walk you through everything in about 3 minutes.
+3657	Type a question a real customer might ask and see how the assistant responds.
+3658	Upload business documents, paste your website URL, or add FAQ text. Your assistant reads all of it and uses it to answer customer questions accurately.
+3659	Use the status column to mark bookings as confirmed, completed, or cancelled.
+3660	Use this chat window to ask your assistant the same questions your customers would ask. If an answer is wrong, go back to the Knowledge Base and add more detail.
+3661	Welcome to your dashboard
+3662	What to upload first
+3663	Your current plan, usage, and upgrade options are all here. Chat sessions reset monthly, and you can upgrade or cancel at any time.
+3664	Your plan
+3665	This document is available in English only. The English text is the legally binding version.
+3666	Country and language notification
+3667	Accept analytics
+3668	Close
+3669	Cookie choices
+3670	Cookie settings
+3671	Cookies
+3672	Reject
+3673	We always use the cookies needed to sign you in and keep the site secure. With your permission we also use Google Analytics to count visits and see which pages help. We never use advertising cookies.
+3674	← Previous
+3675	All Topics
+3676	Blog pagination
+3677	Clear all filters
+3678	Clear search
+3679	Deploy on Your Website
+3680	matching “
+3681	MIN READ
+3682	Next →
+3683	No guides match your search criteria.
+3684	Read guide →
+3685	Reset all filters
+3686	Search 200+ guides by keyword, topic, or industry (e.g. appointment booking, dental, plumbing, RAG, BYOK)...
+3687	Search Knowledge Hub & Glossary
+3688	Showing
+3689	Start 14-day trial →
+3690	Topic Clusters
+3691	TOPIC CLUSTERS
+3692	Try different keywords, or reset your filters to browse the full directory.
+3693	Turn visitors into confirmed appointments 24/7.
+3694	Email updates
+3695	Enter a valid email address, like name@example.com.
+3696	Official community channels
+3697	Subscribe
+3698	Thank you! You have been subscribed to Crescelo updates.
+3699	you@company.com
+3700	Add your content in minutes.
+3701	All features
+3702	Choose the tone, colours and greeting, then paste one line of code on your site.
+3703	Conversations that need a person show up in the inbox with the full history attached.
+3704	Customers pick a real free slot.
+3705	Every Growth feature free for 14 days. A card is required to start, and it is charged when the trial ends unless you cancel first.
+3706	Every lead lands in one inbox.
+3707	Every reply is built from passages in your own documents. This is what happens behind a single question.
+3708	From set-up to live.
+3709	Good to know.
+3710	Guides:
+3711	It finds the answer in your content.
+3712	Learn more →
+3713	Log in
+3714	Make it look like your brand.
+3715	Name, contact details and the conversation behind them, ready for your team to follow up.
+3716	One assistant, every channel.
+3717	SEE IT

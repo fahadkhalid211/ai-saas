@@ -1,5 +1,6 @@
 'use client';
 
+import { T } from '@/lib/i18n/context';
 import React, { useEffect, useRef } from 'react';
 import { Bell, X } from 'lucide-react';
 
@@ -69,7 +70,7 @@ export function NotificationToast({
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between">
-          <span className="text-xs font-bold text-slate-900 dark:text-white truncate">{incomingToast.title}</span>
+          <span className="text-xs font-bold text-slate-900 dark:text-white truncate"><T>{incomingToast.title}</T></span>
           <button
             type="button"
             onClick={onDismiss}
@@ -78,7 +79,7 @@ export function NotificationToast({
             <X className="w-4 h-4" />
           </button>
         </div>
-        <p className="text-xs text-slate-600 dark:text-slate-300 mt-0.5 line-clamp-2">{incomingToast.message}</p>
+        <p className="text-xs text-slate-600 dark:text-slate-300 mt-0.5 line-clamp-2"><T>{incomingToast.message}</T></p>
         <div className="mt-2 flex items-center gap-2">
           {isChatNotif && (setActiveTab || onOpenConversation) ? (
             <button
@@ -98,7 +99,7 @@ export function NotificationToast({
                   : 'text-blue-600 dark:text-blue-400'
               }`}
             >
-              {isEscalation ? 'Open Live Chat' : 'View Chat'} &rarr;
+              {isEscalation ? <T>{'Open Live Chat'}</T> : <T>{'View Chat'}</T>} &rarr;
             </button>
           ) : (
             <button
@@ -109,15 +110,15 @@ export function NotificationToast({
               }}
               className="text-[11px] font-semibold text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
             >
-              View Notifications
+              <T>View Notifications</T>
             </button>
           )}
           <span className="text-slate-300 dark:text-slate-700">&bull;</span>
-          <span className="text-[10px] text-slate-400 font-mono">Just now</span>
+          <span className="text-[10px] text-slate-400 font-mono"><T>Just now</T></span>
           {toastQueue.length > 1 && (
             <>
               <span className="text-slate-300 dark:text-slate-700">&bull;</span>
-              <span className="text-[10px] text-slate-400 font-semibold">+{toastQueue.length - 1} more</span>
+              <span className="text-[10px] text-slate-400 font-semibold">+{toastQueue.length - 1} <T>more</T></span>
             </>
           )}
         </div>

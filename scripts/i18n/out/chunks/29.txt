@@ -1,0 +1,150 @@
+4350	& Google
+4351	Protected by
+4352	reCAPTCHA
+4353	Something went wrong
+4354	A hosted page if you have no site
+4355	A list of what is missing
+4356	A Meta developer app for WhatsApp, or a bot with BotFather for Telegram.
+4357	A website address is read when you add it. Add it again after big changes to refresh the content.
+4358	Add an AI chat widget to WordPress, Shopify, Webflow, Wix or any website with one script tag. Match your brand and go live in minutes.
+4359	Add sources
+4360	Add the documents, pages and videos that describe your business. Crescelo indexes them so the assistant can find the right passage for every question, and it shows you what it could not answer so you can close the gap.
+4361	Add the questions you need, such as service, budget or preferred time, and mark which are required.
+4362	Add to their calendar
+4363	After booking, visitors can add the appointment to Google Calendar, Apple Calendar or any iCal app.
+4364	AI Assistant for WhatsApp and Telegram
+4365	AI can still get things wrong. Review your conversations and fill the gaps the assistant reports; the widget tells visitors they are talking to an AI.
+4366	AI Website Assistant for Service Businesses
+4367	Alerts when it matters
+4368	An AI website assistant that answers visitor questions from your own documents, books appointments and hands over to your team. Try it free for 14 days.
+4369	An assistant that answers from your own business, not from guesswork.
+4370	Answer customers on the apps they already use.
+4371	Answered from the price list you uploaded.
+4372	Answers to unanswered questions
+4373	Appears as a chat bubble on your site.
+4374	Are you taking new clients this month?
+4375	Ask a question in the Testing Studio right after adding a source to see if it is picked up.
+4376	Ask it questions
+4377	Ask the questions your customers ask in the Testing Studio and fix anything missing.
+4378	Asks at the right time
+4379	Available times are calculated from your opening hours and slot length, minus what is already booked.
+4380	Basic validation and rate limits reject junk, but like any form it cannot prove that details are genuine.
+4381	Book real appointments in the chat, with no double bookings.
+4382	Booking option shown in the chat
+4383	Built-in picker, Calendly or Cal.com
+4384	By email and in the dashboard.
+4385	Can clients cancel or reschedule themselves?
+4386	Can I connect my CRM?
+4387	Can I get a fade and beard trim tomorrow around 3?
+4388	Can I keep using Calendly?
+4389	Can I use it on several sites?
+4390	Can it answer phone calls?
+4391	Can it speak to visitors in other languages?
+4392	Can several people help?
+4393	Can two people book the same time?
+4394	Can visitors submit fake data?
+4395	Cancelling or rescheduling any booking
+4396	Capture leads in the chat and send them to email, Slack, Google Sheets or webhooks. Every lead links back to the conversation it came from.
+4397	Chatbot Lead Capture for Service Businesses
+4398	Check indexing
+4399	Check it
+4400	Check widget.js appears in the page source, clear your caches, and make sure a security plugin is not blocking other domains. The WordPress guide lists every check.
+4401	Choose how it speaks, what it should never discuss and when it should offer a person, in Behavior and Rules.
+4402	Choose your fields
+4403	Clear that it is an AI
+4404	Close the gaps
+4405	Closing or returning a conversation
+4406	Confirmation and reminder emails
+4407	Confirmations and reminders
+4408	Connect an AI provider
+4409	Connect it
+4410	Connect OpenAI, Anthropic Claude, Google Gemini, Groq, DeepSeek or a self-hosted model with your own key. Crescelo adds nothing on top of what your provider charges.
+4411	Connect WhatsApp Business (Cloud API) and Telegram bots to your AI assistant so it answers customers and books appointments on the apps they use.
+4412	Connect your channels
+4413	Connect your Meta developer app and phone number; customers message you and the assistant replies.
+4414	Connect your own WhatsApp Business and Telegram accounts and the same assistant, with the same knowledge and booking, replies there too.
+4415	Contact details are requested when a visitor shows intent or when the assistant cannot answer, not as a wall in front of the chat.
+4416	Copy the one-line script from Overview and paste it into your site.
+4417	Copy the script
+4418	Corrections to any passage
+4419	Create a bot with BotFather, paste its token and set the webhook from the dashboard.
+4420	Create the account
+4421	Crescelo can host a business page with your assistant on it (in beta polish).
+4422	Crescelo reads your services, prices and policies, then talks to visitors on your website around the clock. It answers from what you wrote, says so when it does not know, and passes the conversation to your team when a person is needed.
+4423	Deleting sources you no longer want
+4424	Delivered where you work
+4425	Do I need a WhatsApp Business account?
+4426	Do I need technical skills?
+4427	Do you do beard trims on Saturdays, and how much?
+4428	Does it sync both ways with Google Calendar?
+4429	Does the visitor know when a person joins?
+4430	Each lead appears under Leads with an email alert to your team.
+4431	Each new lead triggers an email alert and can be posted to Slack, added as a row in Google Sheets or sent to a webhook.
+4432	Each plan includes an amount of knowledge storage, shown in Plans and Billing.
+4433	Each source shows when it has finished processing.
+4434	Email alerts
+4435	Enter the details in Channels and Integrations and copy the webhook address it shows.
+4436	Every answer comes from the documents, pages and notes you add. It does not browse the internet to fill gaps in your business.
+4437	Every booking appears in a private feed you subscribe to from Google, Apple or Outlook Calendar.
+4438	Every question it could not answer is logged. Write a one-line answer and it is added for good.
+4439	Fields you choose
+4440	Finds meaning, not just words
+4441	Fix wrong answers at the source
+4442	Follow up
+4443	Found in the price sheet, even though the visitor used different words.
+4444	From Overview choose Add to website, or use the Deploy button in the top bar.
+4445	Full colour starts at $95, depending on hair length. Toner is $25 extra.
+4446	Full context
+4447	Give support agents access to conversations and leads without giving them billing or settings.
+4448	Go live
+4449	Greeting and behaviour per assistant
+4450	Hand back or close
+4451	Hand it back
+4452	Happy to arrange one. What is your name, best phone number and email?
+4453	Hi, are you open on Sunday?
+4454	Honest when it does not know
+4455	How much does it set me back for a full colour?
+4456	How often does a website source update?
+4457	I would like a quote for a full bathroom refit.
+4458	I would like to talk to someone about a refund.
+4459	If your content does not answer a question, the assistant says so and offers a booking form or a person. The gap is logged so you can fill it.
+4460	In Behavior and Rules set which details the assistant collects.
+4461	In Channels and Integrations add Slack, Google Sheets or a webhook, and use the test button.
+4462	In Widget and Styling choose the built-in date picker, Calendly or Cal.com.
+4463	Incoming messages are verified before the assistant sees them.
+4464	Into the Leads section of your dashboard, by email, and to any of Slack, Google Sheets or a webhook you connect.
+4465	Is my content used to train AI models?
+4466	Is there a cost from WhatsApp or Telegram?
+4467	It does not show on my site. What now?
+4468	It is designed to answer only from your content and to say when it does not know. No AI is perfect, so check the conversation history and add missing answers over time.
+4469	It replies in the language a visitor writes in, based on what your AI provider supports. Your knowledge should be written in the languages you want it to answer well.
+4470	Knowledge Base for Your AI Assistant
+4471	Knowledge base guide
+4472	Knowledge, styling and behaviour changes apply at once.
+4473	Lead form fields and which are required
+4474	Leads and bookings made in these channels appear in the same dashboard.
+4475	Leads and bookings still arrive
+4476	Leads land in your dashboard and in your channels at once.
+4477	Let visitors book
+4478	Let visitors book appointments inside the chat. Live slots, no double bookings, confirmation emails and self-service reschedule links.
+4479	Linked to the conversation
+4480	Live availability
+4481	Live Chat Handover from AI to Your Team
+4482	Live handover on or off
+4483	Live takeover needs someone from your team to be available in the dashboard; outside those hours the assistant offers a booking or a message form instead.
+4484	Manage bookings
+4485	Many kinds of sources
+4486	Marcus has 3:15 PM open. I have held it for you. Shall I confirm it?
+4487	Matches your brand
+4488	Name, colours and position
+4489	Name, colours, position and welcome message
+4490	Native two-way sync with HubSpot, Salesforce and Pipedrive is planned, not available yet. Use a webhook through Zapier or Make in the meantime.
+4491	No. A slot is locked while it is being booked, and a taken slot is no longer offered.
+4492	No. Adding content, choosing a provider and pasting one script are point-and-click steps, and there is a guide for each.
+4493	Not yet. Bookings are exported to a feed you subscribe to; two-way sync is on the roadmap.
+4494	Not yet. Phone calls are under development.
+4495	Notification emails
+4496	Of course. I have notified the team and someone will join this chat shortly.
+4497	One brain
+4498	One line of code puts your assistant on any website.
+4499	One script tag

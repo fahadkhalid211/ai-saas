@@ -1,5 +1,6 @@
 'use client';
 
+import { T, useT } from '@/lib/i18n/context';
 import { useEffect, useRef, useState } from 'react';
 import { annualSavingsPercent } from '@/lib/billing/plans';
 import { trackEvent } from '@/lib/analytics/track';
@@ -8,6 +9,7 @@ import { ButtonLink, Check, Reveal, SectionHead } from './ui';
 import { useI18n } from '@/lib/i18n/context';
 
 export function Pricing() {
+  const __t = useT();
   const { dict } = useI18n();
   const pr = dict?.pricing || PRICING;
   const [annual, setAnnual] = useState(true);
@@ -31,12 +33,12 @@ export function Pricing() {
       <div className="mk-wrap">
         <SectionHead id="mk-pricing-title" eyebrow={pr.eyebrow} title={pr.title} intro={pr.intro} />
 
-        <div className="mk-billing" role="group" aria-label="Billing period">
+        <div className="mk-billing" role="group" aria-label={__t("Billing period")}>
           <button type="button" aria-pressed={!annual} className={!annual ? 'is-on' : ''} onClick={() => setAnnual(false)}>
-            {pr.monthly || 'Monthly'}
+            <T>{pr.monthly || 'Monthly'}</T>
           </button>
           <button type="button" aria-pressed={annual} className={annual ? 'is-on' : ''} onClick={() => setAnnual(true)}>
-            {pr.annual || 'Annual'} <small style={{ fontWeight: 700 }}>· {pr.save || 'save'} {annualSavingsPercent()}%</small>
+            <T>{pr.annual || 'Annual'}</T> <small style={{ fontWeight: 700 }}>· <T>{pr.save || 'save'}</T> {annualSavingsPercent()}%</small>
           </button>
         </div>
 
@@ -49,24 +51,24 @@ export function Pricing() {
 
             return (
               <Reveal as="li" key={p.id} delay={i * 80} className={`mk-plan ${p.popular ? 'is-popular' : ''}`}>
-                {p.popular ? <span className="mk-plan-flag">{pr.recommended || 'Recommended'}</span> : null}
-                <h3>{p.name}</h3>
-                <p className="mk-plan-tag">{p.tagline}</p>
+                {p.popular ? <span className="mk-plan-flag"><T>{pr.recommended || 'Recommended'}</T></span> : null}
+                <h3><T>{p.name}</T></h3>
+                <p className="mk-plan-tag"><T>{p.tagline}</T></p>
                 <p className="mk-price" aria-live="polite">
-                  <span className="mk-price-num">${price}</span>
-                  <span className="mk-price-per"> {pr.perMonth || '/ month'}</span>
+                  <span className="mk-price-num">$<T>{price}</T></span>
+                  <span className="mk-price-per"> <T>{pr.perMonth || '/ month'}</T></span>
                 </p>
                 <p className="mk-price-note" style={{ fontWeight: 600 }}>
-                  {pr.trialNote || '14 days free (card required, cancel any time). Then:'}
+                  <T>{pr.trialNote || '14 days free (card required, cancel any time). Then:'}</T>
                 </p>
                 <p className="mk-price-note">
-                  {annual ? billedAnnuallyText : (pr.billedMonthly || 'Billed monthly, cancel any time')}
+                  <T>{annual ? billedAnnuallyText : (pr.billedMonthly || 'Billed monthly, cancel any time')}</T>
                 </p>
                 <ul className="mk-ticks">
                   {p.highlights.map((h) => (
                     <li key={h}>
                       <Check />
-                      {h}
+                      <T>{h}</T>
                     </li>
                   ))}
                 </ul>
@@ -76,14 +78,14 @@ export function Pricing() {
                   className="mk-plan-cta"
                   onClick={() => trackEvent('plan_selected', { plan: p.id, billing: annual ? 'annual' : 'monthly' })}
                 >
-                  {dict?.nav?.signup || 'Start free trial'}
+                  <T>{dict?.nav?.signup || 'Start free trial'}</T>
                 </ButtonLink>
               </Reveal>
             );
           })}
         </ul>
 
-        <p className="mk-footnote">{pr.byokNote || PRICING.note}</p>
+        <p className="mk-footnote"><T>{pr.byokNote || PRICING.note}</T></p>
       </div>
     </section>
   );

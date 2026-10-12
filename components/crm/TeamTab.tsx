@@ -1,3 +1,4 @@
+import { T } from '@/lib/i18n/context';
 import React from 'react';
 import {
   UserCheck,
@@ -65,10 +66,10 @@ export const TeamTab: React.FC<TeamTabProps> = ({
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2.5">
             <UserCheck className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-            <span>Team</span>
+            <span><T>Team</T></span>
           </h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-            Invite team members and manage their access to the dashboard.
+            <T>Invite team members and manage their access to the dashboard.</T>
           </p>
         </div>
         <button
@@ -77,7 +78,7 @@ export const TeamTab: React.FC<TeamTabProps> = ({
           className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs transition cursor-pointer"
         >
           <UserPlus className="h-3.5 w-3.5" />
-          <span>Invite Team Member</span>
+          <span><T>Invite Team Member</T></span>
         </button>
       </div>
 
@@ -100,30 +101,30 @@ export const TeamTab: React.FC<TeamTabProps> = ({
         <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-1">
           <div className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
             <ShieldCheck className="h-4 w-4 text-emerald-500" />
-            <span>Owner &amp; Admin</span>
+            <span><T>Owner &amp; Admin</T></span>
           </div>
           <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
-            Full administrative control: add/edit assistants, update billing, invite teammates, and view security audits.
+            <T>Full administrative control: add/edit assistants, update billing, invite teammates, and view security audits.</T>
           </p>
         </div>
 
         <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-1">
           <div className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
             <Headphones className="h-4 w-4 text-blue-500" />
-            <span>Support Agent</span>
+            <span><T>Support Agent</T></span>
           </div>
           <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
-            Operational access: take over live chats, manage appointments, and respond to captured visitor leads.
+            <T>Operational access: take over live chats, manage appointments, and respond to captured visitor leads.</T>
           </p>
         </div>
 
         <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-1">
           <div className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
             <CreditCard className="h-4 w-4 text-purple-500" />
-            <span>Billing &amp; Viewer</span>
+            <span><T>Billing &amp; Viewer</T></span>
           </div>
           <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
-            Specialized access: invoices and payment methods for Billing Managers; read-only analytics for Viewers.
+            <T>Specialized access: invoices and payment methods for Billing Managers; read-only analytics for Viewers.</T>
           </p>
         </div>
       </div>
@@ -132,7 +133,7 @@ export const TeamTab: React.FC<TeamTabProps> = ({
       <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden shadow-xs">
         <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
           <h2 className="text-xs font-bold uppercase tracking-wider text-slate-500">
-            Active Collaborators ({teamMembers.length})
+            <T>Active Collaborators (</T>{teamMembers.length})
           </h2>
           <button
             type="button"
@@ -140,7 +141,7 @@ export const TeamTab: React.FC<TeamTabProps> = ({
             className="text-xs text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 cursor-pointer"
           >
             <RefreshCw className="h-3 w-3" />
-            <span>Refresh</span>
+            <span><T>Refresh</T></span>
           </button>
         </div>
 
@@ -148,18 +149,18 @@ export const TeamTab: React.FC<TeamTabProps> = ({
           <table className="w-full text-left text-xs">
             <thead className="bg-slate-50 dark:bg-slate-800/60 text-slate-500 font-semibold border-b border-slate-200 dark:border-slate-800">
               <tr>
-                <th className="py-3 px-4">Member Name</th>
-                <th className="py-3 px-4">Email</th>
-                <th className="py-3 px-4">Assigned Role</th>
-                <th className="py-3 px-4">2FA Status</th>
-                <th className="py-3 px-4 text-right">Actions</th>
+                <th className="py-3 px-4"><T>Member Name</T></th>
+                <th className="py-3 px-4"><T>Email</T></th>
+                <th className="py-3 px-4"><T>Assigned Role</T></th>
+                <th className="py-3 px-4"><T>2FA Status</T></th>
+                <th className="py-3 px-4 text-right"><T>Actions</T></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
               {teamMembers.map((member) => (
                 <tr key={member.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
                   <td className="py-3.5 px-4 font-semibold text-slate-900 dark:text-white">
-                    <div>{member.name}</div>
+                    <div><T>{member.name}</T></div>
                   </td>
                   <td className="py-3.5 px-4 text-slate-600 dark:text-slate-300 font-mono text-[11px]">
                     <div>{member.email}</div>
@@ -181,10 +182,10 @@ export const TeamTab: React.FC<TeamTabProps> = ({
                     {member.twoFactorEnabled ? (
                       <span className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-semibold text-[11px]">
                         <ShieldCheck className="h-3.5 w-3.5" />
-                        <span>Enabled</span>
+                        <span><T>Enabled</T></span>
                       </span>
                     ) : (
-                      <span className="text-slate-400 text-[11px]">Not Setup</span>
+                      <span className="text-slate-400 text-[11px]"><T>Not Setup</T></span>
                     )}
                   </td>
                   <td className="py-3.5 px-4 text-right">
@@ -211,7 +212,7 @@ export const TeamTab: React.FC<TeamTabProps> = ({
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-base font-bold text-slate-900 dark:text-white">Invite Team Member</h3>
+              <h3 className="text-base font-bold text-slate-900 dark:text-white"><T>Invite Team Member</T></h3>
               <button onClick={() => setShowAddTeamModal(false)} className="text-slate-400 hover:text-slate-600 cursor-pointer">
                 <X className="h-5 w-5" />
               </button>
@@ -219,7 +220,7 @@ export const TeamTab: React.FC<TeamTabProps> = ({
 
             <form onSubmit={handleAddTeamMember} className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Full Name</label>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1"><T>Full Name</T></label>
                 <input
                   type="text"
                   required
@@ -231,7 +232,7 @@ export const TeamTab: React.FC<TeamTabProps> = ({
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Email Address</label>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1"><T>Email Address</T></label>
                 <input
                   type="email"
                   required
@@ -243,7 +244,7 @@ export const TeamTab: React.FC<TeamTabProps> = ({
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Access Role</label>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1"><T>Access Role</T></label>
                 <select
                   value={newMemberRole}
                   onChange={(e) => setNewMemberRole(e.target.value as any)}
@@ -262,14 +263,14 @@ export const TeamTab: React.FC<TeamTabProps> = ({
                   onClick={() => setShowAddTeamModal(false)}
                   className="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-medium text-slate-700 dark:text-slate-300 cursor-pointer"
                 >
-                  Cancel
+                  <T>Cancel</T>
                 </button>
                 <button
                   type="submit"
                   disabled={isAddingTeamMember}
                   className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold cursor-pointer"
                 >
-                  {isAddingTeamMember ? 'Inviting...' : 'Send Invite'}
+                  {isAddingTeamMember ? <T>{'Inviting...'}</T> : <T>{'Send Invite'}</T>}
                 </button>
               </div>
             </form>

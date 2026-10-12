@@ -1,0 +1,121 @@
+4500	One script tag adds the chat bubble to WordPress, Shopify, Webflow, Wix, Squarespace or plain HTML. Changes apply without touching your site again.
+4501	One-click takeover
+4502	Online Appointment Booking in Chat
+4503	Open a lead and read the chat that produced it, so the follow-up starts with context.
+4504	Open a source, correct the passage and the assistant uses the fix straight away.
+4505	Open Knowledge Base and upload files, add a website address or paste a YouTube link.
+4506	Open the conversation in Chat History and reply as yourself. The visitor sees your messages in the same chat.
+4507	Open the conversation in Chat History and reply.
+4508	Opening hours and slot length
+4509	Or the assistant decides it cannot help.
+4510	Or use your existing tool
+4511	Paste a key in AI Settings, or start on the free engine while you test.
+4512	Paste a single script tag and a chat bubble appears in the corner of your site. Change its look, wording and behaviour from the dashboard, and the change is live without editing your site again.
+4513	Paste it in your site
+4514	PDF and Word documents, CSV spreadsheets, and text or Markdown files. You can also add website addresses and YouTube links.
+4515	PDF and Word documents, CSV spreadsheets, text and Markdown files, website addresses and YouTube transcripts.
+4516	Plans start with a 14-day free trial (a card is required, charged when the trial ends unless you cancel). AI usage is billed by your own provider.
+4517	Prefer Calendly or Cal.com? Send visitors to your booking link instead of the built-in picker.
+4518	Protected from junk
+4519	Purge caching plugins or your host’s cache and reload in a private window.
+4520	Put it before the closing body tag, or in your platform’s site-wide footer scripts.
+4521	Read the conversation, contact the visitor and remove leads you no longer need.
+4522	Return the chat to the assistant or end it.
+4523	Review unanswered questions and add the answers.
+4524	Roles for your team
+4525	Search combines meaning-based and keyword matching, so casual wording still finds your pricing or policy.
+4526	See, confirm or cancel appointments under Appointments, and subscribe to the feed.
+4527	Send a message and check the assistant replies.
+4528	Send leads to Zapier, Make, n8n or your own endpoint. Requests are signed so your system can verify they came from Crescelo.
+4529	Set hours and slot length
+4530	Set the name, colours, position, welcome message and suggested questions.
+4531	Share your WhatsApp number or Telegram link with customers.
+4532	Signed and verified
+4533	Signed webhooks for automation
+4534	Slack channel, Google Sheet or webhook destination
+4535	Slots are locked
+4536	Step into any conversation when a person is needed.
+4537	Storage that fits your plan
+4538	Submissions are validated and rate limited, and invalid emails or phone numbers are rejected.
+4539	Suggested starter questions
+4540	Take over
+4541	Take over any AI chat in one click. Get notified when a visitor needs a person, reply in the same conversation and hand it back.
+4542	Teach it your business in minutes, and keep improving it.
+4543	Team access to conversations
+4544	Telegram bots
+4545	Telegram bots are free to create. WhatsApp conversations may be billed by Meta according to their pricing.
+4546	Tell the picker when you are open and how long an appointment takes.
+4547	Test as you go
+4548	Test before visitors see it
+4549	Test it
+4550	The assistant asks for contact details at the right moment, saves every lead with the conversation it came from, and sends it wherever your team works: email, Slack, Google Sheets or your own systems.
+4551	The assistant handles the routine. When a visitor asks for a person, or the question is beyond it, your team is notified and can take over the same chat in one click.
+4552	The assistant offers a person
+4553	The assistant offers times in the chat when someone wants to book.
+4554	The assistant offers to take the visitor’s details or book a time, so the request is not lost.
+4555	The chat adapts to small screens and can be expanded for longer conversations.
+4556	The same assistant, answering in WhatsApp.
+4557	The same knowledge base, tone and booking rules apply on every channel.
+4558	The script is loaded with defer, so it does not hold up your page from rendering.
+4559	The slot is locked while the visitor decides.
+4560	The Testing Studio lets you chat as a visitor would, so you can fix gaps before going live.
+4561	The WhatsApp and Telegram accounts are yours, so you keep control of your numbers and bots.
+4562	The widget tells visitors they are talking to an AI assistant, and offers a person when you have set that up.
+4563	Through a webhook with Zapier or Make today. Native CRM sync is planned.
+4564	Tone and rules you set
+4565	Tone, topics to avoid and when to offer a person
+4566	Turn conversations into leads your team can act on.
+4567	Turn on booking
+4568	Update without redeploying
+4569	Upload documents, add website pages and YouTube videos so your AI assistant answers accurately. See unanswered questions and fix gaps.
+4570	Upload documents, add your website address or paste a YouTube link in the Knowledge Base.
+4571	Use the Testing Studio to see what it answers and which source it used.
+4572	Verify
+4573	View the page source and search for widget.js; the bubble appears within a second or two.
+4574	Visitor asks for a person
+4575	Visitors get a confirmation email with a private link to reschedule or cancel, and reminders before the appointment. You are notified by email and in the dashboard.
+4576	Watch leads arrive
+4577	We are closed on Sundays. I can book you for Monday from 9 AM.
+4578	Website Chat Widget: Install in One Line
+4579	Welcome message and starter questions
+4580	What does it cost?
+4581	What file types can I upload?
+4582	What if nobody is online?
+4583	WhatsApp and Telegram are included on the Agency / Scale plan, and you set up the accounts yourself. Phone calls are under development and not available yet.
+4584	WhatsApp Business (Cloud API)
+4585	When a visitor is ready, the assistant offers real available times, locks the slot they pick and confirms by email. Your team sees every booking in the dashboard and in a calendar feed.
+4586	When it cannot answer, it offers a booking form or a person instead of guessing.
+4587	When the assistant offers a person
+4588	When you are done, give the conversation back to the assistant or close it.
+4589	Where do leads go?
+4590	Which AI provider and model answers
+4591	Which channels are enabled
+4592	Which events are sent (new lead, new booking)
+4593	Which fields the lead form asks for
+4594	Which sources the assistant uses
+4595	While one visitor books a time, it is held so a second visitor cannot take it. If it is just gone, they are offered the next slot.
+4596	Who on your team can take over
+4597	Will it make things up?
+4598	Will it slow my site down?
+4599	WordPress step by step
+4600	Works on any website
+4601	Works on phones
+4602	Works on WordPress, Shopify, Webflow, Wix, Squarespace and plain HTML. The code already contains your assistant ID.
+4603	Write prices and policies clearly, one topic per document, ideally in a list or table. The assistant is only as good as the content it is given.
+4604	Yes, Saturdays 10 to 4. A beard trim is $15, or $45 with a haircut. Want me to find you a slot?
+4605	Yes, we have room on Tuesdays and Thursdays. Would you like to book a first session?
+4606	Yes. Add team members with a role that includes conversations.
+4607	Yes. Choose Calendly or Cal.com as the booking option and the assistant sends visitors to your link.
+4608	Yes. Each confirmation email has a private link for that.
+4609	Yes. It uses Meta’s WhatsApp Cloud API, which you set up with your own Meta developer app.
+4610	Yes. Messages from your team appear in the same chat, marked as coming from your team.
+4611	Yes. Use the same script on each site, or create a separate assistant for each business.
+4612	You are notified when a visitor asks for a person or when the assistant hands the conversation over.
+4613	You own the accounts
+4614	You see the whole conversation so far, so nobody repeats themselves.
+4615	Your AI provider, no markup
+4616	Your calendar feed
+4617	Your calendar feed is read-only: bookings appear in Google, Apple or Outlook, but events you create there do not block Crescelo slots. Two-way calendar sync is in development.
+4618	Your content is stored for your assistant and sent to the AI provider you choose only as needed to answer a question, under that provider’s terms.
+4619	Your team is alerted by email and in the dashboard.
+4620	Your team is notified

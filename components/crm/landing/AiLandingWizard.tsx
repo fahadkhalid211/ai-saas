@@ -1,5 +1,6 @@
 'use client';
 
+import { T, useT } from '@/lib/i18n/context';
 import React, { useState, useEffect, useMemo } from 'react';
 import {
   Sparkles,
@@ -229,6 +230,7 @@ export function AiLandingWizard({
   allLandingPages = [],
   activeAssistant,
 }: AiLandingWizardProps) {
+  const __t = useT();
   const [step, setStep] = useState<1 | 2 | 3 | 4 | 5>(1);
 
   const existingPagesCount = allLandingPages?.length || 0;
@@ -405,20 +407,20 @@ export function AiLandingWizard({
             type="button"
             onClick={onBackToList}
             className="p-2 rounded-xl border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 transition cursor-pointer"
-            title="Back to Landing Pages List"
+            title={__t("Back to Landing Pages List")}
           >
             <ArrowLeft className="h-4 w-4" />
           </button>
           <div>
             <div className="flex items-center gap-2">
               <Sparkles className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-              <h2 className="text-lg font-bold text-slate-900 dark:text-white">AI Website Architect</h2>
+              <h2 className="text-lg font-bold text-slate-900 dark:text-white"><T>AI Website Architect</T></h2>
               <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-900">
-                Studio Generation
+                <T>Studio Generation</T>
               </span>
             </div>
             <p className="text-xs text-slate-500 dark:text-slate-400">
-              AI architects your high-conversion business site, writes custom copy, and connects an appointment concierge.
+              <T>AI architects your high-conversion business site, writes custom copy, and connects an appointment concierge.</T>
             </p>
           </div>
         </div>
@@ -426,11 +428,11 @@ export function AiLandingWizard({
         {/* Step Indicator */}
         {step <= 3 && (
           <div className="flex items-center gap-2 text-xs font-semibold text-slate-500 dark:text-slate-400">
-            <span className={step === 1 ? 'text-blue-600 dark:text-blue-400 font-bold' : ''}>1. Industry</span>
+            <span className={step === 1 ? 'text-blue-600 dark:text-blue-400 font-bold' : ''}><T>1. Industry</T></span>
             <span>&rarr;</span>
-            <span className={step === 2 ? 'text-blue-600 dark:text-blue-400 font-bold' : ''}>2. Design</span>
+            <span className={step === 2 ? 'text-blue-600 dark:text-blue-400 font-bold' : ''}><T>2. Design</T></span>
             <span>&rarr;</span>
-            <span className={step === 3 ? 'text-blue-600 dark:text-blue-400 font-bold' : ''}>3. Brand Content</span>
+            <span className={step === 3 ? 'text-blue-600 dark:text-blue-400 font-bold' : ''}><T>3. Brand Content</T></span>
           </div>
         )}
       </div>
@@ -440,10 +442,10 @@ export function AiLandingWizard({
         <div className="space-y-6">
           <div className="space-y-1">
             <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
-              <span>Step 1: Choose Your Business Industry</span>
+              <span><T>Step 1: Choose Your Business Industry</T></span>
             </h3>
             <p className="text-xs text-slate-500 dark:text-slate-400">
-              AI will calibrate copywriting tone, service booking flows, and appointment triages for your specific vertical.
+              <T>AI will calibrate copywriting tone, service booking flows, and appointment triages for your specific vertical.</T>
             </p>
           </div>
 
@@ -470,7 +472,7 @@ export function AiLandingWizard({
                     <div className="absolute -top-2.5 right-3 z-10">
                       <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-indigo-600 text-white shadow-xs">
                         <Sparkles className="h-3 w-3 text-amber-300" />
-                        <span>Custom Canvas</span>
+                        <span><T>Custom Canvas</T></span>
                       </span>
                     </div>
                   )}
@@ -488,22 +490,22 @@ export function AiLandingWizard({
                         </span>
                       ) : isCustom ? (
                         <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 px-1.5 py-0.5 rounded bg-indigo-100/60 dark:bg-indigo-900/50">
-                          Highlighted
+                          <T>Highlighted</T>
                         </span>
                       ) : null}
                     </div>
                     <div className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
-                      <span>{ind.name}</span>
+                      <span><T>{ind.name}</T></span>
                     </div>
                     <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
-                      {ind.description}
+                      <T>{ind.description}</T>
                     </p>
                   </div>
 
                   <div className="pt-2 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between text-[10px] text-slate-500">
-                    <span>{ind.defaultServices.length} default services</span>
+                    <span>{ind.defaultServices.length} <T>default services</T></span>
                     <span className={`font-semibold ${isCustom ? 'text-indigo-600 dark:text-indigo-400' : 'text-blue-600 dark:text-blue-400'}`}>
-                      {isCustom ? 'Fully Modular' : 'Auto-configured'}
+                      {isCustom ? <T>{'Fully Modular'}</T> : <T>{'Auto-configured'}</T>}
                     </span>
                   </div>
                 </div>
@@ -517,7 +519,7 @@ export function AiLandingWizard({
               onClick={() => setStep(2)}
               className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-md shadow-blue-600/20 transition cursor-pointer"
             >
-              <span>Next: Choose Modern Design Archetype</span>
+              <span><T>Next: Choose Modern Design Archetype</T></span>
               <ArrowRight className="h-4 w-4" />
             </button>
           </div>
@@ -529,10 +531,10 @@ export function AiLandingWizard({
         <div className="space-y-6">
           <div className="space-y-1">
             <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
-              <span>Step 2: Choose Design Archetype &amp; Aesthetic (3 Available)</span>
+              <span><T>Step 2: Choose Design Archetype &amp; Aesthetic (3 Available)</T></span>
             </h3>
             <p className="text-xs text-slate-500 dark:text-slate-400">
-              Select one of the 3 custom design archetypes crafted for {INDUSTRIES_LIST.find((i) => i.id === selectedIndustry)?.name || 'your industry'}. Each offers a distinct layout, typography scale, and aesthetic mood.
+              <T>Select one of the 3 custom design archetypes crafted for</T> {INDUSTRIES_LIST.find((i) => i.id === selectedIndustry)?.name || <T>{'your industry'}</T>}<T>. Each offers a distinct layout, typography scale, and aesthetic mood.</T>
             </p>
           </div>
 
@@ -563,23 +565,23 @@ export function AiLandingWizard({
                     <div>
                       <div className="flex items-center justify-between mb-1">
                         <span className="text-xs font-bold text-slate-900 dark:text-white">
-                          {arch.name}
+                          <T>{arch.name}</T>
                         </span>
                         {isSelected && (
                           <span className="inline-flex items-center gap-1 text-[10.5px] font-bold text-blue-600 dark:text-blue-400">
                             <Check className="w-3 h-3" />
-                            <span>Selected</span>
+                            <span><T>Selected</T></span>
                           </span>
                         )}
                       </div>
                       <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-                        {arch.tagline}
+                        <T>{arch.tagline}</T>
                       </p>
                     </div>
 
                     <div className="space-y-1.5 pt-1">
                       <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                        Architectural Features:
+                        <T>Architectural Features:</T>
                       </div>
                       <div className="space-y-1">
                         {arch.features.map((feat, fIdx) => (
@@ -593,7 +595,7 @@ export function AiLandingWizard({
 
                     <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-[10.5px]">
                       <div>
-                        <span className="text-slate-400 block text-[9.5px]">Color Aesthetic</span>
+                        <span className="text-slate-400 block text-[9.5px]"><T>Color Aesthetic</T></span>
                         <span className="font-semibold text-slate-800 dark:text-slate-200">{arch.aesthetic}</span>
                       </div>
                       <button
@@ -605,7 +607,7 @@ export function AiLandingWizard({
                         className="inline-flex items-center gap-1 text-[11px] font-bold text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
                       >
                         <Eye className="w-3.5 h-3.5" />
-                        <span>Preview Design</span>
+                        <span><T>Preview Design</T></span>
                       </button>
                     </div>
                   </div>
@@ -620,14 +622,14 @@ export function AiLandingWizard({
               onClick={() => setStep(1)}
               className="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
             >
-              &larr; Back to Industry
+              <T>&larr; Back to Industry</T>
             </button>
             <button
               type="button"
               onClick={() => setStep(3)}
               className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-md shadow-blue-600/20 transition cursor-pointer"
             >
-              <span>Next: Brand Details &amp; Purpose</span>
+              <span><T>Next: Brand Details &amp; Purpose</T></span>
               <ArrowRight className="h-4 w-4" />
             </button>
           </div>
@@ -639,10 +641,10 @@ export function AiLandingWizard({
         <div className="space-y-6">
           <div className="space-y-1">
             <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
-              <span>Step 3: Tell AI About Your Business &amp; Purpose</span>
+              <span><T>Step 3: Tell AI About Your Business &amp; Purpose</T></span>
             </h3>
             <p className="text-xs text-slate-500 dark:text-slate-400">
-              Provide your brand name, core purpose, contact info, and services. AI will synthesize compelling copy, headline hooks, and initialize your AI Concierge.
+              <T>Provide your brand name, core purpose, contact info, and services. AI will synthesize compelling copy, headline hooks, and initialize your AI Concierge.</T>
             </p>
           </div>
 
@@ -651,35 +653,35 @@ export function AiLandingWizard({
             <div className="p-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-4">
               <h4 className="text-xs font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400 flex items-center gap-1.5">
                 <Briefcase className="h-3.5 w-3.5" />
-                <span>Brand Identity &amp; Story</span>
+                <span><T>Brand Identity &amp; Story</T></span>
               </h4>
 
               <div>
                 <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                  Business Name *
+                  <T>Business Name *</T>
                 </label>
                 <input
                   type="text"
                   required
                   value={businessName}
                   onChange={(e) => handleBusinessNameChange(e.target.value)}
-                  placeholder="e.g. Apex Athletics Club or Crown Barbers"
+                  placeholder={__t("e.g. Apex Athletics Club or Crown Barbers")}
                   className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
                 />
               </div>
 
               <div>
                 <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                  Website URL Slug (/site/[slug]) *
+                  <T>Website URL Slug (/site/[slug]) *</T>
                 </label>
                 <div className="flex items-center gap-1.5">
-                  <span className="text-xs text-slate-400 font-mono">/site/</span>
+                  <span className="text-xs text-slate-400 font-mono"><T>/site/</T></span>
                   <input
                     type="text"
                     required
                     value={slug}
                     onChange={(e) => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-'))}
-                    placeholder="my-business"
+                    placeholder={__t("my-business")}
                     className="flex-1 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white font-mono focus:outline-none focus:border-blue-500"
                   />
                 </div>
@@ -687,42 +689,42 @@ export function AiLandingWizard({
 
               <div>
                 <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                  Founder / Owner Name
+                  <T>Founder / Owner Name</T>
                 </label>
                 <input
                   type="text"
                   value={founderName}
                   onChange={(e) => setFounderName(e.target.value)}
-                  placeholder="e.g. Marcus Vance, Head Barber &amp; Founder"
+                  placeholder={__t("e.g. Marcus Vance, Head Barber &amp; Founder")}
                   className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
                 />
               </div>
 
               <div>
                 <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                  Business Purpose &amp; Story Narrative *
+                  <T>Business Purpose &amp; Story Narrative *</T>
                 </label>
                 <textarea
                   rows={3}
                   value={purposeStory}
                   onChange={(e) => setPurposeStory(e.target.value)}
-                  placeholder="What makes your business special? e.g. We provide precision men's grooming and hot towel shaves with an upscale lounge atmosphere in Brooklyn since 2018..."
+                  placeholder={__t("What makes your business special? e.g. We provide precision men's grooming and hot towel shaves with an upscale lounge atmosphere in Brooklyn since 2018...")}
                   className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 leading-relaxed"
                 />
                 <p className="text-[10.5px] text-slate-500 dark:text-slate-400 mt-1">
-                  AI uses this narrative to architect headlines, about section copy, and starter questions.
+                  <T>AI uses this narrative to architect headlines, about section copy, and starter questions.</T>
                 </p>
               </div>
 
               <div>
                 <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                  Brand Logo Image URL (Optional)
+                  <T>Brand Logo Image URL (Optional)</T>
                 </label>
                 <input
                   type="url"
                   value={logoUrl}
                   onChange={(e) => setLogoUrl(e.target.value)}
-                  placeholder="https://.../logo.png"
+                  placeholder={__t("https://.../logo.png")}
                   className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
                 />
               </div>
@@ -734,12 +736,12 @@ export function AiLandingWizard({
               <div className="p-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-3">
                 <h4 className="text-xs font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400 flex items-center gap-1.5">
                   <Globe className="h-3.5 w-3.5" />
-                  <span>Contact &amp; Location</span>
+                  <span><T>Contact &amp; Location</T></span>
                 </h4>
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1">Phone</label>
+                    <label className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1"><T>Phone</T></label>
                     <input
                       type="text"
                       value={phone}
@@ -749,35 +751,35 @@ export function AiLandingWizard({
                     />
                   </div>
                   <div>
-                    <label className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1">Email</label>
+                    <label className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1"><T>Email</T></label>
                     <input
                       type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      placeholder="contact@mybrand.com"
+                      placeholder={__t("contact@mybrand.com")}
                       className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-2.5 py-1.5 text-xs text-slate-900 dark:text-white"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1">Physical Address</label>
+                  <label className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1"><T>Physical Address</T></label>
                   <input
                     type="text"
                     value={address}
                     onChange={(e) => setAddress(e.target.value)}
-                    placeholder="452 Atlantic Ave, Brooklyn, NY 11217"
+                    placeholder={__t("452 Atlantic Ave, Brooklyn, NY 11217")}
                     className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-2.5 py-1.5 text-xs text-slate-900 dark:text-white"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1">Operating Hours</label>
+                  <label className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1"><T>Operating Hours</T></label>
                   <input
                     type="text"
                     value={hours}
                     onChange={(e) => setHours(e.target.value)}
-                    placeholder="Mon-Sat: 9:00 AM - 7:00 PM"
+                    placeholder={__t("Mon-Sat: 9:00 AM - 7:00 PM")}
                     className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-2.5 py-1.5 text-xs text-slate-900 dark:text-white"
                   />
                 </div>
@@ -790,17 +792,17 @@ export function AiLandingWizard({
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <Bot className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                      <span className="text-xs font-bold text-slate-900 dark:text-white">AI Concierge &amp; Knowledge Base</span>
+                      <span className="text-xs font-bold text-slate-900 dark:text-white"><T>AI Concierge &amp; Knowledge Base</T></span>
                     </div>
                     <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 dark:bg-blue-900/70 text-blue-800 dark:text-blue-200 border border-blue-200 dark:border-blue-800">
                       <CheckCircle2 className="h-3 w-3 text-blue-600 dark:text-blue-400" />
-                      <span>Default Knowledge Base</span>
+                      <span><T>Default Knowledge Base</T></span>
                     </span>
                   </div>
 
                   <p className="text-[11px] text-slate-600 dark:text-slate-300 leading-relaxed">
-                    This landing page will automatically use your default AI knowledge base (<strong>{defaultAssistant?.name || 'Primary Assistant'}</strong>).
-                    All documents, FAQs, and files you train in your workspace will immediately power your site&apos;s AI chatbot.
+                    <T>This landing page will automatically use your default AI knowledge base (</T><strong>{defaultAssistant?.name || <T>{'Primary Assistant'}</T>}</strong><T>).
+                    All documents, FAQs, and files you train in your workspace will immediately power your site&apos;s AI chatbot.</T>
                   </p>
 
                   <div className="space-y-2 pt-1 border-t border-blue-100 dark:border-blue-900/40">
@@ -814,10 +816,10 @@ export function AiLandingWizard({
                       />
                       <div>
                         <span className="text-xs font-semibold text-slate-800 dark:text-slate-200 block">
-                          Connect Default Knowledge Base ({defaultAssistant?.name || 'Primary Assistant'})
+                          <T>Connect Default Knowledge Base (</T>{defaultAssistant?.name || <T>{'Primary Assistant'}</T>})
                         </span>
                         <span className="text-[11px] text-slate-500 dark:text-slate-400">
-                          Visitor inquiries and appointment bookings are handled using your existing trained knowledge.
+                          <T>Visitor inquiries and appointment bookings are handled using your existing trained knowledge.</T>
                         </span>
                       </div>
                     </label>
@@ -832,10 +834,10 @@ export function AiLandingWizard({
                       />
                       <div>
                         <span className="text-xs font-semibold text-slate-800 dark:text-slate-200 block">
-                          No Chatbot (Website Only)
+                          <T>No Chatbot (Website Only)</T>
                         </span>
                         <span className="text-[11px] text-slate-500 dark:text-slate-400">
-                          The live site will operate without a floating chatbot widget.
+                          <T>The live site will operate without a floating chatbot widget.</T>
                         </span>
                       </div>
                     </label>
@@ -847,15 +849,15 @@ export function AiLandingWizard({
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <Bot className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                      <span className="text-xs font-bold text-slate-900 dark:text-white">AI Concierge &amp; Knowledge Base</span>
+                      <span className="text-xs font-bold text-slate-900 dark:text-white"><T>AI Concierge &amp; Knowledge Base</T></span>
                     </div>
                     <span className="text-[10.5px] font-semibold text-slate-500 dark:text-slate-400">
-                      Page #{existingPagesCount + 1}
+                      <T>Page #</T>{existingPagesCount + 1}
                     </span>
                   </div>
 
                   <p className="text-xs text-slate-700 dark:text-slate-300 font-medium">
-                    Would you like this new page to use your previous knowledge base or create a new dedicated one?
+                    <T>Would you like this new page to use your previous knowledge base or create a new dedicated one?</T>
                   </p>
 
                   <div className="space-y-2.5">
@@ -875,20 +877,20 @@ export function AiLandingWizard({
                       <div className="flex-1 space-y-1">
                         <div className="flex items-center justify-between">
                           <span className="text-xs font-bold text-slate-900 dark:text-white">
-                            Use Previous / Existing Knowledge Base (Recommended)
+                            <T>Use Previous / Existing Knowledge Base (Recommended)</T>
                           </span>
                           <span className="text-[10px] font-semibold px-2 py-0.2 rounded bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
-                            Reuses Documents
+                            <T>Reuses Documents</T>
                           </span>
                         </div>
                         <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
-                          Shares documents, FAQs, and business training data from an existing assistant so you do not need to re-upload files.
+                          <T>Shares documents, FAQs, and business training data from an existing assistant so you do not need to re-upload files.</T>
                         </p>
 
                         {assistantOption !== 'auto_create' && assistantOption !== 'none' && assistants.length > 0 && (
                           <div className="pt-2">
                             <label className="block text-[10.5px] font-semibold text-slate-600 dark:text-slate-300 mb-1">
-                              Select Assistant / Knowledge Base:
+                              <T>Select Assistant / Knowledge Base:</T>
                             </label>
                             <select
                               value={assistantOption}
@@ -922,14 +924,14 @@ export function AiLandingWizard({
                       <div className="flex-1 space-y-0.5">
                         <div className="flex items-center justify-between">
                           <span className="text-xs font-bold text-slate-900 dark:text-white">
-                            Create a New Knowledge Base for This Page
+                            <T>Create a New Knowledge Base for This Page</T>
                           </span>
                           <span className="text-[10px] font-semibold px-2 py-0.2 rounded bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-900">
-                            Creates New Bot
+                            <T>Creates New Bot</T>
                           </span>
                         </div>
                         <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
-                          Spins up a brand-new, dedicated AI bot with an isolated knowledge base. Recommended if this website is for a completely different brand, company, or vertical.
+                          <T>Spins up a brand-new, dedicated AI bot with an isolated knowledge base. Recommended if this website is for a completely different brand, company, or vertical.</T>
                         </p>
                       </div>
                     </label>
@@ -949,10 +951,10 @@ export function AiLandingWizard({
                       />
                       <div>
                         <span className="text-xs font-semibold text-slate-800 dark:text-slate-200 block">
-                          No Chatbot (Website Only)
+                          <T>No Chatbot (Website Only)</T>
                         </span>
                         <span className="text-[11px] text-slate-500 dark:text-slate-400">
-                          The live site will operate without a floating chatbot widget.
+                          <T>The live site will operate without a floating chatbot widget.</T>
                         </span>
                       </div>
                     </label>
@@ -967,13 +969,13 @@ export function AiLandingWizard({
             <div className="flex items-center justify-between">
               <div>
                 <h4 className="text-xs font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">
-                  Primary Services &amp; Pricing Menu
+                  <T>Primary Services &amp; Pricing Menu</T>
                 </h4>
                 <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                  Visitors can book these services directly through your interactive calendar or AI Concierge.
+                  <T>Visitors can book these services directly through your interactive calendar or AI Concierge.</T>
                 </p>
               </div>
-              <span className="text-xs font-mono text-slate-500">{services.length} items</span>
+              <span className="text-xs font-mono text-slate-500">{services.length} <T>items</T></span>
             </div>
 
             {/* List of services */}
@@ -984,16 +986,16 @@ export function AiLandingWizard({
                   className="p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 flex items-center justify-between gap-2 text-xs"
                 >
                   <div className="min-w-0 flex-1">
-                    <div className="font-semibold text-slate-900 dark:text-white truncate">{svc.name}</div>
+                    <div className="font-semibold text-slate-900 dark:text-white truncate"><T>{svc.name}</T></div>
                     <div className="text-[11px] font-mono text-emerald-600 dark:text-emerald-400 font-bold">
-                      ${svc.price} · {svc.durationMinutes} min
+                      ${svc.price} · {svc.durationMinutes} <T>min</T>
                     </div>
                   </div>
                   <button
                     type="button"
                     onClick={() => handleRemoveService(svc.id)}
                     className="p-1 rounded text-slate-400 hover:text-red-500 transition cursor-pointer"
-                    title="Remove service"
+                    title={__t("Remove service")}
                   >
                     <Trash2 className="h-3 w-3" />
                   </button>
@@ -1005,7 +1007,7 @@ export function AiLandingWizard({
             <div className="flex items-center gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
               <input
                 type="text"
-                placeholder="Service Name (e.g. VIP Consultation)"
+                placeholder={__t("Service Name (e.g. VIP Consultation)")}
                 value={newServiceName}
                 onChange={(e) => setNewServiceName(e.target.value)}
                 className="flex-1 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-1.5 text-xs text-slate-900 dark:text-white"
@@ -1014,7 +1016,7 @@ export function AiLandingWizard({
                 <span className="text-xs text-slate-400 font-bold">$</span>
                 <input
                   type="number"
-                  placeholder="Price"
+                  placeholder={__t("Price")}
                   value={newServicePrice}
                   onChange={(e) => setNewServicePrice(e.target.value)}
                   className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-2 py-1.5 text-xs text-slate-900 dark:text-white"
@@ -1026,7 +1028,7 @@ export function AiLandingWizard({
                 className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold transition cursor-pointer"
               >
                 <Plus className="h-3.5 w-3.5" />
-                <span>Add</span>
+                <span><T>Add</T></span>
               </button>
             </div>
           </div>
@@ -1038,7 +1040,7 @@ export function AiLandingWizard({
               onClick={() => setStep(2)}
               className="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
             >
-              &larr; Back to Design Archetype
+              <T>&larr; Back to Design Archetype</T>
             </button>
             <button
               type="button"
@@ -1047,7 +1049,7 @@ export function AiLandingWizard({
               className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 dark:text-slate-900 text-white text-xs font-bold shadow-md transition cursor-pointer disabled:opacity-50"
             >
               <Sparkles className="h-4 w-4 text-amber-400" />
-              <span>Architect &amp; Deploy Website Now</span>
+              <span><T>Architect &amp; Deploy Website Now</T></span>
             </button>
           </div>
         </div>
@@ -1071,10 +1073,10 @@ export function AiLandingWizard({
 
           <div className="space-y-2">
             <h3 className="text-xl font-bold text-slate-900 dark:text-white">
-              Crafting Your Bespoke Digital Experience
+              <T>Crafting Your Bespoke Digital Experience</T>
             </h3>
             <p className="text-xs font-medium text-slate-600 dark:text-slate-300 min-h-[40px] flex items-center justify-center px-4 transition-all duration-300">
-              {currentAiStepMsg || `Analyzing brand narrative and target clientele for "${businessName || 'your business'}"...`}
+              {currentAiStepMsg || __t("Analyzing brand narrative and target clientele for \"{n1}\"...", { n1: businessName || 'your business' })}
             </p>
           </div>
 
@@ -1090,7 +1092,7 @@ export function AiLandingWizard({
               />
             </div>
             <div className="flex justify-between text-[11px] font-mono text-slate-400">
-              <span>Architecting Digital System</span>
+              <span><T>Architecting Digital System</T></span>
               <span className="font-semibold text-slate-700 dark:text-slate-300">{generationProgress}%</span>
             </div>
           </div>
@@ -1103,7 +1105,7 @@ export function AiLandingWizard({
                 onClick={() => setStep(3)}
                 className="block mt-2 font-bold underline cursor-pointer"
               >
-                Return to form and retry
+                <T>Return to form and retry</T>
               </button>
             </div>
           )}
@@ -1119,44 +1121,44 @@ export function AiLandingWizard({
 
           <div className="space-y-1">
             <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300">
-              Live &amp; Deployed
+              <T>Live &amp; Deployed</T>
             </span>
             <h3 className="text-2xl font-bold text-slate-900 dark:text-white">
-              {createdConfig.businessName} is Live!
+              {createdConfig.businessName} <T>is Live!</T>
             </h3>
             <p className="text-xs text-slate-500 dark:text-slate-400">
-              Your AI-designed website is published with responsive layouts, an appointment calendar, and isolated knowledge base support.
+              <T>Your AI-designed website is published with responsive layouts, an appointment calendar, and isolated knowledge base support.</T>
             </p>
           </div>
 
           {/* Site Overview Card */}
           <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-left space-y-2">
             <div className="flex items-center justify-between text-xs">
-              <span className="text-slate-500">Public URL:</span>
+              <span className="text-slate-500"><T>Public URL:</T></span>
               <a
                 href={`/site/${createdConfig.slug}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="font-mono text-blue-600 dark:text-blue-400 font-semibold flex items-center gap-1 hover:underline"
               >
-                <span>/site/{createdConfig.slug}</span>
+                <span><T>/site/</T>{createdConfig.slug}</span>
                 <ExternalLink className="h-3 w-3" />
               </a>
             </div>
             <div className="flex items-center justify-between text-xs">
-              <span className="text-slate-500">Connected AI Concierge:</span>
+              <span className="text-slate-500"><T>Connected AI Concierge:</T></span>
               <span className="font-semibold text-slate-800 dark:text-slate-200">
                 {createdConfig.assistantId ? (
                   assistantOption === 'auto_create'
-                    ? `Dedicated Bot (${createdConfig.assistantId})`
-                    : `Existing Knowledge Base (${assistants.find((a) => a.id === createdConfig.assistantId)?.name || createdConfig.assistantId})`
-                ) : 'None / Disabled'}
+                    ? __t("Dedicated Bot ({assistantId})", { assistantId: createdConfig.assistantId })
+                    : __t("Existing Knowledge Base ({n1})", { n1: assistants.find((a) => a.id === createdConfig.assistantId)?.name || createdConfig.assistantId })
+                ) : <T>{'None / Disabled'}</T>}
               </span>
             </div>
             <div className="flex items-center justify-between text-xs">
-              <span className="text-slate-500">Services Seeded:</span>
+              <span className="text-slate-500"><T>Services Seeded:</T></span>
               <span className="font-semibold text-slate-800 dark:text-slate-200">
-                {createdConfig.services?.length || 0} services
+                {createdConfig.services?.length || 0} <T>services</T>
               </span>
             </div>
           </div>
@@ -1170,7 +1172,7 @@ export function AiLandingWizard({
               className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 text-xs font-bold hover:bg-slate-50 dark:hover:bg-slate-700 transition"
             >
               <Eye className="h-4 w-4 text-blue-600" />
-              <span>View Live Website</span>
+              <span><T>View Live Website</T></span>
             </a>
 
             <button
@@ -1179,7 +1181,7 @@ export function AiLandingWizard({
               className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-md transition cursor-pointer"
             >
               <Sliders className="h-4 w-4" />
-              <span>Open Visual Customizer</span>
+              <span><T>Open Visual Customizer</T></span>
             </button>
           </div>
 
@@ -1188,7 +1190,7 @@ export function AiLandingWizard({
             onClick={onBackToList}
             className="text-xs text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 font-semibold cursor-pointer underline pt-2 block mx-auto"
           >
-            &larr; Back to All Landing Pages
+            <T>&larr; Back to All Landing Pages</T>
           </button>
         </div>
       )}

@@ -1,4 +1,5 @@
-import Link from 'next/link';
+import { T } from '@/lib/i18n/context';
+import Link from '@/components/i18n/Link';
 import { Header } from '@/components/marketing/Header';
 import { Footer } from '@/components/marketing/Closing';
 import { JsonLd } from '@/components/marketing/JsonLd';
@@ -38,28 +39,28 @@ export function FeaturePage({ feature }: { feature: ProductFeature }) {
         <section className="mk-hero" style={{ marginTop: '1rem' }}>
           <div className="mk-hero-glow" aria-hidden="true" />
           <div className="mk-wrap mk-hero-inner">
-            <p className="mk-eyebrow mk-rise" style={{ ['--mk-delay' as string]: '0ms' }}>{feature.eyebrow}</p>
+            <p className="mk-eyebrow mk-rise" style={{ ['--mk-delay' as string]: '0ms' }}><T>{feature.eyebrow}</T></p>
             <h1 className="mk-h1 mk-rise" style={{ maxWidth: '22ch', marginInline: 'auto', ['--mk-delay' as string]: '140ms' }}>
-              {feature.title}
+              <T>{feature.title}</T>
             </h1>
             <p className="mk-lead mk-rise" style={{ maxWidth: '62ch', ['--mk-delay' as string]: '320ms' }}>
-              {feature.intro}
+              <T>{feature.intro}</T>
             </p>
             <div className="mk-cta-row mk-rise" style={{ justifyContent: 'center', ['--mk-delay' as string]: '460ms' }}>
-              <ButtonLink href={SIGNUP_HREF}>Start free trial</ButtonLink>
+              <ButtonLink href={SIGNUP_HREF}><T>Start free trial</T></ButtonLink>
               <ButtonLink href="/pricing" variant="ghost">
-                See pricing
+                <T>See pricing</T>
               </ButtonLink>
             </div>
 
             <div aria-hidden="true" style={{ margin: '2.25rem auto 0', maxWidth: '30rem', display: 'grid', gap: '0.6rem', textAlign: 'left' }}>
               <span style={{ justifySelf: 'end', maxWidth: '85%', padding: '0.65rem 0.95rem', borderRadius: '1.1rem 1.1rem 0.3rem 1.1rem', background: 'rgba(255,254,235,0.14)', color: 'var(--mk-bg)', fontSize: '0.95rem' }}>
-                {feature.chat.visitor}
+                <T>{feature.chat.visitor}</T>
               </span>
               <span style={{ justifySelf: 'start', maxWidth: '88%', padding: '0.65rem 0.95rem', borderRadius: '1.1rem 1.1rem 1.1rem 0.3rem', background: 'var(--mk-lime)', color: 'var(--mk-deep)', fontWeight: 600, fontSize: '0.95rem' }}>
-                {feature.chat.assistant}
+                <T>{feature.chat.assistant}</T>
               </span>
-              {feature.chat.footnote ? <small style={{ color: '#cfe3d6', fontSize: '0.78rem', justifySelf: 'start' }}>{feature.chat.footnote}</small> : null}
+              {feature.chat.footnote ? <small style={{ color: '#cfe3d6', fontSize: '0.78rem', justifySelf: 'start' }}><T>{feature.chat.footnote}</T></small> : null}
             </div>
           </div>
         </section>
@@ -68,9 +69,9 @@ export function FeaturePage({ feature }: { feature: ProductFeature }) {
           <section className="mk-section" aria-labelledby="feat-see">
             <div className="mk-wrap" style={{ display: 'grid', gap: '2rem', alignItems: 'center', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 22rem), 1fr))' }}>
               <Reveal>
-                <p className="mk-eyebrow">SEE IT</p>
-                <h2 id="feat-see" className="mk-h2">{VISUAL[feature.slug].title}</h2>
-                <p className="mk-lead">{VISUAL[feature.slug].body}</p>
+                <p className="mk-eyebrow"><T>SEE IT</T></p>
+                <h2 id="feat-see" className="mk-h2"><T>{VISUAL[feature.slug].title}</T></h2>
+                <p className="mk-lead"><T>{VISUAL[feature.slug].body}</T></p>
               </Reveal>
               <Reveal delay={120} className="mk-path-visual">
                 <FeatureVisual kind={VISUAL[feature.slug].kind} />
@@ -85,8 +86,8 @@ export function FeaturePage({ feature }: { feature: ProductFeature }) {
             <div style={{ display: 'grid', gap: '1rem', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 17rem), 1fr))', marginTop: '2rem' }}>
               {feature.benefits.map((b, i) => (
                 <Reveal as="article" key={b.title} className="mk-card" delay={i * 60}>
-                  <h3>{b.title}</h3>
-                  <p>{b.body}</p>
+                  <h3><T>{b.title}</T></h3>
+                  <p><T>{b.body}</T></p>
                 </Reveal>
               ))}
             </div>
@@ -103,8 +104,8 @@ export function FeaturePage({ feature }: { feature: ProductFeature }) {
                     {i + 1}
                   </span>
                   <div>
-                    <h3 style={{ fontSize: '1.25rem', marginBottom: '0.25rem' }}>{s.title}</h3>
-                    <p>{s.body}</p>
+                    <h3 style={{ fontSize: '1.25rem', marginBottom: '0.25rem' }}><T>{s.title}</T></h3>
+                    <p><T>{s.body}</T></p>
                   </div>
                 </Reveal>
               ))}
@@ -119,14 +120,14 @@ export function FeaturePage({ feature }: { feature: ProductFeature }) {
               {feature.controls.map((c) => (
                 <li key={c} className="mk-card" style={{ padding: '1rem 1.25rem', display: 'flex', gap: '0.6rem', alignItems: 'center' }}>
                   <span aria-hidden="true" style={{ color: 'var(--mk-accent)', fontWeight: 800 }}>✓</span>
-                  <span>{c}</span>
+                  <span><T>{c}</T></span>
                 </li>
               ))}
             </ul>
 
             {feature.notice ? (
               <div role="note" className="mk-card" style={{ marginTop: '1.5rem', background: 'var(--mk-warn-soft)', borderColor: 'var(--mk-warn)' }}>
-                <p style={{ color: 'var(--mk-warn)', fontWeight: 600 }}>{feature.notice}</p>
+                <p style={{ color: 'var(--mk-warn)', fontWeight: 600 }}><T>{feature.notice}</T></p>
               </div>
             ) : null}
           </div>
@@ -138,8 +139,8 @@ export function FeaturePage({ feature }: { feature: ProductFeature }) {
             <div style={{ display: 'grid', gap: '0.75rem', marginTop: '2rem' }}>
               {feature.faq.map((f) => (
                 <details key={f.q} className="mk-card" style={{ padding: '1.1rem 1.4rem' }}>
-                  <summary style={{ cursor: 'pointer', fontWeight: 700 }}>{f.q}</summary>
-                  <p style={{ marginTop: '0.6rem' }}>{f.a}</p>
+                  <summary style={{ cursor: 'pointer', fontWeight: 700 }}><T>{f.q}</T></summary>
+                  <p style={{ marginTop: '0.6rem' }}><T>{f.a}</T></p>
                 </details>
               ))}
             </div>
@@ -152,24 +153,24 @@ export function FeaturePage({ feature }: { feature: ProductFeature }) {
             <div style={{ display: 'grid', gap: '1rem', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 16rem), 1fr))', marginTop: '2rem' }}>
               {related.map((r) => (
                 <Link key={r.slug} href={`/product/${r.slug}`} className="mk-card" style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}>
-                  <h3>{r.name}</h3>
-                  <p>{r.seoDescription}</p>
-                  <span style={{ color: 'var(--mk-accent)', fontWeight: 700 }}>Learn more →</span>
+                  <h3><T>{r.name}</T></h3>
+                  <p><T>{r.seoDescription}</T></p>
+                  <span style={{ color: 'var(--mk-accent)', fontWeight: 700 }}><T>Learn more →</T></span>
                 </Link>
               ))}
             </div>
             <p style={{ textAlign: 'center', marginTop: '1.5rem', color: 'var(--mk-muted)' }}>
               {feature.guides.map((g, i) => (
                 <span key={g.href}>
-                  {i > 0 ? ' · ' : 'Guides: '}
+                  <T>{i > 0 ? ' · ' : 'Guides: '}</T>
                   <Link href={g.href} style={{ textDecoration: 'underline' }}>
-                    {g.label}
+                    <T>{g.label}</T>
                   </Link>
                 </span>
               ))}
               {' · '}
               <Link href="/product" style={{ textDecoration: 'underline' }}>
-                All features
+                <T>All features</T>
               </Link>
             </p>
           </div>
@@ -178,18 +179,18 @@ export function FeaturePage({ feature }: { feature: ProductFeature }) {
         <section className="mk-final" style={{ margin: '48px 0.75rem 12px' }}>
           <div className="mk-wrap">
             <p className="mk-eyebrow" style={{ color: 'var(--mk-lime)' }}>
-              TRY IT
+              <T>TRY IT</T>
             </p>
             <h2 className="mk-h2 mk-h2-wide" style={{ color: 'var(--mk-bg)' }}>
-              See it work on your own business.
+              <T>See it work on your own business.</T>
             </h2>
             <p className="mk-lead" style={{ color: '#cfe3d6' }}>
-              Every Growth feature free for 14 days. A card is required to start, and it is charged when the trial ends unless you cancel first.
+              <T>Every Growth feature free for 14 days. A card is required to start, and it is charged when the trial ends unless you cancel first.</T>
             </p>
             <div className="mk-cta-row" style={{ justifyContent: 'center' }}>
-              <ButtonLink href={SIGNUP_HREF}>Start free trial</ButtonLink>
+              <ButtonLink href={SIGNUP_HREF}><T>Start free trial</T></ButtonLink>
               <ButtonLink href={LOGIN_HREF} variant="ghost">
-                Log in
+                <T>Log in</T>
               </ButtonLink>
             </div>
           </div>

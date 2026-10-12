@@ -1,0 +1,150 @@
+3600	Works on any website — HTML, WordPress, Shopify, Webflow, and more.
+3601	Back
+3602	Exit tour
+3603	Finish Tour
+3604	Next
+3605	Use arrow keys to navigate
+3606	Add more channels
+3607	Add team members and assign them roles: Admins can change settings, Members can view leads and conversations. Everyone gets their own login.
+3608	Audit trail
+3609	Browse by industry using the filter buttons at the top.
+3610	Captured leads
+3611	Change the chat button color, greeting message, launcher position, and logo so the widget feels like part of your website — not a third-party tool.
+3612	Chat history
+3613	Choose how your assistant communicates: Strict keeps answers factual and conservative, Balanced is warm but accurate, Creative adds a more conversational tone. Most businesses do well with Balanced.
+3614	Click "Add Source" to upload a PDF, DOCX, CSV, or paste a website link.
+3615	Click "Edit Page" to open the landing page builder.
+3616	Click "Enable 2FA" and follow the instructions — you will need an authenticator app on your phone.
+3617	Click "Invite Team Member" to send an email invitation.
+3618	Click any conversation row to open the full transcript.
+3619	Connect your assistant to WhatsApp, Telegram, or trigger webhooks to Zapier and your CRM whenever a lead is captured or an appointment is booked.
+3620	Each integration has a simple on/off toggle and a field for your API key or webhook URL.
+3621	Enable two-factor authentication to prevent unauthorized access to your dashboard. It takes about 60 seconds to set up.
+3622	Every action taken in your workspace is logged here — logins, settings changes, team invitations, and plan changes. Useful if you share access with others.
+3623	Every assistant gets a free hosted page at your domain — perfect for sharing on social media or in email campaigns. Customize the design, add your services, and publish in minutes.
+3624	Every conversation your assistant has is saved here. You can read transcripts, filter by date, and jump into a live conversation to take over from the assistant at any time.
+3625	Every time the assistant collects a name, email, or phone number from a visitor, it appears here automatically. No forms to manage — it happens in conversation.
+3626	Getting around
+3627	Hit the "Deploy" button in the top bar to get your embed code. Paste one line of code into your website and your assistant is live. That is it — you are set up.
+3628	Hosted landing pages
+3629	How your assistant is performing
+3630	If you offer appointments, your assistant can handle the entire booking flow — asking for the date, time, and contact details — and the booking shows up here.
+3631	Instead of configuring everything from scratch, pick an industry template (barbershop, dental clinic, gym, etc.) and your assistant will be pre-configured with relevant prompts and FAQs.
+3632	Invite your team
+3633	Keep your account secure
+3634	Knowledge Base — teach your assistant
+3635	Leads are listed with the date and the message they sent.
+3636	Match your brand
+3637	Notice the four sections in the left sidebar.
+3638	Personality and guardrails
+3639	Ready to go live?
+3640	Response style
+3641	See how many visitors your assistant talked to, how many became leads, and which pages drove the most conversations. Use this to decide where to focus next.
+3642	Set your assistant's name, a brief description of your business, and what it should say when it doesn't know the answer. This prevents it from making things up.
+3643	Start with a template
+3644	Start with your most common questions: pricing, hours, services, policies. A one-page FAQ document is enough to make your assistant useful on day one.
+3645	Test before going live
+3646	The "Fallback message" field controls what the assistant says when it is unsure.
+3647	The blue "Deploy" button is always visible in the top right corner.
+3648	The left sidebar is organized into four sections: Get Started (your core setup), Grow & Engage (conversations and bookings), Customize (how the assistant looks and behaves), and Settings (account, team, billing).
+3649	The log is sorted newest-first and can be filtered by action type.
+3650	The Overview tab shows a live snapshot of how your assistant is performing.
+3651	The preview on the right updates in real time as you change settings.
+3652	The status badge next to each source turns green when the assistant has finished learning from it.
+3653	The three Response Style cards let you switch tone with one click.
+3654	The top stat cards give you the numbers at a glance.
+3655	The usage bar shows how many of your monthly sessions you have used.
+3656	This is your command center. From here you can train your assistant, review conversations, and add it to your website. This tour will walk you through everything in about 3 minutes.
+3657	Type a question a real customer might ask and see how the assistant responds.
+3658	Upload business documents, paste your website URL, or add FAQ text. Your assistant reads all of it and uses it to answer customer questions accurately.
+3659	Use the status column to mark bookings as confirmed, completed, or cancelled.
+3660	Use this chat window to ask your assistant the same questions your customers would ask. If an answer is wrong, go back to the Knowledge Base and add more detail.
+3661	Welcome to your dashboard
+3662	What to upload first
+3663	Your current plan, usage, and upgrade options are all here. Chat sessions reset monthly, and you can upgrade or cancel at any time.
+3664	Your plan
+3665	This document is available in English only. The English text is the legally binding version.
+3666	Country and language notification
+3667	Accept analytics
+3668	Close
+3669	Cookie choices
+3670	Cookie settings
+3671	Cookies
+3672	Reject
+3673	We always use the cookies needed to sign you in and keep the site secure. With your permission we also use Google Analytics to count visits and see which pages help. We never use advertising cookies.
+3674	← Previous
+3675	All Topics
+3676	Blog pagination
+3677	Clear all filters
+3678	Clear search
+3679	Deploy on Your Website
+3680	matching “
+3681	MIN READ
+3682	Next →
+3683	No guides match your search criteria.
+3684	Read guide →
+3685	Reset all filters
+3686	Search 200+ guides by keyword, topic, or industry (e.g. appointment booking, dental, plumbing, RAG, BYOK)...
+3687	Search Knowledge Hub & Glossary
+3688	Showing
+3689	Start 14-day trial →
+3690	Topic Clusters
+3691	TOPIC CLUSTERS
+3692	Try different keywords, or reset your filters to browse the full directory.
+3693	Turn visitors into confirmed appointments 24/7.
+3694	Email updates
+3695	Enter a valid email address, like name@example.com.
+3696	Official community channels
+3697	Subscribe
+3698	Thank you! You have been subscribed to Crescelo updates.
+3699	you@company.com
+3700	Add your content in minutes.
+3701	All features
+3702	Choose the tone, colours and greeting, then paste one line of code on your site.
+3703	Conversations that need a person show up in the inbox with the full history attached.
+3704	Customers pick a real free slot.
+3705	Every Growth feature free for 14 days. A card is required to start, and it is charged when the trial ends unless you cancel first.
+3706	Every lead lands in one inbox.
+3707	Every reply is built from passages in your own documents. This is what happens behind a single question.
+3708	From set-up to live.
+3709	Good to know.
+3710	Guides:
+3711	It finds the answer in your content.
+3712	Learn more →
+3713	Log in
+3714	Make it look like your brand.
+3715	Name, contact details and the conversation behind them, ready for your team to follow up.
+3716	One assistant, every channel.
+3717	SEE IT
+3718	See it work on your own business.
+3719	The assistant shows open times from your calendar and books in the chat. No back and forth.
+3720	TRY IT
+3721	Upload files, paste text or add web pages. The assistant learns them and stays in sync.
+3722	var(--mk-warn)
+3723	Website, WhatsApp and Telegram share the same knowledge and the same conversation history.
+3724	What you can set.
+3725	Works together with.
+3726	Your team steps in when it matters.
+3727	Compare generic chatbot and Crescelo answers
+3728	Visitor asks
+3729	Menu
+3730	Mobile
+3731	Primary
+3732	Skip to content
+3733	A standard cut is $35 and takes about 30 minutes. Beard trims are $15 extra.
+3734	Booking confirmed and synced to Google Calendar.
+3735	Business Hours Policy
+3736	Can I book Saturday at 10?
+3737	Confirm
+3738	Confirmed
+3739	Customer conversation preview
+3740	How much is a standard cut?
+3741	Interactive demo. Select an inquiry above to test autonomous grounded responses.
+3742	Live visitor conversation • Apex Barbers
+3743	Real-time Calendar Sync
+3744	Sat, 10:00 – 10:30
+3745	Saturday at 10:00 is open. I have held it for you. Confirm to finish booking.
+3746	Services & Pricing Document
+3747	Standard cut · $35
+3748	Suggested customer inquiries
+3749	We are closed on Sundays. Saturday hours are 9am to 4pm.

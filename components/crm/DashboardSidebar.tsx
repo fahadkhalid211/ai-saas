@@ -1,5 +1,6 @@
 'use client';
 
+import { T } from '@/lib/i18n/context';
 import React, { useState } from 'react';
 import {
   FileCheck,
@@ -188,7 +189,7 @@ export function DashboardSidebar({
         {sections.map((section) => (
           <div key={section.title}>
             <div className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 px-3 mb-1.5">
-              {section.title}
+              <T>{section.title}</T>
             </div>
             <nav className="space-y-0.5">
               {section.items.map((tab) => {
@@ -214,7 +215,7 @@ export function DashboardSidebar({
                       >
                         <div className="flex items-center gap-2.5">
                           <Share2 className={`h-4 w-4 ${isChannelsActive ? 'text-blue-600 dark:text-blue-400' : 'text-slate-500'}`} />
-                          <span>{tab.label}</span>
+                          <span><T>{tab.label}</T></span>
                         </div>
                         <ChevronDown
                           className={`h-3.5 w-3.5 text-slate-400 transition-transform duration-200 ${showSubMenu ? 'rotate-0' : '-rotate-90'}`}
@@ -270,12 +271,12 @@ export function DashboardSidebar({
                   >
                     <div className="flex items-center gap-2.5">
                       <Icon className={`h-4 w-4 ${isActive ? 'text-blue-600 dark:text-blue-400' : 'text-slate-500'}`} />
-                      <span>{tab.label}</span>
+                      <span><T>{tab.label}</T></span>
                     </div>
                     <div className="flex items-center gap-1.5">
                       {tab.waitingCount && tab.waitingCount > 0 ? (
                         <span className="rounded-full bg-amber-500 text-slate-950 px-1.5 py-0.2 text-[11px] font-bold animate-pulse">
-                          {tab.waitingCount} Waiting
+                          {tab.waitingCount} <T>Waiting</T>
                         </span>
                       ) : null}
                       {tab.count !== undefined && (
@@ -300,11 +301,11 @@ export function DashboardSidebar({
         {/* Status Compliance Box */}
         <div className="p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 text-sm space-y-1.5">
           <div className="flex items-center justify-between font-semibold text-slate-700 dark:text-slate-300">
-            <span>Assistant status</span>
-            <span className="text-emerald-700 dark:text-emerald-400 text-xs font-bold uppercase">Ready</span>
+            <span><T>Assistant status</T></span>
+            <span className="text-emerald-700 dark:text-emerald-400 text-xs font-bold uppercase"><T>Ready</T></span>
           </div>
           <p className="text-xs text-slate-600 dark:text-slate-400 leading-normal">
-            Your assistant is ready to answer customers.
+            <T>Your assistant is ready to answer customers.</T>
           </p>
         </div>
 
@@ -322,10 +323,10 @@ export function DashboardSidebar({
             className="flex items-center gap-1.5 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-semibold cursor-pointer transition"
           >
             <Compass className="h-3.5 w-3.5" />
-            <span>Guided tour</span>
+            <span><T>Guided tour</T></span>
           </button>
         ) : (
-          <span className="text-slate-400 dark:text-slate-500">Crescelo</span>
+          <span className="text-slate-400 dark:text-slate-500"><T>Crescelo</T></span>
         )}
         {onToggleSimpleMode ? (
           <button
@@ -344,7 +345,7 @@ export function DashboardSidebar({
             }`}
           >
             <Sparkles className="h-3 w-3 shrink-0" />
-            {simpleMode ? 'Simple view' : 'Advanced view'}
+            {simpleMode ? <T>{'Simple view'}</T> : <T>{'Advanced view'}</T>}
           </button>
         ) : null}
       </div>

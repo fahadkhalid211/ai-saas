@@ -1,0 +1,150 @@
+3718¦Se hur det fungerar för din egen verksamhet.¦Katso, miten se toimii omassa yrityksessäsi.¦Guarda come funziona per la tua attività.¦Mira cómo funciona en tu propio negocio.
+3719¦Assistenten visar lediga tider från din kalender och bokar direkt i chatten. Ingen fram och tillbaka.¦Avustaja näyttää vapaat ajat kalenteristasi ja varaa chatissa. Ei edestakaista viestittelyä.¦L'assistente mostra gli orari liberi dal tuo calendario e prenota direttamente in chat. Niente avanti e indietro.¦El asistente muestra las horas libres de tu calendario y reserva en el chat. Sin idas y venidas.
+3720¦PROVA¦KOKEILE¦PROVALO¦PRUÉBALO
+3721¦Ladda upp filer, klistra in text eller lägg till webbsidor. Assistenten lär sig dem och håller sig uppdaterad.¦Lataa tiedostoja, liitä tekstiä tai lisää verkkosivuja. Avustaja oppii ne ja pysyy ajan tasalla.¦Carica file, incolla testo o aggiungi pagine web. L'assistente li impara e rimane sincronizzato.¦Sube archivos, pega texto o añade páginas web. El asistente los aprende y se mantiene sincronizado.
+3722¦=
+3723¦Webbplatsen, WhatsApp och Telegram delar samma kunskap och samma samtalshistorik.¦Verkkosivusto, WhatsApp ja Telegram jakavat saman tietopohjan ja saman keskusteluhistorian.¦Sito web, WhatsApp e Telegram condividono la stessa conoscenza e la stessa cronologia delle conversazioni.¦El sitio web, WhatsApp y Telegram comparten el mismo conocimiento y el mismo historial de conversaciones.
+3724¦Det här kan du ställa in.¦Mitä voit määrittää.¦Cosa puoi impostare.¦Lo que puedes configurar.
+3725¦Fungerar tillsammans med.¦Toimii yhdessä näiden kanssa.¦Funziona insieme a.¦Funciona junto con.
+3726¦Ditt team hoppar in när det behövs.¦Tiimisi astuu mukaan, kun sillä on merkitystä.¦Il tuo team interviene quando serve.¦Tu equipo interviene cuando importa.
+3727¦Jämför svar från en vanlig chattbot och från Crescelo¦Vertaa tavallisen chatbotin ja Crescelon vastauksia¦Confronta le risposte di un chatbot generico e di Crescelo¦Compara las respuestas de un chatbot genérico y de Crescelo
+3728¦Besökaren frågar¦Kävijä kysyy¦Il visitatore chiede¦El visitante pregunta
+3729¦Meny¦Valikko¦Menu¦Menú
+3730¦Mobil¦Mobiili¦Mobile¦Móvil
+3731¦Huvudmeny¦Päävalikko¦Principale¦Principal
+3732¦Hoppa till innehållet¦Siirry sisältöön¦Vai al contenuto¦Saltar al contenido
+3733¦En vanlig klippning kostar 35 $ och tar cirka 30 minuter. Skäggtrimning kostar 15 $ extra.¦Tavallinen leikkaus maksaa 35 $ ja kestää noin 30 minuuttia. Parran trimmaus maksaa 15 $ lisää.¦Un taglio standard costa 35 $ e dura circa 30 minuti. La sistemata alla barba costa 15 $ in più.¦Un corte estándar cuesta 35 $ y dura unos 30 minutos. El arreglo de barba cuesta 15 $ más.
+3734¦Bokningen är bekräftad och synkad till Google Kalender.¦Varaus vahvistettu ja synkronoitu Google-kalenteriin.¦Prenotazione confermata e sincronizzata con Google Calendar.¦Reserva confirmada y sincronizada con Google Calendar.
+3735¦Policy för öppettider¦Aukioloaikakäytäntö¦Politica degli orari di apertura¦Política de horarios
+3736¦Kan jag boka lördag kl. 10?¦Voinko varata lauantaille klo 10?¦Posso prenotare sabato alle 10?¦¿Puedo reservar el sábado a las 10?
+3737¦Bekräfta¦Vahvista¦Conferma¦Confirmar
+3738¦Bekräftad¦Vahvistettu¦Confermato¦Confirmado
+3739¦Förhandsvisning av kundsamtal¦Asiakaskeskustelun esikatselu¦Anteprima della conversazione con il cliente¦Vista previa de la conversación con el cliente
+3740¦Vad kostar en vanlig klippning?¦Paljonko tavallinen leikkaus maksaa?¦Quanto costa un taglio standard?¦¿Cuánto cuesta un corte estándar?
+3741¦Interaktiv demo. Välj en fråga ovan för att testa svar som bygger på källorna.¦Interaktiivinen esittely. Valitse yllä oleva kysymys testataksesi lähteisiin perustuvia vastauksia.¦Demo interattiva. Seleziona una richiesta qui sopra per provare risposte fondate sulle fonti.¦Demo interactiva. Selecciona una consulta arriba para probar respuestas basadas en las fuentes.
+3742¦Pågående besökarsamtal • Apex Barbers¦Käynnissä oleva kävijäkeskustelu • Apex Barbers¦Conversazione con un visitatore in corso • Apex Barbers¦Conversación en vivo con un visitante • Apex Barbers
+3743¦Kalendersynk i realtid¦Kalenterin reaaliaikainen synkronointi¦Sincronizzazione del calendario in tempo reale¦Sincronización del calendario en tiempo real
+3744¦lör 10:00–10:30¦la 10.00–10.30¦sab 10:00–10:30¦sáb 10:00–10:30
+3745¦Lördag kl. 10.00 är ledig. Jag har hållit den åt dig. Bekräfta för att slutföra bokningen.¦Lauantai klo 10.00 on vapaa. Olen pitänyt sen varattuna sinulle. Vahvista viimeistelläksesi varauksen.¦Sabato alle 10:00 è libero. Te l'ho tenuto da parte. Conferma per completare la prenotazione.¦El sábado a las 10:00 está libre. Te lo he reservado. Confirma para terminar la reserva.
+3746¦Dokument med tjänster och priser¦Palvelu- ja hinta-asiakirja¦Documento di servizi e prezzi¦Documento de servicios y precios
+3747¦Vanlig klippning · 35 $¦Tavallinen leikkaus · 35 $¦Taglio standard · 35 $¦Corte estándar · 35 $
+3748¦Föreslagna kundfrågor¦Ehdotetut asiakkaiden kysymykset¦Richieste suggerite dei clienti¦Consultas sugeridas de clientes
+3749¦Vi har stängt på söndagar. Lördagar har vi öppet kl. 9–16.¦Olemme suljettuna sunnuntaisin. Lauantaisin olemme auki klo 9–16.¦La domenica siamo chiusi. Il sabato siamo aperti dalle 9 alle 16.¦Cerramos los domingos. Los sábados abrimos de 9:00 a 16:00.
+3750¦· Ikraftträdande¦· Voimaantulo¦· In vigore dal¦· Vigencia
+3751¦kontaktformulär¦yhteydenottolomake¦modulo di contatto¦formulario de contacto
+3752¦Senast uppdaterad¦Päivitetty viimeksi¦Ultimo aggiornamento¦Última actualización
+3753¦På den här sidan¦Tällä sivulla¦In questa pagina¦En esta página
+3754¦Branscher som Crescelo är byggt för¦Toimialat, joille Crescelo on rakennettu¦Settori per cui è pensato Crescelo¦Sectores para los que está creado Crescelo
+3755¦(demo)¦(esittely)¦(demo)¦(demo)
+3756¦1 · Tjänst¦1 · Palvelu¦1 · Servizio¦1 · Servicio
+3757¦2 · Dag¦2 · Päivä¦2 · Giorno¦2 · Día
+3758¦3 · Tid¦3 · Aika¦3 · Orario¦3 · Hora
+3759¦4 · Dina uppgifter¦4 · Tietosi¦4 · I tuoi dati¦4 · Tus datos
+3760¦En teammedlem (Alex) gick med i samtalet (demo)¦Tiimin jäsen (Alex) liittyi keskusteluun (esittely)¦Un membro del team (Alex) si è unito alla conversazione (demo)¦Un miembro del equipo (Alex) se unió a la conversación (demo)
+3761¦Lägg till i kalendern¦Lisää kalenteriin¦Aggiungi al calendario¦Añadir al calendario
+3762¦Fråga något eller försök boka. Se hur flödet reagerar.¦Kysy jotain tai yritä varata aika. Katso, miten putki reagoi.¦Fai una domanda o prova a prenotare. Guarda come reagisce la pipeline.¦Pregunta algo o prueba a reservar. Mira cómo reacciona el flujo.
+3763¦Assistenten skriver¦Avustaja kirjoittaa¦L'assistente sta scrivendo¦El asistente está escribiendo
+3764¦Boka en till¦Varaa toinen¦Prenotane un altro¦Reservar otra
+3765¦Bokad för¦Varattu ajalle¦Prenotato per¦Reservado para
+3766¦Bokningsformulär (demo)¦Varauslomake (esittely)¦Modulo di prenotazione (demo)¦Formulario de reserva (demo)
+3767¦Bokningsformuläret skickades med tjänst, tid och kontaktuppgifter.¦Varauslomake lähetettiin palvelun, ajan ja yhteystietojen kera.¦Modulo di prenotazione inviato con servizio, slot e dati di contatto.¦Formulario de reserva enviado con servicio, hueco y datos de contacto.
+3768¦Bokningen sparades i kalendern. En bekräftelse skulle skickas via e-post här.¦Varaus tallennettiin kalenteriin. Vahvistus lähetettäisiin tässä sähköpostitse.¦Prenotazione salvata nel calendario. Qui verrebbe inviata un'e-mail di conferma.¦Reserva guardada en el calendario. Aquí se enviaría un correo de confirmación.
+3769¦Bekräfta bokning¦Vahvista varaus¦Conferma la prenotazione¦Confirmar reserva
+3770¦Bekräftelsen är skriven.¦Vahvistus kirjoitettu.¦Conferma scritta.¦Confirmación redactada.
+3771¦Demosamtal¦Esittelykeskustelu¦Conversazione dimostrativa¦Conversación de demostración
+3772¦E-post¦Sähköposti¦E-mail¦Correo electrónico
+3773¦Så behandlar assistenten varje meddelande¦Näin avustaja käsittelee jokaisen viestin¦Come l'assistente elabora ogni messaggio¦Cómo procesa el asistente cada mensaje
+3774¦indexerade avsnitt. RAG-inferens i realtid.¦indeksoitua katkelmaa. Reaaliaikainen RAG-päättely.¦passaggi indicizzati. Inferenza RAG in tempo reale.¦pasajes indexados. Inferencia RAG en tiempo real.
+3775¦Senast bearbetade meddelande¦Viimeksi käsitelty viesti¦Ultimo messaggio elaborato¦Último mensaje procesado
+3776¦Skriv till demoassistenten¦Kirjoita esittelyavustajalle¦Scrivi all'assistente demo¦Escribe al asistente de demostración
+3777¦min · $¦min · $¦min · $¦min · $
+3778¦Namn¦Nimi¦Nome¦Nombre
+3779¦Namn och e-post validerade. Tjänstens längd lästes:¦Nimi ja sähköposti vahvistettu. Palvelun kesto luettiin:¦Nome ed e-mail convalidati. Durata del servizio letta:¦Nombre y correo validados. Duración del servicio leída:
+3780¦Inga tider kvar den här dagen. Prova en annan dag.¦Ei vapaita aikoja tälle päivälle. Kokeile toista päivää.¦Nessun orario libero in questo giorno. Prova un altro giorno.¦No quedan horas libres este día. Prueba otro día.
+3781¦Inget valt ännu¦Mitään ei ole vielä valittu¦Ancora nulla di selezionato¦Todavía no hay nada seleccionado
+3782¦Öppettider lästes från kunskapsbasen.¦Aukioloajat luettiin tietopohjasta.¦Orari di apertura letti dalla base di conoscenza.¦Horario de apertura leído de la base de conocimiento.
+3783¦Bearbetar ditt meddelande¦Käsitellään viestiäsi¦Elaborazione del tuo messaggio¦Procesando tu mensaje
+3784¦Referens¦Viite¦Riferimento¦Referencia
+3785¦Skicka¦Lähetä¦Invia¦Enviar
+3786¦Källa:¦Lähde:¦Fonte:¦Fuente:
+3787¦Skriv ett meddelande¦Kirjoita viesti¦Scrivi un messaggio¦Escribe un mensaje
+3788¦Verifierad kunskapsbas:¦Vahvistettu tietopohja:¦Base di conoscenza verificata:¦Base de conocimiento verificada:
+3789¦Väntar på ett meddelande¦Odotetaan viestiä¦In attesa di un messaggio¦Esperando un mensaje
+3790¦Du är bokad. Vi ses då!¦Varauksesi on tehty. Nähdään silloin!¦La tua prenotazione è fatta. Ci vediamo allora!¦Tu reserva está hecha. ¡Nos vemos entonces!
+3791¦, lägg till något att läsa¦, lisää jotain luettavaa¦, aggiungi qualcosa da leggere¦, añade algo para leer
+3792¦, du är noterad för¦, olet varattuna ajalle¦, sei prenotato per¦, quedas anotado para
+3793¦? Börja om¦? Aloita alusta¦? Ricomincia¦? Empezar de nuevo
+3794¦Lägg till ett dokument till vänster och fråga sedan på.¦Lisää dokumentti vasemmalle ja kysy sitten.¦Aggiungi un documento a sinistra, poi fai le tue domande.¦Añade un documento a la izquierda y pregunta lo que quieras.
+3795¦Lägg till fil¦Lisää tiedosto¦Aggiungi file¦Añadir archivo
+3796¦Lägg till sida¦Lisää sivu¦Aggiungi pagina¦Añadir página
+3797¦Lägg till text¦Lisää teksti¦Aggiungi testo¦Añadir texto
+3798¦Fråga om dina dokument…¦Kysy dokumenteistasi…¦Chiedi dei tuoi documenti…¦Pregunta sobre tus documentos…
+3799¦Ställ en fråga som en kund skulle ställa.¦Kysy jotain, mitä asiakas kysyisi.¦Fagli una domanda che farebbe un cliente.¦Hazle una pregunta que haría un cliente.
+3800¦Bokad (exempel)¦Varattu (esimerkki)¦Prenotato (esempio)¦Reservado (ejemplo)
+3801¦Ta med dina egna dokument.¦Tuo omat dokumenttisi.¦Porta i tuoi documenti.¦Trae tus propios documentos.
+3802¦Välj en fil¦Valitse tiedosto¦Scegli un file¦Elige un archivo
+3803¦Dag¦Päivä¦Giorno¦Día
+3804¦Mata den med dina dokument. Testa den sedan.¦Syötä sille dokumenttisi. Testaa sitten.¦Dagli i tuoi documenti. Poi mettilo alla prova.¦Dale tus documentos. Luego ponlo a prueba.
+3805¦Från:¦Lähettäjä:¦Da:¦De:
+3806¦Gärna! Välj en dag och en tid nedan.¦Autan mielelläni valitsemaan ajan. Valitse päivä ja aika alta.¦Con piacere ti aiuto a scegliere un orario. Seleziona un giorno e uno slot qui sotto.¦Encantado de ayudarte a elegir una hora. Elige un día y un hueco abajo.
+3807¦Hej¦Hei¦Ciao¦Hola
+3808¦Ärliga svar.¦Rehellisiä vastauksia.¦Risposte oneste.¦Respuestas honestas.
+3809¦Den säger bara det som står i dina dokument.¦Se sanoo vain sen, mitä dokumenteissasi lukee.¦Dice solo ciò che dicono i tuoi documenti.¦Solo dice lo que dicen tus documentos.
+3810¦Gillar du det du ser? Lägg ut det på din webbplats på några minuter.¦Pidätkö näkemästäsi? Ota se käyttöön verkkosivustollasi muutamassa minuutissa.¦Ti piace quello che vedi? Mettilo sul tuo sito in pochi minuti.¦¿Te gusta lo que ves? Ponlo en tu sitio web en minutos.
+3811¦MB.¦Mt.¦MB.¦MB.
+3812¦Inget lösenord, inget kort.¦Ei salasanaa, ei korttia.¦Nessuna password, nessuna carta.¦Sin contraseña, sin tarjeta.
+3813¦Inte¦Ei¦Non¦No
+3814¦Inget ännu. Lägg till ett dokument för att börja.¦Ei vielä mitään. Lisää dokumentti aloittaaksesi.¦Ancora niente. Aggiungi un documento per iniziare.¦Todavía nada. Añade un documento para empezar.
+3815¦Öppna lekplatsen¦Avaa kokeilualue¦Apri il playground¦Abrir el playground
+3816¦Öppna din lekplats på 10 sekunder.¦Avaa kokeilualueesi 10 sekunnissa.¦Apri il tuo playground in 10 secondi.¦Abre tu playground en 10 segundos.
+3817¦Öppnar din lekplats…¦Avataan kokeilualuettasi…¦Apertura del tuo playground…¦Abriendo tu playground…
+3818¦Öppnar…¦Avataan…¦Apertura…¦Abriendo…
+3819¦Klistra in dina vanliga frågor, öppettider, prislista…¦Liitä UKK, aukioloajat, hinnasto…¦Incolla le tue FAQ, gli orari di apertura, il listino prezzi…¦Pega tus preguntas frecuentes, el horario, la lista de precios…
+3820¦PDF, Word, text, CSV eller en webbsida.¦PDF, Word, teksti, CSV tai verkkosivu.¦PDF, Word, testo, CSV o una pagina web.¦PDF, Word, texto, CSV o una página web.
+3821¦PDF, Word, text, Markdown, CSV eller JSON, upp till¦PDF, Word, teksti, Markdown, CSV tai JSON, enintään¦PDF, Word, testo, Markdown, CSV o JSON, fino a¦PDF, Word, texto, Markdown, CSV o JSON, hasta
+3822¦Välj en tid¦Valitse aika¦Scegli un orario¦Elige una hora
+3823¦integritetspolicy¦tietosuojakäytäntö¦informativa sulla privacy¦política de privacidad
+3824¦Frågor innan du provar.¦Kysymyksiä ennen kokeilua.¦Domande prima di provare.¦Preguntas antes de probar.
+3825¦frågor kvar¦kysymystä jäljellä¦domande rimaste¦preguntas restantes
+3826¦Läser…¦Luetaan…¦Lettura in corso…¦Leyendo…
+3827¦Ta bort¦Poista¦Rimuovi¦Quitar
+3828¦Skicka mig då och då tips om hur jag får ut mer av en AI-assistent. Avsluta prenumerationen när som helst.¦Lähetä minulle silloin tällöin vinkkejä tekoälyavustajan hyödyntämiseen. Peruuta tilaus milloin tahansa.¦Mandami di tanto in tanto consigli per sfruttare meglio un assistente IA. Annulla l'iscrizione quando vuoi.¦Envíame de vez en cuando consejos para sacar más partido a un asistente de IA. Date de baja cuando quieras.
+3829¦källor. Ta bort en för att lägga till en annan.¦lähdettä. Poista yksi lisätäksesi toisen.¦fonti. Rimuoverne una per aggiungerne un'altra.¦fuentes. Quita una para añadir otra.
+3830¦Text att lägga till¦Lisättävä teksti¦Testo da aggiungere¦Texto que añadir
+3831¦LEKPLATSEN¦KOKEILUALUE¦IL PLAYGROUND¦EL PLAYGROUND
+3832¦Tänker…¦Mietitään…¦Sta pensando…¦Pensando…
+3833¦Det här är ett exempel: ingenting sparas. Din riktiga assistent bokar i din egen kalender.¦Tämä on esimerkki: mitään ei tallenneta. Oikea avustajasi varaa omaan kalenteriisi.¦Questo è un esempio: non viene salvato nulla. Il tuo assistente vero prenota nel tuo calendario.¦Esto es un ejemplo: no se guarda nada. Tu asistente real reserva en tu propio calendario.
+3834¦Tid¦Aika¦Orario¦Hora
+3835¦Ladda upp en prislista, en FAQ eller en policy och fråga assistenten det en kund skulle fråga. Den svarar bara utifrån det du gett den. Inget kort, ingen installation, inga åtaganden.¦Lataa hinnasto, UKK tai käytäntö ja kysy avustajalta se, mitä asiakas kysyisi. Se vastaa vain sen perusteella, mitä olet antanut. Ei korttia, ei asennusta, ei sitoumuksia.¦Carica un listino prezzi, una FAQ o una policy e chiedi all'assistente ciò che chiederebbe un cliente. Risponde solo in base a ciò che gli hai dato. Nessuna carta, nessuna installazione, nessun impegno.¦Sube una lista de precios, unas preguntas frecuentes o una política y pregúntale al asistente lo que preguntaría un cliente. Responde solo a partir de lo que le has dado. Sin tarjeta, sin instalación, sin compromiso.
+3836¦Vi mejlar en privat länk så att du kan komma tillbaka.¦Lähetämme sinulle yksityisen linkin sähköpostitse, jotta voit palata.¦Ti inviamo per e-mail un link privato così potrai tornare.¦Te enviamos un enlace privado por correo para que puedas volver.
+3837¦Vi använder dina uppgifter för att öppna lekplatsen och mejla din länk. Dokument raderas från lekplatsen efter 7 dagar. För att skriva svar skickas dina frågor och de relevanta avsnitten till en AI-leverantör (Groq eller Google), så lägg inte till konfidentiella eller personliga uppgifter. Se vår¦Käytämme tietojasi kokeilualueen avaamiseen ja linkkisi lähettämiseen sähköpostitse. Dokumentit poistetaan kokeilualueelta 7 päivän kuluttua. Vastausten kirjoittamiseksi kysymyksesi ja olennaiset katkelmat lähetetään tekoälypalveluntarjoajalle (Groq tai Google), joten älä lisää luottamuksellisia tai henkilötietoja. Katso¦Usiamo i tuoi dati per aprire il playground e inviarti il link per e-mail. I documenti vengono eliminati dal playground dopo 7 giorni. Per scrivere le risposte, le tue domande e i passaggi pertinenti vengono inviati a un provider IA (Groq o Google): non aggiungere quindi dati riservati o personali. Consulta la nostra¦Usamos tus datos para abrir el playground y enviarte tu enlace por correo. Los documentos se eliminan del playground tras 7 días. Para redactar las respuestas, tus preguntas y los pasajes relevantes se envían a un proveedor de IA (Groq o Google), así que no añadas datos confidenciales ni personales. Consulta nuestra
+3838¦Webbsidans adress¦Verkkosivun osoite¦Indirizzo della pagina web¦Dirección de la página web
+3839¦Jobbmejl¦Työsähköposti¦E-mail di lavoro¦Correo de trabajo
+3840¦Du har lagt till maximalt¦Olet lisännyt enimmäismäärän:¦Hai aggiunto il massimo di¦Has añadido el máximo de
+3841¦Du har använt alla dina lekplatsfrågor.¦Olet käyttänyt kaikki kokeilualueen kysymyksesi.¦Hai usato tutte le domande del playground.¦Has usado todas tus preguntas del playground.
+3842¦Din assistent¦Avustajasi¦Il tuo assistente¦Tu asistente
+3843¦Ditt namn¦Nimesi¦Il tuo nome¦Tu nombre
+3844¦Din fråga¦Kysymyksesi¦La tua domanda¦Tu pregunta
+3845¦Dina källor (¦Lähteesi (¦Le tue fonti (¦Tus fuentes (
+3846¦14 dagar gratis (kort krävs, avsluta när som helst). Därefter:¦14 päivää ilmaiseksi (kortti vaaditaan, peruuta milloin tahansa). Sen jälkeen:¦14 giorni gratis (carta richiesta, annulli quando vuoi). Poi:¦14 días gratis (se requiere tarjeta, cancela cuando quieras). Después:
+3847¦Årligen¦Vuosittain¦Annuale¦Anual
+3848¦Faktureras månadsvis, avsluta när som helst¦Laskutetaan kuukausittain, peruuta milloin tahansa¦Fatturato mensilmente, annulli quando vuoi¦Se factura mensualmente, cancela cuando quieras
+3849¦Faktureringsperiod¦Laskutusjakso¦Periodo di fatturazione¦Periodo de facturación
+3850¦Månadsvis¦Kuukausittain¦Mensile¦Mensual
+3851¦Rekommenderas¦Suositeltu¦Consigliato¦Recomendado
+3852¦Flyg upp till toppen ↑¦Siirry ylös ↑¦Torna in cima ↑¦Subir arriba ↑
+3853¦Rulla till sidans topp¦Vieritä sivun alkuun¦Scorri in cima alla pagina¦Desplazarse al inicio de la página
+3854¦Typ av verksamhet¦Yrityksen tyyppi¦Tipo di attività¦Tipo de negocio
+3855¦AI-leverantörer¦Tekoälypalveluntarjoajat¦Provider IA¦Proveedores de IA
+3856¦Förmåga¦Ominaisuus¦Funzionalità¦Capacidad
+3857¦Crescelo jämfört med Chatbase, vanliga FAQ-botar och enkla livechattwidgetar¦Crescelo verrattuna Chatbaseen, tavallisiin UKK-botteihin ja yksinkertaisiin live-chat-widgetteihin¦Crescelo a confronto con Chatbase, i tipici bot per FAQ e i widget di live chat di base¦Crescelo comparado con Chatbase, los típicos bots de preguntas frecuentes y los widgets básicos de chat en vivo
+3858¦Kundberättelser¦Asiakastarinat¦Storie dei clienti¦Historias de clientes
+3859¦Jämförelsetabell för funktioner¦Ominaisuusvertailutaulukko¦Tabella di confronto delle funzioni¦Tabla comparativa de funciones
+3860¦Indexera en webbplats via URL¦Indeksoi sivusto URL-osoitteen perusteella¦Indicizza un sito tramite URL¦Indexa un sitio web mediante URL
+3861¦OpenAI, Claude, Gemini, Groq: din nyckel¦OpenAI, Claude, Gemini, Groq: sinun avaimesi¦OpenAI, Claude, Gemini, Groq: la tua chiave¦OpenAI, Claude, Gemini, Groq: tu clave
+3862¦Videotranskriptioner som kunskap¦Videolitteroinnit tietopohjana¦Trascrizioni video come conoscenza¦Transcripciones de vídeo como conocimiento
+3863¦Webbsidor¦Verkkosivut¦Pagine web¦Páginas web
+3864¦YouTube¦YouTube¦YouTube¦YouTube
+3865¦Rör sig av sig själv. Håll muspekaren över för att pausa, dra eller använd pilarna för att gå åt båda hållen.¦Liikkuu itsestään. Pysäytä viemällä hiiri päälle, vedä tai käytä nuolia liikkuaksesi kumpaankin suuntaan.¦Scorre da solo. Passa il mouse per mettere in pausa, trascina o usa le frecce per andare in entrambe le direzioni.¦Se mueve solo. Pasa el ratón para pausar, arrastra o usa las flechas para ir en ambas direcciones.
+3866¦Nästa funktioner¦Seuraavat ominaisuudet¦Funzioni successive¦Funciones siguientes
+3867¦Pausa rörelsen¦Pysäytä liike¦Metti in pausa il movimento¦Pausar el movimiento

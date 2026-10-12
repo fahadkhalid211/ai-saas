@@ -1,5 +1,6 @@
 'use client';
 
+import { T } from '@/lib/i18n/context';
 import React from 'react';
 import {
   Eye,
@@ -70,12 +71,12 @@ export const ArchetypeDesignPreview: React.FC<ArchetypeDesignPreviewProps> = ({
         {/* Address Bar */}
         <div className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-900 border border-slate-800 text-[9px] font-mono text-slate-400 max-w-[170px] truncate">
           <Lock className="w-2 h-2 text-emerald-400 shrink-0" />
-          <span className="truncate">site/preview/{archetype.id}</span>
+          <span className="truncate"><T>site/preview/</T>{archetype.id}</span>
         </div>
 
         {/* Badge */}
         <div className="text-[8.5px] font-bold text-slate-400 uppercase tracking-wider hidden sm:block">
-          {archetype.badge || 'Template'}
+          {archetype.badge || <T>{'Template'}</T>}
         </div>
       </div>
 
@@ -117,13 +118,13 @@ export const ArchetypeDesignPreview: React.FC<ArchetypeDesignPreviewProps> = ({
                 isDarkAesthetic ? 'text-slate-400' : 'text-slate-500'
               }`}
             >
-              Services
+              <T>Services</T>
             </span>
             <div
               className="px-1.5 py-0.5 rounded text-[8px] font-bold text-white shadow-xs"
               style={{ backgroundColor: themeColor }}
             >
-              Book
+              <T>Book</T>
             </div>
           </div>
         </div>
@@ -141,24 +142,24 @@ export const ArchetypeDesignPreview: React.FC<ArchetypeDesignPreviewProps> = ({
                 isLuxurySerif ? 'font-serif' : 'font-sans'
               }`}
             >
-              {archetype.name}
+              <T>{archetype.name}</T>
             </div>
             <p className="text-[7.5px] text-slate-400 line-clamp-1 max-w-[200px] mx-auto">
-              {archetype.tagline}
+              <T>{archetype.tagline}</T>
             </p>
             <div className="flex justify-center gap-1.5 pt-0.5">
               <div
                 className="px-2.5 py-0.5 rounded text-[8px] font-bold text-white shadow-xs"
                 style={{ backgroundColor: themeColor }}
               >
-                Reserve Appointment
+                <T>Reserve Appointment</T>
               </div>
               <div
                 className={`px-2 py-0.5 rounded text-[8px] font-medium border ${
                   isDarkAesthetic ? 'border-slate-800 text-slate-300' : 'border-slate-300 text-slate-700'
                 }`}
               >
-                Learn More
+                <T>Learn More</T>
               </div>
             </div>
           </div>
@@ -168,17 +169,17 @@ export const ArchetypeDesignPreview: React.FC<ArchetypeDesignPreviewProps> = ({
             <div className="col-span-7 space-y-1">
               <div className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-slate-500/10 border border-slate-500/20 text-[7px] font-semibold text-slate-400">
                 <span className="w-1 h-1 rounded-full bg-emerald-400 animate-pulse" />
-                <span>Available Today</span>
+                <span><T>Available Today</T></span>
               </div>
               <div className="text-[10.5px] font-bold leading-tight line-clamp-2">
-                {archetype.name}
+                <T>{archetype.name}</T>
               </div>
               <div className="flex items-center gap-1 pt-0.5">
                 <div
                   className="px-2 py-0.5 rounded text-[7.5px] font-bold text-white shadow-xs"
                   style={{ backgroundColor: themeColor }}
                 >
-                  Book Instant
+                  <T>Book Instant</T>
                 </div>
               </div>
             </div>
@@ -191,14 +192,14 @@ export const ArchetypeDesignPreview: React.FC<ArchetypeDesignPreviewProps> = ({
                 <div className="flex items-center justify-between text-[7px]">
                   <span className="font-bold flex items-center gap-0.5">
                     <Calendar className="w-2 h-2 text-blue-400" />
-                    <span>Slot</span>
+                    <span><T>Slot</T></span>
                   </span>
-                  <span className="text-emerald-400 font-bold">10:00 AM</span>
+                  <span className="text-emerald-400 font-bold"><T>10:00 AM</T></span>
                 </div>
                 <div className="h-1 bg-slate-700/40 rounded-full overflow-hidden">
                   <div className="h-full w-2/3 bg-blue-500 rounded-full" />
                 </div>
-                <div className="text-[6.5px] text-slate-400 text-center font-mono">1-Click Confirmed</div>
+                <div className="text-[6.5px] text-slate-400 text-center font-mono"><T>1-Click Confirmed</T></div>
               </div>
             </div>
           </div>
@@ -215,15 +216,15 @@ export const ArchetypeDesignPreview: React.FC<ArchetypeDesignPreviewProps> = ({
                 {archetype.badge}
               </span>
               <div className="text-[10px] font-extrabold text-white leading-tight truncate drop-shadow-xs">
-                {archetype.name}
+                <T>{archetype.name}</T>
               </div>
               <div className="flex items-center justify-between pt-1">
-                <span className="text-[7px] text-slate-300 font-medium">5.0 Star Rating</span>
+                <span className="text-[7px] text-slate-300 font-medium"><T>5.0 Star Rating</T></span>
                 <div
                   className="px-1.5 py-0.5 rounded text-[7px] font-bold text-white shadow-xs"
                   style={{ backgroundColor: themeColor }}
                 >
-                  VIP Access &rarr;
+                  <T>VIP Access &rarr;</T>
                 </div>
               </div>
             </div>
@@ -238,7 +239,7 @@ export const ArchetypeDesignPreview: React.FC<ArchetypeDesignPreviewProps> = ({
         >
           <div className="flex items-center gap-1 truncate max-w-[65%]">
             <ShieldCheck className="w-2.5 h-2.5 text-emerald-500 shrink-0" />
-            <span className="truncate">{archetype.features[0] || 'Verified Architecture'}</span>
+            <span className="truncate">{archetype.features[0] || <T>{'Verified Architecture'}</T>}</span>
           </div>
 
           <div className="flex items-center gap-0.5 shrink-0">
@@ -255,9 +256,9 @@ export const ArchetypeDesignPreview: React.FC<ArchetypeDesignPreviewProps> = ({
         <div className="absolute inset-0 bg-black/65 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-all duration-200 flex flex-col items-center justify-center gap-2 p-3">
           <div className="text-center text-white space-y-0.5">
             <span className="text-[10px] font-bold uppercase tracking-wider text-blue-400 block">
-              Interactive Webpage Design
+              <T>Interactive Webpage Design</T>
             </span>
-            <span className="text-xs font-extrabold block drop-shadow-sm">{archetype.name}</span>
+            <span className="text-xs font-extrabold block drop-shadow-sm"><T>{archetype.name}</T></span>
           </div>
 
           <button
@@ -271,7 +272,7 @@ export const ArchetypeDesignPreview: React.FC<ArchetypeDesignPreviewProps> = ({
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white text-xs font-bold shadow-lg transition cursor-pointer hover:scale-105"
           >
             <Eye className="w-3.5 h-3.5" />
-            <span>Preview Sample Page</span>
+            <span><T>Preview Sample Page</T></span>
           </button>
         </div>
       </div>

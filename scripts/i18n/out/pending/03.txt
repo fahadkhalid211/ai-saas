@@ -1,0 +1,150 @@
+3718	See it work on your own business.
+3719	The assistant shows open times from your calendar and books in the chat. No back and forth.
+3720	TRY IT
+3721	Upload files, paste text or add web pages. The assistant learns them and stays in sync.
+3722	var(--mk-warn)
+3723	Website, WhatsApp and Telegram share the same knowledge and the same conversation history.
+3724	What you can set.
+3725	Works together with.
+3726	Your team steps in when it matters.
+3727	Compare generic chatbot and Crescelo answers
+3728	Visitor asks
+3729	Menu
+3730	Mobile
+3731	Primary
+3732	Skip to content
+3733	A standard cut is $35 and takes about 30 minutes. Beard trims are $15 extra.
+3734	Booking confirmed and synced to Google Calendar.
+3735	Business Hours Policy
+3736	Can I book Saturday at 10?
+3737	Confirm
+3738	Confirmed
+3739	Customer conversation preview
+3740	How much is a standard cut?
+3741	Interactive demo. Select an inquiry above to test autonomous grounded responses.
+3742	Live visitor conversation • Apex Barbers
+3743	Real-time Calendar Sync
+3744	Sat, 10:00 – 10:30
+3745	Saturday at 10:00 is open. I have held it for you. Confirm to finish booking.
+3746	Services & Pricing Document
+3747	Standard cut · $35
+3748	Suggested customer inquiries
+3749	We are closed on Sundays. Saturday hours are 9am to 4pm.
+3750	· Effective
+3751	contact form
+3752	Last updated
+3753	On this page
+3754	Industries Crescelo is built for
+3755	(demo)
+3756	1 · Service
+3757	2 · Day
+3758	3 · Time
+3759	4 · Your details
+3760	A team member (Alex) joined the conversation (demo)
+3761	Add to calendar
+3762	Ask something, or try booking. Watch the pipeline react.
+3763	Assistant is typing
+3764	Book another
+3765	Booked for
+3766	Booking form (demo)
+3767	Booking form submitted with a service, a slot and contact details.
+3768	Booking saved to the calendar. A confirmation email would be sent here.
+3769	Confirm booking
+3770	Confirmation written.
+3771	Demo conversation
+3772	Email
+3773	How the assistant processes each message
+3774	indexed passages. Real-time RAG inference.
+3775	Last message processed
+3776	Message the demo assistant
+3777	min · $
+3778	Name
+3779	Name and email validated. Service length read:
+3780	No times left this day. Try another day.
+3781	Nothing selected yet
+3782	Opening hours read from the knowledge base.
+3783	Processing your message
+3784	Reference
+3785	Send
+3786	Source:
+3787	Type a message
+3788	Verified knowledge base:
+3789	Waiting for a message
+3790	You are all booked in. See you then!
+3791	, add something to read
+3792	, you are down for
+3793	? Start over
+3794	Add a document on the left, then ask away.
+3795	Add file
+3796	Add page
+3797	Add text
+3798	Ask about your documents…
+3799	Ask it something a customer would ask.
+3800	Booked (sample)
+3801	Bring your own docs.
+3802	Choose a file
+3803	Day
+3804	Feed it your docs. Then quiz it.
+3805	From:
+3806	Happy to help you pick a time. Choose a day and a slot below.
+3807	Hi
+3808	Honest answers.
+3809	It only says what your documents say.
+3810	Like what you see? Put it on your website in minutes.
+3811	MB.
+3812	No password, no card.
+3813	Not
+3814	Nothing yet. Add a document to begin.
+3815	Open the playground
+3816	Open your playground in 10 seconds.
+3817	Opening your playground…
+3818	Opening…
+3819	Paste your FAQ, opening hours, price list…
+3820	PDF, Word, text, CSV or a web page.
+3821	PDF, Word, text, Markdown, CSV or JSON, up to
+3822	Pick a time
+3823	privacy policy
+3824	Questions before you try.
+3825	questions left
+3826	Reading…
+3827	Remove
+3828	Send me the occasional tip on getting more from an AI assistant. Unsubscribe any time.
+3829	sources. Remove one to add another.
+3830	Text to add
+3831	THE PLAYGROUND
+3832	Thinking…
+3833	This is a sample: nothing is saved. Your real assistant books into your own calendar.
+3834	Time
+3835	Upload a price list, an FAQ or a policy and ask the assistant what a customer would ask. It answers only from what you gave it. No card, no install, no commitment.
+3836	We email you a private link so you can come back.
+3837	We use your details to open the playground and email your link. Documents are deleted from the playground after 7 days. To write answers, your questions and the relevant passages are sent to an AI provider (Groq or Google), so do not add confidential or personal data. See our
+3838	Web page address
+3839	Work email
+3840	You have added the maximum of
+3841	You have used all your playground questions.
+3842	Your assistant
+3843	Your name
+3844	Your question
+3845	Your sources (
+3846	14 days free (card required, cancel any time). Then:
+3847	Annual
+3848	Billed monthly, cancel any time
+3849	Billing period
+3850	Monthly
+3851	Recommended
+3852	Beam up to top ↑
+3853	Scroll to top of page
+3854	Business type
+3855	AI providers
+3856	Capability
+3857	Crescelo compared with Chatbase, typical FAQ bots and basic live-chat widgets
+3858	Customer stories
+3859	Feature comparison table
+3860	Index a site by URL
+3861	OpenAI, Claude, Gemini, Groq: your key
+3862	Video transcripts as knowledge
+3863	Web pages
+3864	YouTube
+3865	Drifts on its own. Hover to pause, drag or use the arrows to go either way.
+3866	Next features
+3867	Pause movement

@@ -1,4 +1,6 @@
-import Link from 'next/link';
+import { T } from '@/lib/i18n/context';
+import { A } from '@/components/i18n/A';
+import Link from '@/components/i18n/Link';
 import type { ReactNode } from 'react';
 import type { BlogBlock } from '@/lib/blog/posts';
 
@@ -29,18 +31,18 @@ export function inline(text: string): ReactNode[] {
         out.push(
           href.startsWith('/') ? (
             <Link key={`link-${lineIdx}-${m.index}`} href={href} style={{ textDecoration: 'underline', textUnderlineOffset: 3, fontWeight: 600 }}>
-              {label}
+              <T>{label}</T>
             </Link>
           ) : (
-            <a key={`ext-${lineIdx}-${m.index}`} href={href} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'underline', textUnderlineOffset: 3, fontWeight: 600 }}>
-              {label}
-            </a>
+            <A key={`ext-${lineIdx}-${m.index}`} href={href} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'underline', textUnderlineOffset: 3, fontWeight: 600 }}>
+              <T>{label}</T>
+            </A>
           )
         );
       } else if (m[3]) {
         out.push(
           <strong key={`bold-${lineIdx}-${m.index}`} style={{ fontWeight: 700, color: 'var(--mk-ink, #0f172a)' }}>
-            {m[3]}
+            <T>{m[3]}</T>
           </strong>
         );
       }
@@ -62,13 +64,13 @@ export function BlogBody({ blocks }: { blocks: BlogBlock[] }) {
           case 'h2':
             return (
               <h2 key={i} id={b.id} style={{ fontSize: '1.6rem', marginTop: '1.25rem', scrollMarginTop: '6rem', color: 'var(--mk-ink)' }}>
-                {b.text}
+                <T>{b.text}</T>
               </h2>
             );
           case 'h3':
             return (
               <h3 key={i} style={{ fontSize: '1.2rem', marginTop: '0.5rem', color: 'var(--mk-ink)' }}>
-                {b.text}
+                <T>{b.text}</T>
               </h3>
             );
           case 'faq':
@@ -76,7 +78,7 @@ export function BlogBody({ blocks }: { blocks: BlogBlock[] }) {
               <div key={i} style={{ display: 'grid', gap: '0.6rem' }}>
                 {b.items.map((f, j) => (
                   <details key={j} className="mk-card" style={{ padding: '0.9rem 1.2rem' }}>
-                    <summary style={{ cursor: 'pointer', fontWeight: 700 }}>{f.q}</summary>
+                    <summary style={{ cursor: 'pointer', fontWeight: 700 }}><T>{f.q}</T></summary>
                     <p style={{ marginTop: '0.6rem' }}>{inline(f.a)}</p>
                   </details>
                 ))}
@@ -112,7 +114,7 @@ export function BlogBody({ blocks }: { blocks: BlogBlock[] }) {
                     <tr style={{ background: 'var(--mk-surface-muted, #f8fafc)', borderBottom: '2px solid var(--mk-border, #cbd5e1)' }}>
                       {b.headers.map((h, k) => (
                         <th key={k} style={{ padding: '0.75rem 1rem', fontWeight: 700, color: 'var(--mk-ink, #0f172a)' }}>
-                          {h}
+                          <T>{h}</T>
                         </th>
                       ))}
                     </tr>

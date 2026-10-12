@@ -41,6 +41,7 @@ Full details: ${u}/pricing
 - [Home](${u}/): overview and demo
 - [Product and features](${u}/product)
 - [Playground: try it on your own documents](${u}/playground)
+- [LLM cost calculator: API cost of a chatbot per conversation and per month](${u}/tools/llm-cost-calculator)
 - [AI website assistant](${u}/product/ai-assistant), [Appointment booking](${u}/product/appointment-booking), [Lead capture](${u}/product/lead-capture), [Knowledge base](${u}/product/knowledge-base), [Website chat widget](${u}/product/website-widget), [Human handover](${u}/product/human-handover), [WhatsApp and Telegram](${u}/product/messaging-channels)
 - [Pricing](${u}/pricing)
 - [Use cases by industry](${u}/use-case)

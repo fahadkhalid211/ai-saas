@@ -1,0 +1,150 @@
+2550	Reviews
+2551	SaaS
+2552	Save & Publish Landing Page
+2553	Scale Deployment ($399)
+2554	Search templates by industry or keywords...
+2555	Section Enabled
+2556	Section Hidden
+2557	Select Business Timezone
+2558	SEO & Search Engine Optimization
+2559	Serverless Infrastructure Orchestration
+2560	Service consultation and appointment details.
+2561	Service Description
+2562	Service Image URL (Optional)
+2563	Services & Pricing
+2564	Services & Pricing Menu
+2565	Services Section Header
+2566	Services Section Subtitle
+2567	Services Section Title
+2568	Share the founder's ethos, career milestones, awards, or philosophy.
+2569	Slide #
+2570	Slide Badge / Tag
+2571	Slide Image URL
+2572	SOC2 Type II Certified · 99.99% SLA
+2573	Social Media Accounts & Public Profiles
+2574	Social Share Image URL (OpenGraph)
+2575	Sovereign Capital In The Algorithmic Era
+2576	SSL Auto-Provisioned
+2577	Starter Setup ($49)
+2578	Strategic Discovery (Free)
+2579	Strict Knowledge Base Separation
+2580	Styles Available)
+2581	Subheadline
+2582	Subheadline copy
+2583	Subheadline describing key value proposition or service offering.
+2584	Switch Page:
+2585	Tagline / Subtitle
+2586	TARGET / VALUE
+2587	Target URL or Section Anchor
+2588	Test Domain
+2589	Testimonials & Gallery Headers
+2590	Testimonials Section Subtitle
+2591	Testimonials Section Title
+2592	text-[#eafe45] bg-[#1e3523] dark:bg-[#1e3523] dark:text-[#eafe45] border border-[#48614b]
+2593	The chatbot on this landing page only answers questions from this bot's knowledge base.
+2594	The Pricing Plans section is currently hidden from your live landing page. Check “Section Enabled” above to display it.
+2595	These items populate your website catalog and provide live pricing for the AI assistant and interactive booking modal.
+2596	Thumbnail:
+2597	tier)
+2598	TikTok URL
+2599	Top Rated Gym 2026
+2600	Treasury Review ($0)
+2601	Trial Retainer ($2,500)
+2602	Trust Badge Text (Top Banner)
+2603	Trust Metrics & Key Statistics
+2604	Uncompromising Advocacy When Stakes Are Highest
+2605	Universal Clean Business
+2606	Universal Multi-Industry Design
+2607	Universal Standard · Clean & Non-Vibecoded
+2608	Using Default Hero Image
+2609	Value Propositions
+2610	Vanguard Legal Partners
+2611	View Live Site
+2612	Virtual Styling ($0)
+2613	Virtual styling, swatch box requests, bespoke furniture consultations, and order triage.
+2614	Visual Design Archetype (
+2615	Wealth
+2616	Website URL Slug (/site/[slug])
+2617	Whitening ($350)
+2618	Workspace Quota:
+2619	X / Twitter URL
+2620	Yield Arbitrage ($2,000)
+2621	Your Business Name
+2622	Your Business Website
+2623	Your Custom Headline & Brand Positioning
+2624	Your site is currently displaying intelligent default navigation items (e.g. Services, About Us, Reviews, Book Appointment). You can define bespoke navigation items below to override the defaults with custom anchors or external URLs.
+2625	YouTube URL
+2626	Comments / Notes
+2627	Custom Fields
+2628	Fetch newest leads right now
+2629	No leads or support requests captured yet. When visitors use the support form in the widget, submissions will appear here.
+2630	View contact details and inquiries automatically captured by your assistant.
+2631	Visitor Contact
+2632	Website Visitor
+2633	Just now
+2634	Open Live Chat
+2635	View Chat
+2636	View Notifications
+2637	• Answer:
+2638	Add it to your website
+2639	Add your documents
+2640	Add your first one below
+2641	Answer it
+2642	Answered
+2643	Ask it the questions a real customer would ask, and see exactly how it replies — before any visitor ever sees it.
+2644	Asked
+2645	Copy code
+2646	e.g. Yes, we offer full refunds within 14 days of purchase. Contact support@ourstore.com with your order number.
+2647	Full instructions
+2648	Go to My Documents →
+2649	If it ever gets stuck on a question, it will show up here so you can teach it the answer.
+2650	need an answer
+2651	Needs an answer
+2652	Nothing to fix — it has answered everything so far!
+2653	Open Try It Out →
+2654	Questions it couldn't answer
+2655	Remove this question
+2656	Save this answer
+2657	Saving...
+2658	This works on WordPress, Wix, Squarespace, Shopify or a plain HTML site. If you built the site yourself, click “Full instructions” for the exact steps for your platform. If someone else manages your website, click there too — it can email them the code for you, so you never have to touch it.
+2659	Three things to do: add your documents, try asking it a few questions, then put it on your website.
+2660	Try it out
+2661	Type the answer below, the way you'd say it to a customer. It will remember it right away:
+2662	Upload your price list, FAQs, policies, or any file about your business — PDF, Word, a spreadsheet, or plain text. It reads them in seconds, at no cost.
+2663	Welcome to
+2664	When a visitor asks something your documents don't cover, it shows up here honestly instead of guessing. Type the answer once, in a sentence or two, and it will know it from then on.
+2665	Booked
+2666	Business phone number
+2667	Business time zone
+2668	Call-back requested
+2669	Caller
+2670	Callers are always told they are speaking with an AI assistant.
+2671	Callers to your business number are answered by this assistant, which can answer questions and book appointments.
+2672	Enabled
+2673	Failed
+2674	Greeting
+2675	Hung up
+2676	In progress
+2677	International format. Must match the number bought from the carrier. Each number belongs to one assistant.
+2678	Language
+2679	Length
+2680	Max call (minutes)
+2681	No calls yet.
+2682	Not assigned yet
+2683	Numbers are assigned by the Crescelo team. Contact support to get one.
+2684	Outside opening hours
+2685	Phone calls (AI receptionist)
+2686	Phone settings saved
+2687	Recent calls
+2688	Result
+2689	Rung when a caller asks for a person, or if the AI service is unavailable. Leave empty to take a message instead.
+2690	Save phone settings
+2691	The time zone decides what "today" and opening hours mean when the assistant offers appointment times. Booking uses the days and hours from your booking settings.
+2692	Transfer to a person
+2693	Transferred
+2694	Use
+2695	When
+2696	Active AI Provider
+2697	API Key:
+2698	Ask a question to see retrieved knowledge chunks and citations here.
+2699	Attach file to chat

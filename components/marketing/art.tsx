@@ -1,3 +1,4 @@
+import { T } from '@/lib/i18n/context';
 import type { CarouselFeature } from './content-extra';
 
 /** Small original illustrations. Decorative only (aria-hidden at the call site). */
@@ -6,10 +7,10 @@ export function ToolArt({ id }: { id: 'answer' | 'book' | 'handover' }) {
   if (id === 'answer') {
     return (
       <div className="mk-art mk-art-answer">
-        <p className="mk-art-q">What does a deposit cover?</p>
+        <p className="mk-art-q"><T>What does a deposit cover?</T></p>
         <p className="mk-art-a">
-          It comes off your final bill and is refundable for 24 hours.
-          <span>Source: Booking policy</span>
+          <T>It comes off your final bill and is refundable for 24 hours.</T>
+          <span><T>Source: Booking policy</T></span>
         </p>
         <div className="mk-art-dots">
           <i />
@@ -25,21 +26,21 @@ export function ToolArt({ id }: { id: 'answer' | 'book' | 'handover' }) {
         <div className="mk-art-cal">
           {['09:00', '09:30', '10:00', '10:30', '11:00', '11:30'].map((t, i) => (
             <span key={t} className={i === 2 ? 'is-on' : i === 1 ? 'is-off' : ''}>
-              {t}
+              <T>{t}</T>
             </span>
           ))}
         </div>
-        <p className="mk-art-ok">Booked · Thu 10:00</p>
+        <p className="mk-art-ok"><T>Booked · Thu 10:00</T></p>
       </div>
     );
   }
   return (
     <div className="mk-art mk-art-hand">
-      <p className="mk-art-q">Can I talk to someone?</p>
+      <p className="mk-art-q"><T>Can I talk to someone?</T></p>
       <p className="mk-art-join">
-        <b aria-hidden="true">A</b> Alex joined the chat
+        <b aria-hidden="true">A</b> <T>Alex joined the chat</T>
       </p>
-      <p className="mk-art-a">Hi, happy to help. What are you planning?</p>
+      <p className="mk-art-a"><T>Hi, happy to help. What are you planning?</T></p>
     </div>
   );
 }
@@ -135,7 +136,7 @@ export function Glyph({ kind }: { kind: CarouselFeature['glyph'] }) {
   };
   return (
     <svg viewBox="0 0 24 24" width="56" height="56" aria-hidden="true" {...common}>
-      {paths[kind]}
+      <T>{paths[kind]}</T>
     </svg>
   );
 }

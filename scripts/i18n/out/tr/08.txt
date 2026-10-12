@@ -1,0 +1,150 @@
+1200¦Bekräfta bokning¦Vahvista varaus¦Conferma appuntamento¦Confirmar cita
+1201¦Bekräftar bokning...¦Vahvistetaan varausta...¦Conferma dell'appuntamento in corso...¦Confirmando la cita...
+1202¦Det gick inte att skicka bokningen. Försök igen.¦Varauksen lähettäminen epäonnistui. Yritä uudelleen.¦Invio della prenotazione non riuscito. Riprova.¦No se pudo enviar la reserva. Inténtalo de nuevo.
+1203¦Fullständigt namn *¦Koko nimi *¦Nome completo *¦Nombre completo *
+1204¦Anteckningar till mötet (valfritt)¦Kokouksen muistiinpanot (valinnainen)¦Note per l'incontro (facoltative)¦Notas de la reunión (opcional)
+1205¦namn@foretag.se¦nimi@yritys.fi¦nome@azienda.it¦nombre@empresa.com
+1206¦Telefonnummer (valfritt)¦Puhelinnumero (valinnainen)¦Numero di telefono (facoltativo)¦Número de teléfono (opcional)
+1207¦Ange ditt namn och din e-postadress.¦Anna nimesi ja sähköpostiosoitteesi.¦Inserisci il tuo nome e il tuo indirizzo e-mail.¦Indica tu nombre y tu dirección de correo electrónico.
+1208¦Syftet med bokningen...¦Tapaamisen tarkoitus...¦Motivo dell'appuntamento...¦Motivo de la cita...
+1209¦Boka en tid¦Varaa aika¦Fissa un appuntamento¦Programar una cita
+1210¦Välj datum *¦Valitse päivämäärä *¦Seleziona la data *¦Selecciona la fecha *
+1211¦Tid *¦Aika *¦Fascia oraria *¦Franja horaria *
+1212¦AI-assistent, svaren kan vara felaktiga. Meddelanden behandlas enligt vad som beskrivs i vår¦Tekoälyavustaja, vastaukset voivat olla virheellisiä. Viestit käsitellään kuvatulla tavalla meidän¦Assistente IA: le risposte potrebbero essere inesatte. I messaggi vengono trattati come descritto nella nostra¦Asistente de IA: las respuestas pueden ser inexactas. Los mensajes se tratan como se describe en nuestra
+1213¦Svarar…¦Vastataan…¦Risposta in corso…¦Respondiendo…
+1214¦Fråga om priser, installation eller funktioner¦Kysy hinnoista, käyttöönotosta tai ominaisuuksista¦Chiedi di prezzi, configurazione o funzionalità¦Pregunta por precios, configuración o funciones
+1215¦Fråga om din plan eller någon installationsguide¦Kysy pakettisi tai mistä tahansa käyttöönotto-oppaasta¦Chiedi del tuo piano o di una guida alla configurazione¦Pregunta por tu plan o por cualquier guía de configuración
+1216¦Fråga om din plan eller hur du ställer in något…¦Kysy pakettisi tai asetusten tekemisen tavoista…¦Chiedi del tuo piano o di come configurare qualcosa…¦Pregunta por tu plan o por cómo configurar algo…
+1217¦Fråga vad som helst om Crescelo…¦Kysy mitä tahansa Crescelosta…¦Chiedi qualsiasi cosa su Crescelo…¦Pregunta lo que quieras sobre Crescelo…
+1218¦Fråga vad som helst eller boka en demo¦Kysy mitä tahansa tai varaa esittely¦Chiedi qualsiasi cosa o prenota una demo¦Pregunta lo que quieras o reserva una demo
+1219¦Fråga Crescelo-assistenten¦Kysy Crescelo-avustajalta¦Chiedi all'assistente Crescelo¦Pregunta al asistente de Crescelo
+1220¦Assistent¦Avustaja¦Assistente¦Asistente
+1221¦Chatta med Crescelo¦Chatti Crescelon kanssa¦Chatta con Crescelo¦Chatea con Crescelo
+1222¦Konversationen är rensad. Fråga mig vad som helst om Crescelos funktioner, AI-installation, priser utan påslag eller guider för dashboarden!¦Keskustelu tyhjennetty. Kysy minulta mitä tahansa Crescelon ominaisuuksista, tekoälyn käyttöönotosta, hinnoittelusta ilman lisämaksua tai hallintapaneelin oppaista!¦Conversazione cancellata. Chiedimi qualsiasi cosa sulle funzioni di Crescelo, sulla configurazione dell'IA, sui prezzi senza ricarichi o sulle guide della dashboard!¦Conversación borrada. ¡Pregúntame lo que quieras sobre las funciones de Crescelo, la configuración de la IA, los precios sin recargo o las guías del panel!
+1223¦Kopiera svaret¦Kopioi vastaus¦Copia la risposta¦Copiar la respuesta
+1224¦Crescelo-assistent¦Crescelo-avustaja¦Assistente Crescelo¦Asistente de Crescelo
+1225¦Gärna! Välj en dag och en tid nedan. [ACTION:BOOKING_FORM]¦Autan mielelläni valitsemaan ajan. Valitse päivä ja aika alta. [ACTION:BOOKING_FORM]¦Con piacere ti aiuto a scegliere un orario. Seleziona un giorno e uno slot qui sotto. [ACTION:BOOKING_FORM]¦Encantado de ayudarte a elegir una hora. Elige un día y un hueco abajo. [ACTION:BOOKING_FORM]
+1226¦Hej där! 👋 Jag är din **Crescelo-plattformsconcierge**. Fråga mig vad som helst om priser utan påslag på tokens, hur du kopplar dina AI-modeller (Google Gemini, OpenAI, Claude, Groq, Ollama), lägger till kunskapsbaser eller navigerar i dashboarden!¦Hei! 👋 Olen **Crescelo-alustan concierge**. Kysy minulta mitä tahansa hinnoittelusta ilman tokenien lisämaksua, tekoälymallien (Google Gemini, OpenAI, Claude, Groq, Ollama) yhdistämisestä, tietopohjien lisäämisestä tai hallintapaneelissa liikkumisesta!¦Ciao! 👋 Sono il tuo **concierge della piattaforma Crescelo**. Chiedimi qualsiasi cosa sui prezzi senza ricarico sui token, su come collegare i tuoi modelli IA (Google Gemini, OpenAI, Claude, Groq, Ollama), aggiungere basi di conoscenza o muoverti nella dashboard!¦¡Hola! 👋 Soy tu **conserje de la plataforma Crescelo**. ¡Pregúntame lo que quieras sobre los precios sin recargo sobre los tokens, cómo conectar tus modelos de IA (Google Gemini, OpenAI, Claude, Groq, Ollama), añadir bases de conocimiento o moverte por el panel!
+1227¦Hej! Jag är din Crescelo-assistent. Jag kan installationsguiderna och **ditt konto**: fråga om din plan och användning, hur du kopplar en leverantör, lägger till widgeten eller ställer in bokning, eller be mig **uppgradera eller nedgradera din plan** (jag ber alltid dig bekräfta först).¦Hei! Olen Crescelo-avustajasi. Tunnen käyttöönotto-oppaat ja **tilisi**: kysy pakettisi ja käytön tilasta, palveluntarjoajan yhdistämisestä, widgetin lisäämisestä tai varausten määrittämisestä, tai pyydä minua **päivittämään tai alentamaan pakettisi** (pyydän aina vahvistuksesi ensin).¦Ciao! Sono il tuo assistente Crescelo. Conosco le guide alla configurazione e **il tuo account**: chiedimi del tuo piano e dell'utilizzo, di come collegare un provider, aggiungere il widget o configurare le prenotazioni, oppure chiedimi di **passare a un piano superiore o inferiore** (ti chiederò sempre prima una conferma).¦¡Hola! Soy tu asistente de Crescelo. Conozco las guías de configuración y **tu cuenta**: pregunta por tu plan y tu uso, cómo conectar un proveedor, añadir el widget o configurar las reservas, o pídeme que **suba o baje tu plan** (siempre te pediré confirmación antes).
+1228¦En personal har fått besked. Någon ansluter till chatten inom kort.¦Henkilökunnalle on ilmoitettu. Joku liittyy chattiin pian.¦Un operatore è stato avvisato. Qualcuno si unirà presto alla chat.¦Se ha avisado a una persona. Alguien se unirá al chat en breve.
+1229¦Minimera¦Pienennä¦Riduci a icona¦Minimizar
+1230¦Online nu¦Paikalla nyt¦Online ora¦En línea ahora
+1231¦Öppna Crescelos AI-assistent – omedelbara svar och bokning¦Avaa Crescelon tekoälyavustaja – välittömät vastaukset ja varaus¦Apri l'assistente IA di Crescelo: risposte immediate e prenotazione¦Abrir el asistente de IA de Crescelo: respuestas inmediatas y reservas
+1232¦Skicka meddelande¦Lähetä viesti¦Invia messaggio¦Enviar mensaje
+1233¦Börja om¦Aloita alusta¦Ricomincia¦Empezar de nuevo
+1234¦Prata med en person¦Puhu ihmisen kanssa¦Parla con un operatore¦Hablar con una persona
+1235¦Tänker¦Mietitään¦Sta pensando¦Pensando
+1236¦Prova att fråga¦Kokeile kysyä¦Prova a chiedere¦Prueba a preguntar
+1237¦Arbetar…¦Työstetään…¦Elaborazione in corso…¦Trabajando…
+1238¦Boka en tid¦Varaa aika¦Prenota un orario¦Reserva una hora
+1239¦Bokad via Crescelo-assistenten¦Varattu Crescelo-avustajan kautta¦Prenotato dall'assistente Crescelo¦Reservado desde el asistente de Crescelo
+1240¦Bokar…¦Varataan…¦Prenotazione in corso…¦Reservando…
+1241¦Välj dag och tid¦Valitse päivä ja aika¦Scegli giorno e ora¦Elige día y hora
+1242¦Du är bokad¦Varauksesi on tehty¦La tua prenotazione è confermata¦Tu reserva está hecha
+1243¦Din e-post¦Sähköpostisi¦La tua e-mail¦Tu correo electrónico
+1244¦Din e-post för bekräftelsen¦Sähköpostiosoitteesi vahvistusta varten¦La tua e-mail per la conferma¦Tu correo electrónico para la confirmación
+1245¦% avhopp¦% poistuu¦% di abbandono¦% de abandono
+1246¦% andel återkommande kunder¦% toistuvien asiakkaiden osuus¦% di clienti ricorrenti¦% de clientes recurrentes
+1247¦Samtalsaktivitet senaste 7 dagarna¦Keskusteluaktiivisuus viimeisten 7 päivän ajalta¦Attività delle conversazioni negli ultimi 7 giorni¦Actividad de conversaciones en los últimos 7 días
+1248¦Aktiva nu¦Aktiiviset nyt¦Attivi ora¦Activos ahora
+1249¦aktiv(a) tjänst(er)¦aktiivista palvelua¦servizio/i attivo/i¦servicio(s) activo(s)
+1250¦AI söker kontinuerligt igenom besökarnas samtal efter frustration, brådskande eskaleringar eller positiv nöjdhet.¦Tekoäly käy jatkuvasti läpi kävijöiden keskusteluja turhautumisen, kiireellisten eskalointien tai positiivisen tyytyväisyyden varalta.¦L'IA analizza di continuo le conversazioni dei visitatori alla ricerca di frustrazione, escalation urgenti o soddisfazione positiva.¦La IA analiza continuamente las conversaciones de los visitantes en busca de frustración, escaladas urgentes o satisfacción positiva.
+1251¦AI-lösning¦Ratkaistu tekoälyllä¦Risoluzione IA¦Resolución por IA
+1252¦Genomsnittspris¦Keskihinta¦Prezzo medio¦Precio medio
+1253¦Snitt $¦Keskim. $¦Media $¦Media $
+1254¦Genomsnittligt bokningsvärde¦Varauksen keskiarvo¦Valore medio della prenotazione¦Valor medio de la reserva
+1255¦Väntar på bekräftelse¦Odottaa vahvistusta¦In attesa di conferma¦A la espera de confirmación
+1256¦Bokade tjänster och bokningsresultat¦Varatut palvelut ja varausten tulokset¦Servizi prenotati e andamento degli appuntamenti¦Servicios reservados y rendimiento de las citas
+1257¦Antal bokningar¦Varausten määrä¦Numero di prenotazioni¦Número de reservas
+1258¦Bokningsintäkter¦Varaustulot¦Ricavi dalle prenotazioni¦Ingresos por reservas
+1259¦Andel av bokningar¦Varausosuus¦Quota di prenotazioni¦Cuota de reservas
+1260¦Bokningar¦Varaukset¦Prenotazioni¦Reservas
+1261¦Utveckling av bokningar och intäkter¦Varausten ja tulojen kehitys¦Andamento di prenotazioni e ricavi¦Evolución de reservas e ingresos
+1262¦Bokningar och tjänsteresultat¦Varaukset ja palvelujen tulokset¦Prenotazioni e rendimento dei servizi¦Reservas y rendimiento de los servicios
+1263¦Bokningar:¦Varaukset:¦Prenotazioni:¦Reservas:
+1264¦Fördelning av kundbokningar, bokningsandel och intäkter per tjänst.¦Asiakasvarausten määrä, varausosuus ja tulot palveluittain.¦Ripartizione del volume di appuntamenti dei clienti, quota di prenotazioni e ricavi per servizio.¦Desglose del volumen de citas de clientes, cuota de reservas e ingresos por servicio.
+1265¦Avbokad¦Peruttu¦Annullato¦Cancelada
+1266¦Fångade leads¦Tallennetut liidit¦Lead acquisiti¦Leads captados
+1267¦Påbörjade chattsessioner¦Aloitetut chat-istunnot¦Sessioni di chat avviate¦Sesiones de chat iniciadas
+1268¦Chatt till bokning¦Chatista varaukseen¦Da chat a prenotazione¦De chat a reserva
+1269¦Konverteringstratt från chatt till bokning¦Chatista varaukseen -konversiosuppilo¦Funnel di conversione da chat a prenotazione¦Embudo de conversión de chat a reserva
+1270¦Tratt från chatt till bokning¦Chatista varaukseen -suppilo¦Funnel da chat a prenotazione¦Embudo de chat a reserva
+1271¦Chattbottens engagemang och AI-ton¦Chatbotin sitouttaminen ja tekoälyn sävy¦Coinvolgimento del chatbot e tono dell'IA¦Interacción del chatbot y tono de la IA
+1272¦Kund¦Asiakas¦Cliente¦Cliente
+1273¦Kund- och bokningsregister¦Asiakas- ja varausrekisteri¦CRM clienti e prenotazioni¦CRM de clientes y reservas
+1274¦Kund- och bokningsregister, förteckning¦Asiakas- ja varausrekisterin hakemisto¦Elenco CRM di clienti e prenotazioni¦Directorio CRM de clientes y reservas
+1275¦kundprofil(er) med uppföljning av bokningsfrekvens och utgifter.¦asiakasprofiilia varaustiheyden ja kulutuksen seurannalla.¦profilo/i cliente con monitoraggio di frequenza delle prenotazioni e spesa.¦perfil(es) de cliente con seguimiento de la frecuencia de reservas y del gasto.
+1276¦kundprofiler¦asiakasprofiilia¦profili cliente¦perfiles de cliente
+1277¦Genomförd¦Toteutunut¦Completato¦Completada
+1278¦Bekräftade bokningar¦Vahvistetut varaukset¦Prenotazioni confermate¦Reservas confirmadas
+1279¦Samtal¦Keskustelut¦Conversazioni¦Conversaciones
+1280¦Samtal och meddelanden¦Keskustelut ja viestit¦Conversazioni e messaggi¦Conversaciones y mensajes
+1281¦Samtal:¦Keskustelut:¦Conversazioni:¦Conversaciones:
+1282¦Konverteringsgrad¦Konversioprosentti¦Tasso di conversione¦Tasa de conversión
+1283¦Daglig chattbotaktivitet¦Päivittäinen chatbot-keskusteluaktiivisuus¦Attività giornaliera delle conversazioni del chatbot¦Actividad diaria de conversaciones del chatbot
+1284¦Daglig samtalsvolym och frekvens av fångade leads för din assistent.¦Avustajasi päivittäinen keskusteluvolyymi ja liidien keruutiheys.¦Volume giornaliero delle conversazioni e frequenza di acquisizione dei lead del tuo assistente.¦Volumen diario de conversaciones y frecuencia de captación de leads de tu asistente.
+1285¦Dagliga samtal¦Päivittäiset keskustelut¦Conversazioni giornaliere¦Conversaciones diarias
+1286¦Daglig utveckling av användarsamtal, inkommande förfrågningar och fångade leads.¦Käyttäjäkeskustelujen, saapuvien tiedustelujen ja tallennettujen liidien päivittäinen kehitys.¦Andamento giornaliero di conversazioni degli utenti, richieste in arrivo e lead acquisiti.¦Evolución diaria de las conversaciones de los usuarios, las consultas entrantes y los leads captados.
+1287¦Dag 1¦Päivä 1¦Giorno 1¦Día 1
+1288¦Dag 2¦Päivä 2¦Giorno 2¦Día 2
+1289¦Dag 3¦Päivä 3¦Giorno 3¦Día 3
+1290¦Dag 4¦Päivä 4¦Giorno 4¦Día 4
+1291¦Dag 5¦Päivä 5¦Giorno 5¦Día 5
+1292¦Dag 6¦Päivä 6¦Giorno 6¦Día 6
+1293¦Dag 7¦Päivä 7¦Giorno 7¦Día 7
+1294¦Dagar¦Päivää¦Giorni¦Días
+1295¦Engagerade förfrågningar (flera turer)¦Sitoutuneet tiedustelut (useita vuoroja)¦Richieste con coinvolgimento (più turni)¦Consultas con interacción (varios turnos)
+1296¦Exportera analysdata som CSV¦Vie analytiikkatiedot CSV-tiedostona¦Esporta i dati analitici in CSV¦Exportar los datos analíticos como CSV
+1297¦Exportera CSV¦Vie CSV¦Esporta CSV¦Exportar CSV
+1298¦flaggade kunskapsluckor¦merkittyä tietoaukkoa¦lacune segnalate¦lagunas señaladas
+1299¦Genomförda bokningar¦Toteutuneet varaukset¦Appuntamenti svolti¦Citas cumplidas
+1300¦Allmän konsultation¦Yleinen konsultaatio¦Consulenza generale¦Consulta general
+1301¦Håll muspekaren över en dagsstapel för detaljer¦Siirrä hiiri minkä tahansa päiväpylvään päälle nähdäksesi tarkemmat tiedot¦Passa il mouse su una barra del giorno per il dettaglio¦Pasa el ratón por cualquier barra de día para ver el detalle
+1302¦Motor för kunskapsluckor¦Tietoaukkojen moottori¦Motore delle lacune di conoscenza¦Motor de lagunas de conocimiento
+1303¦Senaste 7 dagarna¦Viimeiset 7 päivää¦Ultimi 7 giorni¦Últimos 7 días
+1304¦Senaste besök¦Viimeisin käynti¦Ultima visita¦Última visita
+1305¦Insamlade leaduppgifter¦Tallennetut liiditiedot¦Dettagli del lead acquisiti¦Datos del lead captados
+1306¦Leads och förfrågningar¦Liidit ja tiedustelut¦Lead e richieste¦Leads y consultas
+1307¦Leads:¦Liidit:¦Lead:¦Leads:
+1308¦Meddelanden:¦Viestit:¦Messaggi:¦Mensajes:
+1309¦Neutral¦Neutraali¦Neutro¦Neutral
+1310¦Inga bokningar har registrerats för det valda tidsintervallet ännu.¦Valitulle ajanjaksolle ei ole vielä kirjattu varauksia.¦Nessuna prenotazione registrata per l'intervallo di tempo selezionato.¦Todavía no hay reservas registradas en el intervalo de tiempo seleccionado.
+1311¦Inga kundprofiler matchar dina sökkriterier.¦Mikään asiakasprofiili ei vastaa hakuehtojasi.¦Nessun profilo cliente corrisponde ai criteri di ricerca.¦Ningún perfil de cliente coincide con tus criterios de búsqueda.
+1312¦Inga samtalshändelser har registrerats för det valda tidsintervallet ännu.¦Valitulle ajanjaksolle ei ole vielä kirjattu keskustelutapahtumia.¦Nessun evento di conversazione registrato per l'intervallo di tempo selezionato.¦Todavía no hay eventos de conversación registrados en el intervalo de tiempo seleccionado.
+1313¦Inga tjänstebokningar har registrerats ännu.¦Palvelovarauksia ei ole vielä kirjattu.¦Nessuna prenotazione di servizi registrata finora.¦Todavía no hay reservas de servicios registradas.
+1314¦Inga tjänster har bokats ännu. Bokningar som görs via din chattbot visas här.¦Palveluita ei ole vielä varattu. Chatbotisi kautta tehdyt varaukset näkyvät tässä.¦Nessun servizio è stato ancora prenotato. Gli appuntamenti fissati tramite il tuo chatbot compariranno qui.¦Todavía no se ha reservado ningún servicio. Las citas programadas a través de tu chatbot aparecerán aquí.
+1315¦Väntande¦Odottaa¦In attesa¦Pendiente
+1316¦Intäkter i pipeline ($)¦Putken tulot ($)¦Ricavi in pipeline ($)¦Ingresos en el embudo ($)
+1317¦Positiv¦Positiivinen¦Positivo¦Positivo
+1318¦Föredragna tjänster¦Suosikkipalvelut¦Servizi preferiti¦Servicios preferidos
+1319¦frågor som för närvarande är flaggade där AI:n hade låg träffsäkerhet i sökningen.¦kysymystä on tällä hetkellä merkitty, joissa tekoälyn haun luottamustaso oli alhainen.¦domande attualmente segnalate in cui l'IA ha avuto una bassa affidabilità nel recupero.¦consultas señaladas actualmente en las que la IA tuvo poca confianza en la recuperación.
+1320¦Period: senaste¦Jakso: viimeiset¦Periodo: ultimi¦Periodo: últimos
+1321¦Tonanalys med AI i realtid¦Reaaliaikainen sävyanalyysi tekoälyllä¦IA del tono in tempo reale¦IA de tono en tiempo real
+1322¦Uppdatera¦Päivitä¦Aggiorna¦Actualizar
+1323¦Ombokad / ogiltig¦Siirretty / mitätöity¦Riprogrammato / annullato¦Reprogramada / anulada
+1324¦Intäkter:¦Tulot:¦Ricavi:¦Ingresos:
+1325¦Schemalagd och aktiv¦Aikataulutettu ja aktiivinen¦Pianificato e attivo¦Programada y activa
+1326¦Sök kunder på namn, e-post, telefon eller tjänst...¦Hae asiakkaita nimellä, sähköpostilla, puhelimella tai palvelulla...¦Cerca clienti per nome, e-mail, telefono o servizio...¦Busca clientes por nombre, correo, teléfono o servicio...
+1327¦Bokningsresultat per tjänst¦Palvelukohtaiset varaustulokset¦Rendimento delle prenotazioni per servizio¦Rendimiento de reservas por servicio
+1328¦Tjänstens namn¦Palvelun nimi¦Nome del servizio¦Nombre del servicio
+1329¦Status¦Tila¦Stato¦Estado
+1330¦Totalt antal bokningar¦Varaukset yhteensä¦Prenotazioni totali¦Reservas totales
+1331¦Total omsättning¦Tulot yhteensä¦Ricavi totali¦Ingresos totales
+1332¦Total utgift¦Kulutus yhteensä¦Spesa totale¦Gasto total
+1333¦Följ chattbotens samtal, användarengagemang och tidsbokningar i realtid.¦Seuraa chatbotin keskusteluja, käyttäjien sitoutumista ja ajanvarauksia reaaliajassa.¦Monitora in tempo reale le conversazioni del chatbot, il coinvolgimento degli utenti e gli appuntamenti prenotati.¦Sigue en tiempo real las conversaciones del chatbot, la interacción de los usuarios y las reservas de citas.
+1334¦Följ intäkter från bekräftade kundbokningar över tid.¦Seuraa vahvistetuista asiakasvarauksista syntyviä tuloja ajan mittaan.¦Monitora nel tempo i ricavi generati dagli appuntamenti confermati dei clienti.¦Sigue a lo largo del tiempo los ingresos generados por las citas confirmadas de los clientes.
+1335¦Följer besökarnas väg från första chattsessionen till bekräftad bokning.¦Seuraa kävijöiden etenemistä ensimmäisestä chat-istunnosta vahvistettuun varaukseen.¦Segue il percorso del visitatore dalla prima sessione di chat fino all'appuntamento confermato.¦Sigue el recorrido del visitante desde su primera sesión de chat hasta la cita confirmada.
+1336¦Brådskande¦Kiireellinen¦Urgente¦Urgente
+1337¦Brådskande / eskalerad¦Kiireellinen / eskaloitu¦Urgente / escalato¦Urgente / escalado
+1338¦Visa åtgärder för kunskapsluckor →¦Näytä tietoaukkojen ratkaisu →¦Vedi la risoluzione delle lacune →¦Ver la resolución de lagunas →
+1339¦Analys av besökare som hoppar av¦Poistuvien kävijöiden analyysi¦Analisi dell'abbandono dei visitatori¦Análisis del abandono de visitantes
+1340¦Analys av besökarnas sinnesstämning¦Kävijöiden tunnelma-analyysi¦Analisi del sentiment dei visitatori¦Análisis del sentimiento de los visitantes
+1341¦> Klistra in URL > Välj uppdateringsintervall.¦> Liitä URL > Valitse päivitysväli.¦> Incolla l'URL > Scegli l'intervallo di aggiornamento.¦> Pega la URL > Elige el intervalo de actualización.
+1342¦> Klistra in URL > Klicka på Importera.¦> Liitä URL > Napsauta Tuo.¦> Incolla l'URL > Fai clic su Importa.¦> Pega la URL > Haz clic en Importar.
+1343¦> Klistra in flödets URL och klicka på Lägg till kalender.¦> Liitä syötteen URL ja napsauta Lisää kalenteri.¦> Incolla l'URL del feed e fai clic su Aggiungi calendario.¦> Pega la URL del feed y haz clic en Añadir calendario.
+1344¦Kundkontakt med ett tryck¦Asiakasyhteys yhdellä napautuksella¦Contatto con il cliente con un tocco¦Contacto con el cliente con un toque
+1345¦Tvåvägssynk i realtid¦Kaksisuuntainen reaaliaikainen synkronointi¦Sincronizzazione bidirezionale dal vivo¦Sincronización bidireccional en vivo
+1346¦Åtgärder¦Toiminnot¦Azioni¦Acciones
+1347¦Lägg till kalender¦Lisää kalenteri¦Aggiungi calendario¦Añadir calendario
+1348¦Alla tider¦Kaikki ajat¦Tutti gli slot¦Todos los huecos
+1349¦Alla bokningar genom tiderna¦Kaikki varaukset koko ajalta¦Tutti gli appuntamenti di sempre¦Todas las citas de todos los tiempos

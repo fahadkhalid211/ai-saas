@@ -1,5 +1,7 @@
 'use client';
 
+import { T, useT } from '@/lib/i18n/context';
+import { A } from '@/components/i18n/A';
 import { useCallback, useEffect, useState } from 'react';
 
 const KEY = 'crescelo_cookie_consent';
@@ -58,6 +60,7 @@ function clearAnalyticsCookies() {
  * "Accept"; the choice is stored on this device and can be changed any time from "Cookie settings" in the footer.
  */
 export function CookieConsent() {
+  const __t = useT();
   const [choice, setChoice] = useState<Choice | null>(null);
   const [open, setOpen] = useState(false);
 
@@ -96,14 +99,14 @@ export function CookieConsent() {
   return (
     <div
       role="dialog"
-      aria-label="Cookie choices"
+      aria-label={__t("Cookie choices")}
       className="fixed bottom-4 left-4 right-4 sm:right-auto sm:max-w-md z-[99998] rounded-2xl border border-white/10 bg-[#1f1e1d] p-4 sm:p-5 text-[#e8e5dc] shadow-[0_20px_60px_rgba(0,0,0,0.5)]"
       style={{ fontFamily: 'system-ui, -apple-system, Segoe UI, sans-serif' }}
     >
-      <p className="text-sm font-semibold text-[#faf9f5]">Cookies</p>
+      <p className="text-sm font-semibold text-[#faf9f5]"><T>Cookies</T></p>
       <p className="mt-1.5 text-[13px] leading-relaxed text-[#c9c6bc]">
-        We always use the cookies needed to sign you in and keep the site secure. With your permission we also use Google Analytics to count visits and see which pages help. We never use advertising cookies.{' '}
-        <a href="/cookies" className="underline">Cookie Policy</a>
+        <T>We always use the cookies needed to sign you in and keep the site secure. With your permission we also use Google Analytics to count visits and see which pages help. We never use advertising cookies.</T>{' '}
+        <A href="/cookies" className="underline"><T>Cookie Policy</T></A>
       </p>
       <div className="mt-3.5 flex flex-wrap gap-2">
         <button
@@ -111,18 +114,18 @@ export function CookieConsent() {
           onClick={() => decide('granted')}
           className="rounded-xl bg-[#abff44] px-4 py-2 text-[13px] font-semibold text-[#08251a] hover:brightness-105 cursor-pointer"
         >
-          Accept analytics
+          <T>Accept analytics</T>
         </button>
         <button
           type="button"
           onClick={() => decide('denied')}
           className="rounded-xl border border-white/25 bg-white/[0.06] px-4 py-2 text-[13px] font-semibold text-[#faf9f5] hover:bg-white/[0.1] cursor-pointer"
         >
-          Reject
+          <T>Reject</T>
         </button>
         {choice !== null && (
           <button type="button" onClick={() => setOpen(false)} className="px-2 py-2 text-[13px] text-[#a19f96] underline cursor-pointer">
-            Close
+            <T>Close</T>
           </button>
         )}
       </div>
@@ -134,7 +137,7 @@ export function CookieConsent() {
 export function CookieSettingsLink({ className }: { className?: string }) {
   return (
     <button type="button" className={className} data-cookie-settings>
-      Cookie settings
+      <T>Cookie settings</T>
     </button>
   );
 }

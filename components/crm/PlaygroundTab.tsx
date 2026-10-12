@@ -1,5 +1,6 @@
 'use client';
 
+import { T, useT } from '@/lib/i18n/context';
 import React from 'react';
 import {
   Globe,
@@ -63,6 +64,7 @@ export const PlaygroundTab: React.FC<PlaygroundTabProps> = ({
   activeCitations,
   onRequireApiKey,
 }) => {
+  const __t = useT();
   const hasKey = hasConnectedAiKey(activeAssistant);
 
   const onSendAttempt = () => {
@@ -84,9 +86,9 @@ export const PlaygroundTab: React.FC<PlaygroundTabProps> = ({
     <div className="h-full flex flex-col max-w-6xl space-y-4 mx-auto">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Test Your Assistant</h1>
+                    <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white"><T>Test Your Assistant</T></h1>
                     <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                       Chat with your assistant in real time to test answers before your customers see them.
+                       <T>Chat with your assistant in real time to test answers before your customers see them.</T>
                      </p>
                   </div>
                   <button
@@ -100,7 +102,7 @@ export const PlaygroundTab: React.FC<PlaygroundTabProps> = ({
                     }
                     className="text-xs font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-3 py-1.5 rounded-lg shadow-xs transition"
                   >
-                    Clear Chat
+                    <T>Clear Chat</T>
                   </button>
                 </div>
 
@@ -113,7 +115,7 @@ export const PlaygroundTab: React.FC<PlaygroundTabProps> = ({
                         <div className="flex items-center gap-2">
                           <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0" />
                           <span>
-                            <strong>Groq API Key Required:</strong> Connect your free Groq API key (14,400 free req/day, $0 compute) to test chat.
+                            <strong><T>Groq API Key Required:</T></strong> <T>Connect your free Groq API key (14,400 free req/day, $0 compute) to test chat.</T>
                           </span>
                         </div>
                         <button
@@ -121,7 +123,7 @@ export const PlaygroundTab: React.FC<PlaygroundTabProps> = ({
                           onClick={() => onRequireApiKey?.('AI Playground Chat')}
                           className="inline-flex items-center justify-center gap-1.5 px-3 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs transition cursor-pointer shrink-0 shadow-xs"
                         >
-                          Connect Free Key
+                          <T>Connect Free Key</T>
                         </button>
                       </div>
                     )}
@@ -163,8 +165,8 @@ export const PlaygroundTab: React.FC<PlaygroundTabProps> = ({
                                         <div className="space-y-1.5 min-w-0">
                                           <p className="font-semibold text-amber-900 dark:text-amber-200">
                                             {notice.kind === 'missing_provider'
-                                              ? 'No AI engine is connected yet'
-                                              : "This isn't a real answer — the AI engine had a problem"}
+                                              ? <T>{'No AI engine is connected yet'}</T>
+                                              : <T>{"This isn't a real answer — the AI engine had a problem"}</T>}
                                           </p>
                                           <p className="text-[11px] leading-relaxed text-amber-800/90 dark:text-amber-200/80 whitespace-pre-wrap">{notice.detail}</p>
                                           <button
@@ -172,7 +174,7 @@ export const PlaygroundTab: React.FC<PlaygroundTabProps> = ({
                                             onClick={() => onRequireApiKey?.('AI Playground Chat')}
                                             className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-[11px] px-2.5 py-1 cursor-pointer"
                                           >
-                                            Connect your API key
+                                            <T>Connect your API key</T>
                                           </button>
                                         </div>
                                       </div>
@@ -193,7 +195,7 @@ export const PlaygroundTab: React.FC<PlaygroundTabProps> = ({
                               return (
                                 <div className="mt-2.5 pt-2 border-t border-slate-200 dark:border-slate-700 text-[11px]">
                                   <div className="font-semibold text-slate-600 dark:text-slate-400 mb-1 flex items-center gap-1">
-                                    <span className="flex items-center gap-1"><Globe className="h-3 w-3 text-sky-500" /> Web Sources:</span>
+                                    <span className="flex items-center gap-1"><Globe className="h-3 w-3 text-sky-500" /> <T>Web Sources:</T></span>
                                   </div>
                                   <div className="flex flex-wrap gap-1.5">
                                     {webCitations.map((c: any, ci: number) => (
@@ -229,7 +231,7 @@ export const PlaygroundTab: React.FC<PlaygroundTabProps> = ({
                           ) : (
                             <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400">
                               <span className="h-2 w-2 rounded-full bg-blue-600 animate-pulse"></span>
-                              <span>Retrieving context &amp; generating streaming answer...</span>
+                              <span><T>Retrieving context &amp; generating streaming answer...</T></span>
                             </div>
                           )}
                         </div>
@@ -258,8 +260,8 @@ export const PlaygroundTab: React.FC<PlaygroundTabProps> = ({
                         <div className="flex items-center justify-between p-2 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs">
                           <div className="flex items-center gap-2 min-w-0">
                             <FileText className="h-3.5 w-3.5 text-blue-600 shrink-0" />
-                            <span className="font-semibold truncate max-w-[200px] text-slate-800 dark:text-slate-200">{playgroundAttachment.name}</span>
-                            <span className="text-[10px] text-slate-400 font-mono">({Math.round(playgroundAttachment.size / 1024)} KB)</span>
+                            <span className="font-semibold truncate max-w-[200px] text-slate-800 dark:text-slate-200"><T>{playgroundAttachment.name}</T></span>
+                            <span className="text-[10px] text-slate-400 font-mono">({Math.round(playgroundAttachment.size / 1024)} <T>KB)</T></span>
                           </div>
                           <button
                             type="button"
@@ -301,7 +303,7 @@ export const PlaygroundTab: React.FC<PlaygroundTabProps> = ({
                         <button
                           type="button"
                           onClick={() => playgroundFileInputRef.current?.click()}
-                          title="Attach file to chat"
+                          title={__t("Attach file to chat")}
                           className="p-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition cursor-pointer shrink-0"
                         >
                           <Paperclip className="h-4 w-4" />
@@ -320,7 +322,7 @@ export const PlaygroundTab: React.FC<PlaygroundTabProps> = ({
                       </button>
                       <input
                         type="text"
-                        placeholder="Type a message to test your knowledge base..."
+                        placeholder={__t("Type a message to test your knowledge base...")}
                         value={inputQuery}
                         onChange={(e) => setInputQuery(e.target.value)}
                         onKeyDown={(e) => {
@@ -334,7 +336,7 @@ export const PlaygroundTab: React.FC<PlaygroundTabProps> = ({
                         className="flex items-center gap-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 px-4 py-2 text-xs font-semibold text-white disabled:opacity-50 transition shadow-xs cursor-pointer"
                       >
                         <Send className="h-3.5 w-3.5" />
-                        <span>Send</span>
+                        <span><T>Send</T></span>
                       </button>
                     </div>
                   </div>
@@ -344,23 +346,23 @@ export const PlaygroundTab: React.FC<PlaygroundTabProps> = ({
                   <div className="border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-900 p-5 space-y-4 flex flex-col justify-between shadow-xs">
                     <div className="space-y-4">
                       <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
-                        <span className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">RAG Inspector</span>
+                        <span className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300"><T>RAG Inspector</T></span>
                         <span className="text-[10px] font-mono font-semibold bg-emerald-50 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 px-1.5 py-0.5 rounded">
-                          Connected
+                          <T>Connected</T>
                         </span>
                       </div>
 
                       <div>
-                        <label className="text-[11px] font-medium text-slate-500 dark:text-slate-400 block mb-1">Active AI Provider</label>
+                        <label className="text-[11px] font-medium text-slate-500 dark:text-slate-400 block mb-1"><T>Active AI Provider</T></label>
                         <div className="p-2.5 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs flex items-center justify-between">
-                          <span className="font-semibold text-slate-900 dark:text-white uppercase font-mono">{activeAssistant?.provider || 'Groq'}</span>
-                          <span className="text-slate-500 dark:text-slate-400 font-mono text-[11px]">{activeAssistant?.modelName || 'openai/gpt-oss-120b'}</span>
+                          <span className="font-semibold text-slate-900 dark:text-white uppercase font-mono">{activeAssistant?.provider || <T>{'Groq'}</T>}</span>
+                          <span className="text-slate-500 dark:text-slate-400 font-mono text-[11px]">{activeAssistant?.modelName || <T>{'openai/gpt-oss-120b'}</T>}</span>
                         </div>
                         <div className="mt-1.5 flex items-center justify-between text-[11px]">
-                          <span className="text-slate-500 dark:text-slate-400">API Key:</span>
+                          <span className="text-slate-500 dark:text-slate-400"><T>API Key:</T></span>
                           {hasKey ? (
                             <span className="text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1">
-                              <CheckCircle2 className="h-3 w-3" /> Connected
+                              <CheckCircle2 className="h-3 w-3" /> <T>Connected</T>
                             </span>
                           ) : (
                             <button
@@ -368,7 +370,7 @@ export const PlaygroundTab: React.FC<PlaygroundTabProps> = ({
                               onClick={() => onRequireApiKey?.('AI Engine')}
                               className="text-amber-600 dark:text-amber-400 font-bold hover:underline flex items-center gap-1 cursor-pointer"
                             >
-                              <AlertTriangle className="h-3 w-3" /> Missing (Connect)
+                              <AlertTriangle className="h-3 w-3" /> <T>Missing (Connect)</T>
                             </button>
                           )}
                         </div>
@@ -376,11 +378,11 @@ export const PlaygroundTab: React.FC<PlaygroundTabProps> = ({
 
                       <div>
                         <label className="text-[11px] font-medium text-slate-500 dark:text-slate-400 block mb-1">
-                          Retrieved Fragments ({activeCitations.length})
+                          <T>Retrieved Fragments (</T>{activeCitations.length})
                         </label>
                         {activeCitations.length === 0 ? (
                           <div className="p-3 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 text-[11px] text-slate-500 dark:text-slate-400 text-center">
-                            Ask a question to see retrieved knowledge chunks and citations here.
+                            <T>Ask a question to see retrieved knowledge chunks and citations here.</T>
                           </div>
                         ) : (
                           <div className="space-y-2 max-h-60 overflow-y-auto">
@@ -414,7 +416,7 @@ export const PlaygroundTab: React.FC<PlaygroundTabProps> = ({
                                         rel="noopener noreferrer"
                                         className="text-sky-600 dark:text-sky-400 hover:underline shrink-0 flex items-center gap-0.5 font-sans font-medium"
                                       >
-                                        <span>Visit</span>
+                                        <span><T>Visit</T></span>
                                         <span className="text-[9px]">↗</span>
                                       </a>
                                     )}
@@ -429,8 +431,8 @@ export const PlaygroundTab: React.FC<PlaygroundTabProps> = ({
                     </div>
 
                     <div className="pt-3 border-t border-slate-200 dark:border-slate-800 text-[11px] text-slate-500 dark:text-slate-400 flex justify-between font-mono">
-                      <span>Vector Dims: <strong>384</strong></span>
-                      <span>Embed Cost: <strong className="text-emerald-600 dark:text-emerald-400">$0.00</strong></span>
+                      <span><T>Vector Dims:</T> <strong>384</strong></span>
+                      <span><T>Embed Cost:</T> <strong className="text-emerald-600 dark:text-emerald-400">$0.00</strong></span>
                     </div>
                   </div>
                 </div>

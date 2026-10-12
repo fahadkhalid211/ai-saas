@@ -1,5 +1,6 @@
 'use client';
 
+import { T, useT } from '@/lib/i18n/context';
 import { SaveButton } from '@/components/ui/SaveButton';
 import React, { useState } from 'react';
 import { CostCapCard } from './CostCapCard';
@@ -147,6 +148,7 @@ export const EngineTab: React.FC<EngineTabProps> = ({
   isSaving,
   activeAssistant,
 }) => {
+  const __t = useT();
   const [showApiKey, setShowApiKey] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [isTesting, setIsTesting] = useState(false);
@@ -208,9 +210,9 @@ export const EngineTab: React.FC<EngineTabProps> = ({
     <div className="max-w-4xl space-y-6 mx-auto">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">AI Settings</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white"><T>AI Settings</T></h1>
           <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
-            Choose which AI answers your customers, and how it should sound. The free option below works fine for most businesses — you can always change this later.
+            <T>Choose which AI answers your customers, and how it should sound. The free option below works fine for most businesses — you can always change this later.</T>
           </p>
         </div>
         <a
@@ -220,7 +222,7 @@ export const EngineTab: React.FC<EngineTabProps> = ({
           className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 hover:bg-blue-100 dark:hover:bg-blue-900/60 px-3 py-1.5 rounded-lg border border-blue-200 dark:border-blue-800 transition shrink-0"
         >
           <BookOpen className="h-3.5 w-3.5" />
-          <span>Help with this page ↗</span>
+          <span><T>Help with this page ↗</T></span>
         </a>
       </div>
 
@@ -228,7 +230,7 @@ export const EngineTab: React.FC<EngineTabProps> = ({
       <div
         className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl border border-emerald-300 dark:border-emerald-800/70 bg-emerald-50/70 dark:bg-emerald-950/30 px-4 py-3"
         role="status"
-        aria-label="Currently active AI"
+        aria-label={__t("Currently active AI")}
       >
         <div className="flex items-center gap-3 min-w-0">
           <span className="relative flex h-2.5 w-2.5 shrink-0">
@@ -236,9 +238,9 @@ export const EngineTab: React.FC<EngineTabProps> = ({
             <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500" />
           </span>
           <div className="min-w-0">
-            <div className="text-xs font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">Answering your customers right now</div>
+            <div className="text-xs font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400"><T>Answering your customers right now</T></div>
             <div className="text-sm font-bold text-slate-900 dark:text-white truncate">
-              {liveGuide.label}
+              <T>{liveGuide.label}</T>
               <span className="font-medium text-slate-600 dark:text-slate-400"> · {liveModel}</span>
             </div>
           </div>
@@ -252,12 +254,12 @@ export const EngineTab: React.FC<EngineTabProps> = ({
                   : 'bg-amber-100 text-amber-900 border-amber-300 dark:bg-amber-900/40 dark:text-amber-300 dark:border-amber-800'
               }`}
             >
-              {liveHasKey ? 'Your key is connected' : 'No key connected yet'}
+              {liveHasKey ? <T>{'Your key is connected'}</T> : <T>{'No key connected yet'}</T>}
             </span>
           )}
           {hasUnsavedProviderChange && (
             <span className="px-2 py-0.5 rounded-md border bg-amber-100 text-amber-900 border-amber-300 dark:bg-amber-900/40 dark:text-amber-300 dark:border-amber-800">
-              Switching to {currentGuide.label} once you save
+              <T>Switching to</T> <T>{currentGuide.label}</T> <T>once you save</T>
             </span>
           )}
         </div>
@@ -268,13 +270,13 @@ export const EngineTab: React.FC<EngineTabProps> = ({
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
-              <span className="font-bold text-slate-900 dark:text-white text-sm">You&apos;re never charged for the AI itself</span>
+              <span className="font-bold text-slate-900 dark:text-white text-sm"><T>You&apos;re never charged for the AI itself</T></span>
               <span className="bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300 font-bold px-2 py-0.5 rounded text-xs border border-blue-200 dark:border-blue-700">
-                No markup
+                <T>No markup</T>
               </span>
             </div>
             <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-              Use the free option below and it costs nothing. Or connect your own account with one of the paid services and pay them their normal price directly — we don&apos;t add anything on top, ever.
+              <T>Use the free option below and it costs nothing. Or connect your own account with one of the paid services and pay them their normal price directly — we don&apos;t add anything on top, ever.</T>
             </p>
           </div>
         </div>
@@ -286,13 +288,13 @@ export const EngineTab: React.FC<EngineTabProps> = ({
           <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
           <div className="space-y-1">
             <div className="font-bold text-amber-900 dark:text-amber-200">
-              Connect a key before this can talk to customers
+              <T>Connect a key before this can talk to customers</T>
             </div>
             <p className="text-amber-900/90 dark:text-amber-300/90 text-sm leading-relaxed">
-              It can&apos;t answer questions or be tested until then.
+              <T>It can&apos;t answer questions or be tested until then.</T>
               {liveProviderId === 'groq'
-                ? ' Groq is free, up to 14,400 replies a day, and does not ask for a card.'
-                : ''} Paste your key below, then click &ldquo;Save&rdquo;.
+                ? <T>{' Groq is free, up to 14,400 replies a day, and does not ask for a card.'}</T>
+                : ''} <T>Paste your key below, then click &ldquo;Save&rdquo;.</T>
             </p>
             {liveGuide.consoleUrl && (
               <div className="pt-1.5">
@@ -302,7 +304,7 @@ export const EngineTab: React.FC<EngineTabProps> = ({
                   rel="noreferrer"
                   className="inline-flex items-center gap-1.5 font-bold text-amber-900 dark:text-amber-200 bg-amber-100 dark:bg-amber-900/60 hover:bg-amber-200 dark:hover:bg-amber-900 px-2.5 py-1 rounded-lg border border-amber-300 dark:border-amber-700 transition"
                 >
-                  <span>{liveGuide.consoleLabel || 'Get a free key'} ↗</span>
+                  <span>{liveGuide.consoleLabel || <T>{'Get a free key'}</T>} ↗</span>
                 </a>
               </div>
             )}
@@ -313,8 +315,8 @@ export const EngineTab: React.FC<EngineTabProps> = ({
       {/* Provider Selection Cards */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Choose which AI answers your customers</label>
-          <span className="text-xs text-slate-500 dark:text-slate-500">You can change this any time</span>
+          <label className="text-sm font-semibold text-slate-700 dark:text-slate-300"><T>Choose which AI answers your customers</T></label>
+          <span className="text-xs text-slate-500 dark:text-slate-500"><T>You can change this any time</T></span>
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           {[
@@ -357,7 +359,7 @@ export const EngineTab: React.FC<EngineTabProps> = ({
               >
                 <div>
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-slate-900 dark:text-white">{prov.label}</span>
+                    <span className="text-xs font-bold text-slate-900 dark:text-white"><T>{prov.label}</T></span>
                     <span
                       className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${
                         prov.tag.includes('FASTEST')
@@ -369,7 +371,7 @@ export const EngineTab: React.FC<EngineTabProps> = ({
                     </span>
                   </div>
                   <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1.5 leading-snug">
-                    {prov.desc}
+                    <T>{prov.desc}</T>
                   </p>
                 </div>
 
@@ -382,7 +384,7 @@ export const EngineTab: React.FC<EngineTabProps> = ({
                     className="inline-flex items-center gap-1 text-[10.5px] font-semibold text-blue-600 dark:text-blue-400 hover:underline mt-2.5 pt-1.5 border-t border-slate-100 dark:border-slate-800/80"
                   >
                     <BookOpen className="h-3 w-3 shrink-0" />
-                    <span>Setup Guide ↗</span>
+                    <span><T>Setup Guide ↗</T></span>
                   </a>
                 )}
               </div>
@@ -418,7 +420,7 @@ export const EngineTab: React.FC<EngineTabProps> = ({
           <div className="space-y-2 w-full">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <p className="font-bold text-sm flex items-center gap-2">
-                <span>{currentGuide.tagline}</span>
+                <span><T>{currentGuide.tagline}</T></span>
                 <span className="px-2 py-0.5 rounded text-[10px] font-bold border border-current opacity-85">
                   {currentGuide.badge}
                 </span>
@@ -430,12 +432,12 @@ export const EngineTab: React.FC<EngineTabProps> = ({
                 className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-600 dark:text-blue-400 hover:underline"
               >
                 <BookOpen className="h-3.5 w-3.5" />
-                <span>{currentGuide.actionText} ↗</span>
+                <span><T>{currentGuide.actionText}</T> ↗</span>
               </a>
             </div>
 
             <p className="text-slate-600 dark:text-slate-300 text-[11.5px] leading-relaxed">
-              {currentGuide.summary}
+              <T>{currentGuide.summary}</T>
             </p>
 
             <div className="flex flex-wrap items-center gap-2 pt-1">
@@ -446,7 +448,7 @@ export const EngineTab: React.FC<EngineTabProps> = ({
                   rel="noreferrer"
                   className="inline-flex items-center gap-1.5 text-xs font-semibold text-white bg-slate-900 hover:bg-slate-800 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white px-3 py-1.5 rounded-lg transition shadow-xs"
                 >
-                  <span>{currentGuide.consoleLabel || 'Open Console'}</span>
+                  <span>{currentGuide.consoleLabel || <T>{'Open Console'}</T>}</span>
                   <ExternalLink className="h-3 w-3" />
                 </a>
               )}
@@ -457,7 +459,7 @@ export const EngineTab: React.FC<EngineTabProps> = ({
                 className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition"
               >
                 <BookOpen className="h-3 w-3" />
-                <span>View Full Step-by-Step Connection Guide</span>
+                <span><T>View Full Step-by-Step Connection Guide</T></span>
                 <ExternalLink className="h-2.5 w-2.5 opacity-60" />
               </a>
             </div>
@@ -474,12 +476,12 @@ export const EngineTab: React.FC<EngineTabProps> = ({
               <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
                 <span>
                   {formData.provider === 'auto_free'
-                    ? 'Free Tier API Key (Optional)'
-                    : `${(formData.provider || 'Provider').toUpperCase()} API Key`}
+                    ? <T>{'Free Tier API Key (Optional)'}</T>
+                    : __t("{n1} API Key", { n1: (formData.provider || 'Provider').toUpperCase() })}
                 </span>
                 {formData.provider !== 'auto_free' && (
                   <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-200 dark:border-emerald-800">
-                    Wholesale Direct Billing (0% Markup)
+                    <T>Wholesale Direct Billing (0% Markup)</T>
                   </span>
                 )}
               </label>
@@ -492,7 +494,7 @@ export const EngineTab: React.FC<EngineTabProps> = ({
                   className="inline-flex items-center gap-1.5 text-[11px] font-bold text-blue-600 dark:text-blue-400 hover:underline"
                 >
                   <BookOpen className="h-3.5 w-3.5 text-blue-500" />
-                  <span>Here&apos;s how to get your {currentGuide.label} key (Guide ↗)</span>
+                  <span><T>Here&apos;s how to get your</T> <T>{currentGuide.label}</T> <T>key (Guide ↗)</T></span>
                 </a>
               )}
             </div>
@@ -519,8 +521,8 @@ export const EngineTab: React.FC<EngineTabProps> = ({
             </div>
             <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
               {formData.provider === 'auto_free'
-                ? 'Zero-cost failover automatically tests your key with Groq, then Gemini, and falls back to local Ollama.'
-                : 'Your API key is securely encrypted at rest using AES-256-GCM and never shared or logged.'}
+                ? <T>{'Zero-cost failover automatically tests your key with Groq, then Gemini, and falls back to local Ollama.'}</T>
+                : <T>{'Your API key is securely encrypted at rest using AES-256-GCM and never shared or logged.'}</T>}
             </p>
             {/* Test Connection Row */}
             <div className="flex flex-wrap items-center gap-3 mt-2.5">
@@ -535,7 +537,7 @@ export const EngineTab: React.FC<EngineTabProps> = ({
                 ) : (
                   <Zap className="h-3.5 w-3.5 text-blue-500" />
                 )}
-                <span>{isTesting ? 'Testing…' : 'Test Connection'}</span>
+                <span>{isTesting ? <T>{'Testing…'}</T> : <T>{'Test Connection'}</T>}</span>
               </button>
               {testResult && (
                 <span
@@ -550,7 +552,7 @@ export const EngineTab: React.FC<EngineTabProps> = ({
                   ) : (
                     <AlertTriangle className="h-3.5 w-3.5" />
                   )}
-                  {testResult.message}
+                  <T>{testResult.message}</T>
                 </span>
               )}
             </div>
@@ -563,7 +565,7 @@ export const EngineTab: React.FC<EngineTabProps> = ({
           <div>
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 mb-1.5">
               <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                Ollama Server Endpoint URL
+                <T>Ollama Server Endpoint URL</T>
               </label>
               <a
                 href="/support/ai-connectors/ollama"
@@ -572,18 +574,18 @@ export const EngineTab: React.FC<EngineTabProps> = ({
                 className="inline-flex items-center gap-1.5 text-[11px] font-bold text-amber-700 dark:text-amber-400 hover:underline"
               >
                 <BookOpen className="h-3.5 w-3.5" />
-                <span>Here&apos;s how to set up local Ollama &amp; configure CORS (Guide ↗)</span>
+                <span><T>Here&apos;s how to set up local Ollama &amp; configure CORS (Guide ↗)</T></span>
               </a>
             </div>
             <input
               type="text"
               value={formData.ollamaHost || formData.customBaseUrl || 'http://localhost:11434'}
               onChange={(e) => setFormData({ ...formData, ollamaHost: e.target.value, customBaseUrl: e.target.value })}
-              placeholder="http://localhost:11434"
+              placeholder={__t("http://localhost:11434")}
               className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3 py-2 text-xs text-slate-900 dark:text-slate-100 font-mono outline-none focus:border-blue-500"
             />
             <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
-              Ensure you have launched Ollama with <code>OLLAMA_ORIGINS=&quot;*&quot;</code> to permit browser CORS requests.
+              <T>Ensure you have launched Ollama with</T> <code>OLLAMA_ORIGINS=&quot;*&quot;</code> <T>to permit browser CORS requests.</T>
             </p>
             {/* Test Connection Row (Ollama) */}
             <div className="flex flex-wrap items-center gap-3 mt-2.5">
@@ -598,7 +600,7 @@ export const EngineTab: React.FC<EngineTabProps> = ({
                 ) : (
                   <Zap className="h-3.5 w-3.5 text-amber-500" />
                 )}
-                <span>{isTesting ? 'Testing…' : 'Test Ollama Connection'}</span>
+                <span>{isTesting ? <T>{'Testing…'}</T> : <T>{'Test Ollama Connection'}</T>}</span>
               </button>
               {testResult && (
                 <span
@@ -613,7 +615,7 @@ export const EngineTab: React.FC<EngineTabProps> = ({
                   ) : (
                     <AlertTriangle className="h-3.5 w-3.5" />
                   )}
-                  {testResult.message}
+                  <T>{testResult.message}</T>
                 </span>
               )}
             </div>
@@ -624,10 +626,10 @@ export const EngineTab: React.FC<EngineTabProps> = ({
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-              Response Style
+              <T>Response Style</T>
             </label>
             <span className="text-[11px] font-medium text-blue-600 dark:text-blue-400">
-              {currentStyle === 'strict' ? 'Strict & Factual' : currentStyle === 'balanced' ? 'Balanced (Recommended)' : 'Creative'}
+              {currentStyle === 'strict' ? <T>{'Strict & Factual'}</T> : currentStyle === 'balanced' ? <T>{'Balanced (Recommended)'}</T> : <T>{'Creative'}</T>}
             </span>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -664,11 +666,11 @@ export const EngineTab: React.FC<EngineTabProps> = ({
                   }`}
                 >
                   <div className="flex items-center justify-between font-semibold text-xs mb-1">
-                    <span>{style.label}</span>
+                    <span><T>{style.label}</T></span>
                     {isSelected && <CheckCircle2 className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />}
                   </div>
                   <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-normal">
-                    {style.desc}
+                    <T>{style.desc}</T>
                   </p>
                 </button>
               );
@@ -680,10 +682,10 @@ export const EngineTab: React.FC<EngineTabProps> = ({
         <div className="space-y-2 pt-2 border-t border-slate-100 dark:border-slate-800">
           <div className="flex items-center justify-between">
             <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-              How much knowledge to search per answer
+              <T>How much knowledge to search per answer</T>
             </label>
             <span className="text-[11px] font-mono text-slate-500 dark:text-slate-400">
-              {currentChunks} sections
+              {currentChunks} <T>sections</T>
             </span>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -705,11 +707,11 @@ export const EngineTab: React.FC<EngineTabProps> = ({
                   }`}
                 >
                   <div className="flex items-center justify-between font-semibold text-xs mb-1">
-                    <span>{preset.label}</span>
+                    <span><T>{preset.label}</T></span>
                     {isSelected && <CheckCircle2 className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />}
                   </div>
                   <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-normal">
-                    {preset.desc}
+                    <T>{preset.desc}</T>
                   </p>
                 </button>
               );
@@ -722,15 +724,15 @@ export const EngineTab: React.FC<EngineTabProps> = ({
           <div>
             <div className="text-xs font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
               <Globe className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
-              <span>Allow Live Web Search</span>
+              <span><T>Allow Live Web Search</T></span>
               {(formData.allowWebSearch ?? true) ? (
-                <span className="text-[10px] bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300 font-bold px-1.5 py-0.5 rounded-full">ENABLED</span>
+                <span className="text-[10px] bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300 font-bold px-1.5 py-0.5 rounded-full"><T>ENABLED</T></span>
               ) : (
-                <span className="text-[10px] bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400 font-bold px-1.5 py-0.5 rounded-full">DISABLED</span>
+                <span className="text-[10px] bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400 font-bold px-1.5 py-0.5 rounded-full"><T>DISABLED</T></span>
               )}
             </div>
             <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 max-w-lg">
-              When enabled, your assistant can look up real-time information from the web if a visitor asks about something not in your knowledge base.
+              <T>When enabled, your assistant can look up real-time information from the web if a visitor asks about something not in your knowledge base.</T>
             </p>
           </div>
           <label className="relative inline-flex items-center cursor-pointer ml-4">
@@ -752,7 +754,7 @@ export const EngineTab: React.FC<EngineTabProps> = ({
             className="flex items-center gap-2 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 cursor-pointer transition"
           >
             <Sliders className="h-3.5 w-3.5" />
-            <span>Advanced Technical Settings</span>
+            <span><T>Advanced Technical Settings</T></span>
             <ChevronDown className={`h-3.5 w-3.5 transition-transform duration-200 ${showAdvanced ? 'rotate-180' : ''}`} />
           </button>
 
@@ -761,23 +763,23 @@ export const EngineTab: React.FC<EngineTabProps> = ({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1">
-                    Model Identifier Override
+                    <T>Model Identifier Override</T>
                   </label>
                   <input
                     type="text"
                     value={formData.modelName || ''}
                     onChange={(e) => setFormData({ ...formData, modelName: e.target.value })}
-                    placeholder="e.g. gpt-4o-mini, gemini-3.6-flash"
+                    placeholder={__t("e.g. gpt-4o-mini, gemini-3.6-flash")}
                     className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-xs text-slate-900 dark:text-slate-100 font-mono outline-none focus:border-blue-500"
                   />
                   <p className="text-[10.5px] text-slate-500 mt-1">
-                    Default model for {formData.provider || 'this provider'}.
+                    <T>Default model for</T> {formData.provider || <T>{'this provider'}</T>}.
                   </p>
                 </div>
 
                 <div>
                   <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1">
-                    Max Response Tokens ({formData.maxTokens ?? 2048})
+                    <T>Max Response Tokens (</T>{formData.maxTokens ?? 2048})
                   </label>
                   <input
                     type="range"
@@ -789,14 +791,14 @@ export const EngineTab: React.FC<EngineTabProps> = ({
                     className="w-full accent-blue-600"
                   />
                   <p className="text-[10.5px] text-slate-500 mt-1">
-                    Upper limit on answer length. 2048 tokens is ~1,500 words.
+                    <T>Upper limit on answer length. 2048 tokens is ~1,500 words.</T>
                   </p>
                 </div>
               </div>
 
               <div>
                 <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1">
-                  Fine-Tuning Temperature ({currentTemp})
+                  <T>Fine-Tuning Temperature (</T>{currentTemp})
                 </label>
                 <input
                   type="range"
@@ -812,17 +814,17 @@ export const EngineTab: React.FC<EngineTabProps> = ({
               {(formData.provider === 'ollama' || formData.provider === 'auto_free') && (
                 <div>
                   <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1">
-                    Local Ollama Endpoint URL (Fallback)
+                    <T>Local Ollama Endpoint URL (Fallback)</T>
                   </label>
                   <input
                     type="text"
                     value={formData.customBaseUrl || ''}
                     onChange={(e) => setFormData({ ...formData, customBaseUrl: e.target.value })}
-                    placeholder="http://localhost:11434/v1"
+                    placeholder={__t("http://localhost:11434/v1")}
                     className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-xs text-slate-900 dark:text-slate-100 font-mono outline-none focus:border-blue-500"
                   />
                   <p className="text-[10.5px] text-slate-500 mt-1">
-                    Custom host address for self-hosted local model instances.
+                    <T>Custom host address for self-hosted local model instances.</T>
                   </p>
                 </div>
               )}
@@ -833,7 +835,7 @@ export const EngineTab: React.FC<EngineTabProps> = ({
         {/* Save Button */}
         <div className="pt-2 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
           <p className="text-[10.5px] text-slate-400 dark:text-slate-500">
-            Saving will verify your connection before applying — a bad key will be rejected with an error.
+            <T>Saving will verify your connection before applying — a bad key will be rejected with an error.</T>
           </p>
           <SaveButton
             onClick={() => {

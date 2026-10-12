@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { BLOG_POSTS, PUBLISHED_POSTS, getPost } from './posts';
-import { generateMetadata } from '../../app/(marketing)/blog/[slug]/page';
+import { generateMetadata } from '../../app/[locale]/(marketing)/blog/[slug]/page';
 
 describe('verify noindex status for all articles', () => {
   it('has zero thin articles', () => {

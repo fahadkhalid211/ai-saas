@@ -1,3 +1,4 @@
+import { T } from '@/lib/i18n/context';
 import { SaveButton } from '@/components/ui/SaveButton';
 import React, { useEffect, useState } from 'react';
 import { PhoneCall } from 'lucide-react';
@@ -63,9 +64,9 @@ export const PhoneChannelCard: React.FC<PhoneChannelCardProps> = ({ activeAssist
             <PhoneCall className="h-6 w-6" />
           </div>
           <div>
-            <h2 className="text-base font-bold text-slate-900 dark:text-white">Phone calls (AI receptionist)</h2>
+            <h2 className="text-base font-bold text-slate-900 dark:text-white"><T>Phone calls (AI receptionist)</T></h2>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-              Callers to your business number are answered by this assistant, which can answer questions and book appointments.
+              <T>Callers to your business number are answered by this assistant, which can answer questions and book appointments.</T>
             </p>
           </div>
         </div>
@@ -78,7 +79,7 @@ export const PhoneChannelCard: React.FC<PhoneChannelCardProps> = ({ activeAssist
             className="sr-only peer"
           />
           <div className="w-11 h-6 bg-slate-200 rounded-full peer dark:bg-slate-800 peer-disabled:opacity-50 peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
-          <span className="ml-2.5 text-xs font-semibold text-slate-700 dark:text-slate-300">{formData.phoneEnabled ? 'Enabled' : 'Disabled'}</span>
+          <span className="ml-2.5 text-xs font-semibold text-slate-700 dark:text-slate-300">{formData.phoneEnabled ? <T>{'Enabled'}</T> : <T>{'Disabled'}</T>}</span>
         </label>
       </div>
 
@@ -86,7 +87,7 @@ export const PhoneChannelCard: React.FC<PhoneChannelCardProps> = ({ activeAssist
         <div className="space-y-4">
           <div>
             <label htmlFor="phone-number" className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-              Business phone number
+              <T>Business phone number</T>
             </label>
             {isMasterAdmin ? (
               <input
@@ -98,18 +99,18 @@ export const PhoneChannelCard: React.FC<PhoneChannelCardProps> = ({ activeAssist
                 className={`${fieldClass} font-mono`}
               />
             ) : (
-              <p className={`${fieldClass} font-mono`}>{formData.phoneNumber || 'Not assigned yet'}</p>
+              <p className={`${fieldClass} font-mono`}>{formData.phoneNumber || <T>{'Not assigned yet'}</T>}</p>
             )}
             <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
               {isMasterAdmin
-                ? 'International format. Must match the number bought from the carrier. Each number belongs to one assistant.'
-                : 'Numbers are assigned by the Crescelo team. Contact support to get one.'}
+                ? <T>{'International format. Must match the number bought from the carrier. Each number belongs to one assistant.'}</T>
+                : <T>{'Numbers are assigned by the Crescelo team. Contact support to get one.'}</T>}
             </p>
           </div>
 
           <div>
             <label htmlFor="phone-greeting" className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-              Greeting
+              <T>Greeting</T>
             </label>
             <textarea
               id="phone-greeting"
@@ -120,12 +121,12 @@ export const PhoneChannelCard: React.FC<PhoneChannelCardProps> = ({ activeAssist
               onChange={(e) => set({ phoneGreeting: e.target.value })}
               className={fieldClass}
             />
-            <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Callers are always told they are speaking with an AI assistant.</p>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1"><T>Callers are always told they are speaking with an AI assistant.</T></p>
           </div>
 
           <div>
             <label htmlFor="phone-transfer" className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-              Transfer to a person
+              <T>Transfer to a person</T>
             </label>
             <input
               id="phone-transfer"
@@ -136,7 +137,7 @@ export const PhoneChannelCard: React.FC<PhoneChannelCardProps> = ({ activeAssist
               className={`${fieldClass} font-mono`}
             />
             <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
-              Rung when a caller asks for a person, or if the AI service is unavailable. Leave empty to take a message instead.
+              <T>Rung when a caller asks for a person, or if the AI service is unavailable. Leave empty to take a message instead.</T>
             </p>
           </div>
         </div>
@@ -145,7 +146,7 @@ export const PhoneChannelCard: React.FC<PhoneChannelCardProps> = ({ activeAssist
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label htmlFor="phone-after-hours" className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                Outside opening hours
+                <T>Outside opening hours</T>
               </label>
               <select
                 id="phone-after-hours"
@@ -160,7 +161,7 @@ export const PhoneChannelCard: React.FC<PhoneChannelCardProps> = ({ activeAssist
             </div>
             <div>
               <label htmlFor="phone-max" className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                Max call (minutes)
+                <T>Max call (minutes)</T>
               </label>
               <input
                 id="phone-max"
@@ -177,7 +178,7 @@ export const PhoneChannelCard: React.FC<PhoneChannelCardProps> = ({ activeAssist
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label htmlFor="phone-language" className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                Language
+                <T>Language</T>
               </label>
               <input
                 id="phone-language"
@@ -190,7 +191,7 @@ export const PhoneChannelCard: React.FC<PhoneChannelCardProps> = ({ activeAssist
             </div>
             <div>
               <label htmlFor="phone-timezone" className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                Business time zone
+                <T>Business time zone</T>
               </label>
               <input
                 id="phone-timezone"
@@ -204,11 +205,11 @@ export const PhoneChannelCard: React.FC<PhoneChannelCardProps> = ({ activeAssist
           </div>
           {!formData.timezone && detectedZone ? (
             <button type="button" onClick={() => set({ timezone: detectedZone })} className="text-[11px] font-semibold text-emerald-700 dark:text-emerald-400 underline cursor-pointer">
-              Use {detectedZone}
+              <T>Use</T> {detectedZone}
             </button>
           ) : null}
           <p className="text-[11px] text-slate-500 dark:text-slate-400">
-            The time zone decides what &quot;today&quot; and opening hours mean when the assistant offers appointment times. Booking uses the days and hours from your booking settings.
+            <T>The time zone decides what &quot;today&quot; and opening hours mean when the assistant offers appointment times. Booking uses the days and hours from your booking settings.</T>
           </p>
 
           <SaveButton onClick={handleSaveSettings} saving={isSaving} idleLabel="Save phone settings" savedLabel="Phone settings saved" />
@@ -217,18 +218,18 @@ export const PhoneChannelCard: React.FC<PhoneChannelCardProps> = ({ activeAssist
 
       {hasNumber ? (
         <div>
-          <h3 className="text-xs font-bold text-slate-900 dark:text-white mb-2">Recent calls</h3>
+          <h3 className="text-xs font-bold text-slate-900 dark:text-white mb-2"><T>Recent calls</T></h3>
           {calls.length === 0 ? (
-            <p className="text-xs text-slate-500 dark:text-slate-400">No calls yet.</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400"><T>No calls yet.</T></p>
           ) : (
             <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800">
               <table className="w-full text-xs">
                 <thead className="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
                   <tr>
-                    <th className="text-left p-2.5 font-semibold">When</th>
-                    <th className="text-left p-2.5 font-semibold">Caller</th>
-                    <th className="text-left p-2.5 font-semibold">Length</th>
-                    <th className="text-left p-2.5 font-semibold">Result</th>
+                    <th className="text-left p-2.5 font-semibold"><T>When</T></th>
+                    <th className="text-left p-2.5 font-semibold"><T>Caller</T></th>
+                    <th className="text-left p-2.5 font-semibold"><T>Length</T></th>
+                    <th className="text-left p-2.5 font-semibold"><T>Result</T></th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
@@ -236,8 +237,8 @@ export const PhoneChannelCard: React.FC<PhoneChannelCardProps> = ({ activeAssist
                     <tr key={c.id}>
                       <td className="p-2.5 whitespace-nowrap">{new Date(c.startedAt).toLocaleString()}</td>
                       <td className="p-2.5 font-mono">{maskPhone(c.from)}</td>
-                      <td className="p-2.5">{c.durationSeconds != null ? `${Math.floor(c.durationSeconds / 60)}m ${c.durationSeconds % 60}s` : 'In progress'}</td>
-                      <td className="p-2.5">{OUTCOME_LABEL[c.outcome || ''] || c.outcome || 'Answered'}</td>
+                      <td className="p-2.5">{c.durationSeconds != null ? `${Math.floor(c.durationSeconds / 60)}m ${c.durationSeconds % 60}s` : <T>{'In progress'}</T>}</td>
+                      <td className="p-2.5">{OUTCOME_LABEL[c.outcome || ''] || c.outcome || <T>{'Answered'}</T>}</td>
                     </tr>
                   ))}
                 </tbody>
