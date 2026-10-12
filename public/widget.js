@@ -194,33 +194,47 @@
       }
       /* Header */
       .header {
+        position: relative;
         background-color: var(--primary-color, #2563eb);
+        background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0) 60%);
         color: #ffffff;
-        padding: 16px 20px;
+        padding: 14px 12px 14px 16px;
         display: flex;
         align-items: center;
         justify-content: space-between;
+        gap: 10px;
       }
       .header-info {
         display: flex;
         align-items: center;
-        gap: 12px;
+        gap: 11px;
+        min-width: 0;
+        flex: 1 1 auto;
+      }
+      .header-text {
+        min-width: 0;
       }
       .avatar {
         width: 38px;
         height: 38px;
+        flex: 0 0 38px;
         border-radius: 50%;
         background: rgba(255, 255, 255, 0.2);
+        box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.28);
         display: flex;
         align-items: center;
         justify-content: center;
         font-weight: 600;
-        font-size: 14px;
+        font-size: 13px;
+        letter-spacing: 0.02em;
       }
       .header-title {
         font-size: 15px;
         font-weight: 600;
-        line-height: 1.2;
+        line-height: 1.25;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
       .header-status {
         font-size: 11px;
@@ -236,21 +250,24 @@
         border-radius: 50%;
         background: #4ade80;
       }
-      .close-btn {
+      /* The two round buttons at the right of the header: the menu and close */
+      .close-btn, .header-icon-btn {
         background: transparent;
         border: none;
         color: #ffffff;
         cursor: pointer;
-        opacity: 0.8;
-        padding: 4px;
+        width: 34px;
+        height: 34px;
+        flex: 0 0 34px;
+        padding: 0;
         display: flex;
         align-items: center;
         justify-content: center;
-        border-radius: 6px;
+        border-radius: 50%;
+        transition: background 0.15s;
       }
-      .close-btn:hover {
-        opacity: 1;
-        background: rgba(255, 255, 255, 0.15);
+      .close-btn:hover, .header-icon-btn:hover, .header-icon-btn[aria-expanded="true"] {
+        background: rgba(255, 255, 255, 0.18);
       }
       /* Messages body */
       .messages-container {
@@ -488,29 +505,100 @@
         0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
         50% { transform: scale(1.08); box-shadow: 0 0 0 8px rgba(239, 68, 68, 0); }
       }
-      .lang-dropdown-menu {
+      /* The header menu: everything that used to be a row of buttons (language, expand, save, support) */
+      .header-menu {
         position: absolute;
-        top: 52px;
-        right: 14px;
+        top: calc(100% - 6px);
+        right: 12px;
+        width: 232px;
+        max-width: calc(100% - 24px);
         background: #ffffff;
+        color: #0f172a;
         border: 1px solid #e2e8f0;
-        border-radius: 12px;
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        border-radius: 14px;
+        box-shadow: 0 16px 40px rgba(15, 23, 42, 0.18), 0 2px 6px rgba(15, 23, 42, 0.06);
         padding: 6px;
         display: none;
         flex-direction: column;
-        gap: 2px;
+        gap: 1px;
         z-index: 100;
-        min-width: 120px;
+        transform-origin: top right;
+      }
+      .header-menu.show {
+        display: flex;
+        animation: menuIn 0.14s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+      @keyframes menuIn {
+        from { opacity: 0; transform: translateY(-4px) scale(0.98); }
+        to { opacity: 1; transform: translateY(0) scale(1); }
+      }
+      .menu-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        width: 100%;
+        padding: 9px 10px;
+        background: transparent;
+        border: none;
+        border-radius: 9px;
+        color: #0f172a;
+        font-family: inherit;
+        font-size: 13px;
+        font-weight: 500;
+        line-height: 1.2;
+        text-align: left;
+        cursor: pointer;
+      }
+      .menu-item:hover {
+        background: #f1f5f9;
+      }
+      .menu-item > svg {
+        flex: 0 0 16px;
+        color: #475569;
+      }
+      .menu-item-label {
+        flex: 1 1 auto;
+        min-width: 0;
+      }
+      .menu-item-value {
+        font-size: 11px;
+        font-weight: 600;
+        color: #475569;
+        background: #f1f5f9;
+        border-radius: 6px;
+        padding: 2px 6px;
+      }
+      .menu-chevron {
+        flex: 0 0 12px;
+        color: #64748b;
+        transition: transform 0.15s;
+      }
+      .menu-item[aria-expanded="true"] .menu-chevron {
+        transform: rotate(180deg);
+      }
+      .menu-divider {
+        height: 1px;
+        background: #e2e8f0;
+        margin: 4px 6px;
+      }
+      /* The language list opens inside the menu, under its row */
+      .lang-dropdown-menu {
+        display: none;
+        flex-direction: column;
+        gap: 1px;
+        margin: 2px 0 4px 26px;
+        padding-left: 8px;
+        border-left: 2px solid #e2e8f0;
       }
       .lang-dropdown-menu.show {
         display: flex;
       }
       .lang-item {
-        padding: 6px 10px;
-        font-size: 11.5px;
+        padding: 7px 10px;
+        font-family: inherit;
+        font-size: 12.5px;
         color: #334155;
-        border-radius: 6px;
+        border-radius: 8px;
         cursor: pointer;
         display: flex;
         align-items: center;
@@ -529,28 +617,12 @@
         color: var(--primary-color, #2563eb);
         font-weight: 600;
       }
-      /* Header action buttons */
+      /* Header: the menu button and close */
       .header-actions {
         display: flex;
         align-items: center;
-        gap: 6px;
-      }
-      .header-action-btn {
-        background: rgba(255, 255, 255, 0.18);
-        border: 1px solid rgba(255, 255, 255, 0.3);
-        color: #ffffff;
-        font-size: 11px;
-        font-weight: 600;
-        padding: 4px 8px;
-        border-radius: 6px;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        gap: 4px;
-        transition: background 0.15s;
-      }
-      .header-action-btn:hover {
-        background: rgba(255, 255, 255, 0.28);
+        gap: 2px;
+        flex: 0 0 auto;
       }
       /* Sleek Support Form Card */
       .support-form-card {
@@ -1045,57 +1117,69 @@
     chatWindow.innerHTML = `
       <div class="header">
         <div class="header-info">
-          <div class="avatar" id="ast-avatar">AI</div>
-          <div>
+          <div class="avatar" id="ast-avatar" aria-hidden="true">AI</div>
+          <div class="header-text">
             <div class="header-title" id="ast-name">AI Assistant</div>
             <div class="header-status"><span class="status-dot"></span> Online</div>
           </div>
         </div>
         <div class="header-actions">
-          <button class="header-action-btn" id="header-lang-btn" title="Choose Language">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <button type="button" class="header-icon-btn" id="header-menu-btn" title="Chat options" aria-label="Chat options" aria-haspopup="menu" aria-expanded="false" aria-controls="header-menu">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <circle cx="5" cy="12" r="1.9"></circle>
+              <circle cx="12" cy="12" r="1.9"></circle>
+              <circle cx="19" cy="12" r="1.9"></circle>
+            </svg>
+          </button>
+          <button type="button" class="close-btn" id="close-chat-btn" title="Close chat" aria-label="Close chat">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+        <div class="header-menu" id="header-menu" role="menu" aria-label="Chat options">
+          <button type="button" class="menu-item" id="header-lang-btn" role="menuitem" aria-expanded="false" aria-controls="lang-dropdown">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <circle cx="12" cy="12" r="10"></circle>
               <line x1="2" y1="12" x2="22" y2="12"></line>
               <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
             </svg>
-            <span id="header-lang-label">EN</span>
+            <span class="menu-item-label">Language</span>
+            <span class="menu-item-value" id="header-lang-label">EN</span>
+            <svg class="menu-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg>
           </button>
-          <div class="lang-dropdown-menu" id="lang-dropdown">
-            <button type="button" class="lang-item active" data-lang="en"><span>English</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></button>
-            <button type="button" class="lang-item" data-lang="es"><span>Español</span></button>
-            <button type="button" class="lang-item" data-lang="fr"><span>Français</span></button>
-            <button type="button" class="lang-item" data-lang="de"><span>Deutsch</span></button>
-            <button type="button" class="lang-item" data-lang="ar"><span>العربية</span></button>
-            <button type="button" class="lang-item" data-lang="ur"><span>اردو</span></button>
+          <div class="lang-dropdown-menu" id="lang-dropdown" role="group" aria-label="Language">
+            <button type="button" class="lang-item active" data-lang="en" role="menuitemradio" aria-checked="true"><span>English</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></button>
+            <button type="button" class="lang-item" data-lang="es" role="menuitemradio" aria-checked="false"><span>Español</span></button>
+            <button type="button" class="lang-item" data-lang="fr" role="menuitemradio" aria-checked="false"><span>Français</span></button>
+            <button type="button" class="lang-item" data-lang="de" role="menuitemradio" aria-checked="false"><span>Deutsch</span></button>
+            <button type="button" class="lang-item" data-lang="ar" role="menuitemradio" aria-checked="false"><span>العربية</span></button>
+            <button type="button" class="lang-item" data-lang="ur" role="menuitemradio" aria-checked="false"><span>اردو</span></button>
           </div>
-          <button class="header-action-btn" id="header-download-btn" title="Download Chat Transcript">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-              <polyline points="7 10 12 15 17 10"></polyline>
-              <line x1="12" y1="15" x2="12" y2="3"></line>
-            </svg>
-            <span>Save</span>
-          </button>
-          <button class="header-action-btn" id="header-support-btn" title="Contact Support">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-            </svg>
-            <span>Support</span>
-          </button>
-          <button class="header-action-btn" id="header-expand-btn" title="Expand / Minimize chat window">
-            <svg id="header-expand-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <button type="button" class="menu-item" id="header-expand-btn" role="menuitem">
+            <svg id="header-expand-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <polyline points="15 3 21 3 21 9"></polyline>
               <polyline points="9 21 3 21 3 15"></polyline>
               <line x1="21" y1="3" x2="14" y2="10"></line>
               <line x1="3" y1="21" x2="10" y2="14"></line>
             </svg>
-            <span id="header-expand-label">Expand</span>
+            <span class="menu-item-label" id="header-expand-label">Expand window</span>
           </button>
-          <button class="close-btn" id="close-chat-btn" title="Close chat">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <line x1="18" y1="6" x2="6" y2="18"></line>
-              <line x1="6" y1="6" x2="18" y2="18"></line>
+          <button type="button" class="menu-item" id="header-download-btn" role="menuitem">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
             </svg>
+            <span class="menu-item-label">Save this chat</span>
+          </button>
+          <div class="menu-divider" role="separator"></div>
+          <button type="button" class="menu-item" id="header-support-btn" role="menuitem">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+            </svg>
+            <span class="menu-item-label">Contact support</span>
           </button>
         </div>
       </div>
@@ -1370,7 +1454,70 @@
     new MutationObserver(function () {
       launcher.setAttribute('aria-expanded', chatWindow.classList.contains('open') ? 'true' : 'false');
     }).observe(chatWindow, { attributes: true, attributeFilter: ['class'] });
+    // Header menu (language, expand, save, support)
+    var headerMenu = shadow.getElementById('header-menu');
+    var headerMenuBtn = shadow.getElementById('header-menu-btn');
+    function menuItems() {
+      return Array.prototype.filter.call(headerMenu.querySelectorAll('.menu-item, .lang-dropdown-menu.show .lang-item'), function (el) {
+        return el.offsetParent !== null;
+      });
+    }
+    function closeHeaderMenu(returnFocus) {
+      if (!headerMenu || !headerMenu.classList.contains('show')) return;
+      headerMenu.classList.remove('show');
+      headerMenuBtn.setAttribute('aria-expanded', 'false');
+      var langList = shadow.getElementById('lang-dropdown');
+      var langRow = shadow.getElementById('header-lang-btn');
+      if (langList) langList.classList.remove('show');
+      if (langRow) langRow.setAttribute('aria-expanded', 'false');
+      if (returnFocus) headerMenuBtn.focus();
+    }
+    if (headerMenu && headerMenuBtn) {
+      headerMenuBtn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        if (headerMenu.classList.contains('show')) {
+          closeHeaderMenu(false);
+          return;
+        }
+        headerMenu.classList.add('show');
+        headerMenuBtn.setAttribute('aria-expanded', 'true');
+        var first = menuItems()[0];
+        if (first) first.focus();
+      });
+      // a click inside the menu must not count as a click outside it
+      headerMenu.addEventListener('click', function (e) {
+        e.stopPropagation();
+      });
+      // choosing an action closes the menu; the Language row only opens its list
+      ['header-expand-btn', 'header-download-btn', 'header-support-btn'].forEach(function (id) {
+        var item = shadow.getElementById(id);
+        if (item) item.addEventListener('click', function () { closeHeaderMenu(false); });
+      });
+      headerMenu.querySelectorAll('.lang-item').forEach(function (item) {
+        item.addEventListener('click', function () { closeHeaderMenu(false); });
+      });
+      // clicking anywhere else, in the chat or on the page, closes it
+      chatWindow.addEventListener('click', function () { closeHeaderMenu(false); });
+      document.addEventListener('click', function () { closeHeaderMenu(false); });
+      // arrow keys move through the menu
+      headerMenu.addEventListener('keydown', function (e) {
+        if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp' && e.key !== 'Home' && e.key !== 'End') return;
+        var items = menuItems();
+        if (!items.length) return;
+        e.preventDefault();
+        var at = items.indexOf(shadow.activeElement);
+        var next = e.key === 'Home' ? 0 : e.key === 'End' ? items.length - 1 : e.key === 'ArrowDown' ? (at + 1) % items.length : (at - 1 + items.length) % items.length;
+        items[next].focus();
+      });
+    }
+
     shadow.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && headerMenu && headerMenu.classList.contains('show')) {
+        // the first Escape closes the menu, not the whole chat
+        e.stopPropagation();
+        closeHeaderMenu(true);
+        return;
+      }
       if (e.key === 'Escape' && chatWindow.classList.contains('open')) {
         e.stopPropagation();
         isOpen = false;
@@ -1392,14 +1539,13 @@
         var expanded = chatWindow.classList.toggle('expanded');
         var label = shadow.getElementById('header-expand-label');
         var icon = shadow.getElementById('header-expand-icon');
-        if (label) label.textContent = expanded ? 'Minimize' : 'Expand';
+        if (label) label.textContent = expanded ? 'Minimize window' : 'Expand window';
         if (icon) {
           // arrows pointing in when expanded, out when not
           icon.innerHTML = expanded
             ? '<polyline points="4 14 10 14 10 20"></polyline><polyline points="20 10 14 10 14 4"></polyline><line x1="14" y1="10" x2="21" y2="3"></line><line x1="3" y1="21" x2="10" y2="14"></line>'
             : '<polyline points="15 3 21 3 21 9"></polyline><polyline points="9 21 3 21 3 15"></polyline><line x1="21" y1="3" x2="14" y2="10"></line><line x1="3" y1="21" x2="10" y2="14"></line>';
         }
-        expandBtn.title = expanded ? 'Minimize chat window' : 'Expand chat window';
         scrollToBottom();
       });
     }
@@ -1581,11 +1727,12 @@
     if (langBtn && langDropdown) {
       langBtn.addEventListener('click', function (e) {
         e.stopPropagation();
-        langDropdown.classList.toggle('show');
-      });
-
-      document.addEventListener('click', function () {
-        langDropdown.classList.remove('show');
+        var shown = langDropdown.classList.toggle('show');
+        langBtn.setAttribute('aria-expanded', shown ? 'true' : 'false');
+        if (shown) {
+          var current = langDropdown.querySelector('.lang-item.active') || langDropdown.querySelector('.lang-item');
+          if (current) current.focus();
+        }
       });
 
       var langItems = langDropdown.querySelectorAll('.lang-item');
@@ -1597,10 +1744,12 @@
 
           langItems.forEach(function (i) {
             i.classList.remove('active');
+            i.setAttribute('aria-checked', 'false');
             var check = i.querySelector('svg');
             if (check) check.remove();
           });
           item.classList.add('active');
+          item.setAttribute('aria-checked', 'true');
           var checkSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
           checkSvg.setAttribute('width', '12');
           checkSvg.setAttribute('height', '12');
@@ -1614,6 +1763,7 @@
           item.appendChild(checkSvg);
 
           langDropdown.classList.remove('show');
+          langBtn.setAttribute('aria-expanded', 'false');
 
           if (recognition) {
             var langMap = { en: 'en-US', es: 'es-ES', fr: 'fr-FR', de: 'de-DE', ar: 'ar-SA', ur: 'ur-PK' };
