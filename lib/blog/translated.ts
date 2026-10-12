@@ -1,4 +1,6 @@
 import 'server-only';
+import fs from 'fs/promises';
+import path from 'path';
 import type { SupportedLocale } from '@/lib/i18n/types';
 import manifest from '@/lib/i18n/blog-manifest.json';
 import { getPostResolved } from './resolve';
@@ -50,10 +52,11 @@ export function sameShape(source: BlogBlock[], translated: BlogBlock[]): boolean
 }
 
 async function load(locale: SupportedLocale, slug: string): Promise<BlogTranslation | null> {
-  if (!/^[a-z0-9-]+$/.test(slug)) return null;
+  if (!/^[a-z0-9-]+$/.test(slug) || !/^[a-z]{2}$/.test(locale)) return null;
   try {
-    const mod = await import(`./translations/${locale}/${slug}.json`);
-    return (mod.default ?? mod) as BlogTranslation;
+    const filePath = path.join(process.cwd(), 'lib', 'blog', 'translations', locale, `${slug}.json`);
+    const raw = await fs.readFile(filePath, 'utf8');
+    return JSON.parse(raw) as BlogTranslation;
   } catch {
     return null;
   }
