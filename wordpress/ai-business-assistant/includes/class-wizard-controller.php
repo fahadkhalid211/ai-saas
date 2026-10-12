@@ -1,8 +1,8 @@
 <?php
 /**
- * Onboarding Wizard Controller
+ * Onboarding Wizard and Scraper Controller
  *
- * Manages secure AJAX endpoints for each step of the interactive onboarding wizard.
+ * Manages secure AJAX endpoints for the interactive setup wizard and website scraping engine.
  */
 
 if (!defined('ABSPATH')) {
@@ -24,6 +24,8 @@ class Crescelo_Wizard_Controller {
         add_action('wp_ajax_crescelo_wizard_sync_batch', [$this, 'ajax_sync_batch']);
         add_action('wp_ajax_crescelo_wizard_finish', [$this, 'ajax_finish_setup']);
         add_action('wp_ajax_crescelo_wizard_reset', [$this, 'ajax_reset_configuration']);
+        add_action('wp_ajax_crescelo_save_post_types', [$this, 'ajax_save_post_types']);
+        add_action('wp_ajax_crescelo_record_scrape_complete', [$this, 'ajax_record_scrape_complete']);
     }
 
     /**
@@ -37,7 +39,7 @@ class Crescelo_Wizard_Controller {
     }
 
     /**
-     * Step 2: Scan the WordPress site and database.
+     * Step 2 / Diagnostic: Scan the WordPress site and database.
      */
     public function ajax_scan_site() {
         $this->verify_security();
@@ -48,6 +50,54 @@ class Crescelo_Wizard_Controller {
         } catch (Exception $e) {
             wp_send_json_error(['error' => sanitize_text_field($e->getMessage())]);
         }
+    }
+
+    /**
+     * Save the administrator's selection of post types allowed for scraping.
+     */
+    public function ajax_save_post_types() {
+        $this->verify_security();
+
+        $raw_post_types = isset($_POST['allowed_post_types']) && is_array($_POST['allowed_post_types'])
+            ? $_POST['allowed_post_types']
+            : [];
+
+        $available = $this->scanner->get_available_post_types();
+        $sanitized_types = [];
+
+        foreach ($raw_post_types as $pt) {
+            $slug = sanitize_key($pt);
+            if (isset($available[$slug]) || $slug === 'product' || $slug === 'page' || $slug === 'post') {
+                $sanitized_types[] = $slug;
+            }
+        }
+
+        update_option('ai_assistant_allowed_post_types', $sanitized_types);
+
+        // Optional scrape settings
+        if (isset($_POST['scrape_include_meta'])) {
+            update_option('ai_assistant_scrape_include_meta', (bool) rest_sanitize_boolean($_POST['scrape_include_meta']));
+        }
+        if (isset($_POST['scrape_include_taxonomies'])) {
+            update_option('ai_assistant_scrape_include_taxonomies', (bool) rest_sanitize_boolean($_POST['scrape_include_taxonomies']));
+        }
+        if (isset($_POST['scrape_include_excerpt'])) {
+            update_option('ai_assistant_scrape_include_excerpt', (bool) rest_sanitize_boolean($_POST['scrape_include_excerpt']));
+        }
+        if (isset($_POST['scrape_method'])) {
+            $method = sanitize_key($_POST['scrape_method']);
+            update_option('ai_assistant_scrape_method', in_array($method, ['db', 'html'], true) ? $method : 'db');
+        }
+        if (isset($_POST['batch_size'])) {
+            $size = min(50, max(5, absint($_POST['batch_size'])));
+            update_option('ai_assistant_batch_size', $size);
+        }
+
+        wp_send_json_success([
+            'saved'              => true,
+            'allowed_post_types' => $sanitized_types,
+            'message'            => 'Scraping configuration updated successfully.',
+        ]);
     }
 
     /**
@@ -123,21 +173,27 @@ class Crescelo_Wizard_Controller {
     }
 
     /**
-     * Step 4: Streamlined batched ingestion with strict boundary checks.
+     * Step 4 & Standalone Scraper: Streamlined batched ingestion with strict boundary checks.
+     * Supports ANY allowed post type (pages, posts, products, custom post types) and media documents.
      */
     public function ajax_sync_batch() {
         $this->verify_security();
 
-        // 1. Validate batch type against allowlist
-        $allowed_batches = ['products', 'pages', 'documents', 'faqs'];
-        $raw_batch       = sanitize_key($_POST['batch_type'] ?? 'products');
-        $batch_type      = in_array($raw_batch, $allowed_batches, true) ? $raw_batch : 'products';
+        $raw_batch  = sanitize_key($_POST['batch_type'] ?? 'page');
+        $batch_type = $raw_batch;
 
-        // 2. Validate and clamp pagination to prevent memory exhaustion
-        $offset = absint($_POST['offset'] ?? 0);
-        $limit  = min(50, max(1, absint($_POST['limit'] ?? 15)));
+        // Verify that the batch type is either a recognized post type, products, or documents
+        $is_valid_type = ($batch_type === 'products' || $batch_type === 'documents' || post_type_exists($batch_type));
+        if (!$is_valid_type) {
+            wp_send_json_error(['error' => 'Invalid post type requested for scraping: ' . esc_html($batch_type)]);
+        }
 
-        // 3. Strictly sanitize selected IDs
+        // Validate and clamp pagination to prevent memory exhaustion
+        $default_limit = (int) get_option('ai_assistant_batch_size', 15);
+        $offset        = absint($_POST['offset'] ?? 0);
+        $limit         = min(50, max(1, absint($_POST['limit'] ?? $default_limit)));
+
+        // Strictly sanitize selected IDs
         $selected_ids = [];
         if (isset($_POST['selected_ids']) && is_array($_POST['selected_ids'])) {
             $selected_ids = array_map('absint', array_filter($_POST['selected_ids'], 'is_numeric'));
@@ -145,11 +201,19 @@ class Crescelo_Wizard_Controller {
 
         $assistant_id = sanitize_text_field(get_option('ai_assistant_id', ''));
         if (empty($assistant_id)) {
-            wp_send_json_error(['error' => 'No active Assistant ID configured.']);
+            wp_send_json_error(['error' => 'No active Assistant ID configured. Please configure an assistant first.']);
         }
 
+        // Collect scraping options
+        $options = [
+            'include_meta'       => isset($_POST['include_meta']) ? (bool) rest_sanitize_boolean($_POST['include_meta']) : (bool) get_option('ai_assistant_scrape_include_meta', true),
+            'include_taxonomies' => isset($_POST['include_taxonomies']) ? (bool) rest_sanitize_boolean($_POST['include_taxonomies']) : (bool) get_option('ai_assistant_scrape_include_taxonomies', true),
+            'include_excerpt'    => isset($_POST['include_excerpt']) ? (bool) rest_sanitize_boolean($_POST['include_excerpt']) : (bool) get_option('ai_assistant_scrape_include_excerpt', true),
+            'scrape_method'      => isset($_POST['scrape_method']) ? sanitize_key($_POST['scrape_method']) : sanitize_key(get_option('ai_assistant_scrape_method', 'db')),
+        ];
+
         // Fetch batch safely from WordPress DB
-        $items = $this->scanner->get_items_batch($batch_type, $offset, $limit, $selected_ids);
+        $items = $this->scanner->get_items_batch($batch_type, $offset, $limit, $selected_ids, $options);
 
         if (empty($items)) {
             wp_send_json_success([
@@ -161,7 +225,7 @@ class Crescelo_Wizard_Controller {
             return;
         }
 
-        // Send to Crescelo
+        // Send to Crescelo Knowledge Base backend
         $sync_res = $this->client->sync_batch($assistant_id, $batch_type, $items);
 
         if (empty($sync_res['success'])) {
@@ -178,6 +242,36 @@ class Crescelo_Wizard_Controller {
             'totalChunks'    => absint($sync_res['totalChunks'] ?? 0),
             'nextOffset'     => $next_offset,
             'hasMore'        => $has_more,
+        ]);
+    }
+
+    /**
+     * Record completed website scrape metrics into WordPress options.
+     */
+    public function ajax_record_scrape_complete() {
+        $this->verify_security();
+
+        $total_items  = absint($_POST['total_items'] ?? 0);
+        $total_chunks = absint($_POST['total_chunks'] ?? 0);
+        $post_types   = isset($_POST['scraped_post_types']) && is_array($_POST['scraped_post_types'])
+            ? array_map('sanitize_key', $_POST['scraped_post_types'])
+            : [];
+
+        $now = current_time('mysql');
+
+        update_option('ai_assistant_last_scraped', $now);
+        update_option('ai_assistant_scrape_stats', [
+            'total_items'        => $total_items,
+            'total_chunks'       => $total_chunks,
+            'last_run'           => $now,
+            'scraped_post_types' => $post_types,
+        ]);
+
+        wp_send_json_success([
+            'recorded'    => true,
+            'lastScraped' => $now,
+            'totalItems'  => $total_items,
+            'totalChunks' => $total_chunks,
         ]);
     }
 

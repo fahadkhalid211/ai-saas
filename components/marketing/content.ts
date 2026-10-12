@@ -65,7 +65,7 @@ export const HERO = {
   title: ['Answer every visitor.', 'Book the ones who are ready.'],
   body: 'Instant answers from your content. Real bookings into your calendar.\nYour team steps in only when it matters.',
   primaryCta: 'Start free trial',
-  secondaryCta: 'Try demo with your flyer (free)',
+  secondaryCta: 'Try free Demo',
   trust: [
     'Answers from your own content, and says when it does not know',
     'Free to start — zero compute cost',

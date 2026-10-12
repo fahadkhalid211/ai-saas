@@ -1,9 +1,10 @@
 <?php
 /**
- * Site Scanner and Content Reader
+ * Site Scanner and Content Scraper
  *
- * Inspects the WordPress database and content structure, preparing clean,
- * structured representations of pages, WooCommerce products, and media documents.
+ * Inspects WordPress database and content structure, allowing administrators
+ * to discover, select, and scrape any registered post types (pages, posts, products,
+ * custom post types) and media documents into the AI Knowledge Base.
  */
 
 if (!defined('ABSPATH')) {
@@ -13,7 +14,110 @@ if (!defined('ABSPATH')) {
 class Crescelo_Site_Scanner {
 
     /**
-     * Run a lightweight diagnostic scan of the entire site.
+     * Internal post types that should always be excluded from scraping.
+     */
+    private $excluded_post_types = [
+        'attachment',
+        'revision',
+        'nav_menu_item',
+        'custom_css',
+        'customize_changeset',
+        'oembed_cache',
+        'user_request',
+        'wp_block',
+        'wp_template',
+        'wp_template_part',
+        'wp_navigation',
+        'action_monitor_log',
+    ];
+
+    /**
+     * Get all public registered post types available for scraping.
+     *
+     * @return array Associative array of post types indexed by slug.
+     */
+    public function get_available_post_types() {
+        $post_types_objects = get_post_types(['public' => true], 'objects');
+        $available = [];
+
+        foreach ($post_types_objects as $slug => $obj) {
+            if (in_array($slug, $this->excluded_post_types, true)) {
+                continue;
+            }
+
+            $count_obj = wp_count_posts($slug);
+            $publish_count = isset($count_obj->publish) ? (int) $count_obj->publish : 0;
+
+            // Fetch sample posts
+            $samples_raw = get_posts([
+                'post_type'        => $slug,
+                'post_status'      => 'publish',
+                'posts_per_page'   => 10,
+                'orderby'          => 'menu_order post_date',
+                'order'            => 'DESC',
+                'suppress_filters' => true,
+            ]);
+
+            $samples = [];
+            foreach ($samples_raw as $s) {
+                $samples[] = [
+                    'id'    => (int) $s->ID,
+                    'title' => esc_html($s->post_title ?: ('Untitled ' . $obj->labels->singular_name . ' #' . $s->ID)),
+                    'slug'  => sanitize_title($s->post_name),
+                    'url'   => esc_url_raw(get_permalink($s->ID)),
+                ];
+            }
+
+            // Associated taxonomies
+            $tax_objects = get_object_taxonomies($slug, 'objects');
+            $taxonomies = [];
+            foreach ($tax_objects as $tax_slug => $tax_obj) {
+                if ($tax_obj->public || $tax_obj->show_ui) {
+                    $taxonomies[] = [
+                        'slug'  => $tax_slug,
+                        'label' => esc_html($tax_obj->labels->name ?: $tax_slug),
+                    ];
+                }
+            }
+
+            $available[$slug] = [
+                'slug'           => $slug,
+                'label'          => esc_html($obj->labels->name ?: ucfirst($slug)),
+                'singular_label' => esc_html($obj->labels->singular_name ?: ucfirst($slug)),
+                'description'    => esc_html($obj->description ?: ''),
+                'count'          => $publish_count,
+                'is_woo'         => ($slug === 'product' && class_exists('WooCommerce')),
+                'taxonomies'     => $taxonomies,
+                'samples'        => $samples,
+            ];
+        }
+
+        return $available;
+    }
+
+    /**
+     * Get the array of post types currently allowed for scraping by administrator.
+     *
+     * @return array Array of post type slug strings.
+     */
+    public function get_allowed_post_types() {
+        $saved = get_option('ai_assistant_allowed_post_types', null);
+
+        if (is_array($saved) && !empty($saved)) {
+            return array_map('sanitize_key', $saved);
+        }
+
+        // Default set: pages, posts, and WooCommerce products if present
+        $defaults = ['page', 'post'];
+        if (class_exists('WooCommerce')) {
+            $defaults[] = 'product';
+        }
+
+        return $defaults;
+    }
+
+    /**
+     * Run a comprehensive diagnostic scan of the entire site and database.
      * Returns structured summary metrics without loading heavy content into RAM.
      */
     public function scan_site_summary() {
@@ -41,35 +145,26 @@ class Crescelo_Site_Scanner {
             $booking_systems[] = 'WooCommerce Bookings';
         }
 
-        // Count published pages (uses object cache)
-        $page_counts = wp_count_posts('page');
-        $page_count  = isset($page_counts->publish) ? (int) $page_counts->publish : 0;
+        // Available & Allowed Post Types
+        $available_post_types = $this->get_available_post_types();
+        $allowed_post_types   = $this->get_allowed_post_types();
 
-        // Sample key pages using core get_posts
-        $key_pages_raw = get_posts([
-            'post_type'      => 'page',
-            'post_status'    => 'publish',
-            'posts_per_page' => 20,
-            'orderby'        => 'menu_order post_date',
-            'order'          => 'DESC',
-            'suppress_filters' => true,
-        ]);
-
-        $key_pages = [];
-        foreach ($key_pages_raw as $kp) {
-            $key_pages[] = [
-                'id'    => (int) $kp->ID,
-                'title' => esc_html($kp->post_title),
-                'slug'  => sanitize_title($kp->post_name),
-                'url'   => esc_url_raw(get_permalink($kp->ID)),
-            ];
+        // Calculate total items across all allowed post types
+        $total_allowed_items = 0;
+        foreach ($allowed_post_types as $pt) {
+            if (isset($available_post_types[$pt])) {
+                $total_allowed_items += $available_post_types[$pt]['count'];
+            }
         }
 
-        // Count published blog posts (uses object cache)
-        $post_counts = wp_count_posts('post');
-        $post_count  = isset($post_counts->publish) ? (int) $post_counts->publish : 0;
+        // Count published pages (uses object cache)
+        $page_count = isset($available_post_types['page']['count']) ? $available_post_types['page']['count'] : 0;
+        $key_pages  = isset($available_post_types['page']['samples']) ? $available_post_types['page']['samples'] : [];
 
-        // Media Library Documents (PDF, Word, CSV, TXT) with prepared statements
+        // Count published blog posts (uses object cache)
+        $post_count = isset($available_post_types['post']['count']) ? $available_post_types['post']['count'] : 0;
+
+        // Media Library Documents (PDF, Word, CSV, TXT)
         $doc_mimes = [
             'application/pdf',
             'application/msword',
@@ -80,14 +175,12 @@ class Crescelo_Site_Scanner {
 
         $placeholders = implode(', ', array_fill(0, count($doc_mimes), '%s'));
 
-        // Count documents with safe parameterization
         $doc_count_query = $wpdb->prepare(
             "SELECT COUNT(*) FROM {$wpdb->posts} WHERE post_type = 'attachment' AND post_mime_type IN ($placeholders)",
             $doc_mimes
         );
         $doc_count = (int) $wpdb->get_var($doc_count_query);
 
-        // Fetch sample documents with safe parameterization
         $doc_sample_query = $wpdb->prepare(
             "SELECT ID, post_title, post_mime_type FROM {$wpdb->posts} WHERE post_type = 'attachment' AND post_mime_type IN ($placeholders) ORDER BY post_date DESC LIMIT 10",
             $doc_mimes
@@ -156,52 +249,75 @@ class Crescelo_Site_Scanner {
         }
 
         return [
-            'site_name'   => esc_html(get_bloginfo('name')),
-            'site_url'    => esc_url_raw(home_url()),
-            'admin_email' => sanitize_email(get_option('admin_email')),
-            'wp_version'  => sanitize_text_field(get_bloginfo('version')),
-            'pages'       => [
+            'site_name'           => esc_html(get_bloginfo('name')),
+            'site_url'            => esc_url_raw(home_url()),
+            'admin_email'         => sanitize_email(get_option('admin_email')),
+            'wp_version'          => sanitize_text_field(get_bloginfo('version')),
+            'post_types'          => $available_post_types,
+            'allowed_post_types'  => $allowed_post_types,
+            'total_allowed_items' => $total_allowed_items,
+            'pages'               => [
                 'count'   => $page_count,
                 'samples' => $key_pages,
             ],
-            'posts'       => [
+            'posts'               => [
                 'count' => $post_count,
             ],
-            'documents'   => [
+            'documents'           => [
                 'count'   => $doc_count,
                 'samples' => $sample_docs,
             ],
-            'woocommerce' => $woo_data,
-            'booking'     => [
+            'woocommerce'         => $woo_data,
+            'booking'             => [
                 'active'  => $has_booking,
                 'systems' => array_map('esc_html', $booking_systems),
+            ],
+            'scrape_settings'     => [
+                'include_meta'        => (bool) get_option('ai_assistant_scrape_include_meta', true),
+                'include_taxonomies'  => (bool) get_option('ai_assistant_scrape_include_taxonomies', true),
+                'include_excerpt'     => (bool) get_option('ai_assistant_scrape_include_excerpt', true),
+                'scrape_method'       => sanitize_key(get_option('ai_assistant_scrape_method', 'db')),
+                'batch_size'          => (int) get_option('ai_assistant_batch_size', 15),
+                'last_scraped'        => get_option('ai_assistant_last_scraped', ''),
+                'scrape_stats'        => get_option('ai_assistant_scrape_stats', []),
             ],
         ];
     }
 
     /**
-     * Retrieve paginated and cleaned items for batch syncing.
+     * Retrieve paginated and cleaned items for batch syncing / scraping.
+     *
+     * @param string $batch_type   The post type slug, 'products', or 'documents'.
+     * @param int    $offset       Query offset.
+     * @param int    $limit        Number of items per batch.
+     * @param array  $selected_ids Optional array of specific IDs.
+     * @param array  $options      Optional scraper options override.
+     * @return array Array of formatted items ready for Knowledge Base ingestion.
      */
-    public function get_items_batch($batch_type, $offset = 0, $limit = 20, $selected_ids = []) {
+    public function get_items_batch($batch_type, $offset = 0, $limit = 20, $selected_ids = [], $options = []) {
         $offset = absint($offset);
         $limit  = min(50, max(1, absint($limit)));
         $clean_ids = !empty($selected_ids) ? array_map('absint', (array) $selected_ids) : [];
 
-        if ($batch_type === 'products' && class_exists('WooCommerce')) {
-            return $this->get_products_batch($offset, $limit, $clean_ids);
-        } elseif ($batch_type === 'pages') {
-            return $this->get_pages_batch($offset, $limit, $clean_ids);
-        } elseif ($batch_type === 'documents') {
-            return $this->get_documents_batch($offset, $limit, $clean_ids);
-        }
+        // Normalize batch type
+        $batch_type = sanitize_key($batch_type);
 
-        return [];
+        if (($batch_type === 'products' || $batch_type === 'product') && class_exists('WooCommerce')) {
+            return $this->get_products_batch($offset, $limit, $clean_ids, $options);
+        } elseif ($batch_type === 'documents' || $batch_type === 'attachment') {
+            return $this->get_documents_batch($offset, $limit, $clean_ids);
+        } elseif ($batch_type === 'pages') {
+            return $this->get_posts_batch('page', $offset, $limit, $clean_ids, $options);
+        } else {
+            // Any standard or custom post type
+            return $this->get_posts_batch($batch_type, $offset, $limit, $clean_ids, $options);
+        }
     }
 
     /**
      * Extract and format WooCommerce products.
      */
-    private function get_products_batch($offset, $limit, $selected_ids = []) {
+    private function get_products_batch($offset, $limit, $selected_ids = [], $options = []) {
         $args = [
             'status'   => 'publish',
             'limit'    => $limit,
@@ -252,6 +368,7 @@ class Crescelo_Site_Scanner {
             $items[] = [
                 'id'               => $pid,
                 'title'            => esc_html($product->get_name()),
+                'postType'         => 'product',
                 'sku'              => sanitize_text_field($product->get_sku()),
                 'price'            => html_entity_decode(strip_tags(wc_price($product->get_price()))),
                 'regularPrice'     => html_entity_decode(strip_tags(wc_price($product->get_regular_price()))),
@@ -272,11 +389,25 @@ class Crescelo_Site_Scanner {
     }
 
     /**
-     * Extract and format standard Pages or Posts.
+     * Extract and format any post type (page, post, or custom post type).
+     *
+     * @param string $post_type    The target post type slug.
+     * @param int    $offset       Batch offset.
+     * @param int    $limit        Batch limit.
+     * @param array  $selected_ids Specific IDs to query.
+     * @param array  $options      Scraper options.
+     * @return array
      */
-    private function get_pages_batch($offset, $limit, $selected_ids = []) {
+    public function get_posts_batch($post_type, $offset = 0, $limit = 15, $selected_ids = [], $options = []) {
+        $post_type = sanitize_key($post_type);
+
+        $include_meta       = isset($options['include_meta']) ? (bool) $options['include_meta'] : (bool) get_option('ai_assistant_scrape_include_meta', true);
+        $include_taxonomies = isset($options['include_taxonomies']) ? (bool) $options['include_taxonomies'] : (bool) get_option('ai_assistant_scrape_include_taxonomies', true);
+        $include_excerpt    = isset($options['include_excerpt']) ? (bool) $options['include_excerpt'] : (bool) get_option('ai_assistant_scrape_include_excerpt', true);
+        $scrape_method      = isset($options['scrape_method']) ? sanitize_key($options['scrape_method']) : sanitize_key(get_option('ai_assistant_scrape_method', 'db'));
+
         $args = [
-            'post_type'        => ['page', 'post'],
+            'post_type'        => $post_type,
             'post_status'      => 'publish',
             'posts_per_page'   => $limit,
             'offset'           => $offset,
@@ -292,16 +423,106 @@ class Crescelo_Site_Scanner {
         $query = new WP_Query($args);
         $items = [];
 
+        // Discover taxonomies for this post type
+        $tax_objects = $include_taxonomies ? get_object_taxonomies($post_type, 'objects') : [];
+
         foreach ($query->posts as $post) {
             $pid = absint($post->ID);
+            $permalink = get_permalink($pid);
+
+            // Featured Image URL
+            $image_id  = get_post_thumbnail_id($pid);
+            $image_url = $image_id ? wp_get_attachment_image_url($image_id, 'medium_large') : '';
+
+            // Author Name
+            $author_name = '';
+            if (!empty($post->post_author)) {
+                $author_name = get_the_author_meta('display_name', $post->post_author);
+            }
+
+            // Taxonomies
+            $post_taxonomies = [];
+            $categories      = [];
+            $tags            = [];
+
+            if ($include_taxonomies && !empty($tax_objects)) {
+                foreach ($tax_objects as $tax_name => $tax_obj) {
+                    if (!$tax_obj->public && !$tax_obj->show_ui) continue;
+
+                    $terms = wp_get_post_terms($pid, $tax_name, ['fields' => 'names']);
+                    if (!is_wp_error($terms) && !empty($terms) && is_array($terms)) {
+                        $term_names = array_map('esc_html', $terms);
+                        $post_taxonomies[$tax_obj->labels->name ?: $tax_name] = $term_names;
+
+                        if ($tax_name === 'category') {
+                            $categories = $term_names;
+                        } elseif ($tax_name === 'post_tag') {
+                            $tags = $term_names;
+                        }
+                    }
+                }
+            }
+
+            // Custom Fields / Post Meta (Filtering private underscore keys)
+            $clean_meta = [];
+            if ($include_meta) {
+                $raw_meta = get_post_meta($pid);
+                if (is_array($raw_meta)) {
+                    foreach ($raw_meta as $key => $values) {
+                        // Skip internal private meta starting with underscore
+                        if (substr($key, 0, 1) === '_') continue;
+
+                        $raw_val = $values[0] ?? '';
+                        $unserialized = maybe_unserialize($raw_val);
+
+                        if (is_string($unserialized) || is_numeric($unserialized)) {
+                            $val_str = trim((string) $unserialized);
+                            if ($val_str !== '' && strlen($val_str) < 3000) {
+                                $clean_meta[sanitize_text_field($key)] = sanitize_text_field($val_str);
+                            }
+                        } elseif (is_array($unserialized)) {
+                            // Simple array of strings
+                            $flattened = [];
+                            foreach ($unserialized as $sub_k => $sub_v) {
+                                if (is_scalar($sub_v)) {
+                                    $flattened[] = sanitize_text_field((string)$sub_v);
+                                }
+                            }
+                            if (!empty($flattened)) {
+                                $clean_meta[sanitize_text_field($key)] = $flattened;
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Content Extraction
+            $content = '';
+            if ($scrape_method === 'html' && !empty($permalink)) {
+                // Try rendered extraction, fallback to DB content if remote get fails
+                $rendered = $this->scrape_rendered_url($permalink);
+                $content  = !empty($rendered) ? $rendered : $this->clean_text($post->post_content);
+            } else {
+                $content = $this->clean_text($post->post_content);
+            }
+
+            $excerpt = $include_excerpt ? $this->clean_text($post->post_excerpt ?: wp_trim_words($post->post_content, 40)) : '';
+
             $items[] = [
-                'id'           => $pid,
-                'title'        => esc_html($post->post_title),
-                'postType'     => sanitize_key($post->post_type),
-                'content'      => $this->clean_text($post->post_content),
-                'excerpt'      => $this->clean_text($post->post_excerpt),
-                'url'          => esc_url_raw(get_permalink($pid)),
-                'dateModified' => sanitize_text_field($post->post_modified),
+                'id'            => $pid,
+                'title'         => esc_html($post->post_title ?: ('Untitled #' . $pid)),
+                'postType'      => sanitize_key($post->post_type),
+                'content'       => $content,
+                'excerpt'       => $excerpt,
+                'url'           => esc_url_raw($permalink),
+                'imageUrl'      => $image_url ? esc_url_raw($image_url) : '',
+                'author'        => sanitize_text_field($author_name),
+                'categories'    => $categories,
+                'tags'          => $tags,
+                'taxonomies'    => $post_taxonomies,
+                'meta'          => $clean_meta,
+                'datePublished' => sanitize_text_field($post->post_date),
+                'dateModified'  => sanitize_text_field($post->post_modified),
             ];
         }
 
@@ -343,10 +564,11 @@ class Crescelo_Site_Scanner {
 
             $items[] = [
                 'id'       => $pid,
-                'title'    => esc_html($post->post_title),
+                'title'    => esc_html($post->post_title ?: ('Document #' . $pid)),
+                'postType' => 'document',
                 'mimeType' => sanitize_mime_type($post->post_mime_type),
                 'url'      => esc_url_raw($doc_url),
-                'content'  => "Document Reference: " . esc_html($post->post_title) . "\nDownload / View URL: " . esc_url_raw($doc_url),
+                'content'  => "Document Reference: " . esc_html($post->post_title) . "\nFile URL: " . esc_url_raw($doc_url),
             ];
         }
 
@@ -354,9 +576,54 @@ class Crescelo_Site_Scanner {
     }
 
     /**
+     * Safely scrape the public rendered HTML for a given URL and extract clean text.
+     * Strips headers, navigation menus, footers, forms, scripts, and styling.
+     */
+    public function scrape_rendered_url($url) {
+        if (empty($url) || !wp_http_validate_url($url)) {
+            return '';
+        }
+
+        $response = wp_remote_get($url, [
+            'timeout'    => 12,
+            'user-agent' => 'CresceloKnowledgeScraper/2.1 (WordPress ' . get_bloginfo('version') . ')',
+            'sslverify'  => false,
+        ]);
+
+        if (is_wp_error($response)) {
+            return '';
+        }
+
+        $code = (int) wp_remote_retrieve_response_code($response);
+        if ($code !== 200) {
+            return '';
+        }
+
+        $html = wp_remote_retrieve_body($response);
+        if (empty($html)) {
+            return '';
+        }
+
+        // Remove script, style, noscript tags and content
+        $html = preg_replace('/<(script|style|noscript)\b[^>]*>(.*?)<\/\1>/is', '', $html);
+
+        // Remove header, nav, footer, sidebar, and form tags to isolate main page content
+        $html = preg_replace('/<(header|nav|footer|aside|form)\b[^>]*>(.*?)<\/\1>/is', '', $html);
+
+        // Extract main or article if present
+        if (preg_match('/<main\b[^>]*>(.*?)<\/main>/is', $html, $matches)) {
+            $html = $matches[1];
+        } elseif (preg_match('/<article\b[^>]*>(.*?)<\/article>/is', $html, $matches)) {
+            $html = $matches[1];
+        }
+
+        return $this->clean_text($html);
+    }
+
+    /**
      * Strip HTML, block comments, shortcodes, and excess whitespace from post content.
      */
-    private function clean_text($text) {
+    public function clean_text($text) {
         if (empty($text) || !is_string($text)) return '';
 
         // Strip non-printable control characters (protects JSON serialization and parser bugs)

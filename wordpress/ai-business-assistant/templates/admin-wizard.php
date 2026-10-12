@@ -157,69 +157,56 @@ $nonce        = wp_create_nonce('crescelo_wizard_nonce');
             </div>
 
             <div class="discovery-metrics-grid" id="discovery-metrics" style="display: none;">
+                <!-- Populated dynamically via JS with all discovered post types -->
                 <div class="metric-card">
                     <div class="metric-num" id="metric-pages">0</div>
                     <div class="metric-label">Published Pages</div>
                 </div>
                 <div class="metric-card">
+                    <div class="metric-num" id="metric-posts">0</div>
+                    <div class="metric-label">Blog Posts</div>
+                </div>
+                <div class="metric-card" id="metric-card-products">
                     <div class="metric-num" id="metric-products">0</div>
                     <div class="metric-label">WooCommerce Products</div>
                 </div>
                 <div class="metric-card">
-                    <div class="metric-num" id="metric-categories">0</div>
-                    <div class="metric-label">Product Categories</div>
-                </div>
-                <div class="metric-card">
                     <div class="metric-num" id="metric-docs">0</div>
-                    <div class="metric-label">Discovered Documents</div>
+                    <div class="metric-label">Media Documents</div>
                 </div>
             </div>
 
             <div class="wizard-actions" style="margin-top: 32px;">
                 <button type="button" class="btn btn-secondary btn-back" data-goto="1">&larr; Back</button>
                 <button type="button" class="btn btn-primary" id="btn-to-step-3" disabled>
-                    Review Discovered Knowledge &rarr;
+                    Review Discovered Post Types & Content &rarr;
                 </button>
             </div>
         </div>
 
         <!-- =================== STEP 3: CONTENT SELECTION & FEATURES =================== -->
         <div class="wizard-pane" id="pane-step-3">
-            <h2 class="pane-title">Curate Discovered Content & Activate Features</h2>
-            <p class="pane-subtitle">Choose which content the AI should read and enable commerce actions.</p>
+            <h2 class="pane-title">Choose Post Types & Content to Scrape</h2>
+            <p class="pane-subtitle">Select which post types to allow and train into the AI Knowledge Base, and activate commerce actions.</p>
 
             <div class="curate-columns">
                 <!-- Left: Content Checkboxes -->
                 <div class="curate-col">
-                    <div class="col-title">Discovered Content to Index</div>
-
-                    <!-- Products Accordion -->
-                    <div class="content-group" id="group-products">
-                        <label class="group-header">
-                            <input type="checkbox" id="check-all-products" checked />
-                            <strong>WooCommerce Catalog (<span id="count-products-label">0</span> products)</strong>
-                        </label>
-                        <div class="group-items" id="items-product-categories">
-                            <!-- Populated via JS -->
-                        </div>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; padding-bottom:8px; border-bottom:2px solid #f1f5f9;">
+                        <span class="col-title" style="margin:0; padding:0; border:none;">Discovered Post Types & Content</span>
+                        <span id="curate-selection-count" class="count-badge has-items">Loading...</span>
                     </div>
 
-                    <!-- Pages Accordion -->
-                    <div class="content-group" id="group-pages">
-                        <label class="group-header">
-                            <input type="checkbox" id="check-all-pages" checked />
-                            <strong>Core Pages & Policies (<span id="count-pages-label">0</span> pages)</strong>
-                        </label>
-                        <div class="group-items" id="items-pages-list">
-                            <!-- Populated via JS -->
-                        </div>
+                    <!-- Dynamic Post Types Container -->
+                    <div id="dynamic-post-types-curate">
+                        <!-- Populated dynamically via JS for every registered post type -->
                     </div>
 
                     <!-- Documents Accordion -->
-                    <div class="content-group" id="group-docs">
+                    <div class="content-group" id="group-docs" style="display:none;">
                         <label class="group-header">
                             <input type="checkbox" id="check-all-docs" checked />
-                            <strong>Discovered Documents (<span id="count-docs-label">0</span> files)</strong>
+                            <strong>Media Documents (<span id="count-docs-label">0</span> files)</strong>
                         </label>
                         <div class="group-items" id="items-docs-list">
                             <!-- Populated via JS -->

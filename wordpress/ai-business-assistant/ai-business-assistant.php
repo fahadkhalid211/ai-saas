@@ -1,9 +1,9 @@
 <?php
 /**
- * Plugin Name: Crescelo AI Business Assistant & WooCommerce Sales Concierge
+ * Plugin Name: Crescelo AI Business Assistant & Knowledge Scraper
  * Plugin URI: https://crescelo.com
- * Description: Connect your website to an intelligent AI chatbot that reads your website, WooCommerce catalog, and documents with an automated 5-step setup wizard.
- * Version: 2.0.0
+ * Description: Connect your website to an intelligent AI chatbot that scrapes your entire website (posts, pages, WooCommerce products, custom post types, and documents) into an active vector knowledge base with an automated setup wizard and real-time synchronization.
+ * Version: 2.1.0
  * Author: Crescelo
  * Author URI: https://crescelo.com
  * License: GPL-2.0+
@@ -14,7 +14,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('CRESCELO_PLUGIN_VERSION', '2.0.0');
+define('CRESCELO_PLUGIN_VERSION', '2.1.0');
 define('CRESCELO_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('CRESCELO_PLUGIN_URL', plugin_dir_url(__FILE__));
 
@@ -50,7 +50,7 @@ class AIBusinessAssistantPlugin {
 
     public function add_admin_menu() {
         add_menu_page(
-            'Crescelo AI Assistant',
+            'Crescelo AI Assistant & Knowledge Scraper',
             'AI Assistant',
             'manage_options',
             'ai-business-assistant',
@@ -91,6 +91,48 @@ class AIBusinessAssistantPlugin {
             'sanitize_callback' => 'rest_sanitize_boolean',
             'default'           => false,
         ]);
+        register_setting('ai_assistant_options', 'ai_assistant_allowed_post_types', [
+            'type'              => 'array',
+            'sanitize_callback' => [$this, 'sanitize_post_types_array'],
+            'default'           => ['page', 'post', 'product'],
+        ]);
+        register_setting('ai_assistant_options', 'ai_assistant_scrape_include_meta', [
+            'type'              => 'boolean',
+            'sanitize_callback' => 'rest_sanitize_boolean',
+            'default'           => true,
+        ]);
+        register_setting('ai_assistant_options', 'ai_assistant_scrape_include_taxonomies', [
+            'type'              => 'boolean',
+            'sanitize_callback' => 'rest_sanitize_boolean',
+            'default'           => true,
+        ]);
+        register_setting('ai_assistant_options', 'ai_assistant_scrape_include_excerpt', [
+            'type'              => 'boolean',
+            'sanitize_callback' => 'rest_sanitize_boolean',
+            'default'           => true,
+        ]);
+        register_setting('ai_assistant_options', 'ai_assistant_scrape_method', [
+            'type'              => 'string',
+            'sanitize_callback' => 'sanitize_key',
+            'default'           => 'db',
+        ]);
+        register_setting('ai_assistant_options', 'ai_assistant_batch_size', [
+            'type'              => 'integer',
+            'sanitize_callback' => 'absint',
+            'default'           => 15,
+        ]);
+        register_setting('ai_assistant_options', 'ai_assistant_auto_sync', [
+            'type'              => 'boolean',
+            'sanitize_callback' => 'rest_sanitize_boolean',
+            'default'           => true,
+        ]);
+    }
+
+    public function sanitize_post_types_array($input) {
+        if (!is_array($input)) {
+            return [];
+        }
+        return array_values(array_filter(array_map('sanitize_key', $input)));
     }
 
     public function enqueue_admin_assets($hook) {
@@ -108,16 +150,22 @@ class AIBusinessAssistantPlugin {
         wp_enqueue_script(
             'crescelo-wizard-js',
             CRESCELO_PLUGIN_URL . 'assets/js/wizard.js',
-            [],
+            ['jquery'],
             CRESCELO_PLUGIN_VERSION,
             true
         );
+
+        $allowed_post_types = $this->scanner->get_allowed_post_types();
+        $available_post_types = $this->scanner->get_available_post_types();
 
         wp_localize_script('crescelo-wizard-js', 'CresceloWizardData', [
             'ajaxUrl'            => admin_url('admin-ajax.php'),
             'nonce'              => wp_create_nonce('crescelo_wizard_nonce'),
             'hostUrl'            => esc_url_raw(get_option('ai_assistant_host_url', 'http://localhost:3000')),
             'currentAssistantId' => sanitize_text_field(get_option('ai_assistant_id', '')),
+            'allowedPostTypes'   => $allowed_post_types,
+            'availablePostTypes' => $available_post_types,
+            'batchSize'          => (int) get_option('ai_assistant_batch_size', 15),
         ]);
     }
 

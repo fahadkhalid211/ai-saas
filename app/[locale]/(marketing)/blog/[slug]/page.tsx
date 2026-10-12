@@ -27,8 +27,8 @@ import { withSocial } from '@/lib/seo';
 export const revalidate = 3600;
 
 /** English has every article; another language only the ones that were translated. */
-export async function generateStaticParams({ params }: { params: Promise<{ locale: string }> }) {
-  const { locale } = await params;
+export async function generateStaticParams({ params }: { params: { locale: string } }) {
+  const { locale } = params;
   if (!isLocaleCode(locale) || locale === 'en') return BLOG_POSTS.map((p) => ({ slug: p.slug }));
   return translatedSlugs(locale).map((slug) => ({ slug }));
 }

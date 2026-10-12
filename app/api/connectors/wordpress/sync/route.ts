@@ -79,7 +79,41 @@ function formatPageToMarkdown(item: any, batchType: string): string {
   parts.push(`# ${item.title || 'Untitled Document'}`);
   if (item.url) parts.push(`- **URL**: ${item.url}`);
   parts.push(`- **Content Type**: ${item.postType || batchType}`);
+  if (item.author) parts.push(`- **Author**: ${item.author}`);
   if (item.dateModified) parts.push(`- **Last Updated**: ${item.dateModified}`);
+
+  const categories = Array.isArray(item.categories)
+    ? item.categories.join(', ')
+    : item.categories || '';
+  if (categories) parts.push(`- **Categories**: ${categories}`);
+
+  const tags = Array.isArray(item.tags) ? item.tags.join(', ') : item.tags || '';
+  if (tags) parts.push(`- **Tags**: ${tags}`);
+
+  if (item.taxonomies && typeof item.taxonomies === 'object') {
+    for (const [taxName, terms] of Object.entries(item.taxonomies)) {
+      if (Array.isArray(terms) && terms.length > 0) {
+        parts.push(`- **${taxName}**: ${terms.join(', ')}`);
+      } else if (typeof terms === 'string' && terms) {
+        parts.push(`- **${taxName}**: ${terms}`);
+      }
+    }
+  }
+
+  if (item.meta && typeof item.meta === 'object' && Object.keys(item.meta).length > 0) {
+    const metaLines: string[] = [];
+    for (const [key, val] of Object.entries(item.meta)) {
+      if (val !== undefined && val !== null && val !== '') {
+        const valStr = Array.isArray(val) ? val.join(', ') : typeof val === 'object' ? JSON.stringify(val) : String(val);
+        metaLines.push(`  - **${key}**: ${valStr}`);
+      }
+    }
+    if (metaLines.length > 0) {
+      parts.push(`- **Metadata & Custom Fields**:\n${metaLines.join('\n')}`);
+    }
+  }
+
+  if (item.imageUrl) parts.push(`- **Featured Image**: ${item.imageUrl}`);
 
   if (item.excerpt) {
     parts.push(`\n### Summary\n${item.excerpt.trim()}`);

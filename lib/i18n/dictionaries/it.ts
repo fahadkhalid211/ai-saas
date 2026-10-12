@@ -32,7 +32,7 @@ export const itDict: TranslationDictionary = {
     title: ['Rispondi a ogni visitatore.', 'Prenota quelli che sono pronti.'],
     body: 'Risposte istantanee basate sui tuoi contenuti. Prenotazioni reali nel tuo calendario.\nIl tuo team interviene solo quando serve davvero.',
     primaryCta: 'Inizia la prova gratuita',
-    secondaryCta: 'Prova la demo con i tuoi documenti (gratis)',
+    secondaryCta: 'Prova la demo gratis',
     trust: [
       'Risponde esclusivamente dai tuoi contenuti – non inventa mai',
       'Inizio gratuito – nessun costo di calcolo a tuo carico',

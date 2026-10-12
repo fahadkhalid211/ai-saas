@@ -32,7 +32,7 @@ export const fiDict: TranslationDictionary = {
     title: ['Vastaa jokaiselle vierailijalle.', 'Varaa heidät, jotka ovat valmiita.'],
     body: 'Välittömät vastaukset omasta sisällöstäsi. Oikeat varaukset suoraan kalenteriisi.\nTiimisi osallistuu vain silloin, kun sillä on todella väliä.',
     primaryCta: 'Aloita ilmainen kokeilu',
-    secondaryCta: 'Kokeile demoa omalla materiaalillasi (ilmainen)',
+    secondaryCta: 'Kokeile ilmaista demoa',
     trust: [
       'Vastaa vain omasta sisällöstäsi – ei koskaan arvaile',
       'Ilmainen aloittaa – ei laskentakustannuksia',

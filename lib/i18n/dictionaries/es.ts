@@ -32,7 +32,7 @@ export const esDict: TranslationDictionary = {
     title: ['Responde a cada visitante.', 'Agenda a los que están listos.'],
     body: 'Respuestas instantáneas basadas en tu contenido. Citas reales en tu calendario.\nTu equipo interviene únicamente cuando es necesario.',
     primaryCta: 'Comenzar prueba gratuita',
-    secondaryCta: 'Probar demo con tu documento (gratis)',
+    secondaryCta: 'Probar demo gratis',
     trust: [
       'Responde únicamente desde tu propio contenido – nunca inventa',
       'Comienza gratis – sin costos de cómputo para ti',

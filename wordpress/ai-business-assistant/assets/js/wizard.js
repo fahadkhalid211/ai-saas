@@ -1,5 +1,5 @@
 /**
- * Crescelo Onboarding Wizard Client Logic
+ * Crescelo Onboarding Wizard & Website Scraper Client Logic
  */
 
 (function () {
@@ -10,8 +10,9 @@
         var currentStep = 1;
         var scanData = null;
         var assistantId = data.currentAssistantId || '';
+        var activeScraperAborted = false;
 
-        // Elements
+        // Elements for Wizard
         var stepItems = document.querySelectorAll('.step-item');
         var panes = document.querySelectorAll('.wizard-pane');
 
@@ -68,7 +69,9 @@
             var metrics = document.getElementById('discovery-metrics');
             var nextBtn = document.getElementById('btn-to-step-3');
 
-            statusText.textContent = 'Inspecting WordPress database and WooCommerce catalog...';
+            if (!statusText) return;
+
+            statusText.textContent = 'Discovering registered post types, content, and WooCommerce catalog...';
 
             var formData = new FormData();
             formData.append('action', 'crescelo_wizard_scan');
@@ -86,22 +89,43 @@
                 }
 
                 scanData = response.data;
-                statusText.textContent = 'Scan complete! Reviewing discovered catalog and content.';
+                statusText.textContent = 'Scan complete! Reviewing discovered post types and content.';
 
-                // Update metric counters
-                document.getElementById('metric-pages').textContent = scanData.pages?.count || 0;
-                document.getElementById('metric-products').textContent = scanData.woocommerce?.total_products || 0;
-                document.getElementById('metric-categories').textContent = scanData.woocommerce?.categories?.length || 0;
-                document.getElementById('metric-docs').textContent = scanData.documents?.count || 0;
+                // Update metric counters dynamically
+                if (metrics) {
+                    var pagesCount = scanData.pages?.count || 0;
+                    var postsCount = scanData.posts?.count || 0;
+                    var prodCount  = scanData.woocommerce?.total_products || (scanData.post_types?.product?.count || 0);
+                    var docsCount  = scanData.documents?.count || 0;
 
-                metrics.style.display = 'grid';
-                nextBtn.disabled = false;
+                    var pagesEl = document.getElementById('metric-pages');
+                    if (pagesEl) pagesEl.textContent = pagesCount;
 
-                // Pre-populate Step 3 lists
+                    var postsEl = document.getElementById('metric-posts');
+                    if (postsEl) postsEl.textContent = postsCount;
+
+                    var prodEl = document.getElementById('metric-products');
+                    if (prodEl) prodEl.textContent = prodCount;
+
+                    var docsEl = document.getElementById('metric-docs');
+                    if (docsEl) docsEl.textContent = docsCount;
+
+                    // If WooCommerce is not active, hide products card or show 0
+                    var prodCard = document.getElementById('metric-card-products');
+                    if (prodCard && !scanData.woocommerce?.active && prodCount === 0) {
+                        prodCard.style.display = 'none';
+                    }
+
+                    metrics.style.display = 'grid';
+                }
+
+                if (nextBtn) nextBtn.disabled = false;
+
+                // Pre-populate Step 3 lists with discovered post types
                 populateStep3(scanData);
             })
             .catch(function (err) {
-                statusText.textContent = 'Failed to connect to database: ' + err.message;
+                if (statusText) statusText.textContent = 'Failed to connect to database: ' + err.message;
             });
         }
 
@@ -112,69 +136,101 @@
             });
         }
 
-        // ================= STEP 3: CURATE & POPULATE =================
+        // ================= STEP 3: DYNAMIC POST TYPES CURATION =================
         function populateStep3(scan) {
-            // Products
-            var prodGroup = document.getElementById('group-products');
-            var prodLabel = document.getElementById('count-products-label');
-            var prodCatsContainer = document.getElementById('items-product-categories');
-            prodCatsContainer.innerHTML = '';
+            var container = document.getElementById('dynamic-post-types-curate');
+            if (!container) return;
+            container.innerHTML = '';
 
-            if (scan.woocommerce?.active && scan.woocommerce.total_products > 0) {
-                prodLabel.textContent = parseInt(scan.woocommerce.total_products, 10) || 0;
-                if (scan.woocommerce.categories && scan.woocommerce.categories.length > 0) {
+            var postTypes = scan.post_types || {};
+            var allowed = scan.allowed_post_types || ['page', 'post', 'product'];
+            var totalSelectedCount = 0;
+
+            Object.keys(postTypes).forEach(function (slug) {
+                var pt = postTypes[slug];
+                var isChecked = allowed.indexOf(slug) !== -1;
+                if (isChecked) totalSelectedCount += (pt.count || 0);
+
+                var groupDiv = document.createElement('div');
+                groupDiv.className = 'content-group';
+                groupDiv.id = 'group-pt-' + slug;
+
+                var headerHtml = '<label class="group-header">' +
+                    '<input type="checkbox" class="pt-group-check" data-slug="' + escapeHtml(slug) + '" ' + (isChecked ? 'checked' : '') + ' /> ' +
+                    '<strong>' + escapeHtml(pt.label) + ' (<span class="pt-count">' + (pt.count || 0) + '</span> items)</strong>' +
+                    '</label>';
+
+                var itemsHtml = '<div class="group-items" id="items-pt-' + escapeHtml(slug) + '">';
+
+                // If this is WooCommerce and categories exist
+                if (slug === 'product' && scan.woocommerce?.categories?.length > 0) {
                     scan.woocommerce.categories.forEach(function (cat) {
-                        var catId = parseInt(cat.id, 10) || 0;
-                        var catCount = parseInt(cat.count, 10) || 0;
-                        var lbl = document.createElement('label');
-                        lbl.innerHTML = '<input type="checkbox" class="cat-item-check" data-cat-id="' + catId + '" checked /> ' +
-                            escapeHtml(cat.name) + ' (' + catCount + ' items)';
-                        prodCatsContainer.appendChild(lbl);
+                        itemsHtml += '<label><input type="checkbox" class="cat-item-check" data-cat-id="' + cat.id + '" checked /> ' +
+                            escapeHtml(cat.name) + ' (' + (cat.count || 0) + ' products)</label>';
+                    });
+                } else if (pt.samples && pt.samples.length > 0) {
+                    pt.samples.forEach(function (item) {
+                        itemsHtml += '<label><input type="checkbox" class="item-check" value="' + item.id + '" checked /> ' +
+                            escapeHtml(item.title) + '</label>';
                     });
                 } else {
-                    prodCatsContainer.innerHTML = '<div style="color:#64748b;">All published products selected.</div>';
+                    itemsHtml += '<div style="color:#64748b; font-size:12px;">No items published yet.</div>';
                 }
-            } else {
-                prodGroup.style.display = 'none';
-            }
+                itemsHtml += '</div>';
 
-            // Pages
-            var pagesLabel = document.getElementById('count-pages-label');
-            var pagesList = document.getElementById('items-pages-list');
-            pagesList.innerHTML = '';
-            pagesLabel.textContent = parseInt(scan.pages?.count, 10) || 0;
+                groupDiv.innerHTML = headerHtml + itemsHtml;
+                container.appendChild(groupDiv);
 
-            if (scan.pages?.samples && scan.pages.samples.length > 0) {
-                scan.pages.samples.forEach(function (p) {
-                    var pageId = parseInt(p.id, 10) || 0;
-                    var lbl = document.createElement('label');
-                    lbl.innerHTML = '<input type="checkbox" class="page-item-check" value="' + pageId + '" checked /> ' +
-                        escapeHtml(p.title || p.slug);
-                    pagesList.appendChild(lbl);
+                // Add toggle event for parent checkbox
+                var groupCheck = groupDiv.querySelector('.pt-group-check');
+                groupCheck.addEventListener('change', function () {
+                    var checked = this.checked;
+                    groupDiv.querySelectorAll('.group-items input[type="checkbox"]').forEach(function (c) {
+                        c.checked = checked;
+                    });
+                    updateCurateSummary();
                 });
-            } else {
-                pagesList.innerHTML = '<div style="color:#64748b;">No published pages found.</div>';
-            }
+            });
 
-            // Documents
+            // Documents Group
             var docsGroup = document.getElementById('group-docs');
             var docsLabel = document.getElementById('count-docs-label');
-            var docsList = document.getElementById('items-docs-list');
-            docsList.innerHTML = '';
+            var docsList  = document.getElementById('items-docs-list');
 
-            var docsCount = parseInt(scan.documents?.count, 10) || 0;
-            if (docsCount > 0) {
-                docsLabel.textContent = docsCount;
-                scan.documents.samples.forEach(function (d) {
-                    var docId = parseInt(d.id, 10) || 0;
-                    var lbl = document.createElement('label');
-                    lbl.innerHTML = '<input type="checkbox" class="doc-item-check" value="' + docId + '" checked /> ' +
-                        escapeHtml(d.title);
-                    docsList.appendChild(lbl);
-                });
-            } else {
-                docsGroup.style.display = 'none';
+            if (docsGroup && docsList) {
+                var docCount = parseInt(scan.documents?.count, 10) || 0;
+                if (docCount > 0) {
+                    if (docsLabel) docsLabel.textContent = docCount;
+                    docsList.innerHTML = '';
+                    scan.documents.samples.forEach(function (d) {
+                        var lbl = document.createElement('label');
+                        lbl.innerHTML = '<input type="checkbox" class="doc-item-check" value="' + d.id + '" checked /> ' +
+                            escapeHtml(d.title);
+                        docsList.appendChild(lbl);
+                    });
+                    docsGroup.style.display = 'block';
+                } else {
+                    docsGroup.style.display = 'none';
+                }
             }
+
+            updateCurateSummary();
+        }
+
+        function updateCurateSummary() {
+            var summaryEl = document.getElementById('curate-selection-count');
+            if (!summaryEl) return;
+
+            var total = 0;
+            var checkedGroups = document.querySelectorAll('#dynamic-post-types-curate .pt-group-check:checked');
+            checkedGroups.forEach(function (cb) {
+                var slug = cb.getAttribute('data-slug');
+                if (scanData?.post_types && scanData.post_types[slug]) {
+                    total += (scanData.post_types[slug].count || 0);
+                }
+            });
+
+            summaryEl.textContent = total + ' items ready to scrape';
         }
 
         // ================= STEP 4: REGISTRATION & ASYNC BATCH SYNC =================
@@ -186,8 +242,9 @@
             });
         }
 
-        function appendLog(text, level) {
-            var log = document.getElementById('sync-terminal-log');
+        function appendLog(elementId, text, level) {
+            var log = document.getElementById(elementId);
+            if (!log) return;
             var line = document.createElement('div');
             line.className = 'log-line ' + (level || 'info');
             line.textContent = text;
@@ -195,14 +252,14 @@
             log.scrollTop = log.scrollHeight;
         }
 
-        function updateProgress(percent, label) {
-            var fill = document.getElementById('sync-progress-fill');
-            var percLabel = document.getElementById('sync-percent-label');
-            var statLabel = document.getElementById('sync-status-label');
+        function updateProgress(fillId, percId, statId, percent, label) {
+            var fill = document.getElementById(fillId);
+            var perc = document.getElementById(percId);
+            var stat = document.getElementById(statId);
 
-            fill.style.width = percent + '%';
-            percLabel.textContent = Math.round(percent) + '%';
-            if (label) statLabel.textContent = label;
+            if (fill) fill.style.width = percent + '%';
+            if (perc) perc.textContent = Math.round(percent) + '%';
+            if (stat && label) stat.textContent = label;
         }
 
         function startAssistantRegistrationAndSync() {
@@ -218,8 +275,17 @@
             if (document.getElementById('feat-booking')?.checked) features.push('booking');
             if (document.getElementById('feat-lead-capture')?.checked) features.push('lead_capture');
 
-            appendLog('[AUTH] Connecting to Crescelo SaaS engine at ' + hostUrl + '...', 'info');
-            updateProgress(10, 'Registering AI Assistant...');
+            // Collect selected post types
+            var selectedPostTypes = [];
+            document.querySelectorAll('#dynamic-post-types-curate .pt-group-check:checked').forEach(function (cb) {
+                selectedPostTypes.push(cb.getAttribute('data-slug'));
+            });
+
+            appendLog('sync-terminal-log', '[AUTH] Connecting to Crescelo SaaS engine at ' + hostUrl + '...', 'info');
+            updateProgress('sync-progress-fill', 'sync-percent-label', 'sync-status-label', 10, 'Registering AI Assistant...');
+
+            // Save post types selection first
+            savePostTypesSelection(selectedPostTypes);
 
             var regData = new FormData();
             regData.append('action', 'crescelo_wizard_register');
@@ -234,47 +300,76 @@
             .then(function (res) { return res.json(); })
             .then(function (res) {
                 if (!res.success) {
-                    appendLog('[ERROR] Registration failed: ' + (res.data?.error || 'Unknown error'), 'error');
+                    appendLog('sync-terminal-log', '[ERROR] Registration failed: ' + (res.data?.error || 'Unknown error'), 'error');
                     return;
                 }
 
                 assistantId = res.data.assistantId;
-                appendLog('[SUCCESS] Assistant provisioned: ' + assistantId + ' (' + res.data.assistantName + ')', 'success');
-                updateProgress(25, 'Beginning content batch synchronization...');
+                appendLog('sync-terminal-log', '[SUCCESS] Assistant provisioned: ' + assistantId + ' (' + res.data.assistantName + ')', 'success');
+                updateProgress('sync-progress-fill', 'sync-percent-label', 'sync-status-label', 25, 'Beginning content batch synchronization...');
 
-                // Run batch synchronization sequence
-                runSyncSequence();
+                // Run batch synchronization sequence across selected post types
+                runWizardSyncSequence(selectedPostTypes);
             })
             .catch(function (err) {
-                appendLog('[ERROR] Connection exception: ' + err.message, 'error');
+                appendLog('sync-terminal-log', '[ERROR] Connection exception: ' + err.message, 'error');
             });
         }
 
-        function runSyncSequence() {
+        function savePostTypesSelection(postTypesList) {
+            var fd = new FormData();
+            fd.append('action', 'crescelo_save_post_types');
+            fd.append('nonce', data.nonce);
+            postTypesList.forEach(function (slug) {
+                fd.append('allowed_post_types[]', slug);
+            });
+            fetch(data.ajaxUrl, { method: 'POST', body: fd });
+        }
+
+        function runWizardSyncSequence(selectedTypes) {
             var queue = [];
+            var batchLimit = data.batchSize || 15;
 
-            // 1. Sync WooCommerce products if enabled
-            if (document.getElementById('check-all-products')?.checked && scanData?.woocommerce?.total_products > 0) {
-                queue.push({ type: 'products', total: scanData.woocommerce.total_products, limit: 15 });
-            }
+            selectedTypes.forEach(function (slug) {
+                var total = scanData?.post_types && scanData.post_types[slug] ? scanData.post_types[slug].count : 15;
+                if (total > 0) {
+                    queue.push({
+                        type: slug,
+                        total: total,
+                        limit: batchLimit
+                    });
+                }
+            });
 
-            // 2. Sync Pages
-            if (document.getElementById('check-all-pages')?.checked && scanData?.pages?.count > 0) {
-                queue.push({ type: 'pages', total: scanData.pages.count, limit: 15 });
-            }
-
-            // 3. Sync Documents
+            // Media documents if selected
             if (document.getElementById('check-all-docs')?.checked && scanData?.documents?.count > 0) {
-                queue.push({ type: 'documents', total: scanData.documents.count, limit: 15 });
+                queue.push({
+                    type: 'documents',
+                    total: scanData.documents.count,
+                    limit: batchLimit
+                });
+            }
+
+            if (queue.length === 0) {
+                appendLog('sync-terminal-log', '[NOTICE] No content types selected with published posts.', 'warn');
+                updateProgress('sync-progress-fill', 'sync-percent-label', 'sync-status-label', 100, 'Training complete.');
+                document.getElementById('btn-to-step-5').disabled = false;
+                return;
             }
 
             var currentQueueIdx = 0;
+            var totalItemsSynced = 0;
+            var totalChunksSynced = 0;
 
             function processNextQueueItem() {
                 if (currentQueueIdx >= queue.length) {
                     // All finished!
-                    updateProgress(100, 'Training complete!');
-                    appendLog('[DONE] All selected content indexed and vectorized successfully.', 'success');
+                    updateProgress('sync-progress-fill', 'sync-percent-label', 'sync-status-label', 100, 'Training complete!');
+                    appendLog('sync-terminal-log', '[DONE] Whole website scraped! Indexed ' + totalItemsSynced + ' items and generated ' + totalChunksSynced + ' Knowledge Base chunks.', 'success');
+                    
+                    // Record scrape complete
+                    recordScrapeComplete(totalItemsSynced, totalChunksSynced, selectedTypes);
+
                     document.getElementById('btn-to-step-5').disabled = false;
                     return;
                 }
@@ -283,7 +378,7 @@
                 var offset = 0;
 
                 function sendBatch() {
-                    appendLog('[SYNC] Indexing ' + qItem.type + ' (batch starting at ' + offset + ')...', 'info');
+                    appendLog('sync-terminal-log', '[SYNC] Scraping ' + qItem.type + ' (batch from offset ' + offset + ')...', 'info');
 
                     var batchData = new FormData();
                     batchData.append('action', 'crescelo_wizard_sync_batch');
@@ -296,14 +391,17 @@
                     .then(function (r) { return r.json(); })
                     .then(function (resp) {
                         if (!resp.success) {
-                            appendLog('[WARN] Batch notice: ' + (resp.data?.error || 'Retrying...'), 'warn');
+                            appendLog('sync-terminal-log', '[WARN] Batch notice: ' + (resp.data?.error || 'Retrying...'), 'warn');
                         } else {
                             var processed = resp.data.processedCount || 0;
                             var chunks = resp.data.totalChunks || 0;
-                            appendLog('[CHUNK] Generated & stored ' + chunks + ' embeddings for ' + processed + ' ' + qItem.type + '.', 'success');
+                            totalItemsSynced += processed;
+                            totalChunksSynced += chunks;
 
-                            var estProgress = 25 + Math.min(70, Math.round(((offset + processed) / Math.max(1, qItem.total)) * 70));
-                            updateProgress(estProgress, 'Indexing ' + qItem.type + '...');
+                            appendLog('sync-terminal-log', '[CHUNK] Stored ' + chunks + ' embeddings for ' + processed + ' ' + qItem.type + '.', 'success');
+
+                            var baseProg = 25 + Math.round((currentQueueIdx / queue.length) * 70);
+                            updateProgress('sync-progress-fill', 'sync-percent-label', 'sync-status-label', baseProg, 'Scraping ' + qItem.type + '...');
 
                             if (resp.data.hasMore && resp.data.nextOffset) {
                                 offset = resp.data.nextOffset;
@@ -317,7 +415,7 @@
                         processNextQueueItem();
                     })
                     .catch(function (e) {
-                        appendLog('[WARN] Batch communication glitch: ' + e.message, 'warn');
+                        appendLog('sync-terminal-log', '[WARN] Communication error: ' + e.message, 'warn');
                         currentQueueIdx++;
                         processNextQueueItem();
                     });
@@ -329,12 +427,25 @@
             processNextQueueItem();
         }
 
+        function recordScrapeComplete(items, chunks, postTypes) {
+            var fd = new FormData();
+            fd.append('action', 'crescelo_record_scrape_complete');
+            fd.append('nonce', data.nonce);
+            fd.append('total_items', items);
+            fd.append('total_chunks', chunks);
+            if (postTypes) {
+                postTypes.forEach(function (pt) { fd.append('scraped_post_types[]', pt); });
+            }
+            fetch(data.ajaxUrl, { method: 'POST', body: fd });
+        }
+
         // ================= STEP 5: FINALIZE =================
         var btnToStep5 = document.getElementById('btn-to-step-5');
         if (btnToStep5) {
             btnToStep5.addEventListener('click', function () {
                 goToStep(5);
-                document.getElementById('display-assistant-id').textContent = assistantId;
+                var astDisplay = document.getElementById('display-assistant-id');
+                if (astDisplay) astDisplay.textContent = assistantId;
 
                 var finData = new FormData();
                 finData.append('action', 'crescelo_wizard_finish');
@@ -356,6 +467,228 @@
             btnReRun.addEventListener('click', function () {
                 goToStep(1);
             });
+        }
+
+        // ================= ADMIN SETTINGS: POST TYPE SELECTION & STANDALONE SCRAPER =================
+        var ptCards = document.querySelectorAll('.post-type-card');
+        ptCards.forEach(function (card) {
+            card.addEventListener('click', function (e) {
+                if (e.target.tagName !== 'INPUT') {
+                    var cb = card.querySelector('.pt-checkbox');
+                    if (cb) {
+                        cb.checked = !cb.checked;
+                        cb.dispatchEvent(new Event('change'));
+                    }
+                }
+            });
+
+            var checkbox = card.querySelector('.pt-checkbox');
+            if (checkbox) {
+                checkbox.addEventListener('change', function () {
+                    if (this.checked) {
+                        card.classList.add('selected');
+                    } else {
+                        card.classList.remove('selected');
+                    }
+                    updateSelectedPostTypesCount();
+                });
+            }
+        });
+
+        function updateSelectedPostTypesCount() {
+            var totalChecked = document.querySelectorAll('.pt-checkbox:checked').length;
+            var indicator = document.getElementById('total-selected-indicator');
+            if (indicator) {
+                indicator.textContent = totalChecked + ' types allowed';
+            }
+        }
+
+        // Quick Actions in Settings
+        var btnSelectAll = document.getElementById('action-select-all-pts');
+        if (btnSelectAll) {
+            btnSelectAll.addEventListener('click', function () {
+                document.querySelectorAll('.pt-checkbox').forEach(function (cb) {
+                    cb.checked = true;
+                    cb.closest('.post-type-card')?.classList.add('selected');
+                });
+                updateSelectedPostTypesCount();
+            });
+        }
+
+        var btnDeselectAll = document.getElementById('action-deselect-all-pts');
+        if (btnDeselectAll) {
+            btnDeselectAll.addEventListener('click', function () {
+                document.querySelectorAll('.pt-checkbox').forEach(function (cb) {
+                    cb.checked = false;
+                    cb.closest('.post-type-card')?.classList.remove('selected');
+                });
+                updateSelectedPostTypesCount();
+            });
+        }
+
+        var btnSelectDefaults = document.getElementById('action-select-defaults-pts');
+        if (btnSelectDefaults) {
+            btnSelectDefaults.addEventListener('click', function () {
+                var defaults = ['page', 'post', 'product'];
+                document.querySelectorAll('.pt-checkbox').forEach(function (cb) {
+                    var isDef = defaults.indexOf(cb.value) !== -1;
+                    cb.checked = isDef;
+                    if (isDef) {
+                        cb.closest('.post-type-card')?.classList.add('selected');
+                    } else {
+                        cb.closest('.post-type-card')?.classList.remove('selected');
+                    }
+                });
+                updateSelectedPostTypesCount();
+            });
+        }
+
+        // Standalone One-Click Website Scraper in Settings
+        var btnStartStandalone = document.getElementById('btn-start-standalone-scrape');
+        var btnCancelStandalone = document.getElementById('btn-cancel-standalone-scrape');
+        var standaloneProgressWrap = document.getElementById('standalone-scraper-progress');
+
+        if (btnStartStandalone) {
+            btnStartStandalone.addEventListener('click', function () {
+                var checkedTypes = [];
+                document.querySelectorAll('.pt-checkbox:checked').forEach(function (cb) {
+                    checkedTypes.push(cb.value);
+                });
+
+                if (checkedTypes.length === 0) {
+                    alert('Please select at least one post type to allow scraping.');
+                    return;
+                }
+
+                var currentAstId = data.currentAssistantId || document.getElementById('ai_assistant_id')?.value;
+                if (!currentAstId) {
+                    alert('No active Assistant ID found. Please configure an assistant or complete the setup wizard first.');
+                    return;
+                }
+
+                activeScraperAborted = false;
+                if (standaloneProgressWrap) standaloneProgressWrap.style.display = 'block';
+                btnStartStandalone.disabled = true;
+
+                // Save selected post types via AJAX
+                var saveFd = new FormData();
+                saveFd.append('action', 'crescelo_save_post_types');
+                saveFd.append('nonce', data.nonce);
+                checkedTypes.forEach(function (t) { saveFd.append('allowed_post_types[]', t); });
+
+                saveFd.append('scrape_include_meta', document.getElementById('opt-scrape-include-meta')?.checked ? '1' : '0');
+                saveFd.append('scrape_include_taxonomies', document.getElementById('opt-scrape-include-tax')?.checked ? '1' : '0');
+                saveFd.append('scrape_include_excerpt', document.getElementById('opt-scrape-include-excerpt')?.checked ? '1' : '0');
+                saveFd.append('scrape_method', document.getElementById('ai_assistant_scrape_method')?.value || 'db');
+                saveFd.append('batch_size', document.getElementById('ai_assistant_batch_size')?.value || '15');
+
+                appendLog('standalone-terminal-log', '[INIT] Saved post type scraping configuration: ' + checkedTypes.join(', '), 'info');
+                updateProgress('standalone-progress-fill', 'standalone-percent-label', 'standalone-status-label', 5, 'Starting website scraper...');
+
+                fetch(data.ajaxUrl, { method: 'POST', body: saveFd })
+                .then(function () {
+                    runStandaloneScraper(checkedTypes);
+                })
+                .catch(function (err) {
+                    appendLog('standalone-terminal-log', '[ERROR] Failed saving configuration: ' + err.message, 'error');
+                    btnStartStandalone.disabled = false;
+                });
+            });
+        }
+
+        if (btnCancelStandalone) {
+            btnCancelStandalone.addEventListener('click', function () {
+                activeScraperAborted = true;
+                appendLog('standalone-terminal-log', '[CANCELLED] Scraper stopped by administrator.', 'warn');
+                if (btnStartStandalone) btnStartStandalone.disabled = false;
+            });
+        }
+
+        function runStandaloneScraper(postTypes) {
+            var batchLimit = parseInt(document.getElementById('ai_assistant_batch_size')?.value, 10) || data.batchSize || 15;
+            var currentTypeIdx = 0;
+            var totalItemsScraped = 0;
+            var totalChunksCreated = 0;
+
+            function processNextType() {
+                if (activeScraperAborted) {
+                    btnStartStandalone.disabled = false;
+                    return;
+                }
+
+                if (currentTypeIdx >= postTypes.length) {
+                    // Completed whole website scrape!
+                    updateProgress('standalone-progress-fill', 'standalone-percent-label', 'standalone-status-label', 100, 'Website scrape completed!');
+                    appendLog('standalone-terminal-log', '[DONE] Whole website scraped! Indexed ' + totalItemsScraped + ' items and created ' + totalChunksCreated + ' knowledge chunks.', 'success');
+                    
+                    recordScrapeComplete(totalItemsScraped, totalChunksCreated, postTypes);
+
+                    btnStartStandalone.disabled = false;
+                    return;
+                }
+
+                var currentType = postTypes[currentTypeIdx];
+                var offset = 0;
+
+                function sendScrapeBatch() {
+                    if (activeScraperAborted) {
+                        btnStartStandalone.disabled = false;
+                        return;
+                    }
+
+                    appendLog('standalone-terminal-log', '[SCRAPE] Scraping ' + currentType + ' batch at offset ' + offset + '...', 'info');
+
+                    var batchFd = new FormData();
+                    batchFd.append('action', 'crescelo_wizard_sync_batch');
+                    batchFd.append('nonce', data.nonce);
+                    batchFd.append('batch_type', currentType);
+                    batchFd.append('offset', offset);
+                    batchFd.append('limit', batchLimit);
+
+                    batchFd.append('include_meta', document.getElementById('opt-scrape-include-meta')?.checked ? '1' : '0');
+                    batchFd.append('include_taxonomies', document.getElementById('opt-scrape-include-tax')?.checked ? '1' : '0');
+                    batchFd.append('include_excerpt', document.getElementById('opt-scrape-include-excerpt')?.checked ? '1' : '0');
+                    batchFd.append('scrape_method', document.getElementById('ai_assistant_scrape_method')?.value || 'db');
+
+                    fetch(data.ajaxUrl, { method: 'POST', body: batchFd })
+                    .then(function (res) { return res.json(); })
+                    .then(function (resp) {
+                        if (activeScraperAborted) return;
+
+                        if (!resp.success) {
+                            appendLog('standalone-terminal-log', '[WARN] ' + (resp.data?.error || 'Batch warning'), 'warn');
+                        } else {
+                            var processed = resp.data.processedCount || 0;
+                            var chunks = resp.data.totalChunks || 0;
+                            totalItemsScraped += processed;
+                            totalChunksCreated += chunks;
+
+                            appendLog('standalone-terminal-log', '[CHUNK] Stored ' + chunks + ' embeddings for ' + processed + ' ' + currentType + ' items.', 'success');
+
+                            var percent = Math.min(95, Math.round(((currentTypeIdx + (offset / (offset + 20))) / postTypes.length) * 90) + 10);
+                            updateProgress('standalone-progress-fill', 'standalone-percent-label', 'standalone-status-label', percent, 'Scraping ' + currentType + '...');
+
+                            if (resp.data.hasMore && resp.data.nextOffset) {
+                                offset = resp.data.nextOffset;
+                                sendScrapeBatch();
+                                return;
+                            }
+                        }
+
+                        currentTypeIdx++;
+                        processNextType();
+                    })
+                    .catch(function (err) {
+                        appendLog('standalone-terminal-log', '[ERROR] Batch request failed: ' + err.message, 'error');
+                        currentTypeIdx++;
+                        processNextType();
+                    });
+                }
+
+                sendScrapeBatch();
+            }
+
+            processNextType();
         }
 
         function escapeHtml(str) {

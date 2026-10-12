@@ -32,7 +32,7 @@ export const svDict: TranslationDictionary = {
     title: ['Svara på varje besökare.', 'Boka dem som är redo.'],
     body: 'Omedelbara svar baserade på ditt innehåll. Riktiga bokningar direkt i kalendern.\nDitt team kliver bara in när det verkligen behövs.',
     primaryCta: 'Starta gratis provperiod',
-    secondaryCta: 'Testa demo med ditt material (gratis)',
+    secondaryCta: 'Testa gratis demo',
     trust: [
       'Svarar enbart från ditt innehåll – gissar aldrig',
       'Gratis att komma igång – ingen serverkostnad',
