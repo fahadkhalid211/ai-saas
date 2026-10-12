@@ -114,16 +114,26 @@ const CEILINGS: Record<string, ModelPrice> = {
   groq: mostExpensive(GROQ),
 };
 
-export function priceFor(provider: string, model: string): ModelPrice {
-  const p = (provider || '').toLowerCase();
-  const table = TABLES[p];
-  if (!table) return UNKNOWN_PRICE;
+function listedPrice(table: PriceTable, model: string): ModelPrice | null {
   const m = (model || '').toLowerCase().replace(/^models\//, '');
   let best: string | null = null;
   for (const key of Object.keys(table)) {
     if (m.startsWith(key) && (!best || key.length > best.length)) best = key;
   }
-  return best ? table[best] : CEILINGS[p];
+  return best ? table[best] : null;
+}
+
+export function priceFor(provider: string, model: string): ModelPrice {
+  const p = (provider || '').toLowerCase();
+  const table = TABLES[p];
+  if (!table) return UNKNOWN_PRICE;
+  return listedPrice(table, model) ?? CEILINGS[p];
+}
+
+/** Whether the model has its own list price; false means priceFor answers with the provider's ceiling. */
+export function hasListedPrice(provider: string, model: string): boolean {
+  const table = TABLES[(provider || '').toLowerCase()];
+  return !!table && listedPrice(table, model) !== null;
 }
 
 export function estimateCostUsd(provider: string, model: string, inputTokens: number, outputTokens: number): number {

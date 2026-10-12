@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { estimateCostUsd, estimateUsageCostUsd, priceFor } from './pricing';
+import { estimateCostUsd, estimateUsageCostUsd, hasListedPrice, priceFor } from './pricing';
 
 describe('model pricing', () => {
   it('prices known models per million tokens', () => {
@@ -21,6 +21,13 @@ describe('model pricing', () => {
     expect(unknown.input).toBeGreaterThanOrEqual(10);
     expect(priceFor('custom', 'my-model').input).toBeGreaterThan(1);
     expect(priceFor('openai', 'gpt-99').output).toBeGreaterThanOrEqual(60);
+  });
+
+  it('tells a listed model from one priced by the fallback', () => {
+    expect(hasListedPrice('anthropic', 'claude-fable-5')).toBe(true);
+    expect(hasListedPrice('openai', 'gpt-4o-2024-08-06')).toBe(true);
+    expect(hasListedPrice('anthropic', 'claude-something-new')).toBe(false);
+    expect(hasListedPrice('custom', 'my-model')).toBe(false);
   });
 
   it('never returns a negative or NaN cost', () => {
