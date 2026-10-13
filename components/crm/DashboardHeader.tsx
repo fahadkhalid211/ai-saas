@@ -19,6 +19,7 @@ import {
   User,
   ShieldCheck,
   Compass,
+  Rocket,
 } from 'lucide-react';
 
 interface NotificationItem {
@@ -54,6 +55,8 @@ interface DashboardHeaderProps {
     message?: string;
   } | null;
   onOpenTour?: () => void;
+  /** Opens the step-by-step setup wizard again. */
+  onOpenSetup?: () => void;
   /** Called after the assistant changed the plan, so billing data can be reloaded. */
   onBillingChanged?: () => void;
 }
@@ -77,6 +80,7 @@ export function DashboardHeader({
   currentUser,
   dbStatus,
   onOpenTour,
+  onOpenSetup,
   onBillingChanged,
 }: DashboardHeaderProps) {
   const __t = useT();
@@ -128,6 +132,7 @@ export function DashboardHeader({
         <div className="relative" ref={assistantMenuRef}>
           <button
             type="button"
+            data-tour="header-bot"
             onClick={() => {
               setIsAssistantMenuOpen(!isAssistantMenuOpen);
               setIsAccountMenuOpen(false);
@@ -245,12 +250,27 @@ export function DashboardHeader({
         <FloatingPlatformChatbot variant="header" onNavigate={(tab) => setActiveTab(tab)} onBillingChanged={onBillingChanged} />
 
         {/* Language: choose the dashboard language */}
-        <LanguageSwitcher variant="header" />
+        <div data-tour="header-language"><LanguageSwitcher variant="header" /></div>
+
+        {/* Setup wizard: perform all basic steps in a guided popup */}
+        {onOpenSetup && (
+          <button
+            type="button"
+            data-tour="header-setup"
+            onClick={onOpenSetup}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#08251a] dark:border-[#abff44] bg-[#fffeeb] dark:bg-[#12402d] hover:bg-[#f7f6dd] dark:hover:bg-[#1a4734] text-[#08251a] dark:text-[#abff44] text-xs font-bold shadow-xs transition cursor-pointer"
+            title={__t("Launch Step-by-Step Setup Wizard")}
+          >
+            <span className="text-[#08251a] dark:text-[#abff44]">⚡</span>
+            <span><T>Setup Wizard</T></span>
+          </button>
+        )}
 
         {/* Tour Guide Button */}
         {onOpenTour && (
           <button
             type="button"
+            data-tour="header-tour"
             onClick={onOpenTour}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-slate-800/80 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold shadow-2xs transition cursor-pointer"
             title={__t("Product Tour")}
@@ -263,6 +283,7 @@ export function DashboardHeader({
         {/* Deploy & Embed Widget Button */}
         <button
           type="button"
+          data-tour="header-deploy"
           onClick={() => setShowEmbedModal(true)}
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-2xs transition cursor-pointer"
           title={__t("Deploy Chatbot Widget &amp; WordPress Integration")}

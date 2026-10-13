@@ -7,6 +7,7 @@ import { Header } from '@/components/marketing/Header';
 import { Hero } from '@/components/marketing/Hero';
 import { LogoStrip } from '@/components/marketing/LogoStrip';
 import { ProblemSolution } from '@/components/marketing/ProblemSolution';
+import { CaseStudiesResults } from '@/components/marketing/CaseStudiesResults';
 import { BehindTheScenes, FeatureCarousel, Tools } from '@/components/marketing/Showpieces';
 import { Demo } from '@/components/marketing/Features';
 import { Playground } from '@/components/marketing/Playground';
@@ -50,6 +51,7 @@ export default function WelcomePage() {
         <Hero />
         <LogoStrip />
         <ProblemSolution />
+        <CaseStudiesResults />
         <Tools />
         <BehindTheScenes />
         <FeatureCarousel />

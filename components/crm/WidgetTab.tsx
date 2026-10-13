@@ -120,7 +120,7 @@ export const WidgetTab: React.FC<WidgetTabProps> = ({
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   {/* Configuration controls */}
-                  <div className="space-y-5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-xs">
+                  <div data-tour="widget-controls" className="space-y-5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-xs">
                     {/* Chat title */}
                     <div>
                       <label htmlFor="widget-title" className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1.5">

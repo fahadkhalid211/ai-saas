@@ -211,6 +211,96 @@ const INDUSTRIES: IndustrySimulation[] = [
       staffName: 'Rachel Adams (Solutions Architect)',
     },
   },
+  {
+    id: 'ecommerce',
+    tabLabel: '🛍️ E-Commerce & Retail',
+    title: 'E-Commerce & Online Stores',
+    tagline: 'Convert hesitant shoppers and eliminate pre-purchase doubts.',
+    tone: 'pink',
+    avgTicket: 85,
+    bottleneck:
+      'Shoppers abandon carts late at night when sizing charts, shipping policies, or ingredient lists require digging through confusing pages.',
+    solution:
+      'Crescelo acts as a 24/7 personal digital shopping assistant. It recommends products based on visitor preferences, clarifies return rules, and guides visitors directly to checkout.',
+    metric: '+28%',
+    metricLabel: 'Lift in pre-purchase checkout conversions',
+    features: [
+      'Instant catalog & product specification search',
+      'Order tracking & shipping policy explanation',
+      'Personalized product recommendations',
+      '1-click checkout cart linking',
+    ],
+    chat: {
+      customerMsg: 'Are the organic cotton hoodies preshrunk? What is your return window?',
+      botMsg:
+        'Yes! All our organic cotton hoodies are pre-washed and pre-shrunk so they stay true to size. We also provide hassle-free 30-day free returns with prepaid shipping labels.',
+      sourceTag: 'Store Catalog & Sizing/Returns Policy v2',
+      serviceName: 'Premium Organic Hoodie (M / Charcoal)',
+      suggestedSlots: ['Add to Cart ($78)', 'View Size Chart', 'Order Tracking'],
+      bookedSlot: 'Added to Cart with 30-day guarantee',
+      staffName: 'Apex Store Concierge',
+    },
+  },
+  {
+    id: 'trades',
+    tabLabel: '🔨 Contractors & Home Services',
+    title: 'Roofing, Plumbing & Contractors',
+    tagline: 'Capture job specs and book on-site estimates while on the ladder.',
+    tone: 'mint',
+    avgTicket: 1200,
+    bottleneck:
+      'Contractors are driving or on job sites all day. Homeowners with emergency leaks or renovations call whichever contractor responds first.',
+    solution:
+      'Crescelo qualifies emergency vs routine projects, gathers property square footage or damage photos, checks your service area radius, and schedules on-site estimate slots.',
+    metric: '$28,400',
+    metricLabel: 'Monthly added estimate pipeline value',
+    features: [
+      'Service area & zip code radius validation',
+      'Project scope & damage description intake',
+      'On-site estimate inspection scheduling',
+      'Instant SMS alerts to crew leads',
+    ],
+    chat: {
+      customerMsg: 'We had storm damage last night and a shingle blew off our roof. Do you service North Austin for roof inspections?',
+      botMsg:
+        'Yes, North Austin is within our primary service zone! For storm damage, we can send an inspector tomorrow to perform a 21-point roof check. Would 10:00 AM or 1:30 PM work best for you?',
+      sourceTag: 'Service Area Map & Storm Damage Protocol 2026',
+      serviceName: 'On-Site 21-Point Roof Inspection',
+      suggestedSlots: ['Tomorrow 10:00 AM', 'Tomorrow 1:30 PM', 'Thursday 9:00 AM'],
+      bookedSlot: 'Tomorrow at 10:00 AM with Mark',
+      staffName: 'Mark Miller (Lead Inspector)',
+    },
+  },
+  {
+    id: 'restaurants',
+    tabLabel: '🍽️ Restaurants & Dining',
+    title: 'Restaurants, Lounges & Catering',
+    tagline: 'Book dining reservations and answer dietary menus instantly.',
+    tone: 'amber',
+    avgTicket: 110,
+    bottleneck:
+      'Hosts and servers cannot answer phone calls during peak lunch and dinner rushes, causing parties of 6+ to reserve at rival venues.',
+    solution:
+      'Crescelo answers wine lists, dietary substitutions, and private dining buyouts from your real menu, locking table reservations with party size confirmation.',
+    metric: '+34%',
+    metricLabel: 'Increase in weekday table reservations',
+    features: [
+      'Party size & dining slot table reservations',
+      'Dietary & allergen menu verification',
+      'Private dining & catering lead capture',
+      'Automated SMS reservation confirmation',
+    ],
+    chat: {
+      customerMsg: 'Do you have gluten-free options and can we reserve a table for 5 this Friday at 7:30 PM?',
+      botMsg:
+        'Yes! Over 60% of our dinner menu is gluten-free or can be prepared gluten-free upon request. We have an open booth for 5 this Friday at 7:30 PM. Shall I reserve it under your name?',
+      sourceTag: 'Evening Dining Menu & Allergen Guide v5',
+      serviceName: 'Table Reservation (5 Guests)',
+      suggestedSlots: ['Fri 7:15 PM', 'Fri 7:30 PM', 'Fri 8:00 PM'],
+      bookedSlot: 'Friday at 7:30 PM for 5 guests',
+      staffName: 'Host Desk (Main Dining Room)',
+    },
+  },
 ];
 
 export default function UseCasePage() {
@@ -218,7 +308,7 @@ export default function UseCasePage() {
 
   // Direct links such as /use-case#clinics (the footer uses these) open that industry, on a fresh visit and when the hash changes.
   useEffect(() => {
-    const alias: Record<string, string> = { startups: 'saas' };
+    const alias: Record<string, string> = { startups: 'saas', contractors: 'trades', retail: 'ecommerce', barbershops: 'salons', dining: 'restaurants' };
     const apply = () => {
       const raw = decodeURIComponent(window.location.hash.replace('#', ''));
       const id = alias[raw] ?? raw;

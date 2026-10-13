@@ -691,6 +691,173 @@
             processNextType();
         }
 
+        // ================= TABS SWITCHING =================
+        var tabButtons = document.querySelectorAll('.crescelo-tab-btn');
+        var tabPanes = document.querySelectorAll('.crescelo-tab-pane');
+
+        function switchTab(targetTabId) {
+            tabButtons.forEach(function (btn) {
+                var tab = btn.getAttribute('data-tab');
+                if (tab === targetTabId) {
+                    btn.classList.add('active');
+                    btn.setAttribute('aria-selected', 'true');
+                } else {
+                    btn.classList.remove('active');
+                    btn.setAttribute('aria-selected', 'false');
+                }
+            });
+
+            tabPanes.forEach(function (pane) {
+                if (pane.id === targetTabId) {
+                    pane.classList.add('active');
+                } else {
+                    pane.classList.remove('active');
+                }
+            });
+
+            try {
+                localStorage.setItem('crescelo_admin_active_tab', targetTabId);
+                history.replaceState(null, null, '#' + targetTabId);
+            } catch (e) {}
+        }
+
+        tabButtons.forEach(function (btn) {
+            btn.addEventListener('click', function (e) {
+                e.preventDefault();
+                var target = btn.getAttribute('data-tab');
+                if (target) switchTab(target);
+            });
+        });
+
+        // Restore active tab on load
+        var initialTab = window.location.hash ? window.location.hash.replace('#', '') : '';
+        if (!initialTab) {
+            try {
+                initialTab = localStorage.getItem('crescelo_admin_active_tab');
+            } catch (e) {}
+        }
+        if (initialTab && document.getElementById(initialTab)) {
+            switchTab(initialTab);
+        }
+
+        // ================= MANUAL API KEY CONNECTION =================
+        var btnSubmitManualKey = document.getElementById('btn-submit-manual-key');
+        var inputManualKey = document.getElementById('input-manual-api-key');
+        var inputManualHost = document.getElementById('input-manual-host-url');
+        var feedbackManualKey = document.getElementById('manual-key-feedback');
+        var btnToggleVisibility = document.getElementById('btn-toggle-key-visibility');
+
+        if (btnToggleVisibility && inputManualKey) {
+            btnToggleVisibility.addEventListener('click', function () {
+                if (inputManualKey.type === 'password') {
+                    inputManualKey.type = 'text';
+                    btnToggleVisibility.textContent = '🔒';
+                } else {
+                    inputManualKey.type = 'password';
+                    btnToggleVisibility.textContent = '👁️';
+                }
+            });
+        }
+
+        if (btnSubmitManualKey && inputManualKey) {
+            btnSubmitManualKey.addEventListener('click', function () {
+                var keyVal = inputManualKey.value.trim();
+                if (!keyVal) {
+                    showManualFeedback('Please enter your Crescelo API key.', 'error');
+                    inputManualKey.focus();
+                    return;
+                }
+
+                btnSubmitManualKey.disabled = true;
+                btnSubmitManualKey.innerHTML = '<span>Verifying &amp; Connecting...</span>';
+                showManualFeedback('Verifying key with Crescelo...', 'info');
+
+                var fd = new FormData();
+                fd.append('action', 'crescelo_manual_connect_key');
+                fd.append('nonce', data.nonce);
+                fd.append('api_key', keyVal);
+                var customHost = inputManualHost ? inputManualHost.value.trim() : '';
+                if (customHost) {
+                    fd.append('host_url', customHost);
+                }
+
+                fetch(data.ajaxUrl, {
+                    method: 'POST',
+                    body: fd
+                })
+                .then(function (res) { return res.json(); })
+                .then(function (res) {
+                    if (res.success) {
+                        showManualFeedback('✓ Connected successfully! Reloading...', 'success');
+                        setTimeout(function () {
+                            window.location.href = window.location.pathname + '?page=ai-business-assistant#tab-connection';
+                            window.location.reload();
+                        }, 700);
+                    } else {
+                        btnSubmitManualKey.disabled = false;
+                        btnSubmitManualKey.innerHTML = '<span>Verify &amp; Connect via Key</span>';
+                        showManualFeedback('Connection failed: ' + (res.data?.error || 'Invalid API key.'), 'error');
+                    }
+                })
+                .catch(function (err) {
+                    btnSubmitManualKey.disabled = false;
+                    btnSubmitManualKey.innerHTML = '<span>Verify &amp; Connect via Key</span>';
+                    showManualFeedback('Network error: ' + err.message, 'error');
+                });
+            });
+        }
+
+        function showManualFeedback(msg, type) {
+            if (!feedbackManualKey) return;
+            feedbackManualKey.textContent = msg;
+            feedbackManualKey.className = 'manual-feedback-text ' + (type || 'info');
+            feedbackManualKey.style.display = 'inline-block';
+        }
+
+        // ================= TEST CONNECTION HEALTH =================
+        var btnTestConnection = document.getElementById('btn-test-connection');
+        var testStatusEl = document.getElementById('test-connection-status');
+
+        if (btnTestConnection) {
+            btnTestConnection.addEventListener('click', function () {
+                btnTestConnection.disabled = true;
+                if (testStatusEl) {
+                    testStatusEl.textContent = 'Testing connection health...';
+                    testStatusEl.className = 'test-status-msg info';
+                    testStatusEl.style.display = 'inline-block';
+                }
+
+                var fd = new FormData();
+                fd.append('action', 'crescelo_test_connection');
+                fd.append('nonce', data.nonce);
+
+                fetch(data.ajaxUrl, {
+                    method: 'POST',
+                    body: fd
+                })
+                .then(function (res) { return res.json(); })
+                .then(function (res) {
+                    btnTestConnection.disabled = false;
+                    if (testStatusEl) {
+                        if (res.success) {
+                            testStatusEl.textContent = '✓ Healthy & Active (Assistant: ' + (res.data?.assistantName || 'Connected') + ')';
+                            testStatusEl.className = 'test-status-msg success';
+                        } else {
+                            testStatusEl.textContent = '✗ ' + (res.data?.error || 'Connection check failed.');
+                            testStatusEl.className = 'test-status-msg error';
+                        }
+                    }
+                })
+                .catch(function (err) {
+                    btnTestConnection.disabled = false;
+                    if (testStatusEl) {
+                        testStatusEl.textContent = '✗ Communication error: ' + err.message;
+                        testStatusEl.className = 'test-status-msg error';
+                    }
+                });
+            });
+        }
+
         function escapeHtml(str) {
             if (!str) return '';
             return String(str)

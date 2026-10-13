@@ -25,6 +25,9 @@ import {
   Plug,
   Zap,
   Play,
+  ShoppingBag,
+  Wrench,
+  Utensils,
 } from 'lucide-react';
 
 /**
@@ -110,19 +113,27 @@ export const MEGA_MENUS: MegaMenu[] = [
     label: 'Solutions',
     columns: [
       {
-        title: 'By industry',
+        title: 'Care & Appointments',
         links: [
-          { label: 'Salons and barbershops', description: 'Fill chairs while your hands are busy', href: '/use-case#salons', icon: Scissors, tone: 'lime' },
-          { label: 'Clinics and dental', description: 'Handle intake and appointment questions', href: '/use-case#clinics', icon: Stethoscope, tone: 'mint' },
-          { label: 'Real estate', description: 'Qualify buyers and book viewings', href: '/use-case#real-estate', icon: Building2, tone: 'lav' },
+          { label: 'Salons & Barbershops', description: 'Fill chairs while hands are busy', href: '/use-case#salons', icon: Scissors, tone: 'lime' },
+          { label: 'Clinics & Dental', description: 'Handle patient intake and triage', href: '/use-case#clinics', icon: Stethoscope, tone: 'mint' },
+          { label: 'Fitness & Gyms', description: 'Trial classes, passes & coach slots', href: '/use-case#fitness', icon: Dumbbell, tone: 'lav' },
         ],
       },
       {
-        title: 'More industries',
+        title: 'Commerce & Property',
         links: [
-          { label: 'Fitness studios', description: 'Trial classes, memberships and schedules', href: '/use-case#fitness', icon: Dumbbell, tone: 'amber' },
-          { label: 'Law and professional practices', description: 'Screen enquiries and book consultations', href: '/use-case#legal', icon: Scale, tone: 'pink' },
-          { label: 'SaaS and startups', description: 'Answer product questions and onboard trials', href: '/use-case#saas', icon: Briefcase, tone: 'coral' },
+          { label: 'E-Commerce & Retail', description: 'Product advice & pre-purchase cart', href: '/use-case#ecommerce', icon: ShoppingBag, tone: 'pink' },
+          { label: 'Real Estate & Property', description: 'Qualify buyers and book showings', href: '/use-case#real-estate', icon: Building2, tone: 'amber' },
+          { label: 'Contractors & Trades', description: 'Emergency repairs & job estimates', href: '/use-case#trades', icon: Wrench, tone: 'coral' },
+        ],
+      },
+      {
+        title: 'Advisory, Dining & Tech',
+        links: [
+          { label: 'Legal & Advisory', description: 'Screen retainers & paid consults', href: '/use-case#legal', icon: Scale, tone: 'lav' },
+          { label: 'Restaurants & Dining', description: 'Table reservations & allergen menus', href: '/use-case#restaurants', icon: Utensils, tone: 'mint' },
+          { label: 'SaaS & Tech Startups', description: 'Answer API docs and book demos', href: '/use-case#saas', icon: Briefcase, tone: 'lime' },
         ],
       },
     ],

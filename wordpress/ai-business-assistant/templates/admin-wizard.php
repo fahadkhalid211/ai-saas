@@ -121,21 +121,61 @@ $nonce        = wp_create_nonce('crescelo_wizard_nonce');
             </div>
 
             <!-- Server Connection -->
+            <?php
+            $is_connected = !empty($assistant_id);
+            $oauth_state = wp_create_nonce('crescelo_oauth_' . get_current_user_id() . '_' . wp_rand());
+            set_transient('crescelo_oauth_state_' . $oauth_state, home_url(), 900);
+            $connect_url = add_query_arg([
+                'site_url'   => home_url(),
+                'site_name'  => get_bloginfo('name'),
+                'return_url' => admin_url('admin.php?page=ai-business-assistant'),
+                'state'      => $oauth_state,
+            ], untrailingslashit($host_url) . '/connect/wordpress');
+            ?>
+
             <div class="connection-box">
                 <div class="conn-header">
-                    <strong>Crescelo AI Backend Connection</strong>
-                    <span class="subtext">Connects to your high-performance external SaaS engine</span>
+                    <strong>Crescelo Account &amp; Connection</strong>
+                    <span class="subtext">Connect automatically with 1-click or configure manually</span>
                 </div>
-                <div class="conn-fields">
-                    <div>
-                        <label for="crescelo-host-url">Server URL</label>
-                        <input type="url" id="crescelo-host-url" value="<?php echo esc_attr($host_url); ?>" placeholder="http://localhost:3000" />
+
+                <?php if ($is_connected): ?>
+                    <div style="background:#08251a; color:#ffffff; padding:16px 20px; border-radius:12px; display:flex; justify-content:space-between; align-items:center; margin-top:12px; border:1px solid #1a4734;">
+                        <div>
+                            <span style="color:#abff44; font-weight:700; font-size:12px; display:block;">● Connected to Crescelo</span>
+                            <strong style="font-size:14.5px; color:#ffffff;"><?php echo esc_html(get_option('ai_assistant_assistant_name', $assistant_id)); ?></strong>
+                        </div>
+                        <a href="<?php echo esc_url($connect_url); ?>" class="btn-text-action" style="color:#abff44; font-size:12px; text-decoration:underline;">Switch Assistant</a>
                     </div>
-                    <div>
-                        <label for="crescelo-api-key">API Key (Optional)</label>
-                        <input type="text" id="crescelo-api-key" value="<?php echo esc_attr($api_key); ?>" placeholder="cres_live_..." />
+                    <input type="hidden" id="crescelo-host-url" value="<?php echo esc_attr($host_url); ?>" />
+                    <input type="hidden" id="crescelo-api-key" value="<?php echo esc_attr($api_key); ?>" />
+                <?php else: ?>
+                    <div style="margin-top:14px; text-align:center; padding:18px; background:#fbfbf4; border-radius:12px; border:1px solid #e8e6d1;">
+                        <a href="<?php echo esc_url($connect_url); ?>" class="btn-crescelo-login-cta" style="margin:0 auto 10px auto; max-width:340px; display:inline-flex;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M15 3H19C19.5304 3 20.0391 3.21071 20.4142 3.58579C20.7893 3.96086 21 4.46957 21 5V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21H15" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M10 17L15 12L10 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M15 12H3" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            <span>Log In &amp; Connect with Crescelo</span>
+                        </a>
+                        <p style="font-size:12px; color:#6b6b5c; margin:0;">Recommended: Instantly links your account and assistant without entering URLs or keys.</p>
                     </div>
-                </div>
+
+                    <details style="margin-top:12px; font-size:12.5px; color:#4b5b51;">
+                        <summary style="cursor:pointer; font-weight:600; color:#0f6e58;">Or connect manually with Server URL &amp; API Key</summary>
+                        <div class="conn-fields" style="margin-top:10px;">
+                            <div>
+                                <label for="crescelo-host-url">Server URL</label>
+                                <input type="url" id="crescelo-host-url" value="<?php echo esc_attr($host_url); ?>" placeholder="http://localhost:3000" />
+                            </div>
+                            <div>
+                                <label for="crescelo-api-key">API Key</label>
+                                <input type="text" id="crescelo-api-key" value="<?php echo esc_attr($api_key); ?>" placeholder="cres_wp_..." />
+                            </div>
+                        </div>
+                    </details>
+                <?php endif; ?>
             </div>
 
             <div class="wizard-actions">

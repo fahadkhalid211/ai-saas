@@ -191,6 +191,15 @@ export default function DashboardPage() {
   // Onboarding Wizard — show on first login
   const [showOnboarding, setShowOnboarding] = useState(false);
 
+  // Auto-launch the Setup Wizard popup for new users on start
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const completed = localStorage.getItem('kortex_wizard_completed') || localStorage.getItem('kortex_onboarding_completed');
+    if (!completed && isAuthenticated && activeAssistant?.id) {
+      setShowOnboarding(true);
+    }
+  }, [isAuthenticated, activeAssistant?.id]);
+
   // Product Tour
   const [isTourOpen, setIsTourOpen] = useState(false);
   const [tourStepIndex, setTourStepIndex] = useState(0);
@@ -210,6 +219,8 @@ export default function DashboardPage() {
 
   const handleOpenTour = () => {
     setTourStepIndex(0);
+    const step = TOUR_STEPS[0];
+    if (step && step.tab) setActiveTab(step.tab as any);
     setIsTourOpen(true);
   };
 
@@ -730,6 +741,7 @@ export default function DashboardPage() {
           handleDeleteAssistant={handleDeleteAssistant}
           currentUser={currentUser}
           dbStatus={dbStatus}
+          onOpenSetup={() => setShowOnboarding(true)}
           onOpenTour={handleOpenTour}
           onBillingChanged={() => billing.fetchBilling()}
         />
@@ -834,6 +846,7 @@ export default function DashboardPage() {
             landingPagesCount={landing.allLandingPages.length}
             isMasterAdmin={isMasterAdmin}
             isOwner={currentUser?.role === 'owner' || isMasterAdmin}
+            onOpenSetup={() => setShowOnboarding(true)}
             onOpenTour={handleOpenTour}
             simpleMode={simpleMode}
             onToggleSimpleMode={toggleSimpleMode}
@@ -1317,14 +1330,19 @@ export default function DashboardPage() {
           onOpenConversation={handleOpenConversation}
         />
 
-        {/* First-Run Onboarding Wizard */}
+        {/* First-Run & Replayable Onboarding Wizard */}
         <OnboardingWizardModal
           isOpen={showOnboarding}
           onClose={() => {
             setShowOnboarding(false);
+            localStorage.setItem('kortex_wizard_completed', '1');
             localStorage.setItem('kortex_onboarding_completed', '1');
           }}
-          assistantName={activeAssistant?.name}
+          activeAssistant={activeAssistant}
+          onAssistantUpdated={(updated) => {
+            setActiveAssistant(updated);
+            setFormData((prev: any) => ({ ...prev, ...updated }));
+          }}
           onGoToTab={(tab) => setActiveTab(tab as any)}
           onOpenEmbed={() => setShowEmbedModal(true)}
         />

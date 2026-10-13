@@ -1,0 +1,500 @@
+=== sv
+TITLE: Skydda ditt chattbotkonto: teamroller, tvåfaktorsautentisering och god åtkomsthygien
+SEO: Skydda ditt chattbotkonto | Crescelo
+DESC: Så skyddar du en chattbotarbetsyta: roller med minsta möjliga behörighet, tvåfaktorsautentisering, stark inloggning, avslut av åtkomst, API-nycklar, granskningslogg och en checklista.
+EXCERPT: Så skyddar du en chattbotarbetsyta: roller med minsta möjliga behörighet, tvåfaktorsautentisering, stark inloggning, avslut av åtkomst, API-nycklar, granskningslogg och en checklista.
+CLUSTER: Implementeringsguider
+MOD: 2026-09-27
+P: Din chattbots instrumentpanel innehåller sådant som är värt att skydda: dina kunders konversationer och kontaktuppgifter, dokumenten som utgör din kunskapsbas, din bokningskalender och, om du tar med din egen nyckel, åtkomst till ett konto hos en AI-leverantör som kan driva upp en räkning. Kontot som styr allt detta är bara så säkert som sin svagaste inloggning. De flesta verkliga kontoövertagande är inga listiga intrång: det är återanvända lösenord, delade inloggningar, tidigare anställda som fortfarande har åtkomst och ägare utan en andra faktor. Den här guiden är en praktisk säkerhetsguide för ägare av en chattbotarbetsyta: hur du sätter roller så att människor bara har den åtkomst de behöver, hur tvåfaktorsautentisering fungerar och hur du slår på den, hur du loggar in säkert, hur du hanterar nyanställda och avgående, hur du skyddar API-nycklar, hur du använder en granskningslogg och en checklista du kan göra klart på en eftermiddag.
+H2[what-is-at-stake]: Vad som står på spel
+TABLE:
+H: Tillgång | Risk om någon tar sig in
+R: Konversationer och leads | Kunders personuppgifter exponeras; konsekvenser enligt dataskyddslagstiftningen
+R: Kunskapsbas | Innehåll ändras så att assistenten säger fel saker
+R: Assistentinställningar | Instruktioner ändras; assistenten missbrukas
+R: Bokningar och kalender | Tider raderas eller spammas
+R: AI-leverantörens nyckel | Kostnader drivs upp på ditt konto
+R: Fakturering | Planändringar eller uppsägning
+P: Konsekvenserna av ett övertagande är större än de flesta ägare tror, eftersom en chattbot sitter framför dina kunder.
+H2[least-privilege-give-people-only-what-they-need]: Minsta möjliga behörighet: ge människor bara det de behöver
+P: Roller begränsar vad varje teammedlem kan se och ändra. Principen är minsta möjliga behörighet: börja med det minsta och lägg till åtkomst när det finns en anledning.
+TABLE:
+H: Typ av person | Föreslagen åtkomst
+R: Ägare | Allt, inklusive fakturering och säkerhet; håll det till en eller två personer
+R: Administratörer | Hantera assistenter, kunskap och inställningar; inte fakturering eller ägarskap
+R: Support eller reception | Se konversationer, leads och bokningar; hantera överlämningar; inte inställningar eller nycklar
+R: Konsulter eller byråer | Bara de assistenter och flikar de arbetar med, så länge de arbetar
+R: Fakturering eller ekonomi | Bara planer och fakturor
+UL:
+- Se över roller när någons arbetsuppgifter ändras.
+- Undvik att ge alla ägarrättigheter för bekvämlighets skull.
+- Använd namngivna konton för alla; dela aldrig en inloggning.
+- Begränsa vem som kan se AI-nycklar och vem som kan ändra assistentens instruktioner.
+P: Crescelos arbetsytor använder roller som begränsar vad teammedlemmar kan se, redigera eller ändra, och ägare kan se en granskningslogg över viktiga åtgärder.
+H2[two-factor-authentication-2fa]: Tvåfaktorsautentisering (2FA)
+P: Ett lösenord ensamt kan gissas, återanvändas från ett annat intrång eller stjälas. En andra faktor kräver något annat: en kod från en autentiseringsapp i din telefon. Även om ditt lösenord läcker kan en angripare inte logga in utan koden. Crescelo stöder tidsbaserade engångskoder från autentiseringsappar, och teamkonton kan kräva dem vid inloggning.
+OL:
+- Installera en autentiseringsapp i din telefon.
+- Starta 2FA-installationen i arbetsytans säkerhetsinställningar och skanna QR-koden.
+- Ange den sexsiffriga koden för att bekräfta.
+- Spara återställningskoderna på ett säkert ställe offline; de släpper in dig om du tappar telefonen.
+- Testa att logga ut och in igen med en kod.
+UL:
+- Slå på det för ägare först, sedan för alla.
+- Föredra en autentiseringsapp framför textmeddelanden, som kan avlyssnas.
+- Förvara återställningskoderna i en lösenordshanterare eller en låst låda, inte i ett mejl.
+- När någon slutar, ta bort deras åtkomst; lita inte på deras 2FA.
+H2[strong-sign-in-habits]: Goda inloggningsvanor
+UL:
+- Använd ett unikt, långt lösenord från en lösenordshanterare.
+- Återanvänd aldrig lösenord mellan tjänster.
+- Om du loggar in med Google, skydda det Google-kontot med 2FA också.
+- Se upp för nätfiske: kontrollera adressen innan du anger inloggningsuppgifter och ange inte en kod du inte väntade dig.
+- Logga ut på delade enheter.
+P: Crescelos instrumentpanel kontrollerar en session vid varje anrop mot ditt kontos tillstånd, så att byta lösenord eller ta bort en medlem avslutar deras befintliga sessioner.
+H2[joiners-movers-and-leavers]: Nyanställda, interna flyttar och avgående
+TABLE:
+H: Händelse | Åtgärd
+R: Ny teammedlem | Skapa ett namngivet konto med den minsta roll som fungerar; kräv 2FA
+R: Ändrad roll | Justera åtkomsten samma dag
+R: Konsult blir klar | Ta bort åtkomsten omedelbart
+R: Anställd slutar | Ta bort kontot, byt ut allt de kunde se, som delade lösenord och API-nycklar
+R: Ägarbyte | Överför ägarskapet medvetet och ta bort den tidigare ägarens åtkomst
+P: Skriv ner detta som en kort checklista. Avslut av anställning är där de flesta åtkomstproblem börjar.
+H2[protect-api-keys]: Skydda API-nycklar
+UL:
+- Använd en dedikerad nyckel för varje assistent, med en kostnadsgräns hos leverantören.
+- Klistra aldrig in nycklar i chattar, mejl eller webbplatskod.
+- Begränsa vem som kan se eller ändra AI-inställningarna.
+- Byt nycklar när en person med åtkomst slutar eller ett läckage misstänks.
+- Crescelo lagrar leverantörsnycklar krypterade; se [hur ett nyckelvalv för egna nycklar fungerar](/blog/cryptographic-byok-vault-aes-256-gcm).
+H2[use-the-audit-trail]: Använd granskningsloggen
+P: En granskningslogg registrerar vem som gjorde vad och när: en ändrad inställning, en raderad källa, en tillagd medlem. Använd den. Gå igenom den varje månad efter oväntade ändringar, och efter varje incident. Ägare i Crescelo kan se en granskningslogg över åtgärder i arbetsytan. Den hjälper också vid en tvist eller utredning, eftersom du kan se vad som hände.
+H2[other-basics]: Andra grunder
+UL:
+- Håll dina enheter uppdaterade och låsta.
+- Använd inte offentligt wifi för administrativt arbete utan en betrodd anslutning.
+- Begränsa vem som har adminåtkomst till din domän och webbplats, eftersom chatten är installerad där.
+- Var försiktig med webbläsartillägg.
+- Säkerhetskopiera viktigt innehåll, som dina kunskapsdokument.
+H2[if-you-think-an-account-is-compromised]: Om du tror att ett konto har blivit komprometterat
+OL:
+- Byt lösenord och logga ut överallt.
+- Ta bort misstänkta medlemmar och återkalla API-nycklar.
+- Kontrollera granskningsloggen för att se vad som ändrats.
+- Gå igenom senaste konversationer och leads efter ovanlig aktivitet.
+- Återställ ändrat innehåll från dina original.
+- Berätta för berörda kunder om deras uppgifter kan ha exponerats, enligt dina rättsliga skyldigheter.
+- Kontakta supporten med detaljerna.
+H2[a-one-afternoon-checklist]: En checklista för en eftermiddag
+UL:
+- Högst två ägare, båda med 2FA.
+- Varje teammedlem på ett namngivet konto med den minsta rollen.
+- Återställningskoderna förvarade säkert.
+- Gamla och delade konton borttagna.
+- En dedikerad AI-nyckel med kostnadsgräns.
+- Granskningsloggen genomgången.
+- En skriftlig checklista för nyanställda och avgående.
+H2[common-mistakes]: Vanliga misstag
+UL:
+- Att göra alla till ägare eftersom det är enklare.
+- Att dela en inloggning inom teamet.
+- Att förvara återställningskoderna i samma inkorg som mejlet för lösenordsåterställning.
+- Att glömma att ta bort konsulter när ett projekt är slut.
+- Att aldrig titta på granskningsloggen.
+- Att lämna AI-nyckeln synlig för personer som inte behöver den.
+P: Att åtgärda dessa tar en eftermiddag och tar bort de flesta realistiska sätten som ett konto komprometteras. Lägg in en återkommande kvartalspåminnelse i kalendern för att se över roller och åtkomst.
+H2[frequently-asked-questions]: Vanliga frågor
+FAQ:
+Q: Stöder Crescelo tvåfaktorsautentisering?
+A: Ja. Konton kan använda tidsbaserade koder från en autentiseringsapp, och teamkonton kan kräva dem vid inloggning.
+Q: Vad är minsta möjliga behörighet?
+A: Att ge varje person bara den åtkomst hen behöver, så att ett misstag eller ett intrång orsakar mindre skada.
+Q: Vad gör jag om jag tappar telefonen?
+A: Använd de återställningskoder du sparade när du slog på 2FA och ställ sedan in det på nytt på den nya telefonen.
+Q: Ska jag dela en inloggning med mitt team?
+A: Nej. Använd namngivna konton så att du vet vem som gjorde vad och kan ta bort åtkomst individuellt.
+Q: Hur tar jag bort en tidigare anställds åtkomst?
+A: Ta bort deras konto, byt delade lösenord och API-nycklar de kunde se och gå igenom granskningsloggen.
+Q: Var kan jag se vem som ändrade vad?
+A: I granskningsloggen, som är tillgänglig för arbetsytans ägare.
+P: Se [hur dina data skyddas](/privacy) och [personuppgiftsbiträdesavtalet](/dpa), läs [GDPR-checklistan](/blog/website-chatbot-gdpr-checklist), se [SSRF-skydd för webbskrapor](/blog/mitigating-ssrf-web-scraper-security), [funktionen AI-assistent](/product/ai-assistant) och [starta en gratis provperiod](/login?mode=register) för att sätta upp din arbetsyta på ett säkert sätt.
+H2[further-reading]: Vidare läsning
+UL:
+- [OWASP Top 10 för tillämpningar med stora språkmodeller](https://genai.owasp.org/llm-top-10/): De viktigaste säkerhetsriskerna med AI-assistenter, inklusive promptinjektion.
+- [Google Search Central: skapa hjälpsamt innehåll för människor](https://developers.google.com/search/docs/fundamentals/creating-helpful-content): Vad Google letar efter på användbara sidor.
+=== fi
+TITLE: Chatbot-tilisi suojaaminen: tiimin roolit, kaksivaiheinen tunnistautuminen ja käyttöoikeuksien hygienia
+SEO: Chatbot-tilisi suojaaminen | Crescelo
+DESC: Näin suojaat chatbotin työtilan: vähimmän oikeuden roolit, kaksivaiheinen tunnistautuminen, vahva kirjautuminen, käyttöoikeuksien poisto, API-avaimet, auditointiloki ja tarkistuslista.
+EXCERPT: Näin suojaat chatbotin työtilan: vähimmän oikeuden roolit, kaksivaiheinen tunnistautuminen, vahva kirjautuminen, käyttöoikeuksien poisto, API-avaimet, auditointiloki ja tarkistuslista.
+CLUSTER: Käyttöönotto-oppaat
+MOD: 2026-09-27
+P: Chatbotisi hallintapaneelissa on suojaamisen arvoisia asioita: asiakkaidesi keskustelut ja yhteystiedot, tietopankkisi muodostavat dokumentit, ajanvarauskalenterisi ja, jos tuot oman avaimen, pääsy tekoälypalveluntarjoajan tiliin, jolle voi kertyä lasku. Kaiken tämän hallitseva tili on yhtä turvallinen kuin heikoin kirjautumisensa. Useimmat todelliset tilin kaappaukset eivät ole nokkelia hakkerointeja: ne ovat uudelleenkäytettyjä salasanoja, jaettuja tunnuksia, entisiä työntekijöitä, joilla on yhä pääsy, ja omistajia, joilla ei ole toista tekijää. Tämä opas on käytännön tietoturvaopas chatbotin työtilan omistajille: miten asetat roolit niin, että ihmisillä on vain tarvitsemansa pääsy, miten kaksivaiheinen tunnistautuminen toimii ja miten sen otetaan käyttöön, miten kirjaudut turvallisesti sisään, miten hoidat tulijat ja lähtijät, miten suojaat API-avaimet, miten käytät auditointilokia, sekä tarkistuslista, jonka ehdit käydä läpi iltapäivässä.
+H2[what-is-at-stake]: Mitä on pelissä
+TABLE:
+H: Omaisuus | Riski, jos joku pääsee sisään
+R: Keskustelut ja liidit | Asiakkaiden henkilötiedot paljastuvat; tietosuojalain seuraukset
+R: Tietopankki | Sisältöä muutetaan niin, että assistentti sanoo vääriä asioita
+R: Assistentin asetukset | Ohjeita muutetaan; assistenttia käytetään väärin
+R: Ajanvaraukset ja kalenteri | Ajat poistetaan tai niitä spämmätään
+R: Tekoälyn tarjoajan avain | Tilillesi kertyy kustannuksia
+R: Laskutus | Pakettimuutokset tai irtisanominen
+P: Kaappauksen vaikutus on suurempi kuin useimmat omistajat olettavat, koska chatbot on asiakkaidesi edessä.
+H2[least-privilege-give-people-only-what-they-need]: Vähimmän oikeuden periaate: anna ihmisille vain se, mitä he tarvitsevat
+P: Roolit rajoittavat, mitä kukin tiimin jäsen voi nähdä ja muuttaa. Periaate on vähimmän oikeuden periaate: aloita minimistä ja lisää pääsyä, kun siihen on syy.
+TABLE:
+H: Henkilötyyppi | Ehdotettu pääsy
+R: Omistaja | Kaikki, laskutus ja tietoturva mukaan lukien; pidä yhdessä tai kahdessa henkilössä
+R: Ylläpitäjät | Hallitsevat assistentteja, tietoa ja asetuksia; eivät laskutusta tai omistajuutta
+R: Tuki tai vastaanotto | Näkevät keskustelut, liidit ja ajanvaraukset; hoitavat luovutukset; eivät asetuksia tai avaimia
+R: Urakoitsijat tai toimistot | Vain assistentit ja välilehdet, joiden parissa he työskentelevät, niin kauan kuin he työskentelevät
+R: Laskutus tai talous | Vain paketit ja laskut
+UL:
+- Tarkista roolit, kun jonkun tehtävät muuttuvat.
+- Vältä antamasta kaikille omistajan oikeuksia mukavuussyistä.
+- Käytä nimettyjä tilejä kaikille; älä koskaan jaa tunnuksia.
+- Rajoita, kuka näkee tekoälyavaimet ja kuka voi muuttaa assistentin ohjeita.
+P: Crescelon työtilat käyttävät rooleja, jotka rajoittavat, mitä tiimin jäsenet voivat nähdä, muokata tai muuttaa, ja omistajat näkevät auditointilokin tärkeistä toimista.
+H2[two-factor-authentication-2fa]: Kaksivaiheinen tunnistautuminen (2FA)
+P: Pelkkä salasana voidaan arvata, käyttää uudelleen toisesta tietomurrosta tai varastaa. Toinen tekijä vaatii jotain muuta: koodin puhelimesi tunnistautumissovelluksesta. Vaikka salasanasi vuotaisi, hyökkääjä ei pääse sisään ilman koodia. Crescelo tukee tunnistautumissovellusten aikapohjaisia kertakäyttökoodeja, ja tiimitilit voivat vaatia niitä kirjautumisessa.
+OL:
+- Asenna puhelimeesi tunnistautumissovellus.
+- Aloita 2FA:n käyttöönotto työtilan tietoturva-asetuksissa ja skannaa QR-koodi.
+- Syötä kuusinumeroinen koodi vahvistukseksi.
+- Tallenna palautuskoodit turvalliseen paikkaan offline-tilassa; niillä pääset sisään, jos kadotat puhelimesi.
+- Testaa uloskirjautuminen ja sisäänkirjautuminen koodilla.
+UL:
+- Ota se käyttöön ensin omistajille, sitten kaikille.
+- Suosi tunnistautumissovellusta tekstiviestien sijaan, sillä ne voidaan siepata.
+- Säilytä palautuskoodit salasananhallinnassa tai lukitussa laatikossa, älä sähköpostissa.
+- Kun joku lähtee, poista hänen pääsynsä; älä luota hänen 2FA:han.
+H2[strong-sign-in-habits]: Vahvat kirjautumistottumukset
+UL:
+- Käytä yksilöllistä, pitkää salasanaa salasananhallinnasta.
+- Älä koskaan käytä salasanoja uudelleen eri palveluissa.
+- Jos kirjaudut Googlella, suojaa myös se Google-tili 2FA:lla.
+- Varo kalastelua: tarkista osoite ennen tunnusten syöttämistä äläkä syötä koodia, jota et odottanut.
+- Kirjaudu ulos jaetuilta laitteilta.
+P: Crescelon hallintapaneeli tarkistaa istunnon jokaisessa pyynnössä tilisi tilaa vasten, joten salasanan vaihtaminen tai jäsenen poistaminen päättää heidän olemassa olevat istuntonsa.
+H2[joiners-movers-and-leavers]: Tulijat, siirtyjät ja lähtijät
+TABLE:
+H: Tapahtuma | Toimenpide
+R: Uusi tiimin jäsen | Luo nimetty tili pienimmällä toimivalla roolilla; vaadi 2FA
+R: Roolin muutos | Säädä pääsy samana päivänä
+R: Urakoitsija valmistuu | Poista pääsy välittömästi
+R: Työntekijä lähtee | Poista hänen tilinsä, vaihda kaikki, minkä hän saattoi nähdä, kuten jaetut salasanat ja API-avaimet
+R: Omistaja vaihtuu | Siirrä omistajuus harkiten ja poista vanhan omistajan pääsy
+P: Kirjoita tämä lyhyeksi tarkistuslistaksi. Työsuhteen päättyminen on kohta, josta useimmat käyttöoikeusongelmat alkavat.
+H2[protect-api-keys]: Suojaa API-avaimet
+UL:
+- Käytä erillistä avainta jokaiselle assistentille ja aseta kulutusraja palveluntarjoajalla.
+- Älä koskaan liitä avaimia chatteihin, sähköposteihin tai verkkosivuston koodiin.
+- Rajoita, kuka voi nähdä tai muuttaa tekoälyasetuksia.
+- Vaihda avaimet, kun pääsyn omaava henkilö lähtee tai epäilet vuotoa.
+- Crescelo tallentaa palveluntarjoajan avaimet salattuina; katso [miten oman avaimen holvi toimii](/blog/cryptographic-byok-vault-aes-256-gcm).
+H2[use-the-audit-trail]: Käytä auditointilokia
+P: Auditointiloki kirjaa, kuka teki mitä ja milloin: muutettu asetus, poistettu lähde, lisätty jäsen. Käytä sitä. Tarkista se kuukausittain odottamattomien muutosten varalta ja minkä tahansa välikohtauksen jälkeen. Crescelon omistajat näkevät työtilan toimien auditointilokin. Se auttaa myös riidassa tai tutkinnassa, koska näet, mitä tapahtui.
+H2[other-basics]: Muut perusasiat
+UL:
+- Pidä laitteesi päivitettyinä ja lukittuina.
+- Älä käytä julkista Wi-Fiä ylläpitotyöhön ilman luotettavaa yhteyttä.
+- Rajoita, kenellä on ylläpitäjän pääsy verkkotunnukseesi ja verkkosivustoosi, koska chat on asennettu sinne.
+- Ole varovainen selainlaajennusten kanssa.
+- Varmuuskopioi tärkeä sisältö, kuten tietodokumenttisi.
+H2[if-you-think-an-account-is-compromised]: Jos epäilet tilin vaarantuneen
+OL:
+- Vaihda salasana ja kirjaudu ulos kaikkialta.
+- Poista epäilyttävät jäsenet ja peruuta API-avaimet.
+- Tarkista auditointiloki nähdäksesi, mitä muuttui.
+- Käy läpi viimeaikaiset keskustelut ja liidit epätavallisen toiminnan varalta.
+- Palauta muutettu sisältö alkuperäisistäsi.
+- Kerro asiakkaille, joiden tiedot ovat voineet paljastua, oikeudellisten velvoitteidesi mukaisesti.
+- Ota yhteyttä tukeen ja kerro yksityiskohdat.
+H2[a-one-afternoon-checklist]: Yhden iltapäivän tarkistuslista
+UL:
+- Enintään kaksi omistajaa, molemmilla 2FA.
+- Jokainen tiimin jäsen nimetyllä tilillä pienimmällä roolilla.
+- Palautuskoodit säilytetty turvallisesti.
+- Vanhat ja jaetut tilit poistettu.
+- Erillinen tekoälyavain kulutusrajalla.
+- Auditointiloki tarkistettu.
+- Kirjallinen tulijoiden ja lähtijöiden tarkistuslista.
+H2[common-mistakes]: Yleiset virheet
+UL:
+- Kaikkien tekeminen omistajiksi, koska se on helpompaa.
+- Yhden tunnuksen jakaminen tiimissä.
+- Palautuskoodien säilyttäminen samassa postilaatikossa kuin salasanan palautusviesti.
+- Urakoitsijoiden poistamatta jättäminen projektin päätyttyä.
+- Auditointilokin katsomatta jättäminen.
+- Tekoälyavaimen jättäminen näkyviin ihmisille, jotka eivät sitä tarvitse.
+P: Näiden korjaaminen vie iltapäivän ja poistaa useimmat todelliset tavat, joilla tili vaarantuu. Lisää kalenteriin toistuva neljännesvuosittainen muistutus roolien ja käyttöoikeuksien tarkistamiseksi.
+H2[frequently-asked-questions]: Usein kysytyt kysymykset
+FAQ:
+Q: Tukeeko Crescelo kaksivaiheista tunnistautumista?
+A: Kyllä. Tilit voivat käyttää tunnistautumissovelluksen aikapohjaisia koodeja, ja tiimitilit voivat vaatia niitä kirjautumisessa.
+Q: Mitä on vähimmän oikeuden periaate?
+A: Se, että jokaiselle annetaan vain tarvittava pääsy, jolloin virhe tai tilin vaarantuminen aiheuttaa vähemmän vahinkoa.
+Q: Entä jos kadotan puhelimeni?
+A: Käytä palautuskoodeja, jotka tallensit 2FA:ta ottaessasi, ja ota se sitten uudelleen käyttöön uudessa puhelimessa.
+Q: Pitäisikö minun jakaa yksi tunnus tiimin kanssa?
+A: Ei. Käytä nimettyjä tilejä, jotta tiedät, kuka teki mitä, ja voit poistaa pääsyn yksilöllisesti.
+Q: Miten poistan entisen työntekijän pääsyn?
+A: Poista hänen tilinsä, vaihda jaetut salasanat ja API-avaimet, jotka hän saattoi nähdä, ja tarkista auditointiloki.
+Q: Mistä näen, kuka muutti mitä?
+A: Auditointilokista, joka on työtilan omistajien käytettävissä.
+P: Katso [miten tietosi suojataan](/privacy) ja [henkilötietojen käsittelyä koskeva lisäsopimus](/dpa), lue [GDPR-tarkistuslista](/blog/website-chatbot-gdpr-checklist), katso [SSRF-suojaus verkkosivujen kaapijoille](/blog/mitigating-ssrf-web-scraper-security), [tekoälyassistentin ominaisuus](/product/ai-assistant) ja [aloita ilmainen kokeilu](/login?mode=register) perustaaksesi työtilasi turvallisesti.
+H2[further-reading]: Lisälukemista
+UL:
+- [OWASP Top 10 suurten kielimallien sovelluksille](https://genai.owasp.org/llm-top-10/): Tekoälyassistenttien tärkeimmät tietoturvariskit, mukaan lukien kehoteinjektio.
+- [Google Search Central: hyödyllisen, ihmisläheisen sisällön luominen](https://developers.google.com/search/docs/fundamentals/creating-helpful-content): Mitä Google etsii hyödyllisiltä sivuilta.
+=== it
+TITLE: Proteggere l'account del tuo chatbot: ruoli del team, autenticazione a due fattori e igiene degli accessi
+SEO: Proteggere l'account del tuo chatbot | Crescelo
+DESC: Come proteggere uno spazio di lavoro del chatbot: ruoli con privilegi minimi, autenticazione a due fattori, accesso sicuro, revoca degli accessi, chiavi API, registro di controllo e una checklist.
+EXCERPT: Come proteggere uno spazio di lavoro del chatbot: ruoli con privilegi minimi, autenticazione a due fattori, accesso sicuro, revoca degli accessi, chiavi API, registro di controllo e una checklist.
+CLUSTER: Guide all'implementazione
+MOD: 2026-09-27
+P: La dashboard del tuo chatbot contiene cose che vale la pena proteggere: le conversazioni e i recapiti dei tuoi clienti, i documenti che compongono la tua base di conoscenza, il tuo calendario di prenotazioni e, se porti la tua chiave, l'accesso a un account presso un fornitore di AI che può far lievitare un conto. L'account che controlla tutto questo è sicuro quanto il suo accesso più debole. La maggior parte delle compromissioni reali di account non sono attacchi ingegnosi: sono password riutilizzate, accessi condivisi, ex collaboratori che hanno ancora l'accesso e titolari senza un secondo fattore. Questa guida è una guida pratica alla sicurezza per i titolari di uno spazio di lavoro del chatbot: come impostare i ruoli in modo che le persone abbiano solo l'accesso che serve, come funziona l'autenticazione a due fattori e come attivarla, come accedere in sicurezza, come gestire chi entra e chi esce, come proteggere le chiavi API, come usare un registro di controllo e una checklist da completare in un pomeriggio.
+H2[what-is-at-stake]: Cosa è in gioco
+TABLE:
+H: Risorsa | Rischio se qualcuno entra
+R: Conversazioni e contatti | Dati personali dei clienti esposti; conseguenze ai sensi della normativa sulla privacy
+R: Base di conoscenza | Contenuti alterati così che l'assistente dica cose sbagliate
+R: Impostazioni dell'assistente | Istruzioni modificate; assistente usato in modo improprio
+R: Prenotazioni e calendario | Appuntamenti cancellati o riempiti di spam
+R: Chiave del fornitore di AI | Costi che lievitano sul tuo account
+R: Fatturazione | Cambi di piano o disdetta
+P: L'impatto di una compromissione è maggiore di quanto la maggior parte dei titolari immagini, perché un chatbot sta davanti ai tuoi clienti.
+H2[least-privilege-give-people-only-what-they-need]: Privilegio minimo: dai alle persone solo ciò che serve
+P: I ruoli limitano ciò che ogni membro del team può vedere e modificare. Il principio è il privilegio minimo: parti dal minimo e aggiungi accesso quando c'è un motivo.
+TABLE:
+H: Tipo di persona | Accesso suggerito
+R: Titolare | Tutto, compresi fatturazione e sicurezza; limitalo a una o due persone
+R: Amministratori | Gestiscono assistenti, conoscenza e impostazioni; non fatturazione né proprietà
+R: Assistenza o reception | Vedono conversazioni, contatti e prenotazioni; gestiscono i passaggi a una persona; non impostazioni né chiavi
+R: Collaboratori esterni o agenzie | Solo gli assistenti e le schede su cui lavorano, finché lavorano
+R: Fatturazione o amministrazione | Solo piani e fatture
+UL:
+- Rivedi i ruoli quando cambia il lavoro di qualcuno.
+- Evita di dare a tutti i diritti di titolare per comodità.
+- Usa account nominativi per tutti; non condividere mai un accesso.
+- Limita chi può vedere le chiavi AI e chi può modificare le istruzioni dell'assistente.
+P: Gli spazi di lavoro di Crescelo usano ruoli che limitano ciò che i membri del team possono vedere, modificare o cambiare, e i titolari possono vedere un registro di controllo delle azioni importanti.
+H2[two-factor-authentication-2fa]: Autenticazione a due fattori (2FA)
+P: Una password da sola può essere indovinata, riutilizzata da un'altra violazione o rubata. Un secondo fattore richiede qualcos'altro: un codice da un'app di autenticazione sul tuo telefono. Anche se la tua password trapela, un aggressore non può accedere senza il codice. Crescelo supporta codici monouso basati sul tempo delle app di autenticazione, e gli account di team possono richiederli all'accesso.
+OL:
+- Installa un'app di autenticazione sul telefono.
+- Nelle impostazioni di sicurezza dello spazio di lavoro, avvia la configurazione della 2FA e scansiona il codice QR.
+- Inserisci il codice di sei cifre per confermare.
+- Salva i codici di recupero in un posto sicuro e offline; ti fanno entrare se perdi il telefono.
+- Prova a uscire e rientrare con un codice.
+UL:
+- Attivala prima per i titolari, poi per tutti.
+- Preferisci un'app di autenticazione ai messaggi di testo, che possono essere intercettati.
+- Conserva i codici di recupero in un gestore di password o in un cassetto chiuso a chiave, non in un'e-mail.
+- Quando qualcuno se ne va, rimuovi il suo accesso; non fare affidamento sulla sua 2FA.
+H2[strong-sign-in-habits]: Buone abitudini di accesso
+UL:
+- Usa una password univoca e lunga di un gestore di password.
+- Non riutilizzare mai le password tra servizi diversi.
+- Se accedi con Google, proteggi anche quell'account Google con la 2FA.
+- Attenzione al phishing: controlla l'indirizzo prima di inserire le credenziali e non inserire un codice che non ti aspettavi.
+- Esci dagli account sui dispositivi condivisi.
+P: La dashboard di Crescelo controlla a ogni richiesta una sessione rispetto allo stato del tuo account, quindi cambiare la password o rimuovere un membro termina le sessioni esistenti.
+H2[joiners-movers-and-leavers]: Nuovi arrivi, cambi di ruolo e partenze
+TABLE:
+H: Evento | Azione
+R: Nuovo membro del team | Crea un account nominativo con il ruolo più ristretto che funzioni; richiedi la 2FA
+R: Cambio di ruolo | Adegua l'accesso lo stesso giorno
+R: Fine del lavoro di un collaboratore esterno | Rimuovi l'accesso subito
+R: Un dipendente se ne va | Rimuovi il suo account, cambia tutto ciò che poteva vedere, come password condivise e chiavi API
+R: Cambio di titolare | Trasferisci la proprietà in modo ponderato e rimuovi l'accesso del vecchio titolare
+P: Scrivilo come breve checklist. La cessazione del rapporto è il punto da cui partono la maggior parte dei problemi di accesso.
+H2[protect-api-keys]: Proteggere le chiavi API
+UL:
+- Usa una chiave dedicata per ogni assistente, con un limite di spesa presso il fornitore.
+- Non incollare mai le chiavi in chat, e-mail o codice del sito.
+- Limita chi può vedere o modificare le impostazioni dell'AI.
+- Cambia le chiavi quando se ne va una persona con accesso o si sospetta una fuga.
+- Crescelo conserva le chiavi dei fornitori cifrate; vedi [come funziona un caveau per le tue chiavi](/blog/cryptographic-byok-vault-aes-256-gcm).
+H2[use-the-audit-trail]: Usare il registro di controllo
+P: Un registro di controllo registra chi ha fatto cosa e quando: un'impostazione cambiata, una fonte eliminata, un membro aggiunto. Usalo. Consultalo ogni mese per modifiche inattese e dopo qualsiasi incidente. I titolari su Crescelo possono vedere un registro di controllo delle azioni dello spazio di lavoro. Aiuta anche in una controversia o in un'indagine, perché puoi vedere cosa è successo.
+H2[other-basics]: Altre nozioni di base
+UL:
+- Tieni i dispositivi aggiornati e bloccati.
+- Non usare il Wi-Fi pubblico per lavori di amministrazione senza una connessione fidata.
+- Limita chi ha accesso amministrativo al tuo dominio e al tuo sito, perché la chat è installata lì.
+- Fai attenzione alle estensioni del browser.
+- Fai il backup dei contenuti importanti, come i documenti della tua base di conoscenza.
+H2[if-you-think-an-account-is-compromised]: Se pensi che un account sia compromesso
+OL:
+- Cambia la password ed esci ovunque.
+- Rimuovi i membri sospetti e revoca le chiavi API.
+- Controlla il registro di controllo per vedere cosa è cambiato.
+- Rivedi le conversazioni e i contatti recenti per attività insolite.
+- Ripristina i contenuti alterati dai tuoi originali.
+- Avvisa i clienti interessati se i loro dati potrebbero essere stati esposti, come richiedono i tuoi obblighi di legge.
+- Contatta l'assistenza con i dettagli.
+H2[a-one-afternoon-checklist]: Una checklist per un pomeriggio
+UL:
+- Al massimo due titolari, entrambi con la 2FA.
+- Ogni membro del team su un account nominativo con il ruolo più ristretto.
+- Codici di recupero conservati in modo sicuro.
+- Account vecchi e condivisi rimossi.
+- Una chiave AI dedicata con un limite di spesa.
+- Registro di controllo rivisto.
+- Una checklist scritta per chi entra e chi esce.
+H2[common-mistakes]: Errori comuni
+UL:
+- Rendere tutti titolari perché è più facile.
+- Condividere un unico accesso con il team.
+- Tenere i codici di recupero nella stessa casella dell'e-mail di reimpostazione della password.
+- Dimenticare di rimuovere i collaboratori esterni a fine progetto.
+- Non guardare mai il registro di controllo.
+- Lasciare la chiave AI visibile a chi non ne ha bisogno.
+P: Sistemare queste cose richiede un pomeriggio ed elimina la maggior parte dei modi realistici in cui un account viene compromesso. Metti in calendario un promemoria trimestrale ricorrente per rivedere ruoli e accessi.
+H2[frequently-asked-questions]: Domande frequenti
+FAQ:
+Q: Crescelo supporta l'autenticazione a due fattori?
+A: Sì. Gli account possono usare codici basati sul tempo di un'app di autenticazione, e gli account di team possono richiederli all'accesso.
+Q: Che cos'è il privilegio minimo?
+A: Dare a ciascuno solo l'accesso che serve, così un errore o una compromissione causano meno danni.
+Q: Cosa faccio se perdo il telefono?
+A: Usa i codici di recupero che hai salvato quando hai attivato la 2FA, poi configurala di nuovo sul nuovo telefono.
+Q: Devo condividere un unico accesso con il mio team?
+A: No. Usa account nominativi così sai chi ha fatto cosa e puoi revocare gli accessi singolarmente.
+Q: Come rimuovo l'accesso di un ex dipendente?
+A: Rimuovi il suo account, cambia le password condivise e le chiavi API che poteva vedere e rivedi il registro di controllo.
+Q: Dove posso vedere chi ha cambiato cosa?
+A: Nel registro di controllo, disponibile per i titolari dello spazio di lavoro.
+P: Vedi [come sono protetti i tuoi dati](/privacy) e l'[addendum sul trattamento dei dati](/dpa), leggi la [checklist GDPR](/blog/website-chatbot-gdpr-checklist), vedi la [protezione SSRF per i web scraper](/blog/mitigating-ssrf-web-scraper-security), la [funzione assistente AI](/product/ai-assistant) e [inizia una prova gratuita](/login?mode=register) per configurare il tuo spazio di lavoro in sicurezza.
+H2[further-reading]: Letture consigliate
+UL:
+- [OWASP Top 10 per le applicazioni basate su modelli linguistici di grandi dimensioni](https://genai.owasp.org/llm-top-10/): I principali rischi di sicurezza degli assistenti AI, compresa la prompt injection.
+- [Google Search Central: creare contenuti utili e pensati per le persone](https://developers.google.com/search/docs/fundamentals/creating-helpful-content): Che cosa cerca Google nelle pagine utili.
+=== es
+TITLE: Proteger la cuenta de tu chatbot: roles de equipo, autenticación en dos pasos e higiene de accesos
+SEO: Proteger la cuenta de tu chatbot | Crescelo
+DESC: Cómo proteger el espacio de trabajo de un chatbot: roles de mínimo privilegio, autenticación en dos pasos, inicio de sesión seguro, bajas de personal, claves de API, registro de auditoría y una lista de comprobación.
+EXCERPT: Cómo proteger el espacio de trabajo de un chatbot: roles de mínimo privilegio, autenticación en dos pasos, inicio de sesión seguro, bajas de personal, claves de API, registro de auditoría y una lista de comprobación.
+CLUSTER: Guías de implementación
+MOD: 2026-09-27
+P: El panel de tu chatbot guarda cosas que merece la pena proteger: las conversaciones y los datos de contacto de tus clientes, los documentos que componen tu base de conocimiento, tu calendario de reservas y, si traes tu propia clave, el acceso a una cuenta de un proveedor de IA que puede disparar una factura. La cuenta que controla todo esto es tan segura como su inicio de sesión más débil. La mayoría de los compromisos reales de cuentas no son ataques ingeniosos: son contraseñas reutilizadas, inicios de sesión compartidos, antiguos empleados que aún tienen acceso y propietarios sin un segundo factor. Esta guía es una guía práctica de seguridad para los propietarios de un espacio de trabajo de chatbot: cómo asignar roles para que cada persona tenga solo el acceso que necesita, cómo funciona la autenticación en dos pasos y cómo activarla, cómo iniciar sesión con seguridad, cómo gestionar altas y bajas, cómo proteger las claves de API, cómo usar un registro de auditoría y una lista de comprobación que puedes completar en una tarde.
+H2[what-is-at-stake]: Qué está en juego
+TABLE:
+H: Activo | Riesgo si alguien entra
+R: Conversaciones y contactos | Datos personales de los clientes expuestos; consecuencias según la normativa de privacidad
+R: Base de conocimiento | Contenido alterado para que el asistente diga cosas erróneas
+R: Ajustes del asistente | Instrucciones cambiadas; asistente usado de forma indebida
+R: Reservas y calendario | Citas eliminadas o inundadas de spam
+R: Clave del proveedor de IA | Costes disparados en tu cuenta
+R: Facturación | Cambios de plan o cancelación
+P: El impacto de una toma de control es mayor del que suelen suponer los propietarios, porque un chatbot está de cara a tus clientes.
+H2[least-privilege-give-people-only-what-they-need]: Mínimo privilegio: da a cada persona solo lo que necesita
+P: Los roles limitan lo que cada miembro del equipo puede ver y cambiar. El principio es el mínimo privilegio: empieza con lo mínimo y añade acceso cuando haya un motivo.
+TABLE:
+H: Tipo de persona | Acceso sugerido
+R: Propietario | Todo, incluidas facturación y seguridad; limítalo a una o dos personas
+R: Administradores | Gestionan asistentes, conocimiento y ajustes; no la facturación ni la propiedad
+R: Soporte o recepción | Ven conversaciones, contactos y reservas; gestionan los traspasos; no los ajustes ni las claves
+R: Contratistas o agencias | Solo los asistentes y pestañas en los que trabajan, mientras trabajen
+R: Facturación o finanzas | Solo planes y facturas
+UL:
+- Revisa los roles cuando cambie el puesto de alguien.
+- Evita dar a todos derechos de propietario por comodidad.
+- Usa cuentas nominales para todos; nunca compartas un inicio de sesión.
+- Limita quién puede ver las claves de IA y quién puede cambiar las instrucciones del asistente.
+P: Los espacios de trabajo de Crescelo usan roles que limitan lo que los miembros del equipo pueden ver, editar o cambiar, y los propietarios pueden ver un registro de auditoría de las acciones importantes.
+H2[two-factor-authentication-2fa]: Autenticación en dos pasos (2FA)
+P: Una contraseña por sí sola puede adivinarse, reutilizarse de otra filtración o robarse. Un segundo factor exige algo más: un código de una aplicación de autenticación en tu teléfono. Aunque se filtre tu contraseña, un atacante no puede entrar sin el código. Crescelo admite códigos de un solo uso basados en el tiempo de aplicaciones de autenticación, y las cuentas de equipo pueden exigirlos al iniciar sesión.
+OL:
+- Instala una aplicación de autenticación en tu teléfono.
+- En los ajustes de seguridad del espacio de trabajo, inicia la configuración de la 2FA y escanea el código QR.
+- Introduce el código de seis dígitos para confirmar.
+- Guarda los códigos de recuperación en un lugar seguro y sin conexión; te permiten entrar si pierdes el teléfono.
+- Prueba a cerrar sesión y volver a entrar con un código.
+UL:
+- Actívala primero para los propietarios y después para todos.
+- Prefiere una aplicación de autenticación a los mensajes de texto, que pueden interceptarse.
+- Guarda los códigos de recuperación en un gestor de contraseñas o en un cajón cerrado con llave, no en un correo.
+- Cuando alguien se va, retira su acceso; no confíes en su 2FA.
+H2[strong-sign-in-habits]: Buenos hábitos de inicio de sesión
+UL:
+- Usa una contraseña única y larga de un gestor de contraseñas.
+- Nunca reutilices contraseñas entre servicios.
+- Si inicias sesión con Google, protege también esa cuenta de Google con 2FA.
+- Cuidado con el phishing: comprueba la dirección antes de introducir las credenciales y no introduzcas un código que no esperabas.
+- Cierra sesión en los dispositivos compartidos.
+P: El panel de Crescelo comprueba una sesión en cada petición con el estado de tu cuenta, así que cambiar tu contraseña o eliminar a un miembro cierra sus sesiones existentes.
+H2[joiners-movers-and-leavers]: Altas, cambios de puesto y bajas
+TABLE:
+H: Suceso | Acción
+R: Nuevo miembro del equipo | Crea una cuenta nominal con el rol más pequeño que funcione; exige 2FA
+R: Cambio de puesto | Ajusta el acceso el mismo día
+R: Un contratista termina | Retira el acceso de inmediato
+R: Un empleado se va | Elimina su cuenta y cambia todo lo que pudiera ver, como contraseñas compartidas y claves de API
+R: Cambio de propietario | Transfiere la propiedad de forma deliberada y retira el acceso del antiguo propietario
+P: Anótalo como una lista breve. La baja del personal es donde empiezan la mayoría de los problemas de acceso.
+H2[protect-api-keys]: Proteger las claves de API
+UL:
+- Usa una clave dedicada para cada asistente, con un límite de gasto en el proveedor.
+- Nunca pegues claves en chats, correos ni código del sitio web.
+- Limita quién puede ver o cambiar los ajustes de IA.
+- Cambia las claves cuando se vaya una persona con acceso o se sospeche una filtración.
+- Crescelo guarda las claves de los proveedores cifradas; consulta [cómo funciona una caja fuerte de claves propias](/blog/cryptographic-byok-vault-aes-256-gcm).
+H2[use-the-audit-trail]: Usa el registro de auditoría
+P: Un registro de auditoría anota quién hizo qué y cuándo: un ajuste cambiado, una fuente eliminada, un miembro añadido. Úsalo. Revísalo cada mes en busca de cambios inesperados y tras cualquier incidente. Los propietarios de Crescelo pueden ver un registro de auditoría de las acciones del espacio de trabajo. También ayuda en una disputa o una investigación, porque puedes ver qué ocurrió.
+H2[other-basics]: Otros fundamentos
+UL:
+- Mantén tus dispositivos actualizados y bloqueados.
+- No uses wifi público para tareas de administración sin una conexión de confianza.
+- Limita quién tiene acceso de administrador a tu dominio y a tu sitio web, ya que el chat está instalado ahí.
+- Ten cuidado con las extensiones del navegador.
+- Haz copias de seguridad del contenido importante, como tus documentos de conocimiento.
+H2[if-you-think-an-account-is-compromised]: Si crees que una cuenta está comprometida
+OL:
+- Cambia la contraseña y cierra sesión en todas partes.
+- Elimina a los miembros sospechosos y revoca las claves de API.
+- Revisa el registro de auditoría para ver qué cambió.
+- Revisa las conversaciones y contactos recientes en busca de actividad inusual.
+- Restaura el contenido alterado a partir de tus originales.
+- Informa a los clientes afectados si sus datos pueden haber quedado expuestos, como exigen tus obligaciones legales.
+- Contacta con soporte y facilita los detalles.
+H2[a-one-afternoon-checklist]: Una lista de comprobación para una tarde
+UL:
+- Dos propietarios como máximo, ambos con 2FA.
+- Cada miembro del equipo en una cuenta nominal con el rol más pequeño.
+- Códigos de recuperación guardados de forma segura.
+- Cuentas antiguas y compartidas eliminadas.
+- Una clave de IA dedicada con límite de gasto.
+- Registro de auditoría revisado.
+- Una lista escrita de altas y bajas.
+H2[common-mistakes]: Errores comunes
+UL:
+- Hacer a todos propietarios porque es más fácil.
+- Compartir un solo inicio de sesión en el equipo.
+- Guardar los códigos de recuperación en la misma bandeja que el correo de restablecimiento de contraseña.
+- Olvidar retirar a los contratistas cuando termina un proyecto.
+- No mirar nunca el registro de auditoría.
+- Dejar la clave de IA visible para personas que no la necesitan.
+P: Corregir esto lleva una tarde y elimina la mayoría de las vías realistas por las que se compromete una cuenta. Pon en el calendario un recordatorio trimestral recurrente para revisar roles y accesos.
+H2[frequently-asked-questions]: Preguntas frecuentes
+FAQ:
+Q: ¿Admite Crescelo la autenticación en dos pasos?
+A: Sí. Las cuentas pueden usar códigos basados en el tiempo de una aplicación de autenticación, y las cuentas de equipo pueden exigirlos al iniciar sesión.
+Q: ¿Qué es el mínimo privilegio?
+A: Dar a cada persona solo el acceso que necesita, de modo que un error o un compromiso cause menos daño.
+Q: ¿Qué pasa si pierdo el teléfono?
+A: Usa los códigos de recuperación que guardaste al activar la 2FA y vuelve a configurarla en el teléfono nuevo.
+Q: ¿Debo compartir un inicio de sesión con mi equipo?
+A: No. Usa cuentas nominales para saber quién hizo qué y poder retirar el acceso de forma individual.
+Q: ¿Cómo retiro el acceso de un antiguo empleado?
+A: Elimina su cuenta, cambia las contraseñas compartidas y las claves de API que pudiera ver y revisa el registro de auditoría.
+Q: ¿Dónde puedo ver quién cambió qué?
+A: En el registro de auditoría, disponible para los propietarios del espacio de trabajo.
+P: Consulta [cómo se protegen tus datos](/privacy) y el [anexo de tratamiento de datos](/dpa), lee [la lista del RGPD](/blog/website-chatbot-gdpr-checklist), consulta la [protección SSRF para rastreadores web](/blog/mitigating-ssrf-web-scraper-security), la [función de asistente de IA](/product/ai-assistant) y [empieza una prueba gratuita](/login?mode=register) para configurar tu espacio de trabajo de forma segura.
+H2[further-reading]: Lecturas recomendadas
+UL:
+- [OWASP Top 10 para aplicaciones de modelos de lenguaje de gran tamaño](https://genai.owasp.org/llm-top-10/): Los principales riesgos de seguridad de los asistentes de IA, incluida la inyección de prompts.
+- [Google Search Central: crear contenido útil y pensado para las personas](https://developers.google.com/search/docs/fundamentals/creating-helpful-content): Qué busca Google en las páginas útiles.

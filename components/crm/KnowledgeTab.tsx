@@ -382,6 +382,7 @@ export const KnowledgeTab: React.FC<KnowledgeTabProps> = ({
 
                 {/* Upload Form */}
                 <form
+                  data-tour="knowledge-add"
                   onSubmit={handleExtractContent || handleUploadFiles}
                   className="rounded-xl border border-dashed border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 space-y-4 hover:border-blue-500 dark:hover:border-blue-500 transition shadow-xs"
                 >

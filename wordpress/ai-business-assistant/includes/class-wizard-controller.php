@@ -26,6 +26,9 @@ class Crescelo_Wizard_Controller {
         add_action('wp_ajax_crescelo_wizard_reset', [$this, 'ajax_reset_configuration']);
         add_action('wp_ajax_crescelo_save_post_types', [$this, 'ajax_save_post_types']);
         add_action('wp_ajax_crescelo_record_scrape_complete', [$this, 'ajax_record_scrape_complete']);
+        add_action('wp_ajax_crescelo_manual_connect_key', [$this, 'ajax_manual_connect_key']);
+        add_action('wp_ajax_crescelo_test_connection', [$this, 'ajax_test_connection']);
+        add_action('wp_ajax_crescelo_disconnect', [$this, 'ajax_disconnect']);
     }
 
     /**
@@ -302,5 +305,117 @@ class Crescelo_Wizard_Controller {
 
         update_option('ai_assistant_wizard_completed', false);
         wp_send_json_success(['reset' => true]);
+    }
+
+    /**
+     * Connect manually using an API key.
+     */
+    public function ajax_manual_connect_key() {
+        $this->verify_security();
+
+        $api_key  = sanitize_text_field(trim($_POST['api_key'] ?? ''));
+        $raw_host = trim($_POST['host_url'] ?? get_option('ai_assistant_host_url', 'http://localhost:3000'));
+        $host_url = esc_url_raw($raw_host);
+
+        if (empty($api_key)) {
+            wp_send_json_error(['error' => 'Please enter a valid API Key.']);
+        }
+
+        $endpoint = untrailingslashit($host_url) . '/api/connectors/wordpress/verify-key';
+
+        $response = wp_remote_post($endpoint, [
+            'timeout'     => 20,
+            'headers'     => [
+                'Content-Type'   => 'application/json',
+                'X-Crescelo-Key' => $api_key,
+            ],
+            'body'        => wp_json_encode([
+                'apiKey'     => $api_key,
+                'siteUrl'    => esc_url_raw(home_url()),
+                'siteName'   => sanitize_text_field(get_bloginfo('name')),
+                'adminEmail' => sanitize_email(get_option('admin_email')),
+            ]),
+            'data_format' => 'body',
+        ]);
+
+        if (is_wp_error($response)) {
+            wp_send_json_error(['error' => 'Connection failed: ' . $response->get_error_message()]);
+        }
+
+        $code = (int) wp_remote_retrieve_response_code($response);
+        $body = json_decode(wp_remote_retrieve_body($response), true);
+
+        if ($code !== 200 || empty($body['success'])) {
+            wp_send_json_error(['error' => sanitize_text_field($body['error'] ?? 'Invalid API Key or server response.')]);
+        }
+
+        $assistant_id   = sanitize_text_field($body['assistantId'] ?? '');
+        $assistant_name = sanitize_text_field($body['assistantName'] ?? 'AI Assistant');
+        $site_secret    = sanitize_text_field($body['siteSecret'] ?? $api_key);
+
+        update_option('ai_assistant_id', $assistant_id);
+        update_option('ai_assistant_assistant_name', $assistant_name);
+        update_option('ai_assistant_api_key', $api_key);
+        update_option('ai_assistant_site_secret', $site_secret);
+        update_option('ai_assistant_host_url', $host_url);
+        update_option('ai_assistant_connected_at', current_time('mysql'));
+        update_option('ai_assistant_enabled', true);
+        update_option('ai_assistant_wizard_completed', true);
+
+        wp_send_json_success([
+            'connected'     => true,
+            'assistantId'   => $assistant_id,
+            'assistantName' => $assistant_name,
+            'hostUrl'       => $host_url,
+            'connectedAt'   => current_time('mysql'),
+            'message'       => 'Connected successfully via API Key!',
+        ]);
+    }
+
+    /**
+     * Test active connection health.
+     */
+    public function ajax_test_connection() {
+        $this->verify_security();
+
+        $assistant_id = sanitize_text_field(get_option('ai_assistant_id', ''));
+        $host_url     = esc_url_raw(get_option('ai_assistant_host_url', 'http://localhost:3000'));
+
+        if (empty($assistant_id)) {
+            wp_send_json_error(['error' => 'No assistant connected.']);
+        }
+
+        $endpoint = untrailingslashit($host_url) . '/api/widget/' . $assistant_id . '/config';
+        $res = wp_remote_get($endpoint, ['timeout' => 10]);
+
+        if (is_wp_error($res) || wp_remote_retrieve_response_code($res) !== 200) {
+            wp_send_json_error(['error' => 'Could not communicate with Crescelo assistant. Check server status.']);
+        }
+
+        wp_send_json_success([
+            'healthy'       => true,
+            'assistantId'   => $assistant_id,
+            'assistantName' => get_option('ai_assistant_assistant_name', 'Active Assistant'),
+            'message'       => 'Connection is healthy and active!',
+        ]);
+    }
+
+    /**
+     * Disconnect the site from Crescelo.
+     */
+    public function ajax_disconnect() {
+        $this->verify_security();
+
+        update_option('ai_assistant_id', '');
+        update_option('ai_assistant_assistant_name', '');
+        update_option('ai_assistant_api_key', '');
+        update_option('ai_assistant_site_secret', '');
+        update_option('ai_assistant_account_email', '');
+        update_option('ai_assistant_connected_at', '');
+
+        wp_send_json_success([
+            'disconnected' => true,
+            'message'      => 'Disconnected from Crescelo.',
+        ]);
     }
 }

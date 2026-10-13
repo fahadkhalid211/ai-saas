@@ -97,6 +97,7 @@ interface DashboardSidebarProps {
   isMasterAdmin?: boolean;
   isOwner?: boolean;
   onOpenTour?: () => void;
+  onOpenSetup?: () => void;
   /** "Simple view": hides the more technical tabs (lib/ui/simple-mode.ts). Defaults to on for a reason — see there. */
   simpleMode?: boolean;
   onToggleSimpleMode?: () => void;
@@ -118,6 +119,7 @@ export function DashboardSidebar({
   isMasterAdmin = false,
   isOwner = false,
   onOpenTour,
+  onOpenSetup,
   simpleMode = false,
   onToggleSimpleMode,
 }: DashboardSidebarProps) {
@@ -199,6 +201,7 @@ export function DashboardSidebar({
                     <div key={tab.id} className="space-y-1">
                       <button
                         type="button"
+                        data-tour="nav-channels"
                         onClick={() => {
                           const nextExpanded = !isChannelsExpanded;
                           setIsChannelsExpanded(nextExpanded);
@@ -261,6 +264,7 @@ export function DashboardSidebar({
                 return (
                   <button
                     key={tab.id}
+                    data-tour={`nav-${tab.id}`}
                     onClick={() => setActiveTab(tab.id as any)}
                     className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm font-medium transition cursor-pointer ${
                       isActive
@@ -311,14 +315,26 @@ export function DashboardSidebar({
 
       <div className="pt-3 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between gap-2 text-xs">
         {onOpenTour ? (
-          <button
-            type="button"
-            onClick={onOpenTour}
-            className="flex items-center gap-1.5 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-semibold cursor-pointer transition"
-          >
-            <Compass className="h-3.5 w-3.5" />
-            <span><T>Guided tour</T></span>
-          </button>
+          <div className="flex flex-col gap-1.5">
+            {onOpenSetup ? (
+              <button
+                type="button"
+                onClick={onOpenSetup}
+                className="flex items-center gap-1.5 text-emerald-700 dark:text-emerald-400 hover:text-emerald-800 dark:hover:text-emerald-300 font-semibold cursor-pointer transition"
+              >
+                <Sparkles className="h-3.5 w-3.5" />
+                <span><T>Setup guide</T></span>
+              </button>
+            ) : null}
+            <button
+              type="button"
+              onClick={onOpenTour}
+              className="flex items-center gap-1.5 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-semibold cursor-pointer transition"
+            >
+              <Compass className="h-3.5 w-3.5" />
+              <span><T>Guided tour</T></span>
+            </button>
+          </div>
         ) : (
           <span className="text-slate-400 dark:text-slate-500"><T>Crescelo</T></span>
         )}
