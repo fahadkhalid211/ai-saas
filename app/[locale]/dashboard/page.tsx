@@ -203,6 +203,7 @@ export default function DashboardPage() {
   // Product Tour
   const [isTourOpen, setIsTourOpen] = useState(false);
   const [tourStepIndex, setTourStepIndex] = useState(0);
+  const [tourDontShowAgain, setTourDontShowAgain] = useState(false);
 
   // Groq API Key Missing Modal State
   const [showApiKeyModal, setShowApiKeyModal] = useState(false);
@@ -224,6 +225,21 @@ export default function DashboardPage() {
     setIsTourOpen(true);
   };
 
+  const handleCloseTour = (markedDontShowAgain?: boolean) => {
+    const shouldHide = markedDontShowAgain ?? tourDontShowAgain;
+    if (shouldHide) {
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('crescelo_dont_show_tour', 'true');
+      }
+      fetch('/api/profile/tour', { method: 'POST' }).catch(() => undefined);
+    } else {
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('crescelo_dont_show_tour');
+      }
+    }
+    setIsTourOpen(false);
+  };
+
   const handleTourNext = () => {
     const next = tourStepIndex + 1;
     if (next < TOUR_STEPS.length) {
@@ -231,7 +247,7 @@ export default function DashboardPage() {
       if (step.tab) setActiveTab(step.tab as any);
       setTourStepIndex(next);
     } else {
-      setIsTourOpen(false);
+      handleCloseTour();
     }
   };
 
@@ -371,23 +387,25 @@ export default function DashboardPage() {
   // Billing Hook
   const billing = useCrmBilling();
 
-  // First sign-in: the tour opens by itself, once per member (remembered on the account, so not again on another device).
-  // It waits until the dashboard is usable: an assistant is loaded and the plan screen is not covering the page.
+  // Product tour: appears automatically every time unless the user explicitly checks "Don't show it again"
   const tourAutoOpened = useRef(false);
   useEffect(() => {
-    if (tourAutoOpened.current || isMasterAdmin || supportAccess || isAuthChecking || !currentUser?.id || !activeAssistant) return;
-    if (currentUser.tourSeenAt) return;
-    const status = billing.billingData?.trial?.status;
-    if (!status || status === 'needs_card' || status === 'expired') return;
-    // members who joined before the tour opened by itself are not interrupted now
-    const joined = currentUser.createdAt ? new Date(currentUser.createdAt).getTime() : NaN;
-    if (!Number.isFinite(joined) || Date.now() - joined > 30 * 24 * 60 * 60 * 1000) return;
+    if (tourAutoOpened.current || isMasterAdmin || supportAccess || isAuthChecking) return;
+
+    const isDismissed = typeof window !== 'undefined' && localStorage.getItem('crescelo_dont_show_tour') === 'true';
+    if (isDismissed) {
+      setTourDontShowAgain(true);
+      return;
+    }
+
+    if (!activeAssistant) return;
+
     tourAutoOpened.current = true;
-    setActiveTab('overview');
-    setTourStepIndex(0);
-    setIsTourOpen(true);
-    fetch('/api/profile/tour', { method: 'POST' }).catch(() => undefined);
-  }, [isMasterAdmin, isAuthChecking, currentUser?.id, currentUser?.tourSeenAt, activeAssistant?.id, billing.billingData?.trial?.status]);
+    const timer = setTimeout(() => {
+      handleOpenTour();
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [isMasterAdmin, supportAccess, isAuthChecking, activeAssistant?.id]);
 
   // Channels Hook
   const channels = useCrmChannels({ playNotificationChime });
@@ -1407,8 +1425,22 @@ export default function DashboardPage() {
           stepIndex={tourStepIndex}
           onNext={handleTourNext}
           onPrev={handleTourPrev}
-          onClose={() => setIsTourOpen(false)}
+          onClose={handleCloseTour}
           onGoToStep={handleTourGoToStep}
+          dontShowAgain={tourDontShowAgain}
+          onToggleDontShowAgain={(val) => {
+            setTourDontShowAgain(val);
+            if (val) {
+              if (typeof window !== 'undefined') {
+                localStorage.setItem('crescelo_dont_show_tour', 'true');
+              }
+              fetch('/api/profile/tour', { method: 'POST' }).catch(() => undefined);
+            } else {
+              if (typeof window !== 'undefined') {
+                localStorage.removeItem('crescelo_dont_show_tour');
+              }
+            }
+          }}
         />
 
       </div>
