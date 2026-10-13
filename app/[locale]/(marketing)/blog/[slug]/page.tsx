@@ -24,7 +24,7 @@ import { blogImageUrl, blogPostingSchema, breadcrumbSchema, faqSchema } from '@/
 import { withSocial } from '@/lib/seo';
 
 /** Pages are built once and refreshed hourly, and straight away when the owner saves an edit. */
-export const revalidate = 3600;
+export const revalidate = 86400;
 
 /** English has every article; another language only the ones that were translated. */
 export async function generateStaticParams({ params }: { params: { locale: string } }) {

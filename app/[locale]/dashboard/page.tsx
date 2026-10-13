@@ -667,7 +667,7 @@ export default function DashboardPage() {
       if (typeof document === 'undefined' || document.visibilityState !== 'hidden') {
         fetchNotifications();
       }
-    }, 3000);
+    }, 10000);
     return () => clearInterval(interval);
   }, [isAuthenticated, activeAssistant?.id]);
 
@@ -691,7 +691,7 @@ export default function DashboardPage() {
       if (typeof document === 'undefined' || document.visibilityState !== 'hidden') {
         fetchConversations(activeAssistant.id);
       }
-    }, 2500);
+    }, 8000);
     return () => clearInterval(interval);
   }, [isAuthenticated, activeAssistant?.id, activeTab]);
 

@@ -22,6 +22,8 @@ import {
 import { MarkdownRenderer } from '@/components/markdown-renderer';
 import { ChatBookingCard } from '@/components/chat/ChatBookingCard';
 import { consumeChatStream } from '@/lib/chat/stream';
+import { useAdaptivePoll } from '@/lib/chat/use-adaptive-poll';
+import { isHandoffActive } from '@/lib/chat/poll-schedule';
 import { CresceloMark } from '@/components/brand/CresceloMark';
 
 function getContrastingTextColor(hexColor?: string): string {
@@ -184,74 +186,67 @@ export default function EmbedChatPage({ params }: EmbedPageProps) {
   const knownServerMessageCountRef = useRef(0);
   const currentConvIdRef = useRef<string | null>(null);
 
+  const [handoffActive, setHandoffActive] = useState(false);
+
+  // Start counting from the beginning when the conversation changes to a different one.
   useEffect(() => {
-    if (!conversationId || !conversationToken) return;
-    // Only reset cursor when conversation actually changes to a different ID
     if (currentConvIdRef.current !== conversationId) {
       currentConvIdRef.current = conversationId;
       knownServerMessageCountRef.current = 0;
+      setHandoffActive(false);
     }
+  }, [conversationId]);
 
-    const pollConv = async () => {
-      if (typeof document !== 'undefined' && document.visibilityState === 'hidden') return;
-      try {
-        const params = new URLSearchParams({
-          id: conversationId,
-          token: conversationToken,
-          sinceCount: String(knownServerMessageCountRef.current),
-        });
-        const res = await fetch(`/api/conversations?${params.toString()}`);
-        if (!res.ok) return;
-        const data = await res.json();
-        if (!data || !data.conversation) return;
+  const pollConv = async () => {
+    if (!conversationId || !conversationToken) return;
+    try {
+      const params = new URLSearchParams({
+        id: conversationId,
+        token: conversationToken,
+        sinceCount: String(knownServerMessageCountRef.current),
+      });
+      const res = await fetch(`/api/conversations?${params.toString()}`);
+      if (!res.ok) return;
+      const data = await res.json();
+      if (!data || !data.conversation) return;
 
-        const conv = data.conversation;
-        setIsTakeoverActive(Boolean(conv.isLiveTakeover));
-        if (conv.assignedAgentName) setAssignedAgentName(conv.assignedAgentName);
+      const conv = data.conversation;
+      setIsTakeoverActive(Boolean(conv.isLiveTakeover));
+      setHandoffActive(isHandoffActive(conv));
+      if (conv.assignedAgentName) setAssignedAgentName(conv.assignedAgentName);
 
-        if (typeof data.totalMessageCount === 'number') {
-          knownServerMessageCountRef.current = data.totalMessageCount;
-        }
-
-        const incomingMessages = data.newMessages || [];
-        if (incomingMessages.length === 0) return;
-
-        setMessages((prev) => {
-          const prevIds = new Set(prev.map((m) => m.id).filter(Boolean));
-          const newMessagesToAdd = incomingMessages.filter(
-            (m: any) => (m.role === 'agent' || m.role === 'system') && (!m.id || !prevIds.has(m.id))
-          );
-
-          if (newMessagesToAdd.length === 0) return prev;
-
-          const formatted = newMessagesToAdd.map((m: any) => ({
-            id: m.id,
-            role: m.role as 'agent' | 'system',
-            content: m.content,
-            senderName: m.senderName || conv.assignedAgentName || 'Live Support Agent',
-          }));
-
-          return [...prev, ...formatted];
-        });
-      } catch {
-        // Silent polling error
+      if (typeof data.totalMessageCount === 'number') {
+        knownServerMessageCountRef.current = data.totalMessageCount;
       }
-    };
 
-    const pollIntervalMs = isTakeoverActive ? 1000 : 2500;
-    const interval = setInterval(pollConv, pollIntervalMs);
-    const onVisibilityChange = () => {
-      if (typeof document !== 'undefined' && document.visibilityState === 'visible') {
-        pollConv();
-      }
-    };
-    document.addEventListener('visibilitychange', onVisibilityChange);
+      const incomingMessages = data.newMessages || [];
+      if (incomingMessages.length === 0) return;
 
-    return () => {
-      clearInterval(interval);
-      document.removeEventListener('visibilitychange', onVisibilityChange);
-    };
-  }, [conversationId, conversationToken, isTakeoverActive]);
+      setMessages((prev) => {
+        const prevIds = new Set(prev.map((m) => m.id).filter(Boolean));
+        const newMessagesToAdd = incomingMessages.filter(
+          (m: any) => (m.role === 'agent' || m.role === 'system') && (!m.id || !prevIds.has(m.id))
+        );
+
+        if (newMessagesToAdd.length === 0) return prev;
+
+        const formatted = newMessagesToAdd.map((m: any) => ({
+          id: m.id,
+          role: m.role as 'agent' | 'system',
+          content: m.content,
+          senderName: m.senderName || conv.assignedAgentName || 'Live Support Agent',
+        }));
+
+        return [...prev, ...formatted];
+      });
+    } catch {
+      // Silent polling error
+    }
+  };
+
+  // The pace follows what is happening (lib/chat/poll-schedule.ts): quick while a person is involved or the visitor is active,
+  // slow when idle, and not at all in a hidden tab. It used to ask every 2.5 seconds for as long as the page was open.
+  useAdaptivePoll(pollConv, { enabled: Boolean(conversationId && conversationToken), handoffActive: handoffActive || isTakeoverActive });
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

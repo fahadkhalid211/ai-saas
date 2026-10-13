@@ -236,8 +236,11 @@ export function proxy(request: NextRequest) {
   return response;
 }
 
+// Every request that matches runs this proxy (a server function call that counts against the plan's limits), so files that
+// need none of it are left out: the widget script, the translation catalogs, scripts, styles, fonts, images, documents and the
+// root text files. Pages and the API still go through it. (/blog/feed.xml is not listed: it needs the rewrite above.)
 export const config = {
   matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    '/((?!_next/static|_next/image|favicon\\.ico|widget\\.js|i18n/|robots\\.txt|sitemap\\.xml|llms\\.txt|manifest\\.webmanifest|.*\\.(?:svg|png|jpg|jpeg|gif|webp|avif|ico|js|css|map|woff2?|ttf|otf|txt|zip|pdf|mp3|mp4|webm)$).*)',
   ],
 };

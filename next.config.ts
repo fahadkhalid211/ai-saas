@@ -27,6 +27,16 @@ const nextConfig: NextConfig = {
   },
   async headers() {
     return [
+      // The chat widget script is loaded on every page view of every customer site. Without a cache lifetime each of those views
+      // asked the server whether it had changed (a request each time). An hour in the browser, and a day on the network edge
+      // (cleared by every deploy), keeps updates reaching sites within the hour.
+      {
+        source: '/widget.js',
+        headers: [
+          { key: 'Cache-Control', value: 'public, max-age=3600, s-maxage=86400, stale-while-revalidate=604800' },
+          { key: 'X-Content-Type-Options', value: 'nosniff' },
+        ],
+      },
       // Preview deployments (*.vercel.app) must never compete with the real site in search results.
       {
         source: '/:path*',

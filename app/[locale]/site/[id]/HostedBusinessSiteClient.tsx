@@ -1,6 +1,8 @@
 'use client';
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { useAdaptivePoll } from '@/lib/chat/use-adaptive-poll';
+import { isHandoffActive } from '@/lib/chat/poll-schedule';
 import {
   Scissors,
   Calendar,
@@ -299,74 +301,66 @@ export default function HostedBusinessSiteClient({
 
   const currentSiteConvIdRef = useRef<string | null>(null);
 
-  // Real-time synchronization with Live Agent Takeover
+  // Real-time synchronization with Live Agent Takeover. The pace follows what is happening (lib/chat/poll-schedule.ts):
+  // quick while a person is involved or the visitor is active, slow when idle, and none in a hidden tab.
+  const [siteHandoffActive, setSiteHandoffActive] = useState(false);
   useEffect(() => {
-    if (!conversationId || !conversationToken) return;
     if (currentSiteConvIdRef.current !== conversationId) {
       currentSiteConvIdRef.current = conversationId;
       knownServerMessageCountRef.current = 0;
+      setSiteHandoffActive(false);
     }
+  }, [conversationId]);
 
-    const pollSiteConv = async () => {
-      if (typeof document !== 'undefined' && document.visibilityState === 'hidden') return;
-      try {
-        const params = new URLSearchParams({
-          id: conversationId,
-          token: conversationToken,
-          sinceCount: String(knownServerMessageCountRef.current),
-        });
-        const res = await fetch(`/api/conversations?${params.toString()}`);
-        if (!res.ok) return;
-        const data = await res.json();
-        if (!data || !data.conversation) return;
+  const pollSiteConv = async () => {
+    if (!conversationId || !conversationToken) return;
+    try {
+      const params = new URLSearchParams({
+        id: conversationId,
+        token: conversationToken,
+        sinceCount: String(knownServerMessageCountRef.current),
+      });
+      const res = await fetch(`/api/conversations?${params.toString()}`);
+      if (!res.ok) return;
+      const data = await res.json();
+      if (!data || !data.conversation) return;
 
-        const conv = data.conversation;
-        setIsTakeoverActive(Boolean(conv.isLiveTakeover));
-        if (conv.assignedAgentName) {
-          setAssignedAgentName(conv.assignedAgentName);
-        }
-
-        if (typeof data.totalMessageCount === 'number') {
-          knownServerMessageCountRef.current = data.totalMessageCount;
-        }
-
-        const incomingMessages = data.newMessages || [];
-        if (incomingMessages.length === 0) return;
-
-        setChatMessages((prev) => {
-          const prevIds = new Set(prev.map((m) => m.id).filter(Boolean));
-          const newAgentMessages = incomingMessages.filter(
-            (m: any) => m.role === 'agent' && (!m.id || !prevIds.has(m.id))
-          );
-
-          if (newAgentMessages.length === 0) return prev;
-
-          playChatReceiveSound();
-          const formatted = newAgentMessages.map((m: any) => ({
-            id: m.id,
-            role: 'agent' as const,
-            content: m.content,
-            senderName: m.senderName || conv.assignedAgentName || 'Live Support Agent',
-          }));
-
-          return [...prev, ...formatted];
-        });
-      } catch {}
-    };
-
-    const interval = setInterval(pollSiteConv, 6000);
-    const onVisibilityChange = () => {
-      if (typeof document !== 'undefined' && document.visibilityState === 'visible') {
-        pollSiteConv();
+      const conv = data.conversation;
+      setIsTakeoverActive(Boolean(conv.isLiveTakeover));
+      setSiteHandoffActive(isHandoffActive(conv));
+      if (conv.assignedAgentName) {
+        setAssignedAgentName(conv.assignedAgentName);
       }
-    };
-    document.addEventListener('visibilitychange', onVisibilityChange);
 
-    return () => {
-      clearInterval(interval);
-      document.removeEventListener('visibilitychange', onVisibilityChange);
-    };
-  }, [conversationId, conversationToken]);
+      if (typeof data.totalMessageCount === 'number') {
+        knownServerMessageCountRef.current = data.totalMessageCount;
+      }
+
+      const incomingMessages = data.newMessages || [];
+      if (incomingMessages.length === 0) return;
+
+      setChatMessages((prev) => {
+        const prevIds = new Set(prev.map((m) => m.id).filter(Boolean));
+        const newAgentMessages = incomingMessages.filter(
+          (m: any) => m.role === 'agent' && (!m.id || !prevIds.has(m.id))
+        );
+
+        if (newAgentMessages.length === 0) return prev;
+
+        playChatReceiveSound();
+        const formatted = newAgentMessages.map((m: any) => ({
+          id: m.id,
+          role: 'agent' as const,
+          content: m.content,
+          senderName: m.senderName || conv.assignedAgentName || 'Live Support Agent',
+        }));
+
+        return [...prev, ...formatted];
+      });
+    } catch {}
+  };
+
+  useAdaptivePoll(pollSiteConv, { enabled: Boolean(conversationId && conversationToken), handoffActive: siteHandoffActive || isTakeoverActive });
 
   useEffect(() => {
     if (typeof window !== 'undefined') {

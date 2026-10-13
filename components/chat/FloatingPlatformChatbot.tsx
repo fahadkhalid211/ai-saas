@@ -1,6 +1,8 @@
 'use client';
 
 import { T, useT } from '@/lib/i18n/context';
+import { useAdaptivePoll } from '@/lib/chat/use-adaptive-poll';
+import { isHandoffActive } from '@/lib/chat/poll-schedule';
 import React, { useState, useEffect, useRef } from 'react';
 import { X, Send, RefreshCw, Check, Copy, Minus, ChevronDown, MessageSquare, Headphones } from 'lucide-react';
 import { CresceloOrb, type OrbState } from '@/components/brand/CresceloOrb';
@@ -111,72 +113,74 @@ export function FloatingPlatformChatbot({ variant = 'floating', onNavigate, onBi
     }
   }, [isOpen, messages]);
 
-  // Polling for live agent messages and takeover status in the conversation
+  // Polling for live agent messages and takeover status in the conversation. The pace follows what is happening
+  // (lib/chat/poll-schedule.ts): quick while a person is involved or the visitor is active, slow when idle, none in a hidden tab.
+  // It used to ask every 2.5 seconds, with the whole transcript each time, for as long as the page stayed open.
+  const knownServerCountRef = useRef(0);
+  const [handoffActive, setHandoffActive] = useState(false);
   useEffect(() => {
+    knownServerCountRef.current = 0;
+    setHandoffActive(false);
+  }, [conversationId]);
+
+  const pollConversation = async () => {
     if (!conversationId) return;
-
-    let isMounted = true;
-    const pollConversation = async () => {
-      try {
-        let url = `/api/conversations?id=${encodeURIComponent(conversationId)}`;
-        if (conversationToken) {
-          url += `&token=${encodeURIComponent(conversationToken)}`;
-        }
-        const res = await fetch(url);
-        if (!res.ok) return;
-        const data = await res.json();
-        if (!data || !isMounted) return;
-
-        const conv = data.conversation;
-        if (conv) {
-          if (conv.isLiveTakeover) {
-            setIsTakeoverActive(true);
-            if (conv.assignedAgentName) {
-              setAssignedAgentName(conv.assignedAgentName);
-            }
-          } else if (conv.isLiveTakeover === false) {
-            setIsTakeoverActive(false);
-          }
-        }
-
-        const msgList: any[] = (conv && conv.messages) || data.newMessages || [];
-        if (Array.isArray(msgList) && msgList.length > 0) {
-          setMessages((prev) => {
-            const existingIds = new Set(prev.map((m) => m.id).filter(Boolean));
-            const newToAppend: ChatMessage[] = [];
-
-            for (const m of msgList) {
-              if ((m.role === 'agent' || m.role === 'system') && !existingIds.has(m.id)) {
-                newToAppend.push({
-                  id: m.id || 'msg_' + Math.random().toString(36).substring(2, 9),
-                  role: m.role as 'agent' | 'system',
-                  content: m.content,
-                  senderName: m.senderName || conv?.assignedAgentName || assignedAgentName,
-                  createdAt: m.createdAt || new Date().toISOString(),
-                });
-              }
-            }
-
-            if (newToAppend.length > 0) {
-              if (!isOpen) setHasUnread(true);
-              return [...prev, ...newToAppend];
-            }
-            return prev;
-          });
-        }
-      } catch {
-        // Silent poll error
+    try {
+      // sinceCount: only the messages after the ones already seen come back, not the whole transcript every time
+      let url = `/api/conversations?id=${encodeURIComponent(conversationId)}&sinceCount=${knownServerCountRef.current}`;
+      if (conversationToken) {
+        url += `&token=${encodeURIComponent(conversationToken)}`;
       }
-    };
+      const res = await fetch(url);
+      if (!res.ok) return;
+      const data = await res.json();
+      if (!data) return;
+      if (typeof data.totalMessageCount === 'number') knownServerCountRef.current = data.totalMessageCount;
 
-    pollConversation();
-    const pollInterval = isTakeoverActive ? 1000 : 2500;
-    const timer = setInterval(pollConversation, pollInterval);
-    return () => {
-      isMounted = false;
-      clearInterval(timer);
-    };
-  }, [conversationId, conversationToken, isOpen, assignedAgentName, isTakeoverActive]);
+      const conv = data.conversation;
+      if (conv) {
+        setHandoffActive(isHandoffActive(conv));
+        if (conv.isLiveTakeover) {
+          setIsTakeoverActive(true);
+          if (conv.assignedAgentName) {
+            setAssignedAgentName(conv.assignedAgentName);
+          }
+        } else if (conv.isLiveTakeover === false) {
+          setIsTakeoverActive(false);
+        }
+      }
+
+      const msgList: any[] = (conv && conv.messages) || data.newMessages || [];
+      if (Array.isArray(msgList) && msgList.length > 0) {
+        setMessages((prev) => {
+          const existingIds = new Set(prev.map((m) => m.id).filter(Boolean));
+          const newToAppend: ChatMessage[] = [];
+
+          for (const m of msgList) {
+            if ((m.role === 'agent' || m.role === 'system') && !existingIds.has(m.id)) {
+              newToAppend.push({
+                id: m.id || 'msg_' + Math.random().toString(36).substring(2, 9),
+                role: m.role as 'agent' | 'system',
+                content: m.content,
+                senderName: m.senderName || conv?.assignedAgentName || assignedAgentName,
+                createdAt: m.createdAt || new Date().toISOString(),
+              });
+            }
+          }
+
+          if (newToAppend.length > 0) {
+            if (!isOpen) setHasUnread(true);
+            return [...prev, ...newToAppend];
+          }
+          return prev;
+        });
+      }
+    } catch {
+      // Silent poll error
+    }
+  };
+
+  useAdaptivePoll(pollConversation, { enabled: Boolean(conversationId), handoffActive: handoffActive || isTakeoverActive });
 
   useEffect(() => {
     if (!isOpen || bookingConfig) return;

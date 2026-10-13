@@ -1785,6 +1785,10 @@
       });
     }
     var liveSyncTimer = null;
+    var liveSyncRunning = false;
+    var liveSyncActivityAt = Date.now();
+    var liveSyncHandoff = false;
+    var liveSyncKnownCount = 0;
     var knownMessageIds = {};
     var conversationToken = null;
     var isTakeoverActive = false;
@@ -1887,11 +1891,12 @@
 
     function pollLiveSync() {
       if (!conversationId) return;
-      var syncUrl = hostUrl + '/api/conversations?id=' + encodeURIComponent(conversationId);
+      // sinceCount: the server returns only the messages after the ones already seen, not the whole transcript each time
+      var syncUrl = hostUrl + '/api/conversations?id=' + encodeURIComponent(conversationId) + '&sinceCount=' + liveSyncKnownCount;
       if (conversationToken) {
         syncUrl += '&token=' + encodeURIComponent(conversationToken);
       }
-      fetch(syncUrl)
+      return fetch(syncUrl)
         .then(function (res) {
           if (!res.ok) return null;
           return res.json();
@@ -1900,6 +1905,8 @@
           if (!data) return;
           var conv = data.conversation || {};
           var msgList = (conv && conv.messages) || data.newMessages || [];
+          if (typeof data.totalMessageCount === 'number') liveSyncKnownCount = data.totalMessageCount;
+          liveSyncHandoff = !!conv.isLiveTakeover || conv.status === 'waiting_for_agent' || conv.status === 'live_agent';
 
           if (conv.isLiveTakeover) {
             isTakeoverActive = true;
@@ -1933,13 +1940,67 @@
         .catch(function () {});
     }
 
+    // How often to ask whether a person has written back. This is a copy of nextPollDelayMs in lib/chat/poll-schedule.ts (this file
+    // is loaded on other people's sites and cannot import it): keep the two the same. A hidden tab does not ask at all; a chat that
+    // needs a person asks every 2.5s; an active visitor every 5s; a quiet one every 20s, and after ten quiet minutes every minute.
+    // It used to ask every 3.5 seconds for as long as the page was open.
+    function nextPollDelayMs(hidden, handoffActive, msSinceActivity) {
+      if (hidden) return null;
+      if (handoffActive) return 2500;
+      if (msSinceActivity < 60000) return 5000;
+      if (msSinceActivity < 600000) return 20000;
+      return 60000;
+    }
+
+    function scheduleLiveSync() {
+      if (liveSyncTimer) clearTimeout(liveSyncTimer);
+      liveSyncTimer = null;
+      if (!conversationId) return;
+      var delay = nextPollDelayMs(document.visibilityState === 'hidden', liveSyncHandoff, Date.now() - liveSyncActivityAt);
+      if (delay === null) return; // hidden: starts again when the page is shown
+      liveSyncTimer = setTimeout(runLiveSync, delay);
+    }
+
+    function runLiveSync() {
+      if (liveSyncRunning) return;
+      liveSyncRunning = true;
+      Promise.resolve(pollLiveSync())
+        .catch(function () {})
+        .then(function () {
+          liveSyncRunning = false;
+          scheduleLiveSync();
+        });
+    }
+
+    var liveSyncListening = false;
     function startLiveSync() {
       if (!conversationId) return;
-      pollLiveSync();
-      if (liveSyncTimer) return;
-      liveSyncTimer = setInterval(function () {
-        pollLiveSync();
-      }, 3500);
+      if (!liveSyncListening) {
+        liveSyncListening = true;
+        document.addEventListener('visibilitychange', function () {
+          if (document.visibilityState === 'visible') {
+            liveSyncActivityAt = Date.now();
+            if (liveSyncTimer) clearTimeout(liveSyncTimer);
+            runLiveSync();
+          } else if (liveSyncTimer) {
+            clearTimeout(liveSyncTimer);
+            liveSyncTimer = null;
+          }
+        });
+        ['pointerdown', 'keydown', 'touchstart', 'scroll'].forEach(function (evt) {
+          window.addEventListener(evt, function () {
+            var quiet = Date.now() - liveSyncActivityAt > 15000;
+            liveSyncActivityAt = Date.now();
+            // after a quiet spell the next sign of life brings the pace back up at once
+            if (quiet && !liveSyncRunning && conversationId) {
+              if (liveSyncTimer) clearTimeout(liveSyncTimer);
+              runLiveSync();
+            }
+          }, { passive: true });
+        });
+      }
+      if (liveSyncTimer || liveSyncRunning) return;
+      runLiveSync();
     }
 
     function appendMessage(role, text, senderName) {

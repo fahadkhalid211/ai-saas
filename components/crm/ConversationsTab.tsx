@@ -339,7 +339,8 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
       selectedConversation?.status === 'waiting_for_agent' ||
       selectedConversation?.status === 'live_agent'
     );
-    const pollIntervalMs = isLiveActive ? 1000 : 2500;
+    // a chat that needs a person is followed closely; the rest is checked now and then (a hidden tab is skipped)
+    const pollIntervalMs = isLiveActive ? 2000 : 8000;
     const interval = setInterval(pollOnce, pollIntervalMs);
     const onVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
