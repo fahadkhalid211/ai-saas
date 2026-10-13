@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { processScheduledReminders } from '@/lib/reminders';
-import { getAdminKey, verifyAdminRequest } from '@/lib/security/auth';
+import { getAdminKey, getAuthContext } from '@/lib/security/auth';
 import { timingSafeStringEqual } from '@/lib/security/password';
 import { logged } from '@/lib/logging/route';
 import { logEvent } from '@/lib/logging/logger';
@@ -15,9 +15,11 @@ async function GETHandler(request: NextRequest) {
 
     // Header only: a secret in the URL ends up in access logs and browser history.
     const token = authHeader?.replace(/^Bearer\s+/i, '') || secretHeader;
-    const isSessionAuthed = await verifyAdminRequest(request);
+    // A signed-in customer must not be able to start the platform-wide run (it e-mails every workspace's clients): only the
+    // scheduler's secret, or the platform owner's own session, can.
+    const isPlatformOwner = (await getAuthContext(request)).isMasterAdmin === true;
 
-    if (!isSessionAuthed && (!token || !timingSafeStringEqual(token, expectedKey))) {
+    if (!isPlatformOwner && (!token || !timingSafeStringEqual(token, expectedKey))) {
       return NextResponse.json({ error: 'Unauthorized cron access' }, { status: 401 });
     }
 
