@@ -13,7 +13,7 @@ import { ProblemSolution } from '@/components/marketing/ProblemSolution';
 import { BehindTheScenes, FeatureCarousel, Tools } from '@/components/marketing/Showpieces';
 import { Demo } from '@/components/marketing/Features';
 import { Playground } from '@/components/marketing/Playground';
-import { Compare, DiagonalBenefits, IntegrationsStage, Paths, Stories } from '@/components/marketing/Sections2';
+import { Compare, DiagonalBenefits, IntegrationsStage, Paths } from '@/components/marketing/Sections2';
 import { Metrics, Security, UseCases } from '@/components/marketing/Sections';
 import { Pricing } from '@/components/marketing/Pricing';
 import { Faq } from '@/components/marketing/Closing';

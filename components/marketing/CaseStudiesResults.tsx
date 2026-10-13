@@ -1,21 +1,23 @@
 'use client';
 
-import { T } from '@/lib/i18n/context';
+import { T, useT } from '@/lib/i18n/context';
 import { useState } from 'react';
-import { ArrowRight, CheckCircle2, XCircle, TrendingUp, Clock, CalendarCheck, Quote, Sparkles, Scissors, Stethoscope, Building2, ShoppingBag } from 'lucide-react';
-import { ButtonLink, Reveal, SectionHead } from './ui';
+import { ArrowRight, CheckCircle2, XCircle, Info, Scissors, Stethoscope, Building2, ShoppingBag } from 'lucide-react';
+import Link from '@/components/i18n/Link';
+import { ButtonLink } from './ui';
 import { SIGNUP_HREF } from './content';
 
 interface CaseStudy {
   id: string;
   tabLabel: string;
   icon: any;
-  businessName: string;
+  /** The kind of business the example describes. Examples are never tied to a named company or person. */
   businessType: string;
   headline: string;
   subheadline: string;
   primaryStat: { value: string; label: string };
-  secondaryStats: Array<{ value: string; label: string }>;
+  /** The assumptions the headline number is built from: change them and the number changes. */
+  assumptions: Array<{ value: string; label: string }>;
   before: {
     title: string;
     description: string;
@@ -26,182 +28,154 @@ interface CaseStudy {
     description: string;
     benefits: string[];
   };
-  quote: {
-    text: string;
-    author: string;
-    role: string;
-    location: string;
-  };
 }
 
+/**
+ * Worked examples, not customer results. Every number is arithmetic on the assumptions shown beside it, and nothing here
+ * names a customer, quotes a person or claims a measured outcome (Crescelo does not publish customer results yet). When
+ * real case studies exist, add them as a separate list with the customer's consent and the source of each figure.
+ */
 const CASE_STUDIES: CaseStudy[] = [
   {
     id: 'barbershop',
     tabLabel: 'Salons & Barbershops',
     icon: Scissors,
-    businessName: 'The Noble Barber & Lounge',
-    businessType: '5-Chair Barbershop & Grooming Studio',
-    headline: 'From 35 Missed Calls Weekly to 42% More Booked Appointments',
-    subheadline: 'How a busy barbershop captured $2,400/month in after-hours bookings without picking up the phone mid-haircut.',
-    primaryStat: { value: '+42%', label: 'Appointment Revenue' },
-    secondaryStats: [
-      { value: '84%', label: 'After-Hours Visitors Booked' },
-      { value: '0', label: 'Double-Bookings' },
-      { value: '$2,400', label: 'Extra Monthly Revenue' },
+    businessType: 'A barbershop where the phone rings mid-haircut',
+    headline: 'Calls that go to voicemail become bookings',
+    subheadline: 'Example: 30 missed calls a week, 15% of them would have booked, at a $35 average ticket is about $680 a month.',
+    primaryStat: { value: '≈ $680', label: 'extra revenue a month (example)' },
+    assumptions: [
+      { value: '30', label: 'missed calls a week' },
+      { value: '15%', label: 'would have booked' },
+      { value: '$35', label: 'average ticket' },
     ],
     before: {
-      title: 'Before Crescelo: Hands Busy, Chairs Empty',
-      description: 'Stylists were constantly holding shears or mixing color. Every phone ring during a haircut went to voicemail, and 70% of potential clients never called back.',
+      title: 'Before: hands busy, phone unanswered',
+      description: 'Barbers cannot pick up a call while holding clippers, so enquiries go to voicemail and many people simply try the next shop.',
       painPoints: [
-        '35+ missed phone calls every week during peak shop hours',
-        'Clients abandoning booking when put on hold or sent to voicemail',
-        'Stylists interrupted mid-fade to check paper schedules or respond to DMs',
-        'Lost evening & Sunday inquiries to walk-in competitors down the street',
+        'Calls during peak hours go to voicemail',
+        'People who ask a price question at night wait until the next day',
+        'Barbers stop mid-haircut to check the diary or reply to messages',
+        'Evening and Sunday enquiries go elsewhere',
       ],
     },
     after: {
-      title: 'After Crescelo: 24/7 Front Desk on Autopilot',
-      description: 'A 24/7 website chat widget and WhatsApp assistant answers haircut pricing, checks live barber availability, and locks in appointment slots instantly.',
+      title: 'After: the website answers and books',
+      description: 'The chat on your site answers prices and hours from your own price list, shows open times and books the slot while you work.',
       benefits: [
-        'Clients book appointments at 11 PM directly on Marcus or Elena’s chair',
-        'Atomic calendar locks guarantee zero accidental double-bookings',
-        'Automated SMS confirmations and self-service reschedule links reduce no-shows',
-        'Barbers focus 100% of their attention on clients in their chair',
+        'Visitors ask about prices and opening hours at any time and get an answer from your own content',
+        'Open slots are shown in the chat and a slot is checked again before it is confirmed',
+        'A confirmation email with a link to reschedule or cancel goes out automatically',
+        'Barbers keep their attention on the client in the chair',
       ],
-    },
-    quote: {
-      text: 'I used to stop haircuts to answer the shop phone or reply to Instagram DMs. Now Crescelo fills our chairs while my hands are busy. It literally paid for itself on day two.',
-      author: 'Marcus Vance',
-      role: 'Owner & Master Stylist',
-      location: 'Austin, TX',
     },
   },
   {
     id: 'clinic',
     tabLabel: 'Dental & Healthcare Clinics',
     icon: Stethoscope,
-    businessName: 'Aura Aesthetics & Dental Care',
-    businessType: 'Private Aesthetic & Dental Practice',
-    headline: '18 Hours of Front-Desk Burnout Reclaimed Every Week',
-    subheadline: 'Intake questions answered and consultations booked 24/7 without hallucinating or giving unauthorized medical advice.',
-    primaryStat: { value: '18 hrs', label: 'Saved Weekly for Reception' },
-    secondaryStats: [
-      { value: '3.2x', label: 'Faster Patient Response Time' },
-      { value: '98%', label: 'Patient Triage Satisfaction' },
-      { value: '100%', label: 'Strict Verified Document Grounding' },
+    businessType: 'A small clinic whose reception repeats the same answers',
+    headline: 'Repeat questions stop eating reception time',
+    subheadline: 'Example: 12 repeat questions a day at 3 minutes each over 21 working days is about 12 hours a month.',
+    primaryStat: { value: '≈ 12 hrs', label: 'reception time a month (example)' },
+    assumptions: [
+      { value: '12', label: 'repeat questions a day' },
+      { value: '3 min', label: 'per question' },
+      { value: '21', label: 'working days a month' },
     ],
     before: {
-      title: 'Before Crescelo: Reception Backlog & Hold Times',
-      description: 'Front-desk staff spent 60% of their workday repeating parking directions, fasting requirements, and accepted insurance plans, while patients stood waiting in line.',
+      title: 'Before: the same questions all day',
+      description: 'Parking, opening hours, what to bring and which insurance is accepted are asked again and again, while people wait at the desk.',
       painPoints: [
-        'Patients put on long phone holds while staff handled walk-ins',
-        'Repetitive questions about pre-op fasting and insurance coverage eating up staff hours',
-        'Patients missing appointments due to unclear preparation instructions',
-        'Staff burnout leading to front-desk turnover and scheduling errors',
+        'Reception answers the same handful of questions by phone and email',
+        'Patients are unsure how to prepare for a visit',
+        'Enquiries outside opening hours wait until the next working day',
+        'The team is interrupted while serving people in the room',
       ],
     },
     after: {
-      title: 'After Crescelo: Verified Answers & Intake Triage',
-      description: 'Grounded strictly in verified clinic documents, Crescelo answers preparation guidelines without hallucinating and schedules initial consultation visits.',
+      title: 'After: answers come from your own documents',
+      description: 'The assistant answers from the documents you give it and says so when it does not know, then offers a booking or a person.',
       benefits: [
-        'Instant answers to pre-visit fasting, accepted insurance, and parking questions',
-        'Pre-visit intake questionnaires collected automatically before appointments',
-        'Direct synchronization with clinic Google & Outlook calendar slots',
-        'Instant escalation routing to nursing staff for emergency clinical triage',
+        'Preparation, parking and opening-hours questions are answered from your own documents',
+        'Questions it cannot answer are handed to your team with the whole conversation',
+        'Consultation requests are collected as leads with contact details',
+        'You see which questions it could not answer and fill those gaps',
       ],
-    },
-    quote: {
-      text: 'Our receptionists can finally focus on patients standing in front of them. The AI handles 80% of repetitive intake inquiries flawlessly without inventing medical advice.',
-      author: 'Dr. Elena Rostova, DDS',
-      role: 'Clinical Practice Director',
-      location: 'Denver, CO',
     },
   },
   {
     id: 'realestate',
     tabLabel: 'Real Estate & Property',
     icon: Building2,
-    businessName: 'Prestige Realty Group',
-    businessType: 'Boutique Real Estate Agency',
-    headline: '$140k Extra Closed Commissions in 90 Days',
-    subheadline: 'How an agency captured late-night property browsers, qualified buyers, and booked private showings automatically.',
-    primaryStat: { value: '3.4x', label: 'Faster Lead Engagement' },
-    secondaryStats: [
-      { value: '$140k', label: 'Additional Closed Commissions' },
-      { value: '62%', label: 'Showings Booked Automatically' },
-      { value: '< 2 min', label: 'Average Time to Qualified Showing' },
+    businessType: 'An agency whose enquiries arrive in the evening and at weekends',
+    headline: 'Late enquiries turn into viewing requests',
+    subheadline: 'Example: 20 after-hours enquiries a month, 25% would book a viewing if answered at once, is about 5 viewings.',
+    primaryStat: { value: '+5', label: 'viewings a month (example)' },
+    assumptions: [
+      { value: '20', label: 'after-hours enquiries a month' },
+      { value: '25%', label: 'would book if answered' },
+      { value: '5', label: 'extra viewings' },
     ],
     before: {
-      title: 'Before Crescelo: Cold Weekend Leads & Lost Viewings',
-      description: 'Prospective buyers browse luxury listings late at night. When an inquiry sat unanswered until Monday morning, buyers moved on to competing agents.',
+      title: 'Before: the enquiry waits until Monday',
+      description: 'Buyers browse listings at night and at weekends. If nobody answers, they contact another agent.',
       painPoints: [
-        'High-intent buyers contacting 3 competing agencies before getting a callback',
-        'Agents wasting hours driving to viewings for unqualified leads without pre-approval',
-        'Weekend web traffic converting at less than 1.5% due to delayed response times',
-        'Property inquiries lost in overflowing email inboxes and unorganized spreadsheets',
+        'Evening and weekend enquiries wait for a reply',
+        'Details are spread across email, messages and spreadsheets',
+        'Time is spent on viewings for people who were never going to proceed',
+        'Nobody sees which questions buyers keep asking',
       ],
     },
     after: {
-      title: 'After Crescelo: Instant Buyer Qualification & Showing Booking',
-      description: 'Crescelo qualifies buyer budget, financing status, and move-in timeline in seconds, then directly books private property tours on the broker’s calendar.',
+      title: 'After: every enquiry gets an immediate answer',
+      description: 'The assistant answers from your listing information, asks a few qualifying questions and offers viewing times.',
       benefits: [
-        'Instant response to weekend and late-night listing inquiries in under 3 seconds',
-        'Automated buyer qualification checks: budget, pre-approval letter, move-in timeline',
-        'Direct calendar booking for private property viewings and open house RSVPs',
-        'Instant lead push to CRM with complete conversation brief and buyer criteria',
+        'Instant answers about listings, fees and the viewing process from your own content',
+        'Name, phone and what the buyer is looking for are captured as a lead',
+        'Viewing times are offered through your booking link or the built-in slot picker',
+        'New leads can be sent to email, Slack, Google Sheets or your CRM through a webhook',
       ],
-    },
-    quote: {
-      text: 'In real estate, speed to lead is everything. Crescelo books viewings on my calendar at 11 PM on Sunday while I am asleep. We closed $140k in additional commissions in 90 days.',
-      author: 'David King',
-      role: 'Managing Broker',
-      location: 'Miami, FL',
     },
   },
   {
     id: 'ecommerce',
     tabLabel: 'E-Commerce & Retail Stores',
     icon: ShoppingBag,
-    businessName: 'Apex Home Goods',
-    businessType: 'WooCommerce & Shopify Home Retailer',
-    headline: '+28% Checkout Conversion with Live Product Advice',
-    subheadline: 'Eliminated cart abandonment by answering sizing, material specs, and stock availability right on product pages.',
-    primaryStat: { value: '+28%', label: 'Checkout Conversion Rate' },
-    secondaryStats: [
-      { value: '71%', label: 'Pre-Purchase Questions Answered' },
-      { value: '-$1,400', label: 'Monthly Support Ticket Costs' },
-      { value: '2.4x', label: 'Higher Cart Value with AI Advice' },
+    businessType: 'An online store with unanswered product questions',
+    headline: 'Pre-purchase questions get answered while the shopper is still there',
+    subheadline: 'Example: 100 product questions a month go unanswered, 10% of those shoppers would have bought, at a $60 order is about $600.',
+    primaryStat: { value: '≈ $600', label: 'extra sales a month (example)' },
+    assumptions: [
+      { value: '100', label: 'unanswered questions a month' },
+      { value: '10%', label: 'would have bought' },
+      { value: '$60', label: 'average order' },
     ],
     before: {
-      title: 'Before Crescelo: Abandoned Carts from Unanswered FAQs',
-      description: 'Shoppers hesitated at checkout with questions about dimensions, fabric care, and shipping times. Without live support, 70% left without buying.',
+      title: 'Before: questions sit in an inbox',
+      description: 'Shoppers want to know sizes, materials, delivery times and returns before they pay. If the answer takes a day, many leave.',
       painPoints: [
-        'High cart abandonment on high-ticket furniture and home decor items',
-        'Support tickets taking 24 hours to answer simple dimension and material questions',
-        'Shoppers leaving site to search competitor reviews and buying elsewhere',
-        'Manual inventory check requests overwhelming part-time support reps',
+        'Simple sizing and delivery questions wait for a support reply',
+        'Shoppers leave to compare other shops',
+        'The support inbox fills with the same questions',
+        'Nobody can tell which questions cost sales',
       ],
     },
     after: {
-      title: 'After Crescelo: 24/7 AI Sales Guide on Every Product Page',
-      description: 'Crescelo scrapes the entire product catalog, compares variations, checks real-time stock levels, and guides shoppers straight to checkout.',
+      title: 'After: product and policy answers on every page',
+      description: 'The assistant answers from your product pages and policies, and with the WordPress plugin it can check stock for WooCommerce products.',
       benefits: [
-        'Instant answers to sizing, materials, return policies, and delivery timelines',
-        'Real-time live WooCommerce stock checking prevents out-of-stock complaints',
-        'Cross-sells matching accessories and warranty plans with 1-click cart links',
-        'Support ticket volume dropped by 64% within the first month',
+        'Sizing, materials, delivery and returns questions are answered from your own pages',
+        'With the WordPress plugin, stock levels can be checked for WooCommerce products',
+        'Questions it cannot answer are logged so you can add the answer',
+        'Your team steps in for the cases that need a person',
       ],
-    },
-    quote: {
-      text: 'Customers treat Crescelo like a knowledgeable in-store sales associate. It answers technical specs instantly and guides them to checkout. Our conversion rate jumped 28%.',
-      author: 'Sarah Lin',
-      role: 'Head of E-Commerce',
-      location: 'Seattle, WA',
     },
   },
 ];
 
 export function CaseStudiesResults() {
+  const __t = useT();
   const [activeTabId, setActiveTabId] = useState('barbershop');
   const activeCase = CASE_STUDIES.find((c) => c.id === activeTabId) || CASE_STUDIES[0];
   const Icon = activeCase.icon;
@@ -213,18 +187,18 @@ export function CaseStudiesResults() {
         {/* Section Header */}
         <div className="mk-center-head text-center max-w-3xl mx-auto mb-14">
           <p className="text-xs font-extrabold uppercase tracking-widest text-[#0f6e58] dark:text-[#abff44] mb-3">
-            <T>Proven Business Results &amp; ROI</T>
+            <T>Worked examples</T>
           </p>
           <h2 id="results-title" className="text-3xl sm:text-5xl font-serif text-[#08251a] dark:text-white leading-tight mb-4">
-            <T>See How Businesses Grow with Crescelo</T>
+            <T>What changes when every visitor gets an answer</T>
           </h2>
           <p className="text-base sm:text-lg text-slate-700 dark:text-slate-300 leading-relaxed font-sans">
-            <T>Real before-and-after case studies from service businesses and online stores that stopped losing leads and automated their front desk.</T>
+            <T>Four before-and-after examples with the assumptions shown, so you can swap in your own numbers and see what it could be worth to you.</T>
           </p>
         </div>
 
-        {/* Industry Case Study Tabs */}
-        <div className="flex items-center justify-center gap-2 sm:gap-3 flex-wrap mb-10" role="tablist" aria-label="Case Studies">
+        {/* Industry Tabs */}
+        <div className="flex items-center justify-center gap-2 sm:gap-3 flex-wrap mb-10" role="tablist" aria-label={__t("Worked examples by industry")}>
           {CASE_STUDIES.map((c) => {
             const TabIcon = c.icon;
             const isSelected = c.id === activeTabId;
@@ -248,19 +222,19 @@ export function CaseStudiesResults() {
           })}
         </div>
 
-        {/* Active Case Study Showcase Card */}
+        {/* Active Example Card */}
         <div className="rounded-3xl border-2 border-[#08251a] dark:border-[#1a4734] bg-white dark:bg-[#08251a] shadow-xl overflow-hidden transition-all">
 
-          {/* Top Banner: Business Info & Big Headline Stat */}
+          {/* Top Banner: example label, headline and the headline number */}
           <div className="bg-[#08251a] text-white p-6 sm:p-8 border-b border-[#1a4734]">
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
               <div className="space-y-2 max-w-2xl">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
                   <span className="p-1.5 rounded-lg bg-[#abff44] text-[#08251a]">
                     <Icon size={18} />
                   </span>
                   <span className="text-xs font-bold uppercase tracking-wider text-[#abff44]">
-                    {activeCase.businessName} &bull; {activeCase.businessType}
+                    <T>Example</T> &bull; <T>{activeCase.businessType}</T>
                   </span>
                 </div>
                 <h3 className="text-2xl sm:text-3xl font-serif font-normal text-white leading-tight">
@@ -271,7 +245,7 @@ export function CaseStudiesResults() {
                 </p>
               </div>
 
-              {/* Primary ROI Hero Stat Card */}
+              {/* Headline number */}
               <div className="flex items-center sm:flex-col justify-between sm:justify-center p-4 sm:p-5 rounded-2xl bg-white/10 border border-white/15 text-center shrink-0 min-w-[180px]">
                 <div className="text-4xl sm:text-5xl font-serif font-bold text-[#abff44] leading-none mb-1">
                   {activeCase.primaryStat.value}
@@ -282,28 +256,31 @@ export function CaseStudiesResults() {
               </div>
             </div>
 
-            {/* Secondary Stats Row */}
-            <div className="grid grid-cols-3 gap-3 pt-6 mt-6 border-t border-white/10 text-center">
-              {activeCase.secondaryStats.map((s, idx) => (
-                <div key={idx} className="space-y-0.5">
-                  <div className="text-lg sm:text-2xl font-bold text-white font-mono">{s.value}</div>
-                  <div className="text-[11px] sm:text-xs text-[#a9d9cb] font-medium"><T>{s.label}</T></div>
-                </div>
-              ))}
+            {/* The assumptions behind the number */}
+            <div className="pt-6 mt-6 border-t border-white/10">
+              <p className="text-[11px] font-bold uppercase tracking-wider text-white/70 mb-3 text-center"><T>Assumptions used</T></p>
+              <div className="grid grid-cols-3 gap-3 text-center">
+                {activeCase.assumptions.map((s, idx) => (
+                  <div key={idx} className="space-y-0.5">
+                    <div className="text-lg sm:text-2xl font-bold text-white font-mono">{s.value}</div>
+                    <div className="text-[11px] sm:text-xs text-[#a9d9cb] font-medium"><T>{s.label}</T></div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
 
-          {/* Side-by-Side: Before vs After Transformation */}
+          {/* Side-by-Side: Before vs After */}
           <div className="p-6 sm:p-8 grid grid-cols-1 md:grid-cols-2 gap-6 bg-slate-50/50 dark:bg-[#061c14]">
 
-            {/* BEFORE CRESCELO (The Bottleneck) */}
+            {/* BEFORE */}
             <div className="rounded-2xl border border-red-200 dark:border-red-950/60 bg-red-50/40 dark:bg-red-950/20 p-5 sm:p-6 space-y-4">
               <div className="flex items-center gap-2">
                 <span className="flex items-center justify-center w-6 h-6 rounded-full bg-red-100 dark:bg-red-900/50 text-red-600 dark:text-red-400">
                   <XCircle size={16} />
                 </span>
                 <span className="text-xs font-bold uppercase tracking-wider text-red-700 dark:text-red-400">
-                  BEFORE CRESCELO &bull; The Problem
+                  <T>Before</T> &bull; <T>The problem</T>
                 </span>
               </div>
               <h4 className="text-lg font-bold text-slate-900 dark:text-white leading-snug">
@@ -315,21 +292,21 @@ export function CaseStudiesResults() {
               <ul className="space-y-3.5 mt-5">
                 {activeCase.before.painPoints.map((pt, idx) => (
                   <li key={idx} className="flex items-start gap-2 text-xs text-slate-700 dark:text-slate-300">
-                    <span className="text-red-500 font-bold shrink-0 mt-0.5">✕</span>
+                    <span className="text-red-500 font-bold shrink-0 mt-0.5" aria-hidden="true">✕</span>
                     <span><T>{pt}</T></span>
                   </li>
                 ))}
               </ul>
             </div>
 
-            {/* AFTER CRESCELO (The Automated Growth) */}
+            {/* AFTER */}
             <div className="rounded-2xl border-2 border-[#08251a] dark:border-[#abff44] bg-[#fffeeb] dark:bg-[#08251a] p-5 sm:p-6 space-y-4 shadow-sm">
               <div className="flex items-center gap-2">
                 <span className="flex items-center justify-center w-6 h-6 rounded-full bg-[#08251a] text-[#abff44] dark:bg-[#abff44] dark:text-[#08251a]">
                   <CheckCircle2 size={16} />
                 </span>
                 <span className="text-xs font-bold uppercase tracking-wider text-[#08251a] dark:text-[#abff44]">
-                  AFTER CRESCELO &bull; The Transformation
+                  <T>After</T> &bull; <T>With Crescelo</T>
                 </span>
               </div>
               <h4 className="text-lg font-bold text-[#08251a] dark:text-white leading-snug">
@@ -341,7 +318,7 @@ export function CaseStudiesResults() {
               <ul className="space-y-3.5 mt-5">
                 {activeCase.after.benefits.map((b, idx) => (
                   <li key={idx} className="flex items-start gap-2 text-xs text-slate-800 dark:text-slate-200">
-                    <span className="text-[#0f6e58] dark:text-[#abff44] font-bold shrink-0 mt-0.5">✓</span>
+                    <span className="text-[#0f6e58] dark:text-[#abff44] font-bold shrink-0 mt-0.5" aria-hidden="true">✓</span>
                     <span><T>{b}</T></span>
                   </li>
                 ))}
@@ -350,19 +327,20 @@ export function CaseStudiesResults() {
 
           </div>
 
-          {/* Testimonial Quote & Owner Bio */}
+          {/* How to read this */}
           <div className="p-6 sm:p-8 bg-white dark:bg-[#08251a] border-t border-[#e8e6d1] dark:border-[#1a4734]">
             <div className="flex items-start gap-4">
-              <span className="p-2.5 rounded-xl bg-[#08251a] text-[#abff44] dark:bg-[#1a4734] shrink-0 mt-1">
-                <Quote size={20} />
+              <span className="p-2.5 rounded-xl bg-[#08251a] text-[#abff44] dark:bg-[#1a4734] shrink-0 mt-0.5">
+                <Info size={20} aria-hidden="true" />
               </span>
-              <div className="space-y-2">
-                <blockquote className="text-sm sm:text-base italic text-slate-800 dark:text-slate-100 font-serif leading-relaxed">
-                  &ldquo;<T>{activeCase.quote.text}</T>&rdquo;
-                </blockquote>
-                <div className="text-xs font-bold text-[#08251a] dark:text-[#abff44]">
-                  {activeCase.quote.author} &bull; <span className="text-slate-500 dark:text-slate-400 font-normal">{activeCase.quote.role}, {activeCase.quote.location}</span>
-                </div>
+              <div className="space-y-1.5">
+                <p className="text-sm font-bold text-[#08251a] dark:text-[#abff44]"><T>These are examples, not customer results.</T></p>
+                <p className="text-xs sm:text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
+                  <T>The numbers are simple arithmetic on the assumptions shown. Your traffic, prices and follow-up will differ, and the assistant only helps where visitors are currently going unanswered.</T>{' '}
+                  <Link href="/blog/ai-website-assistant-roi-calculator" className="font-semibold underline underline-offset-2 text-[#0f6e58] dark:text-[#abff44]">
+                    <T>Work it out with your own numbers</T>
+                  </Link>
+                </p>
               </div>
             </div>
           </div>
@@ -371,15 +349,15 @@ export function CaseStudiesResults() {
           <div className="bg-[#fbfbf4] dark:bg-[#0d3323] px-6 py-5 border-t border-[#e8e6d1] dark:border-[#1a4734] flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="text-center sm:text-left">
               <span className="text-sm font-bold text-[#08251a] dark:text-white block">
-                <T>Want results like this for your business?</T>
+                <T>Want to see what it could do for your business?</T>
               </span>
               <span className="text-xs text-slate-600 dark:text-slate-300">
-                <T>Setup takes under 2 minutes. Free 14-day trial &bull; No credit card required.</T>
+                <T>14-day free trial. A card is required to start; you are not charged during the trial and can cancel before it ends.</T>
               </span>
             </div>
 
             <ButtonLink href={SIGNUP_HREF}>
-              <T>Start Free Trial</T> <ArrowRight size={16} className="inline ml-1" />
+              <T>Start free trial</T> <ArrowRight size={16} className="inline ml-1" />
             </ButtonLink>
           </div>
 

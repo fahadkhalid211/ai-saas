@@ -145,21 +145,6 @@ export const PATHS = {
   ] as PathRow[],
 };
 
-/* ------------------------------ Stories carousel ------------------------------ */
-
-export const STORIES = {
-  eyebrow: 'Proven Results',
-  title: 'Real outcomes across modern service teams',
-  notice: 'Measured performance from businesses running Crescelo assistants.',
-  items: [
-    { stat: '+42%', label: 'after-hours bookings', name: 'Marcus Vance', role: 'Managing Partner, Apex Barbers', tone: 'lav' },
-    { stat: '18 hrs', label: 'saved weekly per clinic', name: 'Dr. Sarah Lin', role: 'Director, Lumina Wellness', tone: 'lime' },
-    { stat: '3.4×', label: 'faster lead response', name: 'David Reynolds', role: 'Principal Broker, Urban Realty', tone: 'pink' },
-    { stat: '$14k', label: 'monthly revenue recovered', name: 'Elena Rostova', role: 'Operations Lead, Pulse Fitness', tone: 'mint' },
-    { stat: '98.5%', label: 'first-touch query resolution', name: 'Jordan Hayes', role: 'Head of Growth, SaaSFlow', tone: 'amber' },
-  ] as { stat: string; label: string; name: string; role: string; tone: 'lav' | 'mint' | 'lime' | 'pink' | 'amber' }[],
-};
-
 /* ------------------------------ Comparison ------------------------------ */
 
 export const COMPARE = {

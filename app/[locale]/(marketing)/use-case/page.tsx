@@ -41,12 +41,12 @@ const INDUSTRIES: IndustrySimulation[] = [
     bottleneck:
       'Stylists lose hundreds in daily revenue because they cannot answer phone calls or Instagram DMs while holding shears or mixing color.',
     solution:
-      'Crescelo acts as your digital front desk 24/7. It explains service menus, checks live chair availability, allows clients to pick their stylist, and locks the slot with SMS confirmations.',
-    metric: '+42%',
-    metricLabel: 'Increase in after-hours appointment revenue',
+      'Crescelo acts as your digital front desk 24/7. It explains service menus, shows open times from your opening hours, and holds the slot while the client books. A confirmation email with a reschedule link goes out automatically.',
+    metric: '24/7',
+    metricLabel: 'prices, hours and open slots, even mid-haircut',
     features: [
       'In-chat booking (phone voice coming soon)',
-      'Stylist-specific calendar assignment',
+      'Calendly or Cal.com links for each stylist',
       'Atomic mutex lock prevents chair double-booking',
       'Self-service reschedule & cancellation links',
     ],
@@ -69,16 +69,16 @@ const INDUSTRIES: IndustrySimulation[] = [
     tone: 'lav',
     avgTicket: 180,
     bottleneck:
-      'Receptionists spend 60% of their workday repeating parking directions, pre-visit fasting instructions, and accepted insurance plans.',
+      'Receptionists spend much of the day repeating parking directions, pre-visit fasting instructions, and accepted insurance plans.',
     solution:
-      'Grounded strictly in verified medical practice documents, Crescelo triages inquiries, answers preparation questions without hallucinating, and reserves consultation slots on doctor schedules.',
-    metric: '18 hrs',
-    metricLabel: 'Reclaimed weekly per clinic location',
+      'Crescelo answers preparation questions from your own practice documents, says so when it does not know, and offers consultation times.',
+    metric: '1 click',
+    metricLabel: 'for your team to take over any conversation',
     features: [
-      'Strict grounding (never invents clinical advice)',
-      'Pre-visit intake questionnaire collection',
-      'Instant escalation routing to nursing staff',
-      'Syncs directly to Outlook and Google Calendar',
+      'Answers only from your documents and says when it does not know',
+      'Contact details and questions captured as a lead',
+      'Handover to your team with the whole conversation',
+      'Bookings appear in a calendar feed for Google, Apple or Outlook',
     ],
     chat: {
       customerMsg: 'Do I need to fast before my comprehensive metabolic blood panel tomorrow morning?',
@@ -101,14 +101,14 @@ const INDUSTRIES: IndustrySimulation[] = [
     bottleneck:
       'Prospective buyers browse listings at night. If an inquiry sits unanswered until morning, they contact another agent and the viewing is lost.',
     solution:
-      'Crescelo qualifies buyer budget, financing status, and move-in timeline right in chat or over phone, instantly booking a private tour on the agent’s calendar.',
-    metric: '3.4×',
-    metricLabel: 'Faster response to high-intent buyer inquiries',
+      'Crescelo asks about budget, financing and move-in timeline in the chat, and offers viewing times through your booking link or the built-in slot picker.',
+    metric: 'Any hour',
+    metricLabel: 'enquiries are answered and viewing times offered',
     features: [
-      'Automated buyer & tenant qualification',
-      'Direct scheduling for open houses & private viewings',
-      'Instant CRM lead push with complete conversation brief',
-      'WhatsApp and SMS notifications to field agents',
+      'Buyer and tenant questions asked in the chat',
+      'Viewing times through your booking link or the slot picker',
+      'Leads sent to email, Slack, Google Sheets or a webhook with the conversation',
+      'Email and Slack alerts for new leads',
     ],
     chat: {
       customerMsg: 'I saw the 2-bed loft on 4th Street. Can I schedule a private tour this Saturday?',
@@ -131,14 +131,14 @@ const INDUSTRIES: IndustrySimulation[] = [
     bottleneck:
       'Potential members abandon gym websites when class schedules are buried in PDFs or membership inquiries require waiting for a callback.',
     solution:
-      'Visitors choose a workout time, confirm their fitness goals, and lock in a trial class reservation in under 45 seconds with automated reminder sequences.',
-    metric: '$14,200',
-    metricLabel: 'Monthly recovered revenue from dropped signups',
+      'Visitors ask about classes and pricing, choose a time and reserve a trial class in the chat, and get a reminder by email.',
+    metric: '1 line',
+    metricLabel: 'of code puts the assistant on your website',
     features: [
-      'Live class timetable lookup & slot reservation',
-      'Membership tier explanation with zero token markup',
-      'Personal trainer calendar synchronization',
-      'Automated SMS reminders to reduce trial no-shows',
+      'Class timetable answers and trial-class booking',
+      'Membership tiers explained from your own price list',
+      'Booking links for each trainer (Calendly or Cal.com)',
+      'Email reminders before the trial class',
     ],
     chat: {
       customerMsg: 'What time is your introductory HIIT class on Wednesday? Can beginners attend?',
@@ -161,14 +161,14 @@ const INDUSTRIES: IndustrySimulation[] = [
     bottleneck:
       'Partners waste valuable billable hours fielding general inquiries and manual intake calls from unqualified leads.',
     solution:
-      'Crescelo conducts preliminary conflict checks, answers standard retainer and fee questions from verified documents, and books paid initial consultations.',
-    metric: '22 hrs',
-    metricLabel: 'Senior partner billable time saved monthly',
+      'Crescelo answers standard retainer and fee questions from your documents, collects the details you ask for and offers consultation times. Complex or sensitive matters go to a person.',
+    metric: '14 days',
+    metricLabel: 'free trial to test it on your own documents',
     features: [
-      'Conflict-free preliminary case screening',
-      'Retainer and consultation booking workflow',
-      'Secure document collection upload links',
-      'Direct human escort with full brief to partners',
+      'First-round questions answered from your fee and practice documents',
+      'Consultation booking through the slot picker or your booking link',
+      'Contact details and matter summary captured as a lead',
+      'Handover to a person with the whole conversation',
     ],
     chat: {
       customerMsg: 'We need advice on an intellectual property licensing agreement. What is your consultation fee?',
@@ -191,19 +191,19 @@ const INDUSTRIES: IndustrySimulation[] = [
     bottleneck:
       'High-intent enterprise prospects bounce when forced to fill out a 10-field static demo form and wait 2 business days for SDR outreach.',
     solution:
-      'Crescelo answers deep architectural and security questions from your API docs, verifies company size and budget, and books a live demo on your AE’s calendar in seconds.',
-    metric: '58%',
-    metricLabel: 'Increase in completed discovery demos',
+      'Crescelo answers product and security questions from your docs, asks about company size and needs, and offers demo times through your Calendly or Cal.com link.',
+    metric: '0%',
+    metricLabel: 'markup on AI usage when you bring your own key',
     features: [
-      'Deep architectural Q&A from uploaded API manuals',
-      'Automated company size & budget tiering',
-      'Round-robin Account Executive calendar booking',
-      'Direct lead payload push into HubSpot & Salesforce',
+      'Product Q&A from your uploaded docs and pages',
+      'Company size and needs captured as lead fields',
+      'Demo booking through your Calendly or Cal.com link',
+      'Leads sent to Slack, Google Sheets or any CRM through a webhook',
     ],
     chat: {
-      customerMsg: 'Do you support self-hosted PostgreSQL and SOC2 Type II compliance?',
+      customerMsg: 'Do you have SOC2 Type II compliance?',
       botMsg:
-        'Yes. We support self-hosted PostgreSQL with pgvector, and our platform is fully SOC2 Type II certified with zero third-party data retention.',
+        'Not at this time. We do not hold a SOC 2 report and do not claim any compliance certification. Our security page lists exactly which controls are in place today.',
       sourceTag: 'Security Whitepaper & Architecture Specs v3.2',
       serviceName: 'Enterprise Architecture Discovery (30m)',
       suggestedSlots: ['Today 4:00 PM', 'Tomorrow 11:00 AM', 'Tomorrow 3:00 PM'],
@@ -221,14 +221,14 @@ const INDUSTRIES: IndustrySimulation[] = [
     bottleneck:
       'Shoppers abandon carts late at night when sizing charts, shipping policies, or ingredient lists require digging through confusing pages.',
     solution:
-      'Crescelo acts as a 24/7 personal digital shopping assistant. It recommends products based on visitor preferences, clarifies return rules, and guides visitors directly to checkout.',
-    metric: '+28%',
-    metricLabel: 'Lift in pre-purchase checkout conversions',
+      'Crescelo answers sizing, material, delivery and return questions from your own product pages and policies, and points visitors to the right product.',
+    metric: 'Any page',
+    metricLabel: 'one script tag adds the chat to your site',
     features: [
       'Instant catalog & product specification search',
-      'Order tracking & shipping policy explanation',
-      'Personalized product recommendations',
-      '1-click checkout cart linking',
+      'Shipping and returns policies explained from your own pages',
+      'Product recommendations from your catalog',
+      'Product cards with links (WordPress and WooCommerce plugin)',
     ],
     chat: {
       customerMsg: 'Are the organic cotton hoodies preshrunk? What is your return window?',
@@ -251,14 +251,14 @@ const INDUSTRIES: IndustrySimulation[] = [
     bottleneck:
       'Contractors are driving or on job sites all day. Homeowners with emergency leaks or renovations call whichever contractor responds first.',
     solution:
-      'Crescelo qualifies emergency vs routine projects, gathers property square footage or damage photos, checks your service area radius, and schedules on-site estimate slots.',
-    metric: '$28,400',
-    metricLabel: 'Monthly added estimate pipeline value',
+      'Crescelo separates emergencies from routine jobs, gathers the job details you ask for, answers service-area questions from your documents and offers estimate times.',
+    metric: 'Instant',
+    metricLabel: 'lead alert by email or Slack when a job comes in',
     features: [
-      'Service area & zip code radius validation',
+      'Service-area questions answered from your coverage document',
       'Project scope & damage description intake',
       'On-site estimate inspection scheduling',
-      'Instant SMS alerts to crew leads',
+      'Instant email or Slack alerts for new leads',
     ],
     chat: {
       customerMsg: 'We had storm damage last night and a shingle blew off our roof. Do you service North Austin for roof inspections?',
@@ -281,14 +281,14 @@ const INDUSTRIES: IndustrySimulation[] = [
     bottleneck:
       'Hosts and servers cannot answer phone calls during peak lunch and dinner rushes, causing parties of 6+ to reserve at rival venues.',
     solution:
-      'Crescelo answers wine lists, dietary substitutions, and private dining buyouts from your real menu, locking table reservations with party size confirmation.',
-    metric: '+34%',
-    metricLabel: 'Increase in weekday table reservations',
+      'Crescelo answers wine lists, dietary substitutions and private-dining questions from your real menu, takes reservation requests and collects private-dining enquiries as leads.',
+    metric: 'Rush hour',
+    metricLabel: 'questions still get answered while the team is busy',
     features: [
-      'Party size & dining slot table reservations',
+      'Reservation requests with party size and time',
       'Dietary & allergen menu verification',
       'Private dining & catering lead capture',
-      'Automated SMS reservation confirmation',
+      'Confirmation email with a link to change or cancel',
     ],
     chat: {
       customerMsg: 'Do you have gluten-free options and can we reserve a table for 5 this Friday at 7:30 PM?',
@@ -660,10 +660,10 @@ export default function UseCasePage() {
                         }}
                       >
                         <p style={{ margin: 0, fontWeight: 700, fontSize: '14px', color: 'var(--mk-deep)' }}>
-                          <T>✓ Appointment Confirmed & Locked!</T>
+                          <T>✓ Booking confirmed (sample conversation)</T>
                         </p>
                         <p style={{ margin: '4px 0 0', fontSize: '12px', color: 'var(--mk-ink)' }}>
-                          <T>Syncing to</T> <T>{activeIndustry.chat.staffName}</T><T>&apos;s Google Calendar • SMS dispatched.</T>
+                          <T>Booked with</T> <T>{activeIndustry.chat.staffName}</T><T>. Confirmation email sent.</T>
                         </p>
                       </div>
                     )}
@@ -754,7 +754,7 @@ export default function UseCasePage() {
                   }}
                 >
                   <span style={{ fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', color: 'var(--mk-muted)' }}>
-                    <T>Staff Time Reclaimed</T>
+                    <T>Estimated Staff Time Reclaimed</T>
                   </span>
                   <div style={{ fontFamily: 'var(--mk-serif)', fontSize: '2.4rem', color: 'var(--mk-deep)', margin: '8px 0 4px' }}>
                     <T>{hoursSaved}</T> <T>hrs</T>
@@ -771,12 +771,12 @@ export default function UseCasePage() {
                   }}
                 >
                   <span style={{ fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', color: 'var(--mk-muted)' }}>
-                    <T>Recovered Revenue</T>
+                    <T>Estimated Recovered Revenue</T>
                   </span>
                   <div style={{ fontFamily: 'var(--mk-serif)', fontSize: '2.4rem', color: 'var(--mk-deep)', margin: '8px 0 4px' }}>
                     ${recoveredRevenue.toLocaleString()}
                   </div>
-                  <span style={{ fontSize: '12px', color: 'var(--mk-muted)' }}><T>from missed calls & night traffic</T></span>
+                  <span style={{ fontSize: '12px', color: 'var(--mk-muted)' }}><T>if 24% of enquiries would have booked at the average ticket</T></span>
                 </div>
 
                 <div
@@ -789,12 +789,11 @@ export default function UseCasePage() {
                   }}
                 >
                   <span style={{ fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', color: 'var(--mk-lime)' }}>
-                    <T>After-Hours Booking Rate</T>
+                    <T>How this is estimated</T>
                   </span>
-                  <div style={{ fontFamily: 'var(--mk-serif)', fontSize: '2.4rem', color: 'var(--mk-lime)', margin: '8px 0 4px' }}>
-                    94.2%
+                  <div style={{ fontSize: '13px', color: '#cfe3d6', margin: '10px 0 0', lineHeight: 1.5, textAlign: 'left' }}>
+                    <T>An illustration, not a forecast. It assumes about 10 minutes saved per enquiry and that 24% of enquiries would have booked. Change the slider to match your volume, and judge the result against your own numbers.</T>
                   </div>
-                  <span style={{ fontSize: '12px', color: '#cfe3d6' }}><T>instant slot locking</T></span>
                 </div>
               </div>
             </Reveal>
@@ -809,7 +808,7 @@ export default function UseCasePage() {
                 <T>Start capturing appointments 24 hours a day.</T>
               </h2>
               <p className="mk-lead">
-                <T>Join forward-thinking studios, clinics, and service businesses that run autonomous front desks with Crescelo.</T>
+                <T>Try it on your own documents in the playground, or start the 14-day free trial.</T>
               </p>
               <div className="mk-cta-row">
                 <ButtonLink href={SIGNUP_HREF}><T>Start free trial</T></ButtonLink>

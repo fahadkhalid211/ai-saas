@@ -4,7 +4,7 @@ import { T, useT } from '@/lib/i18n/context';
 import { A } from '@/components/i18n/A';
 import { useEffect, useRef, type CSSProperties } from 'react';
 import { INTEGRATIONS } from './content';
-import { COMPARE, DIAGONAL, PATHS, STORIES } from './content-extra';
+import { COMPARE, DIAGONAL, PATHS } from './content-extra';
 import { Check, Eyebrow, Reveal } from './ui';
 import { FeatureVisual } from './mocks';
 import { OrbitStage } from './OrbitStage';
@@ -209,45 +209,6 @@ export function Paths() {
             </li>
           ))}
         </ol>
-      </div>
-    </section>
-  );
-}
-
-/* ------------------------------ Stories carousel ------------------------------ */
-
-export function Stories() {
-  const __t = useT();
-  const items = [...STORIES.items, ...STORIES.items];
-  return (
-    <section id="customers" className="mk-section mk-stories" aria-labelledby="mk-stories-title">
-      <div className="mk-wrap">
-        <Reveal className="mk-center-head">
-          <Eyebrow><T>{STORIES.eyebrow}</T></Eyebrow>
-          <h2 id="mk-stories-title" className="mk-h2 mk-h2-center">
-            <T>{STORIES.title}</T>
-          </h2>
-          <p className="mk-lead"><T>{STORIES.notice}</T></p>
-        </Reveal>
-      </div>
-      <div className="mk-story-viewport" role="region" aria-label={__t("Customer stories")} tabIndex={0}>
-        <ul className="mk-story-track">
-          {items.map((s, i) => (
-            <li key={i} className="mk-story-li" aria-hidden={i >= STORIES.items.length ? 'true' : undefined}>
-              <article className="mk-story-card" data-tone={s.tone}>
-                <p className="mk-story-stat"><T>{s.stat}</T></p>
-                <p className="mk-story-label"><T>{s.label}</T></p>
-                <div className="mk-story-person">
-                  <span className="mk-avatar" aria-hidden="true" />
-                  <span>
-                    <b><T>{s.name}</T></b>
-                    <small><T>{s.role}</T></small>
-                  </span>
-                </div>
-              </article>
-            </li>
-          ))}
-        </ul>
       </div>
     </section>
   );
