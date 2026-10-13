@@ -1,4 +1,48 @@
 /* The accessibility menu uses its own fixed, high-contrast colours so it stays readable whatever the page around it looks like. */
+.a11y-menu {
+  position: fixed;
+  left: 1rem;
+  bottom: 1rem;
+  z-index: 2147482000;
+  font: 400 0.9375rem/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  color: #111;
+}
+
+.a11y-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 999px;
+  background: #1d4ed8;
+  color: #fff;
+  border: 2px solid #fff;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+  transition: background-color 0.15s ease, transform 0.15s ease;
+}
+.a11y-trigger:hover {
+  background: #1e40af;
+  transform: scale(1.04);
+}
+
+.a11y-panel {
+  position: absolute;
+  left: 0;
+  bottom: 3.75rem;
+  width: min(22rem, calc(100vw - 2rem));
+  max-height: min(38rem, calc(100vh - 6rem));
+  overflow-y: auto;
+  background: #fff;
+  color: #111;
+  border: 2px solid #111;
+  border-radius: 1rem;
+  padding: 1rem 1.1rem 1.1rem;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+  font: 400 0.9375rem/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
 .a11y-overlay-wrap {
   position: relative;
   z-index: 2147482000;
@@ -13,16 +57,7 @@
   left: auto;
   bottom: auto;
   z-index: 2147482001;
-  width: min(22rem, calc(100vw - 2rem));
-  max-height: min(38rem, calc(100vh - 6rem));
-  overflow-y: auto;
-  background: #fff;
-  color: #111;
-  border: 2px solid #111;
-  border-radius: 1rem;
-  padding: 1rem 1.1rem 1.1rem;
   box-shadow: 0 16px 48px rgba(0, 0, 0, 0.28);
-  font: 400 0.9375rem/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 }
 
 .a11y-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.25rem; }
@@ -48,7 +83,19 @@
 .a11y-help a { color: #1d4ed8; text-decoration: underline; }
 .a11y-live { min-height: 1.2em; font-size: 0.8125rem; color: #333; margin: 0.4rem 0 0; }
 .a11y-panel kbd { font: 600 0.75rem ui-monospace, monospace; background: #eee; border: 1px solid #999; border-radius: 4px; padding: 0 0.3rem; }
+.a11y-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
 @media (max-width: 480px) {
+  .a11y-menu { left: 0.6rem; bottom: 0.6rem; }
   .a11y-panel.is-top-panel {
     top: 4.25rem;
     right: 0.75rem;

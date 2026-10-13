@@ -134,7 +134,9 @@ export function AccessibilityMenu() {
   const [note, setNote] = useState('');
   const supported = typeof window !== 'undefined' && 'speechSynthesis' in window && 'SpeechSynthesisUtterance' in window;
 
+  const button = useRef<HTMLButtonElement>(null);
   const panel = useRef<HTMLDivElement>(null);
+  const isDashboard = Boolean(pathname?.includes('/dashboard'));
   const run = useRef(0); // bumps on every start/stop so a stale utterance callback does nothing
   const reading = useRef<HTMLElement | null>(null);
 
@@ -275,6 +277,7 @@ export function AccessibilityMenu() {
   // open, close, and hand focus back
   const close = useCallback(() => {
     setOpen(false);
+    button.current?.focus();
   }, []);
 
   useEffect(() => {
@@ -289,6 +292,7 @@ export function AccessibilityMenu() {
     };
     const onDown = (e: MouseEvent) => {
       const t = e.target as Node;
+      if (button.current?.contains(t)) return;
       if (!panel.current?.contains(t)) setOpen(false);
     };
     document.addEventListener('keydown', onKey, true);
@@ -300,7 +304,7 @@ export function AccessibilityMenu() {
   }, [open, close]);
 
   // the widget embedded in other people's sites has its own controls
-  if (pathname?.startsWith('/embed') || !open) return null;
+  if (pathname?.startsWith('/embed')) return null;
 
   const choice = <K extends keyof Prefs>(k: K, label: string, options: [Prefs[K], string][]) => (
     <fieldset className="a11y-group">
@@ -315,82 +319,126 @@ export function AccessibilityMenu() {
     </fieldset>
   );
 
-  return (
-    <div className="a11y-overlay-wrap" data-a11y-skip>
-      {/* Soft backdrop */}
-      <div
-        className="fixed inset-0 z-[2147482000] bg-slate-900/20 backdrop-blur-[1px]"
-        onClick={close}
-        aria-hidden="true"
-      />
+  const panelContent = (
+    <div
+      ref={panel}
+      id={`${uid}-panel`}
+      role="dialog"
+      aria-label={__t("Accessibility options")}
+      className={`a11y-panel ${isDashboard ? 'is-top-panel' : ''}`}
+    >
+      <div className="a11y-head">
+        <h2><T>Accessibility</T></h2>
+        <button type="button" className="a11y-close" onClick={close} aria-label={__t("Close accessibility options")}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden="true">
+            <path d="M6 6l12 12M18 6L6 18" />
+          </svg>
+        </button>
+      </div>
 
-      <div ref={panel} id={`${uid}-panel`} role="dialog" aria-label={__t("Accessibility options")} className="a11y-panel is-top-panel">
-        <div className="a11y-head">
-          <h2><T>Accessibility</T></h2>
-          <button type="button" className="a11y-close" onClick={close} aria-label={__t("Close accessibility options")}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden="true">
-              <path d="M6 6l12 12M18 6L6 18" />
-            </svg>
-          </button>
-        </div>
-
-        <section aria-labelledby={`${uid}-listen`} className="a11y-section">
-          <h3 id={`${uid}-listen`}><T>Listen to this page</T></h3>
-          {supported ? (
-            <>
-              <div className="a11y-row">
-                {state === 'idle' ? (
-                  <button type="button" className="a11y-primary" onClick={readPage}><T>Read page aloud</T></button>
-                ) : (
-                  <>
-                    <button type="button" className="a11y-primary" onClick={pauseResume}><T>{state === 'paused' ? 'Resume' : 'Pause'}</T></button>
-                    <button type="button" onClick={stop}><T>Stop</T></button>
-                  </>
-                )}
-                {hasSelection && state === 'idle' ? <button type="button" onClick={readSelection}><T>Read selected text</T></button> : null}
-              </div>
+      <section aria-labelledby={`${uid}-listen`} className="a11y-section">
+        <h3 id={`${uid}-listen`}><T>Listen to this page</T></h3>
+        {supported ? (
+          <>
+            <div className="a11y-row">
+              {state === 'idle' ? (
+                <button type="button" className="a11y-primary" onClick={readPage}><T>Read page aloud</T></button>
+              ) : (
+                <>
+                  <button type="button" className="a11y-primary" onClick={pauseResume}><T>{state === 'paused' ? 'Resume' : 'Pause'}</T></button>
+                  <button type="button" onClick={stop}><T>Stop</T></button>
+                </>
+              )}
+              {hasSelection && state === 'idle' ? <button type="button" onClick={readSelection}><T>Read selected text</T></button> : null}
+            </div>
+            <label className="a11y-field">
+              <span><T>Speed</T></span>
+              <select value={rate} onChange={(e) => setRate(Number(e.target.value))}>
+                {RATES.map((r) => (
+                  <option key={r} value={r}>{r === 1 ? 'Normal' : `${r}x`}</option>
+                ))}
+              </select>
+            </label>
+            {pageVoices.length > 1 ? (
               <label className="a11y-field">
-                <span><T>Speed</T></span>
-                <select value={rate} onChange={(e) => setRate(Number(e.target.value))}>
-                  {RATES.map((r) => (
-                    <option key={r} value={r}>{r === 1 ? 'Normal' : `${r}x`}</option>
+                <span><T>Voice</T></span>
+                <select value={voiceName || pageVoices[0]?.name} onChange={(e) => setVoiceName(e.target.value)}>
+                  {pageVoices.map((v) => (
+                    <option key={v.name} value={v.name}>{v.name} ({v.lang})</option>
                   ))}
                 </select>
               </label>
-              {pageVoices.length > 1 ? (
-                <label className="a11y-field">
-                  <span><T>Voice</T></span>
-                  <select value={voiceName || pageVoices[0]?.name} onChange={(e) => setVoiceName(e.target.value)}>
-                    {pageVoices.map((v) => (
-                      <option key={v.name} value={v.name}>{v.name} ({v.lang})</option>
-                    ))}
-                  </select>
-                </label>
-              ) : null}
-              <p className="a11y-help"><T>Uses your browser&apos;s built-in voice. Nothing is sent to us or anyone else. The block being read is highlighted.</T></p>
-            </>
-          ) : (
-            <p className="a11y-help"><T>Your browser cannot read pages aloud. Chrome, Edge, Safari and Firefox can.</T></p>
-          )}
-          <p className="a11y-live" role="status" aria-live="polite"><T>{note || (state === 'reading' ? 'Reading…' : state === 'paused' ? 'Paused' : '')}</T></p>
-        </section>
+            ) : null}
+            <p className="a11y-help"><T>Uses your browser&apos;s built-in voice. Nothing is sent to us or anyone else. The block being read is highlighted.</T></p>
+          </>
+        ) : (
+          <p className="a11y-help"><T>Your browser cannot read pages aloud. Chrome, Edge, Safari and Firefox can.</T></p>
+        )}
+        <p className="a11y-live" role="status" aria-live="polite"><T>{note || (state === 'reading' ? 'Reading…' : state === 'paused' ? 'Paused' : '')}</T></p>
+      </section>
 
-        <section aria-labelledby={`${uid}-display`} className="a11y-section">
-          <h3 id={`${uid}-display`}><T>Display</T></h3>
-          {choice('text', 'Text size', [['100', 'Normal'], ['125', 'Large'], ['150', 'Larger'], ['175', 'Largest']])}
-          {choice('contrast', 'Contrast', [['normal', 'Standard'], ['high', 'High']])}
-          {choice('cvd', 'Colour-blind friendly colours', [['off', 'Off'], ['on', 'On']])}
-          {choice('font', 'Font', [['normal', 'Standard'], ['readable', 'Easy to read']])}
-          {choice('links', 'Links', [['normal', 'Standard'], ['underline', 'Always underlined']])}
-          {choice('focus', 'Keyboard focus outline', [['normal', 'Standard'], ['strong', 'Extra thick']])}
-          {choice('motion', 'Animation', [['normal', 'Standard'], ['reduce', 'Reduce motion']])}
-          <button type="button" className="a11y-reset" onClick={() => { setPrefs({ ...DEFAULTS }); apply(DEFAULTS); save(DEFAULTS); }}><T>Reset all</T></button>
-        </section>
+      <section aria-labelledby={`${uid}-display`} className="a11y-section">
+        <h3 id={`${uid}-display`}><T>Display</T></h3>
+        {choice('text', 'Text size', [['100', 'Normal'], ['125', 'Large'], ['150', 'Larger'], ['175', 'Largest']])}
+        {choice('contrast', 'Contrast', [['normal', 'Standard'], ['high', 'High']])}
+        {choice('cvd', 'Colour-blind friendly colours', [['off', 'Off'], ['on', 'On']])}
+        {choice('font', 'Font', [['normal', 'Standard'], ['readable', 'Easy to read']])}
+        {choice('links', 'Links', [['normal', 'Standard'], ['underline', 'Always underlined']])}
+        {choice('focus', 'Keyboard focus outline', [['normal', 'Standard'], ['strong', 'Extra thick']])}
+        {choice('motion', 'Animation', [['normal', 'Standard'], ['reduce', 'Reduce motion']])}
+        <button type="button" className="a11y-reset" onClick={() => { setPrefs({ ...DEFAULTS }); apply(DEFAULTS); save(DEFAULTS); }}><T>Reset all</T></button>
+      </section>
 
-        <p className="a11y-help">
-          <T>Everything on this site can be used with a keyboard:</T> <kbd>Tab</kbd> <T>moves forward,</T> <kbd>Shift</kbd>+<kbd>Tab</kbd> <T>back,</T> <kbd>Enter</kbd> <T>or</T> <kbd>Space</kbd> <T>activates,</T> <kbd>Esc</kbd> <T>closes.</T> <A href="/accessibility"><T>Accessibility statement</T></A>
-        </p>
+      <p className="a11y-help">
+        <T>Everything on this site can be used with a keyboard:</T> <kbd>Tab</kbd> <T>moves forward,</T> <kbd>Shift</kbd>+<kbd>Tab</kbd> <T>back,</T> <kbd>Enter</kbd> <T>or</T> <kbd>Space</kbd> <T>activates,</T> <kbd>Esc</kbd> <T>closes.</T> <A href="/accessibility"><T>Accessibility statement</T></A>
+      </p>
+    </div>
+  );
+
+  if (isDashboard) {
+    if (!open) return null;
+    return (
+      <div className="a11y-overlay-wrap" data-a11y-skip>
+        <div
+          className="fixed inset-0 z-[2147482000] bg-slate-900/20 backdrop-blur-[1px]"
+          onClick={close}
+          aria-hidden="true"
+        />
+        {panelContent}
       </div>
+    );
+  }
+
+  return (
+    <div className="a11y-menu" data-a11y-skip>
+      <button
+        ref={button}
+        type="button"
+        className="a11y-trigger"
+        aria-expanded={open}
+        aria-controls={`${uid}-panel`}
+        aria-haspopup="dialog"
+        onClick={() => setOpen((o) => !o)}
+        aria-label={__t("Accessibility options: read this page aloud, text size and colours")}
+      >
+        <svg
+          width="22"
+          height="22"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden="true"
+        >
+          <circle cx="12" cy="4.5" r="1.8" />
+          <path d="M5 8.5l7 1.5 7-1.5M12 10v4.5M12 14.5l-3 6M12 14.5l3 6" />
+        </svg>
+        <span className="a11y-only"><T>Accessibility options: read this page aloud, text size and colours</T></span>
+      </button>
+
+      {open ? panelContent : null}
     </div>
   );
 }

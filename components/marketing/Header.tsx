@@ -11,7 +11,6 @@ import { ButtonLink, Logo } from './ui';
 import { MEGA_DIRECT_LINKS, MEGA_MENUS, type MegaMenu } from './mega-menu-data';
 import { LanguageSwitcher } from '@/components/i18n/LanguageSwitcher';
 import { useI18n } from '@/lib/i18n/context';
-import { AccessibilityButton } from '@/components/a11y/AccessibilityMenu';
 import './mega-menu.css';
 
 type MenuId = MegaMenu['id'];
@@ -234,7 +233,6 @@ export function Header() {
 
           <div className="mk-header-actions flex items-center gap-2 sm:gap-3">
             <LanguageSwitcher variant="navbar" />
-            <AccessibilityButton />
             <Link href={LOGIN_HREF} className="mk-nav-link mk-login">
               {dict.nav.login}
             </Link>
@@ -316,7 +314,7 @@ export function Header() {
           <div className="mk-mobile-actions space-y-2">
             <div className="flex items-center justify-between px-1 pb-1">
               <span className="text-xs text-slate-500 font-medium">{dict.switcher.language}</span>
-              <div className="flex items-center gap-2"><LanguageSwitcher variant="navbar" /><AccessibilityButton /></div>
+              <LanguageSwitcher variant="navbar" />
             </div>
             <ButtonLink href={SIGNUP_HREF}>{dict.nav.signup}</ButtonLink>
             <ButtonLink href={LOGIN_HREF} variant="ghost">
