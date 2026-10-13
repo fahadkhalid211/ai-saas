@@ -42,6 +42,12 @@ describe('findWeakSettings', () => {
     expect(local.some((x) => x.severity === 'fail')).toBe(false);
   });
 
+  it('warns when the database connection is encrypted but the server is not verified', () => {
+    const remote = 'postgres://app:pw@203.0.113.9:5432/app?sslmode=require';
+    expect(findWeakSettings({ ...good, DATABASE_URL: remote }).some((x) => x.name === 'DATABASE_SSL_CA')).toBe(true);
+    expect(findWeakSettings({ ...good, DATABASE_URL: remote, DATABASE_SSL_CA: '-----BEGIN CERTIFICATE-----' }).some((x) => x.name === 'DATABASE_SSL_CA')).toBe(false);
+  });
+
   it('never repeats a secret value in what it reports', () => {
     const secretValue = 'kortex_admin_super_secret_key_change_me_in_prod';
     expect(JSON.stringify(findWeakSettings({ ...good, ADMIN_API_KEY: secretValue }))).not.toContain(secretValue);

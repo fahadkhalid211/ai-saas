@@ -41,6 +41,7 @@ export function isConnectionError(err: any): boolean {
     msg.includes('connection timeout') ||
     msg.includes('connection closed') ||
     msg.includes('client has encountered a connection error') ||
+    msg.includes('timeout exceeded when trying to connect') ||
     msg.includes('econnrefused') ||
     msg.includes('etimedout')
   ) {
@@ -152,8 +153,11 @@ export function getPostgresPool(): Pool | null {
 
   if (conn.mode === 'off' && remote) {
     // Password and all customer data would cross the internet in clear text.
-    if (process.env.DATABASE_REQUIRE_TLS === 'true') {
-      console.error('[Postgres] DATABASE_REQUIRE_TLS is set and the connection has TLS disabled: refusing to connect.');
+    // In production a remote database is never reached in clear text unless that is switched on deliberately
+    // (DATABASE_ALLOW_PLAINTEXT=true). DATABASE_REQUIRE_TLS=true refuses it in every environment.
+    const productionDefault = process.env.NODE_ENV === 'production' && process.env.DATABASE_ALLOW_PLAINTEXT !== 'true';
+    if (process.env.DATABASE_REQUIRE_TLS === 'true' || productionDefault) {
+      console.error('[Postgres] The connection to a remote database has TLS disabled: refusing to connect. Use sslmode=require (and DATABASE_SSL_CA).');
       return null;
     }
     if (!warnedInsecureTransport) {

@@ -9,6 +9,9 @@ const CORS_HEADERS = {
   'Access-Control-Allow-Headers': 'Content-Type, Authorization',
 };
 
+const CONVERSATION_STATUSES = ['bot', 'waiting_for_agent', 'live_agent', 'resolved'];
+const CONVERSATION_SENTIMENTS = ['urgent', 'positive', 'neutral'];
+
 function jsonResponse(data: any, status = 200) {
   return NextResponse.json(data, {
     status,
@@ -185,6 +188,14 @@ async function PATCHHandler(req: Request) {
 
     if (!id) {
       return jsonResponse({ error: 'Conversation id is required' }, 400);
+    }
+
+    // The database only accepts these values. Anything else used to reach it, fail there and take the connection offline.
+    if (status !== undefined && !CONVERSATION_STATUSES.includes(status)) {
+      return jsonResponse({ error: `status must be one of: ${CONVERSATION_STATUSES.join(', ')}` }, 400);
+    }
+    if (sentiment !== undefined && sentiment !== null && !CONVERSATION_SENTIMENTS.includes(sentiment)) {
+      return jsonResponse({ error: `sentiment must be one of: ${CONVERSATION_SENTIMENTS.join(', ')}` }, 400);
     }
 
     const conv = await Database.getConversationById(id);

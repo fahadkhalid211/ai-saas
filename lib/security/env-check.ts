@@ -46,6 +46,9 @@ export function findWeakSettings(env: Record<string, string | undefined>): EnvPr
       if (!isPrivate && mode === 'disable') {
         problems.push({ name: 'DATABASE_URL', problem: 'reaches a remote database without TLS (sslmode=disable)', severity: 'fail' });
       }
+      if (!isPrivate && mode !== 'disable' && !env.DATABASE_SSL_CA && mode !== 'verify-full' && mode !== 'verify-ca') {
+        problems.push({ name: 'DATABASE_SSL_CA', problem: 'is not set, so the database connection is encrypted but the certificate of the server is not checked', severity: 'warn' });
+      }
       if (decodeURIComponent(url.username) === 'postgres') {
         problems.push({ name: 'DATABASE_URL', problem: 'connects as the "postgres" superuser', severity: 'warn' });
       }

@@ -2106,7 +2106,7 @@ export class Database {
         return { ...newConv, messages: [] };
       } catch (err) {
         console.warn('[Relational] getOrCreateConversation failed, disabling postgres:', err);
-        disablePostgresTemporarily();
+        if (isConnectionError(err)) disablePostgresTemporarily();
       }
     }
 
@@ -2163,7 +2163,7 @@ export class Database {
         }
       } catch (err) {
         console.warn('[Relational] getConversationById failed, disabling postgres:', err);
-        disablePostgresTemporarily();
+        if (isConnectionError(err)) disablePostgresTemporarily();
       }
     }
     const state = await ensureInitialized();
@@ -2221,7 +2221,7 @@ export class Database {
         }
       } catch (err) {
         console.warn('[Relational] updateConversation failed, disabling postgres:', err);
-        disablePostgresTemporarily();
+        if (isConnectionError(err)) disablePostgresTemporarily();
       }
     }
 
@@ -2290,7 +2290,7 @@ export class Database {
         return msg;
       } catch (err) {
         console.warn('[Relational] saveMessage failed, disabling postgres:', err);
-        disablePostgresTemporarily();
+        if (isConnectionError(err)) disablePostgresTemporarily();
       }
     }
 
@@ -2334,7 +2334,7 @@ export class Database {
         return lead;
       } catch (err) {
         console.warn('[Relational] saveLead failed, disabling postgres:', err);
-        disablePostgresTemporarily();
+        if (isConnectionError(err)) disablePostgresTemporarily();
       }
     }
 
@@ -2361,7 +2361,7 @@ export class Database {
         }
       } catch (err) {
         console.warn('[Relational] getLeads failed, disabling postgres:', err);
-        disablePostgresTemporarily();
+        if (isConnectionError(err)) disablePostgresTemporarily();
       }
     }
 
@@ -2446,7 +2446,7 @@ export class Database {
         return record;
       } catch (err) {
         console.warn('[Relational] recordUnansweredQuery failed, disabling postgres:', err);
-        disablePostgresTemporarily();
+        if (isConnectionError(err)) disablePostgresTemporarily();
       }
     }
 
@@ -2602,7 +2602,7 @@ export class Database {
           throw err;
         }
         console.warn('[Relational] saveAppointment failed, disabling postgres:', err);
-        disablePostgresTemporarily();
+        if (isConnectionError(err)) disablePostgresTemporarily();
       }
     }
 
@@ -2632,7 +2632,7 @@ export class Database {
         if (relApts.length > 0 || wsAssistantIds !== undefined) return relApts;
       } catch (err) {
         console.warn('[Relational] getAppointments failed, disabling postgres:', err);
-        disablePostgresTemporarily();
+        if (isConnectionError(err)) disablePostgresTemporarily();
       }
     }
 
@@ -2679,7 +2679,7 @@ export class Database {
         if (relApt) return relApt;
       } catch (err) {
         console.warn('[Relational] getAppointmentById failed, disabling postgres:', err);
-        disablePostgresTemporarily();
+        if (isConnectionError(err)) disablePostgresTemporarily();
       }
     }
     const state = await ensureInitialized();
@@ -2694,7 +2694,7 @@ export class Database {
         if (relApt) return relApt;
       } catch (err) {
         console.warn('[Relational] getAppointmentByManageToken failed, disabling postgres:', err);
-        disablePostgresTemporarily();
+        if (isConnectionError(err)) disablePostgresTemporarily();
       }
     }
     const state = await ensureInitialized();
@@ -2723,7 +2723,7 @@ export class Database {
         return Relational.relationalGetAppointmentById(id);
       } catch (err) {
         console.warn('[Relational] updateAppointment failed, disabling postgres:', err);
-        disablePostgresTemporarily();
+        if (isConnectionError(err)) disablePostgresTemporarily();
       }
     }
 
@@ -2772,7 +2772,7 @@ export class Database {
         return true;
       } catch (err) {
         console.warn('[Relational] updateAppointmentStatus failed, disabling postgres:', err);
-        disablePostgresTemporarily();
+        if (isConnectionError(err)) disablePostgresTemporarily();
       }
     }
 
@@ -2806,7 +2806,7 @@ export class Database {
         return true;
       } catch (err) {
         console.warn('[Relational] deleteAppointment failed, disabling postgres:', err);
-        disablePostgresTemporarily();
+        if (isConnectionError(err)) disablePostgresTemporarily();
       }
     }
 
@@ -2822,7 +2822,7 @@ export class Database {
         if (relApts.length > 0) return relApts;
       } catch (err) {
         console.warn('[Relational] getUpcomingAppointmentsForReminders failed, disabling postgres:', err);
-        disablePostgresTemporarily();
+        if (isConnectionError(err)) disablePostgresTemporarily();
       }
     }
     const state = await ensureInitialized();
@@ -2854,7 +2854,7 @@ export class Database {
         return true;
       } catch (err) {
         console.warn('[Relational] markReminderSent failed, disabling postgres:', err);
-        disablePostgresTemporarily();
+        if (isConnectionError(err)) disablePostgresTemporarily();
       }
     }
 
@@ -3328,7 +3328,7 @@ export class Database {
         if (relNotifs.length > 0 || wsAssistantIds !== undefined) return relNotifs;
       } catch (err) {
         console.warn('[Relational] getNotifications failed, disabling postgres:', err);
-        disablePostgresTemporarily();
+        if (isConnectionError(err)) disablePostgresTemporarily();
       }
     }
     const state = await ensureInitialized();
@@ -3380,7 +3380,7 @@ export class Database {
         return notif;
       } catch (err) {
         console.warn('[Relational] addNotification failed, disabling postgres:', err);
-        disablePostgresTemporarily();
+        if (isConnectionError(err)) disablePostgresTemporarily();
       }
     }
 

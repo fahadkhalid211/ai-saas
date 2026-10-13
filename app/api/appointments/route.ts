@@ -163,6 +163,9 @@ async function POSTHandler(req: Request) {
       if (!id || !status) {
         return NextResponse.json({ error: 'id and status are required' }, { status: 400 });
       }
+      if (!['pending', 'confirmed', 'cancelled', 'completed'].includes(status)) {
+        return NextResponse.json({ error: 'status must be one of: pending, confirmed, cancelled, completed' }, { status: 400 });
+      }
 
       const existingApt = await Database.getAppointmentById(id);
       if (!existingApt) {
