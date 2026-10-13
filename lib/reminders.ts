@@ -1,5 +1,6 @@
-import { Database, DEFAULT_BARBER_LANDING_CONFIG } from './db';
+import { Database } from './db';
 import { sendAppointmentReminderEmail } from './email';
+import { zonedTimeToUtcMs } from './appointments/instant';
 
 export interface ReminderProcessResult {
   timestamp: string;
@@ -29,17 +30,9 @@ export async function processScheduledReminders(): Promise<ReminderProcessResult
 
   for (const apt of appointments) {
     try {
-      // Parse appointment date & timeSlot (e.g. "2026-09-15", "14:30")
-      const [yearStr, monthStr, dayStr] = apt.date.split('-');
-      const [hourStr, minStr] = (apt.timeSlot || '09:00').split(':');
-
-      const year = parseInt(yearStr, 10);
-      const month = parseInt(monthStr, 10) - 1;
-      const day = parseInt(dayStr, 10);
-      const hour = parseInt(hourStr, 10);
-      const min = parseInt(minStr, 10);
-
-      const aptTime = new Date(year, month, day, hour, min, 0).getTime();
+      // The assistant carries the business's time zone: an appointment time is a wall-clock time there, not on the server.
+      const ast = await Database.getAssistantById(apt.assistantId);
+      const aptTime = zonedTimeToUtcMs(apt.date, apt.timeSlot, ast?.timezone);
       const diffHours = (aptTime - now) / (1000 * 60 * 60);
 
       // Skip past appointments
@@ -47,8 +40,8 @@ export async function processScheduledReminders(): Promise<ReminderProcessResult
         continue;
       }
 
-      const ast = await Database.getAssistantById(apt.assistantId);
-      const landingConfig = ast?.landingPageConfig || DEFAULT_BARBER_LANDING_CONFIG;
+      // never the demo barbershop's details: those would reach every other business's customers
+      const landingConfig: Partial<NonNullable<typeof ast>['landingPageConfig'] & object> = ast?.landingPageConfig || {};
       const businessName = landingConfig.businessName || ast?.name || 'Our Business';
       const businessAddress = landingConfig.address || 'In Shop';
       const businessPhone = landingConfig.phone || '';

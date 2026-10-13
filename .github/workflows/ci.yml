@@ -1,0 +1,37 @@
+name: CI
+
+# Every push and pull request is checked before (or, for pushes to main, right after) Vercel builds it. Type errors and failing
+# tests used to reach production unnoticed, because nothing ran them.
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install
+        run: npm ci
+      - name: Type check
+        run: npx tsc --noEmit
+      - name: Tests
+        # No DATABASE_URL here: the tests use a throwaway data folder (see vitest.config.mts), never a real database.
+        run: npm test
+      - name: Lint (errors are reported, not yet blocking)
+        # The code has existing lint errors; fix them, then remove continue-on-error so new ones cannot be added.
+        run: npx eslint --quiet
+        continue-on-error: true
+      - name: Dependency audit (reported, not blocking)
+        run: npm audit --omit=dev --audit-level=high
+        continue-on-error: true

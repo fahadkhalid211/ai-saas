@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse, after } from 'next/server';
 import crypto from 'crypto';
 import { Database } from '@/lib/db';
 import {
@@ -9,6 +9,9 @@ import {
 import { verifyAdminRequest, getAuthContext } from '@/lib/security/auth';
 import { logged } from '@/lib/logging/route';
 import { logEvent } from '@/lib/logging/logger';
+
+/** Room for the AI reply that is finished after the response. */
+export const maxDuration = 60;
 
 function getTelegramSecretToken(assistantId: string, token: string): string {
   return crypto.createHmac('sha256', token).update(assistantId).digest('hex').slice(0, 32);
@@ -51,9 +54,15 @@ async function POSTHandler(req: NextRequest) {
 
     const update = await req.json();
 
-    // Process update asynchronously so Telegram webhook gets 200 OK immediately
-    processTelegramUpdate(assistant, update).catch((err) => {
-      console.error('[Telegram Webhook Handler Error]:', err);
+    // Answer Telegram at once, and finish the reply after the response. The work is registered with after() so the platform keeps
+    // the function alive until it is done: a promise left running after the response is frozen with the function and the
+    // reply is lost at random.
+    after(async () => {
+      try {
+        await processTelegramUpdate(assistant, update);
+      } catch (err) {
+        console.error('[Telegram Webhook Handler Error]:', err);
+      }
     });
 
     return NextResponse.json({ ok: true });

@@ -11,6 +11,10 @@ const nextConfig: NextConfig = {
   // the model never loaded in production ("libonnxruntime.so.1.14.0: cannot open shared object file").
   outputFileTracingIncludes: {
     '/api/**/*': ['./node_modules/onnxruntime-node/bin/napi-v3/linux/x64/**/*'],
+    // The translated blog articles are read from disk (lib/blog/translated.ts), which the file tracer cannot see. Without this,
+    // a page that is rebuilt on the server after deploy cannot find them and falls back to the English article.
+    '/*/blog': ['./lib/blog/translations/**/*'],
+    '/*/blog/*': ['./lib/blog/translations/**/*'],
   },
   // status.crescelo.com is routed to the status page by the proxy (proxy.ts), together with the language handling.
   async redirects() {

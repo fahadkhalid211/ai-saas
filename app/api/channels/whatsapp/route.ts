@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse, after } from 'next/server';
 import crypto from 'crypto';
 import { Database } from '@/lib/db';
 import { processWhatsAppWebhook } from '@/lib/channels/whatsapp';
@@ -90,9 +90,15 @@ async function POSTHandler(req: NextRequest) {
 
     const body = JSON.parse(rawBody);
 
-    // Process incoming message asynchronously so Meta gets 200 OK immediately
-    processWhatsAppWebhook(assistant, body).catch((err) => {
-      console.error('[WhatsApp Webhook Handler Error]:', err);
+    // Answer Meta at once, and finish the reply after the response. The work is registered with after() so the platform keeps
+    // the function alive until it is done (a promise left running after the response is frozen with the function, and Meta
+    // does not retry a delivery it received a 200 for).
+    after(async () => {
+      try {
+        await processWhatsAppWebhook(assistant, body);
+      } catch (err) {
+        console.error('[WhatsApp Webhook Handler Error]:', err);
+      }
     });
 
     return NextResponse.json({ status: 'EVENT_RECEIVED' }, { status: 200 });
@@ -101,6 +107,9 @@ async function POSTHandler(req: NextRequest) {
     return NextResponse.json({ error: error?.message || 'Webhook failed' }, { status: 500 });
   }
 }
+
+/** Room for the AI reply that is finished after the response. */
+export const maxDuration = 60;
 
 export const GET = logged(GETHandler, { route: '/api/channels/whatsapp' });
 export const POST = logged(POSTHandler, { route: '/api/channels/whatsapp' });

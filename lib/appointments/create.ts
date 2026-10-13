@@ -1,4 +1,4 @@
-import { Database, DEFAULT_BARBER_LANDING_CONFIG, type AppointmentData, type AssistantData } from '@/lib/db';
+import { Database, type AppointmentData, type AssistantData } from '@/lib/db';
 import { sendAppointmentConfirmationEmail } from '@/lib/email';
 import { dispatchIntegrationsAfterResponse } from '@/lib/integrations/dispatch';
 import { acquireBookingLock } from '@/lib/appointments/booking-lock';
@@ -56,7 +56,9 @@ export async function createAppointment(opts: CreateAppointmentOptions): Promise
   const notes = input.notes?.trim() || undefined;
 
   const resolvedDuration = input.durationMinutes || assistant.bookingSlotDuration || 30;
-  const landingConfig = assistant.landingPageConfig || DEFAULT_BARBER_LANDING_CONFIG;
+  // An assistant without a landing page uses its own name. It must never fall back to the demo barbershop's name, address and
+  // phone: those would appear in the confirmation e-mail of every other business.
+  const landingConfig: Partial<NonNullable<AssistantData['landingPageConfig']>> = assistant.landingPageConfig || {};
 
   // Concurrency lock: serialise concurrent attempts on the same slot within this process.
   // (Cross-instance safety comes from the relational unique index, which raises SLOT_CONFLICT.)

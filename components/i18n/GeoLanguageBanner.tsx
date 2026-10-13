@@ -2,14 +2,17 @@
 
 import { T, useT } from '@/lib/i18n/context';
 import React from 'react';
+import { usePathname } from 'next/navigation';
+import { isNoTrackingPath } from '@/lib/privacy/no-tracking-paths';
 import { useI18n } from '@/lib/i18n/context';
 import { X, Globe, Check } from 'lucide-react';
 
 export function GeoLanguageBanner() {
   const __t = useT();
   const { bannerVisible, locale, countryInfo, localeInfo, dict, setLocale, dismissBanner } = useI18n();
+  const pathname = usePathname();
 
-  if (!bannerVisible || !countryInfo || locale === 'en') {
+  if (!bannerVisible || !countryInfo || locale === 'en' || isNoTrackingPath(pathname)) {
     return null;
   }
 

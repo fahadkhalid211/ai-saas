@@ -44,3 +44,6 @@ next-env.d.ts
 .data/
 *.traineddata
 .next-iso
+
+# Extra build folders (NEXT_DIST_DIR=.next-iso / .next-build)
+/.next-*/

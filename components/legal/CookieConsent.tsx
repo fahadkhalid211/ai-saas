@@ -3,6 +3,7 @@
 import { T, useT } from '@/lib/i18n/context';
 import { A } from '@/components/i18n/A';
 import { useCallback, useEffect, useState } from 'react';
+import { isNoTrackingPath } from '@/lib/privacy/no-tracking-paths';
 
 const KEY = 'crescelo_cookie_consent';
 const OPEN_EVENT = 'crescelo:cookie-settings';
@@ -65,6 +66,8 @@ export function CookieConsent() {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
+    // No banner and no analytics inside a customer's embedded chat, on their hosted pages or in the signed-in app.
+    if (isNoTrackingPath(window.location.pathname)) return;
     const saved = read();
     setChoice(saved);
     setOpen(saved === null);
