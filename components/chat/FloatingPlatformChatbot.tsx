@@ -52,9 +52,10 @@ const BOOKING_INTENT = /\b(book|schedule|appointment|demo|meeting|call with|cons
 
 /** What the assistant asked the interface to show, taken from its control tokens. */
 function actionsOf(content: string): { text: string; booking: boolean; human: boolean } {
+  const text = stripActionTokens(content).replace(/\s*\[BOOKING_FORM\]/gi, '').trim();
   return {
-    text: stripActionTokens(content),
-    booking: content.includes('[ACTION:BOOKING_FORM]'),
+    text,
+    booking: content.includes('[ACTION:BOOKING_FORM]') || /\[BOOKING_FORM\]/i.test(content),
     human: content.includes('[ACTION:HUMAN_ESCALATION]'),
   };
 }
@@ -169,12 +170,13 @@ export function FloatingPlatformChatbot({ variant = 'floating', onNavigate, onBi
     };
 
     pollConversation();
-    const timer = setInterval(pollConversation, 3000);
+    const pollInterval = isTakeoverActive ? 1000 : 2500;
+    const timer = setInterval(pollConversation, pollInterval);
     return () => {
       isMounted = false;
       clearInterval(timer);
     };
-  }, [conversationId, conversationToken, isOpen, assignedAgentName]);
+  }, [conversationId, conversationToken, isOpen, assignedAgentName, isTakeoverActive]);
 
   useEffect(() => {
     if (!isOpen || bookingConfig) return;
@@ -663,6 +665,7 @@ export function FloatingPlatformChatbot({ variant = 'floating', onNavigate, onBi
               }
 
               if (m.role === 'agent') {
+                const a = actionsOf(m.content);
                 return (
                   <div key={m.id} className="flex gap-2.5 justify-start">
                     <span className="mt-0.5 shrink-0 flex items-center justify-center w-[26px] h-[26px] rounded-full bg-[#abff44] text-[#08251a]">
@@ -673,7 +676,12 @@ export function FloatingPlatformChatbot({ variant = 'floating', onNavigate, onBi
                         <span>{m.senderName || assignedAgentName || 'Live Support Agent'}</span>
                         <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-[#abff44]/20 text-[#abff44] uppercase tracking-wider font-extrabold">Agent</span>
                       </div>
-                      <div className="whitespace-pre-wrap break-words">{m.content}</div>
+                      <div className="whitespace-pre-wrap break-words">{renderRich(a.text)}</div>
+                      {a.booking && (
+                        <div className="mt-2.5 space-y-2">
+                          <PlatformBookingCard assistantId={ASSISTANT_ID} config={bookingConfig || { bookingEnabled: true }} />
+                        </div>
+                      )}
                     </div>
                   </div>
                 );
@@ -716,7 +724,7 @@ export function FloatingPlatformChatbot({ variant = 'floating', onNavigate, onBi
                     if (!a.booking && !a.human) return null;
                     return (
                       <div className="mt-2.5 space-y-2">
-                        {a.booking && bookingConfig?.bookingEnabled && <PlatformBookingCard assistantId={ASSISTANT_ID} config={bookingConfig} />}
+                        {a.booking && <PlatformBookingCard assistantId={ASSISTANT_ID} config={bookingConfig || { bookingEnabled: true }} />}
                         {a.human ? (
                           <div className="inline-flex items-center gap-2 text-[12px] font-semibold text-[#abff44]" role="status">
                             <span className="h-1.5 w-1.5 rounded-full bg-[#abff44]" />

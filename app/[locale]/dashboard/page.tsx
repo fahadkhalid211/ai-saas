@@ -648,7 +648,7 @@ export default function DashboardPage() {
       if (typeof document === 'undefined' || document.visibilityState !== 'hidden') {
         fetchNotifications();
       }
-    }, 10000);
+    }, 3000);
     return () => clearInterval(interval);
   }, [isAuthenticated, activeAssistant?.id]);
 
@@ -672,7 +672,7 @@ export default function DashboardPage() {
       if (typeof document === 'undefined' || document.visibilityState !== 'hidden') {
         fetchConversations(activeAssistant.id);
       }
-    }, 8000);
+    }, 2500);
     return () => clearInterval(interval);
   }, [isAuthenticated, activeAssistant?.id, activeTab]);
 
@@ -724,6 +724,44 @@ export default function DashboardPage() {
         
         {/* Top Enterprise Header */}
         <DashboardHeader
+          onSelectConversationId={(convId) => {
+            setTargetConversationId(convId);
+            setActiveTab('history');
+          }}
+          onSelectNotification={(n) => {
+            if (!n.read) {
+              fetch('/api/notifications', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'mark_read', id: n.id }),
+              }).catch(() => undefined);
+              setNotifications((prev) => prev.map((item) => (item.id === n.id ? { ...item, read: true } : item)));
+            }
+
+            const type = n.type || '';
+            const meta = (n as any).metadata || {};
+
+            if (type.startsWith('chat_') || meta.conversationId || /chat|message|visitor/i.test(n.title + ' ' + n.message)) {
+              if (meta.conversationId) {
+                setTargetConversationId(meta.conversationId);
+              }
+              setActiveTab('history');
+            } else if (type.startsWith('appointment_') || /appointment|booking|schedule/i.test(n.title + ' ' + n.message)) {
+              setActiveTab('appointments');
+            } else if (type.startsWith('lead_') || /lead|contact/i.test(n.title + ' ' + n.message)) {
+              setActiveTab('leads');
+            } else if (type.includes('cost_cap') || /spending|engine|cost/i.test(n.title + ' ' + n.message)) {
+              setActiveTab('engine');
+            } else if (type.includes('security') || type.includes('2fa') || /security|auth|login/i.test(n.title + ' ' + n.message)) {
+              setActiveTab('security');
+            } else if (type.includes('knowledge') || /source|scrape|document/i.test(n.title + ' ' + n.message)) {
+              setActiveTab('knowledge');
+            } else if (type.includes('channel') || /whatsapp|telegram/i.test(n.title + ' ' + n.message)) {
+              setActiveTab('channels');
+            } else {
+              setActiveTab('overview');
+            }
+          }}
           activeAssistant={activeAssistant}
           assistants={assistants}
           setActiveAssistant={setActiveAssistant}

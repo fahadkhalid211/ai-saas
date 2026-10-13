@@ -50,6 +50,14 @@ export function NotificationToast({
     incomingToast.type === 'chat_escalated' ||
     incomingToast.title?.toLowerCase().includes('agent');
 
+  const isAppointmentNotif =
+    incomingToast.type?.startsWith('appointment_') ||
+    /appointment|booking|schedule/i.test(incomingToast.title + ' ' + incomingToast.message);
+
+  const isLeadNotif =
+    incomingToast.type?.startsWith('lead_') ||
+    /lead|contact/i.test(incomingToast.title + ' ' + incomingToast.message);
+
   const isChatNotif =
     incomingToast.type === 'chat_new' ||
     incomingToast.type === 'chat_message' ||
@@ -100,6 +108,28 @@ export function NotificationToast({
               }`}
             >
               {isEscalation ? <T>{'Open Live Chat'}</T> : <T>{'View Chat'}</T>} &rarr;
+            </button>
+          ) : isAppointmentNotif && setActiveTab ? (
+            <button
+              type="button"
+              onClick={() => {
+                onDismiss();
+                setActiveTab('appointments');
+              }}
+              className="text-[11px] font-bold text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
+            >
+              <T>View Appointments</T> &rarr;
+            </button>
+          ) : isLeadNotif && setActiveTab ? (
+            <button
+              type="button"
+              onClick={() => {
+                onDismiss();
+                setActiveTab('leads');
+              }}
+              className="text-[11px] font-bold text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
+            >
+              <T>View Leads</T> &rarr;
             </button>
           ) : (
             <button

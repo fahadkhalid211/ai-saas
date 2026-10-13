@@ -238,7 +238,8 @@ export default function EmbedChatPage({ params }: EmbedPageProps) {
       }
     };
 
-    const interval = setInterval(pollConv, 6000);
+    const pollIntervalMs = isTakeoverActive ? 1000 : 2500;
+    const interval = setInterval(pollConv, pollIntervalMs);
     const onVisibilityChange = () => {
       if (typeof document !== 'undefined' && document.visibilityState === 'visible') {
         pollConv();
@@ -250,7 +251,7 @@ export default function EmbedChatPage({ params }: EmbedPageProps) {
       clearInterval(interval);
       document.removeEventListener('visibilitychange', onVisibilityChange);
     };
-  }, [conversationId, conversationToken]);
+  }, [conversationId, conversationToken, isTakeoverActive]);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -582,6 +583,13 @@ export default function EmbedChatPage({ params }: EmbedPageProps) {
           }
 
           if (msg.role === 'agent') {
+            const hasBookingAction =
+              msg.content.includes('[ACTION:BOOKING_FORM]') ||
+              /\[BOOKING_FORM\]/i.test(msg.content);
+            const cleanContent = msg.content
+              .replace(/\s*\[ACTION:[A-Z_]+\]/g, '')
+              .replace(/\s*\[BOOKING_FORM\]/gi, '')
+              .trim();
             return (
               <div key={index} className="flex flex-col items-start">
                 <div className="max-w-[88%] sm:max-w-[80%] rounded-2xl px-4 py-2.5 text-xs leading-relaxed shadow-xs bg-white dark:bg-slate-900 border-1.5 border-purple-300 dark:border-purple-700 text-slate-900 dark:text-slate-100 rounded-bl-xs">
@@ -590,7 +598,17 @@ export default function EmbedChatPage({ params }: EmbedPageProps) {
                     <span>{msg.senderName || assignedAgentName || 'Live Support Agent'}</span>
                     <span className="ml-auto text-[9.5px] font-normal text-purple-500 dark:text-purple-400 opacity-80">Support Team</span>
                   </div>
-                  <MarkdownRenderer content={msg.content} />
+                  {cleanContent && <MarkdownRenderer content={cleanContent} />}
+                  {hasBookingAction && (
+                    <div className="mt-3">
+                      <ChatBookingCard
+                        assistantId={assistantId}
+                        primaryColor={primaryColor}
+                        businessName={config?.name || 'Our Team'}
+                        conversationId={conversationId || undefined}
+                      />
+                    </div>
+                  )}
                 </div>
               </div>
             );
@@ -629,8 +647,8 @@ export default function EmbedChatPage({ params }: EmbedPageProps) {
                 ) : (
                   <div>
                     {(() => {
-                      const hasBookingAction = msg.content.includes('[ACTION:BOOKING_FORM]');
-                      const cleanContent = msg.content.replace(/\s*\[ACTION:[A-Z_]+\]/g, '').trim();
+                      const hasBookingAction = msg.content.includes('[ACTION:BOOKING_FORM]') || /\[BOOKING_FORM\]/i.test(msg.content);
+                      const cleanContent = msg.content.replace(/\s*\[ACTION:[A-Z_]+\]/g, '').replace(/\s*\[BOOKING_FORM\]/gi, '').trim();
                       return (
                         <>
                           {cleanContent && <MarkdownRenderer content={cleanContent} />}

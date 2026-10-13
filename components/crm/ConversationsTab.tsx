@@ -248,6 +248,21 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
       }
     }
 
+    if (targetConversationId && !sortedConversations.find((c) => c.id === targetConversationId)) {
+      fetch(`/api/conversations?id=${encodeURIComponent(targetConversationId)}`)
+        .then((r) => (r.ok ? r.json() : null))
+        .then((d) => {
+          if (d?.conversation) {
+            setConversations((prev) => [d.conversation, ...prev.filter((c) => c.id !== d.conversation.id)]);
+            setSelectedConversation(d.conversation);
+            selectedConvKnownCountRef.current = d.conversation.messages?.length || 0;
+            if (onClearTargetConversationId) onClearTargetConversationId();
+          }
+        })
+        .catch(() => undefined);
+      return;
+    }
+
     if (!selectedConversation && sortedConversations.length > 0) {
       handleSelectConversation(sortedConversations[0]);
     }
@@ -318,7 +333,14 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
       }
     };
 
-    const interval = setInterval(pollOnce, 5000);
+    pollOnce();
+    const isLiveActive = Boolean(
+      selectedConversation?.isLiveTakeover ||
+      selectedConversation?.status === 'waiting_for_agent' ||
+      selectedConversation?.status === 'live_agent'
+    );
+    const pollIntervalMs = isLiveActive ? 1000 : 2500;
+    const interval = setInterval(pollOnce, pollIntervalMs);
     const onVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
         pollOnce();
@@ -330,7 +352,7 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
       clearInterval(interval);
       document.removeEventListener('visibilitychange', onVisibilityChange);
     };
-  }, [selectedConversation?.id, playNotificationChime]);
+  }, [selectedConversation?.id, selectedConversation?.isLiveTakeover, selectedConversation?.status, playNotificationChime]);
 
   return (
               <div className="max-w-6xl space-y-6 mx-auto">
@@ -615,7 +637,31 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
                                     {isUser ? (
                                       <div className="whitespace-pre-wrap">{m.content}</div>
                                     ) : (
-                                      <MarkdownRenderer content={m.content} />
+                                      <div>
+                                        {(() => {
+                                          const hasBooking = m.content?.includes('[ACTION:BOOKING_FORM]') || /\[BOOKING_FORM\]/i.test(m.content || '');
+                                          const clean = (m.content || '')
+                                            .replace(/\s*\[ACTION:[A-Z_]+\]/g, '')
+                                            .replace(/\s*\[BOOKING_FORM\]/gi, '')
+                                            .trim();
+                                          return (
+                                            <>
+                                              {clean && <MarkdownRenderer content={clean} />}
+                                              {hasBooking && (
+                                                <div className="mt-2.5 flex items-center gap-2 p-2.5 rounded-xl bg-blue-50/90 dark:bg-blue-950/50 border border-blue-200/90 dark:border-blue-800/70 text-blue-950 dark:text-blue-200 text-xs shadow-xs">
+                                                  <div className="h-6 w-6 rounded-lg bg-blue-600 text-white flex items-center justify-center shrink-0">
+                                                    <Calendar className="h-3.5 w-3.5" />
+                                                  </div>
+                                                  <div className="flex-1 min-w-0">
+                                                    <div className="font-bold text-blue-900 dark:text-blue-100"><T>Appointment Booking Card Sent</T></div>
+                                                    <div className="text-[10.5px] text-blue-700/80 dark:text-blue-300/80"><T>Interactive booking calendar &amp; slots picker displayed to visitor</T></div>
+                                                  </div>
+                                                </div>
+                                              )}
+                                            </>
+                                          );
+                                        })()}
+                                      </div>
                                     )}
 
                                     {/* Web Sources Preview (Strictly for live web search - Never display internal knowledge base) */}

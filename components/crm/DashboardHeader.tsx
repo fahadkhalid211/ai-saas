@@ -30,9 +30,12 @@ interface NotificationItem {
   createdAt: string;
   read?: boolean;
   type?: string;
+  metadata?: Record<string, any>;
 }
 
 interface DashboardHeaderProps {
+  onSelectNotification?: (notification: NotificationItem) => void;
+  onSelectConversationId?: (convId: string) => void;
   activeAssistant: any;
   assistants: any[];
   setActiveAssistant: (ast: any) => void;
@@ -63,6 +66,8 @@ interface DashboardHeaderProps {
 }
 
 export function DashboardHeader({
+  onSelectNotification,
+  onSelectConversationId,
   activeAssistant,
   assistants,
   setActiveAssistant,
@@ -108,6 +113,50 @@ export function DashboardHeader({
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [setIsNotifOpen]);
+
+  const handleNotificationClick = (n: NotificationItem) => {
+    if (!n.read) {
+      fetch('/api/notifications', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'mark_read', id: n.id }),
+      }).catch(() => undefined);
+      n.read = true;
+    }
+
+    if (onSelectNotification) {
+      onSelectNotification(n);
+      setIsNotifOpen(false);
+      return;
+    }
+
+    const type = n.type || '';
+    const meta = (n as any).metadata || {};
+
+    if (type.startsWith('chat_') || meta.conversationId || /chat|message|visitor/i.test(n.title + ' ' + n.message)) {
+      if (meta.conversationId && onSelectConversationId) {
+        onSelectConversationId(meta.conversationId);
+      }
+      setActiveTab('history');
+    } else if (type.startsWith('appointment_') || /appointment|booking|schedule/i.test(n.title + ' ' + n.message)) {
+      setActiveTab('appointments');
+    } else if (type.startsWith('lead_') || /lead|contact/i.test(n.title + ' ' + n.message)) {
+      setActiveTab('leads');
+    } else if (type.includes('cost_cap') || /spending|engine|cost/i.test(n.title + ' ' + n.message)) {
+      setActiveTab('engine');
+    } else if (type.includes('security') || type.includes('2fa') || /security|auth|login/i.test(n.title + ' ' + n.message)) {
+      setActiveTab('security');
+    } else if (type.includes('knowledge') || /source|scrape|document/i.test(n.title + ' ' + n.message)) {
+      setActiveTab('knowledge');
+    } else if (type.includes('channel') || /whatsapp|telegram/i.test(n.title + ' ' + n.message)) {
+      setActiveTab('channels');
+    } else {
+      setActiveTab('overview');
+    }
+
+    setIsNotifOpen(false);
+  };
+
 
   return (
     <header className="h-16 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 sm:px-6 flex items-center justify-between sticky top-0 z-40 shrink-0">
@@ -341,8 +390,11 @@ export function DashboardHeader({
                     return (
                     <div
                       key={n.id}
-                      className={`py-2.5 px-1 flex gap-2.5 ${!n.read ? 'bg-blue-50/50 dark:bg-blue-950/20' : ''} ${isCostCap ? 'cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/60' : ''}`}
-                      onClick={isCostCap ? () => { setActiveTab('engine'); setIsNotifOpen(false); } : undefined}
+                      className={`py-2.5 px-2 rounded-xl flex gap-2.5 cursor-pointer transition ${
+                        !n.read ? 'bg-blue-50/70 dark:bg-blue-950/30' : 'hover:bg-slate-50 dark:hover:bg-slate-800/60'
+                      }`}
+                      onClick={() => handleNotificationClick(n)}
+                      title={__t("Click to view related section")}
                     >
                       <div className="mt-0.5">
                         <span
