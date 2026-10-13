@@ -42,7 +42,6 @@ import {
   GoogleSheetsIcon,
 } from '@/components/crm/ChannelsTab';
 import { ADVANCED_ONLY_TABS } from '@/lib/ui/simple-mode';
-import { LanguageSwitcher } from '@/components/i18n/LanguageSwitcher';
 
 function renderIntegrationIcon(id: IntegrationId | string) {
   switch (id as string) {
@@ -307,11 +306,6 @@ export function DashboardSidebar({
           <p className="text-xs text-slate-600 dark:text-slate-400 leading-normal">
             <T>Your assistant is ready to answer customers.</T>
           </p>
-        </div>
-
-        {/* Language Selection */}
-        <div className="pt-1">
-          <LanguageSwitcher variant="sidebar" />
         </div>
       </div>
 

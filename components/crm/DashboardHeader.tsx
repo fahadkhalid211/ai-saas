@@ -2,6 +2,7 @@
 
 import { T, useT } from '@/lib/i18n/context';
 import React, { useState, useRef, useEffect } from 'react';
+import { LanguageSwitcher } from '@/components/i18n/LanguageSwitcher';
 import { BrandMark } from '@/components/brand/BrandMark';
 import { FloatingPlatformChatbot } from '@/components/chat/FloatingPlatformChatbot';
 import {
@@ -242,6 +243,9 @@ export function DashboardHeader({
 
         {/* Crescelo assistant: drops the chat down from here; stays mounted so the conversation survives minimizing */}
         <FloatingPlatformChatbot variant="header" onNavigate={(tab) => setActiveTab(tab)} onBillingChanged={onBillingChanged} />
+
+        {/* Language: choose the dashboard language */}
+        <LanguageSwitcher variant="header" />
 
         {/* Tour Guide Button */}
         {onOpenTour && (
