@@ -1,4 +1,5 @@
 import { internalPolicy, publicPolicy } from './lib/security/csp';
+import { EMBEDDING_ROUTES, ONNX_RUNTIME_FILES } from './lib/rag/embedding-routes';
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
@@ -9,8 +10,10 @@ const nextConfig: NextConfig = {
   // The local AI search model (@xenova/transformers) runs on onnxruntime-node, whose native binding opens a shared library
   // next to it at run time. File tracing follows imports, not that, so the library was left out of the server functions and
   // the model never loaded in production ("libonnxruntime.so.1.14.0: cannot open shared object file").
+  // Only the routes that run the model get the library (lib/rag/embedding-routes.ts, checked by a test): it used to be added to
+  // all 97 API routes, so every function carried it (about 7.5 GB of function storage) and loaded it on every cold start.
   outputFileTracingIncludes: {
-    '/api/**/*': ['./node_modules/onnxruntime-node/bin/napi-v3/linux/x64/**/*'],
+    ...Object.fromEntries(EMBEDDING_ROUTES.map((route) => [route, [ONNX_RUNTIME_FILES]])),
     // The translated blog articles are read from disk (lib/blog/translated.ts), which the file tracer cannot see. Without this,
     // a page that is rebuilt on the server after deploy cannot find them and falls back to the English article.
     '/*/blog': ['./lib/blog/translations/**/*'],

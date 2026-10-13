@@ -3,6 +3,7 @@
   "regions": [
     "bom1"
   ],
+  "ignoreCommand": "bash scripts/vercel-ignore-build.sh",
   "crons": [
     {
       "path": "/api/cron/log-retention",

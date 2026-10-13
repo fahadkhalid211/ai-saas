@@ -23,8 +23,12 @@ import { BlogViewBeacon } from '@/components/marketing/BlogViewBeacon';
 import { blogImageUrl, blogPostingSchema, breadcrumbSchema, faqSchema } from '@/lib/schema';
 import { withSocial } from '@/lib/seo';
 
-/** Pages are built once and refreshed hourly, and straight away when the owner saves an edit. */
-export const revalidate = 86400;
+/**
+ * Pages are built at deploy time, refreshed straight away when the owner saves an edit (app/api/master/blog), and rebuilt in the
+ * background at most once a week as a safety net. Each rebuild is a server function run, and rebuilding every article hourly
+ * (about 44,000 rebuilds in one billing period) was the largest single use of server CPU.
+ */
+export const revalidate = 604800;
 
 /** English has every article; another language only the ones that were translated. */
 export async function generateStaticParams({ params }: { params: { locale: string } }) {
