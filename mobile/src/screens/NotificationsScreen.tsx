@@ -27,7 +27,7 @@ import {
 
 type FilterType = 'all' | 'unread' | 'bookings' | 'leads';
 
-export function NotificationsScreen() {
+export function NotificationsScreen({ navigation }: { navigation?: any }) {
   const { selectedAssistant } = useAuth();
 
   const [notifications, setNotifications] = useState<InAppNotificationData[]>([]);
@@ -162,6 +162,31 @@ export function NotificationsScreen() {
     }
   };
 
+  const handleItemPress = (item: InAppNotificationData) => {
+    handleMarkAsRead(item);
+
+    const convId = item.metadata?.conversationId;
+    if (
+      item.type === 'takeover_requested' ||
+      item.type === 'chat_escalated' ||
+      item.type === 'chat_new' ||
+      item.type === 'chat_message'
+    ) {
+      if (navigation) {
+        navigation.navigate('LiveChat', {
+          conversationId: convId,
+        });
+      }
+    } else if (
+      item.type === 'appointment_booked' ||
+      item.type === 'appointment_cancelled'
+    ) {
+      if (navigation) {
+        navigation.navigate('Appointments');
+      }
+    }
+  };
+
   const renderNotificationItem = ({ item }: { item: InAppNotificationData }) => {
     const meta = getNotificationIcon(item.type);
     const IconComponent = meta.icon;
@@ -169,7 +194,7 @@ export function NotificationsScreen() {
     return (
       <TouchableOpacity
         style={[styles.notifCard, !item.read && styles.unreadNotifCard]}
-        onPress={() => handleMarkAsRead(item)}
+        onPress={() => handleItemPress(item)}
         activeOpacity={0.75}
       >
         <View style={styles.cardLeft}>

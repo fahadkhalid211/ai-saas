@@ -45,6 +45,41 @@ export interface InAppNotificationData {
   createdAt: string;
 }
 
+export interface MessageData {
+  id: string;
+  conversationId: string;
+  role: 'user' | 'assistant' | 'system' | 'agent';
+  content: string;
+  citations?: any[];
+  tokensUsed?: number;
+  senderName?: string;
+  attachment?: {
+    name: string;
+    type: string;
+    size?: number;
+    url?: string;
+    preview?: string;
+  };
+  createdAt: string;
+}
+
+export interface ConversationData {
+  id: string;
+  assistantId: string;
+  visitorId?: string;
+  visitorEmail?: string;
+  visitorName?: string;
+  sentiment?: 'urgent' | 'positive' | 'neutral';
+  escalated?: boolean;
+  resolved?: boolean;
+  isLiveTakeover?: boolean;
+  assignedAgentName?: string;
+  status?: 'bot' | 'waiting_for_agent' | 'live_agent' | 'resolved';
+  createdAt: string;
+  updatedAt?: string;
+  messages?: MessageData[];
+}
+
 export interface AssistantSummary {
   id: string;
   name: string;

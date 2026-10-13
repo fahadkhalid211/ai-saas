@@ -5,6 +5,8 @@ import {
   AssistantSummary,
   TeamMember,
   WorkspaceSummary,
+  ConversationData,
+  MessageData,
 } from '../types';
 
 const TOKEN_KEY = '@crescelo_token';
@@ -223,6 +225,75 @@ class ApiService {
         id,
         status,
         cancellationReason,
+      }),
+    });
+  }
+
+  // --- Live Chat & Conversations ---
+
+  async getConversations(assistantId?: string): Promise<ConversationData[]> {
+    let url = '/api/conversations';
+    if (assistantId) {
+      url += `?assistantId=${encodeURIComponent(assistantId)}`;
+    }
+    const data = await this.request<{ conversations: ConversationData[] }>(url, {
+      method: 'GET',
+    });
+    return data.conversations || [];
+  }
+
+  async getConversation(
+    id: string,
+    sinceCount?: number
+  ): Promise<{
+    conversation: ConversationData;
+    newMessages?: MessageData[];
+    totalMessageCount?: number;
+  }> {
+    let url = `/api/conversations?id=${encodeURIComponent(id)}`;
+    if (typeof sinceCount === 'number' && sinceCount >= 0) {
+      url += `&sinceCount=${sinceCount}`;
+    }
+    return this.request(url, { method: 'GET' });
+  }
+
+  async sendAgentMessage(
+    conversationId: string,
+    content: string,
+    agentName?: string,
+    takeover: boolean = true
+  ): Promise<{
+    success: boolean;
+    message: MessageData;
+    isLiveTakeover: boolean;
+    assignedAgentName: string;
+  }> {
+    return this.request('/api/conversations', {
+      method: 'POST',
+      body: JSON.stringify({
+        conversationId,
+        content: content.trim(),
+        agentName: agentName?.trim() || 'Support Agent',
+        takeover,
+      }),
+    });
+  }
+
+  async updateConversationStatus(
+    id: string,
+    updates: {
+      isLiveTakeover?: boolean;
+      status?: 'bot' | 'waiting_for_agent' | 'live_agent' | 'resolved';
+      resolved?: boolean;
+      escalated?: boolean;
+      assignedAgentName?: string;
+    }
+  ): Promise<{ success: boolean }> {
+    return this.request('/api/conversations', {
+      method: 'PATCH',
+      body: JSON.stringify({
+        id,
+        ...updates,
       }),
     });
   }

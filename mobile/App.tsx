@@ -9,10 +9,11 @@ import { colors } from './src/theme/colors';
 import { CresceloMark } from './src/components/CresceloMark';
 import { SplashScreen } from './src/screens/SplashScreen';
 import { LoginScreen } from './src/screens/LoginScreen';
+import { LiveChatScreen } from './src/screens/LiveChatScreen';
 import { AppointmentsScreen } from './src/screens/AppointmentsScreen';
 import { NotificationsScreen } from './src/screens/NotificationsScreen';
 import { SettingsScreen } from './src/screens/SettingsScreen';
-import { Calendar, Bell, Settings } from 'lucide-react-native';
+import { Calendar, Bell, Settings, MessageSquare } from 'lucide-react-native';
 import { api } from './src/services/api';
 
 const Tab = createBottomTabNavigator();
@@ -35,21 +36,31 @@ const CresceloNavTheme = {
 function MainTabs() {
   const { selectedAssistant } = useAuth();
   const [unreadCount, setUnreadCount] = useState<number>(0);
+  const [waitingChatCount, setWaitingChatCount] = useState<number>(0);
 
   useEffect(() => {
     let isMounted = true;
-    const fetchBadge = async () => {
+    const fetchBadges = async () => {
       if (!selectedAssistant) return;
       try {
-        const res = await api.getNotifications(selectedAssistant.id, 20);
-        if (isMounted) setUnreadCount(res.unreadCount);
+        const [notifRes, convList] = await Promise.all([
+          api.getNotifications(selectedAssistant.id, 20).catch(() => ({ unreadCount: 0 })),
+          api.getConversations(selectedAssistant.id).catch(() => []),
+        ]);
+        if (isMounted) {
+          setUnreadCount(notifRes.unreadCount || 0);
+          const waiting = (convList || []).filter(
+            (c: any) => c.status === 'waiting_for_agent' && !c.isLiveTakeover
+          ).length;
+          setWaitingChatCount(waiting);
+        }
       } catch (e) {
         // silent
       }
     };
 
-    fetchBadge();
-    const interval = setInterval(fetchBadge, 30000); // 30s background poll for new badges
+    fetchBadges();
+    const interval = setInterval(fetchBadges, 20000); // 20s background poll for badges
     return () => {
       isMounted = false;
       clearInterval(interval);
@@ -77,11 +88,30 @@ function MainTabs() {
       }}
     >
       <Tab.Screen
+        name="LiveChat"
+        component={LiveChatScreen}
+        options={{
+          tabBarLabel: 'Live Chat',
+          tabBarBadge: waitingChatCount > 0 ? waitingChatCount : undefined,
+          tabBarBadgeStyle: {
+            backgroundColor: colors.warning,
+            color: '#04140d',
+            fontSize: 10,
+            fontWeight: '700',
+          },
+          tabBarIcon: ({ color }: { color: string; size?: number }) => (
+            <MessageSquare color={color} size={22} />
+          ),
+        }}
+      />
+      <Tab.Screen
         name="Appointments"
         component={AppointmentsScreen}
         options={{
           tabBarLabel: 'Appointments',
-          tabBarIcon: ({ color }: { color: string; size?: number }) => <Calendar color={color} size={22} />,
+          tabBarIcon: ({ color }: { color: string; size?: number }) => (
+            <Calendar color={color} size={22} />
+          ),
         }}
       />
       <Tab.Screen
@@ -96,7 +126,9 @@ function MainTabs() {
             fontSize: 10,
             fontWeight: '700',
           },
-          tabBarIcon: ({ color }: { color: string; size?: number }) => <Bell color={color} size={22} />,
+          tabBarIcon: ({ color }: { color: string; size?: number }) => (
+            <Bell color={color} size={22} />
+          ),
         }}
       />
       <Tab.Screen
@@ -104,7 +136,9 @@ function MainTabs() {
         component={SettingsScreen}
         options={{
           tabBarLabel: 'Settings',
-          tabBarIcon: ({ color }: { color: string; size?: number }) => <Settings color={color} size={22} />,
+          tabBarIcon: ({ color }: { color: string; size?: number }) => (
+            <Settings color={color} size={22} />
+          ),
         }}
       />
     </Tab.Navigator>

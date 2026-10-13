@@ -12,7 +12,19 @@ It provides real-time appointment management, lead notifications, customer commu
    - Faithful mobile rendition of the Crescelo animated "C" mark (`src/components/CresceloMark.tsx`), featuring the breathing seed and smooth pulse.
    - Deep Obsidian dark theme and Electric Lime accents matching the web application.
 
-2. **Full Appointments Management**:
+2. **Real-Time Live Chat Sync**:
+   - **Full Conversations Feed**: Real-time visitor chat list synced with `/api/conversations`.
+   - **Status Indicators & Alerts**: Visual status indicators for `Waiting for Agent`, `Live Agent Active`, `AI Active`, and `Resolved`.
+   - **Urgent Badges**: Instant detection of escalations, sentiment, and visitors requesting human agents.
+   - **Interactive Live Chat Room**:
+     - 1.5s adaptive polling for real-time visitor-to-agent message sync.
+     - **1-Tap Takeover**: Toggle between AI bot mode and Human Live Agent Takeover.
+     - **Send Interactive Booking Form**: 1-tap action injecting `[ACTION:BOOKING_FORM]` into the visitor chat so leads can schedule appointments inside the chat widget.
+     - **Quick Canned Replies**: Instant greetings, meeting scheduling prompts, and status updates.
+     - Multi-line live chat input with optimistic messaging and server delivery acknowledgment.
+   - **Smart Notification Linking**: Tapping any chat escalation or message notification directly opens that conversation in the live chat room.
+
+3. **Full Appointments Management**:
    - Real-time scheduled bookings list synced with `/api/appointments`.
    - Metrics summary: **Total**, **Upcoming**, **Today**, and **Completed** bookings.
    - Quick filters: **All**, **Upcoming**, **Today**, **Completed**, and **Cancelled**.
