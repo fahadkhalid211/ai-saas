@@ -29,7 +29,7 @@ describe('the first render of the language provider', () => {
   });
 
   it('still honours a language passed in by the page', () => {
-    const html = renderToString(React.createElement(I18nProvider, { initialLocale: 'sv', initialCountry: 'SE' } as any, React.createElement(Probe)));
-    expect(html).toContain('sv|SE|');
+    const html = renderToString(React.createElement(I18nProvider, { locale: 'sv', country: 'SE', children: React.createElement(Probe) }));
+    expect(html).toContain('sv|SE|$49');
   });
 });

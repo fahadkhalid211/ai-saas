@@ -35,6 +35,7 @@ const ROOTS = [
   'components/brand',
   'components/markdown-renderer.tsx',
   'lib/product-features.ts',
+  'lib/billing/plans.ts',
   'components/i18n/EnglishOnlyNotice.tsx',
 ];
 const EXCLUDE = /(AccessCodesTab|AdminLoginScreen|AuditTab|BlogAdminTab|SystemLogsTab)\.tsx$|\.test\.|[\\/]rewritten[\\/]|[\\/]data[\\/]|LanguageSwitcher/;
@@ -60,7 +61,7 @@ const looksLikeText = (t) => {
 };
 
 const CSS_KEYS = new Set(['padding', 'paddingTop', 'paddingBottom', 'paddingLeft', 'paddingRight', 'margin', 'marginTop', 'marginBottom', 'marginLeft', 'marginRight', 'border', 'borderTop', 'borderBottom', 'borderLeft', 'borderRight', 'borderRadius', 'background', 'backgroundColor', 'backgroundImage', 'boxShadow', 'gap', 'display', 'flexDirection', 'alignItems', 'justifyContent', 'gridTemplateColumns', 'gridTemplateRows', 'textTransform', 'textDecoration', 'letterSpacing', 'lineHeight', 'fontWeight', 'fontSize', 'textAlign', 'position', 'overflow', 'cursor', 'opacity', 'zIndex', 'top', 'left', 'right', 'bottom', 'minWidth', 'maxWidth', 'minHeight', 'maxHeight', 'outline', 'transition', 'animation', 'Content-Type', 'Cache-Control', 'contentType']);
-const PROP_WORDS = /^(idleLabel|savingLabel|savedLabel|label|title|heading|subtitle|caption|hint|helper|tooltip|emptyText|cta|actionLabel|text|description|placeholder|confirmLabel|cancelLabel|message)$/;
+const PROP_WORDS = /^(intro|eyebrow|lead|kicker|tagline|subhead|badge|idleLabel|savingLabel|savedLabel|label|title|heading|subtitle|caption|hint|helper|tooltip|emptyText|cta|actionLabel|text|description|placeholder|confirmLabel|cancelLabel|message)$/;
 
 const universe = new Map();
 const add = (text, file) => {
@@ -93,6 +94,14 @@ for (const file of ROOTS.flatMap((r) => walk(r))) {
     // __t("...") / t("...")
     if (ts.isCallExpression(node) && ts.isIdentifier(node.expression) && (node.expression.text === '__t' || node.expression.text === 't') && node.arguments[0]) {
       literalsOf(node.arguments[0], (t) => add(t, rel));
+    }
+    // const CATEGORIES = ['A', 'B']: lists of labels
+    if (ts.isVariableDeclaration(node) && ts.isIdentifier(node.name) && /^(CATEGORIES|PRIORITIES|STATUSES|OPTIONS|TOPICS)$/.test(node.name.text) && node.initializer && ts.isArrayLiteralExpression(node.initializer)) {
+      for (const el of node.initializer.elements) if (ts.isStringLiteral(el)) add(el.text, rel);
+    }
+    // page-level constants: const TITLE = '...'
+    if (ts.isVariableDeclaration(node) && ts.isIdentifier(node.name) && /^[A-Z][A-Z0-9_]*$/.test(node.name.text) && node.initializer && rel.startsWith('app/')) {
+      literalsOf(node.initializer, (t) => add(t, rel));
     }
     // props that carry words: <SaveButton idleLabel="Save" />, <TRich text="..." />
     if (ts.isJsxAttribute(node) && node.initializer && PROP_WORDS.test(node.name.getText())) {

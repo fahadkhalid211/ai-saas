@@ -1,0 +1,5 @@
+4751¦Konto och åtkomst¦Tili ja käyttöoikeudet¦Account e accesso¦Cuenta y acceso
+4752¦Funktionsförfrågan¦Ominaisuuspyyntö¦Richiesta di funzionalità¦Solicitud de función
+4753¦Allmän support¦Yleinen tuki¦Supporto generale¦Soporte general
+4754¦Integritetsförfrågan¦Tietosuojapyyntö¦Richiesta sulla privacy¦Solicitud de privacidad
+4755¦Försäljning och företag¦Myynti ja yritykset¦Vendite ed enterprise¦Ventas y empresas

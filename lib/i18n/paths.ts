@@ -30,6 +30,7 @@ const APP_PREFIXES = [
   '/site',
   '/landing-page',
   '/status',
+  '/connect',
   '/i18n',
   '/_next',
 ];

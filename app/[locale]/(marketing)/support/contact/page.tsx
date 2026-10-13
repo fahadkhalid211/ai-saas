@@ -227,7 +227,7 @@ export default function ContactPage() {
                       >
                         {CATEGORIES.map((c) => (
                           <option key={c} value={c}>
-                            {c}
+                            {__t(c)}
                           </option>
                         ))}
                       </select>

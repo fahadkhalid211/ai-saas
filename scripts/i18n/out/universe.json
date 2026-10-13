@@ -408,6 +408,9 @@
  "🚀 B2B SaaS & Tech": [
   "app/[locale]/(marketing)/use-case/page.tsx"
  ],
+ "${input} in, ${output} out": [
+  "components/marketing/LlmCostCalculator.tsx"
+ ],
  "$0.00 (Free Tiers)": [
   "app/[locale]/(marketing)/support/ai-connectors/auto-free/page.tsx"
  ],
@@ -432,6 +435,15 @@
  ],
  "$0.15 / 1M tokens (gpt-4o-mini)": [
   "app/[locale]/(marketing)/support/ai-connectors/page.tsx"
+ ],
+ "$0.20 per chat session — Best ROI": [
+  "lib/billing/plans.ts"
+ ],
+ "$0.30 per chat session — Save 40%": [
+  "lib/billing/plans.ts"
+ ],
+ "$0.49 per chat session": [
+  "lib/billing/plans.ts"
  ],
  "$0.80 / 1M tokens (Haiku)": [
   "app/[locale]/(marketing)/support/ai-connectors/page.tsx"
@@ -474,6 +486,9 @@
  ],
  "1 · Service": [
   "components/marketing/Playground.tsx"
+ ],
+ "1 AI Assistant Bot": [
+  "lib/billing/plans.ts"
  ],
  "1 Bot": [
   "app/[locale]/(marketing)/pricing/page.tsx"
@@ -541,6 +556,9 @@
  ],
  "100 / mo": [
   "app/[locale]/(marketing)/pricing/page.tsx"
+ ],
+ "100 Chat Sessions / month ($0.50/extra chat)": [
+  "lib/billing/plans.ts"
  ],
  "100% Air-Gapped Privacy • Zero Cloud Dependencies": [
   "app/[locale]/(marketing)/support/ai-connectors/ollama/page.tsx"
@@ -624,6 +642,9 @@
  ],
  "2,000 / mo": [
   "app/[locale]/(marketing)/pricing/page.tsx"
+ ],
+ "2,000 Chat Sessions / month ($0.30/extra chat)": [
+  "lib/billing/plans.ts"
  ],
  "2:30 PM": [
   "app/[locale]/(marketing)/integrations/page.tsx"
@@ -757,11 +778,17 @@
  "452 Atlantic Avenue, Brooklyn, NY 11217": [
   "components/crm/LandingPageTab.tsx"
  ],
+ "5 AI Assistant Bots": [
+  "lib/billing/plans.ts"
+ ],
  "5 Bots": [
   "app/[locale]/(marketing)/pricing/page.tsx"
  ],
  "5 GB": [
   "app/[locale]/(marketing)/pricing/page.tsx"
+ ],
+ "5 GB High-Capacity Knowledge Storage (5,000 MB)": [
+  "lib/billing/plans.ts"
  ],
  "5 Guides": [
   "app/[locale]/(marketing)/support/page.tsx"
@@ -788,14 +815,23 @@
  "50 MB (~50k pages)": [
   "app/[locale]/(marketing)/pricing/page.tsx"
  ],
+ "50 MB Knowledge Storage (~50,000 document pages)": [
+  "lib/billing/plans.ts"
+ ],
  "50 mins": [
   "components/crm/landing/DesignPreviewModal.tsx"
  ],
  "500 / mo": [
   "app/[locale]/(marketing)/pricing/page.tsx"
  ],
+ "500 Chat Sessions / month ($0.40/extra chat)": [
+  "lib/billing/plans.ts"
+ ],
  "500 MB": [
   "app/[locale]/(marketing)/pricing/page.tsx"
+ ],
+ "500 MB Knowledge Storage (Audio/Video Transcripts & Docs)": [
+  "lib/billing/plans.ts"
  ],
  "500+ inquiries (Multi-location)": [
   "app/[locale]/(marketing)/use-case/page.tsx"
@@ -857,6 +893,9 @@
  "A capable model at a low price.": [
   "components/crm/EngineTab.tsx"
  ],
+ "A chat model has no memory. Each time a customer writes, the app sends the instructions, the knowledge-base text and the whole chat so far, and you pay for all of it again. A chat twice as long sends about four times as much history.": [
+  "components/marketing/LlmCostCalculator.tsx"
+ ],
  "A code gives you free access to a plan without a card.": [
   "components/crm/SubscriptionGate.tsx"
  ],
@@ -907,6 +946,9 @@
  ],
  "A team member (Alex) joined the conversation (demo)": [
   "components/marketing/Playground.tsx"
+ ],
+ "A typical question is 10 to 30 words.": [
+  "components/marketing/LlmCostCalculator.tsx"
  ],
  "A website address is read when you add it. Add it again after big changes to refresh the content.": [
   "lib/product-features.ts"
@@ -987,6 +1029,10 @@
  ],
  "Accessibility Statement | Crescelo": [
   "app/[locale]/(marketing)/accessibility/page.tsx"
+ ],
+ "Account & Access": [
+  "app/[locale]/(marketing)/support/contact/page.tsx",
+  "components/crm/SupportTab.tsx"
  ],
  "Account & User Profile": [
   "components/crm/ProfileTab.tsx"
@@ -1275,6 +1321,9 @@
  "Adding...": [
   "components/crm/KnowledgeTab.tsx"
  ],
+ "Adjust your estimated weekly inquiry and phone call volume to see the real impact on your schedule and revenue.": [
+  "app/[locale]/(marketing)/use-case/page.tsx"
+ ],
  "Admin": [
   "components/crm/CustomersTab.tsx",
   "components/crm/DashboardHeader.tsx"
@@ -1344,7 +1393,8 @@
   "components/crm/DocsTab.tsx"
  ],
  "Agency / Scale": [
-  "app/[locale]/(marketing)/pricing/page.tsx"
+  "app/[locale]/(marketing)/pricing/page.tsx",
+  "lib/billing/plans.ts"
  ],
  "Agency Backlink URL": [
   "components/crm/ChannelsTab.tsx"
@@ -1505,6 +1555,9 @@
  "AI Website Assistant for Service Businesses": [
   "lib/product-features.ts"
  ],
+ "AI Website Assistant for Service Businesses | Crescelo": [
+  "app/[locale]/(marketing)/page.tsx"
+ ],
  "AI will calibrate copywriting tone, service booking flows, and appointment triages for your specific vertical.": [
   "components/crm/landing/AiLandingWizard.tsx"
  ],
@@ -1624,6 +1677,9 @@
  ],
  "An assistant that answers from your own business, not from guesswork.": [
   "lib/product-features.ts"
+ ],
+ "An assistant that answers from your own documents looks up the passages that match each question and sends them to the model with it. Those passages are usually the largest part of every request.": [
+  "app/[locale]/(marketing)/tools/llm-cost-calculator/page.tsx"
  ],
  "An embeddable website widget, a hosted business page, WhatsApp and Telegram. One assistant, four channels.": [
   "components/marketing/content.ts"
@@ -1878,6 +1934,9 @@
   "components/marketing/mega-menu-data.ts",
   "lib/product-features.ts"
  ],
+ "Appointment Booking & Calendar Sync (Direct, Calendly, Cal.com)": [
+  "lib/billing/plans.ts"
+ ],
  "Appointment booking in the chat with slot locking to prevent double bookings": [
   "app/[locale]/(marketing)/roadmap/page.tsx"
  ],
@@ -1926,6 +1985,9 @@
  ],
  "Architecture Review & AI Feasibility Audit": [
   "components/crm/landing/DesignPreviewModal.tsx"
+ ],
+ "Are these prices exact?": [
+  "app/[locale]/(marketing)/tools/llm-cost-calculator/page.tsx"
  ],
  "Are you open on Sundays?": [
   "components/marketing/content-extra.ts",
@@ -2187,6 +2249,9 @@
  "Avant-Garde Digital & Motion Direction": [
   "components/crm/LandingPageTab.tsx"
  ],
+ "Average per message": [
+  "components/marketing/LlmCostCalculator.tsx"
+ ],
  "Average Price": [
   "components/crm/AnalyticsTab.tsx"
  ],
@@ -2345,7 +2410,9 @@
   "app/[locale]/(marketing)/support/ai-connectors/openai/page.tsx"
  ],
  "Billing & Payments": [
-  "components/crm/SubscriptionGate.tsx"
+  "app/[locale]/(marketing)/support/contact/page.tsx",
+  "components/crm/SubscriptionGate.tsx",
+  "components/crm/SupportTab.tsx"
  ],
  "Billing & Viewer": [
   "components/crm/TeamTab.tsx"
@@ -2608,6 +2675,9 @@
  "Browse by industry using the filter buttons at the top.": [
   "components/crm/tour/tourData.ts"
  ],
+ "Browse by topic": [
+  "app/[locale]/(marketing)/support/page.tsx"
+ ],
  "Browse Templates": [
   "components/crm/landing/LandingPagesList.tsx",
   "components/crm/LandingPageTab.tsx"
@@ -2623,6 +2693,9 @@
  ],
  "Bug Report": [
   "components/crm/SupportTab.tsx"
+ ],
+ "Bug Report & Issue Triage": [
+  "app/[locale]/(marketing)/report-bug/page.tsx"
  ],
  "Bug Ticket": [
   "app/[locale]/(marketing)/report-bug/page.tsx"
@@ -2867,6 +2940,9 @@
  "Can I keep using Calendly?": [
   "lib/product-features.ts"
  ],
+ "Can I run a chatbot with no API bill?": [
+  "app/[locale]/(marketing)/tools/llm-cost-calculator/page.tsx"
+ ],
  "Can I talk to someone?": [
   "components/marketing/art.tsx"
  ],
@@ -3073,6 +3149,9 @@
  "chats left": [
   "components/crm/BillingTab.tsx"
  ],
+ "Cheapest model here": [
+  "components/marketing/LlmCostCalculator.tsx"
+ ],
  "Check a ticket": [
   "app/[locale]/(marketing)/support/page.tsx"
  ],
@@ -3261,6 +3340,12 @@
  "Click any conversation row to open the full transcript.": [
   "components/crm/tour/tourData.ts"
  ],
+ "Click any integration below to see how it works, what it sends, and how to set it up.": [
+  "app/[locale]/(marketing)/integrations/page.tsx"
+ ],
+ "Click each stage of the pipeline to inspect live protocol traces, benchmark latency, and verified technical specifications.": [
+  "app/[locale]/(marketing)/product/page.tsx"
+ ],
  "Click on": [
   "app/[locale]/(marketing)/support/ai-connectors/anthropic/page.tsx"
  ],
@@ -3402,6 +3487,10 @@
   "components/marketing/content-extra.ts",
   "components/marketing/content.ts"
  ],
+ "COMING SOON": [
+  "app/[locale]/(marketing)/product/page.tsx",
+  "app/[locale]/(marketing)/support/voice-agent/page.tsx"
+ ],
  "Coming soon. Answering phone calls with your assistant is under development; the setup guide will be published when it ships.": [
   "app/[locale]/(marketing)/support/page.tsx"
  ],
@@ -3435,6 +3524,9 @@
  "Compare plans": [
   "app/[locale]/(marketing)/use-case/page.tsx",
   "components/marketing/mega-menu-data.ts"
+ ],
+ "Comparison": [
+  "app/[locale]/(marketing)/pricing/page.tsx"
  ],
  "Complete digital imaging and ultrasonic prophylaxis.": [
   "components/crm/landing/AiLandingWizard.tsx"
@@ -3812,6 +3904,9 @@
  "Contact & Location Information": [
   "components/crm/LandingPageTab.tsx"
  ],
+ "Contact & Support": [
+  "app/[locale]/(marketing)/support/contact/page.tsx"
+ ],
  "Contact Crescelo | Sales & Technical Support": [
   "app/[locale]/(marketing)/support/contact/layout.tsx"
  ],
@@ -3896,6 +3991,9 @@
  "Conversations & Messages": [
   "components/crm/AnalyticsTab.tsx"
  ],
+ "Conversations a month": [
+  "components/marketing/LlmCostCalculator.tsx"
+ ],
  "Conversations that need a person show up in the inbox with the full history attached.": [
   "components/marketing/FeaturePage.tsx"
  ],
@@ -3971,6 +4069,9 @@
  ],
  "Copy Link": [
   "components/crm/LandingPageTab.tsx"
+ ],
+ "Copy link to these numbers": [
+  "components/marketing/LlmCostCalculator.tsx"
  ],
  "Copy one line of code and paste it into your website. The chat button will appear within seconds.": [
   "components/crm/onboarding/OnboardingWizardModal.tsx"
@@ -4056,6 +4157,9 @@
  "Cost": [
   "app/[locale]/(marketing)/support/ai-connectors/gemini/page.tsx",
   "app/[locale]/(marketing)/support/ai-connectors/groq/page.tsx"
+ ],
+ "Cost by model": [
+  "components/marketing/LlmCostCalculator.tsx"
  ],
  "Cost per 1,000 Chats": [
   "app/[locale]/(marketing)/support/ai-connectors/openai/page.tsx"
@@ -4258,6 +4362,9 @@
  "Crescelo connects to wholesale telephony providers (Telnyx / Twilio) using TeXML and WebSocket audio streams. Faster-whisper transcribes caller audio, your assistant formulates knowledge responses, and Piper synthesizes neural speech in under 400ms.": [
   "components/crm/ChannelsTab.tsx"
  ],
+ "Crescelo connects to your own AI key, so the bill above goes straight to the provider at their price. We add nothing on top.": [
+  "components/marketing/LlmCostCalculator.tsx"
+ ],
  "Crescelo Dashboard": [
   "app/[locale]/(marketing)/support/ai-connectors/anthropic/page.tsx",
   "app/[locale]/(marketing)/support/ai-connectors/auto-free/page.tsx",
@@ -4401,6 +4508,9 @@
  "Custom Implementation ($499)": [
   "components/crm/LandingPageTab.tsx"
  ],
+ "Custom Invoice Billing & Multi-seat Team Access": [
+  "lib/billing/plans.ts"
+ ],
  "Custom macro nutrition architecture, weekly progressive training protocol, and coach check-ins.": [
   "components/crm/landing/DesignPreviewModal.tsx"
  ],
@@ -4449,8 +4559,14 @@
  "Customer conversation preview": [
   "components/marketing/Hero.tsx"
  ],
+ "Customer messages": [
+  "components/marketing/LlmCostCalculator.tsx"
+ ],
  "Customer messages from the website widget, WhatsApp, and Telegram arrive through secure, verified channels and are screened before the assistant responds.": [
   "app/[locale]/(marketing)/product/page.tsx"
+ ],
+ "Customer messages per conversation": [
+  "components/marketing/LlmCostCalculator.tsx"
  ],
  "Customer Name": [
   "components/crm/ChannelsTab.tsx"
@@ -4563,6 +4679,9 @@
  ],
  "Deconstructing cloud assets and unbinding routes...": [
   "components/crm/landing/DeleteLandingPageModal.tsx"
+ ],
+ "Dedicated Account Manager & 99.9% Uptime SLA": [
+  "lib/billing/plans.ts"
  ],
  "Dedicated Bot ({assistantId})": [
   "components/crm/landing/AiLandingWizard.tsx"
@@ -4742,6 +4861,9 @@
  ],
  "Deploy your autonomous assistant in under 5 minutes.": [
   "app/[locale]/(marketing)/product/page.tsx"
+ ],
+ "Describe how your customers chat and see the API bill per conversation and per month, model by model. It counts the chat history that is sent again with every message, which quick estimates leave out.": [
+  "components/marketing/LlmCostCalculator.tsx"
  ],
  "Describe the problem or question": [
   "components/crm/SupportTab.tsx"
@@ -4941,6 +5063,9 @@
  ],
  "Documents and files": [
   "components/marketing/content-extra.ts"
+ ],
+ "Does Crescelo add a markup on AI usage?": [
+  "app/[locale]/(marketing)/tools/llm-cost-calculator/page.tsx"
  ],
  "Does it make things up?": [
   "app/[locale]/(marketing)/playground/page.tsx"
@@ -5187,6 +5312,9 @@
  "Each archetype bundles a dedicated high-conversion hosted surface, customized domain knowledge, service pricing hierarchies, and calendar booking mutex locks. We are polishing these before wide release.": [
   "app/[locale]/(marketing)/roadmap/page.tsx"
  ],
+ "Each guide walks you through account creation, API key generation, budget configuration, and Crescelo dashboard connection.": [
+  "app/[locale]/(marketing)/support/ai-connectors/page.tsx"
+ ],
  "Each integration has a simple on/off toggle and a field for your API key or webhook URL.": [
   "components/crm/tour/tourData.ts"
  ],
@@ -5195,6 +5323,9 @@
  ],
  "Each new lead triggers an email alert and can be posted to Slack, added as a row in Google Sheets or sent to a webhook.": [
   "lib/product-features.ts"
+ ],
+ "Each one gets a reply. Most support chats run 4 to 8.": [
+  "components/marketing/LlmCostCalculator.tsx"
  ],
  "Each plan includes an amount of knowledge storage, shown in Plans and Billing.": [
   "lib/product-features.ts"
@@ -5334,6 +5465,9 @@
  "ENABLED": [
   "components/crm/EngineTab.tsx"
  ],
+ "Encountered an error, unexpected glitch, or broken flow in Crescelo? Submit the details below. Our engineering team reviews and triages all bug reports promptly.": [
+  "app/[locale]/(marketing)/report-bug/page.tsx"
+ ],
  "Encrypted keys": [
   "components/marketing/content-extra.ts"
  ],
@@ -5354,6 +5488,9 @@
  ],
  "Engaged Inquiries (Multi-Turn)": [
   "components/crm/AnalyticsTab.tsx"
+ ],
+ "ENGINEERING HORIZON": [
+  "app/[locale]/(marketing)/roadmap/page.tsx"
  ],
  "Ensure": [
   "app/[locale]/(marketing)/support/ai-connectors/auto-free/page.tsx"
@@ -5427,6 +5564,9 @@
  "Enterprise Workflow Audit": [
   "components/crm/landing/AiLandingWizard.tsx"
  ],
+ "Enterprise-grade scale with omnichannel WhatsApp and Telegram integrations.": [
+  "lib/billing/plans.ts"
+ ],
  "environment variable:": [
   "app/[locale]/(marketing)/support/ai-connectors/ollama/page.tsx"
  ],
@@ -5459,6 +5599,9 @@
   "app/[locale]/(marketing)/support/ai-connectors/ollama/page.tsx",
   "app/[locale]/(marketing)/support/ai-connectors/openai/page.tsx"
  ],
+ "Estimates from public list prices in US dollars, last checked {date}. One token is counted as three quarters of an English word. Cached and batch requests are billed lower, so a real bill is usually below these figures.": [
+  "components/marketing/LlmCostCalculator.tsx"
+ ],
  "Evaluation of embedding precision and latency benchmarks.": [
   "components/crm/landing/AiLandingWizard.tsx"
  ],
@@ -5485,6 +5628,9 @@
  ],
  "Every booking appears in a private feed you subscribe to from Google, Apple or Outlook Calendar.": [
   "lib/product-features.ts"
+ ],
+ "Every component is engineered to run deterministically with zero third-party dependencies or hidden lock-ins.": [
+  "app/[locale]/(marketing)/product/page.tsx"
  ],
  "Every confirmation email includes a unique cryptographic": [
   "app/[locale]/(marketing)/support/calendar-booking/page.tsx"
@@ -5545,6 +5691,9 @@
  ],
  "Everything you need to go from zero to live.": [
   "app/[locale]/(marketing)/support/page.tsx"
+ ],
+ "Everything you need to select the right tier for your call volume, website traffic, and team size.": [
+  "app/[locale]/(marketing)/pricing/page.tsx"
  ],
  "Everything you need, already built.": [
   "components/marketing/content.ts"
@@ -5714,6 +5863,7 @@
   "components/crm/BehaviorTab.tsx"
  ],
  "FAQ": [
+  "app/[locale]/(marketing)/pricing/page.tsx",
   "components/marketing/content.ts"
  ],
  "FAQ Section Subtitle": [
@@ -5760,6 +5910,10 @@
  ],
  "Feature comparison table": [
   "components/marketing/Sections2.tsx"
+ ],
+ "Feature request": [
+  "app/[locale]/(marketing)/support/contact/page.tsx",
+  "components/crm/SupportTab.tsx"
  ],
  "Feature status reviewed September 2026": [
   "app/[locale]/(marketing)/roadmap/page.tsx"
@@ -5880,6 +6034,9 @@
  "Fitness Studios & Gyms": [
   "app/[locale]/(marketing)/use-case/page.tsx"
  ],
+ "Five steps and about five minutes. It works the same on Shopify, Webflow, Wix and plain HTML: paste one script before the closing body tag.": [
+  "app/[locale]/(marketing)/guides/add-ai-assistant-to-wordpress/page.tsx"
+ ],
  "Fix Misheard Words & Typos Across Embeddings": [
   "components/crm/modals/CorrectionModal.tsx"
  ],
@@ -5921,6 +6078,9 @@
  ],
  "For example FRIEND-7K3Q9X": [
   "components/crm/SubscriptionGate.tsx"
+ ],
+ "For growing brands needing high-volume conversations and calendar booking.": [
+  "lib/billing/plans.ts"
  ],
  "For large datasets, use CSV files with column headers. The AI understands tabular data like member lists, product catalogs, and FAQs.": [
   "components/crm/DocsTab.tsx"
@@ -5988,6 +6148,9 @@
  "Founder Story & Leadership": [
   "components/crm/LandingPageTab.tsx"
  ],
+ "Free": [
+  "components/marketing/mega-menu-data.ts"
+ ],
  "Free — automatic": [
   "components/crm/EngineTab.tsx"
  ],
@@ -6035,6 +6198,9 @@
  ],
  "Free to start — zero compute cost": [
   "components/marketing/content.ts"
+ ],
+ "FREE TOOL": [
+  "components/marketing/LlmCostCalculator.tsx"
  ],
  "Free trial: {daysLeft} {n2} left. Your card will be charged ${nextChargeAmount} on {n4} unless you cancel first.": [
   "components/crm/SubscriptionGate.tsx"
@@ -6089,6 +6255,9 @@
  ],
  "Full administrative control: add/edit assistants, update billing, invite teammates, and view security audits.": [
   "components/crm/TeamTab.tsx"
+ ],
+ "Full Agency White-Label (Zero Platform Branding)": [
+  "lib/billing/plans.ts"
  ],
  "Full colour starts at $95, depending on hair length. Toner is $25 extra.": [
   "lib/product-features.ts"
@@ -6174,6 +6343,10 @@
  ],
  "General Retainer Advisory": [
   "components/crm/landing/AiLandingWizard.tsx"
+ ],
+ "General Support": [
+  "app/[locale]/(marketing)/support/contact/page.tsx",
+  "components/crm/SupportTab.tsx"
  ],
  "Generate an MCP Token": [
   "components/crm/mcp/McpIntegrationPanel.tsx"
@@ -6305,6 +6478,10 @@
  ],
  "Good day. How may I assist you?": [
   "components/marketing/mocks.tsx"
+ ],
+ "GOOD TO KNOW": [
+  "components/marketing/LlmCostCalculator.tsx",
+  "components/marketing/PlaygroundApp.tsx"
  ],
  "Good to know.": [
   "components/marketing/FeaturePage.tsx"
@@ -6483,7 +6660,8 @@
  ],
  "Growth": [
   "app/[locale]/(marketing)/pricing/page.tsx",
-  "components/crm/modals/NewAssistantModal.tsx"
+  "components/crm/modals/NewAssistantModal.tsx",
+  "lib/billing/plans.ts"
  ],
  "Growth Booking Suite": [
   "components/crm/landing/AiLandingWizard.tsx"
@@ -6518,6 +6696,9 @@
  ],
  "Guides on AI assistants and booking": [
   "components/marketing/mega-menu-data.ts"
+ ],
+ "Guides organised by feature area. Start with AI connectors if you are just getting set up.": [
+  "app/[locale]/(marketing)/support/page.tsx"
  ],
  "Guides:": [
   "components/marketing/FeaturePage.tsx"
@@ -6576,6 +6757,9 @@
  ],
  "Happy to help you pick a time. Choose a day and slot below. [ACTION:BOOKING_FORM]": [
   "components/chat/FloatingPlatformChatbot.tsx"
+ ],
+ "Hardware & Platform Specs": [
+  "app/[locale]/(marketing)/product/page.tsx"
  ],
  "Have an access code?": [
   "components/crm/SubscriptionGate.tsx"
@@ -6701,6 +6885,9 @@
  "High-converting business website with instant scheduling and AI customer care.": [
   "components/crm/landing/LandingPagesList.tsx"
  ],
+ "High-Density Embeddings & Custom LLM Endpoint Base URLs": [
+  "lib/billing/plans.ts"
+ ],
  "High-end design studio showcase with bespoke portfolio cards and project scope estimation.": [
   "app/[locale]/(marketing)/roadmap/page.tsx"
  ],
@@ -6804,8 +6991,14 @@
  "How can we help? *": [
   "app/[locale]/(marketing)/support/contact/page.tsx"
  ],
+ "How Crescelo books appointments inside the chat conversation, syncs with external calendars, and prevents race-condition double-bookings.": [
+  "app/[locale]/(marketing)/support/calendar-booking/page.tsx"
+ ],
  "How Crescelo Inbound AI Voice Works": [
   "components/crm/ChannelsTab.tsx"
+ ],
+ "How Crescelo reads your documentation, creates vector embeddings, and ensures that answers cite your exact material without inventing facts.": [
+  "app/[locale]/(marketing)/support/rag-knowledge/page.tsx"
  ],
  "How do I cancel?": [
   "components/marketing/content.ts"
@@ -6819,12 +7012,21 @@
  "How does it avoid double bookings?": [
   "components/marketing/content.ts"
  ],
+ "How is the cost of a chatbot conversation calculated?": [
+  "app/[locale]/(marketing)/tools/llm-cost-calculator/page.tsx"
+ ],
+ "How it connects": [
+  "app/[locale]/(marketing)/integrations/page.tsx"
+ ],
  "How it searches": [
   "components/crm/KnowledgeTab.tsx",
   "components/crm/OverviewTab.tsx"
  ],
  "How it works": [
   "components/marketing/content-extra.ts"
+ ],
+ "HOW IT WORKS": [
+  "components/marketing/FeaturePage.tsx"
  ],
  "How It Works in Crescelo": [
   "app/[locale]/(marketing)/integrations/page.tsx"
@@ -6834,6 +7036,12 @@
  ],
  "How long are my documents kept?": [
   "app/[locale]/(marketing)/playground/page.tsx"
+ ],
+ "How many chats your assistant handles in a month.": [
+  "components/marketing/LlmCostCalculator.tsx"
+ ],
+ "How many tokens is a word?": [
+  "app/[locale]/(marketing)/tools/llm-cost-calculator/page.tsx"
  ],
  "How much does it set me back for a full colour?": [
   "lib/product-features.ts"
@@ -6864,6 +7072,9 @@
  ],
  "How the free engine works": [
   "components/crm/EngineTab.tsx"
+ ],
+ "How the numbers are worked out.": [
+  "components/marketing/LlmCostCalculator.tsx"
  ],
  "How to add an AI assistant to WordPress": [
   "app/[locale]/(marketing)/guides/add-ai-assistant-to-wordpress/page.tsx"
@@ -6978,6 +7189,9 @@
  "ID:": [
   "components/crm/modals/AppointmentDetailsModal.tsx"
  ],
+ "Ideal for small businesses getting started with automated AI customer support.": [
+  "lib/billing/plans.ts"
+ ],
  "Identity & Design": [
   "components/crm/LandingPageTab.tsx"
  ],
@@ -7061,6 +7275,9 @@
  ],
  "In Development": [
   "app/[locale]/(marketing)/roadmap/page.tsx"
+ ],
+ "In English one token is about three quarters of a word, so 100 words are roughly 133 tokens. Other languages, numbers and code use more tokens per word, so add a margin if your customers do not write in English.": [
+  "app/[locale]/(marketing)/tools/llm-cost-calculator/page.tsx"
  ],
  "In Meta Dashboard → WhatsApp → Configuration, set Webhook URL to the one shown in Crescelo and use your same Verify Token.": [
   "components/crm/DocsTab.tsx"
@@ -7258,6 +7475,12 @@
  "Input / 1M Tokens": [
   "app/[locale]/(marketing)/support/ai-connectors/openai/page.tsx"
  ],
+ "Input tokens billed": [
+  "components/marketing/LlmCostCalculator.tsx"
+ ],
+ "Input tokens by chat length": [
+  "components/marketing/LlmCostCalculator.tsx"
+ ],
  "Insert appointment booking card into chat for customer": [
   "components/crm/ConversationsTab.tsx"
  ],
@@ -7284,6 +7507,9 @@
  ],
  "Install the assistant step by step": [
   "components/marketing/mega-menu-data.ts"
+ ],
+ "INSTALLATION GUIDE": [
+  "app/[locale]/(marketing)/guides/add-ai-assistant-to-wordpress/page.tsx"
  ],
  "Instant (0 Seconds)": [
   "app/[locale]/(marketing)/support/ai-connectors/auto-free/page.tsx"
@@ -7376,6 +7602,9 @@
  ],
  "Interactive listing inquiries": [
   "app/[locale]/(marketing)/roadmap/page.tsx"
+ ],
+ "Interactive Pipeline": [
+  "app/[locale]/(marketing)/product/page.tsx"
  ],
  "Interactive quick-reply buttons and list pickers": [
   "app/[locale]/(marketing)/integrations/page.tsx"
@@ -7512,6 +7741,9 @@
  "KB)": [
   "components/crm/PlaygroundTab.tsx"
  ],
+ "KEEP EXPLORING": [
+  "components/marketing/FeaturePage.tsx"
+ ],
  "Keep your account secure": [
   "components/crm/tour/tourData.ts"
  ],
@@ -7539,6 +7771,9 @@
  ],
  "Knowledge": [
   "components/marketing/content-extra.ts"
+ ],
+ "KNOWLEDGE ARCHITECTURE": [
+  "app/[locale]/(marketing)/support/rag-knowledge/page.tsx"
  ],
  "Knowledge assistant": [
   "components/marketing/content-extra.ts"
@@ -7575,12 +7810,18 @@
  "Knowledge Correction & Fact Patching": [
   "components/crm/modals/CorrectionModal.tsx"
  ],
+ "Knowledge Gap Correction & Instant Vector Overrides": [
+  "lib/billing/plans.ts"
+ ],
  "Knowledge Gap Engine": [
   "components/crm/AnalyticsTab.tsx"
  ],
  "Knowledge Hub": [
   "app/[locale]/(marketing)/blog/[slug]/page.tsx",
   "components/marketing/mega-menu-data.ts"
+ ],
+ "KNOWLEDGE HUB & GLOSSARY": [
+  "app/[locale]/(marketing)/blog/page.tsx"
  ],
  "Knowledge Hub: AI Assistants, Booking & Leads | Crescelo": [
   "app/[locale]/(marketing)/blog/page.tsx"
@@ -7603,6 +7844,9 @@
  ],
  "Knowledge storage quota exceeded.": [
   "components/crm/hooks/useCrmKnowledge.ts"
+ ],
+ "Knowledge-base words sent with each message": [
+  "components/marketing/LlmCostCalculator.tsx"
  ],
  "Knowledge, styling and behaviour changes apply at once.": [
   "lib/product-features.ts"
@@ -7689,6 +7933,9 @@
  ],
  "Lead Capture Form": [
   "components/crm/WidgetTab.tsx"
+ ],
+ "Lead Capture Form & Instant Email Alerts": [
+  "lib/billing/plans.ts"
  ],
  "Lead capture with custom fields": [
   "components/marketing/content.ts"
@@ -7809,6 +8056,9 @@
  "Limited": [
   "components/marketing/content-extra.ts"
  ],
+ "Link copied": [
+  "components/marketing/LlmCostCalculator.tsx"
+ ],
  "Link Label": [
   "components/crm/LandingPageTab.tsx"
  ],
@@ -7823,6 +8073,9 @@
  ],
  "LinkedIn URL": [
   "components/crm/LandingPageTab.tsx"
+ ],
+ "List price per 1M tokens": [
+  "components/marketing/LlmCostCalculator.tsx"
  ],
  "Listen to this page": [
   "components/a11y/AccessibilityMenu.tsx"
@@ -7937,6 +8190,9 @@
  "Live visitor conversation • Apex Barbers": [
   "components/marketing/Hero.tsx"
  ],
+ "Live Webpage Scraper & URL Indexing": [
+  "lib/billing/plans.ts"
+ ],
  "Live website chat widgets where instant typing response is paramount for conversions": [
   "app/[locale]/(marketing)/support/ai-connectors/page.tsx"
  ],
@@ -7954,6 +8210,12 @@
  ],
  "llama3.2:3b / llama3.1:8b": [
   "app/[locale]/(marketing)/support/ai-connectors/ollama/page.tsx"
+ ],
+ "LLM cost calculator": [
+  "app/[locale]/(marketing)/tools/llm-cost-calculator/page.tsx",
+  "components/marketing/content.ts",
+  "components/marketing/LlmCostCalculator.tsx",
+  "components/marketing/mega-menu-data.ts"
  ],
  "Load This Preset": [
   "components/crm/LandingPageTab.tsx"
@@ -8280,7 +8542,8 @@
   "components/crm/landing/DesignPreviewModal.tsx"
  ],
  "Model": [
-  "app/[locale]/(marketing)/support/ai-connectors/openai/page.tsx"
+  "app/[locale]/(marketing)/support/ai-connectors/openai/page.tsx",
+  "components/marketing/LlmCostCalculator.tsx"
  ],
  "Model Context Protocol": [
   "components/crm/ChannelsTab.tsx"
@@ -8348,6 +8611,9 @@
  "more team": [
   "components/crm/CustomersTab.tsx"
  ],
+ "Most expensive here": [
+  "components/marketing/LlmCostCalculator.tsx"
+ ],
  "Most Popular": [
   "app/[locale]/(marketing)/pricing/page.tsx",
   "components/crm/BillingTab.tsx",
@@ -8383,6 +8649,9 @@
  ],
  "Multimodal document intake such as menus and price books": [
   "app/[locale]/(marketing)/roadmap/page.tsx"
+ ],
+ "Multimodal RAG (Audio & Video Transcripts + Image OCR)": [
+  "lib/billing/plans.ts"
  ],
  "Multiple independent assistants": [
   "components/marketing/content.ts"
@@ -8789,6 +9058,9 @@
  "No. You can get started right away using our free built-in engine with zero setup and no card required. If you prefer to connect your own OpenAI, Google Gemini, Anthropic or Groq account, you can plug in your existing key with zero platform markup.": [
   "components/marketing/content.ts"
  ],
+ "No. You connect your own key from OpenAI, Anthropic, Google, Groq or DeepSeek, or a self-hosted model, and the provider bills you directly. The Crescelo plan price is separate.": [
+  "app/[locale]/(marketing)/tools/llm-cost-calculator/page.tsx"
+ ],
  "Nobody matches that search.": [
   "components/crm/CustomersTab.tsx"
  ],
@@ -8963,6 +9235,9 @@
  ],
  "Omnichannel: WhatsApp & Telegram": [
   "app/[locale]/(marketing)/support/page.tsx"
+ ],
+ "Omnichannel: WhatsApp Cloud API & Telegram Bot integrations": [
+  "lib/billing/plans.ts"
  ],
  "On": [
   "components/crm/ChannelsTab.tsx",
@@ -9292,6 +9567,9 @@
  "Our automatic card payments are still on their way. Until they land, we will happily arrange payment with you directly. Tell us which plan you want and anything we should know, and we will reply by email with the next step.": [
   "components/crm/SubscriptionGate.tsx"
  ],
+ "Outbound Webhook Dispatching & CRM Pipeline Sync": [
+  "lib/billing/plans.ts"
+ ],
  "Outbound Webhooks": [
   "components/crm/DocsTab.tsx"
  ],
@@ -9431,6 +9709,9 @@
  "Pay for the conversations your assistant handles. Bring your own AI key and model costs go directly to your provider — we add nothing on top. Save 20% with annual billing.": [
   "app/[locale]/(marketing)/pricing/page.tsx"
  ],
+ "Pay the provider, not a markup.": [
+  "components/marketing/LlmCostCalculator.tsx"
+ ],
  "Paying": [
   "components/crm/CustomersTab.tsx"
  ],
@@ -9478,8 +9759,14 @@
  "People ask questions when they are ready to buy. Answer them instantly instead of the next morning.": [
   "components/marketing/content-extra.ts"
  ],
+ "Per conversation": [
+  "components/marketing/LlmCostCalculator.tsx"
+ ],
  "per month": [
   "app/[locale]/(marketing)/use-case/page.tsx"
+ ],
+ "Per month": [
+  "components/marketing/LlmCostCalculator.tsx"
  ],
  "Per-seat plans": [
   "components/marketing/content-extra.ts"
@@ -9705,6 +9992,9 @@
  "Policy and process answers from your docs": [
   "components/marketing/content.ts"
  ],
+ "Popular Articles": [
+  "app/[locale]/(marketing)/support/page.tsx"
+ ],
  "Popup Message Text": [
   "components/crm/WidgetTab.tsx"
  ],
@@ -9739,6 +10029,9 @@
   "components/crm/ChannelsTab.tsx"
  ],
  "Practical guides for service businesses": [
+  "app/[locale]/(marketing)/blog/page.tsx"
+ ],
+ "Practical guides on AI website assistants, online booking, lead capture, costs and security, written for owners of appointment-based businesses.": [
   "app/[locale]/(marketing)/blog/page.tsx"
  ],
  "Pre-Built Industry Templates (": [
@@ -9888,6 +10181,9 @@
  "Priority 3 (Local Fallback)": [
   "app/[locale]/(marketing)/support/ai-connectors/auto-free/page.tsx"
  ],
+ "Priority Email & Live Chat Support": [
+  "lib/billing/plans.ts"
+ ],
  "Priority Multi-seat": [
   "app/[locale]/(marketing)/pricing/page.tsx"
  ],
@@ -9905,6 +10201,10 @@
  ],
  "Privacy Policy | Crescelo": [
   "app/[locale]/(marketing)/privacy/page.tsx"
+ ],
+ "Privacy request": [
+  "app/[locale]/(marketing)/support/contact/page.tsx",
+  "components/crm/SupportTab.tsx"
  ],
  "Private Estate Tour": [
   "components/crm/LandingPageTab.tsx"
@@ -10046,6 +10346,9 @@
  "Provide your brand name, core purpose, contact info, and services. AI will synthesize compelling copy, headline hooks, and initialize your AI Concierge.": [
   "components/crm/landing/AiLandingWizard.tsx"
  ],
+ "Providers charge per token, with one price for the text you send (input) and a higher one for the text the model writes (output). The calculator adds up every token sent and written across the whole conversation and multiplies each side by the model's list price.": [
+  "app/[locale]/(marketing)/tools/llm-cost-calculator/page.tsx"
+ ],
  "Public MCP Endpoint URL": [
   "components/crm/mcp/McpIntegrationPanel.tsx"
  ],
@@ -10093,6 +10396,9 @@
  ],
  "Question...": [
   "components/crm/LandingPageTab.tsx"
+ ],
+ "QUESTIONS": [
+  "components/marketing/FeaturePage.tsx"
  ],
  "Questions arrive after hours": [
   "components/marketing/content.ts"
@@ -10473,6 +10779,9 @@
  "Reserve Your Slot": [
   "components/crm/landing/DesignPreviewModal.tsx"
  ],
+ "Reset": [
+  "components/marketing/LlmCostCalculator.tsx"
+ ],
  "Reset all": [
   "components/a11y/AccessibilityMenu.tsx"
  ],
@@ -10649,6 +10958,10 @@
  "SaaS and startups": [
   "components/marketing/mega-menu-data.ts"
  ],
+ "Sales & Enterprise": [
+  "app/[locale]/(marketing)/support/contact/page.tsx",
+  "components/crm/SupportTab.tsx"
+ ],
  "Salons & Spas": [
   "components/marketing/content.ts"
  ],
@@ -10822,6 +11135,9 @@
  "Scheduled Time Slot": [
   "components/crm/modals/AppointmentDetailsModal.tsx"
  ],
+ "SCHEDULING DOCUMENTATION": [
+  "app/[locale]/(marketing)/support/calendar-booking/page.tsx"
+ ],
  "Scope discussion and brand alignment session.": [
   "components/crm/landing/AiLandingWizard.tsx"
  ],
@@ -10914,9 +11230,11 @@
  ],
  "Security": [
   "app/[locale]/(marketing)/product/page.tsx",
+  "app/[locale]/(marketing)/support/contact/page.tsx",
   "components/marketing/content.ts",
   "components/crm/DashboardSidebar.tsx",
-  "components/crm/SecurityTab.tsx"
+  "components/crm/SecurityTab.tsx",
+  "components/crm/SupportTab.tsx"
  ],
  "Security & Password": [
   "components/crm/ProfileTab.tsx"
@@ -10942,11 +11260,17 @@
  "See how standard chatbot fluff compares to Crescelo’s grounded response. Drag the slider to inspect.": [
   "components/marketing/content.ts"
  ],
+ "See how to connect a key": [
+  "components/marketing/LlmCostCalculator.tsx"
+ ],
  "SEE IT": [
   "components/marketing/FeaturePage.tsx"
  ],
  "See it answer your visitors": [
   "components/marketing/mega-menu-data.ts"
+ ],
+ "See it in action": [
+  "app/[locale]/(marketing)/use-case/page.tsx"
  ],
  "See it work on your own business.": [
   "components/marketing/FeaturePage.tsx"
@@ -11020,6 +11344,9 @@
  ],
  "Select which events to send: Lead Captured, Message Sent, etc.": [
   "components/crm/DocsTab.tsx"
+ ],
+ "Select your business type below to see how Crescelo handles a real enquiry — from the opening question to a confirmed booking.": [
+  "app/[locale]/(marketing)/use-case/page.tsx"
  ],
  "Select your default model (we recommend": [
   "app/[locale]/(marketing)/support/ai-connectors/openai/page.tsx"
@@ -11294,6 +11621,9 @@
  "Shipped": [
   "app/[locale]/(marketing)/roadmap/page.tsx"
  ],
+ "Short answers cost less: output is the expensive side.": [
+  "components/marketing/LlmCostCalculator.tsx"
+ ],
  "Short reply, no source needed.": [
   "components/marketing/playground-engine.ts"
  ],
@@ -11534,6 +11864,9 @@
  "Specialized access: invoices and payment methods for Billing Managers; read-only analytics for Viewers.": [
   "components/crm/TeamTab.tsx"
  ],
+ "Speech-to-Text Voice Dictation & Multilingual Switcher (6 languages)": [
+  "lib/billing/plans.ts"
+ ],
  "Speed": [
   "components/a11y/AccessibilityMenu.tsx"
  ],
@@ -11591,6 +11924,7 @@
   "app/[locale]/(marketing)/use-case/page.tsx",
   "components/marketing/content.ts",
   "components/marketing/FeaturePage.tsx",
+  "components/marketing/LlmCostCalculator.tsx",
   "components/marketing/mega-menu-data.ts",
   "components/marketing/PlaygroundApp.tsx",
   "components/marketing/Pricing.tsx",
@@ -11622,7 +11956,8 @@
  ],
  "Starter": [
   "app/[locale]/(marketing)/pricing/page.tsx",
-  "components/crm/BillingTab.tsx"
+  "components/crm/BillingTab.tsx",
+  "lib/billing/plans.ts"
  ],
  "Starter (100 Chats / mo)": [
   "components/crm/BillingTab.tsx"
@@ -11693,6 +12028,9 @@
  ],
  "Step-by-step guide to get a free Groq API key and achieve sub-second Llama 3.3 70B inference (500+ tokens/sec) on Crescelo for free.": [
   "app/[locale]/(marketing)/support/ai-connectors/groq/page.tsx"
+ ],
+ "STEP-BY-STEP GUIDES": [
+  "app/[locale]/(marketing)/support/ai-connectors/page.tsx"
  ],
  "Step-by-step guides for connecting OpenAI, Anthropic Claude, Google Gemini, Groq, DeepSeek, and local Ollama.": [
   "app/[locale]/(marketing)/support/page.tsx"
@@ -12111,6 +12449,7 @@
   "app/[locale]/(marketing)/roadmap/page.tsx"
  ],
  "Technical Support": [
+  "app/[locale]/(marketing)/support/contact/page.tsx",
   "components/crm/SupportTab.tsx"
  ],
  "Telegram": [
@@ -12218,6 +12557,9 @@
  "Testimonials Section Title": [
   "components/crm/LandingPageTab.tsx"
  ],
+ "Testing Studio Playground": [
+  "lib/billing/plans.ts"
+ ],
  "Testing, staging, and businesses wanting $0 server/AI bills": [
   "app/[locale]/(marketing)/support/ai-connectors/page.tsx"
  ],
@@ -12314,6 +12656,9 @@
  "The log is sorted newest-first and can be filtered by action type.": [
   "components/crm/tour/tourData.ts"
  ],
+ "The model keeps nothing between messages. To answer the fifth question in context, the app sends the first four questions and answers along with it. That is why input tokens, not replies, make up most of a chatbot bill.": [
+  "app/[locale]/(marketing)/tools/llm-cost-calculator/page.tsx"
+ ],
  "The name visitors see at the top of the chat, up to": [
   "components/crm/WidgetTab.tsx"
  ],
@@ -12322,6 +12667,12 @@
  ],
  "The page you are looking for does not exist or has moved.": [
   "app/[locale]/not-found.tsx"
+ ],
+ "THE PART PEOPLE MISS": [
+  "components/marketing/LlmCostCalculator.tsx"
+ ],
+ "The passages from your documents the assistant reads before answering. Use 0 if it has none.": [
+  "components/marketing/LlmCostCalculator.tsx"
  ],
  "THE PLAYGROUND": [
   "components/marketing/PlaygroundApp.tsx"
@@ -12377,6 +12728,9 @@
  "The status badge next to each source turns green when the assistant has finished learning from it.": [
   "components/crm/tour/tourData.ts"
  ],
+ "The system prompt: tone, rules, services and opening hours.": [
+  "components/marketing/LlmCostCalculator.tsx"
+ ],
  "The Testing Studio lets you chat as a visitor would, so you can fix gaps before going live.": [
   "lib/product-features.ts"
  ],
@@ -12430,6 +12784,9 @@
  ],
  "These items populate your website catalog and provide live pricing for the AI assistant and interactive booking modal.": [
   "components/crm/LandingPageTab.tsx"
+ ],
+ "They are the providers' public list prices on the date shown under the table, and they change. Discounts for cached or batch requests are not counted, so treat the result as an upper estimate and check the provider's pricing page before you budget.": [
+  "app/[locale]/(marketing)/tools/llm-cost-calculator/page.tsx"
  ],
  "Thinking": [
   "components/chat/FloatingPlatformChatbot.tsx"
@@ -12628,6 +12985,9 @@
  "Tokens authenticate external agents to this workspace. Secret tokens are never stored in plain text.": [
   "components/crm/mcp/McpIntegrationPanel.tsx"
  ],
+ "Tokens in one conversation": [
+  "components/marketing/LlmCostCalculator.tsx"
+ ],
  "Tomorrow": [
   "components/crm/landing/DesignPreviewModal.tsx"
  ],
@@ -12719,6 +13079,9 @@
  "Transferred": [
   "components/crm/PhoneChannelCard.tsx"
  ],
+ "Transparent visibility into what has been delivered, what is being polished in active beta, and what is scheduled next.": [
+  "app/[locale]/(marketing)/roadmap/page.tsx"
+ ],
  "Treasury Review ($0)": [
   "components/crm/LandingPageTab.tsx"
  ],
@@ -12761,11 +13124,11 @@
  "Try Demo": [
   "components/marketing/content.ts"
  ],
- "Try demo with your flyer (free)": [
-  "components/marketing/content.ts"
- ],
  "Try different keywords, or reset your filters to browse the full directory.": [
   "components/marketing/BlogGlossaryHub.tsx"
+ ],
+ "Try free Demo": [
+  "components/marketing/content.ts"
  ],
  "Try it": [
   "components/marketing/content-extra.ts",
@@ -12911,7 +13274,11 @@
   "app/[locale]/(marketing)/product/page.tsx"
  ],
  "Unlimited": [
-  "app/[locale]/(marketing)/pricing/page.tsx"
+  "app/[locale]/(marketing)/pricing/page.tsx",
+  "lib/billing/plans.ts"
+ ],
+ "Unlimited AI Assistant Bots": [
+  "lib/billing/plans.ts"
  ],
  "Unlimited bi-weekly maintenance cuts, priority walk-in reservations, and complimentary styling pack.": [
   "components/crm/landing/DesignPreviewModal.tsx"
@@ -13085,6 +13452,9 @@
  "Validated Incoming Webhook endpoint with SSRF & private IP filtering": [
   "app/[locale]/(marketing)/integrations/page.tsx"
  ],
+ "Value Calculator": [
+  "app/[locale]/(marketing)/use-case/page.tsx"
+ ],
  "Value Delivered": [
   "components/crm/BillingTab.tsx"
  ],
@@ -13237,6 +13607,7 @@
   "components/crm/landing/LandingPageQuotaModal.tsx"
  ],
  "View pricing": [
+  "components/marketing/LlmCostCalculator.tsx",
   "components/marketing/mega-menu-data.ts"
  ],
  "View Pricing & Plans": [
@@ -13335,6 +13706,9 @@
  "Visitor requested human assistance. Click to take over and start typing real-time responses.": [
   "components/crm/ConversationsTab.tsx"
  ],
+ "Visitor Sentiment & Escalation Detector": [
+  "lib/billing/plans.ts"
+ ],
  "Visitor Sentiment Analysis": [
   "components/crm/AnalyticsTab.tsx"
  ],
@@ -13422,6 +13796,12 @@
  ],
  "We always use the cookies needed to sign you in and keep the site secure. With your permission we also use Google Analytics to count visits and see which pages help. We never use advertising cookies.": [
   "components/legal/CookieConsent.tsx"
+ ],
+ "We are building an assistant that answers inbound phone calls from the same knowledge base and books appointments by voice. It is not available yet; follow its progress on the roadmap.": [
+  "app/[locale]/(marketing)/product/page.tsx"
+ ],
+ "We are building an assistant that answers inbound phone calls from your knowledge base and books appointments by voice. It is not available yet, so there is nothing to set up today.": [
+  "app/[locale]/(marketing)/support/voice-agent/page.tsx"
  ],
  "We are closed on Sundays. I can book you for Monday from 9 AM.": [
   "lib/product-features.ts"
@@ -13584,6 +13964,9 @@
  "Welcome to your dashboard": [
   "components/crm/tour/tourData.ts"
  ],
+ "What a chatbot costs per conversation": [
+  "components/marketing/mega-menu-data.ts"
+ ],
  "What are your hours and pricing packages?": [
   "components/crm/landing/AiLandingWizard.tsx"
  ],
@@ -13623,6 +14006,9 @@
  "What is live and what is next": [
   "components/marketing/mega-menu-data.ts"
  ],
+ "What is the knowledge-base text?": [
+  "app/[locale]/(marketing)/tools/llm-cost-calculator/page.tsx"
+ ],
  "What makes your business special? e.g. We provide precision men's grooming and hot towel shaves with an upscale lounge atmosphere in Brooklyn since 2018...": [
   "components/crm/landing/AiLandingWizard.tsx"
  ],
@@ -13632,6 +14018,9 @@
  "What to upload first": [
   "components/crm/tour/tourData.ts"
  ],
+ "What will your AI chatbot cost to run?": [
+  "components/marketing/LlmCostCalculator.tsx"
+ ],
  "What works today": [
   "app/[locale]/(marketing)/support/voice-agent/page.tsx"
  ],
@@ -13639,6 +14028,9 @@
   "app/[locale]/(marketing)/roadmap/page.tsx"
  ],
  "What you can set.": [
+  "components/marketing/FeaturePage.tsx"
+ ],
+ "WHAT YOU GET": [
   "components/marketing/FeaturePage.tsx"
  ],
  "What you should do next:": [
@@ -13738,6 +14130,9 @@
   "components/marketing/mega-menu-data.ts",
   "lib/product-features.ts"
  ],
+ "Whether you need help setting up your assistant, subscribing to your calendar feed, or exploring custom enterprise deployment, our engineering team responds within 24 hours.": [
+  "app/[locale]/(marketing)/support/contact/page.tsx"
+ ],
  "Which AI provider and model answers": [
   "lib/product-features.ts"
  ],
@@ -13807,6 +14202,12 @@
  "Wholesale Token Cost Breakdown (Zero Markup Guarantee)": [
   "app/[locale]/(marketing)/support/ai-connectors/openai/page.tsx"
  ],
+ "Why a long chat costs more per message.": [
+  "components/marketing/LlmCostCalculator.tsx"
+ ],
+ "Why does the history get sent again?": [
+  "app/[locale]/(marketing)/tools/llm-cost-calculator/page.tsx"
+ ],
  "Why Groq? (Zero-Cost & Blazing Fast)": [
   "components/crm/modals/ApiKeyRequiredModal.tsx"
  ],
@@ -13827,6 +14228,9 @@
  ],
  "Widget & Website Embedding": [
   "app/[locale]/(marketing)/support/page.tsx"
+ ],
+ "Widget Embed (Floating Bubble & Inline Iframe)": [
+  "lib/billing/plans.ts"
  ],
  "Will it make things up?": [
   "lib/product-features.ts"
@@ -13861,11 +14265,23 @@
  "words •": [
   "components/crm/KnowledgeTab.tsx"
  ],
+ "Words in a customer message": [
+  "components/marketing/LlmCostCalculator.tsx"
+ ],
+ "Words in a reply": [
+  "components/marketing/LlmCostCalculator.tsx"
+ ],
+ "Words of instructions": [
+  "components/marketing/LlmCostCalculator.tsx"
+ ],
  "Work email": [
   "components/marketing/PlaygroundApp.tsx"
  ],
  "Work in progress. Dates are goals, not commitments.": [
   "app/[locale]/(marketing)/roadmap/page.tsx"
+ ],
+ "Worked out from the numbers you entered above.": [
+  "components/marketing/LlmCostCalculator.tsx"
  ],
  "Working while you sleep,": [
   "components/marketing/content-extra.ts"
@@ -13975,6 +14391,9 @@
  ],
  "Yes, we have room on Tuesdays and Thursdays. Would you like to book a first session?": [
   "lib/product-features.ts"
+ ],
+ "Yes, with a model you host yourself, for example through Ollama. There is no charge per token, but you pay for the computer it runs on, and small local models answer less reliably than the hosted ones.": [
+  "app/[locale]/(marketing)/tools/llm-cost-calculator/page.tsx"
  ],
  "Yes, with instant audio alert": [
   "components/marketing/content-extra.ts"
@@ -14105,6 +14524,9 @@
  "You see the whole conversation so far, so nobody repeats themselves.": [
   "lib/product-features.ts"
  ],
+ "YOU STAY IN CONTROL": [
+  "components/marketing/FeaturePage.tsx"
+ ],
  "You will see this workspace exactly as its owner": [
   "components/crm/CustomersTab.tsx"
  ],
@@ -14164,6 +14586,9 @@
  ],
  "Your calendar feed is read-only: bookings appear in Google, Apple or Outlook, but events you create there do not block Crescelo slots. Two-way calendar sync is in development.": [
   "lib/product-features.ts"
+ ],
+ "Your chatbot": [
+  "components/marketing/LlmCostCalculator.tsx"
  ],
  "Your content is stored for your assistant and sent to the AI provider you choose only as needed to answer a question, under that provider’s terms.": [
   "lib/product-features.ts"

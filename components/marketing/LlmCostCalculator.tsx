@@ -144,7 +144,7 @@ export function LlmCostCalculator({ faq }: { faq: { q: string; a: string }[] }) 
                 <tbody>
                   {rows.map((r) => (
                     <tr key={r.model}>
-                      <th scope="row"><span className="lc-model">{r.label}</span><span className="lc-provider">{r.providerLabel}</span></th>
+                      <th scope="row"><span className="lc-model"><T>{r.label}</T></span><span className="lc-provider"><T>{r.providerLabel}</T></span></th>
                       <td className="lc-num">{formatUsd(r.perConversation)}</td>
                       <td className="lc-num"><b>{formatUsd(r.perMonth)}</b></td>
                       <td className="lc-num lc-rate">{__t('${input} in, ${output} out', { input: r.price.input, output: r.price.output })}</td>
@@ -184,7 +184,7 @@ export function LlmCostCalculator({ faq }: { faq: { q: string; a: string }[] }) 
                   const input = conversationTokens({ ...scenario, turns: n }).input;
                   return (
                     <tr key={n}>
-                      <th scope="row">{n}</th>
+                      <th scope="row"><T>{n}</T></th>
                       <td className="lc-num">{count(input)}</td>
                       <td className="lc-num">{count(input / n)}</td>
                     </tr>

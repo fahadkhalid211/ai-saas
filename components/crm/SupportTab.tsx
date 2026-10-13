@@ -245,7 +245,7 @@ export function SupportTab({ master }: { master: boolean }) {
               <p className="text-[11px] text-slate-500"><T>We reply by e-mail to your account address, and you can follow the conversation here.</T></p>
               <div className="grid grid-cols-2 gap-3">
                 <select className={input} value={draft.category} onChange={(e) => setDraft({ ...draft, category: e.target.value })}>
-                  {CATEGORIES.map((c) => <option key={c}>{c}</option>)}
+                  {CATEGORIES.map((c) => <option key={c} value={c}>{__t(c)}</option>)}
                 </select>
                 <select className={input} value={draft.priority} onChange={(e) => setDraft({ ...draft, priority: e.target.value })}>
                   {['low', 'normal', 'high', 'urgent'].map((p) => <option key={p}>{p}</option>)}

@@ -18,6 +18,9 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(import.meta.dirname, './'),
+      // Next.js resolves this marker package itself; tests run without Next, so it is an empty module.
+      'next/root-params': path.resolve(import.meta.dirname, './lib/test-stubs/root-params.ts'),
+      'server-only': path.resolve(import.meta.dirname, './lib/test-stubs/server-only.ts'),
     },
   },
 });
