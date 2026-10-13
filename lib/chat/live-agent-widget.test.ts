@@ -100,7 +100,7 @@ describe('Live Agent to Widget communication', () => {
     const data = await res.json();
     expect(data.newMessages).toBeDefined();
     expect(Array.isArray(data.newMessages)).toBe(true);
-    expect(data.newMessages.length).toBeGreaterThan(0);
-    expect(data.newMessages[0].role).toBe('agent');
+    expect(data.newMessages.some((m: any) => m.role === 'system')).toBe(true);
+    expect(data.newMessages.some((m: any) => m.role === 'agent')).toBe(true);
   });
 });

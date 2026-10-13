@@ -572,6 +572,17 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
 
                           <div className="space-y-3 max-h-[440px] overflow-y-auto pr-2">
                             {(selectedConversation.messages || []).map((m: any, idx: number) => {
+                              if (m.role === 'system') {
+                                return (
+                                  <div key={m.id || idx} className="flex justify-center my-2">
+                                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800 text-purple-700 dark:text-purple-300 text-[11px] font-semibold text-center">
+                                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+                                      <span>{m.content}</span>
+                                    </div>
+                                  </div>
+                                );
+                              }
+
                               const isUser = m.role === 'user';
                               const isAgent = m.role === 'agent';
                               return (

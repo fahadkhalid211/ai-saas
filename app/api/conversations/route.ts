@@ -125,6 +125,21 @@ async function POSTHandler(req: Request) {
       ? agentName.trim()
       : 'Support Agent';
 
+    // If live takeover was not active, record an in-stream system announcement
+    const wasLiveTakeover = Boolean(conv.isLiveTakeover);
+    let systemJoinMessage = null;
+    if (takeover && !wasLiveTakeover) {
+      systemJoinMessage = await Database.saveMessage(
+        conversationId,
+        'system',
+        `Live agent ${cleanName} has joined the chat.`,
+        [],
+        0,
+        undefined,
+        cleanName
+      );
+    }
+
     // 1. Save message as human agent
     const message = await Database.saveMessage(
       conversationId,
@@ -148,6 +163,7 @@ async function POSTHandler(req: Request) {
     return jsonResponse({
       success: true,
       message,
+      systemMessage: systemJoinMessage,
       isLiveTakeover: true,
       assignedAgentName: cleanName,
     });
@@ -181,6 +197,34 @@ async function PATCHHandler(req: Request) {
       if (!ast || (ast.workspaceId || 'default-workspace') !== ctx.workspaceId) {
         return jsonResponse({ error: 'Forbidden' }, 403);
       }
+    }
+
+    const wasLiveTakeover = Boolean(conv.isLiveTakeover);
+    const targetAgentName = (assignedAgentName && typeof assignedAgentName === 'string' && assignedAgentName.trim())
+      ? assignedAgentName.trim()
+      : (conv.assignedAgentName || 'Support Agent');
+
+    // Announce live agent join or departure to both user and agent
+    if (isLiveTakeover === true && !wasLiveTakeover) {
+      await Database.saveMessage(
+        id,
+        'system',
+        `Live agent ${targetAgentName} has joined the chat.`,
+        [],
+        0,
+        undefined,
+        targetAgentName
+      );
+    } else if (isLiveTakeover === false && wasLiveTakeover) {
+      await Database.saveMessage(
+        id,
+        'system',
+        'Live agent session ended. AI assistant is back online.',
+        [],
+        0,
+        undefined,
+        'System'
+      );
     }
 
     const updated = await Database.updateConversation(id, {

@@ -235,10 +235,10 @@ export function CaseStudiesResults() {
                 type="button"
                 aria-selected={isSelected}
                 onClick={() => setActiveTabId(c.id)}
-                className={`flex items-center gap-2 px-4 py-2.5 rounded-full text-xs sm:text-sm font-bold transition-all cursor-pointer border ${
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-full text-xs sm:text-sm font-bold transition-all cursor-pointer border-2 bg-white ${
                   isSelected
-                    ? 'bg-[#08251a] text-[#abff44] border-[#08251a] dark:bg-[#abff44] dark:text-[#08251a] shadow-md scale-105'
-                    : 'bg-white dark:bg-[#08251a]/80 text-[#08251a] dark:text-slate-200 border-[#e8e6d1] dark:border-[#1a4734] hover:bg-[#f7f6dd] dark:hover:bg-[#12402d]'
+                    ? 'border-[#08251a] text-[#08251a] shadow-md ring-2 ring-[#08251a]/20 scale-105 dark:bg-white dark:text-[#08251a] dark:border-[#abff44] dark:ring-[#abff44]/30'
+                    : 'border-slate-300 dark:border-slate-600 text-slate-800 dark:text-slate-200 hover:border-[#08251a] hover:bg-slate-50 dark:hover:bg-slate-800/90 shadow-sm'
                 }`}
               >
                 <TabIcon size={16} />
@@ -312,7 +312,7 @@ export function CaseStudiesResults() {
               <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
                 <T>{activeCase.before.description}</T>
               </p>
-              <ul className="space-y-2 pt-2 border-t border-red-100 dark:border-red-900/40">
+              <ul className="space-y-3.5 mt-5">
                 {activeCase.before.painPoints.map((pt, idx) => (
                   <li key={idx} className="flex items-start gap-2 text-xs text-slate-700 dark:text-slate-300">
                     <span className="text-red-500 font-bold shrink-0 mt-0.5">✕</span>
@@ -338,7 +338,7 @@ export function CaseStudiesResults() {
               <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
                 <T>{activeCase.after.description}</T>
               </p>
-              <ul className="space-y-2 pt-2 border-t border-[#e8e6d1] dark:border-[#1a4734]">
+              <ul className="space-y-3.5 mt-5">
                 {activeCase.after.benefits.map((b, idx) => (
                   <li key={idx} className="flex items-start gap-2 text-xs text-slate-800 dark:text-slate-200">
                     <span className="text-[#0f6e58] dark:text-[#abff44] font-bold shrink-0 mt-0.5">✓</span>

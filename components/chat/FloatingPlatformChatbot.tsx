@@ -2,7 +2,7 @@
 
 import { T, useT } from '@/lib/i18n/context';
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Send, RefreshCw, Check, Copy, Minus, ChevronDown, MessageSquare } from 'lucide-react';
+import { X, Send, RefreshCw, Check, Copy, Minus, ChevronDown, MessageSquare, Headphones } from 'lucide-react';
 import { CresceloOrb, type OrbState } from '@/components/brand/CresceloOrb';
 import { CresceloMark } from '@/components/brand/CresceloMark';
 import { PlatformBookingCard, type BookingConfig } from './PlatformBookingCard';
@@ -12,9 +12,10 @@ import type { AssistantAction } from '@/lib/platform/account';
 
 interface ChatMessage {
   id: string;
-  role: 'user' | 'assistant' | 'system';
+  role: 'user' | 'assistant' | 'system' | 'agent';
   content: string;
   createdAt?: string;
+  senderName?: string;
   /** Buttons the dashboard assistant offers under its answer (confirm a plan change, open a tab, open the billing portal). */
   actions?: AssistantAction[];
 }
@@ -86,6 +87,9 @@ export function FloatingPlatformChatbot({ variant = 'floating', onNavigate, onBi
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [conversationId, setConversationId] = useState<string | null>(null);
+  const [conversationToken, setConversationToken] = useState<string | null>(null);
+  const [isTakeoverActive, setIsTakeoverActive] = useState(false);
+  const [assignedAgentName, setAssignedAgentName] = useState('Support Agent');
   const [hasUnread, setHasUnread] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [bookingConfig, setBookingConfig] = useState<BookingConfig | null>(null);
@@ -105,6 +109,72 @@ export function FloatingPlatformChatbot({ variant = 'floating', onNavigate, onBi
       setTimeout(() => inputRef.current?.focus(), 150);
     }
   }, [isOpen, messages]);
+
+  // Polling for live agent messages and takeover status in the conversation
+  useEffect(() => {
+    if (!conversationId) return;
+
+    let isMounted = true;
+    const pollConversation = async () => {
+      try {
+        let url = `/api/conversations?id=${encodeURIComponent(conversationId)}`;
+        if (conversationToken) {
+          url += `&token=${encodeURIComponent(conversationToken)}`;
+        }
+        const res = await fetch(url);
+        if (!res.ok) return;
+        const data = await res.json();
+        if (!data || !isMounted) return;
+
+        const conv = data.conversation;
+        if (conv) {
+          if (conv.isLiveTakeover) {
+            setIsTakeoverActive(true);
+            if (conv.assignedAgentName) {
+              setAssignedAgentName(conv.assignedAgentName);
+            }
+          } else if (conv.isLiveTakeover === false) {
+            setIsTakeoverActive(false);
+          }
+        }
+
+        const msgList: any[] = (conv && conv.messages) || data.newMessages || [];
+        if (Array.isArray(msgList) && msgList.length > 0) {
+          setMessages((prev) => {
+            const existingIds = new Set(prev.map((m) => m.id).filter(Boolean));
+            const newToAppend: ChatMessage[] = [];
+
+            for (const m of msgList) {
+              if ((m.role === 'agent' || m.role === 'system') && !existingIds.has(m.id)) {
+                newToAppend.push({
+                  id: m.id || 'msg_' + Math.random().toString(36).substring(2, 9),
+                  role: m.role as 'agent' | 'system',
+                  content: m.content,
+                  senderName: m.senderName || conv?.assignedAgentName || assignedAgentName,
+                  createdAt: m.createdAt || new Date().toISOString(),
+                });
+              }
+            }
+
+            if (newToAppend.length > 0) {
+              if (!isOpen) setHasUnread(true);
+              return [...prev, ...newToAppend];
+            }
+            return prev;
+          });
+        }
+      } catch {
+        // Silent poll error
+      }
+    };
+
+    pollConversation();
+    const timer = setInterval(pollConversation, 3000);
+    return () => {
+      isMounted = false;
+      clearInterval(timer);
+    };
+  }, [conversationId, conversationToken, isOpen, assignedAgentName]);
 
   useEffect(() => {
     if (!isOpen || bookingConfig) return;
@@ -235,14 +305,19 @@ export function FloatingPlatformChatbot({ variant = 'floating', onNavigate, onBi
     }
     setIsLoading(true);
 
+    let isTakeoverStream = isTakeoverActive;
     const botMsgId = 'ast_' + (Date.now() + 1);
-    const initialBotMsg: ChatMessage = {
-      id: botMsgId,
-      role: 'assistant',
-      content: '',
-      createdAt: new Date().toISOString(),
-    };
-    setMessages((prev) => [...prev, initialBotMsg]);
+
+    // Only add bot placeholder bubble if AI is not paused by live takeover
+    if (!isTakeoverActive) {
+      const initialBotMsg: ChatMessage = {
+        id: botMsgId,
+        role: 'assistant',
+        content: '',
+        createdAt: new Date().toISOString(),
+      };
+      setMessages((prev) => [...prev, initialBotMsg]);
+    }
 
     const historyMsgs = messages
       .filter((m) => m.role === 'user' || m.role === 'assistant')
@@ -303,21 +378,31 @@ export function FloatingPlatformChatbot({ variant = 'floating', onNavigate, onBi
               setMessages((prev) =>
                 prev.map((m) => (m.id === botMsgId ? { ...m, content: accumulated } : m))
               );
+            } else if (parsed.type === 'takeover_active') {
+              isTakeoverStream = true;
+              setIsTakeoverActive(true);
+              if (parsed.agentName) setAssignedAgentName(parsed.agentName);
+              if (parsed.conversationId) setConversationId(parsed.conversationId);
+              if (parsed.conversationToken) setConversationToken(parsed.conversationToken);
+              // Clean up empty placeholder assistant bubble
+              setMessages((prev) => prev.filter((m) => m.id !== botMsgId));
             } else if (
               (parsed.type === 'citations' || parsed.type === 'done' || parsed.type === 'conversation_id') &&
               parsed.conversationId
             ) {
               setConversationId(parsed.conversationId);
+              if (parsed.conversationToken) setConversationToken(parsed.conversationToken);
             } else if (parsed.type === 'error' && parsed.error) {
-              // If an AI provider error occurred, provide the concierge answer if accumulated is empty
-              if (!accumulated.trim()) {
-                accumulated = getPlatformConciergeAnswer(text);
-              } else {
-                accumulated += `\n\n*(Notice: ${parsed.error})*`;
+              if (!isTakeoverStream && !isTakeoverActive) {
+                if (!accumulated.trim()) {
+                  accumulated = getPlatformConciergeAnswer(text);
+                } else {
+                  accumulated += `\n\n*(Notice: ${parsed.error})*`;
+                }
+                setMessages((prev) =>
+                  prev.map((m) => (m.id === botMsgId ? { ...m, content: accumulated } : m))
+                );
               }
-              setMessages((prev) =>
-                prev.map((m) => (m.id === botMsgId ? { ...m, content: accumulated } : m))
-              );
             }
           } catch {
             if (rawData && !rawData.startsWith('{')) {
@@ -342,6 +427,13 @@ export function FloatingPlatformChatbot({ variant = 'floating', onNavigate, onBi
               setMessages((prev) =>
                 prev.map((m) => (m.id === botMsgId ? { ...m, content: accumulated } : m))
               );
+            } else if (parsed.type === 'takeover_active') {
+              isTakeoverStream = true;
+              setIsTakeoverActive(true);
+              if (parsed.agentName) setAssignedAgentName(parsed.agentName);
+              if (parsed.conversationId) setConversationId(parsed.conversationId);
+              if (parsed.conversationToken) setConversationToken(parsed.conversationToken);
+              setMessages((prev) => prev.filter((m) => m.id !== botMsgId));
             }
           } catch {
             if (!rawData.startsWith('{')) {
@@ -355,28 +447,32 @@ export function FloatingPlatformChatbot({ variant = 'floating', onNavigate, onBi
       }
 
       // If the LLM stream yielded an empty string or error notice, deliver the platform concierge knowledge
-      if (
-        !accumulated.trim() ||
-        accumulated.includes('*(Authentication Error:') ||
-        accumulated.includes('*(Notice: Could not connect') ||
-        accumulated.includes('*(AI Generation Error:')
-      ) {
-        accumulated = getPlatformConciergeAnswer(text);
-        setMessages((prev) =>
-          prev.map((m) => (m.id === botMsgId ? { ...m, content: accumulated } : m))
-        );
+      // ONLY if live agent takeover is not active
+      if (!isTakeoverStream && !isTakeoverActive) {
+        if (
+          !accumulated.trim() ||
+          accumulated.includes('*(Authentication Error:') ||
+          accumulated.includes('*(Notice: Could not connect') ||
+          accumulated.includes('*(AI Generation Error:')
+        ) {
+          accumulated = getPlatformConciergeAnswer(text);
+          setMessages((prev) =>
+            prev.map((m) => (m.id === botMsgId ? { ...m, content: accumulated } : m))
+          );
+        }
       }
 
       if (!isOpen) {
         setHasUnread(true);
       }
     } catch (err: any) {
-      console.warn('[PlatformChatbot] fetch error, using concierge knowledge fallback:', err?.message);
-      // Fallback immediately to platform concierge answer so user gets their answer even on network hiccups
-      const fallbackReply = getPlatformConciergeAnswer(text);
-      setMessages((prev) =>
-        prev.map((m) => (m.id === botMsgId ? { ...m, content: fallbackReply } : m))
-      );
+      console.warn('[PlatformChatbot] fetch error:', err?.message);
+      if (!isTakeoverStream && !isTakeoverActive) {
+        const fallbackReply = getPlatformConciergeAnswer(text);
+        setMessages((prev) =>
+          prev.map((m) => (m.id === botMsgId ? { ...m, content: fallbackReply } : m))
+        );
+      }
     } finally {
       setIsLoading(false);
     }
@@ -501,7 +597,7 @@ export function FloatingPlatformChatbot({ variant = 'floating', onNavigate, onBi
                   <T>Crescelo</T>
                 </h3>
                 <p className="mt-1 text-[11px] text-[#a19f96]" aria-live="polite">
-                  {orbState === 'thinking' ? <T>{'Thinking…'}</T> : orbState === 'speaking' ? <T>{'Answering…'}</T> : inHeader ? <T>{'Ask about your plan or any setup guide'}</T> : <T>{'Ask about pricing, setup or features'}</T>}
+                  {orbState === 'thinking' ? <T>{'Thinking…'}</T> : orbState === 'speaking' ? <T>{'Answering…'}</T> : isTakeoverActive ? <T>{`Live Agent Connected (${assignedAgentName})`}</T> : inHeader ? <T>{'Ask about your plan or any setup guide'}</T> : <T>{'Ask about pricing, setup or features'}</T>}
                 </p>
               </div>
             </div>
@@ -520,6 +616,8 @@ export function FloatingPlatformChatbot({ variant = 'floating', onNavigate, onBi
                     },
                   ]);
                   setConversationId(null);
+                  setConversationToken(null);
+                  setIsTakeoverActive(false);
                 }}
                 title={__t("Start over")}
                 aria-label={__t("Start over")}
@@ -539,9 +637,49 @@ export function FloatingPlatformChatbot({ variant = 'floating', onNavigate, onBi
             </div>
           </div>
 
+          {/* Live Takeover Status Banner */}
+          {isTakeoverActive && (
+            <div className="mx-4 mt-1 mb-2 px-3 py-1.5 rounded-xl bg-[#08251a] border border-[#abff44]/30 flex items-center justify-between text-[11px] text-[#abff44]">
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-[#abff44] animate-pulse" />
+                <span className="font-semibold"><T>Live Agent Connected</T> ({assignedAgentName})</span>
+              </div>
+              <span className="text-[10px] text-[#abff44]/70 font-mono font-medium"><T>AI Paused</T></span>
+            </div>
+          )}
+
           {/* Messages */}
           <div data-lenis-prevent className="relative flex-1 min-h-0 overscroll-contain px-4 pt-2 pb-3 overflow-y-auto space-y-4 [scrollbar-width:thin] [scrollbar-color:rgba(250,249,245,0.18)_transparent]">
-            {messages.map((m) => (
+            {messages.map((m) => {
+              if (m.role === 'system') {
+                return (
+                  <div key={m.id} className="flex justify-center my-2">
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#08251a] border border-[#abff44]/30 text-[#abff44] text-[11px] font-semibold shadow-xs text-center">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#abff44] animate-pulse shrink-0" />
+                      <span>{m.content}</span>
+                    </div>
+                  </div>
+                );
+              }
+
+              if (m.role === 'agent') {
+                return (
+                  <div key={m.id} className="flex gap-2.5 justify-start">
+                    <span className="mt-0.5 shrink-0 flex items-center justify-center w-[26px] h-[26px] rounded-full bg-[#abff44] text-[#08251a]">
+                      <Headphones className="w-3.5 h-3.5" />
+                    </span>
+                    <div className="relative group max-w-[84%] px-3.5 py-2.5 text-[13px] leading-relaxed bg-[#1b382b] text-[#faf9f5] border border-[#abff44]/30 rounded-2xl rounded-tl-md">
+                      <div className="flex items-center gap-1.5 text-[11px] font-bold text-[#abff44] mb-1">
+                        <span>{m.senderName || assignedAgentName || 'Live Support Agent'}</span>
+                        <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-[#abff44]/20 text-[#abff44] uppercase tracking-wider font-extrabold">Agent</span>
+                      </div>
+                      <div className="whitespace-pre-wrap break-words">{m.content}</div>
+                    </div>
+                  </div>
+                );
+              }
+
+              return (
               <div key={m.id} className={`flex gap-2.5 ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                 {m.role === 'assistant' && (
                   <span className="mt-0.5 shrink-0">
@@ -635,7 +773,8 @@ export function FloatingPlatformChatbot({ variant = 'floating', onNavigate, onBi
                   )}
                 </div>
               </div>
-            ))}
+            );
+          })}
 
             {/* Suggestions on the first view */}
             {messages.length <= 2 && !isLoading && (

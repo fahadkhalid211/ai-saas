@@ -1911,9 +1911,9 @@
 
           var hasNewAgentMsg = false;
           msgList.forEach(function (m) {
-            if (m.role === 'agent' && !knownMessageIds[m.id]) {
+            if ((m.role === 'agent' || m.role === 'system') && !knownMessageIds[m.id]) {
               knownMessageIds[m.id] = true;
-              appendMessage('agent', m.content, m.senderName);
+              appendMessage(m.role, m.content, m.senderName);
               hasNewAgentMsg = true;
             } else if (m.id) {
               knownMessageIds[m.id] = true;
@@ -1945,6 +1945,24 @@
     function appendMessage(role, text, senderName) {
       messages.push({ role: role, content: text, senderName: senderName });
       persistSessionState();
+
+      var cleanText = text ? text.replace(/\s*\[ACTION:[A-Z_]+\]/g, '').trim() : '';
+
+      if (role === 'system') {
+        var sysEl = document.createElement('div');
+        sysEl.className = 'message msg-system';
+        sysEl.style.cssText = 'align-self:center;text-align:center;margin:8px auto;max-width:92%;width:100%;display:flex;justify-content:center;';
+        sysEl.innerHTML = `
+          <div style="display:inline-flex;align-items:center;gap:6px;background:rgba(124,58,237,0.08);border:1px solid rgba(124,58,237,0.28);padding:4px 12px;border-radius:20px;font-size:11px;font-weight:600;color:#6d28d9;">
+            <span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#10b981;box-shadow:0 0 0 2px rgba(16,185,129,0.25);"></span>
+            <span>${escapeHtml(cleanText)}</span>
+          </div>
+        `;
+        if (messagesBody) messagesBody.appendChild(sysEl);
+        scrollToBottom();
+        return sysEl;
+      }
+
       var msgEl = document.createElement('div');
       var isUser = role === 'user';
       var isAgent = role === 'agent';

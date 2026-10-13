@@ -50,7 +50,7 @@ export default function EmbedChatPage({ params }: EmbedPageProps) {
   const [messages, setMessages] = useState<
     {
       id?: string;
-      role: 'user' | 'assistant' | 'agent';
+      role: 'user' | 'assistant' | 'agent' | 'system';
       content: string;
       senderName?: string;
       citations?: any[];
@@ -218,15 +218,15 @@ export default function EmbedChatPage({ params }: EmbedPageProps) {
 
         setMessages((prev) => {
           const prevIds = new Set(prev.map((m) => m.id).filter(Boolean));
-          const newAgentMessages = incomingMessages.filter(
-            (m: any) => m.role === 'agent' && (!m.id || !prevIds.has(m.id))
+          const newMessagesToAdd = incomingMessages.filter(
+            (m: any) => (m.role === 'agent' || m.role === 'system') && (!m.id || !prevIds.has(m.id))
           );
 
-          if (newAgentMessages.length === 0) return prev;
+          if (newMessagesToAdd.length === 0) return prev;
 
-          const formatted = newAgentMessages.map((m: any) => ({
+          const formatted = newMessagesToAdd.map((m: any) => ({
             id: m.id,
-            role: 'agent' as const,
+            role: m.role as 'agent' | 'system',
             content: m.content,
             senderName: m.senderName || conv.assignedAgentName || 'Live Support Agent',
           }));
@@ -396,6 +396,13 @@ export default function EmbedChatPage({ params }: EmbedPageProps) {
           setIsTakeoverActive(true);
           if (agentName) setAssignedAgentName(agentName);
           setStreamingStatus(null);
+          setMessages((prev) => {
+            const last = prev[prev.length - 1];
+            if (last && last.role === 'assistant' && !last.content) {
+              return prev.slice(0, -1);
+            }
+            return prev;
+          });
         },
         onDone: (convId, convToken) => {
           if (convId) setConversationId(convId);
@@ -563,6 +570,17 @@ export default function EmbedChatPage({ params }: EmbedPageProps) {
         )}
 
         {messages.map((msg, index) => {
+          if (msg.role === 'system') {
+            return (
+              <div key={msg.id || index} className="flex justify-center my-2">
+                <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800 text-purple-700 dark:text-purple-300 text-xs font-semibold shadow-xs text-center">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+                  <span>{msg.content}</span>
+                </div>
+              </div>
+            );
+          }
+
           if (msg.role === 'agent') {
             return (
               <div key={index} className="flex flex-col items-start">
