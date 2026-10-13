@@ -8,6 +8,7 @@ import { getAuthContext, requireRole } from '@/lib/security/auth';
 import { getClientIp, enforceRateLimit } from '@/lib/security/rate-limit';
 import { logged } from '@/lib/logging/route';
 import { logEvent } from '@/lib/logging/logger';
+import { emailConfirmationRequired } from '@/lib/security/email-verification-gate';
 
 async function POSTHandler(req: NextRequest) {
   try {
@@ -24,6 +25,8 @@ async function POSTHandler(req: NextRequest) {
         { status: 403 }
       );
     }
+    const unconfirmed = await emailConfirmationRequired(ctx.memberId);
+    if (unconfirmed) return unconfirmed;
 
     let body: any;
     try {

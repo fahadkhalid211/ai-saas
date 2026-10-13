@@ -124,6 +124,9 @@ export function SubscriptionGate({ isMasterAdmin, onLogout, onOpenBilling, onOpe
       }
       if (res.ok) {
         await load(); // simulated checkout (development)
+      } else if (out.emailVerificationRequired) {
+        // Not a checkout problem: the person has not opened the link in the confirmation e-mail yet.
+        showErrorModal({ title: 'Confirm your email first', message: out.error, hint: 'Open the link in the email we sent you, then press the button again. Nothing was charged.' });
       } else {
         setCheckoutFailed(true);
         showErrorModal({ title: "Card checkout isn't ready yet", message: out.error || 'Checkout could not be started.', hint: 'Nothing was charged. You can start your free trial without a card, or ask us to arrange payment: the options are right below.' });

@@ -31,6 +31,7 @@ const APP_PREFIXES = [
   '/landing-page',
   '/status',
   '/connect',
+  '/verify-email',
   '/i18n',
   '/_next',
 ];

@@ -987,6 +987,20 @@ ${cleanMessage}
 }
 
 
+/**
+ * Whether an e-mail sending service (Resend or SMTP, from the dashboard settings or the environment) is set up. When it is not,
+ * e-mails are only written to the server log, so nothing that depends on the person reading one can be required.
+ */
+export async function isEmailConfigured(): Promise<boolean> {
+  const dbSmtp = await Database.getSmtpSettings().catch(() => null);
+  const resendKey = dbSmtp?.resendApiKey || process.env.RESEND_API_KEY;
+  if (resendKey && resendKey.startsWith('re_')) return true;
+  const host = dbSmtp?.host || process.env.SMTP_HOST;
+  const user = dbSmtp?.user || process.env.SMTP_USER;
+  const pass = dbSmtp?.pass || process.env.SMTP_PASS;
+  return Boolean(host && user && pass);
+}
+
 /** Sends a ready-made message through the configured Resend/SMTP settings (billing e-mails use this). */
 export async function sendTransactionalEmail(payload: { to: string; subject: string; text: string; html: string; fromName: string }): Promise<EmailSendResult> {
   return sendEmailTransport(payload);

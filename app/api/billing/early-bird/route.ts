@@ -7,6 +7,7 @@ import { BILLING_PLANS } from '@/lib/billing/plans';
 import { newTrialDates, TRIAL_PLAN_ID } from '@/lib/billing/trial';
 import { earlyBirdAvailableFor } from '@/lib/billing/early-bird';
 import { logged } from '@/lib/logging/route';
+import { emailConfirmationRequired } from '@/lib/security/email-verification-gate';
 
 export const dynamic = 'force-dynamic';
 
@@ -17,6 +18,8 @@ async function POSTHandler(req: Request) {
   if (!requireRole(ctx, ['owner', 'admin', 'billing_manager'])) {
     return NextResponse.json({ error: 'Only an owner, admin or billing manager can start the trial.' }, { status: 403 });
   }
+  const unconfirmed = await emailConfirmationRequired(ctx.memberId);
+  if (unconfirmed) return unconfirmed;
   const limited =
     (await enforceDistributedRateLimit(req, 'early-bird', { windowMs: 24 * 60 * 60 * 1000, max: 5 })) ||
     (await enforceDistributedRateLimitByKey(`early-bird-ws:${ctx.workspaceId}`, { windowMs: 60 * 60 * 1000, max: 5 }));

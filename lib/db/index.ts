@@ -393,6 +393,13 @@ export interface TeamMemberData {
   avatarUrl?: string;
   /** When the product tour was shown to this member; absent until their first sign-in to the dashboard. */
   tourSeenAt?: string;
+  /**
+   * Whether this person has shown they own the e-mail address. `false` only for an account created by a password sign-up that
+   * has not been confirmed yet; absent means confirmed (accounts that existed before e-mail confirmation, Google sign-ins and
+   * invited team members), so no existing account is locked out. See lib/security/email-verification.ts.
+   */
+  emailVerified?: boolean;
+  emailVerifiedAt?: string;
   createdAt: string;
   updatedAt?: string;
 }
@@ -3006,6 +3013,50 @@ export class Database {
     return member;
   }
 
+  /**
+   * Whether a CONFIRMED account already owns this e-mail address (a workspace owner or a team member). An account that is still
+   * waiting for its confirmation e-mail does not count: whoever typed an address into a sign-up form has not shown they own it,
+   * so it must not stop the real owner from signing up, nor let anyone else claim it.
+   */
+  static async emailBelongsToConfirmedAccount(email: string): Promise<boolean> {
+    const state = await ensureInitialized();
+    const clean = (email || '').toLowerCase().trim();
+    if (!clean) return false;
+    const members = (state.teamMembers || []).filter((m) => (m.email || '').toLowerCase().trim() === clean);
+    if (members.some((m) => m.emailVerified !== false)) return true;
+    // an older workspace whose owner has no member record yet
+    return (state.workspaces || []).some(
+      (w: any) =>
+        (w.ownerEmail || '').toLowerCase().trim() === clean &&
+        !(state.teamMembers || []).some((m) => m.workspaceId === w.id && (m.email || '').toLowerCase().trim() === clean),
+    );
+  }
+
+  /**
+   * Marks the address as confirmed. With `newPassword` it also replaces the password and ends every other session, and with
+   * `revokeSessions` it ends them without a new password. Two-factor settings are left alone here.
+   */
+  static async confirmEmail(
+    memberId: string,
+    opts: { newPassword?: string; revokeSessions?: boolean } = {},
+  ): Promise<TeamMemberData | null> {
+    const state = await ensureInitialized();
+    const member = (state.teamMembers || []).find((m) => m.id === memberId);
+    if (!member) return null;
+    member.emailVerified = true;
+    member.emailVerifiedAt = new Date().toISOString();
+    if (opts.newPassword) {
+      const hashed = hashPassword(opts.newPassword);
+      member.password = hashed;
+      const ws: any = (state.workspaces || []).find((w) => w.id === member.workspaceId);
+      if (ws && (ws.ownerEmail || '').toLowerCase() === (member.email || '').toLowerCase()) ws.ownerPassword = hashed;
+    }
+    if (opts.newPassword || opts.revokeSessions) member.sessionVersion = (member.sessionVersion || 0) + 1;
+    member.updatedAt = new Date().toISOString();
+    await saveState(state);
+    return member;
+  }
+
   /** Plain lookup: unlike getTeamMemberById it never invents a member. Used to check a session against the account it names. */
   /**
    * Loads the shared state from the database now, instead of trusting this server's copy (which can be up to a minute old).
@@ -3772,6 +3823,8 @@ export class Database {
     ownerEmail: string;
     password?: string;
     industryTemplateSlug?: string;
+    /** false: the address is not confirmed yet (password sign-up). true: the sign-in provider confirmed it. Omitted: unchanged. */
+    emailVerified?: boolean;
   }): Promise<{
     workspace: WorkspaceBillingData;
     assistant: AssistantData;
@@ -3900,6 +3953,8 @@ export class Database {
       status: 'active',
       createdAt: new Date().toISOString(),
       lastLoginAt: new Date().toISOString(),
+      ...(params.emailVerified === false ? { emailVerified: false } : {}),
+      ...(params.emailVerified === true ? { emailVerified: true, emailVerifiedAt: new Date().toISOString() } : {}),
     };
     if (!state.teamMembers) state.teamMembers = [];
     state.teamMembers.push(ownerMember);
@@ -3982,9 +4037,17 @@ export class Database {
     const cleanEmail = (params.email || '').toLowerCase().trim();
     if (!cleanEmail) throw new Error('Email is required for social or SSO login.');
 
+    // An account whose address was never confirmed is not this person's account: anyone can type someone else's address into the
+    // password sign-up form and set a password they know. The provider has confirmed this address, so signing in must never
+    // land in such an account (it would hand the real owner a workspace the other person can still enter). Unconfirmed accounts
+    // are skipped here, and a new workspace is created below if no confirmed one exists.
+    const isUnconfirmed = (m?: TeamMemberData | null) => m?.emailVerified === false;
+    const ownerOf = (wsId: string) =>
+      (state.teamMembers || []).find((m) => m.workspaceId === wsId && (m.email || '').toLowerCase().trim() === cleanEmail);
+
     // 1. Check if an existing workspace owner has this email
     const existingWs = (state.workspaces || []).find(
-      (w: any) => (w.ownerEmail || '').toLowerCase() === cleanEmail
+      (w: any) => (w.ownerEmail || '').toLowerCase() === cleanEmail && !isUnconfirmed(ownerOf(w.id)),
     );
     // Fill in the person's own name and photo from the provider, without overwriting anything they set themselves.
     const applyProfile = (member: TeamMemberData, workspaceName?: string) => {
@@ -4000,7 +4063,9 @@ export class Database {
     };
 
     if (existingWs) {
-      let ownerMember = (state.teamMembers || []).find((m) => m.email.toLowerCase() === cleanEmail);
+      let ownerMember =
+        ownerOf(existingWs.id) ||
+        (state.teamMembers || []).find((m) => m.email.toLowerCase() === cleanEmail && !isUnconfirmed(m));
       if (!ownerMember) {
         ownerMember = {
           id: `owner_${existingWs.id}`,
@@ -4023,7 +4088,7 @@ export class Database {
     }
 
     // 2. Check if a team member with this email exists
-    const existingMember = (state.teamMembers || []).find((m) => m.email.toLowerCase() === cleanEmail);
+    const existingMember = (state.teamMembers || []).find((m) => m.email.toLowerCase() === cleanEmail && !isUnconfirmed(m));
     if (existingMember) {
       existingMember.lastLoginAt = new Date().toISOString();
       const ws = await Database.getWorkspaceBilling(existingMember.workspaceId || 'default-workspace');
@@ -4043,6 +4108,7 @@ export class Database {
       businessName,
       ownerEmail: cleanEmail,
       industryTemplateSlug: 'general',
+      emailVerified: true, // the sign-in provider has confirmed the address
     });
 
     // The owner record is named after the business by default; use the person's own name and photo instead.

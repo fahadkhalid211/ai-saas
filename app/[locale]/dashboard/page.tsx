@@ -50,6 +50,7 @@ import { SupportTab } from '@/components/crm/SupportTab';
 import { BlogAdminTab } from '@/components/crm/BlogAdminTab';
 import { AccessCodesTab } from '@/components/crm/AccessCodesTab';
 import { OnboardingWizardModal } from '@/components/crm/onboarding/OnboardingWizardModal';
+import { EmailVerificationBanner } from '@/components/crm/EmailVerificationBanner';
 import { TourGuideModal } from '@/components/crm/tour/TourGuideModal';
 import { TOUR_STEPS } from '@/components/crm/tour/tourData';
 
@@ -827,6 +828,8 @@ export default function DashboardPage() {
             </button>
           </div>
         )}
+
+        {!isMasterAdmin && !supportAccess ? <EmailVerificationBanner member={currentUser} /> : null}
 
         <SubscriptionGate isMasterAdmin={isMasterAdmin || Boolean(supportAccess)} onLogout={handleLogout} onOpenBilling={() => setActiveTab('billing')} onOpenSupport={() => setActiveTab('support')} />
 

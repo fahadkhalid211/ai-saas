@@ -5,6 +5,7 @@ import { getClientIp } from '@/lib/security/rate-limit';
 import { enforceDistributedRateLimit, enforceDistributedRateLimitByKey } from '@/lib/security/rate-limit-redis';
 import { grantFor, normalizeCode, redeemAccessCode, redeemBlockReason } from '@/lib/billing/access-codes';
 import { logged } from '@/lib/logging/route';
+import { emailConfirmationRequired } from '@/lib/security/email-verification-gate';
 
 export const dynamic = 'force-dynamic';
 
@@ -17,6 +18,8 @@ async function POSTHandler(req: Request) {
   if (!requireRole(ctx, ['owner', 'admin', 'billing_manager'])) {
     return NextResponse.json({ error: 'Only an owner, admin or billing manager can use an access code.' }, { status: 403 });
   }
+  const unconfirmed = await emailConfirmationRequired(ctx.memberId);
+  if (unconfirmed) return unconfirmed;
   const limited =
     (await enforceDistributedRateLimit(req, 'access-code', { windowMs: 60 * 60 * 1000, max: 10 })) ||
     (await enforceDistributedRateLimitByKey(`access-code-ws:${ctx.workspaceId}`, { windowMs: 60 * 60 * 1000, max: 10 }));

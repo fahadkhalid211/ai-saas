@@ -43,7 +43,7 @@ export type RoutingDecision =
 const BOT = /bot|crawl|spider|slurp|bing|yandex|baidu|duckduck|facebookexternalhit|twitterbot|linkedinbot|embedly|preview|lighthouse|pingdom|uptime|headless|curl\/|wget\//i;
 
 /** The signed-in screens that follow the person's language. Everything else outside the public site is English at one address. */
-const PREFERENCE_APP_PREFIXES = ['/dashboard', '/login', '/master', '/admin', '/connect'];
+const PREFERENCE_APP_PREFIXES = ['/dashboard', '/login', '/master', '/admin', '/connect', '/verify-email'];
 
 function startsWithAny(pathname: string, prefixes: string[]): boolean {
   return prefixes.some((p) => pathname === p || pathname.startsWith(p + '/'));

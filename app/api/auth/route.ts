@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { deferAfterResponse } from '@/lib/runtime/defer';
 import {
   generateSessionToken,
   verifyAdminRequest,
@@ -18,6 +19,7 @@ import { validateRegistrationPayload, validateEmail, sanitizeInput } from '@/lib
 import { verifyRecaptchaToken } from '@/lib/security/recaptcha';
 import { logged } from '@/lib/logging/route';
 import { checkSecondFactor } from '@/lib/security/two-factor';
+import { sendVerificationEmail } from '@/lib/security/email-verification-mail';
 
 /**
  * Second step of sign-in. Once the password is right, an account with two-factor authentication turned on must also present a
@@ -182,12 +184,25 @@ async function POSTHandler(req: Request) {
 
       const { businessName, email, password, industryTemplateSlug } = regValidation.sanitized;
 
+      // One confirmed account per address. (An address that is only waiting for its confirmation e-mail does not count, so the
+      // real owner can still sign up if someone else typed their address first.)
+      if (await Database.emailBelongsToConfirmedAccount(email)) {
+        return NextResponse.json(
+          { error: 'An account with this email already exists. Sign in instead, or use Google if that is how you signed up.', accountExists: true },
+          { status: 409 }
+        );
+      }
+
       const tenantResult = await Database.createTenantWorkspace({
         businessName,
         ownerEmail: email,
         password: password || undefined,
         industryTemplateSlug,
+        emailVerified: false,
       });
+
+      // Ask the person to confirm the address. This happens after the response so a slow mail service never slows the sign-up.
+      deferAfterResponse(() => sendVerificationEmail({ id: tenantResult.owner.id, email, name: tenantResult.owner.name }, req.url));
 
       const sessionToken = generateSessionToken(
         'owner',
