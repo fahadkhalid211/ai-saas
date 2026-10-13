@@ -1,0 +1,115 @@
+TITLE: Streaming AI Replies: Server-Sent Events vs WebSockets for Chatbots
+SEO: Streaming AI Replies: Server-Sent Events vs WebSockets
+DESC: How AI chatbots stream replies word by word: Server-Sent Events versus WebSockets, trade-offs for hosting, proxies, reconnection, cost and complexity.
+EXCERPT: How AI chatbots stream replies word by word: Server-Sent Events versus WebSockets, trade-offs for hosting, proxies, reconnection, cost and complexity.
+CLUSTER: Chatbot Technology
+MOD: 2026-09-27
+P: When you watch a chatbot answer, the words appear one after another, not all at once after a long pause. That streaming effect is more than a nicety. Language models produce text token by token, and a full answer can take several seconds; showing words as they are generated makes the wait feel short and lets the visitor start reading almost immediately. Under the hood, streaming needs a connection that stays open while the server sends pieces of the reply. Two technologies dominate: Server-Sent Events (SSE) and WebSockets. Which one you use affects hosting compatibility, complexity, reliability behind proxies and the cost of running the chat. This guide explains both in plain language, compares them for AI chat, describes how streaming interacts with serverless hosting, error handling and reconnection, and explains why many chat widgets, including Crescelo's, use SSE. It is written for developers and for owners who want to understand what their vendor chose and why.
+H2[why-streaming-matters]: Why streaming matters
+TABLE:
+H: Without streaming | With streaming
+R: Visitor waits several seconds with nothing on screen | First words appear in a fraction of a second
+R: Feels slow even when the model is quick | Feels responsive
+R: A timeout loses the whole reply | Partial replies can be preserved
+R: Users may click again or leave | Users read as it arrives
+P: Perceived speed matters more than total time. A reply that starts instantly and takes six seconds to finish feels faster than one that arrives complete after four.
+H2[server-sent-events-sse]: Server-Sent Events (SSE)
+P: SSE is a simple standard: the browser opens a normal HTTP request, the server keeps it open and sends text messages down it as they are ready. It is one-way, from server to browser, which suits a reply being generated. The visitor's message is sent with an ordinary request, and the reply comes back as an event stream.
+UL:
+- **Simple:** plain HTTP; no special protocol upgrade.
+- **Works through most proxies and firewalls** since it looks like a long response.
+- **Automatic reconnection** in the browser's built-in support, with a way to resume.
+- **Easy to implement** on most server frameworks.
+- **Fits serverless and edge hosting** that support streaming responses.
+H3: Limits of SSE
+UL:
+- One direction only: the client cannot push events on the same connection.
+- Browsers limit the number of simultaneous connections per domain on older protocols.
+- Some proxies buffer responses unless configured not to.
+- Text-based, so binary data needs encoding.
+H2[websockets]: WebSockets
+P: A WebSocket upgrades an HTTP connection into a two-way channel. Both sides can send messages at any time with low overhead. It is ideal for real-time apps such as multiplayer games, collaborative editing and live dashboards.
+UL:
+- **Two-way:** client and server both send at will.
+- **Low latency** for frequent, small messages.
+- **Binary support.**
+- **Suitable for presence, typing indicators and live agent chat.**
+H3: Limits of WebSockets
+UL:
+- Needs a long-lived connection to a server that holds state, which is awkward on serverless platforms.
+- Some proxies, corporate networks and older infrastructure interfere with upgrades.
+- You must build reconnection, heartbeats and message ordering yourself.
+- More moving parts to scale and monitor.
+H2[side-by-side-for-an-ai-chatbot]: Side by side for an AI chatbot
+TABLE:
+H: Criterion | SSE | WebSockets
+R: Direction | Server to client | Both
+R: Fit for streaming an AI reply | Excellent | Works, more than needed
+R: Complexity | Low | Higher
+R: Serverless hosting | Works well where streaming responses are supported | Often needs a separate always-on server or managed service
+R: Proxy and firewall friendliness | High | Medium
+R: Reconnection | Built-in support | You build it
+R: Typing indicators and live human chat | Awkward | Natural
+R: Cost to operate | Low | Higher for many idle connections
+P: For the core job of streaming a model's answer to a visitor, SSE does everything needed with less machinery.
+H2[streaming-and-serverless-hosting]: Streaming and serverless hosting
+P: Many small businesses' tools run on serverless platforms where each request is a short-lived function. Streaming responses are supported by modern platforms, but functions have time limits and cold starts, and some intermediaries buffer output. WebSockets require a persistent connection that most function platforms do not hold open. That is a major reason SSE is favoured on such hosting. If you need two-way real-time features, they are usually handled by a dedicated real-time service.
+H2[how-a-streamed-reply-flows]: How a streamed reply flows
+OL:
+- The visitor sends a question to the server.
+- The server retrieves relevant passages from the knowledge base.
+- It calls the language model with streaming turned on.
+- As each token or small group of tokens arrives, the server forwards it to the browser as an event.
+- The widget appends the text as events arrive.
+- At the end, the server sends a final event with metadata such as sources, and closes the stream.
+P: Crescelo's chat endpoint streams replies as Server-Sent Events: token events as the text is generated, followed by source and completion events.
+H2[handling-errors-and-cut-offs]: Handling errors and cut-offs
+UL:
+- **Connection drops mid-reply:** the client should show what it has, mark the reply incomplete and offer a retry.
+- **Model stops early:** a robust server detects a reply that ends mid-sentence and asks the model to continue, so the visitor never sees half a sentence.
+- **Provider error:** fall back to another provider or a friendly message; never a raw error.
+- **Timeouts:** set sensible limits and send keep-alive messages so proxies do not close idle streams.
+- **Duplicate sends:** protect against retries creating two replies.
+P: Crescelo's server continues a reply that stops unfinished and closes cleanly if it cannot. See [how to stop a chatbot from making things up](/blog/grounded-ai-chatbot-hallucinations) for the accuracy side.
+H2[behind-proxies-and-cdns]: Behind proxies and CDNs
+P: Streaming can be broken by intermediaries that buffer responses. Configure servers and proxies to disable buffering for stream endpoints, set appropriate headers (such as no-cache and an event-stream content type) and avoid compression that waits for the full response. Test through the same route your visitors use, including your CDN, not only on your laptop.
+H2[accessibility-and-widget-behaviour]: Accessibility and widget behaviour
+UL:
+- Announce new text to screen readers without repeating the whole reply on every token; batch updates.
+- Respect reduced-motion preferences: avoid typing animations that add delay.
+- Keep scroll behaviour predictable while text streams.
+- Show a clear indicator when the reply is complete.
+P: See [chatbot accessibility and WCAG](/blog/accessibility-wcag-compliance-website-chatbots).
+H2[when-to-choose-websockets]: When to choose WebSockets
+UL:
+- You need live, two-way chat with human agents, typing indicators and presence.
+- You have a persistent server and the operational capacity for it.
+- Message frequency is high in both directions.
+- You need binary data.
+P: Many products combine approaches: SSE for AI streaming and a real-time service for live agent features.
+H2[a-simple-decision-guide]: A simple decision guide
+TABLE:
+H: If you | Choose
+R: Only need to stream an AI reply to the browser | SSE
+R: Run on serverless hosting | SSE
+R: Need two-way real-time features beyond the AI reply | WebSockets or a real-time service, with SSE for the AI stream
+R: Are a small team wanting the least complexity | SSE
+H2[frequently-asked-questions]: Frequently asked questions
+FAQ:
+Q: What is the difference between SSE and WebSockets?
+A: SSE is a one-way stream from server to browser over ordinary HTTP. WebSockets are a two-way persistent channel.
+Q: Which is better for streaming AI replies?
+A: SSE is usually enough and simpler, especially on serverless hosting.
+Q: Does Crescelo use WebSockets?
+A: Its chat streams replies with Server-Sent Events.
+Q: Why does streaming sometimes arrive all at once?
+A: Usually a proxy or CDN is buffering the response. Disable buffering for the stream endpoint.
+Q: What happens if the connection drops?
+A: The widget should keep what it has received and offer a retry, and the server should continue unfinished replies.
+Q: Do I need to worry about this as a business owner?
+A: Not usually. It matters when choosing or building a platform, and when debugging slow-feeling chats.
+P: See the [website widget feature](/product/website-widget), read [performance of embedded chat widgets](/blog/performance-optimization-embedded-chat-widgets) and [how a chat widget is built](/blog/modern-website-chatbot-architecture), and try streaming in the [playground](/playground).
+H2[further-reading]: Further reading
+UL:
+- [MDN: Server-sent events](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events): How servers stream updates to a browser.
+- [MDN: WebSockets API](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API): Two-way real-time connections in the browser.

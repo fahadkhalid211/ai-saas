@@ -1,0 +1,138 @@
+TITLE: AI Chatbot vs Outsourced or Offshore Receptionists: Cost, Quality and Risk
+SEO: AI Chatbot vs Outsourced or Offshore Receptionists | Crescelo
+DESC: Compare an AI chatbot with outsourced or offshore receptionist services on cost, quality, hours, training, privacy and control, and how to decide or combine.
+EXCERPT: Compare an AI chatbot with outsourced or offshore receptionist services on cost, quality, hours, training, privacy and control, and how to decide or combine.
+CLUSTER: Comparisons
+MOD: 2026-09-27
+P: Outsourcing reception to a virtual or offshore team is a popular way for small businesses to cover the phone and chat without hiring in-house. An AI chatbot is another way to cover the same ground. The two differ in cost pattern, quality control, hours, privacy and how well they know your business. This guide compares them fairly, shows the questions to ask an outsourcing provider, describes the risks of each and explains how many businesses use both.
+NOTE: Whether a service is 'offshore', 'nearshore' or local varies by provider. This article compares the general model of outsourced human receptionists with AI, not any specific company.
+H2[how-outsourced-reception-works]: How outsourced reception works
+P: A provider employs receptionists, sometimes in another country, who answer on behalf of many clients. They follow a script and knowledge sheet you provide, take messages, transfer urgent calls, and in some plans book appointments or answer chat. You pay a monthly fee, often with included hours or calls and extra charges beyond them.
+H2[how-an-ai-chatbot-works-alongside]: How an AI chatbot works alongside
+P: An AI assistant reads your documents and replies in chat, capturing leads and booking appointments. It works on the website and messaging channels. Phone answering is a separate channel; Crescelo's voice feature is under development and shown on the [roadmap](/roadmap), so today the comparison is mainly about chat and messaging.
+H2[side-by-side]: Side-by-side
+TABLE:
+H:  | Outsourced receptionists | AI chatbot
+R: Hours | Often 24/7 or extended | 24/7
+R: Channels | Phone first, some chat | Web chat and messaging apps
+R: Speed | Depends on queue | Seconds
+R: Product knowledge | Script and notes; agents serve many clients | Reads all your documents
+R: Empathy and judgement | Human | Limited; hands over sensitive cases
+R: Consistency | Varies by agent | High
+R: Cost pattern | Base plan plus per-minute or per-call charges | Subscription plus small AI usage
+R: Scales | Costs grow with volume | Cost rises slowly
+R: Booking | Depends on plan | Live calendar booking (Growth)
+R: Records | Message summaries or call notes | Full transcripts and analytics
+R: Training | Days to weeks, repeated as agents change | Load content once, update as needed
+H2[cost-how-to-compare-properly]: Cost: how to compare properly
+P: Outsourcing prices are hard to compare because they mix base fees, included minutes, overage charges, setup fees and extras such as bilingual agents or appointment booking. Ask each provider for a total price at your current volume and at double.
+TABLE:
+H: Line to request | Why
+R: Base monthly fee and what it includes | The starting point
+R: Price per additional minute, call or chat | Overage is where bills grow
+R: Setup or onboarding fee | One-off cost
+R: Extras: booking, languages, after-hours, call transfers | Often priced separately
+R: Minimum contract length and cancellation terms | Lock-in risk
+R: Total at 2x volume | Growth check
+P: For the AI side, the platform subscription is fixed, and AI usage is small per conversation. See [bring-your-own-key versus bundled pricing](/blog/byok-vs-bundled-ai-pricing-cost-comparison). Our [ROI guide](/blog/ai-website-assistant-roi-calculator) shows how to weigh either against the value of enquiries you would otherwise miss.
+H2[quality-what-each-does-well-and-badly]: Quality: what each does well and badly
+H3: Outsourced receptionists
+UL:
+- **Good at:** a human voice, taking messages, handling upset callers, following a call script.
+- **Weaker at:** deep knowledge of your services, consistent wording across agents, being the same person each time, and detailed price or policy questions.
+- **Risks:** language and accent mismatch with your customers, high turnover at the provider, and a script that becomes stale.
+H3: AI chatbot
+UL:
+- **Good at:** accurate answers from your documents, instant replies, structured lead capture, booking, consistency.
+- **Weaker at:** empathy, unusual situations and judgement.
+- **Risks:** wrong answers if not grounded, and poor handling of sensitive cases without handover rules.
+P: See [how to stop a chatbot from making things up](/blog/grounded-ai-chatbot-hallucinations) and [live human handover flow design](/blog/live-human-handover-flow-design) for the safeguards that matter.
+H2[privacy-and-data]: Privacy and data
+P: Outsourcing gives more people access to customer information, sometimes in other countries, and you need an agreement that covers confidentiality, data location and how calls or chats are recorded and stored. An AI assistant sends data to your assistant vendor and your AI provider, so you need to understand those processors. In both cases, tell customers who they are talking to and link to your privacy policy. If you serve people in Europe or California, see the [GDPR checklist for website chatbots](/blog/website-chatbot-gdpr-checklist). This is general information, not legal advice.
+H2[control-and-accountability]: Control and accountability
+P: With outsourcing, quality depends on the provider's training and management of agents you do not see. With an assistant, you control the content, the rules and the review process, and you can read every conversation. Neither removes your responsibility for what is said on your behalf.
+H2[using-both]: Using both
+P: Many small businesses combine them: an outsourced service for phone calls, and an AI assistant for the website and messaging. The assistant handles the chat channels and out-of-hours enquiries; the outsourced team handles calls that need a person. Keep information consistent by sharing the same price list and policies with both, and by reviewing complaints from either side.
+OL:
+- List the channels your customers use and the volume on each.
+- Cover chat and messaging with the assistant.
+- Cover phone with a provider if phone volume justifies it.
+- Give both the same documents and escalation rules.
+- Review both monthly against bookings, response times and customer feedback.
+H2[questions-to-ask-an-outsourcing-provider]: Questions to ask an outsourcing provider
+UL:
+- Where are the agents, and what languages do they speak fluently?
+- How are agents trained on my business, and how do updates reach them?
+- What is the turnover, and will I get the same people?
+- How are calls recorded, stored and protected?
+- What are the overage rates and the contract terms?
+- Can I listen to sample calls or read sample chats?
+- How are urgent matters escalated to me, and how fast?
+H2[questions-to-ask-an-ai-provider]: Questions to ask an AI provider
+UL:
+- Does it answer only from my documents and admit when it does not know?
+- Can I see the source of each answer?
+- How is booking protected against double booking?
+- How do I take over a conversation?
+- What does it cost at twice my volume?
+- Where is my data stored and can I delete it?
+H2[decision-guide]: Decision guide
+TABLE:
+H: If | Then
+R: Almost all enquiries arrive by phone | Consider an outsourced service for calls, and add chat for the website
+R: Most enquiries arrive through the website and messaging | Start with an AI assistant
+R: Your calls are sensitive and emotional | Prefer trained people and keep AI to simple tasks
+R: You want the lowest cost at growing volume | AI first, humans for escalation
+R: You need many languages | Test AI in those languages; check an outsourcer's fluency in each
+H2[a-worked-comparison-for-a-small-clinic]: A worked comparison for a small clinic
+P: Imagine a clinic with 250 enquiries a month: 120 by phone, 100 by website and 30 by messaging apps. Phone calls need a person, so the clinic considers an outsourced service for those and an AI assistant for the rest.
+TABLE:
+H: Channel | Volume | Best fit | Reason
+R: Phone | 120 | Outsourced service | Voice; some callers need reassurance
+R: Website chat | 100 | AI assistant | Routine questions, bookings at any hour
+R: Messaging apps | 30 | AI assistant | Same knowledge, instant replies
+P: The outsourced service now handles 120 calls instead of 250 enquiries, which usually lowers its bill, and the assistant covers the rest. Both use the same price list and policies, and the clinic reviews complaints from each every month.
+H2[red-flags-in-a-receptionist-provider]: Red flags in a receptionist provider
+UL:
+- Unwillingness to share sample calls or transcripts.
+- A script that is never updated after the first week.
+- High agent turnover and no continuity.
+- Vague answers about data storage or call recording.
+- Long minimum contracts before you have seen results.
+- Charges that are difficult to predict.
+H2[setting-expectations-with-customers]: Setting expectations with customers
+P: Whichever option you choose, be honest with customers about who they are talking to. Say so in the greeting of a chat, and make sure a phone caller knows they are speaking to a receptionist service acting for you. Give a clear way to reach you directly when something is urgent. Customers forgive limits they are told about far more readily than surprises.
+H2[how-to-run-a-fair-trial-of-each]: How to run a fair trial of each
+OL:
+- Choose ten realistic customer questions and three difficult ones.
+- Give the outsourcer and the assistant the same documents.
+- Test them at different times of day, including nights and weekends.
+- Compare answers for accuracy, tone and next steps.
+- Measure response time and what happens to urgent cases.
+- Ask a colleague to test blind and rate the experience.
+TABLE:
+H: Score | Outsourced service | AI assistant
+R: Accuracy |  | 
+R: Tone |  | 
+R: Speed |  | 
+R: Handling of urgent case |  | 
+R: Total cost at current volume |  | 
+R: Total cost at double volume |  | 
+H2[frequently-asked-questions]: Frequently asked questions
+FAQ:
+Q: Is an AI chatbot cheaper than an outsourced receptionist?
+A: For chat and routine questions, usually, because AI usage costs little per conversation while outsourcing charges by minute or call. Compare totals at your volume.
+Q: Can an AI chatbot answer the phone?
+A: Some products can. Crescelo works in website chat and messaging apps today; phone answering is under development.
+Q: Are offshore receptionists lower quality?
+A: Not necessarily; quality varies by provider. Check language fluency, training and turnover, and listen to samples.
+Q: Can I use an outsourced service and an AI together?
+A: Yes. Use the AI for web chat and out-of-hours enquiries and the service for phone calls, with shared information.
+Q: Which is better for privacy?
+A: Neither is automatically better. Check agreements, data location and the processors involved for each.
+Q: How do I compare them?
+A: Ask for total price at current and double volume, test real questions, and check what happens to urgent or unusual cases.
+P: Try the assistant on your own documents in the [playground](/playground), compare it with our guide to [AI receptionist vs answering service](/blog/ai-receptionist-vs-answering-service), and see the [pricing](/pricing) and [human handover feature](/product/human-handover) pages for what the assistant side costs and how takeover works.
+H2[further-reading]: Further reading
+UL:
+- [Google Search Central: creating helpful, people-first content](https://developers.google.com/search/docs/fundamentals/creating-helpful-content): What Google looks for in useful pages.

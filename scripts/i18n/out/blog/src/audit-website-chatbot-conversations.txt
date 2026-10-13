@@ -1,0 +1,124 @@
+TITLE: How to Review Your Chatbot Conversations Each Week (A 15-Minute Routine)
+SEO: How to Review Your Chatbot Conversations Each Week | Crescelo
+DESC: A weekly routine for auditing website chatbot conversations: what to read, what to score, how to fix wrong answers, spot missing content and turn chats.
+EXCERPT: A weekly routine for auditing website chatbot conversations: what to read, what to score, how to fix wrong answers, spot missing content and turn chats.
+CLUSTER: AI Website Chatbots
+MOD: 2026-09-27
+P: A chatbot is not a machine you install and forget. It is more like a new team member: capable, fast, occasionally wrong, and much better after someone checks its work. The single habit that separates assistants that keep improving from those that quietly go stale is a short weekly review of real conversations. Fifteen minutes a week is enough for a small business. This guide gives you the routine: what to read, what to look for, how to score conversations, how to turn findings into fixes, and how to turn the same conversations into leads and content ideas.
+H2[why-weekly-review-matters]: Why weekly review matters
+UL:
+- **Visitors ask things you did not expect.** Only real conversations show you.
+- **Content goes out of date.** Prices and policies change; the assistant does not know unless you tell it.
+- **Mistakes hide.** A wrong answer given to one visitor is invisible until you look.
+- **Leads slip through.** Interested visitors sometimes leave details that nobody follows up.
+- **Your website has gaps.** Repeated questions show what your pages fail to explain.
+P: A reviewed assistant becomes more accurate each week. An unreviewed one becomes less accurate as your business changes.
+H2[the-15-minute-routine]: The 15-minute routine
+TABLE:
+H: Minutes | Step | What to do
+R: 0 to 3 | Scan the numbers | How many conversations, bookings, leads and handover requests this week
+R: 3 to 8 | Read the flagged conversations | Unanswered questions, handovers, long conversations and any without a booking or lead
+R: 8 to 11 | Spot check five random conversations | Read start to finish for tone and accuracy
+R: 11 to 14 | Fix | Correct wrong content and add missing answers
+R: 14 to 15 | Note | Write one line: what changed and what to watch next week
+P: Do it at the same time each week, ideally Monday morning, and put it in your calendar. In Crescelo, conversations are in Chat History and the numbers in Analytics.
+H2[what-to-look-for]: What to look for
+H3: Wrong answers
+P: Compare each answer with your documents. If it is wrong, find why: was the source outdated, did two documents conflict, or did the assistant ignore a correct passage? The cause tells you the fix.
+H3: Questions it could not answer
+P: These are your content gaps. If the information should exist, write it down and add it. If it should not be shared (for example a private policy), make sure the assistant hands over politely.
+H3: Handover requests
+P: Every time a visitor asks for a person, ask two things: was the request reasonable, and could the assistant have helped first? Repeated handovers on the same topic mean the assistant needs better content there.
+H3: Abandoned conversations
+P: Where did visitors stop replying? A visitor who leaves after a price answer may be telling you the price was unexpected or unclear. See [tracking in-chat funnel drop-off](/blog/tracking-in-chat-funnel-drop-off).
+H3: Leads and bookings that went nowhere
+P: Check that each lead reached you and was followed up, and that each booking appears in your calendar and confirmations were sent.
+H3: Tone
+P: Read a few replies aloud. If a human receptionist would not say it, adjust the instructions or add example replies.
+H2[a-simple-scoring-sheet]: A simple scoring sheet
+TABLE:
+H: Conversation | Accuracy (0-2) | Helpfulness (0-2) | Tone (0-2) | Outcome | Action
+R: Example: price question | 2 | 2 | 2 | Booked | None
+R: Example: parking question | 0 | 0 | 1 | Left | Add parking information
+P: Score a sample of ten conversations for the first month, then five a week. Look at the totals over time. A rising average shows the review is working.
+H2[turn-findings-into-fixes]: Turn findings into fixes
+TABLE:
+H: Finding | Fix
+R: Wrong price | Correct the price in the source document; remove old copies
+R: Missing answer | Write a short document titled with the question
+R: Answer too vague | Add specifics: figures, steps, conditions
+R: Contradiction | Delete or reconcile the conflicting documents
+R: Repeated handover on one topic | Add content or a clearer rule for that topic
+R: Tone problem | Add three example replies in the right voice
+P: Retest the fixed question in the Testing Studio to confirm the change worked. See [the questions every service business chatbot should answer well](/blog/essential-chatbot-questions-service-business) for a test list.
+H2[use-conversations-to-improve-your-website-and-marketing]: Use conversations to improve your website and marketing
+UL:
+- The most common questions belong on your pricing and FAQ pages.
+- The words visitors use are the words to use in your copy.
+- The objections they raise are what your pages should address.
+- The pages where chats start show where visitors hesitate.
+- Interest in a service you barely promote is a signal.
+P: Many owners find the review teaches them more about their customers than analytics does. See [unanswered chat questions as knowledge gaps](/blog/unanswered-chat-questions-knowledge-gaps) and [unanswered questions as lead opportunities](/blog/unanswered-chat-questions-lead-opportunities).
+H2[privacy-in-your-review]: Privacy in your review
+UL:
+- Limit who can read conversations to people who need to.
+- Do not copy transcripts into unsecured places.
+- Delete transcripts you no longer need, according to your retention policy.
+- Do not use personal details from chats for marketing without a lawful basis and consent.
+P: See the [GDPR checklist for website chatbots](/blog/website-chatbot-gdpr-checklist). This is general information, not legal advice.
+H2[team-review-versus-solo-review]: Team review versus solo review
+P: In a team, share the load: one person reads, another fixes content, and a third checks bookings. Rotate the reader so different eyes catch different problems. Keep a shared log of changes so you know what was fixed and why. For a solo owner, keep the routine short and consistent rather than long and occasional.
+H2[signals-that-need-action-right-away]: Signals that need action right away
+UL:
+- A wrong price or policy stated to a customer: fix at once and consider contacting them.
+- An emergency message that was not handed over: review your emergency rules today.
+- A complaint that received a generic reply: follow up personally.
+- A lead with no follow-up: reply now.
+- A sudden rise in unanswered questions: a document may have been removed or a page changed.
+H2[a-sample-week-step-by-step]: A sample week, step by step
+P: Here is what a Monday review might look like for a small clinic with 60 conversations last week.
+TABLE:
+H: Finding | Detail | Fix
+R: Three visitors asked about parking | The assistant said it did not know | Added a short parking page
+R: One visitor was quoted last year's price for a check-up | An old price list was still uploaded | Deleted the old file and re-tested
+R: Two visitors asked for a person about insurance | Reasonable; the assistant lacked detail | Wrote an insurance FAQ with the accepted providers
+R: A lead left a phone number at 9 p.m. | Nobody had called back | Called the visitor first thing; set a morning routine for overnight leads
+R: One reply sounded curt | Tone of the refund answer | Added three example replies in a friendlier voice
+P: The whole review took fifteen minutes and made five improvements. Do this consistently and the assistant becomes better at the things your customers actually ask, rather than the things you guessed they would.
+H2[metrics-worth-tracking-across-weeks]: Metrics worth tracking across weeks
+TABLE:
+H: Metric | Direction you want
+R: Conversations | Growing if traffic grows
+R: Conversations that reach a booking or lead | Rising
+R: Unanswered questions | Falling as you add content
+R: Handover requests | Stable or falling, with the right ones staying
+R: Wrong answers found in review | Falling
+R: Time to fix a wrong answer | Under a day
+P: Chart them on a simple sheet. Trends matter more than any single week.
+H2[what-not-to-do-in-a-review]: What not to do in a review
+UL:
+- Do not read every conversation when volume is high; sample.
+- Do not blame the model before checking the content.
+- Do not change many things at once, or you will not know what worked.
+- Do not forget to retest after a fix.
+- Do not skip a week because things seemed fine; that is when drift starts.
+H2[setting-up-the-habit]: Setting up the habit
+P: The routine only works if it survives busy weeks. Put a recurring fifteen-minute block in your calendar with a title that says exactly what to do, such as 'Read chatbot chats, fix three things'. Keep a running note of fixes so you can see the trend. If you miss a week, do a short version rather than skipping: read only the unanswered questions and handovers. Ask a colleague to cover when you are away, so the habit does not depend on one person, and celebrate small wins, such as the week the number of unanswered questions halves.
+H2[frequently-asked-questions]: Frequently asked questions
+FAQ:
+Q: How often should I review chatbot conversations?
+A: Weekly for the first month at least, then weekly or fortnightly. Fifteen minutes is enough for most small businesses.
+Q: How many conversations should I read?
+A: Read all flagged ones (unanswered, handovers, abandoned) and spot check five others. For high volume, sample.
+Q: What is the most important thing to fix first?
+A: Wrong prices and policies, because they cost you money and trust.
+Q: How do I find what the assistant could not answer?
+A: Look for replies where it said it did not know, and for handover requests. These are your content gaps.
+Q: Do I need special tools?
+A: Not to start. Chat History and a simple spreadsheet are enough.
+Q: Should I tell customers I review conversations?
+A: Yes, in your privacy notice: say that conversations are stored and used to answer and improve the service.
+P: Start your routine by testing in the [playground](/playground), see how the [AI assistant](/product/ai-assistant) works, and [start a free trial](/login?mode=register) when you want it on your site.
+H2[further-reading]: Further reading
+UL:
+- [Google Search Central: creating helpful, people-first content](https://developers.google.com/search/docs/fundamentals/creating-helpful-content): What Google looks for in useful pages.

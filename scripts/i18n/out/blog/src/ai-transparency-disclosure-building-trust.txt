@@ -1,0 +1,110 @@
+TITLE: AI Disclosure for Website Chatbots: How to Tell Visitors and Build Trust
+SEO: AI Disclosure for Website Chatbots | Crescelo
+DESC: How and why to tell visitors they are talking to an AI: legal trends, wording examples, placement, handover, honesty about limits and how disclosure affects.
+EXCERPT: How and why to tell visitors they are talking to an AI: legal trends, wording examples, placement, handover, honesty about limits and how disclosure affects.
+CLUSTER: Customer Experience
+MOD: 2026-09-27
+P: When a visitor types into your website chat, they deserve to know whether a person or an AI is replying. Being clear about it is fair, builds trust and, in a growing number of places, is required by law. Many owners worry that saying 'I am an AI' will scare people away. In practice, honest disclosure combined with a helpful, fast assistant and an easy way to reach a person tends to be well accepted. This guide explains why disclosure matters, what the rules trend towards, how to word it, where to put it, what else to be honest about and how to test the effect on your own visitors.
+NOTE: Laws on AI disclosure are developing quickly and differ by country, state and sector. This is general information, not legal advice. Check the rules that apply to you and take advice where unsure.
+H2[why-disclose]: Why disclose
+UL:
+- **Fairness:** people are entitled to know who or what they are dealing with.
+- **Trust:** discovering later that 'Sarah' was software damages your credibility.
+- **Legal direction:** several jurisdictions and sector rules require or encourage disclosing automated interactions, and more are coming.
+- **Better conversations:** people who know it is an AI phrase questions simply and forgive limits.
+- **Lower risk:** a clear statement sets expectations, so a mistake is less likely to become a complaint.
+H2[what-to-disclose]: What to disclose
+TABLE:
+H: Topic | What to say
+R: It is an AI | 'I am an AI assistant.'
+R: What it can do | Answer questions about your services, prices and hours, and book appointments.
+R: What it cannot do | Give advice you are not qualified to give; promise outcomes; handle emergencies.
+R: That a person is available | How to reach one, and when.
+R: What data is used | That conversations are stored to answer and improve the service, with a link to your privacy policy.
+P: Keep the language plain and short. Long legal notices in the chat window are ignored; a short line and a link are read.
+H2[wording-examples]: Wording examples
+TABLE:
+H: Where | Example
+R: Greeting | Hi, I am the Brook Salon AI assistant. I can answer questions and book you in. A team member is available in office hours.
+R: Below the input | AI assistant. Conversations are stored to help us answer you. Privacy policy.
+R: When handing over | I am passing you to a team member now. They can see our conversation, so you will not need to repeat yourself.
+R: When it does not know | I do not have that information, and I would rather not guess. I can take your details so the team can reply, or you can call us on the number below.
+R: For sensitive topics | I cannot give medical advice. For anything urgent, please call emergency services or our emergency line.
+P: Choose the tone of your brand. A playful business can be light; a clinic should be calm and clear.
+H2[where-to-place-the-disclosure]: Where to place the disclosure
+UL:
+- **In the greeting message,** so it is seen at the start.
+- **Near the input box,** as a small persistent line.
+- **In the chat header,** for example 'AI assistant'.
+- **In your privacy policy and cookie information,** for the details.
+- **In confirmation emails** if the AI took the booking, a line such as 'Booked by our AI assistant. Reply to this email to reach the team.'
+P: Do not hide it in the small print of a page the visitor never opens.
+H2[do-not-pretend-to-be-human]: Do not pretend to be human
+UL:
+- Avoid human names, photos and typing delays that imply a person.
+- Do not claim 'I' have experience or feelings in ways that mislead.
+- If the visitor asks 'Are you a bot?', answer truthfully.
+- Make sure the assistant's instructions say so.
+P: Giving the assistant a friendly name is fine, as long as it says it is an AI. A name alone is not deception, but denying it is.
+H2[be-honest-about-limits-and-mistakes]: Be honest about limits and mistakes
+P: Honesty goes beyond the label. A trustworthy assistant states when it does not know, avoids guessing, and does not invent prices or policies. It should also be clear when information may be out of date, for example 'Prices are correct as of this month; the team will confirm at booking.' Pair disclosure with the safeguards in [how to stop a chatbot from making things up](/blog/grounded-ai-chatbot-hallucinations), because a disclosed AI that invents answers is still a problem.
+H2[handover-and-human-access]: Handover and human access
+P: Disclosure is more credible when a person is really available. Make it easy to ask for one, tell the visitor what will happen and when, and make sure your team is notified with the conversation. A promise of a human that leads nowhere is worse than none. See [live human handover flow design](/blog/live-human-handover-flow-design) and the [human handover feature](/product/human-handover).
+H2[privacy-notice-and-consent]: Privacy notice and consent
+UL:
+- Explain in your privacy policy what the chat collects, why, how long you keep it and who processes it.
+- Mention the AI provider and hosting as processors where relevant.
+- Do not collect more than you need.
+- Give a way to ask for deletion.
+- For marketing use of chat data, get separate consent.
+P: See the [GDPR checklist for website chatbots](/blog/website-chatbot-gdpr-checklist) for a fuller list.
+H2[does-disclosure-hurt-conversion]: Does disclosure hurt conversion?
+P: It is a fair question and the answer depends on your audience and how good the assistant is. Many businesses find that clear disclosure has little effect when the assistant is fast and helpful, and that trust rises when the experience is honest. Some visitors prefer a person, so give them an easy route. You can test it: run your greeting with and without an explicit line for a few weeks, and compare the rate of conversations and bookings. Do not test in a way that misleads visitors; test different honest wordings.
+TABLE:
+H: Test | What to compare
+R: Short label versus fuller greeting statement | Chat start rate, booking rate
+R: 'AI assistant' header versus none | Trust signals such as handover requests
+R: Prominent human option versus subtle | Handover requests and satisfaction
+H2[checklist]: Checklist
+UL:
+- Greeting says it is an AI assistant.
+- A persistent label near the input.
+- A link to the privacy policy.
+- Clear limits: no advice, no emergencies.
+- A visible route to a person.
+- Honest 'I do not know' behaviour.
+- No human name, photo or pretence.
+- Confirmation emails mention AI booking where relevant.
+- Reviewed when laws or your use change.
+H2[worked-example-a-disclosure-that-read-well]: Worked example: a disclosure that read well
+P: A physiotherapy clinic replaced a stiff legal-sounding notice with a two-line greeting: 'Hi, I am the clinic's AI assistant. I can answer questions about appointments, fees and what to expect, and a person is available in office hours. Please do not share medical details here.' Below the input box it added 'AI assistant. Conversations are stored to help us answer you. Privacy policy.' Visitors used the chat as before, some asked for a person and the team appreciated that people no longer shared medical histories in the chat. The clinic reviewed the wording after three months and added a line about opening hours when handovers were answered.
+H2[how-to-review-your-disclosure]: How to review your disclosure
+UL:
+- Read it aloud: does it sound like your business?
+- Ask a friend who does not work for you what they understood.
+- Check that it appears on mobile without scrolling.
+- Check it still matches your privacy policy.
+- Review it whenever your assistant's abilities change, for example when you add booking or a new channel.
+H2[keep-your-records]: Keep your records
+P: Keep a dated copy of the disclosure wording you used, when you changed it and why. If a customer or regulator ever asks how you told visitors they were talking to an AI, you can show them. It also helps you see whether changes in wording changed behaviour, and makes it easier to keep your privacy policy, greeting and confirmation emails consistent with each other.
+H2[a-short-policy-for-your-team]: A short policy for your team
+P: Write down three rules for everyone who touches the chat. First, the assistant always says it is an AI and never denies it. Second, a person is always reachable, and requests for one are honoured. Third, nobody edits the greeting or disclosure without checking it against the privacy policy. Share it with new staff and review it whenever your chat changes.
+H2[frequently-asked-questions]: Frequently asked questions
+FAQ:
+Q: Do I have to tell visitors they are talking to an AI?
+A: Increasingly yes in many places, and it is good practice everywhere. Check the rules that apply to you.
+Q: Where should the disclosure appear?
+A: In the greeting, near the input box and in your privacy policy.
+Q: Will disclosure reduce bookings?
+A: It often has little effect when the assistant is helpful, and it builds trust. You can test wording on your own visitors.
+Q: Can I give the chatbot a name?
+A: Yes, as long as it says it is an AI and does not deny it when asked.
+Q: What if the chatbot makes a mistake?
+A: A clear disclosure and an easy handover reduce harm. Also ground the assistant in your documents and review conversations.
+Q: Does the AI provider need to be mentioned?
+A: Mention your processors in your privacy policy. The chat itself can stay short.
+P: See how the [AI assistant](/product/ai-assistant) is designed to answer only from your content, try it in the [playground](/playground) and [start a free trial](/login?mode=register).
+H2[further-reading]: Further reading
+UL:
+- [EU AI Act, Article 50: transparency obligations](https://artificialintelligenceact.eu/article/50/): When people must be told they are talking to an AI.
+- [Google Search Central: creating helpful, people-first content](https://developers.google.com/search/docs/fundamentals/creating-helpful-content): What Google looks for in useful pages.

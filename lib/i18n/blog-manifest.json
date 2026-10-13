@@ -1,1 +1,26 @@
-{ "sv": [], "fi": [], "it": [], "es": [] }
+{
+ "sv": [
+  "add-ai-chatbot-to-your-website",
+  "grounded-ai-chatbot-hallucinations",
+  "stop-double-bookings-online",
+  "why-contact-us-forms-fail"
+ ],
+ "fi": [
+  "add-ai-chatbot-to-your-website",
+  "grounded-ai-chatbot-hallucinations",
+  "stop-double-bookings-online",
+  "why-contact-us-forms-fail"
+ ],
+ "it": [
+  "add-ai-chatbot-to-your-website",
+  "grounded-ai-chatbot-hallucinations",
+  "stop-double-bookings-online",
+  "why-contact-us-forms-fail"
+ ],
+ "es": [
+  "add-ai-chatbot-to-your-website",
+  "grounded-ai-chatbot-hallucinations",
+  "stop-double-bookings-online",
+  "why-contact-us-forms-fail"
+ ]
+}

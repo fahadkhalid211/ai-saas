@@ -1,0 +1,110 @@
+TITLE: Getting a New Lead to the Right Person in Minutes: Lead Routing for Small Teams
+SEO: Lead Routing for Small Business | Crescelo
+DESC: How to route chat leads quickly: speed matters, routing rules, alerts, ownership, response templates, out-of-hours handling and how to measure time to first.
+EXCERPT: How to route chat leads quickly: speed matters, routing rules, alerts, ownership, response templates, out-of-hours handling and how to measure time to first.
+CLUSTER: Lead Generation
+MOD: 2026-09-27
+P: A lead is a perishable thing. A visitor who asks about a quote at lunchtime is comparing you with two other businesses, and the one who replies first, helpfully, often wins. Yet in many small businesses a new enquiry sits in an inbox until someone notices it, then someone else assumes a colleague has replied. Lead routing is the unglamorous process that fixes this: deciding who gets each lead, how they are told and how quickly they respond. You do not need enterprise software to do it well. This guide explains why speed matters, how to design simple routing rules for a small team, how alerts work with a chat assistant, how to write first replies, how to cover evenings and weekends, how to track response time and which mistakes cause leads to fall through the cracks. It uses Crescelo's real capabilities, which are email alerts, Slack, Google Sheets and signed webhooks, and avoids promising features such as SMS alerts or automatic assignment.
+H2[why-speed-matters]: Why speed matters
+UL:
+- Visitors send enquiries to several businesses; the first useful reply often wins.
+- Interest fades quickly: a lead who was keen at 12:00 may have moved on by 17:00.
+- A fast reply signals that you are attentive and organised.
+- Context is fresh: the visitor remembers what they asked.
+P: Studies from sales research report that responding within minutes gives markedly better contact and conversion than responding hours later. Exact figures vary by source and industry, so treat them as directional. The lesson is consistent: shorten the gap, and make sure someone owns it.
+H2[the-three-questions-routing-answers]: The three questions routing answers
+TABLE:
+H: Question | Example answer
+R: Who should get this lead? | The person responsible for that service or area
+R: How will they be told? | An email alert plus a message in the team's Slack channel
+R: What if they do not act? | A second person is alerted after a set time
+H2[simple-routing-rules-that-work]: Simple routing rules that work
+TABLE:
+H: Rule | When to use it
+R: By service | Different people handle different services
+R: By location | Several branches or areas; see [one assistant for several locations](/blog/multi-location-ai-receptionist)
+R: By value | Large jobs go straight to the owner
+R: By time | Evening leads go to whoever opens the next morning
+R: Round robin | Rotate leads evenly among equals
+R: Everyone, first come first served | Small team with a shared inbox; needs a clear claiming rule
+P: Start with the simplest rule that fits. Add complexity only when a problem shows up.
+H2[how-crescelo-delivers-leads]: How Crescelo delivers leads
+UL:
+- Each new lead appears in the dashboard's Leads section with the conversation that produced it.
+- An email alert goes to your team.
+- You can also post leads to a Slack channel, add them as rows in a Google Sheet or send them to a webhook.
+- Signed webhooks connect to Zapier, Make, n8n or your own systems, where you can apply routing rules such as assigning by service or sending different leads to different people.
+- The lead form fields you choose, for example service, area or budget, arrive with each lead, so a routing rule has data to work with.
+P: There is no built-in automatic assignment or SMS alert. If you need per-service routing, use a webhook into a tool that supports it, or use separate assistants and alert addresses for separate teams.
+H2[design-a-routing-flow]: Design a routing flow
+OL:
+- List your services, locations and team members.
+- Decide who owns each combination and who covers them when absent.
+- Choose the collecting fields that the rule needs, such as service and postcode, and make them required.
+- Set up alerts: an email to the owner and a Slack post to the team channel.
+- Agree on a claim step: the person who takes the lead reacts with a mark in Slack or updates the sheet.
+- Set a backup: if nobody has claimed it in fifteen minutes during opening hours, a second person is alerted.
+P: Write the flow down on one page and pin it where the team can see it.
+H2[write-good-first-replies]: Write good first replies
+UL:
+- Reply on the channel the visitor prefers, using the contact details they gave.
+- Refer to what they asked; the linked conversation shows you.
+- Answer the question and propose a next step: a time for a call, a visit or a booking link.
+- Keep it short and human.
+- Do not ask them to repeat what they told the assistant.
+TABLE:
+H: Situation | Example first reply
+R: Quote request | Hi Sam, thanks for your enquiry about the bathroom refit. From your chat I can see it is a small room in Northfield. I can visit on Thursday afternoon to give an exact quote. Would 2 pm suit you?
+R: Question the assistant could not answer | Hi Priya, I am following up on your question about weekend availability. We do work Saturdays, and I can offer 10 am or 1 pm this week.
+R: Out-of-hours lead | Hi Tom, thanks for getting in touch last night. I am in from 8 am and will call you before 9 unless you would rather I email.
+H2[cover-evenings-and-weekends]: Cover evenings and weekends
+UL:
+- Let the assistant say when someone will reply, honestly: 'The team replies from 9 am on weekdays.'
+- Let it book an appointment or callback slot so the visitor has something concrete.
+- Assign one person to check the first thing in the morning, with a fifteen-minute goal.
+- Use urgency rules for emergencies: display a phone number for genuine emergencies, and route those enquiries to the on-call person.
+P: See [handling emergency jobs for contractors](/blog/emergency-dispatch-workflows-ai-chat) for a dedicated approach.
+H2[measure-time-to-first-contact]: Measure time to first contact
+TABLE:
+H: Measure | How | Target
+R: Time to first reply | Lead arrival to first message sent | Set your own, for example within an hour in opening hours
+R: Claim rate | Share of leads claimed within the target | As close to all as possible
+R: Contact rate | Share of leads you actually spoke to | Rising over time
+R: Win rate by speed | Compare won leads by how quickly you replied | Shows whether speed pays
+P: A simple sheet with arrival time and first-reply time is enough. Review it weekly for the first month.
+H2[common-mistakes]: Common mistakes
+UL:
+- Alerts that go to a shared inbox nobody owns.
+- No backup when the owner is away.
+- Too many alerts, so people ignore them.
+- Replies that ignore the conversation.
+- No record of who followed up.
+- Promising an automatic routing feature your tools do not have.
+H2[a-one-page-routing-plan-you-can-copy]: A one-page routing plan you can copy
+TABLE:
+H: Item | Your answer
+R: Owner for each service | Name and backup
+R: How they are alerted | Email plus Slack channel
+R: Claim step | React in Slack or mark the sheet
+R: Backup after 15 minutes | Second named person
+R: Out-of-hours owner | First person in the next morning
+R: First-reply template | Saved where everyone can find it
+P: Fill this in with your team in a single meeting, test it with a dummy lead and refine it after the first week.
+H2[frequently-asked-questions]: Frequently asked questions
+FAQ:
+Q: How quickly should I reply to a new lead?
+A: As quickly as you reliably can. Minutes during opening hours is a strong goal, since the first useful reply often wins the job.
+Q: How does Crescelo notify my team?
+A: By email alert, and optionally Slack, Google Sheets or a webhook, with the linked conversation.
+Q: Can Crescelo assign leads automatically?
+A: Not natively. Use a webhook into a tool such as Zapier or Make, or separate assistants for separate teams.
+Q: Does it send SMS alerts?
+A: No. Alerts go by email, Slack, Sheets or webhook.
+Q: What if nobody claims a lead?
+A: Set a backup so a second person is alerted after a set time.
+Q: How do I handle out-of-hours leads?
+A: Tell visitors when to expect a reply, offer a booking or callback and check the queue first thing in the morning.
+P: See the [lead capture feature](/product/lead-capture), [pricing](/pricing) and read [scoring chat leads by what visitors said](/blog/chat-behavior-lead-scoring).
+H2[further-reading]: Further reading
+UL:
+- [Google Search Central: creating helpful, people-first content](https://developers.google.com/search/docs/fundamentals/creating-helpful-content): What Google looks for in useful pages.

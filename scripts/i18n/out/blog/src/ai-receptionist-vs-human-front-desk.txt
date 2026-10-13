@@ -1,0 +1,132 @@
+TITLE: AI Receptionist vs Human Front Desk: Cost, Coverage and Quality
+SEO: AI Receptionist vs Human Front Desk | Crescelo
+DESC: A fair comparison of an AI receptionist and a human front desk: cost, coverage, quality, booking and risk, plus how to combine them for the best result.
+EXCERPT: A fair comparison of an AI receptionist and a human front desk: cost, coverage, quality, booking and risk, plus how to combine them for the best result.
+CLUSTER: AI Receptionists
+MOD: 2026-09-27
+P: Should a small business hire a receptionist, use an AI receptionist, or do both? The honest answer is that they are good at different things, and the right mix depends on your volume, your customers and the kind of conversations you have. This guide compares them on cost, coverage, quality and risk, and shows how many businesses combine them so each does what it does best.
+P: Note on scope: Crescelo's assistant works in website chat and messaging apps today. Phone answering is under development and listed on the [roadmap](/roadmap). Where the comparison depends on voice, we say so.
+H2[the-real-cost-of-a-human-front-desk]: The real cost of a human front desk
+P: A salary is only part of the cost. Include employer taxes and benefits, training, holidays and sick cover, equipment, and the management time you spend. Then look at coverage: one person covers one shift. If your business has evening and weekend demand, you either pay for more people or accept that enquiries go unanswered outside those hours. Add the hidden cost of interruptions: a front desk that is also checking people in, taking payments and handling walk-ins cannot always answer the phone or chat on the first attempt.
+TABLE:
+H: Cost item | Human front desk | AI receptionist
+R: Direct cost | Salary or hourly wage plus employer costs | Monthly subscription plus small AI usage
+R: Coverage | The hours you staff | All hours
+R: Cover for absence | You must arrange it | Not needed
+R: Training | Days to weeks, repeated when staff change | Content loaded once, then updated as things change
+R: Scaling with volume | Add people | Cost rises slowly
+R: Judgement | High | Limited
+P: For Crescelo's current plan prices see the [pricing page](/pricing). A framework for comparing cost with value is in the [ROI calculation guide](/blog/ai-website-assistant-roi-calculator).
+H2[coverage-the-hours-you-cannot-staff]: Coverage: the hours you cannot staff
+P: Think about when your customers are online. Many people research services in the evening or on weekends, when a small business is closed. An enquiry that gets an instant answer and a booking option is often won; one that waits until Monday morning is often lost, because the customer has already moved on. An AI receptionist covers those hours without additional wages. Read more in [after-hours appointment booking](/blog/after-hours-appointment-booking).
+H2[quality-what-humans-do-better]: Quality: what humans do better
+UL:
+- **Reading emotion.** A distressed or angry customer needs warmth and judgement.
+- **Handling the truly unusual.** A situation nobody wrote a rule for.
+- **Building relationships.** Regulars value being recognised.
+- **Physical presence.** Greeting people who walk in, handling payments, tidying the waiting area.
+- **Making exceptions sensibly.** A discretion call within your policy.
+H2[quality-what-an-ai-receptionist-does-better]: Quality: what an AI receptionist does better
+UL:
+- **Consistency.** The same accurate answer every time, however busy the day.
+- **Speed.** Instant replies, with no queue.
+- **Memory of the details.** It reads your whole price list and policy set without forgetting.
+- **Availability.** 24 hours a day, every day.
+- **Structured capture.** Every enquiry recorded with the same fields.
+- **Patience.** It does not tire of the fortieth question about parking.
+- **Language range.** Many languages, subject to testing.
+H2[risk-and-how-to-manage-it]: Risk and how to manage it
+TABLE:
+H: Risk | Human front desk | AI receptionist | How to manage
+R: Wrong answer | Misremembers a price | Guesses if ungrounded | Ground the AI in documents and test unanswerable questions
+R: Missed emergency | Distracted | Misses subtle wording | Emergency rules and clear handover
+R: Privacy | Overhears or mishandles data | Data held by vendor | Choose vendors carefully; tell visitors; collect little
+R: Absence | Sickness or resignation | Outage | Backup plans for both
+R: Inconsistency | Varies by person and day | Low | Train, document and review
+P: The main AI-specific risk, an invented answer, is reduced by grounding the assistant in your documents and by testing what it does when it does not know. See [how to stop a chatbot from making things up](/blog/grounded-ai-chatbot-hallucinations).
+H2[the-combination-that-works-for-most-businesses]: The combination that works for most businesses
+OL:
+- The AI answers routine questions and books standard appointments at any hour.
+- Your receptionist is freed from repetitive questions and works with people who need attention.
+- Handover rules pass complaints, emergencies and money questions to a person, with the conversation attached.
+- Your receptionist reviews the AI's transcripts and improves the knowledge base, which makes the whole front desk better.
+P: This changes the job rather than removing it. The receptionist becomes the owner of the customer experience, using the AI as a tool. Our note on [preventing front desk burnout with AI](/blog/prevent-front-desk-burnout-ai) describes the effect on staff.
+H2[handover-done-properly]: Handover done properly
+P: The moment a conversation moves from AI to a person is where trust is won or lost. It should be easy to ask for a person, the person should see the whole conversation, and the customer should not have to repeat anything. See [live human handover flow design](/blog/live-human-handover-flow-design) and the [handover feature page](/product/human-handover).
+H2[a-simple-break-even-calculation]: A simple break-even calculation
+P: You do not need precise figures to see whether an AI receptionist is worth adding. Use your own numbers in this four-step sum.
+OL:
+- Estimate how many enquiries per month arrive when nobody can answer quickly, for example 40.
+- Estimate what share would have booked if answered at once. Be cautious: 10 to 20 percent is a reasonable starting guess for enquiries about services you actually offer.
+- Multiply by the value of an average booking. If 40 enquiries and 15 percent gives 6 bookings at $80 each, that is $480 a month.
+- Compare with the monthly cost of the assistant. If the plan costs less than the extra bookings it recovers, it pays for itself before counting the staff time saved.
+P: The figures above are an illustration, not a forecast. Replace each with your own, and check them after a month using real bookings. If the sum does not work for your business, do not buy it; if it works with cautious numbers, the decision is easy. The same method is explained in [the ROI guide](/blog/ai-website-assistant-roi-calculator).
+H2[signs-your-front-desk-is-overloaded]: Signs your front desk is overloaded
+UL:
+- Calls go to voicemail during busy periods and nobody calls back the same day.
+- Website messages wait until the next working day.
+- Staff answer the same five questions dozens of times a week.
+- Check-in queues form while someone is on the phone.
+- Booking errors creep in because people are rushed.
+- Your best staff spend their time on admin instead of customers.
+P: If three or more of these are true, the routine layer is costing you more than it should, and automating it is likely to pay back. If none are true, you may not need an AI receptionist yet.
+H2[when-to-keep-a-human-only-front-desk]: When to keep a human-only front desk
+UL:
+- Your customers are mainly walk-in and the front desk is about hospitality.
+- Your enquiries are few and high-value, each deserving personal attention.
+- Your conversations are emotionally sensitive by nature.
+- You are not able to keep the AI's content accurate.
+H2[when-to-add-an-ai-receptionist]: When to add an AI receptionist
+UL:
+- Enquiries arrive out of hours, or in bursts that overwhelm the team.
+- Most questions are repetitive: prices, hours, services, availability.
+- You lose bookings when nobody answers quickly.
+- Your team is spending its day on interruptions.
+- You want structured records of what customers ask.
+H2[how-to-start-safely]: How to start safely
+OL:
+- Run the AI alongside your team for a few weeks, with handover switched on.
+- Read every transcript in the first week and correct gaps.
+- Compare bookings and leads before and after.
+- Adjust the rules: what the AI should always hand over and what it may decide.
+- Involve your front desk team in reviewing it, so it reflects how they work.
+P: Try the assistant on your own documents in the [playground](/playground) and read how the [AI assistant feature](/product/ai-assistant) works. When you are ready, [start a free trial](/login?mode=register).
+H2[a-worked-example-a-three-practitioner-clinic]: A worked example: a three-practitioner clinic
+P: Consider a small clinic with three practitioners, one part-time receptionist working 9 to 3 and about 400 enquiries a month. Roughly a third arrive outside those hours. The receptionist spends much of her day answering the same twenty questions while also checking people in and taking payments.
+TABLE:
+H: Before | After adding an AI receptionist
+R: Out-of-hours enquiries wait until the next morning | They are answered instantly, and many convert into bookings
+R: The receptionist answers the same questions repeatedly | The AI handles routine ones; she focuses on patients in the building
+R: Phone rings during check-in and gets missed | Fewer calls arrive because the website answers first
+R: No record of what people asked | Transcripts show what to improve on the website and in the documents
+R: Cover needed for holidays | The AI covers the routine layer while she is away
+P: This is a mixed setup rather than a replacement, and it is the one most businesses end up with.
+H2[what-to-tell-your-team]: What to tell your team
+P: Introducing an AI to a front desk can worry the people who work there. Be direct: explain which tasks it takes over, which stay with them, and how you will judge the result. Involve them in reviewing conversations, because they know which answers are right and which sound off. Staff who own the assistant's quality tend to see it as a tool; staff who feel it was imposed tend to see it as a threat.
+H2[checklist-for-the-first-30-days]: Checklist for the first 30 days
+OL:
+- Week 1: run the AI with handover on; read every conversation daily.
+- Week 2: fix the top ten gaps; adjust the greeting and tone.
+- Week 3: compare bookings and response times with the previous month.
+- Week 4: decide which conversations to let the AI complete alone and which always hand over.
+UL:
+- Keep a list of things the AI got wrong and what you changed.
+- Keep a list of things customers liked, so you can build on them.
+- Confirm that urgent handovers reach someone who will act on them.
+H2[frequently-asked-questions]: Frequently asked questions
+FAQ:
+Q: Is an AI receptionist cheaper than a human?
+A: For covering routine questions and out-of-hours enquiries, usually yes, because a subscription costs much less than wages and covers all hours. It does not replace the judgement and hospitality a person provides.
+Q: Can an AI receptionist fully replace a human?
+A: Not in most businesses. It replaces the repetitive first layer. People remain important for sensitive, unusual and in-person work.
+Q: What happens when the AI cannot help?
+A: A well-configured assistant says so and offers a booking form or a handover to a person, with the conversation attached.
+Q: Will customers accept talking to an AI?
+A: Most accept it when it is fast, honest about being an AI and gives an easy way to reach a person.
+Q: How do I keep the AI accurate?
+A: Keep the documents current, review transcripts weekly and fix the gaps you find.
+Q: Does it work by phone?
+A: Some products do. Crescelo works in website chat and messaging apps today, and phone answering is under development.
+H2[further-reading]: Further reading
+UL:
+- [Google Search Central: creating helpful, people-first content](https://developers.google.com/search/docs/fundamentals/creating-helpful-content): What Google looks for in useful pages.

@@ -1,0 +1,101 @@
+TITLE: Why Chat Widgets Use Shadow DOM: Protecting Your Website (and the Widget)
+SEO: Why Chat Widgets Use Shadow DOM | Crescelo
+DESC: What Shadow DOM is and why embedded chat widgets use it: style isolation, fewer conflicts, accessibility notes, trade-offs against iframes, and how to check.
+EXCERPT: What Shadow DOM is and why embedded chat widgets use it: style isolation, fewer conflicts, accessibility notes, trade-offs against iframes, and how to check.
+CLUSTER: Chatbot Technology
+MOD: 2026-09-27
+P: Adding a chat widget means putting someone else's code on your website. That raises two worries for the site owner. Will the widget break my page, changing fonts or layouts through stray styles? And will my page break the widget, so that a global style rule turns its buttons into something unrecognisable? Both happen more often than they should, especially on sites built with page builders or heavy themes. Modern browsers offer a mechanism designed for exactly this problem: Shadow DOM. It lets a widget draw itself inside a sealed compartment of the page where its styles and structure are separate from everything else. This guide explains in plain language what Shadow DOM is, how it compares with the older approach of using an iframe, what it does and does not protect, where accessibility and other trade-offs arise, and how to test that any widget will behave on your site. Crescelo's widget uses a Shadow DOM; a separate embedded page option uses an iframe.
+H2[the-problem-styles-collide]: The problem: styles collide
+P: Web pages use CSS rules to control appearance, and rules can apply broadly. A site theme might say that every button is orange with large text, or that all paragraphs have a certain margin. A widget's buttons and text are ordinary page elements, so those rules can reach them and distort the widget. In the other direction, a widget with carelessly written CSS can change the appearance of the site's own elements.
+TABLE:
+H: Collision | Symptom
+R: Site styles hit the widget | Distorted buttons, wrong fonts, overlapping text in the chat
+R: Widget styles hit the site | Your headings or links change after the widget loads
+R: Class name clash | Both use a class named 'button' or 'container' with different meanings
+R: Script conflicts | Two scripts overwrite each other's global variables
+H2[what-shadow-dom-is]: What Shadow DOM is
+P: Shadow DOM lets a script attach a hidden, self-contained tree of elements to a host element on the page. Styles defined inside it apply only inside it, and most styles from the page do not leak in. The widget appears on the page like any element, but it has its own sealed styling scope. It is a standard part of modern browsers, not a special plug-in.
+UL:
+- **Style isolation:** the widget's CSS stays inside; the page's CSS does not restyle it.
+- **No class-name clashes:** names inside do not conflict with names outside.
+- **Clean markup:** the widget sits under a single host element, keeping your page structure tidy.
+- **Some things do pass through,** such as inherited properties like font family and colour unless the widget resets them, which a well-built widget does explicitly.
+H2[shadow-dom-versus-iframe]: Shadow DOM versus iframe
+TABLE:
+H: Aspect | Shadow DOM | Iframe
+R: Style isolation | Strong for CSS | Complete; separate document
+R: Script isolation | Shares the page's JavaScript environment | Separate; cannot touch the page's scripts
+R: Security boundary | Not a security boundary | A stronger boundary, particularly across origins
+R: Performance | Light; part of the page | Heavier; a separate page load
+R: Integration | Can respond to page events, size and layout naturally | Needs messages to communicate with the page
+R: Accessibility and focus | Behaves like page content when done properly | Needs care for focus and screen readers across the frame
+R: Best for | A floating widget that should feel part of the site | Embedding a whole page or app that must be fully isolated
+P: Neither is universally better. A floating chat bubble suits Shadow DOM. Embedding a full application, such as a booking page or a hosted chat page inside another site, suits an iframe. Crescelo uses a Shadow DOM for its website widget and offers an embeddable page for other placements.
+H2[what-shadow-dom-does-not-do]: What Shadow DOM does not do
+UL:
+- It is not a security sandbox: scripts on your page can still reach into an open shadow tree, so it does not stop a malicious script on your own site.
+- It does not protect against slow scripts or heavy loads; performance is a separate concern.
+- It does not replace good CSS hygiene inside the widget.
+- It does not fix accessibility problems by itself.
+P: Security for the conversation comes from the server side: rate limits, signed tokens and workspace checks; see [signed visitor tokens](/blog/visitor-capability-tokens-hmac-sha256).
+H2[accessibility-notes]: Accessibility notes
+UL:
+- Keyboard users must be able to reach the launcher, open the chat, move through it and close it.
+- Focus should move sensibly when the chat opens and return when it closes.
+- The chat should have suitable labels for screen readers.
+- Text must have sufficient contrast, including with your custom colours.
+- Streaming text should not flood screen readers with repeated announcements.
+- Respect reduced-motion preferences.
+P: Shadow DOM changes how some assistive technology and testing tools find elements, but modern screen readers handle it well. Test with a screen reader and keyboard on your own site. See [accessibility and WCAG for chatbots](/blog/accessibility-wcag-compliance-website-chatbots).
+H2[other-practical-points]: Other practical points
+UL:
+- **Page builders and themes:** they are the most common source of style conflicts, so isolation helps most there.
+- **Content security policy:** if your site restricts scripts and styles, the widget's host must be allowed.
+- **Cookie banners and other floating elements:** check stacking and overlap on mobile.
+- **Loading:** the widget should load after your main content so it does not delay your page; see [performance of embedded chat widgets](/blog/performance-optimization-embedded-chat-widgets).
+- **Duplicates:** a well-built widget checks that it is not already loaded, so pasting the code twice does not create two chat bubbles.
+H2[how-to-test-a-widget-on-your-site]: How to test a widget on your site
+TABLE:
+H: Test | What to look for
+R: Load your busiest page on a phone | Widget appears, does not cover key buttons
+R: Compare the page before and after installing | No changes in fonts, spacing or colours
+R: Use only the keyboard | Launcher reachable, chat operable, focus returns
+R: Turn on a screen reader | Announcements sensible, labels present
+R: Test with your theme's dark mode or high-contrast mode | Text remains readable
+R: Check page speed before and after | No large drop
+P: Do this on a staging copy first if you have one.
+H2[common-mistakes]: Common mistakes
+UL:
+- Assuming any widget is safe for your styles.
+- Treating Shadow DOM as a security feature.
+- Forgetting mobile tests.
+- Installing the code twice.
+- Ignoring keyboard and screen reader use.
+- Overriding colours without checking contrast.
+H2[a-ten-minute-pre-launch-checklist]: A ten-minute pre-launch checklist
+OL:
+- Install the widget on a staging or hidden page first.
+- Open the page on a phone and a desktop and take screenshots before and after.
+- Tab through the page with the keyboard and open the chat.
+- Change the widget colours and check text contrast.
+- Reload with a slow connection and confirm the page content appears first.
+- Then install on the live site and check again.
+P: This short routine catches nearly all the problems that owners meet with third-party widgets, and it makes a useful habit for any script you add to your site.
+H2[frequently-asked-questions]: Frequently asked questions
+FAQ:
+Q: What is Shadow DOM?
+A: A browser feature that lets a widget draw itself inside a sealed section of the page, so its styles and structure do not clash with your site's.
+Q: Does Crescelo's widget use Shadow DOM?
+A: Yes. The website widget renders inside a Shadow DOM, and a separate embeddable page option uses an iframe.
+Q: Is Shadow DOM more secure than an iframe?
+A: No. It isolates styles, not security. An iframe from another origin is a stronger boundary.
+Q: Will the widget change my site's appearance?
+A: A well-isolated widget should not. Compare the page before and after to confirm.
+Q: Is it accessible?
+A: It can be, if built with keyboard support, focus management, labels and contrast. Test it on your site.
+Q: Can I use both approaches?
+A: Yes. Use the floating widget for general pages and an embedded page where you want a full-page experience.
+P: See the [website widget feature](/product/website-widget), [pricing](/pricing) and read [how a chat widget is built](/blog/modern-website-chatbot-architecture).
+H2[further-reading]: Further reading
+UL:
+- [Google Search Central: creating helpful, people-first content](https://developers.google.com/search/docs/fundamentals/creating-helpful-content): What Google looks for in useful pages.

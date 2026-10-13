@@ -1,0 +1,100 @@
+TITLE: Your Assistant's Unanswered Questions Are a To-Do List: How to Turn Them Into Better Answers
+SEO: Your Assistant's Unanswered Questions Are a To-Do List
+DESC: How to use the questions your chatbot could not answer: where to find them, grouping themes, writing short answers, deciding what not to add, and a weekly.
+EXCERPT: How to use the questions your chatbot could not answer: where to find them, grouping themes, writing short answers, deciding what not to add, and a weekly.
+CLUSTER: Analytics
+MOD: 2026-09-27
+P: Every time your assistant says it does not know something, a real customer has told you what they wanted and what your content was missing. That is more useful than any survey. Yet many businesses set up a chatbot, watch the first week, and never look at the list of questions it could not answer. The list quietly grows. Visitors ask about parking, gift vouchers, whether you treat children, and the assistant apologises and offers a person. Each one is a small lost sale or an unnecessary phone call. This guide shows how to turn that list into a to-do list. It explains where the unanswered questions come from, how to sort them into themes, how to write the short answers that fix most of them, which questions you should deliberately not answer, how to check that a fix worked and how to build a fifteen-minute weekly habit. In Crescelo, every question the assistant could not answer from your content is logged, and you can write a short answer that is added to the knowledge base directly from the list.
+H2[where-the-list-comes-from]: Where the list comes from
+P: A grounded assistant looks up passages in your content before answering. When nothing relevant is found, it does not guess: it says it does not know and offers a booking, a form or a person. That event is logged as an unanswered question, along with the wording the visitor used. The list is therefore an honest record of the gaps between what customers ask and what your content contains.
+TABLE:
+H: What the list shows | Why it is valuable
+R: The exact words visitors use | Lets you write content in their language
+R: Frequency | Shows which gaps matter most
+R: Topics you never thought of | Reveals blind spots
+R: Seasonal patterns | Shows what to add before busy periods
+R: Things you do not offer | Shows demand you could meet, or should explain you do not serve
+H2[step-1-group-the-questions-into-themes]: Step 1: Group the questions into themes
+P: Reading fifty individual questions is tiring; sorting them into five or six themes makes the work obvious.
+TABLE:
+H: Theme | Examples | Typical fix
+R: Practical details | Parking, accessibility, what to bring | A short 'visiting us' section
+R: Pricing edge cases | Do you charge extra for long hair? Is there a student price? | Add the rule to the price document
+R: Policies | Refunds, late arrival, children | A policy paragraph
+R: Services you do not list | Do you do [unlisted service]? | Add the service, or say clearly you do not offer it
+R: Advice | Which option suits me? | A short guide or comparison
+R: Off-topic | Weather, jokes, unrelated requests | Ignore; the assistant should decline politely
+H2[step-2-write-short-factual-answers]: Step 2: Write short, factual answers
+UL:
+- Answer the question in one to three sentences.
+- Use the customer's words in the heading or first sentence.
+- Include the numbers or facts: 'Yes, there is free parking behind the building for up to two hours.'
+- Say what happens next if it depends: 'We treat children over five; please call to book a child's appointment.'
+- Only write what is true and current.
+TABLE:
+H: Question | Weak fix | Good fix
+R: Is there parking? | We have plenty of options. | Free parking behind the building for two hours; spaces on Mill Street are pay and display.
+R: Do you treat children? | Yes. | Yes, from age five. Children under 12 must be accompanied by an adult.
+R: Can I bring a friend? | Please ask. | Yes, one guest may wait in reception; guests cannot come into the treatment room.
+P: A one-sentence answer added straight from the unanswered list is often enough, and it is stored in the knowledge base for good. For anything longer or more formal, update the relevant document or page, so there is one source of truth.
+H2[step-3-decide-what-not-to-answer]: Step 3: Decide what not to answer
+P: Not every gap should be filled. Some questions are better handled by a person, and some the assistant should decline.
+TABLE:
+H: Question type | What to do
+R: Personal, medical, legal or financial advice | Leave it to a qualified person; add a rule that the assistant hands over
+R: Complaints and disputes | Hand over with the details; see [when and how to hand over](/blog/live-human-handover-flow-design)
+R: Confidential business information | Never add it to the knowledge base
+R: Exact quotes for custom jobs | Explain how quotes work and capture the details
+R: Off-topic chat | The assistant declines politely
+P: Write clear instructions for the assistant about these categories, and check its behaviour with test questions.
+H2[step-4-check-that-the-fix-worked]: Step 4: Check that the fix worked
+OL:
+- Ask the original question, in the visitor's words, in the playground or your own widget.
+- Ask two or three variations, including a casual phrase.
+- Check that the answer is right and short.
+- Check that a related question still gets a correct answer.
+- Mark the item done in your notes.
+P: If the fix did not work, the answer may be too far from the question's wording; add the customer's phrase to the heading. See [synonyms in search](/blog/domain-synonym-clusters-rag-search).
+H2[a-fifteen-minute-weekly-routine]: A fifteen-minute weekly routine
+TABLE:
+H: Minute | Task
+R: 0 to 3 | Open the unanswered list and scan for repeats
+R: 3 to 8 | Pick the top three themes; write or update the answers
+R: 8 to 12 | Test the fixes with the original wording
+R: 12 to 15 | Note anything that needs a person, such as a policy decision
+P: The first month yields the largest gains because the biggest gaps are fixed first. After that, the list shrinks and the effort drops.
+H2[use-the-list-beyond-the-chat]: Use the list beyond the chat
+UL:
+- Add popular questions to your website's FAQ page, which also helps search visibility.
+- Tell staff about recurring questions so they can prepare.
+- Fix the cause on your website: if everyone asks about parking, put it on the contact page.
+- Spot demand: many questions about a service you do not list may point to an opportunity.
+- Note the phrases customers use for future marketing copy.
+H2[watch-for-wrong-answers-too]: Watch for wrong answers too
+P: Unanswered questions are the visible gaps. Wrong answers are harder to spot, so sample conversations as well: read five a week and check them against your documents. If you find an incorrect answer, correct the source, then test again. Crescelo lets you correct an answer, and the correction is stored for later questions. Measure trends with [the chat analytics playbook](/blog/service-business-chat-analytics-playbook).
+H2[common-mistakes]: Common mistakes
+UL:
+- Never opening the list.
+- Writing long answers where one sentence would do.
+- Adding contradictory facts in different places.
+- Filling every gap, including ones a person should handle.
+- Forgetting to test the fix.
+- Leaving outdated answers in place.
+H2[frequently-asked-questions]: Frequently asked questions
+FAQ:
+Q: What is an unanswered question?
+A: A question the assistant could not answer from your content. It is logged so you can fill the gap.
+Q: Where do I see them in Crescelo?
+A: In the dashboard's Overview and the unanswered list, where you can write a short answer that is added to the knowledge base.
+Q: How often should I check?
+A: A fifteen-minute review each week is enough for most small businesses.
+Q: Should I answer every question?
+A: No. Leave personal advice, complaints and confidential matters to people, and let the assistant decline off-topic requests.
+Q: How long should an answer be?
+A: One to three sentences with the key facts and what happens next.
+Q: How do I know the fix worked?
+A: Ask the original question again in the visitor's words, plus a variation, and check the answer.
+P: See the [knowledge base feature](/product/knowledge-base), test answers in the [playground](/playground) and read [what an assistant should do when it does not know](/blog/handling-obscure-customer-inquiries-fallbacks).
+H2[further-reading]: Further reading
+UL:
+- [Google Search Central: creating helpful, people-first content](https://developers.google.com/search/docs/fundamentals/creating-helpful-content): What Google looks for in useful pages.

@@ -1,0 +1,107 @@
+TITLE: SSRF and Chatbot Web Scrapers: How Fetching URLs Safely Protects Your Servers
+SEO: SSRF and Chatbot Web Scrapers | Crescelo
+DESC: What server-side request forgery is, why chatbots that fetch web pages are exposed, how attackers abuse it and the defences: allow-lists, DNS checks.
+EXCERPT: What server-side request forgery is, why chatbots that fetch web pages are exposed, how attackers abuse it and the defences: allow-lists, DNS checks.
+CLUSTER: Chatbot Technology
+MOD: 2026-09-27
+P: Many AI assistants can read a web page: you paste a link and the platform fetches it, extracts the text and adds it to the knowledge base. It is a convenient feature and a classic security hazard. When a server fetches whatever address a user supplies, an attacker can supply an address that points not to a public website but to something inside the platform's own network: an internal admin service, a database console, a cloud provider's metadata endpoint that hands out credentials. The server dutifully fetches it and returns the contents. This attack is called server-side request forgery, or SSRF, and it has been behind some of the most damaging cloud breaches. This guide explains SSRF in plain terms, why web-fetching features are exposed, how attackers try to bypass simple defences, and the layered protections a careful platform uses, including the ones Crescelo applies. It also gives you questions to ask any vendor whose product fetches URLs on your behalf.
+H2[ssrf-in-one-paragraph]: SSRF in one paragraph
+P: Normally, a browser asks a website for a page. In an SSRF attack, the attacker gets a server to make the request on their behalf, to a place the attacker cannot reach directly but the server can. Servers often sit inside private networks where internal services trust each other and are not exposed to the internet. A URL fetcher that follows any address becomes a bridge into that network.
+TABLE:
+H: Target an attacker might request | What it could reveal
+R: http://127.0.0.1/admin | A local admin interface on the same server
+R: http://10.0.0.5/ | An internal service on the private network
+R: http://169.254.169.254/latest/meta-data/ | Cloud instance metadata, sometimes including temporary credentials
+R: file:///etc/passwd | Local files, if other schemes are allowed
+R: http://internal-db:5984/ | An internal database with no password
+H2[why-chatbot-platforms-are-exposed]: Why chatbot platforms are exposed
+UL:
+- They deliberately fetch user-supplied URLs (knowledge sources, web search, link previews, webhooks).
+- They run in cloud environments with metadata services and private networks.
+- They may follow redirects, so a harmless public address can bounce to an internal one.
+- They may resolve hostnames, so a public-looking name can point to a private address.
+- Customers can supply custom AI endpoints, adding another fetch path.
+P: Every feature that turns a user-provided address into a server-side request is a potential SSRF path.
+H2[how-simple-defences-fail]: How simple defences fail
+TABLE:
+H: Naive defence | How it is bypassed
+R: Block the text 'localhost' and '127.0.0.1' | Use 127.1, 0x7f000001, decimal 2130706433 or an IPv6 form such as ::1 or ::ffff:127.0.0.1
+R: Check the hostname against a block-list | Use a public hostname that resolves to a private address (DNS pointing to 10.x)
+R: Check once, then fetch | DNS rebinding: the name resolves to a public address at check time and a private one at fetch time
+R: Validate the first URL only | Redirects from a public site to an internal address
+R: Allow only http and https | Still allows internal http addresses
+P: Robust defences work on resolved addresses, at connection time, for every hop.
+H2[the-layered-defence]: The layered defence
+OL:
+- **Restrict schemes.** Allow only http and https.
+- **Resolve and check the address.** Look up the hostname and reject any that resolves to private, loopback, link-local, reserved or metadata ranges, in IPv4 and IPv6, including IPv4-mapped IPv6.
+- **Check every redirect.** Repeat the checks for each hop, and limit the number of redirects.
+- **Connect to the checked address.** Use the resolved IP for the connection so DNS cannot change between check and use.
+- **Limit size and time.** Cap response size and set short timeouts, so a hostile server cannot exhaust resources.
+- **Restrict ports and content types** where possible.
+- **Isolate the fetcher.** Run it with minimal network privileges, ideally in a separate environment with no route to internal services.
+- **Do not return raw responses.** Extract text only, and never echo internal error details to the user.
+- **Log and alert** on blocked attempts.
+TABLE:
+H: Range to block | Examples
+R: Loopback | 127.0.0.0/8, ::1
+R: Private networks | 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, fc00::/7
+R: Link-local and metadata | 169.254.0.0/16, fe80::/10
+R: Current network and reserved | 0.0.0.0/8, multicast and other reserved ranges
+R: IPv4-mapped IPv6 | ::ffff:127.0.0.1 and similar
+H2[what-crescelo-does]: What Crescelo does
+UL:
+- Validates external URLs before fetching them for knowledge sources, rejecting addresses that point to internal, loopback or cloud-metadata ranges.
+- Resolves hostnames and checks the resulting addresses, including IPv6 and IPv4-mapped forms.
+- Applies the same protection to custom AI provider addresses, so a workspace cannot point its assistant at an internal service.
+- Requires secure (HTTPS) addresses for outbound integrations such as webhooks.
+- Rate limits the endpoints that fetch, and limits body sizes.
+P: No single measure is perfect, which is why they are layered. We also keep security tests for the private-address checks. If you find a bypass, please tell us through a support ticket.
+H2[questions-to-ask-any-vendor]: Questions to ask any vendor
+UL:
+- How do you prevent your URL fetcher from reaching internal or metadata addresses?
+- Do you check resolved IPs, including IPv6, and every redirect?
+- How do you handle DNS rebinding?
+- Do custom endpoints and webhooks get the same protection?
+- How is the fetcher isolated from your internal network?
+- Do you log and alert on blocked requests?
+P: Answers such as 'we block localhost' are a warning sign. Look for descriptions of layered defences.
+H2[if-you-are-building-your-own]: If you are building your own
+OL:
+- Treat every user-supplied URL as hostile.
+- Use a well-tested library or proxy for outbound requests.
+- Resolve, validate and pin the IP, and revalidate on redirects.
+- Deny by default: allow-list where you can.
+- Remove cloud metadata access for the fetching service, or require tokens (for example, use the stricter metadata service versions cloud providers offer).
+- Add automated tests with known bypass strings.
+- Review any new feature that fetches a URL.
+H2[what-this-means-for-your-knowledge-base]: What this means for your knowledge base
+P: Adding a web page as a knowledge source should be safe: the platform fetches a public page and reads its text. You can help by adding only public pages you control or trust, avoiding addresses that require login and being suspicious of unusual addresses in shared instructions. If a URL ever returns content that looks like an internal system, tell the vendor.
+H2[common-mistakes]: Common mistakes
+UL:
+- Blocking a few hostnames and calling it done.
+- Checking the URL once and ignoring redirects.
+- Trusting DNS at check time only.
+- Forgetting that custom endpoints and webhooks also fetch URLs.
+- Running the fetcher with access to internal services it does not need.
+- Returning raw fetched content or error text to the user.
+P: Each of these has appeared in real incidents. Layered checks, applied to every hop, close most of the gaps, and regular testing with known bypass strings keeps them closed as the code changes.
+H2[frequently-asked-questions]: Frequently asked questions
+FAQ:
+Q: What is SSRF?
+A: Server-side request forgery: tricking a server into making a request to an address the attacker cannot reach directly, such as an internal service or a cloud metadata endpoint.
+Q: Why are chatbot URL features risky?
+A: Because they fetch user-supplied addresses from servers that sit inside cloud networks with sensitive internal services.
+Q: Does blocking localhost prevent SSRF?
+A: No. Attackers use alternate encodings, DNS tricks and redirects. Defences must work on resolved IP addresses for every hop.
+Q: What does Crescelo do about SSRF?
+A: It validates external URLs, rejects internal and metadata ranges after resolving hostnames, covers custom AI endpoints and requires HTTPS for outbound integrations.
+Q: Can I safely add web pages to my knowledge base?
+A: Yes, public pages you trust. The platform should fetch and read them safely.
+Q: How do I report a security issue?
+A: Open a support ticket describing it, and we will investigate.
+P: See [how your data is protected](/privacy), the [knowledge base feature](/product/knowledge-base), [how a bring-your-own-key vault works](/blog/cryptographic-byok-vault-aes-256-gcm), [securing your chatbot account](/blog/setup-rbac-2fa-team-security) and [bring your own key explained](/blog/bring-your-own-ai-key-byok-explained), and try adding a page in the [playground](/playground).
+H2[further-reading]: Further reading
+UL:
+- [OWASP Top 10 for Large Language Model Applications](https://genai.owasp.org/llm-top-10/): The main security risks of AI assistants, including prompt injection.
+- [Google Search Central: creating helpful, people-first content](https://developers.google.com/search/docs/fundamentals/creating-helpful-content): What Google looks for in useful pages.

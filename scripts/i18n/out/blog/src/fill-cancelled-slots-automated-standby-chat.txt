@@ -1,0 +1,111 @@
+TITLE: Filling Cancelled Appointments: Standby Lists, Waitlists and Fast Offers
+SEO: Filling Cancelled Appointments | Crescelo
+DESC: How to refill cancelled slots: building a standby list, offering openings quickly, wording, fairness rules, tools you can use with your booking system.
+EXCERPT: How to refill cancelled slots: building a standby list, offering openings quickly, wording, fairness rules, tools you can use with your booking system.
+CLUSTER: Booking Optimization
+MOD: 2026-09-27
+P: A cancellation is a small loss, but a repeated one. Every empty slot costs the practitioner's time and the business its revenue, and cancellations often come at short notice, when refilling seems impossible. It is not impossible. Many service businesses have customers who would happily take an earlier or different time if they knew one was free. The trick is to know who they are and to reach them quickly with a simple offer. A standby list, sometimes called a waitlist, is the tool. This guide explains how to build one, how to word offers, how to be fair about who gets a slot, how to do it with the tools you already have, what an AI assistant can and cannot do here and what to measure. It is written for salons, clinics, studios, consultants and any business that books time.
+NOTE: Crescelo's built-in booking hides taken slots and frees a slot immediately when a customer cancels through the confirmation link. It does not include a waitlist that messages customers automatically. This article explains how to run a standby list alongside it, using the assistant to capture interest and simple tools to notify people.
+H2[who-wants-an-earlier-or-different-time]: Who wants an earlier or different time
+UL:
+- Customers booked weeks ahead who would prefer sooner.
+- New customers who could not find a suitable time.
+- Regulars with flexible schedules.
+- People who arrived when you were fully booked.
+- Customers who asked for a specific person or time that was unavailable.
+P: Everyone on that list is a warm lead for a cancelled slot.
+H2[how-to-build-the-list]: How to build the list
+OL:
+- **Ask at booking:** 'Would you like us to tell you if an earlier time opens up?'
+- **Ask in chat:** when the assistant cannot offer a suitable time, it offers to add the visitor to the standby list.
+- **Capture what matters:** name, contact method, service, preferred days and times and how much notice they need.
+- **Record consent** to be contacted about openings.
+- **Keep it simple:** a shared sheet or a note in your booking system works for small businesses.
+P: The assistant can capture this as a lead with the preferences in the message, sent to your inbox or a spreadsheet by the lead delivery options. See [conversational lead capture](/blog/conversational-lead-capture).
+H2[fields-for-a-useful-standby-list]: Fields for a useful standby list
+TABLE:
+H: Field | Why
+R: Name and contact | To offer the slot
+R: Service wanted | To match the opening
+R: Preferred days and times | To offer relevant slots
+R: Notice needed | Some can come within the hour; others need a day
+R: Person preference | Some want a specific practitioner
+R: Date added | For fairness
+R: Consent | To message them
+H2[offer-the-slot-quickly]: Offer the slot quickly
+P: Speed decides who gets the slot. The moment a cancellation happens, send offers to matching people, in order of fairness or priority, and give a short time to accept.
+TABLE:
+H: Message | Example
+R: Offer | Hi Sam, a 3:30 p.m. slot with Priya has opened up today for a cut. Reply YES within 20 minutes to take it, or ignore this if it does not suit.
+R: Confirmation | Booked. See you at 3:30 p.m. today. Change or cancel here if needed.
+R: Slot gone | Thanks for replying. That slot was taken, but we will keep you on the list.
+UL:
+- State the time, service and person.
+- Give a clear deadline.
+- Make accepting one reply or tap.
+- Confirm immediately, and remove the person from the list.
+- If nobody accepts, widen the offer, for example to the wider customer list or social media.
+H2[fairness-rules]: Fairness rules
+OL:
+- First on the list gets the first offer, unless the slot does not suit them.
+- Give regulars or people who have waited longest priority, if you say so.
+- Do not offer the same slot to many people at once unless you say 'first to reply'.
+- Explain how the list works, so nobody feels overlooked.
+- Keep people informed if you cannot fill their request.
+P: A transparent rule is better than a clever one.
+H2[tools-you-can-use]: Tools you can use
+TABLE:
+H: Tool | How it helps
+R: A spreadsheet | The simplest standby list for a small business
+R: Text messaging or email tools | Send offers quickly
+R: Automation tools such as Zapier or Make | Trigger a message when a booking is cancelled; see [webhook automations](/blog/webhook-automations-zapier-make-chat-events)
+R: Your booking system's waitlist, if it has one | Automatic offers
+R: Social media or a broadcast list | Reach many people at short notice for walk-in friendly businesses
+P: With Crescelo, you are notified of bookings and cancellations in your dashboard, and a cancelled slot is bookable again immediately. For automatic messaging when a slot opens, connect your own tools using webhooks on the Agency plan or manage the list manually.
+H2[what-the-ai-assistant-can-do]: What the AI assistant can do
+UL:
+- Explain that a waitlist exists and how it works.
+- Capture a visitor's interest and preferences when no suitable slot is free.
+- Offer the freed slot in the chat if the visitor is talking to it at the time.
+- Tell visitors honestly when there is nothing available.
+P: It cannot notify people on its own unless you connect an automation. Be clear about this in your wording so nobody expects a message you cannot send.
+H2[walk-in-and-last-minute-businesses]: Walk-in and last-minute businesses
+P: Barbershops and beauty studios can post openings on social media or a broadcast list: 'Two chairs free this afternoon, walk in or book here.' Keep the message short, with a booking link, and post as soon as the slot opens. See [managing walk-ins and appointments](/blog/managing-walk-ins-vs-appointments-salons).
+H2[a-sample-conversation]: A sample conversation
+TABLE:
+H: Speaker | Message
+R: Visitor | Do you have anything sooner than next Thursday?
+R: Assistant | Nothing is free before Thursday right now. If you like, I can add you to our standby list, and the team will contact you if something opens up. What days and times suit you, and what is the best number or email?
+R: Visitor | Any weekday after 4. sam@example.com
+R: Assistant | Done, Sam. You are on the list for weekday afternoons after 4. If a slot opens we will email you, and you can take it or ignore it.
+H2[worked-example-a-physiotherapy-clinic]: Worked example: a physiotherapy clinic
+P: A clinic has three to four cancellations a week. It starts a standby list of patients who would like earlier appointments, collected in the chat and at the front desk. When a slot opens, the receptionist emails the first three matching patients with a link and a twenty-minute window. Over two months it refills about half of the cancelled slots, roughly six a month, worth about $500. A few patients who moved earlier free later slots, which are refilled in turn. The clinic did this with a spreadsheet and a template email, and the receptionist spends about ten minutes a day on it.
+H2[measure-it]: Measure it
+TABLE:
+H: Metric | Why
+R: Cancelled slots | Baseline
+R: Slots refilled | Effectiveness
+R: Fill rate | Refilled divided by cancelled
+R: Time from cancellation to offer | Speed
+R: Standby list size | Demand
+R: Revenue recovered | Value
+H2[keep-the-list-clean]: Keep the list clean
+P: A standby list is only useful if it is current. Remove people who have been booked or who no longer want an earlier slot, and ask new entries to confirm their preferences. Review it weekly, so offers go to people who are still interested.
+H2[frequently-asked-questions]: Frequently asked questions
+FAQ:
+Q: How do I fill cancelled appointments?
+A: Keep a standby list of customers who want earlier or different times, and message matching people quickly when a slot opens.
+Q: Can a chatbot manage a waitlist?
+A: It can capture people's interest and preferences. To message them automatically when a slot opens, connect an automation or manage the list yourself.
+Q: Does Crescelo have a waitlist feature?
+A: Not built in. A cancelled slot becomes bookable immediately, and you can run a standby list with the assistant capturing interest and your own tools sending offers.
+Q: How do I keep it fair?
+A: Use a simple, stated rule such as first on the list or longest waiting, and explain it to customers.
+Q: How quickly should I offer a slot?
+A: As soon as it opens, with a short deadline to accept.
+Q: What if nobody takes the slot?
+A: Widen the offer to more customers or social media, or use the time for admin and outreach.
+P: Try a standby conversation in the [playground](/playground), read [how to reduce no-shows](/blog/eliminate-service-no-shows-playbook) and see the [lead capture feature](/product/lead-capture).
+H2[further-reading]: Further reading
+UL:
+- [Google Search Central: creating helpful, people-first content](https://developers.google.com/search/docs/fundamentals/creating-helpful-content): What Google looks for in useful pages.

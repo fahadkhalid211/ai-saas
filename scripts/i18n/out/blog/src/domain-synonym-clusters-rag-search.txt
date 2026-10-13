@@ -1,0 +1,105 @@
+TITLE: Synonyms in Search: Helping an AI Assistant Match How Customers Really Talk
+SEO: Synonyms in Search: Helping an AI Assistant Match | Crescelo
+DESC: How synonyms and query expansion help chatbot search: vocabulary mismatch, hybrid search, expanding queries, building a synonym list for your business, risks.
+EXCERPT: How synonyms and query expansion help chatbot search: vocabulary mismatch, hybrid search, expanding queries, building a synonym list for your business, risks.
+CLUSTER: Knowledge Bases and RAG
+MOD: 2026-09-27
+P: A customer types 'how much for a trim?' Your price list says 'Gentleman's haircut: $30'. A visitor asks 'do you fit boilers?' and your service page says 'heating installation'. Someone writes 'cancel' where your policy says 'withdraw from the booking'. The words differ, but the meaning is the same, and a search that relies on matching words will miss it. This is called vocabulary mismatch, and it is one of the most common reasons an assistant answers 'I do not know' when the answer is sitting in the documents. Modern assistants reduce the problem with meaning-based search and by expanding queries with synonyms. Neither is perfect, and you can help them with a few small habits in how you write your content and in how you handle the words your customers use. This guide explains why mismatch happens, how meaning search and keyword search each handle it, what query expansion does, how to build a small synonym list for your business, the risks of over-expanding and how to test the effect.
+H2[why-customers-do-not-use-your-words]: Why customers do not use your words
+TABLE:
+H: Your term | What customers say
+R: Colour service | Dye, tint, highlights, balayage, root touch-up
+R: Heating installation | Fit a boiler, new central heating, replace radiators
+R: Consultation | Chat, initial meeting, first appointment, assessment
+R: Cancellation policy | Refund, get my money back, change my booking
+R: Residential cleaning | House clean, home cleaning, tidy my flat
+R: Complimentary | Free, no charge, included
+P: Professionals use technical vocabulary; customers use everyday words, brand terms or mixed-up versions. Regional differences add more: trainers or sneakers, flat or apartment, cell or mobile.
+H2[how-search-copes]: How search copes
+TABLE:
+H: Method | Handles synonyms? | Weakness
+R: Keyword search (exact words) | No, unless the words match | Misses paraphrases
+R: Stemming and lemmatising | Partly: 'cancelled' matches 'cancel' | Does not link different words
+R: Meaning-based (vector) search | Yes, often well | Can miss rare terms, names and codes
+R: Query expansion with synonyms | Yes, for the terms you cover | Needs care so it does not add noise
+R: Hybrid search | Combines the strengths | Still benefits from good content
+P: Crescelo combines meaning-based and keyword search and merges results; see [reciprocal rank fusion](/blog/reciprocal-rank-fusion-rrf-rag). A built-in set of everyday synonym groups helps common cases, such as price, cost and fee. Your own business terms are where you can add the most value.
+H2[what-query-expansion-does]: What query expansion does
+P: Query expansion adds related words to the search so that a question using one term also finds passages using another. For 'cost', it may also search for 'price', 'fee' and 'rate'. It improves recall, meaning how many relevant passages are found, but it can reduce precision if it adds words that are too general or ambiguous. The art is to expand where the meaning is truly equivalent in your business.
+TABLE:
+H: Good expansion | Risky expansion
+R: price, cost, fee, charge | service, product, plan, package (too general and often different things)
+R: cancel, withdraw, call off | cut, trim, reduce (different meanings by context)
+R: appointment, booking, reservation | visit, session (may be different services)
+R: colour, dye, tint | treatment (too broad)
+H2[build-a-small-synonym-list-for-your-business]: Build a small synonym list for your business
+OL:
+- Read the last fifty conversations and the unanswered questions; note the words visitors used that your documents do not contain.
+- Group words that mean the same thing in your context.
+- For each group, choose the term you use on your website as the main term.
+- Write the alternatives into your content naturally: 'Colour services (also called dye, tint or highlights)'.
+- Add plain-language headings that match how people ask: 'How much does it cost?' as well as 'Pricing'.
+- Review quarterly as new phrases appear.
+P: Adding the alternatives into the documents themselves is the most reliable method. It works with every search method, is visible to your team and does not depend on any hidden setting.
+H2[write-content-that-matches-questions]: Write content that matches questions
+UL:
+- Use question-style headings that mirror what customers type.
+- Include common alternative names in the first sentence of a section.
+- Spell out abbreviations and give the short form as well.
+- Use both local and international terms if you serve both.
+- State numbers and units in the ways customers write them: '30 min' and 'half an hour'.
+TABLE:
+H: Before | After
+R: Gentleman's haircut: $30 | Men's haircut (also called a gentleman's cut, trim or short back and sides): $30, about 30 minutes
+R: Heating installation | Heating installation: new boilers, central heating and radiator replacement, including 'fitting a boiler'
+R: Cancellation policy | Cancellations and refunds: how to cancel, change or withdraw from a booking, and when you get your money back
+H2[the-risks-of-over-expanding]: The risks of over-expanding
+UL:
+- Broad synonyms can pull in irrelevant passages and confuse the answer.
+- Ambiguous words, such as 'cut' or 'plan', mean different things by context.
+- Adding too many alternatives to every paragraph makes the text awkward for readers.
+- Synonym handling in one language does not carry over to others; multilingual customers need a multilingual model. See [small embedding models and languages](/blog/local-onnx-embeddings-cpu-bge-small).
+H2[test-the-effect]: Test the effect
+TABLE:
+H: Test | How
+R: Collect twenty real questions that used unusual wording | From conversations and the unanswered list
+R: Ask them before the change | Note which return the right answer
+R: Update the documents | Add the alternative words and headings
+R: Ask them again | Compare
+R: Try a few unrelated questions | Check that the answers did not get noisier
+P: Use the measures in [benchmarking retrieval with simple metrics](/blog/benchmarking-rag-retrieval-metrics-business) if you want numbers.
+H2[common-mistakes]: Common mistakes
+UL:
+- Assuming the assistant will always understand any paraphrase.
+- Ignoring the unanswered list, which shows the words you missed.
+- Stuffing documents with synonyms until they read badly.
+- Using internal jargon in customer-facing documents.
+- Never re-testing after changes.
+H2[a-worked-example]: A worked example
+P: A plumbing firm notices that several visitors asked 'do you fit combi boilers?' and got 'I do not know', although its page says 'heating installation, including boiler replacement'. The owner adds a short passage: 'Boiler fitting and replacement (also called fitting a boiler, new boiler, combi boiler installation or swapping an old boiler): we fit most makes, typically in one day, from $2,400.' She also adds the heading 'Do you fit boilers?'. The next time a visitor asks, the assistant finds the passage immediately. The fix took five minutes and depended on nothing but watching real questions and writing the customers' words into the content.
+TABLE:
+H: Step | Action
+R: Spot | Read the unanswered list weekly
+R: Match | Find the passage that should have answered it
+R: Bridge | Add the customer's words and a matching heading
+R: Retest | Ask the original question again
+P: Repeat this loop for a few weeks and the assistant's coverage of your customers' vocabulary grows quickly.
+H2[frequently-asked-questions]: Frequently asked questions
+FAQ:
+Q: Why does my chatbot miss questions that are answered in my documents?
+A: Often because the customer used different words from the documents. Add the customer's wording and clear headings to your content.
+Q: What is query expansion?
+A: Adding related words to a search so that questions and passages using different terms can still match.
+Q: Do I need to configure synonyms?
+A: Not usually. Start by writing your content in customers' words; hybrid search covers many common paraphrases.
+Q: Where do I find the words my customers use?
+A: In conversations and the unanswered questions list.
+Q: Can too many synonyms hurt?
+A: Yes. Broad or ambiguous expansions add noise. Keep to terms that truly mean the same in your business.
+Q: Does it work across languages?
+A: Not automatically. Multilingual customers need a multilingual embedding model and content in, or understandable to, their languages.
+P: Test your wording in the [playground](/playground), see the [knowledge base feature](/product/knowledge-base) and read [what to do when the assistant does not know](/blog/handling-obscure-customer-inquiries-fallbacks).
+H2[further-reading]: Further reading
+UL:
+- [Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks (Lewis et al.)](https://arxiv.org/abs/2005.11401): The original research paper behind retrieval-augmented generation.
+- [Google Search Central: creating helpful, people-first content](https://developers.google.com/search/docs/fundamentals/creating-helpful-content): What Google looks for in useful pages.

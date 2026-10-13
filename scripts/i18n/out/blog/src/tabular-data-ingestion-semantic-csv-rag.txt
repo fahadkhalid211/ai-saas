@@ -1,0 +1,90 @@
+TITLE: Spreadsheets and CSV in a Chatbot Knowledge Base: How to Make Tabular Data Answerable
+SEO: Spreadsheets and CSV in a Chatbot Knowledge Base | Crescelo
+DESC: How to turn CSV and spreadsheet data into answers: why tables retrieve badly, row-to-sentence conversion, summaries, column names, sizes, counts and what not.
+EXCERPT: How to turn CSV and spreadsheet data into answers: why tables retrieve badly, row-to-sentence conversion, summaries, column names, sizes, counts and what not.
+CLUSTER: Knowledge Bases and RAG
+MOD: 2026-09-27
+P: Businesses keep a great deal of knowledge in spreadsheets: price lists, product catalogues, class timetables, member lists, service areas, staff rotas. It is natural to upload the file to a chatbot and expect it to answer questions about it. Often it does not, or it answers wrongly. The reason is that retrieval systems are built for prose. A table of rows and columns, flattened into text, loses the link between a row's label and its values, and a question like 'how many members joined in March?' is a calculation, not a lookup. This guide explains why tabular data is awkward for retrieval, how to prepare a spreadsheet so that an assistant can answer questions about it, when to convert rows to sentences, how summaries help with counts and totals, what sizes to expect, what you should not upload and how to test. Crescelo reads CSV and similar files and adds a dataset overview to help with broad questions.
+H2[why-tables-are-hard-for-retrieval]: Why tables are hard for retrieval
+TABLE:
+H: Problem | Example
+R: Lost headers | A chunk contains '95, 120, 2 hours' with no idea which service or column
+R: Split rows | A row is cut across two chunks
+R: Meaningless numbers | The number 95 alone says nothing
+R: Calculations | Totals, averages and counts cannot be found; they must be computed
+R: Large tables | Thousands of rows overwhelm the search and the model
+R: Ambiguous columns | 'Type' or 'Status' means different things in different sheets
+P: Retrieval finds passages that resemble the question. A row of numbers resembles nothing a visitor would type.
+H2[technique-1-turn-each-row-into-a-sentence]: Technique 1: turn each row into a sentence
+P: Convert every row into a short sentence that includes the column names. The sentence is searchable, understandable and self-contained.
+TABLE:
+H: Row in the sheet | Sentence for the assistant
+R: Colour | medium | 95 | 2 hours | Colour treatment, medium length hair: $95, takes about 2 hours.
+R: Class | Pilates | Tue 18:30 | Studio A | 12 places | Pilates class on Tuesday at 18:30 in Studio A, 12 places.
+R: Item | SKU-4471 | In stock | $34 | Item SKU-4471 is in stock and costs $34.
+P: Crescelo's file parsing for CSV keeps column names with each row, so rows are searchable and readable. Where you can, tidy the header names first: 'Price (USD)' is better than 'P'.
+H2[technique-2-add-a-summary-block]: Technique 2: add a summary block
+P: Questions about counts, totals and breakdowns cannot be answered by retrieving a few rows. Add summary text that answers the common ones: how many rows, the main categories and their counts, ranges of prices or dates, and the most common values. Crescelo adds a dataset overview for uploaded tables, describing the columns and summarising categories, and prioritises it for questions about counts and overviews. You can improve on it by writing your own summary in a text document.
+TABLE:
+H: Question | Needs
+R: What is the cheapest service? | A sorted list or a summary line
+R: How many classes do you run a week? | A count in the summary
+R: What does the price list cover? | An overview of categories
+R: Price of colour for long hair | The specific row sentence
+H2[technique-3-split-big-tables-by-topic]: Technique 3: split big tables by topic
+P: A single sheet with a thousand rows is unwieldy. Split it into meaningful parts: by category, by location or by date. Give each part a clear title. A file called 'Colour prices' retrieves better than one giant 'Prices' file with everything in it.
+H2[technique-4-keep-the-source-of-truth-elsewhere-for-calculati]: Technique 4: keep the source of truth elsewhere for calculations
+P: An assistant is not a spreadsheet. For calculations that must be exact, such as totals, live stock or balances, use a system built for it, and let the assistant answer descriptive questions from the data. Do not rely on a language model to add columns of figures. If the answer is a simple aggregate, put the aggregate in the text.
+H2[what-not-to-upload]: What not to upload
+UL:
+- Personal data such as member lists with names, emails and phone numbers, unless you need the assistant to answer about individuals and have the legal basis.
+- Financial records and anything confidential.
+- Live data that changes hourly, such as stock levels, unless you can keep it updated.
+- Huge exports of everything, when only a small part is useful.
+- Files with merged cells, multiple header rows or notes in cells, without cleaning.
+P: If a dataset contains personal information, tell visitors what the assistant uses and follow your privacy rules. See the [GDPR checklist for website chatbots](/blog/website-chatbot-gdpr-checklist).
+H2[prepare-the-file]: Prepare the file
+OL:
+- Use one header row with clear names.
+- Remove blank rows and columns, merged cells and decorative formatting.
+- Put units in the header: 'Duration (minutes)', 'Price (USD)'.
+- Keep one table per sheet, or one topic per file.
+- Save as CSV (UTF-8) or a simple spreadsheet format.
+- Add a short text note describing what the file contains and its date.
+H2[test-it]: Test it
+TABLE:
+H: Test question | What to check
+R: What does [specific item] cost? | Correct row and value
+R: Do you have anything under $50? | Reasonable list or a summary; not invented
+R: How many items are there in total? | Correct count or an honest 'I do not know'
+R: A question with a typo | Still finds the right row
+R: A question not covered by the data | Says it does not know
+P: Fix problems by improving the file, not by adding rules. See [how to stop a chatbot from making things up](/blog/grounded-ai-chatbot-hallucinations).
+H2[worked-example-a-class-timetable]: Worked example: a class timetable
+P: A studio uploaded its timetable spreadsheet, and the assistant answered 'what time is Pilates on Tuesday?' wrongly. The sheet had merged cells for days, a blank column and abbreviated headers. The owner cleaned the sheet into one row per class with the columns 'Class', 'Day', 'Start time', 'Room' and 'Places', and added a short note: 'Timetable valid from 1 September. Classes marked Beginner are suitable for first-timers.' After re-uploading, the assistant answered correctly, including 'which classes are good for beginners?', because the note gave it the meaning. Ten minutes of cleaning fixed the problem.
+H2[common-mistakes]: Common mistakes
+UL:
+- Uploading a raw export with merged cells and abbreviations.
+- Expecting the assistant to add up columns.
+- Leaving stale versions of the same sheet in the knowledge base.
+- Uploading personal data that is not needed.
+- Skipping tests with real questions.
+H2[frequently-asked-questions]: Frequently asked questions
+FAQ:
+Q: Can a chatbot answer questions from a CSV file?
+A: Yes, for lookups, if rows are searchable with their column names. For counts and totals, add summaries.
+Q: Why does my chatbot give wrong prices from my spreadsheet?
+A: Often because headers were lost or rows split. Clean the file, keep column names with each row and test.
+Q: Should I convert rows into sentences?
+A: Where possible, yes. Sentences are easier to retrieve and understand.
+Q: Can it do calculations?
+A: Do not rely on it for exact arithmetic. Provide summaries or use a system built for calculations.
+Q: How big can the file be?
+A: Limits depend on your plan's knowledge storage. Split large files by topic and upload only what you need.
+Q: Is it safe to upload member lists?
+A: Only if you have a lawful basis and the assistant needs it. Prefer to leave personal data out.
+P: See the [knowledge base feature](/product/knowledge-base), try uploading a table in the [playground](/playground) and read [preparing your service menu and pricing documents](/blog/prepare-service-menu-pricing-docs-rag).
+H2[further-reading]: Further reading
+UL:
+- [Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks (Lewis et al.)](https://arxiv.org/abs/2005.11401): The original research paper behind retrieval-augmented generation.
+- [Google Search Central: structured data introduction](https://developers.google.com/search/docs/appearance/structured-data/intro-structured-data): How structured data improves search results.

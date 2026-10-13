@@ -1,0 +1,126 @@
+TITLE: Chat on a Phone: A Mobile Checklist Before You Put a Chatbot Live
+SEO: Chat on a Phone: A Mobile Checklist Before You Put a Chatbot
+DESC: What to check before a website chatbot goes live on mobile: launcher size, keyboard behaviour, layout, speed, touch targets, orientation, accessibility.
+EXCERPT: What to check before a website chatbot goes live on mobile: launcher size, keyboard behaviour, layout, speed, touch targets, orientation, accessibility.
+CLUSTER: AI Website Chatbots
+MOD: 2026-09-27
+P: Most of your visitors are on phones. A chat that looks fine on your laptop can be unusable on a phone: the launcher covers the call button, the keyboard hides the input, the window is too tall, text is too small or the whole page jumps when it opens. Because mobile visitors are often closest to a decision, a broken chat costs bookings at the worst moment. Testing on real phones takes an hour and catches almost every problem. This guide is a practical checklist for mobile chat: the layout and behaviour to check, the speed and accessibility points that matter on small screens, a way to test on real devices and the common bugs to look for.
+H2[start-with-how-visitors-use-their-phones]: Start with how visitors use their phones
+UL:
+- One hand, thumb reach, often on a train, sofa or shop floor.
+- Small screens, so anything that covers content is painful.
+- A software keyboard that takes half the screen when typing.
+- Variable connections: fast Wi-Fi one moment, weak mobile data the next.
+- Interruptions: calls, notifications, switching apps.
+P: Design for these conditions, not for a desk.
+H2[the-launcher]: The launcher
+TABLE:
+H: Check | Why
+R: Large enough to tap comfortably | Small targets cause mis-taps
+R: Does not cover key buttons | Call, book, menu and cookie choices must stay reachable
+R: Sits clear of browser bars and safe areas | Bottom bars and notches hide it
+R: Has a clear label or recognisable icon | Visitors should know what it does
+R: Does not bounce or flash | Distracting and can trigger motion sensitivity
+P: If the launcher covers a button on some pages, adjust its offset or hide it there.
+H2[the-open-chat-window]: The open chat window
+UL:
+- Uses most of the screen but leaves a clear way to close it.
+- The message list scrolls smoothly and shows the latest message.
+- The input stays visible when the keyboard is open.
+- The page behind does not scroll or jump.
+- Text is at least readable size without zooming.
+- Buttons and links are easy to tap.
+P: The keyboard is the most common problem: on some phones the input disappears behind it or the layout jumps. Test on both iPhone and Android in several browsers.
+H2[layout-and-orientation]: Layout and orientation
+UL:
+- Works in portrait and landscape.
+- Handles long messages, lists and tables without sideways scrolling.
+- Booking cards fit the width.
+- Images, if any, scale down.
+- Nothing is cut off on small phones.
+P: Test on the smallest phone you can find as well as a large one.
+H2[speed-on-a-mobile-connection]: Speed on a mobile connection
+P: A slow widget hurts your page and your visitors' patience. Check that the chat does not delay the main content, and measure page speed on a mobile profile before and after adding it. The widget's script is loaded from one line on your site, and a well-built widget adds little; still, measure your own pages. See [performance of embedded chat widgets](/blog/performance-optimization-embedded-chat-widgets). Test on a throttled connection to see what a visitor on weak data sees.
+H2[touch-and-interaction]: Touch and interaction
+UL:
+- Tap targets are at least a thumb's width, with space between them.
+- Quick-reply buttons are easy to hit.
+- Long-press or hover is never required.
+- Swipe gestures are not the only way to do something.
+- Errors are clear and tappable to fix.
+H2[accessibility-on-mobile]: Accessibility on mobile
+P: Phones have their own assistive technology: VoiceOver on iPhone and TalkBack on Android. Turn one on and try to open the chat, read a reply and send a message. Check colour contrast in sunlight, dark mode and large text settings. See [chatbot accessibility and WCAG](/blog/accessibility-wcag-compliance-website-chatbots).
+H2[booking-and-forms-on-mobile]: Booking and forms on mobile
+UL:
+- Date and time choices are easy to tap; a list of times often beats a tiny calendar.
+- Input fields open the right keyboard: numeric for phone numbers, email for addresses.
+- Autofill works for name, phone and email.
+- Confirmation is clear and visible.
+- The change link opens correctly on a phone.
+P: Try a full booking on a phone, from the first question to the confirmation email.
+H2[notifications-and-interruptions]: Notifications and interruptions
+UL:
+- If a visitor leaves the page and returns, the conversation should still be there.
+- A message should never trigger a sound unexpectedly.
+- Pop-ups should not appear immediately or repeatedly; see [reducing bounce with proactive chat](/blog/reduce-bounce-rate-proactive-chat).
+H2[how-to-test-properly]: How to test properly
+OL:
+- Use at least two real phones, one iPhone and one Android, and if you can, an older model.
+- Test in the browsers your visitors use: Safari and Chrome at least.
+- Test on Wi-Fi and on mobile data.
+- Run the whole path: open, ask, book, receive the confirmation.
+- Open your top five pages and check the launcher on each.
+- Rotate the phone.
+- Turn on large text and dark mode.
+- Ask someone who has never seen it to use it while you watch.
+TABLE:
+H: Bug to look for | Typical cause
+R: Input hidden behind the keyboard | Fixed-height window not resizing
+R: Page scrolls behind the chat | Scroll lock missing
+R: Launcher covers a button | Fixed position clash
+R: Text too small | Font size not scaled
+R: Slow first open | Script or images loaded late
+H2[a-five-minute-check-to-repeat]: A five-minute check to repeat
+UL:
+- Open your busiest page on a phone.
+- Is the launcher visible and not covering anything?
+- Open the chat and type a message; does the keyboard hide the input?
+- Close it; does the page behave?
+- Repeat on the booking page.
+P: Do it after every change to your site, the widget or your theme.
+H2[worked-example-a-clinic-that-found-three-bugs-in-an-hour]: Worked example: a clinic that found three bugs in an hour
+P: A clinic tested its chat on three phones on a Friday afternoon. On an older Android phone the input disappeared behind the keyboard, so nothing could be typed. On an iPhone in landscape the chat window overflowed the screen. And on the contact page the launcher sat directly on top of the tap-to-call button. None of these appeared on the owner's laptop. The developer adjusted the window height for the keyboard, limited the height in landscape and moved the launcher on the contact page. A second round of testing on the same phones confirmed the fixes. The whole exercise took ninety minutes and removed the three problems most likely to have cost bookings from mobile visitors.
+TABLE:
+H: Bug | Phone | Fix
+R: Input hidden by keyboard | Older Android | Window resizes with the keyboard
+R: Window overflow | iPhone, landscape | Maximum height in landscape
+R: Launcher over the call button | All phones on the contact page | Moved launcher on that page
+H2[common-mistakes]: Common mistakes
+UL:
+- Testing only on a laptop with a narrow browser window.
+- Never testing with the keyboard open.
+- Forgetting the contact and booking pages.
+- Ignoring older phones.
+- Auto-opening the chat on mobile.
+- Not retesting after theme or widget updates.
+H2[dark-mode-and-system-settings]: Dark mode and system settings
+P: Many people use dark mode, large text or reduced motion. Switch each on and look at the chat: is text still readable, do colours still have enough contrast, does anything overflow when the font grows, do animations stop? A chat that respects the visitor's settings feels considerate; one that ignores them can be unusable for people who depend on them.
+H2[frequently-asked-questions]: Frequently asked questions
+FAQ:
+Q: How do I test a chatbot on mobile?
+A: Use real phones, run the whole path from opening the chat to the booking confirmation, and check launcher position, keyboard behaviour and page speed.
+Q: Why does the keyboard hide my chat input?
+A: The chat window does not resize when the keyboard opens. Report it to your vendor with the phone and browser.
+Q: Should the chat open automatically on mobile?
+A: No. It covers most of the screen. Show a small bubble instead.
+Q: What is a good launcher size?
+A: Large enough to tap comfortably with a thumb, without dominating the page.
+Q: Does the chat slow my mobile pages?
+A: It can. Measure page speed on a mobile profile before and after.
+Q: How often should I test?
+A: After any change to the widget, theme or page layout, and quarterly otherwise.
+P: See the [website widget feature](/product/website-widget), read [chat widget design](/blog/website-chatbot-widget-design) and test in the [playground](/playground).
+H2[further-reading]: Further reading
+UL:
+- [web.dev: Core Web Vitals](https://web.dev/articles/vitals): How Google measures page speed and stability.
+- [Google Search Central: creating helpful, people-first content](https://developers.google.com/search/docs/fundamentals/creating-helpful-content): What Google looks for in useful pages.

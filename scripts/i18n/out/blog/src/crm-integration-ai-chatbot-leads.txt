@@ -1,0 +1,127 @@
+TITLE: How to Send Chatbot Leads to Your CRM: Webhooks, Zapier and Make Explained
+SEO: Integrate Chatbot with CRM | Crescelo
+DESC: How to connect an AI chatbot to your CRM and tools: what lead data to send, webhooks, Zapier and Make recipes, deduplication, security and how to test.
+EXCERPT: How to connect an AI chatbot to your CRM and tools: what lead data to send, webhooks, Zapier and Make recipes, deduplication, security and how to test.
+CLUSTER: Lead Generation
+MOD: 2026-09-27
+P: A lead that lives only in the chatbot's dashboard is a lead that gets forgotten. The moment a visitor shares contact details, the lead should reach the place your team already works: a customer database, a spreadsheet, a team chat channel or a sales pipeline. This guide explains the ways a chatbot can pass leads to other tools, which data to send, how webhooks work in plain terms, how to use automation tools such as Zapier and Make to reach almost any CRM, how to avoid duplicates and mistakes, and how to test the flow before you rely on it.
+H2[why-integration-matters]: Why integration matters
+UL:
+- **Speed:** leads reach the person who can act, immediately.
+- **One source of truth:** your team works from one list.
+- **Follow-up:** reminders, tasks and pipelines depend on the lead being in your CRM.
+- **Reporting:** you can see which channels and pages produce customers.
+- **Less copy and paste:** manual transfers get skipped when you are busy.
+P: See [speed to lead for service businesses](/blog/speed-to-lead-service-businesses) for why the first hour matters.
+H2[ways-a-chatbot-can-pass-leads-on]: Ways a chatbot can pass leads on
+TABLE:
+H: Method | How it works | Good for | Effort
+R: Email alert | Each lead is emailed to you with the conversation | Every business; instant awareness | None
+R: Slack or team chat | New leads are posted to a channel | Teams who live in chat | Low
+R: Spreadsheet | Each lead becomes a row in Google Sheets | Simple tracking, small volumes | Low
+R: Webhook | The chatbot sends the lead as data to a web address you provide | Connecting to almost anything | Medium
+R: Automation tool (Zapier, Make) | Receives the webhook and creates records in hundreds of apps | Reaching a CRM without code | Low to medium
+R: Native CRM connector | Built-in link to a particular CRM | If the product offers it for your CRM | Low, if available
+P: In Crescelo, leads can go to email with instant alerts, to Slack, to Google Sheets and to webhooks. Outbound webhook dispatch and CRM pipeline sync are part of the Agency / Scale plan. Because webhooks carry the data anywhere, any CRM that accepts data from Zapier, Make or its own API can receive your leads.
+H2[what-data-to-send-with-a-lead]: What data to send with a lead
+TABLE:
+H: Field | Why
+R: Name, email, phone | To contact them
+R: What they asked for | Service or question in their words
+R: Conversation summary or link | So the follower does not start cold
+R: Source page and time | Attribution and speed measurement
+R: Score or label (hot, warm, cool) | Prioritise follow-up
+R: Consent status | Whether they agreed to marketing
+R: Booking details, if any | Date, time and service
+R: Language | So you reply in the right one
+P: Send only what the CRM needs. More data means more privacy responsibility.
+H2[webhooks-in-plain-terms]: Webhooks in plain terms
+P: A webhook is an automatic message from one system to another. When something happens in the chatbot, such as a new lead, it sends a small packet of data to a web address you provide. The receiving system, a CRM or an automation tool, reads the data and acts. Because webhooks can carry sensitive information, they should be signed so the receiver can check they came from the chatbot, and sent only over secure connections. Crescelo signs outgoing webhooks so your systems can verify them. See [webhook automations with Zapier and Make](/blog/webhook-automations-zapier-make-chat-events).
+OL:
+- The visitor shares details and the lead is created.
+- The chatbot sends a webhook with the lead data to your chosen address.
+- Your automation tool receives it and checks the signature if configured.
+- It creates or updates a contact and adds the conversation note.
+- It notifies the right person or creates a follow-up task.
+H2[a-recipe-with-zapier-or-make]: A recipe with Zapier or Make
+P: The steps are similar in both tools.
+OL:
+- Create a new automation with a trigger of the type 'Catch a webhook'. The tool gives you a web address.
+- Paste that address into the chatbot's webhook settings.
+- Send a test lead so the tool can see the data fields.
+- Add an action: 'Create or update contact' in your CRM, mapping name, email, phone and notes.
+- Add a second action: create a task or notify a channel for hot leads.
+- Turn the automation on and send another test lead.
+TABLE:
+H: CRM action | Typical mapping
+R: Create or update contact | Match on email to avoid duplicates
+R: Add note | Conversation summary and link
+R: Create deal or opportunity | Only for warm and hot leads
+R: Assign owner | By area, service or round-robin
+R: Create task | Call within a set time for hot leads
+H2[avoiding-duplicates-and-mess]: Avoiding duplicates and mess
+UL:
+- Match contacts by email or phone so returning visitors do not create new records.
+- Update rather than overwrite existing fields; keep the original source.
+- Tag leads from the chatbot so you can report on them.
+- Do not create a deal for every chat; use score or booking to decide.
+- Delete or merge test records before launch.
+H2[security-and-privacy]: Security and privacy
+UL:
+- Use secure (HTTPS) addresses for webhooks and never send leads to an address you do not control.
+- Verify webhook signatures where your tool supports it.
+- Keep webhook addresses and secrets private; treat them like passwords.
+- Limit who can edit automations, and use two-factor authentication on your automation and CRM accounts.
+- Record consent, and honour deletion requests across systems.
+- Send the minimum data needed.
+P: See [the GDPR checklist](/blog/website-chatbot-gdpr-checklist) and [setting up team roles and two-factor authentication](/blog/setup-rbac-2fa-team-security). This is general information, not legal advice.
+H2[test-the-whole-flow-before-you-rely-on-it]: Test the whole flow before you rely on it
+OL:
+- Submit a test lead in the chat with a name you will recognise.
+- Check the email alert arrives.
+- Check the row, message or CRM record appears with correct fields.
+- Submit the same email again and check it updates, not duplicates.
+- Submit a lead with unusual characters and a long message.
+- Disconnect the automation and see what happens; confirm you still get the email alert.
+- Delete the test records.
+P: A lead should never depend on a single route. Keep the email alert on even when the CRM link is working.
+H2[measure-what-the-integration-gives-you]: Measure what the integration gives you
+TABLE:
+H: Metric | How to use it
+R: Time from lead to first contact | Should fall once alerts and tasks exist
+R: Leads by source page | Shows which pages convert
+R: Lead to customer rate by label | Checks the scoring
+R: Leads without follow-up | Finds gaps in your process
+P: See [attribution modelling for chat leads](/blog/attribution-modeling-marketing-channels-chat-leads) and [conversational lead capture](/blog/conversational-lead-capture).
+H2[common-mistakes]: Common mistakes
+UL:
+- Sending leads to a shared inbox nobody reads.
+- Creating duplicate contacts on every message.
+- Forgetting to test failures.
+- Putting secrets in shared documents.
+- Sending everything, including data you do not need.
+- Not telling the team how to recognise chatbot leads.
+H2[example-routing-leads-to-the-right-person]: Example: routing leads to the right person
+P: A home services company has two crews and a sales coordinator. The automation reads the lead's postcode and service. Emergencies go to the on-call engineer by text. Quote requests create a deal and a task for the coordinator to call within the hour. Out-of-area leads receive an automatic polite reply. Everything is logged in the CRM with the conversation link, so the coordinator sees what the visitor was told before she calls. The setup took an afternoon with a webhook and an automation tool, and it replaced a shared inbox that was often checked late.
+H2[where-a-native-connector-beats-a-webhook]: Where a native connector beats a webhook
+P: A native connector, if your product offers one for your CRM, can be simpler and more reliable: fewer moving parts, no automation account to manage, and sometimes richer mapping. A webhook with an automation tool is more flexible and reaches far more systems. If a native connector exists for your CRM and covers what you need, use it. If not, a webhook and an automation tool is a well-trodden path. Whichever you choose, keep the email alert as a safety net.
+H2[keeping-the-integration-healthy]: Keeping the integration healthy
+P: Integrations break quietly: a password expires, a field is renamed, an automation is switched off. Once a month, send a test lead and check it arrives everywhere. Turn on failure alerts in your automation tool so you hear about errors, and review the run history for skipped or failed runs. Document what the automation does and who owns it, so the knowledge does not live in one person's head.
+H2[frequently-asked-questions]: Frequently asked questions
+FAQ:
+Q: How do I send chatbot leads to my CRM?
+A: Use a webhook to an automation tool such as Zapier or Make that creates or updates a contact in your CRM, or use a native connector if your product offers one.
+Q: Does Crescelo integrate with CRMs?
+A: Leads can go to email, Slack, Google Sheets and webhooks, so any CRM reachable by webhook or automation tool can receive them. Outbound webhooks and CRM pipeline sync are on the Agency / Scale plan.
+Q: What is a webhook?
+A: An automatic message from the chatbot to another system when something happens, such as a new lead.
+Q: How do I avoid duplicate contacts?
+A: Match on email or phone and choose 'create or update' actions.
+Q: Is it safe to send leads to a CRM?
+A: Yes, if you use HTTPS, verify signatures, protect secrets, send only what you need and follow privacy rules.
+Q: Should every chat become a deal?
+A: No. Create deals for warm and hot leads or bookings, and keep the rest as contacts.
+P: See how [lead capture](/product/lead-capture) works, and [start a free trial](/login?mode=register). You can rehearse a lead conversation in the [playground](/playground).
+H2[further-reading]: Further reading
+UL:
+- [Google Search Central: creating helpful, people-first content](https://developers.google.com/search/docs/fundamentals/creating-helpful-content): What Google looks for in useful pages.

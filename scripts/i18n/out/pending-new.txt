@@ -1,0 +1,42 @@
+4709	A chat model has no memory. Each time a customer writes, the app sends the instructions, the knowledge-base text and the whole chat so far, and you pay for all of it again. A chat twice as long sends about four times as much history.
+4710	Adjust your estimated weekly inquiry and phone call volume to see the real impact on your schedule and revenue.
+4711	Browse by topic
+4712	Bug Report & Issue Triage
+4713	Click any integration below to see how it works, what it sends, and how to set it up.
+4714	Click each stage of the pipeline to inspect live protocol traces, benchmark latency, and verified technical specifications.
+4715	COMING SOON
+4716	Comparison
+4717	Contact & Support
+4718	Each guide walks you through account creation, API key generation, budget configuration, and Crescelo dashboard connection.
+4719	Encountered an error, unexpected glitch, or broken flow in Crescelo? Submit the details below. Our engineering team reviews and triages all bug reports promptly.
+4720	ENGINEERING HORIZON
+4721	Every component is engineered to run deterministically with zero third-party dependencies or hidden lock-ins.
+4722	Everything you need to select the right tier for your call volume, website traffic, and team size.
+4723	Five steps and about five minutes. It works the same on Shopify, Webflow, Wix and plain HTML: paste one script before the closing body tag.
+4724	GOOD TO KNOW
+4725	Guides organised by feature area. Start with AI connectors if you are just getting set up.
+4726	Hardware & Platform Specs
+4727	How Crescelo books appointments inside the chat conversation, syncs with external calendars, and prevents race-condition double-bookings.
+4728	How Crescelo reads your documentation, creates vector embeddings, and ensures that answers cite your exact material without inventing facts.
+4729	How it connects
+4730	HOW IT WORKS
+4731	INSTALLATION GUIDE
+4732	Interactive Pipeline
+4733	KEEP EXPLORING
+4734	KNOWLEDGE ARCHITECTURE
+4735	KNOWLEDGE HUB & GLOSSARY
+4736	Popular Articles
+4737	Practical guides on AI website assistants, online booking, lead capture, costs and security, written for owners of appointment-based businesses.
+4738	QUESTIONS
+4739	SCHEDULING DOCUMENTATION
+4740	See it in action
+4741	Select your business type below to see how Crescelo handles a real enquiry — from the opening question to a confirmed booking.
+4742	STEP-BY-STEP GUIDES
+4743	THE PART PEOPLE MISS
+4744	Transparent visibility into what has been delivered, what is being polished in active beta, and what is scheduled next.
+4745	Value Calculator
+4746	We are building an assistant that answers inbound phone calls from the same knowledge base and books appointments by voice. It is not available yet; follow its progress on the roadmap.
+4747	We are building an assistant that answers inbound phone calls from your knowledge base and books appointments by voice. It is not available yet, so there is nothing to set up today.
+4748	WHAT YOU GET
+4749	Whether you need help setting up your assistant, subscribing to your calendar feed, or exploring custom enterprise deployment, our engineering team responds within 24 hours.
+4750	YOU STAY IN CONTROL

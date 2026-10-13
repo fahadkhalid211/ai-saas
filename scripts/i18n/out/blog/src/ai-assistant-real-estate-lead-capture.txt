@@ -1,0 +1,126 @@
+TITLE: AI Assistant for Real Estate Agents: Capture Leads and Book Viewings
+SEO: AI Assistant for Real Estate Agents | Crescelo
+DESC: How real estate agencies use an AI website assistant to answer listing questions, qualify buyers and sellers, book viewings and follow up on leads that arrive.
+EXCERPT: How real estate agencies use an AI website assistant to answer listing questions, qualify buyers and sellers, book viewings and follow up on leads that arrive.
+CLUSTER: Real Estate
+MOD: 2026-09-27
+P: Real estate is a business of timing. A buyer who sends an enquiry about a listing at 9 p.m. is comparing three agents, and the first useful reply often wins the conversation. Yet agents are out at viewings, on calls and in meetings for much of the day. An AI assistant on your website and listing pages can answer the routine questions, qualify the enquiry, book viewings into your diary and hand you a warm lead with the full conversation. This guide explains how to set one up for an agency or independent agent, what to load into it, how to qualify buyers and sellers, and how to stay within the rules.
+NOTE: Real estate advertising, agency and privacy rules differ by country and state. This is general information, not legal advice.
+H2[the-enquiries-an-agency-receives]: The enquiries an agency receives
+TABLE:
+H: Visitor | Typical questions | What the assistant should do
+R: Buyer | Is this property still available? What is the price, size, tax, service charge? Can I see it this week? | Answer from listing details, offer viewing slots, capture contact details
+R: Seller | What is my home worth? How do you market properties? What are your fees? | Explain your process and fees, capture details, book a valuation appointment
+R: Renter | Is it pet friendly? What is the deposit? When can I move in? | Answer from listing and tenancy information, offer a viewing
+R: Investor | What is the yield? What is the area like? | Share the information you publish, and route detailed questions to a person
+R: Neighbour or browser | General local questions | Answer from your area guides, capture interest
+P: The assistant is strongest on repeatable facts. Anything that requires judgement, valuation or negotiation belongs to you.
+H2[what-to-give-the-assistant]: What to give the assistant
+OL:
+- **Listing information:** for each property, price, size, rooms, features, status, address and key terms. See [loading brochures and listing documents](/blog/mls-property-brochure-ingestion-chat).
+- **Your services and fees:** how you market, valuation process, commission or fee structure where you publish it.
+- **Neighbourhood guides:** schools, transport, amenities, character. See [neighbourhood guides and local knowledge](/blog/neighborhood-guides-local-knowledge-real-estate).
+- **Process guides:** how buying, selling or renting works with you, and the documents people need.
+- **Availability:** your calendar and viewing windows.
+P: Keep listing data current. A sold property that the assistant still advertises damages trust faster than an unanswered message. If your listings change daily, set a routine for updating the knowledge base, or rely on pages the assistant re-reads.
+H2[qualifying-buyers-and-sellers-without-interrogating-them]: Qualifying buyers and sellers without interrogating them
+P: A good enquiry chat sounds like a helpful colleague, not a form. The assistant asks a few relevant questions in a natural order, and each answer helps you prioritise.
+TABLE:
+H: Buyer questions | Why it matters
+R: What are you looking for and where? | Match with listings and areas
+R: What is your budget range? | Sets realistic options
+R: When would you like to move? | Urgency
+R: Are you pre-approved or paying cash? | Readiness
+R: Do you have a property to sell first? | Timing and dependency
+TABLE:
+H: Seller questions | Why it matters
+R: Where is the property and what type is it? | Fit with your area and service
+R: Why and when are you thinking of selling? | Timing and motivation
+R: Have you had a valuation before? | Competition and expectations
+R: Would you like a valuation visit? | The next step
+P: Do not make the assistant ask everything. Let it ask what is needed to book a viewing or valuation and offer to continue with a person. See [buyer versus seller lead qualification](/blog/buyer-vs-seller-lead-qualification-chat) and [AI lead qualification framework](/blog/ai-lead-qualification-framework).
+H2[booking-viewings-and-valuations]: Booking viewings and valuations
+P: A viewing booking needs more than a time. It needs the property, the agent who will attend, travel time between viewings and sometimes access arrangements. Offering real slots inside the chat converts an interested visitor into an appointment before they cool off. See [scheduling property showings in chat](/blog/schedule-property-showings-chat) and [open house registration workflows](/blog/open-house-registration-workflows-chat).
+UL:
+- Set separate appointment types: viewing, valuation, buyer consultation.
+- Add buffers for travel between properties.
+- Assign the right agent by area or property.
+- Capture name, phone, email and the property of interest.
+- Send a confirmation with the address, agent name and how to change the booking.
+H2[after-hours-enquiries-where-the-assistant-earns-its-keep]: After-hours enquiries: where the assistant earns its keep
+P: Property portals and social media drive enquiries in the evening and at weekends. If the first reply arrives the next afternoon, the buyer has often already spoken to someone else. An assistant answers immediately, books a slot and puts the lead in your inbox for the morning with the conversation attached. See [after-hours real estate lead capture](/blog/after-hours-real-estate-lead-capture).
+H2[handing-leads-to-your-team]: Handing leads to your team
+P: A lead is only useful if you see it quickly and understand it. Configure instant email alerts, and if you use a customer database, send leads there with the conversation. Route by area or property type so the right agent sees it. A summary at the top of each lead, what the person wants, budget, timing, viewing booked, saves you reading the full chat. See [instant lead routing in chat](/blog/instant-lead-routing-chat) and [CRM integration](/blog/crm-integration-ai-chatbot-leads).
+H2[specific-segments]: Specific segments
+H3: Commercial real estate
+P: Commercial enquiries are fewer and more complex: use, size, lease terms, timing. The assistant qualifies and passes on rather than trying to advise. See [commercial real estate inquiry qualification](/blog/commercial-real-estate-inquiry-qualification).
+H3: Mortgage brokers
+P: For brokers working alongside agents, the chat can book consultations and explain your process without giving financial advice. See [mortgage broker consultation booking](/blog/mortgage-broker-consultation-booking-chat).
+H3: Property management and tenants
+P: For lettings, tenants ask about applications, maintenance and deposits. See [tenant application and property management FAQ](/blog/tenant-application-property-management-faq-chat).
+H2[rules-to-respect]: Rules to respect
+UL:
+- Do not let the assistant give legal, tax or financial advice, or promise returns.
+- State clearly when information is indicative and a person will confirm.
+- Follow your local advertising and fair housing or equality rules; the assistant should not steer or discriminate.
+- Tell visitors they are talking to an AI and link to your privacy policy.
+- Keep personal data to what you need and understand how long it is stored.
+H2[what-it-costs-and-how-to-think-about-return]: What it costs and how to think about return
+P: The relevant comparison is the commission on one extra transaction, or the value of one extra valuation appointment, against a monthly plan. Because real estate enquiries are high-value, even a small recovery matters. Crescelo's plans start at $49 a month, with booking and calendar sync on the $149 Growth plan; see [pricing](/pricing). You connect your own AI provider and pay it directly for usage.
+H2[setup-in-a-day]: Setup in a day
+OL:
+- Collect listings, fee information and area guides into short documents.
+- Load them and set a professional but friendly tone.
+- Set your viewing hours and slot length, and subscribe to the calendar feed.
+- Configure lead alerts and routing.
+- Test buyer, seller and renter conversations, and three questions the documents cannot answer.
+- Add the widget to your site and listing pages.
+- Review the first month of conversations every week.
+H2[a-sample-conversation-with-a-buyer]: A sample conversation with a buyer
+TABLE:
+H: Speaker | Message
+R: Buyer | Is the three-bed on Maple Road still available and what are the council tax and service charge?
+R: Assistant | Yes, 14 Maple Road is currently available at $425,000. It is a three-bedroom semi with a garden and off-street parking. The brochure lists annual property tax of $3,120 and no service charge because it is freehold. Would you like to view it this week?
+R: Buyer | Saturday morning if possible.
+R: Assistant | Saturday at 10:00 or 11:30 is free with Jordan. Which would you like?
+R: Buyer | 11:30.
+R: Assistant | Booked. May I have your name and mobile number so Jordan can confirm, and are you buying with a mortgage or cash? That helps Jordan prepare.
+P: The assistant answered from the listing brochure, offered real slots and asked one qualifying question at the natural moment. The agent receives a booked viewing with the buyer's name, number and funding position.
+H2[speed-and-follow-up-the-first-hour]: Speed and follow-up: the first hour
+P: A useful discipline is to treat the first hour after an enquiry as the most valuable. The assistant covers the first minute. Your team covers the rest: a call or message within the hour, a viewing confirmation and a short note on what the buyer wants. Send yourself a text for hot leads, and check them at set times so no one waits until the next day. If your team is small, agree who looks at leads at what time, and use the conversation summary to prepare for the call.
+H2[common-mistakes]: Common mistakes
+UL:
+- Leaving sold or withdrawn listings in the knowledge base.
+- Letting the assistant estimate a property's value.
+- Asking for too much information before offering a viewing.
+- Not routing leads to the right agent.
+- Forgetting to update viewing availability around holidays.
+- Not recording where the enquiry came from.
+H2[ideas-to-make-it-work-harder]: Ideas to make it work harder
+UL:
+- Add the assistant to individual listing pages so questions arrive with context.
+- Put a link to a hosted chat in portal listings and social posts.
+- Load your buying and selling guides so it can answer process questions.
+- Invite visitors to get an alert when similar properties are listed, with a clear opt-in.
+- Use the weekly review to find which properties get the most questions and adjust your marketing.
+H2[a-weekly-review-that-keeps-it-sharp]: A weekly review that keeps it sharp
+P: Spend fifteen minutes each week on three checks. First, read the conversations that did not end in a booking or lead and note why: a missing answer, a stale listing or a visitor who wanted a person. Second, list the questions the assistant could not answer and add the answers to the knowledge base, starting with the ones asked most. Third, compare viewings booked with viewings attended, and adjust confirmations and reminders if people are not turning up. This small routine is what separates an assistant that gradually improves from one that quietly goes out of date. It also gives you a clear picture of what buyers actually want, which is useful for marketing and for advising sellers.
+P: Share the findings with your team. Agents often hear the same questions in viewings that the assistant sees online, and putting both together makes your listings and your answers better.
+H2[frequently-asked-questions]: Frequently asked questions
+FAQ:
+Q: Can an AI chatbot answer questions about my listings?
+A: Yes, if you load the listing details. It answers from them and should say when it does not know.
+Q: Can it book viewings?
+A: Yes. With booking enabled it offers real slots and confirms the viewing, with the agent and property recorded.
+Q: Will it replace real estate agents?
+A: No. It handles routine questions and out-of-hours enquiries so agents can spend time with buyers and sellers.
+Q: Can it estimate property values?
+A: It should not. Valuation needs a person. Let it explain your process and book a valuation appointment.
+Q: How do I keep listings up to date?
+A: Update the knowledge base whenever listings change, or use pages the assistant re-reads. Remove sold properties promptly.
+Q: Is it suitable for lettings and property management?
+A: Yes. Load tenancy information and use it for applications, viewings and common tenant questions.
+P: Try it with a listing brochure in the [playground](/playground), then [start a free trial](/login?mode=register) to set up booking hours and your website.
+H2[further-reading]: Further reading
+UL:
+- [Google Search Central: creating helpful, people-first content](https://developers.google.com/search/docs/fundamentals/creating-helpful-content): What Google looks for in useful pages.

@@ -1,0 +1,89 @@
+TITLE: A Grounded Business Assistant or a Custom GPT: Which Suits Customer Chat?
+SEO: A Grounded Business Assistant or a Custom GPT | Crescelo
+DESC: Compare a custom GPT with a grounded, embeddable business assistant: control, accuracy, customers, security, cost, branding, booking and lead capture.
+EXCERPT: Compare a custom GPT with a grounded, embeddable business assistant: control, accuracy, customers, security, cost, branding, booking and lead capture.
+CLUSTER: Comparisons
+MOD: 2026-09-27
+P: Many business owners have tried a custom GPT: you upload a few documents to ChatGPT, give it instructions and share a link. It works surprisingly well in minutes, and it is natural to ask whether that is all you need for customer chat. For internal use and experiments, it may be. For a public-facing assistant on your website that handles real customers, appointments and personal data, the differences start to matter. A grounded business assistant, built to answer from your own content, live on your site, connected to booking and lead capture and managed with security controls, solves a different problem. This guide compares the two honestly. It explains what each does well, where custom GPTs fall short for customer chat, what 'grounded' really means, how they differ on access, branding, data handling, cost and operations, and gives a checklist to decide. It does not claim a custom GPT is bad; it is the wrong tool for some jobs, and the right one for others.
+H2[what-each-is]: What each is
+TABLE:
+H:  | Custom GPT | Grounded business assistant (such as Crescelo)
+R: Where it lives | Inside the ChatGPT product, reached by a link | On your website, hosted page or messaging channels
+R: Who uses it | Anyone with the link, often needing an account with the provider | Your website visitors, with no account
+R: Knowledge | Uploaded files and instructions | Documents, web pages and videos indexed for retrieval
+R: Behaviour | Instructions guide a general model | Retrieval limits answers to your content, with rules for when it does not know
+R: Business actions | Limited | Booking, lead capture, handover to a person, notifications
+R: Management | Simple settings | Dashboard with analytics, roles, channels
+H2[what-grounded-means]: What 'grounded' means
+P: A grounded assistant looks up relevant passages in your content before answering and is instructed to answer from them. If nothing relevant is found, it says it does not know and offers a next step, such as booking or a person, instead of guessing. This retrieval-augmented approach reduces made-up answers in areas where accuracy matters: prices, hours, policies. A general model with attached files may also use the files, but it is more likely to blend them with its general knowledge and answer confidently outside your content. See [how to stop a chatbot from making things up](/blog/grounded-ai-chatbot-hallucinations).
+H2[where-custom-gpts-are-a-good-fit]: Where custom GPTs are a good fit
+UL:
+- Internal helpers for you or your team, such as drafting emails in your style.
+- Quick prototypes to test how an assistant might answer.
+- Personal productivity: summarising documents, brainstorming.
+- Sharing a tool with a small group who already use the provider's product.
+H2[where-they-fall-short-for-customer-chat]: Where they fall short for customer chat
+TABLE:
+H: Need | Custom GPT | Grounded business assistant
+R: Live on your website for anonymous visitors | Not designed for this; visitors leave your site and may need an account | Embedded widget, no account needed
+R: Your branding | Limited | Name, colours, position, welcome message; white-label on eligible plans
+R: Bookings | Not built in | Built-in booking or links to Calendly or Cal.com
+R: Lead capture and alerts | Not built in | Fields you choose; email, Slack, Sheets, webhooks
+R: Human handover with context | No | Yes
+R: See what visitors asked | Limited insight into public conversations | Conversations, unanswered questions, leads
+R: Control over data and provider | Tied to one provider's product | Bring your own key; choose the provider
+R: Access control for your team | Basic | Roles and two-factor authentication
+R: Answers only from your content | Weaker guarantees | Retrieval with a fallback when it does not know
+P: The important difference is not intelligence; both use similar underlying models. It is the surrounding system: where it appears, what it can do and how you manage and secure it.
+H2[security-and-data-handling]: Security and data handling
+UL:
+- **Visitor access:** a public link to a custom GPT exposes it to anyone, and conversations may sit in the provider's product under its terms. A website assistant is embedded on your domain with controls such as rate limits and protection against abuse.
+- **Your documents:** in a custom GPT, uploaded files may be retrievable by users through clever prompting. In a business assistant, content is stored in your workspace, isolated from other customers, and answers are limited to what you allow.
+- **Secrets:** provider keys should be stored encrypted; see [how a key vault works](/blog/cryptographic-byok-vault-aes-256-gcm).
+- **Team access:** roles and two-factor authentication matter once several people manage the assistant; see [securing your chatbot account](/blog/setup-rbac-2fa-team-security).
+- **Personal data:** if visitors give names and phone numbers, you need consent wording, retention rules and a data processing agreement; see the [GDPR checklist](/blog/website-chatbot-gdpr-checklist).
+P: A prudent rule: do not upload anything to a custom GPT that you would not be comfortable with a determined user extracting.
+H2[cost-comparison]: Cost comparison
+TABLE:
+H: Cost | Custom GPT | Business assistant
+R: Set-up | Minutes | An hour or two to load content and test
+R: Ongoing | Provider subscription for builders; users may need their own accounts | Platform subscription, plus AI usage at your provider's rate if you bring your own key
+R: Hidden effort | Manual updates, no analytics | Reviewing conversations and unanswered questions
+R: Scaling | Not built for many anonymous visitors | Built for it, with session limits by plan
+P: If you want a website assistant, the comparison is not really one subscription against another; it is a prototype against a system built for production.
+H2[a-decision-checklist]: A decision checklist
+UL:
+- Will anonymous visitors on my website use it? If yes, choose an embeddable assistant.
+- Do I need bookings, lead capture or handover? If yes, choose a business assistant.
+- Do I need to control the brand experience? Business assistant.
+- Is it only for me or my team? A custom GPT may be enough.
+- Do I need to see and improve what customers ask? Business assistant.
+- Do I have sensitive documents? Check access controls and data terms before uploading anywhere.
+H2[you-can-use-both]: You can use both
+P: Many businesses prototype in a custom GPT, refine their documents and instructions, then move the same content into a grounded assistant for customers. The documents you polish carry over. Try your content in the [playground](/playground) to see how a grounded assistant answers and declines.
+H2[common-mistakes]: Common mistakes
+UL:
+- Assuming a shared link is a website chatbot.
+- Uploading sensitive files to a public assistant.
+- Expecting analytics and lead capture from a prototype.
+- Skipping tests for questions the documents cannot answer.
+- Ignoring the provider's data terms.
+H2[frequently-asked-questions]: Frequently asked questions
+FAQ:
+Q: Can I use a custom GPT as my website chatbot?
+A: It is not designed to be embedded for anonymous visitors with bookings, lead capture and management. Use it for prototypes or internal help.
+Q: What does grounded mean?
+A: The assistant answers from passages retrieved from your content and says it does not know when nothing relevant is found.
+Q: Is a business assistant more accurate?
+A: Grounding and a fallback for unknown questions reduce made-up answers, especially for prices and policies. You still need to test.
+Q: Which is cheaper?
+A: A custom GPT is quick to start, but a business assistant is built for production and gives control over usage costs when you bring your own key.
+Q: Is my data safer?
+A: It depends on the platform. Look for workspace isolation, encrypted keys, roles, two-factor sign-in and a data processing agreement.
+Q: Can I start with a custom GPT?
+A: Yes. Refine your documents there, then load them into a business assistant.
+P: See the [AI assistant feature](/product/ai-assistant), [pricing](/pricing) and [how multi-tenant chatbot platforms keep customers' data apart](/blog/multi-tenant-saas-chatbot-architecture).
+H2[further-reading]: Further reading
+UL:
+- [OWASP Top 10 for Large Language Model Applications](https://genai.owasp.org/llm-top-10/): The main security risks of AI assistants, including prompt injection.
+- [Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks (Lewis et al.)](https://arxiv.org/abs/2005.11401): The original research paper behind retrieval-augmented generation.

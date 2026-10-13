@@ -1,0 +1,99 @@
+TITLE: Importing Your Website Into a Chatbot: What to Expect and How to Get Clean Answers
+SEO: Importing Your Website Into a Chatbot | Crescelo
+DESC: How to add your website to an AI assistant: which pages to import, what gets extracted, JavaScript and login problems, keeping content fresh, and a checklist.
+EXCERPT: How to add your website to an AI assistant: which pages to import, what gets extracted, JavaScript and login problems, keeping content fresh, and a checklist.
+CLUSTER: Knowledge Bases and RAG
+MOD: 2026-09-27
+P: The fastest way to give an AI assistant knowledge of your business is to point it at your website. You already wrote the pages: services, prices, opening hours, policies, frequently asked questions. Importing them takes minutes, and the assistant can start answering from your own words. But 'just add the URL' hides several details that decide whether the result is good. Some pages hold almost no useful text. Some content is loaded by JavaScript that a simple fetch never sees. Menus and footers repeat on every page and clutter the results. Old pages contradict new ones. And a website is written for browsing, not for answering questions, so some things visitors ask are simply not on it. This guide explains what happens when a page is imported, which pages to add first, the problems to expect and how to fix them, how to keep the content fresh and how to test the result. It describes how Crescelo works today: you add page addresses, the platform fetches each page, removes menus and boilerplate and indexes the useful text, and it re-checks added pages periodically.
+H2[what-happens-when-you-add-a-page]: What happens when you add a page
+OL:
+- **Fetch:** the platform requests the page from your web server, the way a browser would, but without running interactive scripts. Only public addresses are allowed; addresses that point to private networks are refused for security. See [SSRF and web scraper security](/blog/mitigating-ssrf-web-scraper-security).
+- **Extract:** it removes navigation, headers, footers, cookie banners and other boilerplate, keeping the main text.
+- **Split:** the text is divided into passages of a manageable size, keeping headings with their content.
+- **Index:** each passage is stored for search by both meaning and keywords, so colloquial questions still find your pricing.
+- **Refresh:** added pages are re-checked periodically, and changed content is updated.
+P: The assistant then answers from these passages and says it does not know when nothing relevant is found, instead of inventing an answer.
+H2[which-pages-to-import-first]: Which pages to import first
+TABLE:
+H: Priority | Pages | Why
+R: Highest | Services, prices, booking, opening hours, contact and location | Most visitor questions are about these
+R: High | FAQ, policies (cancellation, refunds, delivery), about and team | They answer the second wave of questions
+R: Medium | Blog articles and guides that explain your services | Good for advice questions, but check they are current
+R: Low | News, event pages, old promotions | Often out of date
+R: Never | Login pages, checkout, account pages, admin areas | No useful content and possibly sensitive
+P: Import the essential pages first, test, then add more. A small, accurate set beats a large, messy one.
+H2[what-a-website-import-cannot-see]: What a website import cannot see
+TABLE:
+H: Problem | Why it happens | What to do
+R: Content that loads after the page opens | It is built by JavaScript in the browser, which a simple fetch does not run | Add the same information as plain text on a page, or upload a document
+R: Text inside images | Menus, price lists and banners saved as pictures are not text | Retype it, or upload the image file where image reading is available on your plan
+R: Pages behind a login | The fetcher cannot sign in | Upload the content as a document
+R: Content in tabs or accordions | It may or may not be in the page source | Check the result and provide a document if needed
+R: Embedded booking or price tools | They live in another system | State the key facts in text on the page
+R: Text in PDFs linked from pages | The link is not followed automatically | Add each PDF as a document
+P: If the assistant cannot answer something that is clearly on your website, view the page source or copy the page's text yourself to see what a fetch would receive.
+H2[clean-up-before-you-import]: Clean up before you import
+UL:
+- Give each page a clear title and headings that match how customers ask questions.
+- Put key facts in plain sentences, not only in graphics.
+- Remove or update outdated pages, and redirect them.
+- Make sure prices and hours on different pages agree.
+- Avoid pages that are mostly lists of links.
+- Add a dedicated FAQ page with real customer questions and short answers.
+P: What helps a human reader also helps the assistant. Vague marketing copy such as 'we deliver excellence' gives it nothing to answer with.
+H2[website-content-versus-other-sources]: Website content versus other sources
+TABLE:
+H: Source | Best for | Watch out for
+R: Website pages | Public facts that change with the site | Boilerplate, JavaScript content, stale pages
+R: Uploaded documents | Price lists, policies, internal guidelines | Old versions left in place
+R: Pasted text | Short, precise answers and rules | Needs manual updates
+R: YouTube links | Explanations and demonstrations already on video; see [turning a video into answers](/blog/youtube-transcript-ingestion-rag) | Transcripts may contain errors
+P: A good knowledge base mixes them: the website for public facts, documents for detailed pricing and policies.
+H2[keep-it-fresh]: Keep it fresh
+UL:
+- Changed prices or hours on the site should reach the assistant. Crescelo re-checks added pages periodically and updates changed content, and if a page cannot be fetched at that time it keeps the previous copy.
+- After a big website change, remove and re-add the page, or check that the update was picked up.
+- Set a monthly reminder to test your top price and hours questions.
+- Tell your team where the assistant's knowledge comes from, so they update the source, not just the chat.
+H2[test-the-result]: Test the result
+TABLE:
+H: Question type | Example | Check
+R: Facts | What time do you open on Saturday? | Matches the site
+R: Prices | How much is [service]? | Matches, with conditions
+R: Policies | Can I get a refund? | Correct and complete
+R: Not on the site | Do you do [unlisted service]? | Says it does not know and offers a next step
+R: Contradictions | Ask about something described on two pages | Answers consistently
+P: Read the sources the assistant shows or the unanswered questions list, and fix gaps at the source. See [your unanswered questions are a to-do list](/blog/unanswered-chat-questions-knowledge-gaps).
+H2[legal-and-etiquette-points]: Legal and etiquette points
+UL:
+- Only import sites you own or have permission to use.
+- Respect copyright for content that is not yours.
+- Do not import pages containing personal data of customers.
+- Check that your own privacy notice covers use of website content in an assistant, where relevant.
+H2[common-mistakes]: Common mistakes
+UL:
+- Importing the whole site at once, including junk pages.
+- Assuming JavaScript-generated content is included.
+- Leaving old pages that contradict new ones.
+- Never testing with real questions.
+- Ignoring the unanswered list.
+- Importing a competitor's site or content you have no rights to.
+H2[frequently-asked-questions]: Frequently asked questions
+FAQ:
+Q: Can I train a chatbot on my website?
+A: Yes. Add your page addresses to the knowledge base and the platform fetches and indexes the useful text, so the assistant answers from it.
+Q: Does it import my whole site automatically?
+A: You add page addresses; import the important pages first and add more as needed.
+Q: Why does the assistant miss something that is on my site?
+A: It may be loaded by JavaScript, stored in an image or behind a login. Add it as plain text or a document.
+Q: How does it stay up to date?
+A: Added pages are re-checked periodically and changed content is updated; a failed check keeps the previous copy.
+Q: Is it safe to import pages?
+A: Yes for public pages. Private-network addresses are refused, and you should not import pages with customers' personal data.
+Q: Should I import my blog?
+A: Yes for advice questions, provided the articles are current and consistent with your prices and policies.
+P: Try adding a page in the [playground](/playground), see the [knowledge base feature](/product/knowledge-base) and read [preparing your service menu and price list](/blog/prepare-service-menu-pricing-docs-rag).
+H2[further-reading]: Further reading
+UL:
+- [Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks (Lewis et al.)](https://arxiv.org/abs/2005.11401): The original research paper behind retrieval-augmented generation.
+- [Google Search Central: creating helpful, people-first content](https://developers.google.com/search/docs/fundamentals/creating-helpful-content): What Google looks for in useful pages.

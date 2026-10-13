@@ -1,0 +1,105 @@
+TITLE: Using Reviews and Social Proof in Chat Without Overstepping the Truth
+SEO: Using Reviews and Social Proof in Chat | Crescelo
+DESC: How to use real reviews and proof in a website chat: what to share, how to quote honestly, rules on testimonials, handling negative reviews and keeping claims.
+EXCERPT: How to use real reviews and proof in a website chat: what to share, how to quote honestly, rules on testimonials, handling negative reviews and keeping claims.
+CLUSTER: Local Service Businesses
+MOD: 2026-09-27
+P: When a visitor asks 'are you any good?', they want evidence, not adjectives. Reviews, ratings, credentials and examples of past work are the evidence that turns a hesitant visitor into a booking. A chat is a natural place to share it, because the question often comes up mid-conversation, at exactly the moment the visitor is deciding. But social proof is also where businesses cut corners, and where an AI assistant can cause harm: an assistant that invents a five-star rating, misquotes a review or claims awards you never won will destroy the trust you are trying to build and may break advertising rules. This guide explains what proof to prepare for your assistant, how it should present it honestly, what the rules generally say, how to handle negative reviews and how to keep everything verifiable.
+NOTE: Rules on reviews, testimonials and endorsements differ by country and sector. This is general information, not legal advice. Make sure what your assistant says complies with the rules that apply to you.
+H2[types-of-proof]: Types of proof
+TABLE:
+H: Proof | Example | How to use in chat
+R: Ratings | 4.8 stars from 212 reviews on a named platform | State the source and date, and link to it
+R: Review quotes | A short quote with the reviewer's first name and source | Only real quotes, with permission where needed
+R: Credentials | Licensed, insured, certified, member of a professional body | State exactly and provide the number or link where appropriate
+R: Experience | Years in business, number of clients served | Only figures you can support
+R: Examples of work | Before-and-after photos, case studies | With consent, linked from your site
+R: Guarantees | A money-back or workmanship guarantee | Quote the terms exactly
+H2[the-cardinal-rule-only-what-is-true-and-current]: The cardinal rule: only what is true and current
+UL:
+- Every claim should be verifiable by the customer.
+- Ratings change; date them or link to the live source.
+- Never invent, round up or select misleadingly.
+- Do not quote reviews out of context.
+- Do not imply endorsements you do not have.
+P: An assistant should not generate proof. It should retrieve and present what you have supplied and approved.
+H2[prepare-a-proof-document]: Prepare a proof document
+OL:
+- List your review platforms, current ratings and links.
+- Add five to ten approved review quotes with source and first name.
+- List credentials and where to verify them.
+- Add facts about your experience that you can support.
+- Add guarantee terms exactly as written.
+- State what you never claim.
+P: Load it into the assistant's knowledge and date it. Review it monthly, since ratings and reviews move.
+H2[how-the-assistant-should-use-it]: How the assistant should use it
+TABLE:
+H: Visitor asks | Good answer
+R: Are you any good? | We are rated 4.8 out of 5 from over 200 reviews on Google, and you can read them here. Would you like to see the next available time?
+R: Do you have reviews? | Yes. Here is our Google page. One recent customer, Sam, wrote: 'Friendly and on time.' You can read more at the link.
+R: Are you licensed? | Yes, we are licensed and insured. Our licence details are on our About page.
+R: Is it guaranteed? | Our workmanship guarantee covers [terms]. The full details are here.
+R: Can I see examples? | Here are some recent projects on our gallery page.
+P: The assistant should link to the source rather than paraphrase where possible, and should decline to answer if the proof is not in its documents.
+H2[rules-to-keep-in-mind]: Rules to keep in mind
+UL:
+- Endorsement and testimonial rules often require that reviews reflect real experiences and that material connections are disclosed.
+- Incentivised reviews may need disclosure or may be prohibited on some platforms.
+- Buying, faking or suppressing negative reviews is unlawful in many places and against platform rules.
+- Claims such as 'best', 'number one' or 'guaranteed' need substantiation.
+- Regulated professions often have strict limits on testimonials.
+P: If in doubt, remove the claim. Trust lost to a misleading statement is hard to recover.
+H2[handling-negative-reviews]: Handling negative reviews
+P: Every business has some. The assistant should not hide them, and it should not argue. If a visitor asks about complaints, the honest answer is your overall rating and a link. A bad review that you responded to well can even build trust. Make sure you reply to reviews promptly and constructively, and use them to improve. See [collecting reviews and ratings with automated chat](/blog/collect-reviews-ratings-automated-chat).
+H2[ask-for-reviews-the-right-way]: Ask for reviews the right way
+UL:
+- Ask happy customers soon after the visit, with a direct link.
+- Ask everyone, not only those you expect to be positive, where the rules require it.
+- Never offer payment for positive reviews.
+- Thank reviewers.
+P: The assistant can include a review request in a post-appointment message if you configure one. Keep it short and optional.
+H2[beyond-reviews-other-trust-signals]: Beyond reviews: other trust signals
+UL:
+- Real photos of your team and premises.
+- Clear pricing and policies.
+- Response speed and honesty about what you do not know.
+- A visible, easy route to a person.
+- Privacy and AI disclosure. See [AI transparency and disclosure](/blog/ai-transparency-disclosure-building-trust).
+P: The assistant's own honesty is a trust signal. An assistant that says 'I do not know, but I can find out' earns more confidence than one that claims everything.
+H2[worked-example-a-renovation-company]: Worked example: a renovation company
+P: A renovation company's assistant used to say 'we are the best builders in town' whenever asked. The owner replaced this with a proof document: a link to its 4.7 rating with the review count, three quoted reviews with the customers' consent, its trade licence number and a link to a gallery of finished projects. The assistant now answers 'are you any good?' with the rating, a link and an offer to book a site visit. Customer trust improved, a competitor's complaint about unsupported claims was avoided, and the company noticed that visitors clicked through to read reviews before booking. The change took an hour.
+H2[a-monthly-proof-review]: A monthly proof review
+UL:
+- Update ratings and review counts, with the date.
+- Replace old quotes with recent ones, with permission.
+- Check that links still work.
+- Check credentials and licence details are current.
+- Remove anything you can no longer support.
+P: Fifteen minutes a month keeps your proof honest and your assistant trustworthy.
+H2[common-mistakes]: Common mistakes
+UL:
+- Letting the assistant claim to be the best.
+- Quoting reviews that are old or out of context.
+- Hiding negative reviews or arguing about them.
+- Using unsupported statistics.
+- Forgetting rules on testimonials in regulated professions.
+H2[keep-it-human]: Keep it human
+P: Proof works best when it sounds like people. A short real line from a customer, the name of the person who did the job and a photo of the result say more than a list of superlatives. Let the assistant share these when they are relevant, and let a real person follow up when a visitor wants to talk to someone who has used you.
+H2[frequently-asked-questions]: Frequently asked questions
+FAQ:
+Q: Can a chatbot show customer reviews?
+A: Yes, from content you provide and approve, ideally linking to the source. It should not invent or paraphrase reviews.
+Q: Should the assistant claim we are the best?
+A: No. Use verifiable facts: ratings, credentials, experience and links.
+Q: How do I handle a visitor asking about bad reviews?
+A: Be honest: share your overall rating and link to the source, and do not argue.
+Q: Is it legal to use testimonials in chat?
+A: Generally yes if they are genuine, current and comply with the rules that apply to you. Some professions restrict them.
+Q: How often should I update proof?
+A: Monthly for ratings and quotes, and whenever credentials change.
+Q: Can the assistant ask for a review?
+A: It can send a short, optional request after a visit if you configure it.
+P: Try a trust question with your own proof document in the [playground](/playground), see the [AI assistant feature](/product/ai-assistant) and read [how to stop a chatbot from making things up](/blog/grounded-ai-chatbot-hallucinations).
+H2[further-reading]: Further reading
+UL:
+- [Google Search Central: creating helpful, people-first content](https://developers.google.com/search/docs/fundamentals/creating-helpful-content): What Google looks for in useful pages.

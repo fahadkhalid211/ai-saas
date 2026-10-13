@@ -1,0 +1,109 @@
+TITLE: Rule-Based Chatbots vs AI Assistants: Differences, Costs and How to Choose
+SEO: Rule-Based Chatbots vs AI Assistants | Crescelo
+DESC: Decision-tree bots and AI assistants solve different problems. Compare how each handles questions, upkeep, cost, risk and bookings, and which one suits.
+EXCERPT: Decision-tree bots and AI assistants solve different problems. Compare how each handles questions, upkeep, cost, risk and bookings, and which one suits.
+CLUSTER: AI Website Chatbots
+MOD: 2026-09-27
+P: The word chatbot covers two quite different things. A rule-based bot follows a script you draw: if the visitor clicks A, show B. An AI assistant reads what the visitor typed and writes a reply from your content. They look similar in a chat window and behave very differently once real customers start using them. Choosing the wrong one is a common and expensive mistake, either because a rigid script frustrates visitors or because an ungrounded AI says things you never approved.
+P: This guide compares the two on the things that matter to a business: what each can and cannot do, how much work it takes to keep them accurate, the risks, the costs and a practical way to decide. We also cover the hybrid approach that many businesses end up using.
+H2[the-short-comparison]: The short comparison
+TABLE:
+H:  | Rule-based chatbot | AI assistant
+R: Input | Buttons and keywords you anticipated | Free text in the visitor's own words
+R: Answers | Exactly what you wrote for each branch | Written fresh each time, from your documents
+R: Handles the unexpected | Poorly: dead ends and 'I did not understand' | Well, within what your content covers
+R: Setup work | Design every branch and every reply | Provide documents, then test and fix gaps
+R: Upkeep | Edit the tree when anything changes | Update the documents; the assistant follows
+R: Predictability | Very high | High if grounded, lower if not
+R: Main risk | Frustrating visitors who go off-script | Saying something wrong or unapproved
+R: Best for | A few fixed journeys | Open questions and varied wording
+H2[how-a-rule-based-chatbot-works]: How a rule-based chatbot works
+P: A rule-based bot, also called a decision-tree or flow bot, is a diagram. Each box is a message, and the arrows are the visitor's choices, usually buttons. Some also match keywords: if the message contains 'price', show the price reply. Everything the bot can say, you wrote in advance. That has real advantages: it cannot invent anything, it is easy to audit, and it is cheap to run because no language model is involved.
+P: The weakness is that people do not follow your diagram. They write two questions in one message, use words you did not list, misspell, or ask something you never thought of. A tree meets that with a dead end or a loop. Every new question means a new branch, so a bot that started simple grows into a tangle that nobody wants to maintain.
+H2[how-an-ai-assistant-works]: How an AI assistant works
+P: An AI assistant uses a language model to read the visitor's message and write a reply. To keep it from guessing, good products retrieve relevant passages from your own documents first and instruct the model to answer only from them. That gives you the flexibility of natural language with answers anchored in your content. The mechanics are covered in [what an AI website assistant is](/blog/ai-website-assistant).
+P: Its weaknesses are the mirror image. A poorly grounded model can produce confident nonsense, and its wording can change from one visit to the next. Good products reduce both problems with grounding, clear instructions and a handover to a person when it is unsure. See [how to stop a chatbot from making things up](/blog/grounded-ai-chatbot-hallucinations).
+H2[where-a-rule-based-bot-is-the-better-tool]: Where a rule-based bot is the better tool
+UL:
+- You have a small number of fixed journeys: pick a service, pick a day, leave your number.
+- The wording must be exactly approved every time, for example in regulated settings.
+- Your budget or infrastructure does not allow AI usage costs.
+- The bot is a menu rather than a conversation, such as a triage form with buttons.
+P: In these cases a script is fine and perfectly predictable. It never says something you did not approve.
+H2[where-an-ai-assistant-earns-its-place]: Where an AI assistant earns its place
+UL:
+- Visitors ask open questions about services, prices, policies and availability.
+- Your questions change often and you do not want to redraw a tree each time.
+- You want to capture leads in a natural conversation instead of a rigid form.
+- You want booking inside the chat, with the assistant understanding requests like 'sometime after school on Thursday'.
+- You serve visitors in more than one language.
+P: Real customers do not follow your tree. An assistant reads the intent and finds the answer in your content, or says it does not know and offers a person.
+H2[the-hybrid-approach-guardrails-around-an-assistant]: The hybrid approach: guardrails around an assistant
+P: The best setups combine both. The AI handles open conversation, while fixed rules handle what must be exact. For example, the assistant answers questions freely from your documents, but a booking always uses a real calendar with slot locking, a lead always goes through defined fields, and certain topics (medical advice, legal advice, refunds) always trigger a handover to a person. This is how Crescelo works: the language is flexible and the actions are deterministic. Read how bookings are protected in [how online booking avoids double bookings](/blog/double-booking-prevention-concurrency-mutex).
+H2[cost-comparison]: Cost comparison
+TABLE:
+H: Cost item | Rule-based | AI assistant
+R: Software | Usually low monthly fee or free tier | Monthly platform fee
+R: Usage | None | AI usage per conversation, paid to the provider or bundled
+R: Setup time | Hours to days designing flows | Hours collecting and testing content
+R: Ongoing work | Editing branches | Reviewing conversations and updating documents
+R: Cost of a wrong answer | Low: cannot invent | Higher if ungrounded; low if grounded and monitored
+P: AI usage is typically a small part of the total for a small business, but it scales with volume and with the model you choose. With a bring-your-own-key product you see and control that cost directly. Our [pricing comparison of bring-your-own-key and bundled AI](/blog/byok-vs-bundled-ai-pricing-cost-comparison) works through examples.
+H2[a-decision-framework]: A decision framework
+OL:
+- List the top twenty questions your visitors ask. If most have short fixed answers and a handful of buttons covers them, a rule-based bot may be enough.
+- Now list the questions you did not think of. If your team hears surprises weekly, you need free text.
+- Decide what must never be improvised. Put those topics behind fixed replies or a handover regardless of the tool.
+- Check your appetite for review work. AI assistants need light weekly upkeep; trees need editing when anything changes.
+- Test with real questions. Run your own list of questions through a trial of each. The result usually decides it.
+H2[migrating-from-a-script-to-an-assistant]: Migrating from a script to an assistant
+P: If you already have a decision-tree bot, you do not need to throw its content away. The text in your branches is already approved wording. Export it into documents (a page per topic), load them into the assistant's knowledge base and keep your fixed flows for the actions that must be exact. Then compare a week of real conversations before switching off the old bot.
+H2[three-real-world-scenarios]: Three real-world scenarios
+H3: A hair salon
+P: A salon has forty regular questions: prices for cuts and colour, whether a patch test is needed, parking, deposit rules, whether walk-ins are welcome. A script could cover the prices with buttons, but a customer who writes 'how much for balayage on shoulder-length hair and do you do toner too?' breaks it. An assistant reads the price list and answers in one message, then offers to book. Here the AI wins on flexibility, and the booking calendar stays deterministic.
+H3: A dental clinic
+P: A clinic must be careful with medical advice and privacy. The assistant can explain opening hours, new-patient steps and insurance questions from approved documents, while fixed rules hand over anything that sounds like an emergency or a request for clinical advice. This is a good example of the hybrid model. Our [dental chatbot guide](/blog/ai-patient-scheduling-dental-practices) covers the details.
+H3: A single-purpose lead form
+P: A roofing contractor mainly wants to collect a name, phone number, address and a short description of the problem. A guided flow with a few questions may be enough, and it never gets confused. If visitors often ask 'do you cover my postcode' or 'how much for a small repair', an assistant adds value on top of the form.
+H2[common-myths]: Common myths
+UL:
+- **'AI chatbots always hallucinate.'** Ungrounded ones do. Grounded ones answer from your documents and admit when they cannot.
+- **'Rule-based bots are cheaper in every way.'** They are cheaper to run, but design and upkeep time is real, and dead ends cost you visitors.
+- **'An AI assistant is set and forget.'** It needs light, regular review, like a page on your website.
+- **'Visitors prefer buttons.'** Some do, for simple choices. Many prefer typing a question in their own words, and a good design offers both.
+H2[metrics-to-compare-when-you-test-both]: Metrics to compare when you test both
+TABLE:
+H: Metric | Why it matters
+R: Answer rate (questions answered without a person) | Shows how often the bot is actually useful
+R: Dead ends or 'I did not understand' replies | Reveals frustration in rule-based bots
+R: Bookings and leads per 100 conversations | The business outcome
+R: Handover requests | Where visitors want a person
+R: Time to first useful answer | Speed matters for enquiries
+R: Unanswered questions | A to-do list for your content
+H2[what-to-ask-a-vendor-about-any-chatbot]: What to ask a vendor about any chatbot
+OL:
+- Can I see exactly what it will say, and where each answer comes from?
+- What happens when it does not know?
+- Can I take over a conversation?
+- How are bookings protected against double booking?
+- What does it cost at ten times my current volume?
+- Can I export my content and conversations?
+P: If you would like to see a grounded assistant behave on your content, try the [playground](/playground). To compare vendors more broadly, read our [website chatbot platform comparison](/blog/website-chatbot-platform-comparison).
+H2[frequently-asked-questions]: Frequently asked questions
+FAQ:
+Q: What is the difference between a rule-based chatbot and an AI chatbot?
+A: A rule-based chatbot follows a script of buttons and keywords you wrote in advance. An AI chatbot reads free text and writes a reply, ideally from your own documents.
+Q: Are rule-based chatbots obsolete?
+A: No. They are still the right tool for a few fixed journeys and where every word must be pre-approved. Many businesses combine them with AI.
+Q: Can an AI chatbot say things I did not approve?
+A: It can if it is not grounded. Products that answer only from your documents, admit when they do not know and hand over to a person reduce that risk a lot.
+Q: Which is cheaper?
+A: Rule-based bots have no AI usage cost, but take design and maintenance time. AI assistants have usage costs but less upkeep. The total depends on volume and how often your content changes.
+Q: Can I use both together?
+A: Yes, and it is common. Let the AI handle open questions while fixed flows and rules handle bookings, leads and sensitive topics.
+Q: Which is better for appointment booking?
+A: A hybrid: an assistant that understands how people phrase requests, plus a deterministic booking engine that shows real free slots and prevents double bookings.
+P: See the difference on your own content in the [playground](/playground), or read how the [AI assistant feature](/product/ai-assistant) combines flexible answers with fixed actions. When you are ready, [start a free trial](/login?mode=register).
+H2[further-reading]: Further reading
+UL:
+- [Google Search Central: creating helpful, people-first content](https://developers.google.com/search/docs/fundamentals/creating-helpful-content): What Google looks for in useful pages.

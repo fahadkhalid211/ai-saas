@@ -1,0 +1,96 @@
+TITLE: Telling Visitors When You Are Open, and What Happens When You Are Not
+SEO: Chatbot Business Hours | Crescelo
+DESC: How an AI assistant should handle opening hours: stating hours, holidays and exceptions, time zones, after-hours replies, booking hours versus open hours.
+EXCERPT: How an AI assistant should handle opening hours: stating hours, holidays and exceptions, time zones, after-hours replies, booking hours versus open hours.
+CLUSTER: AI Receptionists
+MOD: 2026-09-27
+P: 'Are you open now?' is one of the most common questions a business gets, and one of the easiest to get wrong. A visitor asking at nine in the evening about a shop that closed at five deserves a clear answer and a useful next step, not a cheerful 'we are open Monday to Friday'. An assistant that answers only from written documents knows your regular hours, but it does not automatically know the current time in your time zone, that today is a public holiday, that you close early on Fridays or that the Saturday clinic runs different hours. This guide covers how to give the assistant, and your visitors, the right information about hours: how to write hours so they can be found, how to handle holidays and exceptions, what to do about time zones, how to design out-of-hours replies that keep the visitor, how booking hours differ from opening hours and how to test the common questions. It also explains what Crescelo does: booking uses one set of opening hours and one slot length, and the assistant answers hours questions from the content you provide.
+H2[write-your-hours-so-they-can-be-found]: Write your hours so they can be found
+TABLE:
+H: Do | Avoid
+R: Write hours in plain text, day by day | Hours only in an image or an embedded map
+R: Use one format: 'Monday to Friday, 9:00 to 17:30' | Mixing 24-hour and 12-hour formats
+R: State the time zone if you serve several | Assuming everyone knows where you are
+R: Include hours per location | One paragraph for all branches; see [several locations](/blog/multi-location-ai-receptionist)
+R: Mention closures: 'Closed on public holidays' | Leaving holidays unsaid
+R: Say how to reach you outside these hours | Ending with the hours alone
+P: Put the hours in your knowledge base as a short, dedicated passage titled 'Opening hours', and use the same wording on your website. If the website and the documents disagree, the assistant may quote either.
+H2[the-three-kinds-of-hours]: The three kinds of hours
+TABLE:
+H: Kind | Meaning | Example
+R: Opening hours | When customers can visit or phone | Monday to Friday 9 to 5:30
+R: Support or reply hours | When a person answers chats and emails | Replies within a few hours on weekdays
+R: Booking hours | When appointments can be booked | Slots between 9 and 17:00, 30 minutes each
+P: They are often different, and visitors mix them up. Say each one explicitly: 'We are open until 5:30, and our last appointment is at 5:00. The assistant is available at any time; the team replies from 9 am on weekdays.'
+H2[what-crescelo-s-booking-uses]: What Crescelo's booking uses
+UL:
+- A single set of opening hours, with days of the week and start and end times, and one slot length such as 30 minutes.
+- Slots outside these hours are not offered, and slots that are taken are hidden.
+- There is no built-in holiday calendar and no separate hours per service, so close days by adjusting the hours, or by telling the assistant about closures in its documents.
+- The booking picker does not read your own calendar, so an event you add there does not block slots; see [seven traps that stop visitors booking online](/blog/calendar-friction-audit-scheduling-traps).
+- If you need different hours per service or buffers between appointments, consider linking to a scheduling tool such as Calendly or Cal.com.
+P: Keep booking hours in the settings and opening hours in the documents aligned, so what visitors are told matches what they can book.
+H2[holidays-and-exceptions]: Holidays and exceptions
+OL:
+- Keep a short 'Special hours' passage in the knowledge base with dates: 'Closed 25 and 26 December. Open 9 to 1 on 24 December.'
+- Update it a few weeks before each holiday and remove it afterwards, so old exceptions do not linger.
+- Adjust booking hours so visitors cannot book slots on closed days.
+- Add a line to the assistant's welcome message during a closure if it matters: 'We are closed until Monday 6 January; you can still book online.'
+- Test the holiday questions after updating.
+P: Old exceptions are a hidden source of wrong answers; date every special-hours entry.
+H2[time-zones]: Time zones
+UL:
+- State your time zone next to your hours, especially if you serve customers elsewhere.
+- For online or remote services, say whether times are shown in the visitor's zone or yours.
+- The assistant cannot reliably know the visitor's local time unless they say it; ask when it matters.
+- Confirmation emails should state the time clearly, with the zone if there is any doubt; see [scheduling calls across time zones](/blog/time-zone-global-scheduling-consultants).
+H2[designing-the-out-of-hours-experience]: Designing the out-of-hours experience
+P: Visitors who arrive when you are closed are still interested. The assistant's job is to keep them rather than send them away.
+TABLE:
+H: Situation | Helpful reply
+R: 'Are you open?' at 9 pm | We are closed now and open again tomorrow at 9. I can answer questions or show you times to book.
+R: 'Can I speak to someone?' on Sunday | The team is not in today, and replies from 9 am on Monday. If you leave your details, someone will get back to you.
+R: 'I need help urgently' | For urgent matters please call [number]. For anything else, I can take your details.
+R: 'Can I book for tomorrow morning?' | Yes, here are tomorrow's available times.
+UL:
+- Tell them when someone will reply, and keep that promise.
+- Offer booking or a callback request so they leave with a concrete next step.
+- Give an emergency number where relevant, and only if it is real and answered.
+- Do not pretend that a person is available when nobody is.
+P: Out-of-hours chats are often a large share of demand; see [tracking where chat visitors drop off](/blog/tracking-in-chat-funnel-drop-off).
+H2[test-the-common-questions]: Test the common questions
+TABLE:
+H: Question | Check
+R: What time do you open on Saturday? | Correct hours
+R: Are you open on bank holidays? | Answer matches your special hours
+R: Are you open now? | Explains regular hours and what to do if closed
+R: What is your last appointment? | Booking hours match the settings
+R: Can I book for a closed day? | The picker does not offer it, and the assistant explains
+R: What time is that in London? | Handles zone or asks
+P: Re-run them whenever hours change and before each holiday period.
+H2[common-mistakes]: Common mistakes
+UL:
+- Different hours in different documents.
+- Leaving last year's holiday hours in place.
+- Confusing opening hours with booking hours.
+- Not telling visitors when a person will reply.
+- Promising urgent help that is not available.
+- Forgetting to change the booking hours.
+H2[frequently-asked-questions]: Frequently asked questions
+FAQ:
+Q: How does the chatbot know my opening hours?
+A: From the content you provide, such as an 'Opening hours' passage in the knowledge base, and, for booking, from the opening hours set in the booking settings.
+Q: Does Crescelo handle holidays automatically?
+A: No. There is no built-in holiday calendar; adjust booking hours and add dated special hours to your documents.
+Q: Can different services have different hours?
+A: Not in the built-in booking, which uses one set of hours and one slot length. Link to a scheduling tool for more.
+Q: What should the assistant say when I am closed?
+A: That you are closed, when you reopen and what the visitor can do now, such as booking or leaving details.
+Q: How do I handle time zones?
+A: State your zone next to the hours and clarify the zone in confirmations for remote services.
+Q: How often should I check hours?
+A: Whenever they change and before each holiday, by testing the common questions.
+P: See the [appointment booking feature](/product/appointment-booking), the [AI assistant](/product/ai-assistant) and try hours questions in the [playground](/playground).
+H2[further-reading]: Further reading
+UL:
+- [Google Search Central: creating helpful, people-first content](https://developers.google.com/search/docs/fundamentals/creating-helpful-content): What Google looks for in useful pages.

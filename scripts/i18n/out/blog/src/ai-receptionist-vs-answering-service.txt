@@ -1,0 +1,133 @@
+TITLE: AI Receptionist vs Answering Service: Cost, Quality and Which to Choose
+SEO: AI Receptionist vs Answering Service | Crescelo
+DESC: Compare an AI receptionist with a live answering service on cost, coverage, quality, booking and privacy, and see which suits a small service business.
+EXCERPT: Compare an AI receptionist with a live answering service on cost, coverage, quality, booking and privacy, and see which suits a small service business.
+CLUSTER: AI Receptionists
+MOD: 2026-09-27
+P: If your business misses calls and messages when the team is busy or closed, you have three broad options: a live answering service staffed by people, an AI receptionist, or a mix of the two. They solve overlapping problems with different strengths, costs and risks. This guide compares them honestly so you can choose without paying for the wrong thing.
+P: We build an AI website assistant, so we have a view, and we say where it fits and where it does not. One point to be clear about early: the AI options differ by channel. Many products answer the phone; others, including Crescelo today, answer visitors in a website chat and messaging apps. Phone answering at Crescelo is under development and listed on the [roadmap](/roadmap). Everything below compares the approaches, and we note where channel matters.
+H2[what-each-option-is]: What each option is
+H3: A live answering service
+P: A company employs receptionists who answer calls on behalf of many clients. They use a script you provide, take messages, transfer urgent calls and sometimes book appointments. You pay a monthly fee, often with per-minute or per-call charges.
+H3: An AI receptionist
+P: Software that answers enquiries in natural language, from your documents, and can take actions such as booking, capturing details and notifying you. Depending on the product, it works over voice, web chat or messaging apps. See [what an AI website assistant is](/blog/ai-website-assistant) for the web-chat version.
+H3: A human front desk
+P: Your own employee. The comparison with an AI is covered in [AI receptionist vs human front desk](/blog/ai-receptionist-vs-human-front-desk).
+H2[side-by-side-comparison]: Side-by-side comparison
+TABLE:
+H:  | Live answering service | AI receptionist
+R: Availability | Often 24/7, but quality varies by hour | 24/7 and consistent
+R: Cost pattern | Monthly fee plus per-minute or per-call charges that grow with volume | Monthly subscription plus small AI usage; cost grows slowly with volume
+R: Answering speed | Seconds to minutes, depending on queue | Immediate
+R: Product knowledge | Limited to your script; agents serve many clients | Reads your full documents, as long as they are accurate
+R: Judgement and empathy | Human, good with upset or unusual callers | Limited; should hand over sensitive cases
+R: Booking | Sometimes; often takes messages instead | Yes, with live calendar in booking-enabled products
+R: Consistency | Varies by agent and shift | Same every time
+R: Languages | Depends on the service | Many, depending on the model
+R: Setup | Script and call routing; days to weeks | Content and testing; hours to days
+R: Records | Message summaries | Full conversation transcripts
+H2[cost-the-numbers-that-matter]: Cost: the numbers that matter
+P: Answering services usually charge a base fee that includes a set number of minutes or calls, then extra for more. A quiet month and a busy month are billed differently. AI receptionists usually charge a subscription with a number of conversations included, and the AI usage adds a small amount per conversation. Rather than trust general figures, calculate your own.
+OL:
+- Count how many enquiries you receive per month across phone, chat and email.
+- Ask each provider for the total price at that volume and at double it.
+- Add hidden costs: setup fees, per-minute overage, extra languages, booking add-ons.
+- Estimate the value of the enquiries you currently miss.
+P: Our [ROI calculation for an AI website assistant](/blog/ai-website-assistant-roi-calculator) gives a simple way to compare the monthly cost with the value of a few extra bookings. For Crescelo's plans see the [pricing page](/pricing).
+H2[quality-where-each-one-wins]: Quality: where each one wins
+H3: Where a human answering service wins
+UL:
+- Upset or distressed callers who need warmth and judgement.
+- Unusual situations that nobody wrote a rule for.
+- Businesses whose customers strongly prefer to speak to a person.
+- Businesses where the phone is the main channel and voice AI is not yet an option.
+H3: Where an AI receptionist wins
+UL:
+- Repetitive questions about prices, hours, services and policies.
+- Consistency: the same accurate answer every time.
+- Instant response at any hour, with no queue.
+- Booking directly into a live calendar.
+- Capturing details in a structured way and sending them to your systems.
+- Full records and analytics of what customers ask.
+H2[risk-what-can-go-wrong-with-each]: Risk: what can go wrong with each
+TABLE:
+H: Risk | Answering service | AI receptionist
+R: Wrong information | Agent misreads your script | Model guesses if not grounded in your documents
+R: Missed nuance | Agent unfamiliar with your business | Model misses tone or an emergency
+R: Privacy | Agents hear customer details | Data stored and processed by the vendor and its sub-processors
+R: Consistency | Varies by agent | High
+R: Cost surprises | Overage charges | Usage above plan limits
+P: The AI's biggest risk, inventing an answer, is manageable. A grounded assistant answers only from your documents and says it does not know when they do not cover the question. See [how to stop a chatbot from making things up](/blog/grounded-ai-chatbot-hallucinations). Emergencies need a rule: certain words or topics should always hand over to a person; read [handling emergencies in automated chat](/blog/handling-emergencies-automated-chat).
+H2[the-best-answer-for-many-businesses-ai-first-human-for-the-h]: The best answer for many businesses: AI first, human for the hard cases
+P: You do not need to choose one. A common setup uses the AI for the everyday first layer and keeps people for what needs them.
+OL:
+- The AI answers common questions and books standard appointments at any hour.
+- Rules hand over emergencies, complaints, and anything about money or safety to a person, with the conversation attached.
+- Your team follows up on leads the AI captured, in the morning, with full context.
+- You review conversations weekly and improve the content.
+P: Crescelo supports this: visitors can ask for a person at any time, your team is notified and the whole conversation is attached. See [live human handover flow design](/blog/live-human-handover-flow-design) and the [human handover feature](/product/human-handover).
+H2[how-to-choose-a-decision-guide]: How to choose: a decision guide
+TABLE:
+H: If this is you | Lean toward
+R: Most enquiries arrive by phone and customers expect a human voice | A live answering service, possibly with an AI phone product when it meets your bar
+R: Most enquiries arrive through your website and social channels | An AI web-chat assistant
+R: You want bookings made without back-and-forth | An AI assistant with live calendar booking
+R: Your calls are emotionally sensitive (crisis, bereavement, complaints) | People, with AI limited to simple admin
+R: You are very cost-sensitive at high volume | AI, with humans for escalations
+R: You need multiple languages without hiring | AI, after testing the languages you need
+H2[questions-to-ask-any-provider]: Questions to ask any provider
+UL:
+- What exactly happens when it does not know or cannot help?
+- Can I hear or read real examples from businesses like mine?
+- How are urgent and emergency cases handled?
+- How are bookings protected from double booking?
+- What is stored about my customers, for how long, and can I delete it?
+- What is the total price at my volume and at double it?
+- What is the contract term and how do I leave?
+H2[privacy-and-compliance]: Privacy and compliance
+P: Both options handle personal information about your customers. Whichever you choose, tell customers who they are talking to, keep only what you need, and understand where data goes. If you serve people in Europe or California, see the [GDPR checklist for website chatbots](/blog/website-chatbot-gdpr-checklist). For health or legal contexts, take professional advice; this article is general information, not legal advice.
+H2[try-before-you-decide]: Try before you decide
+P: Test an AI assistant on your own content in the [playground](/playground) without signing up, and read [how an AI website assistant works](/blog/ai-website-assistant). If you would like a person to take over when needed, look at the [human handover feature](/product/human-handover). Then [start a free trial](/login?mode=register) to run it against real visitors.
+H2[a-worked-cost-comparison]: A worked cost comparison
+P: Numbers vary by provider and country, so use this as a method rather than a price list. Imagine a clinic that receives 300 enquiries a month, evenly spread between phone and website, and wants coverage outside office hours.
+TABLE:
+H: Line | Live answering service | AI receptionist for web chat | Both
+R: Base fee | A monthly plan with included minutes | A monthly subscription with included conversations | Both fees
+R: Volume charges | Extra minutes or calls above the allowance | Extra sessions above the allowance | Usually lower on each, because the AI takes the routine load
+R: Setup | Script, call routing, possibly setup fee | Documents and testing | Both
+R: What you get | Calls answered by a person, messages taken | Instant answers and bookings from the website | Coverage on phone and web
+R: What you must still do | Follow up on messages | Review conversations weekly | Both
+P: Ask each provider to quote the total at 300 enquiries and at 600, and write down the answer. The second number is the one that surprises people. Then estimate the value of the enquiries you currently miss: how many, and what an average booking is worth. If even a handful of extra bookings a month covers the cost, the decision is easier.
+H2[scripts-versus-knowledge]: Scripts versus knowledge
+P: A live answering service works from a script: greetings, questions to ask, who to call for what. It can be very good for taking messages and passing on urgent calls. It is less suited to detailed product or price questions, because the agent serves many clients and does not know yours as you do. An AI receptionist works from knowledge: it reads your whole document set. That makes it stronger on detail, and weaker on empathy. The best setup uses each for its strength.
+H2[what-a-good-handover-looks-like]: What a good handover looks like
+P: Whichever option you choose, the handover to a person decides how customers feel about the experience.
+OL:
+- The customer never has to repeat their request; the person sees the conversation or a summary.
+- The customer knows what will happen next and when: 'Someone will call you within the hour.'
+- Urgent items reach a phone that will be answered, not an inbox that will be read tomorrow.
+- The response is logged, so nothing is dropped between systems.
+H2[a-five-question-test-before-you-sign-anything]: A five-question test before you sign anything
+UL:
+- Ask for a trial period or a month-to-month plan, and avoid long contracts before you have seen real results.
+- Call or chat as a customer with an awkward question and see how it goes.
+- Ask what happens in an outage and how you will be told.
+- Ask how your customers' data is protected and where it is stored.
+- Ask for the exit process: how you get your data and how long the notice period is.
+H2[frequently-asked-questions]: Frequently asked questions
+FAQ:
+Q: Is an AI receptionist cheaper than an answering service?
+A: Often, especially as volume grows, because AI usage costs little per conversation while answering services charge by minute or call. Compare the total price at your own volume and at double it.
+Q: Can an AI receptionist replace a human completely?
+A: For repetitive questions and standard bookings it can handle most of the work. Sensitive, urgent or unusual cases should still go to a person.
+Q: Does an AI receptionist answer phone calls?
+A: Some products do. Crescelo currently answers visitors in website chat and messaging apps; phone answering is under development and listed on the roadmap.
+Q: Will an AI receptionist make mistakes?
+A: It can. A grounded assistant that answers only from your documents and admits when it does not know reduces mistakes. Test it with questions your content does not cover.
+Q: What about emergencies?
+A: Set rules so emergency wording always hands over to a person immediately, and tell visitors what to do in urgent situations.
+Q: Can I use both an AI and a live answering service?
+A: Yes. Use the AI for routine questions and booking, and a human service or your own team for escalations and calls.
+H2[further-reading]: Further reading
+UL:
+- [Google Search Central: creating helpful, people-first content](https://developers.google.com/search/docs/fundamentals/creating-helpful-content): What Google looks for in useful pages.

@@ -1,0 +1,87 @@
+TITLE: How to Stop Double Bookings: A Practical Guide for Service Business Owners
+SEO: How to Stop Double Bookings: A Practical Guide | Crescelo
+DESC: A non-technical guide to preventing double bookings: one source of truth, real-time availability, phone and walk-in bookings, staff calendars, buffers.
+EXCERPT: A non-technical guide to preventing double bookings: one source of truth, real-time availability, phone and walk-in bookings, staff calendars, buffers.
+CLUSTER: AI Appointment Booking
+MOD: 2026-09-27
+P: A double booking is a small disaster with a big cost. Two customers arrive for the same slot, one of them is disappointed, a practitioner is flustered, and you may lose both customers' goodwill and future business. It usually happens for ordinary reasons: a booking taken on the phone that never reached the online calendar, a page that shows stale availability, a staff member who changed a time in one place but not another. This guide is for owners and managers, not developers. It explains the common causes in plain words, gives you a checklist to close each gap, shows how to handle bookings from several channels, covers walk-ins, breaks and buffers, and gives you a weekly routine that catches problems before customers do. For the technical side, see [how online booking systems prevent double bookings](/blog/double-booking-prevention-concurrency-mutex).
+H2[the-five-usual-causes]: The five usual causes
+TABLE:
+H: Cause | How it happens | Fix
+R: Two calendars | Phone bookings go in a paper diary; online bookings in a system | One source of truth
+R: Stale availability | The page shows times that were taken minutes ago | Real-time availability with a re-check at confirmation
+R: Simultaneous clicks | Two customers pick the same time at once | A booking system that locks the slot
+R: Manual overrides | Staff move or add bookings without updating the system | Everything through the same tool
+R: Wrong availability | Booking hours do not match who is actually working | Regular review of hours and holidays
+H2[rule-1-one-source-of-truth]: Rule 1: one source of truth
+P: Decide where bookings live and put every booking there, whichever way it arrives. That means phone bookings, walk-ins you agree to and bookings made by staff. If a receptionist takes a call, they enter it into the same system the website uses, immediately. If your team also keeps a personal calendar, that calendar should display the system's bookings, not be a second place to record them.
+UL:
+- Retire the paper diary or use it only as a backup.
+- Give staff a quick way to add a booking on their phone.
+- Make the rule visible: 'if it is not in the system, it does not exist.'
+H2[rule-2-a-system-that-checks-at-the-moment-of-booking]: Rule 2: a system that checks at the moment of booking
+P: Availability shown on a page is a snapshot. A good booking system checks again the moment a customer confirms, and locks the slot while saving. Ask your vendor how they do it. Crescelo's built-in booking hides slots that are already taken and locks a slot while it is being booked, so two visitors cannot get the same time, and the second is offered the next one.
+H2[rule-3-keep-availability-honest]: Rule 3: keep availability honest
+UL:
+- Set opening hours and booking hours to match the real week, including days closed.
+- Update for holidays, training days and staff leave before they happen.
+- If your tool has only one slot length, choose the length that fits your main service, and describe longer services so customers book consecutive slots or contact you.
+- If your calendar feed is read-only, remember that events you add in your own calendar do not block slots; close those times in your booking hours.
+P: See [configuring availability rules](/blog/configure-calendar-sync-availability-rules) for the settings that matter.
+H2[rule-4-handle-several-channels]: Rule 4: handle several channels
+TABLE:
+H: Channel | How to keep it in sync
+R: Website booking or chat | The booking system is the source
+R: Phone | Enter into the system while on the call
+R: Walk-ins | Add them as they arrive, or reserve walk-in windows outside bookable time
+R: Social media messages | Send people to the booking link instead of taking bookings in messages
+R: Third-party marketplaces | Use one that syncs, or keep its slots separate and limited
+P: Every extra channel is another place a booking can be recorded only half-way. Limit channels you cannot connect.
+H2[rule-5-staff-and-resources]: Rule 5: staff and resources
+UL:
+- If several people take bookings, each person's time must be tracked separately, either with per-person booking links or a tool that supports staff calendars.
+- If rooms, chairs or equipment are limited, track them as well; a booking can be free for the person but not for the room.
+- Make sure a person on leave has no bookable time.
+P: Crescelo's built-in booking uses your opening hours and one slot length; for per-person calendars, use Calendly or Cal.com links per person. See [multi-staff scheduling with a chatbot](/blog/multi-staff-scheduling-ai-chatbot).
+H2[rule-6-buffers-and-realistic-lengths]: Rule 6: buffers and realistic lengths
+P: Many apparent double bookings are really overruns: a service takes longer than its slot and collides with the next. Set slot lengths to include clean-up and notes, and add a gap after long or unpredictable services. See [service durations and buffer times](/blog/service-durations-buffer-times-ai-scheduling).
+H2[rule-7-make-changes-easy-and-visible]: Rule 7: make changes easy and visible
+P: When customers change or cancel, the system should free the slot immediately and confirm the new time. A private change link in every confirmation means fewer phone changes that might be recorded wrongly. See [self-serve rescheduling](/blog/frictionless-self-serve-rescheduling).
+H2[a-weekly-five-minute-check]: A weekly five-minute check
+OL:
+- Open next week's schedule and scan for overlaps.
+- Check that holidays and leave are reflected.
+- Compare the phone diary or notes with the system.
+- Look at last week's cancellations and changes for anything odd.
+- Book a test appointment and confirm it appears in the right places.
+P: Five minutes a week catches nearly every problem while it is still small.
+H2[if-it-happens-anyway]: If it happens anyway
+OL:
+- Call both customers as soon as you know, and apologise plainly.
+- Offer the later booker the earliest alternative, and consider a gesture such as a small discount.
+- Find out how it happened and fix that step.
+- Tell your team what changed.
+- Note it, so you can see whether the fix works.
+H2[how-an-assistant-helps]: How an assistant helps
+P: A chat that books from real availability removes many manual steps. The assistant asks the booking engine for free times and books the chosen one, so it cannot invent a slot. It also answers 'am I booked?' questions and points to the change link, which reduces phone calls that lead to manual mistakes. See [AI appointment booking](/blog/ai-appointment-booking) and the [appointment booking feature](/product/appointment-booking).
+H2[worked-example-a-salon-that-found-the-cause]: Worked example: a salon that found the cause
+P: A salon had two double bookings in a month and could not explain them. The owner traced each to its source. One came from a phone booking written in the front-desk diary but not entered into the online system. The other came from a stylist who moved a client to a different time in her own calendar but not in the booking tool. The fix was not technical: phone bookings were entered into the system while the caller was still on the line, and stylists agreed to make every change in one place. The owner also began a five-minute weekly check of next week's schedule. In the following six months, there were no double bookings.
+H2[frequently-asked-questions]: Frequently asked questions
+FAQ:
+Q: What is the main cause of double bookings?
+A: Recording bookings in more than one place, followed by systems that do not re-check availability at the moment of confirmation.
+Q: How do I avoid double bookings between phone and online?
+A: Enter phone bookings into the same system the website uses, immediately.
+Q: Do calendar feeds block my personal events?
+A: Not with a read-only feed. Adjust your booking hours so slots are not offered when you are busy.
+Q: Can two people book the same slot at once?
+A: Not in a system that locks the slot while saving. Test yours by trying it from two windows.
+Q: What should I do if a double booking happens?
+A: Contact both customers quickly, offer an alternative and fix the cause.
+Q: How often should I check my schedule?
+A: A five-minute weekly review is enough for most small businesses.
+P: Try a booking conversation in the [playground](/playground), and [start a free trial](/login?mode=register) to see booking with slot locking on your own hours.
+H2[further-reading]: Further reading
+UL:
+- [Google Calendar API overview](https://developers.google.com/calendar/api/guides/overview): How calendar events are read and written by software.
+- [Google Search Central: creating helpful, people-first content](https://developers.google.com/search/docs/fundamentals/creating-helpful-content): What Google looks for in useful pages.

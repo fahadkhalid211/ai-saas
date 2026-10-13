@@ -1,0 +1,122 @@
+TITLE: Chatbot Lead Capture and Privacy Law: GDPR and CCPA Basics for Small Businesses
+SEO: Chatbot Lead Capture and Privacy Law | Crescelo
+DESC: What the GDPR and CCPA mean for chatbot lead capture: lawful basis, notices, consent, minimising data, retention, rights requests, marketing opt-ins.
+EXCERPT: What the GDPR and CCPA mean for chatbot lead capture: lawful basis, notices, consent, minimising data, retention, rights requests, marketing opt-ins.
+CLUSTER: Lead Generation
+MOD: 2026-09-27
+P: A chatbot that captures leads collects personal data: names, phone numbers, email addresses and whatever the visitor types about their problem. If any of your visitors live in the European Union, the United Kingdom or California, privacy laws such as the GDPR and the CCPA apply, whatever the size of your business or where it is located. The rules are not designed to stop you collecting leads. They are designed to make sure you tell people what you are doing, collect only what you need, use it for stated reasons and give people control. A chat that does these things is also a better chat: visitors trust it more. This guide covers the essentials for lead capture in plain language: what counts as personal data, the legal basis for collecting it, what to say in the chat, how consent works for marketing, how long to keep data, how to handle requests and a practical checklist.
+NOTE: This is general information, not legal advice. Privacy law is detailed and depends on your facts, your location and your visitors' locations. Read the official guidance and ask a qualified adviser about your situation.
+H2[what-counts-as-personal-data-in-a-lead]: What counts as personal data in a lead
+UL:
+- Name, email address and phone number.
+- IP address and device information.
+- The content of the conversation, if it identifies a person.
+- Location, if collected.
+- A visitor identifier stored in the browser.
+- Booking details and preferences.
+P: Even a first name and an email address are personal data. Treat all of it with care.
+H2[the-basics-of-gdpr-for-lead-capture]: The basics of GDPR for lead capture
+TABLE:
+H: Principle | In practice
+R: Lawful basis | Have a legal reason: legitimate interests, contract steps or consent
+R: Transparency | Tell people what you collect, why, who processes it and how long you keep it
+R: Purpose limitation | Use the data for the reason you gave, not something else
+R: Data minimisation | Collect only what you need
+R: Storage limitation | Delete data when you no longer need it
+R: Security | Protect it appropriately
+R: Rights | Let people see, correct and delete their data
+P: For most service business chats, replying to an enquiry and arranging a booking rest on legitimate interests or taking steps at the visitor's request, while marketing emails need separate consent. See the [GDPR checklist for website chatbots](/blog/website-chatbot-gdpr-checklist) for the full list.
+H2[the-basics-of-ccpa-and-similar-us-laws]: The basics of CCPA and similar US laws
+UL:
+- California's law gives residents the right to know what is collected, to delete it, to correct it and to opt out of its sale or sharing.
+- It applies to businesses meeting certain size or data thresholds, so many small businesses are out of scope, but state laws are spreading.
+- It requires a privacy notice at or before collection and a clear way to make requests.
+- It restricts selling or sharing personal information and requires honouring opt-outs.
+- It has specific rules for children's data and sensitive data.
+P: If you serve US visitors, check which state laws apply to you, and keep your notice accurate. Do not sell or share chat data for advertising unless you have handled the requirements.
+H2[what-to-say-in-the-chat]: What to say in the chat
+OL:
+- Say it is an AI assistant.
+- Say what you collect and why, in one sentence, and link to your privacy policy.
+- Ask for contact details only when relevant, and explain the purpose: 'What is the best number for the team to confirm your booking?'
+- Do not add anyone to marketing lists by default.
+- Offer a way to reach a person.
+P: Example notice below the input: 'AI assistant. Conversations are stored to answer you and arrange bookings. Privacy policy.' Keep it short and visible.
+H2[consent-for-marketing]: Consent for marketing
+UL:
+- Ask separately, with a clear, unticked opt-in: 'Tick to receive occasional tips and offers. You can unsubscribe at any time.'
+- Do not bundle it with booking or the chat itself.
+- Record when and how consent was given.
+- Make unsubscribing as easy as subscribing.
+- Do not email people who only asked a question and did not opt in.
+P: This matters in practice: many complaints about unsolicited email start with chat data used for marketing without consent.
+H2[minimise-what-you-collect]: Minimise what you collect
+TABLE:
+H: Need | What is enough
+R: Reply to an enquiry | Name and a way to reach them
+R: Book an appointment | Name, contact method, service and time
+R: Send a quote | Contact method and the job details
+R: Qualify a lead | A few relevant answers, not a life history
+P: Discourage sensitive information: health, finances, identifiers. Add a line asking visitors not to share them in the chat.
+H2[retention-how-long-to-keep-it]: Retention: how long to keep it
+UL:
+- Keep leads only as long as they are useful: for example, a set period after the last contact.
+- Delete conversations you do not need, and leads that went nowhere.
+- Keep records the law requires, such as invoices, in the right place.
+- Write your retention period in your privacy policy.
+- Use the tools to delete: Crescelo lets you delete leads, appointments and knowledge sources from the dashboard, and you can ask for everything to be deleted through a support ticket.
+H2[handling-requests-from-visitors]: Handling requests from visitors
+OL:
+- Provide a contact route in your privacy policy.
+- Verify the person's identity before sharing or deleting data.
+- Find their data across your chat, email and CRM.
+- Reply within the legal time, generally one month for the GDPR.
+- Record the request and what you did.
+P: A simple written procedure, and a named person, make this manageable.
+H2[vendors-and-where-data-goes]: Vendors and where data goes
+UL:
+- Your chatbot vendor, AI provider, email service and CRM may all process the data.
+- Have data processing agreements in place; Crescelo publishes a [data processing addendum](/dpa) and a list of [sub-processors](/subprocessors).
+- Ask where data is stored and whether it leaves the UK or EU.
+- With a bring-your-own-key setup, you choose the AI provider, so read its business terms.
+- List processors in your privacy policy.
+H2[cookies-and-browser-storage]: Cookies and browser storage
+P: A chat widget may store an identifier in the visitor's browser so a conversation continues. Describe this in your cookie policy and check whether consent is needed where you operate. Analytics and advertising scripts generally need consent. See our [cookie policy](/cookies) for how we describe ours.
+H2[a-practical-checklist]: A practical checklist
+UL:
+- Data map of what the chat collects and where it goes.
+- Lawful basis noted for each purpose.
+- AI disclosure and privacy notice visible in the chat.
+- Marketing consent separate and unticked.
+- Minimal fields; warning against sensitive details.
+- Retention period set and deletion possible.
+- Requests procedure and a contact route.
+- Processor agreements and sub-processor list.
+- Cookie policy matches the widget.
+- Annual review.
+H2[where-to-go-next]: Where to go next
+P: The product pages explain the tools behind these practices: [lead capture](/product/lead-capture) covers where leads go, and the [AI assistant](/product/ai-assistant) page explains how answers come only from your content. Together with a clear privacy notice, they let you capture leads without collecting more than you should.
+H2[related-guides]: Related guides
+UL:
+- [Capturing phone and email in chat](/blog/capture-phone-email-in-chat) covers timing and wording.
+- [Why contact forms fail](/blog/why-contact-us-forms-fail) explains what chat can do better.
+- [Speed to lead](/blog/speed-to-lead-service-businesses) shows why fast follow-up matters.
+H2[frequently-asked-questions]: Frequently asked questions
+FAQ:
+Q: Do GDPR and CCPA apply to my chatbot?
+A: If you collect personal data from people in the EU, UK or California, yes, in most cases, wherever your business is based, subject to thresholds for the CCPA.
+Q: Do I need consent to capture a lead in chat?
+A: Not always. Replying to an enquiry can rest on legitimate interests or steps requested by the visitor. Marketing needs separate consent.
+Q: Can I add chat leads to my newsletter?
+A: Only with a clear, separate opt-in.
+Q: What should I tell visitors?
+A: That it is an AI, what you collect and why, and where to read your privacy policy.
+Q: How long can I keep chat leads?
+A: As long as needed for a defined purpose, then delete. Set a retention period.
+Q: How do I handle a deletion request?
+A: Verify identity, find and delete the data across your systems, reply within the time limit and record what you did.
+P: See [conversational lead capture](/blog/conversational-lead-capture) for design, read our [privacy policy](/privacy) and try a lead conversation in the [playground](/playground).
+H2[further-reading]: Further reading
+UL:
+- [ICO: lawful basis for processing personal data](https://ico.org.uk/for-organisations/uk-gdpr-guidance-and-resources/lawful-basis/): The UK regulator’s plain-English guide.
+- [European Commission: data protection](https://commission.europa.eu/law/law-topic/data-protection_en): How EU data protection rules work.

@@ -1,0 +1,116 @@
+TITLE: AI Lead Capture for Home Service Contractors: Plumbers, HVAC, Roofers and More
+SEO: AI Lead Capture for Home Service Contractors | Crescelo
+DESC: How home service contractors use an AI assistant to capture job details, answer pricing questions, handle emergencies and book estimates while their crews.
+EXCERPT: How home service contractors use an AI assistant to capture job details, answer pricing questions, handle emergencies and book estimates while their crews.
+CLUSTER: Home Services
+MOD: 2026-09-27
+P: A contractor's phone rings when their hands are full. The plumber is under a sink, the roofer is on a ladder, the electrician is behind a panel. Every missed call is a homeowner who will try the next name on the list, and in home services the first contractor to respond usually wins the job. An AI assistant on your website can answer the routine questions, collect the details of the job, book an estimate or a service call and alert you at once when something is urgent. This guide explains how it fits a trade business, what information to give it, how to handle emergencies and what to measure.
+H2[what-homeowners-ask-before-they-call]: What homeowners ask before they call
+TABLE:
+H: Question | What they really want to know
+R: Do you serve my area? | Whether you will come
+R: How much does a repair or a new install cost? | A ballpark so they can decide
+R: Are you available today or this week? | Speed
+R: Are you licensed and insured? | Trust
+R: Do you do emergency callouts? | Whether you can help right now
+R: What do you charge for an estimate? | Whether they are committing
+R: Do you work on my type of system or roof? | Fit
+P: Contractors know all these answers, but they are rarely written where a visitor can find them at midnight. An assistant reads them from your documents and replies at once.
+H2[what-the-assistant-needs-to-know]: What the assistant needs to know
+OL:
+- **Services and trades:** what you do and do not do, by name.
+- **Service area:** towns, postcodes or a radius. See [service area verification](/blog/service-area-verification-ai-chat).
+- **Pricing guidance:** call-out fee, hourly rate or typical ranges for common jobs, with the caveat that a firm price needs an inspection.
+- **Hours and emergency policy:** when you answer, what counts as an emergency, out-of-hours fees.
+- **Credentials:** licences, insurance and guarantees you can state truthfully.
+- **Process:** how estimates work, how long jobs take, how you schedule.
+P: Never let the assistant promise a fixed price without inspection, or a guaranteed arrival time. Write what it may say and what must wait for a person.
+H2[capturing-the-job-not-just-the-contact]: Capturing the job, not just the contact
+P: A lead with a phone number and 'need help' costs you a phone call to find out what is wrong. A lead with the job description, address, photos and urgency lets you decide and price before you call. The assistant should ask the questions a good dispatcher would ask.
+TABLE:
+H: Trade | Questions that help
+R: Plumbing | What is happening (leak, blocked, no hot water)? Where? Is the water off? How long? Any photos?
+R: HVAC | Heating or cooling? Age and type of system? Any error codes? When did it stop?
+R: Roofing | Leak or storm damage? Roof type and age? Any interior damage? Insurance claim involved?
+R: Electrical | What is happening? Any burning smell, sparks or tripped breakers? Which room?
+R: Landscaping and tree service | What work? Size of area? Access? Any hazards such as power lines?
+R: Cleaning | Type and size of property? Frequency? Any special requirements?
+P: See guides for each trade: [plumbing diagnostic intake](/blog/plumbing-diagnostic-intake-chat), [HVAC seasonal booking](/blog/hvac-seasonal-tune-up-booking-automation), [roofing emergency capture](/blog/roofing-emergency-lead-capture-storm-damage), [electrician scheduling](/blog/electrician-service-call-scheduling-chat), [landscaping and tree service scoping](/blog/landscaping-tree-service-scoping-chat), [pest control](/blog/pest-control-emergency-inspection-chat) and [residential cleaning pricing](/blog/residential-cleaning-pricing-calculator-chat).
+H2[handling-emergencies-properly]: Handling emergencies properly
+P: Home service emergencies range from an inconvenient leak to a real danger. The assistant must never make a safety judgement, but it should recognise urgent wording and act.
+OL:
+- **Recognise it:** words such as flooding, burst, gas smell, no heat with vulnerable people, sparks, fire, storm damage.
+- **Give safety instructions you have approved:** for example, for a gas smell, leave the building and call the gas emergency number or emergency services; for a burst pipe, turn off the water at the stop valve if it is safe to do so.
+- **Alert you immediately** by text and email, with the conversation, address and phone number.
+- **Set expectations honestly:** an estimated response time or that someone will call back within a set period.
+P: Write the safety wording with your own experience and any regulator guidance that applies. See [emergency dispatch workflows in AI chat](/blog/emergency-dispatch-workflows-ai-chat) and [handling emergencies in automated chat](/blog/handling-emergencies-automated-chat).
+H2[booking-estimates-and-service-calls]: Booking estimates and service calls
+P: For non-urgent work, an estimate or service call booked directly from the chat converts the visitor at the moment of interest. Offer windows rather than exact times if your schedule shifts, for example 'Thursday between 9 and 12'. Set separate appointment types for estimates, service calls and emergencies, with buffers for travel. Send a confirmation with the arrival window, what to prepare and how to change it. See [estimate requests and project scoping](/blog/estimate-requests-project-scoping-chat) and [AI appointment booking](/blog/ai-appointment-booking).
+H2[working-with-your-dispatcher-and-crew]: Working with your dispatcher and crew
+P: The assistant is not a replacement for a dispatcher. It feeds one. It collects the information, books what can be booked and hands over what needs judgement. Your dispatcher or office manager reviews the day's leads and adjusts. See [dispatcher and AI collaboration](/blog/home-service-dispatcher-ai-collaboration). Set up instant alerts by text and email so leads are seen within minutes, and consider sending them to a shared inbox so someone always sees them.
+H2[seasonal-peaks-and-storms]: Seasonal peaks and storms
+P: Demand in trades comes in waves: the first cold snap, the first heatwave, a storm. During a peak you cannot answer everything by phone. The assistant can keep answering, collect details and queue jobs by urgency. Prepare for peaks by updating your documents with the current lead times and any emergency pricing, so the assistant does not promise what you cannot deliver. See [seasonality management with an AI assistant](/blog/seasonality-management-ai-assistant).
+H2[pricing-and-cost]: Pricing and cost
+P: Compare the monthly cost with the value of the jobs it recovers. If your average job is worth several hundred dollars and the assistant recovers two or three a month that you would have missed, it usually pays for itself. Crescelo's plans start at $49 a month; booking and calendar sync are on the $149 Growth plan; see [pricing](/pricing). See also [the local service business tech stack](/blog/local-service-business-tech-stack) for how the pieces fit together.
+H2[a-one-day-setup-plan]: A one-day setup plan
+OL:
+- Write down your services, service area, pricing guidance and emergency policy.
+- Load them into the assistant and set a plain, friendly tone.
+- Add the intake questions for your trade.
+- Set alerts by text and email for new leads.
+- Test five typical jobs and two emergencies, plus a question outside your area.
+- Add the assistant to your website and your Google Business Profile links.
+- Review leads daily for the first two weeks.
+H2[a-sample-conversation-with-a-homeowner]: A sample conversation with a homeowner
+TABLE:
+H: Speaker | Message
+R: Homeowner | My water heater is leaking from the bottom. Can someone come today?
+R: Assistant | That sounds stressful. If water is spreading, turn off the water supply to the heater and the power or gas to it if it is safe to do so. I can arrange an emergency visit. Emergency callouts are $120 plus the repair, and we have a technician free this afternoon. What is the address and best mobile number?
+R: Homeowner | 41 Brook Lane, 555-0132.
+R: Assistant | Thanks. I am alerting the team now, and someone will call within 15 minutes to confirm arrival. Could you send a photo of the heater if you can?
+P: The assistant gave safety guidance you approved, stated the callout fee, collected the address and number and alerted the team at once. The plumber sees the job before the call.
+H2[what-a-good-lead-notification-contains]: What a good lead notification contains
+TABLE:
+H: Field | Example
+R: Job type and urgency | Water heater leak, emergency
+R: Address and area check | 41 Brook Lane, inside service area
+R: Contact details | Mobile number and preferred contact
+R: Description and photos | Leaking from bottom, photo attached
+R: Conversation link | Full chat
+R: What the customer was told | Callout fee, callback within 15 minutes
+P: If the notification contains these, your dispatcher can decide in seconds who goes and what to bring.
+H2[tips-for-different-sizes-of-business]: Tips for different sizes of business
+UL:
+- **One-person business:** use the assistant to answer questions and collect details, and set text alerts so you see hot leads between jobs.
+- **Small crew:** route by trade or area, and share the inbox with your office manager.
+- **Growing company:** send leads to your job management or CRM system by webhook and review conversion by source.
+H2[common-mistakes]: Common mistakes
+UL:
+- Promising fixed prices or arrival times.
+- Not stating your service area, leading to wasted enquiries.
+- Ignoring alerts because they go to an unread inbox.
+- Not giving safety wording for emergencies.
+- Failing to update lead times during busy periods.
+- Not asking for photos, which help you price and prepare.
+H2[reviews-and-repeat-business]: Reviews and repeat business
+P: After a completed job, a friendly follow-up asking for a review and offering a maintenance reminder brings in referrals and repeat work. Keep it short and send it once.
+H2[your-google-business-profile-and-local-search]: Your Google Business Profile and local search
+P: Many home service customers find you through Google Maps and local search. Your profile can link to a hosted chat page or your website, so visitors who tap through meet the assistant and can ask about pricing, availability and service area straight away. Keep your hours, services and area consistent between your profile, your website and the assistant's documents, because mismatches confuse customers and search engines. Reviews matter too: after a job, a short message asking for a review, sent by you, helps the next customer choose you. See [converting Google Business Profile traffic in chat](/blog/convert-google-business-traffic-chat) and [the local SEO and conversion blueprint](/blog/local-seo-conversion-blueprint).
+H2[frequently-asked-questions]: Frequently asked questions
+FAQ:
+Q: Can an AI chatbot take job requests for a plumber or electrician?
+A: Yes. It asks the questions a dispatcher would, records the answers and address, and sends the lead to you instantly.
+Q: Can it handle emergency calls?
+A: It should not decide safety. It can recognise urgent wording, give approved safety instructions and alert you immediately, and it should not promise arrival times unless you have set them.
+Q: Can it give a price?
+A: It can share ranges and call-out fees you have approved, and say that a firm price needs an inspection.
+Q: Will it work when I am on a job site?
+A: Yes. It works at any hour and alerts you when a lead needs you.
+Q: Does it need a website?
+A: It works best on a website or a hosted page. You can also share a hosted chat link from your Google Business Profile or social pages.
+Q: What does it cost?
+A: Plans start at tens of dollars a month. Compare the price with the value of one or two extra jobs a month.
+P: Try it with your own price list and service area in the [playground](/playground), then [start a free trial](/login?mode=register). The [lead capture feature](/product/lead-capture) explains how leads reach you.
+H2[further-reading]: Further reading
+UL:
+- [Google Search Central: creating helpful, people-first content](https://developers.google.com/search/docs/fundamentals/creating-helpful-content): What Google looks for in useful pages.

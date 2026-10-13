@@ -1,0 +1,113 @@
+TITLE: Convert Google Business Profile Visitors With Chat: A Setup Guide for Local Businesses
+SEO: Convert Google Business Profile Visitors With Chat | Crescelo
+DESC: How to turn Google Business Profile clicks into bookings: link to a hosted chat page, answer local questions, handle out-of-hours, capture leads and measure.
+EXCERPT: How to turn Google Business Profile clicks into bookings: link to a hosted chat page, answer local questions, handle out-of-hours, capture leads and measure.
+CLUSTER: Local Service Businesses
+MOD: 2026-09-27
+P: Your Google Business Profile is often the first thing a local customer sees, and its website button is where a lot of them click next. What they meet after that click decides whether they book. A slow home page with no obvious next step loses them. A page that answers their question in seconds and offers a time wins them. This guide explains how to use a hosted chat page or a well-prepared site page as the destination of your profile link, what to prepare so the assistant answers local questions well, how to handle out-of-hours visitors and calls, how to capture leads and how to measure the results.
+H2[what-google-business-profile-visitors-want]: What Google Business Profile visitors want
+TABLE:
+H: Visitor thinks | Needs
+R: Are they open now? | Hours, holiday hours, current status
+R: Where exactly are they? | Address, parking, directions
+R: How much will it cost? | Prices or ranges
+R: Do they do what I need? | Services, suitability
+R: Can I go today? | Availability and booking
+R: Can I trust them? | Reviews, credentials, photos
+P: These are local, immediate, practical questions from people who are close to a decision. The faster they get answers, the more likely they are to book.
+H2[choose-the-destination-for-your-profile-link]: Choose the destination for your profile link
+TABLE:
+H: Destination | Pros | Cons
+R: Your home page | Familiar; good for brand | Visitor must find what they need
+R: A service or booking page | Direct to the action | Needs to be clear and fast
+R: A hosted page with an assistant | Answers questions and books in one place; designed for this traffic | One more page to maintain
+R: A phone call button only | Simple for some | No answer after hours
+P: Crescelo offers hosted business pages, a page with your assistant on it that you can link from your profile, social bios and QR codes. See the [website widget feature](/product/website-widget). If you use your own site, place the chat prominently on the page your profile links to.
+H2[prepare-the-assistant-for-local-questions]: Prepare the assistant for local questions
+P: The assistant is only as good as the documents it reads. Load a short local information sheet.
+UL:
+- Address, parking, public transport and accessibility.
+- Opening hours by day, holiday hours and how to reach you outside them.
+- Service area: towns, postcodes or a radius, and what you do outside it.
+- Prices or ranges for your main services and what is included.
+- Booking and cancellation policy.
+- Emergency or same-day policy, if you offer it.
+- Payment methods.
+- What to bring and how long each service takes.
+P: Use the same facts as on your profile. Mismatched hours or prices between your profile, website and assistant confuse customers and damage trust.
+H2[out-of-hours-where-the-chat-pays-for-itself]: Out-of-hours: where the chat pays for itself
+P: Many profile visits happen in the evening and at weekends, when nobody can answer the phone. A visitor who finds a closed business often moves on. An assistant that says 'we are closed now, but I can answer questions and book you in for tomorrow' converts a lost visit into an appointment. Set your hours in the assistant so it tells the truth about availability. See [after-hours appointment booking](/blog/after-hours-appointment-booking).
+H2[service-area-questions]: Service area questions
+P: Visitors often ask 'do you cover my area?' Give the assistant a clear list of the areas you serve and a rule for the edge: what to say to someone just outside. A clear answer saves a wasted call for both sides. See [service area verification in chat](/blog/service-area-verification-ai-chat).
+H2[capture-leads-when-they-are-not-ready-to-book]: Capture leads when they are not ready to book
+P: Some visitors want an answer and will come back later. Offer to send the price list or callback, ask for one contact detail and deliver the lead to your team by instant email alert. See [conversational lead capture](/blog/conversational-lead-capture) and the [lead capture feature](/product/lead-capture).
+H2[handover-for-what-the-assistant-cannot-handle]: Handover for what the assistant cannot handle
+P: Some questions need a person: complaints, unusual requests, emergencies. Make sure visitors can ask for one, and that your team is notified with the conversation. Say honestly when someone will reply. See [live human handover flow design](/blog/live-human-handover-flow-design).
+H2[track-results]: Track results
+TABLE:
+H: Metric | Where
+R: Profile website clicks | Google Business Profile insights
+R: Visits to the hosted page or landing page | Analytics or the page's stats
+R: Chats started and bookings made | Chat and booking reports
+R: Out-of-hours bookings | Booking times
+R: Reviews after visits | Your profile
+P: Add a UTM tag to the profile link, so visits from your profile are identifiable in analytics. For example, source google, medium organic and campaign business-profile. See [tracking chatbot conversions in GA4 and Meta](/blog/integrate-chat-events-ga4-meta-pixel).
+H2[reviews-close-the-loop]: Reviews: close the loop
+P: After a visit, a short message with a direct review link brings in the social proof that helps the next searcher. The assistant can also answer 'do you have reviews?' by pointing to your profile. Never fabricate reviews or quote ones you cannot verify. See [social proof and reviews in AI chat](/blog/social-proof-reviews-ai-chat) and [collecting reviews and ratings with automated chat](/blog/collect-reviews-ratings-automated-chat).
+H2[a-one-hour-setup]: A one-hour setup
+OL:
+- Update your profile: hours, services, categories, photos.
+- Write the local information sheet and load it into the assistant.
+- Set up booking and lead alerts.
+- Test ten local questions, including 'are you open now' and 'do you cover my area'.
+- Create or choose the destination page and add the UTM tag to your profile link.
+- Test on a phone, on mobile data.
+- Review the first two weeks of conversations.
+H2[worked-example-a-barbershop-s-profile-link]: Worked example: a barbershop's profile link
+P: A barbershop's profile linked to its home page, which loaded slowly and buried the prices. The owner creates a hosted page with the assistant, loads the price list, hours, walk-in policy and parking information and points the profile link there with a UTM tag. Visitors from the map now see a friendly greeting, ask 'are you open now' and 'how much for a skin fade', and can pick a time. In the first month the owner sees forty chats from the profile link, twenty-one bookings, and six of those came after closing time, appointments that would previously have gone to another shop.
+TABLE:
+H: Question from a map visitor | Answered from
+R: Are you open now? | Hours document with today's hours
+R: How much is a skin fade? | Price list
+R: Do you take walk-ins? | Walk-in policy
+R: Where do I park? | Directions and parking
+R: Can I book for 5? | Booking flow with real free times
+H2[keep-your-profile-and-assistant-in-sync]: Keep your profile and assistant in sync
+P: Whenever you change hours, prices or services on your profile, change them in the assistant's documents on the same day. Put both on one checklist: profile, website, assistant, and any other listings. A mismatch is one of the most common reasons a local visitor loses trust, and it takes thirty seconds to avoid.
+H2[what-not-to-do]: What not to do
+UL:
+- Do not link to a page that greets mobile visitors with a large pop-up.
+- Do not hide your prices or your phone number.
+- Do not let the assistant promise things your profile does not state.
+- Do not fill your profile description with keywords.
+- Do not ignore a bad review; answer it calmly.
+H2[seasonal-and-holiday-changes]: Seasonal and holiday changes
+P: Profiles and assistants both need care around holidays and seasonal shifts. Before a public holiday, update your profile's special hours and the assistant's documents at the same time, and check that the assistant tells visitors accurately when you reopen. In busy seasons, add a line about lead times so nobody is promised a slot you cannot honour. A short seasonal checklist, done twice a year, prevents most of the mismatches that annoy local customers.
+H2[quick-checklist-before-you-point-the-link]: Quick checklist before you point the link
+UL:
+- The hosted or destination page loads in under three seconds on mobile data.
+- The greeting names your business and says what the assistant can do.
+- Hours, address and phone number are visible without scrolling.
+- The assistant answers your five most common local questions correctly.
+- A test booking completes and the confirmation arrives.
+- Your team knows how handover reaches them.
+P: If any line fails, fix it before you send real traffic to the page; local visitors rarely give a second chance.
+H2[frequently-asked-questions]: Frequently asked questions
+FAQ:
+Q: Where should my Google Business Profile website link go?
+A: To the page that best helps a local visitor act: a booking or services page, or a hosted page where an assistant answers questions and books.
+Q: Can a chatbot help convert Google Maps visitors?
+A: Yes. It can answer hours, price and coverage questions instantly, at any hour, and offer a booking.
+Q: Should I use my home page or a landing page?
+A: A focused page usually converts better because it removes steps between the click and the action.
+Q: How do I track visits from my profile?
+A: Add UTM parameters to the profile's website link and check the source in your analytics.
+Q: What if the assistant does not know an answer?
+A: It should say so and offer a person or a callback, and you should add the answer to your documents.
+Q: Does Crescelo offer hosted pages?
+A: Yes. Hosted business pages with your assistant are available, and how many depends on your plan.
+P: Try local questions on your own documents in the [playground](/playground), and [start a free trial](/login?mode=register). For the wider picture, read [the local SEO and conversion blueprint](/blog/local-seo-conversion-blueprint).
+H2[further-reading]: Further reading
+UL:
+- [Google Business Profile Help: improve your local ranking](https://support.google.com/business/answer/7091): Ranking factors for local businesses.
+- [Google Search Central: creating helpful, people-first content](https://developers.google.com/search/docs/fundamentals/creating-helpful-content): What Google looks for in useful pages.

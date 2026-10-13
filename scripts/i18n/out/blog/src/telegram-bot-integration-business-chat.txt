@@ -1,0 +1,113 @@
+TITLE: Telegram Bot for Business: How to Connect an AI Assistant Step by Step
+SEO: Telegram Bot for Business | Crescelo
+DESC: How to connect a Telegram bot to an AI assistant for your business: BotFather, tokens, webhooks, privacy, message design, testing and when Telegram.
+EXCERPT: How to connect a Telegram bot to an AI assistant for your business: BotFather, tokens, webhooks, privacy, message design, testing and when Telegram.
+CLUSTER: Implementation Guides
+MOD: 2026-09-27
+P: Telegram is a messaging app with hundreds of millions of users, and it is unusually friendly to businesses because bots are a built-in feature. Anyone can create a bot in a couple of minutes, with no business verification and no message-template approval. That makes Telegram one of the easiest channels on which to put an AI assistant, and a good fit if your customers already use it. This guide explains when Telegram makes sense, how to create and connect a bot to an assistant such as Crescelo, how to design messages that work in the app, how to handle privacy, and how to test before you announce it.
+H2[when-telegram-is-the-right-channel]: When Telegram is the right channel
+P: Telegram is popular in some regions, industries and communities much more than others. Before you invest, check whether your customers use it.
+TABLE:
+H: Signal | Telegram is a good fit if
+R: Your customers | They already message you or your community on Telegram
+R: Your region | Telegram is widely used where you operate
+R: Your business | Crypto, tech, education, creators, local communities, delivery and services with online audiences
+R: Your goal | Quick answers and simple bookings in an app people keep open all day
+R: Your setup capacity | You want a channel that takes minutes to set up, not days
+P: If your customers are mainly on WhatsApp or on your website, start there. See [website chat versus WhatsApp bots](/blog/website-chat-vs-whatsapp-bots-service-business) for how to choose.
+H2[how-telegram-bots-work]: How Telegram bots work
+P: A Telegram bot is a special account controlled by software. People find it by its username, open a chat and message it like a contact. When someone sends a message, Telegram forwards it to your assistant through a web address you register, called a webhook. The assistant writes a reply and sends it back through Telegram's interface. There is no phone number to verify and no monthly fee from Telegram for bots.
+UL:
+- **BotFather** is Telegram's own bot for creating and managing bots.
+- The **bot token** is a long secret string that authorises your assistant to act as the bot. Treat it like a password.
+- The **webhook** is the web address to which Telegram delivers messages.
+- **Commands** such as /start and /help are conventions that let users trigger actions.
+H2[step-by-step-setup-with-crescelo]: Step-by-step setup with Crescelo
+P: Telegram is included on Crescelo's Agency / Scale plan.
+OL:
+- **Create the bot.** In Telegram, message @BotFather and send /newbot. Choose a display name and a username ending in 'bot'. BotFather replies with a token. Copy it.
+- **Add the token to your assistant.** In Crescelo, open Channels and Integrations, then Telegram, paste the token, verify it and enable the bot.
+- **Set the webhook.** Use the button in Crescelo to set the webhook automatically, so Telegram delivers messages to your assistant.
+- **Test.** Open your bot in Telegram, press Start and send a question.
+P: Keep the token private. If it is ever exposed, revoke it in BotFather and generate a new one, then update it in Crescelo.
+H2[make-the-bot-look-professional]: Make the bot look professional
+P: Use BotFather to polish the bot before customers see it.
+UL:
+- **Name and username:** use your business name so people recognise it.
+- **Profile picture:** your logo.
+- **Description:** what people see before they press Start; say what the bot does in one line, for example 'Ask about our services, prices and opening hours, or book a time.'
+- **About text:** a short line on the bot's profile.
+- **Commands menu:** list a few helpful commands such as /book and /hours if your setup supports them.
+H2[designing-messages-for-telegram]: Designing messages for Telegram
+P: Telegram chats are quick and casual. Good bot replies are short, specific and easy to act on.
+TABLE:
+H: Do | Avoid
+R: Short paragraphs and clear line breaks | Walls of text
+R: One question at a time | Long forms in a single message
+R: Buttons or a short list of options where supported | Ambiguous open-ended prompts
+R: A friendly first message that says what the bot does | A generic greeting with no purpose
+R: A visible way to reach a person | Trapping people with a bot
+P: Write the greeting separately for Telegram and for your website. A message that works on a page may feel stiff in a chat app.
+H2[booking-and-lead-capture-on-telegram]: Booking and lead capture on Telegram
+P: The same assistant that answers on your website can take bookings and capture leads in Telegram. Crescelo's built-in booking offers slots from your opening hours and locks a slot while it is being booked; confirmations go by email. Because Telegram users sometimes prefer not to share an email, decide what you need at booking: a name and a contact method are usually enough. See [AI appointment booking](/blog/ai-appointment-booking) and [conversational lead capture](/blog/conversational-lead-capture).
+H2[privacy-and-responsibilities]: Privacy and responsibilities
+UL:
+- Tell people they are chatting with an AI assistant, in the bot's description and greeting.
+- Link to your privacy policy.
+- Collect only what you need, and avoid sensitive details in chat.
+- Remember that Telegram is a third-party platform whose own terms and privacy practices apply to conversations.
+- Ask your assistant vendor where data is stored and who processes it, and decide how long you keep transcripts.
+P: If you serve people in Europe or California, see the [GDPR checklist for website chatbots](/blog/website-chatbot-gdpr-checklist); the same principles apply to any chat channel. This is general information, not legal advice.
+H2[groups-channels-and-private-chats]: Groups, channels and private chats
+P: Bots can be added to groups and channels, but a customer-service assistant belongs in one-to-one chats. Group behaviour is different: many people talk at once, and bots may only see certain messages depending on privacy settings. If you run a community group, use a separate approach for moderation and announcements, and keep the assistant for direct questions. Do not add an assistant that answers from private business documents to a public group without thinking about who can read what it says.
+H2[testing-before-you-announce]: Testing before you announce
+OL:
+- Send a normal question and check the answer.
+- Send a question your documents cannot answer and confirm it says it does not know.
+- Book an appointment, if enabled, and check the confirmation.
+- Ask for a person and confirm your team is notified.
+- Send a sticker, photo or voice note and see what happens; decide whether you want a friendly message asking users to type.
+- Test from a second account and on a phone.
+- Check that conversations appear in your dashboard.
+H2[troubleshooting]: Troubleshooting
+TABLE:
+H: Problem | Likely cause | Fix
+R: Bot does not reply | Webhook not set, or token wrong | Verify the token and set the webhook again from the dashboard
+R: Bot replies to you but not to others | Bot disabled or plan limit reached | Check that the bot is enabled and your plan's session limit
+R: Old messages arrive in a burst | Bot was offline and Telegram queued them | Expected once after downtime; review and respond
+R: Token exposed | Shared or committed by mistake | Revoke in BotFather, create a new token and update it
+R: Answers differ from the website | Different assistant or old content | Use the same assistant and refresh the knowledge base
+H2[example-a-language-school-on-telegram]: Example: a language school on Telegram
+P: A language school has many students who already use Telegram. It creates a bot called the school's name, loads its course descriptions, prices, timetable and enrolment policy into the assistant and connects the bot. Students ask about levels, start dates and fees, get answers at once and can request a callback from the admissions team. The staff read a short summary each morning and follow up on the requests. Nothing new is asked of students: they use the app they already have open.
+TABLE:
+H: Question | Answered from
+R: When does the next beginner course start? | Timetable document
+R: How much is the evening course? | Price list
+R: Can I pay in instalments? | Payment policy
+R: I want to speak to someone | Handover to admissions
+H2[keeping-it-useful-after-launch]: Keeping it useful after launch
+UL:
+- Review the first two weeks of conversations daily and fix wrong answers at the source.
+- Add the answers to questions the assistant could not handle.
+- Check that handover requests reach a person quickly.
+- Update the bot description if your services change.
+- Rotate the bot token if a team member who had it leaves.
+P: A bot that customers find useful tends to be talked about in the communities where they gather, which can bring more customers than any advertising. A bot that answers badly gets muted immediately, so accuracy matters more than reach.
+H2[frequently-asked-questions]: Frequently asked questions
+FAQ:
+Q: How do I create a Telegram bot for my business?
+A: Message @BotFather in Telegram, send /newbot, choose a name and username and copy the token. Then paste the token into your assistant's Telegram settings and set the webhook.
+Q: Does Telegram charge for bots?
+A: Telegram does not charge for creating or running bots. You pay for your assistant platform and AI usage.
+Q: Does Crescelo support Telegram?
+A: Yes, on the Agency / Scale plan, using your own bot token.
+Q: Is Telegram easier to set up than WhatsApp?
+A: Yes. It needs no business verification or template approval, only a bot token and a webhook.
+Q: Can a Telegram bot book appointments?
+A: Yes, if your assistant supports booking. The same booking rules apply as on your website.
+Q: Is a Telegram bot private?
+A: Conversations are with your bot and pass through Telegram and your assistant vendor. Tell users what you collect and follow privacy rules.
+P: See the [messaging channels feature](/product/messaging-channels), try the assistant in the [playground](/playground) and [start a free trial](/login?mode=register). For a wider view of channels, read [unifying web, WhatsApp and Telegram in one inbox](/blog/unifying-web-whatsapp-telegram-inbox).
+H2[further-reading]: Further reading
+UL:
+- [Google Search Central: creating helpful, people-first content](https://developers.google.com/search/docs/fundamentals/creating-helpful-content): What Google looks for in useful pages.

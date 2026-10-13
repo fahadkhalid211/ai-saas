@@ -1,0 +1,109 @@
+TITLE: AI Website Assistant: What It Is, How It Works and How to Choose One
+SEO: AI Website Assistant | Crescelo
+DESC: A complete guide to AI website assistants for service businesses: what they do, how they work, what they cost, where they fail and how to choose and launch.
+EXCERPT: A complete guide to AI website assistants for service businesses: what they do, how they work, what they cost, where they fail and how to choose and launch.
+CLUSTER: AI Website Chatbots
+MOD: 2026-09-27
+P: An AI website assistant is a chat window on your website that answers visitor questions in plain language, collects contact details and, in the better products, books appointments. It reads your own content, such as your services, prices, policies and FAQs, and replies from that instead of from general knowledge. For a business that lives on enquiries and bookings, it is the difference between a visitor who leaves with an unanswered question and one who leaves with an appointment.
+P: This guide is written for owners and managers of appointment-based businesses: salons, clinics, agencies, fitness studios, legal and property practices, home services. It explains how these assistants actually work, what to prepare, what they cost, where they go wrong and how to compare products without being fooled by a demo. It is long on purpose. If you only want the short version, jump to the checklist near the end.
+H2[what-an-ai-website-assistant-actually-does]: What an AI website assistant actually does
+P: Most service businesses answer the same questions again and again: are you open on Saturday, how much is this, do you cover my area, can I move my appointment, do you take my insurance. Each of those questions arrives at a bad moment, usually when nobody is free to answer. A visitor who does not get an answer within a minute or two tends to open another tab and try a competitor. An assistant handles that first layer around the clock.
+UL:
+- **Answers questions** from your documents, so replies match what you would say yourself.
+- **Books appointments** by showing real free time slots and confirming the booking in the chat.
+- **Captures leads** by asking for a name, phone number or email when a visitor is interested, and sending them to you.
+- **Hands over to a person** when the question needs one, with the whole conversation attached.
+- **Works in the visitor's language** where the underlying model supports it.
+P: What it is not: a replacement for your team, a magic sales engine, or a way to skip writing down how your business works. The quality of the assistant is capped by the quality of what you give it to read.
+H2[how-it-works-behind-the-chat-bubble]: How it works behind the chat bubble
+P: Understanding the moving parts makes you a better buyer. There are five of them, and every serious product has all five in some form.
+H3: 1. Your knowledge base
+P: You give the assistant documents: a price list, service descriptions, policies, opening hours, FAQ pages, even a link to your website. The system splits them into short passages and stores them so they can be searched. This is called a knowledge base, and it is the assistant's only source of truth about your business.
+H3: 2. Retrieval
+P: When a visitor asks a question, the system first searches the knowledge base for the passages most likely to contain the answer. Good systems combine two kinds of search: one that matches meaning (so 'how much for a cut' finds the page titled 'Haircut pricing') and one that matches exact words (so a product code or a place name is not missed). This step is usually called retrieval-augmented generation, or RAG. You can read more about the trade-offs in our piece on [hybrid search for RAG](/blog/hybrid-rag-dense-vector-sparse-keyword).
+H3: 3. The language model
+P: The retrieved passages and the visitor's question go to a large language model, which writes the reply. The instruction it receives says, in effect: answer only from these passages, and if they do not contain the answer, say so. That single instruction is what separates a useful assistant from one that invents prices.
+H3: 4. Actions
+P: Beyond talking, an assistant can do things: show a booking calendar, lock a time slot so two people cannot book it, send a confirmation email, record a lead, or notify your team. These actions are ordinary software, not AI, and they are where most of the business value sits.
+H3: 5. The channels
+P: The chat can live in a bubble on your website, in a full-page hosted version, and in some products inside WhatsApp or Telegram. The same knowledge and rules serve all of them.
+H2[why-grounding-matters-more-than-the-model]: Why grounding matters more than the model
+P: A model on its own knows a great deal about the world and nothing about your business. Left alone, it will guess, and a guess about your price or your refund policy is worse than no answer at all. Grounding means every reply is built from passages in your own content, and the assistant is instructed to say 'I do not have that' when the passages do not cover the question.
+P: When you compare products, do not ask which model they use. Ask what happens on a question your documents do not cover, and then test it yourself. Ask something absurd, ask something that sounds plausible but is not in your content, and ask for a discount you do not offer. The way a product refuses tells you more than any feature list. We go deeper on this in [how to stop a chatbot from making things up](/blog/grounded-ai-chatbot-hallucinations).
+NOTE: You can try grounding on your own documents without an account in the [Crescelo playground](/playground): upload a file or paste some text, then ask it something that is not in there.
+H2[what-it-costs-in-plain-terms]: What it costs, in plain terms
+P: There are usually two separate costs, and vendors describe them differently, which makes comparison hard.
+TABLE:
+H: Cost | What it pays for | How vendors price it
+R: Platform | The software, hosting, booking and lead tools, support | Monthly subscription, often tiered by conversations, assistants or storage
+R: AI usage | The language model that writes each reply | Bundled into the price with a margin, or billed to you directly at the provider's rate
+P: With a bring-your-own-key setup, you connect your own account at an AI provider such as OpenAI, Anthropic, Google, Groq or DeepSeek, and pay them directly for what you use. The platform adds nothing on top. For most small businesses the AI usage is small compared with the subscription, but it grows with volume, so it is worth knowing which model you are paying for. Our guide to [bring-your-own-key pricing](/blog/byok-vs-bundled-ai-pricing-cost-comparison) works through the numbers.
+P: Crescelo's plans start at $49 a month for one assistant and 100 chat sessions, with Growth at $149 for booking and calendar sync, and a larger tier for agencies and multi-channel use. See the current details on the [pricing page](/pricing), because prices can change.
+H2[what-to-prepare-before-you-switch-one-on]: What to prepare before you switch one on
+OL:
+- Collect the documents you already have: price list, service descriptions, policies, opening hours, FAQ page and any terms you send to customers.
+- Write down the ten questions your team answers most often and check each one is answered somewhere in those documents. If it is not, write the answer down. This step alone improves your website even without an assistant.
+- Decide what the assistant must never promise: medical, legal or financial advice, discounts you have not approved, guaranteed arrival times.
+- Decide when a person should take over: complaints, emergencies, anything involving money or safety.
+- Set up your calendar and services if you want bookings: durations, buffers between appointments, staff, opening hours and holidays.
+P: Then test it the way a customer would. Ask your ten questions in different words, with typos, and in a hurry. Ask something that is not in your content. Try a booking from start to finish and check that the confirmation arrives. Open the site on a phone and make sure the chat window scrolls and does not cover the button a visitor needs. Our [ten questions every service business chatbot should answer well](/blog/essential-chatbot-questions-service-business) is a good starting list.
+H2[where-ai-website-assistants-still-go-wrong]: Where AI website assistants still go wrong
+UL:
+- **Out-of-date content.** If your prices change and the document does not, the assistant repeats the old price. Treat the knowledge base like a page on your website and review it on a schedule.
+- **Questions that need judgement.** Complaints, refunds and unusual requests should go to a person. A good assistant recognises this and offers the handover instead of improvising.
+- **Long, messy source documents.** A 60-page PDF with the answer buried in a footnote is hard to search. Shorter, clearly titled pages retrieve better.
+- **Over-promising by the vendor.** Beware of claims that an assistant will replace your staff or double your sales. It will answer more enquiries faster, and how much that is worth depends on your traffic and margins.
+- **Ignoring the conversations.** The transcripts show what customers really ask and what your site fails to explain. If nobody reads them, you lose the best part of the product. See [how to review your chatbot's conversations each week](/blog/audit-website-chatbot-conversations).
+H2[rule-based-chatbot-or-ai-assistant]: Rule-based chatbot or AI assistant?
+P: Older chatbots follow a script you draw: if the visitor clicks A, show B. They are predictable and cheap, but they break the moment a visitor phrases something in an unexpected way. AI assistants read free text and can cope with that, at the cost of needing careful grounding. For a handful of fixed journeys a script is fine. For open questions from real customers an assistant is the better tool. The full comparison is in [rule-based chatbots vs AI assistants](/blog/rule-based-vs-ai-chatbots).
+H2[privacy-consent-and-honesty]: Privacy, consent and honesty
+P: A chat collects personal information, so it falls under privacy law wherever your visitors live. In practice that means telling visitors they are talking to an AI, linking to your privacy policy, collecting only what you need, and being able to delete a person's data when they ask. If you serve people in the European Union or California, read our [GDPR checklist for website chatbots](/blog/website-chatbot-gdpr-checklist) before you go live. This is general information, not legal advice.
+H2[how-to-compare-products-without-being-fooled-by-a-demo]: How to compare products without being fooled by a demo
+P: Every demo works, because the vendor chose the questions. Use this short protocol on any product you are considering.
+OL:
+- Load your real documents, not the vendor's sample content.
+- Ask the same ten questions on every product and compare the answers side by side.
+- Ask three questions that your documents do not answer. Note which products admit it and which invent something.
+- Try a real booking, including a time that is already taken.
+- Check what you can export and what happens to your data if you leave.
+- Read the pricing page twice: what counts as a conversation, what happens over the limit, and what the AI usage costs.
+TABLE:
+H: Question to ask | Why it matters
+R: Can I see the sources behind each answer? | Lets you find and fix wrong answers quickly
+R: What happens when it does not know? | The most important safety behaviour
+R: Which AI providers can I use, and can I bring my own key? | Controls cost and lets you change model later
+R: How are double bookings prevented? | A booking tool that double-books costs you customers
+R: How do I take over a conversation? | You need a way to step in
+R: Where is my data stored and can I delete it? | Legal and trust question
+H2[how-to-know-it-is-working]: How to know it is working
+P: Look at three numbers after the first few weeks: how many conversations ended with a booking or a lead, how many questions the assistant could not answer, and what visitors said when they asked for a person. The unanswered questions are a to-do list for your knowledge base. The handover requests show you where the assistant should be more helpful or where a human is genuinely needed. For a fuller framework, see the [ROI calculation for an AI website assistant](/blog/ai-website-assistant-roi-calculator).
+H2[a-practical-launch-checklist]: A practical launch checklist
+UL:
+- Documents loaded and reviewed for accuracy and dates.
+- Ten common questions tested, including with typos.
+- Three unanswerable questions tested; the assistant admits it does not know.
+- Booking tested end to end, with the confirmation email received.
+- Handover tested; your team is notified.
+- AI disclosure and privacy link visible in the chat.
+- Tested on a phone and on your slowest page.
+- A weekly ten-minute review of conversations in your calendar.
+H2[frequently-asked-questions]: Frequently asked questions
+FAQ:
+Q: What is an AI website assistant?
+A: It is a chat window on your website that answers visitors from your own documents, captures leads and, in many products, books appointments. It uses a language model to write replies but is told to answer only from the content you provide.
+Q: Is an AI website assistant the same as a chatbot?
+A: It is a modern kind of chatbot. Older chatbots follow fixed scripts. An AI assistant reads free text and writes replies, which makes it more flexible but means it needs careful grounding in your content.
+Q: How much does an AI assistant for a small business cost?
+A: Expect a monthly platform subscription, from tens to a few hundred dollars depending on volume, plus AI usage. With a bring-your-own-key product you pay the AI provider directly at their rates instead of a marked-up bundle.
+Q: Will it make things up?
+A: It can if it is not grounded. A well-built assistant answers only from your documents and says it does not know when they do not cover the question. Always test with questions your content does not answer.
+Q: Can it book appointments?
+A: Yes, in products that include booking. The assistant shows real free slots from your calendar and confirms the booking, with protection so two people cannot take the same time.
+Q: Do I need technical skills?
+A: No. You upload or paste your content, connect an AI provider if the product asks for one and paste one line of code on your website. Most people are live within an afternoon.
+Q: Is it safe for customer data?
+A: It can be, if the vendor is transparent about storage, lets you delete data and you tell visitors they are talking to an AI. Check the vendor's privacy policy and sub-processors before you start.
+P: Ready to see it on your own content? Try the [playground](/playground) with no sign-up, read how the [AI assistant feature](/product/ai-assistant) works, or [start a free trial](/login?mode=register) when you want it on your site.
+H2[further-reading]: Further reading
+UL:
+- [Google Search Central: creating helpful, people-first content](https://developers.google.com/search/docs/fundamentals/creating-helpful-content): What Google looks for in useful pages.

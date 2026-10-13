@@ -1,0 +1,95 @@
+TITLE: Dental Emergencies and AI Chat: How to Route Urgent Messages Safely
+SEO: Dental Emergencies and AI Chat | Crescelo
+DESC: How dental practices should handle urgent messages in a website chat: recognising urgency, safe wording, alerts, out-of-hours routes and why the assistant.
+EXCERPT: How dental practices should handle urgent messages in a website chat: recognising urgency, safe wording, alerts, out-of-hours routes and why the assistant.
+CLUSTER: Dental Clinics
+MOD: 2026-09-27
+P: When someone has a toothache at 11 p.m. or a knocked-out tooth on a Saturday, they turn to the internet. If your practice's website has a chat, that visitor may type their emergency into it. What the chat says next matters. A poorly designed chatbot might reassure someone who needs urgent care, give advice it is not qualified to give, or leave them waiting with no idea what to do. A well-designed one recognises urgency, gives clear approved instructions, alerts your team and never pretends to diagnose. This guide explains how a dental practice should set up its chat for urgent messages: what the assistant should and should not do, how to write the wording with your clinical team, how to route out-of-hours emergencies and how to test the rules.
+NOTE: This is general information, not medical or legal advice. Your clinical lead should write and approve the emergency wording, and you should check the rules that apply to your practice. Emergency guidance varies by country.
+H2[the-core-rule-route-do-not-triage]: The core rule: route, do not triage
+P: An AI assistant is not a clinician. It cannot examine a patient, and it must not decide whether a symptom is serious. Its job in an emergency is to recognise that a message may be urgent, give the practice's approved instructions and get a human involved fast. That means three things: never diagnose, never reassure ('that sounds like nothing') and never recommend medication or treatment.
+TABLE:
+H: The assistant should | The assistant should not
+R: Recognise urgent wording and act at once | Decide whether a symptom is serious
+R: Give your approved emergency instructions | Advise on medication or home treatment
+R: Point to emergency services for life-threatening signs | Say something is 'probably fine'
+R: Alert your team with the conversation | Promise an appointment time it cannot guarantee
+R: Tell the visitor honestly what happens next | Ask for detailed medical history in chat
+H2[recognising-urgent-messages]: Recognising urgent messages
+P: Agree a list of triggers with your clinical lead. Typical categories:
+UL:
+- **Life-threatening signs:** difficulty breathing or swallowing, swelling spreading to the face, eye or neck, uncontrolled bleeding, head or facial trauma, fever with severe swelling.
+- **Urgent dental problems:** severe pain, a knocked-out or broken tooth, a lost filling with pain, an abscess, bleeding that will not stop.
+- **Less urgent but time-sensitive:** a broken denture, a lost crown, a cracked tooth without severe pain.
+P: Recognition uses wording, not medical judgement. Include the many ways people describe problems: 'my face is swollen', 'cannot open my mouth', 'tooth fell out', 'bleeding a lot', 'in agony'. Test with real phrases, misspellings and other languages you serve.
+H2[two-tiers-of-response]: Two tiers of response
+TABLE:
+H: Tier | Examples | Response
+R: 1: possibly life-threatening | Trouble breathing or swallowing, spreading facial swelling, heavy bleeding after injury | Tell the visitor to contact emergency services now, in plain words. Alert the team. Do not continue a normal booking chat.
+R: 2: urgent dental | Severe toothache, knocked-out tooth, abscess signs | Give your approved instructions and phone number or emergency line, offer the earliest emergency slot if you have one and alert the team.
+P: Write the words exactly, and have your clinical lead approve them. For example, tier 1: 'This sounds serious. Please call emergency services now. If it is safe to do so, do not wait for us.' Tier 2: 'I am sorry you are in pain. Please call us on [number] now if we are open. If we are closed, call [emergency dental service or line]. I have alerted our team.'
+H2[out-of-hours-routes]: Out-of-hours routes
+P: Practices differ in what they can offer at night. Decide yours and state it honestly.
+OL:
+- **On-call dentist:** give the emergency number and alert the on-call person by text and email.
+- **Emergency dental service:** name the local service, or your reciprocal arrangement.
+- **Next morning:** offer the first emergency slot and explain that the team will call when the practice opens.
+- **No cover:** say so plainly and direct to emergency services or the nearest urgent care.
+P: Never promise a callback time you cannot meet. See [after-hours appointment booking](/blog/after-hours-appointment-booking) for the general approach and [handling emergencies in automated chat](/blog/handling-emergencies-automated-chat).
+H2[alerts-the-part-that-saves-patients]: Alerts: the part that saves patients
+P: A recognised emergency is only useful if a person sees it. Set up alerts to reach someone who will act, through more than one route.
+UL:
+- Instant email with the whole conversation.
+- A text or push notification to the on-call person, sent by an automation from the chatbot's webhook; see [webhook automations](/blog/webhook-automations-zapier-make-chat-events).
+- A dashboard notification for staff who are working in it.
+- A backup route if the first person does not respond.
+P: Test the alerts regularly, including at night. An alert that goes to an unread inbox is worse than none because it creates false comfort. Crescelo can hand any conversation to your team with notifications and the full history; see the [human handover feature](/product/human-handover).
+H2[what-not-to-collect-in-the-chat]: What not to collect in the chat
+P: Urgent visitors will type details. The assistant should ask only for what is needed to help: a name, a phone number and, in general terms, what is happening so the team can prioritise. It should not ask for a detailed medical history, medications, insurance numbers or images of the patient's face or mouth in an open chat. Tell the visitor that the team will ask what they need when they call. Follow your privacy rules; see [HIPAA considerations for dental chatbots](/blog/hipaa-compliance-dental-chatbots).
+H2[wording-examples-for-your-clinical-team-to-adapt]: Wording examples for your clinical team to adapt
+TABLE:
+H: Situation | Draft wording
+R: Tier 1 | This sounds like it could be serious. Please call emergency services now. Do not wait for us. If you can, ask someone to stay with you.
+R: Severe pain, open | I am sorry you are in pain. Please call us right now on [number], we can see emergencies today. I have alerted the team, and they will look for your call.
+R: Severe pain, closed | I am sorry you are in pain. We are closed now. Please call [emergency line or service]. I have alerted our on-call team and they will reply when able. If your pain gets worse or you have swelling or trouble breathing, call emergency services.
+R: Knocked-out tooth | Please call us right now on [number] or the emergency line. Time matters. I have alerted the team.
+R: Broken denture or lost crown | That is inconvenient. I can book the earliest appointment for you. Is this causing pain or bleeding?
+P: These are drafts for discussion with your dentists, not clinical guidance.
+H2[test-the-rules-before-launch]: Test the rules before launch
+OL:
+- Write twenty realistic urgent messages, including misspellings and casual phrasing.
+- Send each to the assistant in the Testing Studio.
+- Check that tier 1 messages always produce the emergency-services wording.
+- Check that tier 2 messages give the right number and alert the team.
+- Check that ordinary messages such as 'do you whiten teeth?' do not trigger emergency wording.
+- Test at night, and check the on-call person really receives the alert.
+- Repeat after every change to your instructions.
+P: Repeat the test every quarter and after any change to your emergency arrangements.
+H2[a-sample-conversation]: A sample conversation
+TABLE:
+H: Speaker | Message
+R: Visitor | my tooth is killing me and my cheek is swollen, its 10pm
+R: Assistant | I am sorry you are in pain. Swelling can be serious. If you have trouble breathing or swallowing, or the swelling is spreading to your eye or neck, call emergency services now. Otherwise please call our emergency line on [number]. I have alerted our on-call dentist and they will look for your call. Can I take your name and mobile number in case we need to reach you?
+R: Visitor | Sam, 555-0144
+R: Assistant | Thank you, Sam. I have passed everything to the team. If anything gets worse, please do not wait: call emergency services.
+P: The assistant did not say what the swelling was, did not tell Sam what to take and did not promise a time. It gave safety guidance, an emergency line, an alert and a minimal contact capture. Your clinical lead should write and approve every line like these.
+H2[review-after-every-real-emergency]: Review after every real emergency
+P: Whenever an emergency conversation happens, review it the next day with the on-call dentist: did the wording help, did the alert arrive quickly, was the patient seen appropriately, and what would you change? Adjust the triggers and wording, and record the change. Real cases teach more than any test list, and a short review keeps the process safe as your practice and services change.
+H2[frequently-asked-questions]: Frequently asked questions
+FAQ:
+Q: Can a chatbot triage dental emergencies?
+A: It should not. It should recognise urgent wording, give your approved instructions, alert your team and never diagnose or reassure.
+Q: What should the chatbot say for a life-threatening symptom?
+A: Tell the visitor to contact emergency services now, in plain words approved by your clinical lead.
+Q: How do I handle emergencies out of hours?
+A: Provide your emergency line or service, alert the on-call person and offer the first appointment next morning, being honest about what you can do.
+Q: Should the chatbot ask about symptoms?
+A: Only in general terms so the team can prioritise. Avoid detailed medical history in an open chat.
+Q: How do I make sure someone sees the alert?
+A: Use more than one route, send to a person who is on duty, and test it regularly.
+Q: Who writes the emergency wording?
+A: Your clinical lead. The assistant follows the wording; it does not decide clinical questions.
+P: See how the [AI assistant](/product/ai-assistant) is built to hand over rather than guess, try a test conversation in the [playground](/playground) and read [AI chatbots for dental practices](/blog/ai-patient-scheduling-dental-practices).
+H2[further-reading]: Further reading
+UL:
+- [Google Search Central: creating helpful, people-first content](https://developers.google.com/search/docs/fundamentals/creating-helpful-content): What Google looks for in useful pages.

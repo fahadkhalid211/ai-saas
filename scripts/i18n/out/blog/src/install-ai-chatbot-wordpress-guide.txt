@@ -1,0 +1,96 @@
+TITLE: How to Add an AI Chatbot to WordPress: Plugin and Code Methods
+SEO: How to Add an AI Chatbot to WordPress | Crescelo
+DESC: Step-by-step ways to install an AI chatbot on WordPress with a plugin, a theme footer or a child theme, plus caching, speed and troubleshooting tips.
+EXCERPT: Step-by-step ways to install an AI chatbot on WordPress with a plugin, a theme footer or a child theme, plus caching, speed and troubleshooting tips.
+CLUSTER: Implementation Guides
+MOD: 2026-09-27
+P: WordPress powers a large share of small business websites, and adding an AI chatbot to it is one of the easiest installations you will do. The chatbot itself lives on the vendor's servers. Your site only needs a small snippet that loads it. This guide shows three ways to add that snippet, how to handle caching plugins, how to check the effect on speed and what to do when the chat does not appear.
+P: If you have not chosen a chatbot yet, start with [how an AI website assistant works](/blog/ai-website-assistant). If you already have the snippet from your dashboard, read on.
+H2[before-you-install-get-your-embed-snippet]: Before you install: get your embed snippet
+P: Every chatbot product gives you a short snippet of code, usually a single `script` tag that looks like a web address wrapped in HTML. In Crescelo you find it on the Overview page under 'Add to website', or under the Deploy button in the top bar. Copy it exactly. Do not edit the assistant ID in it, because that ties the chat to your account and your content.
+P: Also finish the preparation first: load your services, prices and policies and test the assistant in the testing area. The order matters, because the chat becomes public the moment the snippet goes live. The full preparation list is in our [step-by-step guide to adding an AI chatbot](/blog/add-ai-chatbot-to-your-website).
+H2[method-1-a-header-and-footer-plugin-easiest-and-safest]: Method 1: A header and footer plugin (easiest and safest)
+P: This is the best method for most people because it survives theme changes and does not touch code files.
+OL:
+- In WordPress, go to Plugins, then Add New Plugin.
+- Search for a plugin that inserts headers and footers, such as one named 'Insert Headers and Footers' or 'WPCode'. Choose a well-maintained one with recent updates and many active installations.
+- Install and activate it.
+- Open its settings. Find the box labelled 'Scripts in Footer' or add a new footer snippet.
+- Paste the snippet from your chatbot dashboard and save.
+- Visit your site in a private browser window. The chat bubble should appear within a few seconds.
+P: Advantages: no theme edits, easy to switch off, works with block themes. Disadvantage: one more plugin to keep updated.
+H2[method-2-paste-into-the-theme-footer]: Method 2: Paste into the theme footer
+P: If you prefer not to add a plugin, place the snippet in your theme's footer file just before the closing body tag.
+OL:
+- Go to Appearance, then Theme File Editor. On some sites this is disabled for safety; if so, use Method 1 or Method 3.
+- Select the file called Theme Footer (footer.php).
+- Find the closing `</body>` tag. Paste the snippet on the line above it.
+- Click Update File.
+NOTE: A theme update can overwrite this change. To avoid that, use a child theme (Method 3) or the plugin method. Always take a backup before editing theme files.
+H2[method-3-a-child-theme-best-for-developers]: Method 3: A child theme (best for developers)
+P: A child theme keeps your customisations separate from the main theme so updates do not erase them. Add the snippet in the child theme's functions file using the standard hook that prints code in the footer.
+UL:
+- Create or open your child theme's functions.php.
+- Register a function on the wp_footer action that prints the snippet.
+- Save and check the front end.
+- Optionally, wrap it so it only runs on selected pages, such as your services and contact pages, using WordPress's conditional tags.
+P: This method gives you the most control, including hiding the chat on checkout, account or landing pages where it would distract from the main call to action.
+H2[block-themes-and-the-site-editor]: Block themes and the Site Editor
+P: Newer 'block themes' do not have a classic footer.php. Use the plugin method, or add a Custom HTML block to the site footer template in the Site Editor. Open Appearance, then Editor, then Patterns or Templates, edit the footer, add a Custom HTML block and paste the snippet. Save and test.
+H2[caching-optimisation-and-security-plugins]: Caching, optimisation and security plugins
+P: Most WordPress problems with third-party widgets come from a plugin that changes how scripts load.
+TABLE:
+H: Symptom | Likely cause | What to try
+R: Chat not visible after install | Page cache serving the old page | Clear the site cache and the CDN cache, then reload in a private window
+R: Chat appears late or flickers | Script delayed by an optimisation plugin | Exclude the chat script from 'delay JavaScript' settings, or accept a short delay for speed
+R: Chat blocked with a console error | Content security policy or firewall rule | Allow the chatbot's domain for scripts and connections in your security plugin
+R: Chat appears twice | Snippet added in two places | Remove one copy from the plugin or theme
+R: Chat hidden behind other elements | Another fixed element has a higher layer | Adjust the offset in the widget's position settings
+H2[check-the-effect-on-speed]: Check the effect on speed
+P: A widget adds some weight, so measure it. Run your key pages through a tool such as PageSpeed Insights before and after installing and compare the main numbers. A well-built widget loads after your page content, so it should not delay what visitors see first. If you see a large drop, exclude the chat from pages where it is not needed or check that the script loads asynchronously. Our note on the [performance of embedded chat widgets](/blog/performance-optimization-embedded-chat-widgets) explains what to look for.
+H2[woocommerce-and-membership-sites]: WooCommerce and membership sites
+P: On shops and membership sites, decide where the chat helps. It is useful on product and pricing pages and on the contact page. It can distract on the checkout page, where you want a visitor to finish paying. Conditional loading in a child theme, or the page targeting feature of a header and footer plugin, lets you show the chat on some pages only.
+H2[keeping-the-assistant-accurate-as-your-site-changes]: Keeping the assistant accurate as your site changes
+P: Your WordPress pages change: prices, hours, offers. The chatbot only knows what you gave it. If your product can read your website address, re-index after big changes. Otherwise re-upload the changed documents. Put a reminder in your calendar to review the assistant's conversations weekly; our guide to [reviewing chatbot conversations](/blog/audit-website-chatbot-conversations) shows what to look for.
+H2[troubleshooting-checklist]: Troubleshooting checklist
+OL:
+- Confirm the snippet is exactly as copied, including the assistant ID.
+- Confirm it appears in the page source: view the page source and search for the snippet.
+- Clear the site, browser and CDN caches.
+- Temporarily disable optimisation plugins to see if one is blocking it.
+- Open the browser console (right-click, Inspect, Console) and look for red errors mentioning the chat domain.
+- Test in a private window with extensions off. Some ad blockers hide chat widgets.
+- Check the assistant is switched on and the domain is allowed in its settings.
+H2[using-google-tag-manager-instead]: Using Google Tag Manager instead
+P: If you already manage scripts with Google Tag Manager, you can load the chatbot from there. Create a new tag of the 'Custom HTML' type, paste the snippet, set the trigger to 'All Pages' (or to specific pages) and publish the container. This keeps all your third-party scripts in one place and makes it easy to switch the chat on or off without touching WordPress. One caution: if your visitors must consent before third-party scripts run, wire the trigger to your consent tool so the chat only loads after consent where the law requires it.
+H2[wordpress-multisite-and-staging-sites]: WordPress multisite and staging sites
+P: On a multisite network, add the snippet in each subsite, or in a network-wide must-use plugin if every site should show the same assistant. Use a separate assistant for each brand or language site so the knowledge stays clean. On a staging copy of your site, install the snippet only if you want to test; otherwise remove it before pushing to production, or you may count test conversations in your statistics.
+H2[cookie-banners-and-consent]: Cookie banners and consent
+P: Many WordPress sites use a consent plugin. A chat widget may store an identifier in the visitor's browser so a conversation continues after a reload. Describe this in your cookie policy and, where the law requires consent for non-essential storage, configure your consent plugin to control the chat script. Vendors differ on whether the identifier is strictly necessary; ask yours, and read the [GDPR checklist for website chatbots](/blog/website-chatbot-gdpr-checklist) before you go live in Europe.
+H2[rolling-back-safely]: Rolling back safely
+P: If anything goes wrong, undoing the change should take seconds. With the plugin method, empty the footer box and save. With a theme edit, remove the line you pasted. With Tag Manager, pause the tag. Because the chatbot lives on the vendor's servers, removing the snippet removes it from the site instantly, and your assistant, content and conversations remain safe in your dashboard.
+H2[tips-for-shops-bookings-and-lead-generation-sites]: Tips for shops, bookings and lead-generation sites
+UL:
+- **Service businesses:** show the chat on the services, pricing and contact pages, and connect booking so visitors can reserve a time inside it.
+- **Shops:** use it for delivery, returns and product questions, and hide it on the checkout page.
+- **Lead-generation sites:** enable lead capture so every enquiry arrives by email with the conversation attached.
+- **Membership and course sites:** load your course outline and FAQ into the knowledge base to answer 'what is included' questions.
+P: The [lead capture feature](/product/lead-capture) and [appointment booking feature](/product/appointment-booking) pages explain how each works.
+H2[frequently-asked-questions]: Frequently asked questions
+FAQ:
+Q: What is the easiest way to add a chatbot to WordPress?
+A: Use a header and footer plugin and paste your chatbot's snippet into the footer box. It does not touch theme files and survives theme updates.
+Q: Do I need a special WordPress chatbot plugin?
+A: Not necessarily. Many chatbot products give you a snippet that works on any site, so a general footer plugin is enough. Some vendors also provide their own plugin.
+Q: Will a chatbot slow down my WordPress site?
+A: It can add some weight. A widget that loads after your content has little effect on what visitors see first. Measure with a speed testing tool before and after.
+Q: Why can I not see the chat after installing?
+A: Most often the page cache is serving the old version, or an optimisation plugin is delaying or blocking the script. Clear caches and check the plugin settings.
+Q: Can I show the chat on some pages only?
+A: Yes. Use a child theme with conditional tags, or the page targeting options in a header and footer plugin.
+Q: Does it work with page builders like Elementor?
+A: Yes. Use the footer plugin method, or add an HTML widget to a global footer template in the builder.
+P: Once your snippet is live, test a full booking or lead in your own site. If you need help, the [help centre](/support) and [support tickets](/support/contact) are there. New to this? [Start a free trial](/login?mode=register) and use the [playground](/playground) to rehearse first.
+H2[further-reading]: Further reading
+UL:
+- [Google Search Central: creating helpful, people-first content](https://developers.google.com/search/docs/fundamentals/creating-helpful-content): What Google looks for in useful pages.

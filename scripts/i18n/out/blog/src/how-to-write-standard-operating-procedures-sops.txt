@@ -1,0 +1,117 @@
+TITLE: How to Write Standard Operating Procedures (SOPs) Your Team Will Actually Follow
+SEO: How to Write Standard Operating Procedures (SOPs) Your Team
+DESC: Learn to write clear SOPs: choose which processes to document, capture how work is really done, use simple templates, test with a newcomer and keep them.
+EXCERPT: Learn to write clear SOPs: choose which processes to document, capture how work is really done, use simple templates, test with a newcomer and keep them.
+CLUSTER: 
+MOD: 2026-09-27
+P: In many small businesses, the most important knowledge lives in someone's head: how to open the shop, how to handle a refund, which supplier to call when the boiler part is late. That works until the person is ill, leaves or gets too busy to answer the fifth question of the day. Standard operating procedures, or SOPs, are written instructions for repeatable tasks. Done well, they make training faster, reduce mistakes, keep quality consistent and free the owner from being the only source of answers. Done badly, they become a thick manual that nobody opens. This guide shows how to write SOPs people use: which processes to document first, how to capture what really happens, a simple template, how to write clearly, how to test with a newcomer, where to store the documents and how to keep them current. As a bonus, the same documents make an excellent knowledge base for an AI assistant.
+H2[step-1-choose-what-to-document-first]: Step 1: Choose what to document first
+P: Do not try to write everything. Start with processes that are frequent, risky or often asked about.
+TABLE:
+H: Criterion | Examples
+R: Done often | Opening and closing, taking bookings, invoicing
+R: Costly if done wrong | Refunds, safety checks, handling personal data
+R: Only one person knows | Ordering from key suppliers, payroll steps
+R: New staff struggle with | Using the till, handling complaints
+R: Customers ask about | Cancellations, deposits, aftercare
+P: Pick five. Finishing five useful SOPs beats starting fifty.
+H2[step-2-capture-how-the-work-is-really-done]: Step 2: Capture how the work is really done
+OL:
+- Ask the person who does the task best to walk you through it while you watch.
+- Write down every step, including the ones they do without thinking.
+- Note the tools used, the decisions made and what can go wrong.
+- Take screenshots or photos where they help.
+- Ask: what do new people usually get wrong?
+P: Recording a screen or phone video while they work is a quick way to gather the details. You can turn it into text afterwards.
+H2[step-3-use-a-simple-template]: Step 3: Use a simple template
+TABLE:
+H: Section | What to write
+R: Title | The task in plain words: 'Process a refund'
+R: Purpose | One sentence on why it matters
+R: Who does it | Role, not name
+R: When | The trigger: 'When a customer asks for money back'
+R: What you need | Tools, logins, forms
+R: Steps | Numbered, one action each
+R: Common mistakes | What to avoid
+R: If something goes wrong | Who to ask or what to do
+R: Last reviewed | Date and owner
+P: Keep to one page where possible. If a process needs more, split it into smaller SOPs and link them.
+H2[step-4-write-clearly]: Step 4: Write clearly
+UL:
+- Start each step with a verb: 'Open', 'Check', 'Send'.
+- One action per step.
+- Use the words your team uses, and define any jargon.
+- Say what good looks like: 'The receipt shows the refund amount and today's date.'
+- Include exact wording for customer messages where consistency matters.
+- Use short sentences and lists rather than paragraphs.
+- Add a screenshot only if it clarifies.
+P: Decisions need a rule. Instead of 'use judgement', write 'if the amount is under $50, approve it; if it is over, ask the manager'.
+H2[step-5-test-it-with-a-newcomer]: Step 5: Test it with a newcomer
+P: The real test of an SOP is whether someone who has never done the task can follow it alone. Give the document to a new or unrelated team member and watch without helping. Note every place they hesitate or ask a question, then fix those steps. Repeat until they succeed. Most first drafts fail this test; that is normal and is exactly what the test is for.
+H2[step-6-store-sops-where-people-will-find-them]: Step 6: Store SOPs where people will find them
+UL:
+- Use one shared location, such as a shared drive or a wiki, with clear names.
+- Organise by area: front desk, operations, finance.
+- Make them searchable, and link them from the places where work happens.
+- Keep a single current version; archive old ones instead of leaving copies around.
+- Give access to the people who need it, and restrict who can edit.
+P: If staff regularly ask the same questions, an internal assistant trained on your SOPs can answer them instantly. Crescelo's knowledge base can ingest documents and pages; test it in the [playground](/playground). For customer-facing documents, see [preparing your service menu and price list](/blog/prepare-service-menu-pricing-docs-rag).
+H2[step-7-assign-owners-and-review-dates]: Step 7: Assign owners and review dates
+TABLE:
+H: Item | Recommendation
+R: Owner | One named person responsible for each SOP
+R: Review | Every six to twelve months, and whenever the process changes
+R: Change log | A short note of what changed and when
+R: Retirement | Delete or archive SOPs for processes you no longer do
+P: A wrong SOP is worse than none, because people follow it confidently. Owners and review dates prevent slow decay.
+H2[step-8-train-with-sops-and-use-feedback]: Step 8: Train with SOPs, and use feedback
+UL:
+- Use SOPs as the training script for new hires and check off tasks as they are learned.
+- Encourage staff to suggest improvements; they know where the steps are unclear.
+- When a mistake happens, fix the SOP as well as the mistake.
+- Celebrate updates so keeping documents current becomes a habit.
+H2[common-mistakes]: Common mistakes
+UL:
+- Writing documents no one asked for.
+- Describing the ideal process rather than the real one.
+- Long paragraphs instead of steps.
+- No owner, so nothing is updated.
+- Hiding them in a location no one checks.
+- Never testing with a newcomer.
+H2[an-example-sop]: An example SOP
+TABLE:
+H: Section | Example
+R: Title | Process a refund
+R: Purpose | Return money quickly and consistently while protecting the business
+R: Who | Front desk staff
+R: When | A customer asks for money back within 14 days
+R: Steps | 1. Ask for the order or booking number. 2. Check it in the system. 3. If the amount is under $50, approve it. 4. Refund to the original payment method. 5. Send the refund confirmation message. 6. Note the reason in the log.
+R: Common mistakes | Refunding to a different method; forgetting the log entry
+R: If unsure | Ask the manager before approving over $50
+P: Notice how short it is. A new team member can follow it on their first day, and the manager can change the limit in one place when policy changes.
+H2[rolling-sops-out-to-the-team]: Rolling SOPs out to the team
+OL:
+- Explain why: fewer interruptions, easier training and more consistent service.
+- Introduce one SOP at a time, and let people use it for a week before adding another.
+- Ask the team what is unclear and fix it straight away.
+- Name a champion for each area who keeps the documents current.
+- Review the set together every quarter and retire what is no longer used.
+P: People follow procedures they helped shape. Involving the team in writing and improving them is the difference between a living system and a binder on a shelf.
+H2[frequently-asked-questions]: Frequently asked questions
+FAQ:
+Q: What is an SOP?
+A: A standard operating procedure is a written set of steps for carrying out a repeatable task the same way each time.
+Q: How many SOPs does a small business need?
+A: Start with the five most important processes and add more as needs arise.
+Q: How long should an SOP be?
+A: Ideally one page. Split larger processes into linked SOPs.
+Q: How do I keep SOPs up to date?
+A: Assign an owner, set a review date and update whenever the process changes.
+Q: Can SOPs be used for an AI assistant?
+A: Yes. Clear, current documents are also the best source for a chatbot's knowledge base, provided customer-facing ones are separate from internal ones.
+Q: What is the best format?
+A: Numbered steps with a short purpose and a list of common mistakes, plus screenshots where useful.
+P: See how [reducing repeated questions helps your team](/blog/prevent-front-desk-burnout-ai), the [knowledge base feature](/product/knowledge-base), [pricing](/pricing) and [how to create a customer onboarding process](/blog/how-to-create-customer-onboarding-process).
+H2[further-reading]: Further reading
+UL:
+- [Google Search Central: creating helpful, people-first content](https://developers.google.com/search/docs/fundamentals/creating-helpful-content): What Google looks for in useful pages.

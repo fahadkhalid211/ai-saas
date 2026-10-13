@@ -1,0 +1,99 @@
+TITLE: Turning a YouTube Video Into Answers Your AI Assistant Can Use
+SEO: YouTube Transcript Chatbot Knowledge Base | Crescelo
+DESC: How to add video knowledge to a chatbot: how transcripts are extracted, which videos work, cleaning errors, what is lost, copyright, and how to check answers.
+EXCERPT: How to add video knowledge to a chatbot: how transcripts are extracted, which videos work, cleaning errors, what is lost, copyright, and how to check answers.
+CLUSTER: Knowledge Bases and RAG
+MOD: 2026-09-27
+P: Many small businesses have more knowledge in video than in writing. A hairdresser explains aftercare on a short clip, a physiotherapist demonstrates exercises, a software company records a walkthrough for every feature. That knowledge is valuable, but a visitor asking a question on your website will not scroll through twenty videos to find the thirty seconds that answer it. An AI assistant can, if the words in those videos are turned into searchable text. That is what transcript ingestion does: it retrieves the spoken words of a video as text, splits them into passages and adds them to the assistant's knowledge, so a question about aftercare finds the part of the video where you explained it. This guide explains how it works, which videos suit it, what can go wrong, how to clean up the results, what is lost when a video becomes text, the copyright points to respect and how to verify answers. In Crescelo, you paste a YouTube link into the knowledge base and the video's transcript becomes searchable knowledge.
+H2[how-it-works]: How it works
+OL:
+- You paste a video link into the knowledge base.
+- The platform checks the link and looks up the video's title and channel.
+- It retrieves the transcript, using the captions that exist for the video, whether written by the creator or generated automatically.
+- It splits the text into passages and indexes them for search by meaning and keywords.
+- When a visitor asks a question, the assistant retrieves the best passages and answers from them.
+P: If a video has no captions available, there is nothing to retrieve, and the import will fail or return little. Videos that have been made private, restricted or removed cannot be read.
+H2[which-videos-work-well]: Which videos work well
+TABLE:
+H: Good candidates | Poor candidates
+R: Talking-head explanations of services, aftercare, policies | Music videos or videos with little speech
+R: Step-by-step tutorials narrated aloud | Silent screen recordings with captions only in the picture
+R: Recorded webinars and Q and A sessions | Highly visual content where the words do not carry the meaning
+R: Product walkthroughs with clear narration | Very long videos with a few useful minutes and much chat
+R: Videos you made or have permission to use | Other people's videos you have no right to use
+P: A helpful test: would the video still make sense if you only heard it? If yes, the transcript will carry most of it.
+H2[quality-issues-to-expect]: Quality issues to expect
+UL:
+- **Automatic captions make mistakes,** especially with product names, brand names, place names, technical terms and strong accents. Check for these.
+- **No punctuation or speaker labels** in some captions, which makes passages harder to read; the assistant copes, but misinterpretation is more likely.
+- **Filler and digressions** dilute the useful content.
+- **Out-of-date statements,** such as an old price mentioned in passing in a video from two years ago.
+- **Visual-only information,** for example 'as you can see here', which the transcript cannot explain.
+TABLE:
+H: Problem | Fix
+R: Wrong names or terms | Correct the captions on the video, then re-import; or add a short text document with the correct terms
+R: Old prices in a video | Do not rely on the video for prices; keep prices in one current document and remove the outdated video
+R: Rambling sections | Publish a short, focused video, or write a summary document
+R: Visual instructions | Add a written step list beside the video
+H2[text-is-better-for-facts-video-for-explanation]: Text is better for facts, video for explanation
+P: Use video for how-to and explanation, where speech carries the meaning, such as how to care for a new tattoo or how to set up a feature. Use written documents for facts that change or must be exact: prices, hours, policies, contact details. If a video mentions a price, the assistant may quote it without knowing it changed. Keep exact facts in a single, dated document, and instruct the assistant, in your notes, to prefer that document. See [preparing your service menu and price list](/blog/prepare-service-menu-pricing-docs-rag).
+H2[improve-results-before-importing]: Improve results before importing
+OL:
+- Check that captions exist and read them for errors.
+- Fix names, prices and terms in the captions, or add a supporting document.
+- Use clear, descriptive titles; the title helps the assistant know what the video covers.
+- Trim long intros in future videos and state the topic early.
+- Split long videos into shorter ones by topic where practical.
+H2[copyright-and-permission]: Copyright and permission
+UL:
+- Import videos you made, or where you have permission to use the content.
+- A video being public on YouTube does not mean its content is free to reuse in your product.
+- Do not import competitors' or third parties' videos in ways that breach their rights.
+- If a video shows people, consider whether your privacy notices cover using the speech in an assistant.
+- Check YouTube's terms and the rights position for your situation.
+P: This is general information, not legal advice.
+H2[verify-the-answers]: Verify the answers
+TABLE:
+H: Test | Example | What to check
+R: A question answered in the video | How long should I keep the dressing on? | The answer matches what you said
+R: A question spread across two videos | Can I exercise after the procedure? | The answer is consistent
+R: A question the video does not cover | Is it safe during pregnancy? | The assistant says it does not know and offers a person
+R: A term likely to be mis-transcribed | Your product's name | It is spelled and used correctly
+P: Read the transcript once. It takes a few minutes and reveals most problems. Then run your test questions and correct the source if answers are wrong. Watch the unanswered list for questions people ask that the videos do not cover; see [unanswered questions are a to-do list](/blog/unanswered-chat-questions-knowledge-gaps).
+H2[health-and-safety-content]: Health and safety content
+P: If your videos give health, safety or legal guidance, be cautious. The assistant should present them as general information from your business, not personal advice, and hand over questions about individual circumstances to a qualified person. Keep clinical or safety-critical guidance in reviewed written form as well, so you can confirm it is accurate and current.
+H2[common-mistakes]: Common mistakes
+UL:
+- Importing videos without captions.
+- Trusting automatic captions for names and numbers.
+- Relying on videos for prices and hours.
+- Leaving old videos that contradict your current practice.
+- Importing content you have no rights to.
+- Never testing the results.
+H2[a-practical-workflow]: A practical workflow
+OL:
+- Choose the five videos customers most often need: aftercare, how it works, what to expect.
+- Check captions and correct names and numbers.
+- Import them one at a time and ask two or three questions about each.
+- Note any gaps and write short text summaries for the important points.
+- Review the results after a week using the unanswered questions list.
+P: Starting small keeps the effort low and lets you see quickly which videos actually help visitors.
+H2[frequently-asked-questions]: Frequently asked questions
+FAQ:
+Q: Can Crescelo learn from a YouTube video?
+A: Yes. Paste the link into the knowledge base and the video's transcript becomes searchable knowledge for the assistant.
+Q: What if the video has no captions?
+A: There is no transcript to retrieve, so it cannot be used. Add captions or write a document with the content.
+Q: Are automatic captions accurate?
+A: Often, but not always, especially for names and technical terms. Check them before relying on the video.
+Q: Should I put prices in videos?
+A: Avoid it. Keep exact prices in one current document, because a video's price cannot be updated without re-recording.
+Q: Can I use other people's videos?
+A: Only with permission. A public video is not automatically free to reuse.
+Q: How do I check the assistant's answers?
+A: Read the transcript, ask questions the video answers and questions it does not, and confirm the assistant declines to guess.
+P: See the [knowledge base feature](/product/knowledge-base), try it in the [playground](/playground) and read [importing your website](/blog/dynamic-web-scraping-sitemap-ingestion-rag).
+H2[further-reading]: Further reading
+UL:
+- [Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks (Lewis et al.)](https://arxiv.org/abs/2005.11401): The original research paper behind retrieval-augmented generation.
+- [Google Search Central: creating helpful, people-first content](https://developers.google.com/search/docs/fundamentals/creating-helpful-content): What Google looks for in useful pages.

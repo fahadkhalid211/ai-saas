@@ -1,0 +1,108 @@
+TITLE: Explaining Legal Fees in Chat: Hourly, Fixed and Contingency Without Quoting Cases
+SEO: Explaining Legal Fees in Chat | Crescelo
+DESC: How law firms can explain fee structures in a website chat: hourly, fixed, retainer and contingency models, what to say and avoid, estimates, transparency.
+EXCERPT: How law firms can explain fee structures in a website chat: hourly, fixed, retainer and contingency models, what to say and avoid, estimates, transparency.
+CLUSTER: Professional Services
+MOD: 2026-09-27
+P: 'How much will it cost?' is the question prospective clients most fear asking and most want answered. For law firms it is also a difficult one: costs depend on the matter, the other side and how long things take. Firms that dodge the question lose enquiries to competitors that answer, and firms that answer carelessly create disputes. A website chat can explain how the firm charges in plain language, at any hour, without quoting for a specific case, and lead prospects to a consultation where a proper estimate can be given. This guide explains how to do that: the fee models and how to describe them, what to say and never say, how to handle requests for numbers, how to talk about estimates and how to keep the chat consistent with your engagement terms.
+NOTE: Rules on fee disclosure, advertising fees and contingency arrangements vary by jurisdiction and profession. This is general information, not legal advice. Have your ethics or compliance partner approve the wording.
+H2[the-common-fee-models]: The common fee models
+TABLE:
+H: Model | How it works | Typical use
+R: Hourly | Client pays for time spent, at rates by seniority | Complex or uncertain matters
+R: Fixed fee | An agreed price for a defined scope | Routine work: wills, simple conveyancing, incorporation
+R: Capped fee | Hourly, up to an agreed maximum unless scope changes | Where the client needs a ceiling
+R: Retainer | Regular payment for ongoing access or work | Business clients, ongoing advice
+R: Contingency or conditional fee | Fee depends on the outcome, where permitted | Some injury and claim matters
+R: Free initial consultation | Short first meeting without charge | Marketing and assessment
+P: Describe only the models your firm offers, with the terms you have approved.
+H2[explain-in-plain-words]: Explain in plain words
+TABLE:
+H: Jargon | Plain wording
+R: We bill on a time and materials basis | You pay for the time we spend on your matter, at our hourly rates.
+R: Flat fee engagement | We agree a price in advance for a defined piece of work.
+R: Contingent on recovery | You pay nothing unless your claim succeeds. If it does, our fee is taken as a percentage of what is recovered, plus certain costs, as set out in our agreement.
+R: Disbursements | Costs we pay to third parties on your behalf, such as court fees, which are extra.
+P: If a model has caveats, such as costs that clients may still owe, state them. Hidden caveats cause the disputes you want to avoid.
+H2[what-the-assistant-can-and-cannot-say]: What the assistant can and cannot say
+TABLE:
+H: Can say | Must not say
+R: How the firm charges, in general | What a specific matter will cost
+R: Published fixed fees for routine services | That a case will be cheap, quick or 'straightforward'
+R: That estimates are given after a consultation | That the fee is guaranteed unless it is written in an engagement letter
+R: Typical costs the firm publishes and stands behind | Comparisons that disparage other firms
+R: That additional costs may apply, and which types | Anything that contradicts the engagement terms
+P: Write these limits into the instructions and test with questions like 'What will a divorce cost me?'
+H2[when-a-prospect-asks-for-a-number]: When a prospect asks for a number
+P: Give them something useful without promising. A good answer names the model, gives a published range if you have one, explains what affects the cost and offers the next step. Example: 'For a straightforward uncontested divorce we charge a fixed fee from $X. It can be higher if there are children or property to divide, and we confirm the fee in writing after a short consultation. Would you like to book one?'
+UL:
+- Give ranges only if you can honour them.
+- Say what moves the price.
+- Offer a consultation for a firm estimate.
+- Never contradict what a lawyer will say later.
+H2[estimates-updates-and-transparency]: Estimates, updates and transparency
+P: Fee disputes often grow from surprise. Encourage a habit of transparency, and have the assistant reflect it: written estimates after the consultation, updates when costs approach the estimate and agreement before scope changes. The assistant can explain your practice in general terms so that expectations are set from the first contact.
+H2[free-consultations-be-precise]: Free consultations: be precise
+UL:
+- State the length of the free consultation and what it covers.
+- Say what is not included, such as detailed advice or document review.
+- Explain how the consultation leads to an engagement.
+- Do not describe a consultation as free if any part is charged.
+P: Booking the consultation in the chat is the natural next step. Crescelo's built-in picker offers slots from your opening hours with one slot length; set it to your consultation length. See [AI appointment booking](/blog/ai-appointment-booking).
+H2[contingency-fees-extra-care]: Contingency fees: extra care
+P: Where contingency fees are permitted, describe them accurately: when the fee is payable, the percentage in general terms as approved, and that clients may still be responsible for certain costs. Some jurisdictions restrict what can be said in advertising about contingency arrangements. Have the wording approved and keep it consistent across your website, your chat and your engagement letter.
+H2[consistency-with-your-documents]: Consistency with your documents
+OL:
+- Put the fee explanations in one approved document per model.
+- Load them into the assistant's knowledge, dated.
+- Update them whenever rates or terms change.
+- Remove old versions.
+- Review transcripts for statements that go beyond the document.
+P: See [legal intake automation and conflict checks](/blog/legal-intake-automation-conflict-checks) and [confidentiality and privilege with an AI assistant](/blog/confidentiality-attorney-client-privilege-ai-chat).
+H2[a-sample-conversation]: A sample conversation
+TABLE:
+H: Speaker | Message
+R: Visitor | How much would it cost to write a will?
+R: Assistant | We offer wills for a fixed fee, starting from $X for a single person and $Y for a couple, which covers the meeting, drafting and signing. It can be higher for complex situations such as trusts or overseas property, and we confirm the fee in writing before we begin. I am an AI assistant and cannot give legal advice. Would you like to book a short call to talk through what you need?
+H2[measure-it]: Measure it
+TABLE:
+H: Metric | Why
+R: Fee questions asked and consultations booked | Conversion
+R: Handovers on fee questions | Where the wording falls short
+R: Complaints about fee surprises | Whether transparency works
+R: Enquiries lost after fee answers | Whether pricing is competitive or unclear
+H2[a-quick-checklist-for-your-fee-documents]: A quick checklist for your fee documents
+UL:
+- One page per fee model you actually use.
+- Plain-language description, with examples of what is and is not included.
+- Any published fixed fees, with the date they were last confirmed.
+- How estimates are given and updated.
+- What extra costs may apply, such as court fees or expert reports.
+- How to raise a concern about fees.
+P: These documents also serve as the source for your website's fees page, so the chat, the website and the engagement letter say the same thing. Consistency is your protection: when a client says 'your website told me...', you want the answer to be the same everywhere.
+H2[common-mistakes]: Common mistakes
+UL:
+- Letting the assistant say a matter will be cheap or quick.
+- Publishing fixed fees that only apply to simple cases without saying so.
+- Using jargon that clients do not understand.
+- Forgetting to mention extra costs.
+- Not updating fee documents when rates change.
+H2[frequently-asked-questions]: Frequently asked questions
+FAQ:
+Q: Can a chatbot explain legal fees?
+A: Yes, in general terms and from approved documents. It must not quote a fee for a specific matter.
+Q: Should the chatbot give prices?
+A: Only published fixed fees or ranges the firm will honour, with a note that a written estimate follows a consultation.
+Q: How do I explain contingency fees?
+A: In plain words, as your rules allow, including when the fee is payable and that some costs may still apply.
+Q: What about free consultations?
+A: State exactly what is included and how long it lasts.
+Q: How do I stop the chatbot promising a price?
+A: Write clear rules, test with tempting questions and review transcripts.
+Q: Who approves the fee wording?
+A: Your ethics or compliance partner, and it should match your engagement letters.
+P: Try a fee conversation on your own fee documents in the [playground](/playground), see the [AI assistant feature](/product/ai-assistant) and read [AI chatbots for law firms](/blog/ai-intake-scheduling-professional-services).
+H2[further-reading]: Further reading
+UL:
+- [EU AI Act, Article 50: transparency obligations](https://artificialintelligenceact.eu/article/50/): When people must be told they are talking to an AI.
+- [Google Search Central: creating helpful, people-first content](https://developers.google.com/search/docs/fundamentals/creating-helpful-content): What Google looks for in useful pages.

@@ -1,0 +1,109 @@
+TITLE: Roofing Leads After a Storm: Capturing Emergency Enquiries With Chat
+SEO: Roofing Leads After a Storm: Capturing Emergency Enquiries
+DESC: How roofers can handle the surge of enquiries after storms: fast answers, safe guidance, damage details, insurance questions, triage, honest lead times.
+EXCERPT: How roofers can handle the surge of enquiries after storms: fast answers, safe guidance, damage details, insurance questions, triage, honest lead times.
+CLUSTER: Home Services
+MOD: 2026-09-27
+P: After a storm, roofers get the busiest days of the year. Hail, high winds and heavy rain leave homeowners with leaks, missing tiles and worried phone calls, and they contact several contractors at once. The business that answers first, sounds organised and gives honest guidance usually gets the job. It is also when the phone cannot keep up, and where door-knocking storm chasers move in. A website chat that answers instantly, gathers the details you need, gives safe guidance and prioritises leads by urgency lets a small roofing company handle the surge without dropping calls. This guide explains how to set one up: what to ask, how to triage, what to say about safety, insurance and price, how to be honest about lead times and how to follow up.
+NOTE: Safety, insurance and licensing rules differ by place. Your business must decide what it can say. Never let the assistant give advice that could put someone on a roof or near power lines.
+H2[what-storm-customers-need-first]: What storm customers need first
+TABLE:
+H: Customer thinks | What they need
+R: Is my home safe right now? | Simple safety guidance and reassurance that they should not climb on the roof
+R: Can you come quickly? | An honest lead time and a way to get on the list
+R: Can you stop the water coming in? | Whether you offer emergency tarping and when
+R: What about my insurance? | How you work with claims, without giving legal or insurance advice
+R: Can I trust you? | Licence, insurance and local references you can state truthfully
+H2[safe-guidance-in-the-first-message]: Safe guidance in the first message
+UL:
+- Stay off the roof and away from damaged areas.
+- Stay clear of fallen power lines and treat every line as live; call the utility or emergency services.
+- If ceilings are bulging with water or there is structural damage, move to a safe room and call emergency services if anyone is at risk.
+- Move valuables away from leaks and place containers if it is safe.
+- Take photos from the ground for insurance, only if it is safe.
+P: Have your management approve this wording. A short, calm list is better than a long lecture. The assistant should never tell anyone to inspect the roof themselves.
+H2[the-details-to-capture]: The details to capture
+TABLE:
+H: Field | Why
+R: Address and postcode | Area check and dispatch
+R: What happened and when | Storm date, for claims and triage
+R: Damage seen: leak, missing shingles or tiles, tree on roof, sagging | Urgency and crew planning
+R: Is water coming in now? | Emergency versus routine
+R: Roof type and age if known | Materials and pricing
+R: Insurance claim planned or open | Process and paperwork
+R: Contact number and best time | Callback
+R: Photos (by reply or email) | Assess before visiting
+P: Ask one question at a time and stop when you have enough to place the lead. See [estimate requests and project scoping](/blog/estimate-requests-project-scoping-chat).
+H2[triage-who-gets-a-call-first]: Triage: who gets a call first
+TABLE:
+H: Level | Signs | Response
+R: 1 | Water actively entering, structural damage, tree through the roof | Alert on-call now; emergency tarp if you offer it
+R: 2 | Missing tiles or shingles, small leak that can be contained | Priority list; call within hours
+R: 3 | Inspection wanted, no active leak | Book an inspection slot
+R: 4 | Just browsing prices | Send information; follow up later
+P: A written triage rule keeps the office consistent when everyone is stressed. See [roofing emergency lead capture in AI chat](/blog/emergency-dispatch-workflows-ai-chat) for dispatch design and [instant lead routing](/blog/instant-lead-routing-chat).
+H2[insurance-questions]: Insurance questions
+P: Homeowners will ask about claims. The assistant can explain what your company does, for example that you provide a written estimate and photographs, and that the homeowner should contact their insurer about coverage. It must not say that a claim will be approved, advise on policy interpretation or encourage exaggeration. State your practice honestly: 'We can provide documentation for your claim. Your insurer decides coverage.'
+UL:
+- Never promise that insurance will pay.
+- Never offer to waive a deductible; in many places that is unlawful.
+- Explain how you document damage and provide estimates.
+- Refer disputes to a person.
+H2[be-honest-about-lead-times]: Be honest about lead times
+P: After a big storm, you may be booked for weeks. Saying so plainly earns more trust than a false promise. Put current lead times in the assistant's documents and update them daily during a surge: 'Emergency tarping is available within 24 hours. Full repairs are currently scheduled about three weeks out. I can add you to the list and call you when your slot is confirmed.' Customers appreciate honesty, and it filters out those who need a faster option so you do not waste their time.
+H2[storm-chasers-and-trust]: Storm chasers and trust
+P: Customers are wary of door-knockers and out-of-area crews. Local credentials matter: your address, years in business, licences, insurance and references. Put them in the assistant's knowledge so it can state them accurately, and link to reviews. See [social proof and reviews in AI chat](/blog/social-proof-reviews-ai-chat).
+H2[scheduling-inspections-and-estimates]: Scheduling inspections and estimates
+P: For non-emergency enquiries, offer inspection times in the chat. Crescelo's built-in picker offers slots from your opening hours with one slot length; set it to the inspection window you want. During a surge, reduce your booking hours to what your crews can honour, and update them daily. See [AI appointment booking](/blog/ai-appointment-booking) and [configuring availability rules](/blog/configure-calendar-sync-availability-rules).
+H2[alerts-and-follow-up]: Alerts and follow-up
+UL:
+- Emergency leads go to the on-call phone by text and email at once.
+- All leads land in a shared inbox with the conversation and a triage label.
+- Someone calls every lead back within the promised time; use the summary to start the call well.
+- Send a written confirmation of the plan, and keep customers updated when schedules move.
+P: See [webhook automations](/blog/webhook-automations-zapier-make-chat-events) for text alerts and [speed to lead](/blog/speed-to-lead-service-businesses).
+H2[measure-the-surge]: Measure the surge
+TABLE:
+H: Metric | Why
+R: Enquiries during the storm week and how many were answered within an hour | Coverage
+R: Leads by triage level | Workload mix
+R: Inspections booked and jobs won | Conversion
+R: Lead times quoted versus delivered | Honesty and planning
+R: Questions asked that the assistant could not answer | What to add before the next storm
+P: Afterwards, review the conversations and prepare a storm-response checklist for next time.
+H2[a-storm-response-checklist]: A storm-response checklist
+OL:
+- Update lead times and emergency policy in the assistant's documents.
+- Switch on alerts to the on-call phone.
+- Set booking hours to real capacity.
+- Brief the office on triage rules.
+- Post a short message on your website and profiles about current availability.
+- Review conversations twice a day in the first week.
+H2[a-worked-example-the-week-after-a-hailstorm]: A worked example: the week after a hailstorm
+P: A three-crew roofing company gets 140 enquiries in the four days after a hailstorm, against a normal ten a week. Before the chat, the office answered about half and returned the rest a day late. This time, the assistant answers every visitor at once, gives the safety guidance, asks the four key questions and labels each lead by level. Level 1 leads text the on-call manager. The office works down the level 2 list each morning, and the assistant offers inspection slots only on the days crews can honour. Lead times are updated daily in its documents: tarping within 24 hours, repairs about three weeks. Customers who cannot wait are told honestly, and several return when they have not found faster help elsewhere. The company books more inspections than it can complete in a month, and chooses jobs sensibly instead of drowning.
+TABLE:
+H: Before | With the chat
+R: About half of enquiries answered on the day | Every visitor answered at once
+R: Leads in one undifferentiated pile | Leads labelled by urgency
+R: Customers promised times the crews could not meet | Lead times stated honestly and updated daily
+R: Owner on the phone all day | Owner handles only levels 1 and 2 and the estimates
+H2[after-the-surge]: After the surge
+P: When demand drops, do three things. Follow up with every customer who did not book, in a friendly way, in case their situation changed. Ask completed customers for reviews. And write down what worked and what did not, so the next storm response starts from a checklist instead of a scramble. Keep the assistant's documents updated so that tomorrow's ordinary enquiries are not told about last week's emergency lead times.
+H2[frequently-asked-questions]: Frequently asked questions
+FAQ:
+Q: Can a chatbot handle roofing enquiries after a storm?
+A: Yes. It answers instantly, gives safe guidance, captures damage details, triages by urgency and alerts your team.
+Q: Should the chatbot talk about insurance?
+A: It can explain that you provide documentation and estimates and that the insurer decides coverage. It must not promise approval or advise on policy terms.
+Q: How do I stay honest about lead times?
+A: Put current lead times in the assistant's documents and update them daily during a surge.
+Q: Can it book roof inspections?
+A: Yes, with slots from your booking hours, at the length you set.
+Q: Is it safe to give roof advice by chat?
+A: Only simple safety guidance, such as staying off the roof and away from power lines. Never advise customers to inspect or repair the roof themselves.
+Q: How do I prioritise leads?
+A: Use a written triage rule: active leaks and structural damage first, then missing tiles, then inspections and browsers.
+P: Try a storm conversation with your own lead times and services in the [playground](/playground), see the [lead capture feature](/product/lead-capture) and [start a free trial](/login?mode=register).
+H2[further-reading]: Further reading
+UL:
+- [Google Search Central: creating helpful, people-first content](https://developers.google.com/search/docs/fundamentals/creating-helpful-content): What Google looks for in useful pages.

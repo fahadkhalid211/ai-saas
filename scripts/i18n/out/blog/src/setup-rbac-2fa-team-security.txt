@@ -1,0 +1,124 @@
+TITLE: Securing Your Chatbot Account: Team Roles, Two-Factor Authentication and Access Hygiene
+SEO: Securing Your Chatbot Account | Crescelo
+DESC: How to secure a chatbot workspace: least-privilege roles, two-factor authentication, strong sign-in, offboarding, API keys, audit trails and a checklist.
+EXCERPT: How to secure a chatbot workspace: least-privilege roles, two-factor authentication, strong sign-in, offboarding, API keys, audit trails and a checklist.
+CLUSTER: Implementation Guides
+MOD: 2026-09-27
+P: Your chatbot dashboard holds things worth protecting: your customers' conversations and contact details, the documents that make up your knowledge base, your booking calendar and, if you bring your own key, access to an AI provider account that can run up a bill. The account that controls all this is only as safe as its weakest login. Most real-world account compromises are not clever hacks: they are reused passwords, shared logins, former staff who still have access and owners without a second factor. This guide is a practical security guide for owners of a chatbot workspace: how to set roles so people have only the access they need, how two-factor authentication works and how to turn it on, how to sign in safely, how to handle joiners and leavers, how to protect API keys, how to use an audit trail and a checklist you can complete in an afternoon.
+H2[what-is-at-stake]: What is at stake
+TABLE:
+H: Asset | Risk if someone gets in
+R: Conversations and leads | Customers' personal data exposed; privacy law consequences
+R: Knowledge base | Content altered so the assistant says wrong things
+R: Assistant settings | Instructions changed; assistant misused
+R: Bookings and calendar | Appointments deleted or spammed
+R: AI provider key | Costs run up on your account
+R: Billing | Plan changes or cancellation
+P: The impact of a takeover is larger than most owners assume, because a chatbot sits in front of your customers.
+H2[least-privilege-give-people-only-what-they-need]: Least privilege: give people only what they need
+P: Roles restrict what each team member can view and change. The principle is least privilege: start with the minimum and add access when there is a reason.
+TABLE:
+H: Kind of person | Suggested access
+R: Owner | Everything, including billing and security; keep to one or two people
+R: Administrators | Manage assistants, knowledge and settings; not billing or ownership
+R: Support or front desk staff | See conversations, leads and bookings; handle handovers; not settings or keys
+R: Contractors or agencies | Only the assistants and tabs they work on, for as long as they work
+R: Billing or finance | Plans and invoices only
+UL:
+- Review roles when someone's job changes.
+- Avoid giving everyone owner rights for convenience.
+- Use named accounts for everyone; never share a login.
+- Limit who can see AI keys and who can change assistant instructions.
+P: Crescelo workspaces use roles that restrict what team members can view, edit or change, and owners can see an audit trail of important actions.
+H2[two-factor-authentication-2fa]: Two-factor authentication (2FA)
+P: A password alone can be guessed, reused from another breach or stolen. A second factor requires something else: a code from an authenticator app on your phone. Even if your password leaks, an attacker cannot sign in without the code. Crescelo supports time-based one-time codes from authenticator apps, and team accounts can require them at sign-in.
+OL:
+- Install an authenticator app on your phone.
+- In the workspace's Security settings, start 2FA setup and scan the QR code.
+- Enter the six-digit code to confirm.
+- Save the recovery codes somewhere safe and offline; they let you in if you lose your phone.
+- Test signing out and back in with a code.
+UL:
+- Turn it on for owners first, then for everyone.
+- Prefer an authenticator app over text messages, which can be intercepted.
+- Store recovery codes in a password manager or a locked drawer, not in an email.
+- When someone leaves, remove their access; do not rely on their 2FA.
+H2[strong-sign-in-habits]: Strong sign-in habits
+UL:
+- Use a unique, long password from a password manager.
+- Never reuse passwords across services.
+- If you sign in with Google, protect that Google account with 2FA as well.
+- Be careful of phishing: check the address before entering credentials, and do not enter a code you were not expecting.
+- Sign out on shared devices.
+P: The Crescelo dashboard checks a session on every request against your account state, so changing your password or removing a member ends their existing sessions.
+H2[joiners-movers-and-leavers]: Joiners, movers and leavers
+TABLE:
+H: Event | Action
+R: New team member | Create a named account with the smallest role that works; require 2FA
+R: Change of role | Adjust access the same day
+R: Contractor finishes | Remove access immediately
+R: Employee leaves | Remove their account, rotate anything they could see, such as shared passwords and API keys
+R: Owner changes | Transfer ownership deliberately, and remove the old owner's access
+P: Write this down as a short checklist. Offboarding is where most access problems start.
+H2[protect-api-keys]: Protect API keys
+UL:
+- Use a dedicated key for each assistant, with a spending limit at the provider.
+- Never paste keys into chats, emails or website code.
+- Restrict who can view or change the AI settings.
+- Rotate keys when a person with access leaves or a leak is suspected.
+- Crescelo stores provider keys encrypted; see [how a bring-your-own-key vault works](/blog/cryptographic-byok-vault-aes-256-gcm).
+H2[use-the-audit-trail]: Use the audit trail
+P: An audit trail records who did what and when: a setting changed, a source deleted, a member added. Use it. Review it monthly for unexpected changes, and after any incident. Owners on Crescelo can see an audit trail of workspace actions. It also helps in a dispute or an investigation, because you can see what happened.
+H2[other-basics]: Other basics
+UL:
+- Keep your devices updated and locked.
+- Do not use public Wi-Fi for admin work without a trusted connection.
+- Limit who has admin access to your domain and website, since the chat is installed there.
+- Be careful with browser extensions.
+- Back up important content, such as your knowledge documents.
+H2[if-you-think-an-account-is-compromised]: If you think an account is compromised
+OL:
+- Change the password and sign out everywhere.
+- Remove suspicious members and revoke API keys.
+- Check the audit trail for what changed.
+- Review recent conversations and leads for unusual activity.
+- Restore altered content from your originals.
+- Tell affected customers if their data may have been exposed, as your legal obligations require.
+- Contact support with the details.
+H2[a-one-afternoon-checklist]: A one-afternoon checklist
+UL:
+- Two owners at most, both with 2FA.
+- Every team member on a named account with the smallest role.
+- Recovery codes stored safely.
+- Old and shared accounts removed.
+- A dedicated AI key with a spending limit.
+- Audit trail reviewed.
+- A written joiner and leaver checklist.
+H2[common-mistakes]: Common mistakes
+UL:
+- Making everyone an owner because it is easier.
+- Sharing one login across the team.
+- Keeping recovery codes in the same inbox as the password reset email.
+- Forgetting to remove contractors when a project ends.
+- Never looking at the audit trail.
+- Leaving the AI key visible to people who do not need it.
+P: Fixing these takes an afternoon and removes most of the realistic ways an account gets compromised. Put a recurring quarterly reminder in the calendar to review roles and access.
+H2[frequently-asked-questions]: Frequently asked questions
+FAQ:
+Q: Does Crescelo support two-factor authentication?
+A: Yes. Accounts can use time-based codes from an authenticator app, and team accounts can require them at sign-in.
+Q: What is least privilege?
+A: Giving each person only the access they need, so a mistake or compromise causes less damage.
+Q: What if I lose my phone?
+A: Use the recovery codes you saved when you turned on 2FA, and then set it up again on the new phone.
+Q: Should I share one login with my team?
+A: No. Use named accounts so you know who did what and can remove access individually.
+Q: How do I remove a former employee's access?
+A: Remove their account, rotate shared passwords and API keys they could see and review the audit trail.
+Q: Where can I see who changed what?
+A: In the audit trail, available to workspace owners.
+P: See [how your data is protected](/privacy) and the [data processing addendum](/dpa), read [the GDPR checklist](/blog/website-chatbot-gdpr-checklist), see [SSRF protection for web scrapers](/blog/mitigating-ssrf-web-scraper-security), the [AI assistant feature](/product/ai-assistant) and [start a free trial](/login?mode=register) to set up your workspace securely.
+H2[further-reading]: Further reading
+UL:
+- [OWASP Top 10 for Large Language Model Applications](https://genai.owasp.org/llm-top-10/): The main security risks of AI assistants, including prompt injection.
+- [Google Search Central: creating helpful, people-first content](https://developers.google.com/search/docs/fundamentals/creating-helpful-content): What Google looks for in useful pages.

@@ -1,0 +1,127 @@
+TITLE: Chatbot to Human Handover: How to Design a Smooth Live Handoff
+SEO: Chatbot to Human Handover | Crescelo
+DESC: How to design the handover from an AI chatbot to a person: triggers, notifications, context, expectations, out-of-hours handling and measuring handover.
+EXCERPT: How to design the handover from an AI chatbot to a person: triggers, notifications, context, expectations, out-of-hours handling and measuring handover.
+CLUSTER: AI Receptionists
+MOD: 2026-09-27
+P: However good an AI assistant is, some conversations need a person: a complaint, a sensitive situation, an unusual request, an urgent problem or a customer who simply prefers to talk to a human. What happens at that moment decides how the customer remembers you. A smooth handover feels like a helpful colleague stepping in with full context. A poor one feels like being dropped: waiting with no explanation, repeating everything, or discovering that nobody is there. This guide explains how to design the handover: when it should trigger, how to notify your team, what context to pass, how to set expectations honestly, what to do out of hours and how to measure how well it works.
+H2[when-the-assistant-should-hand-over]: When the assistant should hand over
+TABLE:
+H: Trigger | Example | Handover style
+R: The visitor asks for a person | 'Can I talk to someone?' | Immediate, always honoured
+R: Complaint or anger | 'This is unacceptable' | Fast, with empathy
+R: Sensitive topic | Medical, legal or financial situations | Handover with careful wording
+R: Emergency or safety | 'There is a gas smell' | Safety instructions first, then urgent alert
+R: Unanswerable question | The documents do not cover it | Offer a person or callback
+R: High-value opportunity | Large job or group booking | Notify a person to take over
+R: Repeated failure | Assistant misunderstood twice | Offer a person
+R: Money or refunds | A dispute over a charge | Person decides
+P: Write the triggers down as rules, and test them with realistic messages. Err on the side of handing over sensitive cases.
+H2[never-make-a-handover-hard]: Never make a handover hard
+UL:
+- Do not hide the option to reach a person.
+- Do not make visitors pass several bot questions before they can ask.
+- Do not pretend the assistant is a person.
+- Do not promise an immediate answer if nobody is available.
+- Do not loop the visitor back to the assistant without acknowledging their request.
+P: The best assistants say something like: 'Of course. I will pass you to the team. They can see our conversation.'
+H2[what-the-visitor-should-see-and-hear]: What the visitor should see and hear
+OL:
+- **Acknowledge:** 'I will connect you with a team member.'
+- **Explain what happens next:** 'They can see what we discussed, so you will not need to repeat it.'
+- **Set an honest expectation:** 'Someone will reply within 15 minutes' or 'We reply by 9:30 a.m. on working days.'
+- **Offer an alternative:** 'If it is urgent, call us on this number.'
+- **Confirm the channel:** 'We will reply here in the chat, or by email if you leave one.'
+P: Silence is the enemy. A visitor who does not know what is happening will leave or try again.
+H2[what-your-team-should-see]: What your team should see
+TABLE:
+H: Item | Why it matters
+R: A notification with the reason for handover | Context in the first second
+R: The full conversation | So nobody asks the visitor to repeat
+R: Contact details captured | To follow up if the chat ends
+R: What the assistant already promised | So the person does not contradict it
+R: The page the visitor was on | Context on what they were doing
+R: Priority | Emergencies and complaints first
+P: In Crescelo, a person can take over any conversation from the dashboard in one click and is notified by email, with the whole history attached. See the [human handover feature](/product/human-handover).
+H2[how-to-notify-your-team]: How to notify your team
+UL:
+- **Email:** reliable, works for everyone, includes the conversation.
+- **Team chat such as Slack:** fast for teams who live there; see [webhook automations](/blog/webhook-automations-zapier-make-chat-events).
+- **Text or push alerts:** for urgent cases, via an automation.
+- **Dashboard notification:** for people already working in it.
+P: Choose at least two routes for urgent handovers, so a missed email does not cost a customer. Make sure the alert goes to a person who is actually on duty, not to a shared inbox nobody watches.
+H2[handover-out-of-hours]: Handover out of hours
+P: Nobody is there at 10 p.m., and the assistant should say so honestly. Three good patterns:
+OL:
+- Offer a callback or email reply at a set time the next working day, and capture the contact.
+- Offer the next available booking so the visitor secures a slot now.
+- For emergencies, direct to your emergency line or emergency services with approved wording.
+P: Then make sure the next morning's team sees these handovers first. See [after-hours appointment booking](/blog/after-hours-appointment-booking).
+H2[taking-over-and-handing-back]: Taking over and handing back
+P: When a person takes over, the assistant should stop replying so visitors do not get two voices. When the person is done, decide whether the assistant resumes or the conversation closes. Give the person a way to end the takeover cleanly. Let them mark the outcome, such as resolved, booked or follow-up needed, so you can review it later.
+H2[etiquette-for-the-person-who-takes-over]: Etiquette for the person who takes over
+UL:
+- Greet by name and acknowledge what was said already.
+- Read the whole conversation before replying.
+- Do not repeat questions the visitor has answered.
+- Correct any mistake the assistant made, without blaming it.
+- Reply quickly, even if only to say when you will have an answer.
+- Close the loop: confirm the outcome.
+P: See [live human handover etiquette and best practices](/blog/live-human-handover-etiquette-best-practices).
+H2[measure-handover-quality]: Measure handover quality
+TABLE:
+H: Metric | What it tells you
+R: Handover rate | Share of conversations passed to a person; a very high rate means the assistant needs better content
+R: Time to first human reply | Whether the team responds fast enough
+R: Reasons for handover | Which topics to improve or keep human
+R: Repeat questions after handover | Whether context passes correctly
+R: Resolution rate after handover | Whether people actually help
+R: Handovers with no response | Process failures to fix urgently
+P: Review handover conversations weekly as part of your [chat review routine](/blog/audit-website-chatbot-conversations). Every handover is either a sign that a person was needed or a gap to close.
+H2[common-mistakes]: Common mistakes
+UL:
+- A handover button that goes nowhere.
+- Alerts sent to an unattended inbox.
+- Making visitors repeat themselves.
+- No expectation set about waiting time.
+- The assistant and a person both replying.
+- Never reviewing why handovers happen.
+H2[worked-example-a-complaint-about-a-bill]: Worked example: a complaint about a bill
+TABLE:
+H: Speaker | Message
+R: Visitor | I was charged twice for my appointment. This is ridiculous.
+R: Assistant | I am sorry about that. Billing needs a person to check, so I am passing this to our team now. They can see this conversation, so you will not need to repeat it. Someone will reply within 30 minutes during office hours, and I have noted your contact details. Could you tell me the email you used to book?
+R: Visitor | sam@example.com
+R: Assistant | Thank you, Sam. I have passed everything on. If it is urgent, our number is below.
+P: The assistant did not try to resolve a billing dispute. It acknowledged the problem, explained the next step, set an expectation, captured the missing detail and flagged the conversation as a complaint. The person who picks it up starts with the whole picture.
+H2[a-handover-policy-you-can-adapt]: A handover policy you can adapt
+OL:
+- The assistant always hands over when asked.
+- It always hands over complaints, refunds and billing disputes.
+- It hands over sensitive topics with approved wording and never gives advice.
+- For emergencies it gives safety instructions first, then alerts an on-call person.
+- Handovers are answered within a stated time in business hours, and by a stated time the next working day otherwise.
+- Every handover is logged with a reason and an outcome and reviewed weekly.
+P: Write it down, share it with your team and revisit it quarterly.
+H2[training-your-team-for-handovers]: Training your team for handovers
+P: Handover works best when the people receiving it know what to expect. Spend fifteen minutes walking the team through a real handover: where the alert arrives, how to open the conversation, how to reply and how to close it. Agree who is on duty in each time slot and who covers when they are away. Role-play an awkward case, such as an angry customer, so that the first real one is not the first time anyone has tried it.
+H2[when-to-hand-back-to-the-assistant]: When to hand back to the assistant
+P: Some handovers are brief: a person answers one question and the conversation could continue with the assistant. Decide whether your setup lets the assistant resume, and how the visitor is told. If it does, the person should say so ('I will let the assistant take over booking now'), and the assistant should confirm it has the context. If it does not, the person should finish the conversation, so the visitor never talks to two voices that contradict each other.
+H2[frequently-asked-questions]: Frequently asked questions
+FAQ:
+Q: When should a chatbot hand over to a human?
+A: When the visitor asks, for complaints, sensitive topics, emergencies, unanswerable questions, high-value opportunities and repeated failures.
+Q: How does the human see the conversation?
+A: Good handover passes the full conversation and contact details to the person, so the visitor does not repeat anything.
+Q: What if no one is online?
+A: Say so honestly, capture contact details, offer a callback or a booking, and direct emergencies to the right route.
+Q: Does Crescelo support human handover?
+A: Yes. Your team can take over any conversation from the dashboard, with notifications and the whole history.
+Q: How many handovers are normal?
+A: It varies. Very high rates suggest content gaps, and very low rates may mean people cannot find the option.
+Q: Should the assistant continue after a person joins?
+A: No. Pause the assistant while a person is talking to avoid two voices.
+P: See the [human handover feature](/product/human-handover), try a handover request in the [playground](/playground) and [start a free trial](/login?mode=register).
+H2[further-reading]: Further reading
+UL:
+- [Google Search Central: creating helpful, people-first content](https://developers.google.com/search/docs/fundamentals/creating-helpful-content): What Google looks for in useful pages.

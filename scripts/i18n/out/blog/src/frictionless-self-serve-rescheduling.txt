@@ -1,0 +1,109 @@
+TITLE: Self-Serve Rescheduling: Turn Cancellations Into Rebookings With One-Tap Changes
+SEO: Self-Serve Rescheduling: Turn Cancellations Into Rebookings
+DESC: How to let customers change appointments without calling: change links, chat rescheduling, rules and limits, fees, freeing slots, reminders and the numbers.
+EXCERPT: How to let customers change appointments without calling: change links, chat rescheduling, rules and limits, fees, freeing slots, reminders and the numbers.
+CLUSTER: Booking Optimization
+MOD: 2026-09-27
+P: Most customers who cancel do not mean to leave you. Something changed: a meeting moved, a child fell ill, the car broke down. If changing the booking is easy, they move it and you keep the business. If it takes a phone call during opening hours, many will not bother. They simply do not turn up, and you lose the slot and the customer's goodwill. Making rescheduling effortless is one of the cheapest ways to reduce no-shows and lost revenue, because it turns a would-be no-show into a rebooking, often with enough notice for you to refill the slot. This guide explains how to design self-serve rescheduling: what customers need, how change links and chat can work, what rules to set, how to handle fees fairly, how to free and refill slots, and how to measure the effect.
+H2[why-changing-should-be-easier-than-not-turning-up]: Why changing should be easier than not turning up
+UL:
+- A customer with a conflict wants the least effort: one tap and a new time.
+- If the change costs more effort than ignoring the appointment, many will ignore it.
+- A rebooking keeps the revenue and the relationship; a no-show loses both.
+- Early notice lets you offer the slot to someone else.
+P: The goal is that rescheduling is easier than a no-show, at every hour, on a phone.
+H2[the-change-link]: The change link
+P: The simplest tool is a private link in every confirmation and reminder that lets the customer pick a new time or cancel. Crescelo's confirmation email contains a private link to reschedule or cancel; the freed slot becomes available again at once. Good practice for change links:
+UL:
+- Put the link in the confirmation and every reminder, near the top.
+- Make it work on a phone without logging in.
+- Show only genuinely available times.
+- Confirm the change immediately by email.
+- Make cancelling as easy as rescheduling, with an optional reason.
+- Never make the link expire before the appointment.
+TABLE:
+H: Design choice | Better
+R: Login required | No login; the private link is the key
+R: Phone call to change | Link first, phone as backup
+R: Long form to cancel | One tap, optional reason
+R: Hidden in small print | A clear button
+H2[rescheduling-in-the-chat]: Rescheduling in the chat
+P: Customers also ask in the chat: 'Can I move my appointment?' The assistant can offer the right steps, state your policy and, where the tool allows, guide them through picking a new time or pass them to the link. It should recognise the intent in many wordings ('push it back', 'something came up', 'cannot make Thursday') and respond warmly. See [conversational rescheduling and cancellations](/blog/conversational-rescheduling-cancellations).
+TABLE:
+H: Customer says | Assistant does
+R: Can I move my appointment to next week? | Explains the change is free until [window], and offers the link or next available times
+R: I have to cancel | Acknowledges, states the policy briefly and offers to rebook instead
+R: Something came up and I am late | Tells them the lateness rule and whether the appointment can be kept or moved
+R: Can you move me earlier? | Offers earlier times if any, and adds them to the standby list if that exists
+H2[rules-that-keep-it-fair]: Rules that keep it fair
+OL:
+- **A free change window:** for example, up to 24 hours before.
+- **A limit on changes:** for example, one free change per booking, to prevent constant shuffling.
+- **A rule for late changes:** whether a fee or deposit applies; see [deposits and booking policies](/blog/deposit-collection-booking-policies-chat).
+- **A minimum notice for the new time:** so you can prepare.
+- **Exceptions:** genuine emergencies handled by a person.
+P: Write the rules in plain words, show them before the booking is confirmed and repeat them in the confirmation. See [effective cancellation policies](/blog/effective-cancellation-policies-service-businesses).
+H2[free-the-slot-and-refill-it]: Free the slot and refill it
+P: A cancelled slot is worth money only if someone takes it. When a customer cancels or moves, the freed time should become bookable immediately. Then tell people who are waiting: a standby list, a note to regulars or a post on social media. See [filling cancelled slots with a standby list](/blog/fill-cancelled-slots-automated-standby-chat). The earlier the cancellation, the easier the refill, which is why easy self-service matters so much.
+H2[communication-around-changes]: Communication around changes
+UL:
+- Confirm every change by email with the new details.
+- Send a short reminder before the new time.
+- Update your calendar feed; a subscribed calendar refreshes on its own schedule.
+- Tell the assistant's knowledge base if your policy changes.
+H2[special-cases]: Special cases
+TABLE:
+H: Case | Approach
+R: Multi-session packages | Allow changes to a single session without losing the package, within a limit
+R: Group bookings | Require a person to handle changes
+R: Same-day changes | Handle by phone or a person, with a quick message
+R: Customers who keep changing | A polite note about the policy; a person decides
+R: Deposit already paid | Move the deposit to the new time automatically or by a person
+H2[a-sample-conversation]: A sample conversation
+TABLE:
+H: Speaker | Message
+R: Visitor | I need to move my appointment on Thursday, my daughter is ill.
+R: Assistant | I am sorry to hear that, I hope she feels better soon. You can change it free of charge until 24 hours before. Here is a link to choose a new time, or I can show you what is free next week.
+R: Visitor | Next Tuesday?
+R: Assistant | Tuesday has 10:00 and 2:30 free. Which would you like? I will update your booking and email a new confirmation.
+H2[worked-example-a-barbershop]: Worked example: a barbershop
+P: A barbershop received about twelve no-shows a month. Reading its messages, the owner found that many customers had tried to phone to change their booking and given up when nobody answered. He added the change link to every confirmation and reminder, and told the assistant to point people to it. No-shows fell to five a month, and about twenty bookings a month were moved instead of lost. Because the moves came with notice, he refilled many of the freed slots with walk-ins and a short standby list. The change took an hour to set up and cost nothing extra.
+H2[measure-it]: Measure it
+TABLE:
+H: Metric | Why
+R: Share of changes made through the link | Whether customers use it
+R: No-show rate | Should fall
+R: Rescheduled versus cancelled | Rebookings kept
+R: Slots refilled after a change | Recovered revenue
+R: Calls about changes | Should fall
+P: See [how to reduce no-shows](/blog/eliminate-service-no-shows-playbook) for the whole picture.
+H2[common-mistakes]: Common mistakes
+UL:
+- Making customers phone to change a booking.
+- Hiding the change link.
+- Applying fees without saying so in advance.
+- Not freeing the slot immediately.
+- Forgetting to update the calendar and staff.
+- Ignoring the customer who changes often; a person should talk to them.
+H2[test-the-change-link-yourself]: Test the change link yourself
+P: Make a test booking, open the confirmation on your phone and use the link to move it. Was it obvious? Did it show only real times? Did you get a new confirmation? Try cancelling as well. Then ask a friend to do the same without help. Anything that confuses them will confuse your customers.
+H2[tell-customers-the-link-exists]: Tell customers the link exists
+P: A change link only helps if customers know about it. Mention it in your confirmation email, your reminders, your website's booking page and the assistant's greeting for existing customers: 'Need to change your booking? Use the link in your confirmation email.' A sentence in the right places saves many phone calls.
+H2[frequently-asked-questions]: Frequently asked questions
+FAQ:
+Q: How can customers reschedule without calling?
+A: Include a private change link in every confirmation and reminder, and let the assistant explain how to use it.
+Q: Does Crescelo support self-serve rescheduling?
+A: Yes. The confirmation email includes a private link to reschedule or cancel, and the freed slot becomes available at once.
+Q: Should rescheduling be free?
+A: Usually within a notice window, such as 24 hours. Later changes may follow your cancellation policy.
+Q: How do I stop customers changing too often?
+A: Limit free changes per booking and have a person talk to repeat changers.
+Q: Can the assistant reschedule in the chat?
+A: It can explain the policy and guide customers to the link or available times. The change itself is made through the booking link.
+Q: How do I know it is working?
+A: Track no-show rate, share of changes via the link and slots refilled.
+P: See the [appointment booking feature](/product/appointment-booking), try a rescheduling conversation in the [playground](/playground) and [start a free trial](/login?mode=register).
+H2[further-reading]: Further reading
+UL:
+- [Google Search Central: creating helpful, people-first content](https://developers.google.com/search/docs/fundamentals/creating-helpful-content): What Google looks for in useful pages.

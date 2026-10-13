@@ -1,0 +1,96 @@
+TITLE: How a Bring-Your-Own-Key Vault Protects Your API Keys (AES-256-GCM Explained)
+SEO: API Key Encryption AES-256-GCM | Crescelo
+DESC: How chatbot platforms store customer API keys safely: encryption at rest with AES-256-GCM, nonces and authentication tags, key management, decrypting.
+EXCERPT: How chatbot platforms store customer API keys safely: encryption at rest with AES-256-GCM, nonces and authentication tags, key management, decrypting.
+CLUSTER: Chatbot Technology
+MOD: 2026-09-27
+P: When you give a chatbot platform your AI provider key, you are handing it a secret that can spend your money. How the platform stores that secret matters more than almost any feature. A key saved in plain text in a database is one leak away from a bill you did not authorise. A key encrypted properly is useless to anyone who steals the database. This guide explains, in plain language and with enough technical detail for developers, how a key vault should work: what encryption at rest means, what AES-256-GCM is and why it is used, the role of nonces and authentication tags, where the encryption key itself lives, how keys are used at request time without being exposed, how rotation works, what encryption does not protect against and the questions to ask any vendor. Crescelo stores provider keys with AES-256-GCM.
+H2[the-threat-model]: The threat model
+TABLE:
+H: Threat | Example | Defence
+R: Database leak | A backup or a compromised admin exposes stored records | Encrypt keys at rest
+R: Curious insider | An employee browsing data | Encryption, access controls and audit logs
+R: Application bug | An endpoint accidentally returns a key to the browser | Never send keys to clients; store them encrypted; return masked values
+R: Log leakage | A key is written to a log file | Redact secrets from logs
+R: Stolen backup | An old backup surfaces | Encryption with a key stored elsewhere
+P: Encryption at rest is a strong defence against the first, second and fifth. Careful coding covers the third and fourth.
+H2[what-aes-256-gcm-is]: What AES-256-GCM is
+P: AES is a widely used and heavily studied encryption standard. The 256 refers to the key length in bits, which makes brute-force guessing infeasible. GCM is a mode of operation that provides two things at once: confidentiality (nobody can read the data) and integrity (nobody can alter it without detection). This combination is called authenticated encryption, and it is the standard recommendation for encrypting data at rest.
+TABLE:
+H: Term | Meaning
+R: Key | The secret used to encrypt and decrypt; 256 bits (32 bytes) for AES-256
+R: Nonce or IV | A number used once for each encryption, so the same plaintext never produces the same ciphertext
+R: Ciphertext | The encrypted result
+R: Authentication tag | A short value that proves the ciphertext was not tampered with
+P: To store a key, the platform generates a fresh random nonce, encrypts the key with the master key, and stores the nonce, ciphertext and tag together. To read it, it uses the master key, the nonce and the tag; if the tag does not match, decryption fails, which reveals tampering.
+H2[why-the-nonce-must-never-repeat]: Why the nonce must never repeat
+P: GCM is fast and safe as long as a nonce is never reused with the same key. Reuse can leak information and allow forgery. The safe approach is to generate a fresh random 12-byte nonce for every encryption, which makes a collision astronomically unlikely at normal volumes, and to store the nonce alongside the ciphertext. Any implementation that derives nonces predictably or reuses them is a serious flaw.
+H2[where-the-master-key-lives]: Where the master key lives
+P: Encryption is only as strong as the protection of the encryption key. Storing the master key in the same database as the encrypted secrets defeats the purpose. Good practice separates them:
+UL:
+- Keep the master key in an environment secret or a dedicated key management service, not in the database.
+- Give the application access only at runtime.
+- Restrict who can read production environment variables.
+- Never commit the key to source control.
+- Keep offline backups of the master key in a safe place; losing it means losing every stored secret.
+P: Some platforms derive per-record keys from a master key, so a single leaked record key does not expose everything. Stronger setups use a cloud key management service that performs encryption operations without ever exposing the master key to the application.
+H2[using-the-key-at-request-time]: Using the key at request time
+OL:
+- A visitor sends a message; the server needs to call the AI provider.
+- The server reads the encrypted key record and decrypts it in memory using the master key.
+- It makes the request to the provider, attaching the key.
+- It discards the plaintext key immediately; it is never written to logs, error messages or responses.
+- The dashboard shows only a masked version, such as the last four characters, when you view settings.
+P: At no point does the key travel to your visitor's browser or appear in your website's code.
+H2[rotation-and-revocation]: Rotation and revocation
+UL:
+- If a key might have been exposed, revoke it at the provider and paste a new one; the old ciphertext becomes useless.
+- Rotate the master key periodically, re-encrypting stored secrets with the new one, and keep the old one only until migration completes.
+- Keep an audit trail of when keys were added, changed or removed, and by whom.
+- Tie rotation to events such as staff leaving.
+H2[what-encryption-at-rest-does-not-protect-against]: What encryption at rest does not protect against
+TABLE:
+H: Scenario | Encryption helps? | What else is needed
+R: A stolen database backup | Yes | Protect the master key separately
+R: An attacker who compromises the running application | Not fully: the app can decrypt keys | Least privilege, monitoring, network isolation, spending limits at the provider
+R: A malicious insider with access to the application and environment | Not fully | Separation of duties, audit logs
+R: A phishing attack on a customer's account | No | 2FA and access hygiene; see [securing your chatbot account](/blog/setup-rbac-2fa-team-security)
+P: This is why you should also set a spending limit with your AI provider. If a key is ever misused, the damage is capped.
+H2[how-to-check-a-vendor]: How to check a vendor
+UL:
+- Do you encrypt customer API keys at rest? With what algorithm and mode?
+- Where is the master key stored, and who can access it?
+- Are nonces random and unique per encryption?
+- Can support staff see plaintext keys?
+- Are keys ever returned to the browser or written to logs?
+- How does rotation work, and can I revoke a key immediately?
+- Do you have an audit trail for key changes?
+P: Be wary of vague answers such as 'we take security seriously'. Specifics are the sign of a real implementation.
+H2[what-you-should-do-on-your-side]: What you should do on your side
+OL:
+- Create a dedicated key for the assistant.
+- Set a monthly spending limit at the provider.
+- Enable alerts for unusual usage.
+- Restrict who on your team can see or change the AI settings.
+- Rotate the key if a team member with access leaves.
+- Never paste the key into chats, emails or code.
+P: See [bring your own key explained](/blog/bring-your-own-ai-key-byok-explained) for the wider picture.
+H2[frequently-asked-questions]: Frequently asked questions
+FAQ:
+Q: How does Crescelo store my API key?
+A: Encrypted with AES-256-GCM, decrypted only in server memory when needed, and never sent to visitors' browsers.
+Q: What is AES-256-GCM?
+A: A widely used authenticated encryption method: AES with a 256-bit key in Galois/Counter Mode, providing both confidentiality and tamper detection.
+Q: What is a nonce?
+A: A number used once per encryption. It must be unique for each encryption with the same key.
+Q: Where should the master key be stored?
+A: Separately from the encrypted data, in an environment secret or a key management service, with tight access.
+Q: Can encrypted keys still be misused?
+A: If the running application is compromised, yes. That is why spending limits and access controls matter too.
+Q: Should I rotate my key?
+A: Yes, after any suspected exposure and when someone with access leaves.
+P: See [how your data is protected](/privacy), the [data processing addendum](/dpa), the [AI assistant feature](/product/ai-assistant) and [pricing](/pricing), and read [SSRF protection for web scrapers](/blog/mitigating-ssrf-web-scraper-security).
+H2[further-reading]: Further reading
+UL:
+- [OWASP Top 10 for Large Language Model Applications](https://genai.owasp.org/llm-top-10/): The main security risks of AI assistants, including prompt injection.
+- [OpenAI API documentation](https://platform.openai.com/docs/overview): Models, pricing and limits for the OpenAI API.

@@ -1,0 +1,121 @@
+TITLE: Legal Intake Automation: Capturing Enquiries and Feeding Conflict Checks Safely
+SEO: Legal Intake Automation | Crescelo
+DESC: How law firms can automate first-contact intake: what to collect, how to prepare for conflict checks, keeping privilege and confidentiality in mind, routing.
+EXCERPT: How law firms can automate first-contact intake: what to collect, how to prepare for conflict checks, keeping privilege and confidentiality in mind, routing.
+CLUSTER: Professional Services
+MOD: 2026-09-27
+P: A law firm's intake process is its front door, and it must do two jobs that pull in opposite directions. It must be quick and welcoming, because a prospective client with a problem will contact several firms and hire the first that responds well. And it must be careful, because the firm needs to check for conflicts of interest, protect confidentiality and avoid creating obligations before it is ready. Many firms lose clients by being slow and expose themselves to risk by being casual. A well-designed automated intake can help with both: capture the basics instantly, at any hour, in a way that supports conflict checks and routing, without inviting confidential detail or giving advice. This guide explains what to collect, what to avoid, how to prepare for conflict checks, how to route matters and how to keep the process compliant.
+NOTE: Professional conduct rules on advertising, confidentiality, conflicts and client communication vary by jurisdiction. This is general information, not legal advice. Have your ethics or compliance partner approve the design, and check what your regulator or bar requires.
+H2[what-intake-has-to-achieve]: What intake has to achieve
+TABLE:
+H: Goal | How automation helps
+R: Respond quickly | Instant reply and a booking option at any hour
+R: Capture the essentials | Structured fields, same every time
+R: Enable a conflict check | Names of the parties, so the check can run before substantive discussion
+R: Route correctly | Practice area, urgency and location
+R: Protect confidentiality | Steer visitors away from sharing detail in the chat
+R: Avoid creating a relationship prematurely | Clear statements that the chat gives no advice
+H2[what-to-collect]: What to collect
+TABLE:
+H: Field | Purpose | Notes
+R: Name and contact method | To reply | Ask consent to contact
+R: Type of matter, in the visitor's words | Routing | A category is enough
+R: Names of other parties involved | Conflict check | Ask only if you run checks at intake; explain why
+R: Key dates or deadlines | Urgency | For example a hearing or a limitation issue
+R: Location or jurisdiction | Fit | Whether you can act
+R: How they found you | Marketing | Optional
+P: Keep it to what you need. Do not collect a narrative of the facts, documents, medical information or privileged details in a general chat.
+H2[what-not-to-collect]: What not to collect
+UL:
+- The detailed story of the dispute.
+- Documents, photos or contracts.
+- Financial or medical records.
+- Anything the visitor describes as confidential.
+- Government identifiers and payment details.
+P: Tell visitors that these will be discussed with the lawyer. See [confidentiality and privilege with an AI website assistant](/blog/confidentiality-attorney-client-privilege-ai-chat).
+H2[design-the-opening-to-prevent-oversharing]: Design the opening to prevent oversharing
+P: Visitors with legal problems tend to type more than they should. A short notice at the start reduces it: 'I am an AI assistant. I cannot give legal advice, and this chat does not create a lawyer-client relationship. Please do not share confidential details here. I can take your contact details and arrange a consultation.' The assistant should repeat the point kindly if a visitor starts to describe the facts, and steer toward booking.
+H2[conflict-checks-making-them-easy]: Conflict checks: making them easy
+P: A conflict check needs the identity of the parties. Structured intake helps in three ways: the names are captured cleanly, the check can be run by staff or software before the consultation and the lawyer knows whether the firm can act before hearing the story. If names are collected in chat, store them securely, limit access, and delete them if the matter does not proceed, according to your retention policy. If a conflict is found, have a standard, polite response ready, and consider whether the fact that a conflict exists is itself sensitive.
+OL:
+- Visitor gives their name and the other party's name.
+- Intake staff runs the conflict check.
+- If clear, the consultation proceeds; if not, a person contacts the visitor with a courteous decline and suggestions.
+- The result is recorded in your matter system.
+H2[routing-by-practice-area-and-urgency]: Routing by practice area and urgency
+TABLE:
+H: Signal | Route
+R: Family law with safety concerns | Immediate human contact and appropriate safety wording
+R: Criminal matter, arrest or court date soon | Urgent alert to the duty lawyer
+R: Immigration deadline | Immigration team, urgent flag
+R: Business or commercial dispute | Corporate team
+R: Personal injury | Fast response; see [personal injury lead triage](/blog/personal-injury-lead-triage-response-time)
+R: Outside your practice areas | Polite decline with a suggestion to find appropriate help
+P: For situations involving personal safety, the assistant should give your approved wording, including emergency numbers, and alert a person straight away.
+H2[consultations]: Consultations
+UL:
+- Explain what the initial consultation is, its length and whether it is free or charged.
+- Say what to bring or prepare, such as documents and a summary of key dates.
+- Offer real times.
+- Confirm by email, including the lawyer's name and how the meeting works.
+- Send a reminder.
+P: Crescelo's built-in booking offers slots from your opening hours and one slot length, and you can connect Calendly or Cal.com links per lawyer or practice area. See [AI appointment booking](/blog/ai-appointment-booking).
+H2[fees-and-honesty]: Fees and honesty
+P: Visitors ask about cost early. The assistant can explain your fee structures, for example hourly, fixed fee or contingency, in the words you approve, and say that a specific quote follows a consultation. It must not quote a fee for a specific matter without your approval. See [explaining legal fees and billing models in chat](/blog/explaining-legal-fees-billing-models-chat).
+H2[data-protection-and-retention]: Data protection and retention
+UL:
+- Tell visitors they are talking to an AI and link to your privacy policy.
+- Collect the minimum.
+- Restrict who can read transcripts.
+- Set a retention period and delete what you no longer need.
+- Ask vendors where data is stored, who processes it and how to delete it.
+- Where you serve people in Europe, follow the [GDPR checklist for website chatbots](/blog/website-chatbot-gdpr-checklist).
+H2[a-sample-conversation]: A sample conversation
+TABLE:
+H: Speaker | Message
+R: Visitor | My landlord is trying to evict me and I have a hearing in two weeks.
+R: Assistant | I am sorry you are dealing with that. I am an AI assistant and cannot give legal advice, and this chat does not create a lawyer-client relationship. A hearing in two weeks is time-sensitive, so I would like a member of our housing team to contact you quickly. Please do not share details here. What is your name, best phone number and the landlord's name, so we can check we are able to act?
+P: The assistant recognised urgency, stated its limits, asked only for what the conflict check needs and alerted the team.
+H2[measure-and-review]: Measure and review
+TABLE:
+H: Metric | Why
+R: Enquiries and response time | Speed to lead
+R: Conflict checks run before consultations | Compliance
+R: Consultations booked and attended | Conversion
+R: Enquiries outside your practice areas | Marketing and content clarity
+R: Transcripts reviewed for oversharing | Confidentiality
+H2[a-one-week-rollout-plan]: A one-week rollout plan
+OL:
+- **Day 1:** agree scope and wording with your ethics partner: what may be collected, what may never be said and where each matter type is routed.
+- **Day 2:** write the practice-area descriptions, fee structures and consultation information the assistant will use.
+- **Day 3:** configure intake fields and alerts, and set consultation types and times.
+- **Day 4:** test with realistic scenarios, including urgent and sensitive ones, and a visitor who overshares.
+- **Day 5:** have a partner try to break it, then fix what they find.
+- **Then:** launch on one practice area or page first, review every transcript for two weeks and widen gradually.
+P: A staged launch builds confidence and gives you evidence of governance if you are ever asked how the tool was introduced.
+H2[common-mistakes]: Common mistakes
+UL:
+- Collecting a narrative of the facts.
+- Not stating that the chat gives no advice.
+- Running conflict checks after a detailed consultation instead of before.
+- Leaving alerts for urgent matters on an unwatched inbox.
+- Keeping transcripts indefinitely.
+- Letting the assistant quote fees for specific matters.
+H2[frequently-asked-questions]: Frequently asked questions
+FAQ:
+Q: Can a law firm use a chatbot for intake?
+A: Yes, for capturing basic details and booking consultations, if it gives no advice, discourages confidential detail and complies with your professional rules.
+Q: What should intake collect for a conflict check?
+A: The names of the parties involved, collected securely and used only for the check.
+Q: Does chatting create a client relationship?
+A: Your notice should say it does not, and the assistant must not give advice. Rules vary, so have your ethics partner approve the wording.
+Q: How should the chat handle urgent matters?
+A: Recognise deadlines and safety risks, give approved wording and alert a person immediately.
+Q: Should the chatbot quote fees?
+A: Only general fee structures you approve, not a quote for a specific matter.
+Q: How long should transcripts be kept?
+A: Only as long as needed under your retention policy and legal duties.
+P: Try an intake conversation on your own practice information in the [playground](/playground), read [AI chatbots for law firms and professional services](/blog/ai-intake-scheduling-professional-services) and [start a free trial](/login?mode=register).
+H2[further-reading]: Further reading
+UL:
+- [Google Search Central: creating helpful, people-first content](https://developers.google.com/search/docs/fundamentals/creating-helpful-content): What Google looks for in useful pages.

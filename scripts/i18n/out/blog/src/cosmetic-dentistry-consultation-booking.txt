@@ -1,0 +1,129 @@
+TITLE: Booking Cosmetic Dentistry Consultations With Chat: Whitening, Veneers and Implants
+SEO: Booking Cosmetic Dentistry Consultations With Chat | Crescelo
+DESC: How dental practices can turn cosmetic dentistry enquiries into consultation bookings: what to explain, price wording, consultation flow, trust signals.
+EXCERPT: How dental practices can turn cosmetic dentistry enquiries into consultation bookings: what to explain, price wording, consultation flow, trust signals.
+CLUSTER: Dental Clinics
+MOD: 2026-09-27
+P: Cosmetic dentistry enquiries are different from check-up bookings. The patient is often weighing a significant decision and a significant cost, comparing several practices and looking for reassurance as much as information. They want to know what is possible, how it works, how long it takes, what it might cost and whether they can trust you. A website chat can meet those visitors at their moment of curiosity, explain your options in plain language, and steer them toward a consultation, the right next step, rather than a price quote that cannot be honest without an examination. This guide explains how to set up a chat for cosmetic enquiries: what to explain, how to talk about price, how to design the consultation booking, how to build trust responsibly and what to avoid.
+NOTE: Advertising and health claims rules for dental practices vary by country and professional body. This is general information, not legal advice. Have your dentists and compliance adviser approve all wording, especially about outcomes and before-and-after material.
+H2[what-cosmetic-enquirers-want-to-know]: What cosmetic enquirers want to know
+TABLE:
+H: Topic | Typical questions
+R: Options | What is the difference between whitening, bonding, veneers and crowns? Am I a candidate?
+R: Process | How many visits? How long does it take? Is it painful?
+R: Cost | How much are veneers, whitening or implants?
+R: Results | How will it look? How long does it last?
+R: Trust | How experienced are your dentists? Can I see examples?
+R: Practicalities | Do you offer payment plans? Can I book a consultation?
+P: Every one of these has a safe, useful answer from your approved documents, as long as the assistant explains and does not diagnose.
+H2[explain-options-in-plain-language]: Explain options in plain language
+P: Write short descriptions for each treatment you offer, in the words a patient would use.
+UL:
+- What it is and what problem it addresses.
+- Who it is typically suitable for, and that suitability needs an examination.
+- What the process involves, and roughly how many visits.
+- How long results typically last, without guarantees.
+- What aftercare is involved.
+- Common questions in your own words.
+P: Avoid jargon and superlatives. Do not promise results such as a 'perfect smile'. Approved wording from your dentists should be the only source.
+H2[how-to-talk-about-price]: How to talk about price
+P: Price is often the first question and the hardest to answer, because the honest answer depends on the patient's teeth and goals. A helpful response avoids both a vague dodge and a misleading figure.
+TABLE:
+H: Weak | Better
+R: Contact us for pricing. | It depends on how many teeth and what your goals are, so we start with a consultation. To give you an idea, whitening starts from $X and veneers are priced per tooth, usually from $Y to $Z. At your consultation we will give you a written estimate.
+R: Veneers cost $500. | Veneers are priced per tooth and vary with the type of material and the work needed. We publish a range and confirm exactly after an examination.
+R: Cheapest in town. | We offer payment plans to spread the cost. Would you like to hear the options?
+UL:
+- Publish ranges only if you can honour them.
+- Say what the range depends on.
+- Explain that a written estimate follows the consultation.
+- Describe financing options factually, and note that approval may apply.
+- Never invent or imply a price the practice has not set.
+P: See [insurance and financing FAQ automation](/blog/dental-insurance-financing-faq-automation) for careful wording on cost.
+H2[the-consultation-is-the-conversion]: The consultation is the conversion
+P: The goal of the chat is a booked consultation. Make it attractive and simple.
+OL:
+- Explain what happens at a consultation: a conversation about goals, an examination, possibly photos or scans, and a written plan and estimate.
+- State how long it takes and whether it is free or charged.
+- Offer real available times in the chat.
+- Ask for the minimum: name and how to reach the patient, and which treatment they are interested in.
+- Confirm by email with what to bring and how to change the booking.
+P: Crescelo's built-in booking uses one slot length; for consultations that need a longer slot than your standard visit, choose an appropriate length or use a Calendly or Cal.com link for consultations. See [AI appointment booking](/blog/ai-appointment-booking).
+H2[build-trust-honestly]: Build trust honestly
+UL:
+- Introduce your dentists and their qualifications accurately.
+- Share real patient reviews with permission and from verifiable sources.
+- Show before-and-after images only if you have consent and they comply with your local rules.
+- Be clear about limits: not every patient is a candidate, and results vary.
+- Explain safety and hygiene practices.
+- Give a real way to talk to a person.
+P: Trust also comes from honesty in the chat: an assistant that says 'that needs your dentist to assess' earns more confidence than one that promises everything.
+H2[what-the-assistant-must-not-do]: What the assistant must not do
+UL:
+- Diagnose or say whether a specific person is suitable for a treatment.
+- Promise outcomes, timelines or durability.
+- Give a fixed price for a treatment before an examination.
+- Pressure the visitor with false urgency or limited-time claims you cannot honour.
+- Collect detailed health history or send photos in an open chat.
+P: Write these rules into its instructions and test them with questions that tempt it, such as 'Am I a good candidate for veneers?'
+H2[handling-common-cosmetic-questions]: Handling common cosmetic questions
+TABLE:
+H: Question | Approach
+R: Will whitening damage my teeth? | Explain generally what your dentists advise and recommend the consultation for personal advice; no medical reassurance
+R: Are implants painful? | Share your approved description of the process and comfort measures; avoid promises
+R: How long do veneers last? | Give your approved, cautious statement and mention that care matters
+R: Can I see examples? | Point to approved examples on your site, and offer to show more at the consultation
+R: I have gum problems. Can I still get veneers? | Say that it needs assessment, and offer a consultation
+H2[follow-up-for-people-who-are-not-ready]: Follow-up for people who are not ready
+P: Many cosmetic enquirers take weeks or months to decide. The assistant can offer to send an information guide by email, capture consent and a contact detail, and let your team follow up gently. Do not add anyone to marketing emails without a clear opt-in. See [conversational lead capture](/blog/conversational-lead-capture) and the [lead capture feature](/product/lead-capture).
+H2[measure-what-matters]: Measure what matters
+TABLE:
+H: Metric | Why
+R: Cosmetic enquiries and consultations booked | Conversion
+R: Consultation to treatment acceptance | The real outcome
+R: Questions asked most | What your website should explain
+R: Out-of-hours enquiries | Demand at the moment of interest
+R: Drop-off points in chat | Where visitors lose interest
+H2[a-sample-conversation]: A sample conversation
+TABLE:
+H: Speaker | Message
+R: Visitor | How much are veneers and would they suit me?
+R: Assistant | Veneers are priced per tooth and vary with the material and the work needed, so we start with a consultation. Our range is from $X to $Y per tooth, and you will get a written estimate afterwards. Whether they suit you is something our dentists assess at the consultation, and I cannot say from here. It usually takes about 45 minutes. Would you like to see times?
+R: Visitor | Yes. Do you do payment plans?
+R: Assistant | We do. Our team can go through the options at your consultation, and financing is subject to approval. I can show you times now, or take your details for a call.
+P: The assistant gave a range, explained that suitability needs an assessment, mentioned payment plans with the right caveat and moved to booking.
+H2[consultation-checklist-for-the-practice]: Consultation checklist for the practice
+UL:
+- A private room and enough time, without rushing.
+- Photos or scans taken with clear consent.
+- A written estimate given after the consultation, not before.
+- An honest discussion of alternatives and limits.
+- A follow-up message a few days later, sent with consent.
+P: The consultation is where trust is earned, so the chat's job is to get the right patients to it well informed, not to close the sale.
+H2[common-mistakes]: Common mistakes
+UL:
+- Quoting a price that the practice cannot honour after examination.
+- Using before-and-after images without consent or within the wrong rules.
+- Letting the assistant say whether someone is a good candidate.
+- Making the consultation hard to book.
+- Following up too aggressively, or without consent.
+H2[keep-the-promise-you-make-in-chat]: Keep the promise you make in chat
+P: Whatever the assistant says about the consultation, such as its length, cost and what happens, must match what patients actually experience. Brief your team on what the chat says, and review it whenever your process changes. A patient who arrives expecting what they were told is far more likely to trust your recommendations and to go ahead.
+H2[frequently-asked-questions]: Frequently asked questions
+FAQ:
+Q: Can a chatbot book cosmetic dentistry consultations?
+A: Yes. It can explain options in plain language, answer common questions from approved documents and book a consultation with real available times.
+Q: Should the chatbot quote prices for veneers or implants?
+A: Only published ranges that you can honour, with a clear note that a written estimate follows an examination.
+Q: Can it say whether I am a candidate?
+A: No. Suitability needs an examination. It should offer a consultation.
+Q: How do I keep the wording compliant?
+A: Have your dentists and a compliance adviser approve it, avoid guarantees and follow your local advertising rules.
+Q: What about patients who are not ready to book?
+A: Offer an information guide by email with consent and let your team follow up gently.
+Q: Should it show before-and-after photos?
+A: Only with consent and within your local rules, linking to approved examples on your website.
+P: Try a consultation conversation on your own treatment descriptions in the [playground](/playground), read [AI chatbots for dental practices](/blog/ai-patient-scheduling-dental-practices) and [start a free trial](/login?mode=register).
+H2[further-reading]: Further reading
+UL:
+- [Google Search Central: creating helpful, people-first content](https://developers.google.com/search/docs/fundamentals/creating-helpful-content): What Google looks for in useful pages.

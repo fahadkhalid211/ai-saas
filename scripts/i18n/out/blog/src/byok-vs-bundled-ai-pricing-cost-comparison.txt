@@ -1,0 +1,119 @@
+TITLE: Bring Your Own Key vs Bundled AI Pricing: Which Costs Less for a Chatbot?
+SEO: Bring Your Own Key AI Chatbot Pricing | Crescelo
+DESC: Compare bring-your-own-key and bundled AI chatbot pricing with a worked cost model: token costs per conversation, margins, control, security and when each.
+EXCERPT: Compare bring-your-own-key and bundled AI chatbot pricing with a worked cost model: token costs per conversation, margins, control, security and when each.
+CLUSTER: Comparisons
+MOD: 2026-09-27
+P: When you pay for an AI chatbot, two things are being bought: the software and the AI that writes the replies. Some vendors bundle both into one price. Others, using a bring-your-own-key (BYOK) model, charge for the software and let you connect your own account with an AI provider such as OpenAI, Anthropic, Google, Groq or DeepSeek, which bills you directly. The difference affects how much you pay as you grow, how much control you have and how well you can see where the money goes. This guide explains both models, builds a simple cost model with worked numbers and shows when each one wins.
+NOTE: All model prices below are illustrative, not quotes. AI providers change prices often and offer many models at very different rates. Always check the provider's current pricing page.
+H2[the-two-models-in-plain-terms]: The two models in plain terms
+TABLE:
+H:  | Bundled AI | Bring your own key
+R: What you pay the platform | One subscription that includes AI usage or credits | A subscription for the software only
+R: Who bills for AI | The platform | Your AI provider, directly
+R: Where the margin sits | In the bundle: the platform buys AI and sells it with a margin | Nowhere on AI: you pay the provider's rate
+R: Choice of model | Whatever the platform offers | Any model your provider offers
+R: Cost visibility | Often opaque; limited by credits or message counts | Fully visible in your provider's dashboard
+R: Setup | Simplest | One extra step: create an account and paste a key
+P: Crescelo uses the BYOK model: it charges for the software, you paste your own key, and your provider bills you at normal rates. Crescelo adds no markup and takes no share of tokens. Keys are stored encrypted. There is also a free engine you can use to start and test.
+H2[what-a-conversation-actually-costs-in-ai-terms]: What a conversation actually costs in AI terms
+P: A chat reply costs money in proportion to the text the model reads (input tokens) and writes (output tokens). A token is roughly three quarters of an English word. For a grounded assistant, each reply reads the visitor's question, a few retrieved passages from your documents and some recent conversation, then writes a short answer.
+P: Here is an illustrative worked example.
+TABLE:
+H: Item | Assumption
+R: Messages per chat session | 6 replies from the assistant
+R: Input tokens per reply | 2,500 (instructions, retrieved passages, history)
+R: Output tokens per reply | 250
+R: Total input per session | 15,000 tokens
+R: Total output per session | 1,500 tokens
+P: Now apply three illustrative price levels per million tokens.
+TABLE:
+H: Model tier (illustrative) | Input price per million | Output price per million | Cost per session | Cost per 1,000 sessions
+R: Small, fast model | $0.15 | $0.60 | about $0.003 | about $3
+R: Mid-range model | $1.00 | $4.00 | about $0.021 | about $21
+R: Premium model | $5.00 | $20.00 | about $0.105 | about $105
+P: The calculation for the mid-range row: 15,000 input tokens at $1.00 per million is $0.015, plus 1,500 output tokens at $4.00 per million is $0.006, total $0.021. The takeaway is not the exact figures, which change, but the spread: the same conversation can cost 30 times more on a premium model than on a small one. For most customer-facing questions from a knowledge base, a small or mid-range model gives good answers, and BYOK lets you choose.
+H2[how-bundled-pricing-hides-or-changes-this]: How bundled pricing hides or changes this
+P: Bundled plans typically include a monthly number of conversations, messages or credits. The platform buys AI at wholesale prices, decides which model you get and prices the bundle with a margin and a buffer for heavy users. That has real benefits: simplicity, no provider account, predictable bills and no key to manage. The costs are less obvious.
+UL:
+- **Margin on usage.** You pay more than the provider's rate for each conversation.
+- **Model limits.** You may not be able to choose a cheaper or better model for your use case.
+- **Overage cliffs.** Going past the included volume can trigger large jumps or forced upgrades.
+- **Opaque credits.** A message may consume different credits depending on model, length or features.
+- **Lock-in.** Moving vendors means leaving your model choice and usage history behind.
+H2[how-byok-pricing-behaves-as-you-grow]: How BYOK pricing behaves as you grow
+P: With BYOK, the platform subscription is mostly about features and volume of chat sessions. The AI cost tracks your actual usage at the provider's price. If your volume triples, you pay three times the AI cost, which for a small model is still small. If a cheaper model becomes good enough, you switch and your cost drops immediately, without renegotiating anything. If a better model arrives, you can try it the same day.
+TABLE:
+H: Monthly chat sessions | AI cost, small model (illustrative) | AI cost, mid-range model (illustrative)
+R: 300 | about $1 | about $6
+R: 1,000 | about $3 | about $21
+R: 5,000 | about $15 | about $105
+R: 20,000 | about $60 | about $420
+P: Add your platform subscription to see the total. For many small businesses, the AI usage is a small fraction of the total; for high-volume operations it is significant, and control over it matters.
+H2[when-bundled-pricing-is-the-better-choice]: When bundled pricing is the better choice
+UL:
+- You want the simplest possible setup and do not want to manage a provider account.
+- Your volume is low and predictable, so the bundle's margin costs little.
+- You prefer a single invoice.
+- You value not having to choose a model.
+H2[when-byok-is-the-better-choice]: When BYOK is the better choice
+UL:
+- You want to see and control exactly what AI costs.
+- Your volume is growing or unpredictable.
+- You want to choose or change models, including cheaper fast models for routine questions.
+- You have privacy or data-location preferences and want to pick the provider.
+- You already have an AI provider account or credits.
+- You want to avoid a margin on every conversation.
+H2[security-and-privacy-considerations]: Security and privacy considerations
+P: With BYOK, your visitors' messages go from the platform to the AI provider you chose, under your account and that provider's terms. That is an advantage if you want control, and a responsibility because you need to accept the provider's terms and understand their data handling. Check whether your provider uses API data for training (many do not by default for business API use, but confirm) and where it processes data. Keys should be stored encrypted by the platform, never in browser code. In Crescelo, provider keys are stored encrypted with AES-256-GCM. See [how a bring-your-own-key vault works](/blog/cryptographic-byok-vault-aes-256-gcm) and [BYOK explained](/blog/bring-your-own-ai-key-byok-explained). No product should claim you never need to read the provider's privacy terms.
+H2[how-to-set-up-a-key-safely]: How to set up a key safely
+OL:
+- Create an account with your chosen provider and add a payment method or credits.
+- Create a new API key just for this assistant, so you can revoke it independently.
+- Set a monthly spending limit or budget alert at the provider, if offered.
+- Paste the key into the assistant's AI settings. Never share it in chats or emails.
+- Test with a few questions and check usage in the provider's dashboard.
+- Review usage monthly and revisit the model choice.
+P: The provider guides in the help centre cover each provider, including [OpenAI](/support/ai-connectors/openai), [Gemini](/support/ai-connectors/gemini) and [others](/support/ai-connectors).
+H2[how-to-compare-quotes-fairly]: How to compare quotes fairly
+OL:
+- For bundled products, ask what is included in terms of conversations, and what an extra conversation costs.
+- For BYOK products, estimate your monthly sessions and use the worked model above with the provider's current prices.
+- Add the platform subscription in each case.
+- Compare the totals at your current volume and at three times that.
+- Consider setup effort and the value of control, and pick what suits you.
+P: Crescelo's plans are $49, $149 and $399 a month, with 100, 500 and 2,000 chat sessions included; see the [pricing page](/pricing) for what each includes. The platform-versus-platform comparison is in our [chatbot platform comparison](/blog/website-chatbot-platform-comparison).
+H2[picking-a-model-without-overspending]: Picking a model without overspending
+P: With BYOK you choose the model, and that choice is the biggest lever on cost. A simple approach is to start with a small or mid-range model and test it on your real questions. Keep a list of twenty questions, run them on two models and compare the answers. If the cheaper model answers correctly and stays within the documents, use it. If it struggles on longer or more complex questions, step up. Do not assume the most expensive model is better for grounded question answering: when the answer is in the retrieved text, a good small model often reads it just as well. Revisit the choice every few months, because models and prices change quickly.
+TABLE:
+H: Question type | Usually fine on a small model | Consider a stronger model
+R: Prices, hours and policies from documents | Yes | Rarely needed
+R: Simple booking conversation | Yes | Rarely needed
+R: Long, multi-part questions across several documents | Sometimes | Often helps
+R: Nuanced tone or many languages | Test carefully | May help
+H2[watch-out-for-hidden-usage]: Watch out for hidden usage
+UL:
+- **Long system prompts and history** add input tokens to every reply. Keep instructions tight and trim history.
+- **Very large retrieved passages** increase input cost. Use focused documents.
+- **Retries and errors** can cost tokens without producing a useful reply. Monitor your provider dashboard.
+- **Test conversations** count too, so keep tests short.
+- **Bots or abuse** can run up usage. Rate limits and spending caps protect you.
+H2[frequently-asked-questions]: Frequently asked questions
+FAQ:
+Q: What does bring your own key mean?
+A: You create an account with an AI provider and paste your API key into the chatbot platform. The provider bills you directly for AI usage, and the platform charges only for its software.
+Q: Is BYOK cheaper than bundled AI?
+A: Often, especially as volume grows or when a small model is enough, because there is no margin on AI usage. At low volume the difference may be small, and bundled plans can be simpler.
+Q: How much does an AI chatbot conversation cost?
+A: It depends on the model and the length of the conversation. With a small model it can be a fraction of a cent to a few cents per session; premium models can cost many times more.
+Q: Is my API key safe?
+A: It should be stored encrypted by the platform and never exposed to visitors. Use a dedicated key, set spending limits and revoke it if you suspect a problem.
+Q: Can I change models later?
+A: With BYOK, yes. You can switch model or provider whenever a better or cheaper option appears.
+Q: Do I need technical skills to use my own key?
+A: No. You create the key in the provider's dashboard and paste it into the settings. Guides walk through each provider.
+P: You can try a free engine to test your assistant, then connect your own provider when you are ready. Start in the [playground](/playground) or [start a free trial](/login?mode=register).
+H2[further-reading]: Further reading
+UL:
+- [OpenAI API documentation](https://platform.openai.com/docs/overview): Models, pricing and limits for the OpenAI API.
+- [Google Search Central: creating helpful, people-first content](https://developers.google.com/search/docs/fundamentals/creating-helpful-content): What Google looks for in useful pages.

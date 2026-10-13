@@ -1,0 +1,98 @@
+TITLE: How to Back Up Your Business Data with the 3-2-1 Rule (and Test That It Works)
+SEO: How to Back Up Your Business Data | Crescelo
+DESC: A plain-English guide to backing up small business data: what to protect, the 3-2-1 rule, cloud and SaaS data, automation, encryption, restore tests.
+EXCERPT: A plain-English guide to backing up small business data: what to protect, the 3-2-1 rule, cloud and SaaS data, automation, encryption, restore tests.
+CLUSTER: 
+MOD: 2026-09-27
+P: Most small businesses do not think about backups until the day they need one: a laptop is stolen, a staff member deletes a folder, ransomware encrypts the shared drive, or a cloud account is locked. On that day the question is simple: can you get your data back, and how long will it take? Studies of small business failures consistently show that data loss is a leading contributor to serious disruption, and the cheap insurance is a backup routine that someone has actually tested. This guide gives you a practical plan without jargon. You will learn what data to protect, how the 3-2-1 rule works, how to handle data that lives in cloud services (which people wrongly assume is backed up), how to automate and encrypt backups, how to test restores and what to do in an emergency.
+H2[step-1-list-what-you-must-not-lose]: Step 1: List what you must not lose
+TABLE:
+H: Category | Examples | Where it lives
+R: Financial records | Invoices, accounting data, tax documents | Accounting software, laptops, email
+R: Customer data | Contacts, orders, bookings, conversations | CRM, booking system, chat tools
+R: Documents | Contracts, proposals, price lists, policies | Shared drives, laptops
+R: Website | Pages, images, database, settings | Hosting provider, CMS
+R: Email | Mailboxes and attachments | Email provider
+R: Configuration | Passwords, DNS records, licence keys | Password manager, registrar
+P: Rank them by how painful the loss would be. Start by protecting the top three.
+H2[step-2-understand-the-3-2-1-rule]: Step 2: Understand the 3-2-1 rule
+UL:
+- **3** copies of your data: the original and two backups.
+- **2** different types of storage, for example an external drive and cloud storage.
+- **1** copy off-site, away from your office, so a fire, flood or theft cannot destroy everything.
+P: Modern advice adds a fourth idea: keep at least one copy that cannot be changed or deleted from your normal computers, called an immutable or offline copy. Ransomware often encrypts every connected drive, including backups, so an isolated copy is your last line of defence.
+H2[step-3-do-not-assume-the-cloud-is-a-backup]: Step 3: Do not assume the cloud is a backup
+P: Cloud services keep your data available, but that is different from protecting it. If someone deletes a record, if a sync error overwrites files or if ransomware syncs encrypted files back to the cloud, the service faithfully keeps the damage. Most software-as-a-service providers operate on a shared-responsibility model: they keep the service running, and you are responsible for your content.
+TABLE:
+H: Service type | Backup approach
+R: Email and shared drives | Third-party backup tools, or scheduled exports
+R: Accounting and CRM | Regular exports to CSV or the tool's export function; keep the files
+R: Website | Host backups plus your own periodic copy of files and database
+R: Booking and chat tools | Export contacts, bookings and knowledge documents regularly
+R: Password manager | An encrypted export stored offline
+P: Always confirm that any tool you rely on lets you export your data; see [how to choose SaaS software](/blog/how-to-choose-saas-software-small-business).
+H2[step-4-choose-your-tools]: Step 4: Choose your tools
+OL:
+- For laptops and desktops, use the operating system's built-in backup to an external drive, plus an automatic cloud backup service.
+- For servers or a shared drive, use a network storage device with snapshots and replicate to the cloud.
+- For cloud accounts, use a reputable backup service that supports them, or scheduled exports.
+- For an offline copy, rotate an encrypted external drive kept off-site, or use immutable cloud storage.
+P: Pick tools that run without anyone remembering. A backup that depends on a person clicking a button will eventually stop.
+H2[step-5-automate-and-encrypt]: Step 5: Automate and encrypt
+UL:
+- Schedule daily backups for changing data and weekly for the rest.
+- Encrypt backups so a lost drive is not a data breach.
+- Store encryption keys and passwords separately from the backups, in a password manager and a sealed printed copy.
+- Set alerts for failed backups and check them.
+P: For customer personal data, an unencrypted backup drive that goes missing can be a reportable breach in many places. See the [GDPR checklist](/blog/website-chatbot-gdpr-checklist).
+H2[step-6-decide-how-much-loss-you-can-tolerate]: Step 6: Decide how much loss you can tolerate
+TABLE:
+H: Term | Meaning | Example
+R: Recovery point objective (RPO) | How much recent data you can afford to lose | One day of bookings
+R: Recovery time objective (RTO) | How long you can be without the system | Four hours for the booking system, two days for old archives
+P: These two numbers determine how often you back up and how quickly you need to restore. A clinic that cannot lose appointments needs more frequent backups than a business with a static brochure site.
+H2[step-7-test-a-restore]: Step 7: Test a restore
+P: An untested backup is a hope, not a plan. Every quarter, pick a file, a mailbox item and one system export and restore them to a different location. Time the process and note any problems. Once a year, rehearse a bigger scenario: a laptop is lost, and a staff member needs to be working again on a spare machine by the end of the day.
+H2[step-8-write-a-one-page-recovery-plan]: Step 8: Write a one-page recovery plan
+UL:
+- Who to call and in what order.
+- Where the backups are and how to access them, including passwords.
+- The order in which to restore systems.
+- How to contact customers if service is disrupted.
+- Which accounts to lock and which passwords to change after an incident.
+- Where the printed copy of this plan is kept.
+P: Keep a copy outside the systems it describes, since you cannot read an online document if your accounts are down.
+H2[protecting-against-ransomware]: Protecting against ransomware
+UL:
+- Keep an offline or immutable backup.
+- Enable two-factor sign-in everywhere; see [team roles and two-factor authentication](/blog/setup-rbac-2fa-team-security).
+- Keep systems updated.
+- Train staff to spot phishing.
+- Limit who can delete or overwrite shared files.
+H2[a-simple-starter-setup]: A simple starter setup
+TABLE:
+H: Item | Suggested setup | Frequency
+R: Laptops and desktops | Automatic cloud backup plus an external drive | Continuous or daily
+R: Shared documents | Version history plus a weekly export to a second location | Weekly
+R: Accounting and CRM | Export to CSV and store in the backup location | Monthly, and before big changes
+R: Website | Host backups plus a copy of files and database | Weekly, and before updates
+R: Passwords and DNS records | Encrypted export stored offline | After every change
+P: Assign one person to own the backup routine and one deputy, so it does not depend on a single individual. Put a recurring reminder in the calendar for the quarterly restore test, and write down the result each time. If a restore fails, treat it as the most valuable thing the test could have found, fix it that day and test again.
+H2[frequently-asked-questions]: Frequently asked questions
+FAQ:
+Q: What is the 3-2-1 backup rule?
+A: Keep three copies of your data, on two different types of storage, with one copy off-site.
+Q: Is Google Drive or Dropbox a backup?
+A: Not by itself. They sync changes, including deletions and encrypted files, so add a separate backup or version history you have tested.
+Q: How often should I back up?
+A: Daily for data that changes daily, weekly for the rest. Decide based on how much loss you can tolerate.
+Q: Do I need to encrypt backups?
+A: Yes, especially if they contain customer data and could be lost or stolen.
+Q: How do I know my backup works?
+A: Test a restore every quarter and time it.
+Q: Are the tools I use for customer chats and bookings included?
+A: Check each tool's export options and export your contacts, bookings and documents regularly.
+P: Crescelo lets you keep your own copies of your source documents; see the [knowledge base feature](/product/knowledge-base) and [pricing](/pricing). For a related process, read [preparing your service menu and price list](/blog/prepare-service-menu-pricing-docs-rag).
+H2[further-reading]: Further reading
+UL:
+- [Google Search Central: creating helpful, people-first content](https://developers.google.com/search/docs/fundamentals/creating-helpful-content): What Google looks for in useful pages.

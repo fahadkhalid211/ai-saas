@@ -1,0 +1,113 @@
+TITLE: Pest Control by Chat: Identifying the Problem, Booking Inspections and Handling Urgent Calls
+SEO: Pest Control by Chat: Identifying the Problem | Crescelo
+DESC: How pest control companies use a website chat to identify pests, gather details, give safe guidance, explain treatment and pricing, and book inspections.
+EXCERPT: How pest control companies use a website chat to identify pests, gather details, give safe guidance, explain treatment and pricing, and book inspections.
+CLUSTER: Home Services
+MOD: 2026-09-27
+P: Nobody searches for a pest controller because they are curious. They search because something is in the kitchen, the loft or the bed, and they want it gone now. That urgency is your advantage and your challenge: the first company that answers with confidence usually wins the job, and the customer's anxiety means they will pay attention to the clearest reply. A website chat can meet them at midnight, ask the right identification questions, give calm and safe guidance, explain what treatment involves and what it costs, and book an inspection before they call a competitor. This guide explains how a pest control business can set up a chat that does that well: what to ask for each pest, what safe advice to give, how to talk about treatment and price, how to handle commercial and urgent cases and how to measure the results.
+NOTE: Pest control involves chemicals, health risks and regulation. Your business must decide what advice it can give, and follow local licensing and product rules. The assistant should never advise customers on using pesticides themselves.
+H2[what-customers-ask]: What customers ask
+TABLE:
+H: Enquiry | What the customer wants
+R: I saw a mouse or droppings | How serious is it? Can you come quickly? How much?
+R: Wasp nest or bees | Is it dangerous? Can you remove it today?
+R: Bed bugs suspected | How do I know? How do you treat it? Will neighbours find out?
+R: Ants, cockroaches, fleas | Cause, treatment and cost
+R: Termites or wood damage | Inspection, report and options
+R: Commercial premises | Compliance, regular contracts, discretion
+H2[identify-the-pest-with-a-few-questions]: Identify the pest with a few questions
+P: A lead that says 'pests, please call' costs you a call. A lead with a few identification details lets you send the right technician with the right equipment. Ask simply.
+TABLE:
+H: Pest | Questions
+R: Rodents | What did you see or hear (droppings, gnawing, noises)? Where in the property? For how long? Pets or children present?
+R: Wasps and bees | Where is the nest and how high? How big? Has anyone been stung? Any allergies?
+R: Bed bugs | Bites or marks? Blood spots on sheets? Live insects seen? Which rooms?
+R: Ants and cockroaches | Where do you see them? What time of day? How many?
+R: Fleas | Pets in the home? Bites? Recent moves or visitors?
+R: Termites | Signs of damaged wood, mud tubes or winged insects? Any previous treatments?
+P: Then ask for the address, a number and the best time. Photos help; invite them by reply. See [estimate requests and project scoping](/blog/estimate-requests-project-scoping-chat).
+H2[triage-which-calls-are-urgent]: Triage: which calls are urgent
+TABLE:
+H: Level | Examples | Response
+R: Urgent | Wasp nest near entrances with allergy risk, someone stung and having a reaction, rodents in a food business, bed bugs affecting sleep | Prompt callback and, where possible, same-day or next-day visit
+R: Priority | Active infestation in a home, nest in a garden | Book the earliest slot
+R: Routine | Prevention, contract quotes, general enquiries | Book an inspection at a convenient time
+P: For any allergic reaction, difficulty breathing, swelling of the face or throat after a sting, the assistant should tell the customer to call emergency services immediately. It should not assess medical severity. See [handling emergencies in automated chat](/blog/handling-emergencies-automated-chat).
+H2[safe-guidance-and-what-not-to-say]: Safe guidance and what not to say
+UL:
+- Keep children and pets away from the affected area and any nest.
+- Do not disturb, spray or try to remove a wasp or bee nest yourself.
+- Do not use bug bombs or pesticides in the home without professional advice, especially in bedrooms and food areas.
+- For suspected bed bugs, do not move items between rooms; wash bedding on a hot cycle if you can and wait for an inspection.
+- For rodents, keep food in sealed containers and do not touch droppings without protection.
+P: Keep these short, and have your technicians approve the wording. The assistant should never recommend specific chemicals or doses.
+H2[explain-treatment-and-price-honestly]: Explain treatment and price honestly
+TABLE:
+H: Question | Approach
+R: How much will it cost? | Give ranges for common jobs and what they include, and say that the price is confirmed after an inspection
+R: How long does it take? | Typical timeline, including follow-up visits where needed
+R: Is it safe for children and pets? | Your approved safety statement and any preparation steps
+R: Do you guarantee the result? | Only what your warranty states, with its terms
+R: Will you use marked vehicles? | Your discretion policy, if you offer one
+UL:
+- Explain what the inspection includes and whether it is free.
+- State whether treatments include follow-up visits.
+- Be clear about what customers must do to prepare.
+- Avoid guarantees you cannot back.
+H2[book-the-inspection]: Book the inspection
+P: The goal of the chat is an inspection booked at a time the customer will actually be home. Offer real windows, confirm by email with preparation instructions and give a way to change the booking. Crescelo's built-in picker offers slots from your opening hours and one slot length, so set it to the inspection window; use Calendly or Cal.com if you need different visit types. See [AI appointment booking](/blog/ai-appointment-booking).
+P: For urgent cases, alert your dispatcher at once and let them confirm timing.
+H2[commercial-customers]: Commercial customers
+P: Restaurants, hotels and property managers need discretion, compliance documentation and regular service. The assistant can explain your commercial service in general terms, capture the business name, contact, premises type and concerns, and route the lead to your commercial team. Do not discuss sensitive details of a customer's premises in an open chat. See [commercial janitorial RFP capture](/blog/commercial-janitorial-rfp-capture-chat) for a similar flow.
+H2[seasonal-patterns]: Seasonal patterns
+TABLE:
+H: Season | Typical enquiries | Preparation
+R: Spring and summer | Wasps, ants, fleas | Update wasp and nest guidance; check capacity
+R: Autumn and winter | Rodents seeking warmth | Rodent prevention content
+R: Year-round | Bed bugs, cockroaches, commercial contracts | Discreet handling policies
+P: Update the assistant's documents with seasonal information and current lead times. See [seasonality management with an AI assistant](/blog/seasonality-management-ai-assistant).
+H2[a-sample-conversation]: A sample conversation
+TABLE:
+H: Speaker | Message
+R: Customer | There is a wasp nest above our front door and we have a toddler.
+R: Assistant | I understand, that is worrying. Please keep the toddler and pets away from the door and do not try to remove or spray the nest. If anyone has been stung and has trouble breathing or swelling, call emergency services. We can usually treat nests within a day. Removal starts from $X and includes a follow-up check. What is your postcode, and is anyone in the household allergic to stings?
+R: Customer | No allergies. SW4 7QT.
+R: Assistant | Thank you. I have flagged this as priority for our team. What is the best number to reach you, and are you home today?
+H2[measure-the-results]: Measure the results
+TABLE:
+H: Metric | Why
+R: Enquiries outside office hours and converted | Coverage
+R: Time from enquiry to first contact | Speed
+R: Inspection to treatment conversion | Quality of the message
+R: Priority alerts and response time | Process
+R: Repeat and contract customers gained | Long-term value
+H2[preparing-customers-for-the-visit]: Preparing customers for the visit
+P: A good preparation message reduces wasted visits and improves results. In the confirmation email, tell customers what to expect and what to do: clear access to the areas to be inspected, keep pets and children away, do not use over-the-counter products beforehand because they can disperse the pests and make inspection harder, and let the technician know about allergies, pregnancy or sensitive occupants. Keep it short, and have your technicians approve it.
+H2[follow-up-and-prevention]: Follow-up and prevention
+P: Pest problems return if the cause is not addressed. After treatment, send a short summary of what was done, what to watch for and what preventative steps help, such as sealing entry points and storing food properly. Offer a follow-up visit if your service includes one, and invite customers to a maintenance plan without pressure. Ask for a review when the problem is solved and the customer is relieved. Word of mouth is the strongest source of pest control work, because people trust a recommendation from a neighbour who has just had the same problem.
+H2[common-mistakes]: Common mistakes
+UL:
+- Letting the assistant recommend products or doses.
+- Promising guarantees that the warranty does not support.
+- Discussing a commercial customer's problems in an open chat.
+- Forgetting to give allergy and safety guidance for stings.
+- Not updating seasonal information and lead times.
+P: A quick review of the conversations each week will show whether any of these are creeping in.
+H2[frequently-asked-questions]: Frequently asked questions
+FAQ:
+Q: Can a chatbot identify pests?
+A: It can ask identification questions and capture photos or descriptions so your technician can prepare. It should not give a definitive diagnosis.
+Q: What safety advice should it give?
+A: Short, approved guidance: keep children and pets away, do not disturb nests and do not use pesticides yourself. Direct allergic reactions to emergency services.
+Q: Can it quote prices?
+A: It can give ranges you can honour and say that the price is confirmed after an inspection.
+Q: Can it book inspections?
+A: Yes, with available slots and an email confirmation.
+Q: How should it handle commercial customers?
+A: Capture business details and route to your commercial team without discussing sensitive premises details in chat.
+Q: What about urgent nests or infestations?
+A: Recognise urgency, give safe guidance, alert your dispatcher and offer the earliest visit.
+P: Try a pest conversation with your own services and prices in the [playground](/playground), see the [lead capture feature](/product/lead-capture) and read [AI lead capture for home service contractors](/blog/home-service-contractor-ai-lead-capture).
+H2[further-reading]: Further reading
+UL:
+- [Google Search Central: creating helpful, people-first content](https://developers.google.com/search/docs/fundamentals/creating-helpful-content): What Google looks for in useful pages.

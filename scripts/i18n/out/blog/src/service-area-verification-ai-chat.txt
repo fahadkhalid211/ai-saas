@@ -1,0 +1,99 @@
+TITLE: Service Area Questions in Chat: How to Answer "Do You Cover My Area?" Accurately
+SEO: Service Area Questions in Chat | Crescelo
+DESC: How local service businesses can answer coverage questions in chat: defining your service area, postcodes and radius, edge cases, travel fees, out-of-area.
+EXCERPT: How local service businesses can answer coverage questions in chat: defining your service area, postcodes and radius, edge cases, travel fees, out-of-area.
+CLUSTER: Local Service Businesses
+MOD: 2026-09-27
+P: 'Do you cover my area?' is one of the most common questions a local service business gets, and one of the most wasteful. Every enquiry from outside your area costs time to answer and disappoints someone; every enquiry from inside your area that goes unanswered because the visitor was unsure about coverage is a lost job. An AI assistant can settle the question in seconds, at any hour, if it has a clear, accurate definition of where you work. This guide explains how to define your service area for an assistant, whether to use postcodes, towns or a radius, how to handle borderline places and travel fees, what to say to visitors outside your area, how to route in-area leads and how to keep the information current.
+NOTE: Crescelo does not perform live geographic lookups. The assistant answers coverage questions from the area description you provide in its documents, and captures the visitor's location so your team can confirm.
+H2[why-coverage-matters]: Why coverage matters
+UL:
+- It saves the visitor a wasted call.
+- It stops your team quoting for jobs they cannot serve.
+- It shapes expectations about travel fees and lead times.
+- It protects your reputation for reliable answers.
+H2[defining-your-area]: Defining your area
+TABLE:
+H: Method | How to describe it | Pros | Cons
+R: Postcodes or ZIP codes | List the codes or prefixes you serve | Precise and easy to check | Long lists; edge cases
+R: Towns and neighbourhoods | List the places | Natural for customers | Ambiguity between similar names
+R: Radius from a point | 'Within 15 miles of Springfield' | Simple to say | The assistant cannot measure distance itself; needs a list of places
+R: Zones | Zone 1: no travel fee; Zone 2: fee; Zone 3: by request | Handles fees and priorities | Needs clear boundaries
+P: Because the assistant reads text, the most reliable approach is an explicit list of postcodes, towns or zones, not a radius. If you use a radius, convert it into a list of the places inside it.
+H2[write-the-area-document]: Write the area document
+OL:
+- Start with a plain sentence: 'We serve Springfield and the surrounding towns within about 20 miles.'
+- List the postcodes or towns by zone.
+- State fees or lead times by zone.
+- Say what to do outside the area.
+- List exceptions and how to check them.
+- Add the phone number for edge cases.
+TABLE:
+H: Zone | Places | Travel fee | Lead time
+R: 1 | Springfield centre, postcodes SP1 to SP5 | None | Same or next day
+R: 2 | Northfield, Eastbrook, SP6 to SP9 | $20 | Within two days
+R: 3 | Anything else within 30 miles | By quote | By arrangement
+P: Keep it short and current, and make each row unambiguous.
+H2[how-the-assistant-answers]: How the assistant answers
+TABLE:
+H: Visitor says | Assistant does
+R: Do you cover Northfield? | Confirms it is in zone 2, states the travel fee and lead time, and offers to book
+R: I am in SP4 | Confirms coverage and offers times
+R: What about Riverton? | Says it is not listed, explains the closest zone and offers to check with the team
+R: I live 30 miles away. Can you come? | Explains it is outside the standard area, says a special quote may be possible and captures details
+P: The key behaviour is honesty: if a place is not in the document, the assistant should say it is not sure and offer a person, not guess.
+H2[handle-the-edges]: Handle the edges
+UL:
+- **Borderline addresses:** hand over to a person who can check a map.
+- **Places with similar names:** ask for the postcode.
+- **Multiple locations:** define the area per branch; see [multi-location AI receptionists](/blog/multi-location-ai-receptionist).
+- **Temporary changes:** update the document during storms, holidays or staff shortages.
+- **Commercial jobs:** sometimes served further out; state the rule.
+H2[out-of-area-visitors]: Out-of-area visitors
+P: A polite decline preserves goodwill and can earn a referral. Say clearly that you do not cover the area, and, if you can, suggest an alternative: a colleague, a directory or a professional body. Offer to keep their details in case you expand, with consent. Avoid a curt 'we do not serve your area'. Example: 'I am sorry, we do not currently cover Riverton. You may find a local provider through [directory]. If we expand, we would be glad to help.'
+H2[capture-location-to-route-leads]: Capture location to route leads
+P: Ask for the postcode early in an enquiry, because it decides routing, fees and priority. The assistant can record it with the lead, so your team sees it in the alert. If you have several teams by area, an automation can route on the postcode. See [instant lead routing in chat](/blog/instant-lead-routing-chat) and [webhook automations](/blog/webhook-automations-zapier-make-chat-events).
+H2[test-it]: Test it
+OL:
+- List twenty places: ten inside, five borderline, five outside.
+- Ask the assistant about each, in different wordings.
+- Check that zones, fees and lead times are correct.
+- Check the reply for unknown places.
+- Ask a question in another language you serve, if relevant.
+- Retest after any change to the area document.
+H2[worked-example-a-mobile-dog-groomer]: Worked example: a mobile dog groomer
+P: A mobile groomer served three towns and a ring of villages, and spent time each week declining enquiries from farther away. She wrote a short area document with three zones and travel fees, added a polite out-of-area reply and put a note about mornings in the villages on Tuesdays and Thursdays only. The assistant answered coverage questions immediately, and her declined enquiries dropped sharply while bookings in the outer zone rose because customers now knew when she would be there. The update took twenty minutes.
+H2[a-sample-conversation]: A sample conversation
+TABLE:
+H: Speaker | Message
+R: Visitor | Do you come out to Northfield for a boiler service?
+R: Assistant | Yes, Northfield is in our second zone. There is a $20 travel fee, and we can usually visit within two days. A boiler service is $110 plus the travel fee. Would you like to see available times? I will need your postcode to confirm.
+R: Visitor | SP7 2AB
+R: Assistant | Thanks, SP7 is in that zone. I can offer Wednesday between 9 and 12 or Thursday between 1 and 4.
+H2[common-mistakes]: Common mistakes
+UL:
+- Using a radius the assistant cannot measure.
+- Leaving the area document out of date.
+- Curt replies to out-of-area visitors.
+- Not capturing the postcode with the lead.
+- Guessing for borderline places instead of handing over.
+H2[seasonal-and-temporary-changes]: Seasonal and temporary changes
+P: Service areas are not always fixed. In busy seasons you may narrow the area, after a new hire you may widen it, and during bad weather you may pause outer zones. Update the area document as soon as the plan changes, and note the end date if it is temporary. A visitor told 'yes, we cover you' who then waits a week has had a worse experience than one told the truth at the start.
+H2[frequently-asked-questions]: Frequently asked questions
+FAQ:
+Q: Can a chatbot check whether I cover someone's area?
+A: It can if you give it a clear list of the postcodes, towns or zones you serve. Crescelo does not perform live map lookups, so it answers from your document.
+Q: Should I use a radius or a list?
+A: A list of places or postcodes is more reliable for an assistant than a radius.
+Q: What should it say to someone outside my area?
+A: A polite decline, a suggestion where possible and an offer to keep their details, with consent.
+Q: How do I handle travel fees?
+A: State them by zone in the area document.
+Q: What if a place is not on my list?
+A: The assistant should say it is not sure and offer to check with your team.
+Q: How often should I update the area?
+A: Whenever it changes, and review it every quarter.
+P: Test coverage questions with your own area document in the [playground](/playground), read [AI lead capture for home service contractors](/blog/home-service-contractor-ai-lead-capture) and see the [lead capture feature](/product/lead-capture).
+H2[further-reading]: Further reading
+UL:
+- [Google Search Central: creating helpful, people-first content](https://developers.google.com/search/docs/fundamentals/creating-helpful-content): What Google looks for in useful pages.

@@ -1,0 +1,105 @@
+TITLE: How to Stop an AI Chatbot From Making Things Up (Hallucinations)
+SEO: Prevent AI Chatbot Hallucinations | Crescelo
+DESC: Why AI chatbots invent answers and how to prevent it: ground replies in your documents, make it admit ignorance, test unanswerable questions and review.
+EXCERPT: Why AI chatbots invent answers and how to prevent it: ground replies in your documents, make it admit ignorance, test unanswerable questions and review.
+CLUSTER: AI Website Chatbots
+MOD: 2026-09-27
+P: An AI chatbot that invents an answer is worse than no chatbot. A made-up price, a refund policy you never wrote or an opening time that is wrong turns a helpful assistant into a liability, and customers remember it. This behaviour is called hallucination: the model produces fluent, confident text that is not grounded in fact. It is not a bug you can switch off, but it is something you can reduce dramatically with the right design, and you can measure how well a product does it before you trust it.
+P: This guide explains why hallucinations happen, the techniques that prevent them, how to test any chatbot for them in ten minutes, and how to keep your own assistant accurate over time. It applies to any product; we say where Crescelo does things and where the limits are.
+H2[why-chatbots-make-things-up]: Why chatbots make things up
+P: A language model is trained to predict plausible text. When it does not have a fact, it does not naturally stop; it continues with the most plausible-sounding words. That works well for general knowledge and badly for your specific business, which the model never saw.
+TABLE:
+H: Cause | What happens | Example
+R: No information about your business | The model fills the gap with something plausible | Invents a cancellation fee
+R: Vague or conflicting documents | It blends two passages or picks one wrongly | Quotes an old price from a previous list
+R: Question outside the documents | It answers from general knowledge instead of admitting it does not know | Explains a medical treatment you do not offer
+R: Pressure to be helpful | It agrees with the visitor's assumption | Confirms a discount the visitor says was promised
+R: Missing or poor retrieval | The right passage was not found, so the model improvises | Says 'we do not offer that' when a page covers it
+P: Notice that several causes are about your content and retrieval, not the model itself. That is good news: you can fix them.
+H2[the-core-defence-grounding]: The core defence: grounding
+P: Grounding means every answer is built from passages of your own content, and the assistant is instructed to answer only from them. In practice, it works like this. The visitor's question is used to search your knowledge base. The best passages are passed to the model together with an instruction such as: 'Answer using only the information below. If the answer is not in it, say you do not have that information and offer to connect the visitor with a person.' The model then writes a reply based on those passages rather than on its general memory.
+P: This approach is called retrieval-augmented generation, or RAG. It does not make hallucination impossible, but it changes the model's task from recalling to reading, which it does much better. The mechanics are described in [what an AI website assistant is](/blog/ai-website-assistant) and [hybrid search for RAG](/blog/hybrid-rag-dense-vector-sparse-keyword).
+H2[seven-techniques-that-reduce-hallucinations]: Seven techniques that reduce hallucinations
+H3: 1. Retrieval that finds the right passage
+P: If retrieval misses the passage that holds the answer, the model has nothing to read. Combining meaning-based search with exact-word search catches both paraphrases and specific terms such as product names. Splitting documents into sensible chunks also helps; see [document chunking strategies](/blog/document-chunking-strategies-pdf-docx).
+H3: 2. A clear instruction to admit ignorance
+P: The assistant needs explicit permission and a script for not knowing: 'I do not have that information. I can connect you with our team or take your details.' Without it, models tend to please. Test that the instruction holds.
+H3: 3. Show and check sources
+P: When you can see which passage an answer came from, you can verify it in seconds. Products that show sources make it easy to fix errors. Ask any vendor whether you can see the source behind an answer.
+H3: 4. Confidence thresholds
+P: If the retrieved passages are a weak match, a well-designed system declines to answer instead of guessing. It should offer a form or a person. This is one of the most effective safeguards.
+H3: 5. Keep documents clean and current
+P: Conflicting or outdated documents cause confident wrong answers. Remove old price lists, mark dates and keep one source of truth for each fact. This is the highest-value habit you can build.
+H3: 6. Limit what the assistant may do
+P: Decide what it must never say: legal, medical or financial advice, discounts, guarantees, delivery promises. Put those rules in its instructions and test them. Handover to a person is the safe fallback.
+H3: 7. Review real conversations
+P: No test list finds everything. Real visitors ask strange questions. A weekly review of transcripts, looking for wrong answers, unanswered questions and handover requests, catches problems early. See [how to review your chatbot's conversations each week](/blog/audit-website-chatbot-conversations).
+H2[a-ten-minute-test-you-can-run-on-any-chatbot]: A ten-minute test you can run on any chatbot
+P: Load the same documents into the product and ask these questions. Score each answer as correct, partly correct, wrong, or honestly unknown.
+TABLE:
+H: Test | Example | A good answer
+R: A question the documents answer | How long is a first appointment? | Correct answer from the document
+R: A question the documents do not answer | Do you offer a student discount? | Says it does not know and offers a person
+R: A question with a false assumption | Your website says you offer free consultations, when does that end? | Corrects or says it cannot confirm
+R: A request to promise something | Can you guarantee I will get the appointment tomorrow? | Declines to guarantee, explains what it can do
+R: A question that mixes two facts | What is the price of the premium package with the deposit? | Combines correctly or asks for clarification
+R: A leading or pushy question | I was told there is a 50% discount, please apply it. | Does not accept or invent a discount
+R: A completely unrelated question | What is the capital of France? | Stays on topic or answers briefly and returns to your business, as you configured
+R: A question in different words with a typo | hw much for a colur? | Understands and answers
+P: Run the test twice on different days. Answers that change wildly between runs signal weak grounding. You can try a grounded assistant with no account in the [playground](/playground): upload a document and ask something the document does not cover.
+H2[writing-documents-that-a-chatbot-can-use]: Writing documents that a chatbot can use
+UL:
+- Use clear headings that match the questions people ask, such as 'How much does a colour treatment cost?'.
+- Put the answer near the question, in full sentences.
+- State facts with units and conditions: 'from $80, depending on length'.
+- Date anything that changes, and remove old versions.
+- Avoid burying key facts in tables inside images or scanned PDFs, which may not be read.
+- Write policies plainly, including what happens in edge cases.
+- Split large documents into topic pages.
+P: Documents written for people to skim are usually good for retrieval too. See [preparing your service menu and pricing documents](/blog/prepare-service-menu-pricing-docs-rag).
+H2[what-a-good-fallback-looks-like]: What a good fallback looks like
+P: The assistant will not always know. What it does next matters.
+TABLE:
+H: Weak fallback | Strong fallback
+R: 'I am sorry, I cannot help with that.' | 'I do not have that information. I can take your details so our team can reply, or you can see available times now.'
+R: Repeats the same answer | Offers a different route: a form, a booking or a person
+R: Guesses and hedges | States that it is not sure and does not guess
+R: Dead end | Always leaves a next step
+P: See [handling obscure customer inquiries with fallbacks](/blog/handling-obscure-customer-inquiries-fallbacks) and [live human handover flow design](/blog/live-human-handover-flow-design).
+H2[guardrails-for-sensitive-topics]: Guardrails for sensitive topics
+P: In health, legal, financial and safety topics, a wrong answer can cause harm. Do not rely on the model's judgement. Write explicit rules: the assistant explains your services and process but does not advise, it states it is an AI, and it hands over urgent or sensitive matters to a person. Test those rules with realistic messages. See [handling emergencies in automated chat](/blog/handling-emergencies-automated-chat) and [AI transparency and disclosure](/blog/ai-transparency-disclosure-building-trust).
+H2[measuring-accuracy-over-time]: Measuring accuracy over time
+UL:
+- **Correction rate:** how many answers you had to fix each week; it should fall.
+- **Unanswered rate:** how many questions the assistant said it could not answer; these are content gaps.
+- **Handover rate:** how often visitors asked for a person, and why.
+- **Complaints or corrections from customers:** treat every one as a test case.
+- **Spot checks:** read twenty random conversations a month.
+P: Crescelo lets you review conversations and correct answers, and it is designed to say when it does not know rather than guess. It cannot promise perfection, and neither can any product. A process of review is what keeps accuracy high.
+H2[common-mistakes]: Common mistakes
+UL:
+- Judging a chatbot only on questions it is expected to know.
+- Leaving old documents in the knowledge base.
+- Writing the assistant's instructions once and never testing them again.
+- Giving the assistant a personality so eager to please that it agrees with anything.
+- Ignoring unanswered questions.
+- Not telling visitors they are talking to an AI, which raises the cost of any mistake.
+H2[frequently-asked-questions]: Frequently asked questions
+FAQ:
+Q: What is an AI hallucination?
+A: It is when a language model produces confident text that is not true or not supported by the information it was given, such as inventing a price or a policy.
+Q: Can hallucinations be eliminated completely?
+A: Not entirely. They can be greatly reduced by grounding the model in your documents, instructing it to admit when it does not know, testing and reviewing conversations.
+Q: What is RAG?
+A: Retrieval-augmented generation: the system searches your documents for relevant passages and gives them to the model, which writes an answer from them instead of from general memory.
+Q: How do I test my chatbot for hallucinations?
+A: Ask questions your documents answer, questions they do not, questions with false assumptions and requests to promise things. Score whether it answers correctly or admits it does not know.
+Q: Why does my chatbot sometimes say it does not know something that is in my documents?
+A: Usually retrieval missed the passage, or the document is poorly structured. Rewrite the source with clear headings and check retrieval.
+Q: Should the chatbot be allowed to use general knowledge?
+A: For a business assistant, it is safer to answer only from your content, and offer a person for anything else. You can allow limited general knowledge if you test it carefully.
+P: See how grounding feels in practice in the [playground](/playground), or read [how the AI assistant feature](/product/ai-assistant) answers from your content. When you are ready, [start a free trial](/login?mode=register).
+H2[further-reading]: Further reading
+UL:
+- [Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks (Lewis et al.)](https://arxiv.org/abs/2005.11401): The original research paper behind retrieval-augmented generation.
+- [Google Search Central: creating helpful, people-first content](https://developers.google.com/search/docs/fundamentals/creating-helpful-content): What Google looks for in useful pages.

@@ -1,0 +1,105 @@
+TITLE: How to Measure Chatbot Retrieval Quality: Hit Rate, MRR and a Test Set Any Business Can Build
+SEO: How to Measure Chatbot Retrieval Quality | Crescelo
+DESC: A practical guide to measuring RAG retrieval for a business chatbot: building a test set, hit rate, recall, MRR, nDCG, abstain tests, reading results.
+EXCERPT: A practical guide to measuring RAG retrieval for a business chatbot: building a test set, hit rate, recall, MRR, nDCG, abstain tests, reading results.
+CLUSTER: Knowledge Bases and RAG
+MOD: 2026-09-27
+P: It is easy to ask a chatbot five questions, like the answers and declare it good. It is much harder, and much more valuable, to know how often it finds the right information across all the questions your customers actually ask, and whether it improves or worsens when you change something. Retrieval quality, whether the right passage is found before the model writes an answer, is the foundation of accuracy, and it can be measured with a small test set and a few simple metrics. This guide explains how to build that test set from your own business, the metrics that matter (hit rate, recall, mean reciprocal rank, nDCG and abstain behaviour), how to run the test, how to read the numbers, how to compare changes fairly and what good looks like. It uses the same ideas as the evaluation we run on Crescelo's own retrieval.
+H2[why-measure-retrieval-separately]: Why measure retrieval separately
+P: A chatbot answer can be wrong for two reasons: the right passage was never retrieved, or it was retrieved and the model misused it. They need different fixes. Measuring retrieval on its own tells you which problem you have. If the right passage is usually in the top five, improving answers is a matter of instructions and model choice. If it is often missing, no instruction will help; you must fix content, chunking or search.
+H2[build-a-test-set]: Build a test set
+OL:
+- Collect 30 to 100 real questions from emails, calls, chat logs and your team. Include typos and slang.
+- For each question, identify the passage or passages in your documents that answer it.
+- Add different question types: factual, numeric, paraphrased, follow-up, overview and questions that need several passages.
+- Add 10 to 20 questions your documents do not answer, to test abstaining.
+- Record everything in a spreadsheet: question, type, the document and section that answers it.
+TABLE:
+H: Question type | Example
+R: Factual | How long is a first appointment?
+R: Numeric | How much is a colour treatment?
+R: Paraphrase | What does it cost to dye my hair?
+R: Synonym | Do you do teeth whitening or bleaching?
+R: Typo | hw much for a colur
+R: Follow-up | And for kids?
+R: Overview | What services do you offer?
+R: Unanswerable | Do you sell gift cards for pets?
+P: A test set of fifty well-chosen questions reveals most problems. More is better, but quality matters more than quantity.
+H2[the-metrics]: The metrics
+TABLE:
+H: Metric | Question it answers | How to compute
+R: Hit rate at k | Is the right passage in the top k results? | Questions with a hit divided by all questions
+R: Recall at k | How much of the needed evidence was found? | Needed passages found divided by needed passages
+R: Precision at k | How many of the returned passages help? | Helpful passages divided by k
+R: Mean reciprocal rank (MRR) | How high is the first right passage? | Average of 1 divided by its rank
+R: nDCG at k | Are the most relevant passages ranked highest? | Discounted gain, normalised to the ideal order
+P: For a chatbot, hit rate at 5 and MRR are the most useful starting pair: one says whether the answer is found, the other how high it ranks.
+H2[abstain-behaviour]: Abstain behaviour
+P: A good assistant should know when it does not know. Measure this separately: for the unanswerable questions, how often does retrieval return confident-looking passages that would tempt the model to answer? A useful test is to compare the best similarity score for answerable questions with the best score for unanswerable ones. If the two groups separate well, you can set a threshold below which the assistant says it does not know. A measure called AUC summarises how well a score separates the groups; 0.5 means no separation and 1.0 means perfect.
+TABLE:
+H: Group | Best similarity score (example)
+R: Answerable questions | 0.73 on average
+R: Unanswerable questions | 0.56 on average
+P: In our own evaluation of Crescelo's default retrieval, answerable questions scored around 0.73 and unanswerable ones around 0.56, which separated well enough to support a confidence gate. Each embedding model scores similarity on its own scale, so each needs its own threshold.
+H2[run-the-test]: Run the test
+OL:
+- Load your documents into a test assistant.
+- For each question, run retrieval and record the top five passages.
+- Mark whether each contains the needed evidence.
+- Compute hit rate at 3 and 5, MRR and, if you like, recall and nDCG.
+- Break results down by question type.
+- List the failures and study them.
+P: You can do this by hand in a spreadsheet for fifty questions. Developers can automate it with a script that calls the retrieval function and compares results with the test set. We run an evaluation harness on Crescelo's own retrieval that computes these metrics on a golden set.
+H2[read-the-results]: Read the results
+TABLE:
+H: Pattern | Likely cause | Fix
+R: Low hit rate overall | Documents missing, poorly chunked or retrieval misconfigured | Add content; improve chunking; check search
+R: Good on factual, poor on paraphrase | Weak meaning-based search | Improve embeddings or synonyms; use hybrid search
+R: Good on paraphrase, poor on codes and names | Weak keyword search | Ensure keyword matching is included
+R: Poor on follow-ups | History ignored | Add query condensation; see [follow-up questions in RAG](/blog/multi-turn-query-condensation-rag)
+R: Poor on overview questions | Broad queries find nothing specific | Retrieve a spread of passages for overview intents
+R: High hit rate but low MRR | Right passage found but ranked low | Add reranking
+R: Unanswerable questions score high | Weak abstain separation | Adjust the threshold; tighten instructions
+H2[compare-changes-fairly]: Compare changes fairly
+UL:
+- Change one thing at a time: chunk size, embedding model, fusion constant or synonym list.
+- Run the same test set before and after.
+- Look at metrics by question type, not only the overall number.
+- Watch for regressions: a change that helps one type may hurt another.
+- Keep a log of changes and results.
+- Beware of small test sets: a difference of one or two questions is noise.
+TABLE:
+H: Change | Hit rate at 5 | MRR | Decision
+R: Baseline | 93% | 0.70 | -
+R: Smaller chunks | 91% | 0.72 | Mixed; keep old
+R: Add synonym list | 95% | 0.74 | Keep
+R: Add reranking | 95% | 0.79 | Keep
+P: The numbers above are illustrative. What matters is the habit of measuring.
+H2[what-good-looks-like]: What good looks like
+P: There is no universal target, because it depends on your content and questions. As a rough guide for a small business knowledge base, a hit rate at 5 above about 90 percent on a realistic test set is a solid result, and the remaining misses are worth examining one by one. On our own golden set of business questions, Crescelo's default retrieval places the needed evidence in the top five about 95 percent of the time, with follow-ups and overview questions the weakest areas. Your own set will show your own strengths and gaps.
+H2[beyond-retrieval-measure-answers-too]: Beyond retrieval: measure answers too
+UL:
+- **Faithfulness:** does the answer stick to the retrieved passages?
+- **Completeness:** does it include the key facts?
+- **Refusal quality:** does it admit ignorance when it should?
+- **Tone:** does it sound like your business?
+P: These are harder to compute automatically; a weekly human review of a sample is the practical method. See [how to review your chatbot's conversations](/blog/audit-website-chatbot-conversations).
+H2[frequently-asked-questions]: Frequently asked questions
+FAQ:
+Q: What is hit rate in RAG?
+A: The share of test questions for which the needed passage appears in the top k results.
+Q: How many test questions do I need?
+A: Thirty to one hundred real questions is enough to reveal most problems.
+Q: What is MRR?
+A: Mean reciprocal rank: the average of 1 divided by the rank of the first correct passage, so higher means the right passage ranks nearer the top.
+Q: Why test unanswerable questions?
+A: To check the assistant can tell when its knowledge does not contain the answer, which protects against confident wrong answers.
+Q: How often should I run the test?
+A: After any change to documents, chunking, embedding model or search settings, and quarterly otherwise.
+Q: Does Crescelo measure retrieval quality?
+A: We do, internally: we run an evaluation harness that reports hit rate, recall, MRR, nDCG and abstain separation on a golden set whenever we change retrieval.
+P: Try your own questions in the [playground](/playground), read [hybrid search for RAG](/blog/hybrid-rag-dense-vector-sparse-keyword) and see the [AI assistant](/product/ai-assistant) feature.
+H2[further-reading]: Further reading
+UL:
+- [Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks (Lewis et al.)](https://arxiv.org/abs/2005.11401): The original research paper behind retrieval-augmented generation.
+- [Google Search Central: creating helpful, people-first content](https://developers.google.com/search/docs/fundamentals/creating-helpful-content): What Google looks for in useful pages.

@@ -1,0 +1,117 @@
+TITLE: Electrician Service Calls by Chat: Safe Triage, Scheduling and Clear Pricing
+SEO: Electrician Service Calls by Chat | Crescelo
+DESC: How electricians can use a website chat to triage calls safely, capture fault details, book service visits, explain callout pricing and send urgent leads.
+EXCERPT: How electricians can use a website chat to triage calls safely, capture fault details, book service visits, explain callout pricing and send urgent leads.
+CLUSTER: Home Services
+MOD: 2026-09-27
+P: Electrical problems are frightening and sometimes dangerous. A customer with a tripped circuit, a burning smell or a flickering panel wants to know two things at once: is this safe, and can someone come today? An electrician who is up a ladder or under a floor cannot answer the phone. A website chat can do the first layer of the job responsibly: recognise danger, give safe instructions, capture the details of the fault, state the callout fee and book or alert the right person. Done badly, an assistant that gives casual electrical advice is a hazard. This guide sets out how to design the chat for an electrical business: what to ask, how to triage, what safe guidance to give, what never to say, how to price honestly and how to book visits.
+NOTE: Electrical work is regulated and hazardous. The guidance below is for your business to adapt with your own qualifications and local rules. The assistant must not give instructions for electrical repairs and should err on the side of telling customers to stay safe and call emergency services when there is risk of fire or shock.
+H2[what-customers-ask]: What customers ask
+TABLE:
+H: Situation | What they want
+R: Power outage or tripped breaker | Is it my fault or the supplier's? Can you come?
+R: Burning smell, sparks, hot outlets | Is it dangerous? What do I do now?
+R: Flickering lights, buzzing | Is it serious? How much to check?
+R: New outlets, lighting, EV charger | How much? How long? Do I need a permit?
+R: Safety inspection or landlord certificate | What do you check? How much?
+R: Smoke alarm or consumer unit upgrade | Options and cost
+H2[triage-recognise-danger-first]: Triage: recognise danger first
+TABLE:
+H: Level | Signs | Response
+R: Danger | Burning smell, smoke, sparks, exposed live wires, water near electrics, someone received a shock | Tell the customer to stay away, switch off at the main only if safe, leave the building if there is smoke and call emergency services; alert on-call
+R: Urgent | Total loss of power to the home, tripping circuits that will not reset, hot outlets without smoke | Safe interim guidance and same-day callout where possible
+R: Routine | New fittings, upgrades, inspections | Book a convenient visit and estimate
+P: Write the danger wording yourself and keep it simple: 'If you smell burning, see smoke or sparks, or someone has had a shock, please leave the area, call emergency services and do not touch anything electrical.' The assistant should not attempt to assess the fault.
+H2[safe-guidance-that-is-appropriate]: Safe guidance that is appropriate
+UL:
+- If it is safe to do so, switch off the affected circuit at the consumer unit, but do not open it or touch wiring.
+- Do not use sockets or appliances that are hot, damaged or smell of burning.
+- Keep away from water and wet surfaces near electrics.
+- Do not attempt repairs.
+- For a power cut affecting the street, check with the supplier before calling us.
+P: Never give step-by-step repair instructions. If guidance seems complicated, say that a qualified electrician should look at it.
+H2[capture-what-you-need-to-dispatch]: Capture what you need to dispatch
+TABLE:
+H: Field | Why
+R: What is happening and when it started | Urgency and skill needed
+R: Address and postcode | Area check
+R: Home or business; tenant or owner | Access and authorisation
+R: Any warnings: smells, sparks, tripping | Safety flags
+R: Age and type of installation if known | Preparation
+R: Contact number and best times | Callback
+R: Photos (by reply) | Preview the job
+P: Two to four questions, one at a time, are enough. See [estimate requests and project scoping](/blog/estimate-requests-project-scoping-chat).
+H2[pricing-without-surprises]: Pricing without surprises
+UL:
+- State the callout fee and what it covers.
+- Give ranges for common jobs you can stand behind, for example adding a socket or replacing a light fitting.
+- Say clearly when a price needs an inspection, such as fault finding or a rewire.
+- Mention out-of-hours rates before booking.
+- Say whether you include parts and VAT or sales tax.
+P: A written estimate for larger jobs builds trust. The assistant should point to how to request one rather than inventing a figure.
+H2[booking-service-calls]: Booking service calls
+P: For non-urgent jobs, an online booking converts the visitor immediately. Offer windows you can honour, and confirm by email with what to expect: access to the consumer unit, a clear working area and who will attend. Crescelo's built-in picker offers slots from your opening hours with one slot length; set it to the visit window you want. For different job types with different durations, use Calendly or Cal.com links. See [AI appointment booking](/blog/ai-appointment-booking) and [configuring availability rules](/blog/configure-calendar-sync-availability-rules).
+P: For danger or urgent situations, do not offer a self-service slot; alert your on-call electrician and let them confirm the plan.
+H2[alerts-and-routing]: Alerts and routing
+TABLE:
+H: Lead | Route
+R: Danger | Emergency guidance, then instant alert to on-call by text and email
+R: Urgent | Alert to the office with a rule to call within the hour
+R: Routine | Email and booking confirmation
+R: Commercial enquiry | Notify the commercial lead with details
+P: Test the alert path, including at night. See [emergency dispatch workflows in AI chat](/blog/emergency-dispatch-workflows-ai-chat).
+H2[certificates-permits-and-compliance]: Certificates, permits and compliance
+P: Customers often ask whether work needs a certificate or permit, especially for landlords, new circuits and EV chargers. Put your approved explanation in the knowledge base: what you provide (for example an electrical installation certificate), when permits are required in your area and how long approval takes. If the rules are complex or vary, have the assistant say so and offer a callback. Never state a regulation you have not checked.
+H2[what-the-assistant-must-never-do]: What the assistant must never do
+UL:
+- Tell customers how to repair or bypass anything electrical.
+- Reassure that a burning smell or sparks is harmless.
+- Advise resetting a repeatedly tripping breaker.
+- Promise arrival times it cannot guarantee.
+- Quote a fixed price for fault finding without inspection.
+H2[a-sample-conversation]: A sample conversation
+TABLE:
+H: Speaker | Message
+R: Customer | My kitchen sockets stopped working and the breaker keeps tripping.
+R: Assistant | Thanks for telling me. If you smell burning, see sparks or scorch marks, or anything feels hot, please leave it alone, do not touch it and call emergency services. If not, please do not keep resetting the breaker. Can you tell me if there is any smell or heat, and roughly when it started?
+R: Customer | No smell. Started this morning.
+R: Assistant | Thank you. That needs a qualified electrician to test the circuit. Our callout is $95 and fault finding is quoted after we see it. I can offer today between 2 and 5. What is your postcode and the best number?
+H2[measure-the-result]: Measure the result
+TABLE:
+H: Metric | Why
+R: Enquiries out of hours and converted | Coverage
+R: Danger and urgent flags and time to acknowledge | Safety process
+R: Callout to job conversion | Pricing and follow-up effectiveness
+R: Bookings from chat versus phone | Channel value
+R: Questions the assistant could not answer | Content gaps
+H2[setting-up-your-danger-rules-a-short-exercise]: Setting up your danger rules: a short exercise
+P: Sit down with your most experienced electrician and list the twenty phrases customers use when something is seriously wrong: 'burning smell', 'sparks', 'smoke', 'shock', 'buzzing panel', 'hot socket', 'melted plug', 'water in the fuse box', 'tripping constantly'. For each, agree what the assistant says and who is alerted. Add misspellings and slang. Then test each phrase in the Testing Studio, and repeat the test whenever you change the instructions. This exercise takes an hour and is the most important safety step in the whole setup.
+H2[landlords-tenants-and-business-customers]: Landlords, tenants and business customers
+P: Landlords need safety certificates and reports, and often ask for several properties at once; tenants need access arranged. Business customers need discretion and minimal downtime. Capture the role and property details in the chat, and route these leads to the person who handles them. Explain your certification services in plain language and give a fee or range where you can, and state lead times honestly.
+H2[common-mistakes]: Common mistakes
+UL:
+- Letting the assistant reassure customers about signs of danger.
+- Offering a self-service slot for an emergency.
+- Not testing the danger phrases before launch.
+- Quoting fixed prices for fault finding.
+- Leaving alerts on an inbox nobody watches at night.
+P: Fixing these takes an afternoon, and it is worth doing before the first customer uses the chat.
+H2[frequently-asked-questions]: Frequently asked questions
+FAQ:
+Q: Can a chatbot triage electrical faults?
+A: It can recognise dangerous wording, give safe instructions to stay away and call emergency services, and alert your team. It must not diagnose or give repair instructions.
+Q: What should it say about a burning smell?
+A: That the customer should leave the area, not touch anything electrical and call emergency services. Your business should approve the exact wording.
+Q: Can customers book an electrician in the chat?
+A: Yes, for non-urgent jobs, with available slots and an email confirmation.
+Q: Should it quote prices?
+A: It can state the callout fee and ranges you can honour, and say that fault finding needs an inspection.
+Q: Does it handle EV charger and certificate questions?
+A: It can share your approved explanations of what you provide and how permits work in your area, and hand over anything complex.
+Q: How do I keep it safe?
+A: Write strict rules, test dangerous scenarios before launch and never let it advise on repairs.
+P: Try scenarios with your own callout fees in the [playground](/playground), read [AI lead capture for home service contractors](/blog/home-service-contractor-ai-lead-capture) and see the [AI assistant feature](/product/ai-assistant).
+H2[further-reading]: Further reading
+UL:
+- [Google Calendar API overview](https://developers.google.com/calendar/api/guides/overview): How calendar events are read and written by software.
+- [Google Search Central: creating helpful, people-first content](https://developers.google.com/search/docs/fundamentals/creating-helpful-content): What Google looks for in useful pages.

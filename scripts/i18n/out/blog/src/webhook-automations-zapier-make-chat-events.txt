@@ -1,0 +1,128 @@
+TITLE: Chatbot Webhooks and Automation: Connect Chat Events to Zapier, Make and Your Tools
+SEO: Chatbot Webhooks and Automation: Connect Chat Events | Crescelo
+DESC: How to use chatbot webhooks with Zapier or Make: which events to send, payload fields, recipes for leads and bookings, signatures, retries and testing.
+EXCERPT: How to use chatbot webhooks with Zapier or Make: which events to send, payload fields, recipes for leads and bookings, signatures, retries and testing.
+CLUSTER: Advanced AI Automation
+MOD: 2026-09-27
+P: A chatbot creates events: a new lead, a booking, a request for a person, a conversation that ended. Each of those is a moment when something else should happen: a row in a spreadsheet, a task in your project tool, a message to your team, an email to the customer, a record in a CRM. Webhooks are how the chatbot tells other systems that something happened, and tools such as Zapier and Make turn that signal into action without you writing code. This guide explains webhooks in plain terms, which chat events are worth automating, how to build recipes for leads and bookings, how to keep them secure and how to test them so they do not fail silently.
+H2[webhooks-in-one-paragraph]: Webhooks in one paragraph
+P: A webhook is a message sent automatically from one system to a web address you choose, whenever a chosen event happens. The message is a small package of data, usually in a format called JSON. The receiving system, for example Zapier or Make, listens at that address and starts a workflow when a message arrives. Nothing needs to be checked or polled: the chatbot pushes the news the moment it happens. Crescelo can send outbound webhooks for events such as leads and bookings on the Agency / Scale plan, and signs them so the receiver can verify the source.
+H2[which-events-are-worth-automating]: Which events are worth automating
+TABLE:
+H: Event | Typical automation
+R: New lead captured | Create a CRM contact, post to Slack, add a spreadsheet row, notify the on-call person
+R: Hot lead (high score) | Text the owner, create a call task with a deadline
+R: New booking | Add to a team calendar, send a prep checklist, create a job in your operations tool
+R: Booking cancelled or changed | Free a resource, notify staff, offer the slot to a waitlist
+R: Handover requested | Alert a person, open a ticket, assign an owner
+R: Conversation with an unanswered question | Add to a content to-do list
+R: Negative sentiment or complaint | Notify a manager for personal follow-up
+P: Start with two or three that save you the most time. A small set of reliable automations beats a large fragile one.
+H2[what-is-in-the-message]: What is in the message
+P: The payload should carry what the receiver needs and no more. Typical fields:
+TABLE:
+H: Field | Use
+R: Event type and time | Route by event; log when it happened
+R: Contact name, email, phone | Create or match a contact
+R: What they asked for | Populate notes or a task
+R: Conversation link or summary | Give context
+R: Source page | Attribution
+R: Booking details | Date, time and service
+R: Score or label | Prioritise
+R: Consent | Whether marketing is allowed
+P: Keep sensitive details out of the payload unless you must send them, and remember every system that receives them becomes part of your privacy responsibilities.
+H2[recipe-1-new-lead-to-spreadsheet-slack-and-crm-zapier]: Recipe 1: New lead to spreadsheet, Slack and CRM (Zapier)
+OL:
+- In Zapier, create a Zap with the trigger 'Webhooks by Zapier' and the event 'Catch Hook'. Copy the web address it gives you.
+- Paste the address into the chatbot's webhook settings for the lead event.
+- Submit a test lead so Zapier can read the fields.
+- Add an action: 'Create or update contact' in your CRM, matching on email.
+- Add an action: post a message to a Slack channel with the name, request and conversation link.
+- Add an action: append a row to a Google Sheet for reporting.
+- Turn the Zap on and submit another test.
+H2[recipe-2-booking-to-calendar-and-checklist-make]: Recipe 2: Booking to calendar and checklist (Make)
+OL:
+- In Make, create a scenario that starts with a 'Custom webhook' module and copy its address.
+- Paste it into the chatbot's webhook settings for the booking event and send a test booking.
+- Add a module to create an event in your team calendar with the customer name and service.
+- Add a module to send the customer a preparation email if you want more than the standard confirmation.
+- Add a module to create a task for the person who will serve them.
+- Add error handling so a failure sends you an alert.
+H2[recipe-3-handover-to-a-task-and-alert]: Recipe 3: Handover to a task and alert
+OL:
+- Trigger on the handover-requested event.
+- Create a task or ticket with the visitor's question and conversation link.
+- Assign an owner by rule, such as the person on duty.
+- Send a direct message with a link to the conversation.
+- Set a reminder if the task is not picked up in ten minutes.
+P: Handover is where speed matters most; see [live human handover flow design](/blog/live-human-handover-flow-design).
+H2[zapier-or-make]: Zapier or Make?
+TABLE:
+H:  | Zapier | Make
+R: Feel | Simple, linear steps | Visual scenarios with branching
+R: Best for | Straightforward 'when this, do that' flows | Complex flows with routers, loops and data handling
+R: Learning curve | Gentle | Steeper but more powerful
+R: Pricing model | By tasks or actions; check current plans | By operations; check current plans
+P: Either works with a chatbot webhook. Pick the one your team already knows. Both have free tiers to test with. Check current pricing on their sites.
+H2[security]: Security
+UL:
+- Use HTTPS addresses only.
+- Treat the webhook address as a secret: anyone who knows it can send data to it.
+- Verify signatures when your tool supports it, so fake messages are rejected.
+- Limit who can edit automations, and protect the accounts with two-factor authentication.
+- Do not forward personal data to systems you do not need.
+- Rotate the address or secret if it is exposed.
+P: See [setting up team roles and two-factor authentication](/blog/setup-rbac-2fa-team-security) and [SSRF and safe web fetching](/blog/mitigating-ssrf-web-scraper-security) for related safeguards.
+H2[reliability-retries-duplicates-and-failures]: Reliability: retries, duplicates and failures
+UL:
+- **Retries:** a sender may retry if it does not receive a success response, so the same event can arrive twice. Make your automation idempotent: match on a unique ID or email so a repeated message updates instead of duplicating.
+- **Failures:** turn on error notifications in your automation tool and read them.
+- **Rate limits:** apps have limits; bursts can be delayed.
+- **Backups:** keep the email alert on even when automations work, so no lead depends on one route.
+H2[testing-checklist]: Testing checklist
+OL:
+- Send a test event and confirm it arrives.
+- Check the fields map correctly, including empty values.
+- Send the same event twice and confirm no duplicate.
+- Send an event with special characters and a long message.
+- Turn off the destination app and check you receive an error alert.
+- Delete test records before going live.
+H2[a-worked-example-after-hours-lead-to-morning-follow-up]: A worked example: after-hours lead to morning follow-up
+P: A dental clinic gets leads overnight. An automation runs each time the chat captures a lead outside office hours. It creates a contact in the practice's CRM, tags it 'after hours', adds a task for the front desk with the due time set to 9:00 the next morning and posts a short summary into the team channel. When the receptionist arrives, the task list already shows who to call, what they asked and what the assistant told them. Nothing was copied by hand and no lead waited in an inbox nobody opened.
+TABLE:
+H: Step | Tool action
+R: Trigger | Lead created event from the chatbot webhook
+R: Filter | Only if the time is outside opening hours
+R: Action 1 | Create or update the contact by email
+R: Action 2 | Create a task due at 9:00 next working day
+R: Action 3 | Post a summary in the team channel
+H2[naming-and-documenting-automations]: Naming and documenting automations
+P: Give each automation a clear name that says what it does, such as 'Chatbot lead to CRM and Slack'. Write a two-line description of the trigger, the actions and the owner. Keep the list in a shared document. When someone leaves or an app changes, you will know what depends on what and what to check.
+H2[common-mistakes]: Common mistakes
+UL:
+- Building one huge automation instead of small ones that are easy to debug.
+- Not handling repeated events.
+- Sending more data than the destination needs.
+- Forgetting to switch off test automations.
+- Having no alert when an automation fails.
+- Putting webhook addresses in public documents.
+H2[when-to-use-a-webhook-instead-of-a-native-integration]: When to use a webhook instead of a native integration
+P: Native integrations are simple when they exist, but a webhook reaches everything else, which matters as your tools change. If you switch CRM next year, you change the destination in one automation and leave the chatbot untouched. That flexibility is the main reason to prefer webhooks for anything you expect to evolve.
+H2[frequently-asked-questions]: Frequently asked questions
+FAQ:
+Q: What is a webhook?
+A: An automatic message a system sends to a web address when something happens, such as a new lead or booking.
+Q: Do I need to code to use webhooks?
+A: No. Tools such as Zapier and Make receive the webhook and connect it to other apps with a visual builder.
+Q: Does Crescelo support webhooks?
+A: Yes. Outbound webhooks and CRM pipeline sync are on the Agency / Scale plan, and outgoing webhooks are signed so you can verify them.
+Q: Which events should I automate first?
+A: New leads and bookings, then handover requests. Start with the ones that save the most time.
+Q: How do I stop duplicates?
+A: Match on a unique ID or email and use 'create or update' actions.
+Q: Are webhooks secure?
+A: They can be, if you use HTTPS, keep the address secret, verify signatures and send only what you need.
+P: See the [lead capture feature](/product/lead-capture), read [how to send chatbot leads to your CRM](/blog/crm-integration-ai-chatbot-leads) and [start a free trial](/login?mode=register). You can rehearse a lead conversation in the [playground](/playground).
+H2[further-reading]: Further reading
+UL:
+- [Google Search Central: creating helpful, people-first content](https://developers.google.com/search/docs/fundamentals/creating-helpful-content): What Google looks for in useful pages.

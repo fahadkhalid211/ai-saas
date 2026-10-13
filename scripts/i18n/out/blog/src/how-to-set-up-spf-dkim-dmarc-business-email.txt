@@ -1,0 +1,92 @@
+TITLE: How to Set Up SPF, DKIM and DMARC So Your Business Emails Reach the Inbox
+SEO: How to Set Up SPF, DKIM and DMARC So Your Business Emails
+DESC: Step-by-step guide to email authentication for small businesses: what SPF, DKIM and DMARC do, how to add the DNS records, test them and fix common problems.
+EXCERPT: Step-by-step guide to email authentication for small businesses: what SPF, DKIM and DMARC do, how to add the DNS records, test them and fix common problems.
+CLUSTER: 
+MOD: 2026-09-27
+P: If your business emails land in spam, or if a customer tells you they received a message from 'you' that you never sent, the cause is usually email authentication. Mail providers such as Gmail, Outlook and Yahoo check whether a message really comes from the domain it claims. Three DNS settings, SPF, DKIM and DMARC, provide that proof. Since large providers began requiring authentication from bulk senders, and treating unauthenticated mail with more suspicion, setting these up has moved from nice-to-have to essential, even for small businesses that send a few hundred emails a month. The good news is that it is a one-off job of about an hour, needs no coding and can be done safely in stages. This guide explains what each record does in plain language, gives step-by-step instructions, shows how to test and lists the mistakes that most often cause problems.
+H2[what-the-three-records-do]: What the three records do
+TABLE:
+H: Record | Plain-language job | Where it lives
+R: SPF | Lists which servers are allowed to send email for your domain | A TXT record on your domain
+R: DKIM | Adds a digital signature to each message, proving it was not altered and came from you | A TXT (or CNAME) record with a selector name
+R: DMARC | Tells receivers what to do when SPF or DKIM checks fail, and where to send reports | A TXT record at _dmarc.yourdomain
+P: Think of SPF as a guest list, DKIM as a tamper-proof seal and DMARC as the instruction to the doorman about what to do with anyone who is not on the list or has a broken seal.
+H2[before-you-start-list-every-service-that-sends-your-email]: Before you start: list every service that sends your email
+UL:
+- Your mailbox provider, such as Google Workspace or Microsoft 365.
+- Your website contact form or booking system.
+- Your newsletter tool.
+- Your invoicing or accounting software.
+- Your customer support and chat tools.
+- Any CRM that emails on your behalf.
+P: Each one needs to be covered by SPF and, ideally, signed with DKIM. Forgetting one is the most common reason legitimate email gets blocked after tightening the rules.
+H2[step-1-find-where-your-dns-is-managed]: Step 1: Find where your DNS is managed
+P: DNS records are edited where your domain's name servers point: often your registrar (where you bought the domain) or a service such as Cloudflare. Log in there and find the DNS or 'zone' settings. Take a screenshot or export of the existing records before changing anything.
+H2[step-2-set-up-spf]: Step 2: Set up SPF
+OL:
+- Check whether you already have an SPF record: a TXT record beginning with v=spf1. You may have only one per domain.
+- Collect the include statements each sender requires from their documentation, for example include:_spf.google.com for Google Workspace.
+- Combine them into one record, for example: v=spf1 include:_spf.google.com include:sendgrid.net ~all
+- Save it as a TXT record at the root of your domain.
+TABLE:
+H: Ending | Meaning
+R: ~all (soft fail) | Mail from unlisted servers is suspicious but usually still delivered; a good starting point
+R: -all (hard fail) | Mail from unlisted servers should be rejected; use once you are sure the list is complete
+R: ?all or +all | Neutral or allow everything: avoid, it defeats the purpose
+P: SPF allows at most ten DNS lookups. Every include counts, and some contain more. If you exceed the limit, SPF fails for everything, so remove services you no longer use.
+H2[step-3-set-up-dkim]: Step 3: Set up DKIM
+OL:
+- In each sending service's settings, find 'domain authentication', 'DKIM' or 'sender verification'.
+- The service gives you one or more DNS records to add, usually CNAME or TXT records with a selector name such as selector1._domainkey.
+- Add them exactly as shown; do not add your domain name twice, a common error with some DNS panels.
+- Return to the service and click Verify. It can take from minutes to a day for DNS to update.
+P: For your main mailbox provider, turn on DKIM signing in its admin console; in Google Workspace this is under Gmail authentication, and in Microsoft 365 in the Defender portal. Repeat the process for each service that sends email as your domain.
+H2[step-4-set-up-dmarc-gradually]: Step 4: Set up DMARC gradually
+P: Start with a monitoring-only policy so nothing is blocked while you find gaps. Create a TXT record named _dmarc with a value such as:
+P: v=DMARC1; p=none; rua=mailto:dmarc-reports@yourdomain.com
+TABLE:
+H: Policy | Effect | When to use
+R: p=none | Monitor only; report failures | Start here for two to four weeks
+R: p=quarantine | Failing mail goes to spam | When reports show only legitimate mail passes
+R: p=reject | Failing mail is refused | Once you are confident; the strongest protection against spoofing
+P: The rua address receives daily reports from mail providers. They are XML and hard to read, so use a free or low-cost report viewer if you want to make sense of them. Review them to find any sender you forgot to authenticate.
+H2[step-5-test-everything]: Step 5: Test everything
+UL:
+- Send a test email from each service to a Gmail address, open the message, choose 'Show original' and check that SPF, DKIM and DMARC all say PASS.
+- Use a free online checker to look up your records and spot syntax errors.
+- Send tests from the contact form, the booking system, invoices and newsletters, not only from your mailbox.
+- Check the DMARC reports after a few days.
+H2[common-problems-and-fixes]: Common problems and fixes
+TABLE:
+H: Problem | Likely cause | Fix
+R: SPF says permerror | Two SPF records, or more than ten lookups | Merge into one record and remove unused includes
+R: DKIM fails on forwarded mail | Forwarding altered the message | Normal in some cases; DMARC passes if SPF or DKIM aligns
+R: Newsletter still lands in spam | Sender not authenticated, or a poor list | Verify the domain in the tool and clean your list
+R: Records not found | Added to the wrong domain or with the domain name duplicated | Check the record host names
+R: Legitimate mail rejected after p=reject | A forgotten sender | Return to p=none, find the sender in reports, authenticate it
+H2[beyond-the-three-records]: Beyond the three records
+UL:
+- Use a domain name for sending that matches your website.
+- Keep your list clean and honour unsubscribes.
+- Avoid sudden spikes in volume from a new domain.
+- Monitor your reputation with the free tools that mailbox providers offer.
+- Add a BIMI logo later if you want to show your brand in inboxes; it needs a strict DMARC policy first.
+H2[frequently-asked-questions]: Frequently asked questions
+FAQ:
+Q: What are SPF, DKIM and DMARC?
+A: SPF lists servers allowed to send for your domain, DKIM signs each message and DMARC tells receivers how to handle mail that fails and sends you reports.
+Q: Do I need all three?
+A: Yes. Together they prove your email is genuine, and major providers expect them, especially from bulk senders.
+Q: Can I break my email by setting them up?
+A: Only if you jump straight to a strict DMARC policy. Start with p=none, review reports and tighten gradually.
+Q: How long do DNS changes take?
+A: Often minutes, sometimes up to a day or so depending on the record's time-to-live.
+Q: Why do I have to authenticate every tool?
+A: Each service that sends email as your domain is a separate sender, and any unlisted one can fail the checks.
+Q: How do I know it is working?
+A: Send tests to Gmail, view the original message headers and look for PASS on all three, and read your DMARC reports.
+P: Booking and lead notifications from a chat assistant are email too, so authenticate your domain before turning them on. See [how bookings and reminders work](/product/appointment-booking), read [why contact forms fail](/blog/why-contact-us-forms-fail) and [start a trial](/login?mode=register). Related: [protect your team accounts](/blog/setup-rbac-2fa-team-security) and [choose software carefully](/blog/how-to-choose-saas-software-small-business).
+H2[further-reading]: Further reading
+UL:
+- [Google Search Central: creating helpful, people-first content](https://developers.google.com/search/docs/fundamentals/creating-helpful-content): What Google looks for in useful pages.

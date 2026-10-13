@@ -1,0 +1,97 @@
+TITLE: Keeping One Customer's Data Away From Another: Multi-Tenant Security in a Chatbot Platform
+SEO: Multi-tenant SaaS Data Isolation | Crescelo
+DESC: How multi-tenant chatbot platforms isolate customers: workspace scoping, authorisation checks, IDOR and BOLA risks, per-tenant search, secrets, testing.
+EXCERPT: How multi-tenant chatbot platforms isolate customers: workspace scoping, authorisation checks, IDOR and BOLA risks, per-tenant search, secrets, testing.
+CLUSTER: Chatbot Technology
+MOD: 2026-09-27
+P: Most business software, including chatbot platforms, is multi-tenant: many customers share the same application and database, each in their own workspace. It is efficient and keeps prices low, but it carries one serious risk. If the software ever mixes up whose data is whose, one customer can see another's conversations, leads or documents. For a chatbot, that could mean your visitors' messages, your price list or your customer contact details appearing in someone else's dashboard, or someone else's private notes surfacing in your assistant's answers. Such failures are rarely dramatic hacks; they are usually small mistakes, like a missing ownership check on one endpoint. This guide explains in plain language how tenant isolation works, the classic mistakes known as IDOR and BOLA, the layers of protection a careful platform uses, how retrieval and secrets are kept apart, how such systems are tested and what questions to ask any vendor. It describes the approach Crescelo takes without claiming certifications it does not hold.
+H2[what-multi-tenant-means]: What multi-tenant means
+TABLE:
+H: Model | How it works | Trade-off
+R: Multi-tenant | One application and database, data tagged by workspace | Efficient and affordable; needs rigorous access checks
+R: Single-tenant | Each customer gets their own copy of the system | Stronger separation, higher cost and effort
+R: Hybrid | Shared application, separate databases or schemas for some customers | Middle ground for larger customers
+P: Multi-tenant is perfectly safe when it is done carefully, and most modern software-as-a-service works this way. The care is in the details.
+H2[the-core-idea-every-record-belongs-to-a-workspace]: The core idea: every record belongs to a workspace
+P: Every conversation, lead, document, assistant and setting carries the identifier of the workspace that owns it. Every request from a logged-in user carries the identity of their workspace, taken from the session, not from anything the user can type. Every read or write must check that the record's workspace matches the requester's. If any step forgets this check, that step is a hole.
+H2[idor-and-bola-the-classic-mistakes]: IDOR and BOLA: the classic mistakes
+P: IDOR stands for insecure direct object reference, and BOLA for broken object level authorisation. Both describe the same flaw: the server accepts an identifier from the request, such as an assistant number, and returns the record without checking that the requester is allowed to see it. An attacker, or a curious customer, simply changes the number in the address and receives someone else's data.
+TABLE:
+H: Request | Unsafe behaviour | Safe behaviour
+R: Get conversation 1234 | Returns it to anyone who asks | Returns it only if it belongs to the requester's workspace
+R: Update assistant abc | Applies the change if the id exists | Checks the assistant belongs to the requester's workspace first
+R: Download lead export | Uses a workspace id from the address | Uses the workspace from the authenticated session
+R: List sources | Lists everything | Lists only the requester's
+P: Sequential or guessable identifiers make this worse, though unguessable identifiers alone are not a defence: the check must exist regardless.
+H2[layers-of-protection]: Layers of protection
+OL:
+- **Authenticate:** know who is calling. Sessions are checked against the account's current state on every request, so removing a member ends their access immediately.
+- **Take the workspace from the session,** never from the request body.
+- **Check ownership** of the specific record before reading or changing it. In Crescelo, a guard verifies that an assistant belongs to the caller's workspace before any action on it.
+- **Check the role:** within the workspace, roles limit what each member can do; see [securing your chatbot account](/blog/setup-rbac-2fa-team-security).
+- **Scope queries** so the database only returns rows for the workspace.
+- **Test** that cross-workspace access is refused.
+P: The platform owner's master-admin role is a deliberate exception, used for support and administration, and it should itself be protected with strong authentication and logging.
+H2[isolating-search-and-answers]: Isolating search and answers
+P: Retrieval brings a special risk: the assistant must only find passages from the right workspace and, within it, from the right assistant. The search is filtered by assistant and workspace before ranking, not afterwards, so another customer's passage can never be a candidate for an answer. If it were filtered after ranking, a stray passage could leak into the context sent to the AI model. Embedding and re-embedding jobs follow the same rule.
+H2[secrets-and-keys]: Secrets and keys
+UL:
+- Each customer's AI provider key is stored encrypted and used only for that customer's requests; see [how a key vault works](/blog/cryptographic-byok-vault-aes-256-gcm).
+- Keys are never sent to visitors' browsers.
+- Public widget requests use tokens tied to a single conversation rather than credentials that unlock the workspace; see [signed visitor tokens](/blog/visitor-capability-tokens-hmac-sha256).
+- Outbound webhooks are signed so the receiver can verify them.
+H2[rate-limits-and-abuse-controls-per-tenant]: Rate limits and abuse controls per tenant
+P: Isolation is also about fairness. One customer's traffic spike or abuse must not degrade service for others. Per-assistant and per-visitor rate limits, session allowances by plan and spending guards protect the platform and each customer's budget.
+H2[how-to-test-isolation]: How to test isolation
+TABLE:
+H: Test | Expected result
+R: Log in as workspace A and request a workspace B record by id | Refused
+R: Change ids in every endpoint of the dashboard | Refused or not found
+R: Ask workspace A's assistant about something only in workspace B's documents | It does not know
+R: Remove a team member and reuse their session | Refused at once
+R: Try a viewer role on an admin action | Forbidden
+P: Crescelo's automated tests include cross-workspace and ownership checks for API routes, and they run before each release. Automated tests find many issues; independent security testing adds assurance, and we do not claim formal certifications.
+H2[questions-to-ask-your-vendor]: Questions to ask your vendor
+UL:
+- How is my workspace's data separated from other customers'?
+- Do you check ownership on every record access, and do you test for cross-tenant access?
+- How is search isolated between customers?
+- How are provider keys stored?
+- Can support staff see my data, and is that access logged?
+- Do you have a data processing agreement and a list of sub-processors?
+P: Look for specific answers. See [how your data is protected](/privacy) and the [sub-processors](/subprocessors) page.
+H2[common-mistakes]: Common mistakes
+UL:
+- Trusting an id from the request without an ownership check.
+- Filtering search results after ranking.
+- Guessable ids with no authorisation.
+- Shared credentials between tenants.
+- No tests for cross-tenant access.
+- Over-broad admin access.
+H2[what-this-means-for-you-as-a-customer]: What this means for you as a customer
+UL:
+- Use named accounts and the smallest suitable roles for your team, so your own workspace is protected from the inside.
+- Turn on two-factor sign-in for owners and admins.
+- Keep confidential material out of the knowledge base unless the assistant is meant to use it.
+- Ask your vendor for a data processing agreement and a list of sub-processors, and keep copies.
+- Tell the vendor at once if you ever see data that is not yours.
+P: Isolation is the platform's responsibility, and good practice inside your workspace is yours. Together they keep customers' information where it belongs.
+H2[frequently-asked-questions]: Frequently asked questions
+FAQ:
+Q: What does multi-tenant mean?
+A: Many customers share one application and database, with each customer's data kept in its own workspace.
+Q: Is multi-tenant software safe?
+A: Yes, when every request checks that the record belongs to the caller's workspace and this is tested.
+Q: What is BOLA or IDOR?
+A: A flaw where a server returns a record by id without checking the requester is allowed to see it.
+Q: Can another customer's documents appear in my assistant's answers?
+A: Not in a properly isolated platform: search is filtered by workspace and assistant before ranking.
+Q: How does Crescelo test this?
+A: Automated tests check cross-workspace access and ownership for API routes. We do not claim formal security certifications.
+Q: What should I ask a vendor?
+A: How data is separated, how ownership is checked, how search and keys are isolated and who can access your data.
+P: See the [data processing addendum](/dpa), the [human handover feature](/product/human-handover), the [knowledge base feature](/product/knowledge-base), [pricing](/pricing) and read [how a chat widget is built](/blog/modern-website-chatbot-architecture).
+H2[further-reading]: Further reading
+UL:
+- [OWASP Top 10 for Large Language Model Applications](https://genai.owasp.org/llm-top-10/): The main security risks of AI assistants, including prompt injection.
+- [Google Search Central: creating helpful, people-first content](https://developers.google.com/search/docs/fundamentals/creating-helpful-content): What Google looks for in useful pages.

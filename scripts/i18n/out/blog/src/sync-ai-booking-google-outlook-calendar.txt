@@ -1,0 +1,111 @@
+TITLE: AI Bookings in Google Calendar and Outlook: How Sync Works and What to Expect
+SEO: AI Bookings in Google Calendar and Outlook: How Sync Works
+DESC: How AI chatbot bookings reach Google Calendar, Outlook and Apple Calendar: read-only feeds, two-way sync, Calendly links, limits and how to avoid clashes.
+EXCERPT: How AI chatbot bookings reach Google Calendar, Outlook and Apple Calendar: read-only feeds, two-way sync, Calendly links, limits and how to avoid clashes.
+CLUSTER: AI Appointment Booking
+MOD: 2026-09-27
+P: The moment a chatbot books an appointment, one question matters most: will it show up in the calendar I actually use? And its mirror: will the chatbot know when I am busy? The answers depend on how the product connects to calendars. Some read and write your Google or Outlook calendar in both directions. Others publish a one-way feed you subscribe to. Others hand over to a scheduling tool. This guide explains the three approaches, what each means in practice, what Crescelo does today, and how to avoid clashes whichever route you use.
+H2[three-ways-bookings-reach-your-calendar]: Three ways bookings reach your calendar
+TABLE:
+H: Method | How it works | Pros | Cons
+R: Two-way sync | The system reads your busy times and writes bookings into your calendar through Google or Microsoft's interfaces | Personal events block slots automatically | Requires permissions to your calendar; more setup and more that can break
+R: One-way calendar feed | The system publishes bookings as an iCal feed you subscribe to from any calendar app | Simple, works with Google, Apple and Outlook, no permissions to your calendar | Read-only: your events do not block slots; feeds refresh on the calendar app's schedule
+R: Scheduling tool link | The chatbot sends visitors to Calendly, Cal.com or similar, which connects to your calendar itself | Mature scheduling features and sync | The visitor leaves the chat to finish the booking
+P: None is best in every case. Match the method to how complicated your day is.
+H2[what-crescelo-does-today]: What Crescelo does today
+UL:
+- **Built-in booking:** offers slots from your opening hours and one slot length, hides times already taken and locks a slot while it is booked.
+- **Calendar feed:** every booking is added to a private, read-only calendar feed. Copy its address from the Appointments page and subscribe in Google Calendar (Other calendars, From URL), Outlook or Apple Calendar.
+- **Add to calendar in chat:** after booking, visitors get options to add the appointment to Google Calendar, Apple Calendar or iCal.
+- **Calendly and Cal.com:** the assistant can send visitors to your existing booking link if you prefer.
+- **Two-way sync:** not available yet; it is on the roadmap.
+P: See the current status on the [roadmap](/roadmap). We describe the limits plainly so you can plan around them.
+H2[what-a-read-only-feed-means-for-you]: What a read-only feed means for you
+OL:
+- Bookings made in the chat appear in your calendar app, usually within minutes to a few hours, depending on how often the app refreshes subscribed calendars. Google Calendar can be slow to refresh subscribed feeds.
+- Events you add in your own calendar, such as a dentist appointment, do not stop the assistant offering that time.
+- Changing or cancelling an event in your calendar app does not change the booking in Crescelo; do that in the Appointments page or through the customer's link.
+P: Practical consequence: keep your booking hours as the single source of truth for when you can be booked. If you have a personal commitment, reduce your booking hours for that day, or use a scheduling tool with two-way sync for that part of your business.
+H2[how-to-subscribe-to-the-feed]: How to subscribe to the feed
+H3: Google Calendar
+OL:
+- Open Google Calendar on a computer.
+- Next to Other calendars, click the plus and choose From URL.
+- Paste the feed address and add the calendar.
+- Give it a colour so bookings stand out.
+H3: Outlook
+OL:
+- Open Calendar and choose Add calendar, then Subscribe from web.
+- Paste the feed address and name the calendar.
+- Import and choose a colour.
+H3: Apple Calendar
+OL:
+- In Calendar choose File, then New Calendar Subscription.
+- Paste the feed address and set the refresh interval to the shortest option.
+NOTE: Treat the feed address like a password. Anyone with the link can read your bookings. If it is shared by mistake, regenerate it if your product allows, and subscribe again.
+H2[avoiding-clashes-in-practice]: Avoiding clashes in practice
+TABLE:
+H: Situation | What to do
+R: You have a personal appointment in your calendar | Close those hours in the booking settings, or keep a separate personal calendar and accept the risk for short blocks
+R: You take some bookings by phone | Enter them in the dashboard or reduce booking hours so slots are not offered
+R: You use a second booking system | Pick one as the source of truth, or divide by service or day
+R: You are away for a week | Set your hours to closed for those days before you leave
+R: A customer changes their booking in the confirmation link | The slot is freed automatically and the feed updates
+H2[when-two-way-sync-matters-most]: When two-way sync matters most
+UL:
+- You have a busy personal or family calendar that changes often.
+- You have several staff, each with their own calendar.
+- You take bookings from many sources, such as phone, walk-ins and other platforms.
+- You need meeting links created automatically.
+P: If that is you, a scheduling tool that supports two-way sync is the better fit today, and the assistant can send visitors to it. See [AI website assistant vs Calendly and Acuity](/blog/ai-website-assistant-vs-calendly-acuity).
+H2[confirmations-and-reminders]: Confirmations and reminders
+P: Whatever calendar method you use, visitors should get a confirmation email with the details and a private link to reschedule or cancel, and a reminder before the appointment. Crescelo sends confirmations and email reminders, and the link frees the slot when a customer cancels. See [reducing no-shows](/blog/eliminate-service-no-shows-playbook) and [automated booking confirmations](/blog/automated-booking-confirmations-ical).
+H2[questions-to-ask-any-vendor-about-calendar-sync]: Questions to ask any vendor about calendar sync
+OL:
+- Is the sync one-way or two-way?
+- Which calendars are supported: Google, Microsoft, Apple?
+- How quickly do changes appear?
+- What permissions does it need to my calendar?
+- What happens if I change or delete an event in my calendar?
+- Can each staff member connect their own calendar?
+- What happens if the connection breaks?
+H2[a-worked-example-of-how-a-booking-travels]: A worked example of how a booking travels
+TABLE:
+H: Step | What happens | Where you see it
+R: 1 | A visitor books Thursday 10:30 in the chat | Appointments page in the dashboard
+R: 2 | A confirmation email is sent with a private change link | The visitor's inbox
+R: 3 | The booking is added to the private calendar feed | Your Google, Outlook or Apple calendar after its next refresh
+R: 4 | The visitor cancels using the link | The slot is freed and offered again; the feed updates
+R: 5 | You add a dentist visit at 10:30 Thursday in your own calendar | Nothing changes in the booking system, so keep your booking hours clear of it
+P: Step 5 is where people are caught out. A read-only feed only sends information one way, so anything you add to your calendar must also be reflected in your booking hours.
+H2[if-you-have-a-team]: If you have a team
+P: Each person's calendar is separate, and a single booking page cannot know who is free. For a team, the practical options today are one booking link per person through a scheduling tool such as Calendly or Cal.com, or a single shared pool of slots where whoever is free takes the booking, coordinated in your dashboard. Decide which suits your business, and write the rule down so that everyone follows it.
+H2[checklist-before-you-rely-on-the-feed]: Checklist before you rely on the feed
+OL:
+- Subscribe to the feed in the calendar you check every morning.
+- Book a test appointment and time how long it takes to appear.
+- Cancel it using the customer link and check it disappears.
+- Add a personal event during a bookable time and confirm you understand that it will not block the slot.
+- Set your booking hours so they exclude times you know you are unavailable.
+- Tell everyone on your team where to look.
+H2[why-some-vendors-avoid-two-way-sync]: Why some vendors avoid two-way sync
+P: Two-way sync sounds obviously better, but it carries costs. It needs permission to read and write your calendar, which is sensitive, and it must handle edge cases: recurring events, all-day events, tentative events, several calendars, time zones and events that change after a booking. It can also fail silently when tokens expire, leaving you with a booking system that believes you are free when you are not. A read-only feed is simpler and safer, at the price of some manual discipline. Whichever you have, test what happens when a connection breaks, because that is when double bookings appear.
+H2[frequently-asked-questions]: Frequently asked questions
+FAQ:
+Q: Does Crescelo sync with Google Calendar?
+A: Bookings appear in Google Calendar through a read-only feed you subscribe to. Two-way sync is not available yet and is on the roadmap.
+Q: Will personal events in my calendar block booking slots?
+A: Not with a read-only feed. Adjust your booking hours, or use a scheduling tool with two-way sync.
+Q: How often does a subscribed calendar update?
+A: That depends on the calendar app. Google Calendar can take several hours to refresh subscribed feeds; Outlook and Apple usually refresh more often.
+Q: Can I use Calendly with the assistant?
+A: Yes. Crescelo supports Calendly and Cal.com links as an alternative to the built-in picker.
+Q: What if I cancel an event in my calendar?
+A: With a one-way feed, the booking stays in the booking system until it is cancelled there.
+Q: Is the calendar feed private?
+A: It is a private link. Anyone who has it can read your bookings, so do not share it.
+P: Read the [appointment booking feature](/product/appointment-booking) for the details, or try a booking flow in the [playground](/playground). When you are ready, [start a free trial](/login?mode=register).
+H2[further-reading]: Further reading
+UL:
+- [Google Calendar API overview](https://developers.google.com/calendar/api/guides/overview): How calendar events are read and written by software.
+- [Google Search Central: creating helpful, people-first content](https://developers.google.com/search/docs/fundamentals/creating-helpful-content): What Google looks for in useful pages.

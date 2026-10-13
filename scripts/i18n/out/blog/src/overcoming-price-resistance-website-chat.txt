@@ -1,0 +1,111 @@
+TITLE: When a Visitor Says "It Is Too Expensive": Handling Price Objections in Website Chat
+SEO: Handling Price Objections in Chat | Crescelo
+DESC: How to handle price objections in chat without discounting: understand the concern, explain value honestly, offer options, know when to hand over, and write.
+EXCERPT: How to handle price objections in chat without discounting: understand the concern, explain value honestly, offer options, know when to hand over, and write.
+CLUSTER: Website Conversion
+MOD: 2026-09-27
+P: Sooner or later every service business hears it: 'That is more than I expected.' In a chat window the objection arrives in a few words and can end the conversation just as quickly. What happens next depends on how the reply is written. A defensive answer loses the visitor. A panicky discount trains them to expect one. A shrug says nothing. A good answer treats the objection as information: the visitor is telling you what they compared you with, what they expected or how they feel about the risk. This guide covers how to handle price resistance in website chat, whether the reply comes from a person or from an AI assistant trained on your documents. It explains what price objections usually mean, a simple response framework, honest ways to explain value, options to offer instead of discounts, when to pass the conversation to a person, what the assistant must never do and how to test the wording. The examples are illustrative; adapt the numbers and services to yours.
+H2[what-too-expensive-usually-means]: What 'too expensive' usually means
+TABLE:
+H: What they say | What it often means | What helps
+R: It is too expensive | It is more than I expected | Explain what the price includes and how it is made up
+R: Others are cheaper | I am comparing, and I cannot tell the difference | Explain the difference honestly, without disparaging others
+R: I cannot afford that | The budget is fixed | Offer a smaller option or a phased approach
+R: Can you do it for less? | I am testing whether the price is negotiable | Explain your pricing approach; offer options, not a random cut
+R: I need to think about it | I am not yet convinced of the value or need to consult someone | Offer information and an easy way to come back
+P: Price objections are rarely about price alone. They are about the relationship between price and confidence that the result is worth it.
+H2[a-four-step-response-framework]: A four-step response framework
+OL:
+- **Acknowledge.** Show you heard: 'That is fair, it is a real investment.'
+- **Clarify.** Ask one question to understand: 'What were you expecting, or what are you comparing it with?'
+- **Explain value.** Connect the price to what they get, using facts from your documents, not slogans.
+- **Offer a next step or option.** A smaller service, a payment approach you genuinely offer, a consultation to scope the work or a follow-up message.
+P: The order matters. Jumping to value before understanding the concern can sound dismissive.
+H2[explain-value-with-facts-not-adjectives]: Explain value with facts, not adjectives
+UL:
+- What is included: materials, aftercare, follow-up visits, guarantees you actually offer.
+- How long it takes and who does it, including qualifications where relevant.
+- What happens if it goes wrong: your redo or refund policy, if you have one.
+- Typical results or timelines, stated honestly and not as promises.
+- What the cheaper alternative usually leaves out, phrased without attacking competitors.
+TABLE:
+H: Weak answer | Stronger answer
+R: We are worth it. | The $140 includes the consultation, the colour, a toner and a free 20-minute check after two weeks.
+R: We use quality products. | We use professional-grade colour that is less likely to damage hair, and we do a patch test first.
+R: Trust us. | We offer a free adjustment within 14 days if you are not happy.
+P: Only state guarantees and inclusions that are true and written in your documents. See [preparing your service menu and price list](/blog/prepare-service-menu-pricing-docs-rag).
+H2[options-instead-of-discounts]: Options instead of discounts
+P: A discount given because someone asked teaches customers to ask, and it erodes the value of your work. Offering a different shape of the same service respects both sides.
+TABLE:
+H: Option | Example
+R: A smaller scope | A single treatment instead of a package; a survey now, the full job later
+R: A phased plan | Start with the most urgent part and schedule the rest
+R: A different tier | A standard service instead of the premium one
+R: A payment approach you really offer | Pay in stages, if you allow it
+R: A consultation | A short call or visit to fit the work to the budget
+P: Do not invent options for the assistant to mention. If you do not offer payment plans, the assistant must not suggest them. Crescelo's booking does not process payments, so any payment arrangement is handled outside the chat.
+H2[what-an-ai-assistant-must-never-do]: What an AI assistant must never do
+UL:
+- Invent discounts, price matches or special offers.
+- Agree to a lower price than the documents state.
+- Make guarantees that are not in the documents.
+- Pressure the visitor with false urgency such as 'only one slot left'.
+- Criticise competitors.
+- Ignore the concern and repeat the price.
+P: Write these limits into the assistant's instructions: 'Never offer discounts or change prices. If a visitor says the price is too high, acknowledge it, explain what the price includes from the documents, mention only the options listed in the price document and offer to pass their request to the team.'
+H2[when-to-hand-over-to-a-person]: When to hand over to a person
+UL:
+- The visitor asks to negotiate.
+- A large or complex project where the quote depends on details.
+- A returning customer with a history.
+- A frustrated visitor who feels the price is unfair.
+- Any situation where the right answer is a business decision, not a fact.
+P: Capture their name, contact details and what they said, so the person who replies can pick up where the chat left off. See [when and how to hand over](/blog/live-human-handover-flow-design).
+H2[sample-conversations]: Sample conversations
+TABLE:
+H: Visitor | Assistant
+R: That seems pricey for a haircut. | I understand. A cut at our studio is $65 and includes a consultation, a wash, a styled finish and a free tidy-up within two weeks. If you would like something lower, our shorter trim is $40. Would you like to see either?
+R: Can you do a discount? | I am not able to change prices, but I can pass your request to the team, or show you our other options. Shall I take your contact details?
+R: I found it cheaper elsewhere. | That is fair to compare. I can tell you what ours includes so you can weigh them up: [list from your documents]. If it helps, I can also share our shorter service.
+H2[fix-the-causes-behind-the-objection]: Fix the causes behind the objection
+UL:
+- **Sticker shock:** state price ranges and what changes them early, so nothing is a surprise.
+- **Unclear value:** add what is included to each service description.
+- **Weak proof:** show real reviews and results; see [using social proof in chat](/blog/social-proof-reviews-ai-chat).
+- **Wrong audience:** if many visitors object, check whether your marketing attracts people with a different budget.
+- **No smaller option:** consider a lower-cost entry service.
+P: Read your price objection conversations monthly. Patterns tell you which of these needs work, and each fix reduces future objections.
+H2[measure-the-effect]: Measure the effect
+TABLE:
+H: Measure | Why
+R: Share of chats where price was raised | How central price is to your visitors
+R: What happened next | Whether visitors continued, left or booked
+R: Handovers on price | Whether staff need better guidance
+R: Objections by service | Which service pages need clearer value
+P: Compare before and after each change to your price page or instructions, using the method in [the chat analytics playbook](/blog/service-business-chat-analytics-playbook).
+H2[common-mistakes]: Common mistakes
+UL:
+- Discounting at the first objection.
+- Dumping a long value speech.
+- Ignoring the visitor's own words.
+- Letting the assistant improvise offers.
+- Never reading the objection transcripts.
+- Hiding prices until the last moment.
+H2[frequently-asked-questions]: Frequently asked questions
+FAQ:
+Q: How should a chatbot respond to 'it is too expensive'?
+A: Acknowledge the concern, ask what they expected, explain what the price includes using facts from your documents and offer only real options or a handover.
+Q: Should the assistant offer discounts?
+A: No. It should never invent or agree to discounts. Route negotiation requests to a person.
+Q: What are good alternatives to discounting?
+A: A smaller scope, a phased plan, a different tier or a consultation to fit the work to the budget.
+Q: How do I stop price shock?
+A: State price ranges and inclusions clearly and early, on your website and in the assistant's answers.
+Q: When should a person take over?
+A: For negotiation, large or complex projects and frustrated visitors.
+Q: Does Crescelo handle payment plans?
+A: No. Payments are not part of the built-in booking, so any payment arrangement is handled outside the chat.
+P: Try your own price questions in the [playground](/playground), see the [AI assistant feature](/product/ai-assistant) and read [price calculators or chat: which gets better leads](/blog/cost-estimators-vs-conversational-lead-capture).
+H2[further-reading]: Further reading
+UL:
+- [Google Search Central: creating helpful, people-first content](https://developers.google.com/search/docs/fundamentals/creating-helpful-content): What Google looks for in useful pages.

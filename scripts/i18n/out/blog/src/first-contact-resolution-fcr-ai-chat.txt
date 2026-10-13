@@ -1,0 +1,96 @@
+TITLE: First Contact Resolution and AI Chat: Solving the Question in One Conversation
+SEO: First Contact Resolution and AI Chat: Solving the Question
+DESC: What first contact resolution means for small businesses using AI chat: defining it, what the assistant can resolve, measuring it honestly, common blockers.
+EXCERPT: What first contact resolution means for small businesses using AI chat: defining it, what the assistant can resolve, measuring it honestly, common blockers.
+CLUSTER: Analytics
+MOD: 2026-09-27
+P: First contact resolution, or FCR, is a simple idea from customer service: the customer's problem is solved in the first conversation, without follow-ups, transfers or repeat contacts. It is one of the few service measures that customers feel directly. Nobody enjoys asking the same question three times or being told to call back tomorrow. For a small business, AI chat makes a high FCR realistic for a large share of routine questions, because the assistant answers instantly from your documents at any hour. It also makes it easy to fool yourself: a conversation that ended is not the same as a problem solved. This guide explains what FCR means in a chat setting, which kinds of questions an assistant can genuinely resolve, how to measure resolution without inflating it, what blocks it and how to improve it. Where numbers are suggested, they are yours to gather, not industry promises.
+H2[defining-resolution-honestly]: Defining resolution honestly
+TABLE:
+H: Counts as resolved | Does not count
+R: Visitor got the opening hours and did not return with the same question | Visitor left after an unhelpful answer
+R: Visitor booked an appointment and received a confirmation | Visitor was told to phone and never did
+R: Visitor received the address and parking details | Visitor got a vague answer and rephrased three times
+R: Visitor's request was handed to staff with full details and answered | A handover with no details that forced them to repeat themselves
+P: The test is whether the customer got what they came for, not whether the chat closed. A person who abandons in frustration is a lost conversation, not a resolved one.
+H2[what-an-assistant-can-resolve]: What an assistant can resolve
+UL:
+- **Factual questions:** hours, location, services, prices, policies, preparation and aftercare.
+- **Simple actions:** booking, rescheduling through a private link and leaving details for a callback.
+- **Guidance:** which service suits a situation, based on your documented advice.
+- **Navigation:** where to find a form, a page or a document.
+P: Matters that need judgement, access to private records or empathy, such as complaints, disputes and clinical or legal advice, should be handed to a person with the context attached. Resolving them in one contact means the handover works, not that the bot solves them.
+H2[how-to-measure-it]: How to measure it
+OL:
+- Pick a sample of recent conversations, thirty to fifty.
+- For each, decide: resolved, handed over, or unresolved.
+- For handovers, check whether staff resolved it and whether the customer had to repeat information.
+- Check whether the same visitor came back with the same question within a few days, where you can tell (same contact details or booking).
+- Calculate the share resolved without repeat contact.
+P: Keep the definition stable so you can compare months. A rough measure applied consistently beats a precise one used once.
+H2[what-blocks-first-contact-resolution]: What blocks first contact resolution
+TABLE:
+H: Blocker | Effect | Fix
+R: Missing information | The assistant cannot answer, visitor leaves | Add the passage; review unanswered questions weekly
+R: Outdated information | Wrong answer; repeat contact to correct it | Date content and review monthly
+R: Vague answers | Visitor asks again | Give specifics and a next step
+R: No booking path | Visitor told to call | Enable booking or callback capture
+R: Bad handover | Customer repeats everything | Pass the transcript and details to staff
+R: Hard-to-find handover option | Customer gives up | Offer a person clearly when asked
+H2[improve-it-in-four-steps]: Improve it in four steps
+OL:
+- **Fill the gaps.** Use the unanswered list to add missing facts.
+- **End with the next step.** Every answer should say what happens next: book, call, visit or wait for a reply.
+- **Make handover complete.** Send the conversation, name and contact details, so nobody starts over.
+- **Follow up.** For handed-over conversations, reply promptly and confirm the issue was solved.
+P: See [handing over from bot to human](/blog/live-human-handover-flow-design) for a smooth escalation design.
+H2[do-not-chase-the-number]: Do not chase the number
+UL:
+- Forcing the assistant to answer everything drives up wrong answers.
+- Discouraging handover to boost the metric hurts customers.
+- Counting every closed chat as resolved makes the figure meaningless.
+- A modest, honest rate you can improve beats an inflated one.
+H2[a-worked-example]: A worked example
+P: A pet groomer reviews forty chats. Twenty-two were simple questions about prices, hours and vaccination rules; the assistant answered them and none returned with the same question, so they count as resolved. Nine ended in a booking. Six were handed to staff with details and were answered the same day. Three were unresolved: a visitor asked about grooming an elderly cat, a service the documents did not mention. The groomer writes a short passage on senior and nervous animals and adds it to the knowledge base. Resolution here rose because a gap was found and filled, not because the metric was redefined.
+TABLE:
+H: Group | Count | Action
+R: Answered, no return | 22 | Keep documents current
+R: Booked | 9 | Check confirmations were sent
+R: Handed over and answered | 6 | Confirm the details reached staff
+R: Unresolved | 3 | Add the missing passage
+H2[the-role-of-staff-in-resolution]: The role of staff in resolution
+P: Resolution is a team result. When the assistant hands over, staff should see the whole conversation so the customer does not repeat anything, and they should reply quickly with a real answer, not a generic acknowledgement. Agree a reply time, such as the same business day, and check it in the weekly review. A fast, informed reply after a handover often leaves the customer happier than an instant answer from a machine, because it shows the business listened.
+P: Finally, remember the customer's view. They do not care which channel solved their problem; they care that it was solved once. Design each answer to end with a clear next step, whether that is a booking, a visit or a promised reply, and check that the promise is kept.
+H2[a-weekly-checklist]: A weekly checklist
+OL:
+- Read the unanswered list and add the top missing facts.
+- Check the oldest documents for outdated prices, hours and policies.
+- Read three handovers and confirm the customer did not have to repeat anything.
+- Look for repeated questions from the same person, a sign the first answer failed.
+- Note one improvement for next week.
+P: Small weekly fixes compound. After a couple of months, the same visitors' questions are answered first time, and staff spend their time on the conversations that really need a person.
+H2[signs-your-resolution-is-improving]: Signs your resolution is improving
+UL:
+- Fewer repeat questions from the same customers.
+- Shorter conversations that end with a booking or a clear next step.
+- A shrinking unanswered list from week to week.
+- Staff report fewer calls asking for information already on the website.
+P: Note these signs in your monthly review and celebrate progress with the team, since it is their handovers that make the whole approach work.
+H2[frequently-asked-questions]: Frequently asked questions
+FAQ:
+Q: What is first contact resolution?
+A: Solving the customer's problem during the first conversation, without follow-ups or repeated contacts.
+Q: Can an AI chatbot achieve high FCR?
+A: For routine factual questions and simple actions such as booking, yes, when the knowledge base is complete and current.
+Q: How do I measure FCR for chat?
+A: Sample recent conversations, classify them as resolved, handed over or unresolved and check for repeat contact.
+Q: Is a handover a failure?
+A: No. It is resolution when the handover passes full context and a person answers promptly.
+Q: What lowers FCR most?
+A: Missing or outdated information and answers that do not say what happens next.
+Q: Should I set an FCR target?
+A: Set a direction for improvement against your own baseline rather than copying vendor benchmarks.
+P: See the [AI assistant feature](/product/ai-assistant), [pricing](/pricing) and [the chat analytics playbook](/blog/service-business-chat-analytics-playbook). Also read [where visitors drop off in chat](/blog/tracking-in-chat-funnel-drop-off).
+H2[further-reading]: Further reading
+UL:
+- [Google Search Central: creating helpful, people-first content](https://developers.google.com/search/docs/fundamentals/creating-helpful-content): What Google looks for in useful pages.

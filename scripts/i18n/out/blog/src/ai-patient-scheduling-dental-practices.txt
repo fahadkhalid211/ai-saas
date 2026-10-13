@@ -1,0 +1,121 @@
+TITLE: AI Chatbot for Dental Practices: Scheduling, Intake and Patient Questions
+SEO: AI Chatbot for Dental Practices | Crescelo
+DESC: How dental practices use an AI chatbot to answer patient questions, book appointments by dentist and treatment, handle emergencies safely and protect patient.
+EXCERPT: How dental practices use an AI chatbot to answer patient questions, book appointments by dentist and treatment, handle emergencies safely and protect patient.
+CLUSTER: Dental Clinics
+MOD: 2026-09-27
+P: A dental practice receives the same questions all day: Do you take my insurance? How much is a check-up? Do you see children? Can I be seen today, I have a toothache? Each call ties up the front desk while patients wait in reception, and each missed call or unanswered message is a new patient who may book elsewhere. An AI chatbot on the practice website can answer the routine questions instantly, book appointments into the right dentist's diary and pass anything urgent or clinical to your team. This guide explains how that works for a dental practice, what to set up, how to handle emergencies and privacy responsibly, and what to measure.
+NOTE: This article is general information, not legal or medical advice. Dental practices handle sensitive health information and are subject to rules that vary by country and region. Take advice from a qualified professional about your obligations before you go live.
+H2[what-patients-ask-before-they-book]: What patients ask before they book
+P: New patients research before they commit, often outside opening hours. The questions cluster into a few groups.
+TABLE:
+H: Group | Typical questions | Answer from
+R: Cost and payment | How much is a check-up, whitening, an implant consultation? Do you offer payment plans? | Fee list and financing document
+R: Insurance | Do you accept my provider? What does it cover? | Insurance FAQ, with a clear line on what you cannot confirm
+R: First visit | What happens at a new-patient appointment? How long does it take? What should I bring? | New-patient guide
+R: Treatments | Do you do braces, veneers, root canals, sedation? | Treatment pages
+R: Practicalities | Where are you, is there parking, are you wheelchair accessible, do you see children? | Practice information
+R: Urgent problems | I have a toothache, a broken tooth, swelling. | Emergency policy and handover
+P: Every one of these has an answer that already exists in your practice. The assistant's job is to read them accurately and say so when it does not know. See our guides on [dental insurance and financing FAQ automation](/blog/dental-insurance-financing-faq-automation) and [new patient intake automation](/blog/dental-new-patient-intake-automation).
+H2[how-booking-works-in-a-dental-practice]: How booking works in a dental practice
+P: Dental scheduling has its own rules. Appointment types have different lengths and need different resources: a hygiene visit, a filling and an implant consultation are not interchangeable. Some dentists see certain treatments only. Rooms and equipment matter. A good booking system models these things.
+UL:
+- **Appointment types with durations:** new-patient exam, hygiene, emergency slot, consultation, follow-up.
+- **Practitioner rules:** which dentist or hygienist provides which type.
+- **Rooms and equipment** where they limit availability.
+- **Buffers** for cleaning and set-up between patients.
+- **Protected emergency slots** kept free each day.
+- **Real availability from your calendar,** with locking so two patients cannot take the same time.
+P: See [multi-practitioner dental scheduling](/blog/multi-practitioner-dental-scheduling) for how to model this, and [AI appointment booking](/blog/ai-appointment-booking) for the general mechanism.
+H2[handling-dental-emergencies-safely]: Handling dental emergencies safely
+P: This is the most important design decision. A chatbot must never appear to triage a medical emergency on its own. The safe pattern has three parts.
+OL:
+- **Recognise urgency.** Words such as severe pain, swelling, bleeding, knocked-out tooth, difficulty swallowing or breathing, or fever with a toothache should trigger the emergency route immediately.
+- **Give clear instructions.** State that for a life-threatening problem (trouble breathing or swallowing, severe swelling spreading to the face or neck, heavy bleeding, head injury) the patient should contact emergency services now. For a dental emergency during opening hours, give the practice phone number; out of hours, give your emergency line or the local emergency dental service.
+- **Alert the team.** Notify the practice at once with the conversation, so a person can follow up.
+P: The assistant should not diagnose, recommend medication or reassure. It should route. Write the wording with your clinical team and test it with realistic messages. See [dental emergency triage with AI chat](/blog/dental-emergency-triage-ai-chat) and [handling emergencies in automated chat](/blog/handling-emergencies-automated-chat).
+H2[privacy-what-to-collect-and-what-not-to]: Privacy: what to collect and what not to
+P: A chat is not the place for detailed health information. Keep the assistant's questions to what is needed to book: name, a way to contact the patient, the reason for the visit in general terms, and whether they are a new or existing patient. Avoid asking for medical history, medication lists or insurance member numbers in chat. Use your practice management system or secure forms for clinical intake.
+UL:
+- Tell visitors they are talking to an AI assistant and link to your privacy policy.
+- Collect the minimum, and make sure conversations are not kept longer than needed.
+- Ask any vendor where data is stored, who processes it, how long it is kept and how to delete it.
+- In the United States, dental practices are generally covered entities under HIPAA. Do not put protected health information into any tool unless you have confirmed in writing that the vendor can meet your obligations, including a business associate agreement where required. In other regions, check the equivalent rules.
+P: Our [HIPAA considerations for dental chatbots](/blog/hipaa-compliance-dental-chatbots) goes into more detail, and the [GDPR checklist for website chatbots](/blog/website-chatbot-gdpr-checklist) applies to practices serving people in Europe.
+H2[new-patients-recalls-and-existing-patients]: New patients, recalls and existing patients
+P: Different patients want different things, and the assistant can serve each appropriately.
+TABLE:
+H: Patient type | What they want | How the assistant helps
+R: New patient | Price, fit, first-visit information, a slot | Answers and books a new-patient exam; shares the welcome guide
+R: Existing patient | Change or confirm an appointment, ask a simple question | Reschedules, states the policy, hands over anything clinical
+R: Overdue for a check-up | A gentle nudge and an easy booking | Recall messages with a link to book; see [reducing your recall backlog](/blog/reduce-dental-recall-backlog-chat)
+R: Parent booking for a child | A child-friendly explanation and suitable times | Answers from your paediatric information; see [pediatric dental inquiries](/blog/pediatric-dental-inquiries-chat)
+R: Considering cosmetic work | Options, cost ranges, a consultation | Explains what you offer and books a consultation rather than quoting a treatment plan; see [cosmetic consultation booking](/blog/cosmetic-dentistry-consultation-booking)
+H2[what-to-load-into-the-knowledge-base]: What to load into the knowledge base
+OL:
+- Fee list and payment options, kept up to date.
+- Which insurers you work with, and a line that coverage must be confirmed with the insurer.
+- Treatment descriptions in plain language, approved by your dentists.
+- The new-patient guide: what happens, how long, what to bring.
+- Opening hours, holidays, address, parking, accessibility.
+- Cancellation and lateness policy.
+- Emergency policy and out-of-hours numbers.
+P: Write in plain language and avoid guarantees. The assistant should not promise outcomes, prices for a specific treatment plan or insurance coverage.
+H2[reducing-no-shows-and-gaps-in-the-diary]: Reducing no-shows and gaps in the diary
+P: Empty chairs are expensive in a practice with fixed overheads. The same tools that work elsewhere apply: clear confirmations, reminders, easy rescheduling and a standby list. Recall reminders bring back patients who are overdue. See [how to reduce no-shows](/blog/eliminate-service-no-shows-playbook) and [patient retention with front desk automation](/blog/patient-retention-front-desk-automation-dental).
+H2[what-it-costs-and-how-to-judge-the-return]: What it costs and how to judge the return
+P: Compare the monthly cost of an assistant with the value of the extra new patients it converts and the front desk time it saves. Take a cautious view: if five extra new-patient bookings a month would cover the plan several times over, the decision is easy; if not, wait. Crescelo's plans start at $49 a month, with booking and calendar sync from the $149 Growth plan; see [pricing](/pricing). You connect your own AI provider and pay them directly for usage, which is typically small. The [ROI guide](/blog/ai-website-assistant-roi-calculator) has the method.
+H2[a-launch-checklist-for-a-dental-practice]: A launch checklist for a dental practice
+UL:
+- Clinical lead has approved the wording on treatments, emergencies and insurance.
+- Emergency handover tested with ten realistic messages.
+- The assistant states that it is an AI and links to the privacy policy.
+- It does not ask for medical history or insurance numbers.
+- Booking tested for each appointment type and practitioner, including two people choosing the same slot.
+- Confirmations and reminders reviewed.
+- A named person reviews conversations each week for the first month.
+H2[a-sample-conversation-with-a-new-patient]: A sample conversation with a new patient
+TABLE:
+H: Speaker | Message
+R: Patient | Hi, I have not been to a dentist in years and I am nervous. Do you take new patients and how much is a first visit?
+R: Assistant | Hello, and thank you for reaching out. Yes, we are welcoming new patients. A new-patient exam with X-rays is $95 and takes about 45 minutes. Many of our patients feel nervous, and the team will take things at your pace. Would you like to see available times?
+R: Patient | Yes, mornings if possible.
+R: Assistant | I can offer Tuesday at 9:15, Wednesday at 8:30 or Friday at 10:00. Which suits you?
+R: Patient | Wednesday. Do you take Delta insurance?
+R: Assistant | Our insurance guide lists the providers we work with, and Delta is on it. Coverage depends on your plan, so please check the details with Delta before your visit. Shall I book Wednesday at 8:30 under your name?
+P: The assistant answered from the price list and insurance guide, acknowledged the patient's nerves in a warm way, avoided promising coverage and moved smoothly to a booking. It did not ask about the patient's health history.
+H2[what-the-front-desk-does-differently-afterwards]: What the front desk does differently afterwards
+UL:
+- Starts the day by reading overnight conversations and bookings instead of a pile of voicemails.
+- Follows up on unanswered questions and adds the answers to the knowledge base.
+- Handles the emergency alerts immediately, with context in front of them.
+- Spends reception time on patients in the building, not on the same five questions by phone.
+H2[common-mistakes]: Common mistakes
+UL:
+- Letting the assistant answer clinical questions such as whether a symptom is serious.
+- Not testing the emergency route with realistic messages before launch.
+- Loading an out-of-date fee list.
+- Asking for medical history in the chat.
+- Making promises about insurance coverage.
+- Forgetting to tell visitors that they are talking to an AI.
+H2[phrases-the-assistant-should-never-use]: Phrases the assistant should never use
+P: Agree a list of things the assistant must not say, and put it in your instructions and test it. Examples: 'that sounds like nothing to worry about', 'you should take ibuprofen', 'your insurance will cover that', 'this treatment is guaranteed', 'you do not need to see a dentist'. Each of these gives clinical or financial assurance that only a professional who has examined the patient can give. A short list of prohibited statements, written with your clinical lead, is one of the most valuable safety measures you can add.
+H2[frequently-asked-questions]: Frequently asked questions
+FAQ:
+Q: Can a chatbot book dental appointments?
+A: Yes. With a booking-enabled assistant, patients choose an appointment type and a free time, and the booking is confirmed with protection against double booking.
+Q: Is it safe to use a chatbot for emergencies?
+A: The assistant should never triage. It should recognise urgent wording, give clear instructions to contact emergency services or the practice, and alert your team immediately.
+Q: Can it answer insurance questions?
+A: It can share which insurers you work with and general guidance from your documents, but it should say that coverage must be confirmed with the insurer and should not promise anything.
+Q: Does a dental chatbot need to be HIPAA compliant?
+A: In the United States, practices are generally covered entities. Do not put protected health information in a tool unless you have confirmed in writing that the vendor meets your obligations. Keep chat questions to what is needed to book.
+Q: How much does it cost?
+A: Plans for small practices start at tens of dollars a month plus a small AI usage cost. Compare with the value of recovered bookings and saved front desk time.
+Q: Will it replace my receptionist?
+A: No. It takes routine questions and after-hours bookings so your team can focus on patients in the practice.
+P: Try it with your own fee list and new-patient guide in the [playground](/playground), then [start a free trial](/login?mode=register) if it fits.
+H2[further-reading]: Further reading
+UL:
+- [Google Calendar API overview](https://developers.google.com/calendar/api/guides/overview): How calendar events are read and written by software.
+- [Google Search Central: creating helpful, people-first content](https://developers.google.com/search/docs/fundamentals/creating-helpful-content): What Google looks for in useful pages.

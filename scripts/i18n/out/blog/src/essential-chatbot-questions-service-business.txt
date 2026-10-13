@@ -1,0 +1,131 @@
+TITLE: The Questions Every Service Business Chatbot Must Answer Well (Test List)
+SEO: The Questions Every Service Business Chatbot Must Answer
+DESC: A ready-to-use list of the questions your website chatbot must answer correctly: prices, hours, availability, policies, trust and edge cases, with how to test.
+EXCERPT: A ready-to-use list of the questions your website chatbot must answer correctly: prices, hours, availability, policies, trust and edge cases, with how to test.
+CLUSTER: AI Website Chatbots
+MOD: 2026-09-27
+P: Most chatbot launches fail on the questions nobody thought to test. The assistant handles the demo question perfectly, then a real visitor asks 'do you do weekends?', 'can I bring my dog?' or 'is there a cancellation fee?', and the answer is vague, wrong or missing. The fix is not more technology; it is a better list. This guide gives you a ready-made list of the questions a service business chatbot must answer well, grouped by what the visitor is trying to do, with notes on what a good answer contains, how to test each and how to fix failures. Copy the list, adapt it to your business and use it before launch and every time you change your content.
+H2[how-to-use-this-list]: How to use this list
+OL:
+- Copy the questions relevant to your business into a spreadsheet.
+- For each, write the correct answer in your own words, from your documents.
+- Ask the assistant in the Testing Studio, in your own wording and with typos.
+- Score: correct, partly correct, wrong, or honestly unknown.
+- Fix every failure by improving the source content, then retest.
+- Rerun the whole list after any change to prices, policies or hours.
+P: A list of forty questions takes about half an hour to run and is the most valuable half hour in a chatbot launch.
+H2[1-basics-who-what-where]: 1. Basics: who, what, where
+TABLE:
+H: Question | A good answer contains
+R: What do you do? | One plain sentence, and the main services
+R: Where are you located? | Address, area covered, parking or transport
+R: What are your opening hours? | Days and times, holidays, and how to reach you outside hours
+R: Do you serve my area? | The area you cover, and a way to check
+R: How long have you been open? | Only what you have published; otherwise says it does not know
+H2[2-prices-and-costs]: 2. Prices and costs
+TABLE:
+H: Question | A good answer contains
+R: How much is [main service]? | Price or range, and what is included
+R: Are there extra charges? | The extras you publish, or says it does not know
+R: Do you offer discounts, packages or memberships? | Only what exists; never invents a discount
+R: Do you give free quotes or consultations? | Whether and how
+R: What is your call-out or minimum fee? | The figure, if published
+R: What payment methods do you accept? | The accepted methods
+P: Prices are where wrong answers cost the most, so test them first and most often. See [overcoming price resistance in website chat](/blog/overcoming-price-resistance-website-chat).
+H2[3-availability-and-booking]: 3. Availability and booking
+TABLE:
+H: Question | A good answer contains
+R: Do you have anything this week or tomorrow? | Real available times, or a route to see them
+R: Can I book for Saturday morning? | Available slots or the nearest alternative
+R: How do I book? | The steps, and an offer to book now
+R: Can I book for someone else or a group? | What is possible, or a handover
+R: Do you take walk-ins? | Your walk-in policy
+R: Can I book outside your opening hours? | Explains the hours and offers the nearest slot
+H2[4-changes-cancellations-and-refunds]: 4. Changes, cancellations and refunds
+TABLE:
+H: Question | A good answer contains
+R: Can I cancel or change my appointment? | How, and until when it is free
+R: What is your cancellation fee? | The fee, or that there is none
+R: What if I am late? | Your lateness policy
+R: Do you give refunds? | Your refund policy in plain words
+R: Do I need to pay a deposit? | Whether, how much and when it is refunded
+H2[5-the-service-itself]: 5. The service itself
+TABLE:
+H: Question | A good answer contains
+R: How long does [service] take? | Duration
+R: What should I bring or do beforehand? | Preparation steps
+R: Is [service] suitable for [child, pregnancy, condition]? | Only what you can safely say; otherwise a handover
+R: Who will I see? | Staff information you publish
+R: What are the results or what should I expect? | Realistic expectations, no guarantees
+R: Do you offer [service you do not offer]? | Says you do not, and suggests what you do offer
+H2[6-trust-and-credentials]: 6. Trust and credentials
+TABLE:
+H: Question | A good answer contains
+R: Are you licensed and insured? | Only what you can truthfully state
+R: Do you have reviews? | Where to find them, without inventing quotes
+R: Is my information safe? | A link to your privacy policy and how data is handled
+R: Am I talking to a person? | Says it is an AI assistant, and how to reach a person
+P: See [AI transparency and disclosure](/blog/ai-transparency-disclosure-building-trust) for wording that builds trust.
+H2[7-awkward-and-edge-cases]: 7. Awkward and edge cases
+TABLE:
+H: Question or message | A good answer
+R: A question your documents do not cover | Says it does not know and offers a person or form
+R: A request for a discount or price match | Declines politely; states what you can offer
+R: A demand for a guarantee | Does not promise; explains what you can commit to
+R: A complaint or angry message | Empathetic, brief, hands over to a person
+R: Something urgent or an emergency | Approved safety wording and an immediate alert to your team
+R: Medical, legal or financial advice | Declines to advise; offers a consultation
+R: An off-topic question | Brief, polite, back to your services
+R: A message with typos or slang | Understands and answers
+R: A question in another language | Answers in that language if you support it, or explains what you support
+R: A request to speak to a person | Confirms and notifies your team
+H2[how-to-score-and-record-results]: How to score and record results
+TABLE:
+H: Score | Meaning | Action
+R: Correct | Right, complete, in your tone | None
+R: Partly correct | Right but missing a key detail | Improve the document that holds the detail
+R: Wrong | Contradicts your documents | Find the source; fix or remove conflicting text
+R: Honestly unknown | Says it does not know | If the information should exist, add it; if not, accept
+R: Invented | Confident but not in your documents | Serious: tighten instructions and retest; see [preventing hallucinations](/blog/grounded-ai-chatbot-hallucinations)
+P: Keep a dated copy of results so you can see progress and catch regressions after edits.
+H2[fixing-failures-at-the-source]: Fixing failures at the source
+UL:
+- **Missing answer:** write the answer in a short, clearly titled document.
+- **Wrong answer:** find the passage it used; correct or delete it. Look for older documents that conflict.
+- **Vague answer:** add specifics, such as prices, durations and conditions.
+- **Answer buried in a long document:** split it into a focused page.
+- **Wrong tone:** add a few example replies to the instructions.
+P: Avoid piling rules onto the assistant to fix content problems. Clean sources beat long instructions. See [preparing your service menu and pricing documents](/blog/prepare-service-menu-pricing-docs-rag).
+H2[turn-real-conversations-into-new-test-questions]: Turn real conversations into new test questions
+P: After launch, your visitors write the best test questions. Each week, copy the questions the assistant could not answer or answered badly into your list. The list grows to reflect real behaviour, and your assistant improves in the places customers actually look. See [how to review your chatbot's conversations each week](/blog/audit-website-chatbot-conversations).
+H2[a-starter-list-by-business-type]: A starter list by business type
+TABLE:
+H: Business | Add these questions
+R: Salon or barbershop | Do I need a patch test? Do you cut curly hair? Can I bring my child?
+R: Clinic or dental | Do you take new patients? Which insurance? What if I have pain now?
+R: Home services | Do you do emergency callouts? Are you insured? Can you send photos of past work?
+R: Real estate | Is the property still available? Can I view it this week?
+R: Professional services | How do you charge? Is the first call free? What should I prepare?
+R: Fitness studio | Can I try a class? What is the cancellation policy for classes?
+H2[a-worked-example-fixing-one-failed-question]: A worked example: fixing one failed question
+P: A salon tests 'Do you do patch tests?' and the assistant answers 'I do not have that information.' The salon's documents mention patch tests only inside a long PDF about colour aftercare. The fix is not to change the assistant's settings but to add a short page titled 'Do I need a patch test before colour?' with the answer: yes, at least 48 hours before, free of charge, booked as a 10-minute visit. The salon retests three ways of asking the same question, including one with a typo, and all three now succeed. Repeating this for each failure is how a launch list turns into a reliable assistant.
+H2[questions-your-team-should-add]: Questions your team should add
+P: Ask each person who talks to customers to add the five questions they dread most. Front desk staff know which questions cause confusion, technicians know which technical questions come up and the owner knows the awkward ones about pricing and complaints. Adding their questions makes the list truer to your business than any generic template, and it involves the team in making the assistant good.
+H2[frequently-asked-questions]: Frequently asked questions
+FAQ:
+Q: How many test questions do I need?
+A: Twenty to forty covers most service businesses. Start with the ten your team hears most and add the awkward cases.
+Q: What if the assistant fails a question?
+A: Fix the source content first, then retest. Only change the instructions if the content is right and the behaviour is wrong.
+Q: How often should I rerun the list?
+A: Before launch, after any change to prices or policies and monthly.
+Q: What is the most important thing to test?
+A: That the assistant says it does not know, and does not invent, when your documents do not cover the question.
+Q: Should the chatbot answer off-topic questions?
+A: Briefly and politely, then return to your services. You can configure this in the instructions.
+Q: Can I use real customer questions?
+A: Yes. Real questions from email, calls and chat make the best test list.
+P: Run your list in the [playground](/playground) with your own documents, and see [how the AI assistant](/product/ai-assistant) answers from your content. When you are ready, [start a free trial](/login?mode=register).
+H2[further-reading]: Further reading
+UL:
+- [Google Search Central: creating helpful, people-first content](https://developers.google.com/search/docs/fundamentals/creating-helpful-content): What Google looks for in useful pages.

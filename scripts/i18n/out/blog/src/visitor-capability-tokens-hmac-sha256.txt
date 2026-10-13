@@ -1,0 +1,98 @@
+TITLE: Securing Public Chat Endpoints: Signed Tokens Explained in Plain Language
+SEO: Capability Tokens HMAC-SHA256 | Crescelo
+DESC: How a public chat widget can be secured without logins: capability tokens, HMAC signatures, scoping to one conversation, constant-time checks, expiry, rate.
+EXCERPT: How a public chat widget can be secured without logins: capability tokens, HMAC signatures, scoping to one conversation, constant-time checks, expiry, rate.
+CLUSTER: Chatbot Technology
+MOD: 2026-09-27
+P: A website chat widget has an unusual security problem. It has to work for anonymous visitors, with no login, yet it talks to a server that holds conversations that must stay private. If the server hands out any conversation to anyone who knows its number, then a visitor could read another visitor's chat by guessing identifiers. If the server demands a full login, the widget cannot work. The usual answer is a capability token: a long, unguessable value that proves the holder is allowed to access one specific thing, and nothing else. It is like a coat-check ticket: it does not say who you are, only that you hold the ticket for that coat. This guide explains capability tokens in plain language, how they can be created with a cryptographic signature (HMAC) so the server does not need to store them, why they are scoped to a single conversation, how they are checked safely, what they cannot protect against and the extra layers a public endpoint needs. Crescelo uses signed tokens of this kind for conversations and for calendar feeds.
+H2[the-problem-in-one-example]: The problem in one example
+P: A visitor is chatting with your assistant, and a member of your team joins the conversation from the dashboard. The visitor's widget must be able to fetch the team member's replies. But it has no login. So the widget needs a way to say 'I am allowed to read conversation 1234' without allowing it to read conversation 1235.
+TABLE:
+H: Approach | Problem
+R: Open access by conversation id | Ids can be guessed or leaked; anyone could read others' chats
+R: Require login for visitors | Breaks the anonymous widget
+R: Store a random secret per conversation in the database | Works, but needs storage and lookup
+R: Derive a signed token from the conversation id | Works with no storage; verifiable by the server
+H2[what-is-an-hmac]: What is an HMAC
+P: HMAC is a way to create a fingerprint of a message using a secret key. Anyone with the secret can compute the fingerprint; nobody without it can produce a matching one, even if they know the message. With SHA-256 as the underlying method, the result is a long string that cannot be guessed or worked backwards to reveal the secret.
+UL:
+- **Input:** a label and the conversation id, for example the text 'conversation-access' followed by the id.
+- **Secret:** a server-side key that never leaves the server.
+- **Output:** a token, such as a run of hexadecimal characters.
+- **Verification:** the server recomputes the token for the id it was asked about and compares it with the one presented.
+P: Because the token is derived from the secret and the id, the server does not have to store it. It can regenerate it whenever needed to check a presented token.
+H2[scoping-one-token-one-thing]: Scoping: one token, one thing
+P: The most important property is scope. A token computed from conversation 1234 is useless for conversation 1235, because the id is part of the input. Different kinds of access use different labels, so a token for a conversation cannot be used as a token for a calendar feed. In Crescelo, a conversation token allows the widget to poll for live-agent replies for that conversation only, and a calendar feed token allows read-only access to an assistant's appointment feed. Neither allows anything else.
+TABLE:
+H: Token | Grants | Does not grant
+R: Conversation access token | Read replies for one conversation | Other conversations, dashboard access, settings
+R: Calendar feed token | Read-only subscription to one assistant's appointments | Editing bookings, other assistants, conversations
+H2[checking-tokens-safely]: Checking tokens safely
+UL:
+- **Constant-time comparison:** compare the presented token to the expected one in a way that takes the same time however many characters match, so attackers cannot learn the token from timing differences.
+- **Reject missing or malformed tokens** without further work.
+- **Never log tokens** or include them in error messages.
+- **Use enough length:** long random-looking values cannot be guessed by trial.
+- **Keep the secret secret:** it lives in the server's environment and is never sent to the browser.
+P: If the secret is ever exposed, all derived tokens become forgeable, so the secret must be protected and rotated if compromised. Rotating it invalidates existing tokens, which is acceptable for short-lived conversations.
+H2[where-tokens-are-used-and-where-they-are-not]: Where tokens are used, and where they are not
+TABLE:
+H: Use | Right tool
+R: Widget reading replies for one conversation | Capability token
+R: A team member using the dashboard | Authenticated session with roles and optional two-factor sign-in
+R: A webhook sent to your system | Signed request with a shared secret so the receiver can verify it
+R: A calendar app subscribing to bookings | Capability token in the feed address
+R: A visitor starting a chat | Rate limiting and abuse checks, since there is nothing to protect yet
+P: Dashboard sessions are different: they use cookies marked HttpOnly and SameSite, are checked against the account on each request and support role-based access; see [securing your chatbot account](/blog/setup-rbac-2fa-team-security).
+H2[what-tokens-cannot-protect-against]: What tokens cannot protect against
+UL:
+- **A token that leaks:** anyone holding it can use it for that one conversation. Treat calendar feed addresses as private, like a password.
+- **Abuse of the open start of a chat:** anyone can start a conversation, so rate limits, size limits, origin checks and bot protection are still needed.
+- **Compromised secrets:** protect the server environment.
+- **Malicious content:** the server must still validate and sanitise messages.
+- **Guessing attacks at scale:** long tokens and rate limits make them impractical.
+H2[layers-a-public-endpoint-needs]: Layers a public endpoint needs
+OL:
+- Rate limits per visitor and per assistant.
+- Size limits on messages and requests.
+- Validation of every input.
+- Origin and domain checks for widget use, where appropriate.
+- Bot protection on forms where it makes sense.
+- Workspace isolation so the assistant only reaches its own workspace's data; see [multi-tenant data isolation](/blog/multi-tenant-saas-chatbot-architecture).
+- Logging and alerting on unusual patterns.
+P: A token is one layer. The point of layering is that no single mistake exposes everything.
+H2[questions-to-ask-a-vendor]: Questions to ask a vendor
+UL:
+- How do you stop one visitor reading another's conversation?
+- What is in your public tokens, and what can each one do?
+- Are tokens compared in constant time and never logged?
+- How are secrets stored and rotated?
+- What rate limits and abuse controls protect public endpoints?
+- How do team members authenticate, and is two-factor available?
+H2[common-mistakes]: Common mistakes
+UL:
+- Using sequential ids as the only protection.
+- One token that unlocks everything.
+- Sending the server secret to the browser.
+- Comparing tokens with ordinary string equality.
+- Logging tokens in URLs and error messages.
+- Sharing calendar feed addresses publicly.
+H2[frequently-asked-questions]: Frequently asked questions
+FAQ:
+Q: What is a capability token?
+A: An unguessable value that proves the holder may access one specific thing, such as a single conversation, without needing a login.
+Q: What is HMAC-SHA256?
+A: A method of creating a tamper-proof fingerprint of a message using a secret key, so only someone with the key can produce a matching value.
+Q: Does Crescelo use signed tokens?
+A: Yes, for conversation access by the public widget and for read-only calendar feeds, each scoped to a single item.
+Q: Can a visitor read someone else's chat?
+A: Not without that conversation's token, which cannot be guessed or derived without the server's secret.
+Q: What if a token leaks?
+A: It only grants access to that one item, but treat calendar feed addresses as private and tell us if you suspect exposure.
+Q: Are tokens enough on their own?
+A: No. Public endpoints also need rate limits, validation, origin checks and workspace isolation.
+P: See [how your data is protected](/privacy), read [SSRF and web scraper security](/blog/mitigating-ssrf-web-scraper-security) and try the widget in the [playground](/playground). The [AI assistant feature](/product/ai-assistant) page covers what visitors can do.
+H2[further-reading]: Further reading
+UL:
+- [OWASP Top 10 for Large Language Model Applications](https://genai.owasp.org/llm-top-10/): The main security risks of AI assistants, including prompt injection.
+- [Google Search Central: creating helpful, people-first content](https://developers.google.com/search/docs/fundamentals/creating-helpful-content): What Google looks for in useful pages.

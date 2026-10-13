@@ -1,0 +1,132 @@
+TITLE: Buyer and Seller Lead Qualification in Chat: Questions That Sort Leads Without Scaring Them
+SEO: Real Estate Lead Qualification Chatbot | Crescelo
+DESC: How real estate teams qualify buyers and sellers in a website chat: the few questions that matter, scoring, routing to the right agent and following up.
+EXCERPT: How real estate teams qualify buyers and sellers in a website chat: the few questions that matter, scoring, routing to the right agent and following up.
+CLUSTER: Real Estate
+MOD: 2026-09-27
+P: A real estate lead can be a buyer ready to make an offer this month, a seller thinking about listing next spring, a renter, an investor or someone idly browsing. Each needs a different response, from a different person, at a different speed. Treat them all the same and you either waste your best agents' time on window shoppers or let hot leads cool. Chat helps because it can ask the few questions that sort leads while helping the visitor, and route them accordingly. This guide explains how to qualify buyers and sellers in chat: what to ask, how to word it so it feels natural, how to score and route, how to keep the tone respectful and how to check that your scoring reflects reality.
+H2[why-sorting-matters]: Why sorting matters
+TABLE:
+H: Lead type | Value and urgency | Who should respond
+R: Buyer with finance, wants to view now | High, fast | Buyer's agent within minutes
+R: Seller considering listing soon | High, moderate speed | Listing agent, valuation offer
+R: Early-stage buyer | Medium, nurture | Follow-up sequence, then agent
+R: Renter | Depends on your model | Lettings team
+R: Investor | High but specialised | Senior agent or investment desk
+R: Browser | Low | Automated information
+P: Sorting well means the right person calls the right lead first.
+H2[buyer-questions]: Buyer questions
+TABLE:
+H: Question | Why it matters | Natural wording
+R: Which property or area? | Match and route | Which property caught your eye, or which area are you looking in?
+R: Budget range? | Realistic options | So I can suggest the right homes, roughly what range are you thinking?
+R: Timing? | Urgency | Are you looking to move soon, or planning ahead?
+R: Finance arranged? | Readiness | Have you spoken to a lender yet, or paying cash?
+R: Need to sell first? | Dependency | Do you have a home to sell first?
+R: Must-haves? | Match | Anything that is a must, like bedrooms or a garden?
+P: Ask one at a time, starting with what helps the visitor most. Stop when you can route them.
+H2[seller-questions]: Seller questions
+TABLE:
+H: Question | Why it matters | Natural wording
+R: Property address or area | Fit with your territory | Where is the property?
+R: Type and size | Match and preparation | What kind of property is it, roughly how many bedrooms?
+R: Timing | Urgency | Are you thinking of selling soon, or just curious about value?
+R: Reason | Motivation | Is there a particular reason you are thinking of moving?
+R: Other valuations | Competition | Have you had a valuation already?
+R: Next step | Conversion | Would you like someone to visit for a valuation?
+P: Sellers value discretion. Explain what happens with their details and avoid asking for information you do not need.
+H2[signals-you-can-read-without-asking]: Signals you can read without asking
+UL:
+- A specific property or address is stronger than a general question.
+- Asking about viewing times signals intent.
+- Mentioning a date such as a lease ending or a school year signals urgency.
+- Giving contact details unprompted signals interest.
+- Asking about fees or process from a seller signals early comparison.
+P: See [lead scoring from chat behaviour](/blog/chat-behavior-lead-scoring).
+H2[a-simple-scoring-model]: A simple scoring model
+TABLE:
+H: Signal | Points
+R: Specific property and viewing request | +4
+R: Timing within three months | +3
+R: Finance arranged or cash | +2
+R: Gave a phone number | +2
+R: Seller wants a valuation visit | +4
+R: General browsing | 0
+R: Outside your area | -3
+TABLE:
+H: Total | Label | Action
+R: 7 or more | Hot | Call within minutes; text alert
+R: 4 to 6 | Warm | Same-day call or email
+R: 1 to 3 | Nurture | Automated follow-up if they agreed
+R: Negative | Not a fit | Polite reply with suggestions
+P: Adjust the numbers to your market and check them against outcomes each quarter. See [AI lead qualification framework](/blog/ai-lead-qualification-framework).
+H2[route-to-the-right-person]: Route to the right person
+UL:
+- By area: the agent who covers the postcode.
+- By type: buyer's agent, listing agent, lettings, investment.
+- By value: senior agents for high-value or complex leads.
+- By availability: round-robin among agents on duty.
+P: Send hot leads by text and email with a summary at the top. Crescelo sends lead emails with instant alerts and can deliver leads to Slack, Google Sheets and webhooks, so an automation can route by area or type. See [instant lead routing in chat](/blog/instant-lead-routing-chat) and [CRM integration](/blog/crm-integration-ai-chatbot-leads).
+H2[keep-it-respectful-and-fair]: Keep it respectful and fair
+UL:
+- Do not use the chat to steer or exclude people on protected characteristics; follow fair housing and equal opportunity rules that apply where you operate.
+- Do not ask intrusive questions about a person's circumstances.
+- Give every visitor a courteous answer, whatever their score.
+- Tell visitors they are talking to an AI, and offer a person.
+- Collect only what you need.
+P: A low score means lower priority, not a rude reply.
+H2[follow-up-at-the-right-pace]: Follow-up at the right pace
+TABLE:
+H: Lead | Follow-up
+R: Hot buyer | Call now; confirm viewing; send similar listings
+R: Warm buyer | Email with listings and an offer to book a viewing
+R: Early-stage buyer | Occasional useful updates, with consent
+R: Seller considering | Offer a market snapshot; follow up after a week
+R: Seller ready | Valuation visit within days
+P: Do not add anyone to marketing emails without consent. See [GDPR and CCPA for chatbot lead capture](/blog/chatbot-lead-capture-gdpr-ccpa-compliance).
+H2[a-sample-conversation]: A sample conversation
+TABLE:
+H: Speaker | Message
+R: Visitor | I am thinking of selling my house on Maple Road but not sure when.
+R: Assistant | Thanks for asking. I can explain how our valuation works, which is free and takes about 30 minutes, with no obligation. Roughly how many bedrooms does the house have, and are you thinking of moving this year or later?
+R: Visitor | Three bedrooms. Maybe this year.
+R: Assistant | Good to know. Would you like one of our agents to visit for a valuation? I can offer Tuesday or Thursday. What is the best number to reach you?
+H2[common-mistakes]: Common mistakes
+UL:
+- Asking about budget before helping.
+- Treating every lead as hot.
+- Not routing by area, so leads bounce between agents.
+- Never checking whether scores predict outcomes.
+- Sending alerts for every lead so agents ignore them.
+H2[worked-example-two-leads-on-the-same-morning]: Worked example: two leads on the same morning
+P: At 8:40 a.m., a visitor asks about a specific three-bedroom house, says they need to move by August and have a mortgage pre-approval. The assistant scores them as hot, offers Saturday viewing times, books one and texts the buyer's agent with a summary: house, timeline, pre-approved, viewing booked. At 9:10, another visitor asks generally what homes cost in the area and gives no details. The assistant answers helpfully, offers a market guide by email and captures an address with consent. That lead is added to a monthly update list. The agent calls the first lead within ten minutes and never has to sort through the second. The scoring did not judge either person; it simply prioritised the agent's time.
+TABLE:
+H: Lead | Signals | Label | Action
+R: House-specific buyer | Property, timeline, finance, viewing request | Hot | Text alert; call in minutes
+R: General browser | No property, no timeline | Nurture | Guide by email with consent
+H2[check-the-scoring-every-quarter]: Check the scoring every quarter
+OL:
+- List last quarter's leads with their labels.
+- Note what happened to each: viewing, offer, listing, nothing.
+- Compare conversion by label: did hot leads convert most?
+- Look for patterns the scoring missed: warm leads that converted, or hot leads that did not.
+- Adjust points and wording, and record the change.
+P: A scoring model is a hypothesis about your market. Test it against results, and keep it simple enough to explain to your team.
+H2[frequently-asked-questions]: Frequently asked questions
+FAQ:
+Q: How do I qualify real estate leads in chat?
+A: Ask a few natural questions about property, timing and readiness, read signals like viewing requests, score the lead and route it to the right agent.
+Q: Should the chat ask about budget?
+A: Gently and indirectly, for example by asking what range the visitor is considering, and only after helping.
+Q: How do I qualify sellers?
+A: Ask about location, type, timing and whether they want a valuation visit, and keep their details private.
+Q: Can it route leads by area?
+A: Yes, by using lead data in an automation or your CRM to assign the right agent.
+Q: How do I avoid bias in scoring?
+A: Score behaviour and stated needs, never personal characteristics, and review the results regularly.
+Q: How do I know my scoring works?
+A: Compare labels with outcomes each quarter and adjust.
+P: See the [lead capture feature](/product/lead-capture), try a buyer and a seller conversation in the [playground](/playground) and read [AI lead qualification framework](/blog/ai-lead-qualification-framework).
+H2[further-reading]: Further reading
+UL:
+- [Google Search Central: creating helpful, people-first content](https://developers.google.com/search/docs/fundamentals/creating-helpful-content): What Google looks for in useful pages.

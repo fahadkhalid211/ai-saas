@@ -1,0 +1,100 @@
+TITLE: Client Intake for Consultants: Qualify High-Value Enquiries Without Wasting Discovery Calls
+SEO: Client Intake for Consultants: Qualify High-Value Enquiries
+DESC: How independent consultants and small agencies can use chat to qualify enquiries, filter poor fits, capture project details and book discovery calls.
+EXCERPT: How independent consultants and small agencies can use chat to qualify enquiries, filter poor fits, capture project details and book discovery calls.
+CLUSTER: Consultants and Coaches
+MOD: 2026-09-27
+P: For a consultant or a small agency, time is the product. Every discovery call that goes nowhere is an hour that could have been billable or restful. Yet enquiries arrive as vague one-liners: 'Can you help with our marketing?', 'How much is a website?' Answering each properly takes time, and ignoring them loses good clients. A chat on your website can do the sorting for you. It explains what you do and what you do not, asks the few questions that show whether someone is a fit, shares how you work and price, and books discovery calls only with people who are ready. This guide explains how to set that up: what to publish, which questions to ask, how to filter kindly, how to book the call and how to follow up.
+H2[what-makes-an-enquiry-high-value]: What makes an enquiry high value
+TABLE:
+H: Signal | Good sign | Warning sign
+R: Problem | Specific, with a business reason | Vague, no outcome named
+R: Budget | Realistic for your work | Far below your minimum, or 'as cheap as possible'
+R: Timeline | Clear and workable | Yesterday, or 'no rush' for months
+R: Authority | Decision maker or reporting to one | Gathering quotes for someone else
+R: Fit | Your niche and method | Outside your expertise
+P: The aim is not to be selective for its own sake but to spend your time where you can help most.
+H2[publish-the-things-that-filter]: Publish the things that filter
+P: The best filter is information. State on your site and in the assistant's documents:
+UL:
+- Who you work with and who you do not.
+- Typical project types, sizes and durations.
+- Your minimum engagement or starting fee.
+- How you work: process, communication and what you need from clients.
+- Current availability and lead time.
+- Examples and results you can share.
+P: Visitors who see a $10,000 minimum will either qualify themselves out or arrive prepared, saving you both time. Hiding your prices attracts enquiries you cannot serve.
+H2[questions-that-qualify-without-interrogating]: Questions that qualify without interrogating
+TABLE:
+H: Question | Natural wording | What it tells you
+R: What are you trying to achieve? | What outcome would make this project a success? | Clarity of the problem
+R: What is the scope? | Roughly what do you have in mind, for example a one-off project or ongoing support? | Size and type
+R: What is the timeline? | When would you like to start? | Urgency and feasibility
+R: What is the budget range? | Our projects usually start around $X. Does that fit what you had in mind? | Fit with your minimum
+R: Who decides? | Who else would be involved in choosing? | Authority
+P: Offer your minimum as information rather than asking for a number: it feels fairer, and it filters gently.
+H2[filter-kindly]: Filter kindly
+P: When an enquiry is not a fit, the assistant should say so respectfully and, where possible, help. Options: point to a lower-cost resource such as a guide, refer to a colleague or a directory, invite them to return when their situation changes, or offer an email list if they consent. Never be curt. A polite decline builds your reputation and sometimes turns into a referral later.
+H2[booking-the-discovery-call]: Booking the discovery call
+OL:
+- Explain what the call is: length, format, whether it is free or paid and what you will cover.
+- State what to prepare, such as a short brief or goals.
+- Offer real times and confirm by email with a video link or dial-in.
+- Ask for a short pre-call summary if it helps.
+- Send a reminder and a change link.
+P: If your calls are paid, say so plainly, and explain what the fee covers. See [paid discovery call booking](/blog/paid-discovery-call-booking-chat) and [eliminating unpaid consulting requests](/blog/eliminating-unpaid-consulting-requests-chat). Crescelo's built-in booking offers slots from your opening hours and one slot length; use Calendly or Cal.com if you need different call types. See [AI appointment booking](/blog/ai-appointment-booking).
+H2[time-zones-and-availability]: Time zones and availability
+P: Consultants often serve clients in other time zones. State your working hours and time zone, confirm times in both zones in the confirmation and set booking hours that protect your deep-work time. See [time zone scheduling for consultants](/blog/time-zone-global-scheduling-consultants).
+H2[capture-the-brief]: Capture the brief
+P: A good intake creates a short brief for you: who they are, what they want, scope, timeline, budget fit and how they found you. Deliver it to your email with the conversation, so you can read for two minutes and decide whether to invest in the call. Crescelo sends lead emails with instant alerts and can send leads to Slack, Google Sheets or a webhook for your CRM. See [conversational lead capture](/blog/conversational-lead-capture).
+H2[follow-up-without-pressure]: Follow up without pressure
+TABLE:
+H: Lead | Follow-up
+R: Booked a call | Confirmation, prep note and reminder
+R: Qualified but not booked | A short note a day later with a link to times
+R: Not ready | Offer a resource and check in later, with consent
+R: Not a fit | A kind decline and a suggestion
+H2[a-sample-conversation]: A sample conversation
+TABLE:
+H: Speaker | Message
+R: Visitor | We need help with our marketing. What do you charge?
+R: Assistant | Thanks for reaching out. I am an AI assistant for the studio. We work with B2B software companies on positioning and content, and projects usually start around $8,000. What outcome would make this project a success for you, and roughly when would you like to start?
+R: Visitor | We want more qualified demos. Start next month. That is within budget.
+R: Assistant | That sounds like a good fit. I can offer a 30-minute discovery call on Tuesday or Thursday. Could you tell me your company name and role so Priya can prepare?
+H2[common-mistakes]: Common mistakes
+UL:
+- Hiding prices, then wasting calls on unsuitable enquiries.
+- Asking too many questions before offering a call.
+- Being cold to people who are not a fit.
+- Booking calls into the middle of your focus time.
+- Never reviewing what enquiries ask for.
+H2[a-worked-example-a-brand-strategy-studio]: A worked example: a brand strategy studio
+P: A two-person brand strategy studio was taking six discovery calls a week and winning one. Half of those calls were with startups that could not afford its minimum project. It added a short chat to its website with its minimum stated up front, three qualifying questions and a clear description of its process. Discovery calls dropped to four a week, and the studio won two. Founders who were not a fit received a friendly note and a link to a free brand workbook, and several returned six months later, funded and ready. The studio's calendar became calmer, and the calls it did take started with clients who already understood how it worked.
+TABLE:
+H: Item | Before (illustrative) | After
+R: Discovery calls per week | 6 | 4
+R: Wins per week | 1 | 2
+R: Calls with poor fits | About 3 | About 1
+R: Follow-ups from filtered leads later | None | Several
+H2[protect-your-energy]: Protect your energy
+P: An intake chat is also a boundary. It lets you answer at your own pace, decline politely and keep your calendar for the work that matters. Many consultants find that this alone makes the business calmer, because they no longer feel obliged to reply to every enquiry within minutes.
+H2[a-quarterly-tune-up]: A quarterly tune-up
+P: Every quarter, look at the last fifty enquiries. Which types did you win, and which wasted your time? What did visitors ask that your site did not answer? Did your minimum or availability change? Update the assistant's documents and questions to match. A consultancy's positioning shifts over time, and an intake that reflects last year's offer will attract last year's clients.
+H2[frequently-asked-questions]: Frequently asked questions
+FAQ:
+Q: How do I stop wasting discovery calls?
+A: Publish who you serve and your minimum, use a short intake to qualify and book calls only with people who fit.
+Q: Should I show my prices?
+A: At least a starting point. It filters and builds trust.
+Q: Can a chatbot decline poor-fit enquiries?
+A: Yes, kindly, with a helpful suggestion. Have a person review the tone.
+Q: What should intake ask?
+A: The goal, scope, timeline, budget fit and who decides, in natural wording.
+Q: Can I charge for discovery calls?
+A: Yes, if you explain what the fee covers. Some consultants find it improves quality.
+Q: How do I handle time zones?
+A: State your hours and zone, and confirm times in both zones.
+P: Try an intake conversation with your own services in the [playground](/playground), see the [lead capture feature](/product/lead-capture) and [start a free trial](/login?mode=register).
+H2[further-reading]: Further reading
+UL:
+- [Google Search Central: creating helpful, people-first content](https://developers.google.com/search/docs/fundamentals/creating-helpful-content): What Google looks for in useful pages.

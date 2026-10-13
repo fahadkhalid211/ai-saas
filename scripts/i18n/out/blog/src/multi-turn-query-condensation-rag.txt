@@ -1,0 +1,92 @@
+TITLE: Follow-Up Questions in RAG: Query Condensation and Rewriting for Chat
+SEO: Multi-turn Query Condensation RAG | Crescelo
+DESC: Why chat follow-ups break retrieval and how to fix it: resolving references, rewriting questions, using history, choosing rules or a model, risks and testing.
+EXCERPT: Why chat follow-ups break retrieval and how to fix it: resolving references, rewriting questions, using history, choosing rules or a model, risks and testing.
+CLUSTER: Chatbot Technology
+MOD: 2026-09-27
+P: People do not talk to a chatbot in complete, self-contained questions. They say 'how much is it?', 'and for kids?', 'what about Saturday?', 'explain in detail'. Each of those makes perfect sense in context and none of them makes sense alone. A retrieval system that searches on the literal words of the latest message will return nothing useful for 'explain in detail', because the words carry no topic. This is one of the most common causes of a chatbot that seems to forget the conversation. The fix is to turn each follow-up into a standalone question before searching: query condensation, sometimes called query rewriting. This guide explains the problem, the main techniques from simple rules to model-based rewriting, the risks, how to combine them, how to test on real conversations and how Crescelo approaches it.
+H2[the-problem-in-one-example]: The problem in one example
+TABLE:
+H: Turn | Visitor says | Search should use
+R: 1 | How much is a colour treatment? | How much is a colour treatment?
+R: 2 | And with a cut? | How much is a colour treatment with a cut?
+R: 3 | What about for short hair? | How much is a colour treatment with a cut for short hair?
+R: 4 | Explain in detail | Explain in detail the colour treatment with a cut for short hair
+P: If retrieval sees only 'And with a cut?' it may find passages about haircuts, not the colour price. If it sees only 'Explain in detail' it may find nothing. The conversation supplies the missing context; the retrieval step has to use it.
+H2[why-it-matters-more-in-chat]: Why it matters more in chat
+UL:
+- Chat messages are short and elliptical.
+- Pronouns and references are constant: 'it', 'that one', 'the second option'.
+- Visitors change topic without warning.
+- Follow-ups are often the most valuable turns, where the visitor is closest to a decision.
+P: A retrieval system that ignores history fails exactly when the visitor is engaged.
+H2[technique-1-rules-that-add-the-previous-topic]: Technique 1: rules that add the previous topic
+P: The simplest approach detects that a message cannot stand alone and prepends the previous user question. Signals include very short messages, pronouns, openers such as 'and', 'what about', 'how about', 'why', and phrases like 'in detail' or 'more'. It is instant, free and predictable.
+TABLE:
+H: Strengths | Weaknesses
+R: No model calls; no latency | Crude: may add the wrong topic when the visitor changed subject
+R: Deterministic and easy to test | Cannot resolve complex references
+R: Works offline and on cheap hardware | Rules need maintenance across languages
+H2[technique-2-model-based-rewriting]: Technique 2: model-based rewriting
+P: A small language model reads the conversation and writes a standalone question, and sometimes several alternative phrasings. It handles subtle references and topic changes better than rules. The costs are an extra model call, added latency and the risk that the rewrite adds facts that were not in the conversation. Mitigations: use a small fast model, keep a strict timeout, cache results, instruct it to change as little as possible and fall back to the rules if it fails.
+TABLE:
+H: Strengths | Weaknesses
+R: Handles complex references | Adds latency and cost
+R: Fixes typos and expands abbreviations | May hallucinate context
+R: Can produce alternative phrasings for better recall | Needs a fallback when it fails
+H2[technique-3-use-both]: Technique 3: use both
+P: A robust pipeline applies the cheap rules first and, where enabled, a bounded model rewrite second, searching with both the condensed query and the original and fusing the results. If the rewrite fails or times out, the rules still work. Crescelo follows this pattern: it resolves follow-ups using the previous question by default, and can optionally use a small model to write a standalone question and alternative phrasings, each searched and fused, with a short timeout and caching so a failure falls back to the rules.
+H2[what-history-to-include]: What history to include
+UL:
+- The last one or two user questions are usually enough.
+- Include the assistant's last reply if the visitor refers to something it said ('the second option').
+- Do not include the whole conversation: it dilutes the query and costs tokens.
+- Reset context when the visitor clearly changes topic.
+P: Cap the amount of history, and prefer the most recent turns.
+H2[broad-and-overview-requests]: Broad and overview requests
+P: Some messages are not follow-ups but broad requests: 'tell me everything', 'what do you offer?', 'give me an overview'. Searching on those words finds little. A good system recognises them and retrieves a spread of passages across the knowledge base instead of a keyword match. Crescelo treats these as overview questions and pulls a representative set of passages. See [how to review your chatbot's conversations](/blog/audit-website-chatbot-conversations) for spotting such questions in your own logs.
+H2[risks-and-how-to-control-them]: Risks and how to control them
+TABLE:
+H: Risk | Example | Control
+R: Wrong topic carried over | Visitor moves from prices to parking, rule adds 'colour treatment' | Only add context when the message is short or referential; drop it when the new message has its own topic words
+R: Invented detail in a rewrite | Model adds 'for children' that no one said | Instruct it to add nothing new; compare with the original
+R: Latency | Extra model call | Small model, timeout, caching
+R: Cost | Rewrite on every message | Only rewrite when needed
+R: Language drift | Rewrite in the wrong language | Keep the visitor's language
+H2[how-to-test-on-real-conversations]: How to test on real conversations
+OL:
+- Collect twenty real multi-turn conversations, or write realistic ones.
+- For each follow-up, note the passage that should be retrieved.
+- Run retrieval with the raw message, with the rule-based condensation and with the model rewrite.
+- Measure how often the right passage is in the top five for each.
+- Read the failures: was the topic wrong, the rewrite invented or the passage missing?
+- Repeat after any change to the rules, the model or the prompts.
+P: Follow-ups are often underrepresented in test sets. Make sure yours includes them; our own retrieval evaluation showed that follow-up questions were the weakest category, which is exactly where condensation earns its keep.
+H2[what-the-visitor-should-see]: What the visitor should see
+P: Condensation is invisible, and it should be. The visitor asks 'and for kids?' and gets a sensible answer about kids for the same service, without repeating themselves. If the assistant is unsure what they mean, it should ask a clarifying question instead of guessing. See [the questions every service business chatbot should answer well](/blog/essential-chatbot-questions-service-business).
+H2[common-mistakes]: Common mistakes
+UL:
+- Searching on the raw follow-up and blaming the knowledge base.
+- Passing the whole conversation to the search, which drowns the topic.
+- Rewriting every message even when it stands alone.
+- Never testing multi-turn conversations.
+- Letting a rewrite change the visitor's language.
+H2[frequently-asked-questions]: Frequently asked questions
+FAQ:
+Q: What is query condensation?
+A: Turning a follow-up message into a standalone question, using the conversation history, before searching the knowledge base.
+Q: Why does my chatbot fail on follow-up questions?
+A: Because retrieval searches on the literal words of the latest message, which lack the topic. Condensing the question fixes this.
+Q: Do I need a language model for it?
+A: Not necessarily. Simple rules handle many follow-ups; a model handles complex ones.
+Q: How much history should I use?
+A: The last one or two user questions, plus the assistant's last reply if referred to.
+Q: Can rewriting make things worse?
+A: Yes, if it carries over the wrong topic or invents detail. Constrain it, cache it and fall back to rules.
+Q: How does Crescelo handle follow-ups?
+A: It resolves them using the previous question by default and can optionally use a small model to write standalone questions and alternatives.
+P: See a follow-up in action in the [playground](/playground), read [hybrid search for RAG](/blog/hybrid-rag-dense-vector-sparse-keyword) and see the [AI assistant](/product/ai-assistant) feature.
+H2[further-reading]: Further reading
+UL:
+- [Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks (Lewis et al.)](https://arxiv.org/abs/2005.11401): The original research paper behind retrieval-augmented generation.
+- [Google Search Central: creating helpful, people-first content](https://developers.google.com/search/docs/fundamentals/creating-helpful-content): What Google looks for in useful pages.

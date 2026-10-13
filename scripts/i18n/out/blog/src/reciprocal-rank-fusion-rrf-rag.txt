@@ -1,0 +1,102 @@
+TITLE: Reciprocal Rank Fusion (RRF) for RAG: Merging Search Results the Simple Way
+SEO: Reciprocal Rank Fusion (RRF) for RAG | Crescelo
+DESC: How reciprocal rank fusion merges vector and keyword results for RAG: the formula, a worked example, choosing the constant, weighting, limits and how to test.
+EXCERPT: How reciprocal rank fusion merges vector and keyword results for RAG: the formula, a worked example, choosing the constant, weighting, limits and how to test.
+CLUSTER: Knowledge Bases and RAG
+MOD: 2026-09-27
+P: Hybrid search runs two kinds of retrieval and has to combine their results: one that matches meaning (vector search) and one that matches words (keyword search such as BM25). The awkward part is that the two produce scores on different scales. A vector similarity of 0.62 and a keyword score of 14.3 cannot simply be added. Reciprocal rank fusion, or RRF, sidesteps the problem with a beautifully simple idea: ignore the scores and use only the ranks. A passage that appears near the top of either list scores well, and one that appears near the top of both scores best. This guide explains RRF in plain terms, shows the formula and a worked example, discusses the constant everyone asks about, describes weighted variants and limits, and shows how to check on your own data that the merge helps. It builds on our guide to [hybrid search for RAG](/blog/hybrid-rag-dense-vector-sparse-keyword).
+H2[the-problem-rrf-solves]: The problem RRF solves
+TABLE:
+H: Method | Score you get | Scale
+R: Vector search (cosine similarity) | For example 0.71 | Between about 0 and 1, but depends on the embedding model
+R: Keyword search (BM25) | For example 12.6 | Unbounded; depends on query length and corpus
+R: Full-text search rank in a database | For example 0.08 | Depends on the function and normalisation
+P: Adding or averaging these is meaningless. Normalising them is possible but fragile, because the distributions change with the query and the data. RRF avoids the issue by throwing away the scores and keeping only the order.
+H2[the-formula]: The formula
+P: For each passage, RRF adds up a contribution from every list in which it appears. The contribution is one divided by a constant plus the passage's rank in that list. With rank starting at 1 and a constant k, a passage's score is the sum over lists of 1 / (k + rank).
+TABLE:
+H: Rank in a list | Contribution with k = 60
+R: 1 | 1 / 61 = 0.0164
+R: 2 | 1 / 62 = 0.0161
+R: 5 | 1 / 65 = 0.0154
+R: 10 | 1 / 70 = 0.0143
+R: 20 | 1 / 80 = 0.0125
+R: Not in the list | 0
+P: The differences between adjacent ranks are small, which is intentional: RRF rewards appearing in several lists more than it rewards being first in one.
+H2[a-worked-example]: A worked example
+P: A visitor asks: 'Do you do skin fades for kids on Saturdays?' Vector search and keyword search each return five passages. Passages are labelled A to F.
+TABLE:
+H: Passage | Vector rank | Keyword rank | RRF score (k = 60)
+R: A: kids' cuts policy | 1 | 3 | 1/61 + 1/63 = 0.0323
+R: B: skin fade service | 3 | 1 | 1/63 + 1/61 = 0.0323
+R: C: Saturday hours | 2 | not listed | 1/62 = 0.0161
+R: D: parking | 4 | not listed | 1/64 = 0.0156
+R: E: fade blog post | not listed | 2 | 1/62 = 0.0161
+R: F: prices | 5 | 5 | 1/65 + 1/65 = 0.0308
+P: Passages A and B, found by both methods, top the ranking. F is not first in either list but appears in both, so it scores higher than C, D or E, which each appear in only one. This is the behaviour you want: agreement between two very different retrieval methods is a strong signal of relevance.
+H2[what-the-constant-k-does]: What the constant k does
+P: The constant controls how quickly the reward falls with rank. A small k, such as 1 or 10, makes the top ranks count far more than lower ranks. A large k, such as 60, flattens the curve, so a passage that is ranked tenth in two lists can beat one ranked first in only one. The value 60 comes from the original research and is a widely used default because it performs well across many datasets. It is a good place to start and rarely needs tuning.
+TABLE:
+H: k | Effect | When to consider
+R: Small (about 5 to 20) | Strongly favours top-ranked items | When one method is clearly more reliable
+R: 60 (default) | Balanced | Most cases
+R: Large (100 or more) | Nearly flat; favours agreement between lists | When lists are noisy
+H2[weighting-the-lists]: Weighting the lists
+P: Plain RRF treats every list as equal. Sometimes you know that one method should count more: keyword search for a product catalogue full of codes, vector search for conversational FAQs. A weighted variant multiplies each list's contribution by a weight, for example 1.0 for vectors and 0.6 for keywords. Start with equal weights, and only add weights if an evaluation on your own questions shows a benefit. Some systems also add a small bonus for the vector similarity score itself, as a tie-breaker, without letting scores dominate.
+H2[why-it-works-so-well-in-practice]: Why it works so well in practice
+UL:
+- **Scale independence:** it does not care what the scores mean.
+- **Robustness:** an odd score in one list cannot swamp the rest.
+- **Simplicity:** a few lines of code, with one parameter.
+- **Fusion of any number of lists:** you can add a third retriever, such as a title match, without redesign.
+- **Speed:** the arithmetic is trivial next to the searches.
+H2[limits-of-rrf]: Limits of RRF
+UL:
+- It ignores how much better rank 1 is than rank 2. Two nearly identical candidates and one runaway winner look the same.
+- It cannot rescue a list that does not contain the right passage at all.
+- Candidates missing from every list are invisible; retrieval depth matters, so take at least 15 to 25 from each method.
+- It does not judge relevance itself; a reranker can do that as a second step.
+P: These are reasons to see RRF as the merge step in a pipeline, not a complete solution. See [document chunking strategies](/blog/document-chunking-strategies-pdf-docx) for the step before, and reranking below for the step after.
+H2[reranking-after-fusion]: Reranking after fusion
+P: A common pipeline retrieves 20 to 30 candidates with each method, merges them with RRF to a shortlist of 10 to 20, then reranks the shortlist with a model that reads the question and each passage together, and finally passes the top few to the language model. Reranking costs more per query but only touches a small set, and it can correct cases where the fusion order was slightly off. Crescelo's retrieval combines vector and keyword search, merges with reciprocal rank fusion, and applies a lighter reranking step, with an optional cross-encoder for higher accuracy.
+H2[how-to-test-that-fusion-helps-on-your-data]: How to test that fusion helps on your data
+OL:
+- Collect 30 to 50 real questions and note which passage should answer each.
+- Run three retrievals: vector only, keyword only and RRF.
+- For each question, check whether the right passage is in the top 3 and top 5.
+- Compute hit rate and mean reciprocal rank for each method.
+- Look at the questions where RRF lost to a single method and see why.
+- Try k = 20, 60 and 100 and one weighting, and keep changes only if they help consistently.
+TABLE:
+H: Metric | Meaning
+R: Hit rate at 5 | Share of questions whose right passage is in the top 5
+R: Mean reciprocal rank | Average of 1 divided by the rank of the right passage
+R: nDCG | Rewards putting relevant passages higher
+P: On a small English test set of our own, hybrid retrieval with fusion put the needed passage in the top five for about 95 percent of questions. Your numbers will differ with your content, which is why testing on your data matters. See [benchmarking RAG retrieval for business](/blog/benchmarking-rag-retrieval-metrics-business).
+H2[implementation-notes-for-developers]: Implementation notes for developers
+UL:
+- Fuse by a stable passage identifier so duplicates merge.
+- Keep ranks 1-based and be consistent.
+- Break ties deterministically, for example by the better vector similarity.
+- Return each passage's per-method rank and score for debugging.
+- Do the fusion inside the database if you can, to save round trips, or in application code for flexibility.
+- Cache repeated queries; retrieval results for the same question rarely change.
+H2[frequently-asked-questions]: Frequently asked questions
+FAQ:
+Q: What is reciprocal rank fusion?
+A: A method that merges ranked lists by giving each passage the sum of 1 / (k + rank) across the lists, ignoring the original scores.
+Q: What value of k should I use?
+A: 60 is a well-tested default. Tune it only if your own evaluation shows a benefit.
+Q: Why not add the scores together?
+A: Vector and keyword scores are on different scales and distributions, so simple addition or averaging is unreliable.
+Q: Can I weight one retriever more?
+A: Yes, with a weighted variant. Start equal, and add weights only if testing supports it.
+Q: Do I still need a reranker?
+A: It is optional but often improves the final ordering, especially for the top few results.
+Q: Does Crescelo use RRF?
+A: Yes. Its retrieval merges vector and keyword results with reciprocal rank fusion.
+P: See how retrieval feeds answers in the [AI assistant](/product/ai-assistant), try grounded answers in the [playground](/playground) and read [why chatbots make things up](/blog/grounded-ai-chatbot-hallucinations).
+H2[further-reading]: Further reading
+UL:
+- [Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks (Lewis et al.)](https://arxiv.org/abs/2005.11401): The original research paper behind retrieval-augmented generation.
+- [Google Search Central: creating helpful, people-first content](https://developers.google.com/search/docs/fundamentals/creating-helpful-content): What Google looks for in useful pages.

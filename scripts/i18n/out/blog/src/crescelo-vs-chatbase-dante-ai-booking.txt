@@ -1,0 +1,116 @@
+TITLE: Chatbase and Dante AI Alternatives: Crescelo Compared for Booking and Leads
+SEO: Chatbase and Dante AI Alternatives | Crescelo
+DESC: An honest comparison of Crescelo with Chatbase and Dante AI style knowledge chatbots: answers, booking, leads, handover, pricing model and who each suits.
+EXCERPT: An honest comparison of Crescelo with Chatbase and Dante AI style knowledge chatbots: answers, booking, leads, handover, pricing model and who each suits.
+CLUSTER: Comparisons
+MOD: 2026-09-27
+P: Chatbase and Dante AI belong to a popular group of products: you give them your content, and they give you a chatbot that answers questions about it. If you are searching for an alternative, the useful question is not which product has the longer feature list, but what you need the chatbot to do. Answering questions from documents is one job. Booking appointments, capturing leads properly and handing over to your team are different jobs, and products are built with different jobs in mind.
+P: We make Crescelo, so we are not neutral. This comparison tries to be fair: it explains where knowledge-base chatbots are the right tool, where an appointment-focused assistant fits better, and how to test both on your own content. Features and prices on every product change, so check each vendor's current pages before deciding; we describe categories and approaches rather than quote competitor prices.
+H2[what-chatbase-and-dante-ai-style-products-do-well]: What Chatbase and Dante AI style products do well
+P: Products in this group are strong at the core task of turning documents, websites and knowledge bases into a question-answering chatbot quickly.
+UL:
+- **Fast setup:** paste a website address or upload files and get a working chatbot in minutes.
+- **General-purpose flexibility:** they suit documentation sites, support portals, product Q&A and internal knowledge.
+- **Embeds and sharing:** website widgets and shareable links.
+- **Broad appeal:** they serve startups, agencies, e-commerce and software companies as well as service businesses.
+P: If your main goal is 'let people ask questions about our documentation and get accurate answers', these tools are a natural fit and you should try them.
+H2[where-an-appointment-focused-assistant-differs]: Where an appointment-focused assistant differs
+P: A service business, such as a salon, clinic, law practice or fitness studio, needs the chatbot to do more than answer. It needs to turn the conversation into a booking or a qualified lead. That changes what matters.
+TABLE:
+H: Need | Knowledge-base chatbot (typical) | Crescelo (appointment-focused)
+R: Answer questions from your content | Core feature | Core feature, with an instruction to answer only from your content and admit when it does not know
+R: Book appointments in the chat | Often limited or handled by linking out to a scheduling tool | Built in: live free slots, slot locking, confirmations (Growth plan)
+R: Capture leads | Available in some products, often basic | Structured capture with instant email alerts, webhook and CRM delivery
+R: Hand over to a person | Varies | One-click takeover with the full conversation and notifications
+R: Business-hours logic | Usually not central | Opening hours and slot length for the built-in picker; Calendly and Cal.com for more complex scheduling
+R: Channels | Website, sometimes messaging apps | Website widget, hosted page, WhatsApp and Telegram on the top plan
+R: AI usage | Usually bundled in the plan or credits | Bring your own key: you pay your AI provider directly, so no markup
+P: None of these points make one product universally better. They show what each was designed around. If you never book appointments, the booking column is irrelevant to you. If you do, it may decide the choice.
+H2[grounding-the-feature-that-matters-most-for-either]: Grounding: the feature that matters most for either
+P: Whichever product you pick, test how it behaves when your documents do not contain the answer. A good assistant says it does not know and offers a person or a form. A weaker one guesses. Load the same documents into each product, ask three questions that are not covered, and see what happens. Read [how to stop a chatbot from making things up](/blog/grounded-ai-chatbot-hallucinations) for what to look for. You can also test Crescelo without an account in the [playground](/playground).
+H2[pricing-models-compared]: Pricing models compared
+P: Pricing is where products in this space differ most, and where surprises hide.
+TABLE:
+H: Model | How it works | Watch for
+R: Credits or message limits bundled with the plan | Plan includes a number of AI messages or credits per month | Running out mid-month, and higher tiers to raise the limit
+R: Per-seat plus usage | Fee per team member plus conversation charges | Cost growth as your team grows
+R: Bring your own key (Crescelo) | Platform subscription with chat sessions included, and you pay your AI provider directly for model usage | You manage a provider account; you see and control the AI cost
+P: Crescelo's Starter plan is $49 a month with one assistant and 100 chat sessions; Growth is $149 with booking and calendar sync; the Agency tier is $399 with WhatsApp and Telegram. See the [pricing page](/pricing). The reasoning behind bring-your-own-key is in [BYOK versus bundled AI pricing](/blog/byok-vs-bundled-ai-pricing-cost-comparison).
+H2[booking-the-biggest-difference-for-service-businesses]: Booking: the biggest difference for service businesses
+P: Ask each product these questions, and watch for vague answers.
+OL:
+- Does the chatbot read my real calendar or only send a link to a scheduling page?
+- How does it stop two visitors booking the same slot?
+- Can I set durations, buffers and staff for each service?
+- What confirmations and reminders are sent, and can I customise them?
+- Can visitors reschedule or cancel from the confirmation?
+P: If the answer to the first question is 'it links to my scheduling tool', that can be perfectly workable, but the visitor leaves the conversation to finish the booking. Our guide to [AI appointment booking](/blog/ai-appointment-booking) explains what an in-chat booking system must do.
+H2[leads-and-handover]: Leads and handover
+P: For lead capture, check what fields you can collect, how leads reach you (email, webhook, spreadsheet, CRM), whether you get an instant alert and whether you can export them. For handover, check whether you can see conversations live, take over, and whether the visitor is told a person has joined. See [conversational lead capture](/blog/conversational-lead-capture) and [live human handover flow design](/blog/live-human-handover-flow-design).
+H2[who-should-choose-which]: Who should choose which
+TABLE:
+H: If you are | Consider
+R: A software company with documentation and a help centre | A knowledge-base chatbot such as those in this group
+R: A service business that lives on appointments | An appointment-focused assistant such as Crescelo
+R: An agency building chatbots for many clients | Check white-label options and per-client pricing on each product; Crescelo offers white-label on Growth and above
+R: Someone who wants the cheapest way to test the idea | Try free plans or trials of several and compare answers on your own content
+R: A business that must keep AI spend visible | A bring-your-own-key product
+H2[how-to-compare-them-fairly-in-an-hour]: How to compare them fairly in an hour
+OL:
+- Choose ten real customer questions and three that your content cannot answer.
+- Load identical documents into each product.
+- Ask all thirteen questions and score each answer as correct, partly correct, wrong or honestly unknown.
+- Try a booking or a lead capture end to end.
+- Ask to see how you would take over a conversation.
+- Read the pricing page and calculate the total at three times your current volume.
+P: Repeat the test a few days later, to check that answers are consistent. Then choose using a written scorecard; a template is in our [platform comparison guide](/blog/website-chatbot-platform-comparison).
+H2[migrating-from-another-chatbot]: Migrating from another chatbot
+P: If you already run a chatbot trained on your documents, you can keep the same source files. Upload them to the new product, recreate your greeting and tone, set up your services and calendar, and run both side by side for a week before you switch the website snippet. Keep an export of your existing conversations and leads first.
+H2[our-honest-limits]: Our honest limits
+UL:
+- Crescelo is built for appointment-based service businesses, so it is narrower than general-purpose chatbot builders.
+- Phone answering is under development and listed on the [roadmap](/roadmap); today it works in website chat and messaging apps.
+- Because it is bring-your-own-key, you need an account with an AI provider, or you can use the free engine to start.
+H2[three-example-businesses-and-what-they-chose]: Three example businesses and what they chose
+H3: A dental practice
+P: A practice needs to answer questions about treatments, insurance and opening hours, and to book new-patient and check-up appointments. It has two dentists and a hygienist, each with different appointment types. A general knowledge-base chatbot answers the questions well but sends people to a separate booking page. An appointment-focused assistant can carry the conversation through to a booked slot with the right practitioner. The practice also cares about privacy, so it limits what the chat collects and hands anything clinical to the team. See [AI patient scheduling for dental practices](/blog/ai-patient-scheduling-dental-practices).
+H3: A software startup
+P: A startup with public documentation wants visitors to ask how features work and get answers with links. Booking a demo is one goal among many, and the team already uses a scheduling tool. A knowledge-base chatbot is a natural choice, and the demo link can point to the existing scheduling page.
+H3: A marketing agency serving local clients
+P: An agency builds an assistant for each client. It needs white-label branding, one dashboard for many assistants and predictable costs. Booking matters for the salon and clinic clients but not for the shop clients. It compares per-assistant pricing and white-label limits across products before choosing, and tests each on a client's real documents.
+P: The lesson is the same in all three: decide by the job, then test with real content.
+H2[setup-effort-compared]: Setup effort compared
+P: Knowledge-base chatbots are famously quick to start: add a website address, wait, and chat. Appointment-focused assistants need a little more, because booking needs real information: your services, your hours and how long a booking lasts. That extra step is not wasted effort; it is the information a booking system cannot work without. A realistic plan for Crescelo is an afternoon: gather your documents, load them, set your booking hours and slot length, subscribe to the calendar feed, test and publish. Our [step-by-step guide to adding a chatbot](/blog/add-ai-chatbot-to-your-website) has the full list.
+H2[data-privacy-and-control]: Data, privacy and control
+UL:
+- **Where your documents live:** ask each vendor where content is stored, which sub-processors handle it and how to delete it.
+- **Which AI provider sees your visitors' messages:** with a bring-your-own-key product you choose the provider and can pick one that fits your privacy needs.
+- **Keys and secrets:** confirm that API keys are stored encrypted and never exposed to visitors.
+- **Team access:** check for roles and two-factor authentication if several people manage the assistant.
+P: If you serve visitors in Europe or California, review the [GDPR checklist for website chatbots](/blog/website-chatbot-gdpr-checklist) before launch. This is general information, not legal advice.
+H2[questions-to-put-to-any-vendor]: Questions to put to any vendor
+OL:
+- Show me an answer with its source passage.
+- What happens when the content does not contain the answer?
+- How do I book an appointment through the chat, end to end?
+- What is the total monthly price at three times my current volume?
+- Which parts are live today and which are on a roadmap?
+- How do I export my content, conversations and leads?
+H2[frequently-asked-questions]: Frequently asked questions
+FAQ:
+Q: What is a good alternative to Chatbase?
+A: It depends on the job. For appointment-based businesses, look for a chatbot with built-in booking, lead capture and handover, such as Crescelo. For documentation Q&A, other knowledge-base chatbots may fit better.
+Q: Does Crescelo train on my documents?
+A: It indexes your documents so the assistant can find relevant passages and answer from them. It does not need you to train a model, and you choose your own AI provider.
+Q: Can Crescelo answer from my website and files?
+A: Yes. You can upload documents, paste text or add website addresses to the knowledge base.
+Q: Does it book appointments in the chat?
+A: Yes, on the Growth plan and above, with live availability, slot locking and confirmations.
+Q: What does bring your own key mean?
+A: You connect your own account with an AI provider such as OpenAI, Anthropic, Google, Groq or DeepSeek and pay them directly for model usage, so the platform adds no markup on AI.
+Q: Can I try before I pay?
+A: You can try the assistant on your own documents in the playground with no sign-up, and start a free trial to put it on your website.
+P: See the difference yourself: upload a document in the [playground](/playground), then [start a free trial](/login?mode=register) if it fits.
+H2[further-reading]: Further reading
+UL:
+- [Google Search Central: creating helpful, people-first content](https://developers.google.com/search/docs/fundamentals/creating-helpful-content): What Google looks for in useful pages.

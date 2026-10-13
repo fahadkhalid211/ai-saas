@@ -1,0 +1,119 @@
+TITLE: GDPR Checklist for Website Chatbots: What Small Businesses Must Do
+SEO: GDPR Checklist for Website Chatbots | Crescelo
+DESC: A practical GDPR checklist for website chatbots: lawful basis, transparency, consent, data minimisation, retention, processors, transfers and visitor rights.
+EXCERPT: A practical GDPR checklist for website chatbots: lawful basis, transparency, consent, data minimisation, retention, processors, transfers and visitor rights.
+CLUSTER: Lead Generation
+MOD: 2026-09-27
+P: A website chatbot collects personal data: what people type, their contact details, sometimes their location or device information. If any of your visitors are in the European Union or the United Kingdom, data protection law applies to that chat, whatever size your business is. The good news is that compliance for a typical service business chatbot comes down to a clear set of practical steps. This checklist walks through them, explains what each one means in plain language and points out the questions to ask your chatbot vendor.
+NOTE: This is general information, not legal advice. Data protection law is detailed and depends on your facts. Read the official guidance, and ask a qualified adviser about your situation. For the text of the regulation see the [GDPR information site](https://gdpr.eu/).
+H2[why-chatbots-need-special-attention]: Why chatbots need special attention
+P: A chat feels informal, so visitors type more than they would in a form, including sensitive details. An AI assistant may also send that text to a third-party AI provider, store transcripts and use analytics. Each of these is a data-processing activity that needs a legal basis, transparency and safeguards. Treat the chatbot like any other system that handles customer information.
+H2[step-1-know-what-data-the-chatbot-handles]: Step 1: Know what data the chatbot handles
+P: Start with a simple map. What does the chatbot collect and where does it go?
+TABLE:
+H: Data | Where it comes from | Where it goes
+R: Messages typed by visitors | The chat | Your platform vendor, and the AI provider that writes replies
+R: Name, email, phone number | The chat or a lead form | Your vendor, your email or CRM, your team
+R: Booking details | The booking flow | Your calendar, confirmation emails
+R: Technical data (IP address, browser) | The visit | Your vendor's logs and security systems
+R: A visitor identifier stored in the browser | The widget | Your vendor, to continue a conversation
+P: Write this down. It becomes the backbone of your privacy notice and your record of processing.
+H2[step-2-decide-your-lawful-basis]: Step 2: Decide your lawful basis
+P: Under GDPR you need a lawful basis for each purpose. For a service chatbot the usual candidates are these.
+UL:
+- **Legitimate interests:** answering visitors' questions and running a support tool. You should be able to show that it is necessary, that you have balanced it against visitors' rights and that people would reasonably expect it.
+- **Contract:** taking steps at the visitor's request before entering a contract, such as booking an appointment.
+- **Consent:** for optional extras such as marketing emails or non-essential cookies. Consent must be freely given, specific and easy to withdraw.
+P: Do not rely on a pre-ticked box or on silence. Keep marketing consent separate from the chat itself.
+H2[step-3-be-transparent]: Step 3: Be transparent
+UL:
+- Tell visitors they are talking to an AI assistant.
+- Show a short notice in or near the chat that explains what is collected and links to your privacy policy.
+- Explain in the privacy policy what you collect through the chat, why, how long you keep it and who processes it.
+- Give contact details for privacy requests.
+P: Example notice: 'You are chatting with an AI assistant. We store this conversation to answer you and improve our service. Read our privacy policy.'
+H2[step-4-collect-only-what-you-need]: Step 4: Collect only what you need
+P: Data minimisation is a core principle. Design the flow so it asks for what is necessary and no more. A booking needs a name and a way to reach the person. It does not need a date of birth. Discourage visitors from typing sensitive information: add a line such as 'Please do not share medical or financial details here.' Configure the assistant so it does not ask for special-category data, such as health information, unless you have a specific lawful basis and safeguards.
+H2[step-5-sort-out-processors-and-the-ai-provider]: Step 5: Sort out processors and the AI provider
+P: Your chatbot vendor is a processor acting on your behalf, and so may be the AI provider and the email service. You need a data processing agreement with each that handles personal data for you. Ask each vendor for one, and for their list of sub-processors. Crescelo publishes a [data processing addendum](/dpa) and a list of [sub-processors](/subprocessors). With a bring-your-own-key setup, you choose the AI provider, so you should accept its business terms and check how it treats API data.
+TABLE:
+H: Question | Why it matters
+R: Do you provide a data processing agreement? | Required when a vendor processes personal data for you
+R: Who are your sub-processors, and where are they? | You need to know who handles the data
+R: Is API data used to train models? | Affects confidentiality
+R: Where is data stored and processed? | Relevant to transfers outside the UK or EU
+R: How long are conversations kept and can I delete them? | Retention and deletion rights
+R: How are keys and data protected? | Security of processing
+H2[step-6-international-transfers]: Step 6: International transfers
+P: If data is stored or processed outside the UK or EU, for example by a US-based vendor or AI provider, you need a lawful transfer mechanism, such as an adequacy decision or standard contractual clauses. Vendors should tell you which they use. This is one of the most technical areas; ask your vendor for their transfer documentation and take advice if needed.
+H2[step-7-retention-and-deletion]: Step 7: Retention and deletion
+UL:
+- Decide how long you keep transcripts. Keep them only as long as they are useful, for example to answer follow-ups and improve the assistant.
+- Delete leads and conversations you no longer need.
+- Make sure you can delete a person's data on request, including from the vendor's systems.
+- Document your retention period in your privacy policy.
+P: Crescelo lets you delete leads, appointments and knowledge sources from the dashboard, and you can request deletion of everything by opening a support ticket.
+H2[step-8-respect-visitor-rights]: Step 8: Respect visitor rights
+P: People can ask to see their data, correct it, delete it, restrict or object to processing and receive a copy. You generally must reply within one month. Prepare a simple process: who receives requests, how you verify identity, how you find a person's chat data and how you confirm deletion. Include a contact route in your privacy policy. See our [contact form](/support/contact), which creates a support ticket, as an example of a trackable route.
+H2[step-9-cookies-and-browser-storage]: Step 9: Cookies and browser storage
+P: A chat widget may store an identifier in the visitor's browser so that a conversation continues after a reload. Whether it needs consent depends on whether it is strictly necessary for a service the visitor requested, and on local rules. Describe what the widget stores in your cookie policy, and ask the vendor whether it is strictly necessary. Analytics and marketing cookies generally require consent. See our [cookie policy](/cookies) for an example of how we describe it.
+H2[step-10-security]: Step 10: Security
+UL:
+- Use a vendor that encrypts data in transit and at rest and isolates customer workspaces.
+- Protect your account with strong passwords and two-factor authentication.
+- Give team members the least access they need.
+- Store API keys only in the platform's encrypted settings.
+- Have a plan for a data breach, including who tells the regulator and affected people within the required time.
+P: See [setting up team roles and two-factor authentication](/blog/setup-rbac-2fa-team-security).
+H2[step-11-special-situations]: Step 11: Special situations
+UL:
+- **Children:** avoid collecting data from children unless you have safeguards, and consider whether the service is meant for them.
+- **Health, legal and financial services:** these carry extra obligations. Keep chat to booking and general information, and take advice.
+- **Marketing:** do not add people to email lists from a chat without a separate, clear opt-in.
+- **Automated decisions:** if the chatbot makes decisions that significantly affect people, further rules apply.
+H2[a-copy-and-use-checklist]: A copy-and-use checklist
+UL:
+- Data map of what the chatbot collects and where it goes.
+- Lawful basis chosen for each purpose.
+- AI disclosure and privacy link visible in the chat.
+- Privacy policy updated to mention the chatbot, transcripts, processors and retention.
+- Minimal data collection; warning against sharing sensitive details.
+- Data processing agreements with the chatbot vendor and other processors.
+- Sub-processors and international transfers reviewed.
+- Retention period set and deletion possible.
+- Process for handling visitor requests.
+- Cookie policy and consent settings match what the widget stores.
+- Security controls, including two-factor authentication.
+- Regular review of transcripts and the checklist itself.
+H2[a-short-privacy-notice-you-can-adapt]: A short privacy notice you can adapt
+P: Use plain language and keep it short. For example: 'This chat is run by an AI assistant. We collect the messages you send and any contact details you choose to give us so we can answer you, arrange appointments and improve our service. Our AI and hosting providers process this data on our behalf. We keep chats for [period]. You can ask to see or delete your data at any time. Please do not share sensitive information here. Full details are in our privacy policy.' Adapt the wording, add your details, and have it reviewed.
+H2[related-guides]: Related guides
+UL:
+- [Bring your own AI key, explained](/blog/bring-your-own-ai-key-byok-explained) covers where your data goes when you choose the AI provider.
+- [Chatbot lead capture and GDPR and CCPA](/blog/chatbot-lead-capture-gdpr-ccpa-compliance) goes deeper on collecting contact details.
+- [AI transparency and disclosure](/blog/ai-transparency-disclosure-building-trust) explains how to tell visitors it is an AI.
+- [How to stop a chatbot from making things up](/blog/grounded-ai-chatbot-hallucinations) reduces the risk of wrong statements about your business.
+H2[documents-to-keep-on-file]: Documents to keep on file
+UL:
+- Your data map and record of processing for the chatbot.
+- Data processing agreements with the chatbot vendor, AI provider and other processors.
+- A note of your lawful basis and any balancing test for legitimate interests.
+- Your privacy policy and cookie policy versions.
+- Your retention schedule and deletion log.
+- A log of visitor requests and how you handled them.
+P: Keeping these on file makes it easier to answer a regulator or a customer who asks how you handle their data.
+H2[frequently-asked-questions]: Frequently asked questions
+FAQ:
+Q: Does GDPR apply to my website chatbot?
+A: Yes, if you process personal data of people in the EU or UK, wherever your business is based. Chat messages and contact details are personal data.
+Q: Do I need consent for a chatbot?
+A: Not always. Many chatbot uses rely on legitimate interests or contract, but consent is needed for marketing and for non-essential cookies. Be transparent in every case.
+Q: Do I have to tell visitors it is an AI?
+A: It is best practice and increasingly required. Tell people they are talking to an AI, and give them a way to reach a person.
+Q: Is the AI provider a processor?
+A: Usually yes, when it processes personal data on your behalf. You need appropriate terms with it, and you should check how it treats API data.
+Q: How long can I keep chat transcripts?
+A: Only as long as you need them for a defined purpose. Set a retention period and delete data afterwards.
+Q: What if someone asks me to delete their chat?
+A: You should be able to find and delete it, including with your vendor, and confirm within the legal time limit, generally one month.
+P: Read our [privacy policy](/privacy) to see how we handle data, and see [how the AI assistant answers only from your content](/product/ai-assistant). To try it with your own documents, use the [playground](/playground).
