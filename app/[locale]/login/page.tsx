@@ -92,7 +92,7 @@ export default function LoginPage() {
             mode: 'staff',
             email: staffEmailInput.trim(),
             password: staffPasswordInput.trim(),
-            ...(needsTwoFactor ? { twoFactorCode: twoFactorCode.trim() } : {}),
+            ...(needsTwoFactor || twoFactorCode.trim() ? { twoFactorCode: twoFactorCode.trim() } : {}),
             recaptchaToken,
           };
       const res = await fetch('/api/auth', {
@@ -108,7 +108,6 @@ export default function LoginPage() {
         if (data.requiresTwoFactor) {
           // password accepted, the account also needs its authenticator code
           setNeedsTwoFactor(true);
-          if (needsTwoFactor) setTwoFactorCode('');
         }
         setAuthError(data.error || 'Authentication failed');
         setIsLoggingIn(false);

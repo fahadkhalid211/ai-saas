@@ -107,7 +107,7 @@ export function AdminLoginScreen({
 
   const isSubmitDisabled =
     isLoggingIn ||
-    (authLoginMode === 'staff' && (!staffEmailInput.trim() || !staffPasswordInput.trim() || !isStaffEmailValid)) ||
+    (authLoginMode === 'staff' && (!staffEmailInput.trim() || !staffPasswordInput.trim() || !isStaffEmailValid || Boolean(needsTwoFactor && !twoFactorCode?.trim()))) ||
     (authLoginMode === 'register' && (
       !regBusinessNameInput.trim() ||
       !isRegBusinessNameValid ||
@@ -369,7 +369,7 @@ export function AdminLoginScreen({
                     inputMode="numeric"
                     value={twoFactorCode || ''}
                     onChange={(e) => setTwoFactorCode?.(e.target.value)}
-                    placeholder="6-digit code, or a recovery code"
+                    placeholder="6-digit authenticator code (e.g. 123 456) or recovery code"
                     className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white text-xs placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
                     autoFocus
                     required
@@ -394,7 +394,7 @@ export function AdminLoginScreen({
                 {authLoginMode === 'register' && <Sparkles className="h-3.5 w-3.5" />}
                 {authLoginMode === 'staff' && <Users className="h-3.5 w-3.5" />}
                 <span>
-                  {authLoginMode === 'register' ? (auth?.createAccountBtn || 'Start Free Trial') : (auth?.signInBtn || 'Sign In to Workspace')}
+                  {authLoginMode === 'register' ? (auth?.createAccountBtn || 'Start Free Trial') : needsTwoFactor ? 'Verify 2FA & Sign In' : (auth?.signInBtn || 'Sign In to Workspace')}
                 </span>
               </>
             )}

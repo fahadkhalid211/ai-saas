@@ -28,6 +28,7 @@ import {
   ShoppingBag,
   Wrench,
   Utensils,
+  Smartphone,
 } from 'lucide-react';
 
 /**
@@ -89,6 +90,7 @@ export const MEGA_MENUS: MegaMenu[] = [
         title: 'Where it works',
         links: [
           { label: 'Website chat widget', description: 'One script tag on any site', href: '/product/website-widget', icon: Globe, tone: 'lime' },
+          { label: 'Mobile apps (iOS & Android)', description: 'Embed in native iOS and Android apps', href: '/product/mobile-apps', icon: Smartphone, tone: 'lav' },
           { label: 'Phone voice agent', description: 'Answering calls is under development', href: '/roadmap', icon: Phone, tone: 'pink', badge: 'Soon' },
           { label: 'WhatsApp and Telegram', description: 'Reply on the apps customers already use', href: '/product/messaging-channels', icon: MessageCircle, tone: 'mint' },
           { label: 'Human handover', description: 'Take over any conversation in one click', href: '/product/human-handover', icon: HandHelping, tone: 'coral' },

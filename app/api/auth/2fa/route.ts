@@ -28,7 +28,7 @@ const GETHandler = withAdminAuth(async (req: Request) => {
       : (members.find((m) => m.role === 'owner') || members[0]);
 
     if (action === 'setup') {
-      const secret = generateBase32Secret(20);
+      const secret = generateBase32Secret(32);
       const recoveryCodes = generateRecoveryCodes(8);
       const otpUrl = generateOtpAuthUrl({
         issuer: 'Crescelo Enterprise',

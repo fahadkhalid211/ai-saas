@@ -56,7 +56,7 @@ export default function WelcomePage() {
         <BehindTheScenes />
         <FeatureCarousel />
         <Demo />
-        <DiagonalBenefits />
+        {/* <DiagonalBenefits /> */}
         <Paths />
         <Playground />
         <UseCases />

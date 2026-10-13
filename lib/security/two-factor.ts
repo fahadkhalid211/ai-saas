@@ -33,15 +33,34 @@ export function checkSecondFactor(member: TeamMemberData, code: unknown): Second
   const supplied = typeof code === 'string' ? normalize(code) : '';
   if (!supplied || !member.twoFactorSecret) return { ok: false };
 
-  const step = findTotpStep(supplied, decryptSecret(member.twoFactorSecret));
-  if (step !== null) {
-    if (typeof member.twoFactorLastStep === 'number' && step <= member.twoFactorLastStep) return { ok: false };
-    return { ok: true, method: 'totp', updates: { twoFactorLastStep: step } };
+  // 1. Check TOTP authenticator code (support 6-digits with or without spaces/dashes)
+  const cleanDigits = supplied.replace(/[\s-]+/g, '');
+  if (/^\d{6}$/.test(cleanDigits)) {
+    const step = findTotpStep(cleanDigits, decryptSecret(member.twoFactorSecret), 2);
+    if (step !== null) {
+      if (typeof member.twoFactorLastStep === 'number' && step <= member.twoFactorLastStep) return { ok: false };
+      return { ok: true, method: 'totp', updates: { twoFactorLastStep: step } };
+    }
   }
 
+  // 2. Check Recovery Code
   const stored = member.recoveryCodes || [];
   const hashed = hashRecoveryCode(supplied);
   const idx = stored.findIndex((c) => (c.startsWith(HASH_PREFIX) ? timingSafeStringEqual(c, hashed) : timingSafeStringEqual(normalize(c), supplied)));
-  if (idx === -1) return { ok: false };
-  return { ok: true, method: 'recovery', updates: { recoveryCodes: stored.filter((_, i) => i !== idx) } };
+  if (idx !== -1) {
+    return { ok: true, method: 'recovery', updates: { recoveryCodes: stored.filter((_, i) => i !== idx) } };
+  }
+
+  // Try recovery code without dashes in case input differed in dash formatting
+  const suppliedNoDash = supplied.replace(/-/g, '');
+  const hashedNoDash = hashRecoveryCode(suppliedNoDash);
+  const idxNoDash = stored.findIndex((c) => {
+    const unhashedClean = normalize(c).replace(/-/g, '');
+    return c.startsWith(HASH_PREFIX) ? timingSafeStringEqual(c, hashedNoDash) : timingSafeStringEqual(unhashedClean, suppliedNoDash);
+  });
+  if (idxNoDash !== -1) {
+    return { ok: true, method: 'recovery', updates: { recoveryCodes: stored.filter((_, i) => i !== idxNoDash) } };
+  }
+
+  return { ok: false };
 }

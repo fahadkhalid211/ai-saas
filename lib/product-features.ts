@@ -266,6 +266,38 @@ export const PRODUCT_FEATURES: ProductFeature[] = [
     related: ['website-widget', 'ai-assistant', 'lead-capture'],
     guides: [{ label: 'Integrations', href: '/integrations' }, { label: 'Roadmap', href: '/roadmap' }],
   },
+  {
+    slug: 'mobile-apps',
+    name: 'Mobile apps (iOS & Android)',
+    eyebrow: 'Where it works',
+    title: 'Deploy your AI assistant inside native iOS and Android apps.',
+    intro: 'Embed your business assistant into your mobile application using lightweight web views, mobile SDK wrappers, or our fast REST and WebSocket APIs. Keep your knowledge base, appointment booking, and lead qualification synchronized everywhere.',
+    seoTitle: 'AI Assistant for Mobile Apps (iOS and Android) | Crescelo',
+    seoDescription: 'Integrate your AI business assistant and appointment booking directly into iOS and Android apps with full calendar synchronization and lead capture.',
+    chat: { visitor: 'Can I book an appointment for tomorrow afternoon in the app?', assistant: 'Yes, 2:30 PM and 4:00 PM are open tomorrow. Shall I lock in 2:30 PM for you?', footnote: 'Embedded right inside your iOS or Android app.' },
+    benefits: [
+      { title: 'Native iOS & Android integration', body: 'Embed via lightweight in-app WebViews, native mobile SDK components, or direct REST API endpoints.' },
+      { title: 'One synchronized brain', body: 'Updates made to your knowledge base and services in the Crescelo dashboard immediately reflect across both web and mobile.' },
+      { title: 'In-app appointment booking', body: 'Clients can view available slots and book appointments directly inside your mobile app without jumping to external browsers.' },
+      { title: 'Push notifications & lead sync', body: 'Leads and consultation requests captured inside mobile apps route straight to your dashboard, Slack, and email.' },
+      { title: 'Zero duplicate maintenance', body: 'Never maintain two separate bots for your site and your mobile app. One unified assistant handles both.' },
+      { title: 'Offline-tolerant & responsive', body: 'Designed for touchscreens with high-DPI responsive design, quick loading, and graceful network reconnection.' },
+    ],
+    steps: [
+      { title: 'Get your assistant ID & API token', body: 'Head to Overview in your Crescelo dashboard to copy your assistant public key and embed URL.' },
+      { title: 'Embed in your mobile app', body: 'Drop our embed URL into a WKWebView (iOS Swift/SwiftUI) or WebView (Android Kotlin/Jetpack Compose), or call our Chat API directly.' },
+      { title: 'Customize appearance', body: 'Set brand colors, corner radius, and dark mode to match your mobile app design perfectly.' },
+      { title: 'Ship & test', body: 'Run a live test booking inside your app simulator, then deploy to the App Store and Google Play.' },
+    ],
+    controls: ['Theme color & dark mode auto-detection', 'Custom headers & authentication tokens', 'Lead capture field requirements', 'Live calendar slot availability'],
+    faq: [
+      { q: 'Can I use Crescelo in Flutter or React Native apps?', a: 'Yes. You can use standard webview packages (e.g. webview_flutter or react-native-webview) or integrate directly with our clean HTTP JSON API.' },
+      { q: 'Does appointment booking work on mobile?', a: 'Yes. Mobile users can select open slots, pick staff members, and receive instant SMS/email confirmations without leaving the app.' },
+      { q: 'Do I need separate plans for web and mobile?', a: 'No. Your existing Crescelo assistant covers your website, mobile apps, and messaging channels concurrently.' },
+    ],
+    related: ['website-widget', 'ai-assistant', 'appointment-booking'],
+    guides: [{ label: 'Integrations', href: '/integrations' }, { label: 'Knowledge Base', href: '/product/knowledge-base' }],
+  },
 ];
 
 export const featureBySlug = (slug: string) => PRODUCT_FEATURES.find((f) => f.slug === slug);

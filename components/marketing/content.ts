@@ -211,7 +211,7 @@ export const METRICS = {
   items: [
     { value: 11, suffix: '', label: 'Industry starter templates' },
     { value: 5, suffix: '', label: 'Ways to add knowledge: files, URLs, video, text, images' },
-    { value: 3, suffix: '', label: 'Channels: web widget, WhatsApp, Telegram' },
+    { value: 4, suffix: '', label: 'Channels: web widget, iOS & Android mobile apps, WhatsApp, Telegram' },
     { value: 2, suffix: '', label: 'Search methods combined: semantic and keyword' },
   ],
   footnote: 'Figures describe product capabilities, not projected customer outcomes.',
@@ -225,6 +225,7 @@ export const INTEGRATIONS = {
   intro: 'Only integrations that exist in the product are listed here.',
   hub: 'Crescelo',
   items: [
+    { id: 'mobile', label: 'Mobile apps (iOS & Android)', note: 'Native SDK, in-app WebView, REST API' },
     { id: 'whatsapp', label: 'WhatsApp', note: 'Answer customers in WhatsApp' },
     { id: 'telegram', label: 'Telegram', note: 'Answer customers in Telegram' },
     { id: 'slack', label: 'Slack', note: 'New leads posted to a channel' },
@@ -321,11 +322,11 @@ export const FAQ = {
     },
     {
       q: 'Which channels does it work on?',
-      a: 'An embeddable website widget, a hosted business page, WhatsApp and Telegram. One assistant, four channels.',
+      a: 'An embeddable website widget, native iOS & Android mobile apps, a hosted business page, WhatsApp and Telegram. One assistant, all your business channels.',
     },
     {
-      q: 'Is Crescelo certified for HIPAA, SOC 2 or similar?',
-      a: 'No certifications are claimed at this time. The security section lists exactly what controls are in place today.',
+      q: 'Can Crescelo be used in mobile apps (iOS & Android)?',
+      a: 'Yes. Crescelo works inside mobile apps via our lightweight mobile embed, in-app WebView, or REST API. Your assistant accesses the exact same knowledge base, calendar slots, and booking flow as on your website.',
     },
     {
       q: 'How do I cancel?',

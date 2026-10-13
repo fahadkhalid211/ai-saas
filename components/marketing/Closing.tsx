@@ -177,16 +177,6 @@ export function Footer() {
             <CookieSettingsLink className="underline cursor-pointer" />
           </div>
         </div>
-        <div className="mk-footer-giant-word" aria-hidden="true">
-          <svg viewBox="0 0 1000 195" width="100%" preserveAspectRatio="xMidYMid meet" className="mk-footer-wordmark-svg">
-            <text x="50.3%" y="81.5%" textAnchor="middle" className="mk-footer-wordmark-shadow">
-              <T>Crescelo</T>
-            </text>
-            <text x="50%" y="79%" textAnchor="middle" className="mk-footer-wordmark-text">
-              <T>Crescelo</T>
-            </text>
-          </svg>
-        </div>
       </div>
     </footer>
   );

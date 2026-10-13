@@ -234,11 +234,11 @@ export const enDict: TranslationDictionary = {
       },
       {
         q: 'Which channels does it work on?',
-        a: 'An embeddable website widget, a hosted business page, WhatsApp and Telegram. One assistant, four channels.',
+        a: 'An embeddable website widget, native iOS & Android mobile apps, a hosted business page, WhatsApp and Telegram. One assistant, all your business channels.',
       },
       {
-        q: 'Is Crescelo certified for HIPAA, SOC 2 or similar?',
-        a: 'No certifications are claimed at this time. The security section lists exactly what controls are in place today.',
+        q: 'Can Crescelo be used in mobile apps (iOS & Android)?',
+        a: 'Yes. Crescelo works inside mobile apps via our lightweight mobile embed, in-app WebView, or REST API. Your assistant accesses the exact same knowledge base, calendar slots, and booking flow as on your website.',
       },
       {
         q: 'How do I cancel?',
