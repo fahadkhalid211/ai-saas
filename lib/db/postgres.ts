@@ -1,3 +1,4 @@
+import { newestFirst } from './bounds';
 import { Pool } from 'pg';
 import { mergeState } from './state-merge';
 
@@ -321,8 +322,8 @@ export function toCloudPayload(state: any): Record<string, any> {
   const cloudData: Record<string, any> = {
     ...transactional,
     messages: Array.isArray(rawMessages) ? rawMessages.slice(-100) : [],
-    auditLogs: Array.isArray(rawAuditLogs) ? rawAuditLogs.slice(-50) : [],
-    notifications: Array.isArray(rawNotifications) ? rawNotifications.slice(-50) : [],
+    auditLogs: newestFirst(rawAuditLogs, 50),
+    notifications: newestFirst(rawNotifications, 50),
     pageViews: Array.isArray(rawPageViews) ? rawPageViews.slice(0, 50) : [],
   };
   if (relationalMode()) {

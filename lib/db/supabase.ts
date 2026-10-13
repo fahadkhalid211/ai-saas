@@ -1,3 +1,4 @@
+import { newestFirst } from './bounds';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import type { CloudStateResult } from './postgres';
 
@@ -128,8 +129,8 @@ export async function persistSupabaseState(state: any): Promise<{ ok: boolean; u
     // Cap high-frequency collections so kortex_app_state.data remains under 100 KB.
     const cloudPageViews = Array.isArray(rawPageViews) ? rawPageViews.slice(0, 50) : [];
     const cloudMessages = Array.isArray(rawMessages) ? rawMessages.slice(-100) : [];
-    const cloudAuditLogs = Array.isArray(rawAuditLogs) ? rawAuditLogs.slice(-50) : [];
-    const cloudNotifications = Array.isArray(rawNotifications) ? rawNotifications.slice(-50) : [];
+    const cloudAuditLogs = newestFirst(rawAuditLogs, 50);
+    const cloudNotifications = newestFirst(rawNotifications, 50);
 
     const timestamp = new Date().toISOString();
     const payload = {

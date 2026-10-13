@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import crypto from 'crypto';
 import { Database } from '@/lib/db';
 import { chunkDocument } from '@/lib/rag/chunker';
 import { generateEmbeddingsBatch } from '@/lib/rag/embedder';
 import { clearRetrievalCache } from '@/lib/rag/cache';
 import { enforceRateLimit } from '@/lib/security/rate-limit';
+import { authorizeConnectorCall, presentedConnectorKey } from '@/lib/connectors/wordpress-auth';
+import { wordpressKnowledgeBlock } from '@/lib/connectors/wordpress-quota';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 300;
@@ -18,12 +19,6 @@ export async function OPTIONS() {
       'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Crescelo-Key, X-Crescelo-Secret',
     },
   });
-}
-
-function safeSecretCompare(a?: string, b?: string): boolean {
-  if (!a || !b) return false;
-  if (a.length !== b.length) return false;
-  return crypto.timingSafeEqual(Buffer.from(a), Buffer.from(b));
 }
 
 function formatProductToMarkdown(item: any): string {
@@ -149,21 +144,27 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Authenticate request using configured webhookSecret
-    if (assistant.webhookSecret) {
-      const providedSecret = req.headers.get('x-crescelo-secret') || req.headers.get('x-crescelo-key');
-      if (!providedSecret || !safeSecretCompare(assistant.webhookSecret, providedSecret)) {
-        return NextResponse.json(
-          { success: false, error: 'Unauthorized: Invalid or missing X-Crescelo-Secret' },
-          { status: 401, headers: { 'Access-Control-Allow-Origin': '*' } }
-        );
-      }
+    // The assistant's connector key is required. An assistant with no key rejects the call (fail closed).
+    const auth = authorizeConnectorCall(assistant, presentedConnectorKey(req));
+    if (!auth.ok) {
+      return NextResponse.json(
+        { success: false, error: auth.error },
+        { status: auth.status, headers: { 'Access-Control-Allow-Origin': '*' } }
+      );
     }
 
     if (!Array.isArray(items) || items.length === 0) {
       return NextResponse.json(
         { success: true, processedCount: 0, totalChunks: 0, message: 'No items in batch' },
         { status: 200, headers: { 'Access-Control-Allow-Origin': '*' } }
+      );
+    }
+
+    const blocked = await wordpressKnowledgeBlock(assistant, Buffer.byteLength(JSON.stringify(items), 'utf-8'));
+    if (blocked) {
+      return NextResponse.json(
+        { success: false, storageLimitReached: blocked.status === 403, error: blocked.error },
+        { status: blocked.status, headers: { 'Access-Control-Allow-Origin': '*' } }
       );
     }
 

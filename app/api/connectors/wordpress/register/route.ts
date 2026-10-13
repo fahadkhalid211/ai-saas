@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import crypto from 'crypto';
 import { Database } from '@/lib/db';
 import { enforceRateLimit } from '@/lib/security/rate-limit';
+import { authorizeConnectorCall, presentedConnectorKey } from '@/lib/connectors/wordpress-auth';
 
 export const dynamic = 'force-dynamic';
 
@@ -107,12 +107,6 @@ If an answer is unavailable, offer to route their question to the team.`;
   };
 }
 
-function safeSecretCompare(a?: string, b?: string): boolean {
-  if (!a || !b) return false;
-  if (a.length !== b.length) return false;
-  return crypto.timingSafeEqual(Buffer.from(a), Buffer.from(b));
-}
-
 export async function POST(req: NextRequest) {
   try {
     const rateLimit = enforceRateLimit(req, 'wp-register', { windowMs: 60 * 1000, max: 20 });
@@ -143,72 +137,48 @@ export async function POST(req: NextRequest) {
       .toLowerCase();
     const config = buildPromptsAndConfig(siteName, websiteType, objective, features);
 
-    let assistant = null;
-    let isNew = false;
-    const providedSecret = req.headers.get('x-crescelo-secret') || body.siteSecret;
-
-    // Check if an existing assistant ID was provided
-    if (existingAssistantId) {
-      const candidate = await Database.getAssistantById(existingAssistantId);
-      if (candidate) {
-        const domainMatches = candidate.allowedDomains?.some((d) => d.toLowerCase() === cleanDomain);
-        const secretMatches = candidate.webhookSecret && providedSecret && safeSecretCompare(candidate.webhookSecret, providedSecret);
-
-        if (!domainMatches && !secretMatches) {
-          return NextResponse.json(
-            { success: false, error: 'Unauthorized: Assistant does not belong to this domain and secret is invalid.' },
-            { status: 403, headers: { 'Access-Control-Allow-Origin': '*' } }
-          );
-        }
-        assistant = candidate;
-      }
+    // Registration only updates an assistant that already exists in a customer's workspace, and only for a caller that
+    // holds that assistant's connector key (generated in the dashboard). A domain name is not a credential: the assistant
+    // id and its allowed domains are visible on every site that embeds the widget, so matching on them let anyone take
+    // an assistant over. Creating assistants anonymously is gone for the same reason.
+    const providedKey = presentedConnectorKey(req, body.siteSecret);
+    if (!existingAssistantId || typeof existingAssistantId !== 'string') {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Connect this site from your Crescelo dashboard: generate a WordPress key there, paste it into the plugin, and the plugin will connect with it.',
+        },
+        { status: 401, headers: { 'Access-Control-Allow-Origin': '*' } }
+      );
     }
 
-    // If not found, check if an assistant with matching site domain exists
-    if (!assistant) {
-      const allAssistants = await Database.getAssistants('default-workspace');
-      assistant = allAssistants.find(
-        (a) =>
-          a.allowedDomains?.some((d) => d.toLowerCase() === cleanDomain) ||
-          a.description?.includes(cleanDomain)
-      ) || null;
+    let assistant = await Database.getAssistantById(existingAssistantId);
+    const authResult = assistant ? authorizeConnectorCall(assistant, providedKey) : null;
+    if (!assistant || !authResult || !authResult.ok) {
+      // One answer for "no such assistant" and "wrong key", so this cannot be used to find assistant ids.
+      const denied = authResult && !authResult.ok && authResult.status === 403 ? authResult : null;
+      return NextResponse.json(
+        { success: false, error: denied ? denied.error : 'Unauthorized: invalid assistant or key.' },
+        { status: denied ? 403 : 401, headers: { 'Access-Control-Allow-Origin': '*' } }
+      );
     }
 
-    const siteSecret = assistant?.webhookSecret || ('cres_sec_' + crypto.randomBytes(16).toString('hex'));
+    const isNew = false;
+    // The key is the caller's own (it was just checked), so echoing it back reveals nothing new.
+    const siteSecret = providedKey;
 
-    if (assistant) {
-      // Update existing assistant
-      const updated = await Database.updateAssistant(assistant.id, {
-        name: `${siteName} AI Assistant`,
-        description: `WordPress Assistant for ${cleanDomain} (${websiteType} / ${objective})`,
-        systemPrompt: config.systemPrompt,
-        welcomeMessage: config.welcomeMessage,
-        starterQuestions: config.starterQuestions,
-        primaryColor: config.primaryColor,
-        collectLeadEmail: config.collectLeadEmail,
-        bookingEnabled: config.bookingEnabled,
-        allowedDomains: Array.from(new Set([...(assistant.allowedDomains || []), cleanDomain])),
-        webhookSecret: siteSecret,
-      });
-      if (updated) assistant = updated;
-    } else {
-      // Create new assistant
-      isNew = true;
-      assistant = await Database.createAssistant({
-        name: `${siteName} AI Assistant`,
-        description: `WordPress Assistant for ${cleanDomain} (${websiteType} / ${objective})`,
-        systemPrompt: config.systemPrompt,
-        welcomeMessage: config.welcomeMessage,
-        starterQuestions: config.starterQuestions,
-        primaryColor: config.primaryColor,
-        collectLeadEmail: config.collectLeadEmail,
-        bookingEnabled: config.bookingEnabled,
-        allowedDomains: [cleanDomain],
-        workspaceId: 'default-workspace',
-        webhookSecret: siteSecret,
-        allowWebSearch: true,
-      });
-    }
+    const updated = await Database.updateAssistant(assistant.id, {
+      name: `${siteName} AI Assistant`,
+      description: `WordPress Assistant for ${cleanDomain} (${websiteType} / ${objective})`,
+      systemPrompt: config.systemPrompt,
+      welcomeMessage: config.welcomeMessage,
+      starterQuestions: config.starterQuestions,
+      primaryColor: config.primaryColor,
+      collectLeadEmail: config.collectLeadEmail,
+      bookingEnabled: config.bookingEnabled,
+      allowedDomains: Array.from(new Set([...(assistant.allowedDomains || []), cleanDomain])),
+    });
+    if (updated) assistant = updated;
 
     const hostUrl = req.nextUrl.origin;
 
