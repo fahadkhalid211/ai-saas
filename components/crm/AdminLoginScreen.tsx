@@ -19,6 +19,7 @@ import { brandFontClasses } from '@/lib/brand-fonts';
 import { GoogleRecaptchaNotice } from '@/components/security/GoogleRecaptcha';
 import { useI18n } from '@/lib/i18n/context';
 import { LanguageSwitcher } from '@/components/i18n/LanguageSwitcher';
+import { AccessibilityButton } from '@/components/a11y/AccessibilityMenu';
 
 const GoogleIcon: React.FC<{ className?: string }> = ({ className = 'h-4 w-4' }) => (
   <svg viewBox="0 0 24 24" className={className}>
@@ -132,6 +133,7 @@ export function AdminLoginScreen({
           </Link>
           <div className="flex items-center gap-2">
             <LanguageSwitcher variant="compact" />
+            <AccessibilityButton />
             {onBackToHome && (
               <button
                 type="button"

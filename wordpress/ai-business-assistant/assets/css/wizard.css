@@ -1351,6 +1351,14 @@
 .card-icon {
     font-size: 24px;
     margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+}
+
+.card-icon svg {
+    width: 24px;
+    height: 24px;
+    stroke: var(--kx-deep);
 }
 
 .card-title {

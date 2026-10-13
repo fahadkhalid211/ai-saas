@@ -3,6 +3,7 @@
 import { T, useT } from '@/lib/i18n/context';
 import React, { useState, useRef, useEffect } from 'react';
 import { LanguageSwitcher } from '@/components/i18n/LanguageSwitcher';
+import { AccessibilityButton } from '@/components/a11y/AccessibilityMenu';
 import { BrandMark } from '@/components/brand/BrandMark';
 import { FloatingPlatformChatbot } from '@/components/chat/FloatingPlatformChatbot';
 import {
@@ -252,6 +253,7 @@ export function DashboardHeader({
         {/* Language: choose the dashboard language */}
         <div data-tour="header-language"><LanguageSwitcher variant="header" /></div>
 
+        <AccessibilityButton />
         {/* Setup wizard: perform all basic steps in a guided popup */}
         {onOpenSetup && (
           <button

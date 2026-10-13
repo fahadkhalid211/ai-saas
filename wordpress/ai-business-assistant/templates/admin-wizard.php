@@ -68,25 +68,25 @@ $nonce        = wp_create_nonce('crescelo_wizard_nonce');
             <div class="grid-cards-4">
                 <label class="selection-card selected">
                     <input type="radio" name="website_type" value="woocommerce" checked />
-                    <div class="card-icon">🛍️</div>
+                    <div class="card-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg></div>
                     <div class="card-title">WooCommerce Store</div>
                     <div class="card-desc">Sell physical or digital goods. Understands products, stock, prices, variations, and cart.</div>
                 </label>
                 <label class="selection-card">
                     <input type="radio" name="website_type" value="service_booking" />
-                    <div class="card-icon">📅</div>
+                    <div class="card-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg></div>
                     <div class="card-title">Services & Appointments</div>
                     <div class="card-desc">Salons, medical clinics, consultants. Explains services and schedules appointments.</div>
                 </label>
                 <label class="selection-card">
                     <input type="radio" name="website_type" value="content_docs" />
-                    <div class="card-icon">📚</div>
+                    <div class="card-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M6 6h10"/><path d="M6 10h10"/></svg></div>
                     <div class="card-title">Docs & Knowledge Base</div>
                     <div class="card-desc">Blogs, documentation, support portals. Provides accurate answers and ticket deflection.</div>
                 </label>
                 <label class="selection-card">
                     <input type="radio" name="website_type" value="lead_generation" />
-                    <div class="card-icon">🎯</div>
+                    <div class="card-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></div>
                     <div class="card-title">B2B & Lead Generation</div>
                     <div class="card-desc">Agencies and software firms. Qualifies requirements and captures client leads.</div>
                 </label>
@@ -96,25 +96,25 @@ $nonce        = wp_create_nonce('crescelo_wizard_nonce');
             <div class="grid-cards-4">
                 <label class="selection-card selected">
                     <input type="radio" name="objective" value="sales" checked />
-                    <div class="card-icon">⚡</div>
+                    <div class="card-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div>
                     <div class="card-title">Conversational Sales</div>
                     <div class="card-desc">Guide shoppers, compare products, answer specifications, and stage items to cart.</div>
                 </label>
                 <label class="selection-card">
                     <input type="radio" name="objective" value="booking" />
-                    <div class="card-icon">🕒</div>
+                    <div class="card-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
                     <div class="card-title">Schedule Appointments</div>
                     <div class="card-desc">Answer service inquiries and schedule consultations directly in the chat window.</div>
                 </label>
                 <label class="selection-card">
                     <input type="radio" name="objective" value="support" />
-                    <div class="card-icon">🛡️</div>
+                    <div class="card-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
                     <div class="card-title">24/7 Support Deflection</div>
                     <div class="card-desc">Fast answers to shipping, refund, and FAQ questions, escalating when necessary.</div>
                 </label>
                 <label class="selection-card">
                     <input type="radio" name="objective" value="leads" />
-                    <div class="card-icon">💼</div>
+                    <div class="card-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="7" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg></div>
                     <div class="card-title">Inquiry & Lead Capture</div>
                     <div class="card-desc">Collect visitor email, project requirements, and send instant notifications.</div>
                 </label>
@@ -260,7 +260,7 @@ $nonce        = wp_create_nonce('crescelo_wizard_nonce');
 
                     <div class="feature-item">
                         <div class="feature-info">
-                            <div class="feature-name">🛒 Conversational Add-to-Cart</div>
+                            <div class="feature-name">Conversational Add-to-Cart</div>
                             <div class="feature-desc">Stages recommended products directly into the customer's active cart via WooCommerce AJAX.</div>
                         </div>
                         <label class="switch">
@@ -271,7 +271,7 @@ $nonce        = wp_create_nonce('crescelo_wizard_nonce');
 
                     <div class="feature-item">
                         <div class="feature-info">
-                            <div class="feature-name">🔍 Real-Time Stock & Price Verification</div>
+                            <div class="feature-name">Real-Time Stock & Price Verification</div>
                             <div class="feature-desc">Deterministically verifies live inventory and sale prices from the database before the AI responds.</div>
                         </div>
                         <label class="switch">
@@ -282,7 +282,7 @@ $nonce        = wp_create_nonce('crescelo_wizard_nonce');
 
                     <div class="feature-item">
                         <div class="feature-info">
-                            <div class="feature-name">⚡ Smart Sizing & Product Comparison</div>
+                            <div class="feature-name">Smart Sizing & Product Comparison</div>
                             <div class="feature-desc">Compares attributes, dimensions, and specifications to explain differences clearly.</div>
                         </div>
                         <label class="switch">
@@ -293,7 +293,7 @@ $nonce        = wp_create_nonce('crescelo_wizard_nonce');
 
                     <div class="feature-item">
                         <div class="feature-info">
-                            <div class="feature-name">📅 In-Chat Appointment Booking</div>
+                            <div class="feature-name">In-Chat Appointment Booking</div>
                             <div class="feature-desc">Allows clients to select dates and schedule consultation slots within the chat bubble.</div>
                         </div>
                         <label class="switch">
@@ -304,7 +304,7 @@ $nonce        = wp_create_nonce('crescelo_wizard_nonce');
 
                     <div class="feature-item">
                         <div class="feature-info">
-                            <div class="feature-name">🎯 Pre-Sale Lead Capture</div>
+                            <div class="feature-name">Pre-Sale Lead Capture</div>
                             <div class="feature-desc">Captures visitor email and phone when they request custom quotes or help.</div>
                         </div>
                         <label class="switch">
