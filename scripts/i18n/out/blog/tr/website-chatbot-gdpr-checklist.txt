@@ -1,0 +1,480 @@
+=== sv
+TITLE: GDPR-checklista för chattbotar på webbplatser: vad småföretag måste göra
+SEO: GDPR-checklista för chattbotar på webbplatser | Crescelo
+DESC: En praktisk GDPR-checklista för chattbotar på webbplatser: rättslig grund, öppenhet, samtycke, uppgiftsminimering, lagring, personuppgiftsbiträden, överföringar och besökarnas rättigheter.
+EXCERPT: En praktisk GDPR-checklista för chattbotar på webbplatser: rättslig grund, öppenhet, samtycke, uppgiftsminimering, lagring, personuppgiftsbiträden, överföringar och besökarnas rättigheter.
+CLUSTER: Leadsgenerering
+MOD: 2026-09-27
+P: En chattbot på en webbplats samlar in personuppgifter: det människor skriver, deras kontaktuppgifter och ibland deras plats- eller enhetsinformation. Om någon av dina besökare befinner sig i Europeiska unionen eller Storbritannien gäller dataskyddslagstiftningen för den chatten, oavsett hur stort ditt företag är. Den goda nyheten är att regelefterlevnad för en typisk chattbot hos ett tjänsteföretag handlar om en tydlig uppsättning praktiska steg. Den här checklistan går igenom dem, förklarar vad vart och ett betyder på vanlig svenska och pekar ut de frågor du ska ställa till din chattbotleverantör.
+NOTE: Detta är allmän information, inte juridisk rådgivning. Dataskyddslagstiftningen är detaljerad och beror på dina förhållanden. Läs den officiella vägledningen och fråga en kvalificerad rådgivare om din situation. Förordningens text finns på [informationssidan om GDPR](https://gdpr.eu/).
+H2[why-chatbots-need-special-attention]: Varför chattbotar behöver särskild uppmärksamhet
+P: En chatt känns informell, så besökare skriver mer än de skulle göra i ett formulär, inklusive känsliga uppgifter. En AI-assistent kan dessutom skicka den texten till en AI-leverantör från tredje part, lagra konversationer och använda analys. Var och en av dessa är en behandling av personuppgifter som kräver en rättslig grund, öppenhet och skyddsåtgärder. Behandla chattboten som vilket annat system som helst som hanterar kundinformation.
+H2[step-1-know-what-data-the-chatbot-handles]: Steg 1: Vet vilka uppgifter chattboten hanterar
+P: Börja med en enkel karta. Vad samlar chattboten in och vart tar det vägen?
+TABLE:
+H: Uppgift | Varifrån den kommer | Vart den går
+R: Meddelanden som besökare skriver | Chatten | Din plattformsleverantör och den AI-leverantör som skriver svaren
+R: Namn, e-post, telefonnummer | Chatten eller ett leadformulär | Din leverantör, din e-post eller ditt CRM, ditt team
+R: Bokningsuppgifter | Bokningsflödet | Din kalender, bekräftelsemejl
+R: Tekniska uppgifter (IP-adress, webbläsare) | Besöket | Din leverantörs loggar och säkerhetssystem
+R: En besöks-ID som lagras i webbläsaren | Widgeten | Din leverantör, för att kunna fortsätta en konversation
+P: Skriv ner detta. Det blir ryggraden i din integritetspolicy och din förteckning över behandlingar.
+H2[step-2-decide-your-lawful-basis]: Steg 2: Bestäm din rättsliga grund
+P: Enligt GDPR behöver du en rättslig grund för varje ändamål. För en chattbot inom tjänster är dessa de vanliga kandidaterna.
+UL:
+- **Berättigat intresse:** att besvara besökarnas frågor och driva ett supportverktyg. Du bör kunna visa att det är nödvändigt, att du har vägt det mot besökarnas rättigheter och att människor rimligen skulle förvänta sig det.
+- **Avtal:** att vidta åtgärder på besökarens begäran innan ett avtal ingås, till exempel att boka en tid.
+- **Samtycke:** för valfria extrafunktioner som marknadsföringsmejl eller icke-nödvändiga kakor. Samtycket måste vara frivilligt, specifikt och lätt att dra tillbaka.
+P: Förlita dig inte på en förkryssad ruta eller på tystnad. Håll samtycket till marknadsföring skilt från själva chatten.
+H2[step-3-be-transparent]: Steg 3: Var öppen
+UL:
+- Tala om för besökarna att de pratar med en AI-assistent.
+- Visa ett kort meddelande i eller nära chatten som förklarar vad som samlas in och länkar till din integritetspolicy.
+- Förklara i integritetspolicyn vad du samlar in via chatten, varför, hur länge du sparar det och vem som behandlar det.
+- Ange kontaktuppgifter för integritetsärenden.
+P: Exempel på meddelande: 'Du chattar med en AI-assistent. Vi sparar den här konversationen för att kunna svara dig och förbättra vår tjänst. Läs vår integritetspolicy.'
+H2[step-4-collect-only-what-you-need]: Steg 4: Samla bara in det du behöver
+P: Uppgiftsminimering är en grundprincip. Utforma flödet så att det frågar efter det som är nödvändigt och inget mer. En bokning behöver ett namn och ett sätt att nå personen. Den behöver inte ett födelsedatum. Avråd besökare från att skriva känslig information: lägg till en rad som 'Dela inte medicinska eller ekonomiska uppgifter här.' Konfigurera assistenten så att den inte frågar efter känsliga personuppgifter, som hälsoinformation, om du inte har en särskild rättslig grund och skyddsåtgärder.
+H2[step-5-sort-out-processors-and-the-ai-provider]: Steg 5: Reda ut personuppgiftsbiträden och AI-leverantören
+P: Din chattbotleverantör är ett personuppgiftsbiträde som agerar för din räkning, och det kan AI-leverantören och e-posttjänsten också vara. Du behöver ett personuppgiftsbiträdesavtal med var och en som hanterar personuppgifter åt dig. Be varje leverantör om ett, och om deras lista över underbiträden. Crescelo publicerar ett [personuppgiftsbiträdesavtal](/dpa) och en lista över [underbiträden](/subprocessors). Med en lösning där du tar med din egen nyckel väljer du AI-leverantören, så du bör godkänna dess affärsvillkor och kontrollera hur den behandlar API-data.
+TABLE:
+H: Fråga | Varför det är viktigt
+R: Tillhandahåller ni ett personuppgiftsbiträdesavtal? | Krävs när en leverantör behandlar personuppgifter åt dig
+R: Vilka är era underbiträden och var finns de? | Du behöver veta vem som hanterar uppgifterna
+R: Används API-data för att träna modeller? | Påverkar konfidentialiteten
+R: Var lagras och behandlas data? | Relevant för överföringar utanför Storbritannien eller EU
+R: Hur länge sparas konversationer och kan jag radera dem? | Lagring och rätten till radering
+R: Hur skyddas nycklar och data? | Säkerhet i behandlingen
+H2[step-6-international-transfers]: Steg 6: Internationella överföringar
+P: Om uppgifter lagras eller behandlas utanför Storbritannien eller EU, till exempel av en amerikansk leverantör eller AI-leverantör, behöver du en laglig överföringsmekanism, som ett beslut om adekvat skyddsnivå eller standardavtalsklausuler. Leverantörer bör tala om vilken de använder. Det här är ett av de mest tekniska områdena; be din leverantör om dokumentationen för överföringar och ta råd vid behov.
+H2[step-7-retention-and-deletion]: Steg 7: Lagring och radering
+UL:
+- Bestäm hur länge du sparar konversationer. Spara dem bara så länge de är användbara, till exempel för att besvara uppföljningar och förbättra assistenten.
+- Radera leads och konversationer du inte längre behöver.
+- Se till att du kan radera en persons uppgifter på begäran, även hos leverantörens system.
+- Dokumentera din lagringstid i din integritetspolicy.
+P: Med Crescelo kan du radera leads, bokningar och kunskapskällor från instrumentpanelen, och du kan begära radering av allt genom att öppna ett supportärende.
+H2[step-8-respect-visitor-rights]: Steg 8: Respektera besökarnas rättigheter
+P: Människor kan be att få se sina uppgifter, rätta dem, radera dem, begränsa eller invända mot behandling och få en kopia. Du måste i regel svara inom en månad. Förbered en enkel process: vem som tar emot förfrågningar, hur du verifierar identitet, hur du hittar en persons chattdata och hur du bekräftar radering. Ta med en kontaktväg i din integritetspolicy. Se vårt [kontaktformulär](/support/contact), som skapar ett supportärende, som exempel på en spårbar väg.
+H2[step-9-cookies-and-browser-storage]: Steg 9: Kakor och lagring i webbläsaren
+P: En chattwidget kan lagra ett ID i besökarens webbläsare så att en konversation fortsätter efter en omladdning. Om det kräver samtycke beror på om det är absolut nödvändigt för en tjänst som besökaren har begärt, och på lokala regler. Beskriv vad widgeten lagrar i din kakpolicy och fråga leverantören om det är absolut nödvändigt. Analys- och marknadsföringskakor kräver i allmänhet samtycke. Se vår [kakpolicy](/cookies) för ett exempel på hur vi beskriver det.
+H2[step-10-security]: Steg 10: Säkerhet
+UL:
+- Använd en leverantör som krypterar data under överföring och i vila och isolerar kunders arbetsytor.
+- Skydda ditt konto med starka lösenord och tvåfaktorsautentisering.
+- Ge teammedlemmar den minsta åtkomst de behöver.
+- Lagra API-nycklar endast i plattformens krypterade inställningar.
+- Ha en plan för ett dataintrång, inklusive vem som underrättar tillsynsmyndigheten och de berörda personerna inom föreskriven tid.
+P: Se [att sätta upp teamroller och tvåfaktorsautentisering](/blog/setup-rbac-2fa-team-security).
+H2[step-11-special-situations]: Steg 11: Särskilda situationer
+UL:
+- **Barn:** undvik att samla in uppgifter från barn om du inte har skyddsåtgärder, och fundera på om tjänsten är avsedd för dem.
+- **Hälso-, juridiska och finansiella tjänster:** dessa medför extra skyldigheter. Håll chatten till bokning och allmän information och ta råd.
+- **Marknadsföring:** lägg inte till personer i e-postlistor från en chatt utan ett separat, tydligt samtycke.
+- **Automatiserade beslut:** om chattboten fattar beslut som påverkar människor avsevärt gäller ytterligare regler.
+H2[a-copy-and-use-checklist]: En checklista att kopiera och använda
+UL:
+- Datakarta över vad chattboten samlar in och vart det går.
+- Rättslig grund vald för varje ändamål.
+- AI-upplysning och länk till integritetspolicyn synliga i chatten.
+- Integritetspolicyn uppdaterad med chattboten, konversationer, biträden och lagring.
+- Minimal datainsamling; varning mot att dela känsliga uppgifter.
+- Personuppgiftsbiträdesavtal med chattbotleverantören och andra biträden.
+- Underbiträden och internationella överföringar granskade.
+- Lagringstid fastställd och radering möjlig.
+- Process för att hantera besökares begäranden.
+- Kakpolicy och samtyckesinställningar stämmer med vad widgeten lagrar.
+- Säkerhetskontroller, inklusive tvåfaktorsautentisering.
+- Regelbunden granskning av konversationer och själva checklistan.
+H2[a-short-privacy-notice-you-can-adapt]: Ett kort integritetsmeddelande du kan anpassa
+P: Använd enkelt språk och håll det kort. Till exempel: 'Den här chatten drivs av en AI-assistent. Vi samlar in meddelandena du skickar och de kontaktuppgifter du väljer att ge oss så att vi kan svara dig, ordna tider och förbättra vår tjänst. Våra AI- och hosting-leverantörer behandlar dessa uppgifter för vår räkning. Vi sparar chattar i [period]. Du kan när som helst begära att få se eller radera dina uppgifter. Dela inte känslig information här. Fullständig information finns i vår integritetspolicy.' Anpassa formuleringen, lägg till dina uppgifter och låt någon granska den.
+H2[related-guides]: Relaterade guider
+UL:
+- [Ta med din egen AI-nyckel, förklarat](/blog/bring-your-own-ai-key-byok-explained) beskriver vart dina data tar vägen när du väljer AI-leverantör.
+- [Leadinsamling med chattbot och GDPR och CCPA](/blog/chatbot-lead-capture-gdpr-ccpa-compliance) går djupare in på insamling av kontaktuppgifter.
+- [Öppenhet om AI och upplysning](/blog/ai-transparency-disclosure-building-trust) förklarar hur du berättar för besökare att det är en AI.
+- [Så hindrar du en chattbot från att hitta på saker](/blog/grounded-ai-chatbot-hallucinations) minskar risken för felaktiga påståenden om ditt företag.
+H2[documents-to-keep-on-file]: Dokument att spara
+UL:
+- Din datakarta och förteckning över behandlingar för chattboten.
+- Personuppgiftsbiträdesavtal med chattbotleverantören, AI-leverantören och andra biträden.
+- En anteckning om din rättsliga grund och eventuell intresseavvägning för berättigat intresse.
+- Versioner av din integritetspolicy och kakpolicy.
+- Ditt lagringsschema och din raderingslogg.
+- En logg över besökares begäranden och hur du hanterade dem.
+P: Att ha dessa sparade gör det lättare att svara en tillsynsmyndighet eller en kund som frågar hur du hanterar deras uppgifter.
+H2[frequently-asked-questions]: Vanliga frågor
+FAQ:
+Q: Gäller GDPR för min chattbot på webbplatsen?
+A: Ja, om du behandlar personuppgifter om personer i EU eller Storbritannien, oavsett var ditt företag är baserat. Chattmeddelanden och kontaktuppgifter är personuppgifter.
+Q: Behöver jag samtycke för en chattbot?
+A: Inte alltid. Många användningar av chattbotar bygger på berättigat intresse eller avtal, men samtycke behövs för marknadsföring och för icke-nödvändiga kakor. Var öppen i alla fall.
+Q: Måste jag tala om för besökarna att det är en AI?
+A: Det är god praxis och krävs i allt högre grad. Tala om för människor att de pratar med en AI och ge dem ett sätt att nå en människa.
+Q: Är AI-leverantören ett personuppgiftsbiträde?
+A: Oftast ja, när den behandlar personuppgifter för din räkning. Du behöver lämpliga villkor med den och bör kontrollera hur den behandlar API-data.
+Q: Hur länge får jag spara chattkonversationer?
+A: Bara så länge du behöver dem för ett bestämt ändamål. Fastställ en lagringstid och radera uppgifterna därefter.
+Q: Vad gör jag om någon ber mig radera sin chatt?
+A: Du bör kunna hitta och radera den, även hos din leverantör, och bekräfta inom den lagstadgade tiden, i regel en månad.
+P: Läs vår [integritetspolicy](/privacy) för att se hur vi hanterar uppgifter, och se [hur AI-assistenten bara svarar utifrån ditt innehåll](/product/ai-assistant). Om du vill testa med dina egna dokument, använd [lekplatsen](/playground).
+=== fi
+TITLE: GDPR-tarkistuslista verkkosivuston chatboteille: mitä pienyritysten on tehtävä
+SEO: GDPR-tarkistuslista verkkosivuston chatboteille | Crescelo
+DESC: Käytännön GDPR-tarkistuslista verkkosivuston chatboteille: käsittelyperuste, läpinäkyvyys, suostumus, tietojen minimointi, säilytys, henkilötietojen käsittelijät, siirrot ja kävijöiden oikeudet.
+EXCERPT: Käytännön GDPR-tarkistuslista verkkosivuston chatboteille: käsittelyperuste, läpinäkyvyys, suostumus, tietojen minimointi, säilytys, henkilötietojen käsittelijät, siirrot ja kävijöiden oikeudet.
+CLUSTER: Liidien hankinta
+MOD: 2026-09-27
+P: Verkkosivuston chatbot kerää henkilötietoja: sen, mitä ihmiset kirjoittavat, heidän yhteystietonsa ja joskus sijainti- tai laitetietoja. Jos jokin kävijöistäsi on Euroopan unionissa tai Yhdistyneessä kuningaskunnassa, tietosuojalainsäädäntö koskee tuota chattia yrityksesi koosta riippumatta. Hyvä uutinen on, että tyypillisen palveluyrityksen chatbotin vaatimustenmukaisuus tiivistyy selkeään joukkoon käytännön vaiheita. Tämä tarkistuslista käy ne läpi, selittää kunkin merkityksen selkeästi ja osoittaa kysymykset, joita kannattaa esittää chatbot-toimittajalle.
+NOTE: Tämä on yleistä tietoa, ei oikeudellista neuvontaa. Tietosuojalainsäädäntö on yksityiskohtaista ja riippuu tilanteestasi. Lue viralliset ohjeet ja kysy pätevältä neuvonantajalta omasta tilanteestasi. Asetuksen tekstin löydät [GDPR-tietosivustolta](https://gdpr.eu/).
+H2[why-chatbots-need-special-attention]: Miksi chatbotit vaativat erityistä huomiota
+P: Chat tuntuu epävirallisemmalta, joten kävijät kirjoittavat enemmän kuin lomakkeeseen, myös arkaluonteisia tietoja. Tekoälyassistentti voi lisäksi lähettää tuon tekstin kolmannen osapuolen tekoälypalveluntarjoajalle, tallentaa keskusteluja ja käyttää analytiikkaa. Jokainen näistä on henkilötietojen käsittelyä, joka vaatii käsittelyperusteen, läpinäkyvyyttä ja suojatoimia. Kohtele chatbotia kuten mitä tahansa muuta järjestelmää, joka käsittelee asiakastietoja.
+H2[step-1-know-what-data-the-chatbot-handles]: Vaihe 1: Tiedä, mitä tietoja chatbot käsittelee
+P: Aloita yksinkertaisella kartalla. Mitä chatbot kerää ja minne se menee?
+TABLE:
+H: Tieto | Mistä se tulee | Minne se menee
+R: Kävijöiden kirjoittamat viestit | Chat | Alustatoimittajasi ja vastaukset kirjoittava tekoälypalveluntarjoaja
+R: Nimi, sähköposti, puhelinnumero | Chat tai liidilomake | Toimittajasi, sähköpostisi tai CRM, tiimisi
+R: Varaustiedot | Varausprosessi | Kalenterisi, vahvistussähköpostit
+R: Tekniset tiedot (IP-osoite, selain) | Käynti | Toimittajasi lokit ja tietoturvajärjestelmät
+R: Selaimeen tallennettu kävijätunniste | Widget | Toimittajasi, keskustelun jatkamiseksi
+P: Kirjoita tämä ylös. Siitä tulee tietosuojaselosteesi ja käsittelytoimien selosteesi selkäranka.
+H2[step-2-decide-your-lawful-basis]: Vaihe 2: Päätä käsittelyperusteesi
+P: GDPR:n mukaan jokaiselle käyttötarkoitukselle tarvitaan käsittelyperuste. Palvelu-chatbotille tavallisia vaihtoehtoja ovat nämä.
+UL:
+- **Oikeutettu etu:** kävijöiden kysymyksiin vastaaminen ja tukityökalun ylläpito. Sinun pitäisi pystyä osoittamaan, että se on tarpeellista, että olet punninnut sitä kävijöiden oikeuksia vasten ja että ihmiset voisivat kohtuudella odottaa sitä.
+- **Sopimus:** toimenpiteet kävijän pyynnöstä ennen sopimuksen tekemistä, kuten ajan varaaminen.
+- **Suostumus:** valinnaisille lisäosille, kuten markkinointisähköposteille tai ei-välttämättömille evästeille. Suostumuksen on oltava vapaaehtoinen, yksilöity ja helppo peruuttaa.
+P: Älä luota valmiiksi rastitettuun ruutuun tai hiljaisuuteen. Pidä markkinointisuostumus erillään itse chatista.
+H2[step-3-be-transparent]: Vaihe 3: Ole läpinäkyvä
+UL:
+- Kerro kävijöille, että he puhuvat tekoälyassistentin kanssa.
+- Näytä lyhyt ilmoitus chatissa tai sen lähellä, joka selittää, mitä kerätään, ja linkittää tietosuojaselosteeseesi.
+- Selitä tietosuojaselosteessa, mitä chatin kautta kerätään, miksi, kuinka kauan sitä säilytetään ja kuka sitä käsittelee.
+- Anna yhteystiedot tietosuojapyyntöjä varten.
+P: Esimerkki ilmoituksesta: 'Keskustelet tekoälyassistentin kanssa. Tallennamme tämän keskustelun vastataksemme sinulle ja parantaaksemme palveluamme. Lue tietosuojaselosteemme.'
+H2[step-4-collect-only-what-you-need]: Vaihe 4: Kerää vain tarvitsemasi
+P: Tietojen minimointi on keskeinen periaate. Suunnittele kulku niin, että se kysyy sen, mikä on tarpeen, eikä enempää. Varaus tarvitsee nimen ja tavan tavoittaa henkilö. Se ei tarvitse syntymäaikaa. Neuvo kävijöitä olemaan kirjoittamatta arkaluonteisia tietoja: lisää rivi kuten 'Älä jaa lääketieteellisiä tai taloudellisia tietoja tässä.' Määritä assistentti niin, ettei se kysy erityisiin henkilötietoryhmiin kuuluvia tietoja, kuten terveystietoja, ellei sinulla ole erityistä käsittelyperustetta ja suojatoimia.
+H2[step-5-sort-out-processors-and-the-ai-provider]: Vaihe 5: Selvitä henkilötietojen käsittelijät ja tekoälyn tarjoaja
+P: Chatbot-toimittajasi on henkilötietojen käsittelijä, joka toimii puolestasi, ja niin voivat olla myös tekoälyn tarjoaja ja sähköpostipalvelu. Tarvitset henkilötietojen käsittelyä koskevan sopimuksen jokaisen kanssa, joka käsittelee henkilötietoja puolestasi. Pyydä sellainen jokaiselta toimittajalta sekä luettelo heidän alikäsittelijöistään. Crescelo julkaisee [henkilötietojen käsittelyä koskevan lisäsopimuksen](/dpa) ja luettelon [alikäsittelijöistä](/subprocessors). Omalla avaimella toimivassa ratkaisussa valitset tekoälyn tarjoajan itse, joten sinun tulee hyväksyä sen sopimusehdot ja tarkistaa, miten se käsittelee API-dataa.
+TABLE:
+H: Kysymys | Miksi sillä on merkitystä
+R: Tarjoatteko henkilötietojen käsittelyä koskevan sopimuksen? | Vaaditaan, kun toimittaja käsittelee henkilötietoja puolestasi
+R: Ketkä ovat alikäsittelijänne ja missä he sijaitsevat? | Sinun on tiedettävä, kuka tietoja käsittelee
+R: Käytetäänkö API-dataa mallien kouluttamiseen? | Vaikuttaa luottamuksellisuuteen
+R: Missä tietoja säilytetään ja käsitellään? | Olennaista siirroille Yhdistyneen kuningaskunnan tai EU:n ulkopuolelle
+R: Kuinka kauan keskusteluja säilytetään ja voinko poistaa ne? | Säilytys ja poisto-oikeudet
+R: Miten avaimet ja data suojataan? | Käsittelyn turvallisuus
+H2[step-6-international-transfers]: Vaihe 6: Kansainväliset siirrot
+P: Jos tietoja tallennetaan tai käsitellään Yhdistyneen kuningaskunnan tai EU:n ulkopuolella, esimerkiksi yhdysvaltalaisen toimittajan tai tekoälyn tarjoajan toimesta, tarvitset lainmukaisen siirtomekanismin, kuten tietosuojan riittävyyttä koskevan päätöksen tai vakiosopimuslausekkeet. Toimittajien tulisi kertoa, mitä he käyttävät. Tämä on yksi teknisimmistä alueista; pyydä toimittajaltasi siirtoja koskeva dokumentaatio ja hanki neuvoja tarvittaessa.
+H2[step-7-retention-and-deletion]: Vaihe 7: Säilytys ja poisto
+UL:
+- Päätä, kuinka kauan säilytät keskustelut. Säilytä ne vain niin kauan kuin niistä on hyötyä, esimerkiksi jatkokysymyksiin vastaamiseen ja assistentin parantamiseen.
+- Poista liidit ja keskustelut, joita et enää tarvitse.
+- Varmista, että voit poistaa henkilön tiedot pyynnöstä, myös toimittajan järjestelmistä.
+- Dokumentoi säilytysaikasi tietosuojaselosteessasi.
+P: Crescelosa voit poistaa liidit, ajanvaraukset ja tietolähteet hallintapaneelista, ja voit pyytää kaiken poistamista avaamalla tukipyynnön.
+H2[step-8-respect-visitor-rights]: Vaihe 8: Kunnioita kävijöiden oikeuksia
+P: Ihmiset voivat pyytää nähdä tietonsa, oikaista ne, poistaa ne, rajoittaa käsittelyä tai vastustaa sitä sekä saada kopion. Yleensä sinun on vastattava kuukauden kuluessa. Valmistele yksinkertainen prosessi: kuka vastaanottaa pyynnöt, miten varmennat henkilöllisyyden, miten löydät henkilön chat-tiedot ja miten vahvistat poiston. Sisällytä yhteydenottotapa tietosuojaselosteeseesi. Katso [yhteydenottolomakkeemme](/support/contact), joka luo tukipyynnön, esimerkkinä seurattavasta reitistä.
+H2[step-9-cookies-and-browser-storage]: Vaihe 9: Evästeet ja selaimen tallennustila
+P: Chat-widget voi tallentaa tunnisteen kävijän selaimeen, jotta keskustelu jatkuu sivun latauksen jälkeen. Tarvitaanko siihen suostumus, riippuu siitä, onko se ehdottoman välttämätön kävijän pyytämän palvelun tarjoamiseksi, sekä paikallisista säännöistä. Kuvaa evästekäytännössäsi, mitä widget tallentaa, ja kysy toimittajalta, onko se ehdottoman välttämätön. Analytiikka- ja markkinointievästeet vaativat yleensä suostumuksen. Katso [evästekäytäntömme](/cookies) esimerkkinä siitä, miten kuvaamme sen.
+H2[step-10-security]: Vaihe 10: Tietoturva
+UL:
+- Käytä toimittajaa, joka salaa tiedot siirron aikana ja levossa ja eristää asiakkaiden työtilat toisistaan.
+- Suojaa tilisi vahvoilla salasanoilla ja kaksivaiheisella tunnistautumisella.
+- Anna tiimin jäsenille vain tarvitsemansa vähimmäiskäyttöoikeudet.
+- Tallenna API-avaimet vain alustan salattuihin asetuksiin.
+- Laadi suunnitelma tietoturvaloukkauksen varalle, mukaan lukien kuka ilmoittaa valvontaviranomaiselle ja kohteena oleville henkilöille vaaditussa ajassa.
+P: Katso [tiimin roolien ja kaksivaiheisen tunnistautumisen käyttöönotto](/blog/setup-rbac-2fa-team-security).
+H2[step-11-special-situations]: Vaihe 11: Erityistilanteet
+UL:
+- **Lapset:** vältä lasten tietojen keräämistä, ellei sinulla ole suojatoimia, ja mieti, onko palvelu tarkoitettu heille.
+- **Terveys-, oikeus- ja rahoituspalvelut:** näihin liittyy lisävelvoitteita. Pidä chat varauksissa ja yleisessä tiedossa ja hanki neuvoja.
+- **Markkinointi:** älä lisää ihmisiä sähköpostilistoille chatista ilman erillistä, selkeää suostumusta.
+- **Automaattiset päätökset:** jos chatbot tekee päätöksiä, jotka vaikuttavat ihmisiin merkittävästi, sovelletaan lisäsääntöjä.
+H2[a-copy-and-use-checklist]: Kopioitava ja käytettävä tarkistuslista
+UL:
+- Tietokartta siitä, mitä chatbot kerää ja minne se menee.
+- Käsittelyperuste valittu jokaiselle käyttötarkoitukselle.
+- Tekoälyilmoitus ja tietosuojalinkki näkyvillä chatissa.
+- Tietosuojaseloste päivitetty mainitsemaan chatbot, keskustelut, käsittelijät ja säilytys.
+- Minimaalinen tietojen keruu; varoitus arkaluonteisten tietojen jakamisesta.
+- Henkilötietojen käsittelyä koskevat sopimukset chatbot-toimittajan ja muiden käsittelijöiden kanssa.
+- Alikäsittelijät ja kansainväliset siirrot tarkistettu.
+- Säilytysaika asetettu ja poisto mahdollista.
+- Prosessi kävijöiden pyyntöjen käsittelyyn.
+- Evästekäytäntö ja suostumusasetukset vastaavat sitä, mitä widget tallentaa.
+- Tietoturvakontrollit, mukaan lukien kaksivaiheinen tunnistautuminen.
+- Keskustelujen ja itse tarkistuslistan säännöllinen tarkastus.
+H2[a-short-privacy-notice-you-can-adapt]: Lyhyt tietosuojailmoitus, jota voit mukauttaa
+P: Käytä selkeää kieltä ja pidä se lyhyenä. Esimerkiksi: 'Tätä chattia pyörittää tekoälyassistentti. Keräämme lähettämäsi viestit ja yhteystiedot, jotka päätät antaa meille, jotta voimme vastata sinulle, järjestää aikoja ja parantaa palveluamme. Tekoäly- ja palvelinpalveluntarjoajamme käsittelevät näitä tietoja puolestamme. Säilytämme keskustelut [ajan]. Voit milloin tahansa pyytää nähdä tai poistaa tietosi. Älä jaa arkaluonteisia tietoja tässä. Täydelliset tiedot ovat tietosuojaselosteessamme.' Mukauta sanamuoto, lisää omat tietosi ja tarkistuta se.
+H2[related-guides]: Aiheeseen liittyvät oppaat
+UL:
+- [Oma tekoälyavain selitettynä](/blog/bring-your-own-ai-key-byok-explained) kertoo, minne tietosi menevät, kun valitset tekoälyn tarjoajan.
+- [Liidien keruu chatbotilla sekä GDPR ja CCPA](/blog/chatbot-lead-capture-gdpr-ccpa-compliance) käsittelee yhteystietojen keräämistä tarkemmin.
+- [Tekoälyn läpinäkyvyys ja ilmoittaminen](/blog/ai-transparency-disclosure-building-trust) selittää, miten kerrot kävijöille, että kyseessä on tekoäly.
+- [Näin estät chatbotin keksimästä asioita](/blog/grounded-ai-chatbot-hallucinations) vähentää virheellisten väitteiden riskiä yrityksestäsi.
+H2[documents-to-keep-on-file]: Säilytettävät asiakirjat
+UL:
+- Tietokarttasi ja käsittelytoimien seloste chatbotille.
+- Henkilötietojen käsittelyä koskevat sopimukset chatbot-toimittajan, tekoälyn tarjoajan ja muiden käsittelijöiden kanssa.
+- Muistiinpano käsittelyperusteestasi ja mahdollisesta oikeutetun edun punninnasta.
+- Tietosuojaselosteesi ja evästekäytäntösi versiot.
+- Säilytysaikataulusi ja poistolokisi.
+- Loki kävijöiden pyynnöistä ja siitä, miten käsittelit ne.
+P: Näiden säilyttäminen helpottaa vastaamista valvontaviranomaiselle tai asiakkaalle, joka kysyy, miten käsittelet hänen tietojaan.
+H2[frequently-asked-questions]: Usein kysytyt kysymykset
+FAQ:
+Q: Koskeeko GDPR verkkosivustoni chatbotia?
+A: Kyllä, jos käsittelet EU:ssa tai Yhdistyneessä kuningaskunnassa olevien ihmisten henkilötietoja, riippumatta siitä, missä yrityksesi sijaitsee. Chat-viestit ja yhteystiedot ovat henkilötietoja.
+Q: Tarvitsenko suostumuksen chatbotille?
+A: Et aina. Monet chatbotin käytöt perustuvat oikeutettuun etuun tai sopimukseen, mutta suostumus tarvitaan markkinointiin ja ei-välttämättömille evästeille. Ole avoin joka tapauksessa.
+Q: Onko minun kerrottava kävijöille, että kyseessä on tekoäly?
+A: Se on hyvä käytäntö ja yhä useammin vaadittu. Kerro ihmisille, että he puhuvat tekoälyn kanssa, ja anna heille tapa tavoittaa ihminen.
+Q: Onko tekoälyn tarjoaja henkilötietojen käsittelijä?
+A: Yleensä kyllä, kun se käsittelee henkilötietoja puolestasi. Tarvitset sen kanssa asianmukaiset ehdot, ja sinun tulee tarkistaa, miten se käsittelee API-dataa.
+Q: Kuinka kauan voin säilyttää chat-keskusteluja?
+A: Vain niin kauan kuin tarvitset niitä määriteltyyn tarkoitukseen. Aseta säilytysaika ja poista tiedot sen jälkeen.
+Q: Entä jos joku pyytää minua poistamaan chattinsä?
+A: Sinun pitäisi pystyä löytämään ja poistamaan se, myös toimittajaltasi, ja vahvistamaan se lakisääteisessä määräajassa, yleensä kuukauden kuluessa.
+P: Lue [tietosuojaselosteemme](/privacy) nähdäksesi, miten käsittelemme tietoja, ja katso [miten tekoälyassistentti vastaa vain sisältösi pohjalta](/product/ai-assistant). Jos haluat kokeilla omilla dokumenteillasi, käytä [kokeilualustaa](/playground).
+=== it
+TITLE: Checklist GDPR per i chatbot dei siti web: cosa devono fare le piccole imprese
+SEO: Checklist GDPR per i chatbot dei siti web | Crescelo
+DESC: Una checklist GDPR pratica per i chatbot dei siti web: base giuridica, trasparenza, consenso, minimizzazione dei dati, conservazione, responsabili del trattamento, trasferimenti e diritti dei visitatori.
+EXCERPT: Una checklist GDPR pratica per i chatbot dei siti web: base giuridica, trasparenza, consenso, minimizzazione dei dati, conservazione, responsabili del trattamento, trasferimenti e diritti dei visitatori.
+CLUSTER: Generazione di contatti
+MOD: 2026-09-27
+P: Un chatbot del sito web raccoglie dati personali: ciò che le persone scrivono, i loro recapiti, a volte informazioni sulla posizione o sul dispositivo. Se alcuni dei tuoi visitatori si trovano nell'Unione europea o nel Regno Unito, la normativa sulla protezione dei dati si applica a quella chat, qualunque sia la dimensione della tua attività. La buona notizia è che la conformità per il chatbot di una tipica attività di servizi si riduce a una serie chiara di passaggi pratici. Questa checklist li percorre, spiega in parole semplici il significato di ciascuno e indica le domande da porre al fornitore del tuo chatbot.
+NOTE: Queste sono informazioni generali, non consulenza legale. La normativa sulla protezione dei dati è dettagliata e dipende dalla tua situazione. Leggi le linee guida ufficiali e chiedi a un consulente qualificato della tua situazione. Per il testo del regolamento vedi il [sito informativo sul GDPR](https://gdpr.eu/).
+H2[why-chatbots-need-special-attention]: Perché i chatbot richiedono un'attenzione particolare
+P: Una chat sembra informale, quindi i visitatori scrivono più di quanto farebbero in un modulo, compresi dettagli sensibili. Un assistente AI può inoltre inviare quel testo a un fornitore di AI terzo, conservare le trascrizioni e usare strumenti di analisi. Ognuna di queste è un'attività di trattamento dei dati che richiede una base giuridica, trasparenza e garanzie. Tratta il chatbot come qualsiasi altro sistema che gestisce informazioni sui clienti.
+H2[step-1-know-what-data-the-chatbot-handles]: Passo 1: Sapere quali dati gestisce il chatbot
+P: Parti da una mappa semplice. Che cosa raccoglie il chatbot e dove va a finire?
+TABLE:
+H: Dato | Da dove proviene | Dove va
+R: Messaggi digitati dai visitatori | La chat | Il fornitore della tua piattaforma e il fornitore di AI che scrive le risposte
+R: Nome, e-mail, numero di telefono | La chat o un modulo per i contatti | Il tuo fornitore, la tua e-mail o il tuo CRM, il tuo team
+R: Dettagli della prenotazione | Il flusso di prenotazione | Il tuo calendario, le e-mail di conferma
+R: Dati tecnici (indirizzo IP, browser) | La visita | I log e i sistemi di sicurezza del tuo fornitore
+R: Un identificativo del visitatore memorizzato nel browser | Il widget | Il tuo fornitore, per proseguire una conversazione
+P: Scrivilo. Diventa la colonna portante della tua informativa sulla privacy e del tuo registro dei trattamenti.
+H2[step-2-decide-your-lawful-basis]: Passo 2: Decidere la base giuridica
+P: Con il GDPR serve una base giuridica per ogni finalità. Per un chatbot di servizi i candidati abituali sono questi.
+UL:
+- **Legittimo interesse:** rispondere alle domande dei visitatori e gestire uno strumento di assistenza. Dovresti poter dimostrare che è necessario, che lo hai bilanciato con i diritti dei visitatori e che le persone se lo aspetterebbero ragionevolmente.
+- **Contratto:** compiere passi su richiesta del visitatore prima di concludere un contratto, come prenotare un appuntamento.
+- **Consenso:** per extra facoltativi come le e-mail di marketing o i cookie non essenziali. Il consenso deve essere libero, specifico e facile da revocare.
+P: Non affidarti a una casella preselezionata o al silenzio. Tieni il consenso al marketing separato dalla chat stessa.
+H2[step-3-be-transparent]: Passo 3: Essere trasparenti
+UL:
+- Di' ai visitatori che stanno parlando con un assistente AI.
+- Mostra una breve nota nella chat o vicino ad essa che spieghi cosa viene raccolto e rimandi alla tua informativa sulla privacy.
+- Spiega nell'informativa cosa raccogli tramite la chat, perché, per quanto tempo lo conservi e chi lo tratta.
+- Fornisci i recapiti per le richieste in materia di privacy.
+P: Esempio di nota: 'Stai chattando con un assistente AI. Conserviamo questa conversazione per risponderti e migliorare il nostro servizio. Leggi la nostra informativa sulla privacy.'
+H2[step-4-collect-only-what-you-need]: Passo 4: Raccogliere solo ciò che serve
+P: La minimizzazione dei dati è un principio fondamentale. Progetta il flusso in modo che chieda ciò che è necessario e non di più. Una prenotazione richiede un nome e un modo per raggiungere la persona. Non richiede una data di nascita. Scoraggia i visitatori dallo scrivere informazioni sensibili: aggiungi una riga come 'Non condividere qui dati medici o finanziari.' Configura l'assistente in modo che non chieda categorie particolari di dati, come le informazioni sulla salute, a meno che tu non abbia una base giuridica specifica e adeguate garanzie.
+H2[step-5-sort-out-processors-and-the-ai-provider]: Passo 5: Sistemare responsabili del trattamento e fornitore di AI
+P: Il fornitore del tuo chatbot è un responsabile del trattamento che agisce per tuo conto, e lo possono essere anche il fornitore di AI e il servizio e-mail. Ti serve un accordo sul trattamento dei dati con ciascuno che tratta dati personali per te. Chiedine uno a ogni fornitore, insieme all'elenco dei suoi sub-responsabili. Crescelo pubblica un [addendum sul trattamento dei dati](/dpa) e un elenco dei [sub-responsabili](/subprocessors). Con una configurazione in cui porti la tua chiave, scegli tu il fornitore di AI, quindi dovresti accettarne le condizioni commerciali e verificare come tratta i dati delle API.
+TABLE:
+H: Domanda | Perché è importante
+R: Fornite un accordo sul trattamento dei dati? | Obbligatorio quando un fornitore tratta dati personali per tuo conto
+R: Chi sono i vostri sub-responsabili e dove si trovano? | Devi sapere chi gestisce i dati
+R: I dati delle API vengono usati per addestrare i modelli? | Incide sulla riservatezza
+R: Dove vengono conservati e trattati i dati? | Rilevante per i trasferimenti fuori dal Regno Unito o dall'UE
+R: Per quanto tempo si conservano le conversazioni e posso eliminarle? | Conservazione e diritti di cancellazione
+R: Come sono protetti chiavi e dati? | Sicurezza del trattamento
+H2[step-6-international-transfers]: Passo 6: Trasferimenti internazionali
+P: Se i dati sono conservati o trattati fuori dal Regno Unito o dall'UE, per esempio da un fornitore o un fornitore di AI con sede negli Stati Uniti, serve un meccanismo di trasferimento lecito, come una decisione di adeguatezza o le clausole contrattuali standard. I fornitori dovrebbero dirti quale usano. È una delle aree più tecniche; chiedi al fornitore la documentazione sui trasferimenti e fatti consigliare se necessario.
+H2[step-7-retention-and-deletion]: Passo 7: Conservazione e cancellazione
+UL:
+- Decidi per quanto tempo conservi le trascrizioni. Conservale solo finché sono utili, per esempio per rispondere ai seguiti e migliorare l'assistente.
+- Elimina i contatti e le conversazioni che non ti servono più.
+- Assicurati di poter cancellare i dati di una persona su richiesta, anche dai sistemi del fornitore.
+- Documenta il tuo periodo di conservazione nell'informativa sulla privacy.
+P: Con Crescelo puoi eliminare contatti, appuntamenti e fonti di conoscenza dalla dashboard, e puoi richiedere la cancellazione di tutto aprendo un ticket di assistenza.
+H2[step-8-respect-visitor-rights]: Passo 8: Rispettare i diritti dei visitatori
+P: Le persone possono chiedere di vedere i propri dati, correggerli, cancellarli, limitare il trattamento o opporsi e ricevere una copia. In genere devi rispondere entro un mese. Prepara un processo semplice: chi riceve le richieste, come verifichi l'identità, come trovi i dati di chat di una persona e come confermi la cancellazione. Inserisci un canale di contatto nell'informativa sulla privacy. Vedi il nostro [modulo di contatto](/support/contact), che crea un ticket di assistenza, come esempio di canale tracciabile.
+H2[step-9-cookies-and-browser-storage]: Passo 9: Cookie e archiviazione nel browser
+P: Un widget di chat può memorizzare un identificativo nel browser del visitatore perché la conversazione prosegua dopo un ricaricamento. Se serva il consenso dipende dal fatto che sia strettamente necessario per un servizio richiesto dal visitatore e dalle regole locali. Descrivi nell'informativa sui cookie cosa memorizza il widget e chiedi al fornitore se è strettamente necessario. I cookie di analisi e di marketing richiedono in genere il consenso. Vedi la nostra [informativa sui cookie](/cookies) per un esempio di come lo descriviamo.
+H2[step-10-security]: Passo 10: Sicurezza
+UL:
+- Usa un fornitore che cifra i dati in transito e a riposo e isola gli spazi di lavoro dei clienti.
+- Proteggi il tuo account con password robuste e autenticazione a due fattori.
+- Dai ai membri del team l'accesso minimo di cui hanno bisogno.
+- Conserva le chiavi API solo nelle impostazioni cifrate della piattaforma.
+- Prepara un piano per le violazioni dei dati, compreso chi avvisa l'autorità e le persone interessate entro i termini previsti.
+P: Vedi [configurare ruoli del team e autenticazione a due fattori](/blog/setup-rbac-2fa-team-security).
+H2[step-11-special-situations]: Passo 11: Situazioni particolari
+UL:
+- **Minori:** evita di raccogliere dati dai minori a meno di avere adeguate garanzie e valuta se il servizio sia destinato a loro.
+- **Servizi sanitari, legali e finanziari:** comportano obblighi aggiuntivi. Limita la chat alle prenotazioni e alle informazioni generali e fatti consigliare.
+- **Marketing:** non aggiungere persone a elenchi di e-mail da una chat senza un consenso separato e chiaro.
+- **Decisioni automatizzate:** se il chatbot prende decisioni che incidono in modo significativo sulle persone, si applicano ulteriori regole.
+H2[a-copy-and-use-checklist]: Una checklist da copiare e usare
+UL:
+- Mappa dei dati che il chatbot raccoglie e di dove vanno.
+- Base giuridica scelta per ogni finalità.
+- Dichiarazione dell'uso di AI e link alla privacy visibili nella chat.
+- Informativa sulla privacy aggiornata con chatbot, trascrizioni, responsabili e conservazione.
+- Raccolta minima dei dati; avviso a non condividere dati sensibili.
+- Accordi sul trattamento dei dati con il fornitore del chatbot e altri responsabili.
+- Sub-responsabili e trasferimenti internazionali verificati.
+- Periodo di conservazione stabilito e cancellazione possibile.
+- Processo per gestire le richieste dei visitatori.
+- Informativa sui cookie e impostazioni del consenso coerenti con ciò che memorizza il widget.
+- Controlli di sicurezza, compresa l'autenticazione a due fattori.
+- Revisione periodica delle trascrizioni e della checklist stessa.
+H2[a-short-privacy-notice-you-can-adapt]: Una breve nota sulla privacy da adattare
+P: Usa un linguaggio semplice e mantienila breve. Per esempio: 'Questa chat è gestita da un assistente AI. Raccogliamo i messaggi che invii e gli eventuali recapiti che scegli di darci per risponderti, fissare appuntamenti e migliorare il nostro servizio. I nostri fornitori di AI e di hosting trattano questi dati per nostro conto. Conserviamo le chat per [periodo]. Puoi chiedere in qualsiasi momento di vedere o cancellare i tuoi dati. Non condividere informazioni sensibili qui. I dettagli completi sono nella nostra informativa sulla privacy.' Adatta la formulazione, aggiungi i tuoi dati e falla rivedere.
+H2[related-guides]: Guide correlate
+UL:
+- [La tua chiave AI, spiegata](/blog/bring-your-own-ai-key-byok-explained) spiega dove vanno i tuoi dati quando scegli tu il fornitore di AI.
+- [Raccolta di contatti con il chatbot, GDPR e CCPA](/blog/chatbot-lead-capture-gdpr-ccpa-compliance) approfondisce la raccolta dei recapiti.
+- [Trasparenza e dichiarazione dell'uso di AI](/blog/ai-transparency-disclosure-building-trust) spiega come dire ai visitatori che si tratta di un'AI.
+- [Come impedire a un chatbot di inventare le cose](/blog/grounded-ai-chatbot-hallucinations) riduce il rischio di affermazioni sbagliate sulla tua attività.
+H2[documents-to-keep-on-file]: Documenti da conservare
+UL:
+- La tua mappa dei dati e il registro dei trattamenti per il chatbot.
+- Accordi sul trattamento dei dati con il fornitore del chatbot, il fornitore di AI e altri responsabili.
+- Una nota sulla tua base giuridica ed eventuale test di bilanciamento per il legittimo interesse.
+- Le versioni della tua informativa sulla privacy e sui cookie.
+- Il tuo piano di conservazione e il registro delle cancellazioni.
+- Un registro delle richieste dei visitatori e di come le hai gestite.
+P: Conservare questi documenti rende più facile rispondere a un'autorità o a un cliente che chiede come tratti i suoi dati.
+H2[frequently-asked-questions]: Domande frequenti
+FAQ:
+Q: Il GDPR si applica al chatbot del mio sito web?
+A: Sì, se tratti dati personali di persone nell'UE o nel Regno Unito, ovunque abbia sede la tua attività. I messaggi di chat e i recapiti sono dati personali.
+Q: Mi serve il consenso per un chatbot?
+A: Non sempre. Molti usi dei chatbot si basano sul legittimo interesse o sul contratto, ma il consenso serve per il marketing e per i cookie non essenziali. Sii trasparente in ogni caso.
+Q: Devo dire ai visitatori che è un'AI?
+A: È una buona pratica e sempre più spesso un obbligo. Di' alle persone che stanno parlando con un'AI e dai loro un modo per raggiungere una persona.
+Q: Il fornitore di AI è un responsabile del trattamento?
+A: Di solito sì, quando tratta dati personali per tuo conto. Servono condizioni adeguate con lui e dovresti verificare come tratta i dati delle API.
+Q: Per quanto tempo posso conservare le trascrizioni delle chat?
+A: Solo per il tempo necessario a una finalità definita. Stabilisci un periodo di conservazione e poi cancella i dati.
+Q: E se qualcuno mi chiede di cancellare la sua chat?
+A: Dovresti poterla trovare e cancellare, anche presso il fornitore, e confermarlo entro il termine di legge, in genere un mese.
+P: Leggi la nostra [informativa sulla privacy](/privacy) per vedere come trattiamo i dati e scopri [come l'assistente AI risponde solo in base ai tuoi contenuti](/product/ai-assistant). Per provarlo con i tuoi documenti, usa il [playground](/playground).
+=== es
+TITLE: Lista de comprobación del RGPD para chatbots de sitios web: lo que deben hacer las pequeñas empresas
+SEO: Lista de comprobación del RGPD para chatbots de sitios web | Crescelo
+DESC: Una lista práctica del RGPD para chatbots de sitios web: base jurídica, transparencia, consentimiento, minimización de datos, conservación, encargados del tratamiento, transferencias y derechos de los visitantes.
+EXCERPT: Una lista práctica del RGPD para chatbots de sitios web: base jurídica, transparencia, consentimiento, minimización de datos, conservación, encargados del tratamiento, transferencias y derechos de los visitantes.
+CLUSTER: Captación de contactos
+MOD: 2026-09-27
+P: Un chatbot de un sitio web recoge datos personales: lo que la gente escribe, sus datos de contacto y, a veces, información de ubicación o del dispositivo. Si alguno de tus visitantes está en la Unión Europea o en el Reino Unido, la normativa de protección de datos se aplica a ese chat, sea cual sea el tamaño de tu negocio. La buena noticia es que el cumplimiento para el chatbot de un negocio de servicios típico se reduce a un conjunto claro de pasos prácticos. Esta lista los recorre, explica con palabras sencillas qué significa cada uno y señala las preguntas que conviene hacer al proveedor de tu chatbot.
+NOTE: Esto es información general, no asesoramiento jurídico. La normativa de protección de datos es detallada y depende de tus circunstancias. Lee la orientación oficial y consulta a un asesor cualificado sobre tu situación. Para el texto del reglamento consulta el [sitio informativo sobre el RGPD](https://gdpr.eu/).
+H2[why-chatbots-need-special-attention]: Por qué los chatbots necesitan una atención especial
+P: Un chat parece informal, así que los visitantes escriben más de lo que harían en un formulario, incluidos datos sensibles. Además, un asistente de IA puede enviar ese texto a un proveedor de IA externo, guardar transcripciones y usar analítica. Cada una de estas es una actividad de tratamiento de datos que necesita una base jurídica, transparencia y salvaguardas. Trata el chatbot como cualquier otro sistema que maneja información de clientes.
+H2[step-1-know-what-data-the-chatbot-handles]: Paso 1: Saber qué datos maneja el chatbot
+P: Empieza con un mapa sencillo. ¿Qué recoge el chatbot y adónde va?
+TABLE:
+H: Dato | De dónde viene | Adónde va
+R: Mensajes escritos por los visitantes | El chat | El proveedor de tu plataforma y el proveedor de IA que escribe las respuestas
+R: Nombre, correo, número de teléfono | El chat o un formulario de contacto | Tu proveedor, tu correo o tu CRM, tu equipo
+R: Datos de la reserva | El flujo de reserva | Tu calendario, los correos de confirmación
+R: Datos técnicos (dirección IP, navegador) | La visita | Los registros y sistemas de seguridad de tu proveedor
+R: Un identificador del visitante guardado en el navegador | El widget | Tu proveedor, para continuar una conversación
+P: Anótalo. Se convierte en la columna vertebral de tu aviso de privacidad y de tu registro de actividades de tratamiento.
+H2[step-2-decide-your-lawful-basis]: Paso 2: Decidir tu base jurídica
+P: Con el RGPD necesitas una base jurídica para cada finalidad. Para un chatbot de servicios, las candidatas habituales son estas.
+UL:
+- **Interés legítimo:** responder a las preguntas de los visitantes y mantener una herramienta de atención. Deberías poder demostrar que es necesario, que lo has ponderado frente a los derechos de los visitantes y que la gente lo esperaría razonablemente.
+- **Contrato:** adoptar medidas a petición del visitante antes de celebrar un contrato, como reservar una cita.
+- **Consentimiento:** para extras opcionales como correos de marketing o cookies no esenciales. El consentimiento debe ser libre, específico y fácil de retirar.
+P: No te apoyes en una casilla premarcada ni en el silencio. Mantén el consentimiento de marketing separado del chat en sí.
+H2[step-3-be-transparent]: Paso 3: Ser transparente
+UL:
+- Di a los visitantes que están hablando con un asistente de IA.
+- Muestra un aviso breve en el chat o cerca de él que explique qué se recoge y enlace a tu política de privacidad.
+- Explica en la política de privacidad qué recoges a través del chat, por qué, cuánto tiempo lo conservas y quién lo trata.
+- Da datos de contacto para las solicitudes de privacidad.
+P: Ejemplo de aviso: 'Estás chateando con un asistente de IA. Guardamos esta conversación para responderte y mejorar nuestro servicio. Lee nuestra política de privacidad.'
+H2[step-4-collect-only-what-you-need]: Paso 4: Recoger solo lo que necesitas
+P: La minimización de datos es un principio básico. Diseña el flujo para que pida lo necesario y nada más. Una reserva necesita un nombre y una forma de contactar con la persona. No necesita una fecha de nacimiento. Desaconseja a los visitantes escribir información sensible: añade una línea como 'Por favor, no compartas aquí datos médicos ni financieros.' Configura el asistente para que no solicite datos de categoría especial, como información de salud, salvo que tengas una base jurídica específica y salvaguardas.
+H2[step-5-sort-out-processors-and-the-ai-provider]: Paso 5: Ordenar los encargados del tratamiento y el proveedor de IA
+P: El proveedor de tu chatbot es un encargado del tratamiento que actúa en tu nombre, y también pueden serlo el proveedor de IA y el servicio de correo. Necesitas un contrato de encargado del tratamiento con cada uno que trate datos personales por ti. Pídele uno a cada proveedor, junto con su lista de subencargados. Crescelo publica un [anexo de tratamiento de datos](/dpa) y una lista de [subencargados](/subprocessors). Con una configuración en la que traes tu propia clave, tú eliges el proveedor de IA, así que debes aceptar sus condiciones comerciales y comprobar cómo trata los datos de la API.
+TABLE:
+H: Pregunta | Por qué importa
+R: ¿Ofrecéis un contrato de encargado del tratamiento? | Obligatorio cuando un proveedor trata datos personales por ti
+R: ¿Quiénes son vuestros subencargados y dónde están? | Necesitas saber quién maneja los datos
+R: ¿Se usan los datos de la API para entrenar modelos? | Afecta a la confidencialidad
+R: ¿Dónde se almacenan y tratan los datos? | Relevante para las transferencias fuera del Reino Unido o la UE
+R: ¿Cuánto tiempo se conservan las conversaciones y puedo eliminarlas? | Conservación y derechos de supresión
+R: ¿Cómo se protegen las claves y los datos? | Seguridad del tratamiento
+H2[step-6-international-transfers]: Paso 6: Transferencias internacionales
+P: Si los datos se almacenan o tratan fuera del Reino Unido o la UE, por ejemplo por un proveedor con sede en EE. UU. o un proveedor de IA, necesitas un mecanismo de transferencia lícito, como una decisión de adecuación o las cláusulas contractuales tipo. Los proveedores deberían decirte cuál usan. Es una de las áreas más técnicas; pide a tu proveedor su documentación sobre transferencias y busca asesoramiento si hace falta.
+H2[step-7-retention-and-deletion]: Paso 7: Conservación y supresión
+UL:
+- Decide cuánto tiempo conservas las transcripciones. Consérvalas solo mientras sean útiles, por ejemplo para responder a seguimientos y mejorar el asistente.
+- Elimina los contactos y conversaciones que ya no necesites.
+- Asegúrate de poder eliminar los datos de una persona a petición suya, también de los sistemas del proveedor.
+- Documenta tu plazo de conservación en tu política de privacidad.
+P: Con Crescelo puedes eliminar contactos, citas y fuentes de conocimiento desde el panel, y puedes solicitar la supresión de todo abriendo un ticket de soporte.
+H2[step-8-respect-visitor-rights]: Paso 8: Respetar los derechos de los visitantes
+P: Las personas pueden pedir ver sus datos, rectificarlos, suprimirlos, limitar u oponerse al tratamiento y recibir una copia. Por lo general debes responder en el plazo de un mes. Prepara un proceso sencillo: quién recibe las solicitudes, cómo verificas la identidad, cómo encuentras los datos de chat de una persona y cómo confirmas la supresión. Incluye una vía de contacto en tu política de privacidad. Consulta nuestro [formulario de contacto](/support/contact), que crea un ticket de soporte, como ejemplo de una vía con seguimiento.
+H2[step-9-cookies-and-browser-storage]: Paso 9: Cookies y almacenamiento del navegador
+P: Un widget de chat puede guardar un identificador en el navegador del visitante para que una conversación continúe tras recargar la página. Que necesite consentimiento depende de si es estrictamente necesario para un servicio que el visitante ha solicitado y de las normas locales. Describe en tu política de cookies qué guarda el widget y pregunta al proveedor si es estrictamente necesario. Las cookies de analítica y de marketing suelen requerir consentimiento. Consulta nuestra [política de cookies](/cookies) como ejemplo de cómo lo describimos.
+H2[step-10-security]: Paso 10: Seguridad
+UL:
+- Usa un proveedor que cifre los datos en tránsito y en reposo y aísle los espacios de trabajo de los clientes.
+- Protege tu cuenta con contraseñas seguras y autenticación en dos pasos.
+- Da a los miembros del equipo el acceso mínimo que necesiten.
+- Guarda las claves de API solo en los ajustes cifrados de la plataforma.
+- Ten un plan para una brecha de seguridad, incluido quién avisa a la autoridad y a las personas afectadas en el plazo exigido.
+P: Consulta [configurar roles de equipo y autenticación en dos pasos](/blog/setup-rbac-2fa-team-security).
+H2[step-11-special-situations]: Paso 11: Situaciones especiales
+UL:
+- **Menores:** evita recoger datos de menores salvo que tengas salvaguardas, y valora si el servicio está pensado para ellos.
+- **Servicios sanitarios, jurídicos y financieros:** conllevan obligaciones adicionales. Limita el chat a reservas e información general y busca asesoramiento.
+- **Marketing:** no añadas a personas a listas de correo desde un chat sin una aceptación separada y clara.
+- **Decisiones automatizadas:** si el chatbot toma decisiones que afectan de forma significativa a las personas, se aplican normas adicionales.
+H2[a-copy-and-use-checklist]: Una lista para copiar y usar
+UL:
+- Mapa de datos de lo que recoge el chatbot y adónde va.
+- Base jurídica elegida para cada finalidad.
+- Aviso de IA y enlace de privacidad visibles en el chat.
+- Política de privacidad actualizada con el chatbot, las transcripciones, los encargados y la conservación.
+- Recogida mínima de datos; advertencia contra compartir datos sensibles.
+- Contratos de encargado del tratamiento con el proveedor del chatbot y otros encargados.
+- Subencargados y transferencias internacionales revisados.
+- Plazo de conservación fijado y supresión posible.
+- Proceso para atender las solicitudes de los visitantes.
+- Política de cookies y ajustes de consentimiento acordes con lo que guarda el widget.
+- Controles de seguridad, incluida la autenticación en dos pasos.
+- Revisión periódica de las transcripciones y de la propia lista.
+H2[a-short-privacy-notice-you-can-adapt]: Un aviso de privacidad breve que puedes adaptar
+P: Usa un lenguaje sencillo y mantenlo breve. Por ejemplo: 'Este chat está gestionado por un asistente de IA. Recogemos los mensajes que envías y los datos de contacto que decidas darnos para poder responderte, organizar citas y mejorar nuestro servicio. Nuestros proveedores de IA y de alojamiento tratan estos datos en nuestro nombre. Conservamos los chats durante [plazo]. Puedes pedir en cualquier momento ver o eliminar tus datos. Por favor, no compartas información sensible aquí. Los detalles completos están en nuestra política de privacidad.' Adapta la redacción, añade tus datos y haz que alguien la revise.
+H2[related-guides]: Guías relacionadas
+UL:
+- [Trae tu propia clave de IA, explicado](/blog/bring-your-own-ai-key-byok-explained) trata adónde van tus datos cuando eliges el proveedor de IA.
+- [Captación de contactos con chatbot, RGPD y CCPA](/blog/chatbot-lead-capture-gdpr-ccpa-compliance) profundiza en la recogida de datos de contacto.
+- [Transparencia y aviso de IA](/blog/ai-transparency-disclosure-building-trust) explica cómo decir a los visitantes que es una IA.
+- [Cómo evitar que un chatbot se invente cosas](/blog/grounded-ai-chatbot-hallucinations) reduce el riesgo de afirmaciones erróneas sobre tu negocio.
+H2[documents-to-keep-on-file]: Documentos que conviene conservar
+UL:
+- Tu mapa de datos y registro de actividades de tratamiento del chatbot.
+- Contratos de encargado del tratamiento con el proveedor del chatbot, el proveedor de IA y otros encargados.
+- Una nota con tu base jurídica y cualquier prueba de ponderación del interés legítimo.
+- Las versiones de tu política de privacidad y de cookies.
+- Tu calendario de conservación y tu registro de supresiones.
+- Un registro de las solicitudes de los visitantes y de cómo las atendiste.
+P: Tener esto a mano facilita responder a una autoridad o a un cliente que pregunta cómo tratas sus datos.
+H2[frequently-asked-questions]: Preguntas frecuentes
+FAQ:
+Q: ¿Se aplica el RGPD al chatbot de mi sitio web?
+A: Sí, si tratas datos personales de personas en la UE o el Reino Unido, estés donde estés. Los mensajes de chat y los datos de contacto son datos personales.
+Q: ¿Necesito consentimiento para un chatbot?
+A: No siempre. Muchos usos de chatbots se apoyan en el interés legítimo o en el contrato, pero se necesita consentimiento para el marketing y para las cookies no esenciales. Sé transparente en cualquier caso.
+Q: ¿Tengo que decir a los visitantes que es una IA?
+A: Es una buena práctica y cada vez más una obligación. Di a la gente que está hablando con una IA y dale una forma de contactar con una persona.
+Q: ¿Es el proveedor de IA un encargado del tratamiento?
+A: Normalmente sí, cuando trata datos personales en tu nombre. Necesitas condiciones adecuadas con él y debes comprobar cómo trata los datos de la API.
+Q: ¿Cuánto tiempo puedo conservar las transcripciones del chat?
+A: Solo el tiempo que las necesites para una finalidad definida. Fija un plazo de conservación y elimina los datos después.
+Q: ¿Y si alguien me pide que elimine su chat?
+A: Deberías poder encontrarlo y eliminarlo, también en tu proveedor, y confirmarlo dentro del plazo legal, por lo general un mes.
+P: Lee nuestra [política de privacidad](/privacy) para ver cómo tratamos los datos, y consulta [cómo el asistente de IA responde solo a partir de tu contenido](/product/ai-assistant). Para probarlo con tus propios documentos, usa el [playground](/playground).
