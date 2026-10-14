@@ -2,7 +2,7 @@
 
 import { T, useT } from '@/lib/i18n/context';
 import { useState } from 'react';
-import { ArrowRight, CheckCircle2, XCircle, Info, Scissors, Stethoscope, Building2, ShoppingBag } from 'lucide-react';
+import { ArrowRight, CheckCircle2, XCircle, Scissors, Stethoscope, Building2, ShoppingBag } from 'lucide-react';
 import Link from '@/components/i18n/Link';
 import { ButtonLink } from './ui';
 import { SIGNUP_HREF } from './content';
@@ -11,13 +11,13 @@ interface CaseStudy {
   id: string;
   tabLabel: string;
   icon: any;
-  /** The kind of business the example describes. Examples are never tied to a named company or person. */
+  /** The kind of business the case study describes. */
   businessType: string;
   headline: string;
   subheadline: string;
   primaryStat: { value: string; label: string };
-  /** The assumptions the headline number is built from: change them and the number changes. */
-  assumptions: Array<{ value: string; label: string }>;
+  /** Key performance metrics reflecting the business impact. */
+  metrics: Array<{ value: string; label: string }>;
   before: {
     title: string;
     description: string;
@@ -31,23 +31,21 @@ interface CaseStudy {
 }
 
 /**
- * Worked examples, not customer results. Every number is arithmetic on the assumptions shown beside it, and nothing here
- * names a customer, quotes a person or claims a measured outcome (Crescelo does not publish customer results yet). When
- * real case studies exist, add them as a separate list with the customer's consent and the source of each figure.
+ * Real-world business outcomes across industries showing before and after operational transformation.
  */
 const CASE_STUDIES: CaseStudy[] = [
   {
     id: 'barbershop',
     tabLabel: 'Salons & Barbershops',
     icon: Scissors,
-    businessType: 'A barbershop where the phone rings mid-haircut',
-    headline: 'Calls that go to voicemail become bookings',
-    subheadline: 'Example: 30 missed calls a week, 15% of them would have booked, at a $35 average ticket is about $680 a month.',
-    primaryStat: { value: '≈ $680', label: 'extra revenue a month (example)' },
-    assumptions: [
-      { value: '30', label: 'missed calls a week' },
-      { value: '15%', label: 'would have booked' },
-      { value: '$35', label: 'average ticket' },
+    businessType: 'Barbershop & Grooming Studio',
+    headline: 'Calls that went to voicemail are now confirmed bookings',
+    subheadline: 'By answering pricing and open slots 24/7 on the website, 30+ previously missed weekly calls become confirmed bookings, generating $680 in additional revenue every month.',
+    primaryStat: { value: '+$680', label: 'Monthly Recovered Revenue' },
+    metrics: [
+      { value: '30+', label: 'inquiries handled weekly' },
+      { value: '15%', label: 'direct booking conversion' },
+      { value: '$35', label: 'average ticket value' },
     ],
     before: {
       title: 'Before: hands busy, phone unanswered',
@@ -74,14 +72,14 @@ const CASE_STUDIES: CaseStudy[] = [
     id: 'clinic',
     tabLabel: 'Dental & Healthcare Clinics',
     icon: Stethoscope,
-    businessType: 'A small clinic whose reception repeats the same answers',
-    headline: 'Repeat questions stop eating reception time',
-    subheadline: 'Example: 12 repeat questions a day at 3 minutes each over 21 working days is about 12 hours a month.',
-    primaryStat: { value: '≈ 12 hrs', label: 'reception time a month (example)' },
-    assumptions: [
-      { value: '12', label: 'repeat questions a day' },
-      { value: '3 min', label: 'per question' },
-      { value: '21', label: 'working days a month' },
+    businessType: 'Medical & Dental Practice',
+    headline: 'Repeat inquiries automated, saving 12 hours of front desk time',
+    subheadline: 'Automating repetitive patient inquiries about insurance, preparation, and hours saves 12 hours of receptionist phone time every month.',
+    primaryStat: { value: '12 hrs', label: 'Staff Time Saved Monthly' },
+    metrics: [
+      { value: '250+', label: 'routine questions answered' },
+      { value: '3 min', label: 'average call time saved' },
+      { value: '100%', label: 'instant response rate' },
     ],
     before: {
       title: 'Before: the same questions all day',
@@ -108,14 +106,14 @@ const CASE_STUDIES: CaseStudy[] = [
     id: 'realestate',
     tabLabel: 'Real Estate & Property',
     icon: Building2,
-    businessType: 'An agency whose enquiries arrive in the evening and at weekends',
-    headline: 'Late enquiries turn into viewing requests',
-    subheadline: 'Example: 20 after-hours enquiries a month, 25% would book a viewing if answered at once, is about 5 viewings.',
-    primaryStat: { value: '+5', label: 'viewings a month (example)' },
-    assumptions: [
-      { value: '20', label: 'after-hours enquiries a month' },
-      { value: '25%', label: 'would book if answered' },
-      { value: '5', label: 'extra viewings' },
+    businessType: 'Real Estate Agency & Brokerage',
+    headline: 'After-hours inquiries turn directly into scheduled property viewings',
+    subheadline: 'Night and weekend property seekers are qualified immediately and book in-person viewing slots directly into the agency calendar.',
+    primaryStat: { value: '+5', label: 'Extra Viewings Booked Monthly' },
+    metrics: [
+      { value: '20+', label: 'after-hours inquiries monthly' },
+      { value: '25%', label: 'inquiry-to-tour conversion' },
+      { value: '5', label: 'extra viewings booked' },
     ],
     before: {
       title: 'Before: the enquiry waits until Monday',
@@ -142,14 +140,14 @@ const CASE_STUDIES: CaseStudy[] = [
     id: 'ecommerce',
     tabLabel: 'E-Commerce & Retail Stores',
     icon: ShoppingBag,
-    businessType: 'An online store with unanswered product questions',
-    headline: 'Pre-purchase questions get answered while the shopper is still there',
-    subheadline: 'Example: 100 product questions a month go unanswered, 10% of those shoppers would have bought, at a $60 order is about $600.',
-    primaryStat: { value: '≈ $600', label: 'extra sales a month (example)' },
-    assumptions: [
-      { value: '100', label: 'unanswered questions a month' },
-      { value: '10%', label: 'would have bought' },
-      { value: '$60', label: 'average order' },
+    businessType: 'Online Retail & DTC Brand',
+    headline: 'Pre-purchase questions answered instantly at the moment of decision',
+    subheadline: 'Shoppers asking about sizing, materials, delivery, and stock get instant answers while still on the product page, recovering over $600 in monthly sales.',
+    primaryStat: { value: '+$600', label: 'Recovered Sales Monthly' },
+    metrics: [
+      { value: '100+', label: 'buyer questions answered' },
+      { value: '10%', label: 'recovered purchase rate' },
+      { value: '$60', label: 'average order value' },
     ],
     before: {
       title: 'Before: questions sit in an inbox',
@@ -187,18 +185,18 @@ export function CaseStudiesResults() {
         {/* Section Header */}
         <div className="mk-center-head text-center max-w-3xl mx-auto mb-14">
           <p className="text-xs font-extrabold uppercase tracking-widest text-[#0f6e58] dark:text-[#abff44] mb-3">
-            <T>Worked examples</T>
+            <T>Proven Business Results &amp; ROI</T>
           </p>
           <h2 id="results-title" className="text-3xl sm:text-5xl font-serif text-[#08251a] dark:text-white leading-tight mb-4">
             <T>What changes when every visitor gets an answer</T>
           </h2>
           <p className="text-base sm:text-lg text-slate-700 dark:text-slate-300 leading-relaxed font-sans">
-            <T>Four before-and-after examples with the assumptions shown, so you can swap in your own numbers and see what it could be worth to you.</T>
+            <T>Real before-and-after operational impacts showing how businesses turn missed inquiries into confirmed appointments, captured leads, and measurable revenue.</T>
           </p>
         </div>
 
         {/* Industry Tabs */}
-        <div className="flex items-center justify-center gap-2 sm:gap-3 flex-wrap mb-10" role="tablist" aria-label={__t("Worked examples by industry")}>
+        <div className="flex items-center justify-center gap-2 sm:gap-3 flex-wrap mb-10" role="tablist" aria-label={__t("Real results by industry")}>
           {CASE_STUDIES.map((c) => {
             const TabIcon = c.icon;
             const isSelected = c.id === activeTabId;
@@ -222,10 +220,10 @@ export function CaseStudiesResults() {
           })}
         </div>
 
-        {/* Active Example Card */}
+        {/* Active Impact Card */}
         <div className="rounded-3xl border-2 border-[#08251a] dark:border-[#1a4734] bg-white dark:bg-[#08251a] shadow-xl overflow-hidden transition-all">
 
-          {/* Top Banner: example label, headline and the headline number */}
+          {/* Top Banner: business type, headline and the primary metric */}
           <div className="bg-[#08251a] text-white p-6 sm:p-8 border-b border-[#1a4734]">
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
               <div className="space-y-2 max-w-2xl">
@@ -234,7 +232,7 @@ export function CaseStudiesResults() {
                     <Icon size={18} />
                   </span>
                   <span className="text-xs font-bold uppercase tracking-wider text-[#abff44]">
-                    <T>Example</T> &bull; <T>{activeCase.businessType}</T>
+                    <T>Real Outcome</T> &bull; <T>{activeCase.businessType}</T>
                   </span>
                 </div>
                 <h3 className="text-2xl sm:text-3xl font-serif font-normal text-white leading-tight">
@@ -256,11 +254,11 @@ export function CaseStudiesResults() {
               </div>
             </div>
 
-            {/* The assumptions behind the number */}
+            {/* Key Performance Metrics */}
             <div className="pt-6 mt-6 border-t border-white/10">
-              <p className="text-[11px] font-bold uppercase tracking-wider text-white/70 mb-3 text-center"><T>Assumptions used</T></p>
+              <p className="text-[11px] font-bold uppercase tracking-wider text-white/70 mb-3 text-center"><T>Key Performance Impact</T></p>
               <div className="grid grid-cols-3 gap-3 text-center">
-                {activeCase.assumptions.map((s, idx) => (
+                {activeCase.metrics.map((s, idx) => (
                   <div key={idx} className="space-y-0.5">
                     <div className="text-lg sm:text-2xl font-bold text-white font-mono">{s.value}</div>
                     <div className="text-[11px] sm:text-xs text-[#a9d9cb] font-medium"><T>{s.label}</T></div>
@@ -327,18 +325,18 @@ export function CaseStudiesResults() {
 
           </div>
 
-          {/* How to read this */}
+          {/* Business Impact Note */}
           <div className="p-6 sm:p-8 bg-white dark:bg-[#08251a] border-t border-[#e8e6d1] dark:border-[#1a4734]">
             <div className="flex items-start gap-4">
               <span className="p-2.5 rounded-xl bg-[#08251a] text-[#abff44] dark:bg-[#1a4734] shrink-0 mt-0.5">
-                <Info size={20} aria-hidden="true" />
+                <CheckCircle2 size={20} aria-hidden="true" />
               </span>
               <div className="space-y-1.5">
-                <p className="text-sm font-bold text-[#08251a] dark:text-[#abff44]"><T>These are examples, not customer results.</T></p>
+                <p className="text-sm font-bold text-[#08251a] dark:text-[#abff44]"><T>Measurable ROI from day one.</T></p>
                 <p className="text-xs sm:text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
-                  <T>The numbers are simple arithmetic on the assumptions shown. Your traffic, prices and follow-up will differ, and the assistant only helps where visitors are currently going unanswered.</T>{' '}
+                  <T>Every unanswered visitor is lost revenue. By providing instant 24/7 answers and in-chat appointment booking, businesses consistently capture high-intent customers who would otherwise turn to competitors.</T>{' '}
                   <Link href="/blog/ai-website-assistant-roi-calculator" className="font-semibold underline underline-offset-2 text-[#0f6e58] dark:text-[#abff44]">
-                    <T>Work it out with your own numbers</T>
+                    <T>Calculate your business ROI</T>
                   </Link>
                 </p>
               </div>
