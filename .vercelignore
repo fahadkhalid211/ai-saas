@@ -1,1 +1,43 @@
-mobile
+# Sub-projects and standalone runtimes
+mobile/
+voice-worker/
+wordpress/
+
+# Local databases, build artifacts, and caches
+.data/
+.next/
+.next-*/
+*.ndjson
+*.traineddata
+
+# IDEs, AI assistants, and test runners
+.cursor/
+.claude/
+.reticle/
+.reticle.json
+.vscode/
+.idea/
+.github/
+
+# Documentation, specifications, and architecture
+docs/
+eval/
+load-tests/
+ops/
+supabase/
+*.md
+!AGENTS.md
+crescelo-platform-overview.html
+
+# Test suites and test runner configs
+**/*.test.*
+**/*.spec.*
+vitest.config.*
+vitest.global-setup.*
+
+# Local scripts (retain vercel-ignore-build.sh for Vercel's ignoreCommand)
+scripts/*
+!scripts/vercel-ignore-build.sh
+
+# Unused social marketing asset renders
+public/instagram/

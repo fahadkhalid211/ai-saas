@@ -19,6 +19,19 @@ const nextConfig: NextConfig = {
     '/*/blog': ['./lib/blog/translations/**/*'],
     '/*/blog/*': ['./lib/blog/translations/**/*'],
   },
+  outputFileTracingExcludes: {
+    '*': [
+      'node_modules/@swc/core-linux-x64-gnu/**/*',
+      'node_modules/@swc/core-linux-x64-musl/**/*',
+      'node_modules/@esbuild/**/*',
+      'node_modules/@xenova/transformers/.cache/**/*',
+      'node_modules/onnxruntime-node/bin/napi-v3/darwin/**/*',
+      'node_modules/onnxruntime-node/bin/napi-v3/win32/**/*',
+      'node_modules/onnxruntime-node/bin/napi-v3/linux/arm64/**/*',
+      '**/*.test.*',
+      '**/*.spec.*',
+    ],
+  },
   // status.crescelo.com is routed to the status page by the proxy (proxy.ts), together with the language handling.
   async redirects() {
     // The marketing page moved from /welcome to the site root.

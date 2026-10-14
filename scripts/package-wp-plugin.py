@@ -5,8 +5,6 @@ def package():
     src_dir = os.path.abspath('wordpress/ai-business-assistant')
     out_paths = [
         os.path.abspath('public/wordpress/ai-business-assistant.zip'),
-        os.path.abspath('public/ai-business-assistant.zip'),
-        os.path.abspath('wordpress/ai-business-assistant.zip'),
     ]
 
     for out_path in out_paths:

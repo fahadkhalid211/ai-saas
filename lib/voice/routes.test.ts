@@ -9,7 +9,7 @@ const SECRET = 'test-voice-secret-'.padEnd(40, 'x');
 const NUMBER = '+15550100777';
 const CALLER = '+15550100123';
 
-let createdAppointmentIds: string[] = [];
+const createdAppointmentIds: string[] = [];
 
 function signed(body: unknown, opts: { tamper?: boolean } = {}): Request {
   const raw = JSON.stringify(body);

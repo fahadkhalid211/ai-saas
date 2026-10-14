@@ -8,10 +8,16 @@ const eslintConfig = defineConfig([
   // Override default ignores of eslint-config-next.
   globalIgnores([
     "mobile/**",
+    "wordpress/**",
+    "voice-worker/**",
+    "load-tests/**",
+    "eval/**",
+    "ops/**",
     // Default ignores of eslint-config-next:
     ".next/**",
     // build folder of the second, isolated dev server (NEXT_DIST_DIR=.next-iso)
     ".next-iso/**",
+    ".next-build/**",
     "out/**",
     "build/**",
     "next-env.d.ts",
@@ -19,6 +25,9 @@ const eslintConfig = defineConfig([
     ".data/**",
     "scratch/**",
     "scripts/**",
+    ".reticle/**",
+    ".cursor/**",
+    ".claude/**",
   ]),
   {
     rules: {

@@ -1,3 +1,0 @@
-4618	Your content is stored for your assistant and sent to the AI provider you choose only as needed to answer a question, under that provider’s terms.
-4619	Your team is alerted by email and in the dashboard.
-4620	Your team is notified

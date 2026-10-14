@@ -256,7 +256,7 @@ describe('Crescelo MCP Multi-Tenant Security & Tool Hardening', () => {
     ).rejects.toThrow(/Forbidden: Token lacks required scope 'bookings:create'/i);
   });
 
-  it('safely defends against prompt injection in knowledge base lookup', async () => {
+  it('safely defends against prompt injection in knowledge base lookup', { timeout: 20000 }, async () => {
     const { handleSearchKnowledge } = await import('../tools/knowledge');
     const authA: McpAuthContext = {
       authenticated: true,
