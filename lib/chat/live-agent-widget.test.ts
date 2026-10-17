@@ -11,10 +11,10 @@ describe('Live Agent to Widget communication', () => {
   let adminSession = '';
 
   beforeAll(async () => {
-    const assistants = await Database.getAssistants();
-    const a = assistants[0];
+    // its own assistant: the shared data may hold none, or only what an earlier test file left behind
+    const a = await Database.createAssistant({ name: 'Live agent widget test', workspaceId: 'ws_live_agent_widget_test' });
     assistantId = a.id;
-    adminSession = await tokenFor('admin', 'admin-user', a.workspaceId || 'default-workspace');
+    adminSession = await tokenFor('admin', 'admin-user', a.workspaceId || 'ws_live_agent_widget_test');
 
     // Create a conversation as visitor
     const conv = await Database.getOrCreateConversation(assistantId, 'vis_test_123');

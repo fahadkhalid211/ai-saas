@@ -1,10 +1,30 @@
-import { describe, expect, it, vi } from 'vitest';
+import { afterAll, describe, expect, it, vi } from 'vitest';
 
 /**
  * The whole path (load, change, save) against a pretend cloud database that "another server" writes to in between.
  * Only the cloud module is replaced; the Database layer, the merge and the save transaction are the real ones.
  */
 const clone = <T>(v: T): T => JSON.parse(JSON.stringify(v));
+
+/**
+ * This file drives the real Database layer, which also saves its state to the data folder. That folder is shared by every test file in a
+ * run, so the state used here (one salon, one assistant, deleted again at the end) was left behind for whichever file ran next: tests that
+ * expect the default demo assistant, or any assistant at all, then failed depending on the order the files ran in (it showed up in CI).
+ * It gets a folder of its own, created before the Database module is loaded.
+ */
+const ownDir = await vi.hoisted(async () => {
+  const fs = await import('node:fs');
+  const os = await import('node:os');
+  const path = await import('node:path');
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'crescelo-state-concurrency-'));
+  process.env.DATA_DIR = dir;
+  return dir;
+});
+
+afterAll(async () => {
+  const fs = await import('node:fs');
+  fs.rmSync(ownDir, { recursive: true, force: true });
+});
 
 const cloud = vi.hoisted(() => ({
   row: null as Record<string, any> | null,
