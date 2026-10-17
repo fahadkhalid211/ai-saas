@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 import { isNoTrackingPath } from '@/lib/privacy/no-tracking-paths';
 import { useI18n } from '@/lib/i18n/context';
 import { X, Globe, Check } from 'lucide-react';
+import { Flag } from './Flag';
 
 export function GeoLanguageBanner() {
   const __t = useT();
@@ -17,12 +18,11 @@ export function GeoLanguageBanner() {
   }
 
   const countryName = countryInfo.nativeName || countryInfo.name;
-  const flag = countryInfo.flag;
   const langName = localeInfo.nativeLabel;
 
   const visitingText = dict.geoBanner.visitingFrom
     .replace('{country}', countryName)
-    .replace('{flag}', flag);
+    .replace(/s*{flag}/, '');
 
   const switchedText = dict.geoBanner.switchedTo.replace('{language}', langName);
   const keepText = dict.geoBanner.keep.replace('{language}', langName);
@@ -34,9 +34,7 @@ export function GeoLanguageBanner() {
     >
       <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3 text-sm">
         <div className="flex items-center gap-2.5 min-w-0">
-          <span className="text-lg flex-shrink-0" aria-hidden="true">
-            <T>{flag}</T>
-          </span>
+          <Flag locale={locale} size={24} />
           <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs sm:text-sm">
             <span className="font-semibold text-white"><T>{visitingText}</T></span>
             <span className="text-slate-300"><T>{switchedText}</T></span>

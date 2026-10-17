@@ -1,5 +1,6 @@
 'use client';
 
+import { T, useT } from '@/lib/i18n/context';
 import React, { useState, useMemo, useEffect } from 'react';
 import { ClipboardList, RefreshCw, ChevronLeft, ChevronRight, Search } from 'lucide-react';
 
@@ -14,6 +15,7 @@ export const AuditTab: React.FC<AuditTabProps> = ({
   isSyncingAudit,
   fetchAuditLogs,
 }) => {
+  const __t = useT();
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
   const pageSize = 10;
@@ -69,17 +71,17 @@ export const AuditTab: React.FC<AuditTabProps> = ({
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2.5">
             <ClipboardList className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-            <span>Audit Trail</span>
+            <span><T>Audit Trail</T></span>
           </h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-            A complete log of every action taken in your workspace — logins, settings changes, and plan updates.
+            <T>A complete log of every action taken in your workspace — logins, settings changes, and plan updates.</T>
           </p>
         </div>
         <div className="flex items-center gap-2">
           <div className="relative">
             <input
               type="text"
-              placeholder="Search user, email, action..."
+              placeholder={__t("Search user, email, action...")}
               value={searchQuery}
               onChange={(e) => {
                 setSearchQuery(e.target.value);
@@ -96,7 +98,7 @@ export const AuditTab: React.FC<AuditTabProps> = ({
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition cursor-pointer disabled:opacity-50 shrink-0"
           >
             <RefreshCw className={`h-3.5 w-3.5 ${isSyncingAudit ? 'animate-spin text-blue-600' : ''}`} />
-            <span>Refresh Logs</span>
+            <span><T>Refresh Logs</T></span>
           </button>
         </div>
       </div>
@@ -106,19 +108,19 @@ export const AuditTab: React.FC<AuditTabProps> = ({
           <table className="w-full text-left text-xs">
             <thead className="bg-slate-50 dark:bg-slate-800/60 text-slate-500 font-semibold border-b border-slate-200 dark:border-slate-800">
               <tr>
-                <th className="py-3 px-4">Timestamp</th>
-                <th className="py-3 px-4">Actor</th>
-                <th className="py-3 px-4">User Email / Username</th>
-                <th className="py-3 px-4">Action Event</th>
-                <th className="py-3 px-4">Target</th>
-                <th className="py-3 px-4">IP Address</th>
+                <th className="py-3 px-4"><T>Timestamp</T></th>
+                <th className="py-3 px-4"><T>Actor</T></th>
+                <th className="py-3 px-4"><T>User Email / Username</T></th>
+                <th className="py-3 px-4"><T>Action Event</T></th>
+                <th className="py-3 px-4"><T>Target</T></th>
+                <th className="py-3 px-4"><T>IP Address</T></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
               {paginatedLogs.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="py-8 text-center text-slate-400">
-                    {searchQuery ? 'No matching audit logs found for your search.' : 'No security audit logs recorded yet.'}
+                    {searchQuery ? <T>{'No matching audit logs found for your search.'}</T> : <T>{'No security audit logs recorded yet.'}</T>}
                   </td>
                 </tr>
               ) : (
@@ -132,7 +134,7 @@ export const AuditTab: React.FC<AuditTabProps> = ({
                         {new Date(log.timestamp).toLocaleString()}
                       </td>
                       <td className="py-3 px-4 font-medium text-slate-800 dark:text-slate-200 whitespace-nowrap">
-                        {log.actor?.name || 'Admin'}
+                        {log.actor?.name || <T>{'Admin'}</T>}
                       </td>
                       <td className="py-3 px-4 font-mono text-[11px]">
                         {userEmail ? (
@@ -144,7 +146,7 @@ export const AuditTab: React.FC<AuditTabProps> = ({
                             @{username}
                           </span>
                         ) : (
-                          <span className="text-slate-400 italic">system</span>
+                          <span className="text-slate-400 italic"><T>system</T></span>
                         )}
                       </td>
                       <td className="py-3 px-4">
@@ -170,7 +172,7 @@ export const AuditTab: React.FC<AuditTabProps> = ({
         {sortedLogs.length > 0 && (
           <div className="p-4 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
             <span className="text-slate-500 dark:text-slate-400 font-mono text-[11px]">
-              Showing {startEntry} to {endEntry} of {sortedLogs.length} entries
+              <T>Showing</T> {startEntry} <T>to</T> {endEntry} <T>of</T> {sortedLogs.length} <T>entries</T>
             </span>
 
             <div className="flex items-center gap-1.5">
@@ -179,7 +181,7 @@ export const AuditTab: React.FC<AuditTabProps> = ({
                 onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                 disabled={currentPage <= 1}
                 className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition cursor-pointer"
-                aria-label="Previous Page"
+                aria-label={__t("Previous Page")}
               >
                 <ChevronLeft className="h-4 w-4" />
               </button>
@@ -221,7 +223,7 @@ export const AuditTab: React.FC<AuditTabProps> = ({
                 onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                 disabled={currentPage >= totalPages}
                 className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition cursor-pointer"
-                aria-label="Next Page"
+                aria-label={__t("Next Page")}
               >
                 <ChevronRight className="h-4 w-4" />
               </button>

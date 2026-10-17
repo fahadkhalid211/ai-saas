@@ -420,3 +420,28 @@
 .mk-pg-stage p { min-height: 0; font-size: 0.7812rem; }
 .mk-pg-foot { padding-top: 0.5rem; }
 @media (max-width: 640px) { .mk-pg-log { max-height: 21.25rem; } }
+
+/* ---- Launch film (right after the hero) ---- */
+.mk-film-section { padding-top: 3.5rem; padding-bottom: 3.5rem; }
+.mk-film { max-width: 60rem; margin: 0 auto; }
+.mk-film-frame { position: relative; aspect-ratio: 16 / 9; border-radius: var(--mk-radius); overflow: hidden; background: #0e2a20; border: 1px solid var(--mk-line); box-shadow: 0 1.5rem 4rem -1.5rem rgba(8, 37, 26, 0.35); }
+.mk-film-video { display: block; width: 100%; height: 100%; object-fit: cover; background: #0e2a20; }
+.mk-film-overlay { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1.25rem; padding: 1rem; background: linear-gradient(180deg, rgba(8, 37, 26, 0.08), rgba(8, 37, 26, 0.38)); }
+.mk-film-overlay.is-ended { background: rgba(8, 37, 26, 0.82); backdrop-filter: blur(6px); }
+.mk-film-play { display: inline-flex; align-items: center; gap: 0.875rem; padding: 0.5rem 1.375rem 0.5rem 0.5rem; border: 0; border-radius: 999px; background: #fffeeb; color: #08251a; font: inherit; font-weight: 700; font-size: 1rem; cursor: pointer; box-shadow: 0 0.75rem 2rem -0.5rem rgba(0, 0, 0, 0.45); transition: transform 0.2s ease, box-shadow 0.2s ease; }
+.mk-film-play:hover { transform: scale(1.04); }
+.mk-film-play-icon { display: grid; place-items: center; width: 3.5rem; height: 3.5rem; border-radius: 50%; background: #abff44; color: #08251a; }
+.mk-film-play-icon svg { margin-left: 0.125rem; }
+.mk-film-overlay.is-ended .mk-film-play-icon svg { margin-left: 0; }
+.mk-film-next { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.75rem; }
+.mk-film-next .mk-btn-primary { background: #abff44; color: #08251a; }
+.mk-film-next .mk-btn-primary:hover { background: #fffeeb; }
+.mk-film-next .mk-btn-ghost { color: #fffeeb; border-color: rgba(255, 254, 235, 0.55); background: transparent; }
+.mk-film-next .mk-btn-ghost:hover { background: rgba(255, 254, 235, 0.14); }
+.mk-film-note { margin-top: 1rem; text-align: center; font-size: 0.875rem; color: var(--mk-muted); }
+@media (max-width: 640px) {
+  .mk-film-frame { border-radius: 1rem; }
+  .mk-film-play { font-size: 0.9375rem; }
+  .mk-film-play-icon { width: 3rem; height: 3rem; }
+}
+@media (prefers-reduced-motion: reduce) { .mk-film-play { transition: none; } .mk-film-play:hover { transform: none; } }

@@ -82,8 +82,8 @@ export function FloatingPlatformChatbot({ variant = 'floating', onNavigate, onBi
       id: 'msg_welcome',
       role: 'assistant',
       content: inHeader
-        ? 'Hi! I am your Crescelo assistant. I know the setup guides and **your account**: ask about your plan and usage, how to connect a provider, add the widget or set up booking, or ask me to **upgrade or downgrade your plan** (I will always ask you to confirm first).'
-        : 'Hi there! 👋 I am your **Crescelo Platform Concierge**. Ask me anything about our zero token markup pricing, connecting your AI models (Google Gemini, OpenAI, Claude, Groq, Ollama), adding knowledge bases, or navigating the dashboard!',
+        ? __t('Hi! I am your Crescelo assistant. I know the setup guides and **your account**: ask about your plan and usage, how to connect a provider, add the widget or set up booking, or ask me to **upgrade or downgrade your plan** (I will always ask you to confirm first).')
+        : __t('Hi there! 👋 I am your **Crescelo Platform Concierge**. Ask me anything about our zero token markup pricing, connecting your AI models (Google Gemini, OpenAI, Claude, Groq, Ollama), adding knowledge bases, or navigating the dashboard!'),
       createdAt: new Date().toISOString(),
     },
   ]);
@@ -215,7 +215,7 @@ export function FloatingPlatformChatbot({ variant = 'floating', onNavigate, onBi
       if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
       setMessages((prev) => prev.map((m) => (m.id === id ? { ...m, content: data.reply, actions: data.actions || [] } : m)));
     } catch (err: any) {
-      const reply = res401(err) ? 'Your session has ended. Please sign in again.' : getPlatformConciergeAnswer(text);
+      const reply = res401(err) ? __t('Your session has ended. Please sign in again.') : getPlatformConciergeAnswer(text);
       setMessages((prev) => prev.map((m) => (m.id === id ? { ...m, content: reply } : m)));
     } finally {
       setIsLoading(false);
@@ -247,7 +247,7 @@ export function FloatingPlatformChatbot({ variant = 'floating', onNavigate, onBi
           window.location.href = data.url;
           return;
         }
-        say(data.error || 'The billing portal is available once a subscription is active.');
+        say(data.error || __t('The billing portal is available once a subscription is active.'));
         return;
       }
       // change_plan: consume the buttons first so it cannot be sent twice
@@ -259,18 +259,18 @@ export function FloatingPlatformChatbot({ variant = 'floating', onNavigate, onBi
       });
       const data = await res.json().catch(() => ({}));
       if (res.ok && !data.isSandbox && data.url) {
-        say('Taking you to secure checkout to finish this.');
+        say(__t('Taking you to secure checkout to finish this.'));
         window.location.href = data.url;
         return;
       }
       if (res.ok) {
-        say(`Done. ${data.message || 'Your plan was updated.'}`);
+        say(__t('Done. {message}', { message: data.message || __t('Your plan was updated.') }));
         onBillingChanged?.();
       } else {
-        say(`I could not change the plan: ${data.error || 'please try again from Plans & Billing.'}`);
+        say(__t('I could not change the plan: {reason}', { reason: data.error || __t('please try again from Plans & Billing.') }));
       }
     } catch {
-      say('I could not reach the server. Please try again from Plans & Billing.');
+      say(__t('I could not reach the server. Please try again from Plans & Billing.'));
     } finally {
       setBusyAction(null);
     }
@@ -303,7 +303,7 @@ export function FloatingPlatformChatbot({ variant = 'floating', onNavigate, onBi
         {
           id: 'ast_' + (Date.now() + 1),
           role: 'assistant',
-          content: 'Happy to help you pick a time. Choose a day and slot below. [ACTION:BOOKING_FORM]',
+          content: __t('Happy to help you pick a time. Choose a day and slot below.') + ' [ACTION:BOOKING_FORM]',
           createdAt: new Date().toISOString(),
         },
       ]);
@@ -509,7 +509,7 @@ export function FloatingPlatformChatbot({ variant = 'floating', onNavigate, onBi
           type="button"
           onClick={() => setIsOpen((o) => !o)}
           aria-expanded={isOpen}
-          aria-label={isOpen ? 'Minimize the Crescelo assistant' : 'Open the Crescelo assistant'}
+          aria-label={isOpen ? __t('Minimize the Crescelo assistant') : __t('Open the Crescelo assistant')}
           title={__t("Ask the Crescelo assistant")}
           className={`relative flex items-center gap-2 rounded-xl border px-2.5 py-1.5 text-xs font-semibold transition cursor-pointer shadow-2xs ${
             isOpen
@@ -603,7 +603,7 @@ export function FloatingPlatformChatbot({ variant = 'floating', onNavigate, onBi
                   <T>Crescelo</T>
                 </h3>
                 <p className="mt-1 text-[11px] text-[#a19f96]" aria-live="polite">
-                  {orbState === 'thinking' ? <T>{'Thinking…'}</T> : orbState === 'speaking' ? <T>{'Answering…'}</T> : isTakeoverActive ? <T>{`Live Agent Connected (${assignedAgentName})`}</T> : inHeader ? <T>{'Ask about your plan or any setup guide'}</T> : <T>{'Ask about pricing, setup or features'}</T>}
+                  {orbState === 'thinking' ? <T>{'Thinking…'}</T> : orbState === 'speaking' ? <T>{'Answering…'}</T> : isTakeoverActive ? __t("Live Agent Connected ({assignedAgentName})", { assignedAgentName: assignedAgentName }) : inHeader ? <T>{'Ask about your plan or any setup guide'}</T> : <T>{'Ask about pricing, setup or features'}</T>}
                 </p>
               </div>
             </div>
@@ -616,8 +616,7 @@ export function FloatingPlatformChatbot({ variant = 'floating', onNavigate, onBi
                     {
                       id: 'msg_welcome_' + Date.now(),
                       role: 'assistant',
-                      content:
-                        'Conversation cleared. Ask me anything about Crescelo features, AI setup, zero-markup pricing, or dashboard guides!',
+                      content: __t('Conversation cleared. Ask me anything about Crescelo features, AI setup, zero-markup pricing, or dashboard guides!'),
                       createdAt: new Date().toISOString(),
                     },
                   ]);
@@ -634,8 +633,8 @@ export function FloatingPlatformChatbot({ variant = 'floating', onNavigate, onBi
               <button
                 type="button"
                 onClick={() => setIsOpen(false)}
-                title={inHeader ? 'Minimize' : 'Close'}
-                aria-label={inHeader ? 'Minimize chat' : 'Close chat'}
+                title={inHeader ? __t('Minimize') : __t('Close')}
+                aria-label={inHeader ? __t('Minimize chat') : __t('Close chat')}
                 className="p-2 text-[#a19f96] hover:text-[#faf9f5] hover:bg-white/[0.06] rounded-xl transition"
               >
                 {inHeader ? <Minus className="w-[18px] h-[18px]" /> : <X className="w-[18px] h-[18px]" />}
@@ -677,8 +676,8 @@ export function FloatingPlatformChatbot({ variant = 'floating', onNavigate, onBi
                     </span>
                     <div className="relative group max-w-[84%] px-3.5 py-2.5 text-[13px] leading-relaxed bg-[#1b382b] text-[#faf9f5] border border-[#abff44]/30 rounded-2xl rounded-tl-md">
                       <div className="flex items-center gap-1.5 text-[11px] font-bold text-[#abff44] mb-1">
-                        <span>{m.senderName || assignedAgentName || 'Live Support Agent'}</span>
-                        <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-[#abff44]/20 text-[#abff44] uppercase tracking-wider font-extrabold">Agent</span>
+                        <span>{m.senderName || assignedAgentName || <T>{'Live Support Agent'}</T>}</span>
+                        <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-[#abff44]/20 text-[#abff44] uppercase tracking-wider font-extrabold"><T>Agent</T></span>
                       </div>
                       <div className="whitespace-pre-wrap break-words">{renderRich(a.text)}</div>
                       {a.booking && (
@@ -797,11 +796,11 @@ export function FloatingPlatformChatbot({ variant = 'floating', onNavigate, onBi
                     <button
                       key={i}
                       type="button"
-                      onClick={() => sendMessage(sug)}
+                      onClick={() => sendMessage(__t(sug))}
                       style={{ backgroundColor: 'rgba(255, 255, 255, 0.05)', color: '#d8d5cb' }}
                       className="mk-chat-pill-btn text-left text-xs text-[#d8d5cb] hover:text-[#faf9f5] bg-white/[0.05] hover:bg-white/[0.09] border border-white/[0.16] hover:border-[#abff44]/50 px-3 py-1.5 rounded-full transition duration-200"
                     >
-                      {sug}
+                      <T>{sug}</T>
                     </button>
                   ))}
                 </div>
@@ -827,7 +826,7 @@ export function FloatingPlatformChatbot({ variant = 'floating', onNavigate, onBi
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder={inHeader ? 'Ask about your plan, or how to set something up…' : 'Ask anything about Crescelo…'}
+                placeholder={inHeader ? __t('Ask about your plan, or how to set something up…') : __t('Ask anything about Crescelo…')}
                 disabled={isLoading}
                 aria-label={__t("Your question")}
                 style={{ outline: 'none', boxShadow: 'none' }}

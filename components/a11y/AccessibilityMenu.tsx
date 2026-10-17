@@ -345,7 +345,7 @@ export function AccessibilityMenu() {
                 <button type="button" className="a11y-primary" onClick={readPage}><T>Read page aloud</T></button>
               ) : (
                 <>
-                  <button type="button" className="a11y-primary" onClick={pauseResume}><T>{state === 'paused' ? 'Resume' : 'Pause'}</T></button>
+                  <button type="button" className="a11y-primary" onClick={pauseResume}>{state === 'paused' ? <T>{'Resume'}</T> : <T>{'Pause'}</T>}</button>
                   <button type="button" onClick={stop}><T>Stop</T></button>
                 </>
               )}
@@ -374,7 +374,7 @@ export function AccessibilityMenu() {
         ) : (
           <p className="a11y-help"><T>Your browser cannot read pages aloud. Chrome, Edge, Safari and Firefox can.</T></p>
         )}
-        <p className="a11y-live" role="status" aria-live="polite"><T>{note || (state === 'reading' ? 'Reading…' : state === 'paused' ? 'Paused' : '')}</T></p>
+        <p className="a11y-live" role="status" aria-live="polite">{note || (state === 'reading' ? <T>{'Reading…'}</T> : state === 'paused' ? <T>{'Paused'}</T> : '')}</p>
       </section>
 
       <section aria-labelledby={`${uid}-display`} className="a11y-section">

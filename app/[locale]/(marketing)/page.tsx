@@ -1,11 +1,12 @@
 import { localizeMeta } from '@/lib/i18n/metadata';
 import { JsonLd } from '@/components/marketing/JsonLd';
-import { faqSchema, organizationSchema, siteNavigationSchema, softwareSchema, websiteSchema } from '@/lib/schema';
+import { faqSchema, launchFilmSchema, organizationSchema, siteNavigationSchema, softwareSchema, websiteSchema } from '@/lib/schema';
 import type { Metadata } from 'next';
 import { SITE } from '@/components/marketing/content';
 import { Header } from '@/components/marketing/Header';
 import { Hero } from '@/components/marketing/Hero';
 import { LogoStrip } from '@/components/marketing/LogoStrip';
+import { LaunchFilm } from '@/components/marketing/LaunchFilm';
 import { ProblemSolution } from '@/components/marketing/ProblemSolution';
 import { CaseStudiesResults } from '@/components/marketing/CaseStudiesResults';
 import { BehindTheScenes, FeatureCarousel, Tools } from '@/components/marketing/Showpieces';
@@ -45,11 +46,12 @@ export async function generateMetadata(): Promise<Metadata> {
 export default function WelcomePage() {
   return (
     <>
-      <JsonLd data={[organizationSchema(), websiteSchema(), siteNavigationSchema(), softwareSchema(), faqSchema(FAQ.items)]} />
+      <JsonLd data={[organizationSchema(), websiteSchema(), siteNavigationSchema(), softwareSchema(), launchFilmSchema(), faqSchema(FAQ.items)]} />
       <Header />
       <main id="main">
         <Hero />
         <LogoStrip />
+        <LaunchFilm />
         <ProblemSolution />
         <CaseStudiesResults />
         <Tools />

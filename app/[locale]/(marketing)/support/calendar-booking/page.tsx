@@ -61,7 +61,7 @@ export default function CalendarBookingGuidePage() {
               <div className="mk-card" style={{ padding: '32px' }}>
                 <h3 style={{ fontSize: '1.6rem', marginBottom: '10px' }}><T>2. The Atomic Mutex Concurrency Lock</T></h3>
                 <p style={{ color: 'var(--mk-muted)', fontSize: '15px', lineHeight: 1.6 }}>
-                  <T>If two visitors click the same 2:00 PM slot simultaneously, traditional bots often double-book both users. Crescelo uses</T> <code>acquireBookingLock(assistantId, date, timeSlot)</code><T>. The first request acquires a lock (shared across servers when Redis is configured), verifies that no conflict was written in the interim, commits the booking, and safely releases the lock. The second user receives an immediate prompt offering the next nearest available slot.</T>
+                  <T>If two visitors click the same 2:00 PM slot simultaneously, traditional bots often double-book both users. Crescelo uses</T> <code>acquireBookingLock(assistantId, date, timeSlot)</code><T>. The first request acquires a lock, verifies that no conflict was written in the interim, commits the booking, and safely releases the lock. The second user receives an immediate prompt offering the next nearest available slot.</T>
                 </p>
               </div>
 

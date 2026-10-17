@@ -246,7 +246,7 @@ export function CaseStudiesResults() {
               {/* Headline number */}
               <div className="flex items-center sm:flex-col justify-between sm:justify-center p-4 sm:p-5 rounded-2xl bg-white/10 border border-white/15 text-center shrink-0 min-w-[180px]">
                 <div className="text-4xl sm:text-5xl font-serif font-bold text-[#abff44] leading-none mb-1">
-                  {activeCase.primaryStat.value}
+                  <T>{activeCase.primaryStat.value}</T>
                 </div>
                 <div className="text-xs font-bold uppercase tracking-wider text-white/90">
                   <T>{activeCase.primaryStat.label}</T>
@@ -260,7 +260,7 @@ export function CaseStudiesResults() {
               <div className="grid grid-cols-3 gap-3 text-center">
                 {activeCase.metrics.map((s, idx) => (
                   <div key={idx} className="space-y-0.5">
-                    <div className="text-lg sm:text-2xl font-bold text-white font-mono">{s.value}</div>
+                    <div className="text-lg sm:text-2xl font-bold text-white font-mono"><T>{s.value}</T></div>
                     <div className="text-[11px] sm:text-xs text-[#a9d9cb] font-medium"><T>{s.label}</T></div>
                   </div>
                 ))}

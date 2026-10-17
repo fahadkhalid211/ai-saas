@@ -322,12 +322,12 @@ export const OnboardingWizardModal: React.FC<OnboardingWizardModalProps> = ({
               </span>
               <div>
                 <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
-                  <span>Quick Setup Wizard</span>
+                  <span><T>Quick Setup Wizard</T></span>
                   <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200/80 uppercase tracking-wider">
-                    Step {step} of 4
+                    <T>Step</T> {step} <T>of 4</T>
                   </span>
                 </h2>
-                <p className="text-xs text-slate-500">Configure and launch your AI Assistant in under 2 minutes.</p>
+                <p className="text-xs text-slate-500"><T>Configure and launch your AI Assistant in under 2 minutes.</T></p>
               </div>
             </div>
 
@@ -335,7 +335,7 @@ export const OnboardingWizardModal: React.FC<OnboardingWizardModalProps> = ({
               type="button"
               onClick={onClose}
               className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition cursor-pointer"
-              aria-label="Close setup wizard"
+              aria-label={__t("Close setup wizard")}
             >
               <X className="h-4 w-4" />
             </button>
@@ -377,8 +377,8 @@ export const OnboardingWizardModal: React.FC<OnboardingWizardModalProps> = ({
                     {isCompleted ? <Check className="h-3.5 w-3.5" /> : s.num}
                   </span>
                   <div className="hidden sm:block min-w-0">
-                    <div className="text-[10px] uppercase tracking-wider font-semibold opacity-75">Step {s.num}</div>
-                    <div className="text-xs font-bold truncate">{s.title}</div>
+                    <div className="text-[10px] uppercase tracking-wider font-semibold opacity-75"><T>Step</T> {s.num}</div>
+                    <div className="text-xs font-bold truncate"><T>{s.title}</T></div>
                   </div>
                 </button>
               );
@@ -393,9 +393,9 @@ export const OnboardingWizardModal: React.FC<OnboardingWizardModalProps> = ({
           {step === 1 && (
             <div className="space-y-5">
               <div>
-                <h3 className="text-base font-bold text-slate-900">What type of business are you setting up for?</h3>
+                <h3 className="text-base font-bold text-slate-900"><T>What type of business are you setting up for?</T></h3>
                 <p className="text-xs text-slate-500">
-                  Select your industry so Crescelo can pre-configure the best greeting, booking flow, and conversation demeanor.
+                  <T>Select your industry so Crescelo can pre-configure the best greeting, booking flow, and conversation demeanor.</T>
                 </p>
               </div>
 
@@ -416,7 +416,7 @@ export const OnboardingWizardModal: React.FC<OnboardingWizardModalProps> = ({
                       }`}
                     >
                       <Icon className={`h-5 w-5 mb-2 ${isSelected ? 'text-blue-600' : 'text-slate-500'}`} />
-                      <span className="text-xs font-bold text-slate-900 leading-tight">{ind.label}</span>
+                      <span className="text-xs font-bold text-slate-900 leading-tight"><T>{ind.label}</T></span>
                     </button>
                   );
                 })}
@@ -425,22 +425,22 @@ export const OnboardingWizardModal: React.FC<OnboardingWizardModalProps> = ({
               {/* Assistant Name */}
               <div className="space-y-1.5 pt-1">
                 <label className="text-xs font-bold text-slate-800">
-                  Assistant Display Name
+                  <T>Assistant Display Name</T>
                 </label>
                 <input
                   type="text"
                   value={assistantName}
                   onChange={(e) => setAssistantName(e.target.value)}
-                  placeholder="e.g. Bella Salon Assistant"
+                  placeholder={__t("e.g. Bella Salon Assistant")}
                   className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-600"
                 />
-                <p className="text-[11px] text-slate-500">Visitors will see this name in the chat header bubble.</p>
+                <p className="text-[11px] text-slate-500"><T>Visitors will see this name in the chat header bubble.</T></p>
               </div>
 
               {/* Primary Goal */}
               <div className="space-y-2">
                 <label className="text-xs font-bold text-slate-800">
-                  Primary Goal for this AI
+                  <T>Primary Goal for this AI</T>
                 </label>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                   {[
@@ -463,7 +463,7 @@ export const OnboardingWizardModal: React.FC<OnboardingWizardModalProps> = ({
                         }`}
                       >
                         <GoalIcon className={`h-3.5 w-3.5 ${isSelected ? 'text-blue-600' : 'text-slate-500'}`} />
-                        <span>{g.label}</span>
+                        <span><T>{g.label}</T></span>
                       </button>
                     );
                   })}
@@ -476,9 +476,9 @@ export const OnboardingWizardModal: React.FC<OnboardingWizardModalProps> = ({
           {step === 2 && (
             <div className="space-y-4">
               <div>
-                <h3 className="text-base font-bold text-slate-900">Teach your AI your business details</h3>
+                <h3 className="text-base font-bold text-slate-900"><T>Teach your AI your business details</T></h3>
                 <p className="text-xs text-slate-500">
-                  No complex setup needed. Provide your website URL or type your hours, services, and pricing below.
+                  <T>No complex setup needed. Provide your website URL or type your hours, services, and pricing below.</T>
                 </p>
               </div>
 
@@ -494,7 +494,7 @@ export const OnboardingWizardModal: React.FC<OnboardingWizardModalProps> = ({
                   }`}
                 >
                   <FileText className="h-3.5 w-3.5 text-blue-600" />
-                  <span>Type Business Information</span>
+                  <span><T>Type Business Information</T></span>
                 </button>
                 <button
                   type="button"
@@ -506,45 +506,45 @@ export const OnboardingWizardModal: React.FC<OnboardingWizardModalProps> = ({
                   }`}
                 >
                   <Globe className="h-3.5 w-3.5 text-blue-600" />
-                  <span>Scan Website URL</span>
+                  <span><T>Scan Website URL</T></span>
                 </button>
               </div>
 
               {knowledgeMode === 'text' ? (
                 <div className="space-y-2">
                   <label className="text-xs font-bold text-slate-800">
-                    Business Hours, Services &amp; Information
+                    <T>Business Hours, Services &amp; Information</T>
                   </label>
                   <textarea
                     rows={6}
                     value={businessInfoText}
                     onChange={(e) => setBusinessInfoText(e.target.value)}
-                    placeholder="Enter your hours, prices, services, parking info, and answers to common customer questions..."
+                    placeholder={__t("Enter your hours, prices, services, parking info, and answers to common customer questions...")}
                     className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-xs font-mono text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-600 leading-relaxed"
                   />
                   <div className="flex items-start gap-2 p-2.5 rounded-xl bg-blue-50/60 border border-blue-100 text-[11px] text-blue-900">
                     <Sparkles className="h-3.5 w-3.5 text-blue-600 shrink-0 mt-0.5" />
                     <span>
-                      <strong className="font-semibold text-blue-800">Recommendation:</strong> Include common details your customers call about (e.g. pricing, hours, parking, policies, and consultation requirements).
+                      <strong className="font-semibold text-blue-800"><T>Recommendation:</T></strong> <T>Include common details your customers call about (e.g. pricing, hours, parking, policies, and consultation requirements).</T>
                     </span>
                   </div>
                 </div>
               ) : (
                 <div className="space-y-2">
                   <label className="text-xs font-bold text-slate-800">
-                    Website URL to Learn From
+                    <T>Website URL to Learn From</T>
                   </label>
                   <div className="flex gap-2">
                     <input
                       type="url"
                       value={websiteUrl}
                       onChange={(e) => setWebsiteUrl(e.target.value)}
-                      placeholder="https://mybusiness.com"
+                      placeholder={__t("https://mybusiness.com")}
                       className="flex-1 px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-600"
                     />
                   </div>
                   <p className="text-[11px] text-slate-500">
-                    Crescelo scans your public pages and indexes your services, products, and FAQs into your assistant memory.
+                    <T>Crescelo scans your public pages and indexes your services, products, and FAQs into your assistant memory.</T>
                   </p>
                 </div>
               )}
@@ -555,15 +555,15 @@ export const OnboardingWizardModal: React.FC<OnboardingWizardModalProps> = ({
           {step === 3 && (
             <div className="space-y-4">
               <div>
-                <h3 className="text-base font-bold text-slate-900">Choose your assistant tone and greeting</h3>
+                <h3 className="text-base font-bold text-slate-900"><T>Choose your assistant tone and greeting</T></h3>
                 <p className="text-xs text-slate-500">
-                  Customize the first message visitors see and match your chat window to your brand palette.
+                  <T>Customize the first message visitors see and match your chat window to your brand palette.</T>
                 </p>
               </div>
 
               {/* Tone selection */}
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-800">Conversation Tone</label>
+                <label className="text-xs font-bold text-slate-800"><T>Conversation Tone</T></label>
                 <div className="grid grid-cols-3 gap-2">
                   {[
                     { id: 'friendly', label: 'Friendly & Welcoming', desc: 'Warm, helpful, and empathetic', icon: Sparkles, iconColor: 'text-amber-500' },
@@ -585,9 +585,9 @@ export const OnboardingWizardModal: React.FC<OnboardingWizardModalProps> = ({
                       >
                         <div className="flex items-center gap-1.5 mb-1">
                           <ToneIcon className={`h-4 w-4 ${t.iconColor}`} />
-                          <span className="text-xs font-bold text-slate-900">{t.label}</span>
+                          <span className="text-xs font-bold text-slate-900"><T>{t.label}</T></span>
                         </div>
-                        <div className="text-[10px] text-slate-500 leading-tight">{t.desc}</div>
+                        <div className="text-[10px] text-slate-500 leading-tight"><T>{t.desc}</T></div>
                       </button>
                     );
                   })}
@@ -597,13 +597,13 @@ export const OnboardingWizardModal: React.FC<OnboardingWizardModalProps> = ({
               {/* Welcome Greeting Message */}
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-slate-800">
-                  Welcome Greeting Message
+                  <T>Welcome Greeting Message</T>
                 </label>
                 <textarea
                   rows={3}
                   value={greetingMessage}
                   onChange={(e) => setGreetingMessage(e.target.value)}
-                  placeholder="The first greeting bubble visitors see when the chat opens..."
+                  placeholder={__t("The first greeting bubble visitors see when the chat opens...")}
                   className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-600 leading-relaxed"
                 />
               </div>
@@ -611,7 +611,7 @@ export const OnboardingWizardModal: React.FC<OnboardingWizardModalProps> = ({
               {/* Theme Color */}
               <div className="space-y-2">
                 <label className="text-xs font-bold text-slate-800">
-                  Chat Widget Brand Color
+                  <T>Chat Widget Brand Color</T>
                 </label>
                 <div className="flex items-center gap-2.5 flex-wrap">
                   {COLOR_PRESETS.map((p) => (
@@ -638,9 +638,9 @@ export const OnboardingWizardModal: React.FC<OnboardingWizardModalProps> = ({
           {step === 4 && (
             <div className="space-y-4">
               <div>
-                <h3 className="text-base font-bold text-slate-900">Test Your AI &amp; Get Your Website Code</h3>
+                <h3 className="text-base font-bold text-slate-900"><T>Test Your AI &amp; Get Your Website Code</T></h3>
                 <p className="text-xs text-slate-500">
-                  Chat below to see your new assistant in action. If you ask something outside your knowledge base, see how professionally it responds!
+                  <T>Chat below to see your new assistant in action. If you ask something outside your knowledge base, see how professionally it responds!</T>
                 </p>
               </div>
 
@@ -651,7 +651,7 @@ export const OnboardingWizardModal: React.FC<OnboardingWizardModalProps> = ({
                   <div className="flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                     <span className="text-xs font-bold text-slate-800">{assistantName}</span>
-                    <span className="text-[11px] text-slate-500 font-medium">— Live Sandbox Test</span>
+                    <span className="text-[11px] text-slate-500 font-medium"><T>— Live Sandbox Test</T></span>
                   </div>
                 </div>
 
@@ -669,7 +669,7 @@ export const OnboardingWizardModal: React.FC<OnboardingWizardModalProps> = ({
                             : 'bg-white text-slate-800 border border-slate-200 rounded-bl-xs shadow-2xs'
                         }`}
                       >
-                        {m.text}
+                        <T>{m.text}</T>
                       </div>
 
                       {/* Quick action buttons if out-of-knowledgebase query occurred */}
@@ -681,7 +681,7 @@ export const OnboardingWizardModal: React.FC<OnboardingWizardModalProps> = ({
                             className="text-[11px] font-semibold px-2.5 py-1 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 transition flex items-center gap-1 cursor-pointer"
                           >
                             <Users className="h-3 w-3" />
-                            <span>Connect to Live Agent</span>
+                            <span><T>Connect to Live Agent</T></span>
                           </button>
                           <button
                             type="button"
@@ -689,7 +689,7 @@ export const OnboardingWizardModal: React.FC<OnboardingWizardModalProps> = ({
                             className="text-[11px] font-semibold px-2.5 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 transition flex items-center gap-1 cursor-pointer"
                           >
                             <Calendar className="h-3 w-3" />
-                            <span>Book a Meeting</span>
+                            <span><T>Book a Meeting</T></span>
                           </button>
                         </div>
                       )}
@@ -699,14 +699,14 @@ export const OnboardingWizardModal: React.FC<OnboardingWizardModalProps> = ({
                   {isTestResponding && (
                     <div className="flex items-center gap-1.5 text-[11px] text-slate-400 italic">
                       <Loader2 className="h-3 w-3 animate-spin text-blue-600" />
-                      <span>{assistantName} is typing...</span>
+                      <span>{assistantName} <T>is typing...</T></span>
                     </div>
                   )}
                 </div>
 
                 {/* Sample question pills */}
                 <div className="px-3 py-1.5 border-t border-slate-200 flex items-center gap-1.5 flex-wrap bg-white">
-                  <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Try:</span>
+                  <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider"><T>Try:</T></span>
                   {[
                     selectedIndustry.sampleQ,
                     'What are your hours?',
@@ -731,7 +731,7 @@ export const OnboardingWizardModal: React.FC<OnboardingWizardModalProps> = ({
                     value={testInput}
                     onChange={(e) => setTestInput(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && handleSendTestMessage()}
-                    placeholder="Type a test question (e.g. asking about services, or something unknown)..."
+                    placeholder={__t("Type a test question (e.g. asking about services, or something unknown)...")}
                     className="flex-1 px-3 py-1.5 rounded-lg border border-slate-200 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-600"
                   />
                   <button
@@ -739,7 +739,7 @@ export const OnboardingWizardModal: React.FC<OnboardingWizardModalProps> = ({
                     onClick={() => handleSendTestMessage()}
                     className="px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold cursor-pointer transition shadow-2xs flex items-center gap-1"
                   >
-                    <span>Send</span>
+                    <span><T>Send</T></span>
                     <Send className="h-3 w-3" />
                   </button>
                 </div>
@@ -748,7 +748,7 @@ export const OnboardingWizardModal: React.FC<OnboardingWizardModalProps> = ({
               {/* Embed snippet & WordPress Links */}
               <div className="space-y-2 pt-1">
                 <label className="text-xs font-bold text-slate-800">
-                  Add to Your Website in 60 Seconds:
+                  <T>Add to Your Website in 60 Seconds:</T>
                 </label>
                 <div className="flex items-center gap-2">
                   <input
@@ -767,19 +767,19 @@ export const OnboardingWizardModal: React.FC<OnboardingWizardModalProps> = ({
                     className="px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold flex items-center gap-1.5 transition cursor-pointer shadow-xs"
                   >
                     {copiedSnippet ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
-                    <span>{copiedSnippet ? 'Copied' : 'Copy Code'}</span>
+                    <span>{copiedSnippet ? <T>{'Copied'}</T> : <T>{'Copy Code'}</T>}</span>
                   </button>
                 </div>
 
                 <div className="flex items-center justify-between text-xs text-slate-500 pt-1">
-                  <span>Using WordPress? Connect in 1 click:</span>
+                  <span><T>Using WordPress? Connect in 1 click:</T></span>
                   <a
                     href="/wordpress/ai-business-assistant.zip"
                     download
                     className="text-blue-600 hover:text-blue-800 font-bold underline inline-flex items-center gap-1"
                   >
                     <Download className="h-3 w-3" />
-                    <span>Download Crescelo WordPress Plugin (.zip)</span>
+                    <span><T>Download Crescelo WordPress Plugin (.zip)</T></span>
                   </a>
                 </div>
               </div>
@@ -798,7 +798,7 @@ export const OnboardingWizardModal: React.FC<OnboardingWizardModalProps> = ({
                 className="inline-flex items-center gap-1 px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-700 hover:bg-slate-50 transition cursor-pointer"
               >
                 <ChevronLeft className="h-3.5 w-3.5" />
-                <span>Back</span>
+                <span><T>Back</T></span>
               </button>
             )}
           </div>
@@ -810,7 +810,7 @@ export const OnboardingWizardModal: React.FC<OnboardingWizardModalProps> = ({
                 onClick={() => setStep((s) => s + 1)}
                 className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition cursor-pointer shadow-xs"
               >
-                <span>Continue to Step {step + 1}</span>
+                <span><T>Continue to Step</T> {step + 1}</span>
                 <ArrowRight className="h-3.5 w-3.5" />
               </button>
             ) : (
@@ -823,12 +823,12 @@ export const OnboardingWizardModal: React.FC<OnboardingWizardModalProps> = ({
                 {isSaving ? (
                   <>
                     <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                    <span>Saving Assistant...</span>
+                    <span><T>Saving Assistant...</T></span>
                   </>
                 ) : (
                   <>
                     <CheckCircle2 className="h-4 w-4" />
-                    <span>Launch Assistant &amp; Go to Dashboard</span>
+                    <span><T>Launch Assistant &amp; Go to Dashboard</T></span>
                   </>
                 )}
               </button>
