@@ -221,7 +221,7 @@ export const BarbershopTemplate: React.FC<IndustryTemplateProps> = ({
             <div className={`relative rounded-3xl overflow-hidden border-2 shadow-xl ${
               isDark ? 'border-amber-900/60 shadow-amber-950/40' : 'border-amber-300/80 shadow-amber-900/10'
             }`}>
-              <img
+              <img decoding="async"
                 src={
                   config.heroImageUrl ||
                   'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&q=80&w=1200'
@@ -344,7 +344,7 @@ export const BarbershopTemplate: React.FC<IndustryTemplateProps> = ({
               {config.founderName && (
                 <div className="pt-2 flex items-center gap-3">
                   {config.founderImageUrl && (
-                    <img src={config.founderImageUrl} alt={config.founderName} className="w-12 h-12 rounded-full object-cover border border-amber-500/40" />
+                    <img decoding="async" src={config.founderImageUrl} alt={config.founderName} className="w-12 h-12 rounded-full object-cover border border-amber-500/40" />
                   )}
                   <div>
                     <div className="text-sm font-bold text-slate-900 dark:text-white">{config.founderName}</div>
@@ -355,7 +355,7 @@ export const BarbershopTemplate: React.FC<IndustryTemplateProps> = ({
             </div>
             {config.aboutImageUrl && (
               <div className="lg:col-span-5 rounded-2xl overflow-hidden border border-amber-900/30">
-                <img src={config.aboutImageUrl} alt="About Us" className="w-full h-72 object-cover" />
+                <img loading="lazy" decoding="async" src={config.aboutImageUrl} alt="About Us" className="w-full h-72 object-cover" />
               </div>
             )}
           </div>
@@ -474,7 +474,7 @@ export const BarbershopTemplate: React.FC<IndustryTemplateProps> = ({
             const imgSrc = typeof item === 'string' ? item : (item as any)?.url || '';
             return (
               <div key={idx} className="rounded-2xl overflow-hidden border border-amber-900/30 aspect-4/3 group relative">
-                <img src={imgSrc} alt="Client Transformation" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                <img loading="lazy" decoding="async" src={imgSrc} alt="Client Transformation" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
               </div>
             );
           })}

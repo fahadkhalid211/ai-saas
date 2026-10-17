@@ -296,7 +296,7 @@ export const CreativeAgencyTemplate: React.FC<IndustryTemplateProps> = ({
           }`}>
             <div className="grid grid-cols-1 lg:grid-cols-12">
               <div className="lg:col-span-7 aspect-video lg:aspect-auto relative overflow-hidden bg-neutral-950">
-                <img
+                <img decoding="async"
                   src={projects[activeProject].image}
                   alt={projects[activeProject].title}
                   className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"

@@ -198,7 +198,7 @@ export const RealEstateTemplate: React.FC<IndustryTemplateProps> = ({
 
           <div className="lg:col-span-5 relative">
             <div className="relative rounded-3xl overflow-hidden border border-slate-700/60 shadow-2xl group">
-              <img
+              <img decoding="async"
                 src={config.heroImageUrl || 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1000&q=80'}
                 alt={config.businessName || 'Luxury Estate'}
                 className="w-full h-96 sm:h-[420px] object-cover object-center group-hover:scale-102 transition duration-700"
@@ -258,7 +258,7 @@ export const RealEstateTemplate: React.FC<IndustryTemplateProps> = ({
             >
               <div>
                 <div className="relative aspect-4/3 overflow-hidden bg-slate-950">
-                  <img src={prop.image} alt={prop.title} className="w-full h-full object-cover transition-transform duration-500 hover:scale-105" />
+                  <img decoding="async" src={prop.image} alt={prop.title} className="w-full h-full object-cover transition-transform duration-500 hover:scale-105" />
                   <div className="absolute top-3 right-3 px-3 py-1 rounded-full font-mono text-xs font-bold bg-black/70 text-white backdrop-blur-md">
                     {prop.price}
                   </div>
@@ -398,7 +398,7 @@ export const RealEstateTemplate: React.FC<IndustryTemplateProps> = ({
               {config.founderName && (
                 <div className="pt-2 flex items-center gap-3">
                   {config.founderImageUrl && (
-                    <img src={config.founderImageUrl} alt={config.founderName} className="w-12 h-12 rounded-full object-cover border border-slate-700" />
+                    <img loading="lazy" decoding="async" src={config.founderImageUrl} alt={config.founderName} className="w-12 h-12 rounded-full object-cover border border-slate-700" />
                   )}
                   <div>
                     <div className="text-sm font-bold text-slate-900 dark:text-white">{config.founderName}</div>
@@ -409,7 +409,7 @@ export const RealEstateTemplate: React.FC<IndustryTemplateProps> = ({
             </div>
             {config.aboutImageUrl && (
               <div className="lg:col-span-5 rounded-2xl overflow-hidden border border-slate-800">
-                <img src={config.aboutImageUrl} alt="About Us" className="w-full h-72 object-cover" />
+                <img loading="lazy" decoding="async" src={config.aboutImageUrl} alt="About Us" className="w-full h-72 object-cover" />
               </div>
             )}
           </div>

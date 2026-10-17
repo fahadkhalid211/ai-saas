@@ -5,7 +5,7 @@ import '@/components/marketing/theme.css';
 import '@/components/marketing/sections.css';
 import { SmoothScroll } from '@/components/marketing/SmoothScroll';
 import { ScrollToTop } from '@/components/marketing/ScrollToTop';
-import { FloatingPlatformChatbot } from '@/components/chat/FloatingPlatformChatbot';
+import { LazyPlatformChatbot } from '@/components/chat/LazyPlatformChatbot';
 
 // EB Garamond for headings (as on the reference editorial sections) and Figtree for body text.
 const serif = EB_Garamond({ subsets: ['latin'], display: 'swap', variable: '--font-mk-serif' });
@@ -20,7 +20,7 @@ export default function MarketingLayout({ children }: { children: ReactNode }) {
       <SmoothScroll />
       {children}
       <ScrollToTop />
-      <FloatingPlatformChatbot />
+      <LazyPlatformChatbot />
     </div>
   );
 }

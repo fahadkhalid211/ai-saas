@@ -7,12 +7,13 @@ import { Footer } from '@/components/marketing/Closing';
 import { JsonLd } from '@/components/marketing/JsonLd';
 import { SectionHead } from '@/components/marketing/ui';
 import { SITE } from '@/components/marketing/content';
-import { sortedPosts, getClusters } from '@/lib/blog/posts';
+import { sortedCards, getClusterSummaries } from '@/lib/blog';
+import type { BlogCard } from '@/lib/blog/card';
 import { blogSchema, breadcrumbSchema, itemListSchema, webPageSchema } from '@/lib/schema';
 import { withSocial } from '@/lib/seo';
 import { getLocale, getT } from '@/lib/i18n/server';
-import { postsForHub } from '@/lib/blog/translated';
-import { BlogGlossaryHub } from '@/components/marketing/BlogGlossaryHub';
+import { postsForHub } from '@/lib/blog/translations';
+import { BlogGlossaryHub, type HubCard } from '@/components/marketing/BlogGlossaryHub';
 
 const description =
   'Guides for service businesses on AI website assistants, online booking, lead capture and knowledge bases, with a glossary of the terms.';
@@ -30,7 +31,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 /** Every article grouped by topic, as plain links. The hub above pages through articles in the browser, so without this
  *  only the first page of posts has a link a crawler can follow. */
-function groupByTopic(posts: ReturnType<typeof sortedPosts>) {
+function groupByTopic(posts: BlogCard[]) {
   const groups = new Map<string, typeof posts>();
   for (const p of posts) {
     const key = p.clusterName || 'More guides';
@@ -42,9 +43,11 @@ function groupByTopic(posts: ReturnType<typeof sortedPosts>) {
 export default async function BlogIndexPage() {
   const locale = await getLocale();
   const t = await getT();
-  const { posts, translated } = await postsForHub(sortedPosts(), locale);
-  const clusters = getClusters();
+  const { posts, translated } = await postsForHub(sortedCards(), locale);
+  const clusters = getClusterSummaries();
   const topics = groupByTopic(posts);
+  // The excerpt is the description (see polish() in lib/blog/posts.ts), so the browser gets it once.
+  const hubCards: HubCard[] = posts.map((p) => ({ slug: p.slug, title: p.title, excerpt: p.excerpt, datePublished: p.datePublished, readMinutes: p.readMinutes, tags: p.tags, clusterId: p.clusterId, clusterName: p.clusterName, primaryKeyword: p.primaryKeyword }));
 
   return (
     <>
@@ -68,7 +71,7 @@ export default async function BlogIndexPage() {
               intro="Practical guides on AI website assistants, online booking, lead capture, costs and security, written for owners of appointment-based businesses."
               align="center"
             />
-            <BlogGlossaryHub posts={posts} clusters={clusters} translated={translated} />
+            <BlogGlossaryHub posts={hubCards} clusters={clusters} translated={translated} />
 
             <nav aria-labelledby="all-articles" style={{ marginTop: '4rem' }}>
               <h2 id="all-articles" className="mk-h3" style={{ marginBottom: '1.5rem' }}>

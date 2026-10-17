@@ -49,23 +49,27 @@ import {
   getThemePalette,
   ThemePalette,
 } from '@/lib/landing/types';
-import { BarbershopTemplate } from '@/components/landing/templates/BarbershopTemplate';
-import { GymTemplate } from '@/components/landing/templates/GymTemplate';
-import { RealEstateTemplate } from '@/components/landing/templates/RealEstateTemplate';
-import { SaasTemplate } from '@/components/landing/templates/SaasTemplate';
-import { EcommerceTemplate } from '@/components/landing/templates/EcommerceTemplate';
-import { LegalTemplate } from '@/components/landing/templates/LegalTemplate';
-import { HealthcareTemplate } from '@/components/landing/templates/HealthcareTemplate';
-import { NexusAiTemplate } from '@/components/landing/templates/NexusAiTemplate';
-import { CreativeAgencyTemplate } from '@/components/landing/templates/CreativeAgencyTemplate';
-import { FintechTemplate } from '@/components/landing/templates/FintechTemplate';
-import { CustomSkeletonTemplate } from '@/components/landing/templates/CustomSkeletonTemplate';
-import { CresceloTemplate } from '@/components/landing/templates/CresceloTemplate';
-import { UniversalTemplate } from '@/components/landing/templates/UniversalTemplate';
-import { MentaraTemplate } from '@/components/landing/templates/MentaraTemplate';
 import { consumeChatStream } from '@/lib/chat/stream';
 import { MarkdownRenderer } from '@/components/markdown-renderer';
 import { ChatBookingCard } from '@/components/chat/ChatBookingCard';
+import dynamic from 'next/dynamic';
+
+// One page shows one template. Importing all 14 put about 580 KB of source into every customer's page; each is now downloaded only when that page uses it
+// (the server still renders it, so the page arrives complete).
+const BarbershopTemplate = dynamic(() => import('@/components/landing/templates/BarbershopTemplate').then((m) => m.BarbershopTemplate));
+const GymTemplate = dynamic(() => import('@/components/landing/templates/GymTemplate').then((m) => m.GymTemplate));
+const RealEstateTemplate = dynamic(() => import('@/components/landing/templates/RealEstateTemplate').then((m) => m.RealEstateTemplate));
+const SaasTemplate = dynamic(() => import('@/components/landing/templates/SaasTemplate').then((m) => m.SaasTemplate));
+const EcommerceTemplate = dynamic(() => import('@/components/landing/templates/EcommerceTemplate').then((m) => m.EcommerceTemplate));
+const LegalTemplate = dynamic(() => import('@/components/landing/templates/LegalTemplate').then((m) => m.LegalTemplate));
+const HealthcareTemplate = dynamic(() => import('@/components/landing/templates/HealthcareTemplate').then((m) => m.HealthcareTemplate));
+const NexusAiTemplate = dynamic(() => import('@/components/landing/templates/NexusAiTemplate').then((m) => m.NexusAiTemplate));
+const CreativeAgencyTemplate = dynamic(() => import('@/components/landing/templates/CreativeAgencyTemplate').then((m) => m.CreativeAgencyTemplate));
+const FintechTemplate = dynamic(() => import('@/components/landing/templates/FintechTemplate').then((m) => m.FintechTemplate));
+const CustomSkeletonTemplate = dynamic(() => import('@/components/landing/templates/CustomSkeletonTemplate').then((m) => m.CustomSkeletonTemplate));
+const CresceloTemplate = dynamic(() => import('@/components/landing/templates/CresceloTemplate').then((m) => m.CresceloTemplate));
+const UniversalTemplate = dynamic(() => import('@/components/landing/templates/UniversalTemplate').then((m) => m.UniversalTemplate));
+const MentaraTemplate = dynamic(() => import('@/components/landing/templates/MentaraTemplate').then((m) => m.MentaraTemplate));
 
 function InstagramIcon({ className = 'w-4 h-4' }: { className?: string }) {
   return (
@@ -1055,7 +1059,7 @@ export default function HostedBusinessSiteClient({
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
           <div className="flex items-center gap-3">
             {activeConfig.logoUrl ? (
-              <img
+              <img decoding="async"
                 src={activeConfig.logoUrl}
                 alt={activeConfig.businessName}
                 className="w-10 h-10 rounded-lg object-contain border border-slate-700/40"
@@ -1811,7 +1815,7 @@ export default function HostedBusinessSiteClient({
               <p className="text-xs text-slate-400 mt-0.5">Scan to open this booking page on mobile</p>
             </div>
             <div className="p-3 bg-white rounded-2xl border border-slate-200 inline-block shadow-sm">
-              <img src={qrCodeUrl} alt="Storefront QR Code" className="w-48 h-48 mx-auto" />
+              <img decoding="async" src={qrCodeUrl} alt="Storefront QR Code" className="w-48 h-48 mx-auto" />
             </div>
             <p className="text-[11px] text-slate-400 break-all">
               {currentUrl}

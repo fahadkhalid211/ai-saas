@@ -4,10 +4,14 @@ import { T, useT, useI18n } from '@/lib/i18n/context';
 import { DATE_LOCALE } from '@/lib/i18n/format';
 import React, { useState, useMemo } from 'react';
 import Link from '@/components/i18n/Link';
-import type { BlogPost, ClusterSummary } from '@/lib/blog/posts';
+import type { BlogCard } from '@/lib/blog/card';
+
+/** What the hub needs of an article. Every field here is sent to the browser for every article, so only what is shown or searched. */
+export type HubCard = Pick<BlogCard, 'slug' | 'title' | 'excerpt' | 'datePublished' | 'readMinutes' | 'tags' | 'clusterId' | 'clusterName' | 'primaryKeyword'>;
+import type { ClusterSummary } from '@/lib/blog';
 
 interface BlogGlossaryHubProps {
-  posts: BlogPost[];
+  posts: HubCard[];
   clusters: ClusterSummary[];
   /** Slugs that exist in the page's language; articles not listed are linked in English. */
   translated?: string[];
@@ -35,12 +39,11 @@ export function BlogGlossaryHub({ posts, clusters, translated }: BlogGlossaryHub
       if (!q) return true;
       const titleMatch = p.title.toLowerCase().includes(q);
       const excerptMatch = p.excerpt.toLowerCase().includes(q);
-      const descMatch = p.description.toLowerCase().includes(q);
       const tagMatch = p.tags.some((t) => t.toLowerCase().includes(q));
       const clusterMatch = p.clusterName ? p.clusterName.toLowerCase().includes(q) : false;
       const kwMatch = p.primaryKeyword ? p.primaryKeyword.toLowerCase().includes(q) : false;
 
-      return titleMatch || excerptMatch || descMatch || tagMatch || clusterMatch || kwMatch;
+      return titleMatch || excerptMatch || tagMatch || clusterMatch || kwMatch;
     });
   }, [posts, searchQuery, selectedClusterId]);
 

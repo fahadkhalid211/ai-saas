@@ -295,7 +295,7 @@ export const EcommerceTemplate: React.FC<IndustryTemplateProps> = ({
           {/* Right Hero Column: Editorial Image Collage */}
           <div className="lg:col-span-6 relative">
             <div className="relative rounded-2xl overflow-hidden aspect-4/5 shadow-2xl">
-              <img
+              <img decoding="async"
                 src={config.heroImageUrl || 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=1200&auto=format&fit=crop'}
                 alt={config.businessName || 'Editorial Capsule Wardrobe'}
                 className="w-full h-full object-cover object-center"
@@ -443,7 +443,7 @@ export const EcommerceTemplate: React.FC<IndustryTemplateProps> = ({
               >
                 {/* Product Image */}
                 <div className="relative aspect-4/5 overflow-hidden bg-neutral-100 dark:bg-neutral-800">
-                  <img
+                  <img decoding="async"
                     src={product.image}
                     alt={product.name}
                     className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
@@ -538,7 +538,7 @@ export const EcommerceTemplate: React.FC<IndustryTemplateProps> = ({
               {config.founderName && (
                 <div className="pt-2 flex items-center gap-3">
                   {config.founderImageUrl && (
-                    <img src={config.founderImageUrl} alt={config.founderName} className="w-12 h-12 rounded-full object-cover border border-amber-500/40" />
+                    <img loading="lazy" decoding="async" src={config.founderImageUrl} alt={config.founderName} className="w-12 h-12 rounded-full object-cover border border-amber-500/40" />
                   )}
                   <div>
                     <div className="text-sm font-bold text-neutral-900 dark:text-white">{config.founderName}</div>
@@ -549,7 +549,7 @@ export const EcommerceTemplate: React.FC<IndustryTemplateProps> = ({
             </div>
             {config.aboutImageUrl && (
               <div className="lg:col-span-5 rounded-2xl overflow-hidden border border-neutral-800">
-                <img src={config.aboutImageUrl} alt="About Us" className="w-full h-72 object-cover" />
+                <img loading="lazy" decoding="async" src={config.aboutImageUrl} alt="About Us" className="w-full h-72 object-cover" />
               </div>
             )}
           </div>
@@ -643,12 +643,12 @@ export const EcommerceTemplate: React.FC<IndustryTemplateProps> = ({
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
-              <img
+              <img loading="lazy" decoding="async"
                 src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=600&auto=format&fit=crop"
                 alt="Studio Craft"
                 className="rounded-2xl object-cover aspect-square shadow-md"
               />
-              <img
+              <img loading="lazy" decoding="async"
                 src="https://images.unsplash.com/photo-1489987707025-afc232f7ea0f?q=80&w=600&auto=format&fit=crop"
                 alt="Fabric Detail"
                 className="rounded-2xl object-cover aspect-square shadow-md mt-6"

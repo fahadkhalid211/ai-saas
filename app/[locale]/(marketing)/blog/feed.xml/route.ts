@@ -1,5 +1,5 @@
 import { SITE } from '@/components/marketing/content';
-import { sortedPosts } from '@/lib/blog/posts';
+import { sortedCards } from '@/lib/blog';
 
 export const dynamic = 'force-static';
 
@@ -7,7 +7,7 @@ const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replac
 
 /** RSS feed of the blog (/blog/feed.xml). */
 export function GET() {
-  const posts = sortedPosts();
+  const posts = sortedCards();
   const items = posts
     .map(
       (p) => `<item><title>${esc(p.title)}</title><link>${SITE.url}/blog/${p.slug}</link><guid isPermaLink="true">${SITE.url}/blog/${p.slug}</guid><pubDate>${new Date(p.datePublished).toUTCString()}</pubDate><description>${esc(p.description)}</description></item>`

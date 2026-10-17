@@ -218,7 +218,7 @@ print(response.reply)`,
           {/* Hero Interface Screenshot */}
           {config.heroImageUrl && (
             <div className="mt-10 max-w-4xl mx-auto rounded-2xl overflow-hidden border border-slate-800 shadow-2xl">
-              <img
+              <img decoding="async"
                 src={config.heroImageUrl}
                 alt={config.businessName || 'Platform Dashboard'}
                 className="w-full h-auto max-h-[460px] object-cover object-top"
@@ -382,7 +382,7 @@ print(response.reply)`,
               {config.founderName && (
                 <div className="pt-2 flex items-center gap-3">
                   {config.founderImageUrl && (
-                    <img src={config.founderImageUrl} alt={config.founderName} className="w-12 h-12 rounded-full object-cover border border-slate-700" />
+                    <img decoding="async" src={config.founderImageUrl} alt={config.founderName} className="w-12 h-12 rounded-full object-cover border border-slate-700" />
                   )}
                   <div>
                     <div className="text-sm font-bold text-slate-900 dark:text-white">{config.founderName}</div>
@@ -393,7 +393,7 @@ print(response.reply)`,
             </div>
             {config.aboutImageUrl && (
               <div className="lg:col-span-5 rounded-2xl overflow-hidden border border-slate-800">
-                <img src={config.aboutImageUrl} alt="About Us" className="w-full h-72 object-cover" />
+                <img loading="lazy" decoding="async" src={config.aboutImageUrl} alt="About Us" className="w-full h-72 object-cover" />
               </div>
             )}
           </div>

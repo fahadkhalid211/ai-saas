@@ -1,5 +1,6 @@
 import { NAV, PLANS, SITE } from '@/components/marketing/content';
 import type { BlogPost } from '@/lib/blog/posts';
+import type { BlogCard } from '@/lib/blog/card';
 import { LEGAL } from '@/lib/legal/config';
 import { TRIAL_DAYS } from '@/lib/billing/trial';
 
@@ -22,6 +23,23 @@ export function organizationSchema() {
     knowsAbout: ['AI website assistants', 'Appointment booking chatbots', 'Lead capture', 'Retrieval-augmented generation', 'Customer support automation'],
     contactPoint: [{ '@type': 'ContactPoint', contactType: 'customer support', url: `${SITE.url}${SITE.contactPath}`, availableLanguage: ['English'] }],
     ...(SITE.socials.length ? { sameAs: SITE.socials.map((s) => s.href) } : {}),
+  };
+}
+
+/** The 40-second film on the home page, so search engines can show it as a video result. */
+export function launchFilmSchema() {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'VideoObject',
+    name: 'Crescelo in 40 seconds',
+    description: 'A visitor asks a barbershop website a question in the evening. The Crescelo assistant answers from the shop\'s own prices and books the appointment in the chat. It also answers on WhatsApp and Telegram and sends each lead to Slack and Google Sheets.',
+    thumbnailUrl: [`${SITE.url}/media/crescelo-launch-film-poster.jpg`],
+    contentUrl: `${SITE.url}/media/crescelo-launch-film.mp4`,
+    uploadDate: '2026-10-16',
+    duration: 'PT40S',
+    width: 1920,
+    height: 1080,
+    publisher: { '@id': `${SITE.url}/#organization` },
   };
 }
 
@@ -166,7 +184,7 @@ export function blogImageUrl(slug: string) {
 }
 
 /** The blog as an entity of its own, so every article can say it belongs to it. */
-export function blogSchema(posts: BlogPost[]) {
+export function blogSchema(posts: BlogCard[]) {
   return {
     '@context': 'https://schema.org',
     '@type': 'Blog',
@@ -182,7 +200,7 @@ export function blogSchema(posts: BlogPost[]) {
 }
 
 /** An ordered list of articles for the blog index (lets search engines see the collection). */
-export function itemListSchema(posts: BlogPost[], limit = 24) {
+export function itemListSchema(posts: BlogCard[], limit = 24) {
   return {
     '@context': 'https://schema.org',
     '@type': 'ItemList',

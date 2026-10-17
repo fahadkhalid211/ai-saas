@@ -31,20 +31,32 @@ function nameOf(el: HTMLElement): string {
   ).trim();
 }
 
-function nameIcons(root: ParentNode) {
-  root.querySelectorAll<HTMLElement>('button, [role="button"], a[href]').forEach((el) => {
-    if (nameOf(el)) return;
-    const svg = el.querySelector('svg');
-    const label = iconLabel(svg?.getAttribute('class') || '');
-    if (label) el.setAttribute('aria-label', label);
-  });
-  root.querySelectorAll<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>('input:not([type="hidden"]):not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]), textarea, select').forEach((el) => {
-    if (el.getAttribute('aria-label') || el.getAttribute('aria-labelledby') || el.getAttribute('title')) return;
-    if (el.id && document.querySelector(`label[for="${CSS.escape(el.id)}"]`)) return;
-    if (el.closest('label')) return;
-    const hint = (el as HTMLInputElement).placeholder;
-    if (hint) el.setAttribute('aria-label', hint);
-  });
+const BUTTONS = 'button, [role="button"], a[href]';
+const FIELDS = 'input:not([type="hidden"]):not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]), textarea, select';
+
+function nameButton(el: HTMLElement) {
+  if (nameOf(el)) return;
+  const svg = el.querySelector('svg');
+  const label = iconLabel(svg?.getAttribute('class') || '');
+  if (label) el.setAttribute('aria-label', label);
+}
+
+function nameField(el: HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement) {
+  if (el.getAttribute('aria-label') || el.getAttribute('aria-labelledby') || el.getAttribute('title')) return;
+  if (el.id && document.querySelector(`label[for="${CSS.escape(el.id)}"]`)) return;
+  if (el.closest('label')) return;
+  const hint = (el as HTMLInputElement).placeholder;
+  if (hint) el.setAttribute('aria-label', hint);
+}
+
+/** Names the icon-only buttons and placeholder-only fields in `root`: the element itself and everything inside it. */
+function nameIcons(root: Element | Document) {
+  if (root instanceof Element) {
+    if (root.matches(BUTTONS)) nameButton(root as HTMLElement);
+    if (root.matches(FIELDS)) nameField(root as HTMLInputElement);
+  }
+  root.querySelectorAll<HTMLElement>(BUTTONS).forEach(nameButton);
+  root.querySelectorAll<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>(FIELDS).forEach(nameField);
 }
 
 const isOverlay = (el: HTMLElement) =>
@@ -136,13 +148,21 @@ export function PageAccessibility() {
       }, 30);
     };
 
+    // The first scan covers the whole page. After that only what was added since is looked at: scanning the whole document on every
+    // change cost a lot on busy pages (the hero's typing animation changes the page about 25 times a second, a long article list is large).
     let queued = false;
-    const scan = () => {
-      queued = false;
-      nameIcons(document);
-      document.querySelectorAll<HTMLElement>('.fixed.inset-0').forEach((el) => {
+    let removedAny = false;
+    const pending = new Set<Element>();
+    const overlaysIn = (root: Element | Document) => {
+      if (root instanceof Element) {
+        const o = root.closest<HTMLElement>('.fixed.inset-0');
+        if (o && isOverlay(o)) adopt(o);
+      }
+      root.querySelectorAll<HTMLElement>('.fixed.inset-0').forEach((el) => {
         if (isOverlay(el)) adopt(el);
       });
+    };
+    const releaseGone = () => {
       // a dialog that has gone: return focus to what opened it
       tracked.forEach((info, el) => {
         if (el.isConnected) return;
@@ -151,14 +171,39 @@ export function PageAccessibility() {
         if (info.opener?.isConnected && !document.querySelector('[role="dialog"][aria-modal="true"]')) info.opener.focus();
       });
     };
-    const queue = () => {
-      if (queued) return;
+    const scan = () => {
+      queued = false;
+      const added = [...pending].filter((n) => n.isConnected);
+      pending.clear();
+      if (added.length > 150) {
+        nameIcons(document);
+        overlaysIn(document);
+      } else {
+        added.forEach((n) => {
+          nameIcons(n);
+          overlaysIn(n);
+        });
+      }
+      if (removedAny) {
+        removedAny = false;
+        releaseGone();
+      }
+    };
+    const onMutations = (records: MutationRecord[]) => {
+      for (const r of records) {
+        r.addedNodes.forEach((n) => {
+          if (n.nodeType === 1) pending.add(n as Element); // text updates (typing animations, counters) are not elements
+        });
+        if (r.removedNodes.length) removedAny = true;
+      }
+      if (queued || (!pending.size && !removedAny)) return;
       queued = true;
       setTimeout(scan, 60);
     };
 
-    scan();
-    const mo = new MutationObserver(queue);
+    nameIcons(document);
+    overlaysIn(document);
+    const mo = new MutationObserver(onMutations);
     mo.observe(document.body, { childList: true, subtree: true });
     return () => {
       mo.disconnect();

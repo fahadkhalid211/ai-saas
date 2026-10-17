@@ -1,18 +1,18 @@
 import { ImageResponse } from 'next/og';
-import { BLOG_POSTS, getPost } from '@/lib/blog/posts';
+import { PUBLISHED_INDEX, getCard } from '@/lib/blog';
 
 export const alt = 'Crescelo article';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 
 export function generateStaticParams() {
-  return BLOG_POSTS.map((p) => ({ slug: p.slug }));
+  return PUBLISHED_INDEX.map((p) => ({ slug: p.slug }));
 }
 
 /** A branded share image for each article: its own title and topic, so shared links and search show something specific. */
 export default async function Image({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const post = getPost(slug);
+  const post = getCard(slug);
   const title = (post?.seoTitle || post?.title || 'Crescelo Knowledge Hub').replace(/\s*\|\s*Crescelo$/, '');
   const topic = post?.clusterName || 'Knowledge Hub';
   const size2 = title.length > 60 ? 60 : title.length > 40 ? 68 : 78;

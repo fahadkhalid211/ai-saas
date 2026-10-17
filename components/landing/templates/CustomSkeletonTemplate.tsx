@@ -177,7 +177,7 @@ export const CustomSkeletonTemplate: React.FC<IndustryTemplateProps> = ({
                   </div>
 
                   <div className="relative rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-800 aspect-video group">
-                    <img
+                    <img decoding="async"
                       src={
                         config.heroImageUrl ||
                         'https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?auto=format&fit=crop&w=800&q=80'

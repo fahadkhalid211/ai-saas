@@ -1,7 +1,7 @@
 import type { MetadataRoute } from 'next';
 import { SITE } from '@/components/marketing/content';
-import { PUBLISHED_POSTS } from '@/lib/blog/posts';
-import { blogLanguages } from '@/lib/blog/translated';
+import { PUBLISHED_INDEX } from '@/lib/blog';
+import { blogLanguages } from '@/lib/blog/translations';
 import { HREFLANG, LOCALES, isLocalizablePath, localizeHref } from '@/lib/i18n/paths';
 import type { SupportedLocale } from '@/lib/i18n/types';
 
@@ -83,7 +83,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   // A page's date should change only when the page does; stamping "now" on everything teaches Google to ignore it.
   const lastModified = new Date(SITE_UPDATED);
   const pages = PAGES.flatMap((p) => entries(p.path, LOCALES, { lastModified, changeFrequency: p.changeFrequency, priority: p.priority }));
-  const posts = PUBLISHED_POSTS.flatMap((b) =>
+  const posts = PUBLISHED_INDEX.flatMap((b) =>
     entries(`/blog/${b.slug}`, blogLanguages(b.slug), { lastModified: new Date(b.dateModified), changeFrequency: 'monthly' as const, priority: 0.6 })
   );
   return [...pages, ...posts];

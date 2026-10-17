@@ -221,7 +221,7 @@ function FloatingHeader({
         <div className="mk-header-row">
           <a href="#" className="mk-logo-link" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             {logoUrl ? (
-              <img
+              <img decoding="async"
                 src={logoUrl}
                 alt={businessName}
                 style={{ width: '32px', height: '32px', borderRadius: '8px', objectFit: 'contain' }}
@@ -416,7 +416,7 @@ function DynamicServicesSection({
               {/* Service image if provided by user */}
               {svc.imageUrl && (
                 <div style={{ height: '180px', width: '100%', overflow: 'hidden', borderBottom: '1.5px solid var(--mk-ink)' }}>
-                  <img
+                  <img decoding="async"
                     src={svc.imageUrl}
                     alt={svc.name}
                     style={{ width: '100%', height: '100%', objectFit: 'cover' }}
@@ -643,7 +643,7 @@ function DynamicFooter({
           <div className="mk-footer-brand">
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               {config.logoUrl ? (
-                <img
+                <img loading="lazy" decoding="async"
                   src={config.logoUrl}
                   alt={businessName}
                   style={{ width: '28px', height: '28px', borderRadius: '6px', objectFit: 'contain' }}
@@ -874,7 +874,7 @@ export const CresceloTemplate: React.FC<IndustryTemplateProps> = ({
                   <Sparkles size={12} />
                   <span>Featured Visual Preview</span>
                 </div>
-                <img
+                <img loading="lazy" decoding="async"
                   src={config.heroImageUrl}
                   alt={businessName}
                   style={{ width: '100%', height: 'auto', maxHeight: '480px', objectFit: 'cover', display: 'block' }}

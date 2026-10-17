@@ -210,7 +210,7 @@ export const HealthcareTemplate: React.FC<IndustryTemplateProps> = ({
           <div className="lg:col-span-5 relative">
             {config.heroImageUrl ? (
               <div className="relative rounded-3xl overflow-hidden border border-teal-800/40 shadow-2xl group">
-                <img
+                <img decoding="async"
                   src={config.heroImageUrl}
                   alt={config.businessName || 'Clinical Care'}
                   className="w-full h-96 sm:h-[440px] object-cover object-center group-hover:scale-102 transition duration-700"
@@ -357,7 +357,7 @@ export const HealthcareTemplate: React.FC<IndustryTemplateProps> = ({
               {config.founderName && (
                 <div className="pt-2 flex items-center gap-3">
                   {config.founderImageUrl && (
-                    <img src={config.founderImageUrl} alt={config.founderName} className="w-12 h-12 rounded-full object-cover border border-teal-500/40" />
+                    <img decoding="async" src={config.founderImageUrl} alt={config.founderName} className="w-12 h-12 rounded-full object-cover border border-teal-500/40" />
                   )}
                   <div>
                     <div className="text-sm font-bold text-slate-900 dark:text-white">{config.founderName}</div>
@@ -368,7 +368,7 @@ export const HealthcareTemplate: React.FC<IndustryTemplateProps> = ({
             </div>
             {config.aboutImageUrl && (
               <div className="lg:col-span-5 rounded-2xl overflow-hidden border border-teal-900/30">
-                <img src={config.aboutImageUrl} alt="About Us" className="w-full h-72 object-cover" />
+                <img loading="lazy" decoding="async" src={config.aboutImageUrl} alt="About Us" className="w-full h-72 object-cover" />
               </div>
             )}
           </div>

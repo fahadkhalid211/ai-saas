@@ -168,7 +168,7 @@ export const UniversalTemplate: React.FC<IndustryTemplateProps> = ({
           {/* Logo & Brand Name */}
           <a href="#" className="flex items-center gap-3.5 group focus:outline-none">
             {config.logoUrl && !imageErrors['brand_logo'] ? (
-              <img
+              <img decoding="async"
                 src={config.logoUrl}
                 alt={businessName}
                 onError={() => handleImageError('brand_logo')}
@@ -378,7 +378,7 @@ export const UniversalTemplate: React.FC<IndustryTemplateProps> = ({
             {/* Right Media Column / Carousel Display */}
             <div className="lg:col-span-5 relative">
               <div className="relative rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl border border-slate-200/80 dark:border-slate-800 bg-slate-900 aspect-4/3 sm:aspect-16/11 group">
-                <img
+                <img decoding="async"
                   key={activeSlide.id}
                   src={activeSlide.imageUrl}
                   alt={activeSlide.headline}
@@ -530,7 +530,7 @@ export const UniversalTemplate: React.FC<IndustryTemplateProps> = ({
                 {/* Service Image (if available) */}
                 {service.imageUrl && !imageErrors[`srv_${service.id}`] ? (
                   <div className="relative aspect-16/9 w-full overflow-hidden bg-slate-800">
-                    <img
+                    <img loading="lazy" decoding="async"
                       src={service.imageUrl}
                       alt={service.name}
                       onError={() => handleImageError(`srv_${service.id}`)}
@@ -669,7 +669,7 @@ export const UniversalTemplate: React.FC<IndustryTemplateProps> = ({
           {/* About Image */}
           <div className="lg:col-span-5 relative">
             <div className="relative rounded-3xl overflow-hidden shadow-2xl border border-slate-200 dark:border-slate-800 aspect-4/3 sm:aspect-1/1 bg-slate-900">
-              <img
+              <img loading="lazy" decoding="async"
                 src={config.aboutImageUrl || 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1000&q=80'}
                 alt={config.aboutTitle || 'About Us'}
                 onError={() => handleImageError('about_img')}

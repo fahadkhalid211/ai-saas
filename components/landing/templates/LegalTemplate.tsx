@@ -263,7 +263,7 @@ export const LegalTemplate: React.FC<IndustryTemplateProps> = ({
           <div className="lg:col-span-5 relative">
             {config.heroImageUrl ? (
               <div className="relative rounded-3xl overflow-hidden border border-slate-700/60 shadow-2xl group">
-                <img
+                <img decoding="async"
                   src={config.heroImageUrl}
                   alt={config.businessName || 'Legal Firm'}
                   className="w-full h-96 sm:h-[440px] object-cover object-center group-hover:scale-102 transition duration-700"
@@ -355,7 +355,7 @@ export const LegalTemplate: React.FC<IndustryTemplateProps> = ({
                 {config.founderName && (
                   <div className="pt-3 border-t border-slate-200 dark:border-slate-800 flex items-center gap-3">
                     {config.founderImageUrl && (
-                      <img src={config.founderImageUrl} alt={config.founderName} className="w-12 h-12 rounded-full object-cover" />
+                      <img decoding="async" src={config.founderImageUrl} alt={config.founderName} className="w-12 h-12 rounded-full object-cover" />
                     )}
                     <div>
                       <div className="text-sm font-bold text-slate-900 dark:text-white">{config.founderName}</div>
@@ -366,7 +366,7 @@ export const LegalTemplate: React.FC<IndustryTemplateProps> = ({
               </div>
               {config.aboutImageUrl && (
                 <div className="md:col-span-4">
-                  <img src={config.aboutImageUrl} alt={config.aboutTitle || 'About'} className="w-full h-64 object-cover rounded-2xl shadow-md border border-slate-700/40" />
+                  <img loading="lazy" decoding="async" src={config.aboutImageUrl} alt={config.aboutTitle || 'About'} className="w-full h-64 object-cover rounded-2xl shadow-md border border-slate-700/40" />
                 </div>
               )}
             </div>

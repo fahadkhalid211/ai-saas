@@ -19,7 +19,8 @@
     "test:load:chat": "k6 run load-tests/chat.js",
     "test:load": "npm run test:load:smoke && npm run test:load:widget && npm run test:load:poll && npm run test:load:chat",
     "db:backfill": "npx tsx scripts/backfill-relational.ts",
-    "db:backfill-chunks": "npx tsx scripts/backfill-chunks.ts"
+    "db:backfill-chunks": "npx tsx scripts/backfill-chunks.ts",
+    "blog:meta": "node scripts/blog-meta.mjs"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.31.0",

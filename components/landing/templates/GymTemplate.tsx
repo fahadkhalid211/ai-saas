@@ -214,7 +214,7 @@ export const GymTemplate: React.FC<IndustryTemplateProps> = ({
             <div className={`relative rounded-3xl overflow-hidden border shadow-2xl ${
               isDark ? 'border-slate-800 shadow-rose-950/20' : 'border-slate-200 shadow-slate-200'
             }`}>
-              <img
+              <img decoding="async"
                 src={
                   config.heroImageUrl ||
                   'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&q=80&w=1200'
@@ -361,7 +361,7 @@ export const GymTemplate: React.FC<IndustryTemplateProps> = ({
               {config.founderName && (
                 <div className="pt-2 flex items-center gap-3">
                   {config.founderImageUrl && (
-                    <img src={config.founderImageUrl} alt={config.founderName} className="w-12 h-12 rounded-full object-cover border border-slate-700" />
+                    <img decoding="async" src={config.founderImageUrl} alt={config.founderName} className="w-12 h-12 rounded-full object-cover border border-slate-700" />
                   )}
                   <div>
                     <div className="text-sm font-bold text-slate-900 dark:text-white">{config.founderName}</div>
@@ -372,7 +372,7 @@ export const GymTemplate: React.FC<IndustryTemplateProps> = ({
             </div>
             {config.aboutImageUrl && (
               <div className="lg:col-span-5 rounded-2xl overflow-hidden border border-slate-800">
-                <img src={config.aboutImageUrl} alt="About Us" className="w-full h-72 object-cover" />
+                <img loading="lazy" decoding="async" src={config.aboutImageUrl} alt="About Us" className="w-full h-72 object-cover" />
               </div>
             )}
           </div>

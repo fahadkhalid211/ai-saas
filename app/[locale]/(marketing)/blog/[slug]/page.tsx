@@ -9,7 +9,7 @@ import { JsonLd } from '@/components/marketing/JsonLd';
 import { BlogBody } from '@/components/marketing/BlogBody';
 import { ButtonLink } from '@/components/marketing/ui';
 import { SITE } from '@/components/marketing/content';
-import { BLOG_POSTS } from '@/lib/blog/posts';
+import { PUBLISHED_INDEX } from '@/lib/blog';
 import { blogLanguages, getPostInLocale, hasBlogTranslation, translatedSlugs } from '@/lib/blog/translated';
 import { getLocale } from '@/lib/i18n/server';
 import { LocaleAlternates } from '@/components/i18n/LocaleAlternates';
@@ -30,10 +30,13 @@ import { withSocial } from '@/lib/seo';
  */
 export const revalidate = 604800;
 
-/** English has every article; another language only the ones that were translated. */
+/**
+ * The written (published) articles are built at deploy time. A placeholder article, if one is ever added, stays reachable and is built
+ * the first time someone opens it, so it never slows a deploy. Another language has only the articles that were translated.
+ */
 export async function generateStaticParams({ params }: { params: { locale: string } }) {
   const { locale } = params;
-  if (!isLocaleCode(locale) || locale === 'en') return BLOG_POSTS.map((p) => ({ slug: p.slug }));
+  if (!isLocaleCode(locale) || locale === 'en') return PUBLISHED_INDEX.map((p) => ({ slug: p.slug }));
   return translatedSlugs(locale).map((slug) => ({ slug }));
 }
 

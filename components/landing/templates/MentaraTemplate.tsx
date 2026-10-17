@@ -282,7 +282,7 @@ function ProcessCardsStack({
               </p>
             </div>
             <div className="rounded-[18px] sm:rounded-[20px] overflow-hidden w-full aspect-[16/10] bg-[#1e3523] border border-[#48614b]/40">
-              <img
+              <img decoding="async"
                 src={step.image}
                 alt={step.title}
                 className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
@@ -664,13 +664,13 @@ export function MentaraTemplate({
           {/* Brand Logo */}
           <a href="#" className="flex items-center gap-3">
             {config.logoUrl ? (
-              <img
+              <img decoding="async"
                 src={config.logoUrl}
                 alt={config.businessName}
                 className="h-10 sm:h-11 w-auto object-contain"
               />
             ) : (
-              <img
+              <img loading="lazy" decoding="async"
                 src={defaultLogo}
                 alt="Mentara Logo"
                 className="h-9 sm:h-10 w-auto object-contain"
@@ -802,7 +802,7 @@ export function MentaraTemplate({
                 heroMounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
               }`}
             >
-              <img
+              <img loading="lazy" decoding="async"
                 src="https://cdn.prod.website-files.com/6825c2925e24e79e2bf4a9ed/682c0d28f4b16c2adf20cf26_5e48f2db85349ba0dcce1015cc0ffc8d_User%20Image.svg"
                 alt="Patients"
                 className="h-6 w-auto"
@@ -874,7 +874,7 @@ export function MentaraTemplate({
           >
             {/* Background Arch Graphic */}
             <div className="relative w-full max-w-[960px] aspect-[16/10] flex items-end justify-center">
-              <img
+              <img loading="lazy" decoding="async"
                 src={heroElementBg}
                 alt="Mentara Hero Element"
                 className="w-full h-auto object-contain pointer-events-none"
@@ -882,7 +882,7 @@ export function MentaraTemplate({
 
               {/* Main Subject Photo */}
               <div className="absolute inset-x-0 bottom-0 flex justify-center items-end">
-                <img
+                <img loading="lazy" decoding="async"
                   src={heroMainImage}
                   alt={config.businessName || 'Mentara'}
                   className="max-h-[380px] sm:max-h-[520px] md:max-h-[600px] w-auto object-contain drop-shadow-2xl"
@@ -949,7 +949,7 @@ export function MentaraTemplate({
             <div className="lg:col-span-5">
               <ScrollReveal direction="right" delay={100}>
                 <div className="relative rounded-[24px] overflow-hidden border border-[#48614b] shadow-2xl aspect-[4/5] bg-[#1e3523] group">
-                  <img
+                  <img loading="lazy" decoding="async"
                     src={config.aboutImageUrl || 'https://cdn.prod.website-files.com/6825c2925e24e79e2bf4a9ed/682c4043b56a8fc5bf42cacc_About%20Image.png'}
                     alt={config.aboutTitle || 'About Mentara'}
                     className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
@@ -962,7 +962,7 @@ export function MentaraTemplate({
             <div className="lg:col-span-7 space-y-6">
               <ScrollReveal direction="left" delay={150}>
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#48614b] bg-[#35503a] text-xs font-semibold uppercase tracking-wider text-[#eafe45] mb-4">
-                  <img src={starIcon} alt="" className="w-3.5 h-3.5" />
+                  <img loading="lazy" decoding="async" src={starIcon} alt="" className="w-3.5 h-3.5" />
                   <span>{config.aboutTitle ? 'About Us' : 'About Mentara'}</span>
                 </div>
 
@@ -1011,7 +1011,7 @@ export function MentaraTemplate({
                   <ScrollReveal key={idx} direction="up" delay={200 + idx * 100}>
                     <div className="p-5 rounded-[20px] border border-[#48614b] bg-[#35503a] space-y-3 hover:-translate-y-2 hover:border-[#eafe45]/60 hover:shadow-xl transition-all duration-300 h-full">
                       <div className="w-12 h-12 rounded-full bg-[#eff3df] flex items-center justify-center p-2.5">
-                        <img src={item.icon} alt="" className="w-full h-full object-contain" />
+                        <img loading="lazy" decoding="async" src={item.icon} alt="" className="w-full h-full object-contain" />
                       </div>
                       <h3 className="text-lg font-medium text-[#eff3df]">{item.title}</h3>
                       <p className="text-xs text-[#b0bca7] leading-relaxed">{item.text}</p>
@@ -1034,7 +1034,7 @@ export function MentaraTemplate({
                     key={idx}
                     className="flex items-center justify-center py-4 px-3 border border-[#48614b]/60 rounded-xl bg-[#1e3523]/40 hover:-translate-y-1 hover:border-[#eafe45]/60 hover:bg-[#2b4731] transition-all duration-300 shadow-xs"
                   >
-                    <img src={logo} alt={`Partner ${idx + 1}`} className="h-7 w-auto object-contain filter brightness-110" />
+                    <img loading="lazy" decoding="async" src={logo} alt={`Partner ${idx + 1}`} className="h-7 w-auto object-contain filter brightness-110" />
                   </div>
                 ))}
               </div>
@@ -1051,7 +1051,7 @@ export function MentaraTemplate({
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
               <div className="space-y-3">
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#48614b] bg-[#2b4731] text-xs font-semibold uppercase tracking-wider text-[#eafe45]">
-                  <img src={starIcon} alt="" className="w-3.5 h-3.5" />
+                  <img loading="lazy" decoding="async" src={starIcon} alt="" className="w-3.5 h-3.5" />
                   <span>{config.servicesTitle || 'Our Services'}</span>
                 </div>
                 <h2 className="text-3xl sm:text-5xl font-semibold text-[#eff3df]">
@@ -1073,7 +1073,7 @@ export function MentaraTemplate({
 
           {/* Wavy Divider */}
           <div className="mb-12">
-            <img src={sectionLine01} alt="" className="w-full h-auto object-contain opacity-70" />
+            <img loading="lazy" decoding="async" src={sectionLine01} alt="" className="w-full h-auto object-contain opacity-70" />
           </div>
 
           {/* Services 3x2 Grid */}
@@ -1084,7 +1084,7 @@ export function MentaraTemplate({
                   <div className="space-y-4">
                     {/* Thumbnail */}
                     <div className="rounded-[18px] overflow-hidden aspect-[16/10] bg-[#1e3523] border border-[#48614b]/40">
-                      <img
+                      <img loading="lazy" decoding="async"
                         src={service.imageUrl || 'https://cdn.prod.website-files.com/682982f2b42d35f376f2394e/6829d494c23b89be6dbf2a48_Thumbnail%20Image%2001.png'}
                         alt={service.name}
                         className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
@@ -1135,7 +1135,7 @@ export function MentaraTemplate({
           <ScrollReveal direction="up">
             <div className="flex flex-col items-center text-center space-y-3 mb-6">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#48614b] bg-[#35503a] text-xs font-semibold uppercase tracking-wider text-[#eafe45]">
-                <img src={starIcon} alt="" className="w-3.5 h-3.5" />
+                <img loading="lazy" decoding="async" src={starIcon} alt="" className="w-3.5 h-3.5" />
                 <span>Our Process</span>
               </div>
               <h2 className="text-3xl sm:text-5xl font-semibold text-[#eff3df]">
@@ -1145,7 +1145,7 @@ export function MentaraTemplate({
           </ScrollReveal>
 
           <div className="mb-12 max-w-4xl mx-auto">
-            <img src={vectorLineOne} alt="" className="w-full h-auto object-contain opacity-70" />
+            <img loading="lazy" decoding="async" src={vectorLineOne} alt="" className="w-full h-auto object-contain opacity-70" />
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 relative">
@@ -1154,7 +1154,7 @@ export function MentaraTemplate({
               <div className="sticky top-[100px] sm:top-[120px] self-start w-full">
                 <ScrollReveal direction="right" delay={100}>
                   <div className="rounded-[20px] sm:rounded-[24px] overflow-hidden border border-[#48614b] shadow-2xl aspect-[4/5] sm:max-h-[640px] bg-[#1e3523]">
-                    <img
+                    <img loading="lazy" decoding="async"
                       src="https://cdn.prod.website-files.com/6825c2925e24e79e2bf4a9ed/682c6530d9caf9f6917cbfec_Process.png"
                       alt="Process Overview"
                       className="w-full h-full object-cover"
@@ -1200,7 +1200,7 @@ export function MentaraTemplate({
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
               <div className="space-y-3">
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#48614b] bg-[#2b4731] text-xs font-semibold uppercase tracking-wider text-[#eafe45]">
-                  <img src={starIcon} alt="" className="w-3.5 h-3.5" />
+                  <img loading="lazy" decoding="async" src={starIcon} alt="" className="w-3.5 h-3.5" />
                   <span>Project Showcase</span>
                 </div>
                 <h2 className="text-3xl sm:text-5xl font-semibold text-[#eff3df]">
@@ -1233,7 +1233,7 @@ export function MentaraTemplate({
           </ScrollReveal>
 
           <div className="mb-12">
-            <img src={sectionLine01} alt="" className="w-full h-auto object-contain opacity-70" />
+            <img loading="lazy" decoding="async" src={sectionLine01} alt="" className="w-full h-auto object-contain opacity-70" />
           </div>
 
           {/* Project Carousel Cards */}
@@ -1253,7 +1253,7 @@ export function MentaraTemplate({
                   >
                     <div className="space-y-4">
                       <div className="rounded-[20px] overflow-hidden aspect-[16/10] bg-[#1e3523] border border-[#48614b]/40">
-                        <img
+                        <img loading="lazy" decoding="async"
                           src={proj.image}
                           alt={proj.title}
                           className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
@@ -1288,7 +1288,7 @@ export function MentaraTemplate({
           <ScrollReveal direction="up">
             <div className="flex flex-col items-center text-center space-y-3 mb-6">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#48614b] bg-[#35503a] text-xs font-semibold uppercase tracking-wider text-[#eafe45]">
-                <img src={starIcon} alt="" className="w-3.5 h-3.5" />
+                <img loading="lazy" decoding="async" src={starIcon} alt="" className="w-3.5 h-3.5" />
                 <span>Testimonials</span>
               </div>
               <h2 className="text-3xl sm:text-5xl font-semibold text-[#eff3df]">
@@ -1298,7 +1298,7 @@ export function MentaraTemplate({
           </ScrollReveal>
 
           <div className="mb-12 max-w-4xl mx-auto">
-            <img src={vectorLineOne} alt="" className="w-full h-auto object-contain opacity-70" />
+            <img loading="lazy" decoding="async" src={vectorLineOne} alt="" className="w-full h-auto object-contain opacity-70" />
           </div>
 
           {/* Testimonial Tabs Navigation + Active Content */}
@@ -1319,7 +1319,7 @@ export function MentaraTemplate({
                             : 'bg-[#1e3523]/60 text-[#eff3df] border-[#48614b]/60 hover:border-[#eafe45]/40 hover:bg-[#35503a]'
                         }`}
                       >
-                        <img
+                        <img loading="lazy" decoding="async"
                           src={t.avatar}
                           alt={t.name}
                           className="w-12 h-12 rounded-full object-cover border border-[#48614b]/40 shrink-0"
@@ -1344,7 +1344,7 @@ export function MentaraTemplate({
                 <div className="sm:col-span-5">
                   <ScrollReveal direction="right" delay={150}>
                     <div className="rounded-[24px] overflow-hidden aspect-[4/5] bg-[#1e3523] border border-[#48614b] shadow-xl">
-                      <img
+                      <img loading="lazy" decoding="async"
                         src={testimonials[activeTestimonialTab].featuredImage}
                         alt={testimonials[activeTestimonialTab].name}
                         className="w-full h-full object-cover"
@@ -1358,7 +1358,7 @@ export function MentaraTemplate({
                   <ScrollReveal direction="left" delay={200}>
                     <div className="bg-[#eff3df] text-[#1e3523] rounded-[24px] p-8 flex flex-col justify-between shadow-2xl h-full">
                       <div className="flex items-center justify-between pb-4 border-b border-[#1e3523]/15">
-                        <img
+                        <img loading="lazy" decoding="async"
                           src="https://cdn.prod.website-files.com/6825c2925e24e79e2bf4a9ed/682d4ce0ced67090ed189722_quote%20icon.png"
                           alt="Quote"
                           className="h-7 w-auto object-contain"
@@ -1382,7 +1382,7 @@ export function MentaraTemplate({
                             {testimonials[activeTestimonialTab].role}
                           </div>
                         </div>
-                        <img
+                        <img loading="lazy" decoding="async"
                           src={testimonials[activeTestimonialTab].logo}
                           alt="Verified"
                           className="h-6 w-auto object-contain opacity-80"
@@ -1404,7 +1404,7 @@ export function MentaraTemplate({
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
               <div className="space-y-3">
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#48614b] bg-[#2b4731] text-xs font-semibold uppercase tracking-wider text-[#eafe45]">
-                  <img src={starIcon} alt="" className="w-3.5 h-3.5" />
+                  <img loading="lazy" decoding="async" src={starIcon} alt="" className="w-3.5 h-3.5" />
                   <span>Team Member</span>
                 </div>
                 <h2 className="text-3xl sm:text-5xl font-semibold text-[#eff3df]">
@@ -1425,7 +1425,7 @@ export function MentaraTemplate({
           </ScrollReveal>
 
           <div className="mb-12">
-            <img src={sectionLine01} alt="" className="w-full h-auto object-contain opacity-70" />
+            <img loading="lazy" decoding="async" src={sectionLine01} alt="" className="w-full h-auto object-contain opacity-70" />
           </div>
 
           {/* 3D Flip Cards Grid */}
@@ -1438,7 +1438,7 @@ export function MentaraTemplate({
                   <div className="relative w-full h-full transition-transform duration-700 [transform-style:preserve-3d] group-hover:[transform:rotateY(180deg)] rounded-[24px]">
                     {/* Front Card */}
                     <div className="absolute inset-0 [backface-visibility:hidden] rounded-[24px] overflow-hidden border border-[#48614b] bg-[#35503a] shadow-xl group-hover:border-[#eafe45]/60 transition-colors">
-                      <img
+                      <img loading="lazy" decoding="async"
                         src={member.image}
                         alt={member.name}
                         className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
@@ -1453,7 +1453,7 @@ export function MentaraTemplate({
                     <div className="absolute inset-0 [backface-visibility:hidden] [transform:rotateY(180deg)] rounded-[24px] p-6 border border-[#eafe45]/60 bg-[#2b4731] flex flex-col justify-between shadow-2xl">
                       <div className="space-y-4">
                         <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-[#eafe45] bg-[#1e3523]">
-                          <img src={member.image} alt={member.name} className="w-full h-full object-cover" />
+                          <img loading="lazy" decoding="async" src={member.image} alt={member.name} className="w-full h-full object-cover" />
                         </div>
                         <div>
                           <h4 className="text-2xl font-bold text-[#eff3df]">{member.name}</h4>
@@ -1504,7 +1504,7 @@ export function MentaraTemplate({
           <ScrollReveal direction="up">
             <div className="flex flex-col items-center text-center space-y-3 mb-6">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#48614b] bg-[#35503a] text-xs font-semibold uppercase tracking-wider text-[#eafe45]">
-                <img src={starIcon} alt="" className="w-3.5 h-3.5" />
+                <img loading="lazy" decoding="async" src={starIcon} alt="" className="w-3.5 h-3.5" />
                 <span>Blog &amp; News</span>
               </div>
               <h2 className="text-3xl sm:text-5xl font-semibold text-[#eff3df]">
@@ -1514,7 +1514,7 @@ export function MentaraTemplate({
           </ScrollReveal>
 
           <div className="mb-12 max-w-4xl mx-auto">
-            <img src={vectorLineOne} alt="" className="w-full h-auto object-contain opacity-70" />
+            <img loading="lazy" decoding="async" src={vectorLineOne} alt="" className="w-full h-auto object-contain opacity-70" />
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -1525,7 +1525,7 @@ export function MentaraTemplate({
                 >
                   <div className="space-y-4">
                     <div className="rounded-[18px] overflow-hidden aspect-[16/10] bg-[#1e3523]">
-                      <img src={b.image} alt={b.title} className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105" />
+                      <img loading="lazy" decoding="async" src={b.image} alt={b.title} className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105" />
                     </div>
                     <h3 className="text-xl font-medium text-[#eff3df] group-hover:text-[#eafe45] transition-colors">{b.title}</h3>
                     <p className="text-xs text-[#b0bca7] leading-relaxed line-clamp-2">{b.desc}</p>
@@ -1739,7 +1739,7 @@ export function MentaraTemplate({
 
                   {/* 99% Mental Check-up Card */}
                   <div className="inline-flex flex-col sm:flex-row items-center gap-4 p-4 rounded-[20px] border border-[#48614b] bg-[#35503a] shadow-lg">
-                    <img
+                    <img loading="lazy" decoding="async"
                       src="https://cdn.prod.website-files.com/6825c2925e24e79e2bf4a9ed/682ac2ca5a97800b4ae09cdf_CTA%20Card%20Image.png"
                       alt=""
                       className="w-14 h-14 rounded-xl object-cover"
@@ -1763,7 +1763,7 @@ export function MentaraTemplate({
 
                 {/* Right Cutout Image */}
                 <div className="lg:col-span-5 flex justify-center lg:justify-end">
-                  <img
+                  <img loading="lazy" decoding="async"
                     src="https://cdn.prod.website-files.com/6825c2925e24e79e2bf4a9ed/682ab89babff5ba0661f06d5_CTA%20Main%20Image.png"
                     alt="Doctor"
                     className="max-h-[360px] sm:max-h-[460px] w-auto object-contain drop-shadow-2xl"
@@ -1783,7 +1783,7 @@ export function MentaraTemplate({
             <div className="lg:col-span-5 space-y-6">
               <ScrollReveal direction="right" delay={100}>
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#48614b] bg-[#35503a] text-xs font-semibold uppercase tracking-wider text-[#eafe45] mb-3">
-                  <img src={starIcon} alt="" className="w-3.5 h-3.5" />
+                  <img loading="lazy" decoding="async" src={starIcon} alt="" className="w-3.5 h-3.5" />
                   <span>FAQ’s</span>
                 </div>
 
@@ -1891,12 +1891,12 @@ export function MentaraTemplate({
           <div className="flex flex-col items-center mb-16">
             <a href="#" className="mb-8">
               {config.logoUrl ? (
-                <img src={config.logoUrl} alt={config.businessName} className="h-10 w-auto object-contain" />
+                <img loading="lazy" decoding="async" src={config.logoUrl} alt={config.businessName} className="h-10 w-auto object-contain" />
               ) : (
-                <img src={defaultFooterLogo} alt="Mentara Footer Logo" className="h-10 w-auto object-contain" />
+                <img loading="lazy" decoding="async" src={defaultFooterLogo} alt="Mentara Footer Logo" className="h-10 w-auto object-contain" />
               )}
             </a>
-            <img src={sectionLine01} alt="" className="w-full h-auto object-contain opacity-70" />
+            <img loading="lazy" decoding="async" src={sectionLine01} alt="" className="w-full h-auto object-contain opacity-70" />
           </div>
 
           {/* Footer 3-Column Layout */}
@@ -1976,7 +1976,7 @@ export function MentaraTemplate({
 
           {/* Bottom Copyright & Bottom Wavy Line */}
           <div className="border-t border-[#48614b] pt-8 text-center text-xs text-[#b0bca7] space-y-4">
-            <img src={sectionLine02} alt="" className="w-full h-auto object-contain opacity-70 mb-4" />
+            <img loading="lazy" decoding="async" src={sectionLine02} alt="" className="w-full h-auto object-contain opacity-70 mb-4" />
             <p>
               {config.footerText || '© 2026 Mentara Mental Health & Therapy. All rights reserved.'}
             </p>

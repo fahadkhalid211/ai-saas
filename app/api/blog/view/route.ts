@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { logged } from '@/lib/logging/route';
 import { enforceDistributedRateLimit } from '@/lib/security/rate-limit-redis';
-import { getPost } from '@/lib/blog/posts';
+import { hasPost } from '@/lib/blog';
 import { recordView } from '@/lib/blog/store';
 
 export const dynamic = 'force-dynamic';
@@ -15,7 +15,7 @@ async function POSTHandler(req: Request) {
   if (limited) return limited;
   const body = await req.json().catch(() => null);
   const slug = typeof body?.slug === 'string' ? body.slug.slice(0, 120) : '';
-  if (!slug || !getPost(slug)) return new NextResponse(null, { status: 204 });
+  if (!slug || !hasPost(slug)) return new NextResponse(null, { status: 204 });
   try {
     await recordView(slug);
   } catch (err) {
