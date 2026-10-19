@@ -67,6 +67,27 @@ export const PlaygroundTab: React.FC<PlaygroundTabProps> = ({
   const __t = useT();
   const hasKey = hasConnectedAiKey(activeAssistant);
 
+  // Questions to try, written from what is in this assistant's knowledge base (not from the industry template it was created with).
+  // null = still loading; [] = nothing to ask about yet (no documents).
+  const assistantId: string | undefined = activeAssistant?.id;
+  const [suggest, setSuggest] = React.useState<{ id: string; questions: string[] } | null>(null);
+  React.useEffect(() => {
+    if (!assistantId) return;
+    let cancelled = false;
+    fetch('/api/knowledge/suggestions', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ assistantId }) })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (!cancelled) setSuggest({ id: assistantId, questions: Array.isArray(d?.questions) ? d.questions : [] });
+      })
+      .catch(() => {
+        if (!cancelled) setSuggest({ id: assistantId, questions: [] });
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [assistantId]);
+  const suggestions = suggest && suggest.id === assistantId ? suggest.questions : null;
+
   const onSendAttempt = () => {
     if (!hasKey) {
       onRequireApiKey?.('AI Playground Chat');
@@ -239,18 +260,27 @@ export const PlaygroundTab: React.FC<PlaygroundTabProps> = ({
                       <div ref={chatEndRef} />
                     </div>
 
-                    {/* Starter Pills */}
-                    {activeAssistant?.starterQuestions && activeAssistant.starterQuestions.length > 0 && (
-                      <div className="px-4 py-2 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-800 flex flex-wrap gap-1.5">
-                        {activeAssistant.starterQuestions.slice(0, 3).map((q: string, i: number) => (
-                          <button
-                            key={i}
-                            onClick={() => handleSendMessage(q)}
-                            className="text-[11px] rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-2.5 py-1 text-slate-700 dark:text-slate-300 hover:border-blue-500 hover:text-blue-600 transition"
-                          >
-                            {q}
-                          </button>
-                        ))}
+                    {/* Questions to try: written from the documents in the knowledge base */}
+                    {suggestions && suggestions.length > 0 && (
+                      <div className="px-4 py-2 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-800 space-y-1.5">
+                        <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400"><T>Try asking, based on your documents</T></p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {suggestions.slice(0, 4).map((q: string, i: number) => (
+                            <button
+                              key={i}
+                              type="button"
+                              onClick={() => (hasKey ? handleSendMessage(q) : onRequireApiKey?.('AI Playground Chat'))}
+                              className="text-left text-[11px] rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-2.5 py-1 text-slate-700 dark:text-slate-200 hover:border-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition cursor-pointer"
+                            >
+                              {q}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    {suggestions && suggestions.length === 0 && (
+                      <div className="px-4 py-2 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-800 text-[11px] text-slate-500 dark:text-slate-400">
+                        <T>Add documents in My Documents and suggested questions about them will appear here.</T>
                       </div>
                     )}
 
