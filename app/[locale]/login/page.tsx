@@ -5,6 +5,7 @@ import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import '../brand.css';
 import { AdminLoginScreen } from '@/components/crm/AdminLoginScreen';
+import { RegistrationEmailNotice } from '@/components/crm/RegistrationEmailNotice';
 import { useRecaptcha } from '@/components/security/GoogleRecaptcha';
 import { readSelectedPlan, rememberSelectedPlan, trackEvent } from '@/lib/analytics/track';
 import { BILLING_PLANS } from '@/lib/billing/plans';
@@ -23,6 +24,9 @@ export default function LoginPage() {
   const [regBusinessNameInput, setRegBusinessNameInput] = useState('');
   const [regEmailInput, setRegEmailInput] = useState('');
   const [regPasswordInput, setRegPasswordInput] = useState('');
+  const [regConfirmInput, setRegConfirmInput] = useState('');
+  // set once the account exists: the popup about confirming the email address is shown before going on to the dashboard
+  const [registeredEmail, setRegisteredEmail] = useState<string | null>(null);
   const [regTemplateInput, setRegTemplateInput] = useState('general');
   const [selectedPlanNote, setSelectedPlanNote] = useState<string | null>(null);
   const [twoFactorCode, setTwoFactorCode] = useState('');
@@ -75,6 +79,10 @@ export default function LoginPage() {
       ? !regBusinessNameInput.trim() || !regEmailInput.trim() || !regPasswordInput.trim()
       : !staffEmailInput.trim() || !staffPasswordInput.trim();
     if (missing) return;
+    if (registering && regPasswordInput.trim() !== regConfirmInput.trim()) {
+      setAuthError(__t('The two passwords do not match.'));
+      return;
+    }
     setIsLoggingIn(true);
     setAuthError(null);
     try {
@@ -102,7 +110,13 @@ export default function LoginPage() {
       });
       const data = await res.json();
       if (res.ok && data.success) {
-        if (registering) trackEvent('sign_up', { method: 'email', plan: readSelectedPlan()?.plan ?? 'none' });
+        if (registering) {
+          trackEvent('sign_up', { method: 'email', plan: readSelectedPlan()?.plan ?? 'none' });
+          // the account is made and signed in: tell them about the confirmation email first, they go on from the popup
+          setRegisteredEmail(regEmailInput.trim());
+          setIsLoggingIn(false);
+          return;
+        }
         router.replace('/dashboard');
       } else {
         if (data.requiresTwoFactor) {
@@ -222,6 +236,8 @@ export default function LoginPage() {
   }
 
   return (
+    <>
+    {registeredEmail ? <RegistrationEmailNotice email={registeredEmail} onContinue={() => router.replace('/dashboard')} /> : null}
     <AdminLoginScreen
       selectedPlanNote={selectedPlanNote}
       theme={theme}
@@ -239,6 +255,8 @@ export default function LoginPage() {
       setRegEmailInput={setRegEmailInput}
       regPasswordInput={regPasswordInput}
       setRegPasswordInput={setRegPasswordInput}
+      regConfirmInput={regConfirmInput}
+      setRegConfirmInput={setRegConfirmInput}
       regTemplateInput={regTemplateInput}
       setRegTemplateInput={setRegTemplateInput}
       isLoggingIn={isLoggingIn}
@@ -250,5 +268,6 @@ export default function LoginPage() {
       handleAppleLogin={handleAppleLogin}
       handleSSOLogin={handleSSOLogin}
     />
+    </>
   );
 }

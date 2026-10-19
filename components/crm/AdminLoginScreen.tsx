@@ -12,6 +12,8 @@ import {
   Lock,
   ArrowRight,
   Globe,
+  Eye,
+  EyeOff,
 } from 'lucide-react';
 import { EMAIL_REGEX } from '@/lib/security/validation';
 import Link from 'next/link';
@@ -35,6 +37,65 @@ const AppleIcon: React.FC<{ className?: string }> = ({ className = 'h-4 w-4' }) 
   </svg>
 );
 
+/** A password box with a button that shows or hides what was typed, so a typo in a new password can be seen before it is saved. */
+function PasswordField({
+  id,
+  name,
+  autoComplete,
+  value,
+  onChange,
+  placeholder,
+  visible,
+  onToggle,
+  invalid = false,
+  describedBy,
+  autoFocus,
+}: {
+  id: string;
+  name: string;
+  autoComplete: string;
+  value: string;
+  onChange: (v: string) => void;
+  placeholder: string;
+  visible: boolean;
+  onToggle: () => void;
+  invalid?: boolean;
+  describedBy?: string;
+  autoFocus?: boolean;
+}) {
+  const __t = useT();
+  return (
+    <div className="relative">
+      <input
+        type={visible ? 'text' : 'password'}
+        value={value}
+        id={id}
+        name={name}
+        autoComplete={autoComplete}
+        aria-invalid={invalid}
+        aria-describedby={describedBy}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        autoFocus={autoFocus}
+        className={`w-full pl-3.5 pr-10 py-2.5 rounded-xl border ${
+          invalid ? 'border-rose-400 dark:border-rose-600 focus:ring-rose-500' : 'border-slate-200 dark:border-slate-700 focus:ring-blue-500'
+        } bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white text-xs placeholder:text-slate-400 focus:outline-none focus:ring-2 transition`}
+        required
+      />
+      <button
+        type="button"
+        onClick={onToggle}
+        aria-pressed={visible}
+        aria-label={visible ? __t('Hide password') : __t('Show password')}
+        title={visible ? __t('Hide password') : __t('Show password')}
+        className="absolute inset-y-0 right-0 flex w-10 items-center justify-center rounded-r-xl text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 cursor-pointer"
+      >
+        {visible ? <EyeOff className="h-4 w-4" aria-hidden="true" /> : <Eye className="h-4 w-4" aria-hidden="true" />}
+      </button>
+    </div>
+  );
+}
+
 interface AdminLoginScreenProps {
   /** The plan and billing period picked on the pricing page, shown before the account is created. */
   selectedPlanNote?: string | null;
@@ -53,6 +114,9 @@ interface AdminLoginScreenProps {
   setRegEmailInput: (val: string) => void;
   regPasswordInput: string;
   setRegPasswordInput: (val: string) => void;
+  /** The password typed a second time; it must match before the account can be created. */
+  regConfirmInput: string;
+  setRegConfirmInput: (val: string) => void;
   regTemplateInput: string;
   setRegTemplateInput: (val: string) => void;
   isLoggingIn: boolean;
@@ -83,6 +147,8 @@ export function AdminLoginScreen({
   setRegEmailInput,
   regPasswordInput,
   setRegPasswordInput,
+  regConfirmInput,
+  setRegConfirmInput,
   regTemplateInput,
   setRegTemplateInput,
   isLoggingIn,
@@ -100,9 +166,12 @@ export function AdminLoginScreen({
   const auth = dict?.auth;
   const [showSsoPrompt, setShowSsoPrompt] = useState(false);
   const [ssoInput, setSsoInput] = useState('');
+  const [showRegPassword, setShowRegPassword] = useState(false);
+  const [showStaffPassword, setShowStaffPassword] = useState(false);
 
   const isRegEmailValid = !regEmailInput || EMAIL_REGEX.test(regEmailInput.trim());
   const isRegPasswordValid = !regPasswordInput || regPasswordInput.trim().length >= 6;
+  const isRegConfirmValid = !regConfirmInput || regConfirmInput.trim() === regPasswordInput.trim();
   const isRegBusinessNameValid = !regBusinessNameInput || regBusinessNameInput.trim().length >= 2;
   const isStaffEmailValid = !staffEmailInput || EMAIL_REGEX.test(staffEmailInput.trim());
 
@@ -115,7 +184,9 @@ export function AdminLoginScreen({
       !regEmailInput.trim() ||
       !isRegEmailValid ||
       !regPasswordInput.trim() ||
-      !isRegPasswordValid
+      !isRegPasswordValid ||
+      !regConfirmInput.trim() ||
+      regConfirmInput.trim() !== regPasswordInput.trim()
     ));
 
   return (
@@ -285,26 +356,44 @@ export function AdminLoginScreen({
                 <label htmlFor="reg-password" className="text-xs font-semibold text-slate-700 dark:text-slate-300">
                   {auth?.passwordLabel || <T>{'Account Password'}</T>}
                 </label>
-                <input
-                  type="password"
-                  value={regPasswordInput}
+                <PasswordField
                   id="reg-password"
                   name="new-password"
                   autoComplete="new-password"
-                  aria-invalid={!isRegPasswordValid}
-                  aria-describedby={!isRegPasswordValid ? 'reg-password-error' : undefined}
-                  onChange={(e) => setRegPasswordInput(e.target.value)}
+                  value={regPasswordInput}
+                  onChange={setRegPasswordInput}
                   placeholder={auth?.passwordPlaceholder || 'At least 6 characters...'}
-                  className={`w-full px-3.5 py-2.5 rounded-xl border ${
-                    !isRegPasswordValid
-                      ? 'border-rose-400 dark:border-rose-600 focus:ring-rose-500'
-                      : 'border-slate-200 dark:border-slate-700 focus:ring-blue-500'
-                  } bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white text-xs placeholder:text-slate-400 focus:outline-none focus:ring-2 transition`}
-                  required
+                  visible={showRegPassword}
+                  onToggle={() => setShowRegPassword((v) => !v)}
+                  invalid={!isRegPasswordValid}
+                  describedBy={!isRegPasswordValid ? 'reg-password-error' : undefined}
                 />
                 {!isRegPasswordValid && (
                   <p id="reg-password-error" role="alert" className="text-[10.5px] text-rose-500 font-medium">
                     {auth?.passwordError || <T>{'Password must be at least 6 characters.'}</T>}
+                  </p>
+                )}
+              </div>
+
+              <div className="space-y-1">
+                <label htmlFor="reg-password-confirm" className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                  <T>Repeat password</T>
+                </label>
+                <PasswordField
+                  id="reg-password-confirm"
+                  name="confirm-password"
+                  autoComplete="new-password"
+                  value={regConfirmInput}
+                  onChange={setRegConfirmInput}
+                  placeholder={__t('Type the same password again')}
+                  visible={showRegPassword}
+                  onToggle={() => setShowRegPassword((v) => !v)}
+                  invalid={!isRegConfirmValid}
+                  describedBy={!isRegConfirmValid ? 'reg-password-confirm-error' : undefined}
+                />
+                {!isRegConfirmValid && (
+                  <p id="reg-password-confirm-error" role="alert" className="text-[10.5px] text-rose-500 font-medium">
+                    <T>The two passwords do not match.</T>
                   </p>
                 )}
               </div>
@@ -346,16 +435,15 @@ export function AdminLoginScreen({
                 <label htmlFor="staff-password" className="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center justify-between">
                   <span>{auth?.staffPasswordLabel || <T>{'Password or Access Code'}</T>}</span>
                 </label>
-                <input
+                <PasswordField
                   id="staff-password"
                   name="password"
                   autoComplete="current-password"
-                  type="password"
                   value={staffPasswordInput}
-                  onChange={(e) => setStaffPasswordInput(e.target.value)}
+                  onChange={setStaffPasswordInput}
                   placeholder={auth?.staffPasswordPlaceholder || 'Enter password or access code...'}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white text-xs placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-                  required
+                  visible={showStaffPassword}
+                  onToggle={() => setShowStaffPassword((v) => !v)}
                 />
               </div>
               {needsTwoFactor && (
