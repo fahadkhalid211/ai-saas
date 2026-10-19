@@ -19,6 +19,7 @@ import {
   BookOpen,
 } from 'lucide-react';
 import { hasConnectedAiKey } from '@/lib/ai/resolve-provider';
+import { ProviderLogo } from '@/components/crm/ProviderLogo';
 
 export interface EngineTabProps {
   formData: any;
@@ -359,7 +360,10 @@ export const EngineTab: React.FC<EngineTabProps> = ({
               >
                 <div>
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-slate-900 dark:text-white"><T>{prov.label}</T></span>
+                    <span className="flex items-center gap-2 text-xs font-bold text-slate-900 dark:text-white">
+                      <ProviderLogo id={prov.id} size={22} />
+                      <span><T>{prov.label}</T></span>
+                    </span>
                     <span
                       className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${
                         prov.tag.includes('FASTEST')
@@ -474,6 +478,7 @@ export const EngineTab: React.FC<EngineTabProps> = ({
           <div>
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 mb-1.5">
               <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
+                <ProviderLogo id={formData.provider || ''} size={20} />
                 <span>
                   {formData.provider === 'auto_free'
                     ? <T>{'Free Tier API Key (Optional)'}</T>
