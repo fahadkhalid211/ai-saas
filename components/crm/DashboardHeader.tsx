@@ -6,6 +6,7 @@ import { LanguageSwitcher } from '@/components/i18n/LanguageSwitcher';
 import { AccessibilityButton } from '@/components/a11y/AccessibilityMenu';
 import { BrandMark } from '@/components/brand/BrandMark';
 import { FloatingPlatformChatbot } from '@/components/chat/FloatingPlatformChatbot';
+import { hasConnectedAiKey } from '@/lib/ai/resolve-provider';
 import {
   Bot,
   Plus,
@@ -283,18 +284,43 @@ export function DashboardHeader({
 
       {/* Right Section: Compact Status, Deploy, Notifications & Account Dropdown */}
       <div className="flex items-center gap-2.5 sm:gap-3">
-        {/* Consolidated System Status Badge */}
-        <div
-          className="hidden md:flex items-center gap-2 text-[11px] font-medium bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/80 px-2.5 py-1.5 rounded-xl text-slate-600 dark:text-slate-300"
-          title={`Database: ${dbStatus?.connected ? (dbStatus.provider === 'postgres' ? 'PostgreSQL' : 'Supabase') : 'Ephemeral'} | Engine: ${activeAssistant?.provider?.toUpperCase() || 'GEMINI'}`}
-        >
-          <span className={`h-2 w-2 rounded-full ${dbStatus?.connected ? 'bg-emerald-500' : 'bg-amber-500 animate-pulse'}`} />
-          <span>{dbStatus?.connected ? <T>{'Live Cloud'}</T> : <T>{'Ephemeral'}</T>}</span>
-          <span className="text-slate-300 dark:text-slate-600">·</span>
-          <span className="font-semibold text-blue-600 dark:text-blue-400 font-mono uppercase">
-            {activeAssistant?.provider || <T>{'GEMINI'}</T>}
-          </span>
-        </div>
+        {/* Status badge: "Live" only while the assistant has an AI key it can answer with; otherwise "Offline", and a click goes to the AI settings */}
+        {(() => {
+          const aiConnected = hasConnectedAiKey(activeAssistant);
+          const engine = activeAssistant?.provider?.toUpperCase() || 'GROQ';
+          const database = dbStatus?.connected ? (dbStatus.provider === 'postgres' ? 'PostgreSQL' : 'Supabase') : 'Ephemeral';
+          const title = aiConnected
+            ? `${__t('AI engine connected')}: ${engine} | ${__t('Database')}: ${database}`
+            : `${__t('No AI engine is connected, so the assistant cannot answer. Add an API key in AI Settings.')} | ${__t('Database')}: ${database}`;
+          const body = (
+            <>
+              <span className={`h-2 w-2 rounded-full ${aiConnected ? 'bg-emerald-500' : 'bg-rose-500'}`} aria-hidden="true" />
+              <span className={aiConnected ? '' : 'font-semibold text-rose-700 dark:text-rose-300'}>{aiConnected ? <T>{'Live'}</T> : <T>{'Offline'}</T>}</span>
+              <span className="text-slate-300 dark:text-slate-600">·</span>
+              {aiConnected ? (
+                <span className="font-semibold text-blue-600 dark:text-blue-400 font-mono uppercase">{engine}</span>
+              ) : (
+                <span className="text-slate-500 dark:text-slate-400"><T>{'No AI connected'}</T></span>
+              )}
+            </>
+          );
+          const base = 'hidden md:flex items-center gap-2 whitespace-nowrap text-[11px] font-medium border px-2.5 py-1.5 rounded-xl';
+          return aiConnected ? (
+            <div className={`${base} bg-slate-50 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700/80 text-slate-600 dark:text-slate-300`} title={title}>
+              {body}
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setActiveTab('engine')}
+              title={title}
+              aria-label={title}
+              className={`${base} bg-rose-50 dark:bg-rose-950/30 border-rose-200 dark:border-rose-900 text-slate-600 dark:text-slate-300 hover:bg-rose-100/70 dark:hover:bg-rose-950/50 cursor-pointer transition`}
+            >
+              {body}
+            </button>
+          );
+        })()}
 
         {/* Crescelo assistant: drops the chat down from here; stays mounted so the conversation survives minimizing */}
         <FloatingPlatformChatbot variant="header" onNavigate={(tab) => setActiveTab(tab)} onBillingChanged={onBillingChanged} />
