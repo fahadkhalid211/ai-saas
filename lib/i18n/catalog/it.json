@@ -4956,5 +4956,6 @@
  "Zero-Cost Engine": "Motore a costo zero",
  "Zero-cost failover automatically tests your key with Groq, then Gemini, and falls back to local Ollama.": "Il failover a costo zero prova la tua chiave prima con Groq, poi con Gemini, e ripiega su Ollama locale.",
  "Zero-Cost Free Engine": "Motore gratuito a costo zero",
- "Zero-latency code snippets": "Snippet di codice a latenza zero"
+ "Zero-latency code snippets": "Snippet di codice a latenza zero",
+ "We are not open on that day. Please pick another date.": "Non siamo aperti quel giorno. Scegli un'altra data."
 }

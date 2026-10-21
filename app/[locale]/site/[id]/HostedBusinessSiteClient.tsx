@@ -142,6 +142,11 @@ export interface HostedBusinessSiteClientProps {
   initialAssistant?: any;
 }
 
+function hhmmToMinutes(value: string | undefined, fallback: number): number {
+  const m = (value || '').match(/^(d{1,2}):(d{2})/);
+  return m ? Number(m[1]) * 60 + Number(m[2]) : fallback;
+}
+
 export default function HostedBusinessSiteClient({
   identifier,
   initialConfig,
@@ -533,16 +538,24 @@ export default function HostedBusinessSiteClient({
   }, [manageToken]);
 
   // Generate available time slots based on service duration
+  // The business's own opening hours when it has set them (the server refuses times outside them); 09:00 to 19:00 otherwise.
+  const openMinutes = hhmmToMinutes(assistantData?.bookingStartHour, 9 * 60);
+  const closeMinutes = hhmmToMinutes(assistantData?.bookingEndHour, 19 * 60);
   const availableSlots = useMemo(() => {
     const slots: string[] = [];
-    const startHour = 9;
-    const endHour = 19;
-    for (let h = startHour; h < endHour; h++) {
-      slots.push(`${h.toString().padStart(2, '0')}:00`);
-      slots.push(`${h.toString().padStart(2, '0')}:40`);
+    for (let h = Math.floor(openMinutes / 60); h * 60 < closeMinutes; h++) {
+      for (const m of [0, 40]) {
+        const at = h * 60 + m;
+        if (at >= openMinutes && at < closeMinutes) slots.push(`${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`);
+      }
     }
-    return slots;
-  }, []);
+    return slots.length ? slots : ['10:00'];
+  }, [openMinutes, closeMinutes]);
+  // keep the chosen time inside the list when the list changes
+  useEffect(() => {
+    setBookingTime((current) => (availableSlots.includes(current) ? current : availableSlots[0]));
+  }, [availableSlots]);
+  const submittingBookingRef = useRef(false);
 
   // Check live availability for selected booking date to avoid double bookings
   useEffect(() => {
@@ -584,6 +597,16 @@ export default function HostedBusinessSiteClient({
 
   const handleBookingSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    // set at once, unlike bookingSubmitting, which only reaches the button after a render: two quick clicks must send one booking
+    if (submittingBookingRef.current) return;
+    const openDays: string[] | undefined = assistantData?.bookingAvailableDays;
+    if (openDays?.length && bookingDate) {
+      const weekday = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][new Date(`${bookingDate}T00:00:00Z`).getUTCDay()];
+      if (!openDays.includes(weekday)) {
+        setBookingError('We are not open on that day. Please pick another date.');
+        return;
+      }
+    }
 
     const appointmentPayload = {
       assistantId: assistantId || 'demo-assistant',
@@ -609,6 +632,7 @@ export default function HostedBusinessSiteClient({
       return;
     }
 
+    submittingBookingRef.current = true;
     setBookingSubmitting(true);
     setBookingError(null);
 
@@ -641,6 +665,7 @@ export default function HostedBusinessSiteClient({
     } catch (err: any) {
       setBookingError(err.message || 'Booking failed');
     } finally {
+      submittingBookingRef.current = false;
       setBookingSubmitting(false);
     }
   };
@@ -1733,6 +1758,10 @@ export default function HostedBusinessSiteClient({
                                   assistantId={activeConfig.assistantId || assistantId}
                                   businessName={activeConfig.businessName || 'Our Business'}
                                   conversationId={conversationId || undefined}
+                                  availableDays={assistantData?.bookingAvailableDays}
+                                  startHour={assistantData?.bookingStartHour}
+                                  endHour={assistantData?.bookingEndHour}
+                                  slotMinutes={assistantData?.bookingSlotDuration}
                                 />
                               )}
                             </>

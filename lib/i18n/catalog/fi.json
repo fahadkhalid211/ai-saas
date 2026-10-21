@@ -4960,5 +4960,6 @@
  "Zero-Cost Engine": "Nollakustannusmoottori",
  "Zero-cost failover automatically tests your key with Groq, then Gemini, and falls back to local Ollama.": "Nollakustannuksen varavaihto testaa avaimesi ensin Groqilla, sitten Geminillä ja siirtyy lopuksi paikalliseen Ollamaan.",
  "Zero-Cost Free Engine": "Ilmainen nollakustannusmoottori",
- "Zero-latency code snippets": "Koodinpätkät ilman viivettä"
+ "Zero-latency code snippets": "Koodinpätkät ilman viivettä",
+ "We are not open on that day. Please pick another date.": "Emme ole auki sinä päivänä. Valitse toinen päivämäärä."
 }

@@ -483,8 +483,8 @@ async function queryYouTubeInnerTube(videoId: string): Promise<YouTubeInnerTubeD
   const clients = [
     {
       name: 'ANDROID',
-      context: { client: { clientName: 'ANDROID', clientVersion: '20.10.38' } },
-      userAgent: 'com.google.android.youtube/20.10.38 (Linux; U; Android 14)',
+      context: { client: { clientName: 'ANDROID', clientVersion: '20.10.38', androidSdkVersion: 34, hl: 'en' } },
+      userAgent: 'com.google.android.youtube/20.10.38 (Linux; U; Android 14) gzip',
     },
     {
       name: 'WEB',
@@ -494,8 +494,17 @@ async function queryYouTubeInnerTube(videoId: string): Promise<YouTubeInnerTubeD
     },
     {
       name: 'IOS',
-      context: { client: { clientName: 'IOS', clientVersion: '19.45.4', deviceModel: 'iPhone16,2' } },
-      userAgent: 'com.google.ios.youtube/19.45.4 (iPhone16,2; U; CPU iOS 18_1 like Mac OS X)',
+      context: {
+        client: {
+          clientName: 'IOS',
+          clientVersion: '20.10.4',
+          deviceModel: 'iPhone16,2',
+          osName: 'iPhone',
+          osVersion: '18.3.2.22D82',
+          hl: 'en',
+        },
+      },
+      userAgent: 'com.google.ios.youtube/20.10.4 (iPhone16,2; U; CPU iOS 18_3_2 like Mac OS X;)',
     },
   ];
 
@@ -511,7 +520,7 @@ async function queryYouTubeInnerTube(videoId: string): Promise<YouTubeInnerTubeD
           () =>
             httpsPostJson(
               `https://${host}/youtubei/v1/player?prettyPrint=false`,
-              { context: client.context, videoId },
+              { context: client.context, videoId, contentCheckOk: true, racyCheckOk: true },
               client.userAgent,
               15000
             ),
@@ -537,9 +546,15 @@ async function queryYouTubeInnerTube(videoId: string): Promise<YouTubeInnerTubeD
         const adaptiveFormats = data?.streamingData?.adaptiveFormats || [];
         const formats = data?.streamingData?.formats || [];
         const allFormats = [...adaptiveFormats, ...formats];
-        const audioFormat = allFormats.find(
-          (f: any) => (f.mimeType?.startsWith('audio/') || f.audioQuality) && f.url
-        );
+        // Without a PO token YouTube only serves the first ~1 MB of a stream, so take the smallest-bitrate mp4
+        // audio: the same megabyte then covers the longest stretch of speech.
+        const audioFormat = allFormats
+          .filter((f: any) => (f.mimeType?.startsWith('audio/') || f.audioQuality) && f.url)
+          .sort((a: any, b: any) => {
+            const aMp4 = a.mimeType?.startsWith('audio/mp4') ? 0 : 1;
+            const bMp4 = b.mimeType?.startsWith('audio/mp4') ? 0 : 1;
+            return aMp4 - bMp4 || (a.bitrate || 0) - (b.bitrate || 0);
+          })[0];
         if (audioFormat?.url && !bestAudioStreamUrl) {
           bestAudioStreamUrl = audioFormat.url;
         }
@@ -673,10 +688,11 @@ export async function extractFromYouTube(
     const watchData = watchPageData.status === 'fulfilled' ? watchPageData.value : {};
     const itData = innerTubeData.status === 'fulfilled' ? innerTubeData.value : {};
 
-    const mergedCaptionTracks = (
-      (watchData.captionTracks && watchData.captionTracks.length > 0)
-        ? watchData.captionTracks
-        : (itData.captionTracks || [])
+    // Caption URLs from the watch page now carry `exp=xpe` and come back as an empty 200 without a PO token,
+    // while the ones the InnerTube (Android) client hands out still download. Try those first, then the
+    // watch page's as a backup, and let the loop below keep going until one actually contains text.
+    const mergedCaptionTracks = [...(itData.captionTracks || []), ...(watchData.captionTracks || [])].filter(
+      (track, i, all) => all.findIndex((o) => o.languageCode === track.languageCode && o.kind === track.kind && o.baseUrl === track.baseUrl) === i
     );
     const mergedTitle = watchData.title || itData.title;
     const mergedAuthor = watchData.author || itData.author;
@@ -770,19 +786,35 @@ export async function extractFromYouTube(
   if (rawTranscript.length === 0 && innerTubeDataForStrategies.audioStreamUrl) {
     console.log(`[URLExtractor] Closed captions not found on video. Streaming audio directly for AI transcription...`);
     try {
-      const audioRes = await queryHttpsWithRetry(
-        () =>
-          httpsGetBuffer(
-            innerTubeDataForStrategies.audioStreamUrl!,
-            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36',
-            'bytes=0-15728640',
-            60000
-          ),
-        3,
-        1000
-      );
-
-      const audioBuffer = audioRes.data;
+      // googlevideo answers a large Range request with an empty 403, so pull the stream in small pieces
+      // and keep whatever arrives before YouTube stops serving it (about the first megabyte).
+      const pieces: Buffer[] = [];
+      let fetched = 0;
+      const PIECE = 256 * 1024;
+      const MAX_AUDIO_BYTES = 15 * 1024 * 1024;
+      let stopReason = '';
+      while (fetched < MAX_AUDIO_BYTES) {
+        const res = await queryHttpsWithRetry(
+          () =>
+            httpsGetBuffer(
+              innerTubeDataForStrategies.audioStreamUrl!,
+              'com.google.android.youtube/20.10.38 (Linux; U; Android 14) gzip',
+              `bytes=${fetched}-${fetched + PIECE - 1}`,
+              30000
+            ),
+          2,
+          500
+        );
+        if (res.statusCode < 200 || res.statusCode >= 300 || res.data.length === 0) {
+          stopReason = `YouTube stopped serving the audio (HTTP ${res.statusCode}) after ${Math.round(fetched / 1024)} KB`;
+          break;
+        }
+        pieces.push(res.data);
+        fetched += res.data.length;
+        if (res.data.length < PIECE) break; // reached the end of the stream
+      }
+      const audioBuffer = Buffer.concat(pieces);
+      if (audioBuffer.length <= 1000) throw new Error(stopReason || 'YouTube did not return any audio for this video');
 
       if (audioBuffer.length > 1000) {
         const filename = `${finalTitle.replace(/[^a-z0-9_-]/gi, '_').slice(0, 50)}.mp4`;

@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { NextResponse } from 'next/server';
 import { deferAfterResponse } from '@/lib/runtime/defer';
 import {
@@ -20,6 +21,9 @@ import { verifyRecaptchaToken } from '@/lib/security/recaptcha';
 import { logged } from '@/lib/logging/route';
 import { checkSecondFactor } from '@/lib/security/two-factor';
 import { sendVerificationEmail } from '@/lib/security/email-verification-mail';
+
+/** Sign-ups being made right now (and for a few seconds after), keyed by a hash of the whole request. See the register branch. */
+const registrationsInFlight = new Map<string, Promise<{ userId: string; workspaceId: string; cookieHeader: string; body: Record<string, unknown> }>>();
 
 /**
  * Second step of sign-in. Once the password is right, an account with two-factor authentication turned on must also present a
@@ -193,60 +197,69 @@ async function POSTHandler(req: Request) {
         );
       }
 
-      const tenantResult = await Database.createTenantWorkspace({
-        businessName,
-        ownerEmail: email,
-        password: password || undefined,
-        industryTemplateSlug,
-        emailVerified: false,
-      });
+      // Clicking "Create account" more than once, or a browser retrying, sends the same sign-up several times within a moment.
+      // Identical copies (same address, password, business name and template) share one result instead of each making a workspace.
+      const dedupeKey = createHash('sha256').update([email, password || '', businessName, industryTemplateSlug || ''].join('\n')).digest('hex');
+      let registration = registrationsInFlight.get(dedupeKey);
+      if (!registration) {
+        registration = (async () => {
+          const tenantResult = await Database.createTenantWorkspace({
+            businessName,
+            ownerEmail: email,
+            password: password || undefined,
+            industryTemplateSlug,
+            emailVerified: false,
+          });
 
-      // Ask the person to confirm the address. This happens after the response so a slow mail service never slows the sign-up.
-      deferAfterResponse(() => sendVerificationEmail({ id: tenantResult.owner.id, email, name: tenantResult.owner.name }, req.url));
+          // Ask the person to confirm the address. This happens after the response so a slow mail service never slows the sign-up.
+          deferAfterResponse(() => sendVerificationEmail({ id: tenantResult.owner.id, email, name: tenantResult.owner.name }, req.url));
 
-      const sessionToken = generateSessionToken(
-        'owner',
-        tenantResult.owner.id,
-        tenantResult.workspace.id
-      );
-      const cookieHeader = createSessionCookieHeader(sessionToken);
-      updateLogContext({ userId: tenantResult.owner.id, workspaceId: tenantResult.workspace.id, role: 'owner' });
+          const sessionToken = generateSessionToken('owner', tenantResult.owner.id, tenantResult.workspace.id);
 
-      await Database.addAuditLog({
-        actor: {
-          id: tenantResult.owner.id,
-          name: tenantResult.owner.name,
-          email,
-          username: email.split('@')[0],
-          ip,
-        },
-        action: 'auth.tenant_registered',
-        targetType: 'workspace',
-        targetId: tenantResult.workspace.id,
-        details: { businessName, email, template: industryTemplateSlug },
-      });
+          await Database.addAuditLog({
+            actor: {
+              id: tenantResult.owner.id,
+              name: tenantResult.owner.name,
+              email,
+              username: email.split('@')[0],
+              ip,
+            },
+            action: 'auth.tenant_registered',
+            targetType: 'workspace',
+            targetId: tenantResult.workspace.id,
+            details: { businessName, email, template: industryTemplateSlug },
+          });
 
-      return NextResponse.json(
-        {
-          success: true,
-          message: `Welcome to Crescelo! Workspace "${businessName}" created successfully.`,
-          isStaff: false,
-          isOwner: true,
-          member: sanitizeTeamMember(tenantResult.owner),
-          workspace: tenantResult.workspace,
-          assistant: tenantResult.assistant,
-          token: sessionToken,
-          // Only present when the caller didn't supply their own password;
-          // show it once so it can be recorded — it is never stored in the clear.
-          temporaryPassword: tenantResult.temporaryPassword,
-        },
-        {
-          status: 201,
-          headers: {
-            'Set-Cookie': cookieHeader,
-          },
-        }
-      );
+          return {
+            userId: tenantResult.owner.id,
+            workspaceId: tenantResult.workspace.id,
+            cookieHeader: createSessionCookieHeader(sessionToken),
+            body: {
+              success: true,
+              message: `Welcome to Crescelo! Workspace "${businessName}" created successfully.`,
+              isStaff: false,
+              isOwner: true,
+              member: sanitizeTeamMember(tenantResult.owner),
+              workspace: tenantResult.workspace,
+              assistant: tenantResult.assistant,
+              token: sessionToken,
+              // Only present when the caller didn't supply their own password;
+              // show it once so it can be recorded — it is never stored in the clear.
+              temporaryPassword: tenantResult.temporaryPassword,
+            },
+          };
+        })();
+        registrationsInFlight.set(dedupeKey, registration);
+        // keep the result for a few seconds so a click that lands just after the first one finished is merged too
+        registration.then(
+          () => setTimeout(() => registrationsInFlight.delete(dedupeKey), 15_000).unref?.(),
+          () => registrationsInFlight.delete(dedupeKey)
+        );
+      }
+
+      const created = await registration;
+      updateLogContext({ userId: created.userId, workspaceId: created.workspaceId, role: 'owner' });
+      return NextResponse.json(created.body, { status: 201, headers: { 'Set-Cookie': created.cookieHeader } });
     }
 
     // 2. Staff / Tenant Credentials Login

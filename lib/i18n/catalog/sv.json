@@ -4959,5 +4959,6 @@
  "Zero-Cost Engine": "Motor utan kostnad",
  "Zero-cost failover automatically tests your key with Groq, then Gemini, and falls back to local Ollama.": "Automatisk reserv utan kostnad testar din nyckel först med Groq, sedan Gemini, och faller tillbaka på lokala Ollama.",
  "Zero-Cost Free Engine": "Gratis motor utan kostnad",
- "Zero-latency code snippets": "Kodavsnitt utan fördröjning"
+ "Zero-latency code snippets": "Kodavsnitt utan fördröjning",
+ "We are not open on that day. Please pick another date.": "Vi har inte öppet den dagen. Välj ett annat datum."
 }

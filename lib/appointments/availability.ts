@@ -196,3 +196,24 @@ export function isOpenNow(config: AvailabilityConfig, now: Date = new Date()): b
   if (open === null || close === null) return false;
   return t.minutes >= open && t.minutes < close;
 }
+
+/**
+ * Why a requested booking falls outside the business's configured opening days or hours, or null when it is fine.
+ * Only what the owner actually configured is enforced (an assistant that never set its hours keeps accepting any time, as before),
+ * and a time written in a format this cannot read is let through rather than refused.
+ */
+export function openingHoursProblem(config: AvailabilityConfig, date: string, timeSlot: string): string | null {
+  if (!isIsoDate(date)) return null;
+  const days = config.bookingAvailableDays;
+  if (days && days.length && !days.includes(weekdayOf(date))) {
+    return `We are not open on ${weekdayOf(date)}s. Please pick another day.`;
+  }
+  const start = parseTimeToMinutes(timeSlot);
+  if (start === null) return null;
+  const open = config.bookingStartHour ? parseTimeToMinutes(config.bookingStartHour) : null;
+  const close = config.bookingEndHour ? parseTimeToMinutes(config.bookingEndHour) : null;
+  if ((open !== null && start < open) || (close !== null && start >= close)) {
+    return `That time is outside our opening hours (${config.bookingStartHour || '00:00'} to ${config.bookingEndHour || '24:00'}). Please pick another time.`;
+  }
+  return null;
+}

@@ -7,6 +7,7 @@ import { validateAppointmentPayload } from '@/lib/security/validation';
 import { acquireBookingLock } from '@/lib/appointments/booking-lock';
 import { resolveAttribution } from '@/lib/analytics/attribution';
 import { createAppointment } from '@/lib/appointments/create';
+import { openingHoursProblem } from '@/lib/appointments/availability';
 import { logged } from '@/lib/logging/route';
 
 export async function OPTIONS() {
@@ -82,7 +83,10 @@ async function GETHandler(req: Request) {
 
 async function POSTHandler(req: Request) {
   try {
-    const body = await req.json();
+    const body = await req.json().catch(() => null);
+    if (body === null || typeof body !== 'object') {
+      return NextResponse.json({ error: 'Request body must be valid JSON.' }, { status: 400, headers: { 'Access-Control-Allow-Origin': '*' } });
+    }
 
     // Client self-service cancellation via manageToken
     if (body.action === 'client_cancel') {
@@ -256,15 +260,18 @@ async function POSTHandler(req: Request) {
         assistant = await Database.getAssistantById(page.assistantId);
       }
     }
-    if (!assistant) {
-      assistant = await Database.getAssistantById('demo-assistant');
-    }
-
+    // An id that matches no assistant is refused. Falling back to the demo assistant put strangers' bookings into its calendar.
     if (!assistant) {
       return NextResponse.json(
         { error: 'Assistant not found' },
         { status: 404, headers: { 'Access-Control-Allow-Origin': '*' } }
       );
+    }
+
+    // The owner's opening days and hours apply to the public booking forms as well, not only to the slots the forms offer.
+    const closed = openingHoursProblem(assistant, date, timeSlot);
+    if (closed) {
+      return NextResponse.json({ error: closed }, { status: 400, headers: { 'Access-Control-Allow-Origin': '*' } });
     }
 
     // Attribution (verified conversation + source) for pilot measurement. Lives on the
@@ -284,9 +291,9 @@ async function POSTHandler(req: Request) {
     const appointment = result.appointment;
 
     return NextResponse.json(
-      { success: true, appointment },
+      { success: true, appointment, ...(result.duplicate ? { alreadyBooked: true } : {}) },
       {
-        status: 201,
+        status: result.duplicate ? 200 : 201,
         headers: { 'Access-Control-Allow-Origin': '*' },
       }
     );

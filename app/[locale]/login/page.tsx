@@ -1,7 +1,7 @@
 'use client';
 
 import { T, useT } from '@/lib/i18n/context';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import '../brand.css';
 import { AdminLoginScreen } from '@/components/crm/AdminLoginScreen';
@@ -19,6 +19,8 @@ export default function LoginPage() {
   const [authLoginMode, setAuthLoginMode] = useState<'staff' | 'register'>('staff');
   const [authError, setAuthError] = useState<string | null>(null);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
+  // set at once, unlike the state above, which only reaches the button after a render: stops several clicks in one moment
+  const submittingRef = useRef(false);
   const [staffEmailInput, setStaffEmailInput] = useState('');
   const [staffPasswordInput, setStaffPasswordInput] = useState('');
   const [regBusinessNameInput, setRegBusinessNameInput] = useState('');
@@ -83,6 +85,8 @@ export default function LoginPage() {
       setAuthError(__t('The two passwords do not match.'));
       return;
     }
+    if (submittingRef.current) return;
+    submittingRef.current = true;
     setIsLoggingIn(true);
     setAuthError(null);
     try {
@@ -129,6 +133,8 @@ export default function LoginPage() {
     } catch (err: any) {
       setAuthError(err?.message || 'Authentication failed');
       setIsLoggingIn(false);
+    } finally {
+      submittingRef.current = false;
     }
   };
 

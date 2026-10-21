@@ -601,6 +601,10 @@ export default function EmbedChatPage({ params }: EmbedPageProps) {
                         primaryColor={primaryColor}
                         businessName={config?.name || 'Our Team'}
                         conversationId={conversationId || undefined}
+                        availableDays={config?.bookingAvailableDays}
+                        startHour={config?.bookingStartHour}
+                        endHour={config?.bookingEndHour}
+                        slotMinutes={config?.bookingSlotDuration}
                       />
                     </div>
                   )}
@@ -653,6 +657,10 @@ export default function EmbedChatPage({ params }: EmbedPageProps) {
                               primaryColor={primaryColor}
                               businessName={config?.name || 'Our Team'}
                               conversationId={conversationId || undefined}
+                              availableDays={config?.bookingAvailableDays}
+                              startHour={config?.bookingStartHour}
+                              endHour={config?.bookingEndHour}
+                              slotMinutes={config?.bookingSlotDuration}
                             />
                           )}
                         </>

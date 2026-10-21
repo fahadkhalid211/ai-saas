@@ -1,7 +1,7 @@
 'use client';
 
 import { T, useT } from '@/lib/i18n/context';
-import React, { useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import { Calendar, Clock, Check, RefreshCw, ExternalLink } from 'lucide-react';
 import { generateGoogleCalendarUrl } from '@/lib/calendar/ical';
 
@@ -14,6 +14,42 @@ interface ChatBookingCardProps {
   conversationId?: string;
   /** 'playground' marks test bookings so they can be excluded from pilot metrics. */
   source?: 'chat' | 'playground';
+  /** The business's opening days, hours and slot length. Without them the card offers 09:00 to 17:00 in half hours. */
+  availableDays?: string[];
+  startHour?: string;
+  endHour?: string;
+  slotMinutes?: number;
+}
+
+const WEEKDAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+const DEFAULT_SLOTS = [
+  '09:00 AM - 09:30 AM',
+  '09:30 AM - 10:00 AM',
+  '10:00 AM - 10:30 AM',
+  '10:30 AM - 11:00 AM',
+  '11:00 AM - 11:30 AM',
+  '11:30 AM - 12:00 PM',
+  '01:00 PM - 01:30 PM',
+  '01:30 PM - 02:00 PM',
+  '02:00 PM - 02:30 PM',
+  '02:30 PM - 03:00 PM',
+  '03:00 PM - 03:30 PM',
+  '03:30 PM - 04:00 PM',
+  '04:00 PM - 04:30 PM',
+  '04:30 PM - 05:00 PM',
+];
+
+function toMinutes(hhmm: string | undefined, fallback: number): number {
+  const m = (hhmm || '').match(/^(\d{1,2}):(\d{2})/);
+  return m ? Number(m[1]) * 60 + Number(m[2]) : fallback;
+}
+
+function label(total: number): string {
+  const h24 = Math.floor(total / 60) % 24;
+  const m = total % 60;
+  const h12 = h24 % 12 === 0 ? 12 : h24 % 12;
+  return `${String(h12).padStart(2, '0')}:${String(m).padStart(2, '0')} ${h24 >= 12 ? 'PM' : 'AM'}`;
 }
 
 export function ChatBookingCard({
@@ -23,6 +59,10 @@ export function ChatBookingCard({
   onSuccess,
   conversationId,
   source = 'chat',
+  availableDays,
+  startHour,
+  endHour,
+  slotMinutes,
 }: ChatBookingCardProps) {
   const __t = useT();
   const tomorrow = new Date(Date.now() + 86400000).toISOString().slice(0, 10);
@@ -36,30 +76,37 @@ export function ChatBookingCard({
   const [error, setError] = useState<string | null>(null);
   const [successData, setSuccessData] = useState<any | null>(null);
 
-  const defaultSlots = [
-    '09:00 AM - 09:30 AM',
-    '09:30 AM - 10:00 AM',
-    '10:00 AM - 10:30 AM',
-    '10:30 AM - 11:00 AM',
-    '11:00 AM - 11:30 AM',
-    '11:30 AM - 12:00 PM',
-    '01:00 PM - 01:30 PM',
-    '01:30 PM - 02:00 PM',
-    '02:00 PM - 02:30 PM',
-    '02:30 PM - 03:00 PM',
-    '03:00 PM - 03:30 PM',
-    '03:30 PM - 04:00 PM',
-    '04:00 PM - 04:30 PM',
-    '04:30 PM - 05:00 PM',
-  ];
+  // set at once, unlike isSubmitting, which only reaches the button after a render: stops two quick clicks sending two bookings
+  const submittingRef = useRef(false);
+  const duration = slotMinutes && slotMinutes > 0 ? slotMinutes : 30;
+
+  const defaultSlots = useMemo(() => {
+    if (!startHour && !endHour) return DEFAULT_SLOTS;
+    const open = toMinutes(startHour, 540);
+    const close = toMinutes(endHour, 1020);
+    const out: string[] = [];
+    for (let t = open; t + duration <= close; t += duration) out.push(`${label(t)} - ${label(t + duration)}`);
+    return out.length ? out : DEFAULT_SLOTS;
+  }, [startHour, endHour, duration]);
+
+  const chosenSlot = defaultSlots.includes(timeSlot) ? timeSlot : defaultSlots[0];
+  const closedOnDate = Boolean(
+    availableDays?.length && date && !availableDays.includes(WEEKDAYS[new Date(`${date}T00:00:00Z`).getUTCDay()]),
+  );
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (submittingRef.current) return;
     if (!name.trim() || !email.trim()) {
       setError('Please provide your name and email address.');
       return;
     }
+    if (closedOnDate) {
+      setError('We are not open on that day. Please pick another date.');
+      return;
+    }
 
+    submittingRef.current = true;
     setIsSubmitting(true);
     setError(null);
 
@@ -73,8 +120,8 @@ export function ChatBookingCard({
           email: email.trim(),
           phone: phone.trim(),
           date,
-          timeSlot,
-          durationMinutes: 30,
+          timeSlot: chosenSlot,
+          durationMinutes: duration,
           notes: notes.trim(),
           conversationId,
           source,
@@ -89,7 +136,7 @@ export function ChatBookingCard({
       const confirmedAppt = data.appointment || {
         name: name.trim(),
         date,
-        timeSlot,
+        timeSlot: chosenSlot,
         email: email.trim(),
       };
       setSuccessData(confirmedAppt);
@@ -99,6 +146,7 @@ export function ChatBookingCard({
     } catch (err: any) {
       setError(err?.message || 'Failed to submit booking. Please try again.');
     } finally {
+      submittingRef.current = false;
       setIsSubmitting(false);
     }
   };
@@ -110,8 +158,8 @@ export function ChatBookingCard({
         email: successData.email || email,
         phone: successData.phone || phone,
         date: successData.date || date,
-        timeSlot: successData.timeSlot || timeSlot,
-        durationMinutes: 30,
+        timeSlot: successData.timeSlot || chosenSlot,
+        durationMinutes: duration,
         notes: notes.trim(),
       },
       businessName
@@ -127,7 +175,7 @@ export function ChatBookingCard({
         </div>
         <p className="text-slate-700 dark:text-slate-300">
           <T>Thank you,</T> <strong>{successData.name || name}</strong><T>! We have reserved your appointment for</T>{' '}
-          <strong>{successData.date || date}</strong> <T>at</T> <strong>{successData.timeSlot || timeSlot}</strong>.
+          <strong>{successData.date || date}</strong> <T>at</T> <strong>{successData.timeSlot || chosenSlot}</strong>.
         </p>
         <div className="flex items-center gap-2 pt-1">
           <a
@@ -178,7 +226,7 @@ export function ChatBookingCard({
               <T>Time Slot *</T>
             </label>
             <select
-              value={timeSlot}
+              value={chosenSlot}
               onChange={(e) => setTimeSlot(e.target.value)}
               className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white outline-none focus:border-blue-500 text-xs cursor-pointer"
             >
@@ -190,6 +238,11 @@ export function ChatBookingCard({
             </select>
           </div>
         </div>
+        {closedOnDate && (
+          <p className="text-[11px] text-amber-700 dark:text-amber-300">
+            <T>We are not open on that day. Please pick another date.</T>
+          </p>
+        )}
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
           <div>
@@ -252,7 +305,7 @@ export function ChatBookingCard({
         <div className="pt-1">
           <button
             type="submit"
-            disabled={isSubmitting}
+            disabled={isSubmitting || closedOnDate}
             style={{ backgroundColor: primaryColor }}
             className="w-full py-2.5 rounded-lg text-white font-semibold text-xs shadow-xs hover:opacity-90 active:opacity-100 transition flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
           >

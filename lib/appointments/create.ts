@@ -22,7 +22,7 @@ export interface NewAppointmentInput {
 }
 
 export type CreateAppointmentResult =
-  | { ok: true; appointment: AppointmentData }
+  | { ok: true; appointment: AppointmentData; /** The same person had already booked this slot (a retry): nothing new was created. */ duplicate?: boolean }
   | { ok: false; status: 409 | 500; error: string };
 
 export interface CreateAppointmentOptions {
@@ -69,6 +69,11 @@ export async function createAppointment(opts: CreateAppointmentOptions): Promise
     const conflict = existingAppointments.find((a) => a.date === date && a.timeSlot === timeSlot && a.status !== 'cancelled');
     const start = parseTimeToMinutes(timeSlot);
     const overlaps = opts.enforceOverlap && start !== null && overlapsExisting(date, start, resolvedDuration, existingAppointments);
+    // Someone whose first attempt timed out, or who clicked twice, asks again for the slot they already hold. Tell them it is theirs
+    // instead of "already booked". The reply leaves out the manage token: knowing an e-mail and a slot must not give control of it.
+    if (conflict && (conflict.email || '').trim().toLowerCase() === email.toLowerCase()) {
+      return { ok: true, duplicate: true, appointment: { ...conflict, manageToken: undefined } };
+    }
     if (conflict || overlaps) {
       logEvent({ level: 'warn', category: 'booking', event: 'booking.slot_conflict', meta: { assistantId: assistant.id, date, timeSlot, overlap: Boolean(overlaps) } });
       return { ok: false, status: 409, error: `The time slot "${timeSlot}" on ${date} has already been booked. Please select another time.` };

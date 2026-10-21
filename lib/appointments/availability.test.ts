@@ -4,6 +4,7 @@ import {
   getAvailableSlots,
   isOpenNow,
   isSlotAvailable,
+  openingHoursProblem,
   minutesToHHMM,
   nextOpenDates,
   nowInTimezone,
@@ -131,5 +132,27 @@ describe('isOpenNow', () => {
     expect(isOpenNow(cfg, new Date('2026-09-21T18:00:00Z'))).toBe(false); // after close
     expect(isOpenNow(cfg, new Date('2026-09-26T10:00:00Z'))).toBe(false); // Saturday
     expect(isOpenNow({ ...cfg, timezone: 'Asia/Tokyo' }, new Date('2026-09-21T10:00:00Z'))).toBe(false); // 19:00 in Tokyo
+  });
+});
+
+describe('openingHoursProblem', () => {
+  const owner = { bookingAvailableDays: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'], bookingStartHour: '09:00', bookingEndHour: '18:00' };
+
+  it('accepts a time on an open day inside the hours, in any of the formats the booking forms send', () => {
+    expect(openingHoursProblem(owner, '2026-11-09', '10:00 AM')).toBeNull(); // Monday
+    expect(openingHoursProblem(owner, '2026-11-09', '10:00 AM - 10:30 AM')).toBeNull();
+    expect(openingHoursProblem(owner, '2026-11-09', '17:40')).toBeNull();
+  });
+
+  it('refuses a closed day and times before opening or from closing time on', () => {
+    expect(openingHoursProblem(owner, '2026-11-08', '10:00 AM')).toMatch(/not open on Sundays/);
+    expect(openingHoursProblem(owner, '2026-11-09', '03:00 AM')).toMatch(/opening hours/);
+    expect(openingHoursProblem(owner, '2026-11-09', '06:00 PM')).toMatch(/opening hours/);
+  });
+
+  it('enforces only what the owner configured, and lets unreadable times through', () => {
+    expect(openingHoursProblem({}, '2026-11-08', '03:00 AM')).toBeNull();
+    expect(openingHoursProblem({ bookingStartHour: '10:00' }, '2026-11-08', '11:00')).toBeNull();
+    expect(openingHoursProblem(owner, '2026-11-09', 'sometime after lunch')).toBeNull();
   });
 });

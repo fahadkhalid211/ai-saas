@@ -836,7 +836,8 @@ function saveLocalStateSync(state: DatabaseState): void {
   // Strip heavy vector embeddings before writing transactional db.json
   const { chunks: _chunks, ...transactional } = state;
   const payload = { ...transactional, chunks: [] };
-  atomicWriteFileSync(DB_FILE, JSON.stringify(payload, null, 2));
+  // compact: indentation made every save about a third bigger, and the whole file is rewritten on each change
+  atomicWriteFileSync(DB_FILE, JSON.stringify(payload));
   try {
     lastDbFileMtime = fs.statSync(DB_FILE).mtimeMs;
   } catch {}
@@ -864,11 +865,56 @@ function markInSync(state: DatabaseState | null): void {
 /** Saves of one instance run one after another, so each starts from the result of the previous one. */
 let saveQueue: Promise<void> = Promise.resolve();
 
+/**
+ * Every change rewrites the whole state, and one request makes several changes, so under load the same megabytes were being
+ * serialised and written over and over (about 160 ms each at 15 MB, which capped the server near 2 writes a second). Saves that
+ * arrive while a write is pending now share it: the file is written once for all of them, and every caller still waits for that
+ * write before it carries on, so an answer is never sent before its data is stored.
+ */
+let localWriteBatch: Promise<void> | null = null;
+let localWriteState: DatabaseState | null = null;
+let lastLocalWriteMs = 0;
+
+function writeLocalStateBatched(state: DatabaseState): Promise<void> {
+  cachedState = state;
+  localWriteState = state;
+  if (!localWriteBatch) {
+    // wait about as long as the last write took, so writing never uses more than about half of the server's time
+    const wait = Math.min(200, Math.round(lastLocalWriteMs));
+    localWriteBatch = new Promise<void>((resolve, reject) => {
+      setTimeout(() => {
+        const toWrite = localWriteState;
+        localWriteBatch = null;
+        localWriteState = null;
+        const started = Date.now();
+        try {
+          if (toWrite) saveLocalStateSync(toWrite);
+          resolve();
+        } catch (err) {
+          reject(err);
+        } finally {
+          lastLocalWriteMs = Date.now() - started;
+        }
+      }, wait);
+    });
+  }
+  return localWriteBatch;
+}
+
+/** A cloud save that is waiting its turn and has not read the state yet: a later save of the same state can ride on it. */
+let queuedCloudSave: { state: DatabaseState; promise: Promise<void> } | null = null;
+
 async function saveState(state: DatabaseState, options?: PersistCloudStateOptions): Promise<void> {
-  saveLocalStateSync(state);
+  await writeLocalStateBatched(state);
 
   if (isCloudDbConfigured()) {
+    // The queued save takes its snapshot only when it starts, which is after this change was made, so joining it loses nothing.
+    if (!options && queuedCloudSave && queuedCloudSave.state === state) {
+      await queuedCloudSave.promise;
+      return;
+    }
     const run = async () => {
+      if (queuedCloudSave && queuedCloudSave.promise === mine) queuedCloudSave = null;
       try {
         // what this save is about, fixed now: anything the app changes while the save is in flight belongs to the next save
         const snapshot = cloneJson(toCloudPayload(state));
@@ -892,8 +938,9 @@ async function saveState(state: DatabaseState, options?: PersistCloudStateOption
         console.warn('[Database] Failed to sync state to Cloud DB:', err);
       }
     };
-    const mine = saveQueue.then(run, run);
+    const mine: Promise<void> = saveQueue.then(run, run);
     saveQueue = mine;
+    if (!options) queuedCloudSave = { state, promise: mine };
     await mine;
   } else if (isRedisConfigured()) {
     redisSet(CACHE_KEYS.STATE, { state, updatedAt: new Date().toISOString() }, 300).catch(() => {});

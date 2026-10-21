@@ -68,6 +68,15 @@ export async function OPTIONS() {
   });
 }
 
+/**
+ * Platform-wide chat messages a minute, a circuit breaker on worst-case provider cost. It used to be a fixed 600, which one busy
+ * business could use up, locking every other business out. It is higher now (CHAT_GLOBAL_PER_MIN overrides it), and each business
+ * has its own cap below so one cannot starve the rest.
+ */
+const CHAT_GLOBAL_PER_MIN = Math.max(60, Number(process.env.CHAT_GLOBAL_PER_MIN) || 3000);
+/** Chat messages a minute for one assistant, counted across all its visitors. */
+const CHAT_ASSISTANT_PER_MIN = Math.max(30, Number(process.env.CHAT_ASSISTANT_PER_MIN) || 300);
+
 async function POSTHandler(req: NextRequest) {
   try {
     // 1. Rate Limiting Check (max 35 messages per minute per IP)
@@ -79,7 +88,7 @@ async function POSTHandler(req: NextRequest) {
     // Backstop: per-IP limiting alone can be defeated by rotating spoofable
     // client-supplied headers, so also cap total system-wide chat volume as
     // a circuit breaker on worst-case LLM provider cost/quota exhaustion.
-    const globalLimit = enforceGlobalRateLimit('chat', { windowMs: 60 * 1000, max: 600 });
+    const globalLimit = enforceGlobalRateLimit('chat', { windowMs: 60 * 1000, max: CHAT_GLOBAL_PER_MIN });
     if (globalLimit.errorResponse) {
       return globalLimit.errorResponse;
     }
@@ -89,10 +98,14 @@ async function POSTHandler(req: NextRequest) {
     const sharedLimited =
       (await enforceDistributedRateLimit(req, 'chat-min', { windowMs: 60 * 1000, max: 35 })) ||
       (await enforceDistributedRateLimit(req, 'chat-hour', { windowMs: 60 * 60 * 1000, max: 400 })) ||
-      (await enforceDistributedRateLimitByKey('global:chat-min', { windowMs: 60 * 1000, max: 600 }));
+      (await enforceDistributedRateLimitByKey('global:chat-min', { windowMs: 60 * 1000, max: CHAT_GLOBAL_PER_MIN }));
     if (sharedLimited) return sharedLimited;
 
-    const body = await req.json();
+    // a body that is not JSON is the caller's mistake, not a server fault
+    const body = await req.json().catch(() => null);
+    if (body === null || typeof body !== 'object') {
+      return NextResponse.json({ error: 'Request body must be valid JSON.' }, { status: 400 });
+    }
 
     const validation = validateChatPayload(body);
     if (!validation.valid || !validation.sanitized) {
@@ -109,6 +122,9 @@ async function POSTHandler(req: NextRequest) {
       landingPageSlug,
     } = validation.sanitized;
     const attachment = body?.attachment;
+
+    const assistantBusy = await enforceDistributedRateLimitByKey(`assistant-chat:${assistantId}`, { windowMs: 60 * 1000, max: CHAT_ASSISTANT_PER_MIN });
+    if (assistantBusy) return assistantBusy;
 
     let assistant = await Database.getAssistantById(assistantId);
     if (!assistant) {
