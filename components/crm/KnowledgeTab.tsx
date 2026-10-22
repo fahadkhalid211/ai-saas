@@ -617,7 +617,7 @@ export const KnowledgeTab: React.FC<KnowledgeTabProps> = ({
                   </div>
                 )}
 
-                {/* Import Knowledge from URL (YouTube, Video, Webpage) */}
+                {/* Import Knowledge from URL (Video/audio file link, Webpage) */}
                 <form
                   onSubmit={handleImportUrl}
                   className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 space-y-3.5 shadow-xs"
@@ -632,16 +632,14 @@ export const KnowledgeTab: React.FC<KnowledgeTabProps> = ({
                           <T>Import from a link</T>
                         </span>
                         <p className="text-xs text-slate-500 dark:text-slate-500">
-                          <T>A YouTube video, a page on your website, or a direct video/audio file — in any language.</T>
+                          <T>A page on your website, or a direct link to a video or audio file — in any language.</T>
                         </p>
                       </div>
                     </div>
 
                     {urlInput.trim() && (
                       <span className="text-xs font-mono px-2 py-0.5 rounded-full font-semibold border bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700">
-                        {/(?:youtube\.com|youtu\.be)/i.test(urlInput)
-                          ? <T>{'YouTube video'}</T>
-                          : /\.(mp4|webm|mov|mkv|avi|mp3|wav|m4a|ogg|flac)$/i.test(urlInput.split('?')[0])
+                        {/\.(mp4|webm|mov|mkv|avi|mp3|wav|m4a|ogg|flac)$/i.test(urlInput.split('?')[0])
                           ? <T>{'Video/audio link'}</T>
                           : <T>{'Web page'}</T>}
                       </span>
@@ -653,7 +651,7 @@ export const KnowledgeTab: React.FC<KnowledgeTabProps> = ({
                       <input
                         type="url"
                         required
-                        placeholder="https://www.youtube.com/watch?v=... or https://yourcompany.com/about"
+                        placeholder="https://yourcompany.com/about"
                         value={urlInput}
                         onChange={(e) => setUrlInput(e.target.value)}
                         className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3 py-2 text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 outline-none focus:border-blue-500"

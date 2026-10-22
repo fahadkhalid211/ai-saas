@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { Database } from '@/lib/db';
 import { BILLING_PLANS } from '@/lib/billing/plans';
 import { parseFileOrText, isMediaFile, isVideoFile, isAudioFile } from '@/lib/rag/parsers';
-import { extractFromUrl } from '@/lib/rag/url-extractor';
+import { extractFromUrl, isYouTubeUrl, YOUTUBE_NOT_SUPPORTED_MESSAGE } from '@/lib/rag/url-extractor';
 import { applyCostCapToMedia } from '@/lib/ai/spend/guard';
 import { diagnoseKnowledgeFailure } from '@/lib/rag/diagnostics';
 import { withAdminAuth, getAuthContext } from '@/lib/security/auth';
@@ -140,11 +140,15 @@ const POSTHandler = withAdminAuth(async (req: Request) => {
       });
     }
 
-    // Extraction Mode 2: URL Extraction (YouTube, Webpage, Direct media stream)
+    // Extraction Mode 2: URL Extraction (Webpage, Direct media stream)
     if (url && url.trim()) {
       const cleanUrl = url.trim();
       activeFilename = cleanUrl;
       activeType = 'web';
+
+      if (isYouTubeUrl(cleanUrl)) {
+        return NextResponse.json({ success: false, error: YOUTUBE_NOT_SUPPORTED_MESSAGE }, { status: 400 });
+      }
 
       const ssrfCheck = await validateSafeExternalUrl(cleanUrl);
       if (!ssrfCheck.safe) {

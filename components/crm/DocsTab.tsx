@@ -13,12 +13,6 @@ import {
   ClipboardList,
 } from 'lucide-react';
 
-const Youtube = ({ className = 'h-4 w-4' }: { className?: string }) => (
-  <svg className={className} viewBox="0 0 24 24" fill="currentColor">
-    <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
-  </svg>
-);
-
 export const DocsTab: React.FC = () => {
   return (
     <div className="p-6 max-w-4xl mx-auto space-y-8">
@@ -47,7 +41,7 @@ export const DocsTab: React.FC = () => {
                         steps: [
                           'Go to Knowledge Base in the sidebar.',
                           'Click "Upload File" — supports PDF, CSV, DOCX, TXT, PNG/JPG images.',
-                          'Or paste a URL / YouTube link to extract content automatically.',
+                          'Or paste a website URL to extract content automatically.',
                           'Wait for status to turn "Ready" (green). This means the AI has indexed the data.',
                           'Test it instantly in Testing Studio by asking questions.',
                         ],
@@ -223,11 +217,6 @@ export const DocsTab: React.FC = () => {
                         body: 'Use the URL field to scrape any public webpage — product pages, terms, about pages. Works best on pages without JavaScript-rendered content (static HTML).',
                       },
                       {
-                        iconName: 'youtube',
-                        title: 'YouTube Transcripts',
-                        body: 'Paste a YouTube URL to extract the video transcript. Great for indexing explainer videos, tutorials, and interviews. Only works if captions are available on the video.',
-                      },
-                      {
                         iconName: 'eye',
                         title: 'Image Text (OCR)',
                         body: 'Upload PNG/JPG files — the AI extracts printed text from the image. Works best on clear, high-contrast text. Handwritten notes and low-quality scans may not extract well.',
@@ -242,7 +231,6 @@ export const DocsTab: React.FC = () => {
                           {card.iconName === 'target' && <Target className="h-5 w-5 text-rose-500" />}
                           {card.iconName === 'refresh' && <RefreshCw className="h-5 w-5 text-amber-500" />}
                           {card.iconName === 'globe' && <Globe className="h-5 w-5 text-emerald-500" />}
-                          {card.iconName === 'youtube' && <Youtube className="h-5 w-5 text-red-500" />}
                           {card.iconName === 'eye' && <Eye className="h-5 w-5 text-purple-500" />}
                         </div>
                         <h4 className="font-semibold text-slate-800 dark:text-slate-100 text-xs mb-1.5"><T>{card.title}</T></h4>

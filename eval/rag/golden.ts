@@ -56,7 +56,7 @@ const knowledge = `# Adding knowledge to an assistant
 An assistant answers only from the material you give it. This is called grounding, and it is why the assistant does not invent prices or policies.
 
 ## What you can add
-You can upload PDF, Word, plain text, CSV and JSON files, paste text directly, add a web page by URL, or add a YouTube video whose transcript is indexed. Audio and video files are transcribed to text first, and images are read with OCR.
+You can upload PDF, Word, plain text, CSV and JSON files, paste text directly, or add a web page by URL. Audio and video files are transcribed to text first, and images are read with OCR.
 
 ## How documents are processed
 Each document is split into passages of about 1,800 characters with a 200 character overlap so that sentences are not cut in half. Every passage is turned into a 384 dimension embedding by a small open source model that runs on our own servers, so embeddings cost nothing. Passages are searched with both meaning and keywords, and the best matches are re-ranked before the assistant answers.

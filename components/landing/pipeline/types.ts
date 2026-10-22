@@ -151,7 +151,7 @@ export const TOPOLOGY_NODES: TopologyNode[] = [
     y: 510,
     color: '#f43f5e',
     radarArc: false,
-    description: 'Multimodal transcript pipeline converting YouTube video and audio into chunks.',
+    description: 'Multimodal transcript pipeline converting video and audio files into chunks.',
     technicalSpec: 'Time-aligned subtitle parser, multi-language caption alignment.',
     telemetryMetrics: [
       { label: 'Model', value: 'Whisper Large' },

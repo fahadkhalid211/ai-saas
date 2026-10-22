@@ -102,7 +102,7 @@ export const enDict: TranslationDictionary = {
     after: [
       {
         title: 'Answers from your own content',
-        body: 'Upload your documents, paste your web pages, add a YouTube link. Every reply is grounded in what you wrote — and it says so when it does not know.',
+        body: 'Upload your documents, paste your web pages, add a video or audio file. Every reply is grounded in what you wrote — and it says so when it does not know.',
       },
       {
         title: 'Books into your real calendar',

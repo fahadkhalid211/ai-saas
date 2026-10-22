@@ -310,7 +310,7 @@ const htmlContent = `<!DOCTYPE html>
 +-------------------------------------------+ +-------------------------------------------+
 |          HYBRID RAG PIPELINE              | |         CORE APPLICATION SERVICES         |
 |  * Multi-Format Ingestion Engine          | |  * Appointment Mutex Engine (Postgres)    |
-|    (PDF, DOCX, CSV, JSON, OCR, YouTube)   | |  * Live Operator Takeover Controller      |
+|    (PDF, DOCX, CSV, JSON, OCR)            | |  * Live Operator Takeover Controller      |
 |  * ONNX Local Embeddings (BGE-Small)      | |  * Lemon Squeezy Billing & Quota Governor        |
 |  * Dense Cosine Similarity Search         | |  * Transactional Email (Resend/SMTP)      |
 |  * Sparse BM25 / Keyword Retrieval        | |  * In-Memory LRU Embeddings Cache         |
@@ -345,7 +345,6 @@ const htmlContent = `<!DOCTYPE html>
       <li><strong>Tabular Spreadsheets (CSV):</strong> Parsed with <code>csv-parse</code> into semantic record serialization (<code>[Record #N] Column: Value | ...</code>) so each row retains full context in vector space.</li>
       <li><strong>Hierarchical JSON:</strong> Recursively flattened into structured key-value property paths.</li>
       <li><strong>Optical Character Recognition:</strong> <code>tesseract.js</code> handles text extraction from uploaded images.</li>
-      <li><strong>YouTube Media:</strong> <code>youtube-transcript</code> extracts multi-lingual captions with streaming audio transcription fallback.</li>
     </ul>
 
     <div class="page-break"></div>
@@ -409,7 +408,7 @@ const htmlContent = `<!DOCTYPE html>
         </tr>
         <tr>
           <td><strong>Document Parsing</strong></td>
-          <td>unpdf, mammoth, csv-parse, tesseract.js, youtube-transcript</td>
+          <td>unpdf, mammoth, csv-parse, tesseract.js</td>
           <td>Extraction of PDF, DOCX, CSV (row-aware serialization), JSON, OCR images, and video transcripts.</td>
         </tr>
         <tr>

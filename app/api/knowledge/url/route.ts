@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { Database } from '@/lib/db';
 import { BILLING_PLANS } from '@/lib/billing/plans';
-import { extractFromUrl } from '@/lib/rag/url-extractor';
+import { extractFromUrl, isYouTubeUrl, YOUTUBE_NOT_SUPPORTED_MESSAGE } from '@/lib/rag/url-extractor';
 import { applyCostCapToMedia } from '@/lib/ai/spend/guard';
 import { chunkDocument } from '@/lib/rag/chunker';
 import { generateEmbeddingsBatch } from '@/lib/rag/embedder';
@@ -13,7 +13,7 @@ import { getClientIp, enforceRateLimit } from '@/lib/security/rate-limit';
 import { logged } from '@/lib/logging/route';
 
 // Webpage scraping falls back through up to three tiers (direct fetch, curl,
-// Jina reader) and YouTube/media extraction can involve transcription, so
+// Jina reader) and media extraction can involve transcription, so
 // this route needs more headroom than a typical short-lived API route.
 export const maxDuration = 300;
 
@@ -35,6 +35,11 @@ const POSTHandler = withRoleAuth(['owner', 'admin'], async (req: Request) => {
     }
 
     const cleanUrl = url.trim();
+
+    // YouTube links are not supported: refused here, before a failed record is made for them
+    if (isYouTubeUrl(cleanUrl)) {
+      return NextResponse.json({ error: YOUTUBE_NOT_SUPPORTED_MESSAGE }, { status: 400 });
+    }
 
     // SSRF Check: Prevent access to internal addresses, loopback, and cloud metadata
     const ssrfCheck = await validateSafeExternalUrl(cleanUrl);
@@ -74,8 +79,7 @@ const POSTHandler = withRoleAuth(['owner', 'admin'], async (req: Request) => {
     }
 
     // 1. Create Knowledge Source in DB
-    const isYouTube = /(?:youtube\.com|youtu\.be)/i.test(cleanUrl);
-    const initialType = isYouTube ? 'youtube' : 'web';
+    const initialType = 'web';
 
     const source = await Database.createKnowledgeSource({
       assistantId,
@@ -86,7 +90,7 @@ const POSTHandler = withRoleAuth(['owner', 'admin'], async (req: Request) => {
     });
 
     try {
-      // 2. Extract content from URL (YouTube transcript, direct media, or webpage)
+      // 2. Extract content from URL (direct media, or webpage)
       console.log(`[URLRoute] Extracting knowledge from ${cleanUrl} for assistant ${assistantId}...`);
       // video and audio links are transcribed on the assistant's key, so they count toward its monthly cost cap
       const media = await applyCostCapToMedia(assistant, { apiKey: assistant.apiKeyEncrypted, provider: assistant.provider });

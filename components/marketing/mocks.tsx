@@ -13,7 +13,7 @@ function SourcesVisual() {
   const rows = [
     { name: 'Price list.pdf', kind: 'PDF', state: 'Ready' },
     { name: 'about-us (web page)', kind: 'URL', state: 'Ready' },
-    { name: 'Intro video', kind: 'YouTube', state: 'Indexing' },
+    { name: 'Intro video', kind: 'Video', state: 'Indexing' },
     { name: 'Policies.docx', kind: 'Word', state: 'Ready' },
   ];
   const [selected, setSelected] = useState(0);

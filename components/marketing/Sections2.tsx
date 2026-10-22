@@ -272,7 +272,6 @@ const ORBIT = [
   ...INTEGRATIONS.items.map((i) => ({ id: i.id, label: i.label, note: i.note })),
   { id: 'provider', label: 'AI providers', note: 'OpenAI, Claude, Gemini, Groq: your key' },
   { id: 'urls', label: 'Web pages', note: 'Index a site by URL' },
-  { id: 'youtube', label: 'YouTube', note: 'Video transcripts as knowledge' },
 ].map((i) => ({ ...i, icon: ORBIT_ICONS[i.id]?.icon, iconBg: ORBIT_ICONS[i.id]?.bg }));
 
 export function IntegrationsStage() {

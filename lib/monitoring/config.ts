@@ -71,7 +71,7 @@ export const MONITORED_SERVICES_DEF = [
     id: 'scraper',
     name: 'Web Scraping & URL Crawler',
     category: 'data' as const,
-    description: 'Cheerio content extraction, sitemap crawl, and YouTube transcript ingestion.',
+    description: 'Cheerio content extraction, sitemap crawl, and audio/video transcription.',
   },
   {
     id: 'workers',

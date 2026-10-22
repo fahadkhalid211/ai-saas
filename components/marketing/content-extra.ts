@@ -81,7 +81,7 @@ export const CAROUSEL = {
   intro: 'Scroll through every capability in Crescelo — from knowledge ingestion to live team handover.',
   items: [
     { id: 'files', tag: 'Knowledge', title: 'Documents and files', body: 'PDF, Word and text files become searchable passages.', tone: 'lav', glyph: 'doc' },
-    { id: 'urls', tag: 'Knowledge', title: 'Web pages and video', body: 'Add a website URL or a YouTube video and its transcript is indexed.', tone: 'mint', glyph: 'page' },
+    { id: 'urls', tag: 'Knowledge', title: 'Web pages and video', body: 'Add a website URL or a link to a video or audio file and its text is indexed.', tone: 'mint', glyph: 'page' },
     { id: 'search', tag: 'Accuracy', title: 'Hybrid search', body: 'Meaning and keyword search are combined, then re-ranked.', tone: 'lime', glyph: 'search' },
     { id: 'words', tag: 'Accuracy', title: 'Related-word matching', body: '"Cost" finds your page on "pricing".', tone: 'pink', glyph: 'words' },
     { id: 'booking', tag: 'Booking', title: 'In-chat booking', body: 'Visitors pick a real slot and confirm without leaving the chat.', tone: 'amber', glyph: 'calendar' },
@@ -138,7 +138,7 @@ export const PATHS = {
   titleLines: ['One assistant.', 'Live in four steps.'],
   echo: 'Live in four steps.',
   rows: [
-    { id: 'connect', step: '01', title: 'Add your content', body: 'Upload documents, paste web pages, drop in a YouTube link. Crescelo reads and indexes everything so answers come straight from your material.', cta: 'Add knowledge', href: '#carousel', tone: 'lav' },
+    { id: 'connect', step: '01', title: 'Add your content', body: 'Upload documents, paste web pages, add a video or audio file. Crescelo reads and indexes everything so answers come straight from your material.', cta: 'Add knowledge', href: '#carousel', tone: 'lav' },
     { id: 'configure', step: '02', title: 'Set it up your way', body: 'Name the assistant, set the tone, add your services and hours, connect your own AI key. Takes about ten minutes.', cta: 'See the controls', href: '#playground', tone: 'mint' },
     { id: 'automate', step: '03', title: 'Put it live', body: 'Paste one script tag on your site or share the hosted page. Visitors start getting answers and bookings immediately.', cta: 'Try the demo', href: '#playground', tone: 'lime' },
     { id: 'grow', step: '04', title: 'Learn and improve', body: 'Check which questions went unanswered, fill the gaps, and add more channels as your business grows.', cta: 'See pricing', href: '#pricing', tone: 'pink' },

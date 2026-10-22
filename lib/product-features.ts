@@ -52,7 +52,7 @@ export const PRODUCT_FEATURES: ProductFeature[] = [
       { title: 'Test before visitors see it', body: 'The Testing Studio lets you chat as a visitor would, so you can fix gaps before going live.' },
     ],
     steps: [
-      { title: 'Add your content', body: 'Upload documents, add your website address or paste a YouTube link in the Knowledge Base.' },
+      { title: 'Add your content', body: 'Upload documents, add your website address or a video or audio file in the Knowledge Base.' },
       { title: 'Connect your AI provider', body: 'Paste a key in AI Settings, or start on the free engine while you test.' },
       { title: 'Test it', body: 'Ask the questions your customers ask in the Testing Studio and fix anything missing.' },
       { title: 'Go live', body: 'Copy the one-line script from Overview and paste it into your site.' },
@@ -142,10 +142,10 @@ export const PRODUCT_FEATURES: ProductFeature[] = [
     title: 'Teach it your business in minutes, and keep improving it.',
     intro: 'Add the documents, pages and videos that describe your business. Crescelo indexes them so the assistant can find the right passage for every question, and it shows you what it could not answer so you can close the gap.',
     seoTitle: 'Knowledge Base for Your AI Assistant',
-    seoDescription: 'Upload documents, add website pages and YouTube videos so your AI assistant answers accurately. See unanswered questions and fix gaps.',
+    seoDescription: 'Upload documents, add website pages and video or audio files so your AI assistant answers accurately. See unanswered questions and fix gaps.',
     chat: { visitor: 'How much does it set me back for a full colour?', assistant: 'Full colour starts at $95, depending on hair length. Toner is $25 extra.', footnote: 'Found in the price sheet, even though the visitor used different words.' },
     benefits: [
-      { title: 'Many kinds of sources', body: 'PDF and Word documents, CSV spreadsheets, text and Markdown files, website addresses and YouTube transcripts.' },
+      { title: 'Many kinds of sources', body: 'PDF and Word documents, CSV spreadsheets, text and Markdown files, website addresses, and video or audio files.' },
       { title: 'Finds meaning, not just words', body: 'Search combines meaning-based and keyword matching, so casual wording still finds your pricing or policy.' },
       { title: 'A list of what is missing', body: 'Every question it could not answer is logged. Write a one-line answer and it is added for good.' },
       { title: 'Fix wrong answers at the source', body: 'Open a source, correct the passage and the assistant uses the fix straight away.' },
@@ -153,7 +153,7 @@ export const PRODUCT_FEATURES: ProductFeature[] = [
       { title: 'Storage that fits your plan', body: 'Each plan includes an amount of knowledge storage, shown in Plans and Billing.' },
     ],
     steps: [
-      { title: 'Add sources', body: 'Open Knowledge Base and upload files, add a website address or paste a YouTube link.' },
+      { title: 'Add sources', body: 'Open Knowledge Base and upload files (documents, video or audio), or add a website address.' },
       { title: 'Check indexing', body: 'Each source shows when it has finished processing.' },
       { title: 'Ask it questions', body: 'Use the Testing Studio to see what it answers and which source it used.' },
       { title: 'Close the gaps', body: 'Review unanswered questions and add the answers.' },
@@ -161,7 +161,7 @@ export const PRODUCT_FEATURES: ProductFeature[] = [
     controls: ['Which sources the assistant uses', 'Corrections to any passage', 'Answers to unanswered questions', 'Deleting sources you no longer want'],
     notice: 'Write prices and policies clearly, one topic per document, ideally in a list or table. The assistant is only as good as the content it is given.',
     faq: [
-      { q: 'What file types can I upload?', a: 'PDF and Word documents, CSV spreadsheets, and text or Markdown files. You can also add website addresses and YouTube links.' },
+      { q: 'What file types can I upload?', a: 'PDF and Word documents, CSV spreadsheets, and text or Markdown files. You can also add website addresses, and video or audio files.' },
       { q: 'How often does a website source update?', a: 'A website address is read when you add it. Add it again after big changes to refresh the content.' },
       { q: 'Is my content used to train AI models?', a: 'Your content is stored for your assistant and sent to the AI provider you choose only as needed to answer a question, under that provider’s terms.' },
     ],

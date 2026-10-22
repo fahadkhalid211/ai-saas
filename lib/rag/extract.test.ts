@@ -71,40 +71,14 @@ For emergencies after 6pm, please dial our emergency helpline directly.
     expect(diag.whatToDoNext.length).toBeGreaterThan(10);
   });
 
-  it('correctly extracts and structures YouTube video transcripts with multi-lingual caption support', async () => {
-    const { extractFromUrl, isYouTubeUrl, extractYouTubeVideoId } = await import('./url-extractor');
-    const testUrl = 'https://www.youtube.com/watch?v=3Cm0y8-5PZE';
+  it('refuses a YouTube link with a clear way forward instead of trying to read it', async () => {
+    const { extractFromUrl, isYouTubeUrl, YOUTUBE_NOT_SUPPORTED_MESSAGE } = await import('./url-extractor');
 
-    expect(isYouTubeUrl(testUrl)).toBe(true);
-    expect(extractYouTubeVideoId(testUrl)).toBe('3Cm0y8-5PZE');
-
-    try {
-      const doc = await extractFromUrl(testUrl);
-      expect(doc).toBeDefined();
-      expect(doc.type).toBe('youtube');
-      expect(doc.content.length).toBeGreaterThan(500);
-      expect(doc.title).toBeDefined();
-      expect(doc.sections?.length).toBeGreaterThan(0);
-    } catch (err: any) {
-      // Live YouTube network requests can be rate-limited or captions disabled
-      expect(err.message).toBeDefined();
+    for (const link of ['https://www.youtube.com/watch?v=3Cm0y8-5PZE', 'https://youtu.be/3Cm0y8-5PZE', 'https://www.youtube.com/shorts/3Cm0y8-5PZE', 'https://m.youtube.com/watch?v=3Cm0y8-5PZE&pp=abc']) {
+      expect(isYouTubeUrl(link)).toBe(true);
+      await expect(extractFromUrl(link)).rejects.toThrow(YOUTUBE_NOT_SUPPORTED_MESSAGE);
     }
-  }, 90000);
-
-  it('correctly extracts Google Head Office tour video transcript with resilient connection pool', async () => {
-    const { extractFromUrl } = await import('./url-extractor');
-    const testUrl = 'https://www.youtube.com/watch?v=OKsaF_AasDA';
-
-    try {
-      const doc = await extractFromUrl(testUrl);
-      expect(doc).toBeDefined();
-      expect(doc.type).toBe('youtube');
-      expect(doc.title).toContain('Google Head Office');
-      expect(doc.content.length).toBeGreaterThan(1000);
-      expect(doc.sections?.length).toBeGreaterThan(0);
-    } catch (err: any) {
-      // Live YouTube network requests can be rate-limited or connection reset
-      expect(err.message).toBeDefined();
-    }
-  }, 90000);
+    expect(YOUTUBE_NOT_SUPPORTED_MESSAGE).toMatch(/upload the video or audio file, or paste its transcript/);
+    expect(isYouTubeUrl('https://yourcompany.com/about')).toBe(false);
+  });
 });

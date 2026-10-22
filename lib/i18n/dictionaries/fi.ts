@@ -102,7 +102,7 @@ export const fiDict: TranslationDictionary = {
     after: [
       {
         title: 'Vastaa suoraan omasta sisällöstäsi',
-        body: 'Lataa tiedostosi, liitä verkkosivusi tai lisää YouTube-linkki. Jokainen vastaus perustuu kirjoittamaasi tietoon – ja avustaja kertoo reilusti, jos vastausta ei löydy.',
+        body: 'Lataa tiedostosi, liitä verkkosivusi tai lisää video- tai äänitiedosto. Jokainen vastaus perustuu kirjoittamaasi tietoon – ja avustaja kertoo reilusti, jos vastausta ei löydy.',
       },
       {
         title: 'Varaa suoraan oikeaan kalenteriisi',
