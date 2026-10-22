@@ -4978,5 +4978,11 @@
  "The AI provider rejected your key, so the assistant cannot answer. Open AI Settings to fix it.": "AI-leverantören avvisade din nyckel, så assistenten kan inte svara. Öppna AI-inställningar för att åtgärda det.",
  "Your AI provider is refusing your key,": "Din AI-leverantör avvisar din nyckel,",
  "Your assistant cannot answer right now": "Din assistent kan inte svara just nu",
- "Your saved key is shown masked. Test Connection checks that saved key; paste a new key only to replace it.": "Din sparade nyckel visas maskerad. Testa anslutning kontrollerar den sparade nyckeln; klistra bara in en ny nyckel om du vill ersätta den."
+ "Your saved key is shown masked. Test Connection checks that saved key; paste a new key only to replace it.": "Din sparade nyckel visas maskerad. Testa anslutning kontrollerar den sparade nyckeln; klistra bara in en ny nyckel om du vill ersätta den.",
+ "A quick look around the dashboard": "En snabb rundtur i panelen",
+ "Get started & help": "Kom igång & hjälp",
+ "Preferences": "Inställningar",
+ "Read aloud, text size and colours": "Uppläsning, textstorlek och färger",
+ "Step-by-step guided setup": "Steg-för-steg-guidad installation",
+ "Publish": "Publicera"
 }

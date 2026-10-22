@@ -4975,5 +4975,11 @@
  "The AI provider rejected your key, so the assistant cannot answer. Open AI Settings to fix it.": "Il provider AI ha rifiutato la tua chiave, quindi l’assistente non può rispondere. Apri le impostazioni AI per risolvere.",
  "Your AI provider is refusing your key,": "Il tuo provider AI rifiuta la tua chiave,",
  "Your assistant cannot answer right now": "Il tuo assistente non può rispondere in questo momento",
- "Your saved key is shown masked. Test Connection checks that saved key; paste a new key only to replace it.": "La chiave salvata è mostrata mascherata. Prova connessione controlla quella chiave salvata; incolla una nuova chiave solo per sostituirla."
+ "Your saved key is shown masked. Test Connection checks that saved key; paste a new key only to replace it.": "La chiave salvata è mostrata mascherata. Prova connessione controlla quella chiave salvata; incolla una nuova chiave solo per sostituirla.",
+ "A quick look around the dashboard": "Uno sguardo veloce alla dashboard",
+ "Get started & help": "Inizia e assistenza",
+ "Preferences": "Preferenze",
+ "Read aloud, text size and colours": "Lettura ad alta voce, dimensione del testo e colori",
+ "Step-by-step guided setup": "Configurazione guidata passo dopo passo",
+ "Publish": "Pubblica"
 }

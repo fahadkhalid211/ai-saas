@@ -1,9 +1,9 @@
 'use client';
 
-import { T, useT } from '@/lib/i18n/context';
+import { T, useT, useI18n } from '@/lib/i18n/context';
 import React, { useState, useRef, useEffect } from 'react';
-import { LanguageSwitcher } from '@/components/i18n/LanguageSwitcher';
-import { AccessibilityButton } from '@/components/a11y/AccessibilityMenu';
+import { Flag } from '@/components/i18n/Flag';
+import { SUPPORTED_LOCALES, type SupportedLocale } from '@/lib/i18n/types';
 import { BrandMark } from '@/components/brand/BrandMark';
 import { FloatingPlatformChatbot } from '@/components/chat/FloatingPlatformChatbot';
 import { hasConnectedAiKey } from '@/lib/ai/resolve-provider';
@@ -22,8 +22,59 @@ import {
   User,
   ShieldCheck,
   Compass,
-  Rocket,
+  Zap,
+  CreditCard,
+  Languages,
+  Accessibility,
+  LogOut,
 } from 'lucide-react';
+
+/** One row of the profile menu. */
+function MenuRow({
+  icon,
+  label,
+  hint,
+  onClick,
+  tone = 'default',
+  trailing,
+}: {
+  icon: React.ReactNode;
+  label: React.ReactNode;
+  hint?: React.ReactNode;
+  onClick: () => void;
+  tone?: 'default' | 'danger';
+  trailing?: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      role="menuitem"
+      onClick={onClick}
+      className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium transition cursor-pointer text-left ${
+        tone === 'danger'
+          ? 'text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30'
+          : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
+      }`}
+    >
+      <span className="shrink-0">{icon}</span>
+      <span className="flex-1 min-w-0">
+        <span className="block truncate">{label}</span>
+        {hint ? <span className="block text-[10.5px] font-normal text-slate-400 dark:text-slate-500 truncate">{hint}</span> : null}
+      </span>
+      {trailing}
+    </button>
+  );
+}
+
+/** A small heading that groups the rows below it. */
+function MenuGroup({ title, children }: { title: React.ReactNode; children: React.ReactNode }) {
+  return (
+    <div className="pt-1.5" role="group">
+      <div className="px-3 pb-1 pt-1 text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">{title}</div>
+      <div className="space-y-0.5">{children}</div>
+    </div>
+  );
+}
 
 interface NotificationItem {
   id: string;
@@ -92,6 +143,8 @@ export function DashboardHeader({
   onBillingChanged,
 }: DashboardHeaderProps) {
   const __t = useT();
+  const { locale, setLocale } = useI18n();
+  const [isLanguageListOpen, setIsLanguageListOpen] = useState(false);
   // Whether the key really works, kept current (checked with the provider every minute or so, and the moment a customer's chat is refused)
   const { health: keyHealth } = useAiKeyHealth(activeAssistant?.id, activeAssistant?.keyHealth);
   const [isAssistantMenuOpen, setIsAssistantMenuOpen] = useState(false);
@@ -109,6 +162,7 @@ export function DashboardHeader({
       }
       if (accountMenuRef.current && !accountMenuRef.current.contains(event.target as Node)) {
         setIsAccountMenuOpen(false);
+        setIsLanguageListOpen(false);
       }
       if (notifMenuRef.current && !notifMenuRef.current.contains(event.target as Node)) {
         setIsNotifOpen(false);
@@ -163,21 +217,13 @@ export function DashboardHeader({
 
 
   return (
-    <header className="h-16 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 sm:px-6 flex items-center justify-between sticky top-0 z-40 shrink-0">
+    <header className="h-16 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 sm:px-6 flex items-center justify-between sticky top-0 z-40 shrink-0 gap-2">
       {/* Left Section: Brand & Assistant Dropdown */}
-      <div className="flex items-center gap-4 sm:gap-6">
+      <div className="flex items-center gap-2 sm:gap-6 min-w-0">
         {/* Brand Logo */}
         <button type="button" className="flex items-center gap-3 cursor-pointer text-left rounded-lg" aria-label={__t("Crescelo overview")} onClick={() => setActiveTab('overview')}>
           <BrandMark size={34} showWord={false} />
-          <div className="hidden sm:block">
-            <div className="flex items-center gap-2">
-              <span className="kx-brand-word"><T>Crescelo</T></span>
-              <span className="text-[10px] font-semibold bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800 px-1.5 py-0.5 rounded">
-                <T>Enterprise</T>
-              </span>
-            </div>
-            <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium"><T>Business Knowledge Engine</T></p>
-          </div>
+          <span className="hidden sm:block kx-brand-word"><T>Crescelo</T></span>
         </button>
 
         <div className="h-6 w-px bg-slate-200 dark:bg-slate-800 hidden md:block" />
@@ -191,13 +237,13 @@ export function DashboardHeader({
               setIsAssistantMenuOpen(!isAssistantMenuOpen);
               setIsAccountMenuOpen(false);
             }}
-            className="flex items-center gap-2.5 rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-50 hover:bg-slate-100 dark:bg-slate-800/70 dark:hover:bg-slate-800 px-3 py-1.5 text-xs font-semibold text-slate-800 dark:text-slate-200 transition shadow-2xs cursor-pointer"
+            className="flex items-center gap-2 sm:gap-2.5 rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-50 hover:bg-slate-100 dark:bg-slate-800/70 dark:hover:bg-slate-800 px-2.5 sm:px-3 py-1.5 text-xs font-semibold text-slate-800 dark:text-slate-200 transition shadow-2xs cursor-pointer"
             title={__t("Switch Active AI Assistant")}
           >
             <span className="h-2 w-2 rounded-full bg-emerald-500 shrink-0" />
             <div className="flex items-center gap-1.5 text-left">
               <span className="text-slate-500 dark:text-slate-400 font-normal hidden lg:inline text-[11px]"><T>Bot:</T></span>
-              <span className="max-w-[130px] sm:max-w-[170px] truncate">{activeAssistant?.name || <T>{'Select Bot'}</T>}</span>
+              <span className="max-w-[56px] min-[420px]:max-w-[110px] sm:max-w-[170px] truncate">{activeAssistant?.name || <T>{'Select Bot'}</T>}</span>
             </div>
             <ChevronDown className={`h-3.5 w-3.5 text-slate-400 transition-transform duration-200 ${isAssistantMenuOpen ? 'rotate-180' : ''}`} />
           </button>
@@ -285,8 +331,8 @@ export function DashboardHeader({
         </div>
       </div>
 
-      {/* Right Section: Compact Status, Deploy, Notifications & Account Dropdown */}
-      <div className="flex items-center gap-2.5 sm:gap-3">
+      {/* Right Section: AI status, the Crescelo assistant, Deploy, notifications and the profile menu (everything else lives in the profile menu) */}
+      <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
         {/* Status badge. "Live" only while the key is saved AND the provider accepts it; a rejected key, a provider that cannot be reached and a
             missing key each have their own state, and a click on any of them goes to the AI settings. */}
         {(() => {
@@ -359,48 +405,16 @@ export function DashboardHeader({
         {/* Crescelo assistant: drops the chat down from here; stays mounted so the conversation survives minimizing */}
         <FloatingPlatformChatbot variant="header" onNavigate={(tab) => setActiveTab(tab)} onBillingChanged={onBillingChanged} />
 
-        {/* Language: choose the dashboard language */}
-        <div data-tour="header-language"><LanguageSwitcher variant="header" /></div>
-
-        <AccessibilityButton />
-        {/* Setup wizard: perform all basic steps in a guided popup */}
-        {onOpenSetup && (
-          <button
-            type="button"
-            data-tour="header-setup"
-            onClick={onOpenSetup}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#08251a] dark:border-[#abff44] bg-[#fffeeb] dark:bg-[#12402d] hover:bg-[#f7f6dd] dark:hover:bg-[#1a4734] text-[#08251a] dark:text-[#abff44] text-xs font-bold shadow-xs transition cursor-pointer"
-            title={__t("Launch Step-by-Step Setup Wizard")}
-          >
-            <span className="text-[#08251a] dark:text-[#abff44]">⚡</span>
-            <span><T>Setup Wizard</T></span>
-          </button>
-        )}
-
-        {/* Tour Guide Button */}
-        {onOpenTour && (
-          <button
-            type="button"
-            data-tour="header-tour"
-            onClick={onOpenTour}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-slate-800/80 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold shadow-2xs transition cursor-pointer"
-            title={__t("Product Tour")}
-          >
-            <Compass className="h-3.5 w-3.5" />
-            <span className="hidden sm:inline"><T>Tour</T></span>
-          </button>
-        )}
-
         {/* Deploy & Embed Widget Button */}
         <button
           type="button"
           data-tour="header-deploy"
           onClick={() => setShowEmbedModal(true)}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-2xs transition cursor-pointer"
+          className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-2xs transition cursor-pointer"
           title={__t("Deploy Chatbot Widget &amp; WordPress Integration")}
         >
           <Globe className="h-3.5 w-3.5" />
-          <span className="hidden sm:inline"><T>Deploy</T></span>
+          <span><T>Deploy</T></span>
         </button>
 
         {/* Notification Bell */}
@@ -483,8 +497,11 @@ export function DashboardHeader({
             type="button"
             onClick={() => {
               setIsAccountMenuOpen(!isAccountMenuOpen);
+              setIsLanguageListOpen(false);
               setIsAssistantMenuOpen(false);
             }}
+            aria-haspopup="menu"
+            aria-expanded={isAccountMenuOpen}
             className="flex items-center gap-2 pl-1.5 pr-2 py-1 rounded-xl border border-slate-200 dark:border-slate-700/80 bg-white hover:bg-slate-50 dark:bg-slate-800/80 dark:hover:bg-slate-800 transition shadow-2xs cursor-pointer text-left"
             title={__t("Account &amp; System Settings")}
           >
@@ -515,10 +532,13 @@ export function DashboardHeader({
             <ChevronDown className={`h-3 w-3 text-slate-400 transition-transform duration-200 ${isAccountMenuOpen ? 'rotate-180' : ''}`} />
           </button>
 
-          {/* Account Dropdown Menu Panel */}
+          {/* Account Dropdown Menu Panel: grouped by what it is for */}
           {isAccountMenuOpen && (
-            <div className="absolute right-0 mt-2 w-64 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl p-2 z-50 animate-in fade-in zoom-in-95 duration-100 space-y-1">
-              {/* Account Header */}
+            <div
+              role="menu"
+              className="absolute right-0 mt-2 w-72 max-w-[calc(100vw-1.5rem)] max-h-[calc(100vh-5rem)] overflow-y-auto rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl p-2 z-50 animate-in fade-in zoom-in-95 duration-100"
+            >
+              {/* Who is signed in */}
               <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800/80">
                 <div className="text-xs font-bold text-slate-900 dark:text-white truncate">
                   {currentUser?.name || <T>{'Administrator'}</T>}
@@ -530,82 +550,146 @@ export function DashboardHeader({
                   <span className="px-1.5 py-0.5 rounded text-[9.5px] font-semibold bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300">
                     {currentUser?.role === 'owner' ? <T>{'Workspace Owner'}</T> : <T>{'Team Admin'}</T>}
                   </span>
-                  <span className="text-[10px] text-slate-400 font-mono">
-                    {currentUser?.title || <T>{'Lead'}</T>}
-                  </span>
+                  {currentUser?.title ? <span className="text-[10px] text-slate-400 font-mono">{currentUser.title}</span> : null}
                 </div>
               </div>
 
-              {/* Menu Items */}
-              <div className="pt-1 space-y-0.5">
-                <button
-                  type="button"
+              <MenuGroup title={<T>Account</T>}>
+                <MenuRow
+                  icon={<User className="h-4 w-4 text-blue-600 dark:text-blue-400" />}
+                  label={<T>Profile &amp; Settings</T>}
                   onClick={() => {
                     setIsAccountMenuOpen(false);
                     setActiveTab('profile');
                   }}
-                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
-                >
-                  <User className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                  <span><T>Profile &amp; Settings</T></span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    toggleTheme();
-                  }}
-                  className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
-                >
-                  <div className="flex items-center gap-2.5">
-                    {theme === 'light' ? (
-                      <Sun className="h-4 w-4 text-amber-500" />
-                    ) : (
-                      <Moon className="h-4 w-4 text-blue-400" />
-                    )}
-                    <span><T>Appearance</T></span>
-                  </div>
-                  <span className="text-[11px] text-slate-400 font-mono capitalize">{theme}</span>
-                </button>
-
-                <button
-                  type="button"
+                />
+                <MenuRow
+                  icon={<CreditCard className="h-4 w-4 text-emerald-500" />}
+                  label={<T>Plans &amp; Billing</T>}
                   onClick={() => {
                     setIsAccountMenuOpen(false);
-                    setShowEmbedModal(true);
+                    setActiveTab('billing');
                   }}
-                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
-                >
-                  <Globe className="h-4 w-4 text-emerald-500" />
-                  <span><T>Deploy &amp; Widget Snippet</T></span>
-                </button>
-
-                <button
-                  type="button"
+                />
+                <MenuRow
+                  icon={<ShieldCheck className="h-4 w-4 text-purple-500" />}
+                  label={<T>Team &amp; Access Control</T>}
                   onClick={() => {
                     setIsAccountMenuOpen(false);
                     setActiveTab('team');
                   }}
-                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
-                >
-                  <ShieldCheck className="h-4 w-4 text-purple-500" />
-                  <span><T>Team &amp; Access Control</T></span>
-                </button>
+                />
+              </MenuGroup>
+
+              {/* On a phone the Deploy button has no room in the bar, so it is offered here */}
+              <div className="sm:hidden">
+                <MenuGroup title={<T>Publish</T>}>
+                  <MenuRow
+                    icon={<Globe className="h-4 w-4 text-emerald-500" />}
+                    label={<T>Deploy &amp; Widget Snippet</T>}
+                    onClick={() => {
+                      setIsAccountMenuOpen(false);
+                      setShowEmbedModal(true);
+                    }}
+                  />
+                </MenuGroup>
               </div>
 
-              {/* Divider & Logout */}
-              <div className="pt-1 border-t border-slate-100 dark:border-slate-800">
-                <button
-                  type="button"
+              {(onOpenSetup || onOpenTour) && (
+                <MenuGroup title={<T>Get started &amp; help</T>}>
+                  {onOpenSetup && (
+                    <MenuRow
+                      icon={<Zap className="h-4 w-4 text-amber-500" />}
+                      label={<T>Setup Wizard</T>}
+                      hint={<T>Step-by-step guided setup</T>}
+                      onClick={() => {
+                        setIsAccountMenuOpen(false);
+                        onOpenSetup();
+                      }}
+                    />
+                  )}
+                  {onOpenTour && (
+                    <MenuRow
+                      icon={<Compass className="h-4 w-4 text-sky-500" />}
+                      label={<T>Product Tour</T>}
+                      hint={<T>A quick look around the dashboard</T>}
+                      onClick={() => {
+                        setIsAccountMenuOpen(false);
+                        onOpenTour();
+                      }}
+                    />
+                  )}
+                </MenuGroup>
+              )}
+
+              <MenuGroup title={<T>Preferences</T>}>
+                <MenuRow
+                  icon={theme === 'light' ? <Sun className="h-4 w-4 text-amber-500" /> : <Moon className="h-4 w-4 text-blue-400" />}
+                  label={<T>Appearance</T>}
+                  onClick={() => toggleTheme()}
+                  trailing={<span className="text-[11px] text-slate-400 font-mono capitalize">{theme}</span>}
+                />
+                <MenuRow
+                  icon={<Languages className="h-4 w-4 text-indigo-500" />}
+                  label={<T>Language</T>}
+                  onClick={() => setIsLanguageListOpen((open) => !open)}
+                  trailing={
+                    <span className="flex items-center gap-1.5">
+                      <Flag locale={locale} size={18} />
+                      <ChevronDown className={`h-3 w-3 text-slate-400 transition-transform duration-200 ${isLanguageListOpen ? 'rotate-180' : ''}`} />
+                    </span>
+                  }
+                />
+                {isLanguageListOpen && (
+                  <div className="ml-3 pl-2 border-l border-slate-200 dark:border-slate-700 space-y-0.5" data-tour="header-language">
+                    {(Object.keys(SUPPORTED_LOCALES) as SupportedLocale[]).map((loc) => (
+                      <button
+                        key={loc}
+                        type="button"
+                        role="menuitemradio"
+                        aria-checked={locale === loc}
+                        onClick={() => {
+                          setLocale(loc, true);
+                          setIsLanguageListOpen(false);
+                          setIsAccountMenuOpen(false);
+                        }}
+                        className={`w-full flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-lg text-xs transition cursor-pointer ${
+                          locale === loc
+                            ? 'bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 font-semibold'
+                            : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
+                        }`}
+                      >
+                        <span className="flex items-center gap-2">
+                          <Flag locale={loc} size={18} />
+                          <span>{SUPPORTED_LOCALES[loc].nativeLabel}</span>
+                        </span>
+                        {locale === loc && <Check className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />}
+                      </button>
+                    ))}
+                  </div>
+                )}
+                <MenuRow
+                  icon={<Accessibility className="h-4 w-4 text-blue-600 dark:text-blue-400" />}
+                  label={<T>Accessibility</T>}
+                  hint={<T>Read aloud, text size and colours</T>}
+                  onClick={() => {
+                    setIsAccountMenuOpen(false);
+                    window.dispatchEvent(new CustomEvent('crescelo:toggle-a11y'));
+                  }}
+                />
+              </MenuGroup>
+
+              {/* Sign out */}
+              <div className="mt-1.5 pt-1.5 border-t border-slate-100 dark:border-slate-800">
+                <MenuRow
+                  tone="danger"
+                  icon={<LogOut className="h-4 w-4 text-red-500" />}
+                  label={<T>Lock Session / Sign Out</T>}
                   onClick={() => {
                     setIsAccountMenuOpen(false);
                     handleLogout();
                   }}
-                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 transition cursor-pointer"
-                >
-                  <Lock className="h-4 w-4 text-red-500" />
-                  <span><T>Lock Session / Sign Out</T></span>
-                </button>
+                />
               </div>
             </div>
           )}

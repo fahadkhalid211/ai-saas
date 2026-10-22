@@ -4979,5 +4979,11 @@
  "The AI provider rejected your key, so the assistant cannot answer. Open AI Settings to fix it.": "Tekoälypalvelu hylkäsi avaimesi, joten avustaja ei voi vastata. Avaa tekoälyasetukset korjataksesi sen.",
  "Your AI provider is refusing your key,": "Tekoälypalvelusi hylkää avaimesi,",
  "Your assistant cannot answer right now": "Avustajasi ei voi vastata juuri nyt",
- "Your saved key is shown masked. Test Connection checks that saved key; paste a new key only to replace it.": "Tallennettu avaimesi näytetään peitettynä. Testaa yhteys tarkistaa tallennetun avaimen; liitä uusi avain vain, jos haluat korvata sen."
+ "Your saved key is shown masked. Test Connection checks that saved key; paste a new key only to replace it.": "Tallennettu avaimesi näytetään peitettynä. Testaa yhteys tarkistaa tallennetun avaimen; liitä uusi avain vain, jos haluat korvata sen.",
+ "A quick look around the dashboard": "Nopea katsaus hallintapaneeliin",
+ "Get started & help": "Aloitus & ohjeet",
+ "Preferences": "Asetukset",
+ "Read aloud, text size and colours": "Ääneen luku, tekstikoko ja värit",
+ "Step-by-step guided setup": "Vaiheittainen opastettu käyttöönotto",
+ "Publish": "Julkaise"
 }
