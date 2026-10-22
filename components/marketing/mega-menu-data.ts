@@ -161,7 +161,8 @@ export const MEGA_MENUS: MegaMenu[] = [
         links: [
           { label: 'Knowledge Hub', description: 'Guides on AI assistants and booking', href: '/blog', icon: Newspaper, tone: 'lime' },
           { label: 'Help center', description: 'Setup guides and documentation', href: '/support', icon: LifeBuoy, tone: 'mint' },
-          { label: 'Add it to WordPress', description: 'Install the assistant step by step', href: '/guides/add-ai-assistant-to-wordpress', icon: Plug, tone: 'lav' },
+          { label: 'Integrations', description: 'Connect calendars, CRM and channels', href: '/integrations', icon: Plug, tone: 'lav' },
+          { label: 'Add it to WordPress', description: 'Install the assistant step by step', href: '/guides/add-ai-assistant-to-wordpress', icon: Globe, tone: 'mint' },
           { label: 'Roadmap', description: 'What is live and what is next', href: '/roadmap', icon: Map, tone: 'amber' },
           { label: 'LLM cost calculator', description: 'What a chatbot costs per conversation', href: '/tools/llm-cost-calculator', icon: Calculator, tone: 'pink', badge: 'Free' },
         ],
@@ -192,6 +193,5 @@ export const MEGA_MENUS: MegaMenu[] = [
 
 /** Links that sit in the bar without a dropdown. */
 export const MEGA_DIRECT_LINKS: { label: string; href: string }[] = [
-  { label: 'Integrations', href: '/integrations' },
   { label: 'Pricing', href: '/pricing' },
 ];
