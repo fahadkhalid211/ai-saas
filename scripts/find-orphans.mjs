@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 const root = process.cwd();
-const skip = new Set(['node_modules', '.next', '.next-iso', '.next-build', '.git', 'mobile', 'wordpress', 'load-tests', 'public', 'supabase', 'ops', '.reticle', '.cursor', '.claude']);
+const skip = new Set(['node_modules', '.next', '.next-iso', '.next-build', '.git', 'mobile', 'wordpress', 'shopify', 'load-tests', 'public', 'supabase', 'ops', '.reticle', '.cursor', '.claude']);
 const walk = (d, o = []) => {
   for (const e of fs.readdirSync(d, { withFileTypes: true })) {
     if (skip.has(e.name)) continue;

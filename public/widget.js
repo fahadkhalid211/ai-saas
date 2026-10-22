@@ -1583,17 +1583,38 @@
       var originalHtml = btn.innerHTML;
       btn.innerHTML = '⏳ Adding to Cart...';
 
-      fetch('/?wc-ajax=add_to_cart', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams({ product_id: pid, quantity: 1 }),
-      })
-      .then(function (res) {
-        return res.text();
-      })
+      // On a Shopify storefront the id is a variant id and the cart API is /cart/add.js.
+      var isShopify = !!(window.Shopify && window.Shopify.shop);
+      var request = isShopify
+        ? fetch('/cart/add.js', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+            body: JSON.stringify({ items: [{ id: Number(pid), quantity: 1 }] }),
+          }).then(function (res) {
+            if (!res.ok) throw new Error('cart-add-failed');
+            return res.text();
+          })
+        : fetch('/?wc-ajax=add_to_cart', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams({ product_id: pid, quantity: 1 }),
+          }).then(function (res) {
+            return res.text();
+          });
+
+      request
       .then(function () {
         btn.classList.add('added');
         btn.innerHTML = '✓ Added! <a href="/cart" target="_blank" rel="noopener noreferrer" style="color:#ffffff;text-decoration:underline;margin-left:6px;font-weight:700;">View Cart &rarr;</a>';
+
+        try {
+          if (isShopify) {
+            // Ask the theme to redraw its cart count/drawer; themes listen for different events, so send the common ones.
+            ['cart:refresh', 'cart:updated', 'cart:build'].forEach(function (name) {
+              document.dispatchEvent(new CustomEvent(name, { bubbles: true }));
+            });
+          }
+        } catch (shopErr) {}
 
         try {
           if (window.jQuery) {
@@ -1603,7 +1624,7 @@
         } catch (evtErr) {}
       })
       .catch(function () {
-        window.open('/cart/?add-to-cart=' + encodeURIComponent(pid), '_blank');
+        window.open(isShopify ? '/cart/' + encodeURIComponent(pid) + ':1' : '/cart/?add-to-cart=' + encodeURIComponent(pid), '_blank');
         btn.disabled = false;
         btn.innerHTML = originalHtml;
       });

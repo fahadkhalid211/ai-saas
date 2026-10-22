@@ -14,7 +14,7 @@ if [ -z "$VERCEL_GIT_PREVIOUS_SHA" ] || ! git cat-file -e "$VERCEL_GIT_PREVIOUS_
 fi
 
 if git diff --quiet "$VERCEL_GIT_PREVIOUS_SHA" "${VERCEL_GIT_COMMIT_SHA:-HEAD}" -- . \
-  ':(exclude)mobile' ':(exclude)scripts' ':(exclude)ops' ':(exclude)wordpress' ':(exclude)voice-worker' \
+  ':(exclude)mobile' ':(exclude)scripts' ':(exclude)ops' ':(exclude)wordpress' ':(exclude)shopify' ':(exclude)voice-worker' \
   ':(exclude)load-tests' ':(exclude).github' ':(exclude).cursor' ':(exclude).claude' ':(exclude).reticle' \
   ':(exclude)docs' ':(exclude)eval' ':(exclude)supabase' ':(exclude)public/instagram' \
   ':(exclude)crescelo-platform-overview.html' ':(exclude,glob)**/*.md' \

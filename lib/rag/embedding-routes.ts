@@ -13,6 +13,7 @@ export const EMBEDDING_ROUTES: string[] = [
   '/api/channels/telegram',
   '/api/channels/whatsapp',
   '/api/chat',
+  '/api/connectors/shopify/sync',
   '/api/connectors/wordpress/sync',
   '/api/connectors/wordpress/sync-item',
   '/api/cron/recrawl',

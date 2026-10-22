@@ -1,0 +1,18 @@
+# Crescelo AI Assistant: Shopify app (theme app extension).
+#
+# Replace client_id with the one from your Shopify Partner Dashboard (Apps > Create app), or run
+# `shopify app config link` and let the CLI fill this file in.
+name = "Crescelo AI Assistant"
+client_id = "REPLACE_WITH_YOUR_PARTNER_DASHBOARD_CLIENT_ID"
+application_url = "https://www.crescelo.com/connect/shopify"
+embedded = false
+
+[access_scopes]
+# The extension only adds a storefront widget; the catalog is read from the public storefront, so no Admin scopes.
+scopes = ""
+
+[auth]
+redirect_urls = ["https://www.crescelo.com/connect/shopify"]
+
+[webhooks]
+api_version = "2025-10"

@@ -2,6 +2,7 @@
 mobile/
 voice-worker/
 wordpress/
+shopify/
 
 # Local databases, build artifacts, and caches
 .data/

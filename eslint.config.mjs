@@ -9,6 +9,7 @@ const eslintConfig = defineConfig([
   globalIgnores([
     "mobile/**",
     "wordpress/**",
+    "shopify/**",
     "voice-worker/**",
     "load-tests/**",
     "eval/**",

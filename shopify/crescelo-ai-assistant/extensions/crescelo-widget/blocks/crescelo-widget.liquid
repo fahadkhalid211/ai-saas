@@ -1,0 +1,54 @@
+{%- comment -%}
+  Crescelo AI Assistant: app embed. Loads the chat widget on every page of the store.
+  Turn it on under Online Store > Themes > Customize > App embeds.
+{%- endcomment -%}
+
+{%- assign assistant_id = block.settings.assistant_id | strip -%}
+{%- assign host_url = block.settings.host_url | strip -%}
+{%- if host_url == blank -%}
+  {%- assign host_url = 'https://www.crescelo.com' -%}
+{%- endif -%}
+
+{%- if assistant_id != blank and host_url contains 'https://' -%}
+  <script>
+    window.CresceloShopify = {
+      shop: {{ shop.permanent_domain | json }},
+      domain: {{ request.host | json }},
+      currency: {{ cart.currency.iso_code | default: shop.currency | json }},
+      locale: {{ request.locale.iso_code | json }},
+      page: {
+        type: {{ request.page_type | json }}{% if product %},
+        productId: {{ product.id | json }},
+        productTitle: {{ product.title | json }}{% endif %}{% if collection %},
+        collectionTitle: {{ collection.title | json }}{% endif %}
+      }
+    };
+  </script>
+  <script src="{{ host_url | append: '/widget.js' }}" data-assistant="{{ assistant_id | escape }}" defer></script>
+{%- elsif request.design_mode -%}
+  <div style="position:fixed;bottom:16px;right:16px;z-index:2147483000;max-width:280px;padding:12px 14px;border-radius:10px;background:#08251a;color:#fff;font:13px/1.4 system-ui,sans-serif">
+    {{ 'setup_hint' | t }}
+  </div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Crescelo AI Assistant",
+  "target": "body",
+  "settings": [
+    {
+      "type": "text",
+      "id": "assistant_id",
+      "label": "Assistant ID",
+      "info": "Copy it from Crescelo: Dashboard > Connect Shopify."
+    },
+    {
+      "type": "text",
+      "id": "host_url",
+      "label": "Crescelo server URL",
+      "default": "https://www.crescelo.com",
+      "info": "Leave as is unless you run your own Crescelo."
+    }
+  ]
+}
+{% endschema %}

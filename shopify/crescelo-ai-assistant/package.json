@@ -1,0 +1,11 @@
+{
+  "name": "crescelo-ai-assistant-shopify",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Crescelo AI Assistant for Shopify: a theme app extension that adds the AI chat widget to a store.",
+  "scripts": {
+    "dev": "shopify app dev",
+    "deploy": "shopify app deploy",
+    "check": "shopify app build"
+  }
+}

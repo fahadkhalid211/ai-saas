@@ -1,0 +1,14 @@
+{
+  "name": "Crescelo AI Assistant",
+  "settings": {
+    "assistant_id": {
+      "label": "Assistant ID",
+      "info": "Copy it from Crescelo: Dashboard > Connect Shopify."
+    },
+    "host_url": {
+      "label": "Crescelo server URL",
+      "info": "Leave as is unless you run your own Crescelo."
+    }
+  },
+  "setup_hint": "Crescelo AI Assistant is on, but no Assistant ID is set yet. Open the app embed settings and paste yours."
+}
