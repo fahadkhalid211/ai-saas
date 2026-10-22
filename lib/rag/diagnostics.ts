@@ -23,6 +23,35 @@ export function diagnoseKnowledgeFailure(params: {
   const isAudio = ['mp3', 'wav', 'm4a', 'ogg', 'flac', 'aac', 'opus', 'wma', 'audio'].includes(ext);
   const isMedia = isVideo || isAudio;
 
+  // 0. YouTube links: each reason (lib/rag/url-extractor.ts youTubeFailure) needs its own advice
+  if (lowerMsg.includes('youtube is refusing')) {
+    return {
+      category: 'general',
+      reason: 'YouTube is blocking our server from reading this video. This is about the server\'s network address, not about your video.',
+      whatToDoNext:
+        'Two quick ways around it: (1) open the video on YouTube, click "…" then "Show transcript", copy the text and add it as a text document in My Documents; or (2) download the video (or just its audio) and upload the file instead. You can also try the link again later.',
+      actionLabel: 'Add the transcript as a text document',
+    };
+  }
+  if (lowerMsg.includes('this youtube video cannot be read')) {
+    return {
+      category: 'general',
+      reason: errorMessage,
+      whatToDoNext:
+        'Make sure the video is public (not private, members-only or age-restricted) and that the link opens for anyone. If it is yours, change its visibility to Public or Unlisted and add the link again.',
+      actionLabel: 'Check the video and try again',
+    };
+  }
+  if (lowerMsg.includes('has no captions or subtitles')) {
+    return {
+      category: 'content',
+      reason: 'This video has no captions or subtitles we can read, so there was nothing to turn into text.',
+      whatToDoNext:
+        'Turn on automatic captions for the video (YouTube Studio, Subtitles) and add the link again, or upload the video or its audio file. A free Groq key in AI Settings lets Crescelo transcribe the sound of an uploaded file.',
+      actionLabel: 'Upload the video or audio instead',
+    };
+  }
+
   // 1. File Size Limit Exceeded (> 25MB for media Whisper APIs)
   if (
     lowerMsg.includes('exceeding the 25mb limit') ||

@@ -5,6 +5,7 @@ import { execFile } from 'child_process';
 import { promisify } from 'util';
 import { validateSafeExternalUrl } from '../security/ssrf';
 import https from 'node:https';
+import { createProxiedHttpsAgent } from './proxy-agent';
 
 const execFileAsync = promisify(execFile);
 
@@ -257,11 +258,18 @@ function parseTimedtextXml(
   return results;
 }
 
-const youtubeHttpsAgent = new https.Agent({
-  keepAlive: true,
-  maxSockets: 16,
-  timeout: 30000,
-});
+/**
+ * YouTube treats the addresses of cloud hosts (Vercel, AWS, Oracle) very differently from a home connection: the player API and watch
+ * page answer "sign in to confirm you are not a robot" instead of the video. Setting YOUTUBE_PROXY_URL (an http(s) proxy, e.g. a
+ * residential one: http://user:pass@host:port) sends every YouTube request through it, which is the reliable fix on such a host.
+ */
+const youtubeHttpsAgent: https.Agent = process.env.YOUTUBE_PROXY_URL?.trim()
+  ? createProxiedHttpsAgent(process.env.YOUTUBE_PROXY_URL.trim(), { keepAlive: true, maxSockets: 16, timeout: 30000 })
+  : new https.Agent({
+      keepAlive: true,
+      maxSockets: 16,
+      timeout: 30000,
+    });
 
 function httpsPostJson(
   urlStr: string,
@@ -313,11 +321,12 @@ function httpsGetBuffer(
   urlStr: string,
   userAgent?: string,
   rangeHeader?: string,
-  timeoutMs: number = 30000
+  timeoutMs: number = 30000,
+  extraHeaders?: Record<string, string>
 ): Promise<{ statusCode: number; data: Buffer }> {
   return new Promise((resolve, reject) => {
     const url = new URL(urlStr);
-    const headers: Record<string, string> = {};
+    const headers: Record<string, string> = { ...(extraHeaders || {}) };
     if (userAgent) headers['User-Agent'] = userAgent;
     if (rangeHeader) headers['Range'] = rangeHeader;
 
@@ -340,7 +349,7 @@ function httpsGetBuffer(
           const redirectUrl = res.headers.location.startsWith('http')
             ? res.headers.location
             : new URL(res.headers.location, urlStr).toString();
-          httpsGetBuffer(redirectUrl, userAgent, rangeHeader, timeoutMs).then(resolve, reject);
+          httpsGetBuffer(redirectUrl, userAgent, rangeHeader, timeoutMs, extraHeaders).then(resolve, reject);
           return;
         }
 
@@ -393,7 +402,78 @@ interface YouTubeInnerTubeData {
   author?: string;
   captionTracks?: YouTubeCaptionTrack[];
   audioStreamUrl?: string;
+  /** What YouTube said about whether the video can be played (OK, LOGIN_REQUIRED, UNPLAYABLE, ...), when it answered at all. */
+  playability?: { status: string; reason?: string };
+  /** The watch page was a bot check or consent page instead of the video. */
+  botCheck?: boolean;
 }
+
+/**
+ * Why a YouTube link could not be read. The three need different advice, and "may contain only music" was being said for all of them:
+ *  - blocked: YouTube refused this server (a bot check, or no answer at all), which is about the host's network, not the video
+ *  - unavailable: the video is private, removed, age-restricted, members-only or region-locked
+ *  - no_captions: the video has no captions we can read, and no speech could be transcribed from its audio
+ */
+export type YouTubeFailureCode = 'blocked' | 'unavailable' | 'no_captions';
+
+export class YouTubeExtractionError extends Error {
+  code: YouTubeFailureCode;
+  constructor(code: YouTubeFailureCode, message: string) {
+    super(message);
+    this.name = 'YouTubeExtractionError';
+    this.code = code;
+  }
+}
+
+function readPlayability(data: any): { status: string; reason?: string } | undefined {
+  const ps = data?.playabilityStatus;
+  if (!ps || typeof ps.status !== 'string') return undefined;
+  const reason = ps.reason || ps.errorScreen?.playerErrorMessageRenderer?.reason?.simpleText;
+  return { status: ps.status, reason: typeof reason === 'string' ? reason : undefined };
+}
+
+const BOT_REASON = /not a bot|sign in to confirm|confirm you.re not|unusual traffic|automated/i;
+
+export interface YouTubeFailureFacts {
+  title: string;
+  /** The watch page was a bot-check or consent page, or answered 403 / 429. */
+  botCheck: boolean;
+  /** YouTube answered with anything at all (a title, caption list or playability verdict). */
+  heardFromYouTube: boolean;
+  /** The video lists caption tracks (so none could be downloaded). */
+  captionTracksListed: boolean;
+  playability?: { status: string; reason?: string };
+  /** Text about a failed attempt to transcribe the audio, to show after the main reason. */
+  audioError?: string;
+}
+
+/**
+ * Names the real reason no transcript could be made, from what YouTube did and did not say. "Blocked" covers every way a cloud server is
+ * turned away: a bot check, a sign-in wall, no answer at all, or caption tracks that are listed but will not download.
+ */
+export function youTubeFailure(f: YouTubeFailureFacts): YouTubeExtractionError {
+  const p = f.playability;
+  const signInWall = p?.status === 'LOGIN_REQUIRED' && (BOT_REASON.test(p.reason || '') || !p.reason);
+  if (f.botCheck || !f.heardFromYouTube || signInWall || f.captionTracksListed) {
+    return new YouTubeExtractionError(
+      'blocked',
+      "YouTube is refusing to let our server read this video (it asks the server to sign in or prove it is not a robot). This is about the server's network address, not your video."
+    );
+  }
+  if (p && p.status !== 'OK') {
+    return new YouTubeExtractionError(
+      'unavailable',
+      `This YouTube video cannot be read: YouTube reports it as ${p.reason || p.status.toLowerCase().replace(/_/g, ' ')} ("${f.title}"). It may be private, age-restricted, members-only or removed.`
+    );
+  }
+  return new YouTubeExtractionError(
+    'no_captions',
+    `This YouTube video ("${f.title}") has no captions or subtitles we can read, and no speech could be transcribed from its audio.${f.audioError || ''}`
+  );
+}
+
+/** Sent with the watch-page request so a consent interstitial (shown to some regions) is not served instead of the video. */
+const CONSENT_HEADERS = { Cookie: 'SOCS=CAI; CONSENT=YES+1', 'Accept-Language': 'en-US,en;q=0.9' };
 
 /**
  * Strategy 0: Scrape ytInitialPlayerResponse from the YouTube watch page HTML.
@@ -410,16 +490,18 @@ async function scrapeYouTubeWatchPage(videoId: string): Promise<YouTubeInnerTube
     'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36',
   ];
 
+  let botCheck = false;
   for (const ua of userAgents) {
     try {
       // Use httpsGetBuffer (Node native https module) — reliable on both Linux (Vercel) and Windows
       const res = await queryHttpsWithRetry(
-        () => httpsGetBuffer(watchUrl, ua, undefined, 15000),
+        () => httpsGetBuffer(watchUrl, ua, undefined, 15000, CONSENT_HEADERS),
         2,
         500
       );
 
       if (res.statusCode < 200 || res.statusCode >= 300) {
+        if (res.statusCode === 429 || res.statusCode === 403) botCheck = true;
         console.warn(`[URLExtractor] Watch page GET ${res.statusCode} for ${videoId}, trying next UA...`);
         continue;
       }
@@ -432,7 +514,8 @@ async function scrapeYouTubeWatchPage(videoId: string): Promise<YouTubeInnerTube
       const iprMatch = html.match(/ytInitialPlayerResponse\s*=\s*(\{[\s\S]*?\});\s*(?:var |const |let |<\/script>|if\s*\()/);
       if (!iprMatch) {
         // Check if we got a bot-check page instead
-        if (html.includes('enable JavaScript') || html.includes('Are you a robot')) {
+        if (html.includes('enable JavaScript') || html.includes('Are you a robot') || html.includes('consent.youtube.com') || html.includes('unusual traffic')) {
+          botCheck = true;
           console.warn(`[URLExtractor] Watch page returned bot-check for ${videoId}, trying next UA...`);
         } else {
           console.warn(`[URLExtractor] ytInitialPlayerResponse not found in watch page for ${videoId} (html len=${html.length})`);
@@ -469,13 +552,14 @@ async function scrapeYouTubeWatchPage(videoId: string): Promise<YouTubeInnerTube
         author,
         captionTracks,
         audioStreamUrl: audioFormat?.url,
+        playability: readPlayability(data),
       };
     } catch (err: any) {
       console.warn(`[URLExtractor] Watch page scrape failed for ${videoId} UA[${ua.slice(0, 30)}]:`, err?.message);
     }
   }
 
-  return {};
+  return botCheck ? { botCheck: true } : {};
 }
 
 async function queryYouTubeInnerTube(videoId: string): Promise<YouTubeInnerTubeData> {
@@ -512,6 +596,7 @@ async function queryYouTubeInnerTube(videoId: string): Promise<YouTubeInnerTubeD
   let bestAuthor: string | undefined;
   let bestCaptionTracks: YouTubeCaptionTrack[] = [];
   let bestAudioStreamUrl: string | undefined;
+  let playability: { status: string; reason?: string } | undefined;
 
   for (const host of hosts) {
     for (const client of clients) {
@@ -529,6 +614,10 @@ async function queryYouTubeInnerTube(videoId: string): Promise<YouTubeInnerTubeD
         );
 
         if (!data) continue;
+
+        const verdict = readPlayability(data);
+        // one client refusing (a sign-in wall on the web client) does not make the video unplayable when another says OK
+        if (verdict && (!playability || (playability.status !== 'OK' && verdict.status === 'OK'))) playability = verdict;
 
         if (!bestTitle && data?.videoDetails?.title) {
           bestTitle = data.videoDetails.title;
@@ -565,6 +654,7 @@ async function queryYouTubeInnerTube(videoId: string): Promise<YouTubeInnerTubeD
             author: bestAuthor,
             captionTracks: bestCaptionTracks,
             audioStreamUrl: bestAudioStreamUrl,
+            playability,
           };
         }
       } catch (err: any) {
@@ -581,6 +671,7 @@ async function queryYouTubeInnerTube(videoId: string): Promise<YouTubeInnerTubeD
     author: bestAuthor,
     captionTracks: bestCaptionTracks,
     audioStreamUrl: bestAudioStreamUrl,
+    playability,
   };
 }
 
@@ -597,11 +688,15 @@ interface PublicTranscriptResult {
  * with timestamps and titles within 1-2 seconds without datacenter IP blocks.
  */
 async function fetchTranscriptFromPublicService(videoId: string): Promise<PublicTranscriptResult | null> {
+  // The service now answers 401 without a key (a free key allows 10 requests a day), so it is only asked when YOUTUBE_TRANSCRIPT_API_KEY is set.
+  const apiKey = process.env.YOUTUBE_TRANSCRIPT_API_KEY?.trim();
+  if (!apiKey) return null;
   try {
     const res = await fetch(`https://youtube-transcript.ai/transcript/${videoId}.txt`, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36',
         'Accept': 'text/plain, text/markdown, */*',
+        Authorization: `Bearer ${apiKey}`,
       },
       signal: AbortSignal.timeout(12000),
     });
@@ -679,6 +774,9 @@ export async function extractFromYouTube(
 
   // Strategy 2: Direct Watch Page Scrape + Multi-Client InnerTube Query (fallback if Strategy 1 fails)
   let innerTubeDataForStrategies: YouTubeInnerTubeData = {};
+  let playability: { status: string; reason?: string } | undefined;
+  let botCheck = false;
+  let heardFromYouTube = true;
   if (rawTranscript.length === 0) {
     const [watchPageData, innerTubeData] = await Promise.allSettled([
       scrapeYouTubeWatchPage(videoId),
@@ -697,6 +795,12 @@ export async function extractFromYouTube(
     const mergedTitle = watchData.title || itData.title;
     const mergedAuthor = watchData.author || itData.author;
     const mergedAudioUrl = watchData.audioStreamUrl || itData.audioStreamUrl;
+
+    // Any source saying OK means the video plays; only when none does is the first refusal the explanation. A bot check, or silence from every client, says "blocked".
+    const verdicts = [watchData.playability, itData.playability].filter(Boolean) as Array<{ status: string; reason?: string }>;
+    playability = verdicts.find((v) => v.status === 'OK') || verdicts[0];
+    botCheck = Boolean(watchData.botCheck);
+    heardFromYouTube = Boolean(mergedTitle || mergedCaptionTracks.length > 0 || verdicts.length > 0);
 
     innerTubeDataForStrategies = {
       title: mergedTitle,
@@ -840,9 +944,15 @@ export async function extractFromYouTube(
     const errorDetails = audioFallbackError
       ? ` Audio transcription was attempted but failed: ${audioFallbackError}`
       : '';
-    throw new Error(
-      `No spoken transcript or captions found for this YouTube video ("${finalTitle}").${errorDetails} The video may contain only music or no audible speech.`
-    );
+    console.warn(`[URLExtractor] No transcript for ${videoId}: ${playability ? `${playability.status} ${playability.reason || ''}` : botCheck ? 'bot check page' : 'no player data'}`);
+    throw youTubeFailure({
+      title: finalTitle,
+      botCheck,
+      heardFromYouTube,
+      captionTracksListed: (innerTubeDataForStrategies.captionTracks?.length ?? 0) > 0,
+      playability,
+      audioError: errorDetails,
+    });
   }
 
   const detectedLang = rawTranscript[0]?.lang || 'en';
