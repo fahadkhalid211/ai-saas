@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { Database } from '@/lib/db';
 import { withAdminAuth, withRoleAuth, getAuthContext, requireWorkspaceAssistant, generateCalendarFeedToken } from '@/lib/security/auth';
 import { maskSecret } from '@/lib/security/crypto';
-import { hasConnectedAiKey } from '@/lib/ai/resolve-provider';
+import { isMaskedKey, keyFieldsForClient, needsOwnKey, platformKeyFor, recordVerification, storedKeyProvider } from '@/lib/ai/key-health';
 import { getClientIp } from '@/lib/security/rate-limit';
 import { sanitizePhoneSettings } from '@/lib/voice/settings';
 import {
@@ -33,7 +33,7 @@ const GETHandler = withAdminAuth(async (
     const sanitized = {
       ...assistant,
       apiKeyEncrypted: assistant.apiKeyEncrypted ? maskSecret(assistant.apiKeyEncrypted) : '',
-      hasConnectedKey: hasConnectedAiKey(assistant),
+      ...keyFieldsForClient(assistant),
       telegramBotToken: assistant.telegramBotToken ? maskSecret(assistant.telegramBotToken) : '',
       whatsappAccessToken: assistant.whatsappAccessToken ? maskSecret(assistant.whatsappAccessToken) : '',
       webhookSecret: assistant.webhookSecret ? maskSecret(assistant.webhookSecret) : '',
@@ -78,6 +78,11 @@ const PUTHandler = withRoleAuth(['owner', 'admin'], async (
       updatedAt: _forbiddenUpdatedAt,
       ...safeUpdates
     } = body;
+    // The dashboard sends the whole record back on every save, including fields the server computes. They are never stored from a request.
+    delete safeUpdates.hasConnectedKey;
+    delete safeUpdates.keyHealth;
+    delete safeUpdates.aiKeyStatus;
+    delete safeUpdates.apiKeyProvider;
 
     // Links the widget and hosted pages render must be web addresses: a javascript: or data: link would run in a visitor's browser.
     for (const field of ['bookingUrl', 'customBrandingUrl'] as const) {
@@ -116,13 +121,33 @@ const PUTHandler = withRoleAuth(['owner', 'admin'], async (
     }
 
     // Connection verification for AI Engine & messaging connectors before saving
-    const isAiConfigChanging =
-      (safeUpdates.provider !== undefined && safeUpdates.provider !== existing.provider) ||
-      (safeUpdates.apiKeyEncrypted !== undefined &&
-        !safeUpdates.apiKeyEncrypted.includes('****') &&
-        safeUpdates.apiKeyEncrypted !== '') ||
-      (safeUpdates.customBaseUrl !== undefined && safeUpdates.customBaseUrl !== existing.customBaseUrl);
+    // "Changing" means really changing: the screen sends every field on every save, so an unset address arriving as '' (or the same
+    // provider again) is not a change, and must not trigger a live check of the key on, say, a Behavior save.
+    const providerChanging = safeUpdates.provider !== undefined && safeUpdates.provider !== existing.provider;
+    const newKeyGiven = typeof safeUpdates.apiKeyEncrypted === 'string' && safeUpdates.apiKeyEncrypted !== '' && !isMaskedKey(safeUpdates.apiKeyEncrypted);
+    const baseUrlChanging = safeUpdates.customBaseUrl !== undefined && (safeUpdates.customBaseUrl || '') !== (existing.customBaseUrl || '');
+    const isAiConfigChanging = providerChanging || newKeyGiven || baseUrlChanging;
 
+    // A key belongs to the provider it was pasted for. Switching provider without pasting a key for the new one would send the old
+    // provider's key to the new provider (a Groq key to OpenAI), so it is refused instead of saved.
+    let keyForTargetProvider = true;
+    if (providerChanging && !newKeyGiven && needsOwnKey(String(safeUpdates.provider))) {
+      const target = String(safeUpdates.provider).toLowerCase();
+      const reusable = Boolean(existing.apiKeyEncrypted) && storedKeyProvider(existing) === target;
+      if (!reusable) {
+        if (!platformKeyFor(target)) {
+          return NextResponse.json(
+            { error: `Paste your ${target} API key to switch to it. The key saved on this assistant belongs to ${storedKeyProvider(existing)}, so it cannot be used with ${target}.`, keyRequired: true },
+            { status: 400 }
+          );
+        }
+        // the platform's own key will serve; the saved key is for another provider and must not be used with this one
+        phoneCheck.updates.apiKeyEncrypted = '';
+        keyForTargetProvider = false;
+      }
+    }
+
+    let verifiedNow: Awaited<ReturnType<typeof verifyAiProviderConnection>> | null = null;
     if (isAiConfigChanging) {
       const targetProvider = safeUpdates.provider !== undefined ? safeUpdates.provider : existing.provider;
       const isCustomEndpoint = targetProvider === 'custom';
@@ -143,17 +168,19 @@ const PUTHandler = withRoleAuth(['owner', 'admin'], async (
 
       let keyToVerify = '';
       if (safeUpdates.apiKeyEncrypted !== undefined) {
-        keyToVerify = safeUpdates.apiKeyEncrypted.includes('****')
+        keyToVerify = isMaskedKey(safeUpdates.apiKeyEncrypted)
           ? existing.apiKeyEncrypted || ''
           : safeUpdates.apiKeyEncrypted;
       } else {
         keyToVerify = existing.apiKeyEncrypted || '';
       }
+      if (!keyForTargetProvider) keyToVerify = platformKeyFor(targetProvider);
 
       const aiCheck = await verifyAiProviderConnection(targetProvider, keyToVerify, {
         customBaseUrl: targetBaseUrl,
         modelName: targetModel,
       });
+      verifiedNow = aiCheck;
 
       if (!aiCheck.success) {
         return NextResponse.json(
@@ -226,10 +253,20 @@ const PUTHandler = withRoleAuth(['owner', 'admin'], async (
       return NextResponse.json({ error: 'Assistant not found' }, { status: 404 });
     }
 
+    // remember which provider a newly pasted key was for, and share the verdict of the check that just passed with the screens
+    if (newKeyGiven) {
+      updated.apiKeyProvider = String(safeUpdates.provider ?? existing.provider ?? 'groq').toLowerCase();
+      await Database.setApiKeyProvider(updated.id, updated.apiKeyProvider);
+    }
+    if (verifiedNow) await recordVerification(updated, verifiedNow);
+    // the sanitized copy below reads the fresh status
+    const fresh = await Database.getAssistantById(updated.id);
+    if (fresh) updated.aiKeyStatus = fresh.aiKeyStatus;
+
     const sanitized = {
       ...updated,
       apiKeyEncrypted: updated.apiKeyEncrypted ? maskSecret(updated.apiKeyEncrypted) : '',
-      hasConnectedKey: hasConnectedAiKey(updated),
+      ...keyFieldsForClient(updated),
       telegramBotToken: updated.telegramBotToken ? maskSecret(updated.telegramBotToken) : '',
       whatsappAccessToken: updated.whatsappAccessToken ? maskSecret(updated.whatsappAccessToken) : '',
       webhookSecret: updated.webhookSecret ? maskSecret(updated.webhookSecret) : '',

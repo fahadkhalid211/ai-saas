@@ -125,6 +125,20 @@ export interface AssistantData {
   provider: string; // ollama, groq, openai, anthropic, gemini, deepseek, custom
   modelName: string;
   apiKeyEncrypted?: string;
+  /** The provider the saved key was pasted for. Server-controlled: a key is never used with another provider. */
+  apiKeyProvider?: string;
+  /** What the last check of the AI key found (lib/ai/key-health.ts). Written only by the server, never accepted from a client. */
+  aiKeyStatus?: {
+    state: 'valid' | 'invalid' | 'unreachable';
+    message: string;
+    checkedAt: string;
+    /** Which key and provider the check was about, so a changed key is never judged by an old result. */
+    fingerprint: string;
+    provider: string;
+  };
+  /** Computed for the screens (see lib/ai/key-health.ts); never stored. */
+  hasConnectedKey?: boolean;
+  keyHealth?: unknown;
   customBaseUrl?: string;
   /** Monthly spending limit on the customer's own AI key (see lib/ai/spend/guard.ts). */
   costCap?: CostCapSettings;
@@ -1277,6 +1291,8 @@ export class Database {
     return list.map((a) => ({
       ...a,
       apiKeyEncrypted: decryptSecret(a.apiKeyEncrypted || ''),
+      hasConnectedKey: undefined, // computed for the screens, never a stored fact (older saves wrote it into the record)
+      keyHealth: undefined,
       telegramBotToken: decryptSecret(a.telegramBotToken || ''),
       whatsappAccessToken: decryptSecret(a.whatsappAccessToken || ''),
       webhookSecret: decryptSecret(a.webhookSecret || ''),
@@ -1331,6 +1347,8 @@ export class Database {
     return {
       ...a,
       apiKeyEncrypted: decryptSecret(a.apiKeyEncrypted || ''),
+      hasConnectedKey: undefined, // computed for the screens, never a stored fact (older saves wrote it into the record)
+      keyHealth: undefined,
       telegramBotToken: decryptSecret(a.telegramBotToken || ''),
       whatsappAccessToken: decryptSecret(a.whatsappAccessToken || ''),
       webhookSecret: decryptSecret(a.webhookSecret || ''),
@@ -1392,6 +1410,8 @@ export class Database {
     return {
       ...newAssistant,
       apiKeyEncrypted: decryptSecret(newAssistant.apiKeyEncrypted || ''),
+      hasConnectedKey: undefined, // computed for the screens, never a stored fact (older saves wrote it into the record)
+      keyHealth: undefined,
       telegramBotToken: decryptSecret(newAssistant.telegramBotToken || ''),
       whatsappAccessToken: decryptSecret(newAssistant.whatsappAccessToken || ''),
       webhookSecret: decryptSecret(newAssistant.webhookSecret || ''),
@@ -1412,6 +1432,12 @@ export class Database {
     if (workspaceId && workspaceId !== '*') {
       delete updates.workspaceId;
     }
+    // the result of a key check is the server's finding (setAiKeyStatus), not something a request can set
+    delete updates.aiKeyStatus;
+    delete updates.apiKeyProvider; // set by the assistant route together with the key, never by a client
+    // computed fields the dashboard sends back with every save: stored, they made a removed key look connected for ever
+    delete (updates as Record<string, unknown>).hasConnectedKey;
+    delete (updates as Record<string, unknown>).keyHealth;
 
     // Handle encrypted fields: Only update if a new unmasked value was provided
     if (updates.apiKeyEncrypted !== undefined) {
@@ -1454,10 +1480,41 @@ export class Database {
     return {
       ...updated,
       apiKeyEncrypted: decryptSecret(updated.apiKeyEncrypted || ''),
+      hasConnectedKey: undefined, // computed for the screens, never a stored fact (older saves wrote it into the record)
+      keyHealth: undefined,
       telegramBotToken: decryptSecret(updated.telegramBotToken || ''),
       whatsappAccessToken: decryptSecret(updated.whatsappAccessToken || ''),
       webhookSecret: decryptSecret(updated.webhookSecret || ''),
     };
+  }
+
+  /** Records which provider the assistant's saved key was pasted for. Only the assistant route calls this, together with saving a key. */
+  static async setApiKeyProvider(id: string, provider: string): Promise<void> {
+    const state = await ensureInitialized();
+    const idx = state.assistants.findIndex((x) => x.id === id);
+    if (idx === -1 || state.assistants[idx].apiKeyProvider === provider) return;
+    state.assistants[idx].apiKeyProvider = provider;
+    await saveState(state);
+  }
+
+  /** Stores the result of an AI key check on the assistant. Does nothing if the assistant is gone or the result is unchanged. */
+  static async setAiKeyStatus(id: string, status: AssistantData['aiKeyStatus'] | null): Promise<void> {
+    const state = await ensureInitialized();
+    const idx = state.assistants.findIndex((a) => a.id === id);
+    if (idx === -1) return;
+    const current = state.assistants[idx].aiKeyStatus;
+    if (!status && !current) return;
+    // an identical verdict only moves the check time; it is written to disk when something real changed, or about once a minute
+    if (
+      status && current &&
+      current.state === status.state && current.fingerprint === status.fingerprint && current.message === status.message &&
+      Date.parse(status.checkedAt) - Date.parse(current.checkedAt) < 60_000
+    ) {
+      return;
+    }
+    if (status) state.assistants[idx].aiKeyStatus = status;
+    else delete state.assistants[idx].aiKeyStatus;
+    await saveState(state);
   }
 
   static async deleteAssistant(id: string, workspaceId?: string): Promise<boolean> {
@@ -3014,6 +3071,8 @@ export class Database {
     return {
       ...ast,
       apiKeyEncrypted: decryptSecret(ast.apiKeyEncrypted || ''),
+      hasConnectedKey: undefined, // computed for the screens, never a stored fact (older saves wrote it into the record)
+      keyHealth: undefined,
       telegramBotToken: decryptSecret(ast.telegramBotToken || ''),
       whatsappAccessToken: decryptSecret(ast.whatsappAccessToken || ''),
       webhookSecret: decryptSecret(ast.webhookSecret || ''),

@@ -4,10 +4,24 @@ import { validateSafeExternalUrl } from '@/lib/security/ssrf';
  * Validates external API credentials and network endpoints before saving configurations.
  */
 
+/**
+ * Why a check failed, so a screen can tell "your key is wrong" from "we could not reach the provider right now":
+ *  - invalid: the provider answered and refused the key (HTTP 400, 401 or 403)
+ *  - missing: there is no key to check
+ *  - unreachable: no usable answer (network error, timeout, rate limit, provider outage). Says nothing about the key.
+ */
+export type VerificationFailure = 'invalid' | 'missing' | 'unreachable';
+
 export interface VerificationResult {
   success: boolean;
   message: string;
   details?: Record<string, any>;
+  failure?: VerificationFailure;
+}
+
+/** The provider refusing the key is a 400/401/403; every other status (404, 429, 5xx) is not a verdict on the key. */
+export function failureForStatus(status: number): VerificationFailure {
+  return status === 400 || status === 401 || status === 403 ? 'invalid' : 'unreachable';
 }
 
 const DEFAULT_TIMEOUT_MS = 8000;
@@ -89,6 +103,7 @@ export async function verifyAiProviderConnection(
 
     return {
       success: false,
+      failure: 'unreachable',
       message: `Could not connect to local Ollama at ${baseUrl}. Ensure Ollama is running (\`ollama run llama3.2\`) and accessible. (${lastError})`,
     };
   }
@@ -97,6 +112,7 @@ export async function verifyAiProviderConnection(
   if (!apiKey || typeof apiKey !== 'string' || !apiKey.trim()) {
     return {
       success: false,
+      failure: 'missing',
       message: `An API key is required to connect ${provider.toUpperCase()}. Please paste your key.`,
     };
   }
@@ -118,11 +134,13 @@ export async function verifyAiProviderConnection(
       const reason = errJson?.error?.message || `HTTP ${res.status}`;
       return {
         success: false,
+        failure: failureForStatus(res.status),
         message: `Google Gemini authentication failed: ${reason}. Please verify your key at aistudio.google.com.`,
       };
     } catch (err: any) {
       return {
         success: false,
+        failure: 'unreachable',
         message: `Failed to reach Google Gemini API: ${err?.message || 'Network timeout'}. Please check your internet connection.`,
       };
     }
@@ -147,11 +165,13 @@ export async function verifyAiProviderConnection(
       const reason = errJson?.error?.message || `HTTP ${res.status}`;
       return {
         success: false,
+        failure: failureForStatus(res.status),
         message: `OpenAI authentication failed: ${reason}. Please verify your key at platform.openai.com.`,
       };
     } catch (err: any) {
       return {
         success: false,
+        failure: 'unreachable',
         message: `Failed to reach OpenAI API: ${err?.message || 'Network timeout'}.`,
       };
     }
@@ -176,11 +196,13 @@ export async function verifyAiProviderConnection(
       const reason = errJson?.error?.message || `HTTP ${res.status}`;
       return {
         success: false,
+        failure: failureForStatus(res.status),
         message: `Groq authentication failed: ${reason}. Please verify your key at console.groq.com/keys.`,
       };
     } catch (err: any) {
       return {
         success: false,
+        failure: 'unreachable',
         message: `Failed to reach Groq Cloud API: ${err?.message || 'Network timeout'}.`,
       };
     }
@@ -206,11 +228,13 @@ export async function verifyAiProviderConnection(
       const reason = errJson?.error?.message || `HTTP ${res.status}`;
       return {
         success: false,
+        failure: failureForStatus(res.status),
         message: `Anthropic Claude authentication failed: ${reason}. Please verify your key at console.anthropic.com.`,
       };
     } catch (err: any) {
       return {
         success: false,
+        failure: 'unreachable',
         message: `Failed to reach Anthropic API: ${err?.message || 'Network timeout'}.`,
       };
     }
@@ -235,11 +259,13 @@ export async function verifyAiProviderConnection(
       const reason = errJson?.error?.message || `HTTP ${res.status}`;
       return {
         success: false,
+        failure: failureForStatus(res.status),
         message: `DeepSeek authentication failed: ${reason}. Please verify your key at platform.deepseek.com.`,
       };
     } catch (err: any) {
       return {
         success: false,
+        failure: 'unreachable',
         message: `Failed to reach DeepSeek API: ${err?.message || 'Network timeout'}.`,
       };
     }
@@ -264,11 +290,13 @@ export async function verifyAiProviderConnection(
       }
       return {
         success: false,
+        failure: failureForStatus(res.status),
         message: `Custom endpoint returned HTTP ${res.status} when querying models at ${testUrl}.`,
       };
     } catch (err: any) {
       return {
         success: false,
+        failure: 'unreachable',
         message: `Could not connect to custom endpoint at ${baseUrl}: ${err?.message || 'Connection refused'}.`,
       };
     }
@@ -276,6 +304,7 @@ export async function verifyAiProviderConnection(
 
   return {
     success: false,
+    failure: 'invalid',
     message: `Unknown or unsupported AI provider: "${provider}".`,
   };
 }

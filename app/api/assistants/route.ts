@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { Database } from '@/lib/db';
 import { withAdminAuth, withRoleAuth, getAuthContext, generateCalendarFeedToken } from '@/lib/security/auth';
 import { maskSecret } from '@/lib/security/crypto';
-import { hasConnectedAiKey } from '@/lib/ai/resolve-provider';
+import { keyFieldsForClient } from '@/lib/ai/key-health';
 import { BILLING_PLANS } from '@/lib/billing/plans';
 
 import { getClientIp } from '@/lib/security/rate-limit';
@@ -15,7 +15,7 @@ const GETHandler = withAdminAuth(async (req: Request) => {
     const sanitized = assistants.map((a) => ({
       ...a,
       apiKeyEncrypted: a.apiKeyEncrypted ? maskSecret(a.apiKeyEncrypted) : '',
-      hasConnectedKey: hasConnectedAiKey(a),
+      ...keyFieldsForClient(a),
       telegramBotToken: a.telegramBotToken ? maskSecret(a.telegramBotToken) : '',
       whatsappAccessToken: a.whatsappAccessToken ? maskSecret(a.whatsappAccessToken) : '',
       webhookSecret: a.webhookSecret ? maskSecret(a.webhookSecret) : '',
@@ -72,6 +72,7 @@ const POSTHandler = withRoleAuth(['owner', 'admin'], async (req: Request) => {
     const sanitized = {
       ...assistant,
       apiKeyEncrypted: assistant.apiKeyEncrypted ? maskSecret(assistant.apiKeyEncrypted) : '',
+      ...keyFieldsForClient(assistant),
       telegramBotToken: assistant.telegramBotToken ? maskSecret(assistant.telegramBotToken) : '',
       whatsappAccessToken: assistant.whatsappAccessToken ? maskSecret(assistant.whatsappAccessToken) : '',
       webhookSecret: assistant.webhookSecret ? maskSecret(assistant.webhookSecret) : '',

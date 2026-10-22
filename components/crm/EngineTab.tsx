@@ -2,7 +2,7 @@
 
 import { T, useT } from '@/lib/i18n/context';
 import { SaveButton } from '@/components/ui/SaveButton';
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { CostCapCard } from './CostCapCard';
 import {
   CheckCircle2,
@@ -19,6 +19,7 @@ import {
   BookOpen,
 } from 'lucide-react';
 import { hasConnectedAiKey } from '@/lib/ai/resolve-provider';
+import { useAiKeyHealth } from '@/lib/ai/use-key-health';
 import { ProviderLogo } from '@/components/crm/ProviderLogo';
 
 export interface EngineTabProps {
@@ -154,6 +155,11 @@ export const EngineTab: React.FC<EngineTabProps> = ({
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [isTesting, setIsTesting] = useState(false);
   const [testResult, setTestResult] = useState<{ success: boolean; message: string } | null>(null);
+  // Whether the saved key really works: asked of the provider every minute or so, and updated the moment a customer's chat is refused
+  const { health, checking, refresh } = useAiKeyHealth(activeAssistant?.id, activeAssistant?.keyHealth);
+  // What was typed or chosen for each provider while looking around, so clicking another provider card and coming back loses nothing
+  // (and never carries one provider's key over to another).
+  const drafts = useRef<Record<string, { apiKeyEncrypted?: string; modelName?: string; customBaseUrl?: string; ollamaHost?: string }>>({});
 
   const handleTestConnection = async () => {
     setIsTesting(true);
@@ -167,6 +173,8 @@ export const EngineTab: React.FC<EngineTabProps> = ({
         body: JSON.stringify({
           type: 'ai',
           provider: prov,
+          assistantId: activeAssistant?.id,
+          // a saved key is shown masked; the server then tests the saved key itself
           apiKey: formData.apiKeyEncrypted,
           customBaseUrl: isCustomOrOllama ? (formData.customBaseUrl || formData.ollamaHost) : undefined,
           modelName: formData.modelName,
@@ -177,6 +185,8 @@ export const EngineTab: React.FC<EngineTabProps> = ({
         success: res.ok && data.success,
         message: data.message || (res.ok ? 'Connection verified successfully!' : 'Connection test failed.'),
       });
+      // the server stored the verdict for a saved key: bring the badge and the status panel up to date at once
+      void refresh();
     } catch (err: any) {
       setTestResult({
         success: false,
@@ -202,6 +212,14 @@ export const EngineTab: React.FC<EngineTabProps> = ({
   const liveGuide = PROVIDER_GUIDES[liveProviderId] || PROVIDER_GUIDES.groq;
   const liveUsesKey = liveProviderId !== 'ollama';
   const liveHasKey = hasConnectedAiKey(live);
+  const keyState: 'n/a' | 'missing' | 'valid' | 'invalid' | 'unreachable' | 'checking' = !liveUsesKey
+    ? 'n/a'
+    : !liveHasKey || health?.state === 'missing'
+      ? 'missing'
+      : health?.state === 'valid' || health?.state === 'invalid' || health?.state === 'unreachable'
+        ? health.state
+        : 'checking';
+  const checkedAtText = health?.checkedAt ? new Date(health.checkedAt).toLocaleTimeString() : '';
   const liveModel =
     liveProviderId === 'auto_free' ? 'Groq, then Gemini, then Ollama (automatic failover)' : live.modelName || 'openai/gpt-oss-120b';
   const hasUnsavedProviderChange =
@@ -227,36 +245,91 @@ export const EngineTab: React.FC<EngineTabProps> = ({
         </a>
       </div>
 
-      {/* Currently active AI */}
+      {/* Currently active AI: green only while the provider accepts the key */}
       <div
-        className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl border border-emerald-300 dark:border-emerald-800/70 bg-emerald-50/70 dark:bg-emerald-950/30 px-4 py-3"
+        className={`flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl border px-4 py-3 ${
+          keyState === 'invalid'
+            ? 'border-rose-300 dark:border-rose-800/70 bg-rose-50/70 dark:bg-rose-950/30'
+            : keyState === 'unreachable'
+              ? 'border-amber-300 dark:border-amber-800/70 bg-amber-50/70 dark:bg-amber-950/30'
+              : keyState === 'missing' || keyState === 'checking'
+                ? 'border-slate-300 dark:border-slate-700 bg-slate-50/70 dark:bg-slate-900/40'
+                : 'border-emerald-300 dark:border-emerald-800/70 bg-emerald-50/70 dark:bg-emerald-950/30'
+        }`}
         role="status"
         aria-label={__t("Currently active AI")}
+        data-key-state={keyState}
       >
         <div className="flex items-center gap-3 min-w-0">
           <span className="relative flex h-2.5 w-2.5 shrink-0">
-            <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-60 animate-ping" />
-            <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500" />
+            {(keyState === 'valid' || keyState === 'n/a') && <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-60 animate-ping" />}
+            <span
+              className={`relative inline-flex h-2.5 w-2.5 rounded-full ${
+                keyState === 'invalid' ? 'bg-rose-500' : keyState === 'unreachable' ? 'bg-amber-500' : keyState === 'missing' || keyState === 'checking' ? 'bg-slate-400' : 'bg-emerald-500'
+              }`}
+            />
           </span>
           <div className="min-w-0">
-            <div className="text-xs font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400"><T>Answering your customers right now</T></div>
+            <div
+              className={`text-xs font-bold uppercase tracking-wider ${
+                keyState === 'invalid' ? 'text-rose-700 dark:text-rose-400' : keyState === 'unreachable' ? 'text-amber-700 dark:text-amber-400' : keyState === 'missing' || keyState === 'checking' ? 'text-slate-600 dark:text-slate-400' : 'text-emerald-700 dark:text-emerald-400'
+              }`}
+            >
+              {keyState === 'invalid'
+                ? <T>Your assistant cannot answer right now</T>
+                : keyState === 'unreachable'
+                  ? <T>Cannot reach the AI provider right now</T>
+                  : keyState === 'checking'
+                    ? <T>Checking your key…</T>
+                    : keyState === 'missing'
+                      ? <T>Not answering yet</T>
+                      : <T>Answering your customers right now</T>}
+            </div>
             <div className="text-sm font-bold text-slate-900 dark:text-white truncate">
               <T>{liveGuide.label}</T>
               <span className="font-medium text-slate-600 dark:text-slate-400"> · {liveModel}</span>
             </div>
+            {(keyState === 'invalid' || keyState === 'unreachable') && health?.message && (
+              <div className="mt-1 text-xs text-slate-700 dark:text-slate-300 break-words">{health.message}</div>
+            )}
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2 text-xs font-semibold">
           {liveUsesKey && (
             <span
               className={`px-2 py-0.5 rounded-md border ${
-                liveHasKey
+                keyState === 'valid'
                   ? 'bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-900/40 dark:text-emerald-300 dark:border-emerald-800'
-                  : 'bg-amber-100 text-amber-900 border-amber-300 dark:bg-amber-900/40 dark:text-amber-300 dark:border-amber-800'
+                  : keyState === 'invalid'
+                    ? 'bg-rose-100 text-rose-800 border-rose-300 dark:bg-rose-900/40 dark:text-rose-300 dark:border-rose-800'
+                    : keyState === 'checking'
+                      ? 'bg-slate-100 text-slate-700 border-slate-300 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700'
+                      : 'bg-amber-100 text-amber-900 border-amber-300 dark:bg-amber-900/40 dark:text-amber-300 dark:border-amber-800'
               }`}
             >
-              {liveHasKey ? <T>{'Your key is connected'}</T> : <T>{'No key connected yet'}</T>}
+              {keyState === 'valid'
+                ? <T>{'Key verified'}</T>
+                : keyState === 'invalid'
+                  ? <T>{'Key rejected'}</T>
+                  : keyState === 'unreachable'
+                    ? <T>{'Could not verify the key'}</T>
+                    : keyState === 'checking'
+                      ? <T>{'Checking…'}</T>
+                      : <T>{'No key connected yet'}</T>}
             </span>
+          )}
+          {liveUsesKey && liveHasKey && (
+            <button
+              type="button"
+              onClick={() => void refresh(true)}
+              disabled={checking}
+              className="px-2 py-0.5 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-50 cursor-pointer"
+            >
+              {checking ? <T>{'Checking…'}</T> : <T>{'Check now'}</T>}
+            </button>
+          )}
+          {liveUsesKey && liveHasKey && checkedAtText && (
+            <span className="text-[11px] font-normal text-slate-500 dark:text-slate-400"><T>Last checked</T> {checkedAtText}</span>
           )}
           {hasUnsavedProviderChange && (
             <span className="px-2 py-0.5 rounded-md border bg-amber-100 text-amber-900 border-amber-300 dark:bg-amber-900/40 dark:text-amber-300 dark:border-amber-800">
@@ -265,6 +338,19 @@ export const EngineTab: React.FC<EngineTabProps> = ({
           )}
         </div>
       </div>
+
+      {/* The saved key stopped working: say so, and what to do */}
+      {keyState === 'invalid' && (
+        <div className="rounded-xl border border-rose-300 dark:border-rose-800 bg-rose-50/80 dark:bg-rose-950/40 p-4 text-sm shadow-xs flex items-start gap-3" data-key-alert="invalid">
+          <AlertTriangle className="h-5 w-5 text-rose-600 dark:text-rose-400 shrink-0 mt-0.5" />
+          <div className="space-y-1">
+            <div className="font-bold text-rose-900 dark:text-rose-200"><T>The AI provider rejected your key</T></div>
+            <p className="text-rose-900/90 dark:text-rose-300/90 text-sm leading-relaxed">
+              <T>It may have been deleted, expired, or run out of credit. Customers cannot get answers until you paste a working key below and click &ldquo;Save&rdquo;.</T>
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Bring-your-own-key: no markup */}
       <div className="rounded-xl border border-blue-200 dark:border-blue-800/60 bg-gradient-to-r from-blue-50/70 via-indigo-50/40 to-slate-50 dark:from-blue-950/30 dark:via-indigo-950/20 dark:to-slate-900/40 p-4 text-sm text-slate-700 dark:text-slate-300 shadow-xs">
@@ -344,13 +430,31 @@ export const EngineTab: React.FC<EngineTabProps> = ({
                     deepseek: 'deepseek-chat',
                     ollama: 'llama3.2',
                   };
+                  const from = formData.provider || 'groq';
+                  if (prov.id === from) return; // already selected: clicking it again must not reset the model or the key
+                  // keep what was typed or chosen for the provider being left
+                  drafts.current[from] = {
+                    apiKeyEncrypted: formData.apiKeyEncrypted,
+                    modelName: formData.modelName,
+                    customBaseUrl: formData.customBaseUrl,
+                    ollamaHost: formData.ollamaHost,
+                  };
                   const isCloud = prov.id !== 'ollama' && prov.id !== 'custom';
-                  setFormData({
-                    ...formData,
-                    provider: prov.id,
-                    modelName: defaultModels[prov.id] || 'openai/gpt-oss-120b',
-                    ...(isCloud ? { customBaseUrl: '', ollamaHost: '' } : {}),
-                  });
+                  const saved = activeAssistant && (activeAssistant.provider || 'groq') === prov.id ? activeAssistant : null;
+                  const keyProviders = ['groq', 'gemini', 'openai', 'anthropic', 'deepseek'];
+                  const back = drafts.current[prov.id];
+                  const next = back ?? (saved
+                    // the provider that is live: show its saved (masked) key and its own model again
+                    ? { apiKeyEncrypted: saved.apiKeyEncrypted, modelName: saved.modelName, customBaseUrl: saved.customBaseUrl, ollamaHost: saved.ollamaHost }
+                    : {
+                        // another provider: its key has to be pasted, so the previous provider's key is not carried over. The providers
+                        // that run without one keep whatever is saved (the masked placeholder means "leave it as it is").
+                        apiKeyEncrypted: keyProviders.includes(prov.id) ? '' : (activeAssistant?.apiKeyEncrypted ?? formData.apiKeyEncrypted ?? ''),
+                        modelName: defaultModels[prov.id] || 'openai/gpt-oss-120b',
+                        ...(isCloud ? { customBaseUrl: '', ollamaHost: '' } : {}),
+                      });
+                  setFormData({ ...formData, provider: prov.id, ...next });
+                  setTestResult(null);
                 }}
                 className={`text-left p-3.5 rounded-xl border transition flex flex-col justify-between cursor-pointer ${
                   isSelected
@@ -524,6 +628,11 @@ export const EngineTab: React.FC<EngineTabProps> = ({
                 {showApiKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
             </div>
+            {typeof formData.apiKeyEncrypted === 'string' && formData.apiKeyEncrypted.includes('****') && (
+              <p className="text-[11px] text-emerald-700 dark:text-emerald-400 mt-1">
+                <T>Your saved key is shown masked. Test Connection checks that saved key; paste a new key only to replace it.</T>
+              </p>
+            )}
             <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
               {formData.provider === 'auto_free'
                 ? <T>{'Zero-cost failover automatically tests your key with Groq, then Gemini, and falls back to local Ollama.'}</T>
@@ -848,7 +957,10 @@ export const EngineTab: React.FC<EngineTabProps> = ({
               if (isCloud && formData.customBaseUrl) {
                 setFormData((prev: any) => ({ ...prev, customBaseUrl: '', ollamaHost: '' }));
               }
-              handleSaveSettings();
+              void Promise.resolve(handleSaveSettings()).then(() => {
+                drafts.current = {};
+                void refresh(true);
+              });
             }}
             saving={isSaving}
             error={saveError}

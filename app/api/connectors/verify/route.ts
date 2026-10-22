@@ -1,6 +1,7 @@
 import { validateSafeExternalUrl } from '@/lib/security/ssrf';
 import { NextResponse } from 'next/server';
-import { withRoleAuth } from '@/lib/security/auth';
+import { withRoleAuth, getAuthContext, requireWorkspaceAssistant } from '@/lib/security/auth';
+import { checkAssistantKey, effectiveEngine, isMaskedKey, needsOwnKey, storedKeyProvider } from '@/lib/ai/key-health';
 import { enforceRateLimit } from '@/lib/security/rate-limit';
 import {
   verifyAiProviderConnection,
@@ -18,7 +19,7 @@ const POSTHandler = withRoleAuth(['owner', 'admin'], async (req: Request) => {
     }
 
     const body = await req.json().catch(() => ({}));
-    const { type, provider, apiKey, customBaseUrl, modelName, token, phoneNumberId, webhookUrl } = body;
+    const { type, provider, apiKey, customBaseUrl, modelName, token, phoneNumberId, webhookUrl, assistantId } = body;
 
     // The server makes these requests, so refuse targets on private or internal networks.
     for (const target of [webhookUrl, customBaseUrl]) {
@@ -31,7 +32,33 @@ const POSTHandler = withRoleAuth(['owner', 'admin'], async (req: Request) => {
     }
 
     if (type === 'ai') {
-      const result = await verifyAiProviderConnection(provider, apiKey, { customBaseUrl, modelName });
+      // The key field shows a masked placeholder ("gsk_xx****...abcd") for a key that is already saved. That is not the key: testing it
+      // reported "invalid" for a perfectly good saved key. When the field holds the placeholder (or nothing), the saved key of this
+      // assistant is tested instead, and the verdict is stored so the whole dashboard agrees with the button.
+      const typed = typeof apiKey === 'string' ? apiKey.trim() : '';
+      if ((!typed && needsOwnKey(String(provider))) || isMaskedKey(typed)) {
+        const ctx = await getAuthContext(req);
+        const assistant = typeof assistantId === 'string' ? await requireWorkspaceAssistant(ctx, assistantId) : null;
+        if (!assistant) {
+          return NextResponse.json({ success: false, failure: 'missing', message: 'Paste the full key to test it.' }, { status: 400 });
+        }
+        const wanted = String(provider || assistant.provider || 'groq').toLowerCase();
+        const engine = effectiveEngine(assistant);
+        const sameProvider = wanted === engine.provider || wanted === String(assistant.provider || '').toLowerCase();
+        if (!sameProvider || (assistant.apiKeyEncrypted && storedKeyProvider(assistant) !== wanted && needsOwnKey(wanted))) {
+          return NextResponse.json(
+            { success: false, failure: 'missing', message: `The key saved on this assistant is for ${storedKeyProvider(assistant)}. Paste your ${wanted} key to test it.` },
+            { status: 400 }
+          );
+        }
+        const health = await checkAssistantKey(assistant);
+        const ok = health.state === 'valid';
+        return NextResponse.json(
+          { success: ok, message: health.message, failure: ok ? undefined : health.state === 'unreachable' ? 'unreachable' : health.state === 'missing' ? 'missing' : 'invalid', keyHealth: health },
+          { status: ok ? 200 : 400 }
+        );
+      }
+      const result = await verifyAiProviderConnection(provider, typed, { customBaseUrl, modelName });
       return NextResponse.json(result, { status: result.success ? 200 : 400 });
     }
 

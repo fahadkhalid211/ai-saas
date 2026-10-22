@@ -14,6 +14,7 @@ import { DashboardHeader } from '@/components/crm/DashboardHeader';
 import { DashboardSidebar } from '@/components/crm/DashboardSidebar';
 import { NotificationToast } from '@/components/crm/NotificationToast';
 import { hasConnectedAiKey } from '@/lib/ai/resolve-provider';
+import { AiKeyAlert } from '@/components/crm/AiKeyAlert';
 import { ADVANCED_ONLY_TABS, loadSimpleMode, saveSimpleMode } from '@/lib/ui/simple-mode';
 import { OverviewTab } from '@/components/crm/OverviewTab';
 import type { IntegrationId } from '@/components/crm/ChannelsTab';
@@ -836,6 +837,9 @@ export default function DashboardPage() {
         {!isMasterAdmin && !supportAccess ? <EmailVerificationBanner member={currentUser} /> : null}
 
         <SubscriptionGate isMasterAdmin={isMasterAdmin || Boolean(supportAccess)} onLogout={handleLogout} onOpenBilling={() => setActiveTab('billing')} onOpenSupport={() => setActiveTab('support')} />
+
+        {/* The saved key is being refused by the provider */}
+        <AiKeyAlert assistant={activeAssistant} onFix={() => setActiveTab('engine')} />
 
         {/* Missing AI API Key Notification Banner */}
         {!hasConnectedAiKey(activeAssistant) && activeAssistant && (

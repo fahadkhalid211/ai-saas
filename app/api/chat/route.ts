@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse, after } from 'next/server';
 import { withEnvProviderFallback, hasConnectedAiKey } from '@/lib/ai/resolve-provider';
+import { recordChatOutcome } from '@/lib/ai/key-health';
 import { getPlatformConciergeAnswer } from '@/lib/ai/concierge';
 import { syncPlatformGuides } from '@/lib/platform/sync';
 import { Database, getLandingConfigForSlugOrTemplate } from '@/lib/db';
@@ -850,6 +851,10 @@ Directly use the content of this attached document to assist the visitor, answer
 
           // Record how the model call went (never the text). The provider layer reports its own failures inside the reply.
           const llmFailed = /^\s*\*\((Authentication Error|Notice: Could not connect|AI Generation Error):/.test(fullAssistantReply);
+          // The provider's own verdict on the key, as the visitor's chat just experienced it: a refused key shows in the dashboard at once
+          if (!humanRequested && !costCap?.blocked && assistant.id !== 'demo-assistant') {
+            await recordChatOutcome(assistant, fullAssistantReply, !llmFailed && fullAssistantReply.trim().length > 0);
+          }
           logEvent({
             level: llmFailed ? 'error' : 'info',
             category: 'llm',
