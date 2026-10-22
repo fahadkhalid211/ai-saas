@@ -9,7 +9,7 @@
   --kx-deep: #08251a;
   --kx-lime: #abff44;
   --kx-ink: #1a1a1a;
-  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-sans: var(--font-sora), ui-sans-serif, system-ui, -apple-system, sans-serif;
   /* Headings use the same modern sans as the public pages. The logo wordmark alone keeps its serif. */
   --kx-serif: var(--font-sans);
   --kx-wordmark: Georgia, "Times New Roman", serif;
@@ -174,8 +174,8 @@ body:has(.kx-app.dark) { background-color: #1f1e1d; color: #faf9f5; }
 }
 
 /* Headings: editorial serif, as on the marketing site */
-.kx-app :where(h1, h2) { font-family: var(--kx-serif); font-weight: 600; letter-spacing: -0.02em; }
-.kx-app :where(h3[class*="text-xl"], h3[class*="text-2xl"], h3[class*="text-3xl"]) { font-family: var(--kx-serif); font-weight: 600; letter-spacing: -0.02em; }
+.kx-app :where(h1, h2) { font-family: var(--kx-serif); font-weight: 500; letter-spacing: -0.02em; }
+.kx-app :where(h3[class*="text-xl"], h3[class*="text-2xl"], h3[class*="text-3xl"]) { font-family: var(--kx-serif); font-weight: 500; letter-spacing: -0.02em; }
 
 /* Primary buttons and links: lime with ink outline and a chunky offset shadow */
 .kx-app :is(button, a).bg-blue-600,

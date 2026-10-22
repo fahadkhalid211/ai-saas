@@ -10,12 +10,13 @@ import { catalogScript } from '@/lib/i18n/server';
 import { isLocaleCode, PREFIXED_LOCALES } from '@/lib/i18n/paths';
 import { OG_LOCALE } from '@/lib/i18n/paths';
 import { translate } from '@/lib/i18n/translate';
-import { Geist, Geist_Mono } from "next/font/google";
+import { Sora, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import "./a11y.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+// Sora: a wide, geometric sans, light for headings. Used for every heading and all body text, on the public pages and the dashboard.
+const soraSans = Sora({
+  variable: "--font-sora",
   subsets: ["latin"],
 });
 
@@ -118,7 +119,7 @@ export default async function RootLayout({
     <html
       lang={locale}
       suppressHydrationWarning
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${soraSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <head>
         {/* Applies a visitor's saved accessibility settings before first paint, so nothing flashes. */}
