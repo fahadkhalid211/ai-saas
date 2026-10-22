@@ -1,4 +1,4 @@
-import { isStripeConfigured, sandboxAllowed } from './stripe';
+import { isBillingConfigured, sandboxAllowed } from './lemonsqueezy';
 import { trialInfo, type TrialFields } from './trial';
 
 /**
@@ -9,15 +9,15 @@ import { trialInfo, type TrialFields } from './trial';
 
 /** True when checkout can actually take a payment (a live gateway, or the simulated one in development). */
 export function paymentsAvailable(): boolean {
-  return isStripeConfigured() || sandboxAllowed();
+  return isBillingConfigured() || sandboxAllowed();
 }
 
 export function earlyBirdEnabled(): boolean {
-  return process.env.EARLY_BIRD_TRIALS === 'true' || !isStripeConfigured();
+  return process.env.EARLY_BIRD_TRIALS === 'true' || !isBillingConfigured();
 }
 
 export function earlyBirdAvailableFor(ws: (TrialFields & { earlyBird?: boolean }) | null | undefined): boolean {
   if (!earlyBirdEnabled() || !ws) return false;
-  if (ws.trialStartedAt || ws.stripeSubscriptionId || ws.earlyBird) return false;
+  if (ws.trialStartedAt || ws.billingSubscriptionId || ws.earlyBird) return false;
   return trialInfo(ws).status === 'needs_card';
 }

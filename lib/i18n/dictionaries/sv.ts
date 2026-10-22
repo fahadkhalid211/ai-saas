@@ -242,7 +242,7 @@ export const svDict: TranslationDictionary = {
       },
       {
         q: 'Hur avslutar jag mitt konto?',
-        a: 'Via Stripe-faktureringsportalen under ditt konto. Avsluta när som helst – inga bindningstider, inga dolda avgifter.',
+        a: 'Via Lemon Squeezys kundportal under ditt konto. Avsluta när som helst – inga bindningstider, inga dolda avgifter.',
       },
     ],
   },

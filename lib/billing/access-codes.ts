@@ -7,7 +7,7 @@ import { trialInfo } from './trial';
 
 /**
  * Access codes: a code the platform owner makes and shares (with friends, a partner, a reviewer) that gives a workspace a plan
- * for free, for a number of days or with no end date. Stripe is not involved: redeeming a code puts the workspace on the plan
+ * for free, for a number of days or with no end date. No payment provider is involved: redeeming a code puts the workspace on the plan
  * without a subscription, so nothing is ever charged. When a timed grant ends the workspace behaves like any ended trial
  * (assistants pause, and the owner can subscribe). A code can be limited to a number of uses, given an expiry date, and switched off.
  *
@@ -93,7 +93,7 @@ export function redeemable(c: AccessCode | null | undefined, now = new Date()): 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 /**
- * The billing fields a workspace gets when it redeems a code. `requiresSubscription: false` and no Stripe subscription make it a
+ * The billing fields a workspace gets when it redeems a code. `requiresSubscription: false` and no provider subscription make it a
  * plain no-card workspace; a trial end date (when the code has days) makes it lock when the time is up, and no end date leaves it open.
  */
 export function grantFor(c: Pick<AccessCode, 'code' | 'planId' | 'days'>, now = new Date()): Partial<WorkspaceBillingData> {
@@ -113,13 +113,13 @@ export function grantFor(c: Pick<AccessCode, 'code' | 'planId' | 'days'>, now = 
 }
 
 
-type Billing = Pick<WorkspaceBillingData, 'stripeSubscriptionId' | 'subscriptionStatus' | 'billingRisk' | 'complimentaryCode' | 'earlyBird' | 'requiresSubscription' | 'trialStartedAt' | 'trialEndsAt' | 'cancelAtPeriodEnd'>;
+type Billing = Pick<WorkspaceBillingData, 'billingSubscriptionId' | 'subscriptionStatus' | 'billingRisk' | 'complimentaryCode' | 'earlyBird' | 'requiresSubscription' | 'trialStartedAt' | 'trialEndsAt' | 'cancelAtPeriodEnd'>;
 
 /** Why this workspace cannot redeem a code right now, or null when it can. The message is shown to the owner. */
 export function redeemBlockReason(ws: Billing | null | undefined): string | null {
   if (!ws) return 'We could not find your workspace.';
   if (ws.billingRisk) return 'This workspace cannot use access codes. Please contact support.';
-  if (ws.stripeSubscriptionId && ['trialing', 'active', 'past_due'].includes(ws.subscriptionStatus || '')) {
+  if (ws.billingSubscriptionId && ['trialing', 'active', 'past_due'].includes(ws.subscriptionStatus || '')) {
     return 'You already have a subscription. Cancel it in the billing portal first if you would rather use free access.';
   }
   const status = trialInfo(ws).status;
@@ -131,7 +131,7 @@ export function redeemBlockReason(ws: Billing | null | undefined): string | null
 
 /** For the dashboard: is this workspace on free access from a code, and until when (null = no end date)? */
 export function complimentaryInfo(ws: Billing | null | undefined): { active: boolean; code: string; endsAt: string | null } {
-  if (!ws?.complimentaryCode || ws.stripeSubscriptionId) return { active: false, code: '', endsAt: null };
+  if (!ws?.complimentaryCode || ws.billingSubscriptionId) return { active: false, code: '', endsAt: null };
   const status = trialInfo(ws).status;
   return { active: status === 'trialing' || status === 'legacy', code: ws.complimentaryCode, endsAt: ws.trialEndsAt || null };
 }

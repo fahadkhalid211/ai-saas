@@ -242,7 +242,7 @@ export const itDict: TranslationDictionary = {
       },
       {
         q: 'Come posso disdire l’abbonamento?',
-        a: 'Dal portale di fatturazione Stripe all’interno del tuo account. Puoi cancellare in qualsiasi istante senza penali né attese.',
+        a: 'Dal portale clienti di Lemon Squeezy all’interno del tuo account. Puoi cancellare in qualsiasi istante senza penali né attese.',
       },
     ],
   },

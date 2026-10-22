@@ -2,7 +2,7 @@
 
 import { T, useT } from '@/lib/i18n/context';
 import React from 'react';
-import { Layers, X, CreditCard, ArrowRight, RefreshCw, Sparkles } from 'lucide-react';
+import { Layers, X, ArrowRight } from 'lucide-react';
 
 export interface LandingPageQuotaModalProps {
   isOpen: boolean;
@@ -10,8 +10,6 @@ export interface LandingPageQuotaModalProps {
   currentCount: number;
   totalAllowed: number;
   planTier?: string;
-  onPurchaseExtraSlot: () => Promise<void> | void;
-  isPurchasingSlot: boolean;
   onUpgradePlan?: () => void;
 }
 
@@ -21,8 +19,6 @@ export const LandingPageQuotaModal: React.FC<LandingPageQuotaModalProps> = ({
   currentCount,
   totalAllowed,
   planTier = 'Starter',
-  onPurchaseExtraSlot,
-  isPurchasingSlot,
   onUpgradePlan,
 }) => {
   const __t = useT();
@@ -78,52 +74,12 @@ export const LandingPageQuotaModal: React.FC<LandingPageQuotaModalProps> = ({
             />
           </div>
           <p className="text-[11px] text-slate-500 dark:text-slate-400">
-            <T>To publish an additional landing page with a dedicated AI assistant and custom booking calendar, expand your workspace capacity below.</T>
+            <T>To publish an additional landing page with a dedicated AI assistant and custom booking calendar, upgrade your plan below.</T>
           </p>
         </div>
 
         {/* Upgrade & Addon Action Options */}
         <div className="space-y-3">
-          {/* Option 1: Instant Add-on Slot */}
-          <div className="p-4 rounded-2xl border border-blue-200 dark:border-blue-900/60 bg-blue-50/40 dark:bg-blue-950/20 hover:border-blue-300 dark:hover:border-blue-800 transition space-y-3">
-            <div className="flex items-start justify-between gap-3">
-              <div className="space-y-1">
-                <div className="flex items-center gap-1.5 text-xs font-bold text-blue-950 dark:text-blue-200">
-                  <Sparkles className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
-                  <span><T>Instant Extra Slot Add-on</T></span>
-                </div>
-                <p className="text-[11px] text-slate-600 dark:text-slate-300">
-                  <T>Add 1 permanent landing page slot immediately to your active workspace without changing your plan tier.</T>
-                </p>
-              </div>
-              <div className="text-right shrink-0">
-                <span className="text-base font-extrabold text-blue-600 dark:text-blue-400">$100</span>
-                <span className="text-[10px] text-slate-400 block"><T>one-time add-on</T></span>
-              </div>
-            </div>
-
-            <button
-              type="button"
-              onClick={async () => {
-                await onPurchaseExtraSlot();
-              }}
-              disabled={isPurchasingSlot}
-              className="w-full py-2.5 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-xs font-bold transition shadow-xs flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
-            >
-              {isPurchasingSlot ? (
-                <>
-                  <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                  <span><T>Activating Slot...</T></span>
-                </>
-              ) : (
-                <>
-                  <CreditCard className="w-3.5 h-3.5" />
-                  <span><T>+ Unlock 1 Extra Slot ($100)</T></span>
-                </>
-              )}
-            </button>
-          </div>
-
           {/* Option 2: Subscription Plan Upgrade */}
           {onUpgradePlan && (
             <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center justify-between gap-3">

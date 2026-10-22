@@ -1,232 +1,211 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { Database } from '@/lib/db';
-import { cancelSubscriptionNow, constructWebhookEvent, retrieveSubscriptionSummary } from '@/lib/billing/stripe';
+import { Database, type WorkspaceBillingData } from '@/lib/db';
+import {
+  mapSubscriptionStatus,
+  parseWebhookEvent,
+  planRecord,
+  resolvePlan,
+  testModeAllowed,
+  verifyWebhookSignature,
+  type LemonEvent,
+} from '@/lib/billing/lemonsqueezy';
 import { sendBillingEmail } from '@/lib/billing/emails';
-import { newTrialDates } from '@/lib/billing/trial';
 import { BILLING_PLANS } from '@/lib/billing/plans';
 import { logged } from '@/lib/logging/route';
 import { logEvent } from '@/lib/logging/logger';
 
 export const dynamic = 'force-dynamic';
 
+/**
+ * Lemon Squeezy webhooks. This is the only place a workspace gets a paid plan: a checkout link can be edited by whoever holds it,
+ * but a request signed with our webhook secret cannot.
+ *
+ * Events handled: subscription_created / _updated / _resumed / _unpaused / _paused / _cancelled / _expired,
+ * subscription_payment_success / _failed / _recovered, and refunds (logged for a person to look at).
+ */
+
+const SUBSCRIPTION_EVENTS = new Set([
+  'subscription_created',
+  'subscription_updated',
+  'subscription_resumed',
+  'subscription_unpaused',
+  'subscription_paused',
+  'subscription_cancelled',
+  'subscription_expired',
+  'subscription_payment_recovered',
+]);
+
+/**
+ * The workspace a subscription event belongs to: the one that already holds this subscription, otherwise the workspace named in the
+ * checkout link. The customer is only a last resort, because one customer (one e-mail address) can own several workspaces and a
+ * new subscription must not be attached to whichever of them happened to pay first.
+ */
+async function findWorkspace(evt: LemonEvent): Promise<{ ws: WorkspaceBillingData; viaLink: boolean } | null> {
+  const bySubscription = await Database.findWorkspaceByBillingSubscription(evt.resourceId);
+  if (bySubscription) return { ws: bySubscription, viaLink: false };
+  const linkWorkspace = typeof evt.customData.workspace_id === 'string' ? evt.customData.workspace_id : '';
+  if (linkWorkspace && (await Database.workspaceExists(linkWorkspace))) {
+    return { ws: await Database.getWorkspaceBilling(linkWorkspace), viaLink: true };
+  }
+  if (evt.name !== 'subscription_created') {
+    const customerId = evt.attributes.customer_id !== undefined ? String(evt.attributes.customer_id) : '';
+    const byCustomer = customerId ? await Database.findWorkspaceByBillingCustomer(customerId) : null;
+    if (byCustomer) return { ws: byCustomer, viaLink: false };
+  }
+  return null;
+}
+
+/** Brings a workspace in line with what Lemon Squeezy says about its subscription. */
+async function applySubscription(ws: WorkspaceBillingData, evt: LemonEvent, isNewLink: boolean): Promise<void> {
+  const a = evt.attributes;
+  const status = mapSubscriptionStatus(a.status, a.ends_at);
+  const resolved = resolvePlan(a);
+  const nowIso = new Date().toISOString();
+
+  const updates: Partial<WorkspaceBillingData> = {
+    billingCustomerId: a.customer_id !== undefined ? String(a.customer_id) : ws.billingCustomerId,
+    billingSubscriptionId: evt.resourceId,
+    subscriptionStatus: status,
+    cancelAtPeriodEnd: Boolean(a.cancelled) && status !== 'canceled',
+  };
+  if (typeof a.renews_at === 'string') updates.currentPeriodEnd = a.renews_at;
+  if (a.status === 'on_trial' && typeof a.trial_ends_at === 'string') {
+    updates.trialStartedAt = ws.trialStartedAt || (typeof a.created_at === 'string' ? a.created_at : nowIso);
+    updates.trialEndsAt = a.trial_ends_at;
+  } else if (!ws.trialStartedAt && isNewLink) {
+    // paid from day one: no trial, but the workspace has now used its chance to start one
+    updates.trialStartedAt = typeof a.created_at === 'string' ? a.created_at : nowIso;
+  }
+  if (a.card_last_four) {
+    updates.paymentMethod = { brand: String(a.card_brand || 'card'), last4: String(a.card_last_four), expMonth: 0, expYear: 0 };
+  }
+  if (resolved) {
+    const plan = planRecord(resolved.planId);
+    updates.planId = plan.id;
+    updates.planName = plan.name;
+    updates.billingInterval = resolved.interval;
+    updates.monthlyChatLimit = plan.chatSessionsLimit;
+    updates.overageRatePerChat = plan.overageRate;
+    updates.landingPageLimit = plan.landingPageLimit;
+  } else if (isNewLink) {
+    logEvent({ level: 'error', category: 'billing', event: 'billing.plan_unresolved', meta: { workspaceId: ws.id, variantId: a.variant_id ?? null, variantName: a.variant_name ?? null } });
+  }
+  await Database.updateWorkspaceBilling(ws.id, updates);
+
+  if (isNewLink && a.status === 'on_trial' && resolved) {
+    const plan = planRecord(resolved.planId);
+    await sendBillingEmail({
+      kind: 'trial_started',
+      to: ws.billingEmail || (typeof a.user_email === 'string' ? a.user_email : undefined),
+      workspaceName: ws.name,
+      planName: plan.name,
+      amount: resolved.interval === 'annual' ? plan.annualMonthlyPrice * 12 : plan.monthlyPrice,
+      interval: resolved.interval,
+      date: a.trial_ends_at,
+    });
+  }
+}
+
 async function POSTHandler(req: NextRequest) {
   try {
     const rawBody = await req.text();
-    const signature = req.headers.get('stripe-signature') || '';
+    const signature = req.headers.get('x-signature') || '';
 
-    const event = constructWebhookEvent(rawBody, signature);
-    if (!event) {
-      logEvent({ level: 'warn', category: 'security', event: 'security.invalid_signature', meta: { channel: 'stripe' } });
+    if (!verifyWebhookSignature(rawBody, signature)) {
+      logEvent({ level: 'warn', category: 'security', event: 'security.invalid_signature', meta: { channel: 'lemonsqueezy' } });
       return NextResponse.json({ error: 'Invalid webhook signature or missing secret' }, { status: 400 });
     }
-    logEvent({ category: 'billing', event: 'billing.webhook_received', meta: { type: event.type, eventId: event.id } });
+    const evt = parseWebhookEvent(rawBody);
+    if (!evt) {
+      return NextResponse.json({ error: 'Not a Lemon Squeezy event' }, { status: 400 });
+    }
+    logEvent({ category: 'billing', event: 'billing.webhook_received', meta: { type: evt.name, resourceId: evt.resourceId } });
 
-    // Webhook Idempotency: Deduplicate repeated events to prevent duplicate invoices or slot allocations
-    if (await Database.isWebhookProcessed(event.id)) {
-      console.log(`[Stripe Webhook] Duplicate event ignored: ${event.type} (${event.id})`);
+    // Test-mode purchases accept test cards: on a live server they must never start a subscription.
+    if (evt.testMode && !testModeAllowed()) {
+      logEvent({ level: 'warn', category: 'billing', event: 'billing.test_event_ignored', meta: { type: evt.name } });
+      return NextResponse.json({ received: true, ignored: 'test_mode' });
+    }
+
+    // Webhook idempotency: the same delivery repeated (Lemon Squeezy retries) must not add a second invoice or send a second e-mail
+    if (await Database.isWebhookProcessed(evt.dedupeKey)) {
+      console.log(`[LemonSqueezy Webhook] Duplicate event ignored: ${evt.name} (${evt.resourceId})`);
       return NextResponse.json({ received: true, duplicate: true });
     }
 
-    console.log(`[Stripe Webhook] Processing event: ${event.type} (${event.id})`);
+    console.log(`[LemonSqueezy Webhook] Processing event: ${evt.name} (${evt.resourceId})`);
 
-    switch (event.type) {
-      case 'checkout.session.completed': {
-        const session = event.data.object as any;
-        const workspaceId = session.metadata?.workspaceId || 'default-workspace';
-        const addonType = session.metadata?.addonType;
-        const planId = session.metadata?.planId;
-        const billingInterval = (session.metadata?.billingInterval as 'monthly' | 'annual') || 'monthly';
-
-        if (addonType === 'extra_landing_page') {
-          await Database.purchaseExtraLandingPageSlot(workspaceId);
-          console.log(`[Stripe Webhook] Workspace ${workspaceId} purchased extra landing page slot.`);
-          // every purchase is followed by a receipt to the customer
-          const buyer = session.customer_details?.email || session.customer_email;
-          await sendBillingEmail({ kind: 'receipt', to: buyer, planName: 'Additional landing page slot', amount: (session.amount_total || 0) / 100 });
-          break;
+    if (SUBSCRIPTION_EVENTS.has(evt.name)) {
+      const found = await findWorkspace(evt);
+      if (!found) {
+        logEvent({ level: 'error', category: 'billing', event: 'billing.webhook_unmatched', meta: { type: evt.name, resourceId: evt.resourceId } });
+      } else {
+        const { ws, viaLink } = found;
+        // A workspace that already has a live subscription is not taken over by a different one that names it in a checkout link.
+        const takenByOther =
+          viaLink &&
+          ws.billingSubscriptionId &&
+          ws.billingSubscriptionId !== evt.resourceId &&
+          ['trialing', 'active', 'past_due'].includes(ws.subscriptionStatus || '');
+        if (takenByOther) {
+          logEvent({ level: 'error', category: 'security', event: 'billing.subscription_conflict', meta: { workspaceId: ws.id, resourceId: evt.resourceId } });
+        } else if (evt.name === 'subscription_expired') {
+          await applySubscription(ws, evt, false);
+          await Database.updateWorkspaceBilling(ws.id, { subscriptionStatus: 'canceled', cancelAtPeriodEnd: false });
+          logEvent({ category: 'billing', event: 'billing.subscription_ended', meta: { workspaceId: ws.id } });
+          if (!ws.billingRisk) await sendBillingEmail({ kind: 'cancelled', to: ws.billingEmail, workspaceName: ws.name });
+        } else {
+          await applySubscription(ws, evt, viaLink);
+          logEvent({ category: 'billing', event: 'billing.subscription_updated', meta: { workspaceId: ws.id, type: evt.name, status: String(evt.attributes.status || '') } });
         }
-
-        if (planId) {
-          const targetPlan = BILLING_PLANS.find((p) => p.id === planId) || BILLING_PLANS[0];
-          const ws = await Database.getWorkspaceBilling(workspaceId);
-          const todayStr = new Date().toISOString().split('T')[0];
-          const amount = (session.amount_total || 0) / 100;
-
-          const newInvoice = {
-            id: `inv_${session.id.slice(-6)}`,
-            date: todayStr,
-            planName: `${targetPlan.name} (${billingInterval === 'annual' ? 'Annual' : 'Monthly'})`,
-            amount,
-            status: 'paid' as const,
-          };
-
-          const currentInvoices = ws.invoices || [];
-
-          const subId = session.subscription ? String(session.subscription) : undefined;
-          // Stripe is the source of truth for the trial: its status, when the trial ends (the first charge) and any pending cancellation
-          const sub = subId ? await retrieveSubscriptionSummary(subId) : null;
-          const isTrial = session.metadata?.trial === 'true';
-          const fallbackTrial = newTrialDates();
-          await Database.updateWorkspaceBilling(workspaceId, {
-            planId: targetPlan.id,
-            planName: targetPlan.name,
-            billingInterval,
-            monthlyChatLimit: targetPlan.chatSessionsLimit,
-            overageRatePerChat: targetPlan.overageRate,
-            landingPageLimit: targetPlan.landingPageLimit,
-            stripeCustomerId: session.customer ? String(session.customer) : undefined,
-            stripeSubscriptionId: subId,
-            subscriptionStatus: sub?.status ?? (isTrial ? 'trialing' : 'active'),
-            cancelAtPeriodEnd: sub?.cancelAtPeriodEnd ?? false,
-            ...(isTrial ? { trialStartedAt: fallbackTrial.trialStartedAt, trialEndsAt: sub?.trialEnd ?? fallbackTrial.trialEndsAt } : {}),
-            // a trial has nothing to invoice yet; the first invoice arrives with the first charge
-            invoices: amount > 0 ? [newInvoice, ...currentInvoices] : currentInvoices,
-            ...(sub?.card ? { paymentMethod: { brand: sub.card.brand, last4: sub.card.last4, expMonth: sub.card.expMonth, expYear: sub.card.expYear }, cardFingerprint: sub.card.fingerprint || undefined } : {}),
-          } as any);
-
-          // One free trial per physical card: a second workspace using the same card is stopped before any service is given
-          if (isTrial && sub?.card?.fingerprint) {
-            const earlier = await Database.findOtherWorkspaceByCardFingerprint(sub.card.fingerprint, workspaceId);
-            if (earlier && subId) {
-              await cancelSubscriptionNow(subId);
-              await Database.updateWorkspaceBilling(workspaceId, { subscriptionStatus: 'canceled', billingRisk: 'trial_card_reused' } as any);
-              logEvent({ level: 'warn', category: 'security', event: 'billing.trial_card_reused', meta: { workspaceId } });
-              break;
-            }
-          }
-
-          const to = ws.billingEmail || session.customer_details?.email || session.customer_email;
-          const firstCharge = isTrial ? (sub?.trialEnd ?? fallbackTrial.trialEndsAt) : null;
-          const price = billingInterval === 'annual' ? targetPlan.annualMonthlyPrice * 12 : targetPlan.monthlyPrice;
-          if (isTrial) {
-            await sendBillingEmail({ kind: 'trial_started', to, workspaceName: ws.name, planName: targetPlan.name, amount: price, interval: billingInterval, date: firstCharge });
-          }
-          // a paid (non-trial) checkout is followed by the invoice.payment_succeeded receipt below
-
-          console.log(`[Stripe Webhook] Workspace ${workspaceId} upgraded to ${targetPlan.name} (${billingInterval}).`);
-        }
-        break;
       }
-
-      case 'customer.subscription.updated': {
-        // trial converted to paid, payment failed (past_due), plan changed, or the owner set it to cancel at period end
-        const subscription = event.data.object as any;
-        const customerId = subscription.customer ? String(subscription.customer) : null;
-        const ws = customerId ? await Database.findWorkspaceByStripeCustomer(customerId) : null;
-        if (ws) {
+    } else if (evt.name === 'subscription_payment_success') {
+      const a = evt.attributes;
+      const subscriptionId = a.subscription_id !== undefined ? String(a.subscription_id) : '';
+      const ws = subscriptionId ? await Database.findWorkspaceByBillingSubscription(subscriptionId) : null;
+      const amountCents = Number(a.total) || 0;
+      if (ws && amountCents > 0 && (!a.status || a.status === 'paid')) {
+        const invoiceId = `inv_${evt.resourceId}`;
+        const current = ws.invoices || [];
+        if (!current.some((i) => i.id === invoiceId)) {
+          const plan = BILLING_PLANS.find((p) => p.id === ws.planId);
           await Database.updateWorkspaceBilling(ws.id, {
-            subscriptionStatus: subscription.status,
-            cancelAtPeriodEnd: Boolean(subscription.cancel_at_period_end),
-            ...(subscription.trial_end ? { trialEndsAt: new Date(subscription.trial_end * 1000).toISOString() } : {}),
-          } as any);
-          logEvent({ category: 'billing', event: 'billing.subscription_updated', meta: { workspaceId: ws.id, status: subscription.status, cancelAtPeriodEnd: Boolean(subscription.cancel_at_period_end) } });
-        }
-        break;
-      }
-
-      case 'customer.subscription.deleted': {
-        // Cancelled (during the trial nothing was ever charged) or ended after failed payments. Service stops; there is no free plan.
-        const subscription = event.data.object as any;
-        const customerId = subscription.customer ? String(subscription.customer) : null;
-        if (customerId) {
-          const ws = await Database.findWorkspaceByStripeCustomer(customerId);
-          if (ws) {
-            await Database.updateWorkspaceBilling(ws.id, { subscriptionStatus: 'canceled', cancelAtPeriodEnd: false } as any);
-            logEvent({ category: 'billing', event: 'billing.subscription_ended', meta: { workspaceId: ws.id } });
-            if (!ws.billingRisk) await sendBillingEmail({ kind: 'cancelled', to: ws.billingEmail, workspaceName: ws.name });
-          }
-        }
-        break;
-      }
-
-      case 'invoice.payment_failed': {
-        const invoice = event.data.object as any;
-        const customerId = invoice.customer ? String(invoice.customer) : null;
-        const ws = customerId ? await Database.findWorkspaceByStripeCustomer(customerId) : null;
-        if (ws) {
-          logEvent({ level: 'warn', category: 'billing', event: 'billing.payment_failed', meta: { workspaceId: ws.id, attempt: invoice.attempt_count } });
-          await sendBillingEmail({ kind: 'payment_failed', to: ws.billingEmail || invoice.customer_email, workspaceName: ws.name, planName: ws.planName, amount: (invoice.amount_due || 0) / 100 });
-        }
-        break;
-      }
-
-      case 'customer.subscription.trial_will_end': {
-        // Stripe sends this three days before the trial ends: remind the customer of the charge and how to cancel
-        const subscription = event.data.object as any;
-        const customerId = subscription.customer ? String(subscription.customer) : null;
-        const ws = customerId ? await Database.findWorkspaceByStripeCustomer(customerId) : null;
-        if (ws) {
-          const plan = BILLING_PLANS.find((p) => p.id === ws.planId) || BILLING_PLANS[0];
-          await sendBillingEmail({
-            kind: 'trial_ending',
-            to: ws.billingEmail,
-            workspaceName: ws.name,
-            planName: ws.planName,
-            amount: ws.billingInterval === 'annual' ? plan.annualMonthlyPrice * 12 : plan.monthlyPrice,
-            date: subscription.trial_end ? new Date(subscription.trial_end * 1000).toISOString() : ws.trialEndsAt,
+            invoices: [
+              {
+                id: invoiceId,
+                date: (typeof a.created_at === 'string' ? a.created_at : new Date().toISOString()).split('T')[0],
+                planName: `${plan?.name || ws.planName || 'Crescelo Subscription'} (${ws.billingInterval === 'annual' ? 'Annual' : 'Monthly'})`,
+                amount: amountCents / 100,
+                status: 'paid',
+                pdfUrl: typeof a.urls?.invoice_url === 'string' ? a.urls.invoice_url : undefined,
+              },
+              ...current,
+            ],
           });
+          // Lemon Squeezy e-mails the customer its own receipt and invoice, so none is sent from here.
+          console.log(`[LemonSqueezy Webhook] Logged invoice payment for workspace ${ws.id}: $${amountCents / 100}`);
         }
-        break;
       }
-
-      // A disputed or fraud-flagged payment ends the subscription at once, whatever the plan or trial state
-      case 'radar.early_fraud_warning.created':
-      case 'charge.dispute.created': {
-        const obj = event.data.object as any;
-        const customerId = obj.customer ? String(obj.customer) : obj.charge?.customer ? String(obj.charge.customer) : null;
-        const ws = customerId ? await Database.findWorkspaceByStripeCustomer(customerId) : null;
-        logEvent({ level: 'warn', category: 'security', event: `billing.${event.type}`, meta: { workspaceId: ws?.id ?? null } });
-        if (ws) {
-          if (ws.stripeSubscriptionId) await cancelSubscriptionNow(ws.stripeSubscriptionId);
-          await Database.updateWorkspaceBilling(ws.id, { subscriptionStatus: 'canceled', billingRisk: event.type.startsWith('radar') ? 'fraud_warning' : 'dispute' } as any);
-        }
-        break;
+    } else if (evt.name === 'subscription_payment_failed') {
+      const a = evt.attributes;
+      const subscriptionId = a.subscription_id !== undefined ? String(a.subscription_id) : '';
+      const ws = subscriptionId ? await Database.findWorkspaceByBillingSubscription(subscriptionId) : null;
+      if (ws) {
+        logEvent({ level: 'warn', category: 'billing', event: 'billing.payment_failed', meta: { workspaceId: ws.id } });
+        await sendBillingEmail({ kind: 'payment_failed', to: ws.billingEmail, workspaceName: ws.name, planName: ws.planName, amount: (Number(a.total) || 0) / 100 });
       }
-
-      case 'invoice.payment_succeeded': {
-        const invoice = event.data.object as any;
-        const customerId = invoice.customer ? String(invoice.customer) : null;
-        if (customerId && invoice.amount_paid > 0) {
-          const ws = await Database.findWorkspaceByStripeCustomer(customerId);
-          if (ws) {
-            const currentInvoices = ws.invoices || [];
-            const newInvoice = {
-              id: `inv_${invoice.id.slice(-6)}`,
-              date: new Date().toISOString().split('T')[0],
-              planName: ws.planName || 'Crescelo Subscription',
-              amount: invoice.amount_paid / 100,
-              status: 'paid' as const,
-              pdfUrl: invoice.hosted_invoice_url || invoice.invoice_pdf,
-            };
-            await Database.updateWorkspaceBilling(ws.id, {
-              invoices: [newInvoice, ...currentInvoices],
-            });
-            // the customer gets a receipt with the Stripe invoice link for every payment
-            await sendBillingEmail({
-              kind: 'receipt',
-              to: ws.billingEmail || invoice.customer_email,
-              workspaceName: ws.name,
-              planName: ws.planName,
-              amount: newInvoice.amount,
-              invoiceUrl: invoice.hosted_invoice_url,
-              invoicePdfUrl: invoice.invoice_pdf,
-              invoiceNumber: invoice.number,
-            });
-            console.log(`[Stripe Webhook] Logged invoice payment for workspace ${ws.id}: $${newInvoice.amount}`);
-          }
-        }
-        break;
-      }
-
-      default:
-        // Ignore unhandled event types
-        break;
+    } else if (evt.name === 'order_refunded' || evt.name === 'subscription_payment_refunded') {
+      // A refund is a person's decision to look at (partial or full, goodwill or fraud); the plan is left as it is.
+      const customerId = evt.attributes.customer_id !== undefined ? String(evt.attributes.customer_id) : '';
+      const ws = customerId ? await Database.findWorkspaceByBillingCustomer(customerId) : null;
+      logEvent({ level: 'warn', category: 'billing', event: 'billing.refund', meta: { type: evt.name, workspaceId: ws?.id ?? null } });
     }
+    // anything else (orders, licence keys, ...) needs no action
 
-    await Database.recordProcessedWebhook(event.id);
+    await Database.recordProcessedWebhook(evt.dedupeKey);
     return NextResponse.json({ received: true });
   } catch (error: any) {
-    console.error('[Stripe Webhook] Execution error:', error);
+    console.error('[LemonSqueezy Webhook] Execution error:', error);
     return NextResponse.json({ error: error.message || 'Webhook processing failed' }, { status: 500 });
   }
 }

@@ -242,7 +242,7 @@ export const fiDict: TranslationDictionary = {
       },
       {
         q: 'Miten tilaus peruutetaan?',
-        a: 'Oman tilisi Stripe-laskutusportaalista. Voit peruuttaa milloin tahansa ilman irtisanomisaikoja tai kuluja.',
+        a: 'Oman tilisi Lemon Squeezyn asiakasportaalista. Voit peruuttaa milloin tahansa ilman irtisanomisaikoja tai kuluja.',
       },
     ],
   },

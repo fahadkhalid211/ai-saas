@@ -69,7 +69,7 @@ const ROUTES: Array<[RegExp, Partial<Record<string, string>>]> = [
   [/^\/api\/billing\/checkout/, { POST: 'started checkout for a plan' }],
   [/^\/api\/billing\/early-bird/, { POST: 'started a free trial without a card' }],
   [/^\/api\/billing\/portal/, { POST: 'opened the billing portal' }],
-  [/^\/api\/billing\/webhook|^\/api\/stripe/, { POST: 'The payment provider sent an update' }],
+  [/^\/api\/billing\/webhook/, { POST: 'The payment provider sent an update' }],
   [/^\/api\/billing/, { GET: 'checked their plan', POST: 'changed their plan', PUT: 'updated billing details' }],
   [/^\/api\/lead/, { GET: 'opened the leads', POST: 'A website visitor left their contact details', DELETE: 'deleted a lead' }],
   [/^\/api\/appointments/, { GET: 'opened the appointments', POST: 'A booking was requested', PATCH: 'updated an appointment', PUT: 'updated an appointment', DELETE: 'deleted an appointment' }],
@@ -169,13 +169,11 @@ const EVENTS: Record<string, Describer> = {
   'billing.early_bird_trial_started': (who, d) => `${who} started a free trial without a card (${PLAN[str(d.planId)] || 'plan'}).`,
   'billing.plan_changed': (who, d) => `${who} changed the plan to ${str(d.newPlanName) || PLAN[str(d.newPlanId)] || 'a new plan'}.`,
   'billing.info_updated': (who) => `${who} updated the billing details.`,
-  'billing.addon_purchased': (who) => `${who} bought an add-on.`,
   'billing.subscription_updated': (_w, d) => `The payment provider reported a subscription change${str(d.status) ? ` (now ${str(d.status)})` : ''}.`,
   'billing.subscription_ended': () => 'A subscription ended. The workspace is paused until a plan is chosen again.',
   'billing.payment_failed': () => 'A payment failed. The payment provider will try the card again.',
   'billing.service_paused': () => 'A website visitor was turned away: this workspace has no active plan, so its assistant is paused.',
-  'billing.trial_card_reused': () => 'A trial was refused: the card had already been used for a free trial.',
-  'billing.stripe_not_configured': () => 'A checkout could not start because card payments are not connected on the server.',
+  'billing.not_configured': () => 'A checkout could not start because card payments are not connected on the server.',
   'billing.webhook_received': (_w, d) => `The payment provider sent an update${str(d.type) ? ` (${str(d.type)})` : ''}.`,
 
   // assistants and knowledge

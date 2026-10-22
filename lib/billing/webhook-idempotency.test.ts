@@ -3,7 +3,7 @@ import { Database } from '../db';
 import { POST as webhookHandler } from '../../app/api/billing/webhook/route';
 import { NextRequest } from 'next/server';
 
-describe('Sprint 2: Stripe Webhook Idempotency & Duplicate Protection', () => {
+describe('Sprint 2: Payment Webhook Idempotency & Duplicate Protection', () => {
   beforeEach(async () => {
     // Reset state before tests
     await Database.clearProcessedWebhooksForTesting();

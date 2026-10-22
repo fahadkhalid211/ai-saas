@@ -242,7 +242,7 @@ export const enDict: TranslationDictionary = {
       },
       {
         q: 'How do I cancel?',
-        a: 'Through the Stripe billing portal in your account. Cancel any time — no penalty, no waiting.',
+        a: 'Through the Lemon Squeezy customer portal in your account. Cancel any time — no penalty, no waiting.',
       },
     ],
   },

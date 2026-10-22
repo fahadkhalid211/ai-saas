@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Database } from '@/lib/db';
-import { createCustomerPortalSession } from '@/lib/billing/stripe';
+import { getCustomerPortalUrl } from '@/lib/billing/lemonsqueezy';
 import { getAuthContext, requireRole } from '@/lib/security/auth';
 import { enforceRateLimit } from '@/lib/security/rate-limit';
 import { logged } from '@/lib/logging/route';
@@ -27,27 +27,19 @@ async function POSTHandler(req: NextRequest) {
       : (ctx.workspaceId && ctx.workspaceId !== '*' ? ctx.workspaceId : 'default-workspace');
     const ws = await Database.getWorkspaceBilling(workspaceId);
 
-    const customerId = (ws as any).stripeCustomerId;
-    if (!customerId) {
+    const subscriptionId = ws.billingSubscriptionId;
+    if (!subscriptionId || subscriptionId === 'sandbox_sub') {
       return NextResponse.json(
-        {
-          error: 'No active Stripe customer account associated with this workspace. Upgrade your plan via Stripe Checkout first.',
-        },
+        { error: 'There is no subscription to manage yet. Choose a plan first.' },
         { status: 400 }
       );
     }
 
-    const origin = req.nextUrl.origin || process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
-    const returnUrl = `${origin}/`;
-
-    const portalUrl = await createCustomerPortalSession(customerId, returnUrl);
-    if (!portalUrl) {
-      return NextResponse.json({ error: 'Failed to generate customer portal session' }, { status: 500 });
-    }
-
+    // a fresh signed link to the customer portal (change card, switch plan, cancel, download invoices)
+    const portalUrl = await getCustomerPortalUrl(subscriptionId);
     return NextResponse.json({ success: true, url: portalUrl });
   } catch (error: any) {
-    console.error('[Billing Portal] Error generating portal session:', error);
+    console.error('[Billing Portal] Error generating portal link:', error);
     return NextResponse.json(
       { error: error?.message || 'Failed to initialize customer portal' },
       { status: 500 }

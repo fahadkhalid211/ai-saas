@@ -12,9 +12,9 @@ import { TRIAL_DAYS, type TrialInfo } from '@/lib/billing/trial';
 interface BillingSummary {
   workspaceId: string;
   trial: TrialInfo;
-  subscription: { nextChargeAmount: number; nextChargeDate: string | null; cancelAtPeriodEnd: boolean; hasStripeCustomer: boolean };
+  subscription: { nextChargeAmount: number; nextChargeDate: string | null; cancelAtPeriodEnd: boolean; hasBillingCustomer: boolean };
   /** Can checkout take a payment right now? */
-  payments?: { available: boolean };
+  payments?: { available: boolean; /** Yearly checkout links are set up. */ annualAvailable?: boolean };
   /** The launch offer: a trial with no card. */
   earlyBird?: { available: boolean; active: boolean };
   /** Free access from an access code (lib/billing/access-codes.ts). */
@@ -90,7 +90,7 @@ export function SubscriptionGate({ isMasterAdmin, onLogout, onOpenBilling, onOpe
     load();
   }, [isMasterAdmin, load]);
 
-  // Back from Stripe: the webhook may take a few seconds, so wait for it before showing the dashboard
+  // Back from checkout: the webhook may take a few seconds, so wait for it before showing the dashboard
   useEffect(() => {
     if (isMasterAdmin) return;
     const params = new URLSearchParams(window.location.search);
@@ -108,6 +108,12 @@ export function SubscriptionGate({ isMasterAdmin, onLogout, onOpenBilling, onOpe
     }, 1500);
     return () => window.clearInterval(timer);
   }, [isMasterAdmin, loadOnce]);
+
+  // yearly billing is only offered once its checkout links exist; until then everything is monthly
+  const annualOk = data?.payments?.annualAvailable !== false;
+  useEffect(() => {
+    if (!annualOk && interval === 'annual') setInterval('monthly');
+  }, [annualOk, interval]);
 
   const startCheckout = async () => {
     setBusy(true);
@@ -293,7 +299,7 @@ export function SubscriptionGate({ isMasterAdmin, onLogout, onOpenBilling, onOpe
             </div>
 
             <div className="mt-5 flex justify-center" role="group" aria-label={__t("Billing period")}>
-              {(['annual', 'monthly'] as const).map((i) => (
+              {(annualOk ? (['annual', 'monthly'] as const) : (['monthly'] as const)).map((i) => (
                 <button key={i} type="button" onClick={() => setInterval(i)} aria-pressed={interval === i} className={`px-4 py-1.5 text-xs font-semibold first:rounded-l-full last:rounded-r-full border border-[#08251a]/15 cursor-pointer ${interval === i ? 'bg-[#abff44] text-[#08251a]' : 'bg-[#f5f3dd] text-[#08251a]'}`}>
                   {i === 'annual' ? __t("Annual · save {n1}%", { n1: annualSavingsPercent() }) : <T>{'Monthly'}</T>}
                 </button>
@@ -339,7 +345,7 @@ export function SubscriptionGate({ isMasterAdmin, onLogout, onOpenBilling, onOpe
               {cardsWork && !(earlyBird && checkoutFailed) ? (
                 <SaveButton onClick={startCheckout} saving={busy} idleLabel={expired ? `Subscribe to ${plan.name}` : earlyBird ? 'Start free trial with a card' : 'Start free trial'} savingLabel="Opening secure checkout…" savedLabel="Opening…" className="px-6 py-3 text-sm" />
               ) : null}
-              <p className="text-[11px] text-[#4b5d54]">{cardsWork ? <T>{'Secure payment by Stripe. '}</T> : ''}<T>By continuing you agree to the</T> <a className="underline" href="/terms" target="_blank" rel="noopener noreferrer"><T>Terms</T></a> <T>and</T> <a className="underline" href="/privacy" target="_blank" rel="noopener noreferrer"><T>Privacy Policy</T></a>.</p>
+              <p className="text-[11px] text-[#4b5d54]">{cardsWork ? <T>{'Secure payment by Lemon Squeezy. '}</T> : ''}<T>By continuing you agree to the</T> <a className="underline" href="/terms" target="_blank" rel="noopener noreferrer"><T>Terms</T></a> <T>and</T> <a className="underline" href="/privacy" target="_blank" rel="noopener noreferrer"><T>Privacy Policy</T></a>.</p>
               {data.complimentary?.canRedeem ? (
                 <div className="w-full max-w-sm text-center">
                   {!codeOpen ? (

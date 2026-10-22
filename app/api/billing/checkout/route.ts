@@ -1,6 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Database } from '@/lib/db';
-import { createCheckoutSession, changeSubscriptionPlan, cleanCustomerEmail, isStripeConfigured, sandboxAllowed, stripeModeOk } from '@/lib/billing/stripe';
+import {
+  buildCheckoutUrl,
+  canChangePlanInApp,
+  changeSubscriptionPlan,
+  checkoutLink,
+  getCustomerPortalUrl,
+  isBillingConfigured,
+  sandboxAllowed,
+  cleanCustomerEmail,
+  type BillingInterval,
+  type PaidPlanId,
+} from '@/lib/billing/lemonsqueezy';
 import { enforceDistributedRateLimit, enforceDistributedRateLimitByKey } from '@/lib/security/rate-limit-redis';
 import { newTrialDates, trialAvailable } from '@/lib/billing/trial';
 import { BILLING_PLANS } from '@/lib/billing/plans';
@@ -39,47 +50,31 @@ async function POSTHandler(req: NextRequest) {
       return NextResponse.json({ error: 'Request body must be a JSON object' }, { status: 400 });
     }
 
-    const { planId, billingInterval = 'monthly', addonType } = body as { planId?: any; billingInterval?: any; addonType?: any };
+    const { planId, billingInterval = 'monthly' } = body as { planId?: any; billingInterval?: any };
 
-    // Only plain strings from a fixed list are accepted; nothing typed by the user reaches Stripe.
-    if (typeof planId !== 'undefined' && typeof planId !== 'string') {
-      return NextResponse.json({ error: 'Invalid planId' }, { status: 400 });
-    }
-    if (typeof addonType !== 'undefined' && typeof addonType !== 'string') {
-      return NextResponse.json({ error: 'Invalid addonType' }, { status: 400 });
+    // Only plain strings from a fixed list are accepted; nothing typed by the user reaches the checkout link.
+    if (typeof planId !== 'string') {
+      return NextResponse.json({ error: 'Invalid or missing planId' }, { status: 400 });
     }
     if (typeof billingInterval !== 'string') {
       return NextResponse.json({ error: 'Invalid billingInterval' }, { status: 400 });
     }
 
-    // Validate addonType if specified
-    if (addonType !== undefined) {
-      if (addonType !== 'extra_landing_page') {
-        return NextResponse.json(
-          { error: `Unsupported addonType '${addonType}'. Supported types: extra_landing_page` },
-          { status: 400 }
-        );
-      }
-    }
-
-    // Validate planId if addonType is not specified
     const VALID_PLAN_IDS = BILLING_PLANS.map((p) => p.id);
-    if (!addonType) {
-      if (!planId || typeof planId !== 'string' || !VALID_PLAN_IDS.includes(planId as any)) {
-        return NextResponse.json(
-          { error: `Invalid or missing planId. Must be one of: ${VALID_PLAN_IDS.join(', ')}` },
-          { status: 400 }
-        );
-      }
+    if (!VALID_PLAN_IDS.includes(planId as any)) {
+      return NextResponse.json(
+        { error: `Invalid or missing planId. Must be one of: ${VALID_PLAN_IDS.join(', ')}` },
+        { status: 400 }
+      );
     }
-
-    // Validate billingInterval
     if (billingInterval !== 'monthly' && billingInterval !== 'annual') {
       return NextResponse.json(
         { error: `Invalid billingInterval '${billingInterval}'. Must be 'monthly' or 'annual'` },
         { status: 400 }
       );
     }
+    const plan = planId as PaidPlanId;
+    const interval = billingInterval as BillingInterval;
 
     const workspaceId = ctx.isMasterAdmin && typeof body.workspaceId === 'string'
       ? body.workspaceId
@@ -91,101 +86,71 @@ async function POSTHandler(req: NextRequest) {
     const limitedByIp = await enforceDistributedRateLimit(req, 'billing-checkout-ip', { windowMs: 60 * 60 * 1000, max: 15 });
     if (limitedByIp) return limitedByIp;
 
-    if (!stripeModeOk()) {
-      logEvent({ level: 'error', category: 'billing', event: 'billing.test_key_in_production' });
-      return NextResponse.json({ error: 'Billing is not available right now. Please contact support.' }, { status: 503 });
-    }
-
-    const origin = req.nextUrl.origin || process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
-    const successUrl = `${origin}/dashboard?billing_success=true&session_id={CHECKOUT_SESSION_ID}`;
-    const cancelUrl = `${origin}/dashboard?billing_cancelled=true`;
-
     const ws = await Database.getWorkspaceBilling(workspaceId);
-    // The first subscription of a workspace starts with the 14-day trial (card collected now, charged when it ends)
-    const withTrial = !addonType && trialAvailable(ws);
+    const targetPlan = BILLING_PLANS.find((p) => p.id === plan)!;
+    const live = isBillingConfigured();
 
-    if (!addonType && isStripeConfigured() && ws.stripeSubscriptionId && ws.subscriptionStatus !== 'canceled') {
-      // Already subscribed: move the existing subscription. A second Checkout would create a second, double-billed one.
-      try {
-        await changeSubscriptionPlan(ws.stripeSubscriptionId, planId as 'starter' | 'growth' | 'scale', billingInterval);
-      } catch (err: any) {
-        return NextResponse.json({ error: err?.message || 'Could not change the plan. Use "Manage subscription" instead.' }, { status: 502 });
-      }
-      await Database.updateWorkspaceBilling(ws.id, {
-        planId: planId as 'starter' | 'growth' | 'scale',
-        planName: BILLING_PLANS.find((p) => p.id === planId)!.name,
-        billingInterval,
-        monthlyChatLimit: BILLING_PLANS.find((p) => p.id === planId)!.chatSessionsLimit,
-        overageRatePerChat: BILLING_PLANS.find((p) => p.id === planId)!.overageRate,
-        landingPageLimit: BILLING_PLANS.find((p) => p.id === planId)!.landingPageLimit,
-      });
-      return NextResponse.json({ success: true, isSandbox: false, message: 'Your plan was updated. Changes take effect on your next billing date; nothing extra is charged during a trial.' });
-    }
-
-    if (!isStripeConfigured() && !sandboxAllowed()) {
-      logEvent({ level: 'error', category: 'billing', event: 'billing.stripe_not_configured' });
+    if (!live && !sandboxAllowed()) {
+      logEvent({ level: 'error', category: 'billing', event: 'billing.not_configured' });
       return NextResponse.json({ error: 'Billing is not available right now. Please contact support.' }, { status: 503 });
     }
 
-    // Call Stripe helper
-    const result = await createCheckoutSession({
-      workspaceId: ws.id,
-      workspaceName: ws.name,
-      customerEmail: cleanCustomerEmail(ws.billingEmail),
-      planId: planId as 'starter' | 'growth' | 'scale' | undefined,
-      billingInterval,
-      addonType,
-      withTrial,
-      successUrl,
-      cancelUrl,
-    });
+    if (live) {
+      if (!checkoutLink(plan, interval)) {
+        return NextResponse.json(
+          { error: interval === 'annual' ? 'Yearly billing is not available for this plan yet. Choose monthly billing.' : 'This plan cannot be bought right now. Please contact support.' },
+          { status: 400 }
+        );
+      }
 
-    await Database.addAuditLog({
-      workspaceId: ws.id,
-      actor: {
-        id: ctx.memberId,
-        name: ctx.role === 'owner' ? 'Workspace Owner' : 'Billing Manager',
-        ip: getClientIp(req),
-      },
-      action: 'billing.checkout_initiated',
-      targetType: 'checkout_session',
-      targetId: result.sessionId || 'sandbox',
-      details: {
-        planId,
-        billingInterval,
-        addonType,
-        isSandbox: result.isSandbox,
-      },
-    });
+      if (ws.billingSubscriptionId && ws.subscriptionStatus !== 'canceled') {
+        // Already subscribed: move the existing subscription. A second checkout would create a second, double-billed one.
+        if (canChangePlanInApp(plan, interval)) {
+          try {
+            await changeSubscriptionPlan(ws.billingSubscriptionId, plan, interval);
+          } catch (err: any) {
+            return NextResponse.json({ error: err?.message || 'Could not change the plan. Use "Manage subscription" instead.' }, { status: 502 });
+          }
+          // the plan itself is updated by the webhook Lemon Squeezy sends for the change
+          await Database.addAuditLog({
+            workspaceId: ws.id,
+            actor: { id: ctx.memberId, name: ctx.role === 'owner' ? 'Workspace Owner' : 'Billing Manager', ip: getClientIp(req) },
+            action: 'billing.plan_change_requested',
+            targetType: 'workspace_billing',
+            targetId: ws.id,
+            details: { planId: plan, billingInterval: interval },
+          });
+          return NextResponse.json({ success: true, isSandbox: false, message: 'Your plan change was sent. It shows here as soon as it is confirmed, usually within a minute.' });
+        }
+        // switching is done in the customer portal
+        const portal = await getCustomerPortalUrl(ws.billingSubscriptionId);
+        return NextResponse.json({ success: true, isSandbox: false, url: portal, message: 'Change your plan in the billing portal.' });
+      }
 
-    // If Stripe is configured and session URL generated, return redirect URL
-    if (!result.isSandbox && result.url) {
-      return NextResponse.json({
-        success: true,
-        isSandbox: false,
-        url: result.url,
-        sessionId: result.sessionId,
+      const url = buildCheckoutUrl({ planId: plan, interval, workspaceId: ws.id, customerEmail: cleanCustomerEmail(ws.billingEmail) });
+      if (!url) {
+        return NextResponse.json({ error: 'This plan cannot be bought right now. Please contact support.' }, { status: 400 });
+      }
+
+      await Database.addAuditLog({
+        workspaceId: ws.id,
+        actor: {
+          id: ctx.memberId,
+          name: ctx.role === 'owner' ? 'Workspace Owner' : 'Billing Manager',
+          ip: getClientIp(req),
+        },
+        action: 'billing.checkout_initiated',
+        targetType: 'checkout',
+        targetId: `${plan}:${interval}`,
+        details: { planId: plan, billingInterval: interval, isSandbox: false },
       });
+
+      return NextResponse.json({ success: true, isSandbox: false, url });
     }
 
-    // Operating in Sandbox Mode (Instant direct activation for dev/demo)
-    if (addonType === 'extra_landing_page') {
-      const addonResult = await Database.purchaseExtraLandingPageSlot(ws.id);
-      return NextResponse.json({
-        success: true,
-        isSandbox: true,
-        message: 'Sandbox: 1 Extra Landing Page slot successfully activated ($100 one-time).',
-        newSlotCount: addonResult.newSlotCount,
-        invoice: addonResult.invoice,
-      });
-    }
-
-    // Sandbox Plan Upgrade
-    const targetPlan = BILLING_PLANS.find((p) => p.id === planId)!;
-    const interval = billingInterval as 'monthly' | 'annual';
-
-    // Prevent duplicate duplicate invoice if already on this exact plan and interval
-    if (ws.stripeSubscriptionId && ws.planId === targetPlan.id && ws.billingInterval === interval) {
+    // Operating in Sandbox Mode (instant direct activation, development only)
+    // Prevent a duplicate invoice if already on this exact plan and interval
+    if (ws.billingSubscriptionId && ws.planId === targetPlan.id && ws.billingInterval === interval) {
       return NextResponse.json({
         success: true,
         isSandbox: true,
@@ -195,6 +160,8 @@ async function POSTHandler(req: NextRequest) {
       });
     }
 
+    // The first subscription of a workspace starts with the 14-day trial
+    const withTrial = trialAvailable(ws);
     const todayStr = new Date().toISOString().split('T')[0];
     const price = interval === 'annual' ? targetPlan.annualMonthlyPrice * 12 : targetPlan.monthlyPrice;
 
@@ -216,16 +183,25 @@ async function POSTHandler(req: NextRequest) {
       overageRatePerChat: targetPlan.overageRate,
       landingPageLimit: targetPlan.landingPageLimit,
       // simulated subscription (development only): a trial when one is available, otherwise paid
-      stripeSubscriptionId: 'sandbox_sub',
+      billingSubscriptionId: 'sandbox_sub',
       subscriptionStatus: withTrial ? 'trialing' : 'active',
       ...(withTrial ? newTrialDates() : {}),
       invoices: withTrial ? currentInvoices : [newInvoice, ...currentInvoices],
     });
 
+    await Database.addAuditLog({
+      workspaceId: ws.id,
+      actor: { id: ctx.memberId, name: ctx.role === 'owner' ? 'Workspace Owner' : 'Billing Manager', ip: getClientIp(req) },
+      action: 'billing.checkout_initiated',
+      targetType: 'checkout',
+      targetId: 'sandbox',
+      details: { planId: plan, billingInterval: interval, isSandbox: true },
+    });
+
     return NextResponse.json({
       success: true,
       isSandbox: true,
-      message: `Sandbox: Successfully upgraded to ${targetPlan.name} plan with Google Pay / Card payment simulated!`,
+      message: `Sandbox: Successfully upgraded to ${targetPlan.name} plan (simulated payment).`,
       planId: targetPlan.id,
       billingInterval: interval,
     });

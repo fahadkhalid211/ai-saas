@@ -1,4 +1,4 @@
-import { BILLING_PLANS, EXTRA_LANDING_PAGE_ADDON_PRICE } from '@/lib/billing/plans';
+import { BILLING_PLANS } from '@/lib/billing/plans';
 import { TRIAL_DAYS } from '@/lib/billing/trial';
 
 /**
@@ -289,7 +289,7 @@ export const GUIDES: Guide[] = [
     title: 'Plans and prices',
     category: 'Billing',
     keywords: ['price', 'pricing', 'plans', 'plan', 'cost', 'how much', 'starter', 'growth', 'scale', 'agency', 'annual', 'monthly', 'discount', 'compare plans'],
-    body: `${plansText()}\n\nAnnual billing saves about 20%. An extra landing page slot is a one-time ${money(EXTRA_LANDING_PAGE_ADDON_PRICE)} add-on. Chats beyond your monthly allowance are billed at your plan's per-chat rate; the assistant never cuts a visitor off mid-conversation. AI usage is billed by your own AI provider.`,
+    body: `${plansText()}\n\nAnnual billing saves about 20%.  Chats beyond your monthly allowance are billed at your plan's per-chat rate; the assistant never cuts a visitor off mid-conversation. AI usage is billed by your own AI provider.`,
     links: [{ label: 'Pricing', href: '/pricing' }],
   },
   {
@@ -312,7 +312,7 @@ export const GUIDES: Guide[] = [
     title: 'Cancel, update card, invoices and receipts',
     category: 'Billing',
     keywords: ['cancel', 'cancel subscription', 'unsubscribe', 'stop billing', 'update card', 'change card', 'payment method', 'invoice', 'invoices', 'receipt', 'refund', 'billing email', 'manage subscription'],
-    body: `In **Plans and Billing** click **Manage subscription** to open the secure Stripe billing portal: cancel (you keep access until the period ends), replace your card, and download invoices. A receipt is emailed for every payment. Cards are only ever entered on Stripe's own pages, never in Crescelo. For a refund question, open a support ticket.`,
+    body: `In **Plans and Billing** click **Manage subscription** to open the secure Lemon Squeezy customer portal: cancel (you keep access until the period ends), replace your card, and download invoices. Lemon Squeezy emails a receipt for every payment. Cards are only ever entered on Lemon Squeezy's own pages, never in Crescelo. For a refund question, open a support ticket.`,
   },
   {
     id: 'usage-limits',

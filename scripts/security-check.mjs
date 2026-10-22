@@ -74,7 +74,7 @@ if (!env.UPSTASH_REDIS_REST_URL || !env.UPSTASH_REDIS_REST_TOKEN) {
   add('WARN', 'UPSTASH_REDIS_REST_*', 'not set: rate limits count per server instance, so an attacker spread across instances gets a multiple of every limit.');
 } else add('OK', 'UPSTASH_REDIS_REST_*', 'set (rate limits are shared across instances)');
 
-if (env.STRIPE_SECRET_KEY && !env.STRIPE_WEBHOOK_SECRET) add('FAIL', 'STRIPE_WEBHOOK_SECRET', 'Stripe is configured but webhooks are not verified.');
+if (env.LEMONSQUEEZY_API_KEY && !env.LEMONSQUEEZY_WEBHOOK_SECRET) add('FAIL', 'LEMONSQUEEZY_WEBHOOK_SECRET', 'Lemon Squeezy is configured but webhooks are not verified, so payments never reach the workspace.');
 if (env.VOICE_WORKER_SECRET) secret('VOICE_WORKER_SECRET', { why: 'Signs requests from the phone worker.' });
 if (env.VOICE_WEBHOOK_SECRET) secret('VOICE_WEBHOOK_SECRET', { why: 'Authenticates the carrier webhook.', min: 24 });
 

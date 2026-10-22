@@ -329,18 +329,17 @@ export interface WorkspaceBillingData {
   requiresSubscription?: boolean;
   trialStartedAt?: string;
   trialEndsAt?: string;
-  stripeCustomerId?: string;
-  stripeSubscriptionId?: string;
+  /** The payment provider's (Lemon Squeezy) customer and subscription ids. */
+  billingCustomerId?: string;
+  billingSubscriptionId?: string;
   subscriptionStatus?: SubscriptionStatus;
   cancelAtPeriodEnd?: boolean;
   /** Started the free trial without a card during the launch (early-bird) offer. */
   earlyBird?: boolean;
   /** The access code (lib/billing/access-codes.ts) that gave this workspace free access. */
   complimentaryCode?: string;
-  /** Stripe's identifier for the card that started the trial (never the card number). */
-  cardFingerprint?: string;
-  /** Set when a card was disputed or flagged as fraud; the workspace cannot start another trial. */
-  billingRisk?: 'fraud_warning' | 'dispute' | 'trial_card_reused';
+  /** Set when a payment was disputed or refunded as fraud; the workspace cannot start another trial. */
+  billingRisk?: 'fraud_warning' | 'dispute';
 }
 
 export interface AppointmentData {
@@ -849,6 +848,21 @@ function saveLocalStateSync(state: DatabaseState): void {
  * Keyed by the object, because a request may still be holding (and saving) an object this instance has since reloaded.
  */
 const syncedPayloads = new WeakMap<object, Record<string, any>>();
+
+/**
+ * Workspaces saved while payments ran through Stripe carry stripeCustomerId / stripeSubscriptionId. They are moved to the
+ * provider-neutral names the first time the workspace is read, so nothing that was stored is lost or locked out.
+ */
+function adoptLegacyBillingFields(ws: any): any {
+  if (ws && (ws.stripeSubscriptionId !== undefined || ws.stripeCustomerId !== undefined || ws.cardFingerprint !== undefined)) {
+    if (ws.stripeSubscriptionId !== undefined && ws.billingSubscriptionId === undefined) ws.billingSubscriptionId = ws.stripeSubscriptionId;
+    if (ws.stripeCustomerId !== undefined && ws.billingCustomerId === undefined) ws.billingCustomerId = ws.stripeCustomerId;
+    delete ws.stripeSubscriptionId;
+    delete ws.stripeCustomerId;
+    delete ws.cardFingerprint;
+  }
+  return ws;
+}
 
 const cloneJson = <T>(value: T): T => JSON.parse(JSON.stringify(value));
 
@@ -3668,6 +3682,7 @@ export class Database {
     const targetWsId = (!workspaceId || workspaceId === '*') ? 'default-workspace' : workspaceId;
     const state = await ensureInitialized();
     let ws = state.workspaces.find((w) => w.id === targetWsId);
+    if (ws) adoptLegacyBillingFields(ws);
     const startOfCurrentMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString();
     const endOfCurrentMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 1).toISOString();
 
@@ -3762,58 +3777,6 @@ export class Database {
     return ws as WorkspaceBillingData;
   }
 
-  static async purchaseExtraLandingPageSlot(
-    workspaceId: string = 'default-workspace'
-  ): Promise<{ success: boolean; newSlotCount: number; invoice: InvoiceRecord }> {
-    const targetWsId = (!workspaceId || workspaceId === '*') ? 'default-workspace' : workspaceId;
-    const state = await ensureInitialized();
-    let ws = state.workspaces.find((w) => w.id === targetWsId);
-    if (!ws) {
-      await Database.getWorkspaceBilling(targetWsId);
-      ws = state.workspaces.find((w) => w.id === targetWsId);
-    }
-    if (!ws) throw new Error('Workspace not found');
-
-    ws.extraLandingPagesCount = (ws.extraLandingPagesCount || 0) + 1;
-    if (!ws.invoices) ws.invoices = [];
-
-    const invoice: InvoiceRecord = {
-      id: 'inv_addon_' + Math.random().toString(36).substring(2, 9),
-      date: new Date().toISOString().split('T')[0],
-      planName: 'Add-On: Extra Business Landing Page Slot',
-      amount: 100,
-      status: 'paid',
-    };
-    ws.invoices.unshift(invoice);
-
-    // Record audit log
-    await Database.addAuditLog({
-      actor: { id: 'admin', name: 'Master Admin', ip: '127.0.0.1' },
-      action: 'billing.addon_purchased',
-      targetType: 'workspace_billing',
-      targetId: ws.id,
-      details: {
-        addonType: 'extra_landing_page',
-        amount: 100,
-        newSlotCount: ws.extraLandingPagesCount,
-      },
-    });
-
-    // Send in-app notification
-    await Database.addNotification({
-      title: 'Landing Page Slot Added',
-      message: `Successfully purchased 1 additional business landing page slot for $100. Total add-on slots: ${ws.extraLandingPagesCount}.`,
-      type: 'appointment_booked',
-    });
-
-    await saveState(state);
-    return {
-      success: true,
-      newSlotCount: ws.extraLandingPagesCount,
-      invoice,
-    };
-  }
-
   static async isWebhookProcessed(eventId: string): Promise<boolean> {
     if (!eventId || typeof eventId !== 'string') return false;
     const state = await ensureInitialized();
@@ -3851,17 +3814,25 @@ export class Database {
     return (state.processedWebhookEvents || []).length;
   }
 
-  /** Another workspace that already started a trial with this physical card, if any. */
-  static async findOtherWorkspaceByCardFingerprint(fingerprint: string, excludeWorkspaceId: string): Promise<WorkspaceBillingData | null> {
-    if (!fingerprint) return null;
-    const state = await ensureInitialized();
-    return (state.workspaces || []).find((w) => w.id !== excludeWorkspaceId && w.cardFingerprint === fingerprint && w.trialStartedAt) || null;
-  }
-
-  static async findWorkspaceByStripeCustomer(customerId: string): Promise<WorkspaceBillingData | null> {
+  /** The workspace a payment-provider customer belongs to. */
+  static async findWorkspaceByBillingCustomer(customerId: string): Promise<WorkspaceBillingData | null> {
     if (!customerId) return null;
     const state = await ensureInitialized();
-    return (state.workspaces || []).find((w) => w.stripeCustomerId === customerId) || null;
+    return (state.workspaces || []).find((w) => adoptLegacyBillingFields(w).billingCustomerId === customerId) || null;
+  }
+
+  /** The workspace a payment-provider subscription belongs to. */
+  static async findWorkspaceByBillingSubscription(subscriptionId: string): Promise<WorkspaceBillingData | null> {
+    if (!subscriptionId) return null;
+    const state = await ensureInitialized();
+    return (state.workspaces || []).find((w) => adoptLegacyBillingFields(w).billingSubscriptionId === subscriptionId) || null;
+  }
+
+  /** True when a workspace with this id exists (getWorkspaceBilling would make up a blank one for an unknown id). */
+  static async workspaceExists(workspaceId: string): Promise<boolean> {
+    if (!workspaceId) return false;
+    const state = await ensureInitialized();
+    return (state.workspaces || []).some((w) => w.id === workspaceId);
   }
 
   // Multi-Tenant Workspace Registration & Auth
@@ -3902,8 +3873,8 @@ export class Database {
     const startOfCurrentMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString();
     const endOfCurrentMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 1).toISOString();
 
-    // Every new workspace must start a card-backed 14-day trial via Stripe Checkout before its assistants serve visitors
-    // (lib/billing/trial.ts). The dates and status come from Stripe once Checkout completes.
+    // Every new workspace must start a card-backed trial through checkout before its assistants serve visitors
+    // (lib/billing/trial.ts). The dates and status come from the payment provider once checkout completes.
     const trialPlan = BILLING_PLANS.find((p) => p.id === TRIAL_PLAN_ID) || BILLING_PLANS[0];
     const workspace: WorkspaceBillingData = {
       id: workspaceId,

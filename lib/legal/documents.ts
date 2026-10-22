@@ -48,7 +48,7 @@ export const PRIVACY: LegalDocument = {
           list: [
             'Account data: name, work email address, password (stored only as a salted hash), optional profile picture and job title, workspace settings, and team members you invite.',
             'Sign-in with Google: your name, email address and profile picture, which Google sends us with your permission. We do not receive your Google password.',
-            'Billing data: plan, invoices, billing name and email, tax details. Card details are entered on Stripe’s pages and are never stored by us.',
+            'Billing data: plan, invoices, billing name and email, tax details. Card details are entered on Lemon Squeezy’s pages and are never stored by us.',
             'Content you upload or connect: documents, web pages, FAQs and other knowledge-base material, business hours, services and prices, and integration settings. AI provider keys and webhook secrets you give us are stored encrypted.',
             'Visitor Data (as a processor): the messages a visitor types or speaks to an assistant, the assistant’s replies, contact details a visitor chooses to give (name, email, phone), appointment bookings, call recordings or voicemails and transcripts if the customer enables the phone feature, and a random visitor identifier stored in the visitor’s browser.',
             'Technical and security data: IP address, browser type, device information, pages and API endpoints requested, timestamps, error details and a request identifier. Our operational logs record metadata only, not the text of chat messages or form entries.',
@@ -238,8 +238,8 @@ export const TERMS: LegalDocument = {
       id: 'fees',
       heading: '7. Plans, fees and billing',
       body: [
-        'Free trial and automatic renewal: every new account can start a 14-day free trial of all Growth features, once per business. To start it you add a payment card through Stripe and choose a plan; you are not charged during the trial. Unless you cancel before the trial ends, we charge the card automatically for the plan and billing period you chose on the day the trial ends, and then every month or year until you cancel. You can cancel at any time in the billing portal in your dashboard ("Cancel or manage"); if you cancel before the trial ends you are never charged. If a subscription ends, we pause your assistants; your dashboard stays available so you can resubscribe or export your data, and we keep your data for 30 days before deleting it under the Privacy Policy. We may end or change the trial, and may refuse it where we suspect abuse (for example repeated sign-ups by the same business).',
-        'Paid plans (currently Starter, Growth and Agency / Scale) are described on our pricing page and are billed in advance, monthly or annually as you choose, through Stripe. Prices exclude taxes; you are responsible for applicable taxes and we may add them where required. Subscriptions renew automatically until cancelled. You can cancel at any time in the billing portal; cancellation takes effect at the end of the period already paid, and you keep access until then.',
+        'Free trial and automatic renewal: every new account can start a 14-day free trial of all Growth features, once per business. To start it you add a payment card through Lemon Squeezy and choose a plan; you are not charged during the trial. Unless you cancel before the trial ends, we charge the card automatically for the plan and billing period you chose on the day the trial ends, and then every month or year until you cancel. You can cancel at any time in the billing portal in your dashboard ("Cancel or manage"); if you cancel before the trial ends you are never charged. If a subscription ends, we pause your assistants; your dashboard stays available so you can resubscribe or export your data, and we keep your data for 30 days before deleting it under the Privacy Policy. We may end or change the trial, and may refuse it where we suspect abuse (for example repeated sign-ups by the same business).',
+        'Paid plans (currently Starter, Growth and Agency / Scale) are described on our pricing page and are billed in advance, monthly or annually as you choose. Orders and payments are processed by our payment provider and merchant of record, Lemon Squeezy, whose terms apply to the purchase. Prices are shown before taxes; Lemon Squeezy adds and collects applicable taxes at checkout where required. Subscriptions renew automatically until cancelled. You can cancel at any time in the billing portal; cancellation takes effect at the end of the period already paid, and you keep access until then.',
         'Access codes: from time to time we may give an access code that provides a plan free of charge for a set period or without an end date. A code is personal to the workspace that redeems it, has no cash value and cannot be sold or transferred. When a timed code ends, the workspace behaves like an ended trial and you can subscribe to continue. We may switch off a code or end access granted by a code if it is misused or the plan is withdrawn, giving reasonable notice where we can.',
         'Fees are non-refundable except where these Terms say otherwise or the law gives you a right to a refund. If a payment fails we may retry it and, after notice, suspend paid features. Usage beyond your plan’s included amounts (for example extra chat sessions) is billed at the rates shown when you enable it. We may change prices for future periods by giving at least 30 days’ notice; if you do not agree, cancel before the change takes effect.',
       ],
@@ -248,7 +248,7 @@ export const TERMS: LegalDocument = {
       id: 'third-parties',
       heading: '8. Third-party services and integrations',
       body: [
-        'Crescelo can connect to services we do not control (AI providers, Google, Stripe, Slack, WhatsApp, Telegram, calendars, email and telephony providers). Using them is subject to their terms and to your own account with them. We are not responsible for them, for outages, or for data you choose to send to them.',
+        'Crescelo can connect to services we do not control (AI providers, Google, Lemon Squeezy, Slack, WhatsApp, Telegram, calendars, email and telephony providers). Using them is subject to their terms and to your own account with them. We are not responsible for them, for outages, or for data you choose to send to them.',
       ],
     },
     {
@@ -383,7 +383,7 @@ export const COOKIES: LegalDocument = {
         {
           list: [
             'Google reCAPTCHA (on sign-in, registration and contact forms): checks that a request comes from a person. Google may set cookies and process signals such as IP address and browser behaviour under its own privacy policy. We use it to protect the service, which is why it is treated as necessary for security.',
-            'Stripe (on checkout and the billing portal, which Stripe hosts): sets cookies needed for secure payment and fraud prevention under Stripe’s own policy.',
+            'Lemon Squeezy (on checkout and the customer portal, which Lemon Squeezy hosts): sets cookies needed for secure payment and fraud prevention under Lemon Squeezy’s own policy.',
             'Sign in with Google: when you choose it, Google’s pages may set their own cookies.',
           ],
         },

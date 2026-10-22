@@ -44,9 +44,6 @@ export function useCrmLanding({
     totalAllowed: 1,
     currentCount: 1,
   });
-  const [isPurchasingAddon, setIsPurchasingAddon] = useState(false);
-  const [addonSuccessMsg, setAddonSuccessMsg] = useState<string | null>(null);
-  const [addonErrorMsg, setAddonErrorMsg] = useState<string | null>(null);
   const [showNewPageModal, setShowNewPageModal] = useState(false);
   const [showQuotaModal, setShowQuotaModal] = useState(false);
   const [newPageName, setNewPageName] = useState('');
@@ -93,51 +90,6 @@ export function useCrmLanding({
       if (e?.name !== 'AbortError') {
         console.warn('Failed to fetch all landing pages', e);
       }
-    }
-  };
-
-  const handlePurchaseExtraLandingPage = async () => {
-    setIsPurchasingAddon(true);
-    setAddonSuccessMsg(null);
-    setAddonErrorMsg(null);
-    try {
-      const res = await fetch('/api/billing/addon', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          addonType: 'extra_landing_page',
-          workspaceId: activeAssistant?.workspaceId,
-        }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.error || 'Failed to purchase add-on');
-      }
-
-      // Real Stripe Checkout redirect
-      if (data.url) {
-        window.location.href = data.url;
-        return;
-      }
-
-      setAddonSuccessMsg(data.message || 'Extra Landing Page slot unlocked for $100! Your workspace limit has been updated.');
-      playNotificationChime();
-      if (data.totalAllowed) {
-        setLandingPageLimits((prev) => ({
-          ...prev,
-          extraSlots: data.newSlotCount ?? (prev.extraSlots + 1),
-          totalAllowed: data.totalAllowed,
-        }));
-      }
-      await fetchAllLandingPages();
-      await fetchBilling();
-      await fetchNotifications();
-      setShowQuotaModal(false);
-      setTimeout(() => setAddonSuccessMsg(null), 5000);
-    } catch (err: any) {
-      setAddonErrorMsg(err.message);
-    } finally {
-      setIsPurchasingAddon(false);
     }
   };
 
@@ -440,9 +392,6 @@ export function useCrmLanding({
     setPresetNotice,
     allLandingPages,
     landingPageLimits,
-    isPurchasingAddon,
-    addonSuccessMsg,
-    addonErrorMsg,
     showNewPageModal,
     setShowNewPageModal,
     newPageName,
@@ -454,7 +403,6 @@ export function useCrmLanding({
     newPageAssistantId,
     setNewPageAssistantId,
     fetchAllLandingPages,
-    handlePurchaseExtraLandingPage,
     handleCreateNewLandingPage,
     handleDeleteLandingPage,
     deletingPageId,

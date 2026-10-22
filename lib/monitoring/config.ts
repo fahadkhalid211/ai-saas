@@ -89,6 +89,6 @@ export const MONITORED_SERVICES_DEF = [
     id: 'channels',
     name: 'Omnichannel Webhooks & Voice',
     category: 'channels' as const,
-    description: 'Stripe webhooks, WhatsApp, Telegram, Google Sheets, and telephony worker.',
+    description: 'Lemon Squeezy webhooks, WhatsApp, Telegram, Google Sheets, and telephony worker.',
   },
 ] as const;

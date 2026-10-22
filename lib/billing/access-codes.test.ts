@@ -106,12 +106,12 @@ describe('the grant', () => {
 describe('who may redeem', () => {
   it('lets a new or ended workspace, and an early-bird trial, redeem', () => {
     expect(redeemBlockReason({ requiresSubscription: true })).toBeNull();
-    expect(redeemBlockReason({ requiresSubscription: true, subscriptionStatus: 'canceled', stripeSubscriptionId: 'sub_1' } as any)).toBeNull();
+    expect(redeemBlockReason({ requiresSubscription: true, subscriptionStatus: 'canceled', billingSubscriptionId: 'sub_1' } as any)).toBeNull();
     const future = new Date(Date.now() + 5 * 86400000).toISOString();
     expect(redeemBlockReason({ earlyBird: true, trialStartedAt: new Date().toISOString(), trialEndsAt: future })).toBeNull();
   });
   it('blocks a paying workspace, older workspaces, repeat grants and flagged cards', () => {
-    expect(redeemBlockReason({ stripeSubscriptionId: 'sub_1', subscriptionStatus: 'active' })).toMatch(/subscription/);
+    expect(redeemBlockReason({ billingSubscriptionId: 'sub_1', subscriptionStatus: 'active' })).toMatch(/subscription/);
     expect(redeemBlockReason({})).toMatch(/not needed/);
     expect(redeemBlockReason({ complimentaryCode: 'X-1234' })).toMatch(/already have free access/);
     expect(redeemBlockReason({ requiresSubscription: true, billingRisk: 'dispute' })).toMatch(/contact support/);

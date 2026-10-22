@@ -58,7 +58,7 @@ export function useCrmBilling() {
       const data = await res.json();
       if (res.ok) {
         if (!data.isSandbox && data.url) {
-          // Redirect to live Stripe Checkout session (supporting Google Pay, Apple Pay, Cards)
+          // Redirect to the live Lemon Squeezy checkout (cards, Apple Pay, Google Pay, PayPal)
           window.location.href = data.url;
           return;
         }
@@ -93,7 +93,7 @@ export function useCrmBilling() {
       } else {
         setPlanChangeMsg({
           type: 'error',
-          text: data.error || 'Customer portal is available after active Stripe checkout.',
+          text: data.error || 'Customer portal is available after you subscribe.',
         });
       }
     } catch (err: any) {
@@ -101,7 +101,7 @@ export function useCrmBilling() {
     }
   };
 
-  // Cards are only ever entered on Stripe's own pages. This opens the Stripe billing portal, where the card can be replaced.
+  // Cards are only ever entered on Lemon Squeezy's own pages. This opens the customer portal, where the card can be replaced.
   const handleUpdatePaymentMethod = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsUpdatingCard(true);

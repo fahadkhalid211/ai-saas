@@ -68,7 +68,7 @@ Crescelo monitors 11 distinct services derived directly from the application arc
 | `scraper` | Web Scraping & URL Crawler | `data` | Cheerio crawler readiness |
 | `workers` | Background Workers & Cron | `infra` | Vercel cron endpoints and job schedule state |
 | `notifications` | Email & Notification Dispatcher | `channels`| SMTP / Resend delivery readiness and push token store |
-| `channels` | Omnichannel Webhooks & Voice | `channels`| Stripe, WhatsApp, Telegram, Voice worker webhooks |
+| `channels` | Omnichannel Webhooks & Voice | `channels`| Lemon Squeezy, WhatsApp, Telegram, Voice worker webhooks |
 
 ---
 

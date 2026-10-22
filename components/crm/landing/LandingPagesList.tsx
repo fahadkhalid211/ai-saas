@@ -40,8 +40,6 @@ interface LandingPagesListProps {
     totalAllowed: number;
     currentCount: number;
   };
-  isPurchasingAddon: boolean;
-  handlePurchaseExtraLandingPage: () => Promise<void>;
   handleStartCreateWizard: () => void;
   handleSelectPageForEdit: (page: LandingPageConfig) => void;
   handleDeleteLandingPage?: (pageIdOrSlug?: string | LandingPageConfig) => Promise<void> | void;
@@ -105,8 +103,6 @@ function IndustryBadge({ industry }: { industry?: string }) {
 export function LandingPagesList({
   allLandingPages,
   landingPageLimits,
-  isPurchasingAddon,
-  handlePurchaseExtraLandingPage,
   handleStartCreateWizard,
   handleSelectPageForEdit,
   handleDeleteLandingPage,
@@ -202,28 +198,6 @@ export function LandingPagesList({
           </div>
         </div>
 
-        {/* Add-on Slot Purchase */}
-        <div className="flex items-center gap-2 shrink-0">
-          <button
-            type="button"
-            onClick={handlePurchaseExtraLandingPage}
-            disabled={isPurchasingAddon}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-amber-300 dark:border-amber-800 bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/40 text-amber-900 dark:text-amber-200 text-xs font-semibold transition cursor-pointer disabled:opacity-50"
-            title={__t("Add 1 extra landing page slot for $100")}
-          >
-            {isPurchasingAddon ? (
-              <>
-                <RefreshCw className="h-3.5 w-3.5 animate-spin text-amber-600" />
-                <span><T>Processing...</T></span>
-              </>
-            ) : (
-              <>
-                <CreditCard className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
-                <span><T>+ Extra Slot ($100)</T></span>
-              </>
-            )}
-          </button>
-        </div>
       </div>
 
       {/* Landing Pages Collection */}

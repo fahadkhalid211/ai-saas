@@ -254,20 +254,22 @@ export const BillingTab: React.FC<BillingTabProps> = ({
           >
             <T>Monthly</T>
           </button>
-          <button
-            type="button"
-            onClick={() => setBillingInterval('annual')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-semibold transition cursor-pointer ${
-              billingInterval === 'annual'
-                ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs'
-                : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
-            }`}
-          >
-            <span><T>Annual</T></span>
-            <span className="bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 text-[10px] px-1.5 py-0.2 rounded-full font-bold">
-              <T>Save</T> {annualSavingsPercent()}%
-            </span>
-          </button>
+          {billingData?.payments?.annualAvailable !== false && (
+            <button
+              type="button"
+              onClick={() => setBillingInterval('annual')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-semibold transition cursor-pointer ${
+                billingInterval === 'annual'
+                  ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs'
+                  : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+              }`}
+            >
+              <span><T>Annual</T></span>
+              <span className="bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 text-[10px] px-1.5 py-0.2 rounded-full font-bold">
+                <T>Save</T> {annualSavingsPercent()}%
+              </span>
+            </button>
+          )}
         </div>
       </div>
 
@@ -401,13 +403,13 @@ export const BillingTab: React.FC<BillingTabProps> = ({
               <h2 className="text-sm font-bold text-slate-900 dark:text-white"><T>Payment Method</T></h2>
             </div>
             <div className="flex items-center gap-2">
-              {handleOpenCustomerPortal && billingData?.stripeCustomerId && (
+              {handleOpenCustomerPortal && billingData?.subscription?.hasBillingCustomer && (
                 <button
                   type="button"
                   onClick={handleOpenCustomerPortal}
                   className="text-xs text-blue-600 dark:text-blue-400 hover:underline font-semibold cursor-pointer"
                 >
-                  <T>Stripe Portal</T>
+                  <T>Customer Portal</T>
                 </button>
               )}
               <button
@@ -442,9 +444,11 @@ export const BillingTab: React.FC<BillingTabProps> = ({
                 <div className="text-xs font-bold text-slate-900 dark:text-white font-mono">
                   •••• •••• •••• {billingData?.paymentMethod?.last4 || '4242'}
                 </div>
-                <div className="text-[11px] text-slate-500 dark:text-slate-400">
-                  <T>Expires</T> {billingData?.paymentMethod?.expMonth || 12}/{billingData?.paymentMethod?.expYear || 2028}
-                </div>
+                {billingData?.paymentMethod?.expMonth > 0 && (
+                  <div className="text-[11px] text-slate-500 dark:text-slate-400">
+                    <T>Expires</T> {billingData.paymentMethod.expMonth}/{billingData.paymentMethod.expYear}
+                  </div>
+                )}
               </div>
             </div>
             <span className="rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 px-2 py-0.5 text-[10px] font-bold">

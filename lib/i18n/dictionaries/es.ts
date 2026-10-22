@@ -242,7 +242,7 @@ export const esDict: TranslationDictionary = {
       },
       {
         q: '¿Cómo cancelo mi suscripción?',
-        a: 'Desde el portal de facturación de Stripe dentro de tu cuenta. Cancela en cualquier instante — sin penalizaciones ni esperas.',
+        a: 'Desde el portal de clientes de Lemon Squeezy dentro de tu cuenta. Cancela en cualquier instante — sin penalizaciones ni esperas.',
       },
     ],
   },

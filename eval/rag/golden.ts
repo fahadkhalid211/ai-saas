@@ -210,7 +210,7 @@ Check the spam folder, then open Channels and send a test email to confirm your 
 const billing = `# Billing
 
 ## Payments
-Payments are handled by Stripe. You can pay by card and change plan at any time from Plans and Billing; the change applies immediately and is prorated.
+Payments are handled by Lemon Squeezy. You can pay by card and change plan at any time from Plans and Billing; the change applies immediately and is prorated.
 
 ## Invoices
 Every payment produces an invoice you can download from Plans and Billing. Invoices show the plan, billing period and any extra chat sessions.

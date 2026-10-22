@@ -294,7 +294,7 @@ export default function PricingPage() {
               <div className="mk-card" style={{ padding: 'clamp(16px, 4vw, 24px)' }}>
                 <h3 style={{ fontSize: '1.3rem', marginBottom: '8px' }}><T>Can I cancel or switch plans at any time?</T></h3>
                 <p style={{ color: 'var(--mk-muted)', fontSize: '15px' }}>
-                  <T>Yes. All payments and subscriptions are handled securely through the Stripe Customer Portal. You can change your plan, download invoices, or cancel with a single click.</T>
+                  <T>Yes. All payments and subscriptions are handled securely through the Lemon Squeezy customer portal. You can change your plan, download invoices, or cancel with a single click.</T>
                 </p>
               </div>
             </div>

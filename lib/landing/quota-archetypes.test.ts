@@ -101,19 +101,6 @@ describe('Design Archetypes & Quota Verification', () => {
     expect(billingWildcard.planId).toBe(billingDefault.planId);
   });
 
-  it('should increase total allowed pages upon purchasing an extra landing page slot', async () => {
-    const { Database } = await import('@/lib/db');
-    const billingBefore = await Database.getWorkspaceBilling('default-workspace');
-    const initialSlots = billingBefore.extraLandingPagesCount || 0;
-
-    const purchaseResult = await Database.purchaseExtraLandingPageSlot('default-workspace');
-    expect(purchaseResult.success).toBe(true);
-    expect(purchaseResult.newSlotCount).toBe(initialSlots + 1);
-
-    const billingAfter = await Database.getWorkspaceBilling('*');
-    expect(billingAfter.extraLandingPagesCount).toBe(initialSlots + 1);
-  });
-
   it('should verify intelligent bot assignment rules for page 1 vs page 2+', () => {
     const assistants = [
       { id: 'demo-assistant', name: 'Crescelo Support Agent' },

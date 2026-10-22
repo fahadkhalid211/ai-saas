@@ -6,7 +6,7 @@ import { getClientIp } from '@/lib/security/rate-limit';
 import { validateEmail, sanitizeInput } from '@/lib/security/validation';
 import { logged } from '@/lib/logging/route';
 import { trialInfo } from '@/lib/billing/trial';
-import { isStripeConfigured } from '@/lib/billing/stripe';
+import { annualBillingAvailable, isBillingConfigured } from '@/lib/billing/lemonsqueezy';
 import { earlyBirdAvailableFor, paymentsAvailable } from '@/lib/billing/early-bird';
 import { complimentaryInfo, redeemBlockReason } from '@/lib/billing/access-codes';
 
@@ -40,7 +40,7 @@ const GETHandler = withAdminAuth(async (req: Request) => {
       workspaceId: ws.id,
       name: ws.name,
       trial: trialInfo(ws),
-      payments: { available: paymentsAvailable() },
+      payments: { available: paymentsAvailable(), annualAvailable: !isBillingConfigured() || annualBillingAvailable() },
       earlyBird: { available: earlyBirdAvailableFor(ws), active: Boolean(ws.earlyBird) },
       complimentary: { ...complimentaryInfo(ws), canRedeem: redeemBlockReason(ws) === null },
       subscription: {
@@ -48,7 +48,7 @@ const GETHandler = withAdminAuth(async (req: Request) => {
         nextChargeAmount: ws.billingInterval === 'annual' ? currentPlan.annualMonthlyPrice * 12 : currentPlan.monthlyPrice,
         nextChargeDate: trialInfo(ws).endsAt || ws.currentPeriodEnd,
         cancelAtPeriodEnd: Boolean(ws.cancelAtPeriodEnd),
-        hasStripeCustomer: Boolean(ws.stripeCustomerId),
+        hasBillingCustomer: Boolean(ws.billingCustomerId),
       },
       planId: ws.planId,
       planName: ws.planName,
@@ -91,9 +91,9 @@ const POSTHandler = withRoleAuth(['owner', 'admin', 'billing_manager'], async (r
       : (ctx.workspaceId && ctx.workspaceId !== '*' ? ctx.workspaceId : 'default-workspace');
 
     if (action === 'change_plan') {
-      // With Stripe connected a plan is only ever set by a paid checkout (webhook). This direct route would otherwise let any
+      // With payments connected a plan is only ever set by a paid checkout (webhook). This direct route would otherwise let any
       // workspace owner give themselves a paid plan for free, and would sidestep the end of the trial.
-      if (isStripeConfigured() && !ctx.isMasterAdmin) {
+      if (isBillingConfigured() && !ctx.isMasterAdmin) {
         return NextResponse.json({ error: 'Plans are changed through checkout. Use "Choose plan" to subscribe.' }, { status: 400 });
       }
       const targetPlan = BILLING_PLANS.find((p) => p.id === planId);
@@ -177,10 +177,10 @@ const PATCHHandler = withRoleAuth(['owner', 'admin', 'billing_manager'], async (
 
     const updates: any = {};
 
-    // Card details are never accepted from the browser: the real card comes from Stripe through the webhook, and it is changed
-    // in Stripe's billing portal. (A hand-typed "card" would fake a payment method.)
+    // Card details are never accepted from the browser: the real card comes from the payment provider through the webhook, and it is
+    // changed in the customer portal. (A hand-typed "card" would fake a payment method.)
     if (paymentMethod !== undefined) {
-      return NextResponse.json({ error: 'Card details are managed by Stripe. Use "Cancel or manage" to update your card.' }, { status: 400 });
+      return NextResponse.json({ error: 'Card details are managed by Lemon Squeezy. Use "Cancel or manage" to update your card.' }, { status: 400 });
     }
     if (false as boolean) {
       if (!paymentMethod || typeof paymentMethod !== 'object' || Array.isArray(paymentMethod)) {

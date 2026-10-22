@@ -19,7 +19,7 @@ export interface BillingEmailInput {
   interval?: 'monthly' | 'annual';
   /** ISO date: first charge (trial started / ending), or when access ends (cancelled). */
   date?: string | null;
-  /** Stripe's hosted invoice or receipt page. Only https links are used. */
+  /** The provider's hosted invoice or receipt page (Lemon Squeezy). Only https links are used. */
   invoiceUrl?: string | null;
   invoicePdfUrl?: string | null;
   invoiceNumber?: string | null;
@@ -34,12 +34,12 @@ export function escapeHtml(value: unknown): string {
     .replace(/'/g, '&#39;');
 }
 
-/** Only absolute https links to Stripe-hosted pages are ever put into an e-mail. */
-export function safeStripeLink(url?: string | null): string | null {
+/** Only absolute https links to Lemon Squeezy-hosted pages are ever put into an e-mail. */
+export function safeInvoiceLink(url?: string | null): string | null {
   if (!url) return null;
   try {
     const u = new URL(url);
-    return u.protocol === 'https:' && /(^|\.)stripe\.com$/i.test(u.hostname) ? u.toString() : null;
+    return u.protocol === 'https:' && /(^|\.)lemonsqueezy\.com$/i.test(u.hostname) ? u.toString() : null;
   } catch {
     return null;
   }
@@ -51,8 +51,8 @@ const every = (i?: 'monthly' | 'annual') => (i === 'annual' ? 'year' : 'month');
 
 export function buildBillingEmail(input: BillingEmailInput): { subject: string; text: string; html: string } {
   const plan = input.planName || 'Crescelo';
-  const link = safeStripeLink(input.invoiceUrl);
-  const pdf = safeStripeLink(input.invoicePdfUrl);
+  const link = safeInvoiceLink(input.invoiceUrl);
+  const pdf = safeInvoiceLink(input.invoicePdfUrl);
   let subject = '';
   let heading = '';
   const lines: string[] = [];

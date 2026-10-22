@@ -14,7 +14,6 @@ export interface PlanTier {
   highlight: string;
 }
 
-export const EXTRA_LANDING_PAGE_ADDON_PRICE = 100; // $100 one-time per additional landing page
 
 export function getPlanKnowledgeStorageLimitMb(planId: string = 'starter'): number {
   const plan = BILLING_PLANS.find((p) => p.id === planId) || BILLING_PLANS[0];

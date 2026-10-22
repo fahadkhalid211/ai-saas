@@ -311,7 +311,7 @@ const htmlContent = `<!DOCTYPE html>
 |          HYBRID RAG PIPELINE              | |         CORE APPLICATION SERVICES         |
 |  * Multi-Format Ingestion Engine          | |  * Appointment Mutex Engine (Postgres)    |
 |    (PDF, DOCX, CSV, JSON, OCR, YouTube)   | |  * Live Operator Takeover Controller      |
-|  * ONNX Local Embeddings (BGE-Small)      | |  * Stripe Billing & Quota Governor        |
+|  * ONNX Local Embeddings (BGE-Small)      | |  * Lemon Squeezy Billing & Quota Governor        |
 |  * Dense Cosine Similarity Search         | |  * Transactional Email (Resend/SMTP)      |
 |  * Sparse BM25 / Keyword Retrieval        | |  * In-Memory LRU Embeddings Cache         |
 |  * Reciprocal Rank Fusion (RRF)           | |  * Audit Logging Service (Owner-Only)     |
@@ -434,7 +434,7 @@ const htmlContent = `<!DOCTYPE html>
         </tr>
         <tr>
           <td><strong>Monetization & Billing</strong></td>
-          <td>Stripe Node SDK</td>
+          <td>Lemon Squeezy webhooks &amp; API</td>
           <td>Subscription tiers, webhook idempotency, storage quotas, monthly chat volume governors.</td>
         </tr>
         <tr>

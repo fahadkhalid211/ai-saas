@@ -181,14 +181,14 @@ export function accountIntent(text: string, a: AccountSnapshot | null): IntentRe
     if (!a.canManageBilling) return { reply: 'Only an owner, admin or billing manager can cancel. Please ask one of them, or open a support ticket.', actions: [] };
     const trialing = a.trial.status === 'trialing';
     return {
-      reply: `${trialing ? 'To stop the trial from turning into a paid plan, cancel before it ends. ' : ''}Cancelling is done in the secure Stripe billing portal: you keep access until the period ends and nothing more is charged. I cannot cancel for you, but this button opens the portal.`,
+      reply: `${trialing ? 'To stop the trial from turning into a paid plan, cancel before it ends. ' : ''}Cancelling is done in the secure Lemon Squeezy customer portal: you keep access until the period ends and nothing more is charged. I cannot cancel for you, but this button opens the portal.`,
       actions: [{ type: 'open_portal', label: 'Open billing portal' }],
     };
   }
 
   // ---- card / invoices
   if (/\b(update|change|replace|new)\b.*\b(card|payment method)\b|\b(invoices?|receipts?)\b/i.test(t)) {
-    return { reply: 'Cards and invoices are handled in the secure Stripe billing portal. Cards are never entered in Crescelo itself.', actions: [{ type: 'open_portal', label: 'Open billing portal' }, { type: 'navigate', tab: 'billing', label: 'Open Plans & Billing' }] };
+    return { reply: 'Cards and invoices are handled in the secure Lemon Squeezy customer portal. Cards are never entered in Crescelo itself.', actions: [{ type: 'open_portal', label: 'Open billing portal' }, { type: 'navigate', tab: 'billing', label: 'Open Plans & Billing' }] };
   }
 
   // ---- change plan (upgrade / downgrade / switch to X / annual)
@@ -198,7 +198,7 @@ export function accountIntent(text: string, a: AccountSnapshot | null): IntentRe
   if ((wantsChange && (mentionsPlanWord || target || directionUp || directionDown)) || (target && /\b(want|need|like|put me|get|to)\b/i.test(t) && (mentionsPlanWord || wantsChange)) || intervalOnly) {
     if (!a.canManageBilling) return { reply: 'Only an owner, admin or billing manager can change the plan. Please ask one of them, or open a support ticket.', actions: [] };
     if (a.trial.status === 'needs_card' || a.trial.status === 'expired') {
-      return { reply: 'You need an active subscription first. Open **Plans & Billing** and choose a plan; the card step is handled by Stripe.', actions: [{ type: 'navigate', tab: 'billing', label: 'Open Plans & Billing' }] };
+      return { reply: 'You need an active subscription first. Open **Plans & Billing** and choose a plan; the card step is handled by Lemon Squeezy.', actions: [{ type: 'navigate', tab: 'billing', label: 'Open Plans & Billing' }] };
     }
     const interval = detectInterval(t, a.interval);
     let chosen = target;

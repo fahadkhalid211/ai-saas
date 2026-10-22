@@ -7,7 +7,7 @@ anonymous callers with 401 and every customer, including workspace owners, with 
 - **Every API request**: time, route, status, duration, user id, workspace, role, IP, browser, and a `request id`
   (also sent back to the caller as the `x-request-id` header, and shown on 500 errors, so a customer can quote it to you).
 - **Events**: sign-ins (success, failure, lockout), master logins, OAuth, rate-limit hits, blocked cross-site requests,
-  bad webhook signatures (Stripe, WhatsApp, Telegram, voice), bookings and slot conflicts, model calls (provider, model,
+  bad webhook signatures (Lemon Squeezy, WhatsApp, Telegram, voice), bookings and slot conflicts, model calls (provider, model,
   time, failure; never the text), outbound webhooks, cron runs, slow or failing database calls, audit-trail actions.
 - **Errors**: uncaught exceptions in any API route, page-render errors, everything the server prints with
   `console.error` / `console.warn`, and errors from visitors' browsers (uncaught errors and React error boundaries).

@@ -60,8 +60,8 @@ export function findWeakSettings(env: Record<string, string | undefined>): EnvPr
   if (!env.UPSTASH_REDIS_REST_URL || !env.UPSTASH_REDIS_REST_TOKEN) {
     problems.push({ name: 'UPSTASH_REDIS_REST_*', problem: 'is not set, so rate limits and booking locks are per server instance', severity: 'warn' });
   }
-  if (env.STRIPE_SECRET_KEY && !env.STRIPE_WEBHOOK_SECRET) {
-    problems.push({ name: 'STRIPE_WEBHOOK_SECRET', problem: 'is not set although Stripe is configured, so webhooks are not verified', severity: 'fail' });
+  if (env.LEMONSQUEEZY_API_KEY && !env.LEMONSQUEEZY_WEBHOOK_SECRET) {
+    problems.push({ name: 'LEMONSQUEEZY_WEBHOOK_SECRET', problem: 'is not set although Lemon Squeezy is configured, so payments never reach the workspace and webhooks are not verified', severity: 'fail' });
   }
   return problems;
 }

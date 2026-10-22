@@ -41,7 +41,7 @@ describe('Database Layer & Decoupled Storage', () => {
     // new workspaces must start a card-backed trial before assistants serve visitors
     expect(result.workspace.planId).toBe('growth');
     expect(result.workspace.requiresSubscription).toBe(true);
-    expect(result.workspace.stripeSubscriptionId).toBeUndefined();
+    expect(result.workspace.billingSubscriptionId).toBeUndefined();
     expect(result.assistant).toBeDefined();
     expect(result.assistant.name).toContain('Apex Medical Clinic');
     expect(result.landingPage).toBeDefined();

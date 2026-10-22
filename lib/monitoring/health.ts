@@ -300,7 +300,7 @@ export async function checkChannelsService(): Promise<ServiceHealthResult> {
       status: 'operational',
       latencyMs: duration,
       checkedAt: new Date().toISOString(),
-      message: 'Omnichannel webhooks (Stripe, WhatsApp, Telegram, Voice) operational',
+      message: 'Omnichannel webhooks (Lemon Squeezy, WhatsApp, Telegram, Voice) operational',
     };
   } catch (err: any) {
     return {

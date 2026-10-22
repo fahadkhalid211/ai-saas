@@ -47,7 +47,7 @@ async function GETHandler(req: Request) {
         status: trial.status,
         trialEndsAt: trial.endsAt,
         accessCode: ws.complimentaryCode || null,
-        subscribed: Boolean(ws.stripeSubscriptionId),
+        subscribed: Boolean(ws.billingSubscriptionId),
         billingEmail: ws.billingEmail || null,
         createdAt,
         lastActiveAt,

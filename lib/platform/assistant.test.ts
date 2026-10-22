@@ -35,7 +35,7 @@ describe('dashboard assistant API', () => {
 
   it('proposes a plan change with a confirm action and changes nothing by itself', async () => {
     const a = await tenant('Gamma Studio');
-    await Database.updateWorkspaceBilling(a.workspace.id, { stripeSubscriptionId: 'sub_test', subscriptionStatus: 'active' } as any);
+    await Database.updateWorkspaceBilling(a.workspace.id, { billingSubscriptionId: 'sub_test', subscriptionStatus: 'active' } as any);
     const before = await Database.getWorkspaceBilling(a.workspace.id);
     const r = await (await ask(a.token, 'upgrade to scale annually')).json();
     expect(r.actions[0]).toMatchObject({ type: 'change_plan', planId: 'scale', interval: 'annual' });
