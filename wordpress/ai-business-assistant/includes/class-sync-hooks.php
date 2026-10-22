@@ -21,6 +21,8 @@ class Crescelo_Sync_Hooks {
         // Dynamic Post & Custom Post Type lifecycle
         add_action('save_post', [$this, 'handle_post_save'], 20, 2);
         add_action('before_delete_post', [$this, 'handle_post_delete'], 20, 1);
+        // Unpublishing (draft, private, trash) must remove the content from the knowledge base as well.
+        add_action('transition_post_status', [$this, 'handle_status_transition'], 20, 3);
 
         // WooCommerce Product lifecycle
         if (class_exists('WooCommerce')) {
@@ -154,6 +156,35 @@ class Crescelo_Sync_Hooks {
     }
 
     /**
+     * Remove an item from the knowledge base when it stops being published.
+     */
+    public function handle_status_transition($new_status, $old_status, $post) {
+        if ($old_status !== 'publish' || $new_status === 'publish' || !is_object($post)) {
+            return;
+        }
+        if (wp_is_post_revision($post->ID) || wp_is_post_autosave($post->ID)) {
+            return;
+        }
+        if (!(bool) get_option('ai_assistant_auto_sync', true)) {
+            return;
+        }
+
+        $assistant_id = sanitize_text_field(get_option('ai_assistant_id', ''));
+        if (empty($assistant_id)) return;
+
+        $post_type = sanitize_key($post->post_type);
+        if (!in_array($post_type, $this->get_allowed_post_types(), true)) {
+            return;
+        }
+
+        $batch_type = ($post_type === 'product' && class_exists('WooCommerce')) ? 'products' : $post_type;
+        $this->client->sync_item_async($assistant_id, 'delete', $batch_type, [
+            'id'    => absint($post->ID),
+            'title' => esc_html($post->post_title),
+        ]);
+    }
+
+    /**
      * Handle deletion of any post, page, or custom post type.
      */
     public function handle_post_delete($post_id) {
@@ -174,6 +205,11 @@ class Crescelo_Sync_Hooks {
         $allowed_types = $this->get_allowed_post_types();
 
         if (!in_array($post_type, $allowed_types, true)) {
+            return;
+        }
+
+        // WooCommerce products are removed by handle_product_delete under the 'products' key.
+        if ($post_type === 'product' && class_exists('WooCommerce')) {
             return;
         }
 

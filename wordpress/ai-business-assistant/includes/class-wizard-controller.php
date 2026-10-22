@@ -131,7 +131,7 @@ class Crescelo_Wizard_Controller {
         }
 
         // 4. Validate host_url format and protocol
-        $raw_host = trim($_POST['host_url'] ?? get_option('ai_assistant_host_url', 'http://localhost:3000'));
+        $raw_host = trim($_POST['host_url'] ?? get_option('ai_assistant_host_url', CRESCELO_DEFAULT_HOST));
         $host_url = esc_url_raw($raw_host);
         $parsed   = wp_parse_url($host_url);
 
@@ -184,6 +184,15 @@ class Crescelo_Wizard_Controller {
 
         $raw_batch  = sanitize_key($_POST['batch_type'] ?? 'page');
         $batch_type = $raw_batch;
+
+        // The backend keys products as 'products' (and documents as 'documents'). The wizard sends the post type slug,
+        // so normalise it here; otherwise bulk-synced products are indexed as plain pages under a different identity
+        // than the real-time hooks use, and every later product edit adds a duplicate.
+        if ($batch_type === 'product' && class_exists('WooCommerce')) {
+            $batch_type = 'products';
+        } elseif ($batch_type === 'attachment' || $batch_type === 'document') {
+            $batch_type = 'documents';
+        }
 
         // Verify that the batch type is either a recognized post type, products, or documents
         $is_valid_type = ($batch_type === 'products' || $batch_type === 'documents' || post_type_exists($batch_type));
@@ -287,7 +296,7 @@ class Crescelo_Wizard_Controller {
         update_option('ai_assistant_enabled', true);
         update_option('ai_assistant_wizard_completed', true);
 
-        $host_url     = untrailingslashit(get_option('ai_assistant_host_url', 'http://localhost:3000'));
+        $host_url     = untrailingslashit(get_option('ai_assistant_host_url', CRESCELO_DEFAULT_HOST));
         $assistant_id = sanitize_text_field(get_option('ai_assistant_id', ''));
 
         wp_send_json_success([
@@ -314,7 +323,7 @@ class Crescelo_Wizard_Controller {
         $this->verify_security();
 
         $api_key  = sanitize_text_field(trim($_POST['api_key'] ?? ''));
-        $raw_host = trim($_POST['host_url'] ?? get_option('ai_assistant_host_url', 'http://localhost:3000'));
+        $raw_host = trim($_POST['host_url'] ?? get_option('ai_assistant_host_url', CRESCELO_DEFAULT_HOST));
         $host_url = esc_url_raw($raw_host);
 
         if (empty($api_key)) {
@@ -379,7 +388,7 @@ class Crescelo_Wizard_Controller {
         $this->verify_security();
 
         $assistant_id = sanitize_text_field(get_option('ai_assistant_id', ''));
-        $host_url     = esc_url_raw(get_option('ai_assistant_host_url', 'http://localhost:3000'));
+        $host_url     = esc_url_raw(get_option('ai_assistant_host_url', CRESCELO_DEFAULT_HOST));
 
         if (empty($assistant_id)) {
             wp_send_json_error(['error' => 'No assistant connected.']);

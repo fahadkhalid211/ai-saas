@@ -355,8 +355,8 @@ class Crescelo_Site_Scanner {
                         $terms = wc_get_product_terms($pid, $attr->get_name(), ['fields' => 'names']);
                         $attributes[$attr_name] = is_array($terms) ? array_map('esc_html', $terms) : [];
                     } else {
-                        $options = $attr->get_options();
-                        $attributes[$attr_name] = is_array($options) ? array_map('esc_html', $options) : [];
+                        $attr_options = $attr->get_options();
+                        $attributes[$attr_name] = is_array($attr_options) ? array_map('esc_html', $attr_options) : [];
                     }
                 }
             }
@@ -587,7 +587,8 @@ class Crescelo_Site_Scanner {
         $response = wp_remote_get($url, [
             'timeout'    => 12,
             'user-agent' => 'CresceloKnowledgeScraper/2.1 (WordPress ' . get_bloginfo('version') . ')',
-            'sslverify'  => false,
+            // Verify TLS by default. A site with a self-signed staging certificate can opt out with this filter.
+            'sslverify'  => (bool) apply_filters('crescelo_scrape_sslverify', true),
         ]);
 
         if (is_wp_error($response)) {

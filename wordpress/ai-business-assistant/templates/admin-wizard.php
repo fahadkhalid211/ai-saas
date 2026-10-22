@@ -7,7 +7,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-$host_url     = get_option('ai_assistant_host_url', 'http://localhost:3000');
+$host_url     = get_option('ai_assistant_host_url', CRESCELO_DEFAULT_HOST);
 $api_key      = get_option('ai_assistant_api_key', '');
 $assistant_id = get_option('ai_assistant_id', '');
 $nonce        = wp_create_nonce('crescelo_wizard_nonce');

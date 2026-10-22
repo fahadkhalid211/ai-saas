@@ -265,7 +265,7 @@
         function startAssistantRegistrationAndSync() {
             var websiteType = document.querySelector('input[name="website_type"]:checked')?.value || 'woocommerce';
             var objective = document.querySelector('input[name="objective"]:checked')?.value || 'sales';
-            var hostUrl = document.getElementById('crescelo-host-url')?.value || 'http://localhost:3000';
+            var hostUrl = document.getElementById('crescelo-host-url')?.value || 'https://www.crescelo.com';
             var apiKey = document.getElementById('crescelo-api-key')?.value || '';
 
             var features = [];

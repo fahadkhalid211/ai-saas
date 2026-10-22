@@ -16,14 +16,14 @@ class Crescelo_Client {
     private $site_secret;
 
     public function __construct($host_url = null, $api_key = null) {
-        $raw_host = $host_url ?: get_option('ai_assistant_host_url', 'http://localhost:3000');
+        $raw_host = $host_url ?: get_option('ai_assistant_host_url', CRESCELO_DEFAULT_HOST);
         $clean_host = esc_url_raw(trim($raw_host));
         $parsed = wp_parse_url($clean_host);
 
         if (!empty($parsed['scheme']) && in_array($parsed['scheme'], ['http', 'https'], true)) {
             $this->host_url = untrailingslashit($clean_host);
         } else {
-            $this->host_url = 'http://localhost:3000';
+            $this->host_url = CRESCELO_DEFAULT_HOST;
         }
 
         $this->api_key     = sanitize_text_field($api_key ?: get_option('ai_assistant_api_key', ''));

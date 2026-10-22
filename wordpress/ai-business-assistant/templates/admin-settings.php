@@ -16,7 +16,7 @@ $scanner = new Crescelo_Site_Scanner();
 $available_post_types = $scanner->get_available_post_types();
 $allowed_post_types   = $scanner->get_allowed_post_types();
 
-$host_url       = get_option('ai_assistant_host_url', 'http://localhost:3000');
+$host_url       = get_option('ai_assistant_host_url', CRESCELO_DEFAULT_HOST);
 $assistant_id   = get_option('ai_assistant_id', '');
 $assistant_name = get_option('ai_assistant_assistant_name', '');
 $account_email  = get_option('ai_assistant_account_email', '');

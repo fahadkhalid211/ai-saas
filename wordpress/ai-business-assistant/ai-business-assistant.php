@@ -17,6 +17,7 @@ if (!defined('ABSPATH')) {
 define('CRESCELO_PLUGIN_VERSION', '2.2.0');
 define('CRESCELO_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('CRESCELO_PLUGIN_URL', plugin_dir_url(__FILE__));
+define('CRESCELO_DEFAULT_HOST', 'https://www.crescelo.com');
 
 // Require Core Modules
 require_once CRESCELO_PLUGIN_DIR . 'includes/class-crescelo-client.php';
@@ -66,7 +67,7 @@ class AIBusinessAssistantPlugin {
         register_setting('ai_assistant_options', 'ai_assistant_host_url', [
             'type'              => 'string',
             'sanitize_callback' => 'esc_url_raw',
-            'default'           => 'http://localhost:3000',
+            'default'           => CRESCELO_DEFAULT_HOST,
         ]);
         register_setting('ai_assistant_options', 'ai_assistant_id', [
             'type'              => 'string',
@@ -184,7 +185,7 @@ class AIBusinessAssistantPlugin {
             $assistant_name = sanitize_text_field($_GET['assistant_name'] ?? 'AI Assistant');
             $api_key        = sanitize_text_field($_GET['api_key'] ?? '');
             $site_secret    = sanitize_text_field($_GET['site_secret'] ?? '');
-            $host_url       = esc_url_raw($_GET['host_url'] ?? get_option('ai_assistant_host_url', 'http://localhost:3000'));
+            $host_url       = esc_url_raw($_GET['host_url'] ?? get_option('ai_assistant_host_url', CRESCELO_DEFAULT_HOST));
             $account_email  = sanitize_email($_GET['account_email'] ?? '');
 
             if (empty($assistant_id)) {
@@ -266,7 +267,7 @@ class AIBusinessAssistantPlugin {
         set_transient('crescelo_oauth_state_' . $oauth_state, home_url(), 900); // 15 mins
 
         $return_url = admin_url('admin.php?page=ai-business-assistant');
-        $host_url   = esc_url_raw(get_option('ai_assistant_host_url', 'http://localhost:3000'));
+        $host_url   = esc_url_raw(get_option('ai_assistant_host_url', CRESCELO_DEFAULT_HOST));
         $assistant_id = sanitize_text_field(get_option('ai_assistant_id', ''));
 
         // Connect URL
@@ -297,7 +298,7 @@ class AIBusinessAssistantPlugin {
         $enabled = (bool) get_option('ai_assistant_enabled', true);
         if (!$enabled) return;
 
-        $raw_host = get_option('ai_assistant_host_url', 'http://localhost:3000');
+        $raw_host = get_option('ai_assistant_host_url', CRESCELO_DEFAULT_HOST);
         $clean_host = esc_url_raw(untrailingslashit($raw_host));
         $parsed = wp_parse_url($clean_host);
 
