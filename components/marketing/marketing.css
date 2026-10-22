@@ -21,9 +21,14 @@
   --mk-warn-soft: #ffe7c2;
   --mk-radius: 1.5rem;
   --mk-ease: cubic-bezier(0.22, 1, 0.36, 1);
-  --mk-display: var(--mk-serif);
-  --mk-serif: var(--font-mk-serif), Georgia, "Times New Roman", serif;
-  --mk-sans: var(--font-mk-body), system-ui, -apple-system, "Segoe UI", sans-serif;
+  /* One modern sans (Geist) for headings and body text. --mk-serif keeps its name because many rules use it, but it is the sans now.
+     Only the logo wordmark keeps the old-style serif (--mk-wordmark). Display sizes were chosen for a serif, whose letters look smaller at
+     the same size, so they are multiplied by --mk-display-scale. */
+  --mk-sans: var(--font-geist-sans), system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mk-serif: var(--mk-sans);
+  --mk-display: var(--mk-sans);
+  --mk-wordmark: var(--font-mk-wordmark), Georgia, "Times New Roman", serif;
+  --mk-display-scale: 0.8;
 
   color-scheme: light;
   background: var(--mk-bg);
@@ -60,8 +65,8 @@ html.lenis, html.lenis body { height: auto !important; }
 
 /* Type */
 .mk-eyebrow { font-family: var(--mk-sans); font-size: 0.75rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--mk-accent); font-weight: 700; margin-bottom: 0.75rem; }
-.mk-h1, .mk h1 { font-family: var(--mk-serif); font-weight: 600; letter-spacing: -0.025em; line-height: 1.04; text-wrap: balance; font-size: clamp(2.8rem, 8vw, 5.6rem); }
-.mk-h2, .mk-h3 { font-family: var(--mk-serif); font-weight: 400; letter-spacing: -0.02em; line-height: 1.08; text-wrap: balance; }
+.mk-h1, .mk h1 { font-family: var(--mk-serif); font-weight: 600; letter-spacing: -0.025em; line-height: 1.04; text-wrap: balance; font-size: calc(clamp(2.8rem, 8vw, 5.6rem) * var(--mk-display-scale)); }
+.mk-h2, .mk-h3 { font-family: var(--mk-serif); font-weight: 600; letter-spacing: -0.02em; line-height: 1.08; text-wrap: balance; }
 .mk-h2 { font-size: clamp(2.2rem, 5.2vw, 3.8rem); line-height: 1.08; letter-spacing: -0.02em; max-width: 19ch; }
 .mk-h2-wide { max-width: 24ch; }
 .mk-h3 { font-size: clamp(1.6rem, 3.4vw, 2.4rem); line-height: 1.15; letter-spacing: -0.015em; }
@@ -109,7 +114,7 @@ html.lenis, html.lenis body { height: auto !important; }
 .mk-skip { position: absolute; left: 1rem; top: -4rem; background: var(--mk-ink); color: var(--mk-bg); padding: 0.625rem 1rem; border-radius: 0.5rem; z-index: 60; }
 .mk-skip:focus { top: 0.75rem; }
 .mk-header-row { display: flex; align-items: center; justify-content: space-between; height: 4.25rem; gap: 1rem; }
-.mk-logo { display: inline-flex; align-items: center; gap: 0.625rem; font-family: var(--mk-serif); font-size: 1.625rem; letter-spacing: -0.01em; color: var(--mk-ink); }
+.mk-logo { display: inline-flex; align-items: center; gap: 0.625rem; font-family: var(--mk-wordmark); font-size: 1.625rem; letter-spacing: -0.01em; color: var(--mk-ink); }
 .mk-nav-desktop { display: none; gap: 0.25rem; }
 .mk-nav-link { padding: 0.5rem 0.875rem; border-radius: 62.4375rem; font-size: 0.9375rem; color: var(--mk-muted); transition: color 0.2s, background-color 0.2s; }
 .mk-nav-link:hover { color: var(--mk-ink); background: var(--mk-bg-tint); }
@@ -147,7 +152,7 @@ html.lenis, html.lenis body { height: auto !important; }
 .mk-marquee { display: flex; width: max-content; animation: mk-marquee 42s linear infinite; }
 .mk-marquee:hover { animation-play-state: paused; }
 .mk-marquee-track { display: flex; flex: none; }
-.mk-logo-slot { display: inline-flex; align-items: center; gap: 0.625rem; padding: 0 clamp(1rem, 3.5vw, 2.25rem); font-family: var(--mk-serif); font-size: clamp(1.1rem, 2.5vw, 1.375rem); color: var(--mk-muted); white-space: nowrap; }
+.mk-logo-slot { display: inline-flex; align-items: center; gap: 0.625rem; padding: 0 clamp(1rem, 3.5vw, 2.25rem); font-family: var(--mk-sans); font-size: clamp(1.1rem, 2.5vw, 1.375rem); color: var(--mk-muted); white-space: nowrap;  font-weight: 600; }
 .mk-logo-mark { width: 1.125rem; height: 1.125rem; border-radius: 0.3125rem; border: 1.5px dashed var(--mk-line); }
 @keyframes mk-marquee { to { transform: translateX(-50%); } }
 
@@ -155,7 +160,7 @@ html.lenis, html.lenis body { height: auto !important; }
 .mk-cards { display: grid; gap: 1rem; }
 @media (min-width: 860px) { .mk-cards { grid-template-columns: repeat(3, 1fr); } }
 .mk-card { padding: 1.75rem; background: var(--mk-surface); border: 1px solid var(--mk-line); border-radius: var(--mk-radius); }
-.mk-card h3 { font-family: var(--mk-serif); font-weight: 400; font-size: 1.6rem; line-height: 1.15; margin-bottom: 0.625rem; }
+.mk-card h3 { font-family: var(--mk-serif); font-weight: 600; font-size: calc(1.6rem * var(--mk-display-scale)); line-height: 1.15; margin-bottom: 0.625rem; }
 .mk-card p { color: var(--mk-muted); }
 
 /* Showcase + mocks */
@@ -165,7 +170,7 @@ html.lenis, html.lenis body { height: auto !important; }
 .mk-toggle-wrap { flex-wrap: wrap; border-radius: 1rem; }
 .mk-tabpanel { display: grid; gap: 2rem; margin-top: 2rem; padding: 1.5rem; border: 1px solid var(--mk-line); border-radius: 1.25rem; background: var(--mk-surface); }
 .mk-tabpanel[hidden] { display: none; }
-.mk-tabpanel-copy h3 { font-family: var(--mk-serif); font-weight: 400; font-size: clamp(1.6rem, 3vw, 2.2rem); line-height: 1.12; }
+.mk-tabpanel-copy h3 { font-family: var(--mk-serif); font-weight: 600; font-size: calc(clamp(1.6rem, 3vw, 2.2rem) * var(--mk-display-scale)); line-height: 1.12; }
 .mk-tabpanel-copy p { color: var(--mk-muted); margin-top: 0.75rem; max-width: 46ch; }
 @media (min-width: 900px) { .mk-tabpanel { grid-template-columns: 0.8fr 1.2fr; padding: 2.5rem; align-items: center; } }
 .mk-mock { display: flex; flex-direction: column; gap: 0.75rem; padding: 1.25rem; border: 1px solid var(--mk-line); border-radius: 0.875rem; background: var(--mk-bg); min-width: 0; overflow-x: clip; }
@@ -212,7 +217,7 @@ button.mk-slot:hover:not(:disabled) { border-color: var(--mk-ink); }
 .mk-feature-visual { min-width: 0; }
 
 /* Demo compare */
-.mk-demo-q { display: flex; flex-direction: column; gap: 2px; font-family: var(--mk-serif); font-size: clamp(1.4rem, 3vw, 2rem); margin-bottom: 1.5rem; }
+.mk-demo-q { display: flex; flex-direction: column; gap: 2px; font-family: var(--mk-serif); font-size: calc(clamp(1.4rem, 3vw, 2rem) * var(--mk-display-scale)); margin-bottom: 1.5rem;  font-weight: 600; }
 .mk-demo-q span { font-family: var(--mk-sans); font-size: 0.75rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--mk-muted); }
 .mk-compare { position: relative; min-height: 18.75rem; border: 1px solid var(--mk-line); border-radius: 1.125rem; overflow: hidden; background: var(--mk-surface); touch-action: pan-y; user-select: none; cursor: ew-resize; }
 .mk-compare-pane { position: absolute; inset: 0; padding: 1.75rem; display: flex; flex-direction: column; gap: 0.875rem; }
@@ -232,7 +237,7 @@ button.mk-slot:hover:not(:disabled) { border-color: var(--mk-ink); }
 /* Benefits */
 .mk-benefits { display: grid; border-top: 1px solid var(--mk-line); }
 .mk-benefit { display: grid; gap: 0.375rem 1.5rem; padding: 1.75rem 0; border-bottom: 1px solid var(--mk-line); }
-.mk-benefit h3 { font-family: var(--mk-serif); font-weight: 400; font-size: clamp(1.5rem, 3vw, 2.2rem); line-height: 1.1; }
+.mk-benefit h3 { font-family: var(--mk-serif); font-weight: 600; font-size: calc(clamp(1.5rem, 3vw, 2.2rem) * var(--mk-display-scale)); line-height: 1.1; }
 .mk-benefit p { color: var(--mk-muted); max-width: 48ch; }
 .mk-benefit-idx { font-size: 0.75rem; letter-spacing: 0.14em; color: var(--mk-muted); }
 @media (min-width: 800px) { .mk-benefit { grid-template-columns: 4rem 1fr 1fr; align-items: baseline; } }
@@ -245,7 +250,7 @@ button.mk-slot:hover:not(:disabled) { border-color: var(--mk-ink); }
 .mk-step.is-active { opacity: 1; }
 .mk-step-num { width: 2.5rem; height: 2.5rem; border-radius: 50%; display: grid; place-items: center; background: var(--mk-bg); border: 1.5px solid var(--mk-line); font-weight: 600; transition: background-color 0.3s, color 0.3s, border-color 0.3s; }
 .mk-step.is-active .mk-step-num { background: var(--mk-accent); border-color: var(--mk-accent); color: var(--mk-accent-ink); }
-.mk-step h3 { font-family: var(--mk-serif); font-weight: 400; font-size: 1.9rem; line-height: 1.1; }
+.mk-step h3 { font-family: var(--mk-serif); font-weight: 600; font-size: calc(1.9rem * var(--mk-display-scale)); line-height: 1.1; }
 .mk-step p { color: var(--mk-muted); margin-top: 0.375rem; max-width: 46ch; }
 @media (min-width: 900px) {
   .mk-steps { grid-template-columns: repeat(4, 1fr); gap: 2rem; padding: 3.5rem 0 0; }
@@ -265,7 +270,7 @@ button.mk-slot:hover:not(:disabled) { border-color: var(--mk-ink); }
 .mk-uc-panel { padding: 0.5rem 0; min-width: 0; }
 
 /* Testimonials */
-.mk-quote blockquote { font-family: var(--mk-serif); font-size: clamp(1.6rem, 4vw, 2.8rem); line-height: 1.15; max-width: 30ch; text-wrap: balance; }
+.mk-quote blockquote { font-family: var(--mk-serif); font-size: calc(clamp(1.6rem, 4vw, 2.8rem) * var(--mk-display-scale)); line-height: 1.15; max-width: 30ch; text-wrap: balance;  font-weight: 600; }
 .mk-quote figcaption { display: flex; align-items: center; gap: 0.875rem; margin-top: 1.75rem; }
 .mk-quote figcaption span:last-child { display: flex; flex-direction: column; }
 .mk-quote small { color: var(--mk-muted); }
@@ -283,7 +288,7 @@ button.mk-slot:hover:not(:disabled) { border-color: var(--mk-ink); }
 }
 @media (min-width: 860px) { .mk-metrics { grid-template-columns: repeat(4, 1fr); } }
 .mk-metric { padding: 1.75rem 1rem 1.75rem 0; border-bottom: 1px solid var(--mk-line); display: flex; flex-direction: column-reverse; gap: 0.5rem; }
-.mk-metric-value { font-family: var(--mk-serif); font-size: clamp(3rem, 8vw, 5rem); line-height: 1; font-variant-numeric: tabular-nums; }
+.mk-metric-value { font-family: var(--mk-serif); font-size: calc(clamp(3rem, 8vw, 5rem) * var(--mk-display-scale)); line-height: 1; font-variant-numeric: tabular-nums;  font-weight: 600; }
 .mk-metric dt { color: var(--mk-muted); font-size: 0.875rem; max-width: 24ch; }
 
 /* Integrations */
@@ -294,7 +299,7 @@ button.mk-slot:hover:not(:disabled) { border-color: var(--mk-ink); }
 .mk-hub-line.is-on { stroke: var(--mk-accent); }
 @keyframes mk-dash { to { stroke-dashoffset: -22; } }
 .mk-hub-core { fill: var(--mk-ink); }
-.mk-hub-core-text { fill: var(--mk-bg); font-family: var(--mk-serif); font-size: 1.25rem; }
+.mk-hub-core-text { fill: var(--mk-bg); font-family: var(--mk-serif); font-size: calc(1.25rem * var(--mk-display-scale));  font-weight: 600; }
 .mk-hub-node rect { fill: var(--mk-surface); stroke: var(--mk-line); transition: stroke 0.2s, fill 0.2s; }
 .mk-hub-node text { fill: var(--mk-ink); font-size: 0.8125rem; font-family: var(--mk-sans); }
 .mk-hub-node.is-on rect { stroke: var(--mk-accent); fill: var(--mk-accent-soft); }
@@ -323,10 +328,10 @@ button.mk-slot:hover:not(:disabled) { border-color: var(--mk-ink); }
 .mk-plan { position: relative; display: flex; flex-direction: column; padding: 2rem 1.75rem; border: 1px solid var(--mk-line); border-radius: 1.125rem; background: var(--mk-surface); }
 .mk-plan.is-popular { border-color: var(--mk-ink); box-shadow: 0 0 0 1px var(--mk-ink); }
 .mk-plan-flag { position: absolute; top: -0.8125rem; left: 1.5rem; padding: 0.1875rem 0.875rem; border-radius: 62.4375rem; background: var(--mk-ink); color: var(--mk-bg); font-size: 0.75rem; }
-.mk-plan h3 { font-family: var(--mk-serif); font-weight: 400; font-size: 2rem; }
+.mk-plan h3 { font-family: var(--mk-serif); font-weight: 600; font-size: calc(2rem * var(--mk-display-scale)); }
 .mk-plan-tag { color: var(--mk-muted); font-size: 0.875rem; min-height: 2.625rem; }
 .mk-price { margin-top: 1.25rem; }
-.mk-price-num { font-family: var(--mk-serif); font-size: 3.6rem; line-height: 1; font-variant-numeric: tabular-nums; }
+.mk-price-num { font-family: var(--mk-serif); font-size: calc(3.6rem * var(--mk-display-scale)); line-height: 1; font-variant-numeric: tabular-nums;  font-weight: 600; }
 .mk-price-per { color: var(--mk-muted); }
 .mk-price-note { font-size: 0.8125rem; color: var(--mk-muted); margin-top: 0.25rem; }
 .mk-plan .mk-ticks { flex: 1; margin-bottom: 1.75rem; }

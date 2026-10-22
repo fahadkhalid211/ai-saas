@@ -3,7 +3,7 @@
 @media (min-width: 960px) { .lc-grid { grid-template-columns: minmax(0, 22rem) minmax(0, 1fr); gap: 2rem; } }
 
 .lc-panel { display: grid; gap: 1rem; padding: 1.5rem; background: var(--mk-surface); border: 1.5px solid var(--mk-ink); border-radius: var(--mk-radius); }
-.lc-title { font-family: var(--mk-serif); font-weight: 500; font-size: 1.7rem; line-height: 1.15; }
+.lc-title { font-family: var(--mk-serif); font-weight: 600; font-size: calc(1.7rem * var(--mk-display-scale)); line-height: 1.15; }
 .lc-field { display: grid; gap: 0.3rem; }
 .lc-field label { font-weight: 700; font-size: 0.9rem; }
 .lc-field input { width: 100%; padding: 0.65rem 0.8rem; border-radius: 0.75rem; border: 1.5px solid var(--mk-ink); background: var(--mk-bg); color: var(--mk-ink); font: inherit; font-variant-numeric: tabular-nums; }
@@ -17,7 +17,7 @@
 .lc-stat:nth-child(2) { background: var(--mk-lav); }
 .lc-stat:nth-child(3) { background: var(--mk-bg-tint); }
 .lc-stat span { font-size: 0.8125rem; font-weight: 700; }
-.lc-stat b { font-family: var(--mk-serif); font-weight: 500; font-size: 2rem; line-height: 1.1; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.lc-stat b { font-family: var(--mk-serif); font-weight: 600; font-size: calc(2rem * var(--mk-display-scale)); line-height: 1.1; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
 .lc-stat small { color: var(--mk-muted); font-size: 0.8125rem; }
 
 .lc-table-wrap { margin-top: 1.25rem; }

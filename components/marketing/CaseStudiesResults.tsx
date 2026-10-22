@@ -187,7 +187,7 @@ export function CaseStudiesResults() {
           <p className="text-xs font-extrabold uppercase tracking-widest text-[#0f6e58] dark:text-[#abff44] mb-3">
             <T>Proven Business Results &amp; ROI</T>
           </p>
-          <h2 id="results-title" className="text-3xl sm:text-5xl font-serif text-[#08251a] dark:text-white leading-tight mb-4">
+          <h2 id="results-title" className="text-3xl sm:text-5xl font-sans font-semibold tracking-tight text-[#08251a] dark:text-white leading-tight mb-4">
             <T>What changes when every visitor gets an answer</T>
           </h2>
           <p className="text-base sm:text-lg text-slate-700 dark:text-slate-300 leading-relaxed font-sans">
@@ -235,7 +235,7 @@ export function CaseStudiesResults() {
                     <T>Real Outcome</T> &bull; <T>{activeCase.businessType}</T>
                   </span>
                 </div>
-                <h3 className="text-2xl sm:text-3xl font-serif font-normal text-white leading-tight">
+                <h3 className="text-2xl sm:text-3xl font-sans font-semibold tracking-tight text-white leading-tight">
                   <T>{activeCase.headline}</T>
                 </h3>
                 <p className="text-sm text-[#a9d9cb] leading-relaxed">
@@ -245,7 +245,7 @@ export function CaseStudiesResults() {
 
               {/* Headline number */}
               <div className="flex items-center sm:flex-col justify-between sm:justify-center p-4 sm:p-5 rounded-2xl bg-white/10 border border-white/15 text-center shrink-0 min-w-[180px]">
-                <div className="text-4xl sm:text-5xl font-serif font-bold text-[#abff44] leading-none mb-1">
+                <div className="text-4xl sm:text-5xl font-sans font-bold tracking-tight text-[#abff44] leading-none mb-1">
                   <T>{activeCase.primaryStat.value}</T>
                 </div>
                 <div className="text-xs font-bold uppercase tracking-wider text-white/90">

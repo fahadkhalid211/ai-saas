@@ -16,7 +16,7 @@
 .pg-error { color: #b4233c; font-size: 0.85rem; }
 .pg-work { display: grid; gap: 1.25rem; }
 @media (min-width: 900px) { .pg-work { grid-template-columns: 0.9fr 1.3fr; align-items: start; } }
-.pg-h { font-family: var(--mk-serif); font-size: 1.5rem; font-weight: 400; }
+.pg-h { font-family: var(--mk-serif); font-size: calc(1.5rem * var(--mk-display-scale)); font-weight: 600; }
 .pg-sub { font-size: 0.85rem; font-weight: 700; margin-top: 0.5rem; }
 .pg-tabs { display: flex; gap: 0.4rem; flex-wrap: wrap; }
 .pg-tabs button { border: 1px solid rgba(8,37,26,0.2); background: transparent; border-radius: 999px; padding: 0.4rem 0.85rem; font-size: 0.8rem; font-weight: 600; cursor: pointer; color: inherit; }

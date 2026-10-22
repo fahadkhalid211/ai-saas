@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { EB_Garamond, Figtree } from 'next/font/google';
+import { EB_Garamond } from 'next/font/google';
 import '@/components/marketing/marketing.css';
 import '@/components/marketing/theme.css';
 import '@/components/marketing/sections.css';
@@ -10,8 +10,7 @@ import { ButtonLink } from '@/components/marketing/ui';
 import { SIGNUP_HREF } from '@/components/marketing/content';
 
 // This page sits outside the marketing layout, so it loads the same fonts and styles itself.
-const serif = EB_Garamond({ subsets: ['latin'], display: 'swap', variable: '--font-mk-serif' });
-const body = Figtree({ subsets: ['latin'], display: 'swap', variable: '--font-mk-body' });
+const wordmark = EB_Garamond({ subsets: ['latin'], display: 'swap', variable: '--font-mk-wordmark' });
 
 export const metadata: Metadata = {
   title: 'Page not found | Crescelo',
@@ -30,7 +29,7 @@ const POPULAR = [
 
 export default function NotFound() {
   return (
-    <div className={`mk ${serif.variable} ${body.variable}`}>
+    <div className={`mk ${wordmark.variable}`}>
       <Header />
       <main id="main">
         <section className="mk-section">

@@ -494,7 +494,7 @@ export function FloatingPlatformChatbot({ variant = 'floating', onNavigate, onBi
   const lastMessage = messages[messages.length - 1];
   // What the orb is doing: waiting for the first words, or talking as they arrive.
   const orbState: OrbState = isLoading ? (lastMessage?.role === 'assistant' && lastMessage.content ? 'speaking' : 'thinking') : 'idle';
-  const serif = { fontFamily: 'var(--font-mk-serif, var(--kx-serif, Georgia, "Times New Roman", serif))' } as const;
+  const serif = { fontFamily: 'var(--mk-serif, var(--kx-serif, Georgia, "Times New Roman", serif))' } as const;
 
   return (
     <div
