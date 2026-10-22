@@ -351,7 +351,7 @@ export const PlaygroundTab: React.FC<PlaygroundTabProps> = ({
                         {isVoiceListening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
                       </button>
                       <input
-                        data-tour="playground-input"
+                       
                         type="text"
                         placeholder={__t("Type a message to test your knowledge base...")}
                         value={inputQuery}

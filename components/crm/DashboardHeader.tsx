@@ -21,7 +21,6 @@ import {
   Trash2,
   User,
   ShieldCheck,
-  Compass,
   Zap,
   CreditCard,
   Languages,
@@ -111,7 +110,6 @@ interface DashboardHeaderProps {
     isServerless: boolean;
     message?: string;
   } | null;
-  onOpenTour?: () => void;
   /** Opens the step-by-step setup wizard again. */
   onOpenSetup?: () => void;
   /** Called after the assistant changed the plan, so billing data can be reloaded. */
@@ -138,7 +136,6 @@ export function DashboardHeader({
   handleDeleteAssistant,
   currentUser,
   dbStatus,
-  onOpenTour,
   onOpenSetup,
   onBillingChanged,
 }: DashboardHeaderProps) {
@@ -232,7 +229,6 @@ export function DashboardHeader({
         <div className="relative" ref={assistantMenuRef}>
           <button
             type="button"
-            data-tour="header-bot"
             onClick={() => {
               setIsAssistantMenuOpen(!isAssistantMenuOpen);
               setIsAccountMenuOpen(false);
@@ -408,7 +404,6 @@ export function DashboardHeader({
         {/* Deploy & Embed Widget Button */}
         <button
           type="button"
-          data-tour="header-deploy"
           onClick={() => setShowEmbedModal(true)}
           className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-2xs transition cursor-pointer"
           title={__t("Deploy Chatbot Widget &amp; WordPress Integration")}
@@ -595,7 +590,7 @@ export function DashboardHeader({
                 </MenuGroup>
               </div>
 
-              {(onOpenSetup || onOpenTour) && (
+              {onOpenSetup && (
                 <MenuGroup title={<T>Get started &amp; help</T>}>
                   {onOpenSetup && (
                     <MenuRow
@@ -605,17 +600,6 @@ export function DashboardHeader({
                       onClick={() => {
                         setIsAccountMenuOpen(false);
                         onOpenSetup();
-                      }}
-                    />
-                  )}
-                  {onOpenTour && (
-                    <MenuRow
-                      icon={<Compass className="h-4 w-4 text-sky-500" />}
-                      label={<T>Product Tour</T>}
-                      hint={<T>A quick look around the dashboard</T>}
-                      onClick={() => {
-                        setIsAccountMenuOpen(false);
-                        onOpenTour();
                       }}
                     />
                   )}
@@ -641,7 +625,7 @@ export function DashboardHeader({
                   }
                 />
                 {isLanguageListOpen && (
-                  <div className="ml-3 pl-2 border-l border-slate-200 dark:border-slate-700 space-y-0.5" data-tour="header-language">
+                  <div className="ml-3 pl-2 border-l border-slate-200 dark:border-slate-700 space-y-0.5">
                     {(Object.keys(SUPPORTED_LOCALES) as SupportedLocale[]).map((loc) => (
                       <button
                         key={loc}

@@ -24,7 +24,6 @@ import {
   History as HistoryIcon,
   BookOpen,
   UserCircle,
-  Compass,
   ChevronDown,
   SendHorizontal,
   Radio,
@@ -41,7 +40,6 @@ import {
   SlackIcon,
   GoogleSheetsIcon,
 } from '@/components/crm/ChannelsTab';
-import { ADVANCED_ONLY_TABS } from '@/lib/ui/simple-mode';
 
 function renderIntegrationIcon(id: IntegrationId | string) {
   switch (id as string) {
@@ -99,11 +97,7 @@ interface DashboardSidebarProps {
   landingPagesCount?: number;
   isMasterAdmin?: boolean;
   isOwner?: boolean;
-  onOpenTour?: () => void;
   onOpenSetup?: () => void;
-  /** "Simple view": hides the more technical tabs (lib/ui/simple-mode.ts). Defaults to on for a reason — see there. */
-  simpleMode?: boolean;
-  onToggleSimpleMode?: () => void;
 }
 
 const ROW_BASE = 'flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm font-medium transition cursor-pointer select-none';
@@ -124,10 +118,7 @@ export function DashboardSidebar({
   waitingConversationsCount = 0,
   isMasterAdmin = false,
   isOwner = false,
-  onOpenTour,
   onOpenSetup,
-  simpleMode = false,
-  onToggleSimpleMode,
 }: DashboardSidebarProps) {
   const __t = useT();
   const canViewAudit = Boolean(isOwner || isMasterAdmin);
@@ -138,7 +129,7 @@ export function DashboardSidebar({
 
   const overview: TabItem = { id: 'overview', label: 'Overview', icon: FileCheck };
 
-  const allGroups: TabGroup[] = [
+  const groups: TabGroup[] = [
     {
       id: 'assistant',
       title: 'Build your assistant',
@@ -209,12 +200,6 @@ export function DashboardSidebar({
       : []),
   ];
 
-  // Simple view hides the tabs a first-time owner never needs and would only find intimidating (lib/ui/simple-mode.ts).
-  // Nothing is deleted or disabled by this — turning it off shows every tab again, exactly where it was.
-  const groups: TabGroup[] = simpleMode
-    ? allGroups.map((g) => ({ ...g, items: g.items.filter((t) => !ADVANCED_ONLY_TABS.has(t.id)) })).filter((g) => g.items.length > 0)
-    : allGroups;
-
   const renderItem = (tab: TabItem) => {
     if (tab.id === 'channels') {
       const isChannelsActive = activeTab === 'channels';
@@ -222,7 +207,6 @@ export function DashboardSidebar({
         <div key={tab.id} className="space-y-1">
           <button
             type="button"
-            data-tour="nav-channels"
             aria-expanded={isChannelsExpanded}
             onClick={() => {
               const nextExpanded = !isChannelsExpanded;
@@ -275,7 +259,6 @@ export function DashboardSidebar({
       <button
         key={tab.id}
         type="button"
-        data-tour={`nav-${tab.id}`}
         aria-current={isActive ? 'page' : undefined}
         onClick={() => setActiveTab(tab.id as any)}
         className={`${ROW_BASE} ${isActive ? ROW_ACTIVE : ROW_IDLE}`}
@@ -348,50 +331,18 @@ export function DashboardSidebar({
       </nav>
 
       <div className="pt-3 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between gap-2 text-xs">
-        {onOpenTour ? (
-          <div className="flex flex-col gap-1.5">
-            {onOpenSetup ? (
-              <button
-                type="button"
-                onClick={onOpenSetup}
-                className="flex items-center gap-1.5 text-emerald-700 dark:text-emerald-400 hover:text-emerald-800 dark:hover:text-emerald-300 font-semibold cursor-pointer transition"
-              >
-                <Sparkles className="h-3.5 w-3.5" />
-                <span><T>Setup guide</T></span>
-              </button>
-            ) : null}
-            <button
-              type="button"
-              onClick={onOpenTour}
-              className="flex items-center gap-1.5 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-semibold cursor-pointer transition"
-            >
-              <Compass className="h-3.5 w-3.5" />
-              <span><T>Guided tour</T></span>
-            </button>
-          </div>
+        {onOpenSetup ? (
+          <button
+            type="button"
+            onClick={onOpenSetup}
+            className="flex items-center gap-1.5 text-emerald-700 dark:text-emerald-400 hover:text-emerald-800 dark:hover:text-emerald-300 font-semibold cursor-pointer transition"
+          >
+            <Sparkles className="h-3.5 w-3.5" />
+            <span><T>Setup guide</T></span>
+          </button>
         ) : (
           <span className="text-slate-400 dark:text-slate-500"><T>Crescelo</T></span>
         )}
-        {onToggleSimpleMode ? (
-          <button
-            type="button"
-            onClick={onToggleSimpleMode}
-            aria-pressed={simpleMode}
-            title={
-              simpleMode
-                ? "Showing a simple view with the everyday tabs only. Click to see every setting."
-                : 'Showing every setting. Click to go back to the simple view.'
-            }
-            className={`flex items-center gap-1.5 rounded-full border px-2.5 py-1 font-semibold cursor-pointer transition ${
-              simpleMode
-                ? 'border-emerald-300 bg-emerald-50 text-emerald-800 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300'
-                : 'border-slate-300 bg-slate-100 text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300'
-            }`}
-          >
-            <Sparkles className="h-3 w-3 shrink-0" />
-            {simpleMode ? <T>{'Simple view'}</T> : <T>{'Advanced view'}</T>}
-          </button>
-        ) : null}
       </div>
     </aside>
   );

@@ -3197,18 +3197,6 @@ export class Database {
     }
   }
 
-  /** Marks the product tour as shown to this member (kept on the account, so it holds on every device). */
-  static async markTourSeen(id: string): Promise<string | null> {
-    const state = await ensureInitialized();
-    const member = (state.teamMembers || []).find((m) => m.id === id);
-    if (!member) return null;
-    if (!member.tourSeenAt) {
-      member.tourSeenAt = new Date().toISOString();
-      await saveState(state);
-    }
-    return member.tourSeenAt;
-  }
-
   static async findTeamMember(id: string): Promise<TeamMemberData | null> {
     const state = await ensureInitialized();
     return (state.teamMembers || []).find((m) => m.id === id) || null;

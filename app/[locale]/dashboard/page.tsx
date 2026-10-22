@@ -15,12 +15,10 @@ import { DashboardSidebar } from '@/components/crm/DashboardSidebar';
 import { NotificationToast } from '@/components/crm/NotificationToast';
 import { hasConnectedAiKey } from '@/lib/ai/resolve-provider';
 import { AiKeyAlert } from '@/components/crm/AiKeyAlert';
-import { ADVANCED_ONLY_TABS, loadSimpleMode, saveSimpleMode } from '@/lib/ui/simple-mode';
 import { OverviewTab } from '@/components/crm/OverviewTab';
 import type { IntegrationId } from '@/components/crm/ChannelsTab';
 import { showErrorModal } from '@/lib/ui/notify';
 import { EmailVerificationBanner } from '@/components/crm/EmailVerificationBanner';
-import { TOUR_STEPS } from '@/components/crm/tour/tourData';
 
 import { useCrmAssistants } from '@/components/crm/hooks/useCrmAssistants';
 import { useCrmBilling } from '@/components/crm/hooks/useCrmBilling';
@@ -67,7 +65,6 @@ const NewLandingPageModal = lazyOverlay(() => import('@/components/crm/modals/Ne
 const CounterQrModal = lazyOverlay(() => import('@/components/crm/modals/CounterQrModal').then((m) => m.CounterQrModal), (p) => p.isOpen);
 const OnboardingWizardModal = lazyOverlay(() => import('@/components/crm/onboarding/OnboardingWizardModal').then((m) => m.OnboardingWizardModal), (p) => p.isOpen);
 const ApiKeyRequiredModal = lazyOverlay(() => import('@/components/crm/modals/ApiKeyRequiredModal').then((m) => m.ApiKeyRequiredModal), (p) => p.isOpen);
-const TourGuideModal = lazyOverlay(() => import('@/components/crm/tour/TourGuideModal').then((m) => m.TourGuideModal), (p) => p.isOpen);
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -104,24 +101,6 @@ export default function DashboardPage() {
     'overview' | 'profile' | 'analytics' | 'billing' | 'landing_page' | 'team' | 'security' | 'audit' | 'customers' | 'system_logs' | 'blog_admin' | 'access_codes' | 'support' | 'knowledge' | 'engine' | 'behavior' | 'widget' | 'channels' | 'playground' | 'leads' | 'appointments' | 'docs' | 'templates' | 'history'
   >('overview');
   const [selectedIntegration, setSelectedIntegration] = useState<IntegrationId>('slack');
-
-  // "Simple view" (lib/ui/simple-mode.ts): hides the more technical sidebar tabs by default for a new, non-technical
-  // owner. Read from this browser's saved choice once mounted; defaults to on until then, same as the theme above.
-  const [simpleMode, setSimpleMode] = useState<boolean>(true);
-  useEffect(() => {
-    setSimpleMode(loadSimpleMode());
-  }, []);
-  const toggleSimpleMode = useCallback(() => {
-    setSimpleMode((cur) => {
-      const next = !cur;
-      saveSimpleMode(next);
-      // leaving the technical tabs hidden with nothing selected would show a blank pane
-      if (next) {
-        setActiveTab((tab) => (ADVANCED_ONLY_TABS.has(tab) ? 'overview' : tab));
-      }
-      return next;
-    });
-  }, []);
 
   const [currentUser, setCurrentUser] = useState<any | null>(null);
   const [isMasterAdmin, setIsMasterAdmin] = useState<boolean>(false);
@@ -206,11 +185,6 @@ export default function DashboardPage() {
     }
   }, [isAuthenticated, activeAssistant?.id]);
 
-  // Product Tour
-  const [isTourOpen, setIsTourOpen] = useState(false);
-  const [tourStepIndex, setTourStepIndex] = useState(0);
-  const [tourDontShowAgain, setTourDontShowAgain] = useState(false);
-
   // Groq API Key Missing Modal State
   const [showApiKeyModal, setShowApiKeyModal] = useState(false);
   const [apiKeyModalFeature, setApiKeyModalFeature] = useState('AI Assistant Activation');
@@ -223,54 +197,6 @@ export default function DashboardPage() {
     window.addEventListener('crescelo:missing_api_key', handleMissingKey);
     return () => window.removeEventListener('crescelo:missing_api_key', handleMissingKey);
   }, []);
-
-  const handleOpenTour = () => {
-    setTourStepIndex(0);
-    const step = TOUR_STEPS[0];
-    if (step && step.tab) setActiveTab(step.tab as any);
-    setIsTourOpen(true);
-  };
-
-  const handleCloseTour = (markedDontShowAgain?: boolean) => {
-    const shouldHide = markedDontShowAgain ?? tourDontShowAgain;
-    if (shouldHide) {
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('crescelo_dont_show_tour', 'true');
-      }
-      fetch('/api/profile/tour', { method: 'POST' }).catch(() => undefined);
-    } else {
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem('crescelo_dont_show_tour');
-      }
-    }
-    setIsTourOpen(false);
-  };
-
-  const handleTourNext = () => {
-    const next = tourStepIndex + 1;
-    if (next < TOUR_STEPS.length) {
-      const step = TOUR_STEPS[next];
-      if (step.tab) setActiveTab(step.tab as any);
-      setTourStepIndex(next);
-    } else {
-      handleCloseTour();
-    }
-  };
-
-  const handleTourPrev = () => {
-    const prev = tourStepIndex - 1;
-    if (prev >= 0) {
-      const step = TOUR_STEPS[prev];
-      if (step.tab) setActiveTab(step.tab as any);
-      setTourStepIndex(prev);
-    }
-  };
-
-  const handleTourGoToStep = (index: number) => {
-    const step = TOUR_STEPS[index];
-    if (step.tab) setActiveTab(step.tab as any);
-    setTourStepIndex(index);
-  };
 
   // Database Connectivity Status
   const [dbStatus, setDbStatus] = useState<{
@@ -392,26 +318,6 @@ export default function DashboardPage() {
 
   // Billing Hook
   const billing = useCrmBilling();
-
-  // Product tour: appears automatically every time unless the user explicitly checks "Don't show it again"
-  const tourAutoOpened = useRef(false);
-  useEffect(() => {
-    if (tourAutoOpened.current || isMasterAdmin || supportAccess || isAuthChecking) return;
-
-    const isDismissed = typeof window !== 'undefined' && localStorage.getItem('crescelo_dont_show_tour') === 'true';
-    if (isDismissed) {
-      setTourDontShowAgain(true);
-      return;
-    }
-
-    if (!activeAssistant) return;
-
-    tourAutoOpened.current = true;
-    const timer = setTimeout(() => {
-      handleOpenTour();
-    }, 500);
-    return () => clearTimeout(timer);
-  }, [isMasterAdmin, supportAccess, isAuthChecking, activeAssistant?.id]);
 
   // Channels Hook
   const channels = useCrmChannels({ playNotificationChime });
@@ -804,7 +710,6 @@ export default function DashboardPage() {
           currentUser={currentUser}
           dbStatus={dbStatus}
           onOpenSetup={() => setShowOnboarding(true)}
-          onOpenTour={handleOpenTour}
           onBillingChanged={() => billing.fetchBilling()}
         />
 
@@ -914,9 +819,6 @@ export default function DashboardPage() {
             isMasterAdmin={isMasterAdmin}
             isOwner={currentUser?.role === 'owner' || isMasterAdmin}
             onOpenSetup={() => setShowOnboarding(true)}
-            onOpenTour={handleOpenTour}
-            simpleMode={simpleMode}
-            onToggleSimpleMode={toggleSimpleMode}
           />
 
           {/* Main Content Workspace */}
@@ -1429,30 +1331,6 @@ export default function DashboardPage() {
 
         {/* Branded error dialog for every failed save */}
         <ErrorModalHost />
-
-        {/* Interactive Product Tour */}
-        <TourGuideModal
-          isOpen={isTourOpen}
-          stepIndex={tourStepIndex}
-          onNext={handleTourNext}
-          onPrev={handleTourPrev}
-          onClose={handleCloseTour}
-          onGoToStep={handleTourGoToStep}
-          dontShowAgain={tourDontShowAgain}
-          onToggleDontShowAgain={(val) => {
-            setTourDontShowAgain(val);
-            if (val) {
-              if (typeof window !== 'undefined') {
-                localStorage.setItem('crescelo_dont_show_tour', 'true');
-              }
-              fetch('/api/profile/tour', { method: 'POST' }).catch(() => undefined);
-            } else {
-              if (typeof window !== 'undefined') {
-                localStorage.removeItem('crescelo_dont_show_tour');
-              }
-            }
-          }}
-        />
 
       </div>
     </div>
