@@ -41,6 +41,10 @@ const nextConfig: NextConfig = {
       { source: '/use-cases', destination: '/use-case', permanent: true },
     ];
   },
+  // IndexNow ownership file: /<INDEXNOW_KEY>.txt must exist at the site root (served by app/api/indexnow-key).
+  async rewrites() {
+    return [{ source: '/:key([a-zA-Z0-9]{16,64}).txt', destination: '/api/indexnow-key/:key' }];
+  },
   async headers() {
     return [
       // The chat widget script is loaded on every page view of every customer site. Without a cache lifetime each of those views

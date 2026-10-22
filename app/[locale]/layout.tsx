@@ -37,8 +37,15 @@ const baseMetadata: Metadata = {
   metadataBase: new URL(SITE.url),
   keywords: ['AI website assistant', 'AI chatbot for service businesses', 'appointment booking chatbot', 'lead capture chatbot', 'website chat widget', 'BYOK AI chatbot'],
   authors: [{ name: 'Crescelo', url: SITE.url }],
-  // Google Search Console ownership: set GOOGLE_SITE_VERIFICATION in the environment to the token Search Console gives you.
-  verification: process.env.GOOGLE_SITE_VERIFICATION ? { google: process.env.GOOGLE_SITE_VERIFICATION } : undefined,
+  // Search Console ownership: set GOOGLE_SITE_VERIFICATION (Google) and BING_SITE_VERIFICATION (Bing Webmaster Tools) to the tokens
+  // they give you. Bing's index feeds ChatGPT search, Copilot and others, so it matters as much as Google for AI answers.
+  verification:
+    process.env.GOOGLE_SITE_VERIFICATION || process.env.BING_SITE_VERIFICATION
+      ? {
+          google: process.env.GOOGLE_SITE_VERIFICATION || undefined,
+          other: process.env.BING_SITE_VERIFICATION ? { 'msvalidate.01': process.env.BING_SITE_VERIFICATION } : undefined,
+        }
+      : undefined,
   creator: 'Crescelo',
   publisher: 'Crescelo',
   category: 'technology',
