@@ -10,6 +10,7 @@ import { hashPassword, verifyPassword, isHashedPassword, generateTempPassword } 
 import { getMasterEmail } from '@/lib/security/master';
 import { logEvent } from '../logging/logger';
 import { guideChunks } from '../platform/knowledge';
+import { BookingUnavailableError } from '../appointments/errors';
 import {
   LandingPageConfig,
   LandingPageServiceItem,
@@ -108,6 +109,16 @@ function scheduleDeferredBlobSync(state: DatabaseState): void {
  */
 function isRelationalModeEnabled(): boolean {
   return process.env.DB_RELATIONAL_MODE === 'true' && isPostgresConfigured();
+}
+
+/**
+ * True when this deployment is configured for relational mode (DB_RELATIONAL_MODE=true), whether or not Postgres
+ * is reachable right now. Unlike isRelationalModeEnabled it ignores the temporary outage flag, so booking writes can
+ * tell "Postgres is down" apart from "this deployment never used Postgres" and refuse instead of writing to the
+ * JSON state, which has no unique index or exclusion constraint to stop two bookings taking the same slot.
+ */
+export function isRelationalModeRequired(): boolean {
+  return process.env.DB_RELATIONAL_MODE === 'true';
 }
 
 // Types matching the Prisma model
@@ -2737,7 +2748,10 @@ export class Database {
         }
         console.warn('[Relational] saveAppointment failed, disabling postgres:', err);
         if (isConnectionError(err)) disablePostgresTemporarily();
+        if (isRelationalModeRequired()) throw new BookingUnavailableError(undefined, { cause: err });
       }
+    } else if (isRelationalModeRequired()) {
+      throw new BookingUnavailableError();
     }
 
     const state = await ensureInitialized();
@@ -2855,10 +2869,17 @@ export class Database {
         }
         afterHotWrite(state);
         return Relational.relationalGetAppointmentById(id);
-      } catch (err) {
+      } catch (err: any) {
+        // The new slot is taken (reschedule): report it, never fall back to writing the change elsewhere.
+        if (err?.code === 'SLOT_CONFLICT') {
+          throw err;
+        }
         console.warn('[Relational] updateAppointment failed, disabling postgres:', err);
         if (isConnectionError(err)) disablePostgresTemporarily();
+        if (isRelationalModeRequired()) throw new BookingUnavailableError(undefined, { cause: err });
       }
+    } else if (isRelationalModeRequired()) {
+      throw new BookingUnavailableError();
     }
 
     const state = await ensureInitialized(true);
@@ -2911,7 +2932,10 @@ export class Database {
         }
         console.warn('[Relational] updateAppointmentStatus failed, disabling postgres:', err);
         if (isConnectionError(err)) disablePostgresTemporarily();
+        if (isRelationalModeRequired()) throw new BookingUnavailableError(undefined, { cause: err });
       }
+    } else if (isRelationalModeRequired()) {
+      throw new BookingUnavailableError();
     }
 
     const state = await ensureInitialized(true);
