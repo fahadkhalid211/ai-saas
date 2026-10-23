@@ -8,13 +8,16 @@
  *   or cut short by a cap is counted in `unsupported` instead (see "Recurrence safety" below). Text that is not a calendar at all throws
  *   CalendarParseError, so the caller keeps the blocks it already has instead of treating it as an emptied calendar.
  *
- * Times are never converted by ical.js itself. It supplies the parsing and the recurrence arithmetic (which walks
- * wall-clock fields, so a weekly 10:00 stays 10:00 across a DST change); every wall-clock value is then turned into a
- * UTC instant with the same Intl offset method bookings use (`wallTimeToUtc`).
+ * ical.js only parses the text. Recurrences are expanded by `expandOccurrences` (expand-rrule.ts), which works on
+ * wall-clock fields, so a weekly 10:00 stays 10:00 across a DST change, and whose cost does not grow with the age of the
+ * series. Times are never converted by ical.js: every wall-clock value near the window is turned into a UTC instant with
+ * the same Intl offset method bookings use (`wallTimeToUtc`).
  */
 
 import ICAL from 'ical.js';
 import { knownTimezone, wallTimeToUtc } from '@/lib/appointments/time-range';
+import { civilFromDays, daysFromCivil, expandOccurrences, RecurrenceLimitError, type LocalDateTime, type RuleParts } from './expand-rrule';
+import { recurrenceParts, UnsupportedRecurrence } from './recurrence-rule';
 import type { ExternalBlock } from './types';
 
 /** The text is not an iCal calendar (or is cut off), so nothing can be said about the owner's busy times. */
@@ -42,15 +45,14 @@ export interface ParseIcalResult {
 
 /** Most blocks one recurring event may add inside the window. */
 const MAX_OCCURRENCES_PER_EVENT = 1000;
-/** Most occurrences the recurrence iterator may step through for one event (from its first date, before the window too). */
-const MAX_SCAN_PER_EVENT = 10_000;
-/** Most iterator steps for the whole feed, so many pathological events cannot add up to a hang. */
+/**
+ * Most expansion work for one event: periods scanned plus occurrences read. A rule without COUNT starts next to the
+ * window, so this only binds a COUNT rule, which is counted from its first date (a daily one reaches about 27 years).
+ */
+const MAX_SCAN_PER_EVENT = 20_000;
+/** Most expansion work for the whole feed, so many long series cannot add up to a long block of the event loop. */
 const MAX_SCAN_PER_FEED = 100_000;
 const DAY_MS = 24 * 60 * 60 * 1000;
-const WEEKDAYS = ['SU', 'MO', 'TU', 'WE', 'TH', 'FR', 'SA'];
-
-/** The recurrence cannot be expanded safely or at all; the event is counted in `unsupported`. */
-class UnsupportedRecurrence extends Error {}
 
 type Zone = { kind: 'utc' } | { kind: 'iana'; tz: string } | { kind: 'ical'; zone: ICAL.Timezone };
 
@@ -162,25 +164,35 @@ function zoneOf(time: ICAL.Time, prop: ICAL.Property, ctx: Context): Zone {
   return { kind: 'iana', tz: ctx.fallbackTz };
 }
 
+const dayOf = (t: LocalDateTime) => daysFromCivil(t.y, t.mo, t.d);
+const secondsOf = (t: LocalDateTime) => (t.h * 60 + t.mi) * 60 + t.s;
+const isoDay = (day: number) => {
+  const c = civilFromDays(day);
+  return isoDate(c.y, c.m, c.d);
+};
+
 /** UTC instant (ms) of wall-clock fields read in `zone`. */
-function wallToMs(y: number, mo: number, d: number, h: number, mi: number, s: number, zone: Zone): number {
+function wallToMs(t: LocalDateTime, zone: Zone): number {
   let ms: number;
   if (zone.kind === 'utc') {
-    ms = Date.UTC(y, mo - 1, d, h, mi, s);
+    ms = dayOf(t) * DAY_MS + secondsOf(t) * 1000;
   } else if (zone.kind === 'iana') {
-    ms = wallTimeToUtc(isoDate(y, mo, d), h * 60 + mi, zone.tz) + s * 1000;
+    ms = wallTimeToUtc(isoDate(t.y, t.mo, t.d), t.h * 60 + t.mi, zone.tz) + t.s * 1000;
   } else {
-    const local = new ICAL.Time({ year: y, month: mo, day: d, hour: h, minute: mi, second: s, isDate: false }, zone.zone);
+    const local = new ICAL.Time({ year: t.y, month: t.mo, day: t.d, hour: t.h, minute: t.mi, second: t.s, isDate: false }, zone.zone);
     ms = local.toUnixTime() * 1000;
   }
   if (!Number.isFinite(ms)) throw new Error('unreadable date-time');
   return ms;
 }
 
-/** UTC instant (ms) of a date-time value whose wall-clock fields are in `zone`. */
-function toUtcMs(t: ICAL.Time, zone: Zone): number {
-  return wallToMs(t.year, t.month, t.day, t.hour, t.minute, t.second, zone);
+/** The wall-clock fields of a parsed date or date-time (a date has time 00:00:00). */
+function localOf(t: ICAL.Time): LocalDateTime {
+  return t.isDate ? { y: t.year, mo: t.month, d: t.day, h: 0, mi: 0, s: 0 } : { y: t.year, mo: t.month, d: t.day, h: t.hour, mi: t.minute, s: t.second };
 }
+
+/** UTC instant (ms) of a date-time value whose wall-clock fields are in `zone`. */
+const toUtcMs = (t: ICAL.Time, zone: Zone) => wallToMs(localOf(t), zone);
 
 function asTime(value: unknown): ICAL.Time {
   if (!(value instanceof ICAL.Time)) throw new Error('not a date or date-time');
@@ -188,152 +200,16 @@ function asTime(value: unknown): ICAL.Time {
   return value;
 }
 
-/** Whole days from date `a` to date `b` (calendar arithmetic on the fields, no timezone involved). */
-function daysBetween(a: ICAL.Time, b: ICAL.Time): number {
-  return Math.round((Date.UTC(b.year, b.month - 1, b.day) - Date.UTC(a.year, a.month - 1, a.day)) / DAY_MS);
-}
-
-/** Weekday numbers (0 = Sunday) named in a BYDAY list, and the ordinals of entries such as 1MO or -1FR. */
-function weekdaysOf(byDay: unknown[]): { codes: Set<number>; ordinals: number[] } {
-  const codes = new Set<number>();
-  const ordinals: number[] = [];
-  for (const entry of byDay) {
-    const m = /^([+-]?\d+)?([A-Za-z]{2})$/.exec(String(entry).trim());
-    if (!m) throw new UnsupportedRecurrence('unreadable BYDAY');
-    if (m[1]) ordinals.push(Number(m[1]));
-    const idx = WEEKDAYS.indexOf(m[2].toUpperCase());
-    if (idx < 0) throw new UnsupportedRecurrence('unreadable BYDAY');
-    codes.add(idx);
-  }
-  return { codes, ordinals };
-}
-
-/** Largest INTERVAL accepted per FREQ (a real calendar uses 1 to 4 or so). */
-const MAX_INTERVAL: Record<string, number> = { DAILY: 365, WEEKLY: 104, MONTHLY: 60, YEARLY: 20 };
-/** Longest BY list accepted in a rule (a real list has at most a few dozen entries). */
-const MAX_BY_LIST = 31;
-const ALLOWED_BY_PARTS = new Set(['BYMONTH', 'BYMONTHDAY', 'BYDAY', 'BYSETPOS']);
-
-/** Every value must be an integer within [-max, -1] or [1, max]; unsupported otherwise. */
-function signedInts(list: unknown[], max: number, what: string): void {
-  for (const v of list) {
-    const n = Number(v);
-    if (!Number.isInteger(n) || n === 0 || Math.abs(n) > max) throw new UnsupportedRecurrence(`${what} out of range`);
-  }
-}
-
-/**
- * Recurrence safety. ical.js loops inside a single next() call, with no guard, for rules whose parts can never (or only
- * very rarely) match, and the code is synchronous, so a deadline between calls cannot help. Instead of trying to spot
- * every unsatisfiable rule, only a short allowlist of shapes is expanded, decided from the rule's parts alone in O(1)
- * and before any ical.js iteration. DAILY and WEEKLY shapes always match within a bounded number of steps; the MONTHLY
- * and YEARLY shapes are ones ical.js guards itself. Everything else is unsupported (HOURLY, MINUTELY, SECONDLY, a BY
- * part outside the list, long lists, large INTERVALs).
- *  - COUNT, UNTIL and WKST are always allowed; INTERVAL has a per-FREQ maximum.
- *  - DAILY: no BY part, or BYDAY of plain weekdays (with INTERVAL a multiple of 7, DTSTART's weekday must be among them).
- *  - WEEKLY: no BY part, or BYDAY of plain weekdays.
- *  - MONTHLY: no BY part; or BYMONTHDAY alone; or BYDAY (ordinals allowed) with optional BYSETPOS.
- *  - YEARLY: no BY part; or BYMONTH with BYMONTHDAY; or BYMONTH with BYDAY (ordinals allowed).
- */
-function checkRule(rule: ICAL.Recur, start: ICAL.Time): void {
-  const freq = String(rule.freq);
-  const maxInterval = MAX_INTERVAL[freq];
-  if (!maxInterval) throw new UnsupportedRecurrence(`FREQ=${freq} is not supported`);
-  const interval = Number(rule.interval);
-  if (!Number.isInteger(interval) || interval < 1 || interval > maxInterval) throw new UnsupportedRecurrence('INTERVAL out of range');
-
-  const keys = Object.keys(rule.parts);
-  for (const key of keys) {
-    if (!ALLOWED_BY_PARTS.has(key)) throw new UnsupportedRecurrence(`${key} is not supported`);
-    const n = rule.getComponent(key).length;
-    if (n === 0 || n > MAX_BY_LIST) throw new UnsupportedRecurrence(`${key} list has an unsupported length`);
-  }
-  const has = (k: string) => keys.includes(k);
-  const only = (...allowed: string[]) => {
-    if (keys.some((k) => !allowed.includes(k))) throw new UnsupportedRecurrence(`${freq} with ${keys.join('+')} is not supported`);
-  };
-  const byDay = () => weekdaysOf(rule.getComponent('BYDAY'));
-
-  if (freq === 'DAILY' || freq === 'WEEKLY') {
-    only('BYDAY');
-    if (!has('BYDAY')) return;
-    const { codes, ordinals } = byDay();
-    if (ordinals.length > 0) throw new UnsupportedRecurrence('ordinal BYDAY needs MONTHLY or YEARLY');
-    // A DAILY rule stepping a whole number of weeks stays on DTSTART's weekday for ever.
-    const startDow = new Date(Date.UTC(start.year, start.month - 1, start.day)).getUTCDay();
-    if (freq === 'DAILY' && interval % 7 === 0 && !codes.has(startDow)) throw new UnsupportedRecurrence('BYDAY can never be reached');
-    return;
-  }
-
-  if (freq === 'MONTHLY') {
-    if (keys.length === 0) return;
-    if (has('BYMONTHDAY')) {
-      only('BYMONTHDAY');
-      signedInts(rule.getComponent('BYMONTHDAY'), 31, 'BYMONTHDAY');
-      return;
-    }
-    if (!has('BYDAY')) throw new UnsupportedRecurrence('BYSETPOS needs BYDAY');
-    only('BYDAY', 'BYSETPOS');
-    signedInts(byDay().ordinals, 5, 'BYDAY ordinal');
-    signedInts(rule.getComponent('BYSETPOS'), 5, 'BYSETPOS');
-    return;
-  }
-
-  // YEARLY
-  if (keys.length === 0) return;
-  if (!has('BYMONTH')) throw new UnsupportedRecurrence('YEARLY day parts need BYMONTH');
-  for (const v of rule.getComponent('BYMONTH')) {
-    const n = Number(v);
-    if (!Number.isInteger(n) || n < 1 || n > 12) throw new UnsupportedRecurrence('BYMONTH out of range');
-  }
-  if (has('BYMONTHDAY')) {
-    only('BYMONTH', 'BYMONTHDAY');
-    signedInts(rule.getComponent('BYMONTHDAY'), 31, 'BYMONTHDAY');
-    return;
-  }
-  if (!has('BYDAY')) throw new UnsupportedRecurrence('YEARLY with BYMONTH alone is not supported');
-  only('BYMONTH', 'BYDAY');
-  signedInts(byDay().ordinals, 5, 'BYDAY ordinal');
-}
+/** Key of an instance: `d<day>` for a date, `t<ms>` for a date-time instant (the same form for EXDATE and RECURRENCE-ID). */
+const instanceKey = (t: ICAL.Time, zone: Zone) => (t.isDate ? `d${dayOf(localOf(t))}` : `t${toUtcMs(t, zone)}`);
 
 /** The instant a series ends (inclusive), from its UNTIL, read the way RFC 5545 says: DATE and floating values in the event's zone. */
 function untilInstant(until: ICAL.Time, zone: Zone): number {
   if (until.isDate) {
-    const next = new Date(Date.UTC(until.year, until.month - 1, until.day + 1));
-    return wallToMs(next.getUTCFullYear(), next.getUTCMonth() + 1, next.getUTCDate(), 0, 0, 0, zone) - 1; // the whole local day counts
+    const next = civilFromDays(dayOf(localOf(until)) + 1);
+    return wallToMs({ y: next.y, mo: next.m, d: next.d, h: 0, mi: 0, s: 0 }, zone) - 1; // the whole local day counts
   }
-  if (until.zone && until.zone.tzid === 'UTC') return Date.UTC(until.year, until.month - 1, until.day, until.hour, until.minute, until.second);
-  return toUtcMs(until, zone);
-}
-
-/**
- * For a long-running DAILY or WEEKLY series with no COUNT and no BY parts that could be missed (WEEKLY may carry a
- * BYDAY holding DTSTART's weekday), the occurrences far before the window can be skipped by starting the iteration a whole
- * number of INTERVAL steps later: that is the same sequence. Anything else iterates from DTSTART.
- */
-function fastForwardStart(start: ICAL.Time, rule: ICAL.Recur | null, hasRdate: boolean, spanMs: number, ctx: Context): ICAL.Time {
-  if (!rule || hasRdate || rule.count) return start;
-  const freq = String(rule.freq);
-  if (freq !== 'DAILY' && freq !== 'WEEKLY') return start;
-  const interval = Number(rule.interval);
-  if (!Number.isInteger(interval) || interval < 1) return start;
-  const parts = Object.keys(rule.parts);
-  if (freq === 'DAILY' && parts.length > 0) return start;
-  if (freq === 'WEEKLY') {
-    if (parts.some((p) => p !== 'BYDAY')) return start;
-    const { codes, ordinals } = weekdaysOf(rule.getComponent('BYDAY'));
-    const startDow = new Date(Date.UTC(start.year, start.month - 1, start.day)).getUTCDay();
-    if (ordinals.length > 0 || (codes.size > 0 && !codes.has(startDow))) return start;
-  }
-  const stepDays = interval * (freq === 'DAILY' ? 1 : 7);
-  const startNaive = Date.UTC(start.year, start.month - 1, start.day, start.hour, start.minute, start.second);
-  const k = Math.floor((ctx.fromMs - 3 * DAY_MS - spanMs - startNaive) / (stepDays * DAY_MS));
-  if (!Number.isFinite(k) || k <= 0) return start;
-  const moved = new Date(Date.UTC(start.year, start.month - 1, start.day + k * stepDays));
-  return new ICAL.Time(
-    { year: moved.getUTCFullYear(), month: moved.getUTCMonth() + 1, day: moved.getUTCDate(), hour: start.hour, minute: start.minute, second: start.second, isDate: start.isDate },
-    start.zone,
-  );
+  return toUtcMs(until, until.zone && until.zone.tzid === 'UTC' ? { kind: 'utc' } : zone);
 }
 
 function eventBlocks(prepared: PreparedEvent, overrideKeys: Set<string> | undefined, ctx: Context): EventResult {
@@ -342,9 +218,10 @@ function eventBlocks(prepared: PreparedEvent, overrideKeys: Set<string> | undefi
 
   const startProp = vevent.getFirstProperty('dtstart');
   if (!startProp) throw new Error('event has no DTSTART');
-  const start = asTime(startProp.getFirstValue());
-  const zone = zoneOf(start, startProp, ctx);
-  const isDate = start.isDate;
+  const startTime = asTime(startProp.getFirstValue());
+  const start = localOf(startTime);
+  const zone = zoneOf(startTime, startProp, ctx);
+  const isDate = startTime.isDate;
 
   // Length of the event: whole days for an all-day event, milliseconds otherwise.
   let days = 1;
@@ -353,7 +230,7 @@ function eventBlocks(prepared: PreparedEvent, overrideKeys: Set<string> | undefi
   const durationProp = vevent.getFirstProperty('duration');
   if (isDate) {
     if (endProp) {
-      days = daysBetween(start, asTime(endProp.getFirstValue()));
+      days = dayOf(localOf(asTime(endProp.getFirstValue()))) - dayOf(start);
       if (days < 0) throw new Error('event ends before it starts');
     } else if (durationProp) {
       const dur = durationProp.getFirstValue() as ICAL.Duration;
@@ -363,7 +240,7 @@ function eventBlocks(prepared: PreparedEvent, overrideKeys: Set<string> | undefi
     }
     if (days < 1) days = 1; // DTSTART == DTEND on a date is not valid, but it still means that day
   } else {
-    const startMs = toUtcMs(start, zone);
+    const startMs = wallToMs(start, zone);
     if (endProp) {
       const end = asTime(endProp.getFirstValue());
       durationMs = toUtcMs(end, zoneOf(end, endProp, ctx)) - startMs;
@@ -378,18 +255,17 @@ function eventBlocks(prepared: PreparedEvent, overrideKeys: Set<string> | undefi
   }
   const spanMs = isDate ? days * DAY_MS : durationMs;
 
-  const rangeOf = (occ: ICAL.Time): { s: number; e: number; key: string } => {
+  const rangeOf = (t: LocalDateTime, z: Zone): { s: number; e: number; key: string } => {
     if (isDate) {
-      const s = wallTimeToUtc(isoDate(occ.year, occ.month, occ.day), 0, ctx.fallbackTz);
-      const endDay = new Date(Date.UTC(occ.year, occ.month - 1, occ.day + days));
-      const e = wallTimeToUtc(isoDate(endDay.getUTCFullYear(), endDay.getUTCMonth() + 1, endDay.getUTCDate()), 0, ctx.fallbackTz);
-      return { s, e, key: `d${Date.UTC(occ.year, occ.month - 1, occ.day)}` };
+      const day = dayOf(t);
+      const s = wallTimeToUtc(isoDay(day), 0, ctx.fallbackTz);
+      return { s, e: wallTimeToUtc(isoDay(day + days), 0, ctx.fallbackTz), key: `d${day}` };
     }
-    const s = toUtcMs(occ, zone);
+    const s = wallToMs(t, z);
     return { s, e: s + durationMs, key: `t${s}` };
   };
-  const addIfInWindow = (occ: ICAL.Time) => {
-    const { s, e } = rangeOf(occ);
+  const addIfInWindow = (t: LocalDateTime) => {
+    const { s, e } = rangeOf(t, zone);
     if (s < ctx.toMs && e > ctx.fromMs) blocks.push({ startAt: new Date(s), endAt: new Date(e) });
   };
 
@@ -405,73 +281,106 @@ function eventBlocks(prepared: PreparedEvent, overrideKeys: Set<string> | undefi
     return { blocks, capped: true };
   }
   const rule = rules.length === 1 ? (rules[0].getFirstValue() as ICAL.Recur) : null;
-  const hasRdate = vevent.hasProperty('rdate');
-
-  // UNTIL: ical.js compares it with DTSTART's wall-clock fields as if both were in one zone, which drops the last
-  // instance east of UTC (and keeps a wrong one west of it) for a TZID series. Read it here and stop ical.js comparing.
-  let untilMs: number | null = null;
-  if (rule && rule.until && !hasRdate) {
-    // All-day occurrences are whole days of the business timezone (see rangeOf), so the cut-off day is read there too.
-    untilMs = untilInstant(rule.until, isDate ? { kind: 'iana', tz: ctx.fallbackTz } : zone);
-    rule.until = null;
-  }
-  if (untilMs !== null && untilMs + spanMs <= ctx.fromMs) return { blocks, capped: false }; // ended before the window
-
-  if (rule) {
-    try {
-      checkRule(rule, start);
-    } catch (err) {
-      if (!(err instanceof UnsupportedRecurrence)) throw err;
-      // Not expanded, but the master date is a real occurrence and is kept.
-      addIfInWindow(start);
-      return { blocks, capped: true };
+  // RDATEs: extra instances, each in its own zone (a PERIOD value counts from its start, with the event's length).
+  const rdates: { t: LocalDateTime; z: Zone }[] = [];
+  for (const prop of vevent.getAllProperties('rdate')) {
+    for (const v of prop.getValues()) {
+      const t = asTime(v instanceof ICAL.Period ? v.start : v);
+      rdates.push({ t: localOf(t), z: zoneOf(t, prop, ctx) });
     }
   }
 
+  // UNTIL ends the rule's instances (not the RDATEs) at an instant read in the event's zone; all-day occurrences are whole
+  // days of the business timezone (see rangeOf), so their cut-off day is read there too.
+  const untilMs = rule?.until ? untilInstant(rule.until, isDate ? { kind: 'iana', tz: ctx.fallbackTz } : zone) : null;
+  if (untilMs !== null && rdates.length === 0 && untilMs + spanMs <= ctx.fromMs) return { blocks, capped: false }; // ended before the window
+
+  let parts: RuleParts | null = null;
+  if (rule) {
+    try {
+      parts = recurrenceParts(rule, start);
+    } catch (err) {
+      if (!(err instanceof UnsupportedRecurrence)) throw err;
+      addIfInWindow(start); // not expanded, but the master date is a real occurrence and is kept
+      return { blocks, capped: true };
+    }
+  }
   if (ctx.scanLeft <= 0) {
     // The feed's expansion budget is spent: keep the one date every series is known to have, and report the rest.
     addIfInWindow(start);
     return { blocks, capped: true };
   }
 
-  // Our own EXDATE check on top of ical.js's, so an EXDATE written in another zone form than DTSTART still matches.
+  // EXDATE matches an instance by instant; a DATE value matches every instance on that day; and, as ical.js did, a value
+  // not in UTC also matches an instance not in UTC by wall-clock time (an EXDATE written floating for a TZID series).
   const excluded = new Set<string>();
   for (const prop of vevent.getAllProperties('exdate')) {
     const exZone = zoneOf(asTime(prop.getFirstValue()), prop, ctx);
     for (const v of prop.getValues()) {
       const t = asTime(v);
-      excluded.add(t.isDate ? `d${Date.UTC(t.year, t.month - 1, t.day)}` : `t${toUtcMs(t, exZone)}`);
+      excluded.add(instanceKey(t, exZone));
+      if (!t.isDate && exZone.kind !== 'utc') excluded.add(`w${dayOf(localOf(t))}:${secondsOf(localOf(t))}`);
     }
   }
+  const isExcluded = (t: LocalDateTime, z: Zone, key: string) =>
+    excluded.has(key) || excluded.has(`d${dayOf(t)}`) || (z.kind !== 'utc' && excluded.has(`w${dayOf(t)}:${secondsOf(t)}`));
 
-  const expansion = new ICAL.RecurExpansion({ component: vevent, dtstart: fastForwardStart(start, rule, hasRdate, spanMs, ctx) });
-  let scanned = 0;
-  let capped = false;
-  for (;;) {
-    const occ = expansion.next();
-    if (!occ) break;
-    if (++scanned > MAX_SCAN_PER_EVENT || --ctx.scanLeft < 0) {
-      capped = true;
-      break;
-    }
-    // Cheap pre-filter on the wall-clock fields read as UTC (a zone is at most about a day away), so the Intl
-    // conversion only runs for occurrences near the window.
-    const naive = isDate
-      ? Date.UTC(occ.year, occ.month - 1, occ.day)
-      : Date.UTC(occ.year, occ.month - 1, occ.day, occ.hour, occ.minute, occ.second);
-    if (naive >= ctx.toMs + DAY_MS) break; // occurrences come in order: everything after this is past the window
-    if (naive + spanMs < ctx.fromMs - DAY_MS) continue;
-    const { s, e, key } = rangeOf(occ);
-    if (s >= ctx.toMs) break;
-    if (untilMs !== null && s > untilMs) break; // an instance starting exactly at UNTIL is still part of the series
-    if (excluded.has(key) || overrideKeys?.has(key)) continue;
-    if (e <= ctx.fromMs) continue;
-    if (blocks.length >= MAX_OCCURRENCES_PER_EVENT) {
-      capped = true;
-      break;
-    }
+  const seen = new Set<string>();
+  /** Adds one instance if it is in the window; 'past' once instances of the rule can no longer reach it. */
+  const consider = (t: LocalDateTime, z: Zone, fromRule: boolean): 'ok' | 'past' | 'full' => {
+    // Cheap pre-filter on the wall-clock fields read as UTC (a zone is at most about a day away), so the Intl conversion
+    // only runs for instances near the window.
+    const naive = dayOf(t) * DAY_MS + (isDate ? 0 : secondsOf(t) * 1000);
+    if (naive >= ctx.toMs + DAY_MS) return 'past';
+    if (naive + spanMs < ctx.fromMs - DAY_MS) return 'ok';
+    const { s, e, key } = rangeOf(t, z);
+    if (s >= ctx.toMs || (fromRule && untilMs !== null && s > untilMs)) return 'past'; // an instance exactly at UNTIL is kept
+    if (e <= ctx.fromMs || seen.has(key) || isExcluded(t, z, key) || overrideKeys?.has(key)) return 'ok';
+    if (blocks.length >= MAX_OCCURRENCES_PER_EVENT) return 'full';
+    seen.add(key);
     blocks.push({ startAt: new Date(s), endAt: new Date(e) });
+    return 'ok';
+  };
+
+  const budget = Math.min(MAX_SCAN_PER_EVENT, ctx.scanLeft);
+  const stats = { periods: 0 };
+  let read = 0;
+  let capped = false;
+  try {
+    // Without an RRULE the series is DTSTART plus the RDATEs. Occurrences come in order, so the first one past the
+    // window (or UNTIL) ends the rule.
+    const occurrences = parts
+      ? expandOccurrences(start, parts, {
+          fromDay: Math.floor((ctx.fromMs - DAY_MS - spanMs) / DAY_MS) - 1,
+          toDay: Math.floor((ctx.toMs + DAY_MS) / DAY_MS) + 1,
+          maxPeriods: budget,
+          stats,
+        })
+      : [start];
+    for (const occ of occurrences) {
+      if (++read + stats.periods > budget) {
+        capped = true;
+        break;
+      }
+      const r = consider(occ, zone, true);
+      if (r === 'past') break;
+      if (r === 'full') {
+        capped = true;
+        break;
+      }
+    }
+  } catch (err) {
+    if (!(err instanceof RecurrenceLimitError)) throw err;
+    capped = true;
   }
+  for (const { t, z } of rdates) {
+    read++;
+    if (consider(t, z, false) === 'full') {
+      capped = true;
+      break;
+    }
+  }
+  ctx.scanLeft -= read + stats.periods;
   return { blocks, capped };
 }
 
@@ -480,7 +389,7 @@ function overrideKey(vevent: ICAL.Component, ctx: Context): string {
   const prop = vevent.getFirstProperty('recurrence-id');
   if (!prop) throw new Error('no RECURRENCE-ID');
   const t = asTime(prop.getFirstValue());
-  return t.isDate ? `d${Date.UTC(t.year, t.month - 1, t.day)}` : `t${toUtcMs(t, zoneOf(t, prop, ctx))}`;
+  return instanceKey(t, zoneOf(t, prop, ctx));
 }
 
 export function parseIcalBlocks(icsText: string, opts: ParseIcalOptions): ParseIcalResult {
