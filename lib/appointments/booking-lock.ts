@@ -103,3 +103,12 @@ export async function acquireBookingLock(
     }
   };
 }
+
+/**
+ * Serialises every booking attempt for one assistant and date, whatever the start time. Bookings with different start
+ * times can overlap each other, so the per-slot lock alone is not enough: the conflict check and the insert for a given
+ * day must run one at a time.
+ */
+export function acquireDayLock(assistantId: string, date: string, timeoutMs?: number): Promise<() => void> {
+  return acquireBookingLock(assistantId, date, 'day', timeoutMs);
+}

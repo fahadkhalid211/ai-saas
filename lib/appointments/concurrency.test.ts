@@ -1,5 +1,44 @@
 import { describe, it, expect } from 'vitest';
-import { acquireBookingLock } from './booking-lock';
+import { acquireBookingLock, acquireDayLock } from './booking-lock';
+
+describe('Per-day booking lock', () => {
+  it('serialises every attempt for one assistant and date, whatever the start time', async () => {
+    const events: string[] = [];
+    const task = async (label: string) => {
+      const release = await acquireDayLock('ast_day_lock_same', '2026-10-02');
+      try {
+        events.push(`start ${label}`);
+        await new Promise((resolve) => setTimeout(resolve, 40));
+        events.push(`end ${label}`);
+      } finally {
+        release();
+      }
+    };
+
+    await Promise.all([task('a'), task('b')]);
+
+    // one finishes before the other starts, so the work never interleaves
+    expect(events[0]).toMatch(/^start /);
+    expect(events[1]).toMatch(/^end /);
+    expect(events[2]).toMatch(/^start /);
+    expect(events[3]).toMatch(/^end /);
+  });
+
+  it('lets different dates run concurrently', async () => {
+    const task = async (date: string) => {
+      const release = await acquireDayLock('ast_day_lock_diff', date);
+      try {
+        await new Promise((resolve) => setTimeout(resolve, 40));
+      } finally {
+        release();
+      }
+    };
+
+    const start = Date.now();
+    await Promise.all([task('2026-10-02'), task('2026-10-03')]);
+    expect(Date.now() - start).toBeLessThan(100);
+  });
+});
 
 describe('Sprint 2: Appointment Concurrency Mutex', () => {
   it('should serialize concurrent lock requests for the exact same slot', async () => {
