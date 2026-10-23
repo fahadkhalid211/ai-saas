@@ -161,7 +161,7 @@ DURATION:PT90M`]);
   it('silently skips a timed event with no end (zero length) without counting it', () => {
     const ics = cal([`UID:z
 DTSTART:20260610T090000Z`]);
-    expect(parseIcalBlocks(ics, { timezone: SE, ...WIDE })).toEqual({ blocks: [], skipped: 0 });
+    expect(parseIcalBlocks(ics, { timezone: SE, ...WIDE })).toEqual({ blocks: [], skipped: 0, unsupported: 0 });
   });
 
   it('reads folded lines', () => {
@@ -364,25 +364,26 @@ DTEND:20260610T100000Z`,
     expect(r.blocks.map(iso)).toEqual([['2026-06-10T09:00:00.000Z', '2026-06-10T10:00:00.000Z']]);
   });
 
-  it('caps expansion per event and reports the event as skipped', () => {
+  it('caps expansion per event and reports the event as unsupported', () => {
     const ics = cal([`UID:daily
 DTSTART:20260101T090000Z
 DTEND:20260101T093000Z
 RRULE:FREQ=DAILY`]);
     const r = parseIcalBlocks(ics, { timezone: SE, from: new Date('2026-01-01T00:00:00Z'), to: new Date('2031-01-01T00:00:00Z') });
     expect(r.blocks).toHaveLength(1000);
-    expect(r.skipped).toBe(1);
+    expect(r.skipped).toBe(0);
+    expect(r.unsupported).toBe(1);
     expect(r.blocks[0].startAt.toISOString()).toBe('2026-01-01T09:00:00.000Z');
   });
 
   it('gives up on a rule that needs endless scanning before the window, quickly', () => {
-    const ics = cal([`UID:secondly
+    const ics = cal([`UID:hourly
 DTSTART:20100101T090000Z
-DTEND:20100101T090001Z
-RRULE:FREQ=SECONDLY`]);
+DTEND:20100101T093000Z
+RRULE:FREQ=HOURLY`]);
     const t0 = Date.now();
     const r = parseIcalBlocks(ics, { timezone: SE, ...WIDE });
-    expect(r).toEqual({ blocks: [], skipped: 1 });
+    expect(r).toEqual({ blocks: [], skipped: 0, unsupported: 1 });
     expect(Date.now() - t0).toBeLessThan(5000);
   });
 
@@ -497,12 +498,12 @@ DTEND:20260611T100000Z`,
   });
 
   it('returns an empty result for an empty calendar', () => {
-    expect(parseIcalBlocks(cal([]), { timezone: SE, ...WIDE })).toEqual({ blocks: [], skipped: 0 });
+    expect(parseIcalBlocks(cal([]), { timezone: SE, ...WIDE })).toEqual({ blocks: [], skipped: 0, unsupported: 0 });
   });
 
   it('returns an empty result for a calendar holding only other component types', () => {
     const ics = cal([], ['BEGIN:VTODO', 'UID:t', 'SUMMARY:todo', 'END:VTODO', 'BEGIN:VJOURNAL', 'UID:j', 'END:VJOURNAL']);
-    expect(parseIcalBlocks(ics, { timezone: SE, ...WIDE })).toEqual({ blocks: [], skipped: 0 });
+    expect(parseIcalBlocks(ics, { timezone: SE, ...WIDE })).toEqual({ blocks: [], skipped: 0, unsupported: 0 });
   });
 
   it.each([
@@ -522,5 +523,287 @@ DTSTART:20260610T090000
 DTEND:20260610T100000`]);
     const r = parseIcalBlocks(ics, { timezone: '', ...WIDE });
     expect(r.blocks.map(iso)).toEqual([['2026-06-10T09:00:00.000Z', '2026-06-10T10:00:00.000Z']]);
+  });
+});
+
+// A hostile recurrence rule used to freeze the (synchronous) parser inside a single ical.js call, so these tests assert
+// that the call returns quickly. A hang cannot be interrupted by vitest's timeout, so a regression shows up as a stuck run.
+describe('parseIcalBlocks: hostile recurrence rules', () => {
+  const run = (rule: string, dtstart = '20260110T090000Z', win = WIDE) => {
+    const ics = cal([`UID:h
+DTSTART:${dtstart}
+DTEND:${dtstart.replace('T09', 'T10')}
+RRULE:${rule}`]);
+    const t0 = Date.now();
+    const r = parseIcalBlocks(ics, { timezone: SE, ...win });
+    return { r, ms: Date.now() - t0 };
+  };
+
+  it.each([
+    ['DAILY never matching', 'FREQ=DAILY;BYMONTH=2;BYMONTHDAY=30'],
+    ['HOURLY never matching', 'FREQ=HOURLY;BYMONTH=2;BYMONTHDAY=30'],
+    ['WEEKLY never matching', 'FREQ=WEEKLY;BYMONTH=2;BYMONTHDAY=30'],
+    ['MONTHLY never matching', 'FREQ=MONTHLY;BYMONTH=2;BYMONTHDAY=30'],
+    ['YEARLY never matching', 'FREQ=YEARLY;BYMONTH=2;BYMONTHDAY=30'],
+    ['DAILY in a 30-day month asking for day 31', 'FREQ=DAILY;BYMONTH=4;BYMONTHDAY=31'],
+    ['SECONDLY', 'FREQ=SECONDLY;BYMONTH=2;BYMONTHDAY=29'],
+    ['MINUTELY', 'FREQ=MINUTELY;BYMONTH=2;BYMONTHDAY=29'],
+    ['plain SECONDLY', 'FREQ=SECONDLY'],
+    ['plain MINUTELY', 'FREQ=MINUTELY'],
+    ['DAILY with an interval phase that never lands on the weekday', 'FREQ=DAILY;INTERVAL=7;BYDAY=MO'],
+    ['WEEKLY with BYWEEKNO (not allowed outside YEARLY)', 'FREQ=WEEKLY;BYWEEKNO=10'],
+    ['an absurdly long BYYEARDAY list', `FREQ=YEARLY;BYYEARDAY=${[...Array(366).keys()].flatMap((i) => [i + 1, -(i + 1)]).join(',')}`],
+  ])('returns quickly and reports %s as unsupported', (_label, rule) => {
+    const { r, ms } = run(rule);
+    expect(r).toEqual({ blocks: [], skipped: 0, unsupported: 1 });
+    expect(ms).toBeLessThan(500);
+  }, 5000);
+
+  it('still expands a YEARLY Feb 29 rule', () => {
+    const { r, ms } = run('FREQ=YEARLY;BYMONTH=2;BYMONTHDAY=29', '20240229T090000Z', { from: new Date('2026-01-01T00:00:00Z'), to: new Date('2029-01-01T00:00:00Z') });
+    expect(r.unsupported).toBe(0);
+    expect(r.blocks.map(iso)).toEqual([['2028-02-29T09:00:00.000Z', '2028-02-29T10:00:00.000Z']]);
+    expect(ms).toBeLessThan(500);
+  }, 5000);
+
+  it('still expands a DAILY Feb 29 rule (a sparse but possible match)', () => {
+    const { r, ms } = run('FREQ=DAILY;BYMONTH=2;BYMONTHDAY=29', '20240229T090000Z', { from: new Date('2026-01-01T00:00:00Z'), to: new Date('2029-01-01T00:00:00Z') });
+    expect(r.unsupported).toBe(0);
+    expect(r.blocks.map(iso)).toEqual([['2028-02-29T09:00:00.000Z', '2028-02-29T10:00:00.000Z']]);
+    expect(ms).toBeLessThan(500);
+  }, 5000);
+
+  it('still expands an HOURLY rule limited to Feb 29', () => {
+    const { r, ms } = run('FREQ=HOURLY;BYMONTH=2;BYMONTHDAY=29;BYHOUR=9,12', '20240229T090000Z', { from: new Date('2026-01-01T00:00:00Z'), to: new Date('2029-01-01T00:00:00Z') });
+    expect(r.unsupported).toBe(0);
+    expect(r.blocks.map((b) => b.startAt.toISOString())).toEqual(['2028-02-29T09:00:00.000Z', '2028-02-29T12:00:00.000Z']);
+    expect(ms).toBeLessThan(1500);
+  }, 5000);
+});
+
+describe('parseIcalBlocks: UNTIL is read in the event zone', () => {
+  const list = (ics: string, tz = SE, win = WIDE) => parseIcalBlocks(ics, { timezone: tz, ...win });
+
+  it('keeps the last instance of an Outlook series (UNTIL equals the final start, east of UTC)', () => {
+    const ics = cal([`UID:o
+DTSTART;TZID=Europe/Stockholm:20261012T100000
+DTEND;TZID=Europe/Stockholm:20261012T110000
+RRULE:FREQ=WEEKLY;UNTIL=20261102T090000Z`]);
+    const r = list(ics);
+    expect(r.blocks.map(iso)).toEqual([
+      ['2026-10-12T08:00:00.000Z', '2026-10-12T09:00:00.000Z'],
+      ['2026-10-19T08:00:00.000Z', '2026-10-19T09:00:00.000Z'],
+      ['2026-10-26T09:00:00.000Z', '2026-10-26T10:00:00.000Z'],
+      ['2026-11-02T09:00:00.000Z', '2026-11-02T10:00:00.000Z'],
+    ]);
+    expect(r.unsupported).toBe(0);
+  });
+
+  it('keeps the last instance of a Google series (exact-form UNTIL, across the October DST change)', () => {
+    const ics = cal([`UID:g
+DTSTART;TZID=Europe/Stockholm:20261024T170000
+DTEND;TZID=Europe/Stockholm:20261024T180000
+RRULE:FREQ=DAILY;UNTIL=20261026T160000Z`]);
+    expect(list(ics).blocks.map(iso)).toEqual([
+      ['2026-10-24T15:00:00.000Z', '2026-10-24T16:00:00.000Z'],
+      ['2026-10-25T16:00:00.000Z', '2026-10-25T17:00:00.000Z'],
+      ['2026-10-26T16:00:00.000Z', '2026-10-26T17:00:00.000Z'],
+    ]);
+  });
+
+  it('keeps an instance before an end-of-day UNTIL and drops the next one', () => {
+    const ics = cal([`UID:e
+DTSTART;TZID=Europe/Stockholm:20261005T230000
+DTEND;TZID=Europe/Stockholm:20261005T233000
+RRULE:FREQ=DAILY;UNTIL=20261007T215959Z`]);
+    expect(list(ics).blocks.map(iso)).toEqual([
+      ['2026-10-05T21:00:00.000Z', '2026-10-05T21:30:00.000Z'],
+      ['2026-10-06T21:00:00.000Z', '2026-10-06T21:30:00.000Z'],
+      ['2026-10-07T21:00:00.000Z', '2026-10-07T21:30:00.000Z'],
+    ]);
+  });
+
+  it('works for Tokyo (UTC+9)', () => {
+    const ics = cal([`UID:t
+DTSTART;TZID=Asia/Tokyo:20261020T200000
+DTEND;TZID=Asia/Tokyo:20261020T210000
+RRULE:FREQ=DAILY;UNTIL=20261022T145959Z`]);
+    expect(list(ics, 'UTC').blocks.map(iso)).toEqual([
+      ['2026-10-20T11:00:00.000Z', '2026-10-20T12:00:00.000Z'],
+      ['2026-10-21T11:00:00.000Z', '2026-10-21T12:00:00.000Z'],
+      ['2026-10-22T11:00:00.000Z', '2026-10-22T12:00:00.000Z'],
+    ]);
+  });
+
+  it('works for New York (west of UTC, across the November DST change)', () => {
+    const ics = cal([`UID:n
+DTSTART;TZID=America/New_York:20261030T200000
+DTEND;TZID=America/New_York:20261030T210000
+RRULE:FREQ=DAILY;UNTIL=20261102T010000Z`]);
+    expect(list(ics, 'UTC').blocks.map(iso)).toEqual([
+      ['2026-10-31T00:00:00.000Z', '2026-10-31T01:00:00.000Z'],
+      ['2026-11-01T00:00:00.000Z', '2026-11-01T01:00:00.000Z'],
+      ['2026-11-02T01:00:00.000Z', '2026-11-02T02:00:00.000Z'], // starts exactly at UNTIL: included
+    ]);
+  });
+
+  it('reads a DATE-valued UNTIL on an all-day series as that local day, inclusive', () => {
+    const ics = cal([`UID:d
+DTSTART;VALUE=DATE:20261001
+DTEND;VALUE=DATE:20261002
+RRULE:FREQ=DAILY;UNTIL=20261003`]);
+    expect(list(ics).blocks.map(iso)).toEqual([
+      ['2026-09-30T22:00:00.000Z', '2026-10-01T22:00:00.000Z'],
+      ['2026-10-01T22:00:00.000Z', '2026-10-02T22:00:00.000Z'],
+      ['2026-10-02T22:00:00.000Z', '2026-10-03T22:00:00.000Z'],
+    ]);
+  });
+
+  it('reads a DATE-valued UNTIL on a timed series as that whole local day', () => {
+    const ics = cal([`UID:d2
+DTSTART;TZID=Europe/Stockholm:20261001T100000
+DTEND;TZID=Europe/Stockholm:20261001T110000
+RRULE:FREQ=DAILY;UNTIL=20261003`]);
+    expect(list(ics).blocks.map((b) => b.startAt.toISOString())).toEqual([
+      '2026-10-01T08:00:00.000Z',
+      '2026-10-02T08:00:00.000Z',
+      '2026-10-03T08:00:00.000Z',
+    ]);
+  });
+
+  it('reads a floating UNTIL in the event zone', () => {
+    const ics = cal([`UID:fl
+DTSTART:20261001T100000
+DTEND:20261001T110000
+RRULE:FREQ=DAILY;UNTIL=20261003T100000`]);
+    expect(list(ics).blocks.map((b) => b.startAt.toISOString())).toEqual([
+      '2026-10-01T08:00:00.000Z',
+      '2026-10-02T08:00:00.000Z',
+      '2026-10-03T08:00:00.000Z',
+    ]);
+  });
+
+  it('leaves COUNT to ical.js', () => {
+    const ics = cal([`UID:c
+DTSTART;TZID=Europe/Stockholm:20261012T100000
+DTEND;TZID=Europe/Stockholm:20261012T110000
+RRULE:FREQ=WEEKLY;COUNT=2`]);
+    expect(list(ics).blocks).toHaveLength(2);
+  });
+
+  it('skips a series that ended before the window', () => {
+    const ics = cal([`UID:old
+DTSTART:20200101T090000Z
+DTEND:20200101T100000Z
+RRULE:FREQ=DAILY;UNTIL=20200301T000000Z`]);
+    expect(list(ics)).toEqual({ blocks: [], skipped: 0, unsupported: 0 });
+  });
+});
+
+describe('parseIcalBlocks: budgets never cost a plain event', () => {
+  const PLAIN = `UID:plain
+DTSTART:20260611T090000Z
+DTEND:20260611T100000Z`;
+  const win = { from: new Date('2026-06-10T00:00:00Z'), to: new Date('2026-06-12T00:00:00Z') };
+
+  it('keeps a plain event after many SECONDLY series (unsupported, never expanded)', () => {
+    const series = Array.from({ length: 11 }, (_, i) => `UID:s${i}
+DTSTART:20100101T090000Z
+DTEND:20100101T090001Z
+RRULE:FREQ=SECONDLY`);
+    const r = parseIcalBlocks(cal([...series, PLAIN]), { timezone: SE, ...win });
+    expect(r.blocks.map(iso)).toEqual([['2026-06-11T09:00:00.000Z', '2026-06-11T10:00:00.000Z']]);
+    expect(r.unsupported).toBe(11);
+    expect(r.skipped).toBe(0);
+  }, 10_000);
+
+  it('parses 30 long-running daily Stockholm series quickly and keeps the plain event', () => {
+    const series = Array.from({ length: 30 }, (_, i) => `UID:d${i}
+DTSTART;TZID=Europe/Stockholm:20160101T100000
+DTEND;TZID=Europe/Stockholm:20160101T110000
+RRULE:FREQ=DAILY`);
+    const t0 = Date.now();
+    const r = parseIcalBlocks(cal([...series, PLAIN]), { timezone: SE, ...win });
+    const ms = Date.now() - t0;
+    expect(r.unsupported).toBe(0);
+    expect(r.skipped).toBe(0);
+    expect(r.blocks).toHaveLength(30 * 2 + 1);
+    expect(r.blocks.some((b) => b.startAt.toISOString() === '2026-06-11T09:00:00.000Z' && b.endAt.toISOString() === '2026-06-11T10:00:00.000Z')).toBe(true);
+    expect(ms).toBeLessThan(3000);
+  }, 15_000);
+
+  it('after the feed budget is spent, still reads plain events and the first date of later series', () => {
+    // HOURLY series from 2010 each burn the per-event step cap; eleven of them spend the 100k feed budget.
+    const heavy = Array.from({ length: 11 }, (_, i) => `UID:h${i}
+DTSTART:20100101T090000Z
+DTEND:20100101T093000Z
+RRULE:FREQ=HOURLY`);
+    const later = `UID:monthly
+DTSTART:20260611T120000Z
+DTEND:20260611T130000Z
+RRULE:FREQ=MONTHLY;COUNT=6`;
+    const r = parseIcalBlocks(cal([...heavy, PLAIN, later]), { timezone: SE, ...win });
+    expect(r.blocks.map(iso)).toEqual([
+      ['2026-06-11T09:00:00.000Z', '2026-06-11T10:00:00.000Z'],
+      ['2026-06-11T12:00:00.000Z', '2026-06-11T13:00:00.000Z'],
+    ]);
+    expect(r.unsupported).toBe(12);
+    expect(r.skipped).toBe(0);
+  }, 30_000);
+});
+
+describe('parseIcalBlocks: fast-forwarding long-running simple series', () => {
+  const win = { from: new Date('2026-03-01T00:00:00Z'), to: new Date('2026-04-15T00:00:00Z') };
+
+  it('gives the same blocks for a fortnightly Monday/Wednesday series as plain expansion (COUNT disables the shortcut)', () => {
+    const rule = 'FREQ=WEEKLY;INTERVAL=2;BYDAY=MO,WE';
+    const fast = parseIcalBlocks(cal([`UID:f
+DTSTART;TZID=Europe/Stockholm:20150105T100000
+DTEND;TZID=Europe/Stockholm:20150105T110000
+RRULE:${rule}`]), { timezone: SE, ...win });
+    const slow = parseIcalBlocks(cal([`UID:f
+DTSTART;TZID=Europe/Stockholm:20150105T100000
+DTEND;TZID=Europe/Stockholm:20150105T110000
+RRULE:${rule};COUNT=1000`]), { timezone: SE, ...win });
+    expect(fast.blocks.length).toBeGreaterThan(3);
+    expect(fast.blocks.map(iso)).toEqual(slow.blocks.map(iso));
+    expect(fast.unsupported).toBe(0);
+  });
+
+  it('gives the same blocks for an every-third-day series', () => {
+    const fast = parseIcalBlocks(cal([`UID:f
+DTSTART:20160101T090000Z
+DTEND:20160101T100000Z
+RRULE:FREQ=DAILY;INTERVAL=3`]), { timezone: SE, ...win });
+    const slow = parseIcalBlocks(cal([`UID:f
+DTSTART:20160101T090000Z
+DTEND:20160101T100000Z
+RRULE:FREQ=DAILY;INTERVAL=3;COUNT=3000`]), { timezone: SE, ...win });
+    expect(fast.blocks.length).toBeGreaterThan(10);
+    expect(fast.blocks.map(iso)).toEqual(slow.blocks.map(iso));
+  });
+});
+
+describe('parseIcalBlocks: RANGE=THISANDFUTURE', () => {
+  it('does not apply a THISANDFUTURE override to a single instance; it is reported as unsupported', () => {
+    const ics = cal([
+      `UID:series
+DTSTART:20260601T090000Z
+DTEND:20260601T100000Z
+RRULE:FREQ=WEEKLY;COUNT=4`,
+      `UID:series
+RECURRENCE-ID;RANGE=THISANDFUTURE:20260615T090000Z
+DTSTART:20260615T130000Z
+DTEND:20260615T140000Z`,
+    ]);
+    const r = parseIcalBlocks(ics, { timezone: SE, from: new Date('2026-06-01T00:00:00Z'), to: new Date('2026-07-01T00:00:00Z') });
+    expect(r.unsupported).toBe(1);
+    expect(r.skipped).toBe(0);
+    expect(r.blocks.map((b) => b.startAt.toISOString())).toEqual([
+      '2026-06-01T09:00:00.000Z',
+      '2026-06-08T09:00:00.000Z',
+      '2026-06-15T09:00:00.000Z', // the series is left as it was
+      '2026-06-22T09:00:00.000Z',
+    ]);
   });
 });

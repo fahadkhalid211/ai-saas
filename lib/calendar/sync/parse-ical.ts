@@ -4,7 +4,8 @@
  * - Only events that overlap the window [from, to) are returned, as half-open UTC ranges.
  * - Cancelled and "free" (TRANSP:TRANSPARENT) events do not block.
  * - Recurring events are expanded inside the window; EXDATE and RECURRENCE-ID overrides are honoured.
- * - One bad event never fails the feed: it is counted in `skipped`. Text that is not a calendar at all throws
+ * - One bad event never fails the feed: it is counted in `skipped`. A recurrence that is unsupported, unsafe to expand
+ *   or cut short by a cap is counted in `unsupported` instead (see "Recurrence safety" below). Text that is not a calendar at all throws
  *   CalendarParseError, so the caller keeps the blocks it already has instead of treating it as an emptied calendar.
  *
  * Times are never converted by ical.js itself. It supplies the parsing and the recurrence arithmetic (which walks
@@ -33,8 +34,10 @@ export interface ParseIcalOptions {
 
 export interface ParseIcalResult {
   blocks: ExternalBlock[];
-  /** Events that could not be read (or were only partly expanded). */
+  /** Events that are malformed and could not be read (bad date, bad rule, cut off, no start). */
   skipped: number;
+  /** Events dropped or only partly expanded because their recurrence is unsupported, unsafe or hit a cap. */
+  unsupported: number;
 }
 
 /** Most blocks one recurring event may add inside the window. */
@@ -43,7 +46,20 @@ const MAX_OCCURRENCES_PER_EVENT = 1000;
 const MAX_SCAN_PER_EVENT = 10_000;
 /** Most iterator steps for the whole feed, so many pathological events cannot add up to a hang. */
 const MAX_SCAN_PER_FEED = 100_000;
+/**
+ * Most internal steps ical.js may take inside ONE next() call looking for the next matching day. It has no guard for
+ * HOURLY / DAILY / WEEKLY rules whose BY parts never match, so a rule is checked against the calendar before it is run.
+ */
+const MAX_INNER_STEPS = 200_000;
+/** Longest BY list accepted in a rule (a real list has at most a few dozen entries). */
+const MAX_RULE_LIST = 400;
+/** How far ahead (days) the rule check looks for a matching day. */
+const FEASIBILITY_DAYS = 60 * 366;
 const DAY_MS = 24 * 60 * 60 * 1000;
+const WEEKDAYS = ['SU', 'MO', 'TU', 'WE', 'TH', 'FR', 'SA'];
+
+/** The recurrence cannot be expanded safely or at all; the event is counted in `unsupported`. */
+class UnsupportedRecurrence extends Error {}
 
 type Zone = { kind: 'utc' } | { kind: 'iana'; tz: string } | { kind: 'ical'; zone: ICAL.Timezone };
 
@@ -155,19 +171,24 @@ function zoneOf(time: ICAL.Time, prop: ICAL.Property, ctx: Context): Zone {
   return { kind: 'iana', tz: ctx.fallbackTz };
 }
 
-/** UTC instant (ms) of a date-time value whose wall-clock fields are in `zone`. */
-function toUtcMs(t: ICAL.Time, zone: Zone): number {
+/** UTC instant (ms) of wall-clock fields read in `zone`. */
+function wallToMs(y: number, mo: number, d: number, h: number, mi: number, s: number, zone: Zone): number {
   let ms: number;
   if (zone.kind === 'utc') {
-    ms = Date.UTC(t.year, t.month - 1, t.day, t.hour, t.minute, t.second);
+    ms = Date.UTC(y, mo - 1, d, h, mi, s);
   } else if (zone.kind === 'iana') {
-    ms = wallTimeToUtc(isoDate(t.year, t.month, t.day), t.hour * 60 + t.minute, zone.tz) + t.second * 1000;
+    ms = wallTimeToUtc(isoDate(y, mo, d), h * 60 + mi, zone.tz) + s * 1000;
   } else {
-    const local = new ICAL.Time({ year: t.year, month: t.month, day: t.day, hour: t.hour, minute: t.minute, second: t.second, isDate: false }, zone.zone);
+    const local = new ICAL.Time({ year: y, month: mo, day: d, hour: h, minute: mi, second: s, isDate: false }, zone.zone);
     ms = local.toUnixTime() * 1000;
   }
   if (!Number.isFinite(ms)) throw new Error('unreadable date-time');
   return ms;
+}
+
+/** UTC instant (ms) of a date-time value whose wall-clock fields are in `zone`. */
+function toUtcMs(t: ICAL.Time, zone: Zone): number {
+  return wallToMs(t.year, t.month, t.day, t.hour, t.minute, t.second, zone);
 }
 
 function asTime(value: unknown): ICAL.Time {
@@ -179,6 +200,133 @@ function asTime(value: unknown): ICAL.Time {
 /** Whole days from date `a` to date `b` (calendar arithmetic on the fields, no timezone involved). */
 function daysBetween(a: ICAL.Time, b: ICAL.Time): number {
   return Math.round((Date.UTC(b.year, b.month - 1, b.day) - Date.UTC(a.year, a.month - 1, a.day)) / DAY_MS);
+}
+
+/** Weekday numbers (0 = Sunday) named in a BYDAY list, and whether any entry carries an ordinal such as 1MO. */
+function weekdaysOf(byDay: unknown[]): { codes: Set<number>; ordinal: boolean } {
+  const codes = new Set<number>();
+  let ordinal = false;
+  for (const entry of byDay) {
+    const m = /^([+-]?\d+)?([A-Za-z]{2})$/.exec(String(entry).trim());
+    if (!m) throw new UnsupportedRecurrence('unreadable BYDAY');
+    if (m[1]) ordinal = true;
+    const idx = WEEKDAYS.indexOf(m[2].toUpperCase());
+    if (idx < 0) throw new UnsupportedRecurrence('unreadable BYDAY');
+    codes.add(idx);
+  }
+  return { codes, ordinal };
+}
+
+const numbers = (list: unknown[]) => list.map((v) => Number(v));
+
+/**
+ * Recurrence safety. ical.js loops inside a single next() call, with no guard, for HOURLY / DAILY / WEEKLY rules whose
+ * month / day parts never match (and SECONDLY / MINUTELY can scan millions of steps for one result). The code is
+ * synchronous, so a deadline between calls cannot help: the rule is checked here, before the first next().
+ *  - SECONDLY and MINUTELY are not supported (calendar apps do not produce them).
+ *  - Absurdly long BY lists are rejected.
+ *  - When a rule has BYMONTH / BYMONTHDAY / BYYEARDAY (or a weekday filter on an INTERVAL > 1 daily rule), the calendar
+ *    is walked from DTSTART (about 60 years) to see which days can match, honouring leap years, negative day numbers,
+ *    INTERVAL phase and weekdays. No match, or a gap longer than ical.js can cross cheaply, means unsupported.
+ */
+function checkRule(rule: ICAL.Recur, start: ICAL.Time): void {
+  const freq = String(rule.freq);
+  if (freq === 'SECONDLY' || freq === 'MINUTELY') throw new UnsupportedRecurrence(`FREQ=${freq} is not supported`);
+  if (!['HOURLY', 'DAILY', 'WEEKLY', 'MONTHLY', 'YEARLY'].includes(freq)) throw new UnsupportedRecurrence('unknown FREQ');
+  for (const part of Object.keys(rule.parts)) {
+    if (rule.getComponent(part).length > MAX_RULE_LIST) throw new UnsupportedRecurrence(`${part} list is too long`);
+  }
+  const interval = Number(rule.interval);
+  if (!Number.isInteger(interval) || interval < 1) throw new UnsupportedRecurrence('bad INTERVAL');
+
+  const byMonth = numbers(rule.getComponent('BYMONTH'));
+  const byMonthDay = numbers(rule.getComponent('BYMONTHDAY'));
+  const byYearDay = numbers(rule.getComponent('BYYEARDAY'));
+  const byWeekNo = rule.getComponent('BYWEEKNO');
+  const { codes, ordinal } = weekdaysOf(rule.getComponent('BYDAY'));
+  if (byWeekNo.length > 0 && freq !== 'YEARLY') throw new UnsupportedRecurrence('BYWEEKNO is only valid with YEARLY');
+
+  const sparse = byMonth.length > 0 || byMonthDay.length > 0 || byYearDay.length > 0;
+  const weekdayFilter = codes.size > 0 && !ordinal && freq !== 'WEEKLY';
+  if (!sparse && !(freq === 'DAILY' && interval > 1 && weekdayFilter)) return;
+  if (freq === 'HOURLY' && interval > 1) throw new UnsupportedRecurrence('HOURLY with INTERVAL and day parts');
+
+  const base = Date.UTC(start.year, start.month - 1, start.day);
+  const startDow = new Date(base).getUTCDay();
+  const weekStart = Number(rule.wkst) - 1; // ical.js numbers Sunday as 1
+  const weekOffset = (startDow - weekStart + 7) % 7;
+  let previous = 0;
+  let maxGap = 0;
+  let found = false;
+  for (let i = 0; i < FEASIBILITY_DAYS; i++) {
+    const day = new Date(base + i * DAY_MS);
+    const dow = day.getUTCDay();
+    if (freq === 'DAILY' && i % interval !== 0) continue;
+    if (freq === 'WEEKLY') {
+      if (Math.floor((i + weekOffset) / 7) % interval !== 0) continue;
+      if (codes.size > 0 ? !codes.has(dow) : dow !== startDow) continue;
+    } else if (weekdayFilter && !codes.has(dow)) {
+      continue;
+    }
+    const y = day.getUTCFullYear();
+    const m = day.getUTCMonth() + 1;
+    const d = day.getUTCDate();
+    if (byMonth.length > 0 && !byMonth.includes(m)) continue;
+    if (byMonthDay.length > 0) {
+      const inMonth = new Date(Date.UTC(y, m, 0)).getUTCDate();
+      if (!byMonthDay.includes(d) && !byMonthDay.includes(d - inMonth - 1)) continue;
+    }
+    if (byYearDay.length > 0) {
+      const yearDay = Math.round((Date.UTC(y, m - 1, d) - Date.UTC(y, 0, 1)) / DAY_MS) + 1;
+      const inYear = Math.round((Date.UTC(y + 1, 0, 1) - Date.UTC(y, 0, 1)) / DAY_MS);
+      if (!byYearDay.includes(yearDay) && !byYearDay.includes(yearDay - inYear - 1)) continue;
+    }
+    found = true;
+    maxGap = Math.max(maxGap, i - previous);
+    previous = i;
+  }
+  if (!found) throw new UnsupportedRecurrence('the rule can never match a day');
+  if (maxGap * (freq === 'HOURLY' ? 24 : 1) > MAX_INNER_STEPS) throw new UnsupportedRecurrence('the rule matches too rarely');
+}
+
+/** The instant a series ends (inclusive), from its UNTIL, read the way RFC 5545 says: DATE and floating values in the event's zone. */
+function untilInstant(until: ICAL.Time, zone: Zone): number {
+  if (until.isDate) {
+    const next = new Date(Date.UTC(until.year, until.month - 1, until.day + 1));
+    return wallToMs(next.getUTCFullYear(), next.getUTCMonth() + 1, next.getUTCDate(), 0, 0, 0, zone) - 1; // the whole local day counts
+  }
+  if (until.zone && until.zone.tzid === 'UTC') return Date.UTC(until.year, until.month - 1, until.day, until.hour, until.minute, until.second);
+  return toUtcMs(until, zone);
+}
+
+/**
+ * For a long-running DAILY or WEEKLY series with no COUNT and no BY parts that could be missed (WEEKLY may carry a
+ * BYDAY holding DTSTART's weekday), the occurrences far before the window can be skipped by starting the iteration a whole
+ * number of INTERVAL steps later: that is the same sequence. Anything else iterates from DTSTART.
+ */
+function fastForwardStart(start: ICAL.Time, rule: ICAL.Recur | null, hasRdate: boolean, spanMs: number, ctx: Context): ICAL.Time {
+  if (!rule || hasRdate || rule.count) return start;
+  const freq = String(rule.freq);
+  if (freq !== 'DAILY' && freq !== 'WEEKLY') return start;
+  const interval = Number(rule.interval);
+  if (!Number.isInteger(interval) || interval < 1) return start;
+  const parts = Object.keys(rule.parts);
+  if (freq === 'DAILY' && parts.length > 0) return start;
+  if (freq === 'WEEKLY') {
+    if (parts.some((p) => p !== 'BYDAY')) return start;
+    const { codes, ordinal } = weekdaysOf(rule.getComponent('BYDAY'));
+    const startDow = new Date(Date.UTC(start.year, start.month - 1, start.day)).getUTCDay();
+    if (ordinal || (codes.size > 0 && !codes.has(startDow))) return start;
+  }
+  const stepDays = interval * (freq === 'DAILY' ? 1 : 7);
+  const startNaive = Date.UTC(start.year, start.month - 1, start.day, start.hour, start.minute, start.second);
+  const k = Math.floor((ctx.fromMs - 3 * DAY_MS - spanMs - startNaive) / (stepDays * DAY_MS));
+  if (!Number.isFinite(k) || k <= 0) return start;
+  const moved = new Date(Date.UTC(start.year, start.month - 1, start.day + k * stepDays));
+  return new ICAL.Time(
+    { year: moved.getUTCFullYear(), month: moved.getUTCMonth() + 1, day: moved.getUTCDate(), hour: start.hour, minute: start.minute, second: start.second, isDate: start.isDate },
+    start.zone,
+  );
 }
 
 function eventBlocks(prepared: PreparedEvent, overrideKeys: Set<string> | undefined, ctx: Context): EventResult {
@@ -221,6 +369,7 @@ function eventBlocks(prepared: PreparedEvent, overrideKeys: Set<string> | undefi
     if (!Number.isFinite(durationMs) || durationMs < 0) throw new Error('event ends before it starts');
     if (durationMs === 0) return { blocks, capped: false };
   }
+  const spanMs = isDate ? days * DAY_MS : durationMs;
 
   const rangeOf = (occ: ICAL.Time): { s: number; e: number; key: string } => {
     if (isDate) {
@@ -232,12 +381,37 @@ function eventBlocks(prepared: PreparedEvent, overrideKeys: Set<string> | undefi
     const s = toUtcMs(occ, zone);
     return { s, e: s + durationMs, key: `t${s}` };
   };
+  const addIfInWindow = (occ: ICAL.Time) => {
+    const { s, e } = rangeOf(occ);
+    if (s < ctx.toMs && e > ctx.fromMs) blocks.push({ startAt: new Date(s), endAt: new Date(e) });
+  };
 
   const recurring = !isOverride && (vevent.hasProperty('rrule') || vevent.hasProperty('rdate'));
   if (!recurring) {
-    const { s, e } = rangeOf(start);
-    if (s < ctx.toMs && e > ctx.fromMs) blocks.push({ startAt: new Date(s), endAt: new Date(e) });
+    addIfInWindow(start);
     return { blocks, capped: false };
+  }
+
+  const rules = vevent.getAllProperties('rrule');
+  if (rules.length > 1) throw new UnsupportedRecurrence('more than one RRULE');
+  const rule = rules.length === 1 ? (rules[0].getFirstValue() as ICAL.Recur) : null;
+  const hasRdate = vevent.hasProperty('rdate');
+
+  // UNTIL: ical.js compares it with DTSTART's wall-clock fields as if both were in one zone, which drops the last
+  // instance east of UTC (and keeps a wrong one west of it) for a TZID series. Read it here and stop ical.js comparing.
+  let untilMs: number | null = null;
+  if (rule && rule.until && !hasRdate) {
+    untilMs = untilInstant(rule.until, zone);
+    rule.until = null;
+  }
+  if (untilMs !== null && untilMs + spanMs <= ctx.fromMs) return { blocks, capped: false }; // ended before the window
+
+  if (rule) checkRule(rule, start);
+
+  if (ctx.scanLeft <= 0) {
+    // The feed's expansion budget is spent: keep the one date every series is known to have, and report the rest.
+    addIfInWindow(start);
+    return { blocks, capped: true };
   }
 
   // Our own EXDATE check on top of ical.js's, so an EXDATE written in another zone form than DTSTART still matches.
@@ -250,7 +424,7 @@ function eventBlocks(prepared: PreparedEvent, overrideKeys: Set<string> | undefi
     }
   }
 
-  const expansion = new ICAL.RecurExpansion({ component: vevent, dtstart: start });
+  const expansion = new ICAL.RecurExpansion({ component: vevent, dtstart: fastForwardStart(start, rule, hasRdate, spanMs, ctx) });
   let scanned = 0;
   let capped = false;
   for (;;) {
@@ -260,8 +434,16 @@ function eventBlocks(prepared: PreparedEvent, overrideKeys: Set<string> | undefi
       capped = true;
       break;
     }
+    // Cheap pre-filter on the wall-clock fields read as UTC (a zone is at most about a day away), so the Intl
+    // conversion only runs for occurrences near the window.
+    const naive = isDate
+      ? Date.UTC(occ.year, occ.month - 1, occ.day)
+      : Date.UTC(occ.year, occ.month - 1, occ.day, occ.hour, occ.minute, occ.second);
+    if (naive >= ctx.toMs + DAY_MS) break; // occurrences come in order: everything after this is past the window
+    if (naive + spanMs < ctx.fromMs - DAY_MS) continue;
     const { s, e, key } = rangeOf(occ);
-    if (s >= ctx.toMs) break; // occurrences come in order: everything after this is past the window
+    if (s >= ctx.toMs) break;
+    if (untilMs !== null && s > untilMs) break; // an instance starting exactly at UNTIL is still part of the series
     if (excluded.has(key) || overrideKeys?.has(key)) continue;
     if (e <= ctx.fromMs) continue;
     if (blocks.length >= MAX_OCCURRENCES_PER_EVENT) {
@@ -302,13 +484,21 @@ export function parseIcalBlocks(icsText: string, opts: ParseIcalOptions): ParseI
   }
 
   let skipped = chunks.unterminated;
+  let unsupported = 0;
   const prepared: PreparedEvent[] = [];
   const overrideKeys = new Map<string, Set<string>>();
   for (const lines of chunks.events) {
     try {
       const vevent = parseChunk(lines, 'vevent');
       const uid = stringValue(vevent, 'uid');
-      const isOverride = vevent.hasProperty('recurrence-id');
+      const recurrenceId = vevent.getFirstProperty('recurrence-id');
+      const isOverride = recurrenceId !== null;
+      if (recurrenceId && String(recurrenceId.getParameter('range') ?? '').toUpperCase() === 'THISANDFUTURE') {
+        // "This and all later instances": applying it to one instance only would be wrong, so the override is left out
+        // and the series stays as the master describes it.
+        unsupported++;
+        continue;
+      }
       if (isOverride && uid) {
         // Registered whatever its status: a cancelled or free override still replaces the instance it points at.
         let keys = overrideKeys.get(uid);
@@ -329,18 +519,15 @@ export function parseIcalBlocks(icsText: string, opts: ParseIcalOptions): ParseI
       const status = stringValue(p.vevent, 'status');
       const transp = stringValue(p.vevent, 'transp');
       if (status?.toUpperCase() === 'CANCELLED' || transp?.toUpperCase() === 'TRANSPARENT') continue;
-      if (ctx.scanLeft < 0) {
-        skipped++;
-        continue;
-      }
       const result = eventBlocks(p, p.uid ? overrideKeys.get(p.uid) : undefined, ctx);
       blocks.push(...result.blocks);
-      if (result.capped) skipped++;
-    } catch {
-      skipped++;
+      if (result.capped) unsupported++;
+    } catch (err) {
+      if (err instanceof UnsupportedRecurrence) unsupported++;
+      else skipped++;
     }
   }
 
   blocks.sort((a, b) => a.startAt.getTime() - b.startAt.getTime() || a.endAt.getTime() - b.endAt.getTime());
-  return { blocks, skipped };
+  return { blocks, skipped, unsupported };
 }
