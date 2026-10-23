@@ -5,6 +5,7 @@ import { findBookingConflict } from '@/lib/appointments/conflicts';
 import { slotRangeFields } from '@/lib/appointments/time-range';
 import { McpAuthContext } from '../types';
 import { assertScope } from '../auth';
+import { asMcpError } from '../errors';
 
 export const createBookingMetadata = {
   name: 'create_booking',
@@ -179,7 +180,7 @@ export async function handleCreateBooking(
       notes: notes?.trim() || '',
       ...slotRangeFields(primaryAssistant, { date, timeSlot: normalizedSlot, durationMinutes: duration }),
     }).catch((err: any) => {
-      throw err?.code === 'SLOT_CONFLICT' ? slotTaken() : err;
+      throw err?.code === 'SLOT_CONFLICT' ? slotTaken() : asMcpError(err);
     });
 
     return {
@@ -290,7 +291,9 @@ export async function handleCancelBooking(
     'cancelled',
     args.reason?.trim() || 'Cancelled via AI assistant',
     auth.workspaceId
-  );
+  ).catch((err: unknown) => {
+    throw asMcpError(err);
+  });
 
   if (!success) {
     const error: any = new Error(`Cannot cancel booking '${bookingId}': Booking not found or does not belong to this workspace.`);

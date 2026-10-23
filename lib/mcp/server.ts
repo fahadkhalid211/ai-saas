@@ -6,6 +6,7 @@ import { McpAuthContext } from './types';
 import { hasScope } from './auth';
 import { enforceMcpRateLimit } from './rate-limit';
 import { logMcpToolExecution } from './audit';
+import { toMcpErrorCode } from './errors';
 import { MCP_TOOLS } from './tools';
 
 /**
@@ -184,7 +185,7 @@ export function createCresceloMcpServer(auth: McpAuthContext): Server {
       };
     } catch (err: any) {
       const durationMs = performance.now() - startTime;
-      const errorCode = err.code || 'INTERNAL_ERROR';
+      const errorCode = toMcpErrorCode(err);
       const errorMessage = err.message || 'An unexpected error occurred while executing the tool.';
 
       void logMcpToolExecution({

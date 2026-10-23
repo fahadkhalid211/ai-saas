@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { Database, type AssistantData } from '../db';
 import { createAppointment } from './create';
 import { slotRange } from './time-range';
-import { handleCreateBooking } from '../mcp/tools/bookings';
+import { handleCancelBooking, handleCreateBooking } from '../mcp/tools/bookings';
 import type { McpAuthContext } from '../mcp/types';
 
 /**
@@ -192,6 +192,34 @@ describe('MCP create_booking uses the same check', () => {
       auth,
     ).catch((e) => e);
     expect(err?.code).toBe('BOOKING_CONFLICT');
+  });
+
+  it('answers SERVICE_UNAVAILABLE (a known MCP code), not DB_UNAVAILABLE, when Postgres is required but down', async () => {
+    const ast = await newAssistant();
+    vi.stubEnv('DB_RELATIONAL_MODE', 'true');
+    const err = await handleCreateBooking(
+      { date: MON, timeSlot: '16:00', durationMinutes: 30, customerName: 'S', customerEmail: 's@example.com', confirmed: true },
+      mcpAuth(ast.workspaceId),
+    ).catch((e) => e);
+    expect(err?.code).toBe('SERVICE_UNAVAILABLE');
+    expect(err?.message).toMatch(/try again/i);
+  });
+
+  it('cancel_booking answers SERVICE_UNAVAILABLE when Postgres is required but down', async () => {
+    const ast = await newAssistant();
+    const mine = await book(ast, MON, '16:30', 30);
+    if (!mine.ok) throw new Error('setup booking failed');
+    vi.stubEnv('DB_RELATIONAL_MODE', 'true');
+    const auth = { ...mcpAuth(ast.workspaceId), scopes: ['bookings:modify' as const] };
+    const err = await handleCancelBooking({ bookingId: mine.appointment.id, confirmed: true }, auth).catch((e) => e);
+    expect(err?.code).toBe('SERVICE_UNAVAILABLE');
+  });
+
+  it('the MCP server reports DB_UNAVAILABLE from any tool as SERVICE_UNAVAILABLE', async () => {
+    const { toMcpErrorCode } = await import('../mcp/errors');
+    expect(toMcpErrorCode(Object.assign(new Error('x'), { code: 'DB_UNAVAILABLE' }))).toBe('SERVICE_UNAVAILABLE');
+    expect(toMcpErrorCode(Object.assign(new Error('x'), { code: 'BOOKING_CONFLICT' }))).toBe('BOOKING_CONFLICT');
+    expect(toMcpErrorCode(new Error('x'))).toBe('INTERNAL_ERROR');
   });
 
   it('turns a database SLOT_CONFLICT on save into BOOKING_CONFLICT', async () => {
