@@ -114,7 +114,7 @@ export function isValidTimezone(tz: string): boolean {
   }
 }
 
-function occupiedRange(a: ExistingAppointment): [number, number] | null {
+export function occupiedRange(a: ExistingAppointment): [number, number] | null {
   const start = parseTimeToMinutes(a.timeSlot);
   if (start === null) return null;
   const rangeEnd = parseRangeEnd(a.timeSlot);
