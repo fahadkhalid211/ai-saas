@@ -24,19 +24,24 @@ describe('Per-day booking lock', () => {
     expect(events[3]).toMatch(/^end /);
   });
 
-  it('lets different dates run concurrently', async () => {
-    const task = async (date: string) => {
-      const release = await acquireDayLock('ast_day_lock_diff', date);
-      try {
-        await new Promise((resolve) => setTimeout(resolve, 40));
-      } finally {
-        release();
-      }
-    };
-
-    const start = Date.now();
-    await Promise.all([task('2026-10-02'), task('2026-10-03')]);
-    expect(Date.now() - start).toBeLessThan(100);
+  it('lets different dates hold their locks at the same time', async () => {
+    // Both locks are taken before either is released. If different dates blocked each other, the second acquire would
+    // never resolve while the first is held, and the race below would reject.
+    const neverResolvesIfBlocked = new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error('second date was blocked by the first')), 500)
+    );
+    const releases = await Promise.race([
+      Promise.all([
+        acquireDayLock('ast_day_lock_diff', '2026-10-02', 500),
+        acquireDayLock('ast_day_lock_diff', '2026-10-03', 500),
+      ]),
+      neverResolvesIfBlocked,
+    ]);
+    try {
+      expect(releases).toHaveLength(2);
+    } finally {
+      releases.forEach((release) => release());
+    }
   });
 });
 
