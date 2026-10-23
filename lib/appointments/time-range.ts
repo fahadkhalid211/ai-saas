@@ -15,6 +15,7 @@ const MINUTE_MS = 60_000;
 
 // Building an Intl.DateTimeFormat is far slower than using one, and the conflict check reads many ranges per request,
 // so one formatter per timezone and the validity of each timezone name are kept for the life of the process.
+const CACHE_LIMIT = 1000;
 const formatters = new Map<string, Intl.DateTimeFormat>();
 const timezoneValidity = new Map<string, boolean>();
 
@@ -31,17 +32,19 @@ function formatterFor(timeZone: string): Intl.DateTimeFormat {
       second: '2-digit',
       hourCycle: 'h23',
     });
-    formatters.set(timeZone, f);
+    // Same bound as the validity map below: a cached formatter is only an optimisation, so past the cap it is not kept.
+    if (formatters.size < CACHE_LIMIT) formatters.set(timeZone, f);
   }
   return f;
 }
 
-function knownTimezone(timeZone: string): boolean {
+/** True when `timeZone` is a name Intl accepts (cached; callers of the helpers below must check this first). */
+export function knownTimezone(timeZone: string): boolean {
   let ok = timezoneValidity.get(timeZone);
   if (ok === undefined) {
     ok = isValidTimezone(timeZone);
     // Timezone names come from stored assistants, so the set stays small; the bound only guards against odd input.
-    if (timezoneValidity.size < 1000) timezoneValidity.set(timeZone, ok);
+    if (timezoneValidity.size < CACHE_LIMIT) timezoneValidity.set(timeZone, ok);
   }
   return ok;
 }
@@ -56,7 +59,7 @@ function zoneOffsetMs(timeZone: string, instant: number): number {
 }
 
 /** UTC instant (ms) at which the wall clock in `timeZone` reads the given local date and minutes. */
-function wallTimeToUtc(date: string, minutes: number, timeZone: string): number {
+export function wallTimeToUtc(date: string, minutes: number, timeZone: string): number {
   const [y, m, d] = date.split('-').map(Number);
   const wall = Date.UTC(y, m - 1, d, 0, minutes);
   // Guess with the offset at the naive instant, then re-read once so a DST change in between settles.

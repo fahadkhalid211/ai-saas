@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { slotRange, slotRangeFields } from './time-range';
+import { knownTimezone, slotRange, slotRangeFields, wallTimeToUtc } from './time-range';
 
 const HOUR = 60 * 60 * 1000;
 
@@ -57,5 +57,30 @@ describe('slotRangeFields', () => {
 
   it('returns an empty object when the range is unreadable', () => {
     expect(slotRangeFields({}, { date: '2026-10-23', timeSlot: 'Morning' })).toEqual({});
+  });
+});
+
+describe('wallTimeToUtc and the bounded zone caches', () => {
+  it('converts a wall time to a UTC instant', () => {
+    expect(new Date(wallTimeToUtc('2026-03-29', 4 * 60, 'Europe/Stockholm')).toISOString()).toBe('2026-03-29T02:00:00.000Z');
+    expect(new Date(wallTimeToUtc('2026-03-28', 12 * 60, 'Europe/Stockholm')).toISOString()).toBe('2026-03-28T11:00:00.000Z');
+  });
+
+  it('keeps giving correct answers past the 1000-entry cache cap', () => {
+    // Offset zone names are valid to Intl and cheap to enumerate, so they push both caches over the cap.
+    let checked = 0;
+    for (let h = -23; h <= 23 && checked < 1100; h++) {
+      for (let m = 0; m < 60 && checked < 1100; m++) {
+        const name = `${h < 0 ? '-' : '+'}${String(Math.abs(h)).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+        expect(knownTimezone(name)).toBe(true);
+        const sign = h < 0 ? -1 : 1;
+        const offsetMs = sign * (Math.abs(h) * 60 + m) * 60_000;
+        expect(wallTimeToUtc('2026-06-01', 12 * 60, name)).toBe(Date.UTC(2026, 5, 1, 12) - offsetMs);
+        checked++;
+      }
+    }
+    expect(checked).toBe(1100);
+    expect(knownTimezone('Not/AZone')).toBe(false);
+    expect(knownTimezone('Europe/Stockholm')).toBe(true);
   });
 });
