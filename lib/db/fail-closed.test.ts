@@ -145,6 +145,21 @@ describe('when relational mode is required and Postgres is failing', () => {
     expect(h.query).toHaveBeenCalledTimes(1);
   });
 
+  it('updateAppointment refuses when the relational write has no pool instead of writing elsewhere', async () => {
+    h.noPool = true;
+    await expect(Database.updateAppointment('apt_x', { timeSlot: '11:00 AM' })).rejects.toBeInstanceOf(BookingUnavailableError);
+  });
+
+  it('updateAppointment still answers "not found" (no refusal) when the pool is there but no row matched', async () => {
+    h.query.mockResolvedValue({ rowCount: 0, rows: [] });
+    await expect(Database.updateAppointment('apt_missing', { notes: 'x' })).resolves.toBeNull();
+  });
+
+  it('updateAppointmentStatus refuses when the relational write has no pool', async () => {
+    h.noPool = true;
+    await expect(Database.updateAppointmentStatus('apt_x', 'cancelled')).rejects.toBeInstanceOf(BookingUnavailableError);
+  });
+
   it('updateAppointment refuses while the outage flag is set without querying', async () => {
     h.configured = false;
     await expect(Database.updateAppointment('apt_x', { timeSlot: '11:00 AM' })).rejects.toMatchObject({ code: 'DB_UNAVAILABLE' });

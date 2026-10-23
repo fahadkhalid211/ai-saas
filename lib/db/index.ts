@@ -45,7 +45,7 @@ import {
   persistCloudChunks,
 } from './cloud';
 import { isSupabaseConfigured } from './supabase';
-import { isPostgresConfigured, disablePostgresTemporarily, isConnectionError } from './postgres';
+import { isPostgresConfigured, disablePostgresTemporarily, isConnectionError, getPostgresPool } from './postgres';
 import * as Relational from './relational';
 import * as ChunkStore from './chunk-store';
 import { BILLING_PLANS } from '../billing/plans';
@@ -2868,7 +2868,9 @@ export class Database {
   ): Promise<AppointmentData | null> {
     if (isRelationalModeEnabled()) {
       try {
-        await Relational.relationalUpdateAppointment(id, updates);
+        const written = await Relational.relationalUpdateAppointment(id, updates);
+        // false is also "no row matched", so only a missing pool means the change was not stored anywhere.
+        if (!written && isRelationalModeRequired() && !getPostgresPool()) throw new BookingUnavailableError();
         const state = await ensureInitialized();
         if (state.appointments) {
           const apt = state.appointments.find((a) => a.id === id);
@@ -2883,7 +2885,7 @@ export class Database {
         return Relational.relationalGetAppointmentById(id);
       } catch (err: any) {
         // The new slot is taken (reschedule): report it, never fall back to writing the change elsewhere.
-        if (err?.code === 'SLOT_CONFLICT') {
+        if (err?.code === 'SLOT_CONFLICT' || err instanceof BookingUnavailableError) {
           throw err;
         }
         console.warn('[Relational] updateAppointment failed, disabling postgres:', err);
@@ -2924,7 +2926,9 @@ export class Database {
 
     if (isRelationalModeEnabled()) {
       try {
-        await Relational.relationalUpdateAppointment(id, { status, cancellationReason });
+        const written = await Relational.relationalUpdateAppointment(id, { status, cancellationReason });
+        // false is also "no row matched", so only a missing pool means the change was not stored anywhere.
+        if (!written && isRelationalModeRequired() && !getPostgresPool()) throw new BookingUnavailableError();
         const state = await ensureInitialized();
         if (state.appointments) {
           const apt = state.appointments.find((a) => a.id === id);
@@ -2939,7 +2943,7 @@ export class Database {
         return true;
       } catch (err: any) {
         // The slot was rebooked meanwhile (un-cancel): report it, never fall back to writing the status elsewhere.
-        if (err?.code === 'SLOT_CONFLICT') {
+        if (err?.code === 'SLOT_CONFLICT' || err instanceof BookingUnavailableError) {
           throw err;
         }
         console.warn('[Relational] updateAppointmentStatus failed, disabling postgres:', err);
