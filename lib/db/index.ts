@@ -11,6 +11,7 @@ import { getMasterEmail } from '@/lib/security/master';
 import { logEvent } from '../logging/logger';
 import { guideChunks } from '../platform/knowledge';
 import { BookingUnavailableError } from '../appointments/errors';
+import type { ExternalBlock } from '../calendar/sync/types';
 import {
   LandingPageConfig,
   LandingPageServiceItem,
@@ -2735,7 +2736,9 @@ export class Database {
 
     if (isRelationalModeEnabled()) {
       try {
-        await Relational.relationalUpsertAppointment(apt);
+        const written = await Relational.relationalUpsertAppointment(apt);
+        // No pool (e.g. it refused an insecure connection): nothing was written, so never report a booking that does not exist.
+        if (!written && isRelationalModeRequired()) throw new BookingUnavailableError();
         const state = await ensureInitialized();
         if (!state.appointments) state.appointments = [];
         state.appointments.unshift(apt);
@@ -2743,7 +2746,7 @@ export class Database {
         afterHotWrite(state);
         return apt;
       } catch (err: any) {
-        if (err?.code === 'SLOT_CONFLICT') {
+        if (err?.code === 'SLOT_CONFLICT' || err instanceof BookingUnavailableError) {
           throw err;
         }
         console.warn('[Relational] saveAppointment failed, disabling postgres:', err);
@@ -2763,6 +2766,15 @@ export class Database {
 
   static async createAppointment(data: Parameters<typeof Database.saveAppointment>[0]): Promise<AppointmentData> {
     return Database.saveAppointment(data);
+  }
+
+  /**
+   * Busy periods from the assistant's linked external calendars, used by every booking path's conflict check.
+   * Stub until calendar sync stores blocks: no calendar is linked yet, so nothing is blocked.
+   */
+  static async getExternalBlocks(assistantId: string): Promise<ExternalBlock[]> {
+    void assistantId;
+    return [];
   }
 
   static async getAppointments(assistantId?: string, workspaceId?: string): Promise<AppointmentData[]> {

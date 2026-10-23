@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
-const h = vi.hoisted(() => ({ query: vi.fn(), configured: true }));
+const h = vi.hoisted(() => ({ query: vi.fn(), configured: true, noPool: false }));
 
 // Only the pool and the "configured" check are faked; everything else in ./postgres stays real.
 // No database is reached, and vitest.config.ts gives every run its own DATA_DIR for the JSON state.
@@ -9,9 +9,12 @@ vi.mock('./postgres', async (importOriginal) => {
   return {
     ...actual,
     isPostgresConfigured: () => h.configured,
-    getPostgresPool: () => ({
-      connect: async () => ({ query: h.query, release: () => undefined }),
-    }),
+    getPostgresPool: () =>
+      h.noPool
+        ? null
+        : {
+            connect: async () => ({ query: h.query, release: () => undefined }),
+          },
   };
 });
 
@@ -36,13 +39,38 @@ const jsonHas = async (email: string) => {
   return all.some((a) => a.email === email);
 };
 
+// Every database and shared-cache URL is blanked, so this file can never reach a real database or Redis even when the
+// shell exports them (the pool above is faked, but the JSON state's cloud sync reads these too).
+const REAL_BACKEND_ENV = [
+  'DATABASE_URL',
+  'POSTGRES_URL',
+  'POSTGRES_PRISMA_URL',
+  'POSTGRES_URL_NON_POOLING',
+  'SUPABASE_URL',
+  'NEXT_PUBLIC_SUPABASE_URL',
+  'SUPABASE_SERVICE_ROLE_KEY',
+  'SUPABASE_ANON_KEY',
+  'NEXT_PUBLIC_SUPABASE_ANON_KEY',
+  'UPSTASH_REDIS_REST_URL',
+  'UPSTASH_REDIS_REST_TOKEN',
+];
+
 beforeEach(() => {
+  for (const k of REAL_BACKEND_ENV) vi.stubEnv(k, '');
   h.query.mockReset();
   h.configured = true;
+  h.noPool = false;
 });
 
 afterEach(() => {
   delete process.env.DB_RELATIONAL_MODE;
+  vi.unstubAllEnvs();
+});
+
+describe('test isolation', () => {
+  it('blanks every real database and cache URL', () => {
+    for (const k of REAL_BACKEND_ENV) expect(process.env[k] || '').toBe('');
+  });
 });
 
 describe('isRelationalModeRequired', () => {
@@ -95,6 +123,13 @@ describe('when relational mode is required and Postgres is failing', () => {
     expect(h.query).not.toHaveBeenCalled();
     delete process.env.DB_RELATIONAL_MODE;
     expect(await jsonHas('refused-outage@example.com')).toBe(false);
+  });
+
+  it('saveAppointment refuses when the relational write has no pool (returns false) instead of reporting success', async () => {
+    h.noPool = true;
+    await expect(Database.saveAppointment(booking('refused-nopool@example.com'))).rejects.toBeInstanceOf(BookingUnavailableError);
+    delete process.env.DB_RELATIONAL_MODE;
+    expect(await jsonHas('refused-nopool@example.com')).toBe(false);
   });
 
   it('saveAppointment still propagates SLOT_CONFLICT unchanged', async () => {
