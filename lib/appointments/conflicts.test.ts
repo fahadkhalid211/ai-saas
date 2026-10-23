@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { findBookingConflict } from './conflicts';
+import { blockedSlotStarts, findBookingConflict } from './conflicts';
+import { addDays } from './availability';
 import type { ExternalBlock } from '../calendar/sync/types';
 
 const block = (start: string, end: string): ExternalBlock => ({ startAt: new Date(start), endAt: new Date(end) });
@@ -70,6 +71,12 @@ describe('findBookingConflict', () => {
     expect(findBookingConflict({ date: '2026-10-24', timeSlot: 'after lunch', appointments, blocks: [] })).toBeNull();
   });
 
+  it('finds a booking on the previous day that runs past midnight (UTC)', () => {
+    const appointments = [{ id: 'late', date: '2026-10-22', timeSlot: '23:30', durationMinutes: 120 }];
+    expect(findBookingConflict({ date: '2026-10-23', timeSlot: '00:30', durationMinutes: 30, appointments, blocks: [] })).toEqual({ kind: 'booking', appointmentId: 'late' });
+    expect(findBookingConflict({ date: '2026-10-23', timeSlot: '01:30', durationMinutes: 30, appointments, blocks: [] })).toBeNull();
+  });
+
   it('prefers a booking conflict over an external one', () => {
     const r = findBookingConflict({
       date: '2026-10-23',
@@ -79,4 +86,32 @@ describe('findBookingConflict', () => {
     });
     expect(r).toEqual({ kind: 'booking', appointmentId: 'a1' });
   });
+});
+
+describe('cost of the check with many bookings', () => {
+  // 2000 bookings spread over 400 days: the public checkDate list runs one check per grid slot,
+  // and createAppointment runs it while holding the day lock.
+  const many = Array.from({ length: 2000 }, (_, i) => ({
+    id: `m${i}`,
+    date: addDays('2026-01-01', i % 400),
+    timeSlot: `${String(9 + (i % 8)).padStart(2, '0')}:00`,
+    durationMinutes: 30,
+  }));
+  const config = { bookingStartHour: '07:00', bookingEndHour: '17:00', bookingSlotDuration: 30, timezone: 'Europe/Stockholm' };
+
+  it('blockedSlotStarts over 2000 bookings stays well under 500 ms', () => {
+    const started = performance.now();
+    const blocked = blockedSlotStarts({ config, date: '2026-03-15', appointments: many, blocks: [] });
+    const ms = performance.now() - started;
+    // 2026-03-15 is day 73: bookings at 10:00..16:00 local, five of them that day
+    expect(blocked.length).toBeGreaterThan(0);
+    expect(ms).toBeLessThan(500);
+  }, 60_000);
+
+  it('gives the same answers as the unwindowed check', () => {
+    const date = '2026-03-15';
+    const blocked = blockedSlotStarts({ config, date, appointments: many, blocks: [] });
+    const sameDay = many.filter((a) => a.date === date);
+    expect(blocked).toEqual(blockedSlotStarts({ config, date, appointments: sameDay, blocks: [] }));
+  }, 60_000);
 });

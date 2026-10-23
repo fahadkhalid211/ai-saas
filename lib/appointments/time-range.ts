@@ -13,18 +13,42 @@ export interface SlotRange {
 
 const MINUTE_MS = 60_000;
 
+// Building an Intl.DateTimeFormat is far slower than using one, and the conflict check reads many ranges per request,
+// so one formatter per timezone and the validity of each timezone name are kept for the life of the process.
+const formatters = new Map<string, Intl.DateTimeFormat>();
+const timezoneValidity = new Map<string, boolean>();
+
+function formatterFor(timeZone: string): Intl.DateTimeFormat {
+  let f = formatters.get(timeZone);
+  if (!f) {
+    f = new Intl.DateTimeFormat('en-US', {
+      timeZone,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hourCycle: 'h23',
+    });
+    formatters.set(timeZone, f);
+  }
+  return f;
+}
+
+function knownTimezone(timeZone: string): boolean {
+  let ok = timezoneValidity.get(timeZone);
+  if (ok === undefined) {
+    ok = isValidTimezone(timeZone);
+    // Timezone names come from stored assistants, so the set stays small; the bound only guards against odd input.
+    if (timezoneValidity.size < 1000) timezoneValidity.set(timeZone, ok);
+  }
+  return ok;
+}
+
 /** Offset (ms, local minus UTC) of `timeZone` at the given instant. */
 function zoneOffsetMs(timeZone: string, instant: number): number {
-  const parts = new Intl.DateTimeFormat('en-US', {
-    timeZone,
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-    hourCycle: 'h23',
-  }).formatToParts(new Date(instant));
+  const parts = formatterFor(timeZone).formatToParts(new Date(instant));
   const get = (t: string) => Number(parts.find((p) => p.type === t)?.value);
   const asUtc = Date.UTC(get('year'), get('month') - 1, get('day'), get('hour'), get('minute'), get('second'));
   // Drop sub-second part of the instant so the difference is a clean offset.
@@ -49,7 +73,7 @@ export function slotRange(date: string, timeSlot: string, durationMinutes: numbe
   if (!isIsoDate(date)) return null;
   const range = occupiedRange({ date, timeSlot, durationMinutes });
   if (!range) return null;
-  const tz = timezone && isValidTimezone(timezone) ? timezone : 'UTC';
+  const tz = timezone && knownTimezone(timezone) ? timezone : 'UTC';
   const start = wallTimeToUtc(date, range[0], tz);
   return { start: new Date(start), end: new Date(start + (range[1] - range[0]) * MINUTE_MS) };
 }
