@@ -33,12 +33,36 @@ const apt: AppointmentData = {
   createdAt: '2026-10-23T08:00:00.000Z',
 };
 
+// Every database and shared-cache URL is blanked, so this file can never reach a real database or Redis even when the
+// shell exports them (the pool above is faked, but the JSON state's cloud sync reads these too).
+const REAL_BACKEND_ENV = [
+  'DATABASE_URL',
+  'POSTGRES_URL',
+  'POSTGRES_PRISMA_URL',
+  'POSTGRES_URL_NON_POOLING',
+  'SUPABASE_URL',
+  'NEXT_PUBLIC_SUPABASE_URL',
+  'SUPABASE_SERVICE_ROLE_KEY',
+  'SUPABASE_ANON_KEY',
+  'NEXT_PUBLIC_SUPABASE_ANON_KEY',
+  'UPSTASH_REDIS_REST_URL',
+  'UPSTASH_REDIS_REST_TOKEN',
+];
+
 beforeEach(() => {
+  for (const k of REAL_BACKEND_ENV) vi.stubEnv(k, '');
   h.query.mockReset();
 });
 
 afterEach(() => {
   delete process.env.DB_RELATIONAL_MODE;
+  vi.unstubAllEnvs();
+});
+
+describe('test isolation', () => {
+  it('blanks every real database and cache URL', () => {
+    for (const k of REAL_BACKEND_ENV) expect(process.env[k] || '').toBe('');
+  });
 });
 
 describe('booking ranges in the relational layer', () => {

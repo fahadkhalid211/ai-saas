@@ -2739,11 +2739,16 @@ export class Database {
         const written = await Relational.relationalUpsertAppointment(apt);
         // No pool (e.g. it refused an insecure connection): nothing was written, so never report a booking that does not exist.
         if (!written && isRelationalModeRequired()) throw new BookingUnavailableError();
-        const state = await ensureInitialized();
-        if (!state.appointments) state.appointments = [];
-        state.appointments.unshift(apt);
-        cachedState = state;
-        afterHotWrite(state);
+        // The row is stored. Refreshing the in-memory copy is best effort: its failure must not report the booking as lost.
+        try {
+          const state = await ensureInitialized();
+          if (!state.appointments) state.appointments = [];
+          state.appointments.unshift(apt);
+          cachedState = state;
+          afterHotWrite(state);
+        } catch (refreshErr) {
+          console.warn('[Relational] saveAppointment stored the booking; the cache refresh failed:', refreshErr);
+        }
         return apt;
       } catch (err: any) {
         if (err?.code === 'SLOT_CONFLICT' || err instanceof BookingUnavailableError) {
@@ -2876,18 +2881,23 @@ export class Database {
         const written = await Relational.relationalUpdateAppointment(id, updates);
         // false is also "no row matched", so only a missing pool means the change was not stored anywhere.
         if (!written && isRelationalModeRequired() && !getPostgresPool()) throw new BookingUnavailableError();
-        const state = await ensureInitialized();
-        if (state.appointments) {
-          const apt = state.appointments.find((a) => a.id === id);
-          if (apt) {
-            Object.assign(apt, updates, { updatedAt: new Date().toISOString() });
+        // The change is stored. Refreshing the in-memory copy is best effort: its failure must not report the change as lost.
+        let cached: AppointmentData | undefined;
+        try {
+          const state = await ensureInitialized();
+          cached = state.appointments?.find((a) => a.id === id);
+          if (cached) {
+            Object.assign(cached, updates, { updatedAt: new Date().toISOString() });
             cachedState = state;
-            afterHotWrite(state);
-            return apt;
           }
+          afterHotWrite(state);
+        } catch (refreshErr) {
+          cached = undefined;
+          console.warn('[Relational] updateAppointment stored the change; the cache refresh failed:', refreshErr);
         }
-        afterHotWrite(state);
-        return Relational.relationalGetAppointmentById(id);
+        if (cached) return cached;
+        // awaited here so a failed read is handled by this branch's catch like any other relational error
+        return await Relational.relationalGetAppointmentById(id);
       } catch (err: any) {
         // The new slot is taken (reschedule): report it, never fall back to writing the change elsewhere.
         if (err?.code === 'SLOT_CONFLICT' || err instanceof BookingUnavailableError) {
@@ -2934,17 +2944,20 @@ export class Database {
         const written = await Relational.relationalUpdateAppointment(id, { status, cancellationReason });
         // false is also "no row matched", so only a missing pool means the change was not stored anywhere.
         if (!written && isRelationalModeRequired() && !getPostgresPool()) throw new BookingUnavailableError();
-        const state = await ensureInitialized();
-        if (state.appointments) {
-          const apt = state.appointments.find((a) => a.id === id);
+        // The change is stored. Refreshing the in-memory copy is best effort: its failure must not report the change as lost.
+        try {
+          const state = await ensureInitialized();
+          const apt = state.appointments?.find((a) => a.id === id);
           if (apt) {
             apt.status = status;
             if (cancellationReason) apt.cancellationReason = cancellationReason;
             apt.updatedAt = new Date().toISOString();
             cachedState = state;
           }
+          afterHotWrite(state);
+        } catch (refreshErr) {
+          console.warn('[Relational] updateAppointmentStatus stored the change; the cache refresh failed:', refreshErr);
         }
-        afterHotWrite(state);
         return true;
       } catch (err: any) {
         // The slot was rebooked meanwhile (un-cancel): report it, never fall back to writing the status elsewhere.
