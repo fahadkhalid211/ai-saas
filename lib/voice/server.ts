@@ -12,6 +12,8 @@ import { getVoiceSecret, verifyVoiceRequest } from '@/lib/voice/auth';
 import { normalizeE164 } from '@/lib/voice/text';
 import { buildGreeting, newCallState, type BookResult, type VoiceCallState, type VoiceDeps } from '@/lib/voice/turn';
 import { logEvent } from '@/lib/logging/logger';
+import { getExternalBlocksOrEmpty } from '@/lib/calendar/sync/safe-blocks';
+import { isBookingUnavailable } from '@/lib/appointments/errors';
 
 /** Reads a worker request, verifies its HMAC signature and returns the parsed JSON body. */
 export async function readSignedBody(req: Request): Promise<{ body: any } | { error: NextResponse }> {
@@ -121,11 +123,19 @@ export function productionVoiceDeps(): VoiceDeps {
       return all.map((a) => ({ date: a.date, timeSlot: a.timeSlot, durationMinutes: a.durationMinutes, status: a.status }));
     },
 
-    getExternalBlocks: (assistantId) => Database.getExternalBlocks(assistantId),
+    getExternalBlocks: (assistantId) => getExternalBlocksOrEmpty(assistantId),
 
     bookAppointment: async ({ assistant, booking, state }): Promise<BookResult> => {
       const existing = await Database.getAppointments(assistant.id, undefined, { ownOnly: true });
-      const blocks = await Database.getExternalBlocks(assistant.id);
+      let blocks: Awaited<ReturnType<typeof Database.getExternalBlocks>>;
+      try {
+        blocks = await Database.getExternalBlocks(assistant.id);
+      } catch (err) {
+        // Linked calendars cannot be read: confirming could double-book, so the caller is told it did not go through (a transient failure, not a conflict).
+        if (!isBookingUnavailable(err)) throw err;
+        logEvent({ level: 'error', category: 'booking', event: 'booking.db_unavailable', meta: { assistantId: assistant.id, source: 'external_blocks', channel: 'voice' } });
+        return { ok: false, conflict: false };
+      }
       const config = {
         bookingStartHour: assistant.bookingStartHour,
         bookingEndHour: assistant.bookingEndHour,

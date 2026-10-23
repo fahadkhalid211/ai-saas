@@ -6,12 +6,12 @@ import { chunkProfileId, embeddingProfile, vectorTag } from '../rag/embedding-pr
 import { SearchResultChunk } from '../rag/types';
 import { clearRetrievalCache } from '../rag/cache';
 import { encryptSecret, decryptSecret } from '../security/crypto';
-import { hashPassword, verifyPassword, isHashedPassword, generateTempPassword } from '../security/password';
+import { hashPassword, verifyPassword, isHashedPassword, generateTempPassword, timingSafeStringEqual } from '../security/password';
 import { getMasterEmail } from '@/lib/security/master';
 import { logEvent } from '../logging/logger';
 import { guideChunks } from '../platform/knowledge';
 import { BookingUnavailableError } from '../appointments/errors';
-import type { ExternalBlock } from '../calendar/sync/types';
+import type { CalendarLink, ExternalBlock } from '../calendar/sync/types';
 import {
   LandingPageConfig,
   LandingPageServiceItem,
@@ -48,6 +48,7 @@ import { isSupabaseConfigured } from './supabase';
 import { isPostgresConfigured, disablePostgresTemporarily, isConnectionError, getPostgresPool } from './postgres';
 import * as Relational from './relational';
 import * as ChunkStore from './chunk-store';
+import * as CalendarFile from './calendar-file-store';
 import { BILLING_PLANS } from '../billing/plans';
 import { describeLog } from '../logging/describe';
 import { applyMerged, mergeState } from './state-merge';
@@ -166,6 +167,8 @@ export interface AssistantData {
   supportReceiverEmail?: string;
   supportCcEmails?: string[];
   supportCustomFields?: SupportCustomField[];
+  /** Secret in the address of the owner's read-only feed of Crescelo bookings (lib/calendar/sync). Server-generated; at least 20 characters. */
+  calendarFeedToken?: string;
   telegramBotToken?: string;
   telegramBotEnabled?: boolean;
   whatsappPhoneNumberId?: string;
@@ -483,7 +486,7 @@ export interface InAppNotificationData {
   assistantId?: string;
   title: string;
   message: string;
-  type: 'appointment_booked' | 'appointment_cancelled' | 'lead_captured' | 'takeover_requested' | 'reminder_dispatched' | 'chat_new' | 'chat_message' | 'chat_escalated' | 'cost_cap_warning' | 'cost_cap_reached';
+  type: 'appointment_booked' | 'appointment_cancelled' | 'lead_captured' | 'takeover_requested' | 'reminder_dispatched' | 'chat_new' | 'chat_message' | 'chat_escalated' | 'cost_cap_warning' | 'cost_cap_reached' | 'calendar_clash' | 'calendar_sync_failed';
   metadata?: Record<string, any>;
   read: boolean;
   createdAt: string;
@@ -1294,6 +1297,37 @@ function tagEmbeddings<T extends { embedding?: number[]; metadata: Record<string
   return chunks.map((c) => (c.embedding && c.embedding.length > 0 ? { ...c, metadata: { ...c.metadata, embModel: id } } : c));
 }
 
+/**
+ * Runs an operation on the calendar tables (kortex_calendar_links, kortex_external_blocks).
+ * Returns null when this deployment does not use relational mode: the caller then uses the JSON file (calendar-file-store.ts).
+ * In required mode (DB_RELATIONAL_MODE=true) the tables are the only home of this data, so Postgres being down, disabled or
+ * without a pool throws BookingUnavailableError, never a silent fallback to a file that other instances cannot see.
+ */
+async function onCalendarTables<T>(op: () => Promise<T | null>): Promise<{ value: T } | null> {
+  if (!isRelationalModeRequired()) return null;
+  if (!isRelationalModeEnabled()) throw new BookingUnavailableError();
+  try {
+    const value = await op();
+    if (value === null) throw new BookingUnavailableError();
+    return { value };
+  } catch (err) {
+    if (err instanceof BookingUnavailableError || err instanceof Relational.CalendarLinkRuleError) throw err;
+    console.warn('[Relational] calendar tables failed:', err);
+    if (isConnectionError(err)) disablePostgresTemporarily();
+    throw new BookingUnavailableError(undefined, { cause: err });
+  }
+}
+
+/** The blocks to keep for one link: those not yet over first (soonest first), then the most recently ended, up to the cap. */
+function nearestBlocks(blocks: ExternalBlock[], max: number, now = Date.now()): { kept: ExternalBlock[]; dropped: number } {
+  const valid = blocks.filter((b) => Number.isFinite(b.startAt.getTime()) && Number.isFinite(b.endAt.getTime()) && b.endAt.getTime() > b.startAt.getTime());
+  if (valid.length <= max) return { kept: valid, dropped: blocks.length - valid.length };
+  const upcoming = valid.filter((b) => b.endAt.getTime() > now).sort((a, b) => a.startAt.getTime() - b.startAt.getTime());
+  const past = valid.filter((b) => b.endAt.getTime() <= now).sort((a, b) => b.endAt.getTime() - a.endAt.getTime());
+  const kept = [...upcoming, ...past].slice(0, max);
+  return { kept, dropped: blocks.length - kept.length };
+}
+
 export class Database {
   static async getState(): Promise<DatabaseState> {
     return ensureInitialized();
@@ -1548,6 +1582,11 @@ export class Database {
 
     state.assistants = state.assistants.filter((a) => a.id !== id);
     state.knowledgeSources = state.knowledgeSources.filter((k) => k.assistantId !== id);
+    try {
+      CalendarFile.filePurgeAssistant(id);
+    } catch (err) {
+      console.warn('[CalendarStore] could not remove the deleted assistant\'s calendar links:', err);
+    }
     if (pgVectorStoreEnabled()) {
       await ChunkStore.deleteChunksByAssistant(id);
       clearRetrievalCache(id);
@@ -2774,12 +2813,71 @@ export class Database {
   }
 
   /**
-   * Busy periods from the assistant's linked external calendars, used by every booking path's conflict check.
-   * Stub until calendar sync stores blocks: no calendar is linked yet, so nothing is blocked.
+   * Busy periods from all of the assistant's linked external calendars, sorted by start, used by every booking path's conflict check.
+   * With `from`, blocks that ended at or before it are left out. In required mode a database failure throws BookingUnavailableError:
+   * code that only narrows what is offered catches it and uses none (lib/calendar/sync/safe-blocks.ts), code that confirms a booking refuses.
    */
-  static async getExternalBlocks(assistantId: string): Promise<ExternalBlock[]> {
-    void assistantId;
-    return [];
+  static async getExternalBlocks(assistantId: string, from?: Date): Promise<ExternalBlock[]> {
+    const rel = await onCalendarTables(() => Relational.relationalGetExternalBlocks(assistantId, from));
+    if (rel) return rel.value;
+    return CalendarFile.fileGetBlocks(assistantId, from);
+  }
+
+  /** The calendar links of one assistant, oldest first. */
+  static async getCalendarLinks(assistantId: string): Promise<CalendarLink[]> {
+    const rel = await onCalendarTables(() => Relational.relationalGetCalendarLinks(assistantId));
+    if (rel) return rel.value;
+    return CalendarFile.fileGetLinks(assistantId);
+  }
+
+  /** Every assistant's calendar links (the sync job's work list). */
+  static async getAllCalendarLinks(): Promise<CalendarLink[]> {
+    const rel = await onCalendarTables(() => Relational.relationalGetAllCalendarLinks());
+    if (rel) return rel.value;
+    return CalendarFile.fileGetAllLinks();
+  }
+
+  /** Adds or updates a link (by id). Rejects a 6th link for an assistant, and a link id that belongs to another assistant. */
+  static async saveCalendarLink(link: CalendarLink): Promise<CalendarLink> {
+    const rel = await onCalendarTables(() => Relational.relationalSaveCalendarLink(link));
+    if (rel) return rel.value;
+    return CalendarFile.fileSaveLink(link, Relational.MAX_CALENDAR_LINKS_PER_ASSISTANT);
+  }
+
+  /** Removes a link and its blocks. Only the owning assistant can remove it; false when there is no such link for this assistant. */
+  static async deleteCalendarLink(assistantId: string, linkId: string): Promise<boolean> {
+    const rel = await onCalendarTables(() => Relational.relationalDeleteCalendarLink(assistantId, linkId));
+    if (rel) return rel.value;
+    return CalendarFile.fileDeleteLink(assistantId, linkId);
+  }
+
+  /**
+   * Replaces all blocks of one link (never appends). One transaction in Postgres, so readers see the old set or the new one.
+   * Keeps at most 20,000 blocks per link, the nearest in time, and logs when it had to drop some.
+   */
+  static async replaceExternalBlocks(linkId: string, assistantId: string, blocks: ExternalBlock[]): Promise<void> {
+    const { kept, dropped } = nearestBlocks(blocks, Relational.MAX_BLOCKS_PER_LINK);
+    if (dropped > 0) {
+      logEvent({ level: 'warn', category: 'booking', event: 'calendar.blocks_truncated', meta: { assistantId, linkId, kept: kept.length, dropped } });
+    }
+    const rel = await onCalendarTables(async () => ((await Relational.relationalReplaceExternalBlocks(linkId, assistantId, kept)) ? true : null));
+    if (rel) return;
+    CalendarFile.fileReplaceBlocks(linkId, assistantId, kept);
+  }
+
+  /**
+   * The assistant that owns a calendar feed token, for the read-only feed route. Tokens shorter than 20 characters are refused
+   * without looking at any assistant, and every stored token is compared in constant time, so the answer time does not reveal how much matched.
+   */
+  static async getAssistantByCalendarFeedToken(token: string): Promise<AssistantData | null> {
+    if (typeof token !== 'string' || token.length < 20) return null;
+    const state = await ensureInitialized();
+    let matchId: string | null = null;
+    for (const a of state.assistants) {
+      const stored = a.calendarFeedToken;
+      if (typeof stored === 'string' && stored.length >= 20 && timingSafeStringEqual(token, stored) && matchId === null) matchId = a.id;
+    }
+    return matchId ? Database.getAssistantById(matchId) : null;
   }
 
   /**

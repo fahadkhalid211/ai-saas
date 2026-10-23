@@ -20,6 +20,7 @@ import type {
   ChunkRecord,
 } from './index';
 import type { SearchResultChunk } from '../rag/types';
+import type { CalendarLink, ExternalBlock } from '../calendar/sync/types';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -947,6 +948,14 @@ export async function relationalDeleteAssistantData(assistantId: string): Promis
     await client.query(`DELETE FROM kortex_notifications WHERE assistant_id = $1`, [assistantId]);
     await client.query(`DELETE FROM kortex_unanswered_queries WHERE assistant_id = $1`, [assistantId]);
     await client.query(`DELETE FROM kortex_chunks WHERE assistant_id = $1`, [assistantId]);
+    // Linked calendars (supabase/schema-relational-v5-calendar-links.sql). The tables may not exist yet, which must not stop the cleanup.
+    for (const table of ['kortex_external_blocks', 'kortex_calendar_links']) {
+      try {
+        await client.query(`DELETE FROM ${table} WHERE assistant_id = $1`, [assistantId]);
+      } catch (err: any) {
+        if (err?.code !== '42P01') throw err;
+      }
+    }
     return true;
   });
   return result === true;
@@ -1103,4 +1112,167 @@ export async function relationalGetOwner(
     return { assistantId: (rows[0].assistant_id as string | null) ?? null };
   });
   return result ?? null;
+}
+
+// ---------------------------------------------------------------------------
+// Calendar links and external blocks (supabase/schema-relational-v5-calendar-links.sql)
+//
+// Every function returns null when there is no pool; the caller decides what that means (the Database methods treat it as
+// "unavailable" and refuse in required mode). Errors are NOT swallowed: a booking check must not read a failure as "no blocks".
+// ---------------------------------------------------------------------------
+
+/** Most links one assistant may have, and most blocks kept per link. */
+export const MAX_CALENDAR_LINKS_PER_ASSISTANT = 5;
+export const MAX_BLOCKS_PER_LINK = 20_000;
+/** Blocks per INSERT statement. Each statement sends two arrays plus two ids, so the 65,535-parameter limit is never near. */
+const BLOCK_INSERT_BATCH = 5_000;
+
+const LINK_COLUMNS = 'id, assistant_id, label, url, last_synced_at, last_error, error_since, etag, last_modified, created_at';
+
+function rowToLink(r: Record<string, any>): CalendarLink {
+  return {
+    id: r.id,
+    assistantId: r.assistant_id,
+    label: r.label,
+    url: r.url,
+    ...(r.last_synced_at ? { lastSyncedAt: iso(r.last_synced_at) } : {}),
+    ...(r.last_error ? { lastError: r.last_error } : {}),
+    ...(r.error_since ? { errorSince: iso(r.error_since) } : {}),
+    ...(r.etag ? { etag: r.etag } : {}),
+    ...(r.last_modified ? { lastModified: r.last_modified } : {}),
+    createdAt: iso(r.created_at),
+  };
+}
+
+export async function relationalGetCalendarLinks(assistantId: string): Promise<CalendarLink[] | null> {
+  return withPool(async (client) => {
+    const { rows } = await client.query(
+      `SELECT ${LINK_COLUMNS} FROM kortex_calendar_links WHERE assistant_id = $1 ORDER BY created_at ASC, id ASC`,
+      [assistantId]
+    );
+    return rows.map(rowToLink);
+  });
+}
+
+export async function relationalGetAllCalendarLinks(): Promise<CalendarLink[] | null> {
+  return withPool(async (client) => {
+    const { rows } = await client.query(`SELECT ${LINK_COLUMNS} FROM kortex_calendar_links ORDER BY created_at ASC, id ASC`);
+    return rows.map(rowToLink);
+  });
+}
+
+/** Inserts or updates a link. Throws a plain Error (not a database error) for the 6th link or another assistant's id. */
+export async function relationalSaveCalendarLink(link: CalendarLink): Promise<CalendarLink | null> {
+  return withPool(async (client) => {
+    await client.query('BEGIN');
+    try {
+      // Two requests adding a link for the same assistant at once must not both pass the limit check.
+      await client.query('SELECT pg_advisory_xact_lock(hashtext($1))', ['calendar_links:' + link.assistantId]);
+      const { rows } = await client.query(
+        `SELECT count(*)::int AS n FROM kortex_calendar_links WHERE assistant_id = $1 AND id <> $2`,
+        [link.assistantId, link.id]
+      );
+      if (Number(rows[0]?.n ?? 0) >= MAX_CALENDAR_LINKS_PER_ASSISTANT) {
+        throw new CalendarLinkRuleError(`An assistant can link at most ${MAX_CALENDAR_LINKS_PER_ASSISTANT} calendars.`);
+      }
+      const res = await client.query(
+        `INSERT INTO kortex_calendar_links
+           (id, assistant_id, label, url, last_synced_at, last_error, error_since, etag, last_modified, created_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+         ON CONFLICT (id) DO UPDATE SET
+           label = EXCLUDED.label,
+           url = EXCLUDED.url,
+           last_synced_at = EXCLUDED.last_synced_at,
+           last_error = EXCLUDED.last_error,
+           error_since = EXCLUDED.error_since,
+           etag = EXCLUDED.etag,
+           last_modified = EXCLUDED.last_modified
+         WHERE kortex_calendar_links.assistant_id = EXCLUDED.assistant_id`,
+        [
+          link.id,
+          link.assistantId,
+          link.label,
+          link.url,
+          link.lastSyncedAt ?? null,
+          link.lastError ?? null,
+          link.errorSince ?? null,
+          link.etag ?? null,
+          link.lastModified ?? null,
+          link.createdAt,
+        ]
+      );
+      if (res.rowCount === 0) throw new CalendarLinkRuleError('That calendar link belongs to another assistant.');
+      await client.query('COMMIT');
+      return { ...link };
+    } catch (err) {
+      await client.query('ROLLBACK').catch(() => undefined);
+      throw err;
+    }
+  });
+}
+
+/** A refusal by the link rules (limit reached, another assistant's id): the caller's mistake, not a database failure. */
+export class CalendarLinkRuleError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'CalendarLinkRuleError';
+  }
+}
+
+/** Deletes the link and its blocks together. True when the link existed for this assistant. */
+export async function relationalDeleteCalendarLink(assistantId: string, linkId: string): Promise<boolean | null> {
+  return withPool(async (client) => {
+    await client.query('BEGIN');
+    try {
+      await client.query(`DELETE FROM kortex_external_blocks WHERE link_id = $1 AND assistant_id = $2`, [linkId, assistantId]);
+      const res = await client.query(`DELETE FROM kortex_calendar_links WHERE id = $1 AND assistant_id = $2`, [linkId, assistantId]);
+      await client.query('COMMIT');
+      return (res.rowCount ?? 0) > 0;
+    } catch (err) {
+      await client.query('ROLLBACK').catch(() => undefined);
+      throw err;
+    }
+  });
+}
+
+/**
+ * Replaces a link's blocks in one transaction (delete, then batched inserts), so a reader sees either the old set or the new one.
+ * The insert only stores rows while the link still exists for this assistant: a sync that finishes after the owner removed the link stores nothing.
+ * False when there is no pool.
+ */
+export async function relationalReplaceExternalBlocks(linkId: string, assistantId: string, blocks: ExternalBlock[]): Promise<boolean> {
+  const done = await withPool(async (client) => {
+    await client.query('BEGIN');
+    try {
+      await client.query(`DELETE FROM kortex_external_blocks WHERE link_id = $1 AND assistant_id = $2`, [linkId, assistantId]);
+      for (let i = 0; i < blocks.length; i += BLOCK_INSERT_BATCH) {
+        const batch = blocks.slice(i, i + BLOCK_INSERT_BATCH);
+        await client.query(
+          `INSERT INTO kortex_external_blocks (link_id, assistant_id, start_at, end_at)
+           SELECT $1, $2, t.s, t.e
+           FROM unnest($3::timestamptz[], $4::timestamptz[]) AS t(s, e)
+           WHERE EXISTS (SELECT 1 FROM kortex_calendar_links WHERE id = $1 AND assistant_id = $2)`,
+          [linkId, assistantId, batch.map((b) => b.startAt.toISOString()), batch.map((b) => b.endAt.toISOString())]
+        );
+      }
+      await client.query('COMMIT');
+      return true;
+    } catch (err) {
+      await client.query('ROLLBACK').catch(() => undefined);
+      throw err;
+    }
+  });
+  return done === true;
+}
+
+export async function relationalGetExternalBlocks(assistantId: string, from?: Date): Promise<ExternalBlock[] | null> {
+  return withPool(async (client) => {
+    const { rows } = from
+      ? await client.query(
+          `SELECT start_at, end_at FROM kortex_external_blocks WHERE assistant_id = $1 AND end_at > $2 ORDER BY start_at ASC`,
+          [assistantId, from.toISOString()]
+        )
+      : await client.query(`SELECT start_at, end_at FROM kortex_external_blocks WHERE assistant_id = $1 ORDER BY start_at ASC`, [assistantId]);
+    return rows.map((r: Record<string, any>) => ({ startAt: new Date(r.start_at), endAt: new Date(r.end_at) }));
+  });
 }

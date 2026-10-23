@@ -89,7 +89,15 @@ export async function createAppointment(opts: CreateAppointmentOptions): Promise
     if (sameSlot && (sameSlot.email || '').trim().toLowerCase() === email.toLowerCase()) {
       return { ok: true, duplicate: true, appointment: { ...sameSlot, manageToken: undefined } };
     }
-    const blocks = await Database.getExternalBlocks(assistant.id);
+    let blocks: Awaited<ReturnType<typeof Database.getExternalBlocks>>;
+    try {
+      blocks = await Database.getExternalBlocks(assistant.id);
+    } catch (err) {
+      // Linked calendars cannot be read: confirming now could double-book against them, so nothing is written and the visitor retries.
+      if (!isBookingUnavailable(err)) throw err;
+      logEvent({ level: 'error', category: 'booking', event: 'booking.db_unavailable', meta: { assistantId: assistant.id, date, timeSlot, source: 'external_blocks' } });
+      return { ok: false, status: 503, error: BOOKING_UNAVAILABLE_MESSAGE };
+    }
     const conflict = findBookingConflict({
       date,
       timeSlot,

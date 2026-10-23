@@ -28,15 +28,17 @@ if (!raw) {
   process.exit(2);
 }
 const dry = process.argv.includes('--dry');
-// v4 (booking range columns) is additive and idempotent; it runs after v2, which creates kortex_appointments, and last,
+// v4 (booking range columns) is additive and idempotent; it runs after v2, which creates kortex_appointments, and last of the older files,
 // because it sets lock_timeout for the session. The v4b no-overlap constraint is deliberately NOT listed: it fails while
 // overlapping bookings exist and is applied by hand after the backfill (docs/superpowers/plans/2026-10-23-booking-ranges-runbook.md).
+// v5 (calendar links and external blocks) only creates new tables; it needs nothing from the other files.
 const FILES = [
   'supabase/schema-relational-v2.sql',
   'supabase/schema-relational-v3-widget-events.sql',
   'supabase/schema-chunks-v3.sql',
   'supabase/schema-logs-v1.sql',
   'supabase/schema-relational-v4-booking-ranges.sql',
+  'supabase/schema-relational-v5-calendar-links.sql',
 ];
 
 const u = new URL(raw);

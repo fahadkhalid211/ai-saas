@@ -12,6 +12,7 @@ import { blockedSlotStarts, findBookingConflict } from '@/lib/appointments/confl
 import { slotRange, slotRangeFields } from '@/lib/appointments/time-range';
 import { isBookingUnavailable } from '@/lib/appointments/errors';
 import { logged } from '@/lib/logging/route';
+import { getExternalBlocksOrEmpty } from '@/lib/calendar/sync/safe-blocks';
 
 /**
  * Nothing was saved and the visitor may retry. Postgres being required but unavailable pauses it for 60 seconds
@@ -70,7 +71,8 @@ async function GETHandler(req: Request) {
       const assistant = await Database.getAssistantById(assistantId);
       let bookedSlots = exact;
       if (assistant) {
-        const blocks = await Database.getExternalBlocks(assistant.id);
+        // Only narrows what the widget offers: if the linked calendars cannot be read it falls back to none (the booking check still refuses).
+        const blocks = await getExternalBlocksOrEmpty(assistant.id);
         const covered = blockedSlotStarts({
           config: {
             bookingStartHour: assistant.bookingStartHour,

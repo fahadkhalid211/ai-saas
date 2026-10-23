@@ -39,7 +39,9 @@ export interface InAppNotificationData {
     | 'reminder_dispatched'
     | 'chat_new'
     | 'chat_message'
-    | 'chat_escalated';
+    | 'chat_escalated'
+    | 'calendar_clash'
+    | 'calendar_sync_failed';
   metadata?: Record<string, any>;
   read: boolean;
   createdAt: string;

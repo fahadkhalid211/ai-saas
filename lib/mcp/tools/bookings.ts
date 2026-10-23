@@ -149,7 +149,10 @@ export async function handleCreateBooking(
     // Check the slot's time range against active bookings in this workspace and the assistant's external calendar blocks.
     // Always the assistant's own timezone, so the stored range matches every other booking path.
     const existingAppointments = await Database.getAppointments(primaryAssistant.id, auth.workspaceId, { ownOnly: true });
-    const blocks = await Database.getExternalBlocks(primaryAssistant.id);
+    // Confirming a booking: if the linked calendars cannot be read, refuse (SERVICE_UNAVAILABLE) instead of risking a double booking.
+    const blocks = await Database.getExternalBlocks(primaryAssistant.id).catch((err: unknown) => {
+      throw asMcpError(err);
+    });
     const conflict = findBookingConflict({
       date,
       timeSlot: normalizedSlot,

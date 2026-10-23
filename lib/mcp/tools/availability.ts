@@ -2,6 +2,7 @@ import { Database } from '@/lib/db';
 import { getAvailableSlots, isIsoDate, type AvailabilityConfig, type ExistingAppointment } from '@/lib/appointments/availability';
 import { McpAuthContext } from '../types';
 import { assertScope } from '../auth';
+import { getExternalBlocksOrEmpty } from '@/lib/calendar/sync/safe-blocks';
 
 export const checkAvailabilityMetadata = {
   name: 'check_availability',
@@ -79,7 +80,7 @@ export async function handleCheckAvailability(
     status: a.status,
   }));
 
-  const blocks = await Database.getExternalBlocks(primaryAssistant.id);
+  const blocks = await getExternalBlocksOrEmpty(primaryAssistant.id);
 
   const slots = getAvailableSlots({
     config,
