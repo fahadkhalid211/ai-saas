@@ -6,6 +6,9 @@
  * Slot strings use "HH:MM" (24h), matching what the hosted business page already submits.
  */
 
+import type { ExternalBlock } from '../calendar/sync/types';
+import { slotRange } from './time-range';
+
 export const WEEKDAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'] as const;
 
 export interface AvailabilityConfig {
@@ -140,6 +143,8 @@ export interface SlotQuery {
   now?: Date;
   /** Minimum notice before a slot can be booked today. */
   minLeadMinutes?: number;
+  /** Busy periods from linked external calendars; any slot overlapping one is dropped. */
+  blocks?: ExternalBlock[];
 }
 
 /** Open start times ("HH:MM") for a date, honouring opening days/hours, duration, overlaps and the past. */
@@ -158,10 +163,15 @@ export function getAvailableSlots(q: SlotQuery): string[] {
   if (q.date < today.date) return [];
   const earliest = q.date === today.date ? today.minutes + (q.minLeadMinutes ?? 30) : 0;
 
+  const blocks = q.blocks ?? [];
   const slots: string[] = [];
   for (let start = open; start + duration <= close; start += step) {
     if (start < earliest) continue;
     if (overlapsExisting(q.date, start, duration, q.appointments)) continue;
+    if (blocks.length) {
+      const r = slotRange(q.date, minutesToHHMM(start), duration, q.config.timezone);
+      if (r && blocks.some((b) => r.start < b.endAt && b.startAt < r.end)) continue;
+    }
     slots.push(minutesToHHMM(start));
   }
   return slots;

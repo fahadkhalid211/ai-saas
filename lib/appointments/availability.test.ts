@@ -13,6 +13,7 @@ import {
   speakTime,
   weekdayOf,
 } from './availability';
+import { blockedSlotStarts } from './conflicts';
 
 // Monday 2026-09-21, 08:00 UTC
 const NOW = new Date('2026-09-21T08:00:00Z');
@@ -154,5 +155,37 @@ describe('openingHoursProblem', () => {
     expect(openingHoursProblem({}, '2026-11-08', '03:00 AM')).toBeNull();
     expect(openingHoursProblem({ bookingStartHour: '10:00' }, '2026-11-08', '11:00')).toBeNull();
     expect(openingHoursProblem(owner, '2026-11-09', 'sometime after lunch')).toBeNull();
+  });
+});
+
+describe('external blocks', () => {
+  const blockConfig = { ...config, timezone: 'Europe/Stockholm' };
+  // Winter, Stockholm is UTC+1: 10:00-11:00 local is 09:00Z-10:00Z.
+  const blocks = [{ startAt: new Date('2026-12-08T09:00:00Z'), endAt: new Date('2026-12-08T10:00:00Z') }];
+  const NOW_WINTER = new Date('2026-12-01T08:00:00Z');
+
+  it('getAvailableSlots removes exactly the slots a block overlaps', () => {
+    const slots = getAvailableSlots({ config: blockConfig, date: '2026-12-08', appointments: [], blocks, now: NOW_WINTER });
+    expect(slots).toEqual(['09:00', '09:30', '11:00', '11:30']);
+  });
+
+  it('an empty or absent blocks list changes nothing', () => {
+    const base = getAvailableSlots({ config: blockConfig, date: '2026-12-08', appointments: [], now: NOW_WINTER });
+    expect(getAvailableSlots({ config: blockConfig, date: '2026-12-08', appointments: [], blocks: [], now: NOW_WINTER })).toEqual(base);
+  });
+
+  it('respects the service duration against a block', () => {
+    const slots = getAvailableSlots({ config: blockConfig, date: '2026-12-08', durationMinutes: 60, appointments: [], blocks, now: NOW_WINTER });
+    expect(slots).toEqual(['09:00', '11:00']); // 09:00-10:00 local ends as the block starts; 09:30 and 10:30 overlap it
+  });
+
+  it('blockedSlotStarts lists grid starts hit by a block or a booking', () => {
+    const appointments = [{ date: '2026-12-08', timeSlot: '11:30', durationMinutes: 30 }];
+    expect(blockedSlotStarts({ config: blockConfig, date: '2026-12-08', appointments, blocks })).toEqual(['10:00', '10:30', '11:30']);
+  });
+
+  it('blockedSlotStarts is empty with nothing in the way and for bad dates', () => {
+    expect(blockedSlotStarts({ config: blockConfig, date: '2026-12-08', appointments: [], blocks: [] })).toEqual([]);
+    expect(blockedSlotStarts({ config: blockConfig, date: 'nope', appointments: [], blocks })).toEqual([]);
   });
 });
