@@ -223,6 +223,7 @@ async function resolveSession(session: NonNullable<ReturnType<typeof getSessionP
   }
   if (member.status && member.status !== 'active') return GUEST;
   if ((member.sessionVersion || 0) !== session.sessionVersion) return GUEST; // signed out everywhere / password or 2FA changed
+  if (await Database.isAccountDisabled(member)) return GUEST; // the platform owner disabled this person or their whole account
   return { authenticated: true, role: member.role, memberId: member.id, workspaceId: member.workspaceId || session.workspaceId, isMasterAdmin: false };
 }
 

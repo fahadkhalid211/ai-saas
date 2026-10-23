@@ -42,6 +42,8 @@ export interface TrialFields {
   billingSubscriptionId?: string;
   subscriptionStatus?: SubscriptionStatus;
   cancelAtPeriodEnd?: boolean;
+  /** The platform owner disabled this account (see Database.setWorkspaceDisabled). */
+  disabledAt?: string;
 }
 
 /** Dates for a trial that starts now (used for simulated checkouts and as a fallback if the provider does not say). */
@@ -95,6 +97,7 @@ export function trialInfo(ws: TrialFields | null | undefined, now: Date = new Da
 
 /** True when visitors should not be served by this workspace's assistants. */
 export function serviceBlocked(ws: TrialFields | null | undefined, now: Date = new Date()): boolean {
+  if (ws?.disabledAt) return true;
   const s = trialInfo(ws, now).status;
   return s === 'expired' || s === 'needs_card';
 }

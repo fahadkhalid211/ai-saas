@@ -55,7 +55,7 @@ export const GUIDES: Guide[] = [
     title: 'Where things are in the dashboard',
     category: 'Getting started',
     keywords: ['dashboard', 'where', 'find', 'menu', 'sidebar', 'tabs', 'navigate', 'navigation', 'settings'],
-    body: `The left menu is grouped like this:\n- **Get started**: Overview, Knowledge Base, Testing Studio.\n- **Grow and engage**: Leads, Appointments, Chat History, Analytics and KPIs.\n- **Customize and channels**: Widget and Styling (colours, welcome message, booking options), Channels and Integrations (Slack, Google Sheets, webhooks, WhatsApp, Telegram, email), Behavior and Rules.\n- **Settings and account**: AI Settings, Team, Plans and Billing, Security and 2FA, Audit Trail (owners), Support, My Profile, Guides and Docs.\n\nThe assistant picker at the top switches between your assistants.`,
+    body: `The left menu is grouped like this:\n- **Get started**: Overview, Knowledge Base, Testing Studio.\n- **Grow and engage**: Leads, Appointments, Chat History, Analytics and KPIs.\n- **Customize and channels**: Widget and Styling (colours, welcome message, booking options), Channels and Integrations (Slack, Google Sheets, webhooks, WhatsApp, Telegram, email), Behavior and Rules.\n- **Settings and account**: AI Settings, Team, Plans and Billing, Security, Audit Trail (owners), Support, My Profile, Guides and Docs.\n\nThe assistant picker at the top switches between your assistants.`,
   },
   {
     id: 'connect-openai',
@@ -270,11 +270,11 @@ export const GUIDES: Guide[] = [
     body: `Open **Team** > add a member with their name, email and role. Roles: **owner** and **admin** manage everything; **billing manager** handles plans and invoices; **support agent** works with conversations and leads; **viewer** can look but not change. A new member receives a temporary password to change at first sign-in. Owners can change roles or remove members at any time, and removed members lose access immediately.`,
   },
   {
-    id: 'two-factor',
-    title: 'Two-factor sign-in and account security',
+    id: 'account-security',
+    title: 'Account security, password and deleting your account',
     category: 'Security',
-    keywords: ['2fa', 'two factor', 'two-factor', 'authenticator', 'google authenticator', 'recovery code', 'security', 'sign out everywhere', 'password', 'change password', 'hacked', 'secure my account'],
-    body: `Open **Security and 2FA** > start setup, scan the QR code with an authenticator app (Google Authenticator, Authy, 1Password), enter the 6-digit code and **save the recovery codes**. From then on sign-in (including Google sign-in) asks for a code. To turn it off you must enter a current code.\n\n**Sign out everywhere** ends every session on every device. Changing your password or your 2FA does the same for your other sessions. Change your password in **My Profile**.`,
+    keywords: ['security', 'sign out everywhere', 'password', 'change password', 'show password', 'hacked', 'secure my account', 'delete account', 'close account', 'remove my data'],
+    body: `Open **Security** and use **Sign out everywhere** to end every session of your account on every device. Change your password in **My Profile**: the eye button next to each box shows what you typed. Changing it ends your other sessions.\n\nTo close your account, open **My Profile** > **Delete account**. For the owner this permanently deletes the account and everything in it (assistants, documents, conversations, leads, appointments, landing pages and team members) and **can never be restored**. A paid subscription is cancelled first. Team members who are not the owner only remove their own sign-in.`,
   },
   {
     id: 'security-privacy',

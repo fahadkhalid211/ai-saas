@@ -2,7 +2,7 @@
 
 import { T, useT } from '@/lib/i18n/context';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { ChevronDown, LogIn, RefreshCw, Search } from 'lucide-react';
+import { AlertTriangle, ChevronDown, LogIn, RefreshCw, Search, Trash2 } from 'lucide-react';
 import { showErrorModal } from '@/lib/ui/notify';
 
 interface Person {
@@ -14,6 +14,7 @@ interface Person {
   createdAt: string | null;
   lastLoginAt: string | null;
   twoFactorEnabled: boolean;
+  disabled: boolean;
 }
 interface Bot {
   id: string;
@@ -30,6 +31,8 @@ interface Customer {
   trialEndsAt: string | null;
   accessCode: string | null;
   subscribed: boolean;
+  disabled: boolean;
+  protectedWorkspace: boolean;
   createdAt: string | null;
   lastActiveAt: string | null;
   owner: Person | null;
@@ -41,6 +44,7 @@ const day = (iso: string | null) => (iso ? new Date(iso).toLocaleDateString('en-
 const ROLE: Record<string, string> = { owner: 'Owner', admin: 'Admin', support_agent: 'Support agent', billing_manager: 'Billing manager', viewer: 'Viewer' };
 
 function statusOf(c: Customer): { label: string; tone: string } {
+  if (c.disabled) return { label: 'Disabled', tone: 'bg-rose-100 text-rose-900 dark:bg-rose-900/40 dark:text-rose-200' };
   const good = 'bg-emerald-100 text-emerald-900 dark:bg-emerald-900/40 dark:text-emerald-200';
   const warn = 'bg-amber-100 text-amber-900 dark:bg-amber-900/40 dark:text-amber-200';
   const bad = 'bg-rose-100 text-rose-900 dark:bg-rose-900/40 dark:text-rose-200';
@@ -61,6 +65,13 @@ function statusOf(c: Customer): { label: string; tone: string } {
   }
 }
 
+/** What the platform owner is about to do to an account (or to one person in it), waiting for confirmation. */
+interface PendingAction {
+  kind: 'disable' | 'enable' | 'delete';
+  customer: Customer;
+  person?: Person;
+}
+
 /**
  * Master admin only: everyone registered on the platform, grouped by workspace, with their assistants and plan status,
  * and a way to open a customer's account to troubleshoot it (support access, recorded in their audit trail).
@@ -75,6 +86,10 @@ export function CustomersTab() {
   const [open, setOpen] = useState<string | null>(null);
   const [confirm, setConfirm] = useState<Customer | null>(null);
   const [entering, setEntering] = useState(false);
+  const [pending, setPending] = useState<PendingAction | null>(null);
+  const [typed, setTyped] = useState('');
+  const [working, setWorking] = useState(false);
+  const [actionError, setActionError] = useState('');
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -117,6 +132,37 @@ export function CustomersTab() {
       showErrorModal({ title: "Couldn't open the account", message: (e as Error).message });
     }
   };
+
+  const closePending = () => {
+    setPending(null);
+    setTyped('');
+    setActionError('');
+  };
+
+  /** Disable, enable or delete: the server decides what is allowed and says why when it is not. */
+  const runPending = async () => {
+    if (!pending) return;
+    setWorking(true);
+    setActionError('');
+    try {
+      const target = { workspaceId: pending.customer.id, ...(pending.person ? { memberId: pending.person.id } : {}) };
+      const res = await fetch('/api/master/customers', {
+        method: pending.kind === 'delete' ? 'DELETE' : 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(pending.kind === 'delete' ? { ...target, confirm: 'DELETE' } : { ...target, action: pending.kind }),
+      });
+      const out = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(out.error || 'Could not complete that.');
+      closePending();
+      await load();
+    } catch (e) {
+      setActionError((e as Error).message);
+    } finally {
+      setWorking(false);
+    }
+  };
+
+  const subject = pending ? (pending.person ? pending.person.name || pending.person.email : pending.customer.name) : '';
 
   return (
     <div className="space-y-6 p-4 sm:p-6">
@@ -225,6 +271,24 @@ export function CustomersTab() {
                           >
                             <LogIn className="h-3.5 w-3.5" aria-hidden="true" /> <T>Open account</T>
                           </button>
+                          {!c.protectedWorkspace ? (
+                            <>
+                              <button
+                                type="button"
+                                onClick={() => setPending({ kind: c.disabled ? 'enable' : 'disable', customer: c })}
+                                className="inline-flex items-center gap-1 rounded-lg border border-slate-300 dark:border-slate-700 px-2.5 py-1.5 text-xs font-medium text-slate-800 dark:text-slate-100 cursor-pointer"
+                              >
+                                {c.disabled ? <T>Enable</T> : <T>Disable</T>}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setPending({ kind: 'delete', customer: c })}
+                                className="inline-flex items-center gap-1 rounded-lg border border-rose-300 dark:border-rose-800 px-2.5 py-1.5 text-xs font-medium text-rose-700 dark:text-rose-300 cursor-pointer"
+                              >
+                                <Trash2 className="h-3.5 w-3.5" aria-hidden="true" /> <T>Delete</T>
+                              </button>
+                            </>
+                          ) : null}
                         </div>
                       </td>
                     </tr>
@@ -242,7 +306,20 @@ export function CustomersTab() {
                                       {ROLE[m.role] || m.role}
                                       {m.status === 'invited' ? <T>{' · invited, not joined yet'}</T> : ''} <T>· joined</T> {day(m.createdAt)} <T>· last sign-in</T> {day(m.lastLoginAt)}
                                       {m.twoFactorEnabled ? <T>{' · two-factor on'}</T> : ''}
+                                      {m.disabled ? <T>{' · disabled'}</T> : ''}
                                     </div>
+                                    {!c.protectedWorkspace ? (
+                                      <div className="mt-1 flex gap-3 text-xs font-semibold">
+                                        <button type="button" onClick={() => setPending({ kind: m.disabled ? 'enable' : 'disable', customer: c, person: m })} className="text-slate-700 dark:text-slate-200 underline cursor-pointer">
+                                          {m.disabled ? <T>Enable</T> : <T>Disable</T>}
+                                        </button>
+                                        {m.role !== 'owner' ? (
+                                          <button type="button" onClick={() => setPending({ kind: 'delete', customer: c, person: m })} className="text-rose-700 dark:text-rose-300 underline cursor-pointer">
+                                            <T>Delete</T>
+                                          </button>
+                                        ) : null}
+                                      </div>
+                                    ) : null}
                                   </li>
                                 ))}
                                 {c.members.length === 0 ? <li className="text-sm text-slate-600 dark:text-slate-300"><T>Nobody yet.</T></li> : null}
@@ -275,6 +352,66 @@ export function CustomersTab() {
           </tbody>
         </table>
       </div>
+
+      {pending ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4" role="dialog" aria-modal="true" aria-labelledby="cust-action-title">
+          <div className="w-full max-w-md rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-2xl">
+            <h2 id="cust-action-title" className="text-lg font-bold text-slate-900 dark:text-white">
+              {pending.kind === 'delete' ? <T>Delete</T> : pending.kind === 'disable' ? <T>Disable</T> : <T>Enable</T>} <T>{subject}</T>?
+            </h2>
+            {pending.kind === 'delete' ? (
+              <>
+                <div className="mt-3 flex gap-2.5 rounded-xl border border-rose-200 dark:border-rose-800 bg-rose-50 dark:bg-rose-950/40 p-3 text-sm text-rose-900 dark:text-rose-200">
+                  <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5 text-rose-600" aria-hidden="true" />
+                  <div className="space-y-1">
+                    <p className="font-bold"><T>This can never be restored.</T></p>
+                    {pending.person ? (
+                      <p><T>This person is removed from the workspace and can no longer sign in.</T></p>
+                    ) : (
+                      <p><T>The whole account is deleted: assistants, documents, conversations, leads, appointments, landing pages and every team member. A live subscription is cancelled first.</T></p>
+                    )}
+                  </div>
+                </div>
+                <label htmlFor="cust-delete-confirm" className="mt-3 block text-sm text-slate-700 dark:text-slate-200"><T>Type DELETE to confirm</T></label>
+                <input
+                  id="cust-delete-confirm"
+                  value={typed}
+                  onChange={(e) => setTyped(e.target.value)}
+                  autoComplete="off"
+                  className="mt-1 w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 dark:text-slate-100"
+                />
+              </>
+            ) : pending.kind === 'disable' ? (
+              <p className="mt-2 text-sm text-slate-700 dark:text-slate-200">
+                {pending.person ? (
+                  <T>They cannot sign in and any open session ends at once. Nothing is deleted, and you can enable them again.</T>
+                ) : (
+                  <T>Nobody in this account can sign in, open sessions end at once and its assistants stop answering visitors. Nothing is deleted, and you can enable it again.</T>
+                )}
+              </p>
+            ) : (
+              <p className="mt-2 text-sm text-slate-700 dark:text-slate-200">
+                {pending.person ? <T>They can sign in again.</T> : <T>Everyone in this account can sign in again and its assistants answer visitors again.</T>}
+              </p>
+            )}
+            {actionError ? <p role="alert" className="mt-3 text-sm font-medium text-rose-700 dark:text-rose-300">{actionError}</p> : null}
+            <div className="mt-5 flex justify-end gap-2">
+              <button type="button" onClick={closePending} disabled={working} className="rounded-lg border border-slate-300 dark:border-slate-700 px-4 py-2 text-sm font-medium text-slate-800 dark:text-slate-100 cursor-pointer">
+                <T>Cancel</T>
+              </button>
+              <button
+                type="button"
+                onClick={runPending}
+                disabled={working || (pending.kind === 'delete' && typed.trim() !== 'DELETE')}
+                className={`inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-bold text-white disabled:opacity-50 cursor-pointer ${pending.kind === 'enable' ? 'bg-slate-900 dark:bg-white dark:text-slate-900' : 'bg-rose-600'}`}
+              >
+                {working ? <RefreshCw className="h-4 w-4 animate-spin" aria-hidden="true" /> : null}
+                {pending.kind === 'delete' ? <T>Delete forever</T> : pending.kind === 'disable' ? <T>Disable</T> : <T>Enable</T>}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
 
       {confirm ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4" aria-labelledby="cust-open-title">

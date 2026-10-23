@@ -287,6 +287,17 @@ export function canChangePlanInApp(planId: PaidPlanId, interval: BillingInterval
   return isApiConfigured() && variantIdFor(planId, interval) !== null;
 }
 
+/**
+ * Cancels a subscription so nothing more is charged (used when an account is deleted). It stays usable to the end of the period
+ * already paid for, which does not matter once the account is gone. A subscription that is already cancelled or expired is fine.
+ */
+export async function cancelSubscription(subscriptionId: string): Promise<void> {
+  const current = await api(`/subscriptions/${encodeURIComponent(subscriptionId)}`);
+  const status = current?.data?.attributes?.status;
+  if (status === 'cancelled' || status === 'expired') return;
+  await api(`/subscriptions/${encodeURIComponent(subscriptionId)}`, { method: 'DELETE' });
+}
+
 /** Moves a live subscription to another plan or billing period. Lemon Squeezy prorates it. */
 export async function changeSubscriptionPlan(subscriptionId: string, planId: PaidPlanId, interval: BillingInterval): Promise<void> {
   const variantId = variantIdFor(planId, interval);

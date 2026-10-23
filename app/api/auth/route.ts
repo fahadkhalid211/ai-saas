@@ -21,6 +21,7 @@ import { verifyRecaptchaToken } from '@/lib/security/recaptcha';
 import { logged } from '@/lib/logging/route';
 import { checkSecondFactor } from '@/lib/security/two-factor';
 import { sendVerificationEmail } from '@/lib/security/email-verification-mail';
+import { ACCOUNT_DISABLED_MESSAGE } from '@/lib/security/account-status';
 
 /** Sign-ups being made right now (and for a few seconds after), keyed by a hash of the whole request. See the register branch. */
 const registrationsInFlight = new Map<string, Promise<{ userId: string; workspaceId: string; cookieHeader: string; body: Record<string, unknown> }>>();
@@ -157,6 +158,9 @@ async function POSTHandler(req: Request) {
       }
       const member = await Database.getTeamMemberById(pending.memberId);
       if (!member) return NextResponse.json({ error: 'Account not found.', expired: true }, { status: 401 });
+      if (await Database.isAccountDisabled(member)) {
+        return NextResponse.json({ error: ACCOUNT_DISABLED_MESSAGE, disabled: true }, { status: 403 });
+      }
       const stop = await requireSecondFactor(member.id, member.email || '', body?.twoFactorCode, ip);
       if (stop) return stop;
 
@@ -289,6 +293,10 @@ async function POSTHandler(req: Request) {
       // Check tenant workspace login
       const tenantMatch = await Database.verifyTenantLogin(email, passwordOrCode);
       if (tenantMatch) {
+        // Said only now that the right password was given, so the message does not reveal which addresses have an account.
+        if (await Database.isAccountDisabled({ ...tenantMatch.member, workspaceId: tenantMatch.member.workspaceId || tenantMatch.workspace.id })) {
+          return NextResponse.json({ error: ACCOUNT_DISABLED_MESSAGE, disabled: true }, { status: 403 });
+        }
         const stop = await requireSecondFactor(tenantMatch.member.id, email, body?.twoFactorCode, ip);
         if (stop) return stop;
         const sessionToken = generateSessionToken(
@@ -350,6 +358,9 @@ async function POSTHandler(req: Request) {
         );
       }
 
+      if (await Database.isAccountDisabled(staffMember)) {
+        return NextResponse.json({ error: ACCOUNT_DISABLED_MESSAGE, disabled: true }, { status: 403 });
+      }
       const stop2 = await requireSecondFactor(staffMember.id, email, body?.twoFactorCode, ip);
       if (stop2) return stop2;
 

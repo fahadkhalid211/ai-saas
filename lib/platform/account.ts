@@ -65,7 +65,7 @@ const TABS: { tab: string; label: string; words: RegExp }[] = [
   { tab: 'behavior', label: 'Behavior & Rules', words: /\b(behaviou?r|rules)\b/i },
   { tab: 'engine', label: 'AI Settings', words: /\b(ai settings|engine|api key|provider|model)\b/i },
   { tab: 'team', label: 'Team', words: /\b(team|members?|invite)\b/i },
-  { tab: 'security', label: 'Security & 2FA', words: /\b(security|2fa|two.?factor)\b/i },
+  { tab: 'security', label: 'Security', words: /\b(security|2fa|two.?factor)\b/i },
   { tab: 'support', label: 'Support', words: /\b(support|tickets?)\b/i },
   { tab: 'profile', label: 'My Profile', words: /\b(profile|my password)\b/i },
   { tab: 'docs', label: 'Guides & Docs', words: /\b(docs|guides)\b/i },

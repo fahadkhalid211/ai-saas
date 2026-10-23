@@ -248,7 +248,6 @@ export const SECURITY = {
   items: [
     { title: 'Passwords are hashed', body: 'Account passwords are stored as salted scrypt hashes, never in plain text.' },
     { title: 'AI keys are encrypted at rest', body: 'Your AI provider keys are encrypted with AES-256-GCM before storage.' },
-    { title: 'Two-factor sign-in', body: 'Team accounts can require a time-based one-time code as a second step at login.' },
     { title: 'Rate limiting on all endpoints', body: 'Sign-in and public endpoints are rate limited to slow brute-force attempts.' },
     { title: 'Signed webhooks', body: 'Outgoing webhooks carry a signature your systems can verify to confirm they came from us.' },
     { title: 'Role-based access', body: 'Team members are assigned roles that restrict what they can view, edit or change.' },

@@ -1,7 +1,9 @@
 import { NextResponse } from 'next/server';
 import { getMasterEmail } from '@/lib/security/master';
 import { Database, TeamMemberData } from '@/lib/db';
-import { getAuthContext, getAdminKey, generateSessionToken, createSessionCookieHeader } from '@/lib/security/auth';
+import { getAuthContext, getAdminKey, generateSessionToken, createSessionCookieHeader, createClearCookieHeader } from '@/lib/security/auth';
+import { enforceDistributedRateLimitByKey } from '@/lib/security/rate-limit-redis';
+import { deleteWorkspaceAndBilling } from '@/lib/platform/account-deletion';
 import { getClientIp } from '@/lib/security/rate-limit';
 import { verifyPassword, timingSafeStringEqual } from '@/lib/security/password';
 import { logged } from '@/lib/logging/route';
@@ -156,5 +158,67 @@ async function PATCHHandler(req: Request) {
   }
 }
 
+/**
+ * The signed-in person deletes their own account, for good. The owner's account takes the whole workspace with it (assistants,
+ * documents, conversations, leads, appointments, team members); anyone else only removes their own sign-in. The person must type
+ * their e-mail address and, if the account has a password, give it, so a stolen session or a stray click cannot do this.
+ */
+async function DELETEHandler(req: Request) {
+  try {
+    const ctx = await getAuthContext(req);
+    if (!ctx.authenticated) {
+      return NextResponse.json({ error: 'Unauthorized: Session invalid or expired' }, { status: 401 });
+    }
+    if (ctx.supportAccess) {
+      return NextResponse.json({ error: 'Not available during support access: only the account owner can delete the account.' }, { status: 403 });
+    }
+    if (ctx.isMasterAdmin) {
+      return NextResponse.json({ error: 'The platform admin account cannot be deleted here.' }, { status: 403 });
+    }
+
+    const limited = await enforceDistributedRateLimitByKey(`delete-account:${ctx.memberId}`, { windowMs: 15 * 60 * 1000, max: 5 });
+    if (limited) return limited;
+
+    const member = await Database.getTeamMemberById(ctx.memberId, ctx.workspaceId);
+    if (!member) return NextResponse.json({ error: 'Account not found.' }, { status: 404 });
+
+    const body = await req.json().catch(() => ({}));
+    const typedEmail = String(body?.confirmEmail || '').trim().toLowerCase();
+    if (!typedEmail || typedEmail !== String(member.email || '').trim().toLowerCase()) {
+      return NextResponse.json({ error: 'Type your account e-mail address exactly to confirm.' }, { status: 400 });
+    }
+    if (member.password) {
+      const password = String(body?.password || '').trim();
+      if (!password) return NextResponse.json({ error: 'Enter your password to confirm.', needsPassword: true }, { status: 400 });
+      if (!verifyPassword(password, member.password)) return NextResponse.json({ error: 'That password is not correct.' }, { status: 400 });
+    }
+
+    const ip = getClientIp(req);
+    const wipesWorkspace = member.role === 'owner';
+    if (wipesWorkspace) {
+      const result = await deleteWorkspaceAndBilling(ctx.workspaceId);
+      if (!result.ok) return NextResponse.json({ error: result.error }, { status: result.status });
+    } else {
+      await Database.deleteMemberAccount(member.id);
+    }
+
+    // The record of the deletion keeps no name or e-mail address, only that it happened.
+    await Database.addAuditLog({
+      actor: { id: member.id, name: 'Deleted account', ip },
+      action: wipesWorkspace ? 'account.workspace_deleted' : 'account.member_deleted',
+      targetType: 'user_profile',
+      targetId: member.id,
+      details: { selfService: true },
+    });
+
+    const res = NextResponse.json({ success: true, deleted: wipesWorkspace ? 'workspace' : 'member' });
+    res.headers.append('Set-Cookie', createClearCookieHeader());
+    return res;
+  } catch (error: any) {
+    return NextResponse.json({ error: error?.message || 'Could not delete the account' }, { status: 500 });
+  }
+}
+
 export const GET = logged(GETHandler, { route: '/api/profile' });
 export const PATCH = logged(PATCHHandler, { route: '/api/profile' });
+export const DELETE = logged(DELETEHandler, { route: '/api/profile' });

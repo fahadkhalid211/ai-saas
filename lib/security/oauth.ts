@@ -3,6 +3,7 @@ import { Database, TeamMemberData, WorkspaceBillingData } from '@/lib/db';
 import { generateSessionToken, createSessionCookieHeader, createPendingTwoFactorCookie } from '@/lib/security/auth';
 import { timingSafeStringEqual } from '@/lib/security/password';
 import { updateLogContext } from '@/lib/logging/context';
+import { ACCOUNT_DISABLED_ERROR } from '@/lib/security/account-status';
 
 export interface OAuthUserProfile {
   email: string;
@@ -174,6 +175,8 @@ export async function authenticateOAuthUser(
     domain: profile.domain,
     picture: profile.picture,
   });
+
+  if (await Database.isAccountDisabled(member)) throw new Error(ACCOUNT_DISABLED_ERROR);
 
   const full = await Database.getTeamMemberById(member.id);
   if (full?.twoFactorEnabled && full.twoFactorSecret) {

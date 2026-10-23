@@ -1,5 +1,6 @@
 import { T } from '@/lib/i18n/context';
 import React from 'react';
+import { TWO_FACTOR_SETUP_AVAILABLE } from '@/lib/security/two-factor-flag';
 import {
   UserCheck,
   UserPlus,
@@ -60,6 +61,8 @@ export const TeamTab: React.FC<TeamTabProps> = ({
   setNewMemberRole,
   isAddingTeamMember,
 }) => {
+  // two-factor is switched off for new set-ups; the column only appears while it is offered or someone still has it on
+  const showTwoFactor = TWO_FACTOR_SETUP_AVAILABLE || teamMembers.some((m) => m.twoFactorEnabled);
   return (
     <div className="max-w-5xl space-y-6 mx-auto">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -152,7 +155,7 @@ export const TeamTab: React.FC<TeamTabProps> = ({
                 <th className="py-3 px-4"><T>Member Name</T></th>
                 <th className="py-3 px-4"><T>Email</T></th>
                 <th className="py-3 px-4"><T>Assigned Role</T></th>
-                <th className="py-3 px-4"><T>2FA Status</T></th>
+                {showTwoFactor && <th className="py-3 px-4"><T>2FA Status</T></th>}
                 <th className="py-3 px-4 text-right"><T>Actions</T></th>
               </tr>
             </thead>
@@ -178,6 +181,7 @@ export const TeamTab: React.FC<TeamTabProps> = ({
                       <option value="viewer">Viewer</option>
                     </select>
                   </td>
+                  {showTwoFactor && (
                   <td className="py-3.5 px-4">
                     {member.twoFactorEnabled ? (
                       <span className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-semibold text-[11px]">
@@ -188,6 +192,7 @@ export const TeamTab: React.FC<TeamTabProps> = ({
                       <span className="text-slate-400 text-[11px]"><T>Not Setup</T></span>
                     )}
                   </td>
+                  )}
                   <td className="py-3.5 px-4 text-right">
                     {member.role !== 'owner' && (
                       <button

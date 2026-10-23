@@ -13,6 +13,7 @@ import {
 } from '@/lib/security/totp';
 import { createSessionCookieHeader, generateSessionToken } from '@/lib/security/auth';
 import { logged } from '@/lib/logging/route';
+import { TWO_FACTOR_SETUP_AVAILABLE, TWO_FACTOR_UNAVAILABLE_MESSAGE } from '@/lib/security/two-factor-flag';
 
 export const dynamic = 'force-dynamic';
 
@@ -28,6 +29,7 @@ const GETHandler = withAdminAuth(async (req: Request) => {
       : (members.find((m) => m.role === 'owner') || members[0]);
 
     if (action === 'setup') {
+      if (!TWO_FACTOR_SETUP_AVAILABLE) return NextResponse.json({ error: TWO_FACTOR_UNAVAILABLE_MESSAGE }, { status: 403 });
       const secret = generateBase32Secret(32);
       const recoveryCodes = generateRecoveryCodes(8);
       const otpUrl = generateOtpAuthUrl({
@@ -78,6 +80,7 @@ async function POSTHandler(req: NextRequest) {
     }
 
     if (action === 'enable') {
+      if (!TWO_FACTOR_SETUP_AVAILABLE) return NextResponse.json({ error: TWO_FACTOR_UNAVAILABLE_MESSAGE }, { status: 403 });
       if (targetMember.twoFactorEnabled) {
         return NextResponse.json({ error: 'Two-factor authentication is already on. Turn it off first (this needs a current code) to set up a new device.' }, { status: 409 });
       }

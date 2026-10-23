@@ -12,6 +12,7 @@ import { getClientIp } from '@/lib/security/rate-limit';
 import { enforceDistributedRateLimit } from '@/lib/security/rate-limit-redis';
 import { canonicalOrigin } from '@/lib/security/origin';
 import { logged } from '@/lib/logging/route';
+import { ACCOUNT_DISABLED_ERROR, ACCOUNT_DISABLED_MESSAGE } from '@/lib/security/account-status';
 
 export const dynamic = 'force-dynamic';
 
@@ -107,6 +108,7 @@ async function GETHandler(req: Request, { params }: { params: Promise<{ provider
     res.headers.append('Set-Cookie', clearOAuthCookie());
     return res;
   } catch (err: any) {
+    if (err?.message === ACCOUNT_DISABLED_ERROR) return loginRedirect(origin, ACCOUNT_DISABLED_MESSAGE, true, isMobile);
     console.error('[OAuth] google callback failed:', err?.message);
     return loginRedirect(origin, 'Google sign-in could not be completed. Please try again.', true, isMobile);
   }

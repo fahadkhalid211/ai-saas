@@ -1,6 +1,7 @@
 import { T } from '@/lib/i18n/context';
 import React from 'react';
 import { ShieldCheck, CheckCircle2, AlertCircle, KeyRound, Copy } from 'lucide-react';
+import { TWO_FACTOR_SETUP_AVAILABLE } from '@/lib/security/two-factor-flag';
 
 export interface SecurityTabProps {
   twoFactorEnabled: boolean;
@@ -40,7 +41,11 @@ export const SecurityTab: React.FC<SecurityTabProps> = ({
             <span><T>Security</T></span>
           </h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-            <T>Protect your account with two-factor authentication and review login activity.</T>
+            {TWO_FACTOR_SETUP_AVAILABLE || twoFactorEnabled ? (
+              <T>Protect your account with two-factor authentication and review login activity.</T>
+            ) : (
+              <T>Review how your account is protected and sign out of other devices.</T>
+            )}
           </p>
         </div>
       </div>
@@ -59,7 +64,8 @@ export const SecurityTab: React.FC<SecurityTabProps> = ({
         </div>
       )}
 
-      {/* 2FA Status Card */}
+      {/* 2FA Status Card. Hidden while two-factor set-up is switched off (lib/security/two-factor-flag.ts); anyone who already has it on still sees it, so they can turn it off. */}
+      {(TWO_FACTOR_SETUP_AVAILABLE || twoFactorEnabled) && (
       <div className="p-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3.5">
@@ -181,6 +187,7 @@ export const SecurityTab: React.FC<SecurityTabProps> = ({
           </div>
         )}
       </div>
+      )}
 
       <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs flex items-center justify-between gap-4">
         <div>

@@ -93,7 +93,7 @@ export const CAROUSEL = {
     { id: 'leads', tag: 'Team', title: 'Leads and gaps', body: 'Captured contacts and unanswered questions, in one inbox.', tone: 'amber', glyph: 'inbox' },
     { id: 'analytics', tag: 'Insight', title: 'Analytics', body: 'See conversations, bookings and leads over time.', tone: 'coral', glyph: 'chart' },
     { id: 'byok', tag: 'Control', title: 'Your own AI key', body: 'Bring your provider key. Model usage is billed by your provider.', tone: 'lav', glyph: 'key' },
-    { id: 'security', tag: 'Control', title: 'Roles and 2FA', body: 'Team roles, two-factor sign-in and encrypted keys.', tone: 'mint', glyph: 'shield' },
+    { id: 'security', tag: 'Control', title: 'Team roles and encryption', body: 'Team roles and encrypted keys.', tone: 'mint', glyph: 'shield' },
   ] as CarouselFeature[],
 };
 

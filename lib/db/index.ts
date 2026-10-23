@@ -352,6 +352,8 @@ export interface WorkspaceBillingData {
   earlyBird?: boolean;
   /** The access code (lib/billing/access-codes.ts) that gave this workspace free access. */
   complimentaryCode?: string;
+  /** Set when the platform owner disabled this account: nobody can sign in and the assistants stop answering visitors. */
+  disabledAt?: string;
   /** Set when a payment was disputed or refunded as fraud; the workspace cannot start another trial. */
   billingRisk?: 'fraud_warning' | 'dispute';
 }
@@ -402,6 +404,8 @@ export interface TeamMemberData {
   twoFactorLastStep?: number;
   /** Raised to end every existing session of this member (password change, 2FA change, sign out everywhere). */
   sessionVersion?: number;
+  /** Set when the platform owner disabled this person: they cannot sign in and their open sessions end at once. */
+  disabledAt?: string;
   title?: string;
   avatarUrl?: string;
   /** When the product tour was shown to this member; absent until their first sign-in to the dashboard. */
@@ -3219,6 +3223,85 @@ export class Database {
     state.teamMembers = state.teamMembers.filter((m) => m.id !== id);
     await saveState(state);
     return state.teamMembers.length < prevLen;
+  }
+
+  /** True when the person, or the whole account they belong to, has been disabled by the platform owner. */
+  static async isAccountDisabled(member: { id?: string; workspaceId?: string; disabledAt?: string } | null | undefined): Promise<boolean> {
+    if (!member) return false;
+    if (member.disabledAt) return true;
+    const state = await ensureInitialized();
+    const ws = (state.workspaces || []).find((w: any) => w.id === (member.workspaceId || 'default-workspace'));
+    return Boolean(ws?.disabledAt);
+  }
+
+  /** Disables or re-enables one person. A disabled person cannot sign in and every session they have open ends. */
+  static async setMemberDisabled(id: string, disabled: boolean): Promise<TeamMemberData | null> {
+    const state = await ensureInitialized(true);
+    const member = (state.teamMembers || []).find((m) => m.id === id);
+    if (!member) return null;
+    if (disabled) {
+      member.disabledAt = member.disabledAt || new Date().toISOString();
+      member.sessionVersion = (member.sessionVersion || 0) + 1;
+    } else {
+      delete member.disabledAt;
+    }
+    await saveState(state);
+    return member;
+  }
+
+  /** Disables or re-enables a whole account: all its people are locked out and its assistants stop answering visitors. */
+  static async setWorkspaceDisabled(workspaceId: string, disabled: boolean): Promise<boolean> {
+    if (!workspaceId || workspaceId === '*' || workspaceId === 'default-workspace') return false;
+    const state = await ensureInitialized(true);
+    const ws = (state.workspaces || []).find((w: any) => w.id === workspaceId);
+    if (!ws) return false;
+    if (disabled) ws.disabledAt = ws.disabledAt || new Date().toISOString();
+    else delete ws.disabledAt;
+    await saveState(state);
+    return true;
+  }
+
+  /**
+   * Permanently removes one person: their record, push tokens and API tokens. Their work stays with the workspace.
+   * Cannot be undone. (The owner's account is removed with deleteWorkspaceCascade instead.)
+   */
+  static async deleteMemberAccount(id: string): Promise<boolean> {
+    const state = await ensureInitialized(true);
+    const before = (state.teamMembers || []).length;
+    state.teamMembers = (state.teamMembers || []).filter((m) => m.id !== id);
+    if (state.teamMembers.length === before) return false;
+    state.pushTokens = (state.pushTokens || []).filter((t) => t.memberId !== id);
+    state.mcpTokens = (state.mcpTokens || []).filter((t) => t.userId !== id);
+    await saveState(state);
+    return true;
+  }
+
+  /**
+   * Permanently removes a workspace and everything in it: every assistant with its documents, search index, conversations,
+   * leads, appointments, landing pages and page views (through deleteAssistant), then the people, API and push tokens, the
+   * activity log and the workspace itself. Cannot be undone. Returns what was removed, or null when there is no such workspace
+   * (the built-in default workspace is never removed).
+   */
+  static async deleteWorkspaceCascade(workspaceId: string): Promise<{ assistants: number; people: number } | null> {
+    if (!workspaceId || workspaceId === '*' || workspaceId === 'default-workspace') return null;
+    let state = await ensureInitialized(true);
+    if (!(state.workspaces || []).some((w: any) => w.id === workspaceId)) return null;
+
+    const assistantIds = (state.assistants || []).filter((a) => (a.workspaceId || 'default-workspace') === workspaceId).map((a) => a.id);
+    for (const id of assistantIds) await Database.deleteAssistant(id, workspaceId);
+
+    state = await ensureInitialized();
+    const people = (state.teamMembers || []).filter((m) => (m.workspaceId || 'default-workspace') === workspaceId);
+    const personIds = new Set(people.map((m) => m.id));
+    state.teamMembers = (state.teamMembers || []).filter((m) => !personIds.has(m.id));
+    state.pushTokens = (state.pushTokens || []).filter((t) => t.workspaceId !== workspaceId && !(t.memberId && personIds.has(t.memberId)));
+    state.mcpTokens = (state.mcpTokens || []).filter((t) => t.workspaceId !== workspaceId);
+    state.mcpAuditLogs = (state.mcpAuditLogs || []).filter((l) => l.workspaceId !== workspaceId);
+    state.auditLogs = (state.auditLogs || []).filter((l) => (l.workspaceId || l.details?.workspaceId) !== workspaceId);
+    state.landingPages = (state.landingPages || []).filter((lp) => lp.workspaceId !== workspaceId);
+    state.workspaces = (state.workspaces || []).filter((w: any) => w.id !== workspaceId);
+    await saveState(state);
+    return { assistants: assistantIds.length, people: people.length };
   }
 
   static async verifyStaffLogin(
