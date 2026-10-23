@@ -51,6 +51,17 @@ describe('public booking rules', () => {
     expect(someoneElse.status).toBe(409);
   });
 
+  it('refuses a booking that overlaps a longer one with a different start time, and allows back-to-back', async () => {
+    const { Database } = await import('../db');
+    const ast = await Database.createAssistant({ name: 'Overlap rule test', workspaceId: 'ws_overlap_rule_test' });
+    const long = await book({ ...person, email: 'long@example.com', assistantId: ast.id, date: '2099-11-05', timeSlot: '10:00', durationMinutes: 60 });
+    expect(long.status).toBe(201);
+    const inside = await book({ ...person, email: 'inside@example.com', assistantId: ast.id, date: '2099-11-05', timeSlot: '10:30', durationMinutes: 30 });
+    expect(inside.status).toBe(409);
+    const after = await book({ ...person, email: 'after@example.com', assistantId: ast.id, date: '2099-11-05', timeSlot: '11:00', durationMinutes: 30 });
+    expect(after.status).toBe(201);
+  });
+
   it('refuses an assistant id that matches nothing instead of booking into the demo assistant', async () => {
     const res = await book({ ...person, assistantId: 'ast_does_not_exist', date: '2099-11-04', timeSlot: '10:00 AM' });
     expect(res.status).toBe(404);

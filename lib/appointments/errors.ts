@@ -12,3 +12,8 @@ export class BookingUnavailableError extends Error {
     if (options && 'cause' in options) (this as { cause?: unknown }).cause = options.cause;
   }
 }
+
+/** True for the error the database layer throws when a booking cannot be written safely (Postgres required but down). */
+export function isBookingUnavailable(err: unknown): boolean {
+  return err instanceof BookingUnavailableError || (err as { code?: unknown } | null | undefined)?.code === 'DB_UNAVAILABLE';
+}

@@ -1,12 +1,8 @@
 import { Database } from '@/lib/db';
-import { acquireBookingLock } from '@/lib/appointments/booking-lock';
-import {
-  overlapsExisting,
-  parseTimeToMinutes,
-  isIsoDate,
-  minutesToHHMM,
-  type ExistingAppointment,
-} from '@/lib/appointments/availability';
+import { acquireDayLock } from '@/lib/appointments/booking-lock';
+import { parseTimeToMinutes, isIsoDate, minutesToHHMM } from '@/lib/appointments/availability';
+import { findBookingConflict } from '@/lib/appointments/conflicts';
+import { slotRangeFields } from '@/lib/appointments/time-range';
 import { McpAuthContext } from '../types';
 import { assertScope } from '../auth';
 
@@ -138,10 +134,10 @@ export async function handleCreateBooking(
 
   const normalizedSlot = minutesToHHMM(startMinutes);
 
-  // Acquire concurrency lock to prevent race conditions across parallel agents
+  // Acquire the day lock (bookings with different start times can overlap) to prevent races across parallel agents
   let releaseLock: (() => void) | null = null;
   try {
-    releaseLock = await acquireBookingLock(primaryAssistant.id, date, normalizedSlot, 5000);
+    releaseLock = await acquireDayLock(primaryAssistant.id, date, 5000);
   } catch (lockErr: any) {
     const error: any = new Error(`Slot ${normalizedSlot} on ${date} is currently being processed by another client. Please retry in a moment.`);
     error.code = 'BOOKING_CONFLICT';
@@ -149,16 +145,20 @@ export async function handleCreateBooking(
   }
 
   try {
-    // Check if slot overlaps with any active booking in this workspace
+    // Check the slot's time range against active bookings in this workspace and the assistant's external calendar blocks.
+    // Always the assistant's own timezone, so the stored range matches every other booking path.
     const existingAppointments = await Database.getAppointments(primaryAssistant.id, auth.workspaceId);
-    const existingList: ExistingAppointment[] = existingAppointments.map((a) => ({
-      date: a.date,
-      timeSlot: a.timeSlot,
-      durationMinutes: a.durationMinutes,
-      status: a.status,
-    }));
+    const blocks = await Database.getExternalBlocks(primaryAssistant.id);
+    const conflict = findBookingConflict({
+      date,
+      timeSlot: normalizedSlot,
+      durationMinutes: duration,
+      timezone: primaryAssistant.timezone,
+      appointments: existingAppointments,
+      blocks,
+    });
 
-    if (overlapsExisting(date, startMinutes, duration, existingList)) {
+    if (conflict) {
       const error: any = new Error(`The requested slot at ${normalizedSlot} on ${date} is already booked. Please run check_availability to select an open time.`);
       error.code = 'BOOKING_CONFLICT';
       throw error;
@@ -176,6 +176,7 @@ export async function handleCreateBooking(
       serviceId: serviceId?.trim() || '',
       serviceName: serviceName?.trim() || 'General Consultation',
       notes: notes?.trim() || '',
+      ...slotRangeFields(primaryAssistant, { date, timeSlot: normalizedSlot, durationMinutes: duration }),
     });
 
     return {

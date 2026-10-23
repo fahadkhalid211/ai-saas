@@ -1,9 +1,11 @@
 import { Database, type AppointmentData, type AssistantData } from '@/lib/db';
 import { sendAppointmentConfirmationEmail } from '@/lib/email';
 import { dispatchIntegrationsAfterResponse } from '@/lib/integrations/dispatch';
-import { acquireBookingLock } from '@/lib/appointments/booking-lock';
+import { acquireDayLock } from '@/lib/appointments/booking-lock';
 import { attributionCustomData, type ResolvedAttribution } from '@/lib/analytics/attribution';
-import { overlapsExisting, parseTimeToMinutes } from '@/lib/appointments/availability';
+import { findBookingConflict } from '@/lib/appointments/conflicts';
+import { slotRangeFields } from '@/lib/appointments/time-range';
+import { isBookingUnavailable } from '@/lib/appointments/errors';
 import { logEvent } from '@/lib/logging/logger';
 
 export interface NewAppointmentInput {
@@ -23,7 +25,10 @@ export interface NewAppointmentInput {
 
 export type CreateAppointmentResult =
   | { ok: true; appointment: AppointmentData; /** The same person had already booked this slot (a retry): nothing new was created. */ duplicate?: boolean }
-  | { ok: false; status: 409 | 500; error: string };
+  | { ok: false; status: 409 | 500 | 503; error: string };
+
+/** Answer for a booking refused because the database that guards against double booking is unavailable. */
+export const BOOKING_UNAVAILABLE_MESSAGE = 'We could not save your booking right now. Please try again in a moment.';
 
 export interface CreateAppointmentOptions {
   assistant: AssistantData;
@@ -35,16 +40,14 @@ export interface CreateAppointmentOptions {
   actorId?: string;
   /** The id/slug the caller used, when it differs from the resolved assistant (kept on the lead). */
   originalAssistantId?: string;
-  /** Also reject a slot whose time range overlaps another booking (used by voice, which offers computed slots). */
-  enforceOverlap?: boolean;
   /** Send the client's confirmation email (skipped when the email is a synthetic placeholder). */
   sendClientEmail?: boolean;
 }
 
 /**
  * Creates an appointment and runs every side effect the public booking API does:
- * conflict check under the slot lock, client confirmation email, dashboard notification,
- * audit log, paired lead, webhook and admin email. Shared by the web API and the voice channel.
+ * range-overlap conflict check (bookings and external calendar blocks) under the day lock, client confirmation email,
+ * dashboard notification, audit log, paired lead, webhook and admin email. Shared by the web API and the voice channel.
  */
 export async function createAppointment(opts: CreateAppointmentOptions): Promise<CreateAppointmentResult> {
   const { assistant, input, attribution, ip } = opts;
@@ -60,22 +63,29 @@ export async function createAppointment(opts: CreateAppointmentOptions): Promise
   // phone: those would appear in the confirmation e-mail of every other business.
   const landingConfig: Partial<NonNullable<AssistantData['landingPageConfig']>> = assistant.landingPageConfig || {};
 
-  // Concurrency lock: serialise concurrent attempts on the same slot within this process.
-  // (Cross-instance safety comes from the relational unique index, which raises SLOT_CONFLICT.)
-  const releaseLock = await acquireBookingLock(assistant.id, date, timeSlot);
+  // Concurrency lock: serialise every attempt for this assistant and day (bookings with different start times can overlap).
+  // (Cross-instance safety comes from the relational exclusion constraint and unique index, which raise SLOT_CONFLICT.)
+  const releaseLock = await acquireDayLock(assistant.id, date);
   let appointment: AppointmentData;
   try {
     const existingAppointments = await Database.getAppointments(assistant.id);
-    const conflict = existingAppointments.find((a) => a.date === date && a.timeSlot === timeSlot && a.status !== 'cancelled');
-    const start = parseTimeToMinutes(timeSlot);
-    const overlaps = opts.enforceOverlap && start !== null && overlapsExisting(date, start, resolvedDuration, existingAppointments);
+    const sameSlot = existingAppointments.find((a) => a.date === date && a.timeSlot === timeSlot && a.status !== 'cancelled');
     // Someone whose first attempt timed out, or who clicked twice, asks again for the slot they already hold. Tell them it is theirs
     // instead of "already booked". The reply leaves out the manage token: knowing an e-mail and a slot must not give control of it.
-    if (conflict && (conflict.email || '').trim().toLowerCase() === email.toLowerCase()) {
-      return { ok: true, duplicate: true, appointment: { ...conflict, manageToken: undefined } };
+    if (sameSlot && (sameSlot.email || '').trim().toLowerCase() === email.toLowerCase()) {
+      return { ok: true, duplicate: true, appointment: { ...sameSlot, manageToken: undefined } };
     }
-    if (conflict || overlaps) {
-      logEvent({ level: 'warn', category: 'booking', event: 'booking.slot_conflict', meta: { assistantId: assistant.id, date, timeSlot, overlap: Boolean(overlaps) } });
+    const blocks = await Database.getExternalBlocks(assistant.id);
+    const conflict = findBookingConflict({
+      date,
+      timeSlot,
+      durationMinutes: resolvedDuration,
+      timezone: assistant.timezone,
+      appointments: existingAppointments,
+      blocks,
+    });
+    if (conflict) {
+      logEvent({ level: 'warn', category: 'booking', event: 'booking.slot_conflict', meta: { assistantId: assistant.id, date, timeSlot, kind: conflict.kind } });
       return { ok: false, status: 409, error: `The time slot "${timeSlot}" on ${date} has already been booked. Please select another time.` };
     }
 
@@ -94,11 +104,16 @@ export async function createAppointment(opts: CreateAppointmentOptions): Promise
         price: input.price ? Number(input.price) : undefined,
         landingPageName: input.landingPageName || landingConfig.businessName,
         landingPageSlug: input.landingPageSlug || landingConfig.slug,
+        ...slotRangeFields(assistant, { date, timeSlot, durationMinutes: resolvedDuration }),
       });
     } catch (err: any) {
       if (err?.code === 'SLOT_CONFLICT') {
         logEvent({ level: 'warn', category: 'booking', event: 'booking.slot_conflict', meta: { assistantId: assistant.id, date, timeSlot, source: 'database_index' } });
         return { ok: false, status: 409, error: `The time slot "${timeSlot}" on ${date} has already been booked. Please select another time.` };
+      }
+      if (isBookingUnavailable(err)) {
+        logEvent({ level: 'error', category: 'booking', event: 'booking.db_unavailable', meta: { assistantId: assistant.id, date, timeSlot } });
+        return { ok: false, status: 503, error: BOOKING_UNAVAILABLE_MESSAGE };
       }
       throw err;
     }

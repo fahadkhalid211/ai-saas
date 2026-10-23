@@ -4,11 +4,19 @@ import { verifyAdminRequest, getAuthContext } from '@/lib/security/auth';
 import { enforceRateLimit, getClientIp } from '@/lib/security/rate-limit';
 import { enforceDistributedRateLimit, enforceDistributedRateLimitByKey } from '@/lib/security/rate-limit-redis';
 import { validateAppointmentPayload } from '@/lib/security/validation';
-import { acquireBookingLock } from '@/lib/appointments/booking-lock';
+import { acquireDayLock } from '@/lib/appointments/booking-lock';
 import { resolveAttribution } from '@/lib/analytics/attribution';
-import { createAppointment } from '@/lib/appointments/create';
+import { BOOKING_UNAVAILABLE_MESSAGE, createAppointment } from '@/lib/appointments/create';
 import { openingHoursProblem } from '@/lib/appointments/availability';
+import { blockedSlotStarts, findBookingConflict } from '@/lib/appointments/conflicts';
+import { slotRangeFields } from '@/lib/appointments/time-range';
+import { isBookingUnavailable } from '@/lib/appointments/errors';
 import { logged } from '@/lib/logging/route';
+
+/** Postgres is required but unavailable: nothing was saved, and the visitor may retry shortly. */
+function bookingUnavailableResponse(message: string = BOOKING_UNAVAILABLE_MESSAGE) {
+  return NextResponse.json({ error: message }, { status: 503, headers: { 'Access-Control-Allow-Origin': '*', 'Retry-After': '5' } });
+}
 
 export async function OPTIONS() {
   return new NextResponse(null, {
@@ -41,9 +49,29 @@ async function GETHandler(req: Request) {
     // Public live slot availability check for booking widgets and landing pages
     if (checkDate && assistantId) {
       const allAppointments = await Database.getAppointments(assistantId);
-      const bookedSlots = allAppointments
+      const exact = allAppointments
         .filter((a) => a.date === checkDate && a.status !== 'cancelled')
         .map((a) => a.timeSlot);
+
+      // Also every grid start that a longer booking or an external calendar block covers, so the widget never offers it.
+      const assistant = await Database.getAssistantById(assistantId);
+      let bookedSlots = exact;
+      if (assistant) {
+        const blocks = await Database.getExternalBlocks(assistant.id);
+        const covered = blockedSlotStarts({
+          config: {
+            bookingStartHour: assistant.bookingStartHour,
+            bookingEndHour: assistant.bookingEndHour,
+            bookingAvailableDays: assistant.bookingAvailableDays,
+            bookingSlotDuration: assistant.bookingSlotDuration,
+            timezone: assistant.timezone,
+          },
+          date: checkDate,
+          appointments: allAppointments,
+          blocks,
+        });
+        bookedSlots = Array.from(new Set([...exact, ...covered]));
+      }
 
       return NextResponse.json(
         { date: checkDate, bookedSlots },
@@ -119,30 +147,49 @@ async function POSTHandler(req: Request) {
         return NextResponse.json({ error: 'Appointment not found' }, { status: 404 });
       }
 
-      const releaseLock = await acquireBookingLock(apt.assistantId, newDate.trim(), newTimeSlot.trim());
+      const date = String(newDate).trim();
+      const timeSlot = String(newTimeSlot).trim();
+      // An unreadable time would leave the booking's stored range at its old time, so it is refused.
+      const range = slotRangeFields({}, { date, timeSlot, durationMinutes: apt.durationMinutes });
+      if (!range.slotStart) {
+        return NextResponse.json({ error: 'newDate must be YYYY-MM-DD and newTimeSlot a time such as "14:00" or "2:00 PM".' }, { status: 400 });
+      }
+      const takenResponse = () =>
+        NextResponse.json(
+          { error: `The time slot "${timeSlot}" on ${date} has already been booked. Please select another time.` },
+          { status: 409 }
+        );
+
+      // The day lock: a booking with a different start time on the same day can still overlap the new time.
+      const releaseLock = await acquireDayLock(apt.assistantId, date);
       let updated;
       try {
+        const assistant = await Database.getAssistantById(apt.assistantId);
         const existingAppointments = await Database.getAppointments(apt.assistantId);
-        const conflict = existingAppointments.find(
-          (a) =>
-            a.id !== apt.id &&
-            a.date === newDate.trim() &&
-            a.timeSlot === newTimeSlot.trim() &&
-            a.status !== 'cancelled'
-        );
-        if (conflict) {
-          return NextResponse.json(
-            { error: `The time slot "${newTimeSlot.trim()}" on ${newDate.trim()} has already been booked. Please select another time.` },
-            { status: 409 }
-          );
-        }
-
-        updated = await Database.updateAppointment(apt.id, {
-          date: newDate.trim(),
-          timeSlot: newTimeSlot.trim(),
-          status: 'confirmed',
-          remindersSent: { reminder24h: false, reminder1h: false },
+        const blocks = await Database.getExternalBlocks(apt.assistantId);
+        const conflict = findBookingConflict({
+          date,
+          timeSlot,
+          durationMinutes: apt.durationMinutes,
+          timezone: assistant?.timezone,
+          appointments: existingAppointments,
+          blocks,
+          ignoreAppointmentId: apt.id,
         });
+        if (conflict) return takenResponse();
+
+        try {
+          updated = await Database.updateAppointment(apt.id, {
+            date,
+            timeSlot,
+            status: 'confirmed',
+            remindersSent: { reminder24h: false, reminder1h: false },
+            ...slotRangeFields(assistant || {}, { date, timeSlot, durationMinutes: apt.durationMinutes }),
+          });
+        } catch (err: any) {
+          if (err?.code === 'SLOT_CONFLICT') return takenResponse();
+          throw err;
+        }
       } finally {
         releaseLock();
       }
@@ -150,7 +197,7 @@ async function POSTHandler(req: Request) {
       await Database.addNotification({
         assistantId: apt.assistantId,
         title: 'Appointment Rescheduled',
-        message: `${apt.name} rescheduled their appointment to ${newDate.trim()} at ${newTimeSlot.trim()}.`,
+        message: `${apt.name} rescheduled their appointment to ${date} at ${timeSlot}.`,
         type: 'appointment_booked',
       });
       return NextResponse.json({ success: true, appointment: updated });
@@ -286,6 +333,7 @@ async function POSTHandler(req: Request) {
       originalAssistantId: assistantId,
     });
     if (!result.ok) {
+      if (result.status === 503) return bookingUnavailableResponse(result.error);
       return NextResponse.json({ error: result.error }, { status: result.status, headers: { 'Access-Control-Allow-Origin': '*' } });
     }
     const appointment = result.appointment;
@@ -298,6 +346,8 @@ async function POSTHandler(req: Request) {
       }
     );
   } catch (error: any) {
+    // Any branch (new booking, reschedule, cancel, status update) refused because Postgres is required but down.
+    if (isBookingUnavailable(error)) return bookingUnavailableResponse();
     console.error('[AppointmentsAPI] Error processing appointment:', error);
     return NextResponse.json(
       { error: error?.message || 'Failed to process appointment' },

@@ -79,11 +79,14 @@ export async function handleCheckAvailability(
     status: a.status,
   }));
 
+  const blocks = await Database.getExternalBlocks(primaryAssistant.id);
+
   const slots = getAvailableSlots({
     config,
     date,
     durationMinutes: serviceDuration || config.bookingSlotDuration || 30,
     appointments: existingAppointments,
+    blocks,
   });
 
   return {

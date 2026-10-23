@@ -121,8 +121,11 @@ export function productionVoiceDeps(): VoiceDeps {
       return all.map((a) => ({ date: a.date, timeSlot: a.timeSlot, durationMinutes: a.durationMinutes, status: a.status }));
     },
 
+    getExternalBlocks: (assistantId) => Database.getExternalBlocks(assistantId),
+
     bookAppointment: async ({ assistant, booking, state }): Promise<BookResult> => {
       const existing = await Database.getAppointments(assistant.id);
+      const blocks = await Database.getExternalBlocks(assistant.id);
       const config = {
         bookingStartHour: assistant.bookingStartHour,
         bookingEndHour: assistant.bookingEndHour,
@@ -131,7 +134,7 @@ export function productionVoiceDeps(): VoiceDeps {
         timezone: assistant.timezone,
       };
       // Independent re-check of the read-back slot before saving (the model and the flow are not trusted).
-      const stillOpen = isSlotAvailable({ config, date: booking.date, timeSlot: booking.timeSlot, durationMinutes: booking.durationMinutes, appointments: existing });
+      const stillOpen = isSlotAvailable({ config, date: booking.date, timeSlot: booking.timeSlot, durationMinutes: booking.durationMinutes, appointments: existing, blocks });
       if (!stillOpen) return { ok: false, conflict: true };
 
       const known = await knownCaller(assistant.id, booking.phone);
@@ -153,7 +156,6 @@ export function productionVoiceDeps(): VoiceDeps {
         attribution: { source: 'phone', conversationId: state.conversationId },
         ip: 'phone',
         actorId: 'phone',
-        enforceOverlap: true,
         sendClientEmail: !!known.email,
       });
       if (result.ok) return { ok: true, appointmentId: result.appointment.id, hasEmail: !!known.email };

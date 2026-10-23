@@ -7,6 +7,7 @@ import {
   type AvailabilityConfig,
   type ExistingAppointment,
 } from '@/lib/appointments/availability';
+import type { ExternalBlock } from '@/lib/calendar/sync/types';
 import { filterByDayPart, parseDayPart, parseSpokenDate, parseYesNo, pickSlot } from '@/lib/voice/datetime';
 import { normalizeE164, parseSpokenDigits } from '@/lib/voice/text';
 
@@ -49,6 +50,8 @@ export interface BookingContext {
   services: BookingService[];
   config: AvailabilityConfig;
   appointments: ExistingAppointment[];
+  /** Busy periods from linked external calendars; slots overlapping one are never offered. */
+  blocks?: ExternalBlock[];
   now?: Date;
   /** E.164 caller ID, if the network provided one. */
   callerPhone?: string;
@@ -206,9 +209,9 @@ function ask(state: BookingState, ctx: BookingContext): BookingTurn {
 /** Loads open slots for the chosen date, or explains and offers the nearest open days. */
 function offerDate(state: BookingState, ctx: BookingContext): BookingTurn {
   const duration = state.durationMinutes || ctx.config.bookingSlotDuration || 30;
-  const slots = getAvailableSlots({ config: ctx.config, date: state.date!, durationMinutes: duration, appointments: ctx.appointments, now: ctx.now });
+  const slots = getAvailableSlots({ config: ctx.config, date: state.date!, durationMinutes: duration, appointments: ctx.appointments, blocks: ctx.blocks, now: ctx.now });
   if (!slots.length) {
-    const next = nextOpenDates({ config: ctx.config, durationMinutes: duration, appointments: ctx.appointments, now: ctx.now, count: 3, from: state.date });
+    const next = nextOpenDates({ config: ctx.config, durationMinutes: duration, appointments: ctx.appointments, blocks: ctx.blocks, now: ctx.now, count: 3, from: state.date });
     const cleared = { ...state, date: undefined, slots: undefined, offered: undefined, offerPage: 0 };
     if (!next.length) return giveUp(cleared, ctx);
     const days = next.map((d) => speakDate(d.date));

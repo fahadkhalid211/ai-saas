@@ -1,5 +1,6 @@
 import type { AssistantData } from '@/lib/db';
 import type { ExistingAppointment } from '@/lib/appointments/availability';
+import type { ExternalBlock } from '@/lib/calendar/sync/types';
 import {
   bookingFailed,
   bookingSlotTaken,
@@ -47,6 +48,8 @@ export type BookResult = { ok: true; appointmentId: string; hasEmail: boolean } 
 
 export interface VoiceDeps {
   getAppointments(assistantId: string): Promise<ExistingAppointment[]>;
+  /** Busy periods from linked external calendars, so the times offered skip them. Optional: none when absent. */
+  getExternalBlocks?(assistantId: string): Promise<ExternalBlock[]>;
   bookAppointment(args: { assistant: AssistantData; booking: BookingRequest; state: VoiceCallState }): Promise<BookResult>;
   saveMessage(conversationId: string, role: 'user' | 'assistant', content: string): Promise<void>;
   saveCallback(args: { assistant: AssistantData; name?: string; phone: string; note: string; conversationId: string }): Promise<void>;
@@ -88,7 +91,7 @@ export function buildGreeting(assistant: AssistantData): string {
   return `Hello, thanks for calling ${business}. You're speaking with an AI assistant. How can I help you today?`;
 }
 
-function bookingContext(assistant: AssistantData, state: VoiceCallState, appointments: ExistingAppointment[], now?: Date): BookingContext {
+function bookingContext(assistant: AssistantData, state: VoiceCallState, appointments: ExistingAppointment[], now?: Date, blocks?: ExternalBlock[]): BookingContext {
   const lc = assistant.landingPageConfig;
   return {
     services: (lc?.services || []).map((s) => ({ id: s.id, name: s.name, durationMinutes: s.durationMinutes, price: s.price })),
@@ -100,6 +103,7 @@ function bookingContext(assistant: AssistantData, state: VoiceCallState, appoint
       timezone: assistant.timezone,
     },
     appointments,
+    blocks,
     now,
     callerPhone: state.from || undefined,
     knownName: state.knownName,
@@ -116,6 +120,9 @@ export async function* runVoiceTurn(input: { assistant: AssistantData; state: Vo
   const now = deps.now?.();
   const said: string[] = [];
   const text = (input.text || '').replace(/\s+/g, ' ').trim().slice(0, 1000);
+
+  // Only narrows the times offered; the booking itself re-checks blocks before saving, so a failed read offers without them.
+  const loadBlocks = async (): Promise<ExternalBlock[]> => (deps.getExternalBlocks ? deps.getExternalBlocks(assistant.id).catch(() => []) : []);
 
   const say = (t: string): VoiceEvent => {
     said.push(t);
@@ -186,7 +193,7 @@ export async function* runVoiceTurn(input: { assistant: AssistantData; state: Vo
         yield say(after.say);
       } else if (result.conflict) {
         const fresh = await deps.getAppointments(assistant.id);
-        const again = bookingSlotTaken(turn.state, bookingContext(assistant, state, fresh.length ? fresh : appointments, now));
+        const again = bookingSlotTaken(turn.state, bookingContext(assistant, state, fresh.length ? fresh : appointments, now, await loadBlocks()));
         state.booking = again.state.active ? again.state : null;
         yield say(again.say);
         if (again.action?.type === 'callback') yield* callback({ note: again.action.note, name: again.action.name });
@@ -220,7 +227,7 @@ export async function* runVoiceTurn(input: { assistant: AssistantData; state: Vo
   // Continue an in-progress booking.
   if (state.booking?.active) {
     const appointments = await deps.getAppointments(assistant.id);
-    yield* applyBookingTurn(stepBooking(state.booking, text, bookingContext(assistant, state, appointments, now)));
+    yield* applyBookingTurn(stepBooking(state.booking, text, bookingContext(assistant, state, appointments, now, await loadBlocks())));
     yield* finish();
     return;
   }
@@ -245,7 +252,7 @@ export async function* runVoiceTurn(input: { assistant: AssistantData; state: Vo
       yield* callback({ note: 'Caller wanted to book; phone booking is not enabled.' });
     } else {
       const appointments = await deps.getAppointments(assistant.id);
-      yield* applyBookingTurn(startBooking(bookingContext(assistant, state, appointments, now), text));
+      yield* applyBookingTurn(startBooking(bookingContext(assistant, state, appointments, now, await loadBlocks()), text));
     }
     yield* finish();
     return;
