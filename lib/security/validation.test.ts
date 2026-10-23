@@ -155,6 +155,14 @@ describe('Enterprise Validation & Sanitization Suite', () => {
       expect(validateTimeSlot('noon').valid).toBe(false);
       expect(validateTimeSlot('10:00 - 25:00').valid).toBe(false);
     });
+
+    it('rejects 12h times whose hour is not 1-12, which the booking time parser cannot read', () => {
+      for (const bad of ['13:00 PM', '0:30 AM', '00:30 AM', '23:00 AM', '10:00 AM - 13:00 PM']) {
+        expect(validateTimeSlot(bad).valid, bad).toBe(false);
+      }
+      expect(validateTimeSlot('12:30 AM').valid).toBe(true);
+      expect(validateTimeSlot('12:00 PM').valid).toBe(true);
+    });
   });
 
   describe('URL Validation', () => {

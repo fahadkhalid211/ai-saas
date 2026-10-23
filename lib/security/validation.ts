@@ -4,6 +4,8 @@
  * for all input fields across the platform.
  */
 
+import { parseTimeToMinutes } from '../appointments/availability';
+
 export const EMAIL_REGEX =
   /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$/;
 
@@ -230,7 +232,10 @@ export function validateTimeSlot(timeStr: unknown): { valid: boolean; error?: st
     return { valid: false, error: 'Appointment time slot is required.' };
   }
   const clean = timeStr.trim();
-  if (!TIME_SLOT_REGEX.test(clean)) {
+  // The pattern alone lets through "13:00 PM" or "0:30 AM"; every part must also be a time the booking parser can read,
+  // or the booking would be stored without a time range and escape the overlap checks.
+  const parts = clean.split(/\s*(?:-|–|—|to)\s*(?=\d)/i);
+  if (!TIME_SLOT_REGEX.test(clean) || parts.some((p) => parseTimeToMinutes(p) === null)) {
     return { valid: false, error: 'Please select a valid time slot (e.g. 10:00 AM, 10:00 - 10:30, or 2:30 PM).' };
   }
   return { valid: true, value: clean };

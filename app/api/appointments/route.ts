@@ -9,7 +9,7 @@ import { resolveAttribution } from '@/lib/analytics/attribution';
 import { BOOKING_UNAVAILABLE_MESSAGE, createAppointment } from '@/lib/appointments/create';
 import { openingHoursProblem } from '@/lib/appointments/availability';
 import { blockedSlotStarts, findBookingConflict } from '@/lib/appointments/conflicts';
-import { slotRangeFields } from '@/lib/appointments/time-range';
+import { slotRange, slotRangeFields } from '@/lib/appointments/time-range';
 import { isBookingUnavailable } from '@/lib/appointments/errors';
 import { logged } from '@/lib/logging/route';
 
@@ -321,6 +321,14 @@ async function POSTHandler(req: Request) {
       return NextResponse.json({ error: closed }, { status: 400, headers: { 'Access-Control-Allow-Origin': '*' } });
     }
 
+    // A time the range parser cannot read would be saved without a range and escape the overlap checks.
+    if (!slotRange(date, timeSlot, durationMinutes, assistant.timezone)) {
+      return NextResponse.json(
+        { error: 'Please select a valid time slot (e.g. 10:00 AM, 10:00 - 10:30, or 2:30 PM).' },
+        { status: 400, headers: { 'Access-Control-Allow-Origin': '*' } }
+      );
+    }
+
     // Attribution (verified conversation + source) for pilot measurement. Lives on the
     // paired lead so it works in both blob and relational modes without a schema change.
     const attribution = await resolveAttribution(validation.sanitized, assistant.id);
@@ -348,6 +356,13 @@ async function POSTHandler(req: Request) {
   } catch (error: any) {
     // Any branch (new booking, reschedule, cancel, status update) refused because Postgres is required but down.
     if (isBookingUnavailable(error)) return bookingUnavailableResponse();
+    // The database refused the change because the time was booked meanwhile (e.g. un-cancelling onto a rebooked slot).
+    if (error?.code === 'SLOT_CONFLICT') {
+      return NextResponse.json(
+        { error: 'That time has already been booked. Please select another time.' },
+        { status: 409, headers: { 'Access-Control-Allow-Origin': '*' } }
+      );
+    }
     console.error('[AppointmentsAPI] Error processing appointment:', error);
     return NextResponse.json(
       { error: error?.message || 'Failed to process appointment' },

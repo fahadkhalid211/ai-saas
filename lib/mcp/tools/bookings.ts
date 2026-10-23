@@ -59,9 +59,10 @@ export async function handleCreateBooking(
 ) {
   assertScope(auth, 'bookings:create');
 
+  // Trimmed once and used everywhere (lock, conflict check, stored row): a padded date would otherwise skip the range check.
+  const date = (args.date || '').trim();
+  const timeSlot = (args.timeSlot || '').trim();
   const {
-    date,
-    timeSlot,
     customerName,
     customerEmail,
     customerPhone,
@@ -72,13 +73,13 @@ export async function handleCreateBooking(
   } = args;
 
   // Basic validation
-  if (!date || !isIsoDate(date.trim())) {
+  if (!date || !isIsoDate(date)) {
     const error: any = new Error("Invalid date format. Expected 'YYYY-MM-DD'");
     error.code = 'VALIDATION_ERROR';
     throw error;
   }
 
-  if (!timeSlot || !timeSlot.trim()) {
+  if (!timeSlot) {
     const error: any = new Error('timeSlot parameter is required (e.g. "14:00" or "2:00 PM")');
     error.code = 'VALIDATION_ERROR';
     throw error;
@@ -123,8 +124,7 @@ export async function handleCreateBooking(
   }
 
   const duration = Math.max(10, Math.min(480, Number(args.durationMinutes) || primaryAssistant.bookingSlotDuration || 30));
-  const normalizedTime = timeSlot.trim();
-  const startMinutes = parseTimeToMinutes(normalizedTime);
+  const startMinutes = parseTimeToMinutes(timeSlot);
 
   if (startMinutes === null) {
     const error: any = new Error(`Cannot parse time slot '${timeSlot}'. Expected HH:MM or h:mm AM/PM.`);
@@ -158,13 +158,14 @@ export async function handleCreateBooking(
       blocks,
     });
 
-    if (conflict) {
+    const slotTaken = () => {
       const error: any = new Error(`The requested slot at ${normalizedSlot} on ${date} is already booked. Please run check_availability to select an open time.`);
       error.code = 'BOOKING_CONFLICT';
-      throw error;
-    }
+      return error;
+    };
+    if (conflict) throw slotTaken();
 
-    // Save appointment
+    // Save appointment (the database's overlap constraint answers SLOT_CONFLICT if another instance won the race)
     const appointment = await Database.createAppointment({
       assistantId: primaryAssistant.id,
       name: customerName.trim(),
@@ -177,6 +178,8 @@ export async function handleCreateBooking(
       serviceName: serviceName?.trim() || 'General Consultation',
       notes: notes?.trim() || '',
       ...slotRangeFields(primaryAssistant, { date, timeSlot: normalizedSlot, durationMinutes: duration }),
+    }).catch((err: any) => {
+      throw err?.code === 'SLOT_CONFLICT' ? slotTaken() : err;
     });
 
     return {

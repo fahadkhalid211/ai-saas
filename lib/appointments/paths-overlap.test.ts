@@ -174,6 +174,93 @@ describe('MCP create_booking uses the same check', () => {
     ).catch((e) => e);
     expect(err?.code).toBe('BOOKING_CONFLICT');
   });
+
+  it('trims a padded date, so it still conflicts and the stored row carries the trimmed date and a range', async () => {
+    const ast = await newAssistant();
+    const auth = mcpAuth(ast.workspaceId);
+    const first = await handleCreateBooking(
+      { date: ` ${MON} `, timeSlot: ' 10:00 ', durationMinutes: 60, customerName: 'P', customerEmail: 'p@example.com', confirmed: true },
+      auth,
+    );
+    expect(first.status).toBe('confirmed');
+    const stored = await Database.getAppointmentById((first as { bookingId: string }).bookingId);
+    expect(stored?.date).toBe(MON);
+    expect(stored?.slotStart).toBe('2099-11-02T10:00:00.000Z');
+
+    const err = await handleCreateBooking(
+      { date: ` ${MON}`, timeSlot: '10:30', durationMinutes: 30, customerName: 'Q', customerEmail: 'q@example.com', confirmed: true },
+      auth,
+    ).catch((e) => e);
+    expect(err?.code).toBe('BOOKING_CONFLICT');
+  });
+
+  it('turns a database SLOT_CONFLICT on save into BOOKING_CONFLICT', async () => {
+    const ast = await newAssistant();
+    vi.spyOn(Database, 'createAppointment').mockRejectedValue(Object.assign(new Error('Slot conflict'), { code: 'SLOT_CONFLICT' }));
+    const err = await handleCreateBooking(
+      { date: MON, timeSlot: '15:00', durationMinutes: 30, customerName: 'R', customerEmail: 'r@example.com', confirmed: true },
+      mcpAuth(ast.workspaceId),
+    ).catch((e) => e);
+    expect(err?.code).toBe('BOOKING_CONFLICT');
+    expect(err?.message).toMatch(/already booked/i);
+  });
+});
+
+describe('web POST time slots', () => {
+  it('refuses 12h times the validator used to accept but the parser cannot read', async () => {
+    const ast = await newAssistant();
+    for (const timeSlot of ['13:00 PM', '0:30 AM', '00:30 AM', '23:00 AM']) {
+      const res = await post({ assistantId: ast.id, name: 'Bad time', email: `bad${seq++}@example.com`, date: MON, timeSlot });
+      expect(res.status, timeSlot).toBe(400);
+    }
+    const all = await Database.getAppointments(ast.id);
+    expect(all.filter((a) => a.assistantId === ast.id)).toHaveLength(0);
+  });
+
+  it('still accepts HH:MM and 12h range strings, storing a range', async () => {
+    const ast = await newAssistant();
+    const plain = await post({ assistantId: ast.id, name: 'Plain', email: 'plain@example.com', date: MON, timeSlot: '09:00', durationMinutes: 30 });
+    expect(plain.status).toBe(201);
+    expect(plain.json.appointment.slotStart).toBe('2099-11-02T09:00:00.000Z');
+    const ranged = await post({ assistantId: ast.id, name: 'Ranged', email: 'ranged@example.com', date: MON, timeSlot: '10:00 AM - 10:30 AM' });
+    expect(ranged.status).toBe(201);
+    expect(ranged.json.appointment.slotStart).toBe('2099-11-02T10:00:00.000Z');
+    expect(ranged.json.appointment.slotEnd).toBe('2099-11-02T10:30:00.000Z');
+  });
+});
+
+describe('status changes that hit a database slot conflict', () => {
+  const conflict = () => Object.assign(new Error('Slot conflict: rebooked'), { code: 'SLOT_CONFLICT' });
+
+  it('client_cancel answers 409 instead of 500', async () => {
+    const ast = await newAssistant();
+    const mine = await book(ast, MON, '11:30', 30);
+    if (!mine.ok) throw new Error('setup booking failed');
+    vi.spyOn(Database, 'updateAppointmentStatus').mockRejectedValue(conflict());
+    const res = await post({ action: 'client_cancel', manageToken: mine.appointment.manageToken });
+    expect(res.status).toBe(409);
+    expect(res.json.error).toBe('That time has already been booked. Please select another time.');
+    expect(res.headers.get('Access-Control-Allow-Origin')).toBe('*');
+  });
+
+  it('admin update_status answers 409 instead of 500', async () => {
+    const adminKey = `test-admin-${Math.random().toString(36).slice(2)}`;
+    vi.stubEnv('ADMIN_API_KEY', adminKey);
+    const ast = await newAssistant();
+    const mine = await book(ast, MON, '12:30', 30);
+    if (!mine.ok) throw new Error('setup booking failed');
+    vi.spyOn(Database, 'updateAppointmentStatus').mockRejectedValue(conflict());
+    const { POST } = await import('../../app/api/appointments/route');
+    const res = await POST(
+      new Request('http://localhost:3000/api/appointments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${adminKey}` },
+        body: JSON.stringify({ action: 'update_status', id: mine.appointment.id, status: 'confirmed' }),
+      }),
+    );
+    expect(res.status).toBe(409);
+    expect((await res.json()).error).toBe('That time has already been booked. Please select another time.');
+  });
 });
 
 describe('client reschedule', () => {
