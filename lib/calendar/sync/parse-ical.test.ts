@@ -1,4 +1,8 @@
-import { describe, expect, it } from 'vitest';
+import { spawnSync } from 'node:child_process';
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join, resolve } from 'node:path';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { CalendarParseError, parseIcalBlocks } from './parse-ical';
 
 const SE = 'Europe/Stockholm';
@@ -376,11 +380,11 @@ RRULE:FREQ=DAILY`]);
     expect(r.blocks[0].startAt.toISOString()).toBe('2026-01-01T09:00:00.000Z');
   });
 
-  it('gives up on a rule that needs endless scanning before the window, quickly', () => {
-    const ics = cal([`UID:hourly
-DTSTART:20100101T090000Z
-DTEND:20100101T093000Z
-RRULE:FREQ=HOURLY`]);
+  it('gives up on a series that needs more than the step cap to reach the window, quickly', () => {
+    const ics = cal([`UID:counted
+DTSTART:19900101T090000Z
+DTEND:19900101T093000Z
+RRULE:FREQ=DAILY;COUNT=100000`]);
     const t0 = Date.now();
     const r = parseIcalBlocks(ics, { timezone: SE, ...WIDE });
     expect(r).toEqual({ blocks: [], skipped: 0, unsupported: 1 });
@@ -526,59 +530,225 @@ DTEND:20260610T100000`]);
   });
 });
 
-// A hostile recurrence rule used to freeze the (synchronous) parser inside a single ical.js call, so these tests assert
-// that the call returns quickly. A hang cannot be interrupted by vitest's timeout, so a regression shows up as a stuck run.
-describe('parseIcalBlocks: hostile recurrence rules', () => {
-  const run = (rule: string, dtstart = '20260110T090000Z', win = WIDE) => {
+// A hostile recurrence rule used to freeze the (synchronous) parser inside a single ical.js call. vitest cannot interrupt a
+// synchronous hang, so these cases run in a child process (the parser bundled with rolldown, which ships with vite) with a
+// hard kill deadline: a regression fails the test instead of freezing the suite.
+describe('parseIcalBlocks: hostile recurrence rules (child process, hard deadline)', () => {
+  let tmp = '';
+  let runner = '';
+
+  beforeAll(async () => {
+    const { build } = await import('rolldown');
+    tmp = mkdtempSync(join(tmpdir(), 'parse-ical-'));
+    const root = resolve(import.meta.dirname, '../../..');
+    await build({
+      input: join(root, 'lib/calendar/sync/parse-ical.ts'),
+      platform: 'node',
+      resolve: { alias: { '@': root } },
+      output: { file: join(tmp, 'parse-ical.mjs'), format: 'esm' },
+      logLevel: 'silent',
+    });
+    runner = join(tmp, 'run.mjs');
+    writeFileSync(
+      runner,
+      [
+        "import { parseIcalBlocks } from './parse-ical.mjs';",
+        "const chunks = [];",
+        "for await (const c of process.stdin) chunks.push(c);",
+        "const { ics, timezone, from, to } = JSON.parse(Buffer.concat(chunks).toString());",
+        "const t0 = Date.now();",
+        "const r = parseIcalBlocks(ics, { timezone, from: new Date(from), to: new Date(to) });",
+        "console.log(JSON.stringify({ ms: Date.now() - t0, skipped: r.skipped, unsupported: r.unsupported, blocks: r.blocks.map((b) => [b.startAt.toISOString(), b.endAt.toISOString()]) }));",
+      ].join('\n'),
+    );
+  }, 30_000);
+
+  afterAll(() => {
+    if (tmp) rmSync(tmp, { recursive: true, force: true });
+  });
+
+  function inChild(rule: string, dtstart: string, win = WIDE) {
+    const dtend = dtstart.replace(/T(\d\d)/, (_m, h) => `T${String(Number(h) + 1).padStart(2, '0')}`);
     const ics = cal([`UID:h
 DTSTART:${dtstart}
-DTEND:${dtstart.replace('T09', 'T10')}
-RRULE:${rule}`]);
-    const t0 = Date.now();
-    const r = parseIcalBlocks(ics, { timezone: SE, ...win });
-    return { r, ms: Date.now() - t0 };
-  };
+DTEND:${dtend}
+RRULE:FREQ=${rule}`]);
+    const r = spawnSync(process.execPath, [runner], {
+      input: JSON.stringify({ ics, timezone: SE, from: win.from.toISOString(), to: win.to.toISOString() }),
+      timeout: 10_000,
+      killSignal: 'SIGKILL',
+      encoding: 'utf8',
+    });
+    if (r.error) throw new Error(`parser did not finish within 10 s for RRULE:${rule} (${(r.error as NodeJS.ErrnoException).code})`);
+    expect(r.status).toBe(0);
+    return JSON.parse(r.stdout) as { ms: number; skipped: number; unsupported: number; blocks: string[][] };
+  }
+
+  const SAT = '20260110T090000Z'; // a Saturday
+  const MON = '20260112T090000Z';
+  const TUE = '20260106T090000Z';
 
   it.each([
-    ['DAILY never matching', 'FREQ=DAILY;BYMONTH=2;BYMONTHDAY=30'],
-    ['HOURLY never matching', 'FREQ=HOURLY;BYMONTH=2;BYMONTHDAY=30'],
-    ['WEEKLY never matching', 'FREQ=WEEKLY;BYMONTH=2;BYMONTHDAY=30'],
-    ['MONTHLY never matching', 'FREQ=MONTHLY;BYMONTH=2;BYMONTHDAY=30'],
-    ['YEARLY never matching', 'FREQ=YEARLY;BYMONTH=2;BYMONTHDAY=30'],
-    ['DAILY in a 30-day month asking for day 31', 'FREQ=DAILY;BYMONTH=4;BYMONTHDAY=31'],
-    ['SECONDLY', 'FREQ=SECONDLY;BYMONTH=2;BYMONTHDAY=29'],
-    ['MINUTELY', 'FREQ=MINUTELY;BYMONTH=2;BYMONTHDAY=29'],
-    ['plain SECONDLY', 'FREQ=SECONDLY'],
-    ['plain MINUTELY', 'FREQ=MINUTELY'],
-    ['DAILY with an interval phase that never lands on the weekday', 'FREQ=DAILY;INTERVAL=7;BYDAY=MO'],
-    ['WEEKLY with BYWEEKNO (not allowed outside YEARLY)', 'FREQ=WEEKLY;BYWEEKNO=10'],
-    ['an absurdly long BYYEARDAY list', `FREQ=YEARLY;BYYEARDAY=${[...Array(366).keys()].flatMap((i) => [i + 1, -(i + 1)]).join(',')}`],
-  ])('returns quickly and reports %s as unsupported', (_label, rule) => {
-    const { r, ms } = run(rule);
-    expect(r).toEqual({ blocks: [], skipped: 0, unsupported: 1 });
-    expect(ms).toBeLessThan(500);
-  }, 5000);
+    ['DAILY;BYMONTHDAY=-1', SAT],
+    ['HOURLY;BYMONTHDAY=-1', SAT],
+    ['DAILY;BYDAY=1MO', SAT],
+    ['DAILY;BYDAY=-1FR', SAT],
+    ['HOURLY;BYDAY=1MO', SAT],
+    ['HOURLY;INTERVAL=168;BYDAY=TU', MON],
+    ['HOURLY', SAT],
+    ['WEEKLY;INTERVAL=99999999', SAT],
+    ['WEEKLY;INTERVAL=1000000', SAT],
+    ['DAILY;INTERVAL=9999999', SAT],
+    ['DAILY;INTERVAL=366', SAT],
+    ['MONTHLY;INTERVAL=61;BYMONTHDAY=1', SAT],
+    ['YEARLY;INTERVAL=21', SAT],
+    ['YEARLY;BYMONTH=2;BYDAY=5MO;BYMONTHDAY=28', SAT],
+    ['DAILY;BYMONTH=2;BYMONTHDAY=30', SAT],
+    ['HOURLY;BYMONTH=2;BYMONTHDAY=30', SAT],
+    ['WEEKLY;BYMONTH=2;BYMONTHDAY=30', SAT],
+    ['MONTHLY;BYMONTH=2;BYMONTHDAY=30', SAT],
+    ['DAILY;BYMONTH=4;BYMONTHDAY=31', SAT],
+    ['DAILY;BYMONTH=2;BYMONTHDAY=29', '20240229T090000Z'],
+    ['HOURLY;BYMONTH=2;BYMONTHDAY=29;BYHOUR=9,12', '20240229T090000Z'],
+    ['SECONDLY;BYMONTH=2;BYMONTHDAY=29', SAT],
+    ['MINUTELY;BYMONTH=2;BYMONTHDAY=29', SAT],
+    ['SECONDLY', SAT],
+    ['MINUTELY', SAT],
+    ['DAILY;INTERVAL=7;BYDAY=MO', TUE],
+    ['DAILY;INTERVAL=14;BYDAY=MO', TUE],
+    ['WEEKLY;BYWEEKNO=10', SAT],
+    ['WEEKLY;BYYEARDAY=100', SAT],
+    ['DAILY;BYHOUR=9,10', SAT],
+    ['MONTHLY;BYSETPOS=1', SAT],
+    ['MONTHLY;BYMONTH=2;BYMONTHDAY=29', SAT],
+    ['MONTHLY;BYDAY=MO;BYMONTHDAY=13', SAT],
+    ['YEARLY;BYMONTH=2', SAT],
+    ['YEARLY;BYDAY=MO', SAT],
+    ['YEARLY;BYYEARDAY=100', SAT],
+    ['YEARLY;BYWEEKNO=20', SAT],
+    ['YEARLY;BYMONTH=2;BYMONTHDAY=29;BYSETPOS=1', SAT],
+    [`YEARLY;BYYEARDAY=${[...Array(366).keys()].flatMap((i) => [i + 1, -(i + 1)]).join(',')}`, SAT],
+  ])('RRULE:%s is not expanded, returns quickly, and keeps the master date', (rule, dtstart) => {
+    // A 2024 master date is outside the default 2026 window, so give those cases a window that holds it.
+    const r = inChild(rule, dtstart, dtstart.startsWith('2024') ? { from: new Date('2024-01-01T00:00:00Z'), to: new Date('2025-01-01T00:00:00Z') } : WIDE);
+    expect(r.unsupported).toBe(1);
+    expect(r.skipped).toBe(0);
+    expect(r.ms).toBeLessThan(500);
+    const start = `${dtstart.slice(0, 4)}-${dtstart.slice(4, 6)}-${dtstart.slice(6, 8)}T09:00:00.000Z`;
+    const end = start.replace('T09', 'T10');
+    expect(r.blocks).toEqual([[start, end]]);
+  }, 15_000);
 
-  it('still expands a YEARLY Feb 29 rule', () => {
-    const { r, ms } = run('FREQ=YEARLY;BYMONTH=2;BYMONTHDAY=29', '20240229T090000Z', { from: new Date('2026-01-01T00:00:00Z'), to: new Date('2029-01-01T00:00:00Z') });
-    expect(r.unsupported).toBe(0);
-    expect(r.blocks.map(iso)).toEqual([['2028-02-29T09:00:00.000Z', '2028-02-29T10:00:00.000Z']]);
-    expect(ms).toBeLessThan(500);
-  }, 5000);
+  it('returns quickly for a YEARLY rule with a month and a day that cannot exist (ical.js guards it)', () => {
+    const r = inChild('YEARLY;BYMONTH=2;BYMONTHDAY=30', SAT);
+    expect(r.ms).toBeLessThan(500);
+    expect(r.skipped).toBe(0);
+  }, 15_000);
 
-  it('still expands a DAILY Feb 29 rule (a sparse but possible match)', () => {
-    const { r, ms } = run('FREQ=DAILY;BYMONTH=2;BYMONTHDAY=29', '20240229T090000Z', { from: new Date('2026-01-01T00:00:00Z'), to: new Date('2029-01-01T00:00:00Z') });
+  it('still expands the YEARLY Feb 29 rule', () => {
+    const r = inChild('YEARLY;BYMONTH=2;BYMONTHDAY=29', '20240229T090000Z', { from: new Date('2026-01-01T00:00:00Z'), to: new Date('2029-01-01T00:00:00Z') });
     expect(r.unsupported).toBe(0);
-    expect(r.blocks.map(iso)).toEqual([['2028-02-29T09:00:00.000Z', '2028-02-29T10:00:00.000Z']]);
-    expect(ms).toBeLessThan(500);
-  }, 5000);
+    expect(r.blocks).toEqual([['2028-02-29T09:00:00.000Z', '2028-02-29T10:00:00.000Z']]);
+    expect(r.ms).toBeLessThan(500);
+  }, 15_000);
+});
 
-  it('still expands an HOURLY rule limited to Feb 29', () => {
-    const { r, ms } = run('FREQ=HOURLY;BYMONTH=2;BYMONTHDAY=29;BYHOUR=9,12', '20240229T090000Z', { from: new Date('2026-01-01T00:00:00Z'), to: new Date('2029-01-01T00:00:00Z') });
+describe('parseIcalBlocks: the supported recurrence shapes expand exactly', () => {
+  const starts = (rule: string, dtstart: string, from: string, to: string, tz = 'UTC') => {
+    const ics = cal([`UID:s
+DTSTART:${dtstart}
+DTEND:${dtstart.replace(/T(\d\d)/, (_m, h) => `T${String(Number(h) + 1).padStart(2, '0')}`)}
+RRULE:${rule}`]);
+    const r = parseIcalBlocks(ics, { timezone: tz, from: new Date(from), to: new Date(to) });
     expect(r.unsupported).toBe(0);
-    expect(r.blocks.map((b) => b.startAt.toISOString())).toEqual(['2028-02-29T09:00:00.000Z', '2028-02-29T12:00:00.000Z']);
-    expect(ms).toBeLessThan(1500);
-  }, 5000);
+    expect(r.skipped).toBe(0);
+    return r.blocks.map((b) => b.startAt.toISOString().slice(0, 10));
+  };
+
+  it('WEEKLY on Monday, Wednesday and Friday', () => {
+    expect(starts('FREQ=WEEKLY;BYDAY=MO,WE,FR', '20260302T090000Z', '2026-03-02T00:00:00Z', '2026-03-10T00:00:00Z')).toEqual(['2026-03-02', '2026-03-04', '2026-03-06', '2026-03-09']);
+  });
+  it('WEEKLY every second week on Tuesday and Thursday', () => {
+    expect(starts('FREQ=WEEKLY;INTERVAL=2;BYDAY=TU,TH', '20260303T090000Z', '2026-03-01T00:00:00Z', '2026-04-01T00:00:00Z')).toEqual(['2026-03-03', '2026-03-05', '2026-03-17', '2026-03-19', '2026-03-31']);
+  });
+  it('DAILY on weekdays', () => {
+    expect(starts('FREQ=DAILY;BYDAY=MO,TU,WE,TH,FR', '20260302T090000Z', '2026-03-02T00:00:00Z', '2026-03-10T00:00:00Z')).toEqual(['2026-03-02', '2026-03-03', '2026-03-04', '2026-03-05', '2026-03-06', '2026-03-09']);
+  });
+  it('MONTHLY on the second Tuesday', () => {
+    expect(starts('FREQ=MONTHLY;BYDAY=2TU', '20260310T090000Z', '2026-03-01T00:00:00Z', '2026-06-01T00:00:00Z')).toEqual(['2026-03-10', '2026-04-14', '2026-05-12']);
+  });
+  it('MONTHLY on the last day (BYMONTHDAY=-1)', () => {
+    expect(starts('FREQ=MONTHLY;BYMONTHDAY=-1', '20260131T090000Z', '2026-01-01T00:00:00Z', '2026-05-01T00:00:00Z')).toEqual(['2026-01-31', '2026-02-28', '2026-03-31', '2026-04-30']);
+  });
+  it('MONTHLY on the 31st skips the shorter months', () => {
+    expect(starts('FREQ=MONTHLY;BYMONTHDAY=31', '20260131T090000Z', '2026-01-01T00:00:00Z', '2026-06-01T00:00:00Z')).toEqual(['2026-01-31', '2026-03-31', '2026-05-31']);
+  });
+  it('MONTHLY on the last Friday', () => {
+    expect(starts('FREQ=MONTHLY;BYDAY=-1FR', '20260130T090000Z', '2026-01-01T00:00:00Z', '2026-05-01T00:00:00Z')).toEqual(['2026-01-30', '2026-02-27', '2026-03-27', '2026-04-24']);
+  });
+  it('MONTHLY on the last weekday (BYDAY=MO..FR with BYSETPOS=-1)', () => {
+    expect(starts('FREQ=MONTHLY;BYDAY=MO,TU,WE,TH,FR;BYSETPOS=-1', '20260130T090000Z', '2026-01-01T00:00:00Z', '2026-05-01T00:00:00Z')).toEqual(['2026-01-30', '2026-02-27', '2026-03-31', '2026-04-30']);
+  });
+  it('YEARLY on a month and day', () => {
+    expect(starts('FREQ=YEARLY;BYMONTH=3;BYMONTHDAY=9', '20000309T090000Z', '2026-01-01T00:00:00Z', '2028-01-01T00:00:00Z')).toEqual(['2026-03-09', '2027-03-09']);
+  });
+  it('YEARLY on the fourth Thursday of November', () => {
+    expect(starts('FREQ=YEARLY;BYMONTH=11;BYDAY=4TH', '20251127T090000Z', '2026-01-01T00:00:00Z', '2027-12-31T00:00:00Z')).toEqual(['2026-11-26', '2027-11-25']);
+  });
+  it('an all-day yearly birthday lands on the local day', () => {
+    const ics = cal([`UID:b
+DTSTART;VALUE=DATE:20000309
+RRULE:FREQ=YEARLY`]);
+    const r = parseIcalBlocks(ics, { timezone: SE, from: new Date('2026-01-01T00:00:00Z'), to: new Date('2027-01-01T00:00:00Z') });
+    expect(r.blocks.map(iso)).toEqual([['2026-03-08T23:00:00.000Z', '2026-03-09T23:00:00.000Z']]);
+    expect(r.unsupported).toBe(0);
+  });
+});
+
+describe('parseIcalBlocks: cost of ordinary recurring events', () => {
+  const win = { from: new Date('2026-06-01T00:00:00Z'), to: new Date('2026-07-01T00:00:00Z') };
+
+  it('parses 1,000 monthly (BYMONTHDAY=15) events in about a second', () => {
+    const events = Array.from({ length: 1000 }, (_, i) => `UID:m${i}
+DTSTART:20240115T090000Z
+DTEND:20240115T100000Z
+RRULE:FREQ=MONTHLY;BYMONTHDAY=15`);
+    const t0 = Date.now();
+    const r = parseIcalBlocks(cal(events), { timezone: SE, ...win });
+    const ms = Date.now() - t0;
+    expect(r.unsupported).toBe(0);
+    expect(r.skipped).toBe(0);
+    expect(r.blocks).toHaveLength(1000);
+    expect(ms).toBeLessThan(3000); // about 0.8 s on a quiet machine; the old calendar walk took about 20 s
+  }, 20_000);
+
+  it('parses 1,000 yearly birthday (BYMONTH=3;BYMONTHDAY=9) events in about two seconds', () => {
+    const events = Array.from({ length: 1000 }, (_, i) => `UID:y${i}
+DTSTART:${1995 + (i % 30)}0309T090000Z
+DTEND:${1995 + (i % 30)}0309T100000Z
+RRULE:FREQ=YEARLY;BYMONTH=3;BYMONTHDAY=9`);
+    const t0 = Date.now();
+    const r = parseIcalBlocks(cal(events), { timezone: SE, from: new Date('2026-03-01T00:00:00Z'), to: new Date('2026-04-01T00:00:00Z') });
+    const ms = Date.now() - t0;
+    expect(r.unsupported).toBe(0);
+    expect(r.skipped).toBe(0);
+    expect(r.blocks).toHaveLength(1000);
+    expect(ms).toBeLessThan(3000);
+  }, 20_000);
+});
+
+describe('parseIcalBlocks: all-day series use the business timezone for the days and for UNTIL', () => {
+  it('does not invent an extra day when an all-day DTSTART carries a TZID', () => {
+    const ics = cal([`UID:ad
+DTSTART;TZID=America/New_York;VALUE=DATE:20261020
+RRULE:FREQ=DAILY;UNTIL=20261022`]);
+    const r = parseIcalBlocks(ics, { timezone: SE, ...WIDE });
+    expect(r.blocks.map(iso)).toEqual([
+      ['2026-10-19T22:00:00.000Z', '2026-10-20T22:00:00.000Z'],
+      ['2026-10-20T22:00:00.000Z', '2026-10-21T22:00:00.000Z'],
+      ['2026-10-21T22:00:00.000Z', '2026-10-22T22:00:00.000Z'],
+    ]);
+  });
 });
 
 describe('parseIcalBlocks: UNTIL is read in the event zone', () => {
@@ -733,11 +903,11 @@ RRULE:FREQ=DAILY`);
   }, 15_000);
 
   it('after the feed budget is spent, still reads plain events and the first date of later series', () => {
-    // HOURLY series from 2010 each burn the per-event step cap; eleven of them spend the 100k feed budget.
+    // COUNT-limited DAILY series from 1990 (no fast-forward) each burn the per-event step cap; eleven of them spend the 100k feed budget.
     const heavy = Array.from({ length: 11 }, (_, i) => `UID:h${i}
-DTSTART:20100101T090000Z
-DTEND:20100101T093000Z
-RRULE:FREQ=HOURLY`);
+DTSTART:19900101T090000Z
+DTEND:19900101T093000Z
+RRULE:FREQ=DAILY;COUNT=100000`);
     const later = `UID:monthly
 DTSTART:20260611T120000Z
 DTEND:20260611T130000Z
