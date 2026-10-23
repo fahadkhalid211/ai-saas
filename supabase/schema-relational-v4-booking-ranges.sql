@@ -17,8 +17,14 @@
 -- external_clash_at     : set when an imported calendar block was found to overlap an already
 --                         confirmed booking (the owner is notified; the guest is never cancelled).
 --
+-- LOCKING: this briefly blocks bookings on kortex_appointments while the constraint/index is built (here: while the
+-- columns are added); run at a quiet time; if it times out, retry. lock_timeout below makes it give up after 5s
+-- instead of queueing behind a long transaction and stalling every booking behind it.
+--
 -- btree_gist is needed by the exclusion constraint added in the v4b file. It is created
 -- here so a database that does not allow it fails early, before any code is deployed.
+
+SET lock_timeout = '5s';
 
 CREATE EXTENSION IF NOT EXISTS btree_gist;
 

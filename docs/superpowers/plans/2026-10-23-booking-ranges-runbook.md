@@ -4,7 +4,8 @@ Phase 1 of calendar sync and double-booking prevention needs three owner steps o
 Nothing in this repo runs them for you. Both scripts print the database host first and refuse to connect unless
 `--yes-this-is-the-database` is passed, so check that the host is the one you mean before every run.
 
-The scripts read `DATABASE_URL` (or `POSTGRES_URL`) from the shell or from `.env` in the current directory.
+The scripts only run SELECTs (plus the `--apply` UPDATE) on that one database and abort if its host cannot be read.
+They read `DATABASE_URL` (or `POSTGRES_URL`) from the shell or from `.env` in the current directory.
 Run them from the repository root.
 
 ## P1. Confirm relational mode in production
@@ -33,8 +34,12 @@ before any code is deployed.)
 1. **Apply the v4 SQL** (adds the extension and three nullable columns; safe to run twice). Paste the file
    `supabase/schema-relational-v4-booking-ranges.sql` into the Supabase SQL Editor and run it, or:
 
+   Both SQL files set `lock_timeout = '5s'` and briefly block bookings on `kortex_appointments`: run them at a quiet
+   time, and if one times out, run it again. With psql, `-v ON_ERROR_STOP=1` stops at the first error (so a refused
+   `CREATE EXTENSION` cannot scroll past) and `-1` runs the file in a single transaction.
+
    ```bash
-   psql "$DATABASE_URL" -f supabase/schema-relational-v4-booking-ranges.sql
+   psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -1 -f supabase/schema-relational-v4-booking-ranges.sql
    ```
 
 2. **Deploy the code** from this branch to production.
@@ -45,7 +50,7 @@ before any code is deployed.)
    npx tsx scripts/backfill-slot-ranges.ts --yes-this-is-the-database
    ```
 
-   Check the host line, the counts and the "Left NULL" lists. Then write the ranges:
+   Check the host line, the sample conversions (date, slot, timezone, UTC range), the counts and the "Left NULL" lists. Then write the ranges:
 
    ```bash
    npx tsx scripts/backfill-slot-ranges.ts --yes-this-is-the-database --apply
@@ -66,7 +71,7 @@ before any code is deployed.)
    `supabase/schema-relational-v4b-no-overlap-constraint.sql` into the SQL Editor and run it, or:
 
    ```bash
-   psql "$DATABASE_URL" -f supabase/schema-relational-v4b-no-overlap-constraint.sql
+   psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -1 -f supabase/schema-relational-v4b-no-overlap-constraint.sql
    ```
 
    It fails while overlapping bookings exist; nothing changes if it fails. Go back to step 4.

@@ -18,6 +18,7 @@
 
 import fs from 'node:fs';
 import { findOverlaps } from '../lib/appointments/overlap-report';
+import { parseDbHost } from '../lib/appointments/backfill-plan';
 
 const CONFIRMED = process.argv.includes('--yes-this-is-the-database');
 
@@ -40,11 +41,10 @@ async function main(): Promise<void> {
     process.exit(2);
   }
 
-  let host = '(unreadable)';
-  try {
-    host = new URL(getPostgresUrl()!).hostname;
-  } catch {
-    // keep the placeholder; never print the raw URL, it contains the password
+  const host = parseDbHost(getPostgresUrl());
+  if (!host) {
+    console.error('[OverlapReport] Aborting: cannot read the database host from the connection URL, so it cannot be confirmed.');
+    process.exit(2);
   }
   console.log(`[OverlapReport] Database host: ${host}`);
   console.log('[OverlapReport] Mode: read only');

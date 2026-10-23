@@ -15,11 +15,15 @@
  * Bookings whose date or time cannot be read, or whose assistant no longer exists, are listed and left NULL.
  * The no-overlap constraint does not cover them.
  *
+ * Assistant timezones are read with one SELECT from kortex_app_state (id 'default') on the same connection; the script
+ * never calls Database.getState(), whose initialisation can read other stores or write state.
+ *
  * Safety: the database host (never the password) is printed first, and the script aborts unless
  * --yes-this-is-the-database is passed. This machine's .env may point at the live database.
  */
 
 import fs from 'node:fs';
+import type { BackfillRow } from '../lib/appointments/backfill-plan';
 
 const APPLY = process.argv.includes('--apply');
 const CONFIRMED = process.argv.includes('--yes-this-is-the-database');
@@ -37,18 +41,20 @@ async function main(): Promise<void> {
   loadEnvFile();
 
   // Dynamic imports: the env must be loaded before the database modules are used.
+  // Deliberately NOT lib/db (Database.getState): its init can read Redis or Supabase, fall back to this machine's local
+  // JSON state, or write state and run DDL, even in a dry run. Everything below is plain SELECTs on one pool.
   const { getPostgresUrl, isPostgresConfigured, getPostgresPool } = await import('../lib/db/postgres');
+  const { parseDbHost, assistantTimezones, planBackfill } = await import('../lib/appointments/backfill-plan');
 
   if (!isPostgresConfigured()) {
     console.error('[SlotBackfill] Error: Postgres is not configured. Check DATABASE_URL / POSTGRES_URL.');
     process.exit(1);
   }
 
-  let host = '(unreadable)';
-  try {
-    host = new URL(getPostgresUrl()!).hostname;
-  } catch {
-    // keep the placeholder; never print the raw URL, it contains the password
+  const host = parseDbHost(getPostgresUrl());
+  if (!host) {
+    console.error('[SlotBackfill] Aborting: cannot read the database host from the connection URL, so it cannot be confirmed.');
+    process.exit(1);
   }
   console.log(`[SlotBackfill] Database host: ${host}`);
   console.log(`[SlotBackfill] Mode: ${APPLY ? 'APPLY (will write)' : 'DRY RUN (writes nothing)'}`);
@@ -64,14 +70,30 @@ async function main(): Promise<void> {
     process.exit(1);
   }
 
-  const { Database } = await import('../lib/db');
-  const { slotRangeFields } = await import('../lib/appointments/time-range');
+  // Assistant timezones: one read-only SELECT on the same database the bookings are in.
+  let timezoneById: Map<string, string | undefined> | null = null;
+  try {
+    const res = await pool.query(`SELECT data->'assistants' AS assistants FROM kortex_app_state WHERE id = $1 LIMIT 1`, ['default']);
+    if (res.rows.length === 0) {
+      console.error("[SlotBackfill] Aborting: no kortex_app_state row with id 'default' in this database, so assistant timezones are unknown.");
+      await pool.end().catch(() => {});
+      process.exit(1);
+    }
+    timezoneById = assistantTimezones(res.rows[0].assistants);
+  } catch (err) {
+    console.error('[SlotBackfill] Aborting: could not read assistant timezones from kortex_app_state.');
+    console.error(err);
+    await pool.end().catch(() => {});
+    process.exit(1);
+  }
+  if (!timezoneById) {
+    console.error('[SlotBackfill] Aborting: kortex_app_state.data has no assistants list, so assistant timezones are unknown.');
+    await pool.end().catch(() => {});
+    process.exit(1);
+  }
+  console.log(`[SlotBackfill] Assistants with a known timezone setting: ${timezoneById.size}`);
 
-  const state = await Database.getState();
-  const timezoneById = new Map<string, string | undefined>();
-  for (const a of state.assistants || []) timezoneById.set(a.id, a.timezone);
-
-  let rows: Array<{ id: string; assistant_id: string; date: string; time_slot: string; duration_minutes: number | null; status: string }>;
+  let rows: BackfillRow[];
   try {
     const res = await pool.query(
       `SELECT id, assistant_id, date, time_slot, duration_minutes, status
@@ -89,42 +111,35 @@ async function main(): Promise<void> {
 
   console.log(`[SlotBackfill] Bookings without a range: ${rows.length}`);
 
-  let written = 0;
-  let planned = 0;
-  const unreadable: string[] = [];
-  const unknownAssistant: string[] = [];
+  const plan = planBackfill(rows, timezoneById);
 
-  for (const row of rows) {
-    if (!timezoneById.has(row.assistant_id)) {
-      unknownAssistant.push(`${row.id} (assistant ${row.assistant_id}, ${row.date} ${row.time_slot}, ${row.status})`);
-      continue;
+  // Show the conversion so the owner can eyeball it before --apply (an assistant without a timezone is read as UTC).
+  const SAMPLE = 8;
+  console.log(`[SlotBackfill] Sample of computed ranges (first ${Math.min(SAMPLE, plan.planned.length)}):`);
+  for (const p of plan.planned.slice(0, SAMPLE)) {
+    console.log(`      ${p.id}  ${p.date} "${p.timeSlot}"  tz=${p.timezone ?? '(none, UTC)'}  ->  ${p.slotStart} .. ${p.slotEnd}`);
+  }
+
+  let written = 0;
+  if (APPLY) {
+    for (const p of plan.planned) {
+      const res = await pool.query('UPDATE kortex_appointments SET slot_start=$1, slot_end=$2 WHERE id=$3 AND slot_start IS NULL', [
+        p.slotStart,
+        p.slotEnd,
+        p.id,
+      ]);
+      written += res.rowCount ?? 0;
     }
-    const fields = slotRangeFields(
-      { timezone: timezoneById.get(row.assistant_id) },
-      { date: row.date, timeSlot: row.time_slot, durationMinutes: row.duration_minutes ?? undefined },
-    );
-    if (!fields.slotStart || !fields.slotEnd) {
-      unreadable.push(`${row.id} (assistant ${row.assistant_id}, "${row.date}" "${row.time_slot}", ${row.status})`);
-      continue;
-    }
-    planned++;
-    if (!APPLY) continue;
-    const res = await pool.query('UPDATE kortex_appointments SET slot_start=$1, slot_end=$2 WHERE id=$3 AND slot_start IS NULL', [
-      fields.slotStart,
-      fields.slotEnd,
-      row.id,
-    ]);
-    written += res.rowCount ?? 0;
   }
 
   console.log('[SlotBackfill] Summary:');
-  console.log(`  - Ranges computed: ${planned}`);
+  console.log(`  - Ranges computed: ${plan.planned.length}`);
   console.log(APPLY ? `  - Rows written: ${written}` : '  - Rows written: 0 (dry run; add --apply to write)');
-  console.log(`  - Left NULL, time cannot be read: ${unreadable.length}`);
-  for (const line of unreadable) console.log(`      ${line}`);
-  console.log(`  - Left NULL, assistant not found: ${unknownAssistant.length}`);
-  for (const line of unknownAssistant) console.log(`      ${line}`);
-  if (unreadable.length || unknownAssistant.length) {
+  console.log(`  - Left NULL, time cannot be read: ${plan.unreadable.length}`);
+  for (const r of plan.unreadable) console.log(`      ${r.id} (assistant ${r.assistant_id}, "${r.date}" "${r.time_slot}", ${r.status})`);
+  console.log(`  - Left NULL, assistant not found: ${plan.unknownAssistant.length}`);
+  for (const r of plan.unknownAssistant) console.log(`      ${r.id} (assistant ${r.assistant_id}, ${r.date} ${r.time_slot}, ${r.status})`);
+  if (plan.unreadable.length || plan.unknownAssistant.length) {
     console.log('  Rows left NULL are not protected by the no-overlap constraint. Check the non-cancelled ones by hand.');
   }
   console.log('[SlotBackfill] Completed.');
