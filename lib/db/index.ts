@@ -2777,7 +2777,12 @@ export class Database {
     return [];
   }
 
-  static async getAppointments(assistantId?: string, workspaceId?: string): Promise<AppointmentData[]> {
+  /**
+   * Appointments of one assistant (matched by id, slug or landing page), of a workspace, or all.
+   * When the assistant has none, the list falls back to the other assistants of its workspace (a dashboard view);
+   * booking checks pass `{ ownOnly: true }` so another assistant's bookings never block or show as taken.
+   */
+  static async getAppointments(assistantId?: string, workspaceId?: string, opts: { ownOnly?: boolean } = {}): Promise<AppointmentData[]> {
     let wsAssistantIds: string[] | undefined;
     if (workspaceId && workspaceId !== '*') {
       const state = await ensureInitialized();
@@ -2811,7 +2816,7 @@ export class Database {
         matchesAssistant(a.assistantId, assistantId, state) ||
         (a.landingPageSlug ? matchesAssistant(a.landingPageSlug, assistantId, state) : false)
     );
-    if (matched.length > 0) return matched;
+    if (matched.length > 0 || opts.ownOnly) return matched;
 
     // Fallback: Check if there are appointments in the same workspace
     const targetAst = (state.assistants || []).find((a) => a.id === assistantId);

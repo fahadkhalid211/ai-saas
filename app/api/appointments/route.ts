@@ -48,7 +48,7 @@ async function GETHandler(req: Request) {
 
     // Public live slot availability check for booking widgets and landing pages
     if (checkDate && assistantId) {
-      const allAppointments = await Database.getAppointments(assistantId);
+      const allAppointments = await Database.getAppointments(assistantId, undefined, { ownOnly: true });
       const exact = allAppointments
         .filter((a) => a.date === checkDate && a.status !== 'cancelled')
         .map((a) => a.timeSlot);
@@ -165,7 +165,7 @@ async function POSTHandler(req: Request) {
       let updated;
       try {
         const assistant = await Database.getAssistantById(apt.assistantId);
-        const existingAppointments = await Database.getAppointments(apt.assistantId);
+        const existingAppointments = await Database.getAppointments(apt.assistantId, undefined, { ownOnly: true });
         const blocks = await Database.getExternalBlocks(apt.assistantId);
         const conflict = findBookingConflict({
           date,

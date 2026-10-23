@@ -117,14 +117,14 @@ export async function startVoiceSession(input: { callId: string; from?: string; 
 export function productionVoiceDeps(): VoiceDeps {
   return {
     getAppointments: async (assistantId) => {
-      const all = await Database.getAppointments(assistantId);
+      const all = await Database.getAppointments(assistantId, undefined, { ownOnly: true });
       return all.map((a) => ({ date: a.date, timeSlot: a.timeSlot, durationMinutes: a.durationMinutes, status: a.status }));
     },
 
     getExternalBlocks: (assistantId) => Database.getExternalBlocks(assistantId),
 
     bookAppointment: async ({ assistant, booking, state }): Promise<BookResult> => {
-      const existing = await Database.getAppointments(assistant.id);
+      const existing = await Database.getAppointments(assistant.id, undefined, { ownOnly: true });
       const blocks = await Database.getExternalBlocks(assistant.id);
       const config = {
         bookingStartHour: assistant.bookingStartHour,

@@ -68,7 +68,7 @@ export async function createAppointment(opts: CreateAppointmentOptions): Promise
   const releaseLock = await acquireDayLock(assistant.id, date);
   let appointment: AppointmentData;
   try {
-    const existingAppointments = await Database.getAppointments(assistant.id);
+    const existingAppointments = await Database.getAppointments(assistant.id, undefined, { ownOnly: true });
     const sameSlot = existingAppointments.find((a) => a.date === date && a.timeSlot === timeSlot && a.status !== 'cancelled');
     // Someone whose first attempt timed out, or who clicked twice, asks again for the slot they already hold. Tell them it is theirs
     // instead of "already booked". The reply leaves out the manage token: knowing an e-mail and a slot must not give control of it.

@@ -38,8 +38,8 @@ afterEach(() => {
 });
 
 let seq = 0;
-async function newAssistant(extra: Partial<AssistantData> = {}): Promise<AssistantData> {
-  const ws = `ws_paths_${Date.now().toString(36)}_${seq++}`;
+async function newAssistant(extra: Partial<AssistantData> = {}, workspaceId?: string): Promise<AssistantData> {
+  const ws = workspaceId || `ws_paths_${Date.now().toString(36)}_${seq++}`;
   const created = await Database.createAssistant({ name: 'Paths overlap test', workspaceId: ws });
   return (await Database.updateAssistant(created.id, {
     bookingStartHour: '09:00',
@@ -324,6 +324,27 @@ describe('GET checkDate', () => {
     vi.spyOn(Database, 'getExternalBlocks').mockResolvedValue([{ startAt: r.start, endAt: r.end }]);
     const booked = await checkDate(ast.id, MON);
     expect(booked).toEqual(['13:00']);
+  });
+});
+
+describe('another assistant in the same workspace', () => {
+  it("does not refuse a new assistant's first booking, and checkDate does not list the other assistant's times", async () => {
+    const a = await newAssistant();
+    const b = await newAssistant({}, a.workspaceId);
+    expect((await book(a, MON, '10:00', 60)).ok).toBe(true);
+
+    expect(await checkDate(b.id, MON)).toEqual([]);
+    expect(await book(b, MON, '10:30', 30)).toMatchObject({ ok: true });
+    // A's own list is unchanged
+    expect(await checkDate(a.id, MON)).toEqual(expect.arrayContaining(['10:00', '10:30']));
+  });
+
+  it("the voice channel sees only the assistant's own bookings", async () => {
+    const a = await newAssistant();
+    const b = await newAssistant({}, a.workspaceId);
+    expect((await book(a, MON, '11:00', 30)).ok).toBe(true);
+    const { productionVoiceDeps } = await import('../voice/server');
+    expect(await productionVoiceDeps().getAppointments(b.id)).toEqual([]);
   });
 });
 

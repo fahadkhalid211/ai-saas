@@ -71,7 +71,7 @@ export async function handleCheckAvailability(
   };
 
   // Fetch all existing appointments for this assistant/workspace
-  const rawAppointments = await Database.getAppointments(primaryAssistant.id, auth.workspaceId);
+  const rawAppointments = await Database.getAppointments(primaryAssistant.id, auth.workspaceId, { ownOnly: true });
   const existingAppointments: ExistingAppointment[] = rawAppointments.map((a) => ({
     date: a.date,
     timeSlot: a.timeSlot,
