@@ -57,19 +57,34 @@ export async function acquireBookingLock(
   const key = buildLockKey(assistantId, date, timeSlot);
 
   const startTime = Date.now();
+  const timeoutError = () => new Error(`Booking lock timeout after ${timeoutMs}ms for slot: ${timeSlot} on ${date}`);
   while (activeLocks.has(key)) {
-    if (Date.now() - startTime > timeoutMs) {
-      throw new Error(`Booking lock timeout after ${timeoutMs}ms for slot: ${timeSlot} on ${date}`);
-    }
+    const remaining = timeoutMs - (Date.now() - startTime);
+    if (remaining <= 0) throw timeoutError();
 
-    await new Promise<void>((resolve) => {
+    // Wait for the holder to release, but no longer than the time left: a waiter that is never woken must still give up.
+    const woken = await new Promise<boolean>((resolve) => {
       let waiters = lockWaiters.get(key);
       if (!waiters) {
         waiters = [];
         lockWaiters.set(key, waiters);
       }
-      waiters.push(resolve);
+      const timer = setTimeout(() => {
+        const list = lockWaiters.get(key);
+        const at = list ? list.indexOf(wake) : -1;
+        if (list && at >= 0) {
+          list.splice(at, 1);
+          if (list.length === 0) lockWaiters.delete(key);
+        }
+        resolve(false);
+      }, remaining);
+      const wake = () => {
+        clearTimeout(timer);
+        resolve(true);
+      };
+      waiters.push(wake);
     });
+    if (!woken) throw timeoutError();
   }
 
   activeLocks.add(key);
@@ -102,6 +117,15 @@ export async function acquireBookingLock(
       lockWaiters.delete(key);
     }
   };
+}
+
+/**
+ * True for the error acquireBookingLock / acquireDayLock throw when the lock could not be taken in time (another request
+ * held it). Callers answer HTTP 503 with a short Retry-After: nothing was written and an immediate retry usually works.
+ */
+export function isBookingLockTimeout(err: unknown): boolean {
+  const message = (err as { message?: unknown } | null | undefined)?.message;
+  return typeof message === 'string' && message.startsWith('Booking lock timeout');
 }
 
 /**

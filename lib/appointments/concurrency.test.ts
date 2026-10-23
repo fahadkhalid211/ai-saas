@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { acquireBookingLock, acquireDayLock } from './booking-lock';
+import { acquireBookingLock, acquireDayLock, isBookingLockTimeout } from './booking-lock';
 
 describe('Per-day booking lock', () => {
   it('serialises every attempt for one assistant and date, whatever the start time', async () => {
@@ -42,6 +42,29 @@ describe('Per-day booking lock', () => {
     } finally {
       releases.forEach((release) => release());
     }
+  });
+});
+
+describe('Day lock timeout', () => {
+  it('gives up after the timeout while another request holds the lock, and the lock still works afterwards', async () => {
+    const release = await acquireDayLock('ast_day_lock_timeout', '2026-10-04');
+    const started = Date.now();
+    const pending = acquireDayLock('ast_day_lock_timeout', '2026-10-04', 150).catch((e) => e);
+    // Without a working timeout the waiter only wakes on release; release after 3 s so the test cannot hang.
+    const safety = setTimeout(release, 3000);
+    const err = await pending;
+    clearTimeout(safety);
+    expect(Date.now() - started).toBeLessThan(2000);
+    expect(isBookingLockTimeout(err)).toBe(true);
+    release();
+    // the timed-out waiter left no trace: the next caller gets the lock at once
+    const again = await acquireDayLock('ast_day_lock_timeout', '2026-10-04', 150);
+    again();
+  });
+
+  it('isBookingLockTimeout is false for other errors', () => {
+    expect(isBookingLockTimeout(new Error('boom'))).toBe(false);
+    expect(isBookingLockTimeout(undefined)).toBe(false);
   });
 });
 

@@ -1,7 +1,7 @@
 import { Database, type AppointmentData, type AssistantData } from '@/lib/db';
 import { sendAppointmentConfirmationEmail } from '@/lib/email';
 import { dispatchIntegrationsAfterResponse } from '@/lib/integrations/dispatch';
-import { acquireDayLock } from '@/lib/appointments/booking-lock';
+import { acquireDayLock, isBookingLockTimeout } from '@/lib/appointments/booking-lock';
 import { attributionCustomData, type ResolvedAttribution } from '@/lib/analytics/attribution';
 import { findBookingConflict } from '@/lib/appointments/conflicts';
 import { slotRangeFields } from '@/lib/appointments/time-range';
@@ -25,7 +25,13 @@ export interface NewAppointmentInput {
 
 export type CreateAppointmentResult =
   | { ok: true; appointment: AppointmentData; /** The same person had already booked this slot (a retry): nothing new was created. */ duplicate?: boolean }
-  | { ok: false; status: 409 | 500 | 503; error: string };
+  | {
+      ok: false;
+      status: 409 | 500 | 503;
+      error: string;
+      /** For a 503: seconds the client should wait before retrying (5 for a busy day lock; the route defaults to 60 for an outage). */
+      retryAfterSeconds?: number;
+    };
 
 /** Answer for a booking refused because the database that guards against double booking is unavailable. */
 export const BOOKING_UNAVAILABLE_MESSAGE = 'We could not save your booking right now. Please try again in a moment.';
@@ -65,7 +71,15 @@ export async function createAppointment(opts: CreateAppointmentOptions): Promise
 
   // Concurrency lock: serialise every attempt for this assistant and day (bookings with different start times can overlap).
   // (Cross-instance safety comes from the relational exclusion constraint and unique index, which raise SLOT_CONFLICT.)
-  const releaseLock = await acquireDayLock(assistant.id, date);
+  let releaseLock: () => void;
+  try {
+    releaseLock = await acquireDayLock(assistant.id, date);
+  } catch (err) {
+    // Another request held the day for too long: nothing was written, and a retry in a few seconds usually succeeds.
+    if (!isBookingLockTimeout(err)) throw err;
+    logEvent({ level: 'warn', category: 'booking', event: 'booking.lock_timeout', meta: { assistantId: assistant.id, date, timeSlot } });
+    return { ok: false, status: 503, error: BOOKING_UNAVAILABLE_MESSAGE, retryAfterSeconds: 5 };
+  }
   let appointment: AppointmentData;
   try {
     const existingAppointments = await Database.getAppointments(assistant.id, undefined, { ownOnly: true });

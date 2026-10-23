@@ -4,7 +4,7 @@ import { verifyAdminRequest, getAuthContext } from '@/lib/security/auth';
 import { enforceRateLimit, getClientIp } from '@/lib/security/rate-limit';
 import { enforceDistributedRateLimit, enforceDistributedRateLimitByKey } from '@/lib/security/rate-limit-redis';
 import { validateAppointmentPayload } from '@/lib/security/validation';
-import { acquireDayLock } from '@/lib/appointments/booking-lock';
+import { acquireDayLock, isBookingLockTimeout } from '@/lib/appointments/booking-lock';
 import { resolveAttribution } from '@/lib/analytics/attribution';
 import { BOOKING_UNAVAILABLE_MESSAGE, createAppointment } from '@/lib/appointments/create';
 import { openingHoursProblem } from '@/lib/appointments/availability';
@@ -13,9 +13,22 @@ import { slotRange, slotRangeFields } from '@/lib/appointments/time-range';
 import { isBookingUnavailable } from '@/lib/appointments/errors';
 import { logged } from '@/lib/logging/route';
 
-/** Postgres is required but unavailable: nothing was saved, and the visitor may retry shortly. */
-function bookingUnavailableResponse(message: string = BOOKING_UNAVAILABLE_MESSAGE) {
-  return NextResponse.json({ error: message }, { status: 503, headers: { 'Access-Control-Allow-Origin': '*', 'Retry-After': '5' } });
+/**
+ * Nothing was saved and the visitor may retry. Postgres being required but unavailable pauses it for 60 seconds
+ * (disablePostgresTemporarily), so that is the default wait; a busy day lock passes 5.
+ */
+function bookingUnavailableResponse(message: string = BOOKING_UNAVAILABLE_MESSAGE, retryAfterSeconds = 60) {
+  return NextResponse.json(
+    { error: message },
+    { status: 503, headers: { 'Access-Control-Allow-Origin': '*', 'Retry-After': String(retryAfterSeconds) } }
+  );
+}
+
+function slotTakenResponse(date: string, timeSlot: string) {
+  return NextResponse.json(
+    { error: `The time slot "${timeSlot}" on ${date} has already been booked. Please select another time.` },
+    { status: 409 }
+  );
 }
 
 export async function OPTIONS() {
@@ -154,11 +167,7 @@ async function POSTHandler(req: Request) {
       if (!range.slotStart) {
         return NextResponse.json({ error: 'newDate must be YYYY-MM-DD and newTimeSlot a time such as "14:00" or "2:00 PM".' }, { status: 400 });
       }
-      const takenResponse = () =>
-        NextResponse.json(
-          { error: `The time slot "${timeSlot}" on ${date} has already been booked. Please select another time.` },
-          { status: 409 }
-        );
+      const takenResponse = () => slotTakenResponse(date, timeSlot);
 
       // The day lock: a booking with a different start time on the same day can still overlap the new time.
       const releaseLock = await acquireDayLock(apt.assistantId, date);
@@ -230,7 +239,30 @@ async function POSTHandler(req: Request) {
         }
       }
 
-      const updated = await Database.updateAppointmentStatus(id, status, cancellationReason, ctx.workspaceId);
+      // Restoring a cancelled booking takes its time back, which may have been booked meanwhile: check it like a new booking.
+      const reactivating = existingApt.status === 'cancelled' && status !== 'cancelled';
+      let updated: boolean;
+      const releaseLock = reactivating ? await acquireDayLock(existingApt.assistantId, existingApt.date) : null;
+      try {
+        if (reactivating) {
+          const assistant = await Database.getAssistantById(existingApt.assistantId);
+          const appointments = await Database.getAppointments(existingApt.assistantId, undefined, { ownOnly: true });
+          const blocks = await Database.getExternalBlocks(existingApt.assistantId);
+          const conflict = findBookingConflict({
+            date: existingApt.date,
+            timeSlot: existingApt.timeSlot,
+            durationMinutes: existingApt.durationMinutes,
+            timezone: assistant?.timezone,
+            appointments,
+            blocks,
+            ignoreAppointmentId: id,
+          });
+          if (conflict) return slotTakenResponse(existingApt.date, existingApt.timeSlot);
+        }
+        updated = await Database.updateAppointmentStatus(id, status, cancellationReason, ctx.workspaceId);
+      } finally {
+        releaseLock?.();
+      }
       if (!updated) {
         return NextResponse.json({ error: 'Appointment not found' }, { status: 404 });
       }
@@ -341,7 +373,7 @@ async function POSTHandler(req: Request) {
       originalAssistantId: assistantId,
     });
     if (!result.ok) {
-      if (result.status === 503) return bookingUnavailableResponse(result.error);
+      if (result.status === 503) return bookingUnavailableResponse(result.error, result.retryAfterSeconds);
       return NextResponse.json({ error: result.error }, { status: result.status, headers: { 'Access-Control-Allow-Origin': '*' } });
     }
     const appointment = result.appointment;
@@ -356,6 +388,8 @@ async function POSTHandler(req: Request) {
   } catch (error: any) {
     // Any branch (new booking, reschedule, cancel, status update) refused because Postgres is required but down.
     if (isBookingUnavailable(error)) return bookingUnavailableResponse();
+    // Another request held the day lock too long (reschedule, un-cancel): nothing was written, retry shortly.
+    if (isBookingLockTimeout(error)) return bookingUnavailableResponse(BOOKING_UNAVAILABLE_MESSAGE, 5);
     // The database refused the change because the time was booked meanwhile (e.g. un-cancelling onto a rebooked slot).
     if (error?.code === 'SLOT_CONFLICT') {
       return NextResponse.json(

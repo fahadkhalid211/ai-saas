@@ -263,6 +263,46 @@ describe('status changes that hit a database slot conflict', () => {
   });
 });
 
+describe('admin un-cancel', () => {
+  async function setStatus(id: string, status: string) {
+    const adminKey = `test-admin-${Math.random().toString(36).slice(2)}`;
+    vi.stubEnv('ADMIN_API_KEY', adminKey);
+    const { POST } = await import('../../app/api/appointments/route');
+    const res = await POST(
+      new Request('http://localhost:3000/api/appointments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${adminKey}` },
+        body: JSON.stringify({ action: 'update_status', id, status }),
+      }),
+    );
+    return { status: res.status, json: await res.json() };
+  }
+
+  it('refuses to restore a cancelled booking whose time was booked meanwhile', async () => {
+    const ast = await newAssistant();
+    const mine = await book(ast, MON, '10:00', 60);
+    if (!mine.ok) throw new Error('setup booking failed');
+    expect((await setStatus(mine.appointment.id, 'cancelled')).status).toBe(200);
+    expect((await book(ast, MON, '10:30', 30)).ok).toBe(true);
+
+    const res = await setStatus(mine.appointment.id, 'confirmed');
+    expect(res.status).toBe(409);
+    expect(res.json.error).toBe('The time slot "10:00" on 2099-11-02 has already been booked. Please select another time.');
+    expect((await Database.getAppointmentById(mine.appointment.id))?.status).toBe('cancelled');
+  });
+
+  it('restores a cancelled booking when nothing overlaps it', async () => {
+    const ast = await newAssistant();
+    const mine = await book(ast, MON, '14:00', 60);
+    if (!mine.ok) throw new Error('setup booking failed');
+    expect((await setStatus(mine.appointment.id, 'cancelled')).status).toBe(200);
+    expect((await book(ast, MON, '15:00', 30)).ok).toBe(true); // adjacent, not overlapping
+
+    expect((await setStatus(mine.appointment.id, 'confirmed')).status).toBe(200);
+    expect((await Database.getAppointmentById(mine.appointment.id))?.status).toBe('confirmed');
+  });
+});
+
 describe('client reschedule', () => {
   it('refuses an overlapping time, allows an adjacent one and its own overlapping range, and stores the new range', async () => {
     const ast = await newAssistant({ timezone: 'America/New_York' });
@@ -354,7 +394,7 @@ describe('503 when Postgres is required but unavailable', () => {
     vi.stubEnv('DB_RELATIONAL_MODE', 'true');
     const res = await post({ assistantId: ast.id, name: 'Outage', email: 'outage@example.com', date: MON, timeSlot: '16:00' });
     expect(res.status).toBe(503);
-    expect(res.headers.get('Retry-After')).toBe('5');
+    expect(res.headers.get('Retry-After')).toBe('60');
   });
 
   it('reschedule and client cancel answer 503 with Retry-After', async () => {
@@ -365,10 +405,10 @@ describe('503 when Postgres is required but unavailable', () => {
 
     const moved = await post({ action: 'client_reschedule', manageToken: mine.appointment.manageToken, newDate: MON, newTimeSlot: '16:30' });
     expect(moved.status).toBe(503);
-    expect(moved.headers.get('Retry-After')).toBe('5');
+    expect(moved.headers.get('Retry-After')).toBe('60');
 
     const cancelled = await post({ action: 'client_cancel', manageToken: mine.appointment.manageToken });
     expect(cancelled.status).toBe(503);
-    expect(cancelled.headers.get('Retry-After')).toBe('5');
+    expect(cancelled.headers.get('Retry-After')).toBe('60');
   });
 });
