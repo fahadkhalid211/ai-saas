@@ -380,6 +380,11 @@ export interface AppointmentData {
     reminder1h?: boolean;
     reminder1hSentAt?: string;
   };
+  /** The booking as UTC instants (ISO); set when the date and time could be read. Half-open: [slotStart, slotEnd). */
+  slotStart?: string;
+  slotEnd?: string;
+  /** When a calendar sync found this booking overlapping a busy block on the owner's calendar; null clears it. */
+  externalClashAt?: string | null;
   createdAt: string;
   updatedAt?: string;
 }
@@ -2685,6 +2690,8 @@ export class Database {
     price?: number;
     landingPageName?: string;
     landingPageSlug?: string;
+    slotStart?: string;
+    slotEnd?: string;
   }): Promise<AppointmentData> {
     const manageToken = crypto.randomBytes(16).toString('hex');
 
@@ -2705,6 +2712,8 @@ export class Database {
       manageToken,
       landingPageName: data.landingPageName,
       landingPageSlug: data.landingPageSlug,
+      slotStart: data.slotStart,
+      slotEnd: data.slotEnd,
       remindersSent: {
         reminder24h: false,
         reminder1h: false,
@@ -2895,7 +2904,11 @@ export class Database {
         }
         afterHotWrite(state);
         return true;
-      } catch (err) {
+      } catch (err: any) {
+        // The slot was rebooked meanwhile (un-cancel): report it, never fall back to writing the status elsewhere.
+        if (err?.code === 'SLOT_CONFLICT') {
+          throw err;
+        }
         console.warn('[Relational] updateAppointmentStatus failed, disabling postgres:', err);
         if (isConnectionError(err)) disablePostgresTemporarily();
       }

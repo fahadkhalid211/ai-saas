@@ -359,6 +359,8 @@ function aptToRow(apt: AppointmentData) {
     JSON.stringify(apt.remindersSent ?? {}),
     apt.createdAt,
     apt.updatedAt ?? apt.createdAt,
+    apt.slotStart ?? null,
+    apt.slotEnd ?? null,
   ];
 }
 
@@ -384,7 +386,15 @@ function rowToApt(r: Record<string, any>): AppointmentData {
     remindersSent: r.reminders_sent ?? {},
     createdAt: iso(r.created_at),
     updatedAt: r.updated_at ? iso(r.updated_at) : undefined,
+    slotStart: r.slot_start ? iso(r.slot_start) : undefined,
+    slotEnd: r.slot_end ? iso(r.slot_end) : undefined,
+    externalClashAt: r.external_clash_at ? iso(r.external_clash_at) : undefined,
   };
+}
+
+/** Postgres refused the write because the slot is taken: a unique key (23505) or an overlapping range (23P01). */
+function isSlotViolation(err: any): boolean {
+  return err?.code === '23505' || err?.code === '23P01';
 }
 
 export async function relationalUpsertAppointment(apt: AppointmentData): Promise<boolean> {
@@ -395,8 +405,8 @@ export async function relationalUpsertAppointment(apt: AppointmentData): Promise
            (id, assistant_id, name, email, phone, date, time_slot, duration_minutes,
             status, notes, service_id, service_name, price, manage_token,
             cancellation_reason, landing_page_name, landing_page_slug,
-            reminders_sent, created_at, updated_at)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20)
+            reminders_sent, created_at, updated_at, slot_start, slot_end)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22)
          ON CONFLICT (id) DO UPDATE SET
            status              = EXCLUDED.status,
            notes               = EXCLUDED.notes,
@@ -407,7 +417,7 @@ export async function relationalUpsertAppointment(apt: AppointmentData): Promise
       );
       return true;
     } catch (err: any) {
-      if (err?.code === '23505') {
+      if (isSlotViolation(err)) {
         const conflictErr = new Error(`Slot conflict: ${apt.timeSlot} on ${apt.date} has already been booked`);
         (conflictErr as any).code = 'SLOT_CONFLICT';
         throw conflictErr;
@@ -432,6 +442,9 @@ export async function relationalUpdateAppointment(
   if (patch.date !== undefined) { sets.push(`date = $${idx++}`); values.push(patch.date); }
   if (patch.timeSlot !== undefined) { sets.push(`time_slot = $${idx++}`); values.push(patch.timeSlot); }
   if (patch.remindersSent !== undefined) { sets.push(`reminders_sent = $${idx++}`); values.push(JSON.stringify(patch.remindersSent)); }
+  if (patch.slotStart !== undefined) { sets.push(`slot_start = $${idx++}`); values.push(patch.slotStart); }
+  if (patch.slotEnd !== undefined) { sets.push(`slot_end = $${idx++}`); values.push(patch.slotEnd); }
+  if (patch.externalClashAt !== undefined) { sets.push(`external_clash_at = $${idx++}`); values.push(patch.externalClashAt); }
 
   sets.push(`updated_at = $${idx++}`);
   values.push(new Date().toISOString());
@@ -447,7 +460,7 @@ export async function relationalUpdateAppointment(
       );
       return (res.rowCount ?? 0) > 0;
     } catch (err: any) {
-      if (err?.code === '23505') {
+      if (isSlotViolation(err)) {
         const conflictErr = new Error(`Slot conflict: ${patch.timeSlot || 'slot'} on ${patch.date || 'date'} has already been booked`);
         (conflictErr as any).code = 'SLOT_CONFLICT';
         throw conflictErr;
