@@ -209,6 +209,66 @@ describe('fetchCalendarFeed', () => {
     if (r.status === 'error') expect(r.error).toMatch(/too long|time/i);
   });
 
+  it('returns an error after 8 s when the SSRF guard (DNS) never resolves', async () => {
+    vi.useFakeTimers();
+    validate.mockImplementation(() => new Promise(() => {}));
+    const p = fetchCalendarFeed('https://cal.example.com/a.ics');
+    await vi.advanceTimersByTimeAsync(8000);
+    const r = await p;
+    expect(r.status).toBe('error');
+    if (r.status === 'error') expect(r.error).toMatch(/too long/i);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('times out a hung guard on a redirect hop too', async () => {
+    vi.useFakeTimers();
+    validate
+      .mockImplementationOnce(async (u: string) => ({ safe: true, url: u }))
+      .mockImplementation(() => new Promise(() => {}));
+    fetchMock.mockResolvedValueOnce(new Response(null, { status: 302, headers: { Location: 'https://cdn.example.com/b.ics' } }));
+    const p = fetchCalendarFeed('https://cal.example.com/a.ics');
+    await vi.advanceTimersByTimeAsync(8000);
+    expect((await p).status).toBe('error');
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('sends cache: no-store so a framework fetch cache can never serve a stale calendar', async () => {
+    fetchMock.mockResolvedValueOnce(new Response(ICS, { status: 200 }));
+    await fetchCalendarFeed('https://cal.example.com/a.ics');
+    expect(fetchMock.mock.calls[0][1].cache).toBe('no-store');
+  });
+
+  it('treats a 304 as an error when no conditional header was sent', async () => {
+    fetchMock.mockResolvedValueOnce(new Response(null, { status: 304 }));
+    expect((await fetchCalendarFeed('https://cal.example.com/a.ics')).status).toBe('error');
+    fetchMock.mockResolvedValueOnce(new Response(null, { status: 304 }));
+    expect((await fetchCalendarFeed('https://cal.example.com/a.ics', {})).status).toBe('error');
+  });
+
+  it('keeps not_modified for a 304 when only If-Modified-Since was sent', async () => {
+    fetchMock.mockResolvedValueOnce(new Response(null, { status: 304 }));
+    expect(await fetchCalendarFeed('https://cal.example.com/a.ics', { lastModified: 'Wed, 21 Oct 2026 07:28:00 GMT' })).toEqual({
+      status: 'not_modified',
+    });
+  });
+
+  it('rejects a link with credentials before the guard, without echoing the password or the link', async () => {
+    const r = await fetchCalendarFeed(`https://user:${SECRET}@cal.example.com/a.ics?token=${SECRET}`);
+    expect(r.status).toBe('error');
+    if (r.status === 'error') expect(r.error).toMatch(/username or password/i);
+    expect(JSON.stringify(r)).not.toContain(SECRET);
+    expect(validate).not.toHaveBeenCalled();
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('rejects a redirect that carries credentials', async () => {
+    fetchMock.mockResolvedValueOnce(new Response(null, { status: 302, headers: { Location: `https://u:${SECRET}@cdn.example.com/b.ics` } }));
+    const r = await fetchCalendarFeed('https://cal.example.com/a.ics');
+    expect(r.status).toBe('error');
+    expect(JSON.stringify(r)).not.toContain(SECRET);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
   it('returns error when fetch throws, naming the host but not the secret', async () => {
     fetchMock.mockRejectedValueOnce(new Error(`connect ECONNREFUSED https://cal.example.com/a.ics?token=${SECRET}`));
     const r = await fetchCalendarFeed(`https://cal.example.com/a.ics?token=${SECRET}`);

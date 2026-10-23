@@ -16,6 +16,29 @@ export function normaliseCalendarUrl(raw: string): string {
 
 class FeedError extends Error {}
 
+/** Runs `work` but gives up the moment `signal` aborts, so a stalled DNS lookup cannot outlive the time limit. */
+function raceAbort<T>(work: Promise<T>, signal: AbortSignal): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    if (signal.aborted) {
+      work.catch(() => {});
+      reject(new Error('aborted'));
+      return;
+    }
+    const onAbort = () => reject(new Error('aborted'));
+    signal.addEventListener('abort', onAbort, { once: true });
+    work.then(
+      (v) => {
+        signal.removeEventListener('abort', onAbort);
+        resolve(v);
+      },
+      (e) => {
+        signal.removeEventListener('abort', onAbort);
+        reject(e);
+      },
+    );
+  });
+}
+
 /** Reads the body, stopping as soon as it passes the size limit rather than trusting content-length. */
 async function readLimitedText(res: Response, host: string): Promise<string> {
   const declared = Number(res.headers.get('content-length'));
@@ -62,6 +85,7 @@ export async function fetchCalendarFeed(
     let current = normaliseCalendarUrl(url);
 
     for (let hop = 0; hop <= MAX_REDIRECTS; hop++) {
+      if (controller.signal.aborted) throw new Error('aborted');
       let parsed: URL;
       try {
         parsed = new URL(current);
@@ -73,7 +97,11 @@ export async function fetchCalendarFeed(
         throw new FeedError(`The calendar link on ${host} must start with https:// (or webcal://).`);
       }
 
-      const verdict = await validateSafeExternalUrl(current, { requireHttps: true });
+      if (parsed.username || parsed.password) {
+        throw new FeedError('Calendar links must not contain a username or password.');
+      }
+
+      const verdict = await raceAbort(validateSafeExternalUrl(current, { requireHttps: true }), controller.signal);
       if (!verdict.safe) {
         throw new FeedError(`The calendar address ${host} is not allowed (it must be a public https address).`);
       }
@@ -85,9 +113,15 @@ export async function fetchCalendarFeed(
       if (prev?.etag) headers['If-None-Match'] = prev.etag;
       if (prev?.lastModified) headers['If-Modified-Since'] = prev.lastModified;
 
-      const res = await fetch(current, { redirect: 'manual', headers, signal: controller.signal });
+      const res = await fetch(current, { redirect: 'manual', cache: 'no-store', headers, signal: controller.signal });
 
-      if (res.status === 304) return { status: 'not_modified' };
+      if (res.status === 304) {
+        // A 304 only means something if we asked a conditional question.
+        if (!prev?.etag && !prev?.lastModified) {
+          throw new FeedError(`${host} answered "not modified" although no earlier copy was requested.`);
+        }
+        return { status: 'not_modified' };
+      }
 
       if (res.status >= 300 && res.status < 400) {
         await res.body?.cancel().catch(() => {});
