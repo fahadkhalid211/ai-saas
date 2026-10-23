@@ -10,6 +10,7 @@ import { BlogBody } from '@/components/marketing/BlogBody';
 import { ButtonLink } from '@/components/marketing/ui';
 import { SITE } from '@/components/marketing/content';
 import { PUBLISHED_INDEX } from '@/lib/blog';
+import { isIndexable } from '@/lib/blog/indexing';
 import { blogLanguages, getPostInLocale, hasBlogTranslation, translatedSlugs } from '@/lib/blog/translated';
 import { getLocale } from '@/lib/i18n/server';
 import { LocaleAlternates } from '@/components/i18n/LocaleAlternates';
@@ -54,10 +55,10 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       description: post.description,
       alternates: { canonical: `/blog/${post.slug}` },
       robots: {
-        index: true,
+        index: isIndexable(post.slug),
         follow: true,
         googleBot: {
-          index: true,
+          index: isIndexable(post.slug),
           follow: true,
           'max-image-preview': 'large',
           'max-snippet': -1,

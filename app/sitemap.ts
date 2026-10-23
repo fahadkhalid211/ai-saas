@@ -1,12 +1,20 @@
 import type { MetadataRoute } from 'next';
 import { SITE } from '@/components/marketing/content';
 import { PUBLISHED_INDEX } from '@/lib/blog';
+import { releasedSlugs } from '@/lib/blog/schedule';
 import { blogLanguages } from '@/lib/blog/translations';
-import { HREFLANG, LOCALES, isLocalizablePath, localizeHref } from '@/lib/i18n/paths';
+import { HREFLANG, isLocalizablePath, localizeHref } from '@/lib/i18n/paths';
 import type { SupportedLocale } from '@/lib/i18n/types';
 
+/**
+ * Only the English pages are submitted for now. Google had not read most of the Swedish, Finnish, Italian and Spanish copies, and
+ * spreading its attention over five versions of every page slowed down the English ones. Those pages stay live and indexable (they
+ * link to each other with hreflang on the page); add 'sv', 'fi', 'it', 'es' back here once the English pages are indexed.
+ */
+const SITEMAP_LOCALES: readonly SupportedLocale[] = ['en'];
+
 /** Bump this when the marketing pages change in a way worth re-crawling. */
-const SITE_UPDATED = '2026-10-07';
+const SITE_UPDATED = '2026-10-23';
 
 /** Every public page that should be in search results. Sign-in and private areas are left out on purpose. */
 const PAGES: { path: string; priority: number; changeFrequency: 'weekly' | 'monthly' | 'yearly' }[] = [
@@ -79,12 +87,17 @@ function entries(path: string, languages: readonly SupportedLocale[], rest: { la
   return languages.map((l) => ({ url: urlFor(l), ...rest, alternates }));
 }
 
+/** Rebuilt hourly so a new day's articles appear without a deploy. */
+export const revalidate = 3600;
+
 export default function sitemap(): MetadataRoute.Sitemap {
   // A page's date should change only when the page does; stamping "now" on everything teaches Google to ignore it.
   const lastModified = new Date(SITE_UPDATED);
-  const pages = PAGES.flatMap((p) => entries(p.path, LOCALES, { lastModified, changeFrequency: p.changeFrequency, priority: p.priority }));
-  const posts = PUBLISHED_INDEX.flatMap((b) =>
-    entries(`/blog/${b.slug}`, blogLanguages(b.slug), { lastModified: new Date(b.dateModified), changeFrequency: 'monthly' as const, priority: 0.6 })
+  const pages = PAGES.flatMap((p) => entries(p.path, SITEMAP_LOCALES, { lastModified, changeFrequency: p.changeFrequency, priority: p.priority }));
+  // Articles join the sitemap a few per day (lib/blog/schedule.ts), so Google meets the site gradually instead of 275 pages at once.
+  const released = new Set(releasedSlugs());
+  const posts = PUBLISHED_INDEX.filter((b) => released.has(b.slug)).flatMap((b) =>
+    entries(`/blog/${b.slug}`, blogLanguages(b.slug).filter((l) => SITEMAP_LOCALES.includes(l)), { lastModified: new Date(b.dateModified), changeFrequency: 'monthly' as const, priority: 0.6 })
   );
   return [...pages, ...posts];
 }

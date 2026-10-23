@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { BLOG_POSTS, PUBLISHED_POSTS, getPost } from './posts';
+import { isIndexable } from './indexing';
 import { generateMetadata } from '../../app/[locale]/(marketing)/blog/[slug]/page';
 
 describe('verify noindex status for all articles', () => {
@@ -11,12 +12,12 @@ describe('verify noindex status for all articles', () => {
   });
 
   for (const post of BLOG_POSTS) {
-    it(`${post.slug} has explicit index: true and is NOT noindex`, async () => {
+    it(`${post.slug} is indexed unless it is one of the held-back articles`, async () => {
       expect(post.thin).toBeFalsy();
       const meta = await generateMetadata({ params: Promise.resolve({ slug: post.slug }) });
       expect(meta.robots).toBeDefined();
       if (typeof meta.robots === 'object' && meta.robots !== null) {
-        expect(meta.robots.index).toBe(true);
+        expect(meta.robots.index).toBe(isIndexable(post.slug));
         expect(meta.robots.follow).toBe(true);
       }
     });
