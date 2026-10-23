@@ -9,7 +9,8 @@
 --
 -- THIS STATEMENT FAILS WHILE OVERLAPPING BOOKINGS EXIST. Postgres checks every existing row when
 -- the constraint is added; one overlapping pair (same assistant, non-cancelled) aborts it and
--- nothing is changed. Fix each pair the report lists (cancel or move one booking), then run it again.
+-- nothing is changed. Fix each pair the report lists (delete one booking in the dashboard, or cancel it from the
+-- mobile app or the guest manage link), then run it again.
 --
 -- LOCKING: this briefly blocks bookings on kortex_appointments while the constraint/index is built; run at a quiet
 -- time; if it times out, retry. lock_timeout below makes it give up after 5s instead of queueing behind a long
@@ -24,6 +25,8 @@
 --
 -- Not idempotent: a second run fails with "constraint already exists". To remove it:
 --   ALTER TABLE kortex_appointments DROP CONSTRAINT kortex_appointments_no_overlap;
+-- Drop it BEFORE rolling the code back to a version without range support: old code maps only 23505, so a 23P01
+-- would take its JSON-fallback branch and save the booking only in the blob.
 
 SET lock_timeout = '5s';
 

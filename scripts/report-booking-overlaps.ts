@@ -104,7 +104,7 @@ async function main(): Promise<void> {
   }
 
   if (pairs.length > 0) {
-    console.log('[OverlapReport] Fix every pair above (cancel or move one booking), then run this report again.');
+    console.log('[OverlapReport] Fix every pair above (delete one booking in the dashboard, or cancel it from the mobile app or the guest manage link), then run this report again.');
   } else {
     console.log('[OverlapReport] No overlaps. The v4b constraint can be applied.');
   }
