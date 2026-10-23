@@ -233,6 +233,21 @@ describe('Enterprise Validation & Sanitization Suite', () => {
       expect(badRes.errors.password).toBeDefined();
     });
 
+    it('leaves a missing appointment duration undefined (the assistant slot length applies) and still checks a given one', () => {
+      const base = { assistantId: 'ast_123', name: 'Jane Doe', email: 'jane@example.com', date: '2029-11-20', timeSlot: '11:00 AM' };
+      const none = validateAppointmentPayload(base);
+      expect(none.valid).toBe(true);
+      expect(none.sanitized?.durationMinutes).toBeUndefined();
+      expect(validateAppointmentPayload({ ...base, durationMinutes: '' }).sanitized?.durationMinutes).toBeUndefined();
+      expect(validateAppointmentPayload({ ...base, durationMinutes: '60' }).sanitized?.durationMinutes).toBe(60);
+
+      for (const durationMinutes of [2, 481, 'long']) {
+        const bad = validateAppointmentPayload({ ...base, durationMinutes });
+        expect(bad.valid, String(durationMinutes)).toBe(false);
+        expect(bad.errors.durationMinutes).toBeDefined();
+      }
+    });
+
     it('validates appointment booking payload', () => {
       const validBooking = {
         assistantId: 'ast_123',

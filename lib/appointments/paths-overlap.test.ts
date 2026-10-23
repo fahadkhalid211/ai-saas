@@ -245,6 +245,19 @@ describe('web POST time slots', () => {
     expect(all.filter((a) => a.assistantId === ast.id)).toHaveLength(0);
   });
 
+  it("a booking without a duration takes the assistant's slot length, so it blocks only its own slot", async () => {
+    const ast = await newAssistant(); // 30-minute grid
+    const res = await post({ assistantId: ast.id, name: 'No duration', email: 'nodur@example.com', date: MON, timeSlot: '11:00' });
+    expect(res.status).toBe(201);
+    expect(res.json.appointment.durationMinutes).toBe(30);
+    expect(res.json.appointment.slotEnd).toBe('2099-11-02T11:30:00.000Z');
+    expect(await checkDate(ast.id, MON)).toEqual(['11:00']);
+
+    const longer = await newAssistant({ bookingSlotDuration: 45 });
+    const res45 = await post({ assistantId: longer.id, name: 'No duration', email: 'nodur45@example.com', date: MON, timeSlot: '11:00' });
+    expect(res45.json.appointment.durationMinutes).toBe(45);
+  });
+
   it('still accepts HH:MM and 12h range strings, storing a range', async () => {
     const ast = await newAssistant();
     const plain = await post({ assistantId: ast.id, name: 'Plain', email: 'plain@example.com', date: MON, timeSlot: '09:00', durationMinutes: 30 });

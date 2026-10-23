@@ -615,7 +615,8 @@ export default function HostedBusinessSiteClient({
       phone: clientPhone,
       date: bookingDate,
       timeSlot: bookingTime,
-      durationMinutes: selectedService?.durationMinutes || 40,
+      // The service's own length, or none: the server then uses the assistant's slot length (never a made-up 40).
+      durationMinutes: selectedService?.durationMinutes || undefined,
       serviceId: selectedService?.id,
       serviceName: selectedService?.name || 'Appointment',
       price: selectedService?.price,
@@ -951,7 +952,8 @@ export default function HostedBusinessSiteClient({
           id: 'srv_default',
           name: 'Consultation & Appointment',
           description: 'Scheduled service visit',
-          durationMinutes: 45,
+          // no services configured: one slot of the assistant's grid, the same length the server would use
+          durationMinutes: assistantData?.bookingSlotDuration || 30,
           price: 50,
         });
       },
@@ -1177,7 +1179,7 @@ export default function HostedBusinessSiteClient({
                 id: 'srv_1',
                 name: 'Standard Appointment',
                 description: 'Service appointment',
-                durationMinutes: 40,
+                durationMinutes: assistantData?.bookingSlotDuration || 30,
                 price: 45,
               })}
               className={`flex items-center gap-2 px-5 py-2.5 ${currentTheme.btnBg} ${currentTheme.btnHoverBg} ${currentTheme.btnText} font-semibold text-sm rounded-lg shadow-lg transition-all active:scale-95`}

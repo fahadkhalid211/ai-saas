@@ -361,7 +361,8 @@ export function validateAppointmentPayload(data: any): {
     phone: string;
     date: string;
     timeSlot: string;
-    durationMinutes: number;
+    /** Undefined when the request gave none: the booking then takes the assistant's slot length. */
+    durationMinutes?: number;
     serviceId?: string;
     serviceName?: string;
     price: number;
@@ -392,8 +393,12 @@ export function validateAppointmentPayload(data: any): {
   const timeCheck = validateTimeSlot(data?.timeSlot);
   if (!timeCheck.valid) errors.timeSlot = timeCheck.error!;
 
+  // No default here: a made-up length (it used to be 40) blocks the next slot on a 30-minute grid. createAppointment uses
+  // the assistant's slot length when none is given.
+  const durationGiven = data?.durationMinutes !== undefined && data?.durationMinutes !== null && data?.durationMinutes !== '';
   const durCheck = validateNumber(data?.durationMinutes, 5, 480, 'Duration Minutes', false);
-  const durationMinutes = durCheck.valid ? durCheck.value || 40 : 40;
+  if (!durCheck.valid) errors.durationMinutes = durCheck.error!;
+  const durationMinutes = durationGiven && durCheck.valid ? durCheck.value : undefined;
 
   const priceCheck = validateNumber(data?.price, 0, 100000, 'Price', false);
   const price = priceCheck.valid ? priceCheck.value || 0 : 0;
