@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { Database, type AssistantData } from '@/lib/db';
 import { logEvent } from '@/lib/logging/logger';
 import { fetchCalendarFeed, normaliseCalendarUrl } from './fetch-feed';
@@ -12,7 +13,7 @@ import type { CalendarLink } from './types';
  * - syncCalendarLink: one link. Never throws. A failed or unreadable read keeps the blocks already stored; only a readable calendar
  *   replaces them (an emptied calendar is readable and replaces them with none).
  * - refreshAssistantCalendars: called right BEFORE a booking is confirmed (and before the day lock is taken), capped at 3 seconds. Never throws, never blocks a booking.
- * - syncDueCalendars: the scheduled job; reads every link that has gone unread for a while, then checks upcoming bookings for clashes.
+ * - syncDueCalendars: the scheduled job; reads every link that is due, then checks upcoming bookings for clashes.
  *
  * Sync status is recorded only with Database.updateCalendarLinkStatus, which never re-creates a link the owner removed meanwhile.
  * A calendar address is a secret: it appears in no log line, notification, e-mail or error text produced here.
@@ -22,8 +23,15 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 const WINDOW_BACK_MS = DAY_MS;
 const WINDOW_FORWARD_MS = 180 * DAY_MS;
 
+/**
+ * The blocks cover [read time - 1 day, read time + 180 days]. A server that keeps answering 304 never moves that window, so after this long
+ * the next read is sent WITHOUT the stored validators: the answer is a full body, parsed for a fresh window.
+ */
+const FULL_READ_AFTER_MS = DAY_MS;
+
 const UNREADABLE = 'The link did not return a readable calendar';
 const NOT_SAVED = 'The calendar could not be updated right now.';
+const NOT_STORED = 'Could not store the calendar';
 
 export interface SyncResult {
   ok: boolean;
@@ -33,18 +41,26 @@ export interface SyncResult {
   error?: string;
 }
 
+// In-process memory, keyed by link id AND a hash of its address: an owner who edits the address gets a fresh key, so the edited link is
+// neither stuck behind the "tried a moment ago" memo nor joined to a read of the old address.
 const inFlight = new Map<string, Promise<SyncResult>>();
-// When this process last tried each link. A link that keeps failing has no new lastSyncedAt, so without this every booking would try it again.
-const attemptedAt = new Map<string, number>();
+type Attempt = { at: number; state: 'pending' | 'ok' | 'failed' };
+const attempts = new Map<string, Attempt>();
 const MAX_TRACKED = 5000;
+
+const memoKey = (link: Pick<CalendarLink, 'id' | 'url'>) => `${link.id}:${createHash('sha256').update(link.url).digest('hex').slice(0, 16)}`;
 
 /** Clears the in-process memory (tests only). */
 export function _resetSyncStateForTesting(): void {
   inFlight.clear();
-  attemptedAt.clear();
+  attempts.clear();
 }
 
 const errName = (err: unknown) => (err instanceof Error ? err.name : 'unknown');
+const timeOf = (iso?: string) => {
+  const t = Date.parse(iso ?? '');
+  return Number.isFinite(t) ? t : 0;
+};
 
 function withoutLink(text: string, link: CalendarLink): string {
   let out = text;
@@ -56,10 +72,12 @@ function withoutLink(text: string, link: CalendarLink): string {
 
 /** Reads one link and stores the result. Two calls for the same link at once share one read. Never throws. */
 export function syncCalendarLink(link: CalendarLink, assistant: AssistantData, now: Date = new Date()): Promise<SyncResult> {
-  const running = inFlight.get(link.id);
+  const key = memoKey(link);
+  const running = inFlight.get(key);
   if (running) return running;
-  if (attemptedAt.size >= MAX_TRACKED) attemptedAt.clear();
-  attemptedAt.set(link.id, Date.now());
+  if (attempts.size >= MAX_TRACKED) attempts.clear();
+  const attempt: Attempt = { at: Date.now(), state: 'pending' };
+  attempts.set(key, attempt);
 
   const run: Promise<SyncResult> = syncOnce(link, assistant, now)
     .catch((err): SyncResult => {
@@ -67,30 +85,49 @@ export function syncCalendarLink(link: CalendarLink, assistant: AssistantData, n
       logEvent({ level: 'warn', category: 'booking', event: 'calendar.sync_failed', meta: { assistantId: link.assistantId, linkId: link.id, error: errName(err) } });
       return { ok: false, blocks: link.blockCount ?? 0, error: NOT_SAVED };
     })
+    .then((res) => {
+      attempt.state = res.ok ? 'ok' : 'failed';
+      return res;
+    })
     .finally(() => {
-      if (inFlight.get(link.id) === run) inFlight.delete(link.id);
+      if (inFlight.get(key) === run) inFlight.delete(key);
     });
-  inFlight.set(link.id, run);
+  inFlight.set(key, run);
   return run;
 }
 
 async function syncOnce(link: CalendarLink, assistant: AssistantData, now: Date): Promise<SyncResult> {
   const kept = link.blockCount ?? 0;
   const nowIso = now.toISOString();
+  const timezone = assistant.timezone || 'UTC';
 
   // A failure is recorded without touching the stored blocks. False from the update = the owner removed the link meanwhile: say nothing.
   const fail = async (message: string): Promise<SyncResult> => {
-    const recorded = await Database.updateCalendarLinkStatus(link.assistantId, link.id, { lastError: message, errorSince: link.errorSince ?? nowIso });
+    const recorded = await Database.updateCalendarLinkStatus(link.assistantId, link.id, {
+      lastError: message,
+      errorSince: link.errorSince ?? nowIso,
+      lastAttemptAt: nowIso,
+    });
     return recorded ? { ok: false, blocks: kept, error: message } : { ok: false, blocks: kept };
   };
 
-  const res = await fetchCalendarFeed(link.url, { etag: link.etag, lastModified: link.lastModified });
+  // Validators make an unchanged calendar answer 304, which keeps the blocks parsed earlier. That is only right while those blocks still
+  // cover the window and were read the way they would be read now, so a full read (no validators) is forced when:
+  //  - no response has been parsed yet, or the last one is more than a day old (the window has moved on);
+  //  - the block count is unknown (an earlier version stored the link, or the status was reset);
+  //  - the assistant's timezone changed since the last parse (floating times and all-day events are read in it).
+  const fullAt = timeOf(link.fullSyncedAt);
+  const needFull =
+    fullAt === 0 || now.getTime() - fullAt > FULL_READ_AFTER_MS || link.blockCount === undefined || link.parsedTimezone !== timezone;
+  const res = needFull ? await fetchCalendarFeed(link.url) : await fetchCalendarFeed(link.url, { etag: link.etag, lastModified: link.lastModified });
 
   if (res.status === 'error') return fail(withoutLink(res.error, link));
 
   if (res.status === 'not_modified') {
+    // Nothing was parsed, so fullSyncedAt stays where it was.
     const recorded = await Database.updateCalendarLinkStatus(link.assistantId, link.id, {
       lastSyncedAt: nowIso,
+      lastAttemptAt: nowIso,
       lastError: null,
       errorSince: null,
       failureNotifiedFor: null,
@@ -101,7 +138,7 @@ async function syncOnce(link: CalendarLink, assistant: AssistantData, now: Date)
   let parsed: ReturnType<typeof parseIcalBlocks>;
   try {
     parsed = parseIcalBlocks(res.text, {
-      timezone: assistant.timezone || 'UTC',
+      timezone,
       from: new Date(now.getTime() - WINDOW_BACK_MS),
       to: new Date(now.getTime() + WINDOW_FORWARD_MS),
     });
@@ -113,10 +150,23 @@ async function syncOnce(link: CalendarLink, assistant: AssistantData, now: Date)
   }
 
   // Guarded in the database: a link removed meanwhile gets no blocks.
-  await Database.replaceExternalBlocks(link.id, link.assistantId, parsed.blocks);
+  try {
+    await Database.replaceExternalBlocks(link.id, link.assistantId, parsed.blocks);
+  } catch (err) {
+    // The blocks could not be written: the owner must see it (and the 24 hour notice must be able to arm), so record an error if we can.
+    logEvent({ level: 'warn', category: 'booking', event: 'calendar.blocks_store_failed', meta: { assistantId: link.assistantId, linkId: link.id, error: errName(err) } });
+    try {
+      return await fail(NOT_STORED);
+    } catch {
+      return { ok: false, blocks: kept, error: NOT_STORED };
+    }
+  }
   const stored = Math.min(parsed.blocks.length, MAX_BLOCKS_PER_LINK);
   const recorded = await Database.updateCalendarLinkStatus(link.assistantId, link.id, {
     lastSyncedAt: nowIso,
+    lastAttemptAt: nowIso,
+    fullSyncedAt: nowIso,
+    parsedTimezone: timezone,
     lastError: null,
     errorSince: null,
     failureNotifiedFor: null,
@@ -131,14 +181,15 @@ async function syncOnce(link: CalendarLink, assistant: AssistantData, now: Date)
 export interface RefreshOptions {
   /** Longest wait for the reads, default 3000 ms. */
   timeoutMs?: number;
-  /** Links read more recently than this are used as they are, default 60 s. */
+  /** Links tried more recently than this are used as they are, default 60 s. */
   maxAgeMs?: number;
 }
 
 /**
- * Brings the assistant's linked calendars up to date just before a booking is confirmed. Reads the links that are older than `maxAgeMs`,
- * in parallel, and waits at most `timeoutMs`. `stale` is true when a read failed or timed out, or a link still carries an error:
- * the booking then goes ahead against the last good blocks (logged as booking.calendar_stale). This function never throws.
+ * Brings the assistant's linked calendars up to date just before a booking is confirmed. Reads the links that were last tried more than
+ * `maxAgeMs` ago, in parallel, and waits at most `timeoutMs`. `stale` is true when a read failed or timed out, or a link still carries an
+ * error, or a link skipped as "tried a moment ago" has not finished or has failed: the booking then goes ahead against the last good
+ * blocks (logged as booking.calendar_stale). This function never throws.
  * Call it BEFORE taking the day lock; the conflict check inside the lock reads the blocks it stored.
  */
 export async function refreshAssistantCalendars(assistant: AssistantData, opts: RefreshOptions = {}): Promise<{ stale: boolean }> {
@@ -158,9 +209,17 @@ export async function refreshAssistantCalendars(assistant: AssistantData, opts: 
     const nowMs = Date.now();
     const due: CalendarLink[] = [];
     for (const link of links) {
-      const last = Math.max(Date.parse(link.lastSyncedAt ?? '') || 0, attemptedAt.get(link.id) ?? 0);
-      if (last === 0 || nowMs - last > maxAgeMs) due.push(link);
-      else if (link.lastError) stale = true;
+      const attempt = attempts.get(memoKey(link));
+      const last = Math.max(timeOf(link.lastSyncedAt), timeOf(link.lastAttemptAt), attempt?.at ?? 0);
+      if (last === 0 || nowMs - last > maxAgeMs) {
+        due.push(link);
+        continue;
+      }
+      // Not read again now. Its blocks are only trustworthy if the attempt that made it "recent" worked: an error is recorded, an attempt
+      // still running (or that timed out) or one that ended without success is not.
+      const tryFailed = attempt !== undefined && attempt.state !== 'ok';
+      const attemptedAfterSuccess = timeOf(link.lastAttemptAt) > timeOf(link.lastSyncedAt);
+      if (link.lastError || tryFailed || attemptedAfterSuccess) stale = true;
     }
     const results = await Promise.all(due.map((link) => syncCalendarLink(link, assistant)));
     failedCount = results.filter((r) => !r.ok && r.error).length;
@@ -197,39 +256,81 @@ const DEFAULT_MAX_AGE_MS = 10 * 60_000;
 // The scheduler may fire a little early; without this a link read at the end of one run would be skipped by the next and wait a whole extra cycle.
 const DUE_GRACE_MS = 60_000;
 const CONCURRENCY = 3;
-const START_BUDGET_MS = 50_000;
+/**
+ * No new link is STARTED after this long. One read can take up to 8 s (the fetch limit) plus the database writes, and the clash check needs
+ * time after it, so the start budget leaves about 20 s of the 55 s hard stop below for reads already running.
+ */
+const START_BUDGET_MS = 35_000;
+/** No clash check is started after this long (the hosting limit is 300 s; this keeps a run well inside one scheduler interval). */
 const HARD_STOP_MS = 55_000;
 const FAILURE_NOTICE_AFTER_MS = DAY_MS;
 
+// How long a link that keeps failing waits before it is tried again, by how long it has been failing (never shorter than the normal interval).
+const BACKOFF_TIERS: Array<{ failingFor: number; wait: number }> = [
+  { failingFor: 7 * DAY_MS, wait: 6 * 60 * 60_000 },
+  { failingFor: DAY_MS, wait: 60 * 60_000 },
+];
+
 export interface SyncDueOptions {
-  /** No new link is started after this long (default 50 s). */
+  /** No new link is started after this long (default 35 s). */
   budgetMs?: number;
   /** Links read at the same time (default 3). */
   concurrency?: number;
 }
 
+export interface SyncDueResult {
+  /** Due links that were started. */
+  checked: number;
+  /** Of those, links whose read failed. */
+  failed: number;
+  /** Due links NOT started because the start budget ran out; they come first in the next run. */
+  skipped: number;
+  /** Assistants whose clash check was not run because the 55 s hard stop came first. */
+  clashChecksSkipped: number;
+}
+
+/** When the link was last tried (successful or not); 0 = never. */
+const lastTried = (link: CalendarLink) => Math.max(timeOf(link.lastAttemptAt), timeOf(link.lastSyncedAt));
+
+/** Minimum time between two scheduled reads of a link: the normal interval, longer the longer it has been failing. */
+function intervalFor(link: CalendarLink, nowMs: number, maxAgeMs: number): number {
+  const since = timeOf(link.errorSince);
+  if (since === 0) return maxAgeMs;
+  const failingFor = nowMs - since;
+  for (const tier of BACKOFF_TIERS) if (failingFor >= tier.failingFor) return Math.max(maxAgeMs, tier.wait);
+  return maxAgeMs;
+}
+
 const LABEL_NAMES: Record<CalendarLink['label'], string> = { google: 'Google', apple: 'Apple', outlook: 'Outlook', other: 'linked' };
 
 /**
- * The scheduled job: reads every link not read for `maxAgeMs` (or never), three at a time, and starts no new link after 50 seconds
- * (the rest wait for the next run). One link's failure never stops the others. Afterwards upcoming bookings are checked for clashes
- * with the stored blocks of every assistant that has a read link: this covers blocks stored by a booking-time refresh, which this
- * job then skips as fresh. A link that has failed for 24 hours gets one notification for that run of failures.
+ * The scheduled job. A link is due when it was never tried, or its wait since the last attempt has passed: 10 minutes normally, and for a
+ * link that has been failing for 24 hours to 7 days 60 minutes, for longer than that 6 hours (saving an edited address resets this).
+ * Due links are read oldest attempt first (never-tried ones first), so one tenant's dead links cannot starve the others. Three at a time;
+ * no new link is started after 35 s (the rest are counted as `skipped` and go first next time).
+ *
+ * Clash check: an assistant's upcoming bookings are checked against its stored blocks right after that assistant's last due link was read
+ * successfully. Afterwards, while time remains (hard stop 55 s), the assistants whose check could not run yet, then every other assistant
+ * with a read link, are checked: this covers blocks stored by a booking-time refresh, which this job skips as fresh. Checks that did not
+ * fit are counted as `clashChecksSkipped`.
+ * One link's failure never stops the others. A link that has failed for 24 hours gets one notification for that run of failures.
  */
 export async function syncDueCalendars(
   now: Date = new Date(),
   maxAgeMs: number = DEFAULT_MAX_AGE_MS,
   opts: SyncDueOptions = {},
-): Promise<{ checked: number; failed: number }> {
+): Promise<SyncDueResult> {
   const started = Date.now();
   const budgetMs = opts.budgetMs ?? START_BUDGET_MS;
   const concurrency = Math.max(1, opts.concurrency ?? CONCURRENCY);
   const links = await Database.getAllCalendarLinks();
-  const dueAfter = Math.max(0, maxAgeMs - DUE_GRACE_MS);
-  const due = links.filter((l) => {
-    const last = Date.parse(l.lastSyncedAt ?? '');
-    return !Number.isFinite(last) || now.getTime() - last >= dueAfter;
-  });
+  const nowMs = now.getTime();
+  const due = links
+    .filter((l) => {
+      const last = lastTried(l);
+      return last === 0 || nowMs - last >= Math.max(0, intervalFor(l, nowMs, maxAgeMs) - DUE_GRACE_MS);
+    })
+    .sort((a, b) => lastTried(a) - lastTried(b) || a.createdAt.localeCompare(b.createdAt));
 
   const assistants = new Map<string, Promise<AssistantData | null>>();
   const assistantFor = (id: string) => {
@@ -241,10 +342,24 @@ export async function syncDueCalendars(
     return p;
   };
 
+  const waiting = new Map<string, number>(); // due links of each assistant not finished yet
+  for (const l of due) waiting.set(l.assistantId, (waiting.get(l.assistantId) ?? 0) + 1);
+  const syncedOk = new Set<string>();
+  const checkedForClashes = new Set<string>();
+
+  const clashCheck = async (assistantId: string): Promise<void> => {
+    checkedForClashes.add(assistantId);
+    try {
+      const assistant = await assistantFor(assistantId);
+      if (assistant) await detectClashes(assistant, now);
+    } catch (err) {
+      logEvent({ level: 'warn', category: 'cron', event: 'calendar.clash_check_failed', meta: { assistantId, error: errName(err) } });
+    }
+  };
+
   let next = 0;
   let checked = 0;
   let failed = 0;
-  const syncedOk = new Set<string>();
 
   const worker = async () => {
     while (next < due.length && Date.now() - started < budgetMs) {
@@ -265,23 +380,28 @@ export async function syncDueCalendars(
         if (!counted) checked++;
         failed++;
         logEvent({ level: 'warn', category: 'cron', event: 'calendar.sync_link_crashed', meta: { assistantId: link.assistantId, linkId: link.id, error: errName(err) } });
+      } finally {
+        const left = (waiting.get(link.assistantId) ?? 1) - 1;
+        waiting.set(link.assistantId, left);
+        // That assistant's last due link is done: check its bookings now, not at the end when the budget may be gone.
+        if (left === 0 && syncedOk.has(link.assistantId) && Date.now() - started < HARD_STOP_MS) await clashCheck(link.assistantId);
       }
     }
   };
   await Promise.all(Array.from({ length: Math.min(concurrency, due.length) }, worker));
+  const skipped = due.length - next;
 
-  // Clash check: assistants whose links were just read first, then the others that have a read link.
-  const order = [...syncedOk, ...links.filter((l) => l.lastSyncedAt && !syncedOk.has(l.assistantId)).map((l) => l.assistantId)];
-  for (const assistantId of new Set(order)) {
-    if (Date.now() - started >= HARD_STOP_MS) break;
-    try {
-      const assistant = await assistantFor(assistantId);
-      if (assistant) await detectClashes(assistant, now);
-    } catch (err) {
-      logEvent({ level: 'warn', category: 'cron', event: 'calendar.clash_check_failed', meta: { assistantId, error: errName(err) } });
+  // Final pass, while time remains: assistants read in this run whose check has not run (their other links were not all started), then the rest.
+  const rest = [...syncedOk, ...links.filter((l) => l.lastSyncedAt).map((l) => l.assistantId)].filter((id) => !checkedForClashes.has(id));
+  let clashChecksSkipped = 0;
+  for (const assistantId of new Set(rest)) {
+    if (Date.now() - started >= HARD_STOP_MS) {
+      clashChecksSkipped++;
+      continue;
     }
+    await clashCheck(assistantId);
   }
-  return { checked, failed };
+  return { checked, failed, skipped, clashChecksSkipped };
 }
 
 /**

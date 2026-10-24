@@ -31,18 +31,21 @@ export interface CalendarLinkStatusFields {
   blockCount?: number | null;
   unsupportedCount?: number | null;
   failureNotifiedFor?: string | null;
+  fullSyncedAt?: string | null;
+  parsedTimezone?: string | null;
+  lastAttemptAt?: string | null;
 }
 
 /** Checks the status fields of an update and returns them in storable form (error text capped). Throws CalendarLinkRuleError. */
 export function checkStatusFields(fields: CalendarLinkStatusFields): CalendarLinkStatusFields {
   const out: CalendarLinkStatusFields = {};
-  for (const key of ['lastSyncedAt', 'errorSince', 'failureNotifiedFor'] as const) {
+  for (const key of ['lastSyncedAt', 'errorSince', 'failureNotifiedFor', 'fullSyncedAt', 'lastAttemptAt'] as const) {
     const v = fields[key];
     if (v === undefined) continue;
     if (v !== null && !isIsoTime(v)) throw new CalendarLinkRuleError(`${key} must be a date and time.`);
     out[key] = v;
   }
-  for (const key of ['lastError', 'etag', 'lastModified'] as const) {
+  for (const key of ['lastError', 'etag', 'lastModified', 'parsedTimezone'] as const) {
     const v = fields[key];
     if (v === undefined) continue;
     if (v !== null && typeof v !== 'string') throw new CalendarLinkRuleError(`${key} must be text.`);
@@ -88,5 +91,8 @@ export function checkCalendarLink(link: CalendarLink): void {
     blockCount: link.blockCount,
     unsupportedCount: link.unsupportedCount,
     failureNotifiedFor: link.failureNotifiedFor,
+    fullSyncedAt: link.fullSyncedAt,
+    parsedTimezone: link.parsedTimezone,
+    lastAttemptAt: link.lastAttemptAt,
   });
 }

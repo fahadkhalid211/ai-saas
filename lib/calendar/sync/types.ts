@@ -25,5 +25,11 @@ export interface CalendarLink {
   unsupportedCount?: number;
   /** The `errorSince` value the 24-hour "calendar not syncing" notice was already sent for, so it is sent once per run of failures. */
   failureNotifiedFor?: string;
+  /** ISO time a response was last actually parsed and stored (never set by a 304). A read after 24 hours is sent without validators. */
+  fullSyncedAt?: string;
+  /** The timezone the stored blocks were parsed in; a different assistant timezone forces a full read. */
+  parsedTimezone?: string;
+  /** ISO time of the last attempt, successful or not. Orders and spaces out the scheduled reads. */
+  lastAttemptAt?: string;
   createdAt: string;
 }

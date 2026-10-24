@@ -80,12 +80,24 @@ export function fileGetAllLinks(): CalendarLink[] {
   return read().links.slice().sort((a, b) => a.createdAt.localeCompare(b.createdAt));
 }
 
+const STATUS_KEYS = [
+  'lastSyncedAt', 'lastError', 'errorSince', 'etag', 'lastModified', 'blockCount', 'unsupportedCount',
+  'failureNotifiedFor', 'fullSyncedAt', 'parsedTimezone', 'lastAttemptAt',
+] as const;
+
+function withoutStatus(link: CalendarLink): CalendarLink {
+  const copy = { ...link } as unknown as Record<string, unknown>;
+  for (const key of STATUS_KEYS) delete copy[key];
+  return copy as unknown as CalendarLink;
+}
+
 export function fileSaveLink(link: CalendarLink, maxPerAssistant: number): CalendarLink {
   const data = read();
   const idx = data.links.findIndex((l) => l.id === link.id);
   if (idx >= 0) {
     if (data.links[idx].assistantId !== link.assistantId) throw new CalendarLinkRuleError('That calendar link belongs to another assistant.');
-    data.links[idx] = { ...link };
+    // A different address is a different calendar: what was learned about the old one (validators, counts, times, errors) no longer applies.
+    data.links[idx] = data.links[idx].url === link.url ? { ...link } : withoutStatus(link);
   } else {
     if (data.links.filter((l) => l.assistantId === link.assistantId).length >= maxPerAssistant) {
       throw new CalendarLinkRuleError(`An assistant can link at most ${maxPerAssistant} calendars.`);

@@ -35,8 +35,30 @@ CREATE TABLE IF NOT EXISTS kortex_calendar_links (
   block_count          INTEGER CHECK (block_count IS NULL OR block_count >= 0),
   unsupported_count    INTEGER CHECK (unsupported_count IS NULL OR unsupported_count >= 0),
   failure_notified_for TIMESTAMPTZ,
+  full_synced_at       TIMESTAMPTZ,
+  parsed_timezone      TEXT,
+  last_attempt_at      TIMESTAMPTZ,
   created_at     TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+-- A database that already ran an EARLIER DRAFT of this file has the table without the columns added since. CREATE TABLE IF NOT EXISTS
+-- leaves such a table as it is, so each later column is added here (safe to run twice; a no-op on a fresh install).
+--   block_count / unsupported_count : shown to the owner after each read
+--   failure_notified_for            : which run of failures the 24-hour notice was sent for
+--   full_synced_at / parsed_timezone: when and in which timezone a response was last parsed (a 304 does not move them)
+--   last_attempt_at                 : last attempt, successful or not (orders and spaces out the scheduled reads)
+ALTER TABLE kortex_calendar_links
+  ADD COLUMN IF NOT EXISTS block_count INTEGER CHECK (block_count IS NULL OR block_count >= 0);
+ALTER TABLE kortex_calendar_links
+  ADD COLUMN IF NOT EXISTS unsupported_count INTEGER CHECK (unsupported_count IS NULL OR unsupported_count >= 0);
+ALTER TABLE kortex_calendar_links
+  ADD COLUMN IF NOT EXISTS failure_notified_for TIMESTAMPTZ;
+ALTER TABLE kortex_calendar_links
+  ADD COLUMN IF NOT EXISTS full_synced_at TIMESTAMPTZ;
+ALTER TABLE kortex_calendar_links
+  ADD COLUMN IF NOT EXISTS parsed_timezone TEXT;
+ALTER TABLE kortex_calendar_links
+  ADD COLUMN IF NOT EXISTS last_attempt_at TIMESTAMPTZ;
 
 CREATE INDEX IF NOT EXISTS idx_kortex_calendar_links_assistant
   ON kortex_calendar_links (assistant_id, created_at);

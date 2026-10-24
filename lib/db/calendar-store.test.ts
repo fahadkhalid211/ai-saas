@@ -758,6 +758,140 @@ describe('sync result counts and the failure-notice marker', () => {
   });
 });
 
+describe('fix round 1: attempt time, full-read time, parse timezone', () => {
+  it('file mode: stores fullSyncedAt, parsedTimezone and lastAttemptAt and null clears them', async () => {
+    const a = `ast_${seq++}`;
+    const l = link(a);
+    await Database.saveCalendarLink(l);
+    expect(
+      await Database.updateCalendarLinkStatus(a, l.id, {
+        fullSyncedAt: '2026-10-24T09:00:00.000Z',
+        parsedTimezone: 'Europe/London',
+        lastAttemptAt: '2026-10-24T10:00:00.000Z',
+      }),
+    ).toBe(true);
+    expect((await Database.getCalendarLinks(a))[0]).toMatchObject({
+      fullSyncedAt: '2026-10-24T09:00:00.000Z',
+      parsedTimezone: 'Europe/London',
+      lastAttemptAt: '2026-10-24T10:00:00.000Z',
+    });
+    await Database.updateCalendarLinkStatus(a, l.id, { fullSyncedAt: null, parsedTimezone: null, lastAttemptAt: null });
+    const [after] = await Database.getCalendarLinks(a);
+    expect(after.fullSyncedAt).toBeUndefined();
+    expect(after.parsedTimezone).toBeUndefined();
+    expect(after.lastAttemptAt).toBeUndefined();
+  });
+
+  it('rejects unreadable times and a timezone that is not text', async () => {
+    await expect(Database.updateCalendarLinkStatus('ast_1', 'cal_1', { fullSyncedAt: 'yesterday' })).rejects.toBeInstanceOf(CalendarLinkRuleError);
+    await expect(Database.updateCalendarLinkStatus('ast_1', 'cal_1', { lastAttemptAt: 'soon' })).rejects.toBeInstanceOf(CalendarLinkRuleError);
+    await expect(Database.updateCalendarLinkStatus('ast_1', 'cal_1', { parsedTimezone: 5 as unknown as string })).rejects.toBeInstanceOf(CalendarLinkRuleError);
+  });
+
+  it('relational mode: UPDATE sets the three columns and rows map back', async () => {
+    vi.stubEnv('DB_RELATIONAL_MODE', 'true');
+    h.configured = true;
+    h.query.mockResolvedValue({ rows: [], rowCount: 1 });
+    await Database.updateCalendarLinkStatus('ast_1', 'cal_1', { fullSyncedAt: '2026-10-24T09:00:00.000Z', parsedTimezone: 'UTC', lastAttemptAt: '2026-10-24T10:00:00.000Z' });
+    const upd = h.query.mock.calls.find((c) => /UPDATE kortex_calendar_links/i.test(String(c[0])))!;
+    for (const col of ['full_synced_at', 'parsed_timezone', 'last_attempt_at']) expect(String(upd[0])).toMatch(new RegExp(`${col} = \\$\\d`));
+
+    h.query.mockReset();
+    h.query.mockResolvedValue({
+      rows: [
+        {
+          id: 'cal_1',
+          assistant_id: 'ast_1',
+          label: 'google',
+          url: 'https://x.example.com/a.ics',
+          full_synced_at: new Date('2026-10-24T09:00:00Z'),
+          parsed_timezone: 'UTC',
+          last_attempt_at: new Date('2026-10-24T10:00:00Z'),
+          created_at: new Date('2026-10-01T08:00:00Z'),
+        },
+      ],
+      rowCount: 1,
+    });
+    const [got] = await Database.getCalendarLinks('ast_1');
+    expect(got).toMatchObject({ fullSyncedAt: '2026-10-24T09:00:00.000Z', parsedTimezone: 'UTC', lastAttemptAt: '2026-10-24T10:00:00.000Z' });
+  });
+});
+
+describe('fix round 1: editing the address resets the sync status', () => {
+  const status: Partial<CalendarLink> = {
+    etag: '"e"',
+    lastModified: 'Sat, 24 Oct 2026 10:00:00 GMT',
+    lastSyncedAt: '2026-10-24T10:00:00.000Z',
+    lastError: 'trouble',
+    errorSince: '2026-10-23T10:00:00.000Z',
+    blockCount: 9,
+    unsupportedCount: 2,
+    fullSyncedAt: '2026-10-24T09:00:00.000Z',
+    parsedTimezone: 'UTC',
+    failureNotifiedFor: '2026-10-23T10:00:00.000Z',
+    lastAttemptAt: '2026-10-24T10:00:00.000Z',
+  };
+
+  it('file mode: a different address drops every status field, the same address keeps what the caller passes', async () => {
+    const a = `ast_${seq++}`;
+    const l = link(a, status);
+    await Database.saveCalendarLink(l);
+
+    await Database.saveCalendarLink({ ...l, label: 'outlook' });
+    expect((await Database.getCalendarLinks(a))[0]).toMatchObject({ label: 'outlook', etag: '"e"', blockCount: 9, fullSyncedAt: status.fullSyncedAt });
+
+    await Database.saveCalendarLink({ ...l, url: 'https://calendar.example.com/private/other.ics' });
+    const [got] = await Database.getCalendarLinks(a);
+    expect(got.url).toBe('https://calendar.example.com/private/other.ics');
+    expect(got.id).toBe(l.id);
+    expect(got.createdAt).toBe(l.createdAt);
+    for (const key of Object.keys(status)) expect((got as unknown as Record<string, unknown>)[key]).toBeUndefined();
+  });
+
+  it('file mode: a new link keeps the status it is given (nothing to reset)', async () => {
+    const a = `ast_${seq++}`;
+    await Database.saveCalendarLink(link(a, { etag: '"x"' }));
+    expect((await Database.getCalendarLinks(a))[0].etag).toBe('"x"');
+  });
+
+  it('relational mode: the upsert nulls each status column when the stored address differs', async () => {
+    vi.stubEnv('DB_RELATIONAL_MODE', 'true');
+    h.configured = true;
+    h.query.mockImplementation(async (sql: string) => (/SELECT count\(\*\)/i.test(sql) ? { rows: [{ n: '0' }], rowCount: 1 } : { rows: [], rowCount: 1 }));
+    await Database.saveCalendarLink(link('ast_1', status));
+    const ins = String(h.query.mock.calls.find((c) => /INSERT INTO kortex_calendar_links/i.test(String(c[0])))![0]);
+    for (const col of [
+      'last_synced_at', 'last_error', 'error_since', 'etag', 'last_modified', 'block_count', 'unsupported_count',
+      'failure_notified_for', 'full_synced_at', 'parsed_timezone', 'last_attempt_at',
+    ]) {
+      expect(ins).toMatch(new RegExp(`${col} = CASE WHEN kortex_calendar_links\\.url IS DISTINCT FROM EXCLUDED\\.url THEN NULL ELSE EXCLUDED\\.${col} END`));
+    }
+  });
+});
+
+describe('fix round 1: the v5 SQL file matches the columns the code reads', () => {
+  const sql = () => fs.readFileSync(path.join(process.cwd(), 'supabase', 'schema-relational-v5-calendar-links.sql'), 'utf-8');
+  const NEW_COLUMNS = ['block_count', 'unsupported_count', 'failure_notified_for', 'full_synced_at', 'parsed_timezone', 'last_attempt_at'];
+
+  it('has an idempotent ALTER TABLE ... ADD COLUMN IF NOT EXISTS for every column added after the first draft', () => {
+    for (const col of NEW_COLUMNS) {
+      expect(sql()).toMatch(new RegExp(`ALTER TABLE kortex_calendar_links\\s+ADD COLUMN IF NOT EXISTS ${col}\\b`));
+    }
+  });
+
+  it('creates every column the code selects', async () => {
+    vi.stubEnv('DB_RELATIONAL_MODE', 'true');
+    h.configured = true;
+    h.query.mockResolvedValue({ rows: [], rowCount: 0 });
+    await Database.getCalendarLinks('ast_1');
+    const select = String(h.query.mock.calls.find((c) => /FROM kortex_calendar_links/i.test(String(c[0])))![0]);
+    const cols = /SELECT ([\s\S]+?) FROM/.exec(select)![1].split(',').map((c) => c.trim());
+    const create = /CREATE TABLE IF NOT EXISTS kortex_calendar_links \(([\s\S]*?)\n\);/.exec(sql())![1];
+    for (const col of cols) expect(create).toMatch(new RegExp(`\\b${col}\\b`));
+    for (const col of NEW_COLUMNS) expect(cols).toContain(col);
+  });
+});
+
 describe('a missing table reads as nothing linked', () => {
   const undefinedTable = () => Object.assign(new Error('relation "kortex_calendar_links" does not exist'), { code: '42P01' });
 

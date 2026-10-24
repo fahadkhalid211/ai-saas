@@ -1126,7 +1126,16 @@ export async function relationalGetOwner(
 const BLOCK_INSERT_BATCH = 5_000;
 
 const LINK_COLUMNS =
-  'id, assistant_id, label, url, last_synced_at, last_error, error_since, etag, last_modified, block_count, unsupported_count, failure_notified_for, created_at';
+  'id, assistant_id, label, url, last_synced_at, last_error, error_since, etag, last_modified, block_count, unsupported_count, failure_notified_for, full_synced_at, parsed_timezone, last_attempt_at, created_at';
+
+/**
+ * The sync-status columns of a link, in the order of the insert. When the address of an existing link is edited, every one of them is reset
+ * (the validators, counts and times described the old calendar), so the edited link is read in full at the next opportunity.
+ */
+const STATUS_SQL_COLUMNS = [
+  'last_synced_at', 'last_error', 'error_since', 'etag', 'last_modified', 'block_count', 'unsupported_count',
+  'failure_notified_for', 'full_synced_at', 'parsed_timezone', 'last_attempt_at',
+] as const;
 
 function rowToLink(r: Record<string, any>): CalendarLink {
   return {
@@ -1142,6 +1151,9 @@ function rowToLink(r: Record<string, any>): CalendarLink {
     ...(r.block_count !== null && r.block_count !== undefined ? { blockCount: Number(r.block_count) } : {}),
     ...(r.unsupported_count !== null && r.unsupported_count !== undefined ? { unsupportedCount: Number(r.unsupported_count) } : {}),
     ...(r.failure_notified_for ? { failureNotifiedFor: iso(r.failure_notified_for) } : {}),
+    ...(r.full_synced_at ? { fullSyncedAt: iso(r.full_synced_at) } : {}),
+    ...(r.parsed_timezone ? { parsedTimezone: r.parsed_timezone } : {}),
+    ...(r.last_attempt_at ? { lastAttemptAt: iso(r.last_attempt_at) } : {}),
     createdAt: iso(r.created_at),
   };
 }
@@ -1179,20 +1191,14 @@ export async function relationalSaveCalendarLink(link: CalendarLink): Promise<Ca
       }
       const res = await client.query(
         `INSERT INTO kortex_calendar_links
-           (id, assistant_id, label, url, last_synced_at, last_error, error_since, etag, last_modified,
-            block_count, unsupported_count, failure_notified_for, created_at)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+           (id, assistant_id, label, url, ${STATUS_SQL_COLUMNS.join(', ')}, created_at)
+         VALUES ($1, $2, $3, $4, ${STATUS_SQL_COLUMNS.map((_, i) => `$${i + 5}`).join(', ')}, $${STATUS_SQL_COLUMNS.length + 5})
          ON CONFLICT (id) DO UPDATE SET
            label = EXCLUDED.label,
            url = EXCLUDED.url,
-           last_synced_at = EXCLUDED.last_synced_at,
-           last_error = EXCLUDED.last_error,
-           error_since = EXCLUDED.error_since,
-           etag = EXCLUDED.etag,
-           last_modified = EXCLUDED.last_modified,
-           block_count = EXCLUDED.block_count,
-           unsupported_count = EXCLUDED.unsupported_count,
-           failure_notified_for = EXCLUDED.failure_notified_for
+           ${STATUS_SQL_COLUMNS.map(
+             (c) => `${c} = CASE WHEN kortex_calendar_links.url IS DISTINCT FROM EXCLUDED.url THEN NULL ELSE EXCLUDED.${c} END`
+           ).join(',\n           ')}
          WHERE kortex_calendar_links.assistant_id = EXCLUDED.assistant_id`,
         [
           link.id,
@@ -1207,6 +1213,9 @@ export async function relationalSaveCalendarLink(link: CalendarLink): Promise<Ca
           link.blockCount ?? null,
           link.unsupportedCount ?? null,
           link.failureNotifiedFor ?? null,
+          link.fullSyncedAt ?? null,
+          link.parsedTimezone ?? null,
+          link.lastAttemptAt ?? null,
           link.createdAt,
         ]
       );
@@ -1229,6 +1238,9 @@ const STATUS_COLUMNS: Record<keyof CalendarLinkStatusFields, string> = {
   blockCount: 'block_count',
   unsupportedCount: 'unsupported_count',
   failureNotifiedFor: 'failure_notified_for',
+  fullSyncedAt: 'full_synced_at',
+  parsedTimezone: 'parsed_timezone',
+  lastAttemptAt: 'last_attempt_at',
 };
 
 /**

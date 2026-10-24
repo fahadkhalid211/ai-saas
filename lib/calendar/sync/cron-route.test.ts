@@ -11,7 +11,7 @@ const URL_ = 'http://localhost/api/cron/calendar-sync';
 beforeEach(() => {
   vi.stubEnv('CRON_SECRET', SECRET);
   sync.syncDueCalendars.mockReset();
-  sync.syncDueCalendars.mockResolvedValue({ checked: 4, failed: 1 });
+  sync.syncDueCalendars.mockResolvedValue({ checked: 4, failed: 1, skipped: 2, clashChecksSkipped: 3 });
 });
 
 afterEach(() => {
@@ -25,6 +25,8 @@ describe('/api/cron/calendar-sync', () => {
     expect(mod.dynamic).toBe('force-dynamic');
     expect(typeof mod.GET).toBe('function');
     expect(typeof mod.POST).toBe('function');
+    // A run can take about a minute (reads, clash checks); the sibling cron routes declare the same ceiling.
+    expect(mod.maxDuration).toBe(300);
   });
 
   it('answers 401 without the secret and does no work', async () => {
@@ -43,16 +45,16 @@ describe('/api/cron/calendar-sync', () => {
 
     const a = await GET(new Request(URL_, { headers: { authorization: `Bearer ${SECRET}` } }) as any);
     expect(a.status).toBe(200);
-    expect(await a.json()).toEqual({ success: true, checked: 4, failed: 1 });
+    expect(await a.json()).toEqual({ success: true, checked: 4, failed: 1, skipped: 2, clashChecksSkipped: 3 });
 
     const b = await POST(new Request(URL_, { method: 'POST', headers: { 'x-cron-secret': SECRET } }) as any);
     expect(b.status).toBe(200);
-    expect(await b.json()).toEqual({ success: true, checked: 4, failed: 1 });
+    expect(await b.json()).toEqual({ success: true, checked: 4, failed: 1, skipped: 2, clashChecksSkipped: 3 });
 
     expect(sync.syncDueCalendars).toHaveBeenCalledTimes(2);
     const cron = events.mock.calls.map((c) => c[0]).filter((e) => e.category === 'cron' && e.event === 'cron.calendar_sync_run');
     expect(cron).toHaveLength(2);
-    expect(cron[0].meta).toEqual({ checked: 4, failed: 1 });
+    expect(cron[0].meta).toEqual({ checked: 4, failed: 1, skipped: 2, clashChecksSkipped: 3 });
   });
 
   it('answers 500 with a generic message when the run itself fails', async () => {

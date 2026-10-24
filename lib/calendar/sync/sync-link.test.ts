@@ -13,6 +13,7 @@ vi.mock('./fetch-feed', async (importOriginal) => {
 import { Database, resolveDataDir, type AssistantData } from '@/lib/db';
 import * as logger from '@/lib/logging/logger';
 import type { CalendarLink } from './types';
+import * as clashes from './clashes';
 import { syncCalendarLink, refreshAssistantCalendars, syncDueCalendars, _resetSyncStateForTesting } from './sync-link';
 
 // Same blanking as lib/db/fail-closed.test.ts: nothing here may reach a real database or cache.
@@ -67,7 +68,7 @@ async function addLink(assistantId: string, over: Partial<CalendarLink> = {}): P
     assistantId,
     label: 'google',
     url: URL_OF(seq),
-    createdAt: new Date(Date.UTC(2026, 9, 1, 8, 0, seq % 60)).toISOString(),
+    createdAt: new Date(Date.UTC(2026, 9, 1, 8, 0, 0) + seq * 1000).toISOString(),
     ...over,
   };
   await Database.saveCalendarLink(l);
@@ -101,7 +102,13 @@ describe('syncCalendarLink', () => {
 
   it('sends the stored validators and reads only now-1 day to now+180 days in the assistant timezone', async () => {
     const ast = await newAssistant('America/New_York');
-    const link = await addLink(ast.id, { etag: '"old"', lastModified: 'Fri, 23 Oct 2026 09:00:00 GMT' });
+    const link = await addLink(ast.id, {
+      etag: '"old"',
+      lastModified: 'Fri, 23 Oct 2026 09:00:00 GMT',
+      blockCount: 0,
+      fullSyncedAt: new Date(NOW.getTime() - 60 * 60_000).toISOString(),
+      parsedTimezone: 'America/New_York',
+    });
     feed.fetch.mockResolvedValue(
       okFeed(
         ics(
@@ -430,7 +437,7 @@ describe('syncDueCalendars', () => {
 
     const res = await syncDueCalendars(NOW);
 
-    expect(res).toEqual({ checked: 2, failed: 1 });
+    expect(res).toEqual({ checked: 2, failed: 1, skipped: 0, clashChecksSkipped: 0 });
     expect(feed.fetch).toHaveBeenCalledTimes(2);
     expect((await reload(never)).lastSyncedAt).toBe(NOW.toISOString());
     expect((await reload(old)).lastError).toBeTruthy();
@@ -441,7 +448,7 @@ describe('syncDueCalendars', () => {
     const ast = await newAssistant();
     await addLink(ast.id, { lastSyncedAt: new Date(NOW.getTime() - 5 * 60_000).toISOString() });
     feed.fetch.mockResolvedValue(okFeed(TOMORROW_ICS));
-    expect(await syncDueCalendars(NOW, 60_000)).toEqual({ checked: 1, failed: 0 });
+    expect(await syncDueCalendars(NOW, 60_000)).toEqual({ checked: 1, failed: 0, skipped: 0, clashChecksSkipped: 0 });
   });
 
   it('one link that throws or fails never stops the others', async () => {
@@ -457,7 +464,7 @@ describe('syncDueCalendars', () => {
 
     const res = await syncDueCalendars(NOW);
 
-    expect(res).toEqual({ checked: 3, failed: 2 });
+    expect(res).toEqual({ checked: 3, failed: 2, skipped: 0, clashChecksSkipped: 0 });
     expect((await reload(good)).blockCount).toBe(2);
   });
 
@@ -466,11 +473,11 @@ describe('syncDueCalendars', () => {
     await addLink(ast.id);
     const orphan = await addLink(`ast_gone_${seq++}`);
     feed.fetch.mockResolvedValue(okFeed(TOMORROW_ICS));
-    expect(await syncDueCalendars(NOW)).toEqual({ checked: 1, failed: 0 });
+    expect(await syncDueCalendars(NOW)).toEqual({ checked: 1, failed: 0, skipped: 0, clashChecksSkipped: 0 });
     expect(feed.fetch).not.toHaveBeenCalledWith(orphan.url, expect.anything());
   });
 
-  it('reads at most 3 links at a time and stops starting new ones after 50 seconds', async () => {
+  it('reads at most 3 links at a time and stops starting new ones after 35 seconds', async () => {
     // The database is set up on the real clock; only then is time faked.
     const assistants = [await newAssistant(), await newAssistant(), await newAssistant(), await newAssistant()];
     for (const a of assistants) for (let i = 0; i < 5; i++) await addLink(a.id);
@@ -488,15 +495,15 @@ describe('syncDueCalendars', () => {
       return okFeed(TOMORROW_ICS);
     });
 
-    let res: { checked: number; failed: number } | undefined;
+    let res: Awaited<ReturnType<typeof syncDueCalendars>> | undefined;
     const pending = syncDueCalendars(NOW).then((r) => (res = r));
     await vi.advanceTimersByTimeAsync(80_000);
     await pending;
 
-    // 3 at a time, 10 s each: waves start at 0, 10, 20, 30 and 40 s = 15 links; the wave due at 50 s is not started.
+    // 3 at a time, 10 s each: waves start at 0, 10, 20 and 30 s = 12 links; the wave due at 40 s is past the 35 s start budget.
     expect(maxInFlight).toBe(3);
-    expect(started).toBe(15);
-    expect(res).toEqual({ checked: 15, failed: 0 });
+    expect(started).toBe(12);
+    expect(res).toEqual({ checked: 12, failed: 0, skipped: 8, clashChecksSkipped: 0 });
   });
 
   it('runs the clash check after a successful read and flags an overlapping booking', async () => {
@@ -519,7 +526,7 @@ describe('syncDueCalendars', () => {
     feed.fetch.mockResolvedValue(okFeed(TOMORROW_ICS));
     vi.spyOn(Database, 'getAppointments').mockRejectedValue(new Error('db down'));
     vi.spyOn(console, 'warn').mockImplementation(() => undefined);
-    await expect(syncDueCalendars(NOW)).resolves.toEqual({ checked: 1, failed: 0 });
+    await expect(syncDueCalendars(NOW)).resolves.toEqual({ checked: 1, failed: 0, skipped: 0, clashChecksSkipped: 0 });
   });
 
   describe('the 24 hour failure notice', () => {
@@ -539,8 +546,8 @@ describe('syncDueCalendars', () => {
       expect(first[0].title + first[0].message).not.toMatch(/https?:\/\//);
       expect((await reload(link)).failureNotifiedFor).toBe(link.errorSince);
 
-      await syncDueCalendars(new Date(NOW.getTime() + 11 * 60_000));
-      await syncDueCalendars(new Date(NOW.getTime() + 22 * 60_000));
+      await syncDueCalendars(new Date(NOW.getTime() + 61 * 60_000));
+      await syncDueCalendars(new Date(NOW.getTime() + 122 * 60_000));
       expect(await notices(ast.id)).toHaveLength(1);
     });
 
@@ -568,7 +575,7 @@ describe('syncDueCalendars', () => {
 
       // it recovers: the marker is cleared with the error
       feed.fetch.mockResolvedValue(okFeed(TOMORROW_ICS));
-      const t2 = new Date(t1.getTime() + 11 * 60_000);
+      const t2 = new Date(t1.getTime() + 61 * 60_000);
       await syncDueCalendars(t2);
       const recovered = await reload(link);
       expect(recovered.errorSince).toBeUndefined();
@@ -590,13 +597,347 @@ describe('syncDueCalendars', () => {
       vi.spyOn(console, 'warn').mockImplementation(() => undefined);
       const add = vi.spyOn(Database, 'addNotification').mockRejectedValueOnce(new Error('db down'));
 
-      await expect(syncDueCalendars(NOW)).resolves.toEqual({ checked: 1, failed: 1 });
+      await expect(syncDueCalendars(NOW)).resolves.toEqual({ checked: 1, failed: 1, skipped: 0, clashChecksSkipped: 0 });
       expect((await reload(link)).failureNotifiedFor).toBeUndefined();
 
       add.mockRestore();
-      await syncDueCalendars(new Date(NOW.getTime() + 11 * 60_000));
+      await syncDueCalendars(new Date(NOW.getTime() + 61 * 60_000));
       expect(await notices(ast.id)).toHaveLength(1);
     });
   });
 });
 
+// ---------------------------------------------------------------------------------------------------------------------------------
+// Fix round 1
+// ---------------------------------------------------------------------------------------------------------------------------------
+
+const HOUR = 60 * 60_000;
+const DAYS = 24 * HOUR;
+const icsDate = (d: Date) => d.toISOString().replace(/[-:]|\.\d{3}/g, '');
+const after = (base: Date, ms: number) => new Date(base.getTime() + ms);
+
+describe('a feed that keeps answering 304 does not freeze the window', () => {
+  // A server that honours validators: 304 whenever they are sent, the full body otherwise.
+  const serverWith = (text: string) =>
+    feed.fetch.mockImplementation(async (_url: string, prev?: unknown) => (prev ? { status: 'not_modified' } : okFeed(text, { etag: '"v1"' })));
+
+  const NEAR = vevent('near', icsDate(after(NOW, DAYS - HOUR)), icsDate(after(NOW, DAYS)));
+  // Starts 180 days and 12 hours after NOW: outside the window of a read at NOW, inside the window of a read a day later.
+  const FAR = vevent('far', icsDate(after(NOW, 180 * DAYS + 12 * HOUR)), icsDate(after(NOW, 180 * DAYS + 13 * HOUR)));
+
+  it('a parsed response records fullSyncedAt and parsedTimezone; a 304 within 24 hours keeps the blocks and does not move fullSyncedAt', async () => {
+    const ast = await newAssistant('Europe/London');
+    const link = await addLink(ast.id);
+    serverWith(ics(NEAR, FAR));
+
+    await syncCalendarLink(link, ast, NOW);
+    const first = await reload(link);
+    expect(first).toMatchObject({ fullSyncedAt: NOW.toISOString(), parsedTimezone: 'Europe/London', lastAttemptAt: NOW.toISOString(), blockCount: 1 });
+
+    const later = after(NOW, 11 * 60_000);
+    const res = await syncCalendarLink(first, ast, later);
+
+    expect(feed.fetch).toHaveBeenLastCalledWith(link.url, { etag: '"v1"', lastModified: undefined });
+    expect(res).toEqual({ ok: true, blocks: 1 });
+    const got = await reload(link);
+    expect(got.fullSyncedAt).toBe(NOW.toISOString());
+    expect(got.lastSyncedAt).toBe(later.toISOString());
+    expect(got.lastAttemptAt).toBe(later.toISOString());
+    expect(await storedBlocks(ast.id)).toHaveLength(1);
+  });
+
+  it('after 24 hours the read carries no validators and the stored blocks are replaced with the new window', async () => {
+    const ast = await newAssistant();
+    const link = await addLink(ast.id);
+    serverWith(ics(NEAR, FAR));
+    await syncCalendarLink(link, ast, NOW);
+    expect(await storedBlocks(ast.id)).toHaveLength(1); // FAR is beyond the first window
+
+    // Exactly 24 hours: still a 304 read.
+    await syncCalendarLink(await reload(link), ast, after(NOW, DAYS));
+    expect(feed.fetch).toHaveBeenLastCalledWith(link.url, expect.objectContaining({ etag: '"v1"' }));
+    expect(await storedBlocks(ast.id)).toHaveLength(1);
+
+    // A little over 24 hours: a full read.
+    const later = after(NOW, DAYS + 60_000);
+    await syncCalendarLink(await reload(link), ast, later);
+
+    expect(feed.fetch).toHaveBeenLastCalledWith(link.url);
+    expect(feed.fetch.mock.calls.at(-1)).toHaveLength(1);
+    expect((await storedBlocks(ast.id)).map((b) => b[0])).toEqual([
+      after(NOW, DAYS - HOUR).toISOString(),
+      after(NOW, 180 * DAYS + 12 * HOUR).toISOString(),
+    ]);
+    const got = await reload(link);
+    expect(got.fullSyncedAt).toBe(later.toISOString());
+    expect(got.blockCount).toBe(2);
+  });
+
+  it('a link with no stored block count is read in full, whatever else it has', async () => {
+    const ast = await newAssistant();
+    const link = await addLink(ast.id, {
+      etag: '"v1"',
+      fullSyncedAt: after(NOW, -HOUR).toISOString(),
+      parsedTimezone: 'UTC',
+    });
+    serverWith(ics(NEAR));
+    await syncCalendarLink(link, ast, NOW);
+    expect(feed.fetch).toHaveBeenCalledWith(link.url);
+    expect(await storedBlocks(ast.id)).toHaveLength(1);
+  });
+
+  it('a link stored before fullSyncedAt existed is read in full', async () => {
+    const ast = await newAssistant();
+    const link = await addLink(ast.id, { etag: '"v1"', lastModified: 'Fri, 23 Oct 2026 09:00:00 GMT', blockCount: 3, parsedTimezone: 'UTC' });
+    serverWith(ics(NEAR));
+    await syncCalendarLink(link, ast, NOW);
+    expect(feed.fetch).toHaveBeenCalledWith(link.url);
+  });
+
+  it('a changed assistant timezone forces a full read, an unchanged one does not', async () => {
+    const ast = await newAssistant('UTC');
+    const link = await addLink(ast.id);
+    serverWith(ics(NEAR));
+    await syncCalendarLink(link, ast, NOW);
+
+    await syncCalendarLink(await reload(link), ast, after(NOW, 5 * 60_000));
+    expect(feed.fetch).toHaveBeenLastCalledWith(link.url, expect.objectContaining({ etag: '"v1"' }));
+
+    const moved = { ...ast, timezone: 'Asia/Tokyo' };
+    await syncCalendarLink(await reload(link), moved, after(NOW, 10 * 60_000));
+    expect(feed.fetch).toHaveBeenLastCalledWith(link.url);
+    expect((await reload(link)).parsedTimezone).toBe('Asia/Tokyo');
+  });
+});
+
+describe('a failed block write is recorded as an error', () => {
+  it('sets a short lastError and errorSince, keeps the old blocks and returns the failure', async () => {
+    const ast = await newAssistant();
+    const link = await addLink(ast.id);
+    feed.fetch.mockResolvedValueOnce(okFeed(TOMORROW_ICS));
+    await syncCalendarLink(link, ast, NOW);
+    const before = await storedBlocks(ast.id);
+
+    feed.fetch.mockResolvedValue(okFeed(TOMORROW_ICS));
+    vi.spyOn(Database, 'replaceExternalBlocks').mockRejectedValue(Object.assign(new Error('disk full'), { name: 'BookingUnavailableError' }));
+    const later = after(NOW, 11 * 60_000);
+    const res = await syncCalendarLink(await reload(link), ast, later);
+
+    expect(res).toMatchObject({ ok: false, error: 'Could not store the calendar' });
+    const got = await reload(link);
+    expect(got.lastError).toBe('Could not store the calendar');
+    expect(got.errorSince).toBe(later.toISOString());
+    expect(got.lastAttemptAt).toBe(later.toISOString());
+    expect(await storedBlocks(ast.id)).toEqual(before);
+  });
+
+  it('does not throw when the status write fails as well', async () => {
+    const ast = await newAssistant();
+    const link = await addLink(ast.id);
+    feed.fetch.mockResolvedValue(okFeed(TOMORROW_ICS));
+    vi.spyOn(Database, 'replaceExternalBlocks').mockRejectedValue(new Error('db down'));
+    vi.spyOn(Database, 'updateCalendarLinkStatus').mockRejectedValue(new Error('db down'));
+    await expect(syncCalendarLink(link, ast, NOW)).resolves.toMatchObject({ ok: false, error: 'Could not store the calendar' });
+  });
+});
+
+describe('an edited link address is not stuck behind the in-process memory', () => {
+  it('is read again at once with the new address, even though the old address was tried a moment ago', async () => {
+    const ast = await newAssistant();
+    const link = await addLink(ast.id);
+    feed.fetch.mockResolvedValue({ status: 'error', error: 'The calendar at calendar.example.com did not answer.' });
+    await refreshAssistantCalendars(ast);
+    await refreshAssistantCalendars(ast);
+    expect(feed.fetch).toHaveBeenCalledTimes(1);
+
+    const edited = URL_OF('edited');
+    await Database.saveCalendarLink({ ...link, url: edited });
+    await refreshAssistantCalendars(ast);
+
+    expect(feed.fetch).toHaveBeenCalledTimes(2);
+    expect(feed.fetch).toHaveBeenLastCalledWith(edited);
+  });
+
+  it('a read still running for the old address is not joined by a read of the new one', async () => {
+    const ast = await newAssistant();
+    const link = await addLink(ast.id);
+    feed.fetch.mockImplementation(() => new Promise(() => undefined));
+    void syncCalendarLink(link, ast, NOW);
+    await vi.waitFor(() => expect(feed.fetch).toHaveBeenCalledTimes(1));
+
+    feed.fetch.mockResolvedValue(okFeed(TOMORROW_ICS));
+    const res = await syncCalendarLink({ ...link, url: URL_OF('other') }, ast, NOW);
+    expect(feed.fetch).toHaveBeenCalledTimes(2);
+    expect(res.ok).toBe(true);
+  });
+});
+
+describe('stale also covers a link that was skipped because it was tried a moment ago', () => {
+  it('an attempt that timed out (still running) makes the next refresh stale without reading again', async () => {
+    const ast = await newAssistant();
+    await addLink(ast.id);
+    feed.fetch.mockImplementation(() => new Promise(() => undefined));
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+
+    const first = refreshAssistantCalendars(ast);
+    await vi.advanceTimersByTimeAsync(3100);
+    expect(await first).toEqual({ stale: true });
+
+    expect(await refreshAssistantCalendars(ast)).toEqual({ stale: true });
+    expect(feed.fetch).toHaveBeenCalledTimes(1);
+  });
+
+  it('an attempt that ended without recording a success makes it stale (the stored attempt is newer than the last success)', async () => {
+    const ast = await newAssistant();
+    await addLink(ast.id, {
+      lastSyncedAt: new Date(Date.now() - 50_000).toISOString(),
+      lastAttemptAt: new Date(Date.now() - 10_000).toISOString(),
+    });
+    expect(await refreshAssistantCalendars(ast)).toEqual({ stale: true });
+    expect(feed.fetch).not.toHaveBeenCalled();
+  });
+
+  it('a recent success is not stale', async () => {
+    const ast = await newAssistant();
+    const t = new Date(Date.now() - 10_000).toISOString();
+    await addLink(ast.id, { lastSyncedAt: t, lastAttemptAt: t });
+    expect(await refreshAssistantCalendars(ast)).toEqual({ stale: false });
+  });
+});
+
+describe('scheduled reads: order, back-off, budget and the clash check', () => {
+  const run = (over: Parameters<typeof syncDueCalendars>[2] = {}) => syncDueCalendars(NOW, undefined, over);
+
+  it('reads never-tried links first, then the oldest attempt first, so a dead link does not run ahead of other tenants', async () => {
+    const ast = await newAssistant();
+    // Created first, so a plain created-at order would read it first.
+    const dead = await addLink(ast.id, {
+      errorSince: after(NOW, -8 * DAYS).toISOString(),
+      lastError: 'trouble',
+      lastSyncedAt: after(NOW, -9 * DAYS).toISOString(),
+      lastAttemptAt: after(NOW, -7 * HOUR).toISOString(),
+    });
+    const never1 = await addLink(ast.id);
+    const never2 = await addLink(ast.id);
+    const healthy = await addLink(ast.id, { lastSyncedAt: after(NOW, -30 * 60_000).toISOString(), lastAttemptAt: after(NOW, -30 * 60_000).toISOString() });
+    feed.fetch.mockResolvedValue(okFeed(TOMORROW_ICS));
+
+    const res = await run({ concurrency: 1 });
+
+    expect(feed.fetch.mock.calls.map((c) => c[0])).toEqual([never1.url, never2.url, dead.url, healthy.url]);
+    expect(res).toMatchObject({ checked: 4, failed: 0, skipped: 0 });
+  });
+
+  describe('a link that keeps failing is tried less and less often', () => {
+    const failingFor = (ms: number, sinceAttemptMs: number) => ({
+      errorSince: after(NOW, -ms).toISOString(),
+      lastError: 'trouble',
+      lastAttemptAt: after(NOW, -sinceAttemptMs).toISOString(),
+    });
+    const cases: Array<[string, number, number, number]> = [
+      // [name, failing for, since last attempt, expected checked]
+      ['under 24 hours: 5 minutes after an attempt, not yet', 12 * HOUR, 5 * 60_000, 0],
+      ['under 24 hours: 11 minutes after an attempt, again', 12 * HOUR, 11 * 60_000, 1],
+      ['24 hours to 7 days: 30 minutes after an attempt, not yet', 3 * DAYS, 30 * 60_000, 0],
+      ['24 hours to 7 days: 61 minutes after an attempt, again', 3 * DAYS, 61 * 60_000, 1],
+      ['over 7 days: 5 hours after an attempt, not yet', 10 * DAYS, 5 * HOUR, 0],
+      ['over 7 days: 6 hours 2 minutes after an attempt, again', 10 * DAYS, 6 * HOUR + 2 * 60_000, 1],
+    ];
+    it.each(cases)('%s', async (_name, failing, since, expected) => {
+      const ast = await newAssistant();
+      await addLink(ast.id, failingFor(failing, since));
+      feed.fetch.mockResolvedValue(okFeed(TOMORROW_ICS));
+      const res = await run();
+      expect(res.checked).toBe(expected);
+      expect(feed.fetch).toHaveBeenCalledTimes(expected);
+    });
+
+    it('saving an edited address resets the wait, so the link is read at once', async () => {
+      const ast = await newAssistant();
+      const l = await addLink(ast.id, failingFor(10 * DAYS, 60_000));
+      expect((await run()).checked).toBe(0);
+      await Database.saveCalendarLink({ ...l, url: URL_OF('fixed') });
+      feed.fetch.mockResolvedValue(okFeed(TOMORROW_ICS));
+      expect((await run()).checked).toBe(1);
+      expect(feed.fetch).toHaveBeenCalledWith(URL_OF('fixed'));
+    });
+  });
+
+  it('every attempt records lastAttemptAt, success or failure', async () => {
+    const ast = await newAssistant();
+    const good = await addLink(ast.id);
+    const bad = await addLink(ast.id);
+    feed.fetch.mockImplementation(async (url: string) => (url === bad.url ? { status: 'error', error: 'The calendar at calendar.example.com did not answer.' } : okFeed(TOMORROW_ICS)));
+    await run();
+    expect((await reload(good)).lastAttemptAt).toBe(NOW.toISOString());
+    expect((await reload(bad)).lastAttemptAt).toBe(NOW.toISOString());
+  });
+
+  it('reports the due links it did not start as skipped (nothing is started once the budget is gone)', async () => {
+    const ast = await newAssistant();
+    await addLink(ast.id);
+    await addLink(ast.id);
+    feed.fetch.mockResolvedValue(okFeed(TOMORROW_ICS));
+    expect(await run({ budgetMs: 0 })).toEqual({ checked: 0, failed: 0, skipped: 2, clashChecksSkipped: 0 });
+    expect(feed.fetch).not.toHaveBeenCalled();
+  });
+
+  it('checks an assistant for clashes right after its own links were read, even when the sync phase then uses the whole budget', async () => {
+    const first = await newAssistant();
+    await addLink(first.id);
+    const others = [await newAssistant(), await newAssistant(), await newAssistant()];
+    for (const a of others) for (let i = 0; i < 5; i++) await addLink(a.id);
+    const calls: Array<{ id: string; at: number }> = [];
+    vi.spyOn(clashes, 'detectClashes').mockImplementation(async (a) => {
+      calls.push({ id: a.id, at: Date.now() });
+      return [];
+    });
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'Date'] });
+    vi.setSystemTime(NOW);
+    feed.fetch.mockImplementation(async () => {
+      await new Promise((r) => setTimeout(r, 10_000));
+      return okFeed(TOMORROW_ICS);
+    });
+
+    let res: Awaited<ReturnType<typeof syncDueCalendars>> | undefined;
+    const pending = syncDueCalendars(NOW).then((r) => (res = r));
+    await vi.advanceTimersByTimeAsync(120_000);
+    await pending;
+
+    // 16 links, 3 at a time, 10 s each: 12 are started (0, 10, 20, 30 s), 4 wait for the next run.
+    expect(res).toMatchObject({ checked: 12, skipped: 4, clashChecksSkipped: 0 });
+    const at = (id: string) => calls.filter((c) => c.id === id).map((c) => c.at - NOW.getTime());
+    // The first assistant had one link: it was checked as soon as that read finished (10 s), not after the others.
+    expect(at(first.id)).toEqual([10_000]);
+    // Every assistant with a read link was checked exactly once; the one with unstarted links waited for the final pass (after 40 s).
+    expect(new Set(calls.map((c) => c.id)).size).toBe(4);
+    expect(calls).toHaveLength(4);
+    const lastAssistant = calls[calls.length - 1];
+    expect(lastAssistant.at - NOW.getTime()).toBeGreaterThanOrEqual(40_000);
+  });
+
+  it('starts no clash check after the 55 second hard stop and counts the ones it left out', async () => {
+    const synced = await newAssistant();
+    await addLink(synced.id);
+    const waiting = await newAssistant();
+    const t = after(NOW, -60_000).toISOString();
+    await addLink(waiting.id, { lastSyncedAt: t, lastAttemptAt: t });
+    const calls: string[] = [];
+    vi.spyOn(clashes, 'detectClashes').mockImplementation(async (a) => {
+      calls.push(a.id);
+      await new Promise((r) => setTimeout(r, 56_000));
+      return [];
+    });
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'Date'] });
+    vi.setSystemTime(NOW);
+    feed.fetch.mockResolvedValue(okFeed(TOMORROW_ICS));
+
+    let res: Awaited<ReturnType<typeof syncDueCalendars>> | undefined;
+    const pending = syncDueCalendars(NOW).then((r) => (res = r));
+    await vi.advanceTimersByTimeAsync(200_000);
+    await pending;
+
+    expect(calls).toEqual([synced.id]);
+    expect(res).toEqual({ checked: 1, failed: 0, skipped: 0, clashChecksSkipped: 1 });
+  });
+});
