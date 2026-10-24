@@ -4,6 +4,9 @@
  * - Only events that overlap the window [from, to) are returned, as half-open UTC ranges.
  * - Cancelled and "free" (TRANSP:TRANSPARENT) events do not block.
  * - Recurring events are expanded inside the window; EXDATE and RECURRENCE-ID overrides are honoured.
+ * - Cost: past one-off events (most of a history feed) and series whose UNTIL is past are dropped from the raw text before
+ *   ical.js sees them; the parse is async and yields to the event loop about every 10 ms; after 5 s it stops and counts the
+ *   events not read yet in `unsupported` (the result is still returned, not an error).
  * - One bad event never fails the feed: it is counted in `skipped`. A recurrence that is unsupported, unsafe to expand
  *   or cut short by a cap is counted in `unsupported` instead (see "Recurrence safety" below). Text that is not a calendar at all throws
  *   CalendarParseError, so the caller keeps the blocks it already has instead of treating it as an emptied calendar.
@@ -36,15 +39,17 @@ export interface ParseIcalOptions {
   timezone: string;
   from: Date;
   to: Date;
+  /** Wall-clock limit for the whole parse (default 5 s); a lower value is for tests. */
+  deadlineMs?: number;
 }
 
 export interface ParseIcalResult {
   blocks: ExternalBlock[];
-  /** Events that are malformed and could not be read (bad date, bad rule, cut off, no start). */
+  /** Events that are malformed and could not be read (bad date, bad rule, cut off, no start). Past events dropped unread are not counted. */
   skipped: number;
   /**
-   * Events dropped or only partly expanded because their recurrence is unsupported, unsafe or hit a cap, and events whose
-   * TZID points at a VTIMEZONE that was refused (they are still read, in the business timezone).
+   * Events dropped or only partly expanded because their recurrence is unsupported, unsafe or hit a cap; events whose TZID
+   * points at a VTIMEZONE that was refused (they are still read, in the business timezone); and events not read before the deadline.
    */
   unsupported: number;
 }
@@ -59,6 +64,12 @@ const MAX_SCAN_PER_EVENT = 20_000;
 /** Most expansion work for the whole feed, so many long series cannot add up to a long block of the event loop. */
 const MAX_SCAN_PER_FEED = 100_000;
 const DAY_MS = 24 * 60 * 60 * 1000;
+/** Default wall-clock limit of one parse. */
+const PARSE_DEADLINE_MS = 5000;
+/** The parse gives the event loop a turn after this much work. */
+const YIELD_EVERY_MS = 10;
+
+const yieldToLoop = () => new Promise<void>((resolve) => (typeof setImmediate === 'function' ? setImmediate(resolve) : setTimeout(resolve, 0)));
 
 type Zone = { kind: 'utc' } | { kind: 'iana'; tz: string } | { kind: 'vtz'; zone: VZone };
 
@@ -93,12 +104,6 @@ const isoDate = (y: number, m: number, d: number) => `${pad(y, 4)}-${pad(m, 2)}-
 
 /** Unfolds the text and splits it into top-level VEVENT / VTIMEZONE chunks (as lines). */
 function splitFeed(text: string): { events: string[][]; timezones: string[][]; unterminated: number } {
-  const unfolded = text
-    .replace(/^﻿/, '')
-    .replace(/\r\n|\r|\n/g, '\n')
-    .replace(/\n[ \t]/g, '');
-  const lines = unfolded.split('\n').filter((l) => l.trim() !== '');
-
   const events: string[][] = [];
   const timezones: string[][] = [];
   let unterminated = 0;
@@ -106,10 +111,26 @@ function splitFeed(text: string): { events: string[][]; timezones: string[][]; u
   let sawEnd = false;
   let current: { kind: 'event' | 'timezone' | 'other'; lines: string[]; depth: number } | null = null;
 
-  for (const line of lines) {
-    const begin = /^BEGIN:(.*)$/i.exec(line);
-    const end = /^END:(.*)$/i.exec(line);
-    const name = (begin?.[1] ?? end?.[1] ?? '').trim().toUpperCase();
+  // One pass, written for speed on 2 MB feeds: a line starting with a space or tab continues the line before it (unfolding),
+  // so each line is handled once the next one shows it is complete. Blank lines are ignored.
+  const raw = text.replace(/^\uFEFF/, '').split(/\r\n|\r|\n/);
+  let pending: string | null = null;
+  for (let r = 0; r <= raw.length; r++) {
+    const next = r < raw.length ? raw[r] : null;
+    if (next !== null) {
+      const first = next.charCodeAt(0);
+      if ((first === 32 || first === 9) && pending !== null) {
+        pending += next.slice(1);
+        continue;
+      }
+    }
+    const line = pending;
+    pending = next;
+    if (line === null || line === '' || (line.charCodeAt(0) <= 32 && line.trim() === '')) continue;
+    const c = line.charCodeAt(0);
+    const begin = (c === 66 || c === 98) && line.slice(0, 6).toUpperCase() === 'BEGIN:';
+    const end = !begin && (c === 69 || c === 101) && line.slice(0, 4).toUpperCase() === 'END:';
+    const name = begin ? line.slice(6).trim().toUpperCase() : end ? line.slice(4).trim().toUpperCase() : '';
 
     if (!current) {
       if (begin) {
@@ -146,6 +167,96 @@ function splitFeed(text: string): { events: string[][]; timezones: string[][]; u
     throw new CalendarParseError('The feed is not a complete iCal calendar (missing BEGIN:VCALENDAR or END:VCALENDAR).');
   }
   return { events, timezones, unterminated };
+}
+
+/** A raw DATE or DATE-TIME value ("20260610", "20260610T090000", "20260610T090000Z") as ms with its fields read as UTC. */
+function rawDateMs(raw: string): { ms: number; isDate: boolean } | null {
+  const v = raw.trim();
+  const isDate = v.length === 8;
+  // YYYYMMDD, or YYYYMMDD'T'HHMMSS with an optional 'Z'
+  if (!isDate && !((v.length === 15 || (v.length === 16 && v.charCodeAt(15) === 90)) && v.charCodeAt(8) === 84)) return null;
+  const num = (from: number, to: number) => {
+    let n = 0;
+    for (let i = from; i < to; i++) {
+      const c = v.charCodeAt(i) - 48;
+      if (c < 0 || c > 9) return NaN;
+      n = n * 10 + c;
+    }
+    return n;
+  };
+  const y = num(0, 4);
+  const mo = num(4, 6);
+  const d = num(6, 8);
+  if (!(mo >= 1 && mo <= 12 && d >= 1 && d <= 31) || Number.isNaN(y)) return null;
+  const secs = isDate ? 0 : (num(9, 11) * 60 + num(11, 13)) * 60 + num(13, 15);
+  if (Number.isNaN(secs)) return null;
+  return { ms: daysFromCivil(y, mo, d) * DAY_MS + secs * 1000, isDate };
+}
+
+/** Name and raw value of a content line; the value starts at the first colon outside a quoted parameter. */
+function splitLine(line: string): { name: string; value: string } | null {
+  if (line.indexOf('"') < 0) {
+    // The usual case, without quoted parameters.
+    const colon = line.indexOf(':');
+    if (colon < 0) return null;
+    const semi = line.indexOf(';');
+    const nameEnd = semi >= 0 && semi < colon ? semi : colon;
+    return { name: line.slice(0, nameEnd).toUpperCase(), value: line.slice(colon + 1) };
+  }
+  let quoted = false;
+  let nameEnd = -1;
+  for (let i = 0; i < line.length; i++) {
+    const c = line[i];
+    if (c === '"') quoted = !quoted;
+    else if (!quoted && (c === ';' || c === ':') && nameEnd < 0) nameEnd = i;
+    if (!quoted && c === ':') return { name: line.slice(0, nameEnd).toUpperCase(), value: line.slice(i + 1) };
+  }
+  return null;
+}
+
+/**
+ * True when an event chunk certainly has nothing at or after `fromMs`, read from the raw text without ical.js. Only plain cases
+ * are decided; anything else (an override, RDATE, DURATION, an unreadable or missing value, a rule without UNTIL) is not
+ * skipped. Raw values are read as if they were UTC; a zone is less than a day away, and the margins below cover it.
+ */
+function clearlyPast(lines: string[], fromMs: number): boolean {
+  let start: string | null = null;
+  let end: string | null = null;
+  const rules: string[] = [];
+  let depth = 0;
+  for (const line of lines) {
+    const c = line.charCodeAt(0) & ~32; // upper case of an ASCII letter
+    if (c === 66 && line.slice(0, 6).toUpperCase() === 'BEGIN:') {
+      depth++;
+      continue;
+    }
+    if (c === 69 && line.slice(0, 4).toUpperCase() === 'END:') {
+      depth--;
+      continue;
+    }
+    // Only DTSTART, DTEND, DURATION, RRULE, RDATE and RECURRENCE-ID matter; VALARM and other nested parts are ignored.
+    if ((c !== 68 && c !== 82) || depth !== 1) continue;
+    const p = splitLine(line);
+    if (!p) return false;
+    if (p.name === 'RECURRENCE-ID' || p.name === 'RDATE' || p.name === 'DURATION') return false;
+    if (p.name === 'DTSTART') start ??= p.value;
+    else if (p.name === 'DTEND') end ??= p.value;
+    else if (p.name === 'RRULE') rules.push(p.value);
+  }
+  const s = start === null ? null : rawDateMs(start);
+  if (!s) return false;
+  const e = end === null ? { ms: s.ms + (s.isDate ? DAY_MS : 0), isDate: s.isDate } : rawDateMs(end);
+  if (!e) return false;
+  if (rules.length === 0) return e.ms < fromMs - DAY_MS;
+  // A series: every rule must end (UNTIL, inclusive) with its last instance, event length included, clearly before the window.
+  const span = Math.max(0, e.ms - s.ms);
+  for (const rule of rules) {
+    const until = /(?:^|;)UNTIL=([^;]+)/i.exec(rule);
+    const u = until ? rawDateMs(until[1]) : null;
+    if (!u) return false;
+    if (u.ms + (u.isDate ? DAY_MS : 0) + span >= fromMs - 3 * DAY_MS) return false;
+  }
+  return true;
 }
 
 /** Parses one chunk of component lines on its own, so a bad line only affects that component. */
@@ -402,8 +513,17 @@ function overrideKey(vevent: ICAL.Component, ctx: Context): string {
   return instanceKey(t, zoneOf(t, prop, ctx));
 }
 
-export function parseIcalBlocks(icsText: string, opts: ParseIcalOptions): ParseIcalResult {
+export async function parseIcalBlocks(icsText: string, opts: ParseIcalOptions): Promise<ParseIcalResult> {
   const chunks = splitFeed(typeof icsText === 'string' ? icsText : '');
+  const deadline = performance.now() + (opts.deadlineMs ?? PARSE_DEADLINE_MS);
+  let lastYield = performance.now();
+  /** True when ~10 ms of work has passed since the event loop last had a turn (checked per event; the await only then). */
+  const due = () => performance.now() - lastYield >= YIELD_EVERY_MS;
+  const breathe = async () => {
+    await yieldToLoop();
+    lastYield = performance.now();
+  };
+  const late = () => performance.now() >= deadline;
 
   const ctx: Context = {
     fallbackTz: knownTimezone(opts.timezone) ? opts.timezone : 'UTC',
@@ -416,6 +536,8 @@ export function parseIcalBlocks(icsText: string, opts: ParseIcalOptions): ParseI
   };
 
   for (const lines of chunks.timezones) {
+    if (due()) await breathe();
+    if (late()) break; // the event loop below stops at once and counts what is left
     let comp: ICAL.Component;
     try {
       comp = parseChunk(lines, 'vtimezone');
@@ -438,7 +560,18 @@ export function parseIcalBlocks(icsText: string, opts: ParseIcalOptions): ParseI
   let unsupported = 0;
   const prepared: PreparedEvent[] = [];
   const overrideKeys = new Map<string, Set<string>>();
-  for (const lines of chunks.events) {
+  for (let i = 0; i < chunks.events.length; i++) {
+    const lines = chunks.events[i];
+    // Dropping a past event costs about a microsecond, so the clock (not free on every platform) is only read every 256 of them.
+    const past = clearlyPast(lines, ctx.fromMs);
+    if (!past || (i & 255) === 0) {
+      if (due()) await breathe();
+      if (late()) {
+        // Out of time: nothing more is read; the events not read yet (here and below) are reported.
+        return finish([], skipped, unsupported + (chunks.events.length - i - (past ? 1 : 0)) + prepared.length);
+      }
+    }
+    if (past) continue;
     try {
       const vevent = parseChunk(lines, 'vevent');
       const uid = stringValue(vevent, 'uid');
@@ -465,7 +598,11 @@ export function parseIcalBlocks(icsText: string, opts: ParseIcalOptions): ParseI
   }
 
   const blocks: ExternalBlock[] = [];
-  for (const p of prepared) {
+  for (let i = 0; i < prepared.length; i++) {
+    // Out of time: the blocks found so far are kept and the events not read yet are reported.
+    if (due()) await breathe();
+    if (late()) return finish(blocks, skipped, unsupported + (prepared.length - i));
+    const p = prepared[i];
     try {
       const status = stringValue(p.vevent, 'status');
       const transp = stringValue(p.vevent, 'transp');
@@ -480,6 +617,10 @@ export function parseIcalBlocks(icsText: string, opts: ParseIcalOptions): ParseI
     }
   }
 
+  return finish(blocks, skipped, unsupported);
+}
+
+function finish(blocks: ExternalBlock[], skipped: number, unsupported: number): ParseIcalResult {
   blocks.sort((a, b) => a.startAt.getTime() - b.startAt.getTime() || a.endAt.getTime() - b.endAt.getTime());
   return { blocks, skipped, unsupported };
 }

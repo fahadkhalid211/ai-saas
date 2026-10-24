@@ -157,7 +157,7 @@ async function handleAdd(req: Request, ctx: Auth, assistant: AssistantData): Pro
   }
   try {
     const now = Date.now();
-    parseIcalBlocks(fetched.text, { timezone: assistant.timezone || 'UTC', from: new Date(now - DAY_MS), to: new Date(now + 180 * DAY_MS) });
+    await parseIcalBlocks(fetched.text, { timezone: assistant.timezone || 'UTC', from: new Date(now - DAY_MS), to: new Date(now + 180 * DAY_MS) });
   } catch {
     return fail('That link did not return a calendar we can read.', 400);
   }

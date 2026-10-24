@@ -135,9 +135,9 @@ async function syncOnce(link: CalendarLink, assistant: AssistantData, now: Date)
     return { ok: recorded, blocks: kept };
   }
 
-  let parsed: ReturnType<typeof parseIcalBlocks>;
+  let parsed: Awaited<ReturnType<typeof parseIcalBlocks>>;
   try {
-    parsed = parseIcalBlocks(res.text, {
+    parsed = await parseIcalBlocks(res.text, {
       timezone,
       from: new Date(now.getTime() - WINDOW_BACK_MS),
       to: new Date(now.getTime() + WINDOW_FORWARD_MS),
