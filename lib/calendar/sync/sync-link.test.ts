@@ -100,7 +100,7 @@ describe('syncCalendarLink', () => {
     expect(got.errorSince).toBeUndefined();
   });
 
-  it('sends the stored validators and reads only now-1 day to now+180 days in the assistant timezone', async () => {
+  it('sends the stored validators and reads only now-1 day to now+400 days in the assistant timezone', async () => {
     const ast = await newAssistant('America/New_York');
     const link = await addLink(ast.id, {
       etag: '"old"',
@@ -114,7 +114,7 @@ describe('syncCalendarLink', () => {
         ics(
           vevent('inside', '20261101T120000Z', '20261101T130000Z'),
           vevent('too-old', '20261020T120000Z', '20261020T130000Z'),
-          vevent('too-far', '20270601T120000Z', '20270601T130000Z'),
+          vevent('too-far', '20271201T120000Z', '20271201T130000Z'),
           // floating time is read in the business zone: 09:00 New York on 2026-10-27 (EDT) = 13:00 UTC
           vevent('floating', '20261027T090000', '20261027T100000'),
         ),
@@ -649,8 +649,8 @@ describe('a feed that keeps answering 304 does not freeze the window', () => {
     feed.fetch.mockImplementation(async (_url: string, prev?: unknown) => (prev ? { status: 'not_modified' } : okFeed(text, { etag: '"v1"' })));
 
   const NEAR = vevent('near', icsDate(after(NOW, DAYS - HOUR)), icsDate(after(NOW, DAYS)));
-  // Starts 180 days and 12 hours after NOW: outside the window of a read at NOW, inside the window of a read a day later.
-  const FAR = vevent('far', icsDate(after(NOW, 180 * DAYS + 12 * HOUR)), icsDate(after(NOW, 180 * DAYS + 13 * HOUR)));
+  // Starts 400 days and 12 hours after NOW: outside the window of a read at NOW, inside the window of a read a day later.
+  const FAR = vevent('far', icsDate(after(NOW, 400 * DAYS + 12 * HOUR)), icsDate(after(NOW, 400 * DAYS + 13 * HOUR)));
 
   it('a parsed response records fullSyncedAt and parsedTimezone; a 304 within 24 hours keeps the blocks and does not move fullSyncedAt', async () => {
     const ast = await newAssistant('Europe/London');
@@ -693,7 +693,7 @@ describe('a feed that keeps answering 304 does not freeze the window', () => {
     expect(feed.fetch.mock.calls.at(-1)).toHaveLength(1);
     expect((await storedBlocks(ast.id)).map((b) => b[0])).toEqual([
       after(NOW, DAYS - HOUR).toISOString(),
-      after(NOW, 180 * DAYS + 12 * HOUR).toISOString(),
+      after(NOW, 400 * DAYS + 12 * HOUR).toISOString(),
     ]);
     const got = await reload(link);
     expect(got.fullSyncedAt).toBe(later.toISOString());

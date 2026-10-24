@@ -5,6 +5,7 @@ import { fetchCalendarFeed, normaliseCalendarUrl } from './fetch-feed';
 import { CalendarParseError, parseIcalBlocks } from './parse-ical';
 import { MAX_BLOCKS_PER_LINK } from './link-rules';
 import { detectClashes } from './clashes';
+import { SYNC_WINDOW_BACK_MS, SYNC_WINDOW_FORWARD_MS } from './window';
 import type { CalendarLink } from './types';
 
 /**
@@ -20,11 +21,9 @@ import type { CalendarLink } from './types';
  */
 
 const DAY_MS = 24 * 60 * 60 * 1000;
-const WINDOW_BACK_MS = DAY_MS;
-const WINDOW_FORWARD_MS = 180 * DAY_MS;
 
 /**
- * The blocks cover [read time - 1 day, read time + 180 days]. A server that keeps answering 304 never moves that window, so after this long
+ * The blocks cover [read time - 1 day, read time + 400 days] (window.ts; bookings beyond it are refused when a calendar is linked). A server that keeps answering 304 never moves that window, so after this long
  * the next read is sent WITHOUT the stored validators: the answer is a full body, parsed for a fresh window.
  */
 const FULL_READ_AFTER_MS = DAY_MS;
@@ -142,8 +141,8 @@ async function syncOnce(link: CalendarLink, assistant: AssistantData, now: Date)
   try {
     parsed = await parseIcalBlocks(res.text, {
       timezone,
-      from: new Date(now.getTime() - WINDOW_BACK_MS),
-      to: new Date(now.getTime() + WINDOW_FORWARD_MS),
+      from: new Date(now.getTime() - SYNC_WINDOW_BACK_MS),
+      to: new Date(now.getTime() + SYNC_WINDOW_FORWARD_MS),
     });
   } catch (err) {
     if (!(err instanceof CalendarParseError)) {

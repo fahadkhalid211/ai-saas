@@ -213,6 +213,20 @@ describe('external blocks (JSON mode)', () => {
     expect(await Database.getExternalBlocks(a)).toHaveLength(3);
   });
 
+  it('`to` leaves out blocks that start at or after it (a block starting exactly at `to` is out)', async () => {
+    const a = `ast_${seq++}`;
+    const l = link(a);
+    await Database.saveCalendarLink(l);
+    await Database.replaceExternalBlocks(l.id, a, [
+      block('2026-11-02T09:00:00Z', '2026-11-02T10:00:00Z'),
+      block('2026-11-03T23:00:00Z', '2026-11-04T01:00:00Z'),
+      block('2026-11-04T00:00:00Z', '2026-11-04T01:00:00Z'),
+      block('2026-12-01T09:00:00Z', '2026-12-01T10:00:00Z'),
+    ]);
+    const got = await Database.getExternalBlocks(a, new Date('2026-11-01T00:00:00Z'), new Date('2026-11-04T00:00:00Z'));
+    expect(got.map((x) => x.startAt.toISOString())).toEqual(['2026-11-02T09:00:00.000Z', '2026-11-03T23:00:00.000Z']);
+  });
+
   it('ignores blocks for a link that does not exist or belongs to another assistant', async () => {
     const a = `ast_${seq++}`;
     const b = `ast_${seq++}`;
@@ -384,6 +398,18 @@ describe('relational mode (pool faked)', () => {
     expect(String(sql)).toMatch(/end_at > \$2/);
     expect(String(sql)).toMatch(/ORDER BY start_at/i);
     expect(params).toEqual(['ast_1', from.toISOString()]);
+  });
+
+  it('getExternalBlocks with `from` and `to` also leaves out blocks that start at or after `to`', async () => {
+    relational();
+    h.query.mockResolvedValue({ rows: [], rowCount: 0 });
+    const from = new Date('2026-11-01T00:00:00Z');
+    const to = new Date('2026-11-04T00:00:00Z');
+    await Database.getExternalBlocks('ast_1', from, to);
+    const [sql, params] = h.query.mock.calls[0];
+    expect(String(sql)).toMatch(/end_at > \$2/);
+    expect(String(sql)).toMatch(/start_at < \$3/);
+    expect(params).toEqual(['ast_1', from.toISOString(), to.toISOString()]);
   });
 
   it('getExternalBlocks without `from` does not filter by time', async () => {

@@ -2,6 +2,7 @@ import type { AssistantData } from '@/lib/db';
 import type { ExistingAppointment } from '@/lib/appointments/availability';
 import type { ExternalBlock } from '@/lib/calendar/sync/types';
 import {
+  bookingDateTooFar,
   bookingFailed,
   bookingSlotTaken,
   bookingSucceeded,
@@ -44,7 +45,9 @@ export type VoiceEvent =
   | { type: 'action'; action: { type: 'transfer'; number: string } | { type: 'hangup' } }
   | { type: 'state'; state: VoiceCallState };
 
-export type BookResult = { ok: true; appointmentId: string; hasEmail: boolean } | { ok: false; conflict: boolean };
+export type BookResult =
+  | { ok: true; appointmentId: string; hasEmail: boolean }
+  | { ok: false; conflict: boolean; /** The date is beyond how far ahead the linked calendars are read. */ tooFarAhead?: boolean };
 
 export interface VoiceDeps {
   getAppointments(assistantId: string): Promise<ExistingAppointment[]>;
@@ -191,6 +194,10 @@ export async function* runVoiceTurn(input: { assistant: AssistantData; state: Vo
         const after = bookingSucceeded(turn.state, result.hasEmail);
         state.booking = null;
         yield say(after.say);
+      } else if (result.tooFarAhead) {
+        const again = bookingDateTooFar(turn.state);
+        state.booking = again.state;
+        yield say(again.say);
       } else if (result.conflict) {
         const fresh = await deps.getAppointments(assistant.id);
         const again = bookingSlotTaken(turn.state, bookingContext(assistant, state, fresh.length ? fresh : appointments, now, await loadBlocks()));

@@ -5,7 +5,7 @@ import { handleCheckAvailability } from '@/lib/mcp/tools/availability';
 import { handleCreateBooking } from '@/lib/mcp/tools/bookings';
 import { productionVoiceDeps } from '@/lib/voice/server';
 import { newCallState } from '@/lib/voice/turn';
-import { blocksLowerBound } from './blocks-bound';
+import { blocksLowerBound, blocksUpperBound } from './blocks-bound';
 import type { McpAuthContext } from '@/lib/mcp/types';
 
 /**
@@ -30,6 +30,7 @@ const DB_ENV = [
 
 const MON = '2099-11-02';
 const BOUND = new Date('2099-11-01T00:00:00.000Z');
+const UPPER = new Date('2099-11-04T00:00:00.000Z');
 let spy: ReturnType<typeof vi.spyOn>;
 let seq = 0;
 
@@ -56,6 +57,7 @@ async function newAssistant(workspaceId = `ws_bound_${Date.now().toString(36)}_$
 }
 
 const lastBound = () => (spy.mock.calls[spy.mock.calls.length - 1] as unknown[])[1];
+const lastUpper = () => (spy.mock.calls[spy.mock.calls.length - 1] as unknown[])[2];
 const ip = () => `10.6.${Math.floor(Math.random() * 250)}.${Math.floor(Math.random() * 250)}`;
 
 describe('blocksLowerBound', () => {
@@ -72,6 +74,16 @@ describe('blocksLowerBound', () => {
   });
 });
 
+describe('blocksUpperBound', () => {
+  it('is the start of the date plus two days, in UTC', () => {
+    expect(blocksUpperBound('2099-11-02')?.toISOString()).toBe('2099-11-04T00:00:00.000Z');
+    expect(blocksUpperBound('2026-12-31')?.toISOString()).toBe('2027-01-02T00:00:00.000Z');
+  });
+  it('is undefined for anything that is not a real date', () => {
+    for (const bad of ['', 'tomorrow', '2026-02-30', undefined, null]) expect(blocksUpperBound(bad as string)).toBeUndefined();
+  });
+});
+
 describe('callers pass the bound for their date', () => {
   it('createAppointment', async () => {
     const ast = await newAssistant();
@@ -84,6 +96,7 @@ describe('callers pass the bound for their date', () => {
     });
     expect(spy).toHaveBeenCalled();
     expect(lastBound()).toEqual(BOUND);
+    expect(lastUpper()).toEqual(UPPER);
   });
 
   it('the widget availability check (checkDate)', async () => {
@@ -91,6 +104,7 @@ describe('callers pass the bound for their date', () => {
     const { GET } = await import('../../../app/api/appointments/route');
     await GET(new Request(`http://localhost:3000/api/appointments?assistantId=${ast.id}&checkDate=${MON}`));
     expect(lastBound()).toEqual(BOUND);
+    expect(lastUpper()).toEqual(UPPER);
   });
 
   it('client reschedule uses the NEW date', async () => {
@@ -105,6 +119,7 @@ describe('callers pass the bound for their date', () => {
       }),
     );
     expect(lastBound()).toEqual(BOUND);
+    expect(lastUpper()).toEqual(UPPER);
   });
 
   it('admin un-cancel uses the booking\'s date', async () => {
@@ -122,6 +137,7 @@ describe('callers pass the bound for their date', () => {
       }),
     );
     expect(lastBound()).toEqual(BOUND);
+    expect(lastUpper()).toEqual(UPPER);
   });
 
   it('MCP check_availability and create_booking', async () => {
@@ -130,9 +146,11 @@ describe('callers pass the bound for their date', () => {
     const auth: McpAuthContext = { authenticated: true, workspaceId: ws, userId: 'u', tokenName: 't', tokenId: 'tok', scopes: ['bookings:read', 'bookings:create'] };
     await handleCheckAvailability({ date: MON }, auth);
     expect(lastBound()).toEqual(BOUND);
+    expect(lastUpper()).toEqual(UPPER);
     spy.mockClear();
     await handleCreateBooking({ date: MON, timeSlot: '10:00', customerName: 'Guest', customerEmail: 'guest3@example.com', confirmed: true }, auth);
     expect(lastBound()).toEqual(BOUND);
+    expect(lastUpper()).toEqual(UPPER);
   });
 
   it('voice bookAppointment', async () => {
@@ -144,5 +162,6 @@ describe('callers pass the bound for their date', () => {
       state,
     });
     expect(lastBound()).toEqual(BOUND);
+    expect(lastUpper()).toEqual(UPPER);
   });
 });

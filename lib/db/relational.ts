@@ -1313,14 +1313,19 @@ export async function relationalReplaceExternalBlocks(linkId: string, assistantI
   return done === true;
 }
 
-export async function relationalGetExternalBlocks(assistantId: string, from?: Date): Promise<ExternalBlock[] | null> {
+export async function relationalGetExternalBlocks(assistantId: string, from?: Date, to?: Date): Promise<ExternalBlock[] | null> {
   return withPool(async (client) => {
-    const { rows } = from
-      ? await client.query(
-          `SELECT start_at, end_at FROM kortex_external_blocks WHERE assistant_id = $1 AND end_at > $2 ORDER BY start_at ASC`,
-          [assistantId, from.toISOString()]
-        )
-      : await client.query(`SELECT start_at, end_at FROM kortex_external_blocks WHERE assistant_id = $1 ORDER BY start_at ASC`, [assistantId]);
+    const params: string[] = [assistantId];
+    let where = 'assistant_id = $1';
+    if (from) {
+      params.push(from.toISOString());
+      where += ` AND end_at > $${params.length}`;
+    }
+    if (to) {
+      params.push(to.toISOString());
+      where += ` AND start_at < $${params.length}`;
+    }
+    const { rows } = await client.query(`SELECT start_at, end_at FROM kortex_external_blocks WHERE ${where} ORDER BY start_at ASC`, params);
     return rows.map((r: Record<string, any>) => ({ startAt: new Date(r.start_at), endAt: new Date(r.end_at) }));
   });
 }

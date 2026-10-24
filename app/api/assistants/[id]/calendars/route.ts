@@ -12,6 +12,7 @@ import { fetchCalendarFeed, normaliseCalendarUrl } from '@/lib/calendar/sync/fet
 import { parseIcalBlocks } from '@/lib/calendar/sync/parse-ical';
 import { syncCalendarLink } from '@/lib/calendar/sync/sync-link';
 import { CalendarLinkRuleError, MAX_CALENDAR_LINKS_PER_ASSISTANT } from '@/lib/calendar/sync/link-rules';
+import { SYNC_WINDOW_BACK_MS, SYNC_WINDOW_FORWARD_MS } from '@/lib/calendar/sync/window';
 import type { CalendarLink } from '@/lib/calendar/sync/types';
 import { toLinkView } from '@/lib/calendar/link-view';
 import { ensureBusyFeedToken, resetBusyFeedToken } from '@/lib/calendar/export-feed';
@@ -37,7 +38,6 @@ const MAX_BODY_BYTES = 4096;
 const MAX_URL_LENGTH = 2048;
 const SYNC_PAUSE_MS = 30_000;
 const ADD_LIMIT = { windowMs: 60_000, max: 10 };
-const DAY_MS = 24 * 60 * 60 * 1000;
 
 const UNAVAILABLE = 'Calendar settings are temporarily unavailable. Please try again in a moment.';
 
@@ -188,7 +188,7 @@ async function handleAdd(req: Request, ctx: Auth, assistant: AssistantData): Pro
   }
   try {
     const now = Date.now();
-    await parseIcalBlocks(fetched.text, { timezone: assistant.timezone || 'UTC', from: new Date(now - DAY_MS), to: new Date(now + 180 * DAY_MS) });
+    await parseIcalBlocks(fetched.text, { timezone: assistant.timezone || 'UTC', from: new Date(now - SYNC_WINDOW_BACK_MS), to: new Date(now + SYNC_WINDOW_FORWARD_MS) });
   } catch {
     return fail('That link did not return a calendar we can read.', 400);
   }

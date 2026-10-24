@@ -13,7 +13,7 @@ import { normalizeE164 } from '@/lib/voice/text';
 import { buildGreeting, newCallState, type BookResult, type VoiceCallState, type VoiceDeps } from '@/lib/voice/turn';
 import { logEvent } from '@/lib/logging/logger';
 import { getExternalBlocksOrEmpty } from '@/lib/calendar/sync/safe-blocks';
-import { blocksLowerBound } from '@/lib/calendar/sync/blocks-bound';
+import { blocksLowerBound, blocksUpperBound } from '@/lib/calendar/sync/blocks-bound';
 import { isBookingUnavailable } from '@/lib/appointments/errors';
 
 /** Reads a worker request, verifies its HMAC signature and returns the parsed JSON body. */
@@ -130,7 +130,7 @@ export function productionVoiceDeps(): VoiceDeps {
       const existing = await Database.getAppointments(assistant.id, undefined, { ownOnly: true });
       let blocks: Awaited<ReturnType<typeof Database.getExternalBlocks>>;
       try {
-        blocks = await Database.getExternalBlocks(assistant.id, blocksLowerBound(booking.date));
+        blocks = await Database.getExternalBlocks(assistant.id, blocksLowerBound(booking.date), blocksUpperBound(booking.date));
       } catch (err) {
         // Linked calendars cannot be read: confirming could double-book, so the caller is told it did not go through (a transient failure, not a conflict).
         if (!isBookingUnavailable(err)) throw err;
@@ -170,6 +170,7 @@ export function productionVoiceDeps(): VoiceDeps {
         sendClientEmail: !!known.email,
       });
       if (result.ok) return { ok: true, appointmentId: result.appointment.id, hasEmail: !!known.email };
+      if (result.reason === 'too_far_ahead') return { ok: false, conflict: false, tooFarAhead: true };
       return { ok: false, conflict: result.status === 409 };
     },
 

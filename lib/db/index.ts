@@ -2853,13 +2853,13 @@ export class Database {
 
   /**
    * Busy periods from all of the assistant's linked external calendars, sorted by start, used by every booking path's conflict check.
-   * With `from`, blocks that ended at or before it are left out. In required mode a database failure throws BookingUnavailableError:
+   * With `from`, blocks that ended at or before it are left out; with `to`, blocks that start at or after it. In required mode a database failure throws BookingUnavailableError:
    * code that only narrows what is offered catches it and uses none (lib/calendar/sync/safe-blocks.ts), code that confirms a booking refuses.
    */
-  static async getExternalBlocks(assistantId: string, from?: Date): Promise<ExternalBlock[]> {
-    const rel = await onCalendarTables(() => Relational.relationalGetExternalBlocks(assistantId, from), { value: [] });
+  static async getExternalBlocks(assistantId: string, from?: Date, to?: Date): Promise<ExternalBlock[]> {
+    const rel = await onCalendarTables(() => Relational.relationalGetExternalBlocks(assistantId, from, to), { value: [] });
     if (rel) return rel.value;
-    return CalendarFile.fileGetBlocks(assistantId, from);
+    return CalendarFile.fileGetBlocks(assistantId, from, to);
   }
 
   /** The calendar links of one assistant, oldest first. */

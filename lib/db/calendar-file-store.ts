@@ -151,9 +151,10 @@ export function fileReplaceBlocks(linkId: string, assistantId: string, blocks: E
   write(data);
 }
 
-export function fileGetBlocks(assistantId: string, from?: Date): ExternalBlock[] {
+export function fileGetBlocks(assistantId: string, from?: Date, to?: Date): ExternalBlock[] {
   const data = read();
   const fromMs = from ? from.getTime() : -Infinity;
+  const toMs = to ? to.getTime() : Infinity;
   const out: ExternalBlock[] = [];
   for (const link of data.links) {
     if (link.assistantId !== assistantId) continue;
@@ -161,7 +162,7 @@ export function fileGetBlocks(assistantId: string, from?: Date): ExternalBlock[]
       const startAt = new Date(b.s);
       const endAt = new Date(b.e);
       if (Number.isNaN(startAt.getTime()) || Number.isNaN(endAt.getTime())) continue;
-      if (endAt.getTime() > fromMs) out.push({ startAt, endAt });
+      if (endAt.getTime() > fromMs && startAt.getTime() < toMs) out.push({ startAt, endAt });
     }
   }
   return out.sort((a, b) => a.startAt.getTime() - b.startAt.getTime());

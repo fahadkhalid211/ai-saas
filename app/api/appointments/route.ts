@@ -13,7 +13,8 @@ import { slotRange, slotRangeFields } from '@/lib/appointments/time-range';
 import { isBookingUnavailable } from '@/lib/appointments/errors';
 import { logged } from '@/lib/logging/route';
 import { getExternalBlocksOrEmpty } from '@/lib/calendar/sync/safe-blocks';
-import { blocksLowerBound } from '@/lib/calendar/sync/blocks-bound';
+import { blocksLowerBound, blocksUpperBound } from '@/lib/calendar/sync/blocks-bound';
+import { TOO_FAR_AHEAD_MESSAGE, tooFarAheadForLinkedCalendars } from '@/lib/calendar/sync/booking-horizon';
 import { refreshCalendarsBeforeBooking } from '@/lib/calendar/sync/refresh-before-booking';
 
 /**
@@ -74,7 +75,7 @@ async function GETHandler(req: Request) {
       let bookedSlots = exact;
       if (assistant) {
         // Only narrows what the widget offers: if the linked calendars cannot be read it falls back to none (the booking check still refuses).
-        const blocks = await getExternalBlocksOrEmpty(assistant.id, blocksLowerBound(checkDate));
+        const blocks = await getExternalBlocksOrEmpty(assistant.id, blocksLowerBound(checkDate), blocksUpperBound(checkDate));
         const covered = blockedSlotStarts({
           config: {
             bookingStartHour: assistant.bookingStartHour,
@@ -172,6 +173,9 @@ async function POSTHandler(req: Request) {
         return NextResponse.json({ error: 'newDate must be YYYY-MM-DD and newTimeSlot a time such as "14:00" or "2:00 PM".' }, { status: 400 });
       }
       const takenResponse = () => slotTakenResponse(date, timeSlot);
+      if (await tooFarAheadForLinkedCalendars(apt.assistantId, date)) {
+        return NextResponse.json({ error: TOO_FAR_AHEAD_MESSAGE }, { status: 400 });
+      }
 
       // Linked calendars are refreshed BEFORE the lock (network work, never fails the request); the check below reads the blocks it stored.
       const assistant = await Database.getAssistantById(apt.assistantId);
@@ -182,7 +186,7 @@ async function POSTHandler(req: Request) {
       let updated;
       try {
         const existingAppointments = await Database.getAppointments(apt.assistantId, undefined, { ownOnly: true });
-        const blocks = await Database.getExternalBlocks(apt.assistantId, blocksLowerBound(date));
+        const blocks = await Database.getExternalBlocks(apt.assistantId, blocksLowerBound(date), blocksUpperBound(date));
         const conflict = findBookingConflict({
           date,
           timeSlot,
@@ -248,6 +252,9 @@ async function POSTHandler(req: Request) {
 
       // Restoring a cancelled booking takes its time back, which may have been booked meanwhile: check it like a new booking.
       const reactivating = existingApt.status === 'cancelled' && status !== 'cancelled';
+      if (reactivating && (await tooFarAheadForLinkedCalendars(existingApt.assistantId, existingApt.date))) {
+        return NextResponse.json({ error: TOO_FAR_AHEAD_MESSAGE }, { status: 409 });
+      }
       let updated: boolean;
       // Restoring takes the time back, so the linked calendars are refreshed first, BEFORE the lock (never fails the request).
       const reactivatingAssistant = reactivating ? await Database.getAssistantById(existingApt.assistantId) : null;
@@ -257,7 +264,7 @@ async function POSTHandler(req: Request) {
         if (reactivating) {
           const assistant = reactivatingAssistant;
           const appointments = await Database.getAppointments(existingApt.assistantId, undefined, { ownOnly: true });
-          const blocks = await Database.getExternalBlocks(existingApt.assistantId, blocksLowerBound(existingApt.date));
+          const blocks = await Database.getExternalBlocks(existingApt.assistantId, blocksLowerBound(existingApt.date), blocksUpperBound(existingApt.date));
           const conflict = findBookingConflict({
             date: existingApt.date,
             timeSlot: existingApt.timeSlot,

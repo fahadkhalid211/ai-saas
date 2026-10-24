@@ -7,7 +7,8 @@ import { findBookingConflict } from '@/lib/appointments/conflicts';
 import { slotRangeFields } from '@/lib/appointments/time-range';
 import { isBookingUnavailable } from '@/lib/appointments/errors';
 import { logEvent } from '@/lib/logging/logger';
-import { blocksLowerBound } from '@/lib/calendar/sync/blocks-bound';
+import { blocksLowerBound, blocksUpperBound } from '@/lib/calendar/sync/blocks-bound';
+import { TOO_FAR_AHEAD_MESSAGE, tooFarAheadForLinkedCalendars } from '@/lib/calendar/sync/booking-horizon';
 import { refreshCalendarsBeforeBooking } from '@/lib/calendar/sync/refresh-before-booking';
 
 export interface NewAppointmentInput {
@@ -29,8 +30,10 @@ export type CreateAppointmentResult =
   | { ok: true; appointment: AppointmentData; /** The same person had already booked this slot (a retry): nothing new was created. */ duplicate?: boolean }
   | {
       ok: false;
-      status: 409 | 500 | 503;
+      status: 400 | 409 | 500 | 503;
       error: string;
+      /** 'too_far_ahead': the date is beyond the window the assistant's linked calendars are read for (status 400). */
+      reason?: 'too_far_ahead';
       /** For a 503: seconds the client should wait before retrying (5 for a busy day lock; the route defaults to 60 for an outage). */
       retryAfterSeconds?: number;
     };
@@ -71,6 +74,11 @@ export async function createAppointment(opts: CreateAppointmentOptions): Promise
   // phone: those would appear in the confirmation e-mail of every other business.
   const landingConfig: Partial<NonNullable<AssistantData['landingPageConfig']>> = assistant.landingPageConfig || {};
 
+  // A date the linked calendars are not read for could never be checked against them.
+  if (await tooFarAheadForLinkedCalendars(assistant.id, date)) {
+    return { ok: false, status: 400, error: TOO_FAR_AHEAD_MESSAGE, reason: 'too_far_ahead' };
+  }
+
   // Bring the owner's linked calendars up to date BEFORE taking the lock (it may use the network for up to 3 seconds and must not hold
   // the day up). It never fails a booking; the conflict check below reads the blocks it just stored.
   await refreshCalendarsBeforeBooking(assistant);
@@ -97,7 +105,7 @@ export async function createAppointment(opts: CreateAppointmentOptions): Promise
     }
     let blocks: Awaited<ReturnType<typeof Database.getExternalBlocks>>;
     try {
-      blocks = await Database.getExternalBlocks(assistant.id, blocksLowerBound(date));
+      blocks = await Database.getExternalBlocks(assistant.id, blocksLowerBound(date), blocksUpperBound(date));
     } catch (err) {
       // Linked calendars cannot be read: confirming now could double-book against them, so nothing is written and the visitor retries.
       if (!isBookingUnavailable(err)) throw err;

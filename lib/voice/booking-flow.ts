@@ -8,6 +8,7 @@ import {
   type ExistingAppointment,
 } from '@/lib/appointments/availability';
 import type { ExternalBlock } from '@/lib/calendar/sync/types';
+import { TOO_FAR_AHEAD_MESSAGE } from '@/lib/calendar/sync/window';
 import { filterByDayPart, parseDayPart, parseSpokenDate, parseYesNo, pickSlot } from '@/lib/voice/datetime';
 import { normalizeE164, parseSpokenDigits } from '@/lib/voice/text';
 
@@ -372,6 +373,12 @@ export function bookingSlotTaken(state: BookingState, ctx: BookingContext): Book
   const cleared = { ...state, timeSlot: undefined, slots: undefined, offered: undefined, offerPage: 0, step: 'time' as BookingStep, attempts: 0, active: true };
   const turn = offerDate(cleared, ctx);
   return { ...turn, say: `Sorry, that time was just taken. ${turn.say.replace(/^Sure\.\s*/, '')}` };
+}
+
+/** Call when the chosen date is beyond how far ahead the linked calendars are read: the caller is asked for another day. */
+export function bookingDateTooFar(state: BookingState): BookingTurn {
+  const cleared = { ...state, date: undefined, timeSlot: undefined, slots: undefined, offered: undefined, offerPage: 0, step: 'date' as BookingStep, attempts: 0, active: true };
+  return { state: cleared, say: `${TOO_FAR_AHEAD_MESSAGE} What day works best for you?` };
 }
 
 /** Call when saving failed for a reason other than a taken slot. */
