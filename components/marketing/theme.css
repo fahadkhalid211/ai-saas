@@ -393,6 +393,45 @@ button.mk-chat-launcher:hover {
   opacity: 0.3 !important;
 }
 
+/* The booking form's day and time buttons. The .mk button reset (background none, border 0, inherited colour) is outside Tailwind's
+   layers and beats its utility classes, which left these as bare text with no sign they can be clicked or that one is chosen. */
+.mk-chat-panel .mk-book-day,
+.mk-chat-panel .mk-book-slot {
+  background-color: rgba(255, 255, 255, 0.06) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  color: #e8e5dc !important;
+  cursor: pointer;
+}
+
+.mk-chat-panel .mk-book-day:hover,
+.mk-chat-panel .mk-book-slot:hover:not(:disabled) {
+  background-color: rgba(255, 255, 255, 0.12) !important;
+  border-color: rgba(255, 255, 255, 0.45) !important;
+}
+
+.mk-chat-panel .mk-book-day[aria-pressed="true"] {
+  background-color: #abff44 !important;
+  border-color: #abff44 !important;
+  color: #08251a !important;
+  font-weight: 600;
+}
+
+.mk-chat-panel .mk-book-slot[aria-pressed="true"] {
+  background-color: rgba(171, 255, 68, 0.22) !important;
+  border-color: #abff44 !important;
+  box-shadow: inset 0 0 0 1px #abff44;
+  color: #faf9f5 !important;
+  font-weight: 600;
+}
+
+.mk-chat-panel .mk-book-slot:disabled {
+  background-color: transparent !important;
+  border-color: rgba(255, 255, 255, 0.06) !important;
+  color: #666560 !important;
+  text-decoration: line-through;
+  cursor: not-allowed;
+}
+
 .mk-chat-panel .mk-chat-msg-user {
   background-color: #abff44 !important;
   color: #08251a !important;

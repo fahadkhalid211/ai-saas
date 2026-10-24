@@ -142,7 +142,8 @@ export function PlatformBookingCard({ assistantId, config, note }: { assistantId
               key={v}
               type="button"
               onClick={() => setDate(v)}
-              className={`shrink-0 rounded-xl border px-2.5 py-1.5 text-center text-[11px] leading-tight transition ${
+              // mk-book-day: on the marketing pages the .mk button reset drops the Tailwind colours below (see theme.css), so they are repeated there
+              className={`mk-book-day shrink-0 rounded-xl border px-2.5 py-1.5 text-center text-[11px] leading-tight transition ${
                 on ? 'border-[#abff44] bg-[#abff44] text-[#08251a] font-semibold' : 'border-white/10 bg-white/[0.04] text-[#d8d5cb] hover:border-white/25'
               }`}
               aria-pressed={on}
@@ -164,7 +165,7 @@ export function PlatformBookingCard({ assistantId, config, note }: { assistantId
               type="button"
               disabled={taken}
               onClick={() => setSlot(s)}
-              className={`rounded-lg border px-2 py-1.5 text-[11px] transition ${
+              className={`mk-book-slot rounded-lg border px-2 py-1.5 text-[11px] transition ${
                 taken
                   ? 'border-white/5 text-[#666560] line-through cursor-not-allowed'
                   : on
