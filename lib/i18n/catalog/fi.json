@@ -5011,5 +5011,6 @@
  "Everyone in this account can sign in again and its assistants answer visitors again.": "Kaikki tilin käyttäjät voivat kirjautua taas sisään ja avustajat vastaavat jälleen kävijöille.",
  " · disabled": " · poistettu käytöstä",
  "Team roles and encryption": "Tiimiroolit ja salaus",
- "Team roles and encrypted keys.": "Tiimiroolit ja salatut avaimet."
+ "Team roles and encrypted keys.": "Tiimiroolit ja salatut avaimet.",
+ "System status": "Järjestelmän tila"
 }

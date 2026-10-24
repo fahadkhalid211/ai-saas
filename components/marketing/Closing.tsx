@@ -4,12 +4,11 @@ import { T, useT } from '@/lib/i18n/context';
 import { A } from '@/components/i18n/A';
 import { LEGAL } from '@/lib/legal/config';
 import { CookieSettingsLink } from '@/components/legal/CookieConsent';
-import { useId, useState, type FormEvent } from 'react';
+import { useId, useState } from 'react';
 import Link from '@/components/i18n/Link';
 import { FAQ, FINAL_CTA, FOOTER, LOGIN_HREF, SIGNUP_HREF, SITE } from './content';
 import { ButtonLink, Logo, Reveal, SectionHead } from './ui';
 import { LanguageSwitcher } from '@/components/i18n/LanguageSwitcher';
-import { localizeHref } from '@/lib/i18n/paths';
 import { useI18n } from '@/lib/i18n/context';
 
 export function Faq() {
@@ -80,56 +79,6 @@ export function FinalCta() {
   );
 }
 
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
-
-function Newsletter() {
-  const { dict, locale } = useI18n();
-  const news = dict?.newsletter;
-  const [email, setEmail] = useState('');
-  const [error, setError] = useState('');
-  const [sent, setSent] = useState(false);
-  const errId = useId();
-
-  const submit = (e: FormEvent) => {
-    e.preventDefault();
-    const v = email.trim();
-    if (!EMAIL_RE.test(v) || v.length > 254) {
-      setError(news?.error || 'Enter a valid email address, like name@example.com.');
-      setSent(false);
-      return;
-    }
-    setError('');
-    setSent(true);
-    window.location.href = localizeHref(`/support/contact?topic=newsletter&email=${encodeURIComponent(v)}`, locale);
-  };
-
-  return (
-    <form className="mk-news" onSubmit={submit} noValidate>
-      <label htmlFor="mk-news-email"><T>{news?.title || 'Email updates'}</T></label>
-      <div className="mk-news-row">
-        <input
-          id="mk-news-email"
-          type="email"
-          inputMode="email"
-          autoComplete="email"
-          placeholder={news?.placeholder || 'you@company.com'}
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          aria-invalid={error ? true : undefined}
-          aria-describedby={error ? errId : undefined}
-          maxLength={254}
-        />
-        <button type="submit" className="mk-btn mk-btn-primary mk-btn-sm">
-          <T>{news?.button || 'Subscribe'}</T>
-        </button>
-      </div>
-      <p id={errId} className="mk-news-msg" role={error ? 'alert' : 'status'}>
-        <T>{error || (sent ? (news?.success || 'Thank you! You have been subscribed to Crescelo updates.') : '')}</T>
-      </p>
-    </form>
-  );
-}
-
 export function Footer() {
   const __t = useT();
   const { dict } = useI18n();
@@ -154,6 +103,10 @@ export function Footer() {
                 ))}
               </ul>
             )}
+            <a className="mk-footer-badge" href="https://saasbrowser.com/en/saas/1685880/crescelo" target="_blank" rel="nofollow noopener">
+              {/* eslint-disable-next-line @next/next/no-img-element -- third-party badge SVG, served as-is */}
+              <img src="https://static-files.saasbrowser.com/saas-browser-badge-17.svg" alt="Crescelo - SaaS search engine" width={200} />
+            </a>
           </div>
           {FOOTER.columns.map((c) => (
             <nav key={c.title} aria-label={c.title} className="mk-footer-col">
@@ -167,7 +120,6 @@ export function Footer() {
               </ul>
             </nav>
           ))}
-          <Newsletter />
         </div>
         <div className="mk-footer-bottom flex flex-wrap items-center justify-between gap-4">
           <span>© {new Date().getFullYear()} <T>{LEGAL.operatorLine}</T>. {dict.footer.allRightsReserved}</span>

@@ -207,7 +207,6 @@
 .mk-final .mk-btn-ghost { background: transparent !important; color: var(--mk-bg) !important; border: 1.5px solid rgba(255, 254, 235, 0.4) !important; }
 .mk-final .mk-btn-ghost:hover { background: var(--mk-lime) !important; color: var(--mk-deep) !important; border-color: var(--mk-lime) !important; transform: translateY(-2px); box-shadow: 0 0.25rem 0 var(--mk-ink); }
 .mk-footer { border-top: 0; }
-.mk-news input { border: 1.5px solid var(--mk-ink); border-radius: 0.75rem; }
 
 /* Badge grid without repeating marquee ticker */
 .mk-badge-grid {
