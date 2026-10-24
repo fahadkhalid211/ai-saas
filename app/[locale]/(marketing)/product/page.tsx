@@ -96,7 +96,7 @@ const chunks = await retrieveHybridChunks({
       { label: 'Check', value: 'Time-range check under a per-day lock; the database also refuses overlaps' },
       { label: 'Compared against', value: 'Existing bookings and linked calendars' },
       { label: 'Calendar links', value: 'Google, Apple, Outlook or any .ics link, read-only' },
-      { label: 'Refreshed', value: 'Right before each booking and about every 10 minutes' },
+      { label: 'Refreshed', value: 'Just before a booking (unless read in the last minute) and about every 10 minutes' },
     ],
     codeSnippet: `// Every booking, in this order
 await refreshCalendarsBeforeBooking(assistant);

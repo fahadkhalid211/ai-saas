@@ -393,7 +393,7 @@ export default function RoadmapPage() {
               </h2>
               <p className="mk-lead" style={{ fontSize: '1.05rem', marginInline: 'auto' }}>
                 <T>Each archetype bundles a dedicated high-conversion hosted surface, customized domain knowledge,
-                service pricing hierarchies, and calendar booking mutex locks. We are polishing these before wide release.</T>
+                service pricing hierarchies, and booking checks against your bookings and calendars. We are polishing these before wide release.</T>
               </p>
 
               {/* Category Filter Pills */}

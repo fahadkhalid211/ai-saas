@@ -208,7 +208,7 @@ export function PipelineSection({ theme = 'dark' }: PipelineSectionProps) {
               <span className="text-emerald-400 font-bold">3 EXECUTION TOOLS</span>
             </div>
             <div className="text-slate-500 font-mono tracking-wider">
-              PER-INSTANCE MUTEX LOCK · STRICT GROUNDING
+              PER-DAY BOOKING LOCK · STRICT GROUNDING
             </div>
           </div>
         </div>

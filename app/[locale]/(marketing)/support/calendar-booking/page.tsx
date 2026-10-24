@@ -72,10 +72,10 @@ export default function CalendarBookingGuidePage() {
                 </p>
                 <ul style={{ display: 'grid', gap: '8px', marginTop: '12px', fontSize: '14.5px', color: 'var(--mk-deep)' }}>
                   <li><T>• Crescelo only reads the links. It never changes your calendar.</T></li>
-                  <li><T>• The links are read again right before a booking is confirmed and about every 10 minutes. Busy events become unavailable slots.</T></li>
+                  <li><T>• The links are checked again just before a booking is confirmed (unless they were read in the last minute) and about every 10 minutes. Busy events become unavailable slots.</T></li>
                   <li><T>• Common repeating events (daily, weekly, monthly and yearly patterns, such as every Monday or the second Tuesday) are understood. Unusual repeat rules are not, and the settings show how many events have repeats we can't read yet.</T></li>
-                  <li><T>• All-day events that Google marks as Free do not block slots.</T></li>
-                  <li><T>• An event added to your calendar in the very same second a visitor confirms the same slot cannot be seen by either side. If a clash happens anyway, you get a notification and an email, and the guest's booking is never cancelled automatically.</T></li>
+                  <li><T>• Events marked Free (Show as: Free) do not block, including all-day events, which Google marks Free by default.</T></li>
+                  <li><T>• An event added to your calendar in the last minute or so before a visitor confirms (or before your calendar service has updated its link) may not be seen yet. If a clash happens anyway, you get a notification and, when a notification email is set, an email, and the guest's booking is never cancelled automatically.</T></li>
                 </ul>
               </div>
 

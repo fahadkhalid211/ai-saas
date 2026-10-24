@@ -164,7 +164,7 @@ export function SaaSMarketingHomepage({
     },
     {
       q: 'How does in-chat appointment booking work?',
-      a: 'When a visitor asks to book a consultation, tour, or service, the AI assistant detects booking intent and immediately embeds an interactive date and time picker directly in the conversation. Once the visitor selects a time, Crescelo checks the time against your existing bookings and calendars before confirming it, and sends a confirmation email with add-to-calendar options for Google Calendar, Outlook, and .ics.',
+      a: 'When a visitor asks to book a consultation, tour, or service, the AI assistant detects booking intent and immediately embeds an interactive date and time picker directly in the conversation. Once the visitor selects a time, Crescelo checks the time against your existing bookings and calendars before confirming it, sends a confirmation email with a link to add it to Google Calendar, and the chat offers more add-to-calendar options.',
     },
     {
       q: 'How do I install the Crescelo widget on my website?',
@@ -421,12 +421,12 @@ export function SaaSMarketingHomepage({
                       : 'bg-slate-900/80 border-slate-800 text-slate-200'
                   }`}
                 >
-                  <div className="text-xl sm:text-2xl font-black text-indigo-600 dark:text-indigo-400">Slot Lock</div>
+                  <div className="text-xl sm:text-2xl font-black text-indigo-600 dark:text-indigo-400">Booking Lock</div>
                   <div className={`text-[11px] font-semibold mt-0.5 ${isLight ? 'text-slate-800' : 'text-slate-300'}`}>
-                    Per-Instance Mutex
+                    Per-day lock
                   </div>
                   <div className={`text-[10px] ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>
-                    In-memory lock &amp; DB uniqueness
+                    Plus a database check in database mode
                   </div>
                 </div>
 
@@ -554,7 +554,7 @@ export function SaaSMarketingHomepage({
                         : 'bg-blue-950/60 text-blue-300 border-blue-800/60'
                     }`}
                   >
-                    Mutex Armed
+                    Lock Armed
                   </span>
                 </div>
               </div>
@@ -627,7 +627,7 @@ export function SaaSMarketingHomepage({
                         : 'bg-slate-800/40 text-slate-500 border-slate-700/40'
                     }`}
                   >
-                    6. MUTEX ACTION
+                    6. BOOKING CHECK
                   </span>
                 </div>
               </div>
@@ -864,7 +864,7 @@ export function SaaSMarketingHomepage({
                     Native In-Chat Calendar Booking
                   </h3>
                   <p className={`text-xs sm:text-sm leading-relaxed max-w-xl ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
-                    Visitors pick and confirm appointments right inside the conversation stream. Every booking is checked against existing bookings and calendars before it is confirmed, and visitors get add-to-calendar options for Google Calendar, Outlook, and .ics.
+                    Visitors pick and confirm appointments right inside the conversation stream. Every booking is checked against existing bookings and calendars before it is confirmed, and the chat offers Google Calendar, Apple Calendar, and .ics add-to-calendar options.
                   </p>
                 </div>
                 <div
@@ -874,9 +874,9 @@ export function SaaSMarketingHomepage({
                 >
                   <span className="flex items-center gap-2">
                     <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                    <span>In-Memory Slot Lock Active</span>
+                    <span>Per-Day Booking Lock Active</span>
                   </span>
-                  <span className="text-[11px] text-slate-400">Auto-Expiry: 5m</span>
+                  <span className="text-[11px] text-slate-400">Released after saving</span>
                 </div>
               </SpotlightCard>
 
@@ -1098,7 +1098,7 @@ export function SaaSMarketingHomepage({
                     '500 Chat Sessions / month',
                     '5 AI Assistant Bots',
                     '500 MB Knowledge Storage',
-                    'Appointment Booking & Calendar Sync',
+                    'Appointment Booking & Calendar Links',
                     'Multi-Document RAG Knowledge Base',
                     '1-Click Live Human Staff Takeover',
                     'Audio Alerts & Real-Time Chimes',

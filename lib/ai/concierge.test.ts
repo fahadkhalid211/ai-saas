@@ -62,9 +62,18 @@ describe('Crescelo assistant: hand-written guides', () => {
     expect(answer).toContain('Calendars that block my slots');
     expect(answer).toMatch(/up to 5/);
     expect(answer).toMatch(/every 10 minutes/);
-    expect(answer).toMatch(/same second/);
+    expect(answer).toMatch(/last minute or so before a visitor confirms/);
+    expect(answer).toMatch(/unless they were read in the last minute/);
+    expect(answer).not.toMatch(/same second/);
     expect(answer).toMatch(/never cancelled automatically/);
     expect(answer).toMatch(/Busy/);
+  });
+
+  it('finds the calendar link guide for an iCal question and ranks it first for calendar link questions', () => {
+    expect(searchGuides('ical', 3).map((h) => h.guide.id)).toContain('calendar-links');
+    expect(searchGuides('ical link', 3).map((h) => h.guide.id)).toContain('calendar-links');
+    expect(searchGuides('calendar link', 3)[0].guide.id).toBe('calendar-links');
+    expect(searchGuides('what is an ics link', 3).map((h) => h.guide.id)).toContain('calendar-links');
   });
 
   it('never promises zero or never-ever double bookings in the booking guides', () => {

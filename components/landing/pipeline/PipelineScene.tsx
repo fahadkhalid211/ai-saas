@@ -362,7 +362,7 @@ export default function PipelineScene({
           fontWeight="bold"
           letterSpacing="0.12em"
         >
-          DETERMINISTIC TOOLS · MUTEX LOCKED
+          DETERMINISTIC TOOLS · BOOKING LOCK
         </text>
         <text
           x="640"

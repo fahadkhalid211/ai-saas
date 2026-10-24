@@ -247,19 +247,19 @@ export const TOPOLOGY_NODES: TopologyNode[] = [
   // Bottom Center: Deterministic Tools (Y = 520)
   {
     id: 'tool_mutex',
-    label: 'Slot Lock Mutex',
+    label: 'Booking Lock',
     category: 'tools',
-    badge: 'In-Memory Guard',
+    badge: 'Per-Day Lock',
     x: 680,
     y: 520,
     color: '#10b981',
-    description: 'Per-instance concurrency mutex holding appointment slots during confirmation flow.',
-    technicalSpec: '5-minute auto-expiry timer, single-flight lock map, and database uniqueness check.',
+    description: 'Per-day booking lock (one per assistant and day) held while a booking is checked and saved.',
+    technicalSpec: 'Time-range check against bookings and linked calendars under the lock, plus a database overlap check in database mode.',
     telemetryMetrics: [
-      { label: 'Lock Scope', value: 'Assistant + TimeSlot' },
-      { label: 'Auto Expiry', value: '300s' },
+      { label: 'Lock Scope', value: 'Assistant + Day' },
+      { label: 'Max Wait', value: '10s' },
     ],
-    samplePayload: '{"lockKey": "lock:asst_1:2026-11-20:1000", "ttl": 300, "status": "ACQUIRED"}',
+    samplePayload: '{"lockKey": "lock:asst_1:2026-11-20", "status": "ACQUIRED"}',
   },
   {
     id: 'tool_db',
@@ -440,7 +440,7 @@ export const PIPELINE_SCENARIOS: PipelineScenarioData[] = [
   {
     id: 'booking',
     tabName: 'Calendar Booking Flow',
-    badge: 'Slot Lock & Mutex',
+    badge: 'Booking Lock',
     inboundText: 'Can I book an appointment tomorrow at 10:00 AM?',
     primaryPath: [
       'ing_widget',

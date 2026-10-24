@@ -464,7 +464,7 @@ export function CalendarLinksPanel({ assistantId }: Props) {
               <T>{selected.help}</T>
             </p>
             <p className="text-[11px] text-slate-600 dark:text-slate-400">
-              <T>{"All-day events that Google marks as 'Free' (its default for all-day entries) do not block slots; set them to 'Busy' if they should."}</T>
+              <T>{"Events marked Free (Show as: Free) do not block slots, including all-day events, which Google marks Free by default; set them to Busy if they should."}</T>
             </p>
 
             {addError && (
