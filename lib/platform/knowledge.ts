@@ -20,11 +20,14 @@ export function searchGuides(query: string, limit = 3): Scored[] {
   const q = (query || '').toLowerCase();
   const qWords = words(q);
   const qStems = new Set(qWords.map(stem));
+  // Every word of the question, stop words included, for one-word keywords: those match whole words only ('ics' is not in 'topics').
+  const qTokens = new Set((q.match(/[a-z0-9][a-z0-9.\-_+']*/g) || []).map((w) => w.replace(/^[.\-_']+|[.\-_']+$/g, '')));
 
   const scored: Scored[] = GUIDES.map((guide) => {
     let score = 0;
     for (const kw of guide.keywords) {
-      if (q.includes(kw.toLowerCase())) score += kw.includes(' ') ? 7 : 5; // a phrase or a strong single word
+      const k = kw.toLowerCase();
+      if (k.includes(' ') ? q.includes(k) : qTokens.has(k)) score += k.includes(' ') ? 7 : 5; // a phrase (substring) or a strong single word (whole word)
     }
     const titleStems = new Set(words(guide.title).map(stem));
     for (const s of qStems) if (titleStems.has(s)) score += 3;

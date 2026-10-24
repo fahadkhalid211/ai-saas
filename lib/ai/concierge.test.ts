@@ -76,6 +76,14 @@ describe('Crescelo assistant: hand-written guides', () => {
     expect(searchGuides('what is an ics link', 3).map((h) => h.guide.id)).toContain('calendar-links');
   });
 
+  it('matches one-word keywords on whole words only ("topics" is not "ics", "technical" is not "ical")', () => {
+    expect(searchGuides('what topics can the assistant answer', 3).map((h) => h.guide.id)).not.toContain('calendar-links');
+    expect(searchGuides('I have a technical question about topics', 3).map((h) => h.guide.id)).not.toContain('calendar-links');
+    expect(searchGuides('ical', 3).map((h) => h.guide.id)).toContain('calendar-links');
+    expect(searchGuides('calendar link', 3)[0].guide.id).toBe('calendar-links');
+    expect(searchGuides('paste my .ics address', 3).map((h) => h.guide.id)).toContain('calendar-links');
+  });
+
   it('never promises zero or never-ever double bookings in the booking guides', () => {
     const booking = GUIDES.filter((g) => g.category === 'Booking').map((g) => g.body).join(' ');
     expect(booking).not.toMatch(/zero|never double|cannot be double|guarantee/i);
