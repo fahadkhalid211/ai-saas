@@ -1,5 +1,5 @@
 /**
- * Expands the recurrence rule shapes the feed parser allows (see `checkRule` in parse-ical.ts) into local wall-clock
+ * Expands the recurrence rule shapes the feed parser allows (see `checkRule` in recurrence-rule.ts) into local wall-clock
  * occurrences. Pure integer arithmetic on civil dates: no Date, no Intl, no I/O, constant memory.
  *
  * Semantics (RFC 5545, 3.3.10 and 3.8.5.3):
@@ -50,7 +50,7 @@ export interface RuleParts {
   wkst: Weekday;
 }
 
-export interface ExpandOptions {
+interface ExpandOptions {
   /** Days since 1970-01-01: skip, arithmetically, the periods that end before this day. Ignored when the rule has COUNT. */
   fromDay?: number;
   /** Days since 1970-01-01: stop once a period starts after this day. */

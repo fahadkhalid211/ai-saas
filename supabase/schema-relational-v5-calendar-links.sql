@@ -1,13 +1,14 @@
 -- ==============================================================================
 -- Kortex AI - Calendar links and external calendar blocks (calendar sync)
 -- ==============================================================================
--- MANUAL RUN: execute in the Supabase SQL Editor (or psql) BEFORE deploying the code that reads
--- or writes these tables. Safe to run twice (IF NOT EXISTS / DROP POLICY IF EXISTS). It only
--- creates new tables, so existing data and the running app are not affected.
+-- MANUAL RUN: execute in the Supabase SQL Editor (or psql). Safe to run twice (IF NOT EXISTS /
+-- DROP POLICY IF EXISTS). It only creates new tables, so existing data and the running app are
+-- not affected. It may be applied before or after the deploy.
 --
--- With DB_RELATIONAL_MODE=true the code refuses bookings (503, "try again") while these tables
--- cannot be read, because it could otherwise double-book against an owner's linked calendar.
--- So run this file before turning the new code on in a relational deployment.
+-- With DB_RELATIONAL_MODE=true and these tables missing, the code reads them as empty (no
+-- calendars linked, no busy blocks), so bookings keep working; only writes fail (adding a
+-- calendar link in the settings shows the "temporarily unavailable" error until this is applied).
+-- If the database itself is unreachable, bookings are refused (503, "try again") as before.
 --
 -- kortex_calendar_links  : one row per iCal feed an owner linked to an assistant (at most 5 per
 --                          assistant, enforced by the app). Also holds the sync status shown to

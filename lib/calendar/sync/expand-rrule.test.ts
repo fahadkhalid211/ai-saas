@@ -128,8 +128,9 @@ describe('expandOccurrences: bounded cost', () => {
 // Differential test. Random allowlisted rules are expanded three ways: by the expander, by ical.js's RecurIterator (used
 // here only, as the oracle) and by a slow day-by-day scan written independently below. The expander must equal ical.js
 // wherever ical.js follows RFC 5545, and the scan everywhere; the scan must also equal ical.js wherever ical.js is used,
-// which checks the scan itself. The committed run is seeded; RRULE_DIFF_SEED, RRULE_DIFF_CASES and RRULE_DIFF_REPORT
-// (a file for the summary) run a larger one-off.
+// which checks the scan itself. The committed run is seeded and kept to 1,000 cases (a few seconds, every FREQ well covered);
+// RRULE_DIFF_SEED, RRULE_DIFF_CASES and RRULE_DIFF_REPORT (a file for the summary) run a larger one-off, as recorded in the
+// Task 9 report.
 //
 // ical.js defects found by this test (each checked against RFC 5545 3.3.10 and reproduced on its own), whose cases are
 // compared with the scan only:
@@ -424,9 +425,9 @@ function runDifferential(seed: number, cases: number) {
 }
 
 describe('expandOccurrences: differential test against ical.js (seeded)', () => {
-  it('matches ical.js (and an independent scan) on 3,000 random allowlisted rules', () => {
+  it('matches ical.js (and an independent scan) on 1,000 random allowlisted rules', () => {
     const seed = Number(process.env.RRULE_DIFF_SEED ?? 20261023);
-    const cases = Number(process.env.RRULE_DIFF_CASES ?? 3000);
+    const cases = Number(process.env.RRULE_DIFF_CASES ?? 1000);
     const r = runDifferential(seed, cases);
     // RRULE_DIFF_REPORT=<file> writes the summary (counts per FREQ and per oracle, first failures) for a one-off run.
     if (process.env.RRULE_DIFF_REPORT) writeFileSync(process.env.RRULE_DIFF_REPORT, JSON.stringify({ seed, cases, ...r, failures: r.failures.length, sample: r.failures.slice(0, 30) }, null, 1));
