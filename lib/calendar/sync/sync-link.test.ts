@@ -551,6 +551,33 @@ describe('syncDueCalendars', () => {
       expect(await notices(ast.id)).toHaveLength(1);
     });
 
+    it('also goes out, once, from booking-time refreshes when the scheduled job never gets to the link', async () => {
+      // A tenant with a booking attempt every few minutes: each refresh updates lastAttemptAt, so the cron never finds the link due.
+      vi.useFakeTimers({ toFake: ['Date'] });
+      vi.setSystemTime(NOW);
+      const ast = await newAssistant();
+      const link = await addLink(ast.id, { errorSince: new Date(NOW.getTime() - 25 * 60 * 60 * 1000).toISOString(), lastError: 'trouble' });
+      fail();
+      for (let i = 0; i < 4; i++) {
+        vi.setSystemTime(new Date(NOW.getTime() + i * 2 * 60_000));
+        expect(await refreshAssistantCalendars(ast)).toEqual({ stale: true });
+      }
+      expect(feed.fetch).toHaveBeenCalledTimes(4);
+      expect(await notices(ast.id)).toHaveLength(1);
+      expect((await reload(link)).failureNotifiedFor).toBe(link.errorSince);
+    });
+
+    it('a cron run after a booking-time notice does not notify again', async () => {
+      vi.useFakeTimers({ toFake: ['Date'] });
+      vi.setSystemTime(NOW);
+      const ast = await newAssistant();
+      await addLink(ast.id, { errorSince: new Date(NOW.getTime() - 25 * 60 * 60 * 1000).toISOString(), lastError: 'trouble' });
+      fail();
+      await refreshAssistantCalendars(ast);
+      await syncDueCalendars(new Date(NOW.getTime() + 61 * 60_000));
+      expect(await notices(ast.id)).toHaveLength(1);
+    });
+
     it('is not added before 24 hours', async () => {
       const ast = await newAssistant();
       await addLink(ast.id, { errorSince: new Date(NOW.getTime() - 23 * 60 * 60 * 1000).toISOString(), lastError: 'trouble' });

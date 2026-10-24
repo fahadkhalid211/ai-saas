@@ -85,8 +85,11 @@ export function syncCalendarLink(link: CalendarLink, assistant: AssistantData, n
       logEvent({ level: 'warn', category: 'booking', event: 'calendar.sync_failed', meta: { assistantId: link.assistantId, linkId: link.id, error: errName(err) } });
       return { ok: false, blocks: link.blockCount ?? 0, error: NOT_SAVED };
     })
-    .then((res) => {
+    .then(async (res) => {
       attempt.state = res.ok ? 'ok' : 'failed';
+      // Called on every failed read, scheduled or at booking time: a tenant whose bookings keep the link "recently tried" may never be due
+      // for the scheduled job, and must still hear about a link that has been failing for 24 hours. Idempotent; never throws.
+      if (!res.ok && res.error) await noticeLongFailure(link, res.error, now);
       return res;
     })
     .finally(() => {
@@ -372,10 +375,7 @@ export async function syncDueCalendars(
         counted = true;
         const res = await syncCalendarLink(link, assistant, now);
         if (res.ok) syncedOk.add(link.assistantId);
-        else if (res.error) {
-          failed++;
-          await noticeLongFailure(link, res.error, now);
-        }
+        else if (res.error) failed++; // the 24 hour notice was handled by syncCalendarLink
       } catch (err) {
         if (!counted) checked++;
         failed++;
@@ -407,6 +407,7 @@ export async function syncDueCalendars(
 /**
  * After 24 hours of failing in a row, tells the owner once. `errorSince` identifies the run of failures; the matching `failureNotifiedFor`
  * records that the notice went out. If the notification cannot be saved nothing is recorded, so the next run tries again.
+ * Called from syncCalendarLink for every failed read (scheduled job and booking-time refresh). Never throws.
  */
 async function noticeLongFailure(link: CalendarLink, error: string, now: Date): Promise<void> {
   const since = link.errorSince ?? now.toISOString();
