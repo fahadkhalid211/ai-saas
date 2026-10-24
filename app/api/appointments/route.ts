@@ -13,6 +13,7 @@ import { slotRange, slotRangeFields } from '@/lib/appointments/time-range';
 import { isBookingUnavailable } from '@/lib/appointments/errors';
 import { logged } from '@/lib/logging/route';
 import { getExternalBlocksOrEmpty } from '@/lib/calendar/sync/safe-blocks';
+import { blocksLowerBound } from '@/lib/calendar/sync/blocks-bound';
 
 /**
  * Nothing was saved and the visitor may retry. Postgres being required but unavailable pauses it for 60 seconds
@@ -72,7 +73,7 @@ async function GETHandler(req: Request) {
       let bookedSlots = exact;
       if (assistant) {
         // Only narrows what the widget offers: if the linked calendars cannot be read it falls back to none (the booking check still refuses).
-        const blocks = await getExternalBlocksOrEmpty(assistant.id);
+        const blocks = await getExternalBlocksOrEmpty(assistant.id, blocksLowerBound(checkDate));
         const covered = blockedSlotStarts({
           config: {
             bookingStartHour: assistant.bookingStartHour,
@@ -177,7 +178,7 @@ async function POSTHandler(req: Request) {
       try {
         const assistant = await Database.getAssistantById(apt.assistantId);
         const existingAppointments = await Database.getAppointments(apt.assistantId, undefined, { ownOnly: true });
-        const blocks = await Database.getExternalBlocks(apt.assistantId);
+        const blocks = await Database.getExternalBlocks(apt.assistantId, blocksLowerBound(date));
         const conflict = findBookingConflict({
           date,
           timeSlot,
@@ -249,7 +250,7 @@ async function POSTHandler(req: Request) {
         if (reactivating) {
           const assistant = await Database.getAssistantById(existingApt.assistantId);
           const appointments = await Database.getAppointments(existingApt.assistantId, undefined, { ownOnly: true });
-          const blocks = await Database.getExternalBlocks(existingApt.assistantId);
+          const blocks = await Database.getExternalBlocks(existingApt.assistantId, blocksLowerBound(existingApt.date));
           const conflict = findBookingConflict({
             date: existingApt.date,
             timeSlot: existingApt.timeSlot,

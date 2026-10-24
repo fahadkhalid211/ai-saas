@@ -49,6 +49,14 @@ import { isPostgresConfigured, disablePostgresTemporarily, isConnectionError, ge
 import * as Relational from './relational';
 import * as ChunkStore from './chunk-store';
 import * as CalendarFile from './calendar-file-store';
+import {
+  CalendarLinkRuleError,
+  MAX_BLOCKS_PER_LINK,
+  MAX_CALENDAR_LINKS_PER_ASSISTANT,
+  checkCalendarLink,
+  checkStatusFields,
+  type CalendarLinkStatusFields,
+} from '../calendar/sync/link-rules';
 import { BILLING_PLANS } from '../billing/plans';
 import { describeLog } from '../logging/describe';
 import { applyMerged, mergeState } from './state-merge';
@@ -167,8 +175,12 @@ export interface AssistantData {
   supportReceiverEmail?: string;
   supportCcEmails?: string[];
   supportCustomFields?: SupportCustomField[];
-  /** Secret in the address of the owner's read-only feed of Crescelo bookings (lib/calendar/sync). Server-generated; at least 20 characters. */
-  calendarFeedToken?: string;
+  /**
+   * Secret in the address of the busy-only feed of Crescelo bookings (lib/calendar/sync). Server-only: written by
+   * Database.setBusyFeedToken alone, never accepted from a request, ignored by updateAssistant and left out of API responses.
+   * Not the computed `calendarFeedToken` field of the assistant API, which belongs to the owner's own ICS feed.
+   */
+  busyFeedToken?: string;
   telegramBotToken?: string;
   telegramBotEnabled?: boolean;
   whatsappPhoneNumberId?: string;
@@ -1297,13 +1309,27 @@ function tagEmbeddings<T extends { embedding?: number[]; metadata: Record<string
   return chunks.map((c) => (c.embedding && c.embedding.length > 0 ? { ...c, metadata: { ...c.metadata, embModel: id } } : c));
 }
 
+let missingCalendarTablesWarned = false;
+
+/** Only the SQLSTATE of a database error: its message and detail can quote the row, which holds a secret feed URL. */
+function pgCode(err: unknown): string | undefined {
+  const code = (err as { code?: unknown } | null | undefined)?.code;
+  return typeof code === 'string' ? code : undefined;
+}
+
 /**
  * Runs an operation on the calendar tables (kortex_calendar_links, kortex_external_blocks).
  * Returns null when this deployment does not use relational mode: the caller then uses the JSON file (calendar-file-store.ts).
  * In required mode (DB_RELATIONAL_MODE=true) the tables are the only home of this data, so Postgres being down, disabled or
  * without a pool throws BookingUnavailableError, never a silent fallback to a file that other instances cannot see.
+ *
+ * `whenTableMissing` is for reads: a table that does not exist yet (SQLSTATE 42P01, supabase v5 not applied) means no link can
+ * exist, so the read returns that value instead of failing every booking during a deploy.
+ *
+ * A raw database error is never logged or attached as a cause: for a rejected row its detail quotes the whole row, URL included.
+ * SQLSTATE classes 22 and 23 (bad data, constraint violated) are the caller's value being unstorable: a CalendarLinkRuleError.
  */
-async function onCalendarTables<T>(op: () => Promise<T | null>): Promise<{ value: T } | null> {
+async function onCalendarTables<T>(op: () => Promise<T | null>, whenTableMissing?: { value: T }): Promise<{ value: T } | null> {
   if (!isRelationalModeRequired()) return null;
   if (!isRelationalModeEnabled()) throw new BookingUnavailableError();
   try {
@@ -1311,10 +1337,21 @@ async function onCalendarTables<T>(op: () => Promise<T | null>): Promise<{ value
     if (value === null) throw new BookingUnavailableError();
     return { value };
   } catch (err) {
-    if (err instanceof BookingUnavailableError || err instanceof Relational.CalendarLinkRuleError) throw err;
-    console.warn('[Relational] calendar tables failed:', err);
+    if (err instanceof BookingUnavailableError || err instanceof CalendarLinkRuleError) throw err;
+    const code = pgCode(err);
+    if (code === '42P01' && whenTableMissing) {
+      if (!missingCalendarTablesWarned) {
+        missingCalendarTablesWarned = true;
+        console.warn('[Relational] calendar tables are missing (apply supabase/schema-relational-v5-calendar-links.sql); treating as no calendars linked:', { code });
+      }
+      return { value: whenTableMissing.value };
+    }
+    console.warn('[Relational] calendar tables failed:', { name: err instanceof Error ? err.name : 'unknown', code });
+    if (code && (code.startsWith('22') || code.startsWith('23'))) {
+      throw new CalendarLinkRuleError('The calendar link has a value that cannot be stored.');
+    }
     if (isConnectionError(err)) disablePostgresTemporarily();
-    throw new BookingUnavailableError(undefined, { cause: err });
+    throw new BookingUnavailableError(undefined, { cause: { code } });
   }
 }
 
@@ -1489,6 +1526,8 @@ export class Database {
     // computed fields the dashboard sends back with every save: stored, they made a removed key look connected for ever
     delete (updates as Record<string, unknown>).hasConnectedKey;
     delete (updates as Record<string, unknown>).keyHealth;
+    // server-only secret of the busy feed: Database.setBusyFeedToken is its only writer
+    delete (updates as Record<string, unknown>).busyFeedToken;
 
     // Handle encrypted fields: Only update if a new unmasked value was provided
     if (updates.apiKeyEncrypted !== undefined) {
@@ -2818,30 +2857,42 @@ export class Database {
    * code that only narrows what is offered catches it and uses none (lib/calendar/sync/safe-blocks.ts), code that confirms a booking refuses.
    */
   static async getExternalBlocks(assistantId: string, from?: Date): Promise<ExternalBlock[]> {
-    const rel = await onCalendarTables(() => Relational.relationalGetExternalBlocks(assistantId, from));
+    const rel = await onCalendarTables(() => Relational.relationalGetExternalBlocks(assistantId, from), { value: [] });
     if (rel) return rel.value;
     return CalendarFile.fileGetBlocks(assistantId, from);
   }
 
   /** The calendar links of one assistant, oldest first. */
   static async getCalendarLinks(assistantId: string): Promise<CalendarLink[]> {
-    const rel = await onCalendarTables(() => Relational.relationalGetCalendarLinks(assistantId));
+    const rel = await onCalendarTables(() => Relational.relationalGetCalendarLinks(assistantId), { value: [] });
     if (rel) return rel.value;
     return CalendarFile.fileGetLinks(assistantId);
   }
 
   /** Every assistant's calendar links (the sync job's work list). */
   static async getAllCalendarLinks(): Promise<CalendarLink[]> {
-    const rel = await onCalendarTables(() => Relational.relationalGetAllCalendarLinks());
+    const rel = await onCalendarTables(() => Relational.relationalGetAllCalendarLinks(), { value: [] });
     if (rel) return rel.value;
     return CalendarFile.fileGetAllLinks();
   }
 
   /** Adds or updates a link (by id). Rejects a 6th link for an assistant, and a link id that belongs to another assistant. */
   static async saveCalendarLink(link: CalendarLink): Promise<CalendarLink> {
+    checkCalendarLink(link);
     const rel = await onCalendarTables(() => Relational.relationalSaveCalendarLink(link));
     if (rel) return rel.value;
-    return CalendarFile.fileSaveLink(link, Relational.MAX_CALENDAR_LINKS_PER_ASSISTANT);
+    return CalendarFile.fileSaveLink(link, MAX_CALENDAR_LINKS_PER_ASSISTANT);
+  }
+
+  /**
+   * Updates the sync status of a link that still exists (a null value clears a field). Never inserts: a sync that finishes after the
+   * owner removed the link gets false and the link stays gone. False too when the link belongs to another assistant.
+   */
+  static async updateCalendarLinkStatus(assistantId: string, linkId: string, fields: CalendarLinkStatusFields): Promise<boolean> {
+    const checked = checkStatusFields(fields);
+    const rel = await onCalendarTables(() => Relational.relationalUpdateCalendarLinkStatus(assistantId, linkId, checked));
+    if (rel) return rel.value;
+    return CalendarFile.fileUpdateLinkStatus(assistantId, linkId, checked);
   }
 
   /** Removes a link and its blocks. Only the owning assistant can remove it; false when there is no such link for this assistant. */
@@ -2856,7 +2907,7 @@ export class Database {
    * Keeps at most 20,000 blocks per link, the nearest in time, and logs when it had to drop some.
    */
   static async replaceExternalBlocks(linkId: string, assistantId: string, blocks: ExternalBlock[]): Promise<void> {
-    const { kept, dropped } = nearestBlocks(blocks, Relational.MAX_BLOCKS_PER_LINK);
+    const { kept, dropped } = nearestBlocks(blocks, MAX_BLOCKS_PER_LINK);
     if (dropped > 0) {
       logEvent({ level: 'warn', category: 'booking', event: 'calendar.blocks_truncated', meta: { assistantId, linkId, kept: kept.length, dropped } });
     }
@@ -2866,18 +2917,33 @@ export class Database {
   }
 
   /**
-   * The assistant that owns a calendar feed token, for the read-only feed route. Tokens shorter than 20 characters are refused
+   * The assistant that owns a busy feed token, for the busy-only feed route. Tokens shorter than 20 characters are refused
    * without looking at any assistant, and every stored token is compared in constant time, so the answer time does not reveal how much matched.
    */
-  static async getAssistantByCalendarFeedToken(token: string): Promise<AssistantData | null> {
+  static async getAssistantByBusyFeedToken(token: string): Promise<AssistantData | null> {
     if (typeof token !== 'string' || token.length < 20) return null;
     const state = await ensureInitialized();
     let matchId: string | null = null;
     for (const a of state.assistants) {
-      const stored = a.calendarFeedToken;
+      const stored = a.busyFeedToken;
       if (typeof stored === 'string' && stored.length >= 20 && timingSafeStringEqual(token, stored) && matchId === null) matchId = a.id;
     }
     return matchId ? Database.getAssistantById(matchId) : null;
+  }
+
+  /**
+   * The only writer of AssistantData.busyFeedToken (a request can never set it through updateAssistant). Scoped by assistant id;
+   * false when there is no such assistant. Tokens shorter than 20 characters are refused.
+   */
+  static async setBusyFeedToken(assistantId: string, token: string): Promise<boolean> {
+    if (typeof token !== 'string' || token.length < 20) throw new CalendarLinkRuleError('The feed token must be at least 20 characters.');
+    const state = await ensureInitialized();
+    const idx = state.assistants.findIndex((a) => a.id === assistantId);
+    if (idx === -1) return false;
+    if (state.assistants[idx].busyFeedToken === token) return true;
+    state.assistants[idx].busyFeedToken = token;
+    await saveState(state);
+    return true;
   }
 
   /**

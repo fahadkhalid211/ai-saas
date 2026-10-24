@@ -7,6 +7,7 @@ import { findBookingConflict } from '@/lib/appointments/conflicts';
 import { slotRangeFields } from '@/lib/appointments/time-range';
 import { isBookingUnavailable } from '@/lib/appointments/errors';
 import { logEvent } from '@/lib/logging/logger';
+import { blocksLowerBound } from '@/lib/calendar/sync/blocks-bound';
 
 export interface NewAppointmentInput {
   name: string;
@@ -91,7 +92,7 @@ export async function createAppointment(opts: CreateAppointmentOptions): Promise
     }
     let blocks: Awaited<ReturnType<typeof Database.getExternalBlocks>>;
     try {
-      blocks = await Database.getExternalBlocks(assistant.id);
+      blocks = await Database.getExternalBlocks(assistant.id, blocksLowerBound(date));
     } catch (err) {
       // Linked calendars cannot be read: confirming now could double-book against them, so nothing is written and the visitor retries.
       if (!isBookingUnavailable(err)) throw err;

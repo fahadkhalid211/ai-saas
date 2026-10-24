@@ -12,6 +12,7 @@ import fs from 'fs';
 import path from 'path';
 import { ensureDirectory, resolveDataDir, safeReadFile } from './storage';
 import type { CalendarLink, ExternalBlock } from '../calendar/sync/types';
+import { CalendarLinkRuleError, type CalendarLinkStatusFields } from '../calendar/sync/link-rules';
 
 interface StoredBlock {
   s: string;
@@ -44,7 +45,8 @@ function read(): FileShape {
     }
     return { links, blocks };
   } catch (err) {
-    console.warn('[CalendarStore] calendar-sync.json is unreadable, treating it as empty:', (err as Error)?.message);
+    // Only the error's name: a JSON parse message can quote the start of the file, which holds secret feed URLs.
+    console.warn('[CalendarStore] calendar-sync.json is unreadable, treating it as empty:', (err as Error)?.name);
     return empty;
   }
 }
@@ -55,7 +57,8 @@ function write(data: FileShape): void {
   ensureDirectory(path.dirname(target));
   const tmp = `${target}.${process.pid}.${Date.now()}.${Math.random().toString(36).slice(2, 8)}.tmp`;
   try {
-    fs.writeFileSync(tmp, JSON.stringify(data), 'utf-8');
+    // 0600: the file holds secret feed URLs, so only the server's own user may read it.
+    fs.writeFileSync(tmp, JSON.stringify(data), { encoding: 'utf-8', mode: 0o600 });
     fs.renameSync(tmp, target);
   } catch (err) {
     try {
@@ -81,16 +84,31 @@ export function fileSaveLink(link: CalendarLink, maxPerAssistant: number): Calen
   const data = read();
   const idx = data.links.findIndex((l) => l.id === link.id);
   if (idx >= 0) {
-    if (data.links[idx].assistantId !== link.assistantId) throw new Error('That calendar link belongs to another assistant.');
+    if (data.links[idx].assistantId !== link.assistantId) throw new CalendarLinkRuleError('That calendar link belongs to another assistant.');
     data.links[idx] = { ...link };
   } else {
     if (data.links.filter((l) => l.assistantId === link.assistantId).length >= maxPerAssistant) {
-      throw new Error(`An assistant can link at most ${maxPerAssistant} calendars.`);
+      throw new CalendarLinkRuleError(`An assistant can link at most ${maxPerAssistant} calendars.`);
     }
     data.links.push({ ...link });
   }
   write(data);
   return { ...link };
+}
+
+/** Updates the sync-status fields of an existing link only; never adds one. False when the link is gone or another assistant's. */
+export function fileUpdateLinkStatus(assistantId: string, linkId: string, fields: CalendarLinkStatusFields): boolean {
+  const data = read();
+  const link = data.links.find((l) => l.id === linkId && l.assistantId === assistantId);
+  if (!link) return false;
+  const target = link as unknown as Record<string, unknown>;
+  for (const [key, value] of Object.entries(fields)) {
+    if (value === undefined) continue;
+    if (value === null) delete target[key];
+    else target[key] = value;
+  }
+  write(data);
+  return true;
 }
 
 export function fileDeleteLink(assistantId: string, linkId: string): boolean {

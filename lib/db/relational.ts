@@ -21,6 +21,7 @@ import type {
 } from './index';
 import type { SearchResultChunk } from '../rag/types';
 import type { CalendarLink, ExternalBlock } from '../calendar/sync/types';
+import { CalendarLinkRuleError, MAX_CALENDAR_LINKS_PER_ASSISTANT, type CalendarLinkStatusFields } from '../calendar/sync/link-rules';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -1121,9 +1122,6 @@ export async function relationalGetOwner(
 // "unavailable" and refuse in required mode). Errors are NOT swallowed: a booking check must not read a failure as "no blocks".
 // ---------------------------------------------------------------------------
 
-/** Most links one assistant may have, and most blocks kept per link. */
-export const MAX_CALENDAR_LINKS_PER_ASSISTANT = 5;
-export const MAX_BLOCKS_PER_LINK = 20_000;
 /** Blocks per INSERT statement. Each statement sends two arrays plus two ids, so the 65,535-parameter limit is never near. */
 const BLOCK_INSERT_BATCH = 5_000;
 
@@ -1211,12 +1209,34 @@ export async function relationalSaveCalendarLink(link: CalendarLink): Promise<Ca
   });
 }
 
-/** A refusal by the link rules (limit reached, another assistant's id): the caller's mistake, not a database failure. */
-export class CalendarLinkRuleError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = 'CalendarLinkRuleError';
-  }
+const STATUS_COLUMNS: Record<keyof CalendarLinkStatusFields, string> = {
+  lastSyncedAt: 'last_synced_at',
+  lastError: 'last_error',
+  errorSince: 'error_since',
+  etag: 'etag',
+  lastModified: 'last_modified',
+};
+
+/**
+ * Updates only the sync-status fields of a link that exists for this assistant. NEVER inserts, so a sync that finishes after the
+ * owner removed the link cannot bring it (and its secret URL) back. False when no row matched. A null value clears the column.
+ */
+export async function relationalUpdateCalendarLinkStatus(assistantId: string, linkId: string, fields: CalendarLinkStatusFields): Promise<boolean | null> {
+  return withPool(async (client) => {
+    const sets: string[] = [];
+    const params: unknown[] = [linkId, assistantId];
+    for (const key of Object.keys(STATUS_COLUMNS) as Array<keyof CalendarLinkStatusFields>) {
+      if (fields[key] === undefined) continue;
+      params.push(fields[key]);
+      sets.push(`${STATUS_COLUMNS[key]} = $${params.length}`);
+    }
+    if (sets.length === 0) {
+      const { rows } = await client.query(`SELECT 1 FROM kortex_calendar_links WHERE id = $1 AND assistant_id = $2`, params);
+      return rows.length > 0;
+    }
+    const res = await client.query(`UPDATE kortex_calendar_links SET ${sets.join(', ')} WHERE id = $1 AND assistant_id = $2`, params);
+    return (res.rowCount ?? 0) > 0;
+  });
 }
 
 /** Deletes the link and its blocks together. True when the link existed for this assistant. */
@@ -1244,6 +1264,8 @@ export async function relationalReplaceExternalBlocks(linkId: string, assistantI
   const done = await withPool(async (client) => {
     await client.query('BEGIN');
     try {
+      // Two replaces of the same link at once must not both delete and then insert, which would store the union of both sets.
+      await client.query('SELECT pg_advisory_xact_lock(hashtext($1))', ['calendar_blocks:' + linkId]);
       await client.query(`DELETE FROM kortex_external_blocks WHERE link_id = $1 AND assistant_id = $2`, [linkId, assistantId]);
       for (let i = 0; i < blocks.length; i += BLOCK_INSERT_BATCH) {
         const batch = blocks.slice(i, i + BLOCK_INSERT_BATCH);

@@ -20,6 +20,7 @@ const GETHandler = withAdminAuth(async (req: Request) => {
       whatsappAccessToken: a.whatsappAccessToken ? maskSecret(a.whatsappAccessToken) : '',
       webhookSecret: a.webhookSecret ? maskSecret(a.webhookSecret) : '',
       calendarFeedToken: generateCalendarFeedToken(a.id),
+      busyFeedToken: undefined, // server-only secret of the busy feed
     }));
 
     return NextResponse.json({ assistants: sanitized });
@@ -64,6 +65,8 @@ const POSTHandler = withRoleAuth(['owner', 'admin'], async (req: Request) => {
     // Phone numbers are provisioned by the platform admin through the update route, never at creation.
     delete body.phoneNumber;
     delete body.phoneEnabled;
+    // Server-only secret of the busy feed: set by Database.setBusyFeedToken, never from a request.
+    delete body.busyFeedToken;
 
     const assistant = await Database.createAssistant({
       ...body,
@@ -77,6 +80,7 @@ const POSTHandler = withRoleAuth(['owner', 'admin'], async (req: Request) => {
       whatsappAccessToken: assistant.whatsappAccessToken ? maskSecret(assistant.whatsappAccessToken) : '',
       webhookSecret: assistant.webhookSecret ? maskSecret(assistant.webhookSecret) : '',
       calendarFeedToken: generateCalendarFeedToken(assistant.id),
+      busyFeedToken: undefined, // server-only secret of the busy feed
     };
 
     await Database.addAuditLog({

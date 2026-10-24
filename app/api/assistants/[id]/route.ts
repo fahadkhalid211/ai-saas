@@ -38,6 +38,7 @@ const GETHandler = withAdminAuth(async (
       whatsappAccessToken: assistant.whatsappAccessToken ? maskSecret(assistant.whatsappAccessToken) : '',
       webhookSecret: assistant.webhookSecret ? maskSecret(assistant.webhookSecret) : '',
       calendarFeedToken: generateCalendarFeedToken(assistant.id),
+      busyFeedToken: undefined, // server-only secret of the busy feed
     };
 
     return NextResponse.json({ assistant: sanitized });
@@ -83,6 +84,7 @@ const PUTHandler = withRoleAuth(['owner', 'admin'], async (
     delete safeUpdates.keyHealth;
     delete safeUpdates.aiKeyStatus;
     delete safeUpdates.apiKeyProvider;
+    delete safeUpdates.busyFeedToken; // server-only secret of the busy feed (Database.setBusyFeedToken)
 
     // Links the widget and hosted pages render must be web addresses: a javascript: or data: link would run in a visitor's browser.
     for (const field of ['bookingUrl', 'customBrandingUrl'] as const) {
@@ -271,6 +273,7 @@ const PUTHandler = withRoleAuth(['owner', 'admin'], async (
       whatsappAccessToken: updated.whatsappAccessToken ? maskSecret(updated.whatsappAccessToken) : '',
       webhookSecret: updated.webhookSecret ? maskSecret(updated.webhookSecret) : '',
       calendarFeedToken: generateCalendarFeedToken(updated.id),
+      busyFeedToken: undefined, // server-only secret of the busy feed
     };
 
     await Database.addAuditLog({

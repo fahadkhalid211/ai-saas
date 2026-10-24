@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import fs from 'fs';
+import { inspect } from 'util';
 import path from 'path';
 
 const h = vi.hoisted(() => ({ query: vi.fn(), configured: false, noPool: false }));
@@ -22,6 +23,8 @@ vi.mock('./postgres', async (importOriginal) => {
 
 import { Database, resolveDataDir } from './index';
 import { BookingUnavailableError } from '../appointments/errors';
+import { CalendarLinkRuleError } from '../calendar/sync/link-rules';
+import * as logger from '../logging/logger';
 import type { CalendarLink, ExternalBlock } from '../calendar/sync/types';
 
 // Every database and shared-cache URL is blanked, so this file can never reach a real database or Redis even when the
@@ -110,6 +113,7 @@ describe('calendar links (JSON mode)', () => {
     for (const l of five) await Database.saveCalendarLink(l);
 
     await expect(Database.saveCalendarLink(link(a))).rejects.toThrow(/at most 5/i);
+    await expect(Database.saveCalendarLink(link(a))).rejects.toBeInstanceOf(CalendarLinkRuleError);
     await expect(Database.saveCalendarLink({ ...five[0], label: 'apple' })).resolves.toMatchObject({ label: 'apple' });
     expect(await Database.getCalendarLinks(a)).toHaveLength(5);
     // another assistant is not affected
@@ -121,7 +125,7 @@ describe('calendar links (JSON mode)', () => {
     const b = `ast_${seq++}`;
     const l = link(a);
     await Database.saveCalendarLink(l);
-    await expect(Database.saveCalendarLink({ ...l, assistantId: b, url: 'https://evil.example.com/x.ics' })).rejects.toThrow();
+    await expect(Database.saveCalendarLink({ ...l, assistantId: b, url: 'https://evil.example.com/x.ics' })).rejects.toBeInstanceOf(CalendarLinkRuleError);
     expect((await Database.getCalendarLinks(a))[0].url).toBe(l.url);
     expect(await Database.getCalendarLinks(b)).toHaveLength(0);
   });
@@ -282,33 +286,33 @@ describe('external blocks (JSON mode)', () => {
   });
 });
 
-describe('calendar feed token lookup', () => {
+describe('busy feed token lookup', () => {
   const token = 'tok_' + 'a1b2c3d4e5f6a7b8c9d0e1f2';
 
   it('finds the assistant that holds the token', async () => {
     const created = await Database.createAssistant({ name: 'Feed owner', workspaceId: `ws_feed_${seq++}` });
-    await Database.updateAssistant(created.id, { calendarFeedToken: token });
-    const found = await Database.getAssistantByCalendarFeedToken(token);
+    await Database.setBusyFeedToken(created.id, token);
+    const found = await Database.getAssistantByBusyFeedToken(token);
     expect(found?.id).toBe(created.id);
-    expect(found?.calendarFeedToken).toBe(token);
+    expect(found?.busyFeedToken).toBe(token);
   });
 
   it('returns null for unknown, empty and short tokens', async () => {
     const created = await Database.createAssistant({ name: 'Short token', workspaceId: `ws_feed_${seq++}` });
-    await Database.updateAssistant(created.id, { calendarFeedToken: 'short' });
-    expect(await Database.getAssistantByCalendarFeedToken('')).toBeNull();
-    expect(await Database.getAssistantByCalendarFeedToken('short')).toBeNull();
-    expect(await Database.getAssistantByCalendarFeedToken('x'.repeat(19))).toBeNull();
-    expect(await Database.getAssistantByCalendarFeedToken('x'.repeat(40))).toBeNull();
-    expect(await Database.getAssistantByCalendarFeedToken(undefined as unknown as string)).toBeNull();
+    await Database.setBusyFeedToken(created.id, 'short').catch(() => undefined);
+    expect(await Database.getAssistantByBusyFeedToken('')).toBeNull();
+    expect(await Database.getAssistantByBusyFeedToken('short')).toBeNull();
+    expect(await Database.getAssistantByBusyFeedToken('x'.repeat(19))).toBeNull();
+    expect(await Database.getAssistantByBusyFeedToken('x'.repeat(40))).toBeNull();
+    expect(await Database.getAssistantByBusyFeedToken(undefined as unknown as string)).toBeNull();
   });
 
   it('does not match a token that merely starts with the stored one', async () => {
     const created = await Database.createAssistant({ name: 'Prefix', workspaceId: `ws_feed_${seq++}` });
     const t = 'pfx_' + 'z9y8x7w6v5u4t3s2r1q0';
-    await Database.updateAssistant(created.id, { calendarFeedToken: t });
-    expect(await Database.getAssistantByCalendarFeedToken(t + 'x')).toBeNull();
-    expect(await Database.getAssistantByCalendarFeedToken(t.slice(0, -1))).toBeNull();
+    await Database.setBusyFeedToken(created.id, t);
+    expect(await Database.getAssistantByBusyFeedToken(t + 'x')).toBeNull();
+    expect(await Database.getAssistantByBusyFeedToken(t.slice(0, -1))).toBeNull();
   });
 });
 
@@ -411,6 +415,7 @@ describe('relational mode (pool faked)', () => {
       return { rows: [], rowCount: 1 };
     });
     await expect(Database.saveCalendarLink(link('ast_1'))).rejects.toThrow(/at most 5/i);
+    await expect(Database.saveCalendarLink(link('ast_1'))).rejects.toBeInstanceOf(CalendarLinkRuleError);
     expect(sqls().some((s) => /pg_advisory_xact_lock/i.test(s))).toBe(true);
     expect(sqls().some((s) => /INSERT INTO kortex_calendar_links/i.test(s))).toBe(false);
     expect(sqls().some((s) => /ROLLBACK/i.test(s))).toBe(true);
@@ -497,5 +502,250 @@ describe('relational mode (pool faked)', () => {
     await Database.saveCalendarLink(l);
     expect((await Database.getCalendarLinks('ast_opt')).map((x) => x.id)).toEqual([l.id]);
     expect(h.query).not.toHaveBeenCalled();
+  });
+});
+
+// ---------------------------------------------------------------------------------------------------------------------
+// Fix round 1
+// ---------------------------------------------------------------------------------------------------------------------
+
+describe('the secret feed URL never reaches logs or error causes', () => {
+  const SECRET = 'https://calendar.example.com/private/SECRETKEY-9f8e7d6c5b/basic.ics';
+  const relational = () => {
+    vi.stubEnv('DB_RELATIONAL_MODE', 'true');
+    h.configured = true;
+  };
+  const pgError = (code: string) =>
+    Object.assign(new Error(`new row for relation "kortex_calendar_links" violates a constraint (${SECRET})`), {
+      name: 'error',
+      code,
+      detail: `Failing row contains (cal_1, ast_1, google, ${SECRET}, null, null, null, null, null, 2026-10-24 10:00:00+00).`,
+      table: 'kortex_calendar_links',
+    });
+  const failInsert = (code: string) =>
+    h.query.mockImplementation(async (sql: string) => {
+      if (/SELECT count\(\*\)/i.test(sql)) return { rows: [{ n: 0 }], rowCount: 1 };
+      if (/INSERT INTO kortex_calendar_links/i.test(sql)) throw pgError(code);
+      return { rows: [], rowCount: 1 };
+    });
+
+  const spies = () => ({
+    warn: vi.spyOn(console, 'warn').mockImplementation(() => undefined),
+    error: vi.spyOn(console, 'error').mockImplementation(() => undefined),
+    log: vi.spyOn(console, 'log').mockImplementation(() => undefined),
+    info: vi.spyOn(console, 'info').mockImplementation(() => undefined),
+    event: vi.spyOn(logger, 'logEvent').mockImplementation(() => undefined),
+  });
+  const everythingLogged = (s: ReturnType<typeof spies>) =>
+    Object.values(s)
+      .flatMap((spy) => spy.mock.calls)
+      .map((args) => inspect(args, { depth: 8, maxStringLength: 10_000 }))
+      .join('\n');
+  const causeText = (err: unknown) => inspect((err as { cause?: unknown })?.cause, { depth: 8 });
+
+  afterEach(() => vi.restoreAllMocks());
+
+  it('an unexpected database error is logged as name and code only, and no raw error is attached as cause', async () => {
+    relational();
+    const s = spies();
+    failInsert('XX000');
+    const err = await Database.saveCalendarLink(link('ast_1', { url: SECRET })).then(
+      () => null,
+      (e: unknown) => e,
+    );
+    expect(err).toBeInstanceOf(BookingUnavailableError);
+    expect(everythingLogged(s)).not.toContain('SECRETKEY');
+    expect(everythingLogged(s)).toContain('XX000');
+    expect(causeText(err)).not.toContain('SECRETKEY');
+    expect(String((err as Error).message)).not.toContain('SECRETKEY');
+  });
+
+  it.each(['23514', '23502', '22007', '22P02'])('SQLSTATE %s (data or integrity error) is a rule error, not "unavailable", and leaks nothing', async (code) => {
+    relational();
+    const s = spies();
+    failInsert(code);
+    const err = await Database.saveCalendarLink(link('ast_1', { url: SECRET })).then(
+      () => null,
+      (e: unknown) => e,
+    );
+    expect(err).toBeInstanceOf(CalendarLinkRuleError);
+    expect(err).not.toBeInstanceOf(BookingUnavailableError);
+    expect(everythingLogged(s)).not.toContain('SECRETKEY');
+    expect(String((err as Error).message)).not.toContain('SECRETKEY');
+    expect(causeText(err)).not.toContain('SECRETKEY');
+  });
+
+  it('read failures also log only name and code', async () => {
+    relational();
+    const s = spies();
+    h.query.mockRejectedValue(pgError('XX000'));
+    await expect(Database.getCalendarLinks('ast_1')).rejects.toBeInstanceOf(BookingUnavailableError);
+    await expect(Database.getExternalBlocks('ast_1')).rejects.toBeInstanceOf(BookingUnavailableError);
+    expect(everythingLogged(s)).not.toContain('SECRETKEY');
+  });
+
+  it('a corrupt file is logged without echoing its content', async () => {
+    const s = spies();
+    fs.mkdirSync(resolveDataDir(), { recursive: true });
+    fs.writeFileSync(dataFile(), `{"links": [{"url": "${SECRET}" oops`);
+    expect(await Database.getCalendarLinks('ast_1')).toEqual([]);
+    expect(everythingLogged(s)).not.toContain('SECRETKEY');
+  });
+});
+
+describe('a link is checked before it is stored', () => {
+  const bad: Array<[string, Partial<CalendarLink>]> = [
+    ['an unknown label', { label: 'yahoo' as CalendarLink['label'] }],
+    ['a javascript: address', { url: 'javascript:alert(1)' }],
+    ['a file: address', { url: 'file:///etc/passwd' }],
+    ['an address that is not a URL', { url: 'not a url' }],
+    ['no address', { url: '' }],
+    ['an unreadable creation time', { createdAt: 'yesterday-ish' }],
+    ['an empty assistant id', { assistantId: '' }],
+    ['an unreadable sync time', { lastSyncedAt: 'soon' }],
+  ];
+
+  it.each(bad)('rejects %s without touching storage (file mode)', async (_name, over) => {
+    await expect(Database.saveCalendarLink(link('ast_v', over))).rejects.toBeInstanceOf(CalendarLinkRuleError);
+    expect(fs.existsSync(dataFile())).toBe(false);
+  });
+
+  it.each(bad)('rejects %s before any query (relational mode)', async (_name, over) => {
+    vi.stubEnv('DB_RELATIONAL_MODE', 'true');
+    h.configured = true;
+    await expect(Database.saveCalendarLink(link('ast_v', over))).rejects.toBeInstanceOf(CalendarLinkRuleError);
+    expect(h.query).not.toHaveBeenCalled();
+  });
+
+  it('accepts http and https links of every label', async () => {
+    for (const label of ['google', 'apple', 'outlook', 'other'] as const) {
+      await expect(Database.saveCalendarLink(link(`ast_ok_${label}`, { label, url: 'http://example.com/a.ics' }))).resolves.toBeTruthy();
+    }
+  });
+});
+
+describe('updateCalendarLinkStatus never inserts', () => {
+  it('file mode: updates an existing link, clears fields given as null, keeps the rest', async () => {
+    const a = `ast_${seq++}`;
+    const l = link(a, { etag: '"old"', lastError: 'Feed unreachable', errorSince: '2026-10-24T09:00:00.000Z' });
+    await Database.saveCalendarLink(l);
+    const ok = await Database.updateCalendarLinkStatus(a, l.id, { lastSyncedAt: '2026-10-24T10:00:00.000Z', lastError: null, errorSince: null, etag: '"new"' });
+    expect(ok).toBe(true);
+    const [got] = await Database.getCalendarLinks(a);
+    expect(got).toMatchObject({ id: l.id, url: l.url, lastSyncedAt: '2026-10-24T10:00:00.000Z', etag: '"new"' });
+    expect(got.lastError).toBeUndefined();
+    expect(got.errorSince).toBeUndefined();
+  });
+
+  it('file mode: a link deleted meanwhile is NOT re-created', async () => {
+    const a = `ast_${seq++}`;
+    const l = link(a);
+    await Database.saveCalendarLink(l);
+    await Database.deleteCalendarLink(a, l.id);
+    expect(await Database.updateCalendarLinkStatus(a, l.id, { lastSyncedAt: '2026-10-24T10:00:00.000Z' })).toBe(false);
+    expect(await Database.getCalendarLinks(a)).toEqual([]);
+    expect((await Database.getAllCalendarLinks()).some((x) => x.id === l.id)).toBe(false);
+    expect(fs.readFileSync(dataFile(), 'utf-8')).not.toContain(l.id);
+  });
+
+  it('file mode: another assistant cannot update the link', async () => {
+    const a = `ast_${seq++}`;
+    const b = `ast_${seq++}`;
+    const l = link(a);
+    await Database.saveCalendarLink(l);
+    expect(await Database.updateCalendarLinkStatus(b, l.id, { lastError: 'x' })).toBe(false);
+    expect((await Database.getCalendarLinks(a))[0].lastError).toBeUndefined();
+    expect(await Database.getCalendarLinks(b)).toEqual([]);
+  });
+
+  it('relational mode: runs an UPDATE with both ids and never an INSERT', async () => {
+    vi.stubEnv('DB_RELATIONAL_MODE', 'true');
+    h.configured = true;
+    h.query.mockResolvedValue({ rows: [], rowCount: 1 });
+    expect(await Database.updateCalendarLinkStatus('ast_1', 'cal_1', { lastSyncedAt: '2026-10-24T10:00:00.000Z', lastError: null, etag: '"e"' })).toBe(true);
+
+    const all = h.query.mock.calls.map((c) => String(c[0]));
+    expect(all.some((x) => /INSERT/i.test(x))).toBe(false);
+    const upd = h.query.mock.calls.find((c) => /UPDATE kortex_calendar_links/i.test(String(c[0])))!;
+    expect(String(upd[0])).toMatch(/WHERE id = \$1 AND assistant_id = \$2/i);
+    expect(upd[1].slice(0, 2)).toEqual(['cal_1', 'ast_1']);
+    expect(upd[1]).toContain('"e"');
+    expect(upd[1]).toContain(null);
+    expect(String(upd[0])).not.toMatch(/\burl\b\s*=/i);
+  });
+
+  it('relational mode: false when no row matched (deleted meanwhile or another assistant\'s)', async () => {
+    vi.stubEnv('DB_RELATIONAL_MODE', 'true');
+    h.configured = true;
+    h.query.mockResolvedValue({ rows: [], rowCount: 0 });
+    expect(await Database.updateCalendarLinkStatus('ast_1', 'cal_gone', { lastError: 'x' })).toBe(false);
+    expect(h.query.mock.calls.every((c) => !/INSERT/i.test(String(c[0])))).toBe(true);
+  });
+
+  it('rejects unreadable times in the fields', async () => {
+    await expect(Database.updateCalendarLinkStatus('ast_1', 'cal_1', { lastSyncedAt: 'soon' })).rejects.toBeInstanceOf(CalendarLinkRuleError);
+  });
+});
+
+describe('a missing table reads as nothing linked', () => {
+  const undefinedTable = () => Object.assign(new Error('relation "kortex_calendar_links" does not exist'), { code: '42P01' });
+
+  it('required mode: reads return empty instead of making every booking fail; writes still fail', async () => {
+    vi.stubEnv('DB_RELATIONAL_MODE', 'true');
+    h.configured = true;
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    h.query.mockRejectedValue(undefinedTable());
+
+    expect(await Database.getCalendarLinks('ast_1')).toEqual([]);
+    expect(await Database.getAllCalendarLinks()).toEqual([]);
+    expect(await Database.getExternalBlocks('ast_1')).toEqual([]);
+    expect(await Database.getExternalBlocks('ast_1', new Date())).toEqual([]);
+
+    // logged at most once, with only the code
+    const lines = warn.mock.calls.map((a) => inspect(a));
+    expect(lines.length).toBeLessThanOrEqual(1);
+    for (const l of lines) {
+      expect(l).toContain('42P01');
+      expect(l).not.toContain('kortex_calendar_links');
+    }
+
+    await expect(Database.saveCalendarLink(link('ast_1'))).rejects.toBeInstanceOf(BookingUnavailableError);
+    await expect(Database.replaceExternalBlocks('cal_1', 'ast_1', [])).rejects.toBeInstanceOf(BookingUnavailableError);
+    warn.mockRestore();
+  });
+
+  it('other read errors still fail closed', async () => {
+    vi.stubEnv('DB_RELATIONAL_MODE', 'true');
+    h.configured = true;
+    vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    h.query.mockRejectedValue(Object.assign(new Error('boom'), { code: '57014' }));
+    await expect(Database.getExternalBlocks('ast_1')).rejects.toBeInstanceOf(BookingUnavailableError);
+    vi.restoreAllMocks();
+  });
+});
+
+describe('concurrent replaces of one link', () => {
+  it('take a per-link advisory lock right after BEGIN, before the delete', async () => {
+    vi.stubEnv('DB_RELATIONAL_MODE', 'true');
+    h.configured = true;
+    h.query.mockResolvedValue({ rows: [], rowCount: 1 });
+    await Database.replaceExternalBlocks('cal_7', 'ast_1', [block('2099-01-01T09:00:00Z', '2099-01-01T10:00:00Z')]);
+
+    const all = h.query.mock.calls.map((c) => String(c[0]));
+    expect(all[0]).toMatch(/^\s*BEGIN/i);
+    expect(all[1]).toMatch(/pg_advisory_xact_lock\(hashtext\(\$1\)\)/i);
+    expect(h.query.mock.calls[1][1]).toEqual(['calendar_blocks:cal_7']);
+    expect(all.findIndex((x) => /DELETE FROM kortex_external_blocks/i.test(x))).toBeGreaterThan(1);
+  });
+});
+
+describe('the file is private to the server', () => {
+  it('is created with mode 0600', async () => {
+    const spy = vi.spyOn(fs, 'writeFileSync');
+    await Database.saveCalendarLink(link(`ast_${seq++}`));
+    const call = spy.mock.calls.find((c) => String(c[0]).includes('calendar-sync.json'));
+    spy.mockRestore();
+    expect(call).toBeTruthy();
+    expect((call![2] as { mode?: number }).mode).toBe(0o600);
   });
 });

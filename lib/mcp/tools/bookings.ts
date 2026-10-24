@@ -6,6 +6,7 @@ import { slotRangeFields } from '@/lib/appointments/time-range';
 import { McpAuthContext } from '../types';
 import { assertScope } from '../auth';
 import { asMcpError } from '../errors';
+import { blocksLowerBound } from '@/lib/calendar/sync/blocks-bound';
 
 export const createBookingMetadata = {
   name: 'create_booking',
@@ -150,7 +151,7 @@ export async function handleCreateBooking(
     // Always the assistant's own timezone, so the stored range matches every other booking path.
     const existingAppointments = await Database.getAppointments(primaryAssistant.id, auth.workspaceId, { ownOnly: true });
     // Confirming a booking: if the linked calendars cannot be read, refuse (SERVICE_UNAVAILABLE) instead of risking a double booking.
-    const blocks = await Database.getExternalBlocks(primaryAssistant.id).catch((err: unknown) => {
+    const blocks = await Database.getExternalBlocks(primaryAssistant.id, blocksLowerBound(date)).catch((err: unknown) => {
       throw asMcpError(err);
     });
     const conflict = findBookingConflict({

@@ -8,9 +8,9 @@ import type { ExternalBlock } from './types';
  * "no blocks" is safe here. Paths that CONFIRM a booking must call Database.getExternalBlocks directly and fail closed.
  * The log line carries no URLs and no personal data.
  */
-export async function getExternalBlocksOrEmpty(assistantId: string): Promise<ExternalBlock[]> {
+export async function getExternalBlocksOrEmpty(assistantId: string, from?: Date): Promise<ExternalBlock[]> {
   try {
-    return await Database.getExternalBlocks(assistantId);
+    return await Database.getExternalBlocks(assistantId, from);
   } catch (err) {
     logEvent({
       level: 'warn',

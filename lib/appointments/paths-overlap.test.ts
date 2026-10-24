@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { blocksLowerBound } from '@/lib/calendar/sync/blocks-bound';
 import { Database, type AssistantData } from '../db';
 import { createAppointment } from './create';
 import { slotRange } from './time-range';
@@ -128,7 +129,7 @@ describe('createAppointment always enforces range overlap', () => {
     const r = slotRange(MON, '14:00', 60, 'America/New_York')!;
     const spy = vi.spyOn(Database, 'getExternalBlocks').mockResolvedValue([{ startAt: r.start, endAt: r.end }]);
     expect(await book(ast, MON, '14:30', 30)).toMatchObject({ ok: false, status: 409 });
-    expect(spy).toHaveBeenCalledWith(ast.id);
+    expect(spy).toHaveBeenCalledWith(ast.id, blocksLowerBound(MON)); // bounded to the booking's date (minus a day), not read in full
     // outside the block is still free
     expect((await book(ast, MON, '15:00', 30)).ok).toBe(true);
   });

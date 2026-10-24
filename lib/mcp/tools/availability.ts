@@ -3,6 +3,7 @@ import { getAvailableSlots, isIsoDate, type AvailabilityConfig, type ExistingApp
 import { McpAuthContext } from '../types';
 import { assertScope } from '../auth';
 import { getExternalBlocksOrEmpty } from '@/lib/calendar/sync/safe-blocks';
+import { blocksLowerBound } from '@/lib/calendar/sync/blocks-bound';
 
 export const checkAvailabilityMetadata = {
   name: 'check_availability',
@@ -80,7 +81,7 @@ export async function handleCheckAvailability(
     status: a.status,
   }));
 
-  const blocks = await getExternalBlocksOrEmpty(primaryAssistant.id);
+  const blocks = await getExternalBlocksOrEmpty(primaryAssistant.id, blocksLowerBound(date));
 
   const slots = getAvailableSlots({
     config,
