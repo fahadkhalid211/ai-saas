@@ -1,6 +1,11 @@
 **Merging is deploying. If main auto-deploys, apply supabase/schema-relational-v4-booking-ranges.sql BEFORE merging; until v4 is applied every new booking and reschedule in relational mode returns 503.**
 
-# Booking Ranges Runbook (owner steps P1-P3)
+# Calendar Sync and Booking Ranges Runbook
+
+This runbook covers the owner steps for the whole calendar sync and double-booking feature: Phase 1 (booking ranges, steps
+P1-P3 below) and Phase 2 (calendar links, see "Calendar links (Phase 2)" at the end).
+
+## Booking ranges (Phase 1, owner steps P1-P3)
 
 Phase 1 of calendar sync and double-booking prevention needs three owner steps on the live database, in this order.
 Nothing in this repo runs them for you. Both scripts print the database host first and refuse to connect unless
@@ -167,3 +172,57 @@ or backfilled. They are not recomputed when the timezone changes. So:
 
   Between the UPDATE and `--apply` those bookings are not covered by the constraint (the app's own check still
   applies), so do it at a quiet time.
+
+## Calendar links (Phase 2)
+
+Owners link Google, Apple or Outlook calendars (secret iCal links) whose events block booking slots, and get a private
+busy-only feed of their Crescelo bookings. Four things are needed in production.
+
+### L1. Apply `supabase/schema-relational-v5-calendar-links.sql`
+
+Run it in the Supabase SQL Editor (or psql). It is idempotent (safe to run twice) and additive (new tables only). It may be
+applied before or after the deploy: code deployed first reads the missing tables as empty (no links, no blocks), so bookings
+keep working, but adding a calendar in the panel shows the "Calendar settings are temporarily unavailable" error until it is applied.
+
+### L2. Schedule the calendar sync job
+
+`GET` or `POST /api/cron/calendar-sync` every 5 to 10 minutes, with the secret in a header, never in the URL:
+`Authorization: Bearer <CRON_SECRET>` or `x-cron-secret: <CRON_SECRET>`. Two options:
+
+- An external scheduler (cron-job.org, a GitHub Actions `schedule`, or a server cron with curl). This works on every hosting plan.
+- A `vercel.json` cron entry, ONLY if the Vercel plan allows sub-daily crons: on a plan that only allows daily crons a
+  `*/10 * * * *` entry fails the whole deployment. `vercel.json` is deliberately not changed in this repo (`cron/reminders`
+  is also scheduled externally).
+
+Without the job: no clash detection after a booking (an event added to a linked calendar later is never reported), no
+24-hour "not syncing" notices from the job (booking-time reads still send them), links of assistants that get no bookings are
+never re-read, and the "about every 10 minutes" wording in the product copy becomes untrue. The refresh just before each
+booking still works.
+
+### L3. `DB_RELATIONAL_MODE=true`
+
+Required for durable link storage on serverless hosting. Without it links and blocks live in a local JSON file that other
+instances cannot see and that does not survive a redeploy; the panel then shows the "only kept temporarily" warning.
+
+### L4. Limits to know
+
+- A feed larger than 2 MB is refused ("That calendar is too large to read"); a very long-history calendar can hit this.
+- Links are read for the next 400 days. An assistant with at least one linked calendar refuses bookings further ahead
+  ("That date is too far ahead. Please choose an earlier date.").
+- Parsing one feed stops after 5 seconds; events not read by then are counted as "repeats we can't read yet".
+
+### Owner decisions gathered during Phase 2
+
+1. Pricing page rows ("Calendar links", "Every booking checked against existing bookings") now say Included on every plan,
+   because no plan check exists in code; the homepage plan cards still list Calendar Links under Growth only. Decide whether to
+   gate by plan (needs code) or align the cards.
+2. About 23 blog articles carry outdated or overclaiming calendar statements (mutex/slot-hold wording, "never double books",
+   "two-way sync not available / events you add do not block slots yet"). The list is in
+   `.superpowers/sdd/2026-10-23-calendar-sync-double-booking/task-14-report.md` ("Blog / lib/blog candidates"); run
+   `npm run blog:meta` after editing articles.
+3. `lib/billing/plans.ts` still lists "Appointment Booking & Calendar Sync (Direct, Calendly, Cal.com)"; Calendly and
+   Cal.com have no sync.
+4. A recurring event's DTSTART counts toward COUNT even when it does not match the rule (RFC 5545); some apps count
+   differently, so such a series can show one instance fewer than the owner's app.
+5. Calendar link addresses and busy-feed tokens are stored in plain text at rest (database and file store). Encrypting the
+   links and hashing the tokens is a follow-up.
