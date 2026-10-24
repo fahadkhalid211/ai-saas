@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { CalendarParseError, parseIcalBlocks } from './parse-ical';
+import { CalendarParseError, PARSE_DEADLINE_MS, PARSE_MAX_WALL_MS, parseIcalBlocks } from './parse-ical';
 
 const SE = 'Europe/Stockholm';
 const HOUR = 60 * 60 * 1000;
@@ -461,10 +461,10 @@ DTEND:20260610T100000Z`,
 DTSTART:20260610T090000Z
 DTEND:20260610T100000Z
 RRULE:FREQ=BOGUS`,
-      `UID:bad-line
+      // A broken line of a property the parser reads makes the event unreadable.
+      `UID:bad-read-line
 DTSTART:20260610T090000Z
-this line has no colon or semicolon
-DTEND:20260610T100000Z`,
+DTEND 20260610T100000Z`,
       `UID:no-start
 DTEND:20260610T100000Z`,
       `UID:end-before-start
@@ -477,6 +477,20 @@ DTEND:20260611T100000Z`,
     const r = await parseIcalBlocks(ics, { timezone: SE, ...WIDE });
     expect(r.skipped).toBe(5);
     expect(r.blocks.map(iso)).toEqual([['2026-06-11T09:00:00.000Z', '2026-06-11T10:00:00.000Z']]);
+  });
+
+  it('a garbage line that is not a property the parser reads is dropped, and its event still blocks (ical.js alone refused it)', async () => {
+    const ics = cal([
+      `UID:bad-line
+DTSTART:20260610T090000Z
+this line has no colon or semicolon
+DTEND:20260610T100000Z`,
+    ]);
+    const r = await parseIcalBlocks(ics, { timezone: SE, ...WIDE });
+    expect(r).toMatchObject({ skipped: 0, unsupported: 0 });
+    expect(r.blocks.map(iso)).toEqual([['2026-06-10T09:00:00.000Z', '2026-06-10T10:00:00.000Z']]);
+    // Before the reduction (full chunks) the whole event was lost as skipped: a busy time freed by an unrelated bad line.
+    expect((await parseIcalBlocks(ics, { timezone: SE, ...WIDE, keepAllProperties: true })).skipped).toBe(1);
   });
 
   it('counts an event cut off before its END as skipped and still reads the next one', async () => {
@@ -1320,7 +1334,7 @@ DTEND;TZID=${tzid}:${end}`;
 
 // A history feed (Google's secret address carries every event ever) is mostly past one-off events; parsing each with ical.js
 // blocked the event loop for seconds on the booking request. Past events are now dropped from the raw text, and the parse yields to
-// the event loop every ~10 ms. It stops after 5 s of its own work (60 s by the wall clock as a safety net) and then says the result
+// the event loop every ~10 ms. It stops after 15 s of its own work (45 s by the wall clock as a safety net) and then says the result
 // is incomplete. Timing limits in this file carry about 3x headroom for slow CI; the hangs they guard against took seconds.
 describe('parseIcalBlocks: large feeds', () => {
   const pad2 = (n: number) => String(n).padStart(2, '0');
@@ -1460,6 +1474,13 @@ describe('parseIcalBlocks: large feeds', () => {
     expect(r.blocks).toEqual([]);
   }, 30_000);
 
+  it('defaults: 15 s of own work (2 MB feeds take 2-4 s here; a slower CPU must not fail them for good) and a 45 s wall-clock net', async () => {
+    expect(PARSE_DEADLINE_MS).toBe(15_000);
+    expect(PARSE_MAX_WALL_MS).toBe(45_000);
+    const cron = await import('../../../app/api/cron/calendar-sync/route');
+    expect(PARSE_MAX_WALL_MS).toBeLessThan(cron.maxDuration * 1000);
+  });
+
   it('a complete parse says so', async () => {
     const r = await parseIcalBlocks(cal([`UID:a\nDTSTART:20260610T090000Z\nDTEND:20260610T100000Z`]), { timezone: SE, ...WIDE });
     expect(r.complete).toBe(true);
@@ -1545,11 +1566,14 @@ describe('parseIcalBlocks: oversized components', () => {
     expect(ms).toBeLessThan(500); // ical.js took ~1.8 s on this event alone
   }, 30_000);
 
-  it('still reads an event just under the 128 KB limit, and skips one just over it', async () => {
+  it('still reads an event just under the 128 KB limit, and skips one just over it (measured on the properties it reads)', async () => {
     const LIMIT = 128 * 1024;
+    // The size comes from an EXDATE line (a property the parser reads; a long DESCRIPTION is dropped before the check).
     const withText = (uid: string, day: string, size: number) => {
-      const head = `UID:${uid}\nDTSTART:${day}T090000Z\nDTEND:${day}T100000Z\nDESCRIPTION:`;
-      return `${head}${'x'.repeat(size - head.length - 40)}`; // about `size` characters with BEGIN/END and line ends
+      const head = `UID:${uid}\nDTSTART:${day}T090000Z\nDTEND:${day}T100000Z\nEXDATE:`;
+      const values = Math.floor((size - head.length - 40) / 17);
+      const ex = Array.from({ length: values }, (_, i) => stampOf(Date.UTC(1990, 0, 1, 9) + i * 24 * HOUR)).join(',');
+      return `${head}${ex}`; // about `size` characters with BEGIN/END and line ends
     };
     const under = await parseIcalBlocks(cal([withText('under', '20260612', LIMIT - 200)]), { timezone: SE, ...WIDE });
     expect(under.blocks.map(iso)).toEqual([['2026-06-12T09:00:00.000Z', '2026-06-12T10:00:00.000Z']]);
@@ -1569,4 +1593,266 @@ describe('parseIcalBlocks: oversized components', () => {
     expect(r.unsupported).toBe(1);
     expect(ms).toBeLessThan(300); // ical.js took ~0.6 s on this zone alone
   });
+});
+
+// Only the properties the parser reads are handed to ical.js (UID, DTSTART, DTEND, DURATION, RRULE, RDATE, EXDATE, RECURRENCE-ID,
+// STATUS, TRANSP of the VEVENT itself; nested parts such as VALARM are dropped whole). Large descriptions, HTML bodies and
+// attachments then never reach the 128 KB limit, and cost nothing to parse.
+describe('parseIcalBlocks: only the properties the parser reads reach ical.js', () => {
+  /** Folds a content line at 75 characters, as feeds do. */
+  const fold = (line: string) => line.match(/.{1,75}/g)!.join('\r\n ');
+  /** A feed from raw lines (kept as given: folded lines keep their leading space). */
+  const raw = (lines: string[]) => ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//test//EN', ...lines, 'END:VCALENDAR'].join('\r\n') + '\r\n';
+  const timed = (uid: string, day: string, extra: string[]) => [
+    'BEGIN:VEVENT',
+    `UID:${uid}`,
+    'DTSTAMP:20261001T000000Z',
+    `DTSTART:${day}T090000Z`,
+    `DTEND:${day}T100000Z`,
+    ...extra,
+    'END:VEVENT',
+  ];
+  const both = async (ics: string) => {
+    const reduced = await parseIcalBlocks(ics, { timezone: SE, ...WIDE });
+    const full = await parseIcalBlocks(ics, { timezone: SE, ...WIDE, keepAllProperties: true });
+    return { reduced, full };
+  };
+
+  it('an event with a 300 KB DESCRIPTION still blocks its time', async () => {
+    const ics = raw(timed('d', '20260610', [fold(`DESCRIPTION:${'Agenda item\\n'.repeat(25_000)}`)]));
+    const r = await parseIcalBlocks(ics, { timezone: SE, ...WIDE });
+    expect(r.blocks.map(iso)).toEqual([['2026-06-10T09:00:00.000Z', '2026-06-10T10:00:00.000Z']]);
+    expect(r).toMatchObject({ complete: true, skipped: 0, unsupported: 0 });
+  });
+
+  it('an event with a 200 KB base64 ATTACH still blocks its time', async () => {
+    const b64 = Buffer.from(Array.from({ length: 150_000 }, (_, i) => (i * 7) & 255)).toString('base64');
+    expect(b64.length).toBeGreaterThan(195_000);
+    const ics = raw(timed('a', '20260611', [fold(`ATTACH;FMTTYPE=application/pdf;ENCODING=BASE64;VALUE=BINARY;X-FILENAME=agenda.pdf:${b64}`)]));
+    const r = await parseIcalBlocks(ics, { timezone: SE, ...WIDE });
+    expect(r.blocks.map(iso)).toEqual([['2026-06-11T09:00:00.000Z', '2026-06-11T10:00:00.000Z']]);
+    expect(r.unsupported).toBe(0);
+  });
+
+  it('an event with a 150 KB X-ALT-DESC HTML body still blocks its time', async () => {
+    const html = `<html><body>${'<p style="margin:0">Line of the meeting notes; with: colons</p>'.repeat(2400)}</body></html>`;
+    expect(html.length).toBeGreaterThan(150_000);
+    const ics = raw(timed('h', '20260612', [fold(`X-ALT-DESC;FMTTYPE=text/html:${html}`)]));
+    const r = await parseIcalBlocks(ics, { timezone: SE, ...WIDE });
+    expect(r.blocks.map(iso)).toEqual([['2026-06-12T09:00:00.000Z', '2026-06-12T10:00:00.000Z']]);
+    expect(r.unsupported).toBe(0);
+  });
+
+  it('lower-case property names, parameters and a nested VALARM still work', async () => {
+    const lower = raw([
+      'begin:vevent',
+      'uid:lower-1',
+      'dtstart;tzid=Europe/Stockholm:20260105T090000',
+      'dtend;tzid=Europe/Stockholm:20260105T100000',
+      'rrule:FREQ=WEEKLY;COUNT=3',
+      'exdate;tzid=Europe/Stockholm:20260112T090000',
+      `description:${'x'.repeat(200_000)}`,
+      'begin:valarm',
+      'action:DISPLAY',
+      'duration:PT15M',
+      'trigger:-PT10M',
+      'end:valarm',
+      'end:vevent',
+      'begin:vevent',
+      'uid:lower-2',
+      'dtstart:20260301T090000Z',
+      'duration:PT30M',
+      'transp:TRANSPARENT',
+      'end:vevent',
+      'Begin:VEVENT',
+      'Uid:lower-3',
+      'DtStart;Value=Date:20260401',
+      'Status:CANCELLED',
+      'End:VEVENT',
+      'begin:vevent',
+      'uid:lower-1',
+      'recurrence-id;tzid=Europe/Stockholm:20260119T090000',
+      'dtstart;tzid=Europe/Stockholm:20260119T130000',
+      'dtend;tzid=Europe/Stockholm:20260119T140000',
+      'end:vevent',
+    ]);
+    const r = await parseIcalBlocks(lower, { timezone: SE, ...WIDE });
+    expect(r.blocks.map(iso)).toEqual([
+      ['2026-01-05T08:00:00.000Z', '2026-01-05T09:00:00.000Z'],
+      ['2026-01-19T12:00:00.000Z', '2026-01-19T13:00:00.000Z'],
+    ]);
+    expect(r).toMatchObject({ complete: true, skipped: 0, unsupported: 0 });
+  });
+
+  // Realistic exports (the shapes Google, Outlook and Apple produce): the reduced chunks give exactly the result of the full ones.
+  const GOOGLE = raw([
+    'CALSCALE:GREGORIAN',
+    'METHOD:PUBLISH',
+    'X-WR-CALNAME:owner@example.com',
+    'X-WR-TIMEZONE:Europe/Stockholm',
+    ...STOCKHOLM_VTIMEZONE,
+    'BEGIN:VEVENT',
+    'DTSTART;TZID=Europe/Stockholm:20260105T090000',
+    'DTEND;TZID=Europe/Stockholm:20260105T100000',
+    'RRULE:FREQ=WEEKLY;WKST=MO;UNTIL=20260330T065959Z;BYDAY=MO',
+    'EXDATE;TZID=Europe/Stockholm:20260119T090000',
+    'DTSTAMP:20261001T000000Z',
+    'UID:7kukuqrfedlm2f9t3ruoh7o0bf@google.com',
+    'CREATED:20251201T100000Z',
+    fold(`DESCRIPTION:Weekly sync about the roadmap: see https://docs.example.com/a?b=c\\nJoin: https://meet.example.com/abc-defg-hij\\n${'Notes. '.repeat(80)}`),
+    'LAST-MODIFIED:20251202T100000Z',
+    'LOCATION:Room 1\\, Floor 2',
+    'SEQUENCE:0',
+    'STATUS:CONFIRMED',
+    'SUMMARY:Weekly sync',
+    'TRANSP:OPAQUE',
+    fold('ATTENDEE;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=ACCEPTED;CN=Jane Doe;X-NUM-GUESTS=0:mailto:jane@example.com'),
+    'ORGANIZER;CN=owner@example.com:mailto:owner@example.com',
+    'BEGIN:VALARM',
+    'ACTION:DISPLAY',
+    'DESCRIPTION:This is an event reminder',
+    'TRIGGER:-P0DT0H10M0S',
+    'END:VALARM',
+    'END:VEVENT',
+    'BEGIN:VEVENT',
+    'DTSTART;TZID=Europe/Stockholm:20260126T110000',
+    'DTEND;TZID=Europe/Stockholm:20260126T120000',
+    'DTSTAMP:20261001T000000Z',
+    'UID:7kukuqrfedlm2f9t3ruoh7o0bf@google.com',
+    'RECURRENCE-ID;TZID=Europe/Stockholm:20260126T090000',
+    'SEQUENCE:1',
+    'STATUS:CONFIRMED',
+    'SUMMARY:Weekly sync (moved)',
+    'TRANSP:OPAQUE',
+    'END:VEVENT',
+    'BEGIN:VEVENT',
+    'DTSTART;VALUE=DATE:20260704',
+    'DTEND;VALUE=DATE:20260706',
+    'UID:allday@google.com',
+    'SUMMARY:Trip',
+    'TRANSP:OPAQUE',
+    'END:VEVENT',
+    'BEGIN:VEVENT',
+    'DTSTART;VALUE=DATE:20260710',
+    'DTEND;VALUE=DATE:20260711',
+    'UID:free@google.com',
+    'SUMMARY:Reminder only',
+    'TRANSP:TRANSPARENT',
+    'END:VEVENT',
+    'BEGIN:VEVENT',
+    'DTSTART:20260801T090000Z',
+    'DTEND:20260801T100000Z',
+    'UID:cancelled@google.com',
+    'STATUS:CANCELLED',
+    'END:VEVENT',
+  ]);
+
+  const OUTLOOK = raw([
+    'METHOD:PUBLISH',
+    'X-MS-OLK-FORCEINSPECTOROPEN:TRUE',
+    ...WINDOWS_VTIMEZONE,
+    'BEGIN:VEVENT',
+    'CLASS:PUBLIC',
+    'CREATED:20260201T080000Z',
+    'DESCRIPTION:\\n',
+    'DTEND;TZID="W. Europe Standard Time":20260310T150000',
+    'DTSTAMP:20261001T000000Z',
+    'DTSTART;TZID="W. Europe Standard Time":20260310T140000',
+    'LAST-MODIFIED:20260201T080000Z',
+    'PRIORITY:5',
+    'RRULE:FREQ=DAILY;COUNT=5',
+    'SEQUENCE:0',
+    'SUMMARY;LANGUAGE=en-us:Standup',
+    'TRANSP:OPAQUE',
+    'UID:040000008200E00074C5B7101A82E00800000000A0B1C2D3E4F5A601000000000000000010000000F1E2D3C4B5A69788',
+    fold(`X-ALT-DESC;FMTTYPE=text/html:<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN"><html><body>${'<p>Standup: notes</p>'.repeat(60)}</body></html>`),
+    'X-MICROSOFT-CDO-BUSYSTATUS:BUSY',
+    'X-MICROSOFT-CDO-IMPORTANCE:1',
+    'X-MICROSOFT-CDO-ALLDAYEVENT:FALSE',
+    'X-MICROSOFT-DISALLOW-COUNTER:FALSE',
+    'BEGIN:VALARM',
+    'TRIGGER:-PT15M',
+    'ACTION:DISPLAY',
+    'DESCRIPTION:Reminder',
+    'END:VALARM',
+    'END:VEVENT',
+    'BEGIN:VEVENT',
+    'DTSTART;VALUE=DATE:20260320',
+    'DTEND;VALUE=DATE:20260321',
+    'UID:outlook-allday',
+    'X-MICROSOFT-CDO-ALLDAYEVENT:TRUE',
+    'X-MICROSOFT-CDO-BUSYSTATUS:OOF',
+    'END:VEVENT',
+  ]);
+
+  const APPLE = raw([
+    'X-WR-CALNAME:Home',
+    'BEGIN:VEVENT',
+    'CREATED:20260101T100000Z',
+    'UID:8F1C2E8A-1234-4BCD-9EF0-0123456789AB',
+    'DTSTART;VALUE=DATE:20260601',
+    'DTEND;VALUE=DATE:20260603',
+    'RDATE;VALUE=DATE:20260701',
+    'SUMMARY:Holiday',
+    'URL;VALUE=URI:https://example.com/a:b',
+    fold('X-APPLE-STRUCTURED-LOCATION;VALUE=URI;X-ADDRESS="Drottninggatan 1\\n111 51 Stockholm\\nSweden";X-APPLE-RADIUS=70;X-TITLE="Office: 3rd floor":geo:59.33,18.06'),
+    'X-APPLE-TRAVEL-ADVISORY-BEHAVIOR:AUTOMATIC',
+    'DTSTAMP:20261001T000000Z',
+    'SEQUENCE:0',
+    'BEGIN:VALARM',
+    'X-WR-ALARMUID:0A1B2C3D',
+    'UID:0A1B2C3D',
+    'TRIGGER;VALUE=DATE-TIME:19760401T005545Z',
+    'ACTION:NONE',
+    'END:VALARM',
+    'END:VEVENT',
+    'BEGIN:VEVENT',
+    'UID:apple-timed',
+    'DTSTART;TZID=Europe/Stockholm:20260915T080000',
+    'DURATION:PT1H30M',
+    'SUMMARY:Dentist',
+    'END:VEVENT',
+  ]);
+
+  it.each([
+    ['Google', GOOGLE, 12], // 11 Mondays (one excluded, one moved) and the two-day trip
+    ['Outlook', OUTLOOK, 6],
+    ['Apple', APPLE, 3],
+  ])('a realistic %s export gives exactly the same result as the full chunks', async (_name, ics, count) => {
+    const { reduced, full } = await both(ics);
+    expect(reduced).toEqual(full);
+    expect(reduced.blocks).toHaveLength(count);
+    expect(reduced).toMatchObject({ complete: true, skipped: 0, unsupported: 0 });
+  });
+
+  it('the pathological 2 MB EXDATE line is still skipped quickly (EXDATE is a property the parser reads)', async () => {
+    const stamp = (ms: number) => new Date(ms).toISOString().replace(/[-:]/g, '').replace(/\.\d+/, '');
+    const exdates = Array.from({ length: 120_000 }, (_, i) => stamp(Date.UTC(1990, 0, 1, 9) + i * 24 * HOUR)).join(',');
+    const ics = raw([...timed('huge', '19900101', ['RRULE:FREQ=DAILY', `EXDATE:${exdates}`]), ...timed('ok', '20260610', [])]);
+    const t0 = performance.now();
+    const r = await parseIcalBlocks(ics, { timezone: SE, ...WIDE });
+    expect(performance.now() - t0).toBeLessThan(500);
+    expect(r.blocks.map(iso)).toEqual([['2026-06-10T09:00:00.000Z', '2026-06-10T10:00:00.000Z']]);
+    expect(r.unsupported).toBe(1);
+  }, 30_000);
+
+  it('a feed whose events carry large descriptions parses faster than with the full chunks, with the same result', async () => {
+    const events: string[] = [];
+    for (let i = 0; i < 300; i++) {
+      const d = new Date(Date.UTC(2026, 0, 2) + i * 24 * HOUR).toISOString().slice(0, 10).replace(/-/g, '');
+      events.push(...timed(`big-${i}`, d, [fold(`DESCRIPTION:${`Notes for meeting ${i}\\, with details: `.repeat(400)}`), 'BEGIN:VALARM', 'TRIGGER:-PT10M', 'ACTION:DISPLAY', 'END:VALARM']));
+    }
+    const ics = raw(events);
+    await parseIcalBlocks(ics, { timezone: SE, ...WIDE }); // warm-up
+    await parseIcalBlocks(ics, { timezone: SE, ...WIDE, keepAllProperties: true });
+    const t0 = performance.now();
+    const reduced = await parseIcalBlocks(ics, { timezone: SE, ...WIDE });
+    const tReduced = performance.now() - t0;
+    const t1 = performance.now();
+    const full = await parseIcalBlocks(ics, { timezone: SE, ...WIDE, keepAllProperties: true });
+    const tFull = performance.now() - t1;
+    expect(reduced).toEqual(full);
+    expect(reduced.blocks).toHaveLength(300);
+    expect(tReduced).toBeLessThan(tFull);
+  }, 60_000);
 });

@@ -69,12 +69,16 @@ export interface PrefetchedFeed {
   parsed: ParseIcalResult;
 }
 
-/** Parses feed text exactly as a sync at `now` does: the link window and the assistant's timezone. Throws CalendarParseError. */
-export function parseForSync(text: string, assistant: AssistantData, now: Date): Promise<ParseIcalResult> {
+/**
+ * Parses feed text exactly as a sync at `now` does: the link window and the assistant's timezone. Throws CalendarParseError.
+ * `maxWallMs` lowers the parser's wall-clock safety limit (default 45 s) for a caller whose own request limit is shorter.
+ */
+export function parseForSync(text: string, assistant: AssistantData, now: Date, opts: { maxWallMs?: number } = {}): Promise<ParseIcalResult> {
   return parseIcalBlocks(text, {
     timezone: assistant.timezone || 'UTC',
     from: new Date(now.getTime() - SYNC_WINDOW_BACK_MS),
     to: new Date(now.getTime() + SYNC_WINDOW_FORWARD_MS),
+    ...(opts.maxWallMs !== undefined ? { maxWallMs: opts.maxWallMs } : {}),
   });
 }
 

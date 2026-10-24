@@ -31,8 +31,10 @@ import { ensureBusyFeedToken, resetBusyFeedToken } from '@/lib/calendar/export-f
  */
 
 export const dynamic = 'force-dynamic';
-// Adding a link reads it (up to 8 s), parses it (up to 5 s of its own work) and stores the blocks; the default limit can be shorter than that.
+// Adding a link reads it (up to 8 s), parses it (up to 15 s of its own work, 40 s at most by the clock) and stores the blocks; the default limit can be shorter than that.
 export const maxDuration = 60;
+/** The parse's wall-clock safety limit here: after an 8 s read it still ends (as a clean 400) well before the 60 s above. */
+const ADD_PARSE_MAX_WALL_MS = 40_000;
 
 const MAX_BODY_BYTES = 4096;
 const MAX_URL_LENGTH = 2048;
@@ -208,7 +210,7 @@ async function handleAdd(req: Request, ctx: Auth, assistant: AssistantData): Pro
   const now = new Date();
   let parsed: ParseIcalResult;
   try {
-    parsed = await parseForSync(fetched.text, assistant, now);
+    parsed = await parseForSync(fetched.text, assistant, now, { maxWallMs: ADD_PARSE_MAX_WALL_MS });
   } catch {
     return fail('That link did not return a calendar we can read.', 400);
   }

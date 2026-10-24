@@ -8,6 +8,7 @@ const h = vi.hoisted(() => ({
   override: null as null | ((...a: unknown[]) => Promise<unknown>),
   fetchCalls: [] as string[],
   incompleteParse: false,
+  parseOpts: [] as Array<Record<string, unknown>>,
 }));
 
 vi.mock('@/lib/security/ssrf', async (importOriginal) => {
@@ -24,6 +25,7 @@ vi.mock('@/lib/calendar/sync/parse-ical', async (importOriginal) => {
   return {
     ...actual,
     parseIcalBlocks: async (...a: Parameters<typeof actual.parseIcalBlocks>) => {
+      h.parseOpts.push({ ...a[1] });
       const r = await actual.parseIcalBlocks(...a);
       return h.incompleteParse ? { ...r, complete: false } : r;
     },
@@ -67,6 +69,7 @@ beforeEach(() => {
   h.override = null;
   h.fetchCalls = [];
   h.incompleteParse = false;
+  h.parseOpts = [];
   _resetSyncStateForTesting();
   installFeed();
 });
@@ -334,6 +337,21 @@ describe('POST: add a calendar', () => {
     NOT_SECRET(res.text);
     expect(await Database.getCalendarLinks(a.assistantId)).toEqual([]);
     expect(await Database.getExternalBlocks(a.assistantId)).toEqual([]);
+    // The add route caps the parse at 40 s by the clock, so the 400 comes well before the route's own 60 s limit (after an 8 s read).
+    expect(h.parseOpts).toHaveLength(1);
+    expect(h.parseOpts[0].maxWallMs).toBe(40_000);
+  });
+
+  it('"Sync now" parses with the default safety limit (45 s), not the add route\'s 40 s', async () => {
+    const a = await person('sync-limit');
+    expect((await add(a)).status).toBe(201);
+    expect(h.parseOpts.map((o) => o.maxWallMs)).toEqual([40_000]);
+    const [link] = await Database.getCalendarLinks(a.assistantId);
+    vi.spyOn(Date, 'now').mockReturnValue(Date.now() + 31_000); // past the 30 s pause between reads from this screen
+    const res = await call('POST', a, { query: `?action=sync&linkId=${link.id}` });
+    expect(res.status).toBe(200);
+    expect(h.parseOpts).toHaveLength(2);
+    expect(h.parseOpts[1].maxWallMs).toBeUndefined();
   });
 
   it('refuses the same calendar twice', async () => {

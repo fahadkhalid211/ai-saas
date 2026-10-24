@@ -5,9 +5,10 @@
  * - Cancelled and "free" (TRANSP:TRANSPARENT) events do not block.
  * - Recurring events are expanded inside the window; EXDATE and RECURRENCE-ID overrides are honoured.
  * - Cost: past one-off events (most of a history feed) and series whose UNTIL is past are dropped from the raw text before
- *   ical.js sees them; one event or zone over 128 KB is never handed to ical.js (it is counted in `unsupported`); the parse is
- *   async and yields to the event loop about every 10 ms. It stops after 5 s of its OWN work (time spent waiting while other
- *   requests run does not count), or after 60 s by the wall clock as a safety net, and then returns `complete: false`: the
+ *   ical.js sees them; an event is reduced to the properties read here (descriptions, attachments, attendees, alarms are dropped)
+ *   and one event or zone still over 128 KB is never handed to ical.js (it is counted in `unsupported`); the parse is
+ *   async and yields to the event loop about every 10 ms. It stops after 15 s of its OWN work (time spent waiting while other
+ *   requests run does not count), or after 45 s by the wall clock as a safety net, and then returns `complete: false`: the
  *   blocks found so far are only a part of the calendar, and a caller must never store them as if they were all of it.
  * - One bad event never fails the feed: it is counted in `skipped`. A recurrence that is unsupported, unsafe to expand
  *   or cut short by a cap is counted in `unsupported` instead (see "Recurrence safety" below). Text that is not a calendar at all throws
@@ -42,12 +43,17 @@ export interface ParseIcalOptions {
   from: Date;
   to: Date;
   /**
-   * Limit of the parse's own work: the time it spends computing, summed over its slices between yields (default 5 s). Time spent
+   * Limit of the parse's own work: the time it spends computing, summed over its slices between yields (default 15 s). Time spent
    * waiting while other work runs is not counted, so concurrent reads cannot use up each other's budget. A lower value is for tests.
    */
   deadlineMs?: number;
-  /** Wall-clock safety limit, waiting included (default 60 s); a lower value is for tests. */
+  /**
+   * Wall-clock safety limit, waiting included (default 45 s, well inside the scheduled job's limit). A request with a shorter limit
+   * of its own passes less (the "add a calendar" route passes 40 s so its 60 s limit is never hit); tests pass much less.
+   */
   maxWallMs?: number;
+  /** Tests only: hand every line of an event to ical.js, not only the properties the parser reads (to compare the results). */
+  keepAllProperties?: boolean;
 }
 
 export interface ParseIcalResult {
@@ -76,15 +82,19 @@ const MAX_SCAN_PER_EVENT = 20_000;
 /** Most expansion work for the whole feed, so many long series cannot add up to a long block of the event loop. */
 const MAX_SCAN_PER_FEED = 100_000;
 const DAY_MS = 24 * 60 * 60 * 1000;
-/** Default limit of one parse's own work (time spent waiting for other work is not counted). */
-const PARSE_DEADLINE_MS = 5000;
-/** Default wall-clock safety limit of one parse, waiting included. */
-const PARSE_MAX_WALL_MS = 60_000;
+/**
+ * Default limit of one parse's own work (time spent waiting for other work is not counted). A 2 MB feed takes about 2-4 s of work
+ * on a development machine; the margin covers a slower production CPU, so an ordinary large calendar never fails for good.
+ */
+export const PARSE_DEADLINE_MS = 15_000;
+/** Default wall-clock safety limit of one parse, waiting included (the scheduled job may run 300 s; the add route passes less). */
+export const PARSE_MAX_WALL_MS = 45_000;
 /** The parse gives the event loop a turn after this much work. */
 const YIELD_EVERY_MS = 10;
 /**
- * Largest VEVENT / VTIMEZONE handed to ical.js, in characters of its unfolded lines (line ends counted). ical.js parses one
- * component in one go, without a chance to yield; a normal event is a few KB (a long Google description stays well below this).
+ * Largest VEVENT / VTIMEZONE handed to ical.js, in characters of its unfolded lines (line ends counted), measured on an event AFTER
+ * it was reduced to the properties read here. ical.js parses one component in one go, without a chance to yield; a reduced event is
+ * a few hundred characters, so only a flood of EXDATE / RDATE / RRULE values (or a huge VTIMEZONE) reaches this.
  */
 const MAX_COMPONENT_CHARS = 128 * 1024;
 
@@ -121,8 +131,30 @@ interface EventResult {
 const pad = (n: number, width: number) => String(n).padStart(width, '0');
 const isoDate = (y: number, m: number, d: number) => `${pad(y, 4)}-${pad(m, 2)}-${pad(d, 2)}`;
 
-/** Unfolds the text and splits it into top-level VEVENT / VTIMEZONE chunks (as lines). */
-function splitFeed(text: string): { events: string[][]; timezones: string[][]; unterminated: number } {
+/**
+ * The VEVENT properties this parser reads (eventBlocks, overrideKey, clearlyPast and the status / transparency check). Every other
+ * line of an event (DESCRIPTION, X-ALT-DESC, ATTACH, ATTENDEE, SUMMARY, X-*, ...) and every nested component (VALARM) is dropped
+ * before ical.js sees the event: they cost parse time and could push an ordinary event past MAX_COMPONENT_CHARS.
+ */
+const EVENT_PROPERTIES = new Set(['UID', 'DTSTART', 'DTEND', 'DURATION', 'RRULE', 'RDATE', 'EXDATE', 'RECURRENCE-ID', 'STATUS', 'TRANSP']);
+
+/** The property name of an unfolded content line, upper case: the letters, digits and dashes before the first ';' or ':'. */
+function propertyName(line: string): string {
+  let end = 0;
+  while (end < line.length) {
+    const c = line.charCodeAt(end);
+    // A-Z, a-z, 0-9 and '-'
+    if (!((c >= 65 && c <= 90) || (c >= 97 && c <= 122) || (c >= 48 && c <= 57) || c === 45)) break;
+    end++;
+  }
+  return line.slice(0, end).toUpperCase();
+}
+
+/**
+ * Unfolds the text and splits it into top-level VEVENT / VTIMEZONE chunks (as lines). An event chunk keeps only its own BEGIN / END
+ * and the EVENT_PROPERTIES lines (unless `keepAll`, a test hook); a VTIMEZONE chunk is kept whole (vtimezone.ts validates it).
+ */
+function splitFeed(text: string, keepAll = false): { events: string[][]; timezones: string[][]; unterminated: number } {
   const events: string[][] = [];
   const timezones: string[][] = [];
   let unterminated = 0;
@@ -169,15 +201,22 @@ function splitFeed(text: string): { events: string[][]; timezones: string[][]; u
       current = { kind: 'event', lines: [line], depth: 1 };
       continue;
     }
-    current.lines.push(line);
-    if (begin) current.depth++;
-    else if (end) {
+    // Lines are already unfolded here. In a reduced event, a nested component is dropped whole, BEGIN / END included, so the chunk
+    // stays well formed.
+    const reduce = current.kind === 'event' && !keepAll;
+    if (begin) {
+      current.depth++;
+      if (!reduce) current.lines.push(line);
+    } else if (end) {
       current.depth--;
+      if (!reduce || current.depth === 0) current.lines.push(line);
       if (current.depth === 0) {
         if (current.kind === 'event') events.push(current.lines);
         else if (current.kind === 'timezone') timezones.push(current.lines);
         current = null;
       }
+    } else if (!reduce || (current.depth === 1 && EVENT_PROPERTIES.has(propertyName(line)))) {
+      current.lines.push(line);
     }
   }
   if (current?.kind === 'event') unterminated++;
@@ -558,7 +597,7 @@ function overrideKey(vevent: ICAL.Component, ctx: Context): string {
 }
 
 export async function parseIcalBlocks(icsText: string, opts: ParseIcalOptions): Promise<ParseIcalResult> {
-  const chunks = splitFeed(typeof icsText === 'string' ? icsText : '');
+  const chunks = splitFeed(typeof icsText === 'string' ? icsText : '', opts.keepAllProperties === true);
   const workLimit = opts.deadlineMs ?? PARSE_DEADLINE_MS;
   const wallStart = performance.now();
   const wallLimit = opts.maxWallMs ?? PARSE_MAX_WALL_MS;
