@@ -74,7 +74,8 @@ function withWidgetCors(response: NextResponse, pathname: string): NextResponse 
 
 /** The path to put in a log line. The busy calendar feed carries its secret token in the address, so that segment is never logged. */
 function loggablePath(pathname: string): string {
-  return pathname.replace(/^\/api\/calendar\/[^/]+\//, '/api/calendar/[token]/');
+  // Also when nothing follows the token, and after doubled slashes.
+  return pathname.replace(/^\/api\/calendar\/+[^/]+/, '/api/calendar/[token]');
 }
 
 function getRateLimitConfig(pathname: string): { windowMs: number; max: number; bucketKey: string } {

@@ -31,4 +31,18 @@ describe('proxy and the private busy-feed address', () => {
     expect(JSON.stringify(logged.calls)).not.toContain(TOKEN);
     expect(JSON.stringify(events[0])).toContain('/api/calendar/[token]/feed.ics');
   });
+
+  it.each([
+    ['with no segment after the token', `/api/calendar/${TOKEN}`, '203.0.113.78'],
+    ['after a doubled slash', `/api/calendar//${TOKEN}/feed.ics`, '203.0.113.79'],
+  ])('keeps the token out of the log %s', (_name, path, ip) => {
+    logged.calls.length = 0;
+    const headers = { host: 'localhost:3000', 'x-forwarded-for': ip };
+    let limited = false;
+    for (let i = 0; i < 400 && !limited; i++) limited = proxy(new NextRequest(`http://localhost:3000${path}`, { headers })).status === 429;
+    expect(limited).toBe(true);
+    expect(logged.calls.length).toBeGreaterThan(0);
+    expect(JSON.stringify(logged.calls)).not.toContain(TOKEN);
+    expect(JSON.stringify(logged.calls)).toContain('/api/calendar/[token]');
+  });
 });

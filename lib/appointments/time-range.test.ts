@@ -40,6 +40,13 @@ describe('slotRange', () => {
     expect(slotRange('2026-10-23', 'Morning', 30, 'UTC')).toBeNull();
     expect(slotRange('2026-13-40', '10:00', 30, 'UTC')).toBeNull();
   });
+
+  it('returns null instead of throwing for a missing or non-text date or time (one malformed row must not break a feed or a check)', () => {
+    for (const bad of [null, undefined, 42, {}, ['10:00']]) {
+      expect(slotRange('2026-10-23', bad as unknown as string, 30, 'UTC')).toBeNull();
+      expect(slotRange(bad as unknown as string, '10:00', 30, 'UTC')).toBeNull();
+    }
+  });
 });
 
 describe('slotRangeFields', () => {

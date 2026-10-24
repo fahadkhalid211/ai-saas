@@ -68,12 +68,13 @@ export function wallTimeToUtc(date: string, minutes: number, timeZone: string): 
 }
 
 /**
- * The [start, end) range of a booking as UTC instants, or null when the date or time cannot be read.
+ * The [start, end) range of a booking as UTC instants, or null when the date or time cannot be read (also when a stored row has no
+ * date or time at all, or not as text: one malformed row must never break the busy feed or a clash check).
  * Duration: a range string's end wins ("10:00 AM - 10:30 AM"), else durationMinutes, else 30.
  * An unknown or missing timezone is treated as UTC.
  */
 export function slotRange(date: string, timeSlot: string, durationMinutes: number | undefined, timezone: string | undefined): SlotRange | null {
-  if (!isIsoDate(date)) return null;
+  if (typeof date !== 'string' || typeof timeSlot !== 'string' || !isIsoDate(date)) return null;
   const range = occupiedRange({ date, timeSlot, durationMinutes });
   if (!range) return null;
   const tz = timezone && knownTimezone(timezone) ? timezone : 'UTC';

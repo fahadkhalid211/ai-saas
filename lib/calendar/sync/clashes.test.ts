@@ -123,6 +123,18 @@ describe('detectClashes', () => {
     expect(mail.send).toHaveBeenCalledTimes(2);
   });
 
+  it('a malformed booking row does not stop the others from being checked', async () => {
+    const { assistant, link } = await setup();
+    await Database.replaceExternalBlocks(link.id, assistant.id, [block('2026-10-25T09:00:00Z', '2026-10-25T10:00:00Z')]);
+    const hit = await book(assistant, '2026-10-25', '09:15');
+    const real = await Database.getAppointments(assistant.id, undefined, { ownOnly: true });
+    vi.spyOn(Database, 'getAppointments').mockResolvedValue([{ ...real[0], id: 'apt_broken', timeSlot: null as unknown as string }, ...real]);
+
+    const flagged = await detectClashes(assistant, NOW);
+
+    expect(flagged.map((a) => a.id)).toEqual([hit.id]);
+  });
+
   it('reads booking times in the assistant timezone', async () => {
     const { assistant, link } = await setup({ timezone: 'America/New_York' });
     // 14:00-15:00 UTC is 10:00-11:00 in New York (EDT)

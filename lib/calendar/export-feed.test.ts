@@ -121,6 +121,13 @@ describe('generateBusyFeed', () => {
     expect(l[l.length - 1]).toBe(''); // ends with CRLF
   });
 
+  it('skips a malformed row (no time, no date) and still serves the others', () => {
+    const bad = [booking({ id: 'apt_nt', timeSlot: null as unknown as string }), booking({ id: 'apt_nd', date: undefined as unknown as string })];
+    const text = generateBusyFeed([...bad, booking()], 'Studio Calendar', 'Europe/Stockholm', NOW);
+    expect(events(text)).toHaveLength(1);
+    expect(text).toContain('UID:' + SECRET.id + '@crescelo');
+  });
+
   it('produces an empty but valid calendar when there is nothing to show', () => {
     const text = generateBusyFeed([], 'Empty', 'UTC', NOW);
     expect(text).toContain('BEGIN:VCALENDAR');
