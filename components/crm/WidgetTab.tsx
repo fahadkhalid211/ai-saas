@@ -15,6 +15,7 @@ import {
   Send,
 } from 'lucide-react';
 import { CresceloMark } from '@/components/brand/CresceloMark';
+import { CalendarLinksPanel } from '@/components/crm/CalendarLinksPanel';
 
 export interface SupportCustomField {
   id: string;
@@ -432,6 +433,8 @@ export const WidgetTab: React.FC<WidgetTabProps> = ({
                                   })}
                                 </div>
                               </div>
+
+                              <CalendarLinksPanel key={formData.id} assistantId={formData.id} />
                             </div>
                           )}
 
