@@ -11,13 +11,16 @@
  * ical.js only parses the text. Recurrences are expanded by `expandOccurrences` (expand-rrule.ts), which works on
  * wall-clock fields, so a weekly 10:00 stays 10:00 across a DST change, and whose cost does not grow with the age of the
  * series. Times are never converted by ical.js: every wall-clock value near the window is turned into a UTC instant with
- * the same Intl offset method bookings use (`wallTimeToUtc`).
+ * the same Intl offset method bookings use (`wallTimeToUtc`), or, for a TZID Intl does not know, with the feed's own VTIMEZONE
+ * read by vtimezone.ts (small YEARLY zones only; any other zone is dropped and its events are read in the business timezone,
+ * each counted in `unsupported`).
  */
 
 import ICAL from 'ical.js';
 import { knownTimezone, wallTimeToUtc } from '@/lib/appointments/time-range';
 import { civilFromDays, daysFromCivil, expandOccurrences, RecurrenceLimitError, type LocalDateTime, type RuleParts } from './expand-rrule';
 import { recurrenceParts, UnsupportedRecurrence } from './recurrence-rule';
+import { readVTimezone, zoneWallToMs, type VZone } from './vtimezone';
 import type { ExternalBlock } from './types';
 
 /** The text is not an iCal calendar (or is cut off), so nothing can be said about the owner's busy times. */
@@ -39,7 +42,10 @@ export interface ParseIcalResult {
   blocks: ExternalBlock[];
   /** Events that are malformed and could not be read (bad date, bad rule, cut off, no start). */
   skipped: number;
-  /** Events dropped or only partly expanded because their recurrence is unsupported, unsafe or hit a cap. */
+  /**
+   * Events dropped or only partly expanded because their recurrence is unsupported, unsafe or hit a cap, and events whose
+   * TZID points at a VTIMEZONE that was refused (they are still read, in the business timezone).
+   */
   unsupported: number;
 }
 
@@ -54,13 +60,17 @@ const MAX_SCAN_PER_EVENT = 20_000;
 const MAX_SCAN_PER_FEED = 100_000;
 const DAY_MS = 24 * 60 * 60 * 1000;
 
-type Zone = { kind: 'utc' } | { kind: 'iana'; tz: string } | { kind: 'ical'; zone: ICAL.Timezone };
+type Zone = { kind: 'utc' } | { kind: 'iana'; tz: string } | { kind: 'vtz'; zone: VZone };
 
 interface Context {
   /** Business timezone, always a name Intl accepts. */
   fallbackTz: string;
-  /** VTIMEZONE blocks of the feed by TZID; only used for names Intl does not know (e.g. Outlook's Windows names). */
-  vtimezones: Map<string, ICAL.Timezone>;
+  /** VTIMEZONE blocks of the feed by TZID; only kept for names Intl does not know (e.g. Outlook's Windows names). */
+  vtimezones: Map<string, VZone>;
+  /** TZIDs whose VTIMEZONE was refused (see vtimezone.ts). */
+  droppedZones: Set<string>;
+  /** Set when the event being read used a refused zone (it then counts as unsupported). */
+  usedDroppedZone: boolean;
   fromMs: number;
   toMs: number;
   scanLeft: number;
@@ -158,7 +168,8 @@ function zoneOf(time: ICAL.Time, prop: ICAL.Property, ctx: Context): Zone {
   if (typeof tzid === 'string' && tzid !== '') {
     if (knownTimezone(tzid)) return { kind: 'iana', tz: tzid };
     const custom = ctx.vtimezones.get(tzid);
-    if (custom) return { kind: 'ical', zone: custom };
+    if (custom) return { kind: 'vtz', zone: custom };
+    if (ctx.droppedZones.has(tzid)) ctx.usedDroppedZone = true;
   }
   // Floating time, or a TZID nobody can resolve: read it in the business timezone.
   return { kind: 'iana', tz: ctx.fallbackTz };
@@ -179,8 +190,7 @@ function wallToMs(t: LocalDateTime, zone: Zone): number {
   } else if (zone.kind === 'iana') {
     ms = wallTimeToUtc(isoDate(t.y, t.mo, t.d), t.h * 60 + t.mi, zone.tz) + t.s * 1000;
   } else {
-    const local = new ICAL.Time({ year: t.y, month: t.mo, day: t.d, hour: t.h, minute: t.mi, second: t.s, isDate: false }, zone.zone);
-    ms = local.toUnixTime() * 1000;
+    ms = zoneWallToMs(zone.zone, t);
   }
   if (!Number.isFinite(ms)) throw new Error('unreadable date-time');
   return ms;
@@ -398,17 +408,29 @@ export function parseIcalBlocks(icsText: string, opts: ParseIcalOptions): ParseI
   const ctx: Context = {
     fallbackTz: knownTimezone(opts.timezone) ? opts.timezone : 'UTC',
     vtimezones: new Map(),
+    droppedZones: new Set(),
+    usedDroppedZone: false,
     fromMs: opts.from.getTime(),
     toMs: opts.to.getTime(),
     scanLeft: MAX_SCAN_PER_FEED,
   };
 
   for (const lines of chunks.timezones) {
+    let comp: ICAL.Component;
     try {
-      const zone = new ICAL.Timezone(parseChunk(lines, 'vtimezone'));
-      if (zone.tzid) ctx.vtimezones.set(zone.tzid, zone);
+      comp = parseChunk(lines, 'vtimezone');
     } catch {
-      // A broken VTIMEZONE only matters to events that use it, and those fall back to the business timezone.
+      continue; // A broken VTIMEZONE only matters to events that use it, and those fall back to the business timezone.
+    }
+    const tzid = stringValue(comp, 'tzid');
+    // A name Intl knows is always read with Intl, so its VTIMEZONE is never needed.
+    if (!tzid || knownTimezone(tzid) || ctx.vtimezones.has(tzid)) continue;
+    try {
+      ctx.vtimezones.set(tzid, readVTimezone(comp));
+      ctx.droppedZones.delete(tzid);
+    } catch {
+      // Refused (hostile or unusual shape) or unreadable: its events are read in the business timezone and counted as unsupported.
+      ctx.droppedZones.add(tzid);
     }
   }
 
@@ -448,9 +470,10 @@ export function parseIcalBlocks(icsText: string, opts: ParseIcalOptions): ParseI
       const status = stringValue(p.vevent, 'status');
       const transp = stringValue(p.vevent, 'transp');
       if (status?.toUpperCase() === 'CANCELLED' || transp?.toUpperCase() === 'TRANSPARENT') continue;
+      ctx.usedDroppedZone = false;
       const result = eventBlocks(p, p.uid ? overrideKeys.get(p.uid) : undefined, ctx);
       blocks.push(...result.blocks);
-      if (result.capped) unsupported++;
+      if (result.capped || ctx.usedDroppedZone) unsupported++;
     } catch (err) {
       if (err instanceof UnsupportedRecurrence) unsupported++;
       else skipped++;

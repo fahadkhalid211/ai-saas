@@ -1127,3 +1127,193 @@ RRULE:FREQ=WEEKLY;INTERVAL=2;COUNT=4;BYDAY=TU,SU;WKST=${wkst}`]);
     expect(starts(rule('SU')).map((s) => s.slice(0, 10))).toEqual(['2026-06-02', '2026-06-14', '2026-06-16', '2026-06-28']);
   });
 });
+
+// A VTIMEZONE is only used for a TZID Intl does not know. Its STANDARD / DAYLIGHT rules used to be run by ical.js from their
+// DTSTART up to a few years ahead, which a hostile rule (DAILY, HOURLY, SECONDLY ... from the year 1) turned into seconds or hours
+// of a frozen event loop. Only small, YEARLY zones are accepted now and their offsets are computed in-house; any other zone is
+// dropped, its events are read in the business timezone (like an unknown TZID) and each such event counts as unsupported.
+describe('parseIcalBlocks: hostile VTIMEZONE blocks', () => {
+  type Sub = { kind: 'STANDARD' | 'DAYLIGHT'; dtstart: string; from: string; to: string; extra?: string[] };
+  const zone = (tzid: string, subs: Sub[]) => [
+    'BEGIN:VTIMEZONE',
+    `TZID:${tzid}`,
+    ...subs.flatMap((s) => [`BEGIN:${s.kind}`, `DTSTART:${s.dtstart}`, `TZOFFSETFROM:${s.from}`, `TZOFFSETTO:${s.to}`, ...(s.extra ?? []), `END:${s.kind}`]),
+    'END:VTIMEZONE',
+  ];
+  const event = (uid: string, tzid: string, start = '20260701T100000', end = '20260701T110000') => `UID:${uid}
+DTSTART;TZID=${tzid}:${start}
+DTEND;TZID=${tzid}:${end}`;
+  const run = async (ics: string, timezone = SE) => {
+    const t0 = performance.now();
+    const r = await parseIcalBlocks(ics, { timezone, ...WIDE });
+    return { ms: performance.now() - t0, ...r };
+  };
+
+  const HOSTILE_RULES = [
+    'FREQ=DAILY',
+    'FREQ=HOURLY',
+    'FREQ=MINUTELY',
+    'FREQ=SECONDLY',
+    'FREQ=WEEKLY',
+    'FREQ=MONTHLY;BYDAY=-1SU',
+    'FREQ=YEARLY;BYWEEKNO=53',
+  ];
+  const cases = HOSTILE_RULES.flatMap((rule) => [
+    [rule, '00010101T000000'],
+    [rule, '16010101T000000'],
+  ]);
+
+  it.each(cases)('RRULE:%s from %s drops the zone quickly and reads the event in the business timezone', async (rule, dtstart) => {
+    const tz = zone('Hostile Standard Time', [
+      { kind: 'STANDARD', dtstart, from: '+0200', to: '+0100', extra: [`RRULE:${rule}`] },
+      { kind: 'DAYLIGHT', dtstart, from: '+0100', to: '+0200', extra: [`RRULE:${rule}`] },
+    ]);
+    const r = await run(cal([event('e', 'Hostile Standard Time')], tz));
+    expect(r.ms).toBeLessThan(200);
+    // Business timezone is Stockholm (+02:00 in July), not the zone's own offsets.
+    expect(r.blocks.map(iso)).toEqual([['2026-07-01T08:00:00.000Z', '2026-07-01T09:00:00.000Z']]);
+    expect(r.unsupported).toBe(1);
+    expect(r.skipped).toBe(0);
+  });
+
+  it('a hostile zone is dropped even when the event is in New York business time', async () => {
+    const tz = zone('Hostile Standard Time', [{ kind: 'STANDARD', dtstart: '00010101T000000', from: '+0500', to: '+0500', extra: ['RRULE:FREQ=SECONDLY'] }]);
+    const r = await run(cal([event('e', 'Hostile Standard Time')], tz), 'America/New_York');
+    expect(r.ms).toBeLessThan(200);
+    expect(r.blocks.map(iso)).toEqual([['2026-07-01T14:00:00.000Z', '2026-07-01T15:00:00.000Z']]);
+    expect(r.unsupported).toBe(1);
+  });
+
+  it('many distinct hostile zones in one feed stay fast', async () => {
+    const extra: string[] = [];
+    const events: string[] = [];
+    for (let i = 0; i < 300; i++) {
+      const rule = HOSTILE_RULES[i % HOSTILE_RULES.length];
+      extra.push(
+        ...zone(`Zone ${i}`, [
+          { kind: 'STANDARD', dtstart: '00010101T000000', from: '+0200', to: '+0100', extra: [`RRULE:${rule}`] },
+          { kind: 'DAYLIGHT', dtstart: '00010101T000000', from: '+0100', to: '+0200', extra: [`RRULE:${rule}`] },
+        ]),
+      );
+      events.push(event(`e${i}`, `Zone ${i}`));
+    }
+    const r = await run(cal(events, extra));
+    expect(r.ms).toBeLessThan(500);
+    expect(r.blocks).toHaveLength(300);
+    expect(r.unsupported).toBe(300);
+  });
+
+  it('drops a zone with more than two STANDARD / DAYLIGHT parts', async () => {
+    const parts: Sub[] = Array.from({ length: 3 }, (_, i) => ({ kind: i % 2 ? 'DAYLIGHT' : 'STANDARD', dtstart: `${2000 + i}0101T000000`, from: '+0000', to: '+0900' }));
+    const r = await run(cal([event('e', 'Three Parts')], zone('Three Parts', parts)));
+    expect(r.blocks.map(iso)).toEqual([['2026-07-01T08:00:00.000Z', '2026-07-01T09:00:00.000Z']]);
+    expect(r.unsupported).toBe(1);
+  });
+
+  it.each(['FREQ=YEARLY;INTERVAL=2;BYMONTH=10;BYDAY=-1SU', 'FREQ=YEARLY;BYMONTH=10', 'FREQ=YEARLY;BYDAY=-1SU', 'FREQ=YEARLY;BYMONTH=10;BYDAY=-1SU;BYHOUR=3'])(
+    'drops a zone whose rule %s is not in the allowlist',
+    async (rule) => {
+      const tz = zone('Odd Rule Time', [
+        { kind: 'STANDARD', dtstart: '16011028T030000', from: '+0200', to: '+0100', extra: [`RRULE:${rule}`] },
+        { kind: 'DAYLIGHT', dtstart: '16010325T020000', from: '+0100', to: '+0200', extra: ['RRULE:FREQ=YEARLY;BYDAY=-1SU;BYMONTH=3'] },
+      ]);
+      const r = await run(cal([event('e', 'Odd Rule Time')], tz), 'America/New_York');
+      expect(r.blocks.map(iso)).toEqual([['2026-07-01T14:00:00.000Z', '2026-07-01T15:00:00.000Z']]);
+      expect(r.unsupported).toBe(1);
+    },
+  );
+
+  it('drops a zone with more than 1,000 RDATEs', async () => {
+    const many = Array.from({ length: 1001 }, (_, i) => `${1000 + i}0101T000000`).join(',');
+    const big = zone('Many Dates', [{ kind: 'STANDARD', dtstart: '09990101T000000', from: '+0000', to: '+0900', extra: [`RDATE:${many}`] }]);
+    const r = await run(cal([event('e', 'Many Dates')], big));
+    expect(r.ms).toBeLessThan(200);
+    expect(r.blocks.map(iso)).toEqual([['2026-07-01T08:00:00.000Z', '2026-07-01T09:00:00.000Z']]);
+    expect(r.unsupported).toBe(1);
+  });
+
+  it('accepts a zone made of DTSTART and RDATE changes only', async () => {
+    // +09:00 from 2000; +10:00 from 2026-06-01 00:00 local (read in the offset before the change).
+    const few = zone('Few Dates', [
+      { kind: 'STANDARD', dtstart: '20000101T000000', from: '+0000', to: '+0900' },
+      { kind: 'DAYLIGHT', dtstart: '19990101T000000', from: '+0900', to: '+1000', extra: ['RDATE:20260601T000000'] },
+    ]);
+    const r = await run(cal([event('a', 'Few Dates', '20260501T100000', '20260501T110000'), event('b', 'Few Dates')], few));
+    expect(r.unsupported).toBe(0);
+    expect(r.blocks.map(iso)).toEqual([
+      ['2026-05-01T01:00:00.000Z', '2026-05-01T02:00:00.000Z'],
+      ['2026-07-01T00:00:00.000Z', '2026-07-01T01:00:00.000Z'],
+    ]);
+  });
+
+  it('an Outlook zone from 1601 converts exactly and fast, across both DST changes', async () => {
+    const events = [
+      event('a', 'W. Europe Standard Time', '20260329T013000', '20260329T014500'), // before the spring change: +01:00
+      event('b', 'W. Europe Standard Time', '20260329T033000', '20260329T034500'), // after it: +02:00
+      event('c', 'W. Europe Standard Time', '20261024T100000', '20261024T110000'), // +02:00
+      event('d', 'W. Europe Standard Time', '20261026T100000', '20261026T110000'), // +01:00
+    ];
+    const r = await run(cal(events, WINDOWS_VTIMEZONE), 'America/New_York');
+    expect(r.ms).toBeLessThan(200);
+    expect(r.unsupported).toBe(0);
+    expect(r.skipped).toBe(0);
+    expect(r.blocks.map(iso)).toEqual([
+      ['2026-03-29T00:30:00.000Z', '2026-03-29T00:45:00.000Z'],
+      ['2026-03-29T01:30:00.000Z', '2026-03-29T01:45:00.000Z'],
+      ['2026-10-24T08:00:00.000Z', '2026-10-24T09:00:00.000Z'],
+      ['2026-10-26T09:00:00.000Z', '2026-10-26T10:00:00.000Z'],
+    ]);
+  });
+
+  it('an Outlook zone gives the same instants as Intl for Europe/Berlin at noon on every day of 2026 and 2030', async () => {
+    const days: string[] = [];
+    for (const year of [2026, 2030]) {
+      for (let t = Date.UTC(year, 0, 1); t < Date.UTC(year + 1, 0, 1); t += 24 * HOUR) days.push(new Date(t).toISOString().slice(0, 10).replace(/-/g, ''));
+    }
+    const events = days.map((d, i) => event(`n${i}`, 'W. Europe Standard Time', `${d}T120000`, `${d}T130000`));
+    const t0 = performance.now();
+    const r = await parseIcalBlocks(cal(events, WINDOWS_VTIMEZONE), { timezone: 'UTC', from: new Date('2026-01-01T00:00:00Z'), to: new Date('2031-01-01T00:00:00Z') });
+    expect(performance.now() - t0).toBeLessThan(1000);
+    const berlin = new Intl.DateTimeFormat('en-US', { timeZone: 'Europe/Berlin', hour: '2-digit', hourCycle: 'h23' });
+    expect(r.blocks).toHaveLength(days.length);
+    for (const b of r.blocks) expect(berlin.format(b.startAt)).toBe('12');
+  });
+
+  it('a zone rule with UNTIL stops changing the offset after it', async () => {
+    // Daylight time ended after 2010: the zone stays on its standard offset (+01:00) afterwards.
+    const tz = zone('Ended DST Time', [
+      { kind: 'STANDARD', dtstart: '19701025T030000', from: '+0200', to: '+0100', extra: ['RRULE:FREQ=YEARLY;BYMONTH=10;BYDAY=-1SU'] },
+      { kind: 'DAYLIGHT', dtstart: '19700329T020000', from: '+0100', to: '+0200', extra: ['RRULE:FREQ=YEARLY;BYMONTH=3;BYDAY=-1SU;UNTIL=20100328T010000Z'] },
+    ]);
+    const r = await run(cal([event('e', 'Ended DST Time')], tz), 'America/New_York');
+    expect(r.unsupported).toBe(0);
+    expect(r.blocks.map(iso)).toEqual([['2026-07-01T09:00:00.000Z', '2026-07-01T10:00:00.000Z']]);
+
+    // The same with COUNT: five summers from 2022, the last in 2026.
+    const counted = zone('Counted DST Time', [
+      { kind: 'STANDARD', dtstart: '19701025T030000', from: '+0200', to: '+0100', extra: ['RRULE:FREQ=YEARLY;BYMONTH=10;BYDAY=-1SU'] },
+      { kind: 'DAYLIGHT', dtstart: '20220327T020000', from: '+0100', to: '+0200', extra: ['RRULE:FREQ=YEARLY;BYMONTH=3;BYDAY=-1SU;COUNT=5'] },
+    ]);
+    const c = await parseIcalBlocks(cal([event('a', 'Counted DST Time'), event('b', 'Counted DST Time', '20270701T100000', '20270701T110000')], counted), {
+      timezone: 'UTC',
+      from: new Date('2026-01-01T00:00:00Z'),
+      to: new Date('2028-01-01T00:00:00Z'),
+    });
+    expect(c.unsupported).toBe(0);
+    expect(c.blocks.map(iso)).toEqual([
+      ['2026-07-01T08:00:00.000Z', '2026-07-01T09:00:00.000Z'],
+      ['2027-07-01T09:00:00.000Z', '2027-07-01T10:00:00.000Z'],
+    ]);
+  });
+
+  it('a far-future event in an accepted zone converts without iterating from 1601', async () => {
+    const t0 = performance.now();
+    const r = await parseIcalBlocks(cal([event('f', 'W. Europe Standard Time', '99990701T100000', '99990701T110000')], WINDOWS_VTIMEZONE), {
+      timezone: 'UTC',
+      from: new Date('9999-01-01T00:00:00Z'),
+      to: new Date('9999-12-31T00:00:00Z'),
+    });
+    expect(performance.now() - t0).toBeLessThan(200);
+    expect(r.blocks.map(iso)).toEqual([['9999-07-01T08:00:00.000Z', '9999-07-01T09:00:00.000Z']]);
+  });
+});
