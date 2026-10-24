@@ -201,6 +201,13 @@ describe('POST: add a calendar', () => {
     expect(stored[0].id).toBe(res.json.link.id);
     expect((await Database.getExternalBlocks(a.assistantId)).length).toBe(1);
     expect(stored[0].blockCount).toBe(1);
+    // One upstream read: the text that proved the link is the text that is stored (no second fetch).
+    expect(h.fetchCalls).toHaveLength(1);
+  });
+
+  it('declares a 60 second limit for the route (a read can take 8 s plus the parse and the writes)', async () => {
+    const mod = await import('../../app/api/assistants/[id]/calendars/route');
+    expect((mod as { maxDuration?: number }).maxDuration).toBe(60);
   });
 
   it('turns webcal:// into https:// before it is read and saved', async () => {
@@ -321,9 +328,11 @@ describe('POST: add a calendar', () => {
 
   it('keeps the link when the first sync fails afterwards, showing the error', async () => {
     const a = await person('late-fail');
-    let calls = 0;
-    vi.stubGlobal('fetch', vi.fn(async () => (++calls === 1 ? new Response(calendarText(), { status: 200 }) : new Response('x', { status: 500 }))));
+    // The link is read once (the proof); storing its blocks is what fails afterwards.
+    vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    vi.spyOn(Database, 'replaceExternalBlocks').mockRejectedValueOnce(new Error('store down'));
     const res = await add(a);
+    expect(h.fetchCalls).toHaveLength(1);
     expect(res.status).toBe(201);
     expect(res.json.link.lastError).toBeTruthy();
     NOT_SECRET(res.text);

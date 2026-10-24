@@ -9,10 +9,9 @@ import { logged } from '@/lib/logging/route';
 import { logEvent } from '@/lib/logging/logger';
 import { isBookingUnavailable } from '@/lib/appointments/errors';
 import { fetchCalendarFeed, normaliseCalendarUrl } from '@/lib/calendar/sync/fetch-feed';
-import { parseIcalBlocks } from '@/lib/calendar/sync/parse-ical';
-import { syncCalendarLink } from '@/lib/calendar/sync/sync-link';
-import { CalendarLinkRuleError, MAX_CALENDAR_LINKS_PER_ASSISTANT } from '@/lib/calendar/sync/link-rules';
-import { SYNC_WINDOW_BACK_MS, SYNC_WINDOW_FORWARD_MS } from '@/lib/calendar/sync/window';
+import { parseForSync, syncCalendarLink } from '@/lib/calendar/sync/sync-link';
+import type { ParseIcalResult } from '@/lib/calendar/sync/parse-ical';
+import { CALENDAR_LABELS, CalendarLinkRuleError, MAX_CALENDAR_LINKS_PER_ASSISTANT } from '@/lib/calendar/sync/link-rules';
 import type { CalendarLink } from '@/lib/calendar/sync/types';
 import { toLinkView } from '@/lib/calendar/link-view';
 import { ensureBusyFeedToken, resetBusyFeedToken } from '@/lib/calendar/export-feed';
@@ -32,8 +31,9 @@ import { ensureBusyFeedToken, resetBusyFeedToken } from '@/lib/calendar/export-f
  */
 
 export const dynamic = 'force-dynamic';
+// Adding a link reads it (up to 8 s), parses it (up to 5 s) and stores the blocks; the default limit can be shorter than that.
+export const maxDuration = 60;
 
-const LABELS = new Set(['google', 'apple', 'outlook', 'other']);
 const MAX_BODY_BYTES = 4096;
 const MAX_URL_LENGTH = 2048;
 const SYNC_PAUSE_MS = 30_000;
@@ -169,7 +169,7 @@ async function handleAdd(req: Request, ctx: Auth, assistant: AssistantData): Pro
     return fail('Choose a calendar type and paste its link.', 400);
   }
   const label = typeof body?.label === 'string' ? body.label : '';
-  if (!LABELS.has(label)) return fail('Choose which kind of calendar this is.', 400);
+  if (!CALENDAR_LABELS.has(label)) return fail('Choose which kind of calendar this is.', 400);
   if (typeof body.url !== 'string' || !body.url.trim()) return fail('Paste the calendar link.', 400);
   if (body.url.length > MAX_URL_LENGTH) return fail('That link is too long to be a calendar link.', 400);
 
@@ -181,14 +181,15 @@ async function handleAdd(req: Request, ctx: Auth, assistant: AssistantData): Pro
   }
   if (existing.some((l) => normaliseCalendarUrl(l.url) === url)) return fail('That calendar is already linked.', 400);
 
-  // Prove the link works before keeping it: one read, one parse.
+  // Prove the link works before keeping it: one read, one parse. The same text and parse are then stored (no second read).
   const fetched = await fetchCalendarFeed(url);
   if (fetched.status !== 'ok') {
     return fail(fetched.status === 'error' ? reasonForFeedError(fetched.error) : 'We could not read a calendar from that link.', 400);
   }
+  const now = new Date();
+  let parsed: ParseIcalResult;
   try {
-    const now = Date.now();
-    await parseIcalBlocks(fetched.text, { timezone: assistant.timezone || 'UTC', from: new Date(now - SYNC_WINDOW_BACK_MS), to: new Date(now + SYNC_WINDOW_FORWARD_MS) });
+    parsed = await parseForSync(fetched.text, assistant, now);
   } catch {
     return fail('That link did not return a calendar we can read.', 400);
   }
@@ -202,7 +203,7 @@ async function handleAdd(req: Request, ctx: Auth, assistant: AssistantData): Pro
   };
   const saved = await Database.saveCalendarLink(link); // new link: no status fields
   noteAttempt(assistant.id, saved.id);
-  await syncCalendarLink(saved, assistant); // stores the blocks and the status; never throws, a failure shows on the link
+  await syncCalendarLink(saved, assistant, now, { feed: fetched, parsed }); // stores the blocks and the status; never throws, a failure shows on the link
 
   await audit(ctx, req, assistant, 'calendar_link.added', { label, linkId: saved.id });
 

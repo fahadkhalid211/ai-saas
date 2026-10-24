@@ -1,8 +1,9 @@
 import { createHash } from 'node:crypto';
 import { Database, type AssistantData } from '@/lib/db';
 import { logEvent } from '@/lib/logging/logger';
-import { fetchCalendarFeed, normaliseCalendarUrl } from './fetch-feed';
-import { CalendarParseError, parseIcalBlocks } from './parse-ical';
+import { fetchCalendarFeed } from './fetch-feed';
+import { withoutAddresses } from '../link-view';
+import { CalendarParseError, parseIcalBlocks, type ParseIcalResult } from './parse-ical';
 import { MAX_BLOCKS_PER_LINK } from './link-rules';
 import { detectClashes } from './clashes';
 import { SYNC_WINDOW_BACK_MS, SYNC_WINDOW_FORWARD_MS } from './window';
@@ -61,16 +62,26 @@ const timeOf = (iso?: string) => {
   return Number.isFinite(t) ? t : 0;
 };
 
-function withoutLink(text: string, link: CalendarLink): string {
-  let out = text;
-  for (const secret of new Set([link.url, normaliseCalendarUrl(link.url)])) {
-    if (secret) out = out.split(secret).join('[calendar link]');
-  }
-  return out.slice(0, 300);
+/** A feed the caller has already read and parsed with parseForSync (the "add a calendar" check), stored without a second read. */
+export interface PrefetchedFeed {
+  feed: { status: 'ok'; text: string; etag?: string; lastModified?: string };
+  parsed: ParseIcalResult;
 }
 
-/** Reads one link and stores the result. Two calls for the same link at once share one read. Never throws. */
-export function syncCalendarLink(link: CalendarLink, assistant: AssistantData, now: Date = new Date()): Promise<SyncResult> {
+/** Parses feed text exactly as a sync at `now` does: the link window and the assistant's timezone. Throws CalendarParseError. */
+export function parseForSync(text: string, assistant: AssistantData, now: Date): Promise<ParseIcalResult> {
+  return parseIcalBlocks(text, {
+    timezone: assistant.timezone || 'UTC',
+    from: new Date(now.getTime() - SYNC_WINDOW_BACK_MS),
+    to: new Date(now.getTime() + SYNC_WINDOW_FORWARD_MS),
+  });
+}
+
+/**
+ * Reads one link and stores the result. Two calls for the same link at once share one read. Never throws.
+ * `prefetched` (read and parsed by the caller at `now` with parseForSync) is stored as is, without reading the address again.
+ */
+export function syncCalendarLink(link: CalendarLink, assistant: AssistantData, now: Date = new Date(), prefetched?: PrefetchedFeed): Promise<SyncResult> {
   const key = memoKey(link);
   const running = inFlight.get(key);
   if (running) return running;
@@ -78,7 +89,7 @@ export function syncCalendarLink(link: CalendarLink, assistant: AssistantData, n
   const attempt: Attempt = { at: Date.now(), state: 'pending' };
   attempts.set(key, attempt);
 
-  const run: Promise<SyncResult> = syncOnce(link, assistant, now)
+  const run: Promise<SyncResult> = syncOnce(link, assistant, now, prefetched)
     .catch((err): SyncResult => {
       // Only the error's name: its text can quote the database statement or the address.
       logEvent({ level: 'warn', category: 'booking', event: 'calendar.sync_failed', meta: { assistantId: link.assistantId, linkId: link.id, error: errName(err) } });
@@ -98,7 +109,7 @@ export function syncCalendarLink(link: CalendarLink, assistant: AssistantData, n
   return run;
 }
 
-async function syncOnce(link: CalendarLink, assistant: AssistantData, now: Date): Promise<SyncResult> {
+async function syncOnce(link: CalendarLink, assistant: AssistantData, now: Date, prefetched?: PrefetchedFeed): Promise<SyncResult> {
   const kept = link.blockCount ?? 0;
   const nowIso = now.toISOString();
   const timezone = assistant.timezone || 'UTC';
@@ -121,9 +132,13 @@ async function syncOnce(link: CalendarLink, assistant: AssistantData, now: Date)
   const fullAt = timeOf(link.fullSyncedAt);
   const needFull =
     fullAt === 0 || now.getTime() - fullAt > FULL_READ_AFTER_MS || link.blockCount === undefined || link.parsedTimezone !== timezone;
-  const res = needFull ? await fetchCalendarFeed(link.url) : await fetchCalendarFeed(link.url, { etag: link.etag, lastModified: link.lastModified });
+  const res = prefetched
+    ? prefetched.feed
+    : needFull
+      ? await fetchCalendarFeed(link.url)
+      : await fetchCalendarFeed(link.url, { etag: link.etag, lastModified: link.lastModified });
 
-  if (res.status === 'error') return fail(withoutLink(res.error, link));
+  if (res.status === 'error') return fail(withoutAddresses(res.error, link));
 
   if (res.status === 'not_modified') {
     // Nothing was parsed, so fullSyncedAt stays where it was.
@@ -137,13 +152,9 @@ async function syncOnce(link: CalendarLink, assistant: AssistantData, now: Date)
     return { ok: recorded, blocks: kept };
   }
 
-  let parsed: Awaited<ReturnType<typeof parseIcalBlocks>>;
+  let parsed: ParseIcalResult;
   try {
-    parsed = await parseIcalBlocks(res.text, {
-      timezone,
-      from: new Date(now.getTime() - SYNC_WINDOW_BACK_MS),
-      to: new Date(now.getTime() + SYNC_WINDOW_FORWARD_MS),
-    });
+    parsed = prefetched ? prefetched.parsed : await parseForSync(res.text, assistant, now);
   } catch (err) {
     if (!(err instanceof CalendarParseError)) {
       logEvent({ level: 'warn', category: 'booking', event: 'calendar.parse_failed', meta: { assistantId: link.assistantId, linkId: link.id, error: errName(err) } });

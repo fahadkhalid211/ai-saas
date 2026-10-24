@@ -4,7 +4,8 @@ import type { CalendarLink } from './types';
 export const MAX_CALENDAR_LINKS_PER_ASSISTANT = 5;
 export const MAX_BLOCKS_PER_LINK = 20_000;
 
-const LABELS = new Set(['google', 'apple', 'outlook', 'other']);
+/** The calendar kinds a link may be labelled with. */
+export const CALENDAR_LABELS: ReadonlySet<string> = new Set(['google', 'apple', 'outlook', 'other']);
 const MAX_URL_LENGTH = 2048;
 const MAX_ERROR_LENGTH = 500;
 
@@ -70,7 +71,7 @@ export function checkCalendarLink(link: CalendarLink): void {
   if (!link || typeof link !== 'object') throw new CalendarLinkRuleError('The calendar link is missing.');
   if (typeof link.id !== 'string' || !link.id) throw new CalendarLinkRuleError('The calendar link needs an id.');
   if (typeof link.assistantId !== 'string' || !link.assistantId) throw new CalendarLinkRuleError('The calendar link needs an assistant.');
-  if (!LABELS.has(link.label as string)) throw new CalendarLinkRuleError('The calendar label must be google, apple, outlook or other.');
+  if (!CALENDAR_LABELS.has(link.label as string)) throw new CalendarLinkRuleError('The calendar label must be google, apple, outlook or other.');
   if (typeof link.url !== 'string' || !link.url || link.url.length > MAX_URL_LENGTH) {
     throw new CalendarLinkRuleError('The calendar link needs an address of up to 2048 characters.');
   }
@@ -80,7 +81,8 @@ export function checkCalendarLink(link: CalendarLink): void {
   } catch {
     throw new CalendarLinkRuleError('The calendar address is not a valid web address.');
   }
-  if (protocol !== 'https:' && protocol !== 'http:') throw new CalendarLinkRuleError('The calendar address must start with https:// or http://.');
+  // The read is https only (webcal:// is turned into https:// before a link is stored), so nothing else may be stored.
+  if (protocol !== 'https:') throw new CalendarLinkRuleError('The calendar address must start with https://.');
   if (!isIsoTime(link.createdAt)) throw new CalendarLinkRuleError('The calendar link needs a creation time.');
   checkStatusFields({
     lastSyncedAt: link.lastSyncedAt,

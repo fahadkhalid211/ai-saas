@@ -624,6 +624,7 @@ describe('a link is checked before it is stored', () => {
     ['an unknown label', { label: 'yahoo' as CalendarLink['label'] }],
     ['a javascript: address', { url: 'javascript:alert(1)' }],
     ['a file: address', { url: 'file:///etc/passwd' }],
+    ['a plain http address (the read requires https)', { url: 'http://example.com/a.ics' }],
     ['an address that is not a URL', { url: 'not a url' }],
     ['no address', { url: '' }],
     ['an unreadable creation time', { createdAt: 'yesterday-ish' }],
@@ -643,9 +644,9 @@ describe('a link is checked before it is stored', () => {
     expect(h.query).not.toHaveBeenCalled();
   });
 
-  it('accepts http and https links of every label', async () => {
+  it('accepts https links of every label', async () => {
     for (const label of ['google', 'apple', 'outlook', 'other'] as const) {
-      await expect(Database.saveCalendarLink(link(`ast_ok_${label}`, { label, url: 'http://example.com/a.ics' }))).resolves.toBeTruthy();
+      await expect(Database.saveCalendarLink(link(`ast_ok_${label}`, { label, url: 'https://example.com/a.ics' }))).resolves.toBeTruthy();
     }
   });
 });

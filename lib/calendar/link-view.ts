@@ -84,8 +84,11 @@ export const CALENDAR_LABEL_OPTIONS: ReadonlyArray<{ value: CalendarLink['label'
   },
 ];
 
-/** Replaces every address in a text, so an error shown to the owner can never carry a calendar link or its token. */
-function withoutAddresses(text: string, link: CalendarLink): string {
+/**
+ * Replaces every address in a text, so an error stored for or shown to the owner can never carry a calendar link or its token. Used both
+ * when the sync stores an error and when the settings view shows one.
+ */
+export function withoutAddresses(text: string, link: CalendarLink): string {
   let out = text;
   for (const secret of new Set([link.url, link.url.trim().replace(/^webcal:\/\//i, 'https://')])) {
     if (secret) out = out.split(secret).join('[calendar link]');
