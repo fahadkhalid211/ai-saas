@@ -209,7 +209,12 @@ instances cannot see and that does not survive a redeploy; the panel then shows 
 - A feed larger than 2 MB is refused ("That calendar is too large to read"); a very long-history calendar can hit this.
 - Links are read for the next 400 days. An assistant with at least one linked calendar refuses bookings further ahead
   ("That date is too far ahead. Please choose an earlier date.").
-- Parsing one feed stops after 5 seconds; events not read by then are counted as "repeats we can't read yet".
+- A calendar that takes too long to read (more than 5 seconds of the parser's own work, or 60 seconds in total while the
+  server is busy) is treated as a failed read: the blocks from the last full read stay, the link shows "The calendar took
+  too long to read", and the 24 hour "not syncing" notice applies if it keeps happening. Adding such a calendar is refused
+  ("That calendar is too large to read right now. Try again in a moment.") and nothing is saved.
+- Feeds over the 2 MB cap are refused (above); a single event over 128 KB is skipped and counted as "repeats we can't read
+  yet" (a calendar time zone over 128 KB is dropped and its events are read in the business time zone, counted the same way).
 
 ### Owner decisions gathered during Phase 2
 

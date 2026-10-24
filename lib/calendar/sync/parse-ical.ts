@@ -5,8 +5,10 @@
  * - Cancelled and "free" (TRANSP:TRANSPARENT) events do not block.
  * - Recurring events are expanded inside the window; EXDATE and RECURRENCE-ID overrides are honoured.
  * - Cost: past one-off events (most of a history feed) and series whose UNTIL is past are dropped from the raw text before
- *   ical.js sees them; the parse is async and yields to the event loop about every 10 ms; after 5 s it stops and counts the
- *   events not read yet in `unsupported` (the result is still returned, not an error).
+ *   ical.js sees them; one event or zone over 128 KB is never handed to ical.js (it is counted in `unsupported`); the parse is
+ *   async and yields to the event loop about every 10 ms. It stops after 5 s of its OWN work (time spent waiting while other
+ *   requests run does not count), or after 60 s by the wall clock as a safety net, and then returns `complete: false`: the
+ *   blocks found so far are only a part of the calendar, and a caller must never store them as if they were all of it.
  * - One bad event never fails the feed: it is counted in `skipped`. A recurrence that is unsupported, unsafe to expand
  *   or cut short by a cap is counted in `unsupported` instead (see "Recurrence safety" below). Text that is not a calendar at all throws
  *   CalendarParseError, so the caller keeps the blocks it already has instead of treating it as an emptied calendar.
@@ -39,17 +41,27 @@ export interface ParseIcalOptions {
   timezone: string;
   from: Date;
   to: Date;
-  /** Wall-clock limit for the whole parse (default 5 s); a lower value is for tests. */
+  /**
+   * Limit of the parse's own work: the time it spends computing, summed over its slices between yields (default 5 s). Time spent
+   * waiting while other work runs is not counted, so concurrent reads cannot use up each other's budget. A lower value is for tests.
+   */
   deadlineMs?: number;
+  /** Wall-clock safety limit, waiting included (default 60 s); a lower value is for tests. */
+  maxWallMs?: number;
 }
 
 export interface ParseIcalResult {
+  /**
+   * False when the parse stopped at its work deadline or wall-clock safety limit before reading the whole calendar. `blocks` then
+   * holds only what was found so far and the counts are partial: never store such a result in place of a full one.
+   */
+  complete: boolean;
   blocks: ExternalBlock[];
   /** Events that are malformed and could not be read (bad date, bad rule, cut off, no start). Past events dropped unread are not counted. */
   skipped: number;
   /**
    * Events dropped or only partly expanded because their recurrence is unsupported, unsafe or hit a cap; events whose TZID
-   * points at a VTIMEZONE that was refused (they are still read, in the business timezone); and events not read before the deadline.
+   * points at a VTIMEZONE that was refused (they are still read, in the business timezone); and events over the size limit, which are not read.
    */
   unsupported: number;
 }
@@ -64,10 +76,17 @@ const MAX_SCAN_PER_EVENT = 20_000;
 /** Most expansion work for the whole feed, so many long series cannot add up to a long block of the event loop. */
 const MAX_SCAN_PER_FEED = 100_000;
 const DAY_MS = 24 * 60 * 60 * 1000;
-/** Default wall-clock limit of one parse. */
+/** Default limit of one parse's own work (time spent waiting for other work is not counted). */
 const PARSE_DEADLINE_MS = 5000;
+/** Default wall-clock safety limit of one parse, waiting included. */
+const PARSE_MAX_WALL_MS = 60_000;
 /** The parse gives the event loop a turn after this much work. */
 const YIELD_EVERY_MS = 10;
+/**
+ * Largest VEVENT / VTIMEZONE handed to ical.js, in characters of its unfolded lines (line ends counted). ical.js parses one
+ * component in one go, without a chance to yield; a normal event is a few KB (a long Google description stays well below this).
+ */
+const MAX_COMPONENT_CHARS = 128 * 1024;
 
 const yieldToLoop = () => new Promise<void>((resolve) => (typeof setImmediate === 'function' ? setImmediate(resolve) : setTimeout(resolve, 0)));
 
@@ -257,6 +276,31 @@ function clearlyPast(lines: string[], fromMs: number): boolean {
     if (u.ms + (u.isDate ? DAY_MS : 0) + span >= fromMs - 3 * DAY_MS) return false;
   }
   return true;
+}
+
+/** True when a component is too large to hand to ical.js (see MAX_COMPONENT_CHARS). Stops counting as soon as it is. */
+function oversized(lines: string[]): boolean {
+  let chars = 0;
+  for (const line of lines) {
+    chars += line.length + 2;
+    if (chars > MAX_COMPONENT_CHARS) return true;
+  }
+  return false;
+}
+
+/** The TZID of a VTIMEZONE chunk, read from the raw text (its own TZID line, not one of a nested part). */
+function rawTzid(lines: string[]): string | null {
+  let depth = 0;
+  for (const line of lines) {
+    const c = line.charCodeAt(0) & ~32;
+    if (c === 66 && line.slice(0, 6).toUpperCase() === 'BEGIN:') depth++;
+    else if (c === 69 && line.slice(0, 4).toUpperCase() === 'END:') depth--;
+    else if (c === 84 && depth === 1) {
+      const p = splitLine(line);
+      if (p?.name === 'TZID') return p.value.trim() || null;
+    }
+  }
+  return null;
 }
 
 /** Parses one chunk of component lines on its own, so a bad line only affects that component. */
@@ -515,15 +559,24 @@ function overrideKey(vevent: ICAL.Component, ctx: Context): string {
 
 export async function parseIcalBlocks(icsText: string, opts: ParseIcalOptions): Promise<ParseIcalResult> {
   const chunks = splitFeed(typeof icsText === 'string' ? icsText : '');
-  const deadline = performance.now() + (opts.deadlineMs ?? PARSE_DEADLINE_MS);
-  let lastYield = performance.now();
+  const workLimit = opts.deadlineMs ?? PARSE_DEADLINE_MS;
+  const wallStart = performance.now();
+  const wallLimit = opts.maxWallMs ?? PARSE_MAX_WALL_MS;
+  /** Work done in the slices before the current one (the time between yields, never the time spent waiting for a turn). */
+  let workBefore = 0;
+  let lastYield = wallStart;
   /** True when ~10 ms of work has passed since the event loop last had a turn (checked per event; the await only then). */
   const due = () => performance.now() - lastYield >= YIELD_EVERY_MS;
   const breathe = async () => {
+    workBefore += performance.now() - lastYield;
     await yieldToLoop();
     lastYield = performance.now();
   };
-  const late = () => performance.now() >= deadline;
+  /** Out of time: the parse's own work passed its limit, or (safety net) the wall clock did. */
+  const late = () => {
+    const now = performance.now();
+    return workBefore + (now - lastYield) >= workLimit || now - wallStart >= wallLimit;
+  };
 
   const ctx: Context = {
     fallbackTz: knownTimezone(opts.timezone) ? opts.timezone : 'UTC',
@@ -535,9 +588,18 @@ export async function parseIcalBlocks(icsText: string, opts: ParseIcalOptions): 
     scanLeft: MAX_SCAN_PER_FEED,
   };
 
+  // Out of time: what was found so far is returned, marked incomplete (its counts are partial and it must not be stored).
+  const incomplete = (blocks: ExternalBlock[], skipped: number, unsupported: number) => finish(blocks, skipped, unsupported, false);
+
   for (const lines of chunks.timezones) {
     if (due()) await breathe();
-    if (late()) break; // the event loop below stops at once and counts what is left
+    if (late()) return incomplete([], chunks.unterminated, 0);
+    if (oversized(lines)) {
+      // Never handed to ical.js. Dropped like a refused zone: its events are read in the business timezone and counted as unsupported.
+      const tzid = rawTzid(lines);
+      if (tzid && !knownTimezone(tzid) && !ctx.vtimezones.has(tzid)) ctx.droppedZones.add(tzid);
+      continue;
+    }
     let comp: ICAL.Component;
     try {
       comp = parseChunk(lines, 'vtimezone');
@@ -566,12 +628,13 @@ export async function parseIcalBlocks(icsText: string, opts: ParseIcalOptions): 
     const past = clearlyPast(lines, ctx.fromMs);
     if (!past || (i & 255) === 0) {
       if (due()) await breathe();
-      if (late()) {
-        // Out of time: nothing more is read; the events not read yet (here and below) are reported.
-        return finish([], skipped, unsupported + (chunks.events.length - i - (past ? 1 : 0)) + prepared.length);
-      }
+      if (late()) return incomplete([], skipped, unsupported);
     }
     if (past) continue;
+    if (oversized(lines)) {
+      unsupported++; // never handed to ical.js, which would parse it in one go without yielding
+      continue;
+    }
     try {
       const vevent = parseChunk(lines, 'vevent');
       const uid = stringValue(vevent, 'uid');
@@ -599,9 +662,8 @@ export async function parseIcalBlocks(icsText: string, opts: ParseIcalOptions): 
 
   const blocks: ExternalBlock[] = [];
   for (let i = 0; i < prepared.length; i++) {
-    // Out of time: the blocks found so far are kept and the events not read yet are reported.
     if (due()) await breathe();
-    if (late()) return finish(blocks, skipped, unsupported + (prepared.length - i));
+    if (late()) return incomplete(blocks, skipped, unsupported);
     const p = prepared[i];
     try {
       const status = stringValue(p.vevent, 'status');
@@ -617,10 +679,10 @@ export async function parseIcalBlocks(icsText: string, opts: ParseIcalOptions): 
     }
   }
 
-  return finish(blocks, skipped, unsupported);
+  return finish(blocks, skipped, unsupported, true);
 }
 
-function finish(blocks: ExternalBlock[], skipped: number, unsupported: number): ParseIcalResult {
+function finish(blocks: ExternalBlock[], skipped: number, unsupported: number, complete: boolean): ParseIcalResult {
   blocks.sort((a, b) => a.startAt.getTime() - b.startAt.getTime() || a.endAt.getTime() - b.endAt.getTime());
-  return { blocks, skipped, unsupported };
+  return { complete, blocks, skipped, unsupported };
 }

@@ -161,7 +161,7 @@ DURATION:PT90M`]);
   it('silently skips a timed event with no end (zero length) without counting it', async () => {
     const ics = cal([`UID:z
 DTSTART:20260610T090000Z`]);
-    expect(await parseIcalBlocks(ics, { timezone: SE, ...WIDE })).toEqual({ blocks: [], skipped: 0, unsupported: 0 });
+    expect(await parseIcalBlocks(ics, { timezone: SE, ...WIDE })).toEqual({ complete: true, blocks: [], skipped: 0, unsupported: 0 });
   });
 
   it('reads folded lines', async () => {
@@ -383,7 +383,7 @@ DTEND:19900101T093000Z
 RRULE:FREQ=DAILY;COUNT=100000`]);
     const t0 = Date.now();
     const r = await parseIcalBlocks(ics, { timezone: SE, ...WIDE });
-    expect(r).toEqual({ blocks: [], skipped: 0, unsupported: 1 });
+    expect(r).toEqual({ complete: true, blocks: [], skipped: 0, unsupported: 1 });
     expect(Date.now() - t0).toBeLessThan(5000);
   });
 
@@ -498,12 +498,12 @@ DTEND:20260611T100000Z`,
   });
 
   it('returns an empty result for an empty calendar', async () => {
-    expect(await parseIcalBlocks(cal([]), { timezone: SE, ...WIDE })).toEqual({ blocks: [], skipped: 0, unsupported: 0 });
+    expect(await parseIcalBlocks(cal([]), { timezone: SE, ...WIDE })).toEqual({ complete: true, blocks: [], skipped: 0, unsupported: 0 });
   });
 
   it('returns an empty result for a calendar holding only other component types', async () => {
     const ics = cal([], ['BEGIN:VTODO', 'UID:t', 'SUMMARY:todo', 'END:VTODO', 'BEGIN:VJOURNAL', 'UID:j', 'END:VJOURNAL']);
-    expect(await parseIcalBlocks(ics, { timezone: SE, ...WIDE })).toEqual({ blocks: [], skipped: 0, unsupported: 0 });
+    expect(await parseIcalBlocks(ics, { timezone: SE, ...WIDE })).toEqual({ complete: true, blocks: [], skipped: 0, unsupported: 0 });
   });
 
   it.each([
@@ -589,14 +589,14 @@ RRULE:FREQ=${rule}`]);
     const r = await timed(rule, dtstart, dtstart.startsWith('2024') ? { from: new Date('2024-01-01T00:00:00Z'), to: new Date('2025-01-01T00:00:00Z') } : WIDE);
     expect(r.unsupported).toBe(1);
     expect(r.skipped).toBe(0);
-    expect(r.ms).toBeLessThan(200);
+    expect(r.ms).toBeLessThan(600);
     const start = `${dtstart.slice(0, 4)}-${dtstart.slice(4, 6)}-${dtstart.slice(6, 8)}T09:00:00.000Z`;
     expect(r.blocks).toEqual([[start, start.replace('T09', 'T10')]]);
   });
 
   it('a YEARLY rule with a month and a day that cannot exist only has its master date, quickly', async () => {
     const r = await timed('YEARLY;BYMONTH=2;BYMONTHDAY=30', SAT);
-    expect(r.ms).toBeLessThan(200);
+    expect(r.ms).toBeLessThan(600);
     expect(r).toMatchObject({ skipped: 0, unsupported: 0, blocks: [['2026-01-10T09:00:00.000Z', '2026-01-10T10:00:00.000Z']] });
   });
 
@@ -604,7 +604,7 @@ RRULE:FREQ=${rule}`]);
     const r = await timed('YEARLY;BYMONTH=2;BYMONTHDAY=29', '20240229T090000Z', { from: new Date('2026-01-01T00:00:00Z'), to: new Date('2029-01-01T00:00:00Z') });
     expect(r.unsupported).toBe(0);
     expect(r.blocks).toEqual([['2028-02-29T09:00:00.000Z', '2028-02-29T10:00:00.000Z']]);
-    expect(r.ms).toBeLessThan(200);
+    expect(r.ms).toBeLessThan(600);
   });
 });
 
@@ -624,7 +624,7 @@ RRULE:${rule}`;
 
   it('the last weekday of the month since the year 1300', async () => {
     const r = await timedParse([series('lw', '13000105T100000Z', 'FREQ=MONTHLY;BYDAY=MO,TU,WE,TH,FR;BYSETPOS=-1')], Q4);
-    expect(r.ms).toBeLessThan(100);
+    expect(r.ms).toBeLessThan(300);
     expect(r.blocks.map(iso)).toEqual([
       ['2026-10-30T10:00:00.000Z', '2026-10-30T11:00:00.000Z'],
       ['2026-11-30T10:00:00.000Z', '2026-11-30T11:00:00.000Z'],
@@ -635,7 +635,7 @@ RRULE:${rule}`;
 
   it('five second-Tuesday series since the year 1300', async () => {
     const r = await timedParse(Array.from({ length: 5 }, (_, i) => series(`t${i}`, '13000110T100000Z', 'FREQ=MONTHLY;BYDAY=2TU')), Q4);
-    expect(r.ms).toBeLessThan(200);
+    expect(r.ms).toBeLessThan(600);
     expect(r.unsupported).toBe(0);
     expect(r.blocks).toHaveLength(15);
     expect([...new Set(r.blocks.map((b) => b.startAt.toISOString()))]).toEqual(['2026-10-13T10:00:00.000Z', '2026-11-10T10:00:00.000Z', '2026-12-08T10:00:00.000Z']);
@@ -649,7 +649,7 @@ RRULE:${rule}`;
       from: new Date('2026-10-01T00:00:00Z'),
       to: new Date('2026-11-01T00:00:00Z'),
     });
-    expect(r.ms).toBeLessThan(200);
+    expect(r.ms).toBeLessThan(600);
     expect(r.unsupported).toBe(0);
     expect(r.blocks.map((b) => b.startAt.toISOString().slice(8, 10))).toEqual(['01', '02', '03', '04', '05', '27', '28', '29', '30', '31']);
   });
@@ -664,7 +664,7 @@ RRULE:${rule}`;
       ],
       WIDE,
     );
-    expect(r.ms).toBeLessThan(300);
+    expect(r.ms).toBeLessThan(900);
     // Counting the daily and the every-day-weekly series up to 2026 takes more than the per-event budget: unsupported.
     // The other two reach the window within it: every Monday of 2026, and Mon/Wed/Fri of every other week.
     expect(r.unsupported).toBe(2);
@@ -911,7 +911,7 @@ RRULE:FREQ=WEEKLY;COUNT=2`]);
 DTSTART:20200101T090000Z
 DTEND:20200101T100000Z
 RRULE:FREQ=DAILY;UNTIL=20200301T000000Z`]);
-    expect(await list(ics)).toEqual({ blocks: [], skipped: 0, unsupported: 0 });
+    expect(await list(ics)).toEqual({ complete: true, blocks: [], skipped: 0, unsupported: 0 });
   });
 });
 
@@ -1169,7 +1169,7 @@ DTEND;TZID=${tzid}:${end}`;
       { kind: 'DAYLIGHT', dtstart, from: '+0100', to: '+0200', extra: [`RRULE:${rule}`] },
     ]);
     const r = await run(cal([event('e', 'Hostile Standard Time')], tz));
-    expect(r.ms).toBeLessThan(200);
+    expect(r.ms).toBeLessThan(600);
     // Business timezone is Stockholm (+02:00 in July), not the zone's own offsets.
     expect(r.blocks.map(iso)).toEqual([['2026-07-01T08:00:00.000Z', '2026-07-01T09:00:00.000Z']]);
     expect(r.unsupported).toBe(1);
@@ -1179,7 +1179,7 @@ DTEND;TZID=${tzid}:${end}`;
   it('a hostile zone is dropped even when the event is in New York business time', async () => {
     const tz = zone('Hostile Standard Time', [{ kind: 'STANDARD', dtstart: '00010101T000000', from: '+0500', to: '+0500', extra: ['RRULE:FREQ=SECONDLY'] }]);
     const r = await run(cal([event('e', 'Hostile Standard Time')], tz), 'America/New_York');
-    expect(r.ms).toBeLessThan(200);
+    expect(r.ms).toBeLessThan(600);
     expect(r.blocks.map(iso)).toEqual([['2026-07-01T14:00:00.000Z', '2026-07-01T15:00:00.000Z']]);
     expect(r.unsupported).toBe(1);
   });
@@ -1198,7 +1198,7 @@ DTEND;TZID=${tzid}:${end}`;
       events.push(event(`e${i}`, `Zone ${i}`));
     }
     const r = await run(cal(events, extra));
-    expect(r.ms).toBeLessThan(500);
+    expect(r.ms).toBeLessThan(1500);
     expect(r.blocks).toHaveLength(300);
     expect(r.unsupported).toBe(300);
   });
@@ -1227,7 +1227,7 @@ DTEND;TZID=${tzid}:${end}`;
     const many = Array.from({ length: 1001 }, (_, i) => `${1000 + i}0101T000000`).join(',');
     const big = zone('Many Dates', [{ kind: 'STANDARD', dtstart: '09990101T000000', from: '+0000', to: '+0900', extra: [`RDATE:${many}`] }]);
     const r = await run(cal([event('e', 'Many Dates')], big));
-    expect(r.ms).toBeLessThan(200);
+    expect(r.ms).toBeLessThan(600);
     expect(r.blocks.map(iso)).toEqual([['2026-07-01T08:00:00.000Z', '2026-07-01T09:00:00.000Z']]);
     expect(r.unsupported).toBe(1);
   });
@@ -1254,7 +1254,7 @@ DTEND;TZID=${tzid}:${end}`;
       event('d', 'W. Europe Standard Time', '20261026T100000', '20261026T110000'), // +01:00
     ];
     const r = await run(cal(events, WINDOWS_VTIMEZONE), 'America/New_York');
-    expect(r.ms).toBeLessThan(200);
+    expect(r.ms).toBeLessThan(600);
     expect(r.unsupported).toBe(0);
     expect(r.skipped).toBe(0);
     expect(r.blocks.map(iso)).toEqual([
@@ -1273,7 +1273,7 @@ DTEND;TZID=${tzid}:${end}`;
     const events = days.map((d, i) => event(`n${i}`, 'W. Europe Standard Time', `${d}T120000`, `${d}T130000`));
     const t0 = performance.now();
     const r = await parseIcalBlocks(cal(events, WINDOWS_VTIMEZONE), { timezone: 'UTC', from: new Date('2026-01-01T00:00:00Z'), to: new Date('2031-01-01T00:00:00Z') });
-    expect(performance.now() - t0).toBeLessThan(1000);
+    expect(performance.now() - t0).toBeLessThan(3000);
     const berlin = new Intl.DateTimeFormat('en-US', { timeZone: 'Europe/Berlin', hour: '2-digit', hourCycle: 'h23' });
     expect(r.blocks).toHaveLength(days.length);
     for (const b of r.blocks) expect(berlin.format(b.startAt)).toBe('12');
@@ -1313,14 +1313,15 @@ DTEND;TZID=${tzid}:${end}`;
       from: new Date('9999-01-01T00:00:00Z'),
       to: new Date('9999-12-31T00:00:00Z'),
     });
-    expect(performance.now() - t0).toBeLessThan(200);
+    expect(performance.now() - t0).toBeLessThan(600);
     expect(r.blocks.map(iso)).toEqual([['9999-07-01T08:00:00.000Z', '9999-07-01T09:00:00.000Z']]);
   });
 });
 
 // A history feed (Google's secret address carries every event ever) is mostly past one-off events; parsing each with ical.js
 // blocked the event loop for seconds on the booking request. Past events are now dropped from the raw text, and the parse yields to
-// the event loop every ~10 ms with a 5 s deadline.
+// the event loop every ~10 ms. It stops after 5 s of its own work (60 s by the wall clock as a safety net) and then says the result
+// is incomplete. Timing limits in this file carry about 3x headroom for slow CI; the hangs they guard against took seconds.
 describe('parseIcalBlocks: large feeds', () => {
   const pad2 = (n: number) => String(n).padStart(2, '0');
   /** One-off events on consecutive days from 2000-01-01 (all before the 2026 window), about 2 MB in all. */
@@ -1341,7 +1342,7 @@ describe('parseIcalBlocks: large feeds', () => {
     return cal([...events, ...extra]);
   }
 
-  it('a 2 MB feed of past one-off events parses in well under 300 ms and keeps the events that matter', async () => {
+  it('a 2 MB feed of past one-off events parses in well under a second and keeps the events that matter', async () => {
     const keep = [
       `UID:future\nDTSTART:20260610T090000Z\nDTEND:20260610T100000Z`,
       // Starts long ago and ends inside the window: kept.
@@ -1365,7 +1366,7 @@ describe('parseIcalBlocks: large feeds', () => {
     ]);
     expect(r.skipped).toBe(0);
     expect(r.unsupported).toBe(0);
-    expect(ms).toBeLessThan(300);
+    expect(ms).toBeLessThan(900);
   }, 30_000);
 
   it('drops past events without misreading what is near the window', async () => {
@@ -1393,38 +1394,179 @@ describe('parseIcalBlocks: large feeds', () => {
     ]);
   });
 
-  /** Plain timed events, all inside the 2026 window, in a TZID (the slowest common form). */
-  const futureFeed = (n: number) =>
+  /** Plain timed events, all inside the 2026 window, in a TZID (the slowest common form). `k` shifts the days, so feeds differ. */
+  const futureFeed = (n: number, k = 0) =>
     cal(
       Array.from({ length: n }, (_, i) => {
-        const d = new Date(Date.UTC(2026, 0, 2) + (i % 360) * 24 * HOUR);
+        const d = new Date(Date.UTC(2026, 0, 2) + ((i + k * 7) % 360) * 24 * HOUR);
         const day = `${d.getUTCFullYear()}${pad2(d.getUTCMonth() + 1)}${pad2(d.getUTCDate())}`;
-        return `UID:f-${i}\nDTSTART;TZID=Europe/Stockholm:${day}T${pad2(8 + (i % 10))}0000\nDTEND;TZID=Europe/Stockholm:${day}T${pad2(9 + (i % 10))}0000`;
+        return `UID:f-${k}-${i}\nDTSTART;TZID=Europe/Stockholm:${day}T${pad2(8 + (i % 10))}0000\nDTEND;TZID=Europe/Stockholm:${day}T${pad2(9 + (i % 10))}0000`;
       }),
     );
 
+  /** Keeps the event loop busy for `ms` on every turn it gets (other requests, from the parse's point of view). */
+  function busyNeighbour(ms: number) {
+    let stopped = false;
+    let turns = 0;
+    const tick = () => {
+      if (stopped) return;
+      turns++;
+      const until = performance.now() + ms;
+      while (performance.now() < until) {
+        /* busy */
+      }
+      setTimeout(tick, 0);
+    };
+    setTimeout(tick, 0);
+    return {
+      stop: () => {
+        stopped = true;
+      },
+      turns: () => turns,
+    };
+  }
+
   it('yields to the event loop while it parses a feed of many future events', async () => {
     let ticks = 0;
-    const timer = setInterval(() => ticks++, 20);
+    const timer = setInterval(() => ticks++, 2);
     try {
       const t0 = performance.now();
       const r = await parseIcalBlocks(futureFeed(3000), { timezone: SE, ...WIDE });
       const ms = performance.now() - t0;
+      expect(r.complete).toBe(true);
       expect(r.blocks).toHaveLength(3000);
-      expect(ms).toBeGreaterThan(60); // long enough that a 20 ms timer must fire if the loop is not blocked
+      // Long enough for at least two ~10 ms slices of work, so a 2 ms timer must fire in between if the loop is not blocked.
+      expect(ms).toBeGreaterThan(30);
       expect(ticks).toBeGreaterThan(0);
     } finally {
       clearInterval(timer);
     }
   }, 30_000);
 
-  it('stops at the deadline and counts the rest as unsupported (not an error)', async () => {
+  it('a feed whose own work passes the deadline is returned as incomplete (never as a full result)', async () => {
     const t0 = performance.now();
     const r = await parseIcalBlocks(futureFeed(8000), { timezone: SE, ...WIDE, deadlineMs: 30 });
-    expect(performance.now() - t0).toBeLessThan(1000);
-    expect(r.unsupported).toBeGreaterThan(0);
+    expect(performance.now() - t0).toBeLessThan(3000);
+    expect(r.complete).toBe(false);
     expect(r.blocks.length).toBeLessThan(8000);
-    expect(r.blocks.length + r.unsupported).toBe(8000);
+    // The events not read are not folded into the counts of a result that is not stored anyway.
+    expect(r.unsupported).toBe(0);
     expect(r.skipped).toBe(0);
   }, 30_000);
+
+  it('a deadline hit while events are still being prepared is incomplete too', async () => {
+    const r = await parseIcalBlocks(futureFeed(8000), { timezone: SE, ...WIDE, deadlineMs: 1 });
+    expect(r.complete).toBe(false);
+    expect(r.blocks).toEqual([]);
+  }, 30_000);
+
+  it('a complete parse says so', async () => {
+    const r = await parseIcalBlocks(cal([`UID:a\nDTSTART:20260610T090000Z\nDTEND:20260610T100000Z`]), { timezone: SE, ...WIDE });
+    expect(r.complete).toBe(true);
+  });
+
+  it('three large feeds read at the same time each finish completely, with the same blocks as when read alone', async () => {
+    const feeds = [0, 1, 2].map((k) => futureFeed(6000, k));
+    await parseIcalBlocks(feeds[0], { timezone: SE, ...WIDE }); // warm-up, so the timings below are comparable
+    const alone: string[][][] = [];
+    let slowest = 0;
+    for (const f of feeds) {
+      const t0 = performance.now();
+      const r = await parseIcalBlocks(f, { timezone: SE, ...WIDE });
+      slowest = Math.max(slowest, performance.now() - t0);
+      expect(r.complete).toBe(true);
+      expect(r.blocks).toHaveLength(6000);
+      alone.push(r.blocks.map(iso));
+    }
+    // Every feed alone fits well inside this work limit; three read at once take about three times as long by the wall clock,
+    // which is past it (checked below, so the test proves the point): a wall-clock deadline would cut each of them short.
+    const limit = Math.ceil(slowest * 1.5);
+    const t0 = performance.now();
+    const together = await Promise.all(feeds.map((f) => parseIcalBlocks(f, { timezone: SE, ...WIDE, deadlineMs: limit })));
+    const wall = performance.now() - t0;
+    expect(wall).toBeGreaterThan(limit);
+    together.forEach((r, i) => {
+      expect(r.complete).toBe(true);
+      expect(r.blocks.map(iso)).toEqual(alone[i]);
+    });
+  }, 120_000);
+
+  it('time spent on other work while the parse waits does not count against its deadline', async () => {
+    const feed = futureFeed(3000);
+    const t0 = performance.now();
+    const alone = await parseIcalBlocks(feed, { timezone: SE, ...WIDE });
+    const limit = Math.ceil((performance.now() - t0) * 2) + 20;
+    const neighbour = busyNeighbour(40);
+    try {
+      const t1 = performance.now();
+      const r = await parseIcalBlocks(feed, { timezone: SE, ...WIDE, deadlineMs: limit });
+      expect(performance.now() - t1).toBeGreaterThan(limit); // the neighbour really took the time
+      expect(neighbour.turns()).toBeGreaterThan(0);
+      expect(r.complete).toBe(true);
+      expect(r.blocks.map(iso)).toEqual(alone.blocks.map(iso));
+    } finally {
+      neighbour.stop();
+    }
+  }, 60_000);
+
+  it('a parse kept waiting past the wall-clock safety limit stops as incomplete', async () => {
+    const neighbour = busyNeighbour(40);
+    try {
+      const r = await parseIcalBlocks(futureFeed(3000), { timezone: SE, ...WIDE, maxWallMs: 100 });
+      expect(r.complete).toBe(false);
+      expect(r.blocks.length).toBeLessThan(3000);
+    } finally {
+      neighbour.stop();
+    }
+  }, 60_000);
+});
+
+// ical.js parses one component in one go, without a chance to yield: a single oversized event or zone (a 2 MB EXDATE line,
+// 50,000 RDATEs) blocked the event loop for up to ~1.8 s. Such a component is skipped before ical.js sees it.
+describe('parseIcalBlocks: oversized components', () => {
+  const stampOf = (ms: number) => new Date(ms).toISOString().replace(/[-:]/g, '').replace(/\.\d+/, '');
+  const normal = [`UID:n1\nDTSTART:20260610T090000Z\nDTEND:20260610T100000Z`, `UID:n2\nDTSTART:20260611T090000Z\nDTEND:20260611T100000Z`];
+
+  it('skips a 2 MB event (one EXDATE line of 120,000 values) quickly, counts it unsupported and keeps the other events', async () => {
+    const exdates = Array.from({ length: 120_000 }, (_, i) => stampOf(Date.UTC(1990, 0, 1, 9) + i * 24 * HOUR)).join(',');
+    const huge = `UID:huge\nDTSTART:19900101T090000Z\nDTEND:19900101T100000Z\nRRULE:FREQ=DAILY\nEXDATE:${exdates}`;
+    const ics = cal([normal[0], huge, normal[1]]);
+    expect(ics.length).toBeGreaterThan(1_900_000);
+    const t0 = performance.now();
+    const r = await parseIcalBlocks(ics, { timezone: SE, ...WIDE });
+    const ms = performance.now() - t0;
+    expect(r.complete).toBe(true);
+    expect(r.blocks.map(iso)).toEqual([
+      ['2026-06-10T09:00:00.000Z', '2026-06-10T10:00:00.000Z'],
+      ['2026-06-11T09:00:00.000Z', '2026-06-11T10:00:00.000Z'],
+    ]);
+    expect(r.unsupported).toBe(1);
+    expect(r.skipped).toBe(0);
+    expect(ms).toBeLessThan(500); // ical.js took ~1.8 s on this event alone
+  }, 30_000);
+
+  it('still reads an event just under the 128 KB limit, and skips one just over it', async () => {
+    const LIMIT = 128 * 1024;
+    const withText = (uid: string, day: string, size: number) => {
+      const head = `UID:${uid}\nDTSTART:${day}T090000Z\nDTEND:${day}T100000Z\nDESCRIPTION:`;
+      return `${head}${'x'.repeat(size - head.length - 40)}`; // about `size` characters with BEGIN/END and line ends
+    };
+    const under = await parseIcalBlocks(cal([withText('under', '20260612', LIMIT - 200)]), { timezone: SE, ...WIDE });
+    expect(under.blocks.map(iso)).toEqual([['2026-06-12T09:00:00.000Z', '2026-06-12T10:00:00.000Z']]);
+    expect(under.unsupported).toBe(0);
+    const over = await parseIcalBlocks(cal([withText('over', '20260613', LIMIT + 200), normal[0]]), { timezone: SE, ...WIDE });
+    expect(over.blocks.map(iso)).toEqual([['2026-06-10T09:00:00.000Z', '2026-06-10T10:00:00.000Z']]);
+    expect(over.unsupported).toBe(1);
+  });
+
+  it('drops a zone with 50,000 RDATEs on one line without parsing it; its event is read in the business timezone', async () => {
+    const rdates = Array.from({ length: 50_000 }, (_, i) => `${String(1000 + (i % 8000)).padStart(4, '0')}0101T000000`).join(',');
+    const zone = ['BEGIN:VTIMEZONE', 'TZID:Huge Zone', 'BEGIN:STANDARD', 'DTSTART:09990101T000000', 'TZOFFSETFROM:+0000', 'TZOFFSETTO:+0900', `RDATE:${rdates}`, 'END:STANDARD', 'END:VTIMEZONE'];
+    const t0 = performance.now();
+    const r = await parseIcalBlocks(cal([`UID:e\nDTSTART;TZID=Huge Zone:20260701T100000\nDTEND;TZID=Huge Zone:20260701T110000`], zone), { timezone: SE, ...WIDE });
+    const ms = performance.now() - t0;
+    expect(r.blocks.map(iso)).toEqual([['2026-07-01T08:00:00.000Z', '2026-07-01T09:00:00.000Z']]); // Stockholm, +02:00
+    expect(r.unsupported).toBe(1);
+    expect(ms).toBeLessThan(300); // ical.js took ~0.6 s on this zone alone
+  });
 });

@@ -12,8 +12,8 @@ import type { CalendarLink } from './types';
 /**
  * Reading an owner's linked calendars into stored busy blocks.
  *
- * - syncCalendarLink: one link. Never throws. A failed or unreadable read keeps the blocks already stored; only a readable calendar
- *   replaces them (an emptied calendar is readable and replaces them with none).
+ * - syncCalendarLink: one link. Never throws. A failed or unreadable read, or a parse cut short by its deadline, keeps the blocks already
+ *   stored; only a calendar read in full replaces them (an emptied calendar is readable and replaces them with none).
  * - refreshAssistantCalendars: called right BEFORE a booking is confirmed (and before the day lock is taken), capped at 3 seconds. Never throws, never blocks a booking.
  * - syncDueCalendars: the scheduled job; reads every link that is due, then checks upcoming bookings for clashes.
  *
@@ -32,6 +32,7 @@ const FULL_READ_AFTER_MS = DAY_MS;
 const UNREADABLE = 'The link did not return a readable calendar';
 const NOT_SAVED = 'The calendar could not be updated right now.';
 const NOT_STORED = 'Could not store the calendar';
+const TOO_SLOW = 'The calendar took too long to read';
 
 export interface SyncResult {
   ok: boolean;
@@ -160,6 +161,12 @@ async function syncOnce(link: CalendarLink, assistant: AssistantData, now: Date,
       logEvent({ level: 'warn', category: 'booking', event: 'calendar.parse_failed', meta: { assistantId: link.assistantId, linkId: link.id, error: errName(err) } });
     }
     return fail(UNREADABLE);
+  }
+  if (!parsed.complete) {
+    // The parse stopped at its deadline: its blocks are only part of the calendar. Storing them would free every busy time it did not
+    // reach, so this is a failed read like any other (the stored blocks stay, the owner sees the error, the 24 hour notice applies).
+    logEvent({ level: 'warn', category: 'booking', event: 'calendar.parse_incomplete', meta: { assistantId: link.assistantId, linkId: link.id } });
+    return fail(TOO_SLOW);
   }
 
   // Guarded in the database: a link removed meanwhile gets no blocks.

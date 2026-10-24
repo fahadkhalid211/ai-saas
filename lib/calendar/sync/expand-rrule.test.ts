@@ -116,7 +116,7 @@ describe('expandOccurrences: bounded cost', () => {
     const start = at(1300, 1, 5, 10);
     const t0 = performance.now();
     const out = list('FREQ=MONTHLY;BYDAY=2TU;COUNT=9000', start, { take: 9000, toDay: daysFromCivil(2100, 1, 1) });
-    expect(performance.now() - t0).toBeLessThan(100);
+    expect(performance.now() - t0).toBeLessThan(300);
     expect(out[0]).toBe('1300-01-05T10:00:00');
     expect(out).toHaveLength(9000); // one second Tuesday a month: COUNT ends in the 2040s, before toDay
     expect(out[8999] < '2051').toBe(true);

@@ -7,6 +7,7 @@ const h = vi.hoisted(() => ({
   verdict: { safe: true } as { safe: boolean; reason?: string },
   override: null as null | ((...a: unknown[]) => Promise<unknown>),
   fetchCalls: [] as string[],
+  incompleteParse: false,
 }));
 
 vi.mock('@/lib/security/ssrf', async (importOriginal) => {
@@ -16,6 +17,17 @@ vi.mock('@/lib/security/ssrf', async (importOriginal) => {
 vi.mock('@/lib/calendar/sync/fetch-feed', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@/lib/calendar/sync/fetch-feed')>();
   return { ...actual, fetchCalendarFeed: (...a: unknown[]) => (h.override ? h.override(...a) : (actual.fetchCalendarFeed as (...x: unknown[]) => Promise<unknown>)(...a)) };
+});
+// The real parser; `h.incompleteParse` marks its result as cut short by the deadline.
+vi.mock('@/lib/calendar/sync/parse-ical', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/lib/calendar/sync/parse-ical')>();
+  return {
+    ...actual,
+    parseIcalBlocks: async (...a: Parameters<typeof actual.parseIcalBlocks>) => {
+      const r = await actual.parseIcalBlocks(...a);
+      return h.incompleteParse ? { ...r, complete: false } : r;
+    },
+  };
 });
 
 import { Database } from '@/lib/db';
@@ -54,6 +66,7 @@ beforeEach(() => {
   h.verdict = { safe: true };
   h.override = null;
   h.fetchCalls = [];
+  h.incompleteParse = false;
   _resetSyncStateForTesting();
   installFeed();
 });
@@ -282,9 +295,45 @@ describe('POST: add a calendar', () => {
     expect(await Database.getCalendarLinks(a.assistantId)).toEqual([]);
   });
 
-  it('accepts another site whose path merely looks like this app\'s feed', async () => {
+  it.each([
+    ['a percent-encoded path', 'https://localhost/api/%63alendar/abcdefghijklmnopqrstuvwxyz012345/feed.ics', {}],
+    ['a percent-encoded guest-detail path', 'https://localhost/api/appointments/%43ALENDAR?assistantId=x&token=y', {}],
+    ['the configured host with a trailing dot', 'https://crescelo.example./api/calendar/abcdefghijklmnopqrstuvwxyz012345/feed.ics', {}],
+    ['the www host with a trailing dot', 'https://www.crescelo.example./api/calendar/abcdefghijklmnopqrstuvwxyz012345/feed.ics', {}],
+    ['the deployment host (VERCEL_URL)', 'https://crescelo-git-main-team.vercel.app/api/calendar/abcdefghijklmnopqrstuvwxyz012345/feed.ics', { VERCEL_URL: 'crescelo-git-main-team.vercel.app' }],
+    ['the production deployment host', 'https://crescelo.vercel.app/api/calendar/abcdefghijklmnopqrstuvwxyz012345/feed.ics', { VERCEL_PROJECT_PRODUCTION_URL: 'crescelo.vercel.app' }],
+  ])('refuses %s of this app as its own link', async (_name, url, env: Record<string, string>) => {
+    vi.stubEnv('NEXT_PUBLIC_APP_URL', 'https://crescelo.example');
+    for (const [k, v] of Object.entries(env)) vi.stubEnv(k, v);
+    const a = await person('own-bypass');
+    const res = await add(a, { label: 'other', url });
+    expect(res.status).toBe(400);
+    expect(res.json.error).toBe('That is your own Crescelo calendar link. Add a link from the calendar you use elsewhere.');
+    expect(h.fetchCalls).toEqual([]);
+    expect(await Database.getCalendarLinks(a.assistantId)).toEqual([]);
+  });
+
+  it.each([
+    ['another site whose path merely looks like this app\'s feed', 'https://calendar.example.com/api/calendar/abc/feed.ics'],
+    ['a Google address whose path contains /api/calendar/', 'https://calendar.google.com/api/calendar/abc/basic.ics'],
+    ['another project on the deployment provider', 'https://someone-else.vercel.app/api/calendar/abc/feed.ics'],
+    ['a malformed percent-encoding on this app\'s host, outside the feed paths', 'https://localhost/files/%E0%A4%A/cal.ics'],
+  ])('accepts %s', async (_name, url) => {
+    vi.stubEnv('VERCEL_URL', 'crescelo-git-main-team.vercel.app');
+    vi.stubEnv('VERCEL_PROJECT_PRODUCTION_URL', 'crescelo.vercel.app');
     const a = await person('lookalike');
-    expect((await add(a, { label: 'other', url: 'https://calendar.example.com/api/calendar/abc/feed.ics' })).status).toBe(201);
+    expect((await add(a, { label: 'other', url })).status).toBe(201);
+  });
+
+  it('refuses a calendar whose parse is cut short by the deadline, with a fixed message, and saves nothing', async () => {
+    const a = await person('too-slow');
+    h.incompleteParse = true;
+    const res = await add(a);
+    expect(res.status).toBe(400);
+    expect(res.json.error).toBe('That calendar is too large to read right now. Try again in a moment.');
+    NOT_SECRET(res.text);
+    expect(await Database.getCalendarLinks(a.assistantId)).toEqual([]);
+    expect(await Database.getExternalBlocks(a.assistantId)).toEqual([]);
   });
 
   it('refuses the same calendar twice', async () => {

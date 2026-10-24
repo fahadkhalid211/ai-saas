@@ -3,11 +3,23 @@ import fs from 'fs';
 import path from 'path';
 
 const feed = vi.hoisted(() => ({ fetch: vi.fn() }));
+const parser = vi.hoisted(() => ({ incomplete: false }));
 
 // Only the network is faked. The parser and the stores are real (a temp DATA_DIR JSON file), so these tests assert what is stored.
 vi.mock('./fetch-feed', async (importOriginal) => {
   const actual = await importOriginal<typeof import('./fetch-feed')>();
   return { ...actual, fetchCalendarFeed: (...args: unknown[]) => feed.fetch(...args) };
+});
+// The real parser; `parser.incomplete` marks its result as cut short by the deadline (blocks found so far included).
+vi.mock('./parse-ical', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('./parse-ical')>();
+  return {
+    ...actual,
+    parseIcalBlocks: async (...args: Parameters<typeof actual.parseIcalBlocks>) => {
+      const r = await actual.parseIcalBlocks(...args);
+      return parser.incomplete ? { ...r, complete: false } : r;
+    },
+  };
 });
 
 import { Database, resolveDataDir, type AssistantData } from '@/lib/db';
@@ -43,6 +55,7 @@ beforeEach(() => {
   vi.stubEnv('DB_RELATIONAL_MODE', '');
   fs.rmSync(dataFile(), { force: true });
   feed.fetch.mockReset();
+  parser.incomplete = false;
   _resetSyncStateForTesting();
 });
 
@@ -181,6 +194,76 @@ describe('syncCalendarLink', () => {
     const got = await reload(link);
     expect(got.lastError).toBe('The link did not return a readable calendar');
     expect(got.errorSince).toBeTruthy();
+  });
+
+  it('a parse cut short by its deadline is a failed read: the stored blocks stay, the error is recorded, fullSyncedAt does not move', async () => {
+    const ast = await newAssistant();
+    const link = await addLink(ast.id);
+    feed.fetch.mockResolvedValue(okFeed(TOMORROW_ICS, { etag: '"v1"' }));
+    expect(await syncCalendarLink(link, ast, NOW)).toEqual({ ok: true, blocks: 2 });
+    const seeded = await storedBlocks(ast.id);
+    const before = await reload(link);
+    expect(before.fullSyncedAt).toBe(NOW.toISOString());
+
+    // The next read returns a different calendar, but its parse is incomplete: none of it may replace the stored blocks.
+    const OTHER = ics(vevent('c', '20261101T090000Z', '20261101T100000Z'));
+    feed.fetch.mockResolvedValue(okFeed(OTHER, { etag: '"v2"' }));
+    parser.incomplete = true;
+    const later = new Date(NOW.getTime() + 2 * 60 * 60 * 1000);
+    // The timezone changed meanwhile (so this is a full read): parsedTimezone must still name the zone of the stored blocks.
+    await Database.updateAssistant(ast.id, { timezone: 'Europe/Stockholm' });
+    const ast2 = (await Database.getAssistantById(ast.id))!;
+    const res = await syncCalendarLink(before, ast2, later);
+
+    expect(res).toEqual({ ok: false, blocks: 2, error: 'The calendar took too long to read' });
+    expect(await storedBlocks(ast.id)).toEqual(seeded);
+    const failed = await reload(link);
+    expect(failed).toMatchObject({
+      lastError: 'The calendar took too long to read',
+      errorSince: later.toISOString(),
+      lastAttemptAt: later.toISOString(),
+      lastSyncedAt: NOW.toISOString(),
+      fullSyncedAt: NOW.toISOString(),
+      parsedTimezone: 'UTC',
+      blockCount: 2,
+      etag: '"v1"',
+    });
+
+    // A later complete read clears the error and replaces the blocks.
+    parser.incomplete = false;
+    const muchLater = new Date(later.getTime() + 60 * 60 * 1000);
+    expect(await syncCalendarLink(failed, ast2, muchLater)).toEqual({ ok: true, blocks: 1 });
+    expect(await storedBlocks(ast.id)).toEqual([['2026-11-01T09:00:00.000Z', '2026-11-01T10:00:00.000Z']]);
+    const healed = await reload(link);
+    expect(healed.lastError).toBeUndefined();
+    expect(healed.errorSince).toBeUndefined();
+    expect(healed).toMatchObject({ fullSyncedAt: muchLater.toISOString(), parsedTimezone: 'Europe/Stockholm', blockCount: 1, etag: '"v2"' });
+  });
+
+  it('an incomplete parse handed in by the caller (prefetched) is not stored either', async () => {
+    const ast = await newAssistant();
+    const link = await addLink(ast.id);
+    const res = await syncCalendarLink(link, ast, NOW, {
+      feed: okFeed(TOMORROW_ICS),
+      parsed: { complete: false, blocks: [{ startAt: new Date('2026-10-25T09:00:00Z'), endAt: new Date('2026-10-25T10:00:00Z') }], skipped: 0, unsupported: 0 },
+    });
+    expect(res).toEqual({ ok: false, blocks: 0, error: 'The calendar took too long to read' });
+    expect(await storedBlocks(ast.id)).toEqual([]);
+    const got = await reload(link);
+    expect(got.lastError).toBe('The calendar took too long to read');
+    expect(got.fullSyncedAt).toBeUndefined();
+    expect(got.blockCount).toBeUndefined();
+  });
+
+  it('a booking-time refresh whose parse is cut short reports stale and keeps the blocks', async () => {
+    const ast = await newAssistant();
+    const link = await addLink(ast.id);
+    await Database.replaceExternalBlocks(link.id, ast.id, [{ startAt: new Date('2026-10-30T09:00:00Z'), endAt: new Date('2026-10-30T10:00:00Z') }]);
+    feed.fetch.mockResolvedValue(okFeed(TOMORROW_ICS));
+    parser.incomplete = true;
+    expect(await refreshAssistantCalendars(ast)).toEqual({ stale: true });
+    expect(await storedBlocks(ast.id)).toEqual([['2026-10-30T09:00:00.000Z', '2026-10-30T10:00:00.000Z']]);
+    expect((await reload(link)).lastError).toBe('The calendar took too long to read');
   });
 
   it('not_modified keeps the blocks, sets lastSyncedAt and clears an old error', async () => {

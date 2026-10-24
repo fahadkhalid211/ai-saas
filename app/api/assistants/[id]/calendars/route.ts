@@ -31,7 +31,7 @@ import { ensureBusyFeedToken, resetBusyFeedToken } from '@/lib/calendar/export-f
  */
 
 export const dynamic = 'force-dynamic';
-// Adding a link reads it (up to 8 s), parses it (up to 5 s) and stores the blocks; the default limit can be shorter than that.
+// Adding a link reads it (up to 8 s), parses it (up to 5 s of its own work) and stores the blocks; the default limit can be shorter than that.
 export const maxDuration = 60;
 
 const MAX_BODY_BYTES = 4096;
@@ -103,17 +103,31 @@ const feedUrl = (req: Request, token: string) => `${canonicalOrigin(req)}/api/ca
 
 const OWN_LINK = 'That is your own Crescelo calendar link. Add a link from the calendar you use elsewhere.';
 
+/** A host compared as the same site: lower case, without a trailing dot (an absolute DNS name) and without "www.". */
+const sameSiteHost = (hostname: string) => hostname.toLowerCase().replace(/\.+$/, '').replace(/^www\./, '');
+
 const hostOf = (url: string) => {
   try {
-    return new URL(url).hostname.toLowerCase().replace(/^www\./, '');
+    return sameSiteHost(new URL(url).hostname);
   } catch {
     return '';
   }
 };
 
+/** Host of an address that may be written without a scheme (VERCEL_URL is "name.vercel.app"). */
+const hostOfSetting = (value: string | undefined) => {
+  const v = (value || '').trim();
+  return v ? hostOf(/^https?:\/\//i.test(v) ? v : `https://${v}`) : '';
+};
+
+/** Decodes each valid %XX of a path (never throws: a malformed sequence is left as it is). */
+const decodePath = (path: string) => path.replace(/%([0-9a-f]{2})/gi, (_m, hex: string) => String.fromCharCode(parseInt(hex, 16)));
+
 /**
  * True for one of this app's own calendar addresses (the busy feed, or the guest-detail feed): linking it would make every booking
- * block itself. Matched on the host of this request, of canonicalOrigin and of the configured public address (www or not, any scheme).
+ * block itself. Matched on the host of this request, of canonicalOrigin, of the configured public address and of the deployment
+ * (VERCEL_URL, VERCEL_PROJECT_PRODUCTION_URL), www or not, with or without a trailing dot, any scheme; the path is compared
+ * percent-decoded. Only paths under /api/calendar/ and /api/appointments/calendar are refused, and only on those hosts.
  */
 function isOwnCalendarLink(url: string, req: Request): boolean {
   let parsed: URL;
@@ -122,12 +136,17 @@ function isOwnCalendarLink(url: string, req: Request): boolean {
   } catch {
     return false;
   }
-  const host = parsed.hostname.toLowerCase().replace(/^www\./, '');
-  const configured = (process.env.NEXT_PUBLIC_APP_URL || '').trim();
-  const ours = new Set([hostOf(req.url), hostOf(canonicalOrigin(req)), configured ? hostOf(/^https?:\/\//i.test(configured) ? configured : `https://${configured}`) : '']);
+  const host = sameSiteHost(parsed.hostname);
+  const ours = new Set([
+    hostOf(req.url),
+    hostOf(canonicalOrigin(req)),
+    hostOfSetting(process.env.NEXT_PUBLIC_APP_URL),
+    hostOfSetting(process.env.VERCEL_URL),
+    hostOfSetting(process.env.VERCEL_PROJECT_PRODUCTION_URL),
+  ]);
   ours.delete('');
   if (!ours.has(host)) return false;
-  const path = parsed.pathname.replace(/\/{2,}/g, '/').toLowerCase();
+  const path = decodePath(parsed.pathname).replace(/\\/g, '/').replace(/\/{2,}/g, '/').toLowerCase();
   return path.startsWith('/api/calendar/') || path.startsWith('/api/appointments/calendar');
 }
 
@@ -193,6 +212,8 @@ async function handleAdd(req: Request, ctx: Auth, assistant: AssistantData): Pro
   } catch {
     return fail('That link did not return a calendar we can read.', 400);
   }
+  // Cut short by the parse deadline: only part of the calendar was read, so nothing is saved (storing it would free busy times).
+  if (!parsed.complete) return fail('That calendar is too large to read right now. Try again in a moment.', 400);
 
   const link: CalendarLink = {
     id: `cal_${randomUUID().replace(/-/g, '').slice(0, 16)}`,
