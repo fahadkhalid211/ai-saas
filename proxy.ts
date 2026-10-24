@@ -72,6 +72,11 @@ function withWidgetCors(response: NextResponse, pathname: string): NextResponse 
   return response;
 }
 
+/** The path to put in a log line. The busy calendar feed carries its secret token in the address, so that segment is never logged. */
+function loggablePath(pathname: string): string {
+  return pathname.replace(/^\/api\/calendar\/[^/]+\//, '/api/calendar/[token]/');
+}
+
 function getRateLimitConfig(pathname: string): { windowMs: number; max: number; bucketKey: string } {
   for (const config of ROUTE_RATE_LIMITS) {
     if (pathname.startsWith(config.prefix)) {
@@ -147,13 +152,13 @@ export function proxy(request: NextRequest) {
     }
 
     if (bodyTooLarge(request, pathname)) {
-      logEvent({ level: 'warn', category: 'security', event: 'security.body_too_large', ip: getClientIp(request), meta: { path: pathname, bytes: request.headers.get('content-length') } });
+      logEvent({ level: 'warn', category: 'security', event: 'security.body_too_large', ip: getClientIp(request), meta: { path: loggablePath(pathname), bytes: request.headers.get('content-length') } });
       return withWidgetCors(NextResponse.json({ error: 'Request body too large.' }, { status: 413 }), pathname);
     }
 
     const originAllowed = verifyOrigin(request, pathname);
     if (!originAllowed) {
-      logEvent({ level: 'warn', category: 'security', event: 'security.csrf_blocked', ip: getClientIp(request), meta: { path: pathname, method: request.method, origin: request.headers.get('origin') } });
+      logEvent({ level: 'warn', category: 'security', event: 'security.csrf_blocked', ip: getClientIp(request), meta: { path: loggablePath(pathname), method: request.method, origin: request.headers.get('origin') } });
       return withWidgetCors(NextResponse.json(
         { error: 'Forbidden: cross-origin request blocked.' },
         { status: 403 }
@@ -166,7 +171,7 @@ export function proxy(request: NextRequest) {
     const limitResult = checkRateLimit(`${bucketKey}:${clientIp}`, { windowMs, max });
 
     if (!limitResult.allowed) {
-      logEvent({ level: 'warn', category: 'security', event: 'security.rate_limited', ip: clientIp, meta: { limiter: 'proxy', path: pathname, max } });
+      logEvent({ level: 'warn', category: 'security', event: 'security.rate_limited', ip: clientIp, meta: { limiter: 'proxy', path: loggablePath(pathname), max } });
       const retryAfterSec = Math.max(1, Math.ceil((limitResult.resetTime - Date.now()) / 1000));
       return withWidgetCors(NextResponse.json(
         {
