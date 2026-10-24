@@ -105,6 +105,24 @@ describe('detectClashes', () => {
     expect((await Database.getAppointmentById(after.id))?.externalClashAt).toBeUndefined();
   });
 
+  it('ignores a block that is exactly the booking itself (the owner added the booking to the linked calendar)', async () => {
+    const { assistant, link } = await setup();
+    // 09:00-09:30 is the booking copied into the owner's calendar; 11:00-12:00 is a real meeting.
+    await Database.replaceExternalBlocks(link.id, assistant.id, [
+      block('2026-10-25T09:00:00Z', '2026-10-25T09:30:00Z'),
+      block('2026-10-25T11:00:00Z', '2026-10-25T12:00:00Z'),
+    ]);
+    const own = await book(assistant, '2026-10-25', '09:00', { durationMinutes: 30 });
+    const longer = await book(assistant, '2026-10-25', '09:00', { durationMinutes: 45 }); // overlaps the block but is not identical
+    const real = await book(assistant, '2026-10-25', '11:30');
+
+    const flagged = await detectClashes(assistant, NOW);
+
+    expect(flagged.map((a) => a.id).sort()).toEqual([longer.id, real.id].sort());
+    expect((await Database.getAppointmentById(own.id))?.externalClashAt).toBeUndefined();
+    expect(mail.send).toHaveBeenCalledTimes(2);
+  });
+
   it('reads booking times in the assistant timezone', async () => {
     const { assistant, link } = await setup({ timezone: 'America/New_York' });
     // 14:00-15:00 UTC is 10:00-11:00 in New York (EDT)

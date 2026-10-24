@@ -101,6 +101,36 @@ async function audit(
 
 const feedUrl = (req: Request, token: string) => `${canonicalOrigin(req)}/api/calendar/${token}/feed.ics`;
 
+const OWN_LINK = 'That is your own Crescelo calendar link. Add a link from the calendar you use elsewhere.';
+
+const hostOf = (url: string) => {
+  try {
+    return new URL(url).hostname.toLowerCase().replace(/^www\./, '');
+  } catch {
+    return '';
+  }
+};
+
+/**
+ * True for one of this app's own calendar addresses (the busy feed, or the guest-detail feed): linking it would make every booking
+ * block itself. Matched on the host of this request, of canonicalOrigin and of the configured public address (www or not, any scheme).
+ */
+function isOwnCalendarLink(url: string, req: Request): boolean {
+  let parsed: URL;
+  try {
+    parsed = new URL(url);
+  } catch {
+    return false;
+  }
+  const host = parsed.hostname.toLowerCase().replace(/^www\./, '');
+  const configured = (process.env.NEXT_PUBLIC_APP_URL || '').trim();
+  const ours = new Set([hostOf(req.url), hostOf(canonicalOrigin(req)), configured ? hostOf(/^https?:\/\//i.test(configured) ? configured : `https://${configured}`) : '']);
+  ours.delete('');
+  if (!ours.has(host)) return false;
+  const path = parsed.pathname.replace(/\/{2,}/g, '/').toLowerCase();
+  return path.startsWith('/api/calendar/') || path.startsWith('/api/appointments/calendar');
+}
+
 // When each link was last read from this screen (add or "Sync now"), per process: a second request within 30 seconds is refused.
 const lastAttempt = new Map<string, number>();
 const MAX_TRACKED = 5000;
@@ -144,6 +174,7 @@ async function handleAdd(req: Request, ctx: Auth, assistant: AssistantData): Pro
   if (body.url.length > MAX_URL_LENGTH) return fail('That link is too long to be a calendar link.', 400);
 
   const url = normaliseCalendarUrl(body.url);
+  if (isOwnCalendarLink(url, req)) return fail(OWN_LINK, 400);
   const existing = await Database.getCalendarLinks(assistant.id);
   if (existing.length >= MAX_CALENDAR_LINKS_PER_ASSISTANT) {
     return fail(`An assistant can link at most ${MAX_CALENDAR_LINKS_PER_ASSISTANT} calendars.`, 400);

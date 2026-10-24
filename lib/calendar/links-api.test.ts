@@ -259,6 +259,27 @@ describe('POST: add a calendar', () => {
     expect(h.fetchCalls).toEqual([]);
   });
 
+  it.each([
+    ['the busy feed', 'https://localhost/api/calendar/abcdefghijklmnopqrstuvwxyz012345/feed.ics'],
+    ['the busy feed as webcal', 'webcal://localhost/api/calendar/abcdefghijklmnopqrstuvwxyz012345/feed.ics'],
+    ['the busy feed with a doubled slash', 'https://localhost//api/calendar/abcdefghijklmnopqrstuvwxyz012345/feed.ics'],
+    ['the guest-detail feed', 'https://localhost/api/appointments/calendar?assistantId=x&token=y'],
+    ['the configured public address', 'https://www.crescelo.example/api/calendar/abcdefghijklmnopqrstuvwxyz012345/feed.ics'],
+  ])('refuses %s of this app with a fixed message and never reads it', async (_name, url) => {
+    vi.stubEnv('NEXT_PUBLIC_APP_URL', 'https://crescelo.example');
+    const a = await person('own');
+    const res = await add(a, { label: 'other', url });
+    expect(res.status).toBe(400);
+    expect(res.json.error).toBe('That is your own Crescelo calendar link. Add a link from the calendar you use elsewhere.');
+    expect(h.fetchCalls).toEqual([]);
+    expect(await Database.getCalendarLinks(a.assistantId)).toEqual([]);
+  });
+
+  it('accepts another site whose path merely looks like this app\'s feed', async () => {
+    const a = await person('lookalike');
+    expect((await add(a, { label: 'other', url: 'https://calendar.example.com/api/calendar/abc/feed.ics' })).status).toBe(201);
+  });
+
   it('refuses the same calendar twice', async () => {
     const a = await person('dupe');
     expect((await add(a)).status).toBe(201);

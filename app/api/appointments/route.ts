@@ -266,6 +266,8 @@ async function POSTHandler(req: Request) {
             appointments,
             blocks,
             ignoreAppointmentId: id,
+            // The booking's own event in the owner's linked calendar must not stop it being restored.
+            ignoreIdenticalBlock: true,
           });
           if (conflict) return slotTakenResponse(existingApt.date, existingApt.timeSlot);
         }

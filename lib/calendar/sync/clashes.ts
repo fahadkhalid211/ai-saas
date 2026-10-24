@@ -9,6 +9,9 @@ import { logEvent } from '@/lib/logging/logger';
  *
  * - Only the assistant's own bookings that have not started and are not cancelled, and only ones not already marked.
  * - Overlap is half-open, like the booking check: a booking that ends when a block starts is not a clash.
+ * - A block with exactly the booking's own start and end is not a clash: it is the booking itself, copied into the owner's linked calendar
+ *   ("Add to Google Calendar" on the booking, or the busy / guest-detail feed merged into a linked calendar). The trade-off: an unrelated
+ *   event with exactly the same start and end is not reported either.
  * - A booking that was marked and whose clash has since gone stays marked (nothing clears it automatically).
  * - A failure on one booking (database unavailable, notification, e-mail) never stops the others. If the mark itself could not be stored
  *   no notice is sent, so the next run finds the booking again and tries once more instead of announcing it twice.
@@ -46,7 +49,8 @@ async function findAndFlag(assistant: AssistantData, now: Date): Promise<Appoint
   const flagged: AppointmentData[] = [];
   const stamp = now.toISOString();
   for (const { apt, start, end } of candidates) {
-    if (!blocks.some((b) => start < b.endAt && b.startAt < end)) continue;
+    const own = (b: { startAt: Date; endAt: Date }) => b.startAt.getTime() === start.getTime() && b.endAt.getTime() === end.getTime();
+    if (!blocks.some((b) => start < b.endAt && b.startAt < end && !own(b))) continue;
     try {
       const updated = await Database.updateAppointment(apt.id, { externalClashAt: stamp });
       if (!updated) continue;

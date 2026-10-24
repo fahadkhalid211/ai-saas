@@ -343,6 +343,23 @@ describe('admin un-cancel', () => {
     expect((await setStatus(mine.appointment.id, 'confirmed')).status).toBe(200);
     expect((await Database.getAppointmentById(mine.appointment.id))?.status).toBe('confirmed');
   });
+
+  it('restores a booking whose own event is in the linked calendar (a block with exactly its range), but not over a different block', async () => {
+    const ast = await newAssistant();
+    const mine = await book(ast, MON, '10:00', 60);
+    if (!mine.ok) throw new Error('setup booking failed');
+    expect((await setStatus(mine.appointment.id, 'cancelled')).status).toBe(200);
+    const own = slotRange(MON, '10:00', 60, undefined)!;
+    const spy = vi.spyOn(Database, 'getExternalBlocks').mockResolvedValue([{ startAt: own.start, endAt: own.end }]);
+    expect((await setStatus(mine.appointment.id, 'confirmed')).status).toBe(200);
+    expect((await Database.getAppointmentById(mine.appointment.id))?.status).toBe('confirmed');
+
+    expect((await setStatus(mine.appointment.id, 'cancelled')).status).toBe(200);
+    const part = slotRange(MON, '10:30', 30, undefined)!;
+    spy.mockResolvedValue([{ startAt: part.start, endAt: part.end }]);
+    expect((await setStatus(mine.appointment.id, 'confirmed')).status).toBe(409);
+    expect((await Database.getAppointmentById(mine.appointment.id))?.status).toBe('cancelled');
+  });
 });
 
 describe('client reschedule', () => {
@@ -385,6 +402,16 @@ describe('client reschedule', () => {
     const r = slotRange(MON, '15:00', 60, undefined)!;
     vi.spyOn(Database, 'getExternalBlocks').mockResolvedValue([{ startAt: r.start, endAt: r.end }]);
     const res = await post({ action: 'client_reschedule', manageToken: mine.appointment.manageToken, newDate: MON, newTimeSlot: '15:30' });
+    expect(res.status).toBe(409);
+  });
+
+  it('refuses a time whose block has exactly the new range (that is another event, not this booking)', async () => {
+    const ast = await newAssistant();
+    const mine = await book(ast, MON, '09:00', 30);
+    if (!mine.ok) throw new Error('setup booking failed');
+    const r = slotRange(MON, '15:00', 30, undefined)!;
+    vi.spyOn(Database, 'getExternalBlocks').mockResolvedValue([{ startAt: r.start, endAt: r.end }]);
+    const res = await post({ action: 'client_reschedule', manageToken: mine.appointment.manageToken, newDate: MON, newTimeSlot: '15:00' });
     expect(res.status).toBe(409);
   });
 });

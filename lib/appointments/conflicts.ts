@@ -21,6 +21,12 @@ export interface ConflictQuery {
   blocks: ExternalBlock[];
   /** A booking to leave out of the check, e.g. the one being rescheduled. */
   ignoreAppointmentId?: string;
+  /**
+   * Leave out an external block whose range is EXACTLY the requested one. Only for restoring a cancelled booking: the owner's linked
+   * calendar may hold that very booking (added from the booking, or through a merged feed). Never for a new booking or a reschedule:
+   * there an identical block is another event.
+   */
+  ignoreIdenticalBlock?: boolean;
 }
 
 /**
@@ -55,7 +61,9 @@ function firstConflict(
     if (clash) return { kind: 'booking', appointmentId: a.id };
   }
 
-  if (wanted && q.blocks.some((b) => wanted.start < b.endAt && b.startAt < wanted.end)) return { kind: 'external' };
+  const identical = (b: ExternalBlock) =>
+    q.ignoreIdenticalBlock === true && !!wanted && b.startAt.getTime() === wanted.start.getTime() && b.endAt.getTime() === wanted.end.getTime();
+  if (wanted && q.blocks.some((b) => wanted.start < b.endAt && b.startAt < wanted.end && !identical(b))) return { kind: 'external' };
   return null;
 }
 
