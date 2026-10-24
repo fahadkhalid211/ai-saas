@@ -273,7 +273,20 @@ export function CalendarLinksPanel({ assistantId }: Props) {
     }
   };
 
-  if (!assistantId) return null;
+  // A new assistant has no id until it is saved: there is nothing to load or link yet.
+  if (!assistantId) {
+    return (
+      <section aria-labelledby="cal-links-heading" className="space-y-1 pt-2.5 border-t border-dashed border-emerald-200 dark:border-emerald-800">
+        <h4 id="cal-links-heading" className="text-[11px] font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+          <CalendarSync className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" aria-hidden="true" />
+          <span><T>Calendars that block my slots</T></span>
+        </h4>
+        <p className="text-[11px] text-slate-600 dark:text-slate-300">
+          <T>Save the assistant first to add calendars.</T>
+        </p>
+      </section>
+    );
+  }
 
   return (
     <section aria-labelledby="cal-links-heading" className="space-y-3 pt-2.5 border-t border-dashed border-emerald-200 dark:border-emerald-800">

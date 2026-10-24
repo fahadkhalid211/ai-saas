@@ -28,6 +28,12 @@ function bookingUnavailableResponse(message: string = BOOKING_UNAVAILABLE_MESSAG
   );
 }
 
+/** A booking as the guest may see it (manage link): the owner-only calendar clash marker is left out. */
+function forGuest<T extends { externalClashAt?: string | null }>(apt: T): Omit<T, 'externalClashAt'> {
+  const { externalClashAt: _ownerOnly, ...rest } = apt;
+  return rest;
+}
+
 function slotTakenResponse(date: string, timeSlot: string) {
   return NextResponse.json(
     { error: `The time slot "${timeSlot}" on ${date} has already been booked. Please select another time.` },
@@ -57,7 +63,7 @@ async function GETHandler(req: Request) {
       if (!apt) {
         return NextResponse.json({ error: 'Appointment not found or invalid link' }, { status: 404 });
       }
-      return NextResponse.json({ appointment: apt });
+      return NextResponse.json({ appointment: forGuest(apt) });
     }
 
     const assistantId = searchParams.get('assistantId');
@@ -220,7 +226,7 @@ async function POSTHandler(req: Request) {
         message: `${apt.name} rescheduled their appointment to ${date} at ${timeSlot}.`,
         type: 'appointment_booked',
       });
-      return NextResponse.json({ success: true, appointment: updated });
+      return NextResponse.json({ success: true, appointment: updated ? forGuest(updated) : updated });
     }
 
     // Check if this is a status update (Requires Admin Authentication)

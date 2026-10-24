@@ -5,6 +5,7 @@ import React from 'react';
 import { Calendar, X, ExternalLink, Download } from 'lucide-react';
 import { Appointment } from '@/components/crm/AppointmentsTab';
 import { generateGoogleCalendarUrl, generateOutlookCalendarUrl, generateSingleIcs } from '@/lib/calendar/ical';
+import { ExternalClashBadge } from '@/components/crm/ExternalClashBadge';
 
 export interface AppointmentDetailsModalProps {
   appt: Appointment | null;
@@ -107,6 +108,7 @@ export const AppointmentDetailsModal: React.FC<AppointmentDetailsModalProps> = (
             <div className="text-[11px] text-emerald-700 dark:text-emerald-300 font-semibold">
               <T>Duration:</T> {appt.durationMinutes >= 60 ? __t("{n1} Hour(s)", { n1: Math.floor(appt.durationMinutes / 60) }) : __t("{durationMinutes} Minutes", { durationMinutes: appt.durationMinutes })}
             </div>
+            <ExternalClashBadge clashAt={appt.externalClashAt} />
           </div>
 
           <div>

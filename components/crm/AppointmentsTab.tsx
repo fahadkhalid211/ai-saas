@@ -19,6 +19,7 @@ import {
   Smartphone,
 } from 'lucide-react';
 import { CresceloMark } from '@/components/brand/CresceloMark';
+import { ExternalClashBadge } from '@/components/crm/ExternalClashBadge';
 
 export interface Appointment {
   id: string;
@@ -33,6 +34,8 @@ export interface Appointment {
   notes?: string;
   landingPageName?: string;
   landingPageSlug?: string;
+  /** Set when the booking overlaps an event in the owner's linked calendar (dashboard only, never sent to the guest). */
+  externalClashAt?: string | null;
   createdAt: string;
 }
 
@@ -349,6 +352,7 @@ export const AppointmentsTab: React.FC<AppointmentsTabProps> = ({
                                     <div className="text-slate-600 dark:text-slate-300 font-medium text-[11px] mt-0.5">
                                       <Clock className="h-3 w-3 text-slate-400 inline mr-1" />{apt.timeSlot}
                                     </div>
+                                    <ExternalClashBadge clashAt={apt.externalClashAt} />
                                   </td>
 
                                   <td className="py-3.5 px-5 whitespace-nowrap">

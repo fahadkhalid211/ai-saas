@@ -112,6 +112,17 @@ Export (write):
 - Owners subscribe to it from Google, Apple or Outlook. These apps refresh subscribed links slowly (often hours), so the panel
   says plainly that the owner's own calendar may show a new booking late; the booking itself is already safe in Crescelo.
 
+Decisions made during implementation:
+
+- **No stale flag on the booking.** A booking confirmed while a linked calendar could not be refreshed is not marked on the
+  appointment; the staleness is only logged (`booking.calendar_stale`). The owner still learns about a calendar that keeps failing
+  from the 24-hour "not syncing" notice, and about any clash it hid from the clash check after the next good read.
+- **The clash is shown** on the appointment (list and details) as "Clashes with an event in your calendar", with an icon. The marker
+  (`externalClashAt`) is sent to the dashboard only, never in the guest's manage-link responses.
+- **A booking's own event is not a clash.** A block with exactly the booking's start and end is ignored by the clash check and when a
+  cancelled booking is restored (an unrelated event with identical times is ignored too); new bookings and reschedules still refuse it.
+- **Window and horizon.** Links are read for 400 days ahead; an assistant with a linked calendar refuses bookings beyond that.
+
 ### 5. Error handling
 
 Invalid link: rejected when added, with a reason. Feed unreachable, too large, or not iCal: previous blocks stay, the row shows the
