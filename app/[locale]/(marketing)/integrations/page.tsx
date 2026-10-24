@@ -30,21 +30,22 @@ interface IntegrationDetail {
 const INTEGRATIONS: IntegrationDetail[] = [
   {
     id: 'google-calendar',
-    name: 'Calendar feed (Google Calendar, Outlook, Apple)',
+    name: 'Calendar links and feed (Google Calendar, Outlook, Apple)',
     category: 'calendar',
     categoryLabel: 'Calendar',
     badge: 'Native',
     tone: 'lime',
-    tagline: 'Subscribe to your bookings in any calendar app.',
+    tagline: 'Block slots from your calendar and see bookings in any calendar app.',
     overview:
-      'Every assistant has a private calendar feed (iCalendar, .ics). Add its address to Google Calendar, Outlook or Apple Calendar with "subscribe from URL" and new bookings appear there. The feed is read-only: events you add in your calendar do not block times in Crescelo, and there is no two-way sync yet (see the roadmap).',
+      'Add up to 5 calendar links per assistant (Google, Apple, Outlook or any .ics or webcal:// link) and Crescelo reads them, read-only, right before confirming a booking and about every 10 minutes, so busy times are not offered. In the other direction, every assistant has a private calendar feed (iCalendar, .ics) you subscribe to from Google Calendar, Outlook or Apple Calendar, and a separate busy-only link that shows booked times without guest details. Those apps refresh subscriptions slowly, so a new booking may show there late. Writing bookings into your calendar events as they happen (instant two-way sync) is not available yet; it is planned.',
     features: [
-      'Private, token-protected feed address per assistant',
+      'Calendar links block busy times in the built-in booking picker (read-only)',
+      'Private, token-protected feed address per assistant, plus a busy-only link',
       'Works with Google Calendar, Outlook and Apple Calendar subscriptions',
-      'Slot locking so two visitors cannot take the same time',
+      'Every booking checked against existing bookings and linked calendars before it is confirmed',
       'Confirmation and reminder emails with self-service reschedule links',
     ],
-    latency: 'Refresh rate is set by your calendar app',
+    latency: 'Your calendars are read right before each booking and about every 10 minutes; your calendar app sets how fast it refreshes Crescelo links',
     security: 'Feed address contains a secret token; regenerate it in the dashboard if it leaks',
     guideHref: '/support/calendar-booking',
     guideLabel: 'Read Calendar Booking Guide',

@@ -41,13 +41,13 @@ const INDUSTRIES: IndustrySimulation[] = [
     bottleneck:
       'Stylists lose hundreds in daily revenue because they cannot answer phone calls or Instagram DMs while holding shears or mixing color.',
     solution:
-      'Crescelo acts as your digital front desk 24/7. It explains service menus, shows open times from your opening hours, and holds the slot while the client books. A confirmation email with a reschedule link goes out automatically.',
+      'Crescelo acts as your digital front desk 24/7. It explains service menus, shows open times from your opening hours, and checks each booking against your existing bookings and calendars before confirming. A confirmation email with a reschedule link goes out automatically.',
     metric: '24/7',
     metricLabel: 'prices, hours and open slots, even mid-haircut',
     features: [
       'In-chat booking (phone voice coming soon)',
       'Calendly or Cal.com links for each stylist',
-      'Atomic mutex lock prevents chair double-booking',
+      'Every booking checked against existing bookings and linked calendars',
       'Self-service reschedule & cancellation links',
     ],
     chat: {
@@ -605,7 +605,7 @@ export default function UseCasePage() {
                     }}
                   >
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <strong style={{ fontSize: '13px' }}><T>Available Slots (Real-time Mutex Sync):</T></strong>
+                      <strong style={{ fontSize: '13px' }}><T>Available Slots:</T></strong>
                       <span style={{ fontSize: '11px', color: 'var(--mk-muted)' }}><T>Click to pick</T></span>
                     </div>
 

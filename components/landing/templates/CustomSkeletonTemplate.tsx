@@ -226,7 +226,7 @@ export const CustomSkeletonTemplate: React.FC<IndustryTemplateProps> = ({
           {[
             'CUSTOM WIREFRAME BLUEPRINT',
             'RAG KNOWLEDGE RETRIEVAL',
-            'ONE-CLICK CALENDAR SYNC',
+            'ONE-CLICK CALENDAR BOOKING',
             'CUSTOM PRICING TIERS',
             '24/7 AI LIVE ASSISTANT',
             'ENTERPRISE MULTI-TENANT',

@@ -34,8 +34,8 @@ const TOPIC_HUBS = [
     count: 'Coming soon',
   },
   {
-    title: 'Calendar Sync & Concurrency Locks',
-    desc: 'Connecting Google Calendar & Outlook, configuring buffer durations, and understanding atomic mutex slot locks.',
+    title: 'Calendar Links & Booking Checks',
+    desc: 'Linking your Google, Apple or Outlook calendar, the busy-only Crescelo calendar link, and how every booking is checked before it is confirmed.',
     href: '/support/calendar-booking',
     tone: 'mint',
     count: '4 Guides',

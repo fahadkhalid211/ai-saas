@@ -92,7 +92,7 @@ export function softwareSchema() {
     publisher: { '@id': `${SITE.url}/#organization` },
     featureList: [
       'Answers visitor questions from your own documents',
-      'Books appointments in the chat with slot locking',
+      'Books appointments in the chat and checks each booking against existing bookings and linked calendars',
       'Captures leads and sends them to email, webhooks, Slack and Google Sheets',
       'Hands over to a person in one click',
       'WhatsApp and Telegram channels',

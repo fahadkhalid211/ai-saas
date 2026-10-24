@@ -121,7 +121,7 @@ export const AppointmentDetailsModal: React.FC<AppointmentDetailsModalProps> = (
           {/* Calendar Sync Shortcuts */}
           <div className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/70 dark:bg-slate-800/50 space-y-2">
             <div className="text-[10px] uppercase font-bold text-slate-500 dark:text-slate-400 tracking-wider">
-              <T>Export &amp; Calendar Sync</T>
+              <T>Export &amp; Add to Calendar</T>
             </div>
             <div className="flex flex-wrap gap-2">
               <a

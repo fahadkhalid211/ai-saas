@@ -1,6 +1,6 @@
 /**
  * The product feature pages (/product/<slug>), one entry each. Written to match what the product does today; where something
- * is not available yet (two-way calendar sync, CRM sync, phone calls) the page says so in `notice`.
+ * is not available yet (instant two-way calendar sync, CRM sync, phone calls) the page says so in `notice`.
  */
 
 export interface FeatureStep {
@@ -72,30 +72,30 @@ export const PRODUCT_FEATURES: ProductFeature[] = [
     slug: 'appointment-booking',
     name: 'Appointment booking',
     eyebrow: 'The assistant',
-    title: 'Book real appointments in the chat, with no double bookings.',
-    intro: 'When a visitor is ready, the assistant offers real available times, locks the slot they pick and confirms by email. Your team sees every booking in the dashboard and in a calendar feed.',
+    title: 'Book real appointments in the chat, checked against your calendar.',
+    intro: 'When a visitor is ready, the assistant offers real available times and checks the one they pick against your existing bookings and calendars before it confirms by email. Your team sees every booking in the dashboard and in a calendar feed.',
     seoTitle: 'Online Appointment Booking in Chat',
-    seoDescription: 'Let visitors book appointments inside the chat. Live slots, no double bookings, confirmation emails and self-service reschedule links.',
-    chat: { visitor: 'Can I get a fade and beard trim tomorrow around 3?', assistant: 'Marcus has 3:15 PM open. I have held it for you. Shall I confirm it?', footnote: 'The slot is locked while the visitor decides.' },
+    seoDescription: 'Let visitors book appointments inside the chat. Live slots checked against your bookings and calendars, confirmation emails and self-service reschedule links.',
+    chat: { visitor: 'Can I get a fade and beard trim tomorrow around 3?', assistant: '3:15 PM tomorrow is open. Shall I book it for you?', footnote: 'The time is checked again at the moment of confirming.' },
     benefits: [
-      { title: 'Live availability', body: 'Available times are calculated from your opening hours and slot length, minus what is already booked.' },
-      { title: 'Slots are locked', body: 'While one visitor books a time, it is held so a second visitor cannot take it. If it is just gone, they are offered the next slot.' },
+      { title: 'Live availability', body: 'Available times are calculated from your opening hours and slot length, minus what is already booked and any busy time in the Google, Apple or Outlook calendars you link.' },
+      { title: 'Checked before confirming', body: 'Every booking is checked against your existing bookings and linked calendars, including overlapping times, before it is confirmed. If a time is just gone, the visitor is offered the next slot.' },
       { title: 'Confirmations and reminders', body: 'Visitors get a confirmation email with a private link to reschedule or cancel, and reminders before the appointment. You are notified by email and in the dashboard.' },
       { title: 'Add to their calendar', body: 'After booking, visitors can add the appointment to Google Calendar, Apple Calendar or any iCal app.' },
-      { title: 'Your calendar feed', body: 'Every booking appears in a private feed you subscribe to from Google, Apple or Outlook Calendar.' },
+      { title: 'Your calendar feed', body: 'Every booking appears in a private feed you subscribe to from Google, Apple or Outlook Calendar. A separate busy-only link shows booked times without guest details.' },
       { title: 'Or use your existing tool', body: 'Prefer Calendly or Cal.com? Send visitors to your booking link instead of the built-in picker.' },
     ],
     steps: [
-      { title: 'Turn on booking', body: 'In Widget and Styling choose the built-in date picker, Calendly or Cal.com.' },
-      { title: 'Set hours and slot length', body: 'Tell the picker when you are open and how long an appointment takes.' },
+      { title: 'Turn on booking', body: 'In Add to My Website choose the built-in date picker, Calendly or Cal.com.' },
+      { title: 'Set hours and slot length', body: 'Tell the picker when you are open and how long an appointment takes. Optionally link your own calendar so its busy times are blocked.' },
       { title: 'Let visitors book', body: 'The assistant offers times in the chat when someone wants to book.' },
       { title: 'Manage bookings', body: 'See, confirm or cancel appointments under Appointments, and subscribe to the feed.' },
     ],
-    controls: ['Opening hours and slot length', 'Built-in picker, Calendly or Cal.com', 'Confirmation and reminder emails', 'Cancelling or rescheduling any booking'],
-    notice: 'Your calendar feed is read-only: bookings appear in Google, Apple or Outlook, but events you create there do not block Crescelo slots. Two-way calendar sync is in development.',
+    controls: ['Opening hours and slot length', 'Built-in picker, Calendly or Cal.com', 'Calendar links that block busy times', 'Confirmation and reminder emails', 'Cancelling or rescheduling any booking'],
+    notice: 'Calendar links are read-only: Crescelo reads them to block busy times and refreshes them right before confirming a booking, but never changes your calendar. Google, Apple and Outlook refresh the Crescelo links you subscribe to slowly, so a new booking may show there late. Instant two-way sync is not available yet.',
     faq: [
-      { q: 'Can two people book the same time?', a: 'No. A slot is locked while it is being booked, and a taken slot is no longer offered.' },
-      { q: 'Does it sync both ways with Google Calendar?', a: 'Not yet. Bookings are exported to a feed you subscribe to; two-way sync is on the roadmap.' },
+      { q: 'Can two people book the same time?', a: 'No. Crescelo checks every booking against your existing bookings and calendars before confirming it, and a taken time is no longer offered.' },
+      { q: 'Does it sync both ways with Google Calendar?', a: 'Partly. Crescelo reads your calendar link to block busy times, and your bookings reach your calendar through a feed you subscribe to. It does not yet write bookings into Google or Apple events as they happen; that is planned.' },
       { q: 'Can clients cancel or reschedule themselves?', a: 'Yes. Each confirmation email has a private link for that.' },
       { q: 'Can I keep using Calendly?', a: 'Yes. Choose Calendly or Cal.com as the booking option and the assistant sends visitors to your link.' },
     ],
@@ -273,7 +273,7 @@ export const PRODUCT_FEATURES: ProductFeature[] = [
     title: 'Deploy your AI assistant inside native iOS and Android apps.',
     intro: 'Embed your business assistant into your mobile application using lightweight web views, mobile SDK wrappers, or our fast REST and WebSocket APIs. Keep your knowledge base, appointment booking, and lead qualification synchronized everywhere.',
     seoTitle: 'AI Assistant for Mobile Apps (iOS and Android) | Crescelo',
-    seoDescription: 'Integrate your AI business assistant and appointment booking directly into iOS and Android apps with full calendar synchronization and lead capture.',
+    seoDescription: 'Integrate your AI business assistant and appointment booking directly into iOS and Android apps with live slot availability and lead capture.',
     chat: { visitor: 'Can I book an appointment for tomorrow afternoon in the app?', assistant: 'Yes, 2:30 PM and 4:00 PM are open tomorrow. Shall I lock in 2:30 PM for you?', footnote: 'Embedded right inside your iOS or Android app.' },
     benefits: [
       { title: 'Native iOS & Android integration', body: 'Embed via lightweight in-app WebViews, native mobile SDK components, or direct REST API endpoints.' },
@@ -292,7 +292,7 @@ export const PRODUCT_FEATURES: ProductFeature[] = [
     controls: ['Theme color & dark mode auto-detection', 'Custom headers & authentication tokens', 'Lead capture field requirements', 'Live calendar slot availability'],
     faq: [
       { q: 'Can I use Crescelo in Flutter or React Native apps?', a: 'Yes. You can use standard webview packages (e.g. webview_flutter or react-native-webview) or integrate directly with our clean HTTP JSON API.' },
-      { q: 'Does appointment booking work on mobile?', a: 'Yes. Mobile users can select open slots, pick staff members, and receive instant SMS/email confirmations without leaving the app.' },
+      { q: 'Does appointment booking work on mobile?', a: 'Yes. Mobile users can select open slots and receive a confirmation email with a private reschedule or cancel link without leaving the app.' },
       { q: 'Do I need separate plans for web and mobile?', a: 'No. Your existing Crescelo assistant covers your website, mobile apps, and messaging channels concurrently.' },
     ],
     related: ['website-widget', 'ai-assistant', 'appointment-booking'],

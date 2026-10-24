@@ -73,8 +73,8 @@ const DEFAULT_TURNS: Turn[] = [
   },
   {
     q: 'Can I book Saturday at 10?',
-    a: 'Saturday at 10:00 is open. I have reserved the slot for you. Click confirm to finish booking.',
-    source: 'Real-time Calendar Sync',
+    a: 'Saturday at 10:00 is open. Click confirm to finish booking.',
+    source: 'Opening hours and bookings',
     booking: true,
   },
 ];

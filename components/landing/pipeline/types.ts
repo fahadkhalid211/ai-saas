@@ -297,7 +297,7 @@ export const TOPOLOGY_NODES: TopologyNode[] = [
   // Right: Client Egress & Deliverables (X = 1060)
   {
     id: 'egr_calendar',
-    label: 'Calendar Sync',
+    label: 'Calendar Invites',
     category: 'egress',
     badge: 'Google / Outlook',
     x: 1060,
@@ -307,7 +307,7 @@ export const TOPOLOGY_NODES: TopologyNode[] = [
     technicalSpec: 'RFC 5545 iCalendar standard generation, UTC timestamp normalization.',
     telemetryMetrics: [
       { label: 'Formats', value: '.ics, Google, Outlook' },
-      { label: 'Sync Status', value: 'Instant' },
+      { label: 'Delivery', value: 'With the confirmation email' },
     ],
     samplePayload: '{"calendarEvent": "Appointment at Crescelo", "start": "2026-11-20T10:00:00Z"}',
   },
@@ -455,10 +455,10 @@ export const PIPELINE_SCENARIOS: PipelineScenarioData[] = [
       'egr_stream',
     ],
     outcome: {
-      title: 'Appointment Confirmed & Mutex Secured',
-      summary: 'Slot locked for 5 minutes in memory, written to Postgres DB, and calendar invites (.ics + Google) generated.',
+      title: 'Appointment Checked & Confirmed',
+      summary: 'Booking checked against existing bookings and calendars under a per-day lock, saved, and calendar invites (.ics + Google link) generated.',
       metrics: [
-        { label: 'Lock State', value: 'Per-Instance Mutex' },
+        { label: 'Lock State', value: 'Per-day lock' },
         { label: 'Grounding Mode', value: 'Hybrid RRF Citations' },
         { label: 'Total Latency', value: '~360ms' },
       ],

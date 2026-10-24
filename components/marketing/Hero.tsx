@@ -29,8 +29,8 @@ const TURNS: Turn[] = [
   },
   {
     q: 'Can I book Saturday at 10?',
-    a: 'Saturday at 10:00 is open. I have held it for you. Confirm to finish booking.',
-    source: 'Real-time Calendar Sync',
+    a: 'Saturday at 10:00 is open. Confirm to finish booking.',
+    source: 'Opening hours and bookings',
     booking: true,
   },
 ];
@@ -118,7 +118,7 @@ function PromptDemo() {
                   </button>
                 </div>
               ) : null}
-              {cur.booking && confirmed ? <p className="mk-logline"><T>Booking confirmed and synced to Google Calendar.</T></p> : null}
+              {cur.booking && confirmed ? <p className="mk-logline"><T>Booking confirmed. A confirmation email is on its way.</T></p> : null}
             </div>
           ) : null}
         </div>

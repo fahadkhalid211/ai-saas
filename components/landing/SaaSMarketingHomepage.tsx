@@ -164,7 +164,7 @@ export function SaaSMarketingHomepage({
     },
     {
       q: 'How does in-chat appointment booking work?',
-      a: 'When a visitor asks to book a consultation, tour, or service, the AI assistant detects booking intent and immediately embeds an interactive date and time picker directly in the conversation. Once the visitor selects a time, Crescelo checks real-time slot availability, reserves the slot with concurrency lock protection, and sends instant Google Calendar, Outlook, and .ics confirmations.',
+      a: 'When a visitor asks to book a consultation, tour, or service, the AI assistant detects booking intent and immediately embeds an interactive date and time picker directly in the conversation. Once the visitor selects a time, Crescelo checks the time against your existing bookings and calendars before confirming it, and sends a confirmation email with add-to-calendar options for Google Calendar, Outlook, and .ics.',
     },
     {
       q: 'How do I install the Crescelo widget on my website?',
@@ -864,7 +864,7 @@ export function SaaSMarketingHomepage({
                     Native In-Chat Calendar Booking
                   </h3>
                   <p className={`text-xs sm:text-sm leading-relaxed max-w-xl ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
-                    Visitors pick and confirm appointments right inside the conversation stream. Concurrency lock validation prevents double-booking, and confirmation invites sync directly to Google Calendar, Outlook, and .ics.
+                    Visitors pick and confirm appointments right inside the conversation stream. Every booking is checked against existing bookings and calendars before it is confirmed, and visitors get add-to-calendar options for Google Calendar, Outlook, and .ics.
                   </p>
                 </div>
                 <div
@@ -1294,7 +1294,7 @@ export function SaaSMarketingHomepage({
                             : 'text-emerald-400 bg-blue-950/20'
                         }`}
                       >
-                        Atomic concurrency mutex locks
+                        Checked against bookings and calendars before confirming
                       </td>
                     </tr>
                     <tr>

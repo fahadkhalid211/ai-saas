@@ -95,10 +95,10 @@ export const AppointmentsTab: React.FC<AppointmentsTabProps> = ({
                       type="button"
                       onClick={() => setShowCalendarSyncModal(true)}
                       className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-emerald-300 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 text-xs font-semibold shadow-xs transition cursor-pointer"
-                      title="Sync with Google Calendar, Outlook, and Apple Calendar"
+                      title="See your bookings in Google Calendar, Outlook, and Apple Calendar"
                     >
                       <Share2 className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
-                      <span><T>Calendar Sync (.ics)</T></span>
+                      <span><T>Calendar Feed (.ics)</T></span>
                     </button>
 
                     <button
@@ -430,10 +430,10 @@ export const AppointmentsTab: React.FC<AppointmentsTabProps> = ({
                           </div>
                           <div>
                             <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-                              <T>Live Calendar Sync (iCal / Webcal)</T>
+                              <T>Calendar Feed (iCal / Webcal)</T>
                             </h3>
                             <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                              <T>Real-time two-way synchronization with Google Calendar, Outlook, and Apple Calendar.</T>
+                              <T>See your bookings in Google Calendar, Outlook, and Apple Calendar. The feed is read-only and shows guest details, and your calendar app decides how often it refreshes. To block slots from your own calendar, add a calendar link under Add to My Website.</T>
                             </p>
                           </div>
                         </div>

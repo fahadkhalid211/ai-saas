@@ -150,7 +150,7 @@ export const PATHS = {
 export const COMPARE = {
   eyebrow: 'Compare',
   title: 'Not just another chatbot.',
-  intro: 'Crescelo books real appointments, locks slots against your calendar, and answers strictly from your content. Here is how that compares to the alternatives.',
+  intro: 'Crescelo books real appointments, checks every booking against your bookings and linked calendars, and answers strictly from your content. Here is how that compares to the alternatives.',
   columns: ['Crescelo', 'Chatbase', 'Typical FAQ bot', 'Basic live-chat widget'],
   rows: [
     { feature: 'Books appointments inside the chat', values: ['Yes', 'No', 'No', 'No'] },

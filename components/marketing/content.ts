@@ -63,7 +63,7 @@ export const NAV: NavLink[] = [
 export const HERO = {
   eyebrow: 'Website assistant for service businesses',
   title: ['Answer every visitor.', 'Book the ones who are ready.'],
-  body: 'Instant answers from your content. Real bookings into your calendar.\nYour team steps in only when it matters.',
+  body: 'Instant answers from your content. Real bookings that respect your calendar.\nYour team steps in only when it matters.',
   primaryCta: 'Start free trial',
   secondaryCta: 'Try free Demo',
   trust: [
@@ -125,8 +125,8 @@ export const STORY = {
       body: 'Upload your documents, paste your web pages, add a video or audio file. Every reply is grounded in what you wrote — and it says so when it does not know.',
     },
     {
-      title: 'Books into your real calendar',
-      body: 'Visitors pick a slot inside the chat. The moment they confirm, the time is checked and held — no double bookings.',
+      title: 'Books around your real calendar',
+      body: 'Visitors pick a slot inside the chat. When they confirm, the time is checked against your existing bookings and calendars first.',
     },
     {
       title: 'Hands over without losing context',
@@ -172,8 +172,8 @@ export const USE_CASES = {
       id: 'appointments',
       label: 'Appointment businesses',
       title: 'Salons, clinics and studios',
-      body: 'Visitors ask about services and pricing, choose a slot, and the booking lands in your calendar — complete with their contact details.',
-      points: ['Service list with durations and pricing', 'Automated reminders by email', 'Self-service reschedule links'],
+      body: 'Visitors ask about services and pricing, choose a slot, and the booking lands in your dashboard and calendar feed — complete with their contact details.',
+      points: ['Service list with prices', 'Automated reminders by email', 'Self-service reschedule links'],
     },
     {
       id: 'quotes',
@@ -314,7 +314,7 @@ export const FAQ = {
     },
     {
       q: 'How does it avoid double bookings?',
-      a: 'The slot is checked and locked the moment a visitor confirms. If someone else just took it, they are immediately offered the next available time.',
+      a: 'Crescelo checks every booking against your existing bookings and calendars before confirming it. If a time was just taken or is busy in a calendar you linked, the visitor is immediately offered the next available time.',
     },
     {
       q: 'Is there a free trial?',

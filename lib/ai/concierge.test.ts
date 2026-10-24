@@ -48,7 +48,29 @@ describe('Crescelo assistant: hand-written guides', () => {
   it('is honest about calendar sync', () => {
     const answer = getPlatformConciergeAnswer('does it sync with google calendar?');
     expect(answer).toMatch(/not available yet/i);
-    expect(answer).toMatch(/read-only/i);
+    expect(answer).toMatch(/read-only|only \*\*reads\*\*/i);
+    expect(answer).toMatch(/two-way/i);
+    expect(answer).toMatch(/planned/i);
+  });
+
+  it('explains how to block slots from your own calendar, with the real limits', () => {
+    for (const question of ['how do I block slots from my google calendar', 'can I add a calendar link so my own events block bookings', 'where do I find the secret address in iCal format']) {
+      const ids = searchGuides(question, 3).map((h) => h.guide.id);
+      expect(ids, question).toContain('calendar-links');
+    }
+    const answer = getPlatformConciergeAnswer('how do I add my google calendar link so my events block booking slots?');
+    expect(answer).toContain('Calendars that block my slots');
+    expect(answer).toMatch(/up to 5/);
+    expect(answer).toMatch(/every 10 minutes/);
+    expect(answer).toMatch(/same second/);
+    expect(answer).toMatch(/never cancelled automatically/);
+    expect(answer).toMatch(/Busy/);
+  });
+
+  it('never promises zero or never-ever double bookings in the booking guides', () => {
+    const booking = GUIDES.filter((g) => g.category === 'Booking').map((g) => g.body).join(' ');
+    expect(booking).not.toMatch(/zero|never double|cannot be double|guarantee/i);
+    expect(booking).toMatch(/checks every booking against your existing bookings and calendars/i);
   });
 
   it('sends people to support tickets, not to a mailbox', () => {

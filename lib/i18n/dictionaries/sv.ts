@@ -30,7 +30,7 @@ export const svDict: TranslationDictionary = {
   hero: {
     eyebrow: 'Webbplatsassistent för tjänsteföretag',
     title: ['Svara på varje besökare.', 'Boka dem som är redo.'],
-    body: 'Omedelbara svar baserade på ditt innehåll. Riktiga bokningar direkt i kalendern.\nDitt team kliver bara in när det verkligen behövs.',
+    body: 'Omedelbara svar baserade på ditt innehåll. Riktiga bokningar som respekterar din kalender.\nDitt team kliver bara in när det verkligen behövs.',
     primaryCta: 'Starta gratis provperiod',
     secondaryCta: 'Testa gratis demo',
     trust: [
@@ -51,8 +51,8 @@ export const svDict: TranslationDictionary = {
       },
       {
         q: 'Kan jag boka lördag kl. 10?',
-        a: 'Lördag kl. 10:00 är ledig! Jag har reserverat tiden. Vänligen bekräfta bokningen.',
-        source: 'Kalendersynkronisering i realtid',
+        a: 'Lördag kl. 10:00 är ledig! Vänligen bekräfta bokningen.',
+        source: 'Öppettider och bokningar',
         booking: true,
       },
     ],
@@ -105,8 +105,8 @@ export const svDict: TranslationDictionary = {
         body: 'Ladda upp PDF-dokument, länka din hemsida eller lägg till videor. Varje svar är förankrat i vad du skrivit – och assistenten meddelar ärligt när svaret saknas.',
       },
       {
-        title: 'Bokar direkt i din riktiga kalender',
-        body: 'Besökare väljer en tid direkt i chatten. I samma sekund tiden bekräftas låses den – inga dubbelbokningar.',
+        title: 'Bokar utifrån din riktiga kalender',
+        body: 'Besökare väljer en tid direkt i chatten. När de bekräftar kontrolleras tiden först mot dina befintliga bokningar och kalendrar.',
       },
       {
         title: 'Lämnar över till personal utan tappad kontext',
@@ -139,8 +139,8 @@ export const svDict: TranslationDictionary = {
         id: 'appointments',
         label: 'Bokningsbaserade verksamheter',
         title: 'Salonger, kliniker och studior',
-        body: 'Besökare frågar om behandlingar och priser, väljer en tid och bokningen hamnar i din kalender – komplett med kontaktuppgifter.',
-        points: ['Tjänstelista med tidsåtgång och priser', 'Automatiska påminnelser via e-post', 'Självbetjäning för ombokning'],
+        body: 'Besökare frågar om behandlingar och priser, väljer en tid och bokningen hamnar i din instrumentpanel och ditt kalenderflöde – komplett med kontaktuppgifter.',
+        points: ['Tjänstelista med priser', 'Automatiska påminnelser via e-post', 'Självbetjäning för ombokning'],
       },
       {
         id: 'quotes',
@@ -226,7 +226,7 @@ export const svDict: TranslationDictionary = {
       },
       {
         q: 'Hur undviks dubbelbokningar?',
-        a: 'Tidsluckan kontrolleras och reserveras i samma ögonblick som besökaren bekräftar. Om någon annan precis tog tiden erbjuds omedelbart nästa lediga tid.',
+        a: 'Crescelo kontrollerar varje bokning mot dina befintliga bokningar och kalendrar innan den bekräftas. Om en tid precis har tagits eller är upptagen i en kalender du har länkat erbjuds besökaren omedelbart nästa lediga tid.',
       },
       {
         q: 'Finns det en gratis provperiod?',

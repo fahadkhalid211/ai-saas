@@ -30,7 +30,7 @@ export const esDict: TranslationDictionary = {
   hero: {
     eyebrow: 'Asistente web para empresas de servicios',
     title: ['Responde a cada visitante.', 'Agenda a los que están listos.'],
-    body: 'Respuestas instantáneas basadas en tu contenido. Citas reales en tu calendario.\nTu equipo interviene únicamente cuando es necesario.',
+    body: 'Respuestas instantáneas basadas en tu contenido. Citas reales que respetan tu calendario.\nTu equipo interviene únicamente cuando es necesario.',
     primaryCta: 'Comenzar prueba gratuita',
     secondaryCta: 'Probar demo gratis',
     trust: [
@@ -51,8 +51,8 @@ export const esDict: TranslationDictionary = {
       },
       {
         q: '¿Puedo agendar el sábado a las 10?',
-        a: '¡El sábado a las 10:00 está libre! He reservado el espacio para ti. Por favor confirma tu cita a continuación.',
-        source: 'Sincronización de calendario en tiempo real',
+        a: '¡El sábado a las 10:00 está libre! Por favor confirma tu cita a continuación.',
+        source: 'Horarios y reservas',
         booking: true,
       },
     ],
@@ -105,8 +105,8 @@ export const esDict: TranslationDictionary = {
         body: 'Sube tus PDFs, enlaza tu página web o añade videos. Cada respuesta está respaldada por lo que tú escribiste — e indica con honestidad cuando no sabe algo.',
       },
       {
-        title: 'Citas directas en tu calendario real',
-        body: 'Tus visitantes eligen un horario dentro del chat. En el momento en que confirman, el espacio se bloquea — cero reservas duplicadas.',
+        title: 'Agenda respetando tu calendario real',
+        body: 'Tus visitantes eligen un horario dentro del chat. Cuando confirman, el horario se comprueba antes con tus reservas y calendarios existentes.',
       },
       {
         title: 'Traspaso a humanos sin perder el contexto',
@@ -139,8 +139,8 @@ export const esDict: TranslationDictionary = {
         id: 'appointments',
         label: 'Negocios con citas previas',
         title: 'Salones, clínicas y estudios',
-        body: 'Los visitantes preguntan por servicios y tarifas, seleccionan una fecha y la cita queda agendada en tu calendario — con sus datos de contacto.',
-        points: ['Lista de servicios con duraciones y precios', 'Recordatorios automáticos por correo', 'Enlaces de autogestión para reagendar'],
+        body: 'Los visitantes preguntan por servicios y tarifas, seleccionan una fecha y la cita aparece en tu panel y en tu feed de calendario — con sus datos de contacto.',
+        points: ['Lista de servicios con precios', 'Recordatorios automáticos por correo', 'Enlaces de autogestión para reagendar'],
       },
       {
         id: 'quotes',
@@ -226,7 +226,7 @@ export const esDict: TranslationDictionary = {
       },
       {
         q: '¿Cómo se evitan las citas duplicadas?',
-        a: 'El horario se comprueba y se bloquea en el instante en que el visitante confirma. Si otra persona acaba de ocuparlo, se le ofrece inmediatamente el siguiente horario disponible.',
+        a: 'Crescelo comprueba cada reserva con tus reservas y calendarios existentes antes de confirmarla. Si un horario acaba de ocuparse o figura ocupado en un calendario vinculado, se le ofrece inmediatamente el siguiente horario disponible.',
       },
       {
         q: '¿Hay un periodo de prueba gratis?',

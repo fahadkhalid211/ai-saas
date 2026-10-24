@@ -5,7 +5,7 @@ import type { ReactNode } from 'react';
 import { JsonLd } from '@/components/marketing/JsonLd';
 import { breadcrumbSchema, softwareSchema, webPageSchema } from '@/lib/schema';
 
-const description = 'Connect Crescelo to Google Calendar, Slack, Google Sheets, webhooks and Zapier, plus WhatsApp, Telegram, phone and the AI provider you choose.';
+const description = 'Connect Crescelo to your Google, Apple or Outlook calendar, Slack, Google Sheets, webhooks and Zapier, plus WhatsApp, Telegram and the AI provider you choose.';
 
 export async function generateMetadata(): Promise<Metadata> {
   return localizeMeta(withSocial({

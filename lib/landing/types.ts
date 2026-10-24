@@ -842,7 +842,7 @@ export const INDUSTRY_DESIGN_ARCHETYPES: Record<string, DesignArchetype[]> = {
       badge: 'Telehealth Ready',
       features: [
         'Zero-wait virtual consultation booking',
-        'Timezone-intelligent calendar synchronization',
+        'Timezone-aware booking times',
         'Integrated AI clinical concierge',
         'Evidence-based patient FAQ accordion',
       ],
@@ -2215,7 +2215,7 @@ export const DEFAULT_UNIVERSAL_LANDING_CONFIG: LandingPageConfig = {
   features: [
     {
       title: 'Real-Time Calendar Booking',
-      description: 'Lock in appointments instantly with timezone intelligence, automated calendar invitations, and zero double-booking.',
+      description: 'Book appointments in the chat with timezone intelligence, automated calendar invitations, and every booking checked before it is confirmed.',
       icon: 'Calendar',
       badge: 'Frictionless',
     },

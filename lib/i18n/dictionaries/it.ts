@@ -30,7 +30,7 @@ export const itDict: TranslationDictionary = {
   hero: {
     eyebrow: 'Assistente web per imprese di servizi',
     title: ['Rispondi a ogni visitatore.', 'Prenota quelli che sono pronti.'],
-    body: 'Risposte istantanee basate sui tuoi contenuti. Prenotazioni reali nel tuo calendario.\nIl tuo team interviene solo quando serve davvero.',
+    body: 'Risposte istantanee basate sui tuoi contenuti. Prenotazioni reali che rispettano il tuo calendario.\nIl tuo team interviene solo quando serve davvero.',
     primaryCta: 'Inizia la prova gratuita',
     secondaryCta: 'Prova la demo gratis',
     trust: [
@@ -51,8 +51,8 @@ export const itDict: TranslationDictionary = {
       },
       {
         q: 'Posso prenotare sabato alle 10?',
-        a: 'Sabato alle 10:00 è disponibile! Ho riservato l’orario per te. Conferma la prenotazione qui sotto.',
-        source: 'Sincronizzazione calendario in tempo reale',
+        a: 'Sabato alle 10:00 è disponibile! Conferma la prenotazione qui sotto.',
+        source: 'Orari di apertura e prenotazioni',
         booking: true,
       },
     ],
@@ -105,8 +105,8 @@ export const itDict: TranslationDictionary = {
         body: 'Carica i tuoi PDF, incolla le pagine web o aggiungi link video. Ogni risposta è radicata in ciò che hai scritto tu – e dichiara chiaramente quando non conosce la risposta.',
       },
       {
-        title: 'Prenotazioni dirette nel tuo calendario reale',
-        body: 'I visitatori scelgono una fascia oraria direttamente nella chat. Nel momento in cui confermano, l’orario viene bloccato – zero doppie prenotazioni.',
+        title: 'Prenota tenendo conto del tuo calendario reale',
+        body: 'I visitatori scelgono una fascia oraria direttamente nella chat. Quando confermano, l’orario viene prima verificato rispetto alle tue prenotazioni e ai tuoi calendari.',
       },
       {
         title: 'Passaggio al personale senza perdere il filo',
@@ -139,8 +139,8 @@ export const itDict: TranslationDictionary = {
         id: 'appointments',
         label: 'Attività su appuntamento',
         title: 'Saloni, cliniche e studi professionali',
-        body: 'I visitatori chiedono informazioni sui servizi e tariffe, selezionano un orario e la prenotazione si inserisce nel tuo calendario – completa di recapiti.',
-        points: ['Elenco servizi con durata e tariffe', 'Promemoria automatici via email', 'Link self-service per riprogrammare'],
+        body: 'I visitatori chiedono informazioni sui servizi e tariffe, selezionano un orario e la prenotazione compare nella tua dashboard e nel feed del calendario – completa di recapiti.',
+        points: ['Elenco servizi con tariffe', 'Promemoria automatici via email', 'Link self-service per riprogrammare'],
       },
       {
         id: 'quotes',
@@ -226,7 +226,7 @@ export const itDict: TranslationDictionary = {
       },
       {
         q: 'Come vengono evitate le doppie prenotazioni?',
-        a: 'La fascia oraria viene verificata e bloccata all’istante non appena il visitatore conferma. Se qualcun altro ha appena occupato lo slot, viene subito proposta la prima disponibilità successiva.',
+        a: 'Crescelo verifica ogni prenotazione rispetto alle tue prenotazioni e ai tuoi calendari prima di confermarla. Se un orario è appena stato occupato o risulta impegnato in un calendario collegato, al visitatore viene subito proposta la prima disponibilità successiva.',
       },
       {
         q: 'È prevista una prova gratuita?',

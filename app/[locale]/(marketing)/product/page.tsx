@@ -86,31 +86,29 @@ const chunks = await retrieveHybridChunks({
   {
     id: 'mutex',
     stepNumber: '03',
-    title: 'Guaranteed No Double-Bookings',
+    title: 'Bookings Checked Before Confirming',
     badge: 'Step 3: Scheduling',
-    tagline: 'Instant slot locking ensures two customers never grab the same time.',
+    tagline: 'Every booking is checked against your bookings and calendars before it is confirmed.',
     tone: 'mint',
     description:
-      'Unlike simple bots that pretend to book appointments, Crescelo locks the slot instantly the moment a customer confirms, holding it securely before syncing directly to your Google Calendar or Outlook.',
+      'Unlike simple bots that pretend to book appointments, Crescelo checks every booking by time range against your existing bookings and against the calendar links you add, while holding a per-day lock, before it confirms. Your calendars are read-only: Crescelo reads them and does not write into them.',
     specs: [
-      { label: 'Lock Mechanism', value: 'Atomic In-Memory Mutex + DB State' },
-      { label: 'Lock Hold Window', value: '180 seconds hold during checkout' },
-      { label: 'Calendar Providers', value: 'Google Calendar API & Microsoft Graph' },
-      { label: 'Conflict Rate', value: '0.00% double-booking probability' },
+      { label: 'Check', value: 'Time-range check under a per-day lock; the database also refuses overlaps' },
+      { label: 'Compared against', value: 'Existing bookings and linked calendars' },
+      { label: 'Calendar links', value: 'Google, Apple, Outlook or any .ics link, read-only' },
+      { label: 'Refreshed', value: 'Right before each booking and about every 10 minutes' },
     ],
-    codeSnippet: `// Atomic Mutex Slot Locking
-const lock = await acquireSlotMutex({
-  assistantId: "ast_prod_01",
-  slotTime: "2026-09-23T14:30:00Z",
-  durationMinutes: 45
-});
-if (!lock.acquired) {
-  return reply("That slot was just reserved. Let me check the next opening...");
+    codeSnippet: `// Every booking, in this order
+await refreshCalendarsBeforeBooking(assistant);
+const release = await acquireDayLock(assistantId, date);
+const clash = findBookingConflict(newBooking, existingBookings, calendarBlocks);
+if (clash) {
+  return reply("That time was just taken. Let me check the next opening...");
 }`,
     highlights: [
-      'Slot locking so two visitors cannot take the same time',
+      'Every booking checked against existing bookings and linked calendars',
       'Confirmation emails with self-service reschedule and cancel links',
-      'Dynamic buffer periods between appointments (e.g. 15-minute prep)',
+      'Calendar links (Google, Apple, Outlook or any .ics) block busy times',
       'Booking notifications to your team by email and in the dashboard',
     ],
   },
@@ -179,7 +177,7 @@ export default function ProductPage() {
             <ul className="mk-trust mk-rise" style={{ marginTop: '36px', ['--mk-delay' as string]: '600ms' }}>
               <li><T>No hallucinations — answers from your content only</T></li>
               <li><T>Zero token markup — your key, your rate</T></li>
-              <li><T>Real calendar slot locking — no double bookings</T></li>
+              <li><T>Every booking checked against your calendar before it is confirmed</T></li>
               <li><T>Human takeover in one click</T></li>
             </ul>
           </div>
@@ -417,8 +415,8 @@ export default function ProductPage() {
                 { label: 'Token Markup', val: '0% (Wholesale Provider Cost)' },
                 { label: 'Supported Providers', val: 'OpenAI, Groq, Gemini, Claude, Ollama' },
                 { label: 'Credential Encryption', val: 'AES-256 GCM Salted Vault' },
-                { label: 'Calendar', val: 'Calendar feed, Calendly and Cal.com links' },
-                { label: 'Concurrency Engine', val: 'Atomic Mutex In-Memory Locks' },
+                { label: 'Calendar', val: 'Calendar links (read-only), calendar feed, Calendly and Cal.com' },
+                { label: 'Concurrency Engine', val: 'Per-day booking lock + time-range check' },
               ].map((spec, i) => (
                 <div
                   key={i}

@@ -30,7 +30,7 @@ export const fiDict: TranslationDictionary = {
   hero: {
     eyebrow: 'Verkkosivustoavustaja palveluyrityksille',
     title: ['Vastaa jokaiselle vierailijalle.', 'Varaa heidät, jotka ovat valmiita.'],
-    body: 'Välittömät vastaukset omasta sisällöstäsi. Oikeat varaukset suoraan kalenteriisi.\nTiimisi osallistuu vain silloin, kun sillä on todella väliä.',
+    body: 'Välittömät vastaukset omasta sisällöstäsi. Oikeat varaukset, jotka huomioivat kalenterisi.\nTiimisi osallistuu vain silloin, kun sillä on todella väliä.',
     primaryCta: 'Aloita ilmainen kokeilu',
     secondaryCta: 'Kokeile ilmaista demoa',
     trust: [
@@ -51,8 +51,8 @@ export const fiDict: TranslationDictionary = {
       },
       {
         q: 'Voinko varata ajan lauantaille klo 10?',
-        a: 'Lauantai klo 10:00 on vapaana! Olen varannut sen sinulle. Vahvista varaus alta.',
-        source: 'Reaaliaikainen kalenterisynkronointi',
+        a: 'Lauantai klo 10:00 on vapaana! Vahvista varaus alta.',
+        source: 'Aukioloajat ja varaukset',
         booking: true,
       },
     ],
@@ -105,8 +105,8 @@ export const fiDict: TranslationDictionary = {
         body: 'Lataa tiedostosi, liitä verkkosivusi tai lisää video- tai äänitiedosto. Jokainen vastaus perustuu kirjoittamaasi tietoon – ja avustaja kertoo reilusti, jos vastausta ei löydy.',
       },
       {
-        title: 'Varaa suoraan oikeaan kalenteriisi',
-        body: 'Vierailijat valitsevat ajan suoraan chatissa. Heti kun he vahvistavat, aika lukitaan kalenteriin – ei päällekkäisiä varauksia.',
+        title: 'Varaa oikea kalenterisi huomioiden',
+        body: 'Vierailijat valitsevat ajan suoraan chatissa. Kun he vahvistavat, aika tarkistetaan ensin olemassa olevia varauksiasi ja kalentereitasi vasten.',
       },
       {
         title: 'Siirtää keskustelun ihmiselle kontekstia menettämättä',
@@ -139,8 +139,8 @@ export const fiDict: TranslationDictionary = {
         id: 'appointments',
         label: 'Ajanvarausyritykset',
         title: 'Kampaamot, klinikat ja studiot',
-        body: 'Vierailijat kysyvät hoidoista ja hinnoista, valitsevat ajan ja varaus ilmestyy kalenteriisi – yhteystietoineen.',
-        points: ['Palveluhinnasto kestoineen', 'Automaattiset sähköpostimuistutukset', 'Itsepalvelulinkit ajan siirtämiseen'],
+        body: 'Vierailijat kysyvät hoidoista ja hinnoista, valitsevat ajan ja varaus ilmestyy hallintapaneeliisi ja kalenterisyötteeseesi – yhteystietoineen.',
+        points: ['Palveluhinnasto', 'Automaattiset sähköpostimuistutukset', 'Itsepalvelulinkit ajan siirtämiseen'],
       },
       {
         id: 'quotes',
@@ -226,7 +226,7 @@ export const fiDict: TranslationDictionary = {
       },
       {
         q: 'Miten tuplavaraukset vältetään?',
-        a: 'Aika tarkistetaan ja lukitaan heti, kun asiakas vahvistaa valintansa. Jos joku muu ehti varata ajan sekuntia aiemmin, asiakkaalle tarjotaan välittömästi seuraavaa vapaata aikaa.',
+        a: 'Crescelo tarkistaa jokaisen varauksen olemassa olevia varauksiasi ja kalentereitasi vasten ennen vahvistusta. Jos aika on juuri varattu tai varattu linkittämässäsi kalenterissa, vierailijalle tarjotaan välittömästi seuraavaa vapaata aikaa.',
       },
       {
         q: 'Onko palvelussa ilmainen kokeilu?',

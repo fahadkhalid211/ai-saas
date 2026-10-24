@@ -620,7 +620,7 @@ export const UniversalTemplate: React.FC<IndustryTemplateProps> = ({
             {(config.features && config.features.length > 0 ? config.features : [
               {
                 title: 'Real-Time Calendar Booking',
-                description: 'Lock in appointments instantly with timezone intelligence, automated calendar invitations, and zero double-booking.',
+                description: 'Book appointments in the chat with timezone intelligence, automated calendar invitations, and every booking checked before it is confirmed.',
                 badge: 'Frictionless',
               },
               {
