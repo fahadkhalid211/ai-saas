@@ -12,7 +12,11 @@
 -- kortex_calendar_links  : one row per iCal feed an owner linked to an assistant (at most 5 per
 --                          assistant, enforced by the app). Also holds the sync status shown to
 --                          the owner (last_synced_at, last_error, error_since) and the HTTP
---                          validators (etag, last_modified) that let an unchanged feed answer 304.
+--                          validators (etag, last_modified) that let an unchanged feed answer 304,
+--                          how many blocks the last read stored (block_count), how many events had
+--                          repeats the reader could not follow (unsupported_count), and which run of
+--                          failures the 24-hour "not syncing" notice was already sent for
+--                          (failure_notified_for = the error_since value).
 -- kortex_external_blocks : the busy periods read from a feed, as absolute UTC instants, half-open
 --                          [start_at, end_at). Replaced as a whole on every sync, in one transaction.
 --                          assistant_id is repeated here so the booking check reads one indexed range.
@@ -28,6 +32,9 @@ CREATE TABLE IF NOT EXISTS kortex_calendar_links (
   error_since    TIMESTAMPTZ,
   etag           TEXT,
   last_modified  TEXT,
+  block_count          INTEGER CHECK (block_count IS NULL OR block_count >= 0),
+  unsupported_count    INTEGER CHECK (unsupported_count IS NULL OR unsupported_count >= 0),
+  failure_notified_for TIMESTAMPTZ,
   created_at     TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 

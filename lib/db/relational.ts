@@ -1125,7 +1125,8 @@ export async function relationalGetOwner(
 /** Blocks per INSERT statement. Each statement sends two arrays plus two ids, so the 65,535-parameter limit is never near. */
 const BLOCK_INSERT_BATCH = 5_000;
 
-const LINK_COLUMNS = 'id, assistant_id, label, url, last_synced_at, last_error, error_since, etag, last_modified, created_at';
+const LINK_COLUMNS =
+  'id, assistant_id, label, url, last_synced_at, last_error, error_since, etag, last_modified, block_count, unsupported_count, failure_notified_for, created_at';
 
 function rowToLink(r: Record<string, any>): CalendarLink {
   return {
@@ -1138,6 +1139,9 @@ function rowToLink(r: Record<string, any>): CalendarLink {
     ...(r.error_since ? { errorSince: iso(r.error_since) } : {}),
     ...(r.etag ? { etag: r.etag } : {}),
     ...(r.last_modified ? { lastModified: r.last_modified } : {}),
+    ...(r.block_count !== null && r.block_count !== undefined ? { blockCount: Number(r.block_count) } : {}),
+    ...(r.unsupported_count !== null && r.unsupported_count !== undefined ? { unsupportedCount: Number(r.unsupported_count) } : {}),
+    ...(r.failure_notified_for ? { failureNotifiedFor: iso(r.failure_notified_for) } : {}),
     createdAt: iso(r.created_at),
   };
 }
@@ -1175,8 +1179,9 @@ export async function relationalSaveCalendarLink(link: CalendarLink): Promise<Ca
       }
       const res = await client.query(
         `INSERT INTO kortex_calendar_links
-           (id, assistant_id, label, url, last_synced_at, last_error, error_since, etag, last_modified, created_at)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+           (id, assistant_id, label, url, last_synced_at, last_error, error_since, etag, last_modified,
+            block_count, unsupported_count, failure_notified_for, created_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
          ON CONFLICT (id) DO UPDATE SET
            label = EXCLUDED.label,
            url = EXCLUDED.url,
@@ -1184,7 +1189,10 @@ export async function relationalSaveCalendarLink(link: CalendarLink): Promise<Ca
            last_error = EXCLUDED.last_error,
            error_since = EXCLUDED.error_since,
            etag = EXCLUDED.etag,
-           last_modified = EXCLUDED.last_modified
+           last_modified = EXCLUDED.last_modified,
+           block_count = EXCLUDED.block_count,
+           unsupported_count = EXCLUDED.unsupported_count,
+           failure_notified_for = EXCLUDED.failure_notified_for
          WHERE kortex_calendar_links.assistant_id = EXCLUDED.assistant_id`,
         [
           link.id,
@@ -1196,6 +1204,9 @@ export async function relationalSaveCalendarLink(link: CalendarLink): Promise<Ca
           link.errorSince ?? null,
           link.etag ?? null,
           link.lastModified ?? null,
+          link.blockCount ?? null,
+          link.unsupportedCount ?? null,
+          link.failureNotifiedFor ?? null,
           link.createdAt,
         ]
       );
@@ -1215,6 +1226,9 @@ const STATUS_COLUMNS: Record<keyof CalendarLinkStatusFields, string> = {
   errorSince: 'error_since',
   etag: 'etag',
   lastModified: 'last_modified',
+  blockCount: 'block_count',
+  unsupportedCount: 'unsupported_count',
+  failureNotifiedFor: 'failure_notified_for',
 };
 
 /**

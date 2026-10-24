@@ -7,6 +7,7 @@ import { McpAuthContext } from '../types';
 import { assertScope } from '../auth';
 import { asMcpError } from '../errors';
 import { blocksLowerBound } from '@/lib/calendar/sync/blocks-bound';
+import { refreshCalendarsBeforeBooking } from '@/lib/calendar/sync/refresh-before-booking';
 
 export const createBookingMetadata = {
   name: 'create_booking',
@@ -135,6 +136,9 @@ export async function handleCreateBooking(
   }
 
   const normalizedSlot = minutesToHHMM(startMinutes);
+
+  // Refresh the linked calendars BEFORE the lock (network work, never fails the booking); the check below reads what it stored.
+  await refreshCalendarsBeforeBooking(primaryAssistant);
 
   // Acquire the day lock (bookings with different start times can overlap) to prevent races across parallel agents
   let releaseLock: (() => void) | null = null;

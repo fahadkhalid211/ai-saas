@@ -28,12 +28,15 @@ export interface CalendarLinkStatusFields {
   errorSince?: string | null;
   etag?: string | null;
   lastModified?: string | null;
+  blockCount?: number | null;
+  unsupportedCount?: number | null;
+  failureNotifiedFor?: string | null;
 }
 
 /** Checks the status fields of an update and returns them in storable form (error text capped). Throws CalendarLinkRuleError. */
 export function checkStatusFields(fields: CalendarLinkStatusFields): CalendarLinkStatusFields {
   const out: CalendarLinkStatusFields = {};
-  for (const key of ['lastSyncedAt', 'errorSince'] as const) {
+  for (const key of ['lastSyncedAt', 'errorSince', 'failureNotifiedFor'] as const) {
     const v = fields[key];
     if (v === undefined) continue;
     if (v !== null && !isIsoTime(v)) throw new CalendarLinkRuleError(`${key} must be a date and time.`);
@@ -44,6 +47,14 @@ export function checkStatusFields(fields: CalendarLinkStatusFields): CalendarLin
     if (v === undefined) continue;
     if (v !== null && typeof v !== 'string') throw new CalendarLinkRuleError(`${key} must be text.`);
     out[key] = v === null ? null : key === 'lastError' ? v.slice(0, MAX_ERROR_LENGTH) : v.slice(0, 1000);
+  }
+  for (const key of ['blockCount', 'unsupportedCount'] as const) {
+    const v = fields[key];
+    if (v === undefined) continue;
+    if (v !== null && !(typeof v === 'number' && Number.isInteger(v) && v >= 0 && v <= 2_000_000_000)) {
+      throw new CalendarLinkRuleError(`${key} must be a whole number.`);
+    }
+    out[key] = v;
   }
   return out;
 }
@@ -68,5 +79,14 @@ export function checkCalendarLink(link: CalendarLink): void {
   }
   if (protocol !== 'https:' && protocol !== 'http:') throw new CalendarLinkRuleError('The calendar address must start with https:// or http://.');
   if (!isIsoTime(link.createdAt)) throw new CalendarLinkRuleError('The calendar link needs a creation time.');
-  checkStatusFields({ lastSyncedAt: link.lastSyncedAt, lastError: link.lastError, errorSince: link.errorSince, etag: link.etag, lastModified: link.lastModified });
+  checkStatusFields({
+    lastSyncedAt: link.lastSyncedAt,
+    lastError: link.lastError,
+    errorSince: link.errorSince,
+    etag: link.etag,
+    lastModified: link.lastModified,
+    blockCount: link.blockCount,
+    unsupportedCount: link.unsupportedCount,
+    failureNotifiedFor: link.failureNotifiedFor,
+  });
 }

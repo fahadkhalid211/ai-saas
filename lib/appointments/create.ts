@@ -8,6 +8,7 @@ import { slotRangeFields } from '@/lib/appointments/time-range';
 import { isBookingUnavailable } from '@/lib/appointments/errors';
 import { logEvent } from '@/lib/logging/logger';
 import { blocksLowerBound } from '@/lib/calendar/sync/blocks-bound';
+import { refreshCalendarsBeforeBooking } from '@/lib/calendar/sync/refresh-before-booking';
 
 export interface NewAppointmentInput {
   name: string;
@@ -69,6 +70,10 @@ export async function createAppointment(opts: CreateAppointmentOptions): Promise
   // An assistant without a landing page uses its own name. It must never fall back to the demo barbershop's name, address and
   // phone: those would appear in the confirmation e-mail of every other business.
   const landingConfig: Partial<NonNullable<AssistantData['landingPageConfig']>> = assistant.landingPageConfig || {};
+
+  // Bring the owner's linked calendars up to date BEFORE taking the lock (it may use the network for up to 3 seconds and must not hold
+  // the day up). It never fails a booking; the conflict check below reads the blocks it just stored.
+  await refreshCalendarsBeforeBooking(assistant);
 
   // Concurrency lock: serialise every attempt for this assistant and day (bookings with different start times can overlap).
   // (Cross-instance safety comes from the relational exclusion constraint and unique index, which raise SLOT_CONFLICT.)

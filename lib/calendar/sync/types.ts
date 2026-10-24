@@ -19,5 +19,11 @@ export interface CalendarLink {
   /** Validators from the last successful fetch, sent back so an unchanged feed answers 304. */
   etag?: string;
   lastModified?: string;
+  /** Busy blocks stored after the last successful read (shown to the owner). */
+  blockCount?: number;
+  /** Events in the last read whose repeats could not be followed, so they may not block every date (shown to the owner). */
+  unsupportedCount?: number;
+  /** The `errorSince` value the 24-hour "calendar not syncing" notice was already sent for, so it is sent once per run of failures. */
+  failureNotifiedFor?: string;
   createdAt: string;
 }

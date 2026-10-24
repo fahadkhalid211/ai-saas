@@ -687,6 +687,77 @@ describe('updateCalendarLinkStatus never inserts', () => {
   });
 });
 
+describe('sync result counts and the failure-notice marker', () => {
+  it('file mode: stores blockCount, unsupportedCount and failureNotifiedFor, and null clears the marker', async () => {
+    const a = `ast_${seq++}`;
+    const l = link(a);
+    await Database.saveCalendarLink(l);
+    expect(
+      await Database.updateCalendarLinkStatus(a, l.id, {
+        blockCount: 12,
+        unsupportedCount: 3,
+        failureNotifiedFor: '2026-10-22T09:00:00.000Z',
+      }),
+    ).toBe(true);
+    const [got] = await Database.getCalendarLinks(a);
+    expect(got).toMatchObject({ blockCount: 12, unsupportedCount: 3, failureNotifiedFor: '2026-10-22T09:00:00.000Z' });
+
+    await Database.updateCalendarLinkStatus(a, l.id, { failureNotifiedFor: null, blockCount: 0 });
+    const [after] = await Database.getCalendarLinks(a);
+    expect(after.failureNotifiedFor).toBeUndefined();
+    expect(after.blockCount).toBe(0);
+    expect(after.unsupportedCount).toBe(3);
+  });
+
+  it('rejects counts that are not whole non-negative numbers', async () => {
+    for (const bad of [-1, 1.5, Number.NaN, '3' as unknown as number]) {
+      await expect(Database.updateCalendarLinkStatus('ast_1', 'cal_1', { blockCount: bad })).rejects.toBeInstanceOf(CalendarLinkRuleError);
+      await expect(Database.updateCalendarLinkStatus('ast_1', 'cal_1', { unsupportedCount: bad })).rejects.toBeInstanceOf(CalendarLinkRuleError);
+    }
+    await expect(Database.updateCalendarLinkStatus('ast_1', 'cal_1', { failureNotifiedFor: 'later' })).rejects.toBeInstanceOf(CalendarLinkRuleError);
+  });
+
+  it('relational mode: the UPDATE sets block_count, unsupported_count and failure_notified_for', async () => {
+    vi.stubEnv('DB_RELATIONAL_MODE', 'true');
+    h.configured = true;
+    h.query.mockResolvedValue({ rows: [], rowCount: 1 });
+    await Database.updateCalendarLinkStatus('ast_1', 'cal_1', { blockCount: 7, unsupportedCount: 2, failureNotifiedFor: '2026-10-22T09:00:00.000Z' });
+    const upd = h.query.mock.calls.find((c) => /UPDATE kortex_calendar_links/i.test(String(c[0])))!;
+    expect(String(upd[0])).toMatch(/block_count = \$\d/);
+    expect(String(upd[0])).toMatch(/unsupported_count = \$\d/);
+    expect(String(upd[0])).toMatch(/failure_notified_for = \$\d/);
+    expect(upd[1]).toContain(7);
+    expect(upd[1]).toContain(2);
+  });
+
+  it('relational mode: rows map back to blockCount, unsupportedCount and failureNotifiedFor', async () => {
+    vi.stubEnv('DB_RELATIONAL_MODE', 'true');
+    h.configured = true;
+    h.query.mockResolvedValue({
+      rows: [
+        {
+          id: 'cal_1',
+          assistant_id: 'ast_1',
+          label: 'google',
+          url: 'https://x.example.com/a.ics',
+          last_synced_at: null,
+          last_error: null,
+          error_since: null,
+          etag: null,
+          last_modified: null,
+          block_count: 5,
+          unsupported_count: 0,
+          failure_notified_for: new Date('2026-10-22T09:00:00Z'),
+          created_at: new Date('2026-10-01T08:00:00Z'),
+        },
+      ],
+      rowCount: 1,
+    });
+    const [got] = await Database.getCalendarLinks('ast_1');
+    expect(got).toMatchObject({ blockCount: 5, unsupportedCount: 0, failureNotifiedFor: '2026-10-22T09:00:00.000Z' });
+  });
+});
+
 describe('a missing table reads as nothing linked', () => {
   const undefinedTable = () => Object.assign(new Error('relation "kortex_calendar_links" does not exist'), { code: '42P01' });
 

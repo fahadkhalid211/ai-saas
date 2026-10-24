@@ -14,6 +14,7 @@ import { isBookingUnavailable } from '@/lib/appointments/errors';
 import { logged } from '@/lib/logging/route';
 import { getExternalBlocksOrEmpty } from '@/lib/calendar/sync/safe-blocks';
 import { blocksLowerBound } from '@/lib/calendar/sync/blocks-bound';
+import { refreshCalendarsBeforeBooking } from '@/lib/calendar/sync/refresh-before-booking';
 
 /**
  * Nothing was saved and the visitor may retry. Postgres being required but unavailable pauses it for 60 seconds
@@ -172,11 +173,14 @@ async function POSTHandler(req: Request) {
       }
       const takenResponse = () => slotTakenResponse(date, timeSlot);
 
+      // Linked calendars are refreshed BEFORE the lock (network work, never fails the request); the check below reads the blocks it stored.
+      const assistant = await Database.getAssistantById(apt.assistantId);
+      await refreshCalendarsBeforeBooking(assistant);
+
       // The day lock: a booking with a different start time on the same day can still overlap the new time.
       const releaseLock = await acquireDayLock(apt.assistantId, date);
       let updated;
       try {
-        const assistant = await Database.getAssistantById(apt.assistantId);
         const existingAppointments = await Database.getAppointments(apt.assistantId, undefined, { ownOnly: true });
         const blocks = await Database.getExternalBlocks(apt.assistantId, blocksLowerBound(date));
         const conflict = findBookingConflict({
@@ -245,10 +249,13 @@ async function POSTHandler(req: Request) {
       // Restoring a cancelled booking takes its time back, which may have been booked meanwhile: check it like a new booking.
       const reactivating = existingApt.status === 'cancelled' && status !== 'cancelled';
       let updated: boolean;
+      // Restoring takes the time back, so the linked calendars are refreshed first, BEFORE the lock (never fails the request).
+      const reactivatingAssistant = reactivating ? await Database.getAssistantById(existingApt.assistantId) : null;
+      if (reactivating) await refreshCalendarsBeforeBooking(reactivatingAssistant);
       const releaseLock = reactivating ? await acquireDayLock(existingApt.assistantId, existingApt.date) : null;
       try {
         if (reactivating) {
-          const assistant = await Database.getAssistantById(existingApt.assistantId);
+          const assistant = reactivatingAssistant;
           const appointments = await Database.getAppointments(existingApt.assistantId, undefined, { ownOnly: true });
           const blocks = await Database.getExternalBlocks(existingApt.assistantId, blocksLowerBound(existingApt.date));
           const conflict = findBookingConflict({
