@@ -1,6 +1,7 @@
 import { AssistantData, Database } from '../db';
 import { retrieveRelevantContext } from '../rag/retrieval';
 import { buildSystemPrompt, generateChatCompletion } from '../ai/providers';
+import { guardReply } from '../ai/figure-guard';
 import { applyCostCap, COST_CAP_PAUSED_MESSAGE } from '@/lib/ai/spend/guard';
 import { convertMarkdownForMessagingChannel } from './format';
 
@@ -133,7 +134,9 @@ export async function processWhatsAppWebhook(
         );
     await costCap.settle();
 
-    const cleanReply = convertMarkdownForMessagingChannel(aiResponse.trim() || assistant.fallbackMessage);
+    // no price, limit or quantity goes out unless the business supplied it (lib/ai/figure-guard.ts)
+    const checked = costCap.blocked ? aiResponse : guardReply(aiResponse, [assistant.systemPrompt, contextText, assistant.name, assistant.fallbackMessage, userText]).text;
+    const cleanReply = convertMarkdownForMessagingChannel(checked.trim() || assistant.fallbackMessage);
 
     // 4. Send response back to customer's WhatsApp
     await sendWhatsAppMessage(

@@ -19,6 +19,7 @@ import { logEvent } from '@/lib/logging/logger';
 import { wantsLiveAgent, liveAgentReply, streamFixedReply } from '@/lib/chat/handoff';
 import { applyCostCap, applyCostCapToMedia, COST_CAP_PAUSED_MESSAGE } from '@/lib/ai/spend/guard';
 import { isLowConfidence, looksLikeUnknown, withUnknownOffer } from '@/lib/rag/confidence';
+import { FIGURE_REMOVED_NOTE, FigureGuard, allowedFigures } from '@/lib/ai/figure-guard';
 import { SERVICE_PAUSED_MESSAGE, serviceBlocked } from '@/lib/billing/trial';
 
 // Streamed responses (token-by-token LLM output, plus an optional live web
@@ -833,18 +834,48 @@ Directly use the content of this attached document to assist the visitor, answer
 
           const isDemoAssistant = assistant.id === 'demo-assistant';
 
+          // No figure reaches the visitor unless the business gave it (lib/ai/figure-guard.ts): prices, limits, quantities and
+          // timelines are checked against the knowledge base, the catalog, the instructions and what the visitor wrote themselves.
+          // Fixed replies (live agent, cost cap) contain no model output and are not checked.
+          const figureGuard =
+            humanRequested || costCap?.blocked
+              ? null
+              : new FigureGuard(
+                  allowedFigures([
+                    businessPrompt,
+                    combinedContext,
+                    assistant.name,
+                    assistant.fallbackMessage,
+                    ...messages.filter((m: any) => m.role === 'user').map((m: any) => m.content),
+                  ])
+                );
+          const sendToken = (text: string) => {
+            if (!text) return;
+            fullAssistantReply += text;
+            controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'token', token: text })}\n\n`));
+          };
+
+          let rawReply = '';
           for await (const token of tokenGenerator) {
-            fullAssistantReply += token;
+            rawReply += token;
             if (
               isDemoAssistant &&
-              (fullAssistantReply.startsWith('\n\n*(Authentication Error:') ||
-                fullAssistantReply.startsWith('\n\n*(Notice: Could not connect') ||
-                fullAssistantReply.startsWith('\n\n*(AI Generation Error:'))
+              (rawReply.startsWith('\n\n*(Authentication Error:') ||
+                rawReply.startsWith('\n\n*(Notice: Could not connect') ||
+                rawReply.startsWith('\n\n*(AI Generation Error:'))
             ) {
+              fullAssistantReply = rawReply;
               continue;
             }
-            const tokenEvent = `data: ${JSON.stringify({ type: 'token', token })}\n\n`;
-            controller.enqueue(encoder.encode(tokenEvent));
+            sendToken(figureGuard ? figureGuard.push(token) : token);
+          }
+          if (figureGuard) {
+            sendToken(figureGuard.flush());
+            if (figureGuard.dropped > 0) {
+              // what was removed is not replaced with a guess: the visitor is told so, and the offer of a person comes from the block below
+              sendToken(fullAssistantReply.trim() ? `\n\n${FIGURE_REMOVED_NOTE}` : FIGURE_REMOVED_NOTE);
+              logEvent({ level: 'warn', category: 'llm', event: 'llm.figure_removed', meta: { assistantId: assistant.id || assistantId, sentencesRemoved: figureGuard.dropped } });
+            }
           }
 
           await costCap?.settle();
@@ -891,7 +922,8 @@ Directly use the content of this attached document to assist the visitor, answer
           const saidUnknown =
             !humanRequested &&
             !llmFailed &&
-            (looksLikeUnknown(fullAssistantReply) ||
+            ((figureGuard?.dropped ?? 0) > 0 ||
+              looksLikeUnknown(fullAssistantReply) ||
               Boolean(assistant.fallbackMessage && fullAssistantReply.toLowerCase().includes(assistant.fallbackMessage.slice(0, 25).toLowerCase())));
           if (saidUnknown) {
             const withOffer = withUnknownOffer(fullAssistantReply, { bookingEnabled: Boolean(assistant.bookingEnabled) });
@@ -928,6 +960,7 @@ Directly use the content of this attached document to assist the visitor, answer
 
           const isKnowledgeGap =
             isFallbackMsg ||
+            (figureGuard?.dropped ?? 0) > 0 ||
             isUnknownAnswer ||
             (isHandoffPhrase && isUnknownAnswer) ||
             (retrieval.chunks.length === 0 && latestUserMsg.length > 8);
