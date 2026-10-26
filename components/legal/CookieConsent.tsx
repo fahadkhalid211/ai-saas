@@ -100,39 +100,47 @@ export function CookieConsent() {
   if (!open) return null;
 
   return (
-    <div
-      role="dialog"
-      aria-label={__t("Cookie choices")}
-      className="fixed bottom-4 left-4 right-4 sm:right-auto sm:max-w-md z-[99998] rounded-2xl border border-white/10 bg-[#1f1e1d] p-4 sm:p-5 text-[#e8e5dc] shadow-[0_20px_60px_rgba(0,0,0,0.5)]"
-      style={{ fontFamily: 'system-ui, -apple-system, Segoe UI, sans-serif' }}
-    >
-      <p className="text-sm font-semibold text-[#faf9f5]"><T>Cookies</T></p>
-      <p className="mt-1.5 text-[13px] leading-relaxed text-[#c9c6bc]">
-        <T>We always use the cookies needed to sign you in and keep the site secure. With your permission we also use Google Analytics to count visits and see which pages help. We never use advertising cookies.</T>{' '}
-        <A href="/cookies" className="underline"><T>Cookie Policy</T></A>
-      </p>
-      <div className="mt-3.5 flex flex-wrap gap-2">
-        <button
-          type="button"
-          onClick={() => decide('granted')}
-          className="rounded-xl bg-[#abff44] px-4 py-2 text-[13px] font-semibold text-[#08251a] hover:brightness-105 cursor-pointer"
-        >
-          <T>Accept analytics</T>
-        </button>
-        <button
-          type="button"
-          onClick={() => decide('denied')}
-          className="rounded-xl border border-white/25 bg-white/[0.06] px-4 py-2 text-[13px] font-semibold text-[#faf9f5] hover:bg-white/[0.1] cursor-pointer"
-        >
-          <T>Reject</T>
-        </button>
-        {choice !== null && (
-          <button type="button" onClick={() => setOpen(false)} className="px-2 py-2 text-[13px] text-[#a19f96] underline cursor-pointer">
-            <T>Close</T>
+    <>
+      {/* Mobile-only backdrop to dim page and ensure centered popup is prominent & above chat widget */}
+      <div
+        className="fixed inset-0 z-[100000] bg-black/60 backdrop-blur-xs sm:hidden"
+        aria-hidden="true"
+      />
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label={__t("Cookie choices")}
+        className="fixed z-[100001] rounded-2xl border border-white/10 bg-[#1f1e1d] p-5 text-[#e8e5dc] shadow-[0_20px_60px_rgba(0,0,0,0.5)] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[calc(100%-2rem)] max-w-sm max-h-[90vh] overflow-y-auto sm:z-[99998] sm:top-auto sm:bottom-4 sm:left-4 sm:right-auto sm:translate-x-0 sm:translate-y-0 sm:w-auto sm:max-w-md sm:max-h-none sm:overflow-visible sm:p-5"
+        style={{ fontFamily: 'system-ui, -apple-system, Segoe UI, sans-serif' }}
+      >
+        <p className="text-sm font-semibold text-[#faf9f5]"><T>Cookies</T></p>
+        <p className="mt-1.5 text-[13px] leading-relaxed text-[#c9c6bc]">
+          <T>We always use the cookies needed to sign you in and keep the site secure. With your permission we also use Google Analytics to count visits and see which pages help. We never use advertising cookies.</T>{' '}
+          <A href="/cookies" className="underline"><T>Cookie Policy</T></A>
+        </p>
+        <div className="mt-4 flex flex-col sm:flex-row sm:flex-wrap gap-2.5 sm:gap-2">
+          <button
+            type="button"
+            onClick={() => decide('granted')}
+            className="w-full sm:w-auto text-center rounded-xl bg-[#abff44] px-4 py-2.5 sm:py-2 text-[13px] font-semibold text-[#08251a] hover:brightness-105 cursor-pointer"
+          >
+            <T>Accept analytics</T>
           </button>
-        )}
+          <button
+            type="button"
+            onClick={() => decide('denied')}
+            className="w-full sm:w-auto text-center rounded-xl border border-white/25 bg-white/[0.06] px-4 py-2.5 sm:py-2 text-[13px] font-semibold text-[#faf9f5] hover:bg-white/[0.1] cursor-pointer"
+          >
+            <T>Reject</T>
+          </button>
+          {choice !== null && (
+            <button type="button" onClick={() => setOpen(false)} className="w-full sm:w-auto text-center px-2 py-2 text-[13px] text-[#a19f96] underline cursor-pointer">
+              <T>Close</T>
+            </button>
+          )}
+        </div>
       </div>
-    </div>
+    </>
   );
 }
 

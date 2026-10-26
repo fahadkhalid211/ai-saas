@@ -8,10 +8,11 @@ import { Flag } from './Flag';
 
 interface LanguageSwitcherProps {
   variant?: 'navbar' | 'footer' | 'compact' | 'sidebar' | 'header';
+  direction?: 'up' | 'down';
   className?: string;
 }
 
-export function LanguageSwitcher({ variant = 'navbar', className = '' }: LanguageSwitcherProps) {
+export function LanguageSwitcher({ variant = 'navbar', direction, className = '' }: LanguageSwitcherProps) {
   const { locale, setLocale, dict } = useI18n();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -71,10 +72,12 @@ export function LanguageSwitcher({ variant = 'navbar', className = '' }: Languag
         <div
           role="menu"
           aria-orientation="vertical"
-          className={`absolute z-50 mt-1.5 w-48 rounded-xl shadow-xl border bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 p-1.5 text-xs animate-in fade-in zoom-in-95 duration-150 ${
-            isFooter
+          className={`absolute z-50 w-48 rounded-xl shadow-xl border bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 p-1.5 text-xs animate-in fade-in zoom-in-95 duration-150 ${
+            direction === 'up'
+              ? 'bottom-full mb-2 right-0'
+              : isFooter
               ? 'bottom-full mb-2 left-0'
-              : 'right-0 top-full'
+              : 'right-0 top-full mt-1.5'
           }`}
         >
           <div className="space-y-0.5">

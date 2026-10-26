@@ -232,7 +232,7 @@ export function Header() {
           </div>
 
           <div className="mk-header-actions flex items-center gap-2 sm:gap-3">
-            <LanguageSwitcher variant="navbar" />
+            <LanguageSwitcher variant="navbar" className="mk-lang-desktop" />
             <Link href={LOGIN_HREF} className="mk-nav-link mk-login">
               {dict.nav.login}
             </Link>
@@ -314,7 +314,7 @@ export function Header() {
           <div className="mk-mobile-actions space-y-2">
             <div className="flex items-center justify-between px-1 pb-1">
               <span className="text-xs text-slate-500 font-medium">{dict.switcher.language}</span>
-              <LanguageSwitcher variant="navbar" />
+              <LanguageSwitcher variant="navbar" direction="up" />
             </div>
             <ButtonLink href={SIGNUP_HREF}>{dict.nav.signup}</ButtonLink>
             <ButtonLink href={LOGIN_HREF} variant="ghost">

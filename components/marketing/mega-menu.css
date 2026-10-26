@@ -148,6 +148,7 @@
 }
 @media (max-width: 959px) {
   .mk-mega { display: none; }
+  .mk-lang-desktop { display: none !important; }
 }
 
 /* ---------- mobile menu: accordions ---------- */
