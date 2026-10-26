@@ -87,8 +87,12 @@ function entries(path: string, languages: readonly SupportedLocale[], rest: { la
   return languages.map((l) => ({ url: urlFor(l), ...rest, alternates }));
 }
 
-/** Rebuilt hourly so a new day's articles appear without a deploy. */
-export const revalidate = 3600;
+/**
+ * Built for each request, never cached. The articles released so far depend on today's date (lib/blog/schedule.ts); with a cached
+ * sitemap, "revalidate" did not take effect on the host and the list stayed as it was on deploy day, so the daily releases stopped.
+ * It is a few hundred lines of text, so building it each time costs nothing.
+ */
+export const dynamic = 'force-dynamic';
 
 export default function sitemap(): MetadataRoute.Sitemap {
   // A page's date should change only when the page does; stamping "now" on everything teaches Google to ignore it.
