@@ -46,6 +46,7 @@ export type IntegrationId =
   | 'telegram'
   | 'whatsapp'
   | 'instagram'
+  | 'tiktok'
   | 'phone'
   | 'webhooks'
   | 'smtp'
@@ -146,6 +147,13 @@ export const SlackIcon: React.FC<{ className?: string }> = ({ className = 'h-5 w
 );
 
 
+
+export const TikTokIcon: React.FC<{ className?: string }> = ({ className = 'h-5 w-5' }) => (
+  <svg viewBox="0 0 24 24" fill="currentColor" className={className}>
+    <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64c.29 0 .58.04.85.12V9.4a6.33 6.33 0 0 0-1-.08A6.34 6.34 0 0 0 3 15.66a6.34 6.34 0 0 0 10.82 4.49 6.27 6.27 0 0 0 1.95-4.57V8.58a8.28 8.28 0 0 0 4.82 1.55v-3.44a4.85 4.85 0 0 1-1-.00z" />
+  </svg>
+);
+
 export const InstagramIcon: React.FC<{ className?: string }> = ({ className = 'h-5 w-5' }) => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
     <rect width="20" height="20" x="2" y="2" rx="5" ry="5" />
@@ -226,6 +234,9 @@ export const ChannelsTab: React.FC<ChannelsTabProps> = ({
   const [showTelegramToken, setShowTelegramToken] = useState(false);
   const [showWhatsAppToken, setShowWhatsAppToken] = useState(false);
   const [showInstagramToken, setShowInstagramToken] = useState(false);
+  const [showTikTokToken, setShowTikTokToken] = useState(false);
+  const [copiedTtWebhookUrl, setCopiedTtWebhookUrl] = useState(false);
+  const [copiedTtVerifyToken, setCopiedTtVerifyToken] = useState(false);
   const [copiedIgWebhookUrl, setCopiedIgWebhookUrl] = useState(false);
   const [copiedIgVerifyToken, setCopiedIgVerifyToken] = useState(false);
   const [showWebhookSecret, setShowWebhookSecret] = useState(false);
@@ -1658,6 +1669,224 @@ export const ChannelsTab: React.FC<ChannelsTabProps> = ({
                   </li>
                   <li>
                     <strong><T>Instagram Ads Tracking</T></strong>: <T>When you run Click-to-Instagram Direct Ads in Meta Ads Manager, any DM initiated by a prospect will automatically carry ad referral metadata into Crescelo, allowing the AI to answer specific ad questions!</T>
+                  </li>
+                </ol>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ======================================================== */}
+        {/* INTEGRATION: TIKTOK DIRECT & SPARK ADS                   */}
+        {/* ======================================================== */}
+        {selectedIntegration === 'tiktok' && (
+          <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 sm:p-7 shadow-xs space-y-6">
+            {activeSubTab === 'settings' ? (
+              <div className="space-y-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-200 dark:border-slate-800">
+                  <div>
+                    <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                      <T>TikTok Direct Messages &amp; Ads Automation</T>
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-cyan-50 dark:bg-cyan-950 text-cyan-600 dark:text-cyan-300 border border-cyan-200 dark:border-cyan-900/60">
+                        <T>TikTok Business API</T>
+                      </span>
+                    </h3>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                      <T>Autonomous 24/7 direct messaging, Spark Ads inquiry qualification, and instant lead capture on TikTok.</T>
+                    </p>
+                  </div>
+
+                  <label className="relative inline-flex items-center cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={formData.tiktokEnabled || false}
+                      onChange={(e) => setFormData({ ...formData, tiktokEnabled: e.target.checked })}
+                      className="sr-only peer"
+                    />
+                    <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-800 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-slate-600 peer-checked:bg-cyan-600"></div>
+                    <span className="ml-2.5 text-xs font-semibold text-slate-700 dark:text-slate-300">
+                      {formData.tiktokEnabled ? <T>{'Active'}</T> : <T>{'Disabled'}</T>}
+                    </span>
+                  </label>
+                </div>
+
+                <div className="p-4 rounded-xl bg-gradient-to-r from-cyan-500/10 via-teal-500/10 to-blue-500/10 border border-cyan-200/60 dark:border-cyan-900/40 flex items-start gap-3">
+                  <Sparkles className="h-4 w-4 text-cyan-600 dark:text-cyan-400 shrink-0 mt-0.5" />
+                  <div className="text-xs space-y-1">
+                    <p className="font-semibold text-slate-900 dark:text-slate-100">
+                      <T>⚡ TikTok Spark Ads &amp; Direct Message Ads Supported</T>
+                    </p>
+                    <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
+                      <T>When prospects swipe up or click &quot;Send Message&quot; on your TikTok Ads, the AI assistant automatically detects referral ad metadata to quote accurate prices, answer specific video questions, and capture leads 24/7.</T>
+                    </p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                        <T>TikTok Business Account ID / Advertiser ID</T>
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="e.g. 7192837192837192"
+                        value={formData.tiktokBusinessId || ''}
+                        onChange={(e) => setFormData({ ...formData, tiktokBusinessId: e.target.value })}
+                        className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-3.5 py-2.5 text-xs font-mono text-slate-900 dark:text-slate-100 outline-none focus:border-cyan-500"
+                      />
+                      <p className="text-[11px] text-slate-400 mt-1">
+                        <T>Your TikTok Business Center Account ID or Advertiser ID.</T>
+                      </p>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                        <T>TikTok Access Token (Long-Lived)</T>
+                      </label>
+                      <div className="relative">
+                        <input
+                          type={showTikTokToken ? 'text' : 'password'}
+                          placeholder="act.XXXXXX..."
+                          value={formData.tiktokAccessToken || ''}
+                          onChange={(e) => setFormData({ ...formData, tiktokAccessToken: e.target.value })}
+                          className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-3.5 py-2.5 text-xs font-mono text-slate-900 dark:text-slate-100 outline-none focus:border-cyan-500 pr-10"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowTikTokToken(!showTikTokToken)}
+                          className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600"
+                        >
+                          {showTikTokToken ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        </button>
+                      </div>
+                      <p className="text-[11px] text-slate-400 mt-1">
+                        <T>Requires im, im.message.send, or business.message permissions.</T>
+                      </p>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                        <T>Webhook Verify Token</T>
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="custom_verification_secret"
+                        value={formData.tiktokVerifyToken || ''}
+                        onChange={(e) => setFormData({ ...formData, tiktokVerifyToken: e.target.value })}
+                        className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-3.5 py-2.5 text-xs font-mono text-slate-900 dark:text-slate-100 outline-none focus:border-cyan-500"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Callback URL Card */}
+                  <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 space-y-3 text-xs">
+                    <h4 className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                      <TikTokIcon className="h-3.5 w-3.5 text-cyan-500" />
+                      <T>TikTok Webhook Settings to Configure:</T>
+                    </h4>
+
+                    <div>
+                      <span className="text-[11px] font-semibold text-slate-500"><T>Callback URL:</T></span>
+                      <div className="flex items-center gap-2 mt-1">
+                        <input
+                          readOnly
+                          value={
+                            typeof window !== 'undefined'
+                              ? `${window.location.origin}/api/channels/tiktok?assistantId=${activeAssistant?.id || ''}`
+                              : `/api/channels/tiktok?assistantId=${activeAssistant?.id || ''}`
+                          }
+                          className="flex-1 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 font-mono text-[11px]"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const url = `${window.location.origin}/api/channels/tiktok?assistantId=${activeAssistant?.id || ''}`;
+                            navigator.clipboard.writeText(url);
+                            setCopiedTtWebhookUrl(true);
+                            setTimeout(() => setCopiedTtWebhookUrl(false), 2000);
+                          }}
+                          className="px-3 py-1.5 rounded-lg bg-cyan-600 text-white font-semibold text-xs transition cursor-pointer hover:bg-cyan-700"
+                        >
+                          {copiedTtWebhookUrl ? <T>{'Copied'}</T> : <T>{'Copy'}</T>}
+                        </button>
+                      </div>
+                    </div>
+
+                    <div>
+                      <span className="text-[11px] font-semibold text-slate-500"><T>Verify Token:</T></span>
+                      <div className="flex items-center gap-2 mt-1">
+                        <input
+                          readOnly
+                          value={formData.tiktokVerifyToken || 'crescelo_tiktok_token'}
+                          className="flex-1 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 font-mono text-[11px]"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            navigator.clipboard.writeText(formData.tiktokVerifyToken || 'crescelo_tiktok_token');
+                            setCopiedTtVerifyToken(true);
+                            setTimeout(() => setCopiedTtVerifyToken(false), 2000);
+                          }}
+                          className="px-3 py-1.5 rounded-lg bg-cyan-600 text-white font-semibold text-xs transition cursor-pointer hover:bg-cyan-700"
+                        >
+                          {copiedTtVerifyToken ? <T>{'Copied'}</T> : <T>{'Copy'}</T>}
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="pt-2 border-t border-slate-200 dark:border-slate-800 text-[11px] text-slate-500 space-y-1">
+                      <p className="font-semibold text-slate-700 dark:text-slate-300">
+                        <T>Supported Event Subscriptions:</T>
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        <span className="px-2 py-0.5 rounded bg-slate-200 dark:bg-slate-800 font-mono text-[10px] text-slate-800 dark:text-slate-200">
+                          im.message.receive
+                        </span>
+                        <span className="px-2 py-0.5 rounded bg-slate-200 dark:bg-slate-800 font-mono text-[10px] text-slate-800 dark:text-slate-200">
+                          direct_message
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              /* TIKTOK SETUP GUIDE */
+              <div className="space-y-5 text-xs">
+                <div className="p-4 rounded-xl bg-cyan-50/50 dark:bg-cyan-950/30 border border-cyan-200 dark:border-cyan-900/60 flex items-start gap-3">
+                  <TikTokIcon className="h-5 w-5 text-cyan-600 dark:text-cyan-400 shrink-0 mt-0.5" />
+                  <div>
+                    <h4 className="font-bold text-cyan-900 dark:text-cyan-200 text-sm">
+                      <T>TikTok Direct Messages &amp; Ads Setup Guide</T>
+                    </h4>
+                    <p className="text-slate-600 dark:text-slate-300 mt-1 leading-relaxed">
+                      <T>Connect your TikTok Business Account with the TikTok Business API to automate inquiries, capture leads from TikTok Ads &amp; Spark Ads, and book appointments 24/7.</T>
+                    </p>
+                  </div>
+                </div>
+
+                <ol className="list-decimal list-inside space-y-3 text-slate-700 dark:text-slate-300 leading-relaxed">
+                  <li>
+                    <strong><T>Switch to a TikTok Business Account</T></strong>: <T>In the TikTok app, navigate to Profile &gt; Settings and privacy &gt; Account &gt; Switch to Business Account.</T>
+                  </li>
+                  <li>
+                    <strong><T>Create App in TikTok for Developers</T></strong>: <T>Go to developers.tiktok.com &gt; My Apps &gt; Create App and register your business app.</T>
+                  </li>
+                  <li>
+                    <strong><T>Link TikTok Business Center</T></strong>: <T>In TikTok Business Center (business.tiktok.com), link your TikTok account to manage Ads and direct messaging access.</T>
+                  </li>
+                  <li>
+                    <strong><T>Generate Access Token</T></strong>: <T>Request permissions for Direct Messaging (im, business.message) and generate your Long-Lived Access Token. Paste it into the Settings tab.</T>
+                  </li>
+                  <li>
+                    <strong><T>Configure Webhook</T></strong>: <T>In TikTok Developer App &gt; Webhooks, set your Callback URL and Verify Token from the Settings tab.</T>
+                  </li>
+                  <li>
+                    <strong><T>Subscribe to Messaging Events</T></strong>: <T>Subscribe to im.message.receive or direct_message. Your assistant is now online on TikTok!</T>
+                  </li>
+                  <li>
+                    <strong><T>TikTok Ads &amp; Spark Ads</T></strong>: <T>When running TikTok Ads with a &quot;Send Message&quot; CTA, all incoming conversations carry ad referral details into Crescelo, allowing your assistant to answer specific promo questions instantly.</T>
                   </li>
                 </ol>
               </div>

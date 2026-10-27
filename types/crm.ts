@@ -34,6 +34,10 @@ export interface Assistant {
   instagramAccessToken?: string;
   instagramVerifyToken?: string;
   instagramEnabled?: boolean;
+  tiktokBusinessId?: string;
+  tiktokAccessToken?: string;
+  tiktokVerifyToken?: string;
+  tiktokEnabled?: boolean;
   webhookUrl?: string;
   webhookSecret?: string;
   webhookEvents?: string[];

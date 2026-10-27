@@ -164,6 +164,10 @@ export interface AssistantData {
   instagramAccessToken?: string;
   instagramVerifyToken?: string;
   instagramEnabled?: boolean;
+  tiktokBusinessId?: string;
+  tiktokAccessToken?: string;
+  tiktokVerifyToken?: string;
+  tiktokEnabled?: boolean;
   webhookUrl?: string;
   webhookSecret?: string;
   webhookEvents?: string[];
@@ -1320,6 +1324,8 @@ export class Database {
       keyHealth: undefined,
       telegramBotToken: decryptSecret(a.telegramBotToken || ''),
       whatsappAccessToken: decryptSecret(a.whatsappAccessToken || ''),
+      instagramAccessToken: decryptSecret(a.instagramAccessToken || ''),
+      tiktokAccessToken: decryptSecret(a.tiktokAccessToken || ''),
       webhookSecret: decryptSecret(a.webhookSecret || ''),
     }));
   }
@@ -1376,6 +1382,8 @@ export class Database {
       keyHealth: undefined,
       telegramBotToken: decryptSecret(a.telegramBotToken || ''),
       whatsappAccessToken: decryptSecret(a.whatsappAccessToken || ''),
+      instagramAccessToken: decryptSecret(a.instagramAccessToken || ''),
+      tiktokAccessToken: decryptSecret(a.tiktokAccessToken || ''),
       webhookSecret: decryptSecret(a.webhookSecret || ''),
     };
   }
@@ -1414,6 +1422,14 @@ export class Database {
       whatsappAccessToken: data.whatsappAccessToken ? encryptSecret(data.whatsappAccessToken) : '',
       whatsappVerifyToken: data.whatsappVerifyToken || '',
       whatsappEnabled: data.whatsappEnabled ?? false,
+      instagramAccountId: data.instagramAccountId || '',
+      instagramAccessToken: data.instagramAccessToken ? encryptSecret(data.instagramAccessToken) : '',
+      instagramVerifyToken: data.instagramVerifyToken || '',
+      instagramEnabled: data.instagramEnabled ?? false,
+      tiktokBusinessId: data.tiktokBusinessId || '',
+      tiktokAccessToken: data.tiktokAccessToken ? encryptSecret(data.tiktokAccessToken) : '',
+      tiktokVerifyToken: data.tiktokVerifyToken || '',
+      tiktokEnabled: data.tiktokEnabled ?? false,
       webhookUrl: data.webhookUrl || '',
       webhookSecret: data.webhookSecret ? encryptSecret(data.webhookSecret) : '',
       webhookEvents: data.webhookEvents || ['lead.created', 'chat.escalated'],
@@ -1439,6 +1455,8 @@ export class Database {
       keyHealth: undefined,
       telegramBotToken: decryptSecret(newAssistant.telegramBotToken || ''),
       whatsappAccessToken: decryptSecret(newAssistant.whatsappAccessToken || ''),
+      instagramAccessToken: decryptSecret(newAssistant.instagramAccessToken || ''),
+      tiktokAccessToken: decryptSecret(newAssistant.tiktokAccessToken || ''),
       webhookSecret: decryptSecret(newAssistant.webhookSecret || ''),
     };
   }
@@ -1493,6 +1511,13 @@ export class Database {
         updates.instagramAccessToken = encryptSecret(updates.instagramAccessToken);
       }
     }
+    if (updates.tiktokAccessToken !== undefined) {
+      if (updates.tiktokAccessToken.includes('****')) {
+        delete updates.tiktokAccessToken;
+      } else if (updates.tiktokAccessToken) {
+        updates.tiktokAccessToken = encryptSecret(updates.tiktokAccessToken);
+      }
+    }
     if (updates.webhookSecret !== undefined) {
       if (updates.webhookSecret.includes('****')) {
         delete updates.webhookSecret;
@@ -1516,6 +1541,8 @@ export class Database {
       keyHealth: undefined,
       telegramBotToken: decryptSecret(updated.telegramBotToken || ''),
       whatsappAccessToken: decryptSecret(updated.whatsappAccessToken || ''),
+      instagramAccessToken: decryptSecret(updated.instagramAccessToken || ''),
+      tiktokAccessToken: decryptSecret(updated.tiktokAccessToken || ''),
       webhookSecret: decryptSecret(updated.webhookSecret || ''),
     };
   }
@@ -3107,6 +3134,8 @@ export class Database {
       keyHealth: undefined,
       telegramBotToken: decryptSecret(ast.telegramBotToken || ''),
       whatsappAccessToken: decryptSecret(ast.whatsappAccessToken || ''),
+      instagramAccessToken: decryptSecret(ast.instagramAccessToken || ''),
+      tiktokAccessToken: decryptSecret(ast.tiktokAccessToken || ''),
       webhookSecret: decryptSecret(ast.webhookSecret || ''),
     };
   }

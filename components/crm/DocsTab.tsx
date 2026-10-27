@@ -180,6 +180,26 @@ export const DocsTab: React.FC<DocsTabProps> = ({ setActiveTab }) => {
       actionLabel: 'Open Channels',
     },
     {
+      id: 'tiktok-integration',
+      title: 'Connecting TikTok Direct Messages & Ads',
+      category: 'Channels & Integrations',
+      badge: 'TikTok',
+      badgeColor: 'bg-cyan-100 text-cyan-700 dark:bg-cyan-950 dark:text-cyan-300',
+      icon: MessageSquare,
+      steps: [
+        'Switch your TikTok account to a Business Account in TikTok app > Settings & Privacy > Account.',
+        'Register on developers.tiktok.com and create a Business App with Direct Messaging permissions.',
+        'Link your TikTok Business Center account to manage ads and messaging assets.',
+        'Generate a Long-Lived Access Token with im and business.message permissions.',
+        'In Crescelo → Channels & Integrations → select TikTok Direct, and paste your Account ID, Access Token, and Verify Token.',
+        'Set your Webhook Callback URL in TikTok Developer Dashboard and subscribe to im.message.receive.',
+        'Direct messages from profile visits and Click-to-Message TikTok Ads will now be answered 24/7 by AI!',
+      ],
+      tip: 'TikTok Spark Ads and Direct Message Ads pass campaign referral details so the AI responds with the exact offer or product seen in the video.',
+      targetTab: 'channels',
+      actionLabel: 'Open Channels',
+    },
+    {
       id: 'telegram-bot',
       title: 'Connecting Telegram Bot API',
       category: 'Channels & Integrations',
@@ -327,7 +347,7 @@ export const DocsTab: React.FC<DocsTabProps> = ({ setActiveTab }) => {
       if (selectedCategory === 'booking') return coreGuides.filter(g => ['appointment-booking'].includes(g.id));
       if (selectedCategory === 'leads') return coreGuides.filter(g => ['lead-capture'].includes(g.id));
       if (selectedCategory === 'rag') return coreGuides.filter(g => ['knowledge-base', 'figure-guard'].includes(g.id));
-      if (selectedCategory === 'integrations') return coreGuides.filter(g => ['whatsapp-integration', 'instagram-integration', 'telegram-bot', 'outbound-webhooks', 'voice-agent', 'white-label'].includes(g.id));
+      if (selectedCategory === 'integrations') return coreGuides.filter(g => ['whatsapp-integration', 'instagram-integration', 'tiktok-integration', 'telegram-bot', 'outbound-webhooks', 'voice-agent', 'white-label'].includes(g.id));
       return [];
     }
     if (!searchQuery.trim()) return coreGuides;

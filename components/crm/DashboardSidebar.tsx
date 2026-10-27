@@ -34,7 +34,7 @@ import {
   Webhook,
   Mail,
 } from 'lucide-react';
-import { INTEGRATIONS_CONFIG, SlackIcon, GoogleSheetsIcon, InstagramIcon, type IntegrationId } from './ChannelsTab';
+import { INTEGRATIONS_CONFIG, SlackIcon, GoogleSheetsIcon, InstagramIcon, TikTokIcon, type IntegrationId } from './ChannelsTab';
 
 function renderIntegrationIcon(id: IntegrationId) {
   switch (id) {
@@ -48,6 +48,8 @@ function renderIntegrationIcon(id: IntegrationId) {
       return <Radio className="h-3.5 w-3.5 text-emerald-500 shrink-0" />;
     case 'instagram':
       return <InstagramIcon className="h-3.5 w-3.5 text-pink-500 shrink-0" />;
+    case 'tiktok':
+      return <TikTokIcon className="h-3.5 w-3.5 text-cyan-500 shrink-0" />;
     case 'phone':
       return <PhoneCall className="h-3.5 w-3.5 text-indigo-500 shrink-0" />;
     case 'webhooks':
