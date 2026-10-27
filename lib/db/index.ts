@@ -160,6 +160,10 @@ export interface AssistantData {
   whatsappAccessToken?: string;
   whatsappVerifyToken?: string;
   whatsappEnabled?: boolean;
+  instagramAccountId?: string;
+  instagramAccessToken?: string;
+  instagramVerifyToken?: string;
+  instagramEnabled?: boolean;
   webhookUrl?: string;
   webhookSecret?: string;
   webhookEvents?: string[];
@@ -1480,6 +1484,13 @@ export class Database {
         delete updates.whatsappAccessToken;
       } else if (updates.whatsappAccessToken) {
         updates.whatsappAccessToken = encryptSecret(updates.whatsappAccessToken);
+      }
+    }
+    if (updates.instagramAccessToken !== undefined) {
+      if (updates.instagramAccessToken.includes('****')) {
+        delete updates.instagramAccessToken;
+      } else if (updates.instagramAccessToken) {
+        updates.instagramAccessToken = encryptSecret(updates.instagramAccessToken);
       }
     }
     if (updates.webhookSecret !== undefined) {

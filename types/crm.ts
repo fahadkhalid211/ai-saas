@@ -30,6 +30,10 @@ export interface Assistant {
   whatsappAccessToken?: string;
   whatsappVerifyToken?: string;
   whatsappEnabled?: boolean;
+  instagramAccountId?: string;
+  instagramAccessToken?: string;
+  instagramVerifyToken?: string;
+  instagramEnabled?: boolean;
   webhookUrl?: string;
   webhookSecret?: string;
   webhookEvents?: string[];

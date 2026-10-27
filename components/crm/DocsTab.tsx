@@ -158,6 +158,27 @@ export const DocsTab: React.FC<DocsTabProps> = ({ setActiveTab }) => {
       targetTab: 'channels',
       actionLabel: 'Open Channels',
     },
+        {
+      id: 'instagram-integration',
+      title: 'Connecting Instagram Direct & Ads',
+      category: 'Channels & Integrations',
+      badge: 'Instagram',
+      badgeColor: 'bg-pink-100 text-pink-700 dark:bg-pink-950 dark:text-pink-300',
+      icon: MessageSquare,
+      steps: [
+        'Switch your Instagram account to a Professional (Business/Creator) account in the Instagram app.',
+        'Connect your Instagram account to your Facebook Page in Settings > Creator/Business Tools.',
+        'In Instagram app > Message Controls > Connected Tools, toggle ON "Allow access to messages".',
+        'In Meta for Developers, create a Business App and add Messenger / Instagram Graph API.',
+        'Generate a System User token with permissions: instagram_basic and instagram_manage_messages.',
+        'In Crescelo → Channels & Integrations → select Instagram Direct, and paste your Account ID, Access Token, and Verify Token.',
+        'Set your Webhook Callback URL in Meta Developer Dashboard and subscribe to "messages" and "messaging_postbacks".',
+        'Click-to-Instagram Direct Ads will now automatically route inquiries with ad context to your AI assistant!',
+      ],
+      tip: 'When running Instagram Ads, any lead clicking "Send Message" automatically passes referral metadata so the AI knows the exact promotion they saw.',
+      targetTab: 'channels',
+      actionLabel: 'Open Channels',
+    },
     {
       id: 'telegram-bot',
       title: 'Connecting Telegram Bot API',
@@ -306,7 +327,7 @@ export const DocsTab: React.FC<DocsTabProps> = ({ setActiveTab }) => {
       if (selectedCategory === 'booking') return coreGuides.filter(g => ['appointment-booking'].includes(g.id));
       if (selectedCategory === 'leads') return coreGuides.filter(g => ['lead-capture'].includes(g.id));
       if (selectedCategory === 'rag') return coreGuides.filter(g => ['knowledge-base', 'figure-guard'].includes(g.id));
-      if (selectedCategory === 'integrations') return coreGuides.filter(g => ['whatsapp-integration', 'telegram-bot', 'outbound-webhooks', 'voice-agent', 'white-label'].includes(g.id));
+      if (selectedCategory === 'integrations') return coreGuides.filter(g => ['whatsapp-integration', 'instagram-integration', 'telegram-bot', 'outbound-webhooks', 'voice-agent', 'white-label'].includes(g.id));
       return [];
     }
     if (!searchQuery.trim()) return coreGuides;

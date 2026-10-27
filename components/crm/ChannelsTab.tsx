@@ -45,6 +45,7 @@ export type IntegrationId =
   | 'google-sheets'
   | 'telegram'
   | 'whatsapp'
+  | 'instagram'
   | 'phone'
   | 'webhooks'
   | 'smtp'
@@ -94,6 +95,14 @@ export const INTEGRATIONS_CONFIG: IntegrationConfigItem[] = [
     summary: 'Official WhatsApp Business API integration for two-way automated client chats.',
   },
   {
+    id: 'instagram',
+    name: 'Instagram Direct',
+    shortName: 'Instagram Direct',
+    category: 'Autonomous Messaging',
+    badge: 'Direct & Ad Inquiries',
+    summary: 'Autonomous 24/7 client DMs, answer inquiries from Instagram Ads, and book appointments directly on Instagram.',
+  },
+  {
     id: 'webhooks',
     name: 'Zapier & Webhooks',
     shortName: 'Webhooks',
@@ -133,6 +142,15 @@ export const SlackIcon: React.FC<{ className?: string }> = ({ className = 'h-5 w
     <path d="M45.2 25.8c-7.1 0-12.9-5.8-12.9-12.9S38.1 0 45.2 0s12.9 5.8 12.9 12.9v12.9H45.2zm0 6.5c7.1 0 12.9 5.8 12.9 12.9s-5.8 12.9-12.9 12.9H12.9C5.8 58.1 0 52.3 0 45.2s5.8-12.9 12.9-12.9h32.3z" fill="#36C5F0" />
     <path d="M97 45.2c0-7.1 5.8-12.9 12.9-12.9s12.9 5.8 12.9 12.9-5.8 12.9-12.9 12.9H97V45.2zm-6.5 0c0 7.1-5.8 12.9-12.9 12.9s-12.9-5.8-12.9-12.9V12.9C64.7 5.8 70.5 0 77.6 0s12.9 5.8 12.9 12.9v32.3z" fill="#2EB67D" />
     <path d="M77.6 97c7.1 0 12.9 5.8 12.9 12.9s-5.8 12.9-12.9 12.9-12.9-5.8-12.9-12.9V97h12.9zm0-6.5c-7.1 0-12.9-5.8-12.9-12.9s5.8-12.9 12.9-12.9h32.3c7.1 0 12.9 5.8 12.9 12.9s-5.8 12.9-12.9 12.9H77.6z" fill="#ECB22E" />
+  </svg>
+);
+
+
+export const InstagramIcon: React.FC<{ className?: string }> = ({ className = 'h-5 w-5' }) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <rect width="20" height="20" x="2" y="2" rx="5" ry="5" />
+    <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+    <line x1="17.5" x2="17.51" y1="6.5" y2="6.5" />
   </svg>
 );
 
@@ -207,6 +225,9 @@ export const ChannelsTab: React.FC<ChannelsTabProps> = ({
   // Secrets visibility toggles
   const [showTelegramToken, setShowTelegramToken] = useState(false);
   const [showWhatsAppToken, setShowWhatsAppToken] = useState(false);
+  const [showInstagramToken, setShowInstagramToken] = useState(false);
+  const [copiedIgWebhookUrl, setCopiedIgWebhookUrl] = useState(false);
+  const [copiedIgVerifyToken, setCopiedIgVerifyToken] = useState(false);
   const [showWebhookSecret, setShowWebhookSecret] = useState(false);
   const [showSmtpPassword, setShowSmtpPassword] = useState(false);
 
@@ -474,6 +495,15 @@ export const ChannelsTab: React.FC<ChannelsTabProps> = ({
       summary: 'Official WhatsApp Business API integration for two-way automated client chats.',
       icon: <Radio className="h-5 w-5 text-emerald-500" />,
       isActive: Boolean(formData.whatsappEnabled && formData.whatsappPhoneNumberId),
+    },
+    {
+      id: 'instagram' as const,
+      name: 'Instagram Direct',
+      category: 'Autonomous Messaging',
+      badge: 'Direct & Ad Inquiries',
+      summary: 'Autonomous 24/7 client DMs, answer inquiries from Instagram Ads, and book appointments directly on Instagram.',
+      icon: <InstagramIcon className="h-5 w-5 text-pink-500" />,
+      isActive: Boolean(formData.instagramEnabled && formData.instagramAccountId),
     },
     {
       id: 'webhooks' as const,
@@ -1408,6 +1438,227 @@ export const ChannelsTab: React.FC<ChannelsTabProps> = ({
                   <li><T>Under</T> <em><T>API Setup</T></em><T>, copy your</T> <strong><T>Phone Number ID</T></strong> <T>and temporary/system token into the Settings tab.</T></li>
                   <li><T>Under</T> <em><T>Configuration &gt; Webhook</T></em><T>, click</T> <strong><T>Edit</T></strong><T>. Paste your Callback URL and Verify Token from the Settings tab.</T></li>
                   <li><T>Under</T> <em><T>Webhook fields</T></em><T>, subscribe to the</T> <strong><T>messages</T></strong> <T>event. Your assistant is now ready to receive WhatsApp messages!</T></li>
+                </ol>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ======================================================== */}
+        {/* INTEGRATION: INSTAGRAM DIRECT & AD INQUIRIES             */}
+        {/* ======================================================== */}
+        {selectedIntegration === 'instagram' && (
+          <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 sm:p-7 shadow-xs space-y-6">
+            {activeSubTab === 'settings' ? (
+              <div className="space-y-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-200 dark:border-slate-800">
+                  <div>
+                    <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                      <T>Meta Instagram Direct &amp; Ad Automation</T>
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-pink-50 dark:bg-pink-950 text-pink-600 dark:text-pink-300 border border-pink-200 dark:border-pink-900/60">
+                        <T>Meta Messenger API</T>
+                      </span>
+                    </h3>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                      <T>Autonomous 24/7 client direct messaging, Click-to-Instagram Direct Ads context routing, and appointment scheduling.</T>
+                    </p>
+                  </div>
+
+                  <label className="relative inline-flex items-center cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={formData.instagramEnabled || false}
+                      onChange={(e) => setFormData({ ...formData, instagramEnabled: e.target.checked })}
+                      className="sr-only peer"
+                    />
+                    <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-800 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-slate-600 peer-checked:bg-pink-600"></div>
+                    <span className="ml-2.5 text-xs font-semibold text-slate-700 dark:text-slate-300">
+                      {formData.instagramEnabled ? <T>{'Active'}</T> : <T>{'Disabled'}</T>}
+                    </span>
+                  </label>
+                </div>
+
+                <div className="p-4 rounded-xl bg-gradient-to-r from-pink-500/10 via-purple-500/10 to-indigo-500/10 border border-pink-200/60 dark:border-pink-900/40 flex items-start gap-3">
+                  <Sparkles className="h-4 w-4 text-pink-600 dark:text-pink-400 shrink-0 mt-0.5" />
+                  <div className="text-xs space-y-1">
+                    <p className="font-semibold text-slate-900 dark:text-slate-100">
+                      <T>⚡ Click-to-Instagram Direct Ads Supported</T>
+                    </p>
+                    <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
+                      <T>When prospects click your Instagram Ads and send a DM, the AI assistant automatically detects referral ad metadata (Ad ID &amp; Campaign Title) to personalize responses, quote accurate pricing, and qualify leads.</T>
+                    </p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                        <T>Instagram Account ID / Connected Facebook Page ID</T>
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="e.g. 17841400000000000"
+                        value={formData.instagramAccountId || ''}
+                        onChange={(e) => setFormData({ ...formData, instagramAccountId: e.target.value })}
+                        className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-3.5 py-2.5 text-xs font-mono text-slate-900 dark:text-slate-100 outline-none focus:border-pink-500"
+                      />
+                      <p className="text-[11px] text-slate-400 mt-1">
+                        <T>Your Instagram Professional Account ID or linked Facebook Page ID from Meta App Dashboard.</T>
+                      </p>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                        <T>Meta System User Access Token (Permanent)</T>
+                      </label>
+                      <div className="relative">
+                        <input
+                          type={showInstagramToken ? 'text' : 'password'}
+                          placeholder="EAAG..."
+                          value={formData.instagramAccessToken || ''}
+                          onChange={(e) => setFormData({ ...formData, instagramAccessToken: e.target.value })}
+                          className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-3.5 py-2.5 text-xs font-mono text-slate-900 dark:text-slate-100 outline-none focus:border-pink-500 pr-10"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowInstagramToken(!showInstagramToken)}
+                          className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600"
+                        >
+                          {showInstagramToken ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        </button>
+                      </div>
+                      <p className="text-[11px] text-slate-400 mt-1">
+                        <T>Requires instagram_basic and instagram_manage_messages permissions.</T>
+                      </p>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                        <T>Webhook Verify Token</T>
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="custom_verification_secret"
+                        value={formData.instagramVerifyToken || ''}
+                        onChange={(e) => setFormData({ ...formData, instagramVerifyToken: e.target.value })}
+                        className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-3.5 py-2.5 text-xs font-mono text-slate-900 dark:text-slate-100 outline-none focus:border-pink-500"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Callback URL Card */}
+                  <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 space-y-3 text-xs">
+                    <h4 className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                      <InstagramIcon className="h-3.5 w-3.5 text-pink-500" />
+                      <T>Meta Webhook Settings to Configure:</T>
+                    </h4>
+
+                    <div>
+                      <span className="text-[11px] font-semibold text-slate-500"><T>Callback URL:</T></span>
+                      <div className="flex items-center gap-2 mt-1">
+                        <input
+                          readOnly
+                          value={
+                            typeof window !== 'undefined'
+                              ? `${window.location.origin}/api/channels/instagram?assistantId=${activeAssistant?.id || ''}`
+                              : `/api/channels/instagram?assistantId=${activeAssistant?.id || ''}`
+                          }
+                          className="flex-1 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 font-mono text-[11px]"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const url = `${window.location.origin}/api/channels/instagram?assistantId=${activeAssistant?.id || ''}`;
+                            navigator.clipboard.writeText(url);
+                            setCopiedIgWebhookUrl(true);
+                            setTimeout(() => setCopiedIgWebhookUrl(false), 2000);
+                          }}
+                          className="px-3 py-1.5 rounded-lg bg-pink-600 text-white font-semibold text-xs transition cursor-pointer hover:bg-pink-700"
+                        >
+                          {copiedIgWebhookUrl ? <T>{'Copied'}</T> : <T>{'Copy'}</T>}
+                        </button>
+                      </div>
+                    </div>
+
+                    <div>
+                      <span className="text-[11px] font-semibold text-slate-500"><T>Verify Token:</T></span>
+                      <div className="flex items-center gap-2 mt-1">
+                        <input
+                          readOnly
+                          value={formData.instagramVerifyToken || 'crescelo_instagram_token'}
+                          className="flex-1 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 font-mono text-[11px]"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            navigator.clipboard.writeText(formData.instagramVerifyToken || 'crescelo_instagram_token');
+                            setCopiedIgVerifyToken(true);
+                            setTimeout(() => setCopiedIgVerifyToken(false), 2000);
+                          }}
+                          className="px-3 py-1.5 rounded-lg bg-pink-600 text-white font-semibold text-xs transition cursor-pointer hover:bg-pink-700"
+                        >
+                          {copiedIgVerifyToken ? <T>{'Copied'}</T> : <T>{'Copy'}</T>}
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="pt-2 border-t border-slate-200 dark:border-slate-800 text-[11px] text-slate-500 space-y-1">
+                      <p className="font-semibold text-slate-700 dark:text-slate-300">
+                        <T>Required Webhook Subscription Fields:</T>
+                      </p>
+                      <div className="flex gap-2">
+                        <span className="px-2 py-0.5 rounded bg-slate-200 dark:bg-slate-800 font-mono text-[10px] text-slate-800 dark:text-slate-200">
+                          messages
+                        </span>
+                        <span className="px-2 py-0.5 rounded bg-slate-200 dark:bg-slate-800 font-mono text-[10px] text-slate-800 dark:text-slate-200">
+                          messaging_postbacks
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              /* INSTAGRAM SETUP GUIDE */
+              <div className="space-y-5 text-xs">
+                <div className="p-4 rounded-xl bg-pink-50/50 dark:bg-pink-950/30 border border-pink-200 dark:border-pink-900/60 flex items-start gap-3">
+                  <InstagramIcon className="h-5 w-5 text-pink-600 dark:text-pink-400 shrink-0 mt-0.5" />
+                  <div>
+                    <h4 className="font-bold text-pink-900 dark:text-pink-200 text-sm">
+                      <T>Meta Instagram Direct &amp; Ads Setup Guide</T>
+                    </h4>
+                    <p className="text-slate-600 dark:text-slate-300 mt-1 leading-relaxed">
+                      <T>Configure your Instagram Professional account with Meta Developer API to automate inquiries, capture leads from Instagram Ads, and book appointments autonomously.</T>
+                    </p>
+                  </div>
+                </div>
+
+                <ol className="list-decimal list-inside space-y-3 text-slate-700 dark:text-slate-300 leading-relaxed">
+                  <li>
+                    <strong><T>Switch to a Professional Account</T></strong>: <T>In the Instagram mobile app, navigate to Settings &gt; Account type and tools &gt; Switch to Professional Account (Business or Creator).</T>
+                  </li>
+                  <li>
+                    <strong><T>Connect to Facebook Page</T></strong>: <T>Link your Instagram Professional account to your business Facebook Page in Instagram Settings &gt; Creator/Business &gt; Connect or Create a Facebook Page.</T>
+                  </li>
+                  <li>
+                    <strong><T>Enable Connected Tools in App</T></strong>: <T>In Instagram App &gt; Settings &gt; Messages and story replies &gt; Message controls &gt; Connected tools &gt; toggle ON &quot;Allow access to messages&quot;.</T>
+                  </li>
+                  <li>
+                    <strong><T>Create Meta Developer App</T></strong>: <T>Go to developers.facebook.com &gt; My Apps &gt; Create App &gt; select &quot;Other&quot; &gt; &quot;Business&quot;.</T>
+                  </li>
+                  <li>
+                    <strong><T>Add Messenger API for Instagram</T></strong>: <T>Under Add products to your app, locate Messenger (or Instagram Graph API) and click Set Up.</T>
+                  </li>
+                  <li>
+                    <strong><T>Generate System User Token</T></strong>: <T>In Meta Business Manager &gt; System Users &gt; Generate Token with instagram_basic, instagram_manage_messages, pages_manage_metadata, and pages_read_engagement permissions. Paste this into the Settings tab.</T>
+                  </li>
+                  <li>
+                    <strong><T>Configure Webhook</T></strong>: <T>In Meta App Dashboard &gt; Webhooks &gt; select &quot;Instagram&quot; (or Messenger) &gt; Edit Callback URL. Paste your Callback URL and Verify Token, then subscribe to the messages and messaging_postbacks events.</T>
+                  </li>
+                  <li>
+                    <strong><T>Instagram Ads Tracking</T></strong>: <T>When you run Click-to-Instagram Direct Ads in Meta Ads Manager, any DM initiated by a prospect will automatically carry ad referral metadata into Crescelo, allowing the AI to answer specific ad questions!</T>
+                  </li>
                 </ol>
               </div>
             )}

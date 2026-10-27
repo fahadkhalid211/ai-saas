@@ -36,6 +36,7 @@ const GETHandler = withAdminAuth(async (
       ...keyFieldsForClient(assistant),
       telegramBotToken: assistant.telegramBotToken ? maskSecret(assistant.telegramBotToken) : '',
       whatsappAccessToken: assistant.whatsappAccessToken ? maskSecret(assistant.whatsappAccessToken) : '',
+      instagramAccessToken: assistant.instagramAccessToken ? maskSecret(assistant.instagramAccessToken) : '',
       webhookSecret: assistant.webhookSecret ? maskSecret(assistant.webhookSecret) : '',
       calendarFeedToken: generateCalendarFeedToken(assistant.id),
     };
@@ -269,6 +270,7 @@ const PUTHandler = withRoleAuth(['owner', 'admin'], async (
       ...keyFieldsForClient(updated),
       telegramBotToken: updated.telegramBotToken ? maskSecret(updated.telegramBotToken) : '',
       whatsappAccessToken: updated.whatsappAccessToken ? maskSecret(updated.whatsappAccessToken) : '',
+      instagramAccessToken: updated.instagramAccessToken ? maskSecret(updated.instagramAccessToken) : '',
       webhookSecret: updated.webhookSecret ? maskSecret(updated.webhookSecret) : '',
       calendarFeedToken: generateCalendarFeedToken(updated.id),
     };
