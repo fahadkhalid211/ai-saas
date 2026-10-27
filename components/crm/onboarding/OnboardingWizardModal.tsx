@@ -12,7 +12,6 @@ import {
   CheckCircle2,
   Copy,
   Check,
-  Download,
   Scissors,
   ShoppingBag,
   Stethoscope,
@@ -745,7 +744,7 @@ export const OnboardingWizardModal: React.FC<OnboardingWizardModalProps> = ({
                 </div>
               </div>
 
-              {/* Embed snippet & WordPress Links */}
+              {/* Embed snippet */}
               <div className="space-y-2 pt-1">
                 <label className="text-xs font-bold text-slate-800">
                   <T>Add to Your Website in 60 Seconds:</T>
@@ -769,18 +768,6 @@ export const OnboardingWizardModal: React.FC<OnboardingWizardModalProps> = ({
                     {copiedSnippet ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
                     <span>{copiedSnippet ? <T>{'Copied'}</T> : <T>{'Copy Code'}</T>}</span>
                   </button>
-                </div>
-
-                <div className="flex items-center justify-between text-xs text-slate-500 pt-1">
-                  <span><T>Using WordPress? Connect in 1 click:</T></span>
-                  <a
-                    href="/wordpress/ai-business-assistant.zip"
-                    download
-                    className="text-[#08251a] hover:underline font-bold inline-flex items-center gap-1"
-                  >
-                    <Download className="h-3 w-3" />
-                    <span><T>Download Crescelo WordPress Plugin (.zip)</T></span>
-                  </a>
                 </div>
               </div>
             </div>

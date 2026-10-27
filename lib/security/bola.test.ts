@@ -533,8 +533,7 @@ describe('Multi-Tenant Isolation & BOLA/IDOR Security', () => {
     expect(emptyApts).toEqual([]);
 
     const notifs = await relationalGetNotifications(undefined, 50, []);
-    // Only system notifications (assistantId is null) may be returned when assistantIds is empty
-    expect(notifs.every((n) => !n.assistantId)).toBe(true);
+    expect(notifs).toEqual([]);
   });
 
   it('should reject Staff123! default password when no password is set on member', async () => {
@@ -694,6 +693,27 @@ describe('Multi-Tenant Isolation & BOLA/IDOR Security', () => {
     });
     const markRes = await postNotificationsRoute(markReq);
     expect(markRes.status).toBe(404);
+  });
+
+  it('should not leak admin or system notifications without assistantId to newly registered tenant', async () => {
+    const { GET: getNotificationsRoute } = await import('../../app/api/notifications/route');
+
+    await Database.addNotification({
+      title: 'Platform Maintenance Notice',
+      message: 'Global admin alert',
+      type: 'reminder_dispatched',
+    });
+
+    const newWsId = 'ws_new_' + Math.random().toString(36).substring(2, 8);
+    const tokenNew = await tokenFor('owner', 'user-new', newWsId);
+    const req = new Request('http://localhost/api/notifications', {
+      headers: { authorization: `Bearer ${tokenNew}` },
+    });
+    const res = await getNotificationsRoute(req);
+    expect(res.status).toBe(200);
+    const json = await res.json();
+    expect(json.notifications).toEqual([]);
+    expect(json.unreadCount).toBe(0);
   });
 
   it('should prevent cross-workspace slug collisions when saving landing pages', async () => {

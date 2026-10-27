@@ -565,8 +565,9 @@ export async function relationalGetNotifications(
   limit = 50,
   assistantIds?: string[]
 ): Promise<InAppNotificationData[]> {
-  if (assistantIds !== undefined && assistantId && !assistantIds.includes(assistantId)) {
-    return [];
+  if (assistantIds !== undefined) {
+    if (assistantIds.length === 0) return [];
+    if (assistantId && !assistantIds.includes(assistantId)) return [];
   }
 
   const result = await withPool(async (client) => {
@@ -574,21 +575,14 @@ export async function relationalGetNotifications(
     let params: any[];
     if (assistantId) {
       query = `SELECT * FROM kortex_notifications
-               WHERE assistant_id = $1 OR assistant_id IS NULL
+               WHERE assistant_id = $1
                ORDER BY created_at DESC LIMIT $2`;
       params = [assistantId, limit];
     } else if (assistantIds !== undefined) {
-      if (assistantIds.length === 0) {
-        query = `SELECT * FROM kortex_notifications
-                 WHERE assistant_id IS NULL
-                 ORDER BY created_at DESC LIMIT $1`;
-        params = [limit];
-      } else {
-        query = `SELECT * FROM kortex_notifications
-                 WHERE assistant_id = ANY($1::text[]) OR assistant_id IS NULL
-                 ORDER BY created_at DESC LIMIT $2`;
-        params = [assistantIds, limit];
-      }
+      query = `SELECT * FROM kortex_notifications
+               WHERE assistant_id = ANY($1::text[])
+               ORDER BY created_at DESC LIMIT $2`;
+      params = [assistantIds, limit];
     } else {
       query = `SELECT * FROM kortex_notifications ORDER BY created_at DESC LIMIT $1`;
       params = [limit];
@@ -624,7 +618,7 @@ export async function relationalMarkAllNotificationsRead(assistantId?: string): 
     let query: string;
     let params: any[];
     if (assistantId) {
-      query = `UPDATE kortex_notifications SET read = true WHERE assistant_id = $1 OR assistant_id IS NULL`;
+      query = `UPDATE kortex_notifications SET read = true WHERE assistant_id = $1`;
       params = [assistantId];
     } else {
       query = `UPDATE kortex_notifications SET read = true WHERE read = false`;

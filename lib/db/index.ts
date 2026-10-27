@@ -3647,11 +3647,12 @@ export class Database {
     const state = await ensureInitialized();
     let notifs = state.notifications || [];
     if (wsAssistantIds !== undefined) {
+      if (wsAssistantIds.length === 0) return [];
       const wsSet = new Set(wsAssistantIds);
-      notifs = notifs.filter((n) => !n.assistantId || wsSet.has(n.assistantId));
+      notifs = notifs.filter((n) => Boolean(n.assistantId && wsSet.has(n.assistantId)));
     }
     if (assistantId) {
-      notifs = notifs.filter((n) => !n.assistantId || n.assistantId === assistantId);
+      notifs = notifs.filter((n) => n.assistantId === assistantId);
     }
     return notifs.slice(0, limit);
   }
@@ -3727,9 +3728,11 @@ export class Database {
     if (!owner) return false;
     const item = state.notifications.find((n) => n.id === id);
 
-    // a notification with no assistant is workspace-agnostic (system) and may be marked by anyone signed in
-    if (workspaceId && workspaceId !== '*' && owner.assistantId && !assistantInWorkspace(state, owner.assistantId, workspaceId)) {
-      return false;
+    // a notification with no assistant is only accessible to master admin (workspaceId === '*')
+    if (workspaceId && workspaceId !== '*') {
+      if (!owner.assistantId || !assistantInWorkspace(state, owner.assistantId, workspaceId)) {
+        return false;
+      }
     }
 
     if (isRelationalModeEnabled()) {
