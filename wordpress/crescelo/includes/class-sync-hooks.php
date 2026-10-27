@@ -5,6 +5,8 @@
  * Automatically notifies Crescelo when products, pages, posts, or any allowed
  * custom post types are created, modified, or deleted, ensuring the AI Knowledge Base
  * remains 100% synchronized in real time without manual re-crawling.
+ *
+ * @package Crescelo
  */
 
 if (!defined('ABSPATH')) {
@@ -21,7 +23,6 @@ class Crescelo_Sync_Hooks {
         // Dynamic Post & Custom Post Type lifecycle
         add_action('save_post', [$this, 'handle_post_save'], 20, 2);
         add_action('before_delete_post', [$this, 'handle_post_delete'], 20, 1);
-        // Unpublishing (draft, private, trash) must remove the content from the knowledge base as well.
         add_action('transition_post_status', [$this, 'handle_status_transition'], 20, 3);
 
         // WooCommerce Product lifecycle
@@ -33,11 +34,13 @@ class Crescelo_Sync_Hooks {
 
     /**
      * Get allowed post types for automatic syncing.
+     *
+     * @return array
      */
     private function get_allowed_post_types() {
-        $allowed = get_option('ai_assistant_allowed_post_types', null);
+        $allowed = crescelo_get_option('allowed_post_types', null);
         if (is_array($allowed) && !empty($allowed)) {
-            return array_map('sanitize_key', $allowed);
+            return array_values(array_filter(array_map('sanitize_key', $allowed)));
         }
 
         $defaults = ['page', 'post'];
@@ -52,7 +55,9 @@ class Crescelo_Sync_Hooks {
      */
     public function handle_post_save($post_id, $post) {
         $post_id = absint($post_id);
-        if ($post_id <= 0) return;
+        if ($post_id <= 0) {
+            return;
+        }
 
         // Skip autosaves, revisions, or unapproved states
         if (wp_is_post_revision($post_id) || wp_is_post_autosave($post_id)) {
@@ -64,8 +69,10 @@ class Crescelo_Sync_Hooks {
         }
 
         // Check if auto-sync is enabled
-        $auto_sync = (bool) get_option('ai_assistant_auto_sync', true);
-        if (!$auto_sync) return;
+        $auto_sync = (bool) crescelo_get_option('auto_sync', true);
+        if (!$auto_sync) {
+            return;
+        }
 
         $post_type = sanitize_key($post->post_type);
 
@@ -84,8 +91,10 @@ class Crescelo_Sync_Hooks {
             return;
         }
 
-        $assistant_id = sanitize_text_field(get_option('ai_assistant_id', ''));
-        if (empty($assistant_id)) return;
+        $assistant_id = sanitize_text_field(crescelo_get_option('id', ''));
+        if (empty($assistant_id)) {
+            return;
+        }
 
         // Taxonomies
         $post_taxonomies = [];
@@ -94,23 +103,31 @@ class Crescelo_Sync_Hooks {
         $tax_objects     = get_object_taxonomies($post_type, 'objects');
 
         foreach ($tax_objects as $tax_name => $tax_obj) {
-            if (!$tax_obj->public && !$tax_obj->show_ui) continue;
+            if (!$tax_obj->public && !$tax_obj->show_ui) {
+                continue;
+            }
             $terms = wp_get_post_terms($post_id, $tax_name, ['fields' => 'names']);
             if (!is_wp_error($terms) && !empty($terms) && is_array($terms)) {
                 $term_names = array_map('esc_html', $terms);
-                $post_taxonomies[$tax_obj->labels->name ?: $tax_name] = $term_names;
-                if ($tax_name === 'category') $categories = $term_names;
-                if ($tax_name === 'post_tag') $tags = $term_names;
+                $post_taxonomies[$tax_obj->labels->name ? $tax_obj->labels->name : $tax_name] = $term_names;
+                if ($tax_name === 'category') {
+                    $categories = $term_names;
+                }
+                if ($tax_name === 'post_tag') {
+                    $tags = $term_names;
+                }
             }
         }
 
         // Custom Fields / Meta
         $clean_meta = [];
-        if ((bool) get_option('ai_assistant_scrape_include_meta', true)) {
+        if ((bool) crescelo_get_option('scrape_include_meta', true)) {
             $raw_meta = get_post_meta($post_id);
             if (is_array($raw_meta)) {
                 foreach ($raw_meta as $key => $values) {
-                    if (substr($key, 0, 1) === '_') continue;
+                    if (substr($key, 0, 1) === '_') {
+                        continue;
+                    }
                     $val = maybe_unserialize($values[0] ?? '');
                     if (is_string($val) || is_numeric($val)) {
                         $val_str = trim((string) $val);
@@ -134,11 +151,17 @@ class Crescelo_Sync_Hooks {
 
         // Content
         $clean_content = wp_strip_all_tags(strip_shortcodes(preg_replace('/<!--(.|\s)*?-->/', '', $post->post_content)));
-        $clean_excerpt = wp_strip_all_tags($post->post_excerpt ?: wp_trim_words($post->post_content, 40));
+        $clean_excerpt = wp_strip_all_tags($post->post_excerpt ? $post->post_excerpt : wp_trim_words($post->post_content, 40));
+
+        $fallback_title = sprintf(
+            /* translators: %d: post ID */
+            esc_html__('Untitled #%d', 'crescelo'),
+            $post_id
+        );
 
         $item = [
             'id'            => $post_id,
-            'title'         => esc_html($post->post_title ?: ('Untitled #' . $post_id)),
+            'title'         => esc_html($post->post_title ? $post->post_title : $fallback_title),
             'postType'      => $post_type,
             'content'       => trim($clean_content),
             'excerpt'       => trim($clean_excerpt),
@@ -165,12 +188,14 @@ class Crescelo_Sync_Hooks {
         if (wp_is_post_revision($post->ID) || wp_is_post_autosave($post->ID)) {
             return;
         }
-        if (!(bool) get_option('ai_assistant_auto_sync', true)) {
+        if (!(bool) crescelo_get_option('auto_sync', true)) {
             return;
         }
 
-        $assistant_id = sanitize_text_field(get_option('ai_assistant_id', ''));
-        if (empty($assistant_id)) return;
+        $assistant_id = sanitize_text_field(crescelo_get_option('id', ''));
+        if (empty($assistant_id)) {
+            return;
+        }
 
         $post_type = sanitize_key($post->post_type);
         if (!in_array($post_type, $this->get_allowed_post_types(), true)) {
@@ -189,17 +214,23 @@ class Crescelo_Sync_Hooks {
      */
     public function handle_post_delete($post_id) {
         $post_id = absint($post_id);
-        if ($post_id <= 0) return;
+        if ($post_id <= 0) {
+            return;
+        }
 
         if (!current_user_can('delete_post', $post_id)) {
             return;
         }
 
-        $assistant_id = sanitize_text_field(get_option('ai_assistant_id', ''));
-        if (empty($assistant_id)) return;
+        $assistant_id = sanitize_text_field(crescelo_get_option('id', ''));
+        if (empty($assistant_id)) {
+            return;
+        }
 
         $post = get_post($post_id);
-        if (!$post) return;
+        if (!$post) {
+            return;
+        }
 
         $post_type = sanitize_key($post->post_type);
         $allowed_types = $this->get_allowed_post_types();
@@ -226,7 +257,9 @@ class Crescelo_Sync_Hooks {
      */
     public function handle_product_save($product_id) {
         $product_id = absint($product_id);
-        if ($product_id <= 0 || !class_exists('WooCommerce')) return;
+        if ($product_id <= 0 || !class_exists('WooCommerce')) {
+            return;
+        }
 
         $allowed_types = $this->get_allowed_post_types();
         if (!in_array('product', $allowed_types, true)) {
@@ -237,11 +270,15 @@ class Crescelo_Sync_Hooks {
             return;
         }
 
-        $assistant_id = sanitize_text_field(get_option('ai_assistant_id', ''));
-        if (empty($assistant_id)) return;
+        $assistant_id = sanitize_text_field(crescelo_get_option('id', ''));
+        if (empty($assistant_id)) {
+            return;
+        }
 
         $product = wc_get_product($product_id);
-        if (!$product || $product->get_status() !== 'publish') return;
+        if (!$product || $product->get_status() !== 'publish') {
+            return;
+        }
 
         $cats     = wp_get_post_terms($product_id, 'product_cat', ['fields' => 'names']);
         $tags     = wp_get_post_terms($product_id, 'product_tag', ['fields' => 'names']);
@@ -290,14 +327,18 @@ class Crescelo_Sync_Hooks {
      */
     public function handle_product_delete($product_id) {
         $product_id = absint($product_id);
-        if ($product_id <= 0) return;
+        if ($product_id <= 0) {
+            return;
+        }
 
         if (!current_user_can('delete_post', $product_id)) {
             return;
         }
 
-        $assistant_id = sanitize_text_field(get_option('ai_assistant_id', ''));
-        if (empty($assistant_id)) return;
+        $assistant_id = sanitize_text_field(crescelo_get_option('id', ''));
+        if (empty($assistant_id)) {
+            return;
+        }
 
         $item = [
             'id'    => $product_id,

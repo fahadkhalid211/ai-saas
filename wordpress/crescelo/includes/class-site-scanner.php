@@ -5,6 +5,8 @@
  * Inspects WordPress database and content structure, allowing administrators
  * to discover, select, and scrape any registered post types (pages, posts, products,
  * custom post types) and media documents into the AI Knowledge Base.
+ *
+ * @package Crescelo
  */
 
 if (!defined('ABSPATH')) {
@@ -15,6 +17,8 @@ class Crescelo_Site_Scanner {
 
     /**
      * Internal post types that should always be excluded from scraping.
+     *
+     * @var array
      */
     private $excluded_post_types = [
         'attachment',
@@ -60,9 +64,17 @@ class Crescelo_Site_Scanner {
 
             $samples = [];
             foreach ($samples_raw as $s) {
+                $singular_name = !empty($obj->labels->singular_name) ? $obj->labels->singular_name : ucfirst($slug);
+                $fallback_title = sprintf(
+                    /* translators: 1: post type singular label, 2: post ID */
+                    esc_html__('Untitled %1$s #%2$d', 'crescelo'),
+                    $singular_name,
+                    (int) $s->ID
+                );
+
                 $samples[] = [
                     'id'    => (int) $s->ID,
-                    'title' => esc_html($s->post_title ?: ('Untitled ' . $obj->labels->singular_name . ' #' . $s->ID)),
+                    'title' => esc_html($s->post_title ? $s->post_title : $fallback_title),
                     'slug'  => sanitize_title($s->post_name),
                     'url'   => esc_url_raw(get_permalink($s->ID)),
                 ];
@@ -75,16 +87,16 @@ class Crescelo_Site_Scanner {
                 if ($tax_obj->public || $tax_obj->show_ui) {
                     $taxonomies[] = [
                         'slug'  => $tax_slug,
-                        'label' => esc_html($tax_obj->labels->name ?: $tax_slug),
+                        'label' => esc_html($tax_obj->labels->name ? $tax_obj->labels->name : $tax_slug),
                     ];
                 }
             }
 
             $available[$slug] = [
                 'slug'           => $slug,
-                'label'          => esc_html($obj->labels->name ?: ucfirst($slug)),
-                'singular_label' => esc_html($obj->labels->singular_name ?: ucfirst($slug)),
-                'description'    => esc_html($obj->description ?: ''),
+                'label'          => esc_html($obj->labels->name ? $obj->labels->name : ucfirst($slug)),
+                'singular_label' => esc_html($obj->labels->singular_name ? $obj->labels->singular_name : ucfirst($slug)),
+                'description'    => esc_html($obj->description ? $obj->description : ''),
                 'count'          => $publish_count,
                 'is_woo'         => ($slug === 'product' && class_exists('WooCommerce')),
                 'taxonomies'     => $taxonomies,
@@ -101,10 +113,10 @@ class Crescelo_Site_Scanner {
      * @return array Array of post type slug strings.
      */
     public function get_allowed_post_types() {
-        $saved = get_option('ai_assistant_allowed_post_types', null);
+        $saved = crescelo_get_option('allowed_post_types', null);
 
         if (is_array($saved) && !empty($saved)) {
-            return array_map('sanitize_key', $saved);
+            return array_values(array_filter(array_map('sanitize_key', $saved)));
         }
 
         // Default set: pages, posts, and WooCommerce products if present
@@ -119,6 +131,8 @@ class Crescelo_Site_Scanner {
     /**
      * Run a comprehensive diagnostic scan of the entire site and database.
      * Returns structured summary metrics without loading heavy content into RAM.
+     *
+     * @return array
      */
     public function scan_site_summary() {
         global $wpdb;
@@ -175,17 +189,19 @@ class Crescelo_Site_Scanner {
 
         $placeholders = implode(', ', array_fill(0, count($doc_mimes), '%s'));
 
+        // Strictly prepared SQL query for document counts
         $doc_count_query = $wpdb->prepare(
-            "SELECT COUNT(*) FROM {$wpdb->posts} WHERE post_type = 'attachment' AND post_mime_type IN ($placeholders)",
-            $doc_mimes
+            "SELECT COUNT(*) FROM {$wpdb->posts} WHERE post_type = %s AND post_mime_type IN ($placeholders)", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+            array_merge(['attachment'], $doc_mimes)
         );
-        $doc_count = (int) $wpdb->get_var($doc_count_query);
+        $doc_count = (int) $wpdb->get_var($doc_count_query); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 
+        // Strictly prepared SQL query for sample documents
         $doc_sample_query = $wpdb->prepare(
-            "SELECT ID, post_title, post_mime_type FROM {$wpdb->posts} WHERE post_type = 'attachment' AND post_mime_type IN ($placeholders) ORDER BY post_date DESC LIMIT 10",
-            $doc_mimes
+            "SELECT ID, post_title, post_mime_type FROM {$wpdb->posts} WHERE post_type = %s AND post_mime_type IN ($placeholders) ORDER BY post_date DESC LIMIT 10", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+            array_merge(['attachment'], $doc_mimes)
         );
-        $sample_docs_raw = $wpdb->get_results($doc_sample_query, ARRAY_A);
+        $sample_docs_raw = $wpdb->get_results($doc_sample_query, ARRAY_A); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 
         $sample_docs = [];
         if (!empty($sample_docs_raw)) {
@@ -235,16 +251,16 @@ class Crescelo_Site_Scanner {
             if (function_exists('wc_get_attribute_taxonomies')) {
                 $attrs = wc_get_attribute_taxonomies();
                 foreach ($attrs as $attr) {
-                    $woo_data['attributes'][] = esc_html($attr->attribute_label ?: $attr->attribute_name);
+                    $woo_data['attributes'][] = esc_html($attr->attribute_label ? $attr->attribute_label : $attr->attribute_name);
                 }
             }
 
-            // Check if variable products exist
+            // Check if variable products exist using prepared query
             $var_count_query = $wpdb->prepare(
                 "SELECT COUNT(*) FROM {$wpdb->posts} WHERE post_type = %s",
                 'product_variation'
             );
-            $var_count = (int) $wpdb->get_var($var_count_query);
+            $var_count = (int) $wpdb->get_var($var_count_query); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
             $woo_data['has_variations'] = ($var_count > 0);
         }
 
@@ -273,13 +289,13 @@ class Crescelo_Site_Scanner {
                 'systems' => array_map('esc_html', $booking_systems),
             ],
             'scrape_settings'     => [
-                'include_meta'        => (bool) get_option('ai_assistant_scrape_include_meta', true),
-                'include_taxonomies'  => (bool) get_option('ai_assistant_scrape_include_taxonomies', true),
-                'include_excerpt'     => (bool) get_option('ai_assistant_scrape_include_excerpt', true),
-                'scrape_method'       => sanitize_key(get_option('ai_assistant_scrape_method', 'db')),
-                'batch_size'          => (int) get_option('ai_assistant_batch_size', 15),
-                'last_scraped'        => get_option('ai_assistant_last_scraped', ''),
-                'scrape_stats'        => get_option('ai_assistant_scrape_stats', []),
+                'include_meta'        => (bool) crescelo_get_option('scrape_include_meta', true),
+                'include_taxonomies'  => (bool) crescelo_get_option('scrape_include_taxonomies', true),
+                'include_excerpt'     => (bool) crescelo_get_option('scrape_include_excerpt', true),
+                'scrape_method'       => sanitize_key(crescelo_get_option('scrape_method', 'db')),
+                'batch_size'          => (int) crescelo_get_option('batch_size', 15),
+                'last_scraped'        => crescelo_get_option('last_scraped', ''),
+                'scrape_stats'        => crescelo_get_option('scrape_stats', []),
             ],
         ];
     }
@@ -334,17 +350,23 @@ class Crescelo_Site_Scanner {
         $items = [];
 
         foreach ($products as $product) {
-            if (!$product) continue;
+            if (!$product) {
+                continue;
+            }
 
             $pid = absint($product->get_id());
 
             // Extract Categories
             $cats = wp_get_post_terms($pid, 'product_cat', ['fields' => 'names']);
-            if (is_wp_error($cats) || !is_array($cats)) $cats = [];
+            if (is_wp_error($cats) || !is_array($cats)) {
+                $cats = [];
+            }
 
             // Extract Tags
             $tags = wp_get_post_terms($pid, 'product_tag', ['fields' => 'names']);
-            if (is_wp_error($tags) || !is_array($tags)) $tags = [];
+            if (is_wp_error($tags) || !is_array($tags)) {
+                $tags = [];
+            }
 
             // Extract Attributes & Variations
             $attributes = [];
@@ -401,10 +423,10 @@ class Crescelo_Site_Scanner {
     public function get_posts_batch($post_type, $offset = 0, $limit = 15, $selected_ids = [], $options = []) {
         $post_type = sanitize_key($post_type);
 
-        $include_meta       = isset($options['include_meta']) ? (bool) $options['include_meta'] : (bool) get_option('ai_assistant_scrape_include_meta', true);
-        $include_taxonomies = isset($options['include_taxonomies']) ? (bool) $options['include_taxonomies'] : (bool) get_option('ai_assistant_scrape_include_taxonomies', true);
-        $include_excerpt    = isset($options['include_excerpt']) ? (bool) $options['include_excerpt'] : (bool) get_option('ai_assistant_scrape_include_excerpt', true);
-        $scrape_method      = isset($options['scrape_method']) ? sanitize_key($options['scrape_method']) : sanitize_key(get_option('ai_assistant_scrape_method', 'db'));
+        $include_meta       = isset($options['include_meta']) ? (bool) $options['include_meta'] : (bool) crescelo_get_option('scrape_include_meta', true);
+        $include_taxonomies = isset($options['include_taxonomies']) ? (bool) $options['include_taxonomies'] : (bool) crescelo_get_option('scrape_include_taxonomies', true);
+        $include_excerpt    = isset($options['include_excerpt']) ? (bool) $options['include_excerpt'] : (bool) crescelo_get_option('scrape_include_excerpt', true);
+        $scrape_method      = isset($options['scrape_method']) ? sanitize_key($options['scrape_method']) : sanitize_key(crescelo_get_option('scrape_method', 'db'));
 
         $args = [
             'post_type'        => $post_type,
@@ -447,12 +469,14 @@ class Crescelo_Site_Scanner {
 
             if ($include_taxonomies && !empty($tax_objects)) {
                 foreach ($tax_objects as $tax_name => $tax_obj) {
-                    if (!$tax_obj->public && !$tax_obj->show_ui) continue;
+                    if (!$tax_obj->public && !$tax_obj->show_ui) {
+                        continue;
+                    }
 
                     $terms = wp_get_post_terms($pid, $tax_name, ['fields' => 'names']);
                     if (!is_wp_error($terms) && !empty($terms) && is_array($terms)) {
                         $term_names = array_map('esc_html', $terms);
-                        $post_taxonomies[$tax_obj->labels->name ?: $tax_name] = $term_names;
+                        $post_taxonomies[$tax_obj->labels->name ? $tax_obj->labels->name : $tax_name] = $term_names;
 
                         if ($tax_name === 'category') {
                             $categories = $term_names;
@@ -470,7 +494,9 @@ class Crescelo_Site_Scanner {
                 if (is_array($raw_meta)) {
                     foreach ($raw_meta as $key => $values) {
                         // Skip internal private meta starting with underscore
-                        if (substr($key, 0, 1) === '_') continue;
+                        if (substr($key, 0, 1) === '_') {
+                            continue;
+                        }
 
                         $raw_val = $values[0] ?? '';
                         $unserialized = maybe_unserialize($raw_val);
@@ -481,11 +507,10 @@ class Crescelo_Site_Scanner {
                                 $clean_meta[sanitize_text_field($key)] = sanitize_text_field($val_str);
                             }
                         } elseif (is_array($unserialized)) {
-                            // Simple array of strings
                             $flattened = [];
                             foreach ($unserialized as $sub_k => $sub_v) {
                                 if (is_scalar($sub_v)) {
-                                    $flattened[] = sanitize_text_field((string)$sub_v);
+                                    $flattened[] = sanitize_text_field((string) $sub_v);
                                 }
                             }
                             if (!empty($flattened)) {
@@ -499,18 +524,23 @@ class Crescelo_Site_Scanner {
             // Content Extraction
             $content = '';
             if ($scrape_method === 'html' && !empty($permalink)) {
-                // Try rendered extraction, fallback to DB content if remote get fails
                 $rendered = $this->scrape_rendered_url($permalink);
                 $content  = !empty($rendered) ? $rendered : $this->clean_text($post->post_content);
             } else {
                 $content = $this->clean_text($post->post_content);
             }
 
-            $excerpt = $include_excerpt ? $this->clean_text($post->post_excerpt ?: wp_trim_words($post->post_content, 40)) : '';
+            $excerpt = $include_excerpt ? $this->clean_text($post->post_excerpt ? $post->post_excerpt : wp_trim_words($post->post_content, 40)) : '';
+
+            $fallback_title = sprintf(
+                /* translators: %d: post ID */
+                esc_html__('Untitled #%d', 'crescelo'),
+                $pid
+            );
 
             $items[] = [
                 'id'            => $pid,
-                'title'         => esc_html($post->post_title ?: ('Untitled #' . $pid)),
+                'title'         => esc_html($post->post_title ? $post->post_title : $fallback_title),
                 'postType'      => sanitize_key($post->post_type),
                 'content'       => $content,
                 'excerpt'       => $excerpt,
@@ -560,11 +590,19 @@ class Crescelo_Site_Scanner {
         foreach ($query->posts as $post) {
             $pid = absint($post->ID);
             $doc_url = wp_get_attachment_url($pid);
-            if (!$doc_url) continue;
+            if (!$doc_url) {
+                continue;
+            }
+
+            $fallback_doc_title = sprintf(
+                /* translators: %d: document ID */
+                esc_html__('Document #%d', 'crescelo'),
+                $pid
+            );
 
             $items[] = [
                 'id'       => $pid,
-                'title'    => esc_html($post->post_title ?: ('Document #' . $pid)),
+                'title'    => esc_html($post->post_title ? $post->post_title : $fallback_doc_title),
                 'postType' => 'document',
                 'mimeType' => sanitize_mime_type($post->post_mime_type),
                 'url'      => esc_url_raw($doc_url),
@@ -586,8 +624,7 @@ class Crescelo_Site_Scanner {
 
         $response = wp_remote_get($url, [
             'timeout'    => 12,
-            'user-agent' => 'CresceloKnowledgeScraper/2.1 (WordPress ' . get_bloginfo('version') . ')',
-            // Verify TLS by default. A site with a self-signed staging certificate can opt out with this filter.
+            'user-agent' => 'CresceloKnowledgeScraper/2.2 (WordPress ' . get_bloginfo('version') . ')',
             'sslverify'  => (bool) apply_filters('crescelo_scrape_sslverify', true),
         ]);
 
@@ -625,9 +662,11 @@ class Crescelo_Site_Scanner {
      * Strip HTML, block comments, shortcodes, and excess whitespace from post content.
      */
     public function clean_text($text) {
-        if (empty($text) || !is_string($text)) return '';
+        if (empty($text) || !is_string($text)) {
+            return '';
+        }
 
-        // Strip non-printable control characters (protects JSON serialization and parser bugs)
+        // Strip non-printable control characters
         $clean = preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/', '', $text);
 
         // Strip shortcodes

@@ -4,6 +4,8 @@
  *
  * Exposes fast, lightweight REST endpoints for real-time inventory and pricing checks,
  * allowing the Crescelo LLM to deterministically verify data before responding.
+ *
+ * @package Crescelo
  */
 
 if (!defined('ABSPATH')) {
@@ -29,7 +31,7 @@ class Crescelo_Live_API {
             'permission_callback' => [$this, 'validate_crescelo_secret'],
             'args'                => [
                 'product_id' => [
-                    'description'       => 'WooCommerce Product ID',
+                    'description'       => esc_html__('WooCommerce Product ID', 'crescelo'),
                     'type'              => 'integer',
                     'sanitize_callback' => 'absint',
                     'validate_callback' => function ($param) {
@@ -37,7 +39,7 @@ class Crescelo_Live_API {
                     },
                 ],
                 'sku'        => [
-                    'description'       => 'WooCommerce Product SKU',
+                    'description'       => esc_html__('WooCommerce Product SKU', 'crescelo'),
                     'type'              => 'string',
                     'sanitize_callback' => 'sanitize_text_field',
                 ],
@@ -48,15 +50,18 @@ class Crescelo_Live_API {
     /**
      * Verify caller using the shared siteSecret generated during registration.
      * Prevents unauthorized access and brute-force inspection.
+     *
+     * @param WP_REST_Request $request REST request object.
+     * @return bool|WP_Error
      */
     public function validate_crescelo_secret($request) {
-        $stored_secret = (string) get_option('ai_assistant_site_secret', '');
+        $stored_secret = (string) crescelo_get_option('site_secret', '');
 
         // Secret MUST be configured and at least 16 characters long
         if (empty($stored_secret) || strlen($stored_secret) < 16) {
             return new WP_Error(
                 'rest_forbidden',
-                'AI Assistant site secret is not configured. Please complete the setup wizard.',
+                esc_html__('AI Assistant site secret is not configured. Please complete the setup wizard.', 'crescelo'),
                 ['status' => 403]
             );
         }
@@ -70,7 +75,7 @@ class Crescelo_Live_API {
         if (empty($incoming) || !hash_equals($stored_secret, $incoming)) {
             return new WP_Error(
                 'rest_forbidden',
-                'Invalid or missing Crescelo authentication secret.',
+                esc_html__('Invalid or missing Crescelo authentication secret.', 'crescelo'),
                 ['status' => 401]
             );
         }
@@ -89,10 +94,17 @@ class Crescelo_Live_API {
 
     /**
      * Check real-time stock and price for a product or variation.
+     *
+     * @param WP_REST_Request $request REST request object.
+     * @return WP_REST_Response|WP_Error
      */
     public function check_stock($request) {
         if (!class_exists('WooCommerce')) {
-            return new WP_Error('no_woocommerce', 'WooCommerce is not installed on this site', ['status' => 400]);
+            return new WP_Error(
+                'no_woocommerce',
+                esc_html__('WooCommerce is not installed on this site', 'crescelo'),
+                ['status' => 400]
+            );
         }
 
         $product_id = absint($request->get_param('product_id'));
@@ -109,7 +121,11 @@ class Crescelo_Live_API {
         }
 
         if (!$product) {
-            return new WP_Error('product_not_found', 'Product was not found by ID or SKU', ['status' => 404]);
+            return new WP_Error(
+                'product_not_found',
+                esc_html__('Product was not found by ID or SKU', 'crescelo'),
+                ['status' => 404]
+            );
         }
 
         $price         = $product->get_price();

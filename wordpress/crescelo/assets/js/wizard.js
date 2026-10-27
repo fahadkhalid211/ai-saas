@@ -790,7 +790,7 @@
                     if (res.success) {
                         showManualFeedback('✓ Connected successfully! Reloading...', 'success');
                         setTimeout(function () {
-                            window.location.href = window.location.pathname + '?page=ai-business-assistant#tab-connection';
+                            window.location.href = window.location.pathname + '?page=crescelo#tab-connection';
                             window.location.reload();
                         }, 700);
                     } else {

@@ -3,6 +3,8 @@
  * Onboarding Wizard and Scraper Controller
  *
  * Manages secure AJAX endpoints for the interactive setup wizard and website scraping engine.
+ *
+ * @package Crescelo
  */
 
 if (!defined('ABSPATH')) {
@@ -36,7 +38,7 @@ class Crescelo_Wizard_Controller {
      */
     private function verify_security() {
         if (!current_user_can('manage_options')) {
-            wp_send_json_error(['error' => 'Unauthorized user capability.'], 403);
+            wp_send_json_error(['error' => esc_html__('Unauthorized user capability.', 'crescelo')], 403);
         }
         check_ajax_referer('crescelo_wizard_nonce', 'nonce');
     }
@@ -62,7 +64,7 @@ class Crescelo_Wizard_Controller {
         $this->verify_security();
 
         $raw_post_types = isset($_POST['allowed_post_types']) && is_array($_POST['allowed_post_types'])
-            ? $_POST['allowed_post_types']
+            ? array_map('sanitize_key', wp_unslash($_POST['allowed_post_types']))
             : [];
 
         $available = $this->scanner->get_available_post_types();
@@ -75,31 +77,41 @@ class Crescelo_Wizard_Controller {
             }
         }
 
+        crescelo_update_option('allowed_post_types', $sanitized_types);
         update_option('ai_assistant_allowed_post_types', $sanitized_types);
 
         // Optional scrape settings
         if (isset($_POST['scrape_include_meta'])) {
-            update_option('ai_assistant_scrape_include_meta', (bool) rest_sanitize_boolean($_POST['scrape_include_meta']));
+            $val = (bool) rest_sanitize_boolean(wp_unslash($_POST['scrape_include_meta']));
+            crescelo_update_option('scrape_include_meta', $val);
+            update_option('ai_assistant_scrape_include_meta', $val);
         }
         if (isset($_POST['scrape_include_taxonomies'])) {
-            update_option('ai_assistant_scrape_include_taxonomies', (bool) rest_sanitize_boolean($_POST['scrape_include_taxonomies']));
+            $val = (bool) rest_sanitize_boolean(wp_unslash($_POST['scrape_include_taxonomies']));
+            crescelo_update_option('scrape_include_taxonomies', $val);
+            update_option('ai_assistant_scrape_include_taxonomies', $val);
         }
         if (isset($_POST['scrape_include_excerpt'])) {
-            update_option('ai_assistant_scrape_include_excerpt', (bool) rest_sanitize_boolean($_POST['scrape_include_excerpt']));
+            $val = (bool) rest_sanitize_boolean(wp_unslash($_POST['scrape_include_excerpt']));
+            crescelo_update_option('scrape_include_excerpt', $val);
+            update_option('ai_assistant_scrape_include_excerpt', $val);
         }
         if (isset($_POST['scrape_method'])) {
-            $method = sanitize_key($_POST['scrape_method']);
-            update_option('ai_assistant_scrape_method', in_array($method, ['db', 'html'], true) ? $method : 'db');
+            $method = sanitize_key(wp_unslash($_POST['scrape_method']));
+            $val = in_array($method, ['db', 'html'], true) ? $method : 'db';
+            crescelo_update_option('scrape_method', $val);
+            update_option('ai_assistant_scrape_method', $val);
         }
         if (isset($_POST['batch_size'])) {
-            $size = min(50, max(5, absint($_POST['batch_size'])));
+            $size = min(50, max(5, absint(wp_unslash($_POST['batch_size']))));
+            crescelo_update_option('batch_size', $size);
             update_option('ai_assistant_batch_size', $size);
         }
 
         wp_send_json_success([
             'saved'              => true,
             'allowed_post_types' => $sanitized_types,
-            'message'            => 'Scraping configuration updated successfully.',
+            'message'            => esc_html__('Scraping configuration updated successfully.', 'crescelo'),
         ]);
     }
 
@@ -111,37 +123,43 @@ class Crescelo_Wizard_Controller {
 
         // 1. Validate website_type against strict allowlist
         $allowed_types = ['woocommerce', 'service_booking', 'content_docs', 'lead_generation', 'general'];
-        $raw_type      = sanitize_key($_POST['website_type'] ?? 'woocommerce');
+        $raw_type      = isset($_POST['website_type']) ? sanitize_key(wp_unslash($_POST['website_type'])) : 'woocommerce';
         $website_type  = in_array($raw_type, $allowed_types, true) ? $raw_type : 'woocommerce';
 
         // 2. Validate objective against strict allowlist
         $allowed_objectives = ['sales', 'booking', 'support', 'leads'];
-        $raw_objective      = sanitize_key($_POST['objective'] ?? 'sales');
+        $raw_objective      = isset($_POST['objective']) ? sanitize_key(wp_unslash($_POST['objective'])) : 'sales';
         $objective          = in_array($raw_objective, $allowed_objectives, true) ? $raw_objective : 'sales';
 
         // 3. Validate features against allowlist
         $allowed_features = ['add_to_cart', 'live_stock', 'comparison', 'booking', 'lead_capture'];
-        $raw_features     = isset($_POST['features']) && is_array($_POST['features']) ? $_POST['features'] : [];
+        $raw_features     = isset($_POST['features']) && is_array($_POST['features']) ? array_map('sanitize_key', wp_unslash($_POST['features'])) : [];
         $features         = [];
         foreach ($raw_features as $f) {
-            $sanitized_f = sanitize_key($f);
-            if (in_array($sanitized_f, $allowed_features, true)) {
-                $features[] = $sanitized_f;
+            if (in_array($f, $allowed_features, true)) {
+                $features[] = $f;
             }
         }
 
         // 4. Validate host_url format and protocol
-        $raw_host = trim($_POST['host_url'] ?? get_option('ai_assistant_host_url', CRESCELO_DEFAULT_HOST));
+        $raw_host = isset($_POST['host_url']) ? trim(wp_unslash($_POST['host_url'])) : crescelo_get_option('host_url', CRESCELO_DEFAULT_HOST);
         $host_url = esc_url_raw($raw_host);
         $parsed   = wp_parse_url($host_url);
 
         if (empty($parsed['scheme']) || !in_array($parsed['scheme'], ['http', 'https'], true)) {
-            wp_send_json_error(['error' => 'Invalid Server URL. Must use HTTP or HTTPS.']);
+            wp_send_json_error(['error' => esc_html__('Invalid Server URL. Must use HTTP or HTTPS.', 'crescelo')]);
         }
 
         // 5. Sanitize API Key
-        $api_key = sanitize_text_field(trim($_POST['api_key'] ?? get_option('ai_assistant_api_key', '')));
+        $api_key = isset($_POST['api_key']) ? sanitize_text_field(trim(wp_unslash($_POST['api_key']))) : sanitize_text_field(crescelo_get_option('api_key', ''));
 
+        crescelo_update_option('host_url', $host_url);
+        crescelo_update_option('api_key', $api_key);
+        crescelo_update_option('website_type', $website_type);
+        crescelo_update_option('objective', $objective);
+        crescelo_update_option('features', $features);
+
+        // Keep legacy options in sync
         update_option('ai_assistant_host_url', $host_url);
         update_option('ai_assistant_api_key', $api_key);
         update_option('ai_assistant_website_type', $website_type);
@@ -159,12 +177,14 @@ class Crescelo_Wizard_Controller {
         ]);
 
         if (empty($result['success'])) {
-            wp_send_json_error(['error' => sanitize_text_field($result['error'] ?? 'Connection to Crescelo backend failed.')]);
+            wp_send_json_error(['error' => sanitize_text_field($result['error'] ?? esc_html__('Connection to Crescelo backend failed.', 'crescelo'))]);
         }
 
         $assistant_id = sanitize_text_field($result['assistantId'] ?? '');
         $site_secret  = sanitize_text_field($result['siteSecret'] ?? '');
 
+        crescelo_update_option('id', $assistant_id);
+        crescelo_update_option('site_secret', $site_secret);
         update_option('ai_assistant_id', $assistant_id);
         update_option('ai_assistant_site_secret', $site_secret);
 
@@ -182,12 +202,9 @@ class Crescelo_Wizard_Controller {
     public function ajax_sync_batch() {
         $this->verify_security();
 
-        $raw_batch  = sanitize_key($_POST['batch_type'] ?? 'page');
+        $raw_batch  = isset($_POST['batch_type']) ? sanitize_key(wp_unslash($_POST['batch_type'])) : 'page';
         $batch_type = $raw_batch;
 
-        // The backend keys products as 'products' (and documents as 'documents'). The wizard sends the post type slug,
-        // so normalise it here; otherwise bulk-synced products are indexed as plain pages under a different identity
-        // than the real-time hooks use, and every later product edit adds a duplicate.
         if ($batch_type === 'product' && class_exists('WooCommerce')) {
             $batch_type = 'products';
         } elseif ($batch_type === 'attachment' || $batch_type === 'document') {
@@ -197,31 +214,35 @@ class Crescelo_Wizard_Controller {
         // Verify that the batch type is either a recognized post type, products, or documents
         $is_valid_type = ($batch_type === 'products' || $batch_type === 'documents' || post_type_exists($batch_type));
         if (!$is_valid_type) {
-            wp_send_json_error(['error' => 'Invalid post type requested for scraping: ' . esc_html($batch_type)]);
+            wp_send_json_error(['error' => sprintf(
+                /* translators: %s: invalid post type name */
+                esc_html__('Invalid post type requested for scraping: %s', 'crescelo'),
+                esc_html($batch_type)
+            )]);
         }
 
         // Validate and clamp pagination to prevent memory exhaustion
-        $default_limit = (int) get_option('ai_assistant_batch_size', 15);
-        $offset        = absint($_POST['offset'] ?? 0);
-        $limit         = min(50, max(1, absint($_POST['limit'] ?? $default_limit)));
+        $default_limit = (int) crescelo_get_option('batch_size', 15);
+        $offset        = isset($_POST['offset']) ? absint(wp_unslash($_POST['offset'])) : 0;
+        $limit         = min(50, max(1, absint(isset($_POST['limit']) ? wp_unslash($_POST['limit']) : $default_limit)));
 
         // Strictly sanitize selected IDs
         $selected_ids = [];
         if (isset($_POST['selected_ids']) && is_array($_POST['selected_ids'])) {
-            $selected_ids = array_map('absint', array_filter($_POST['selected_ids'], 'is_numeric'));
+            $selected_ids = array_map('absint', array_filter(wp_unslash($_POST['selected_ids']), 'is_numeric'));
         }
 
-        $assistant_id = sanitize_text_field(get_option('ai_assistant_id', ''));
+        $assistant_id = sanitize_text_field(crescelo_get_option('id', ''));
         if (empty($assistant_id)) {
-            wp_send_json_error(['error' => 'No active Assistant ID configured. Please configure an assistant first.']);
+            wp_send_json_error(['error' => esc_html__('No active Assistant ID configured. Please configure an assistant first.', 'crescelo')]);
         }
 
         // Collect scraping options
         $options = [
-            'include_meta'       => isset($_POST['include_meta']) ? (bool) rest_sanitize_boolean($_POST['include_meta']) : (bool) get_option('ai_assistant_scrape_include_meta', true),
-            'include_taxonomies' => isset($_POST['include_taxonomies']) ? (bool) rest_sanitize_boolean($_POST['include_taxonomies']) : (bool) get_option('ai_assistant_scrape_include_taxonomies', true),
-            'include_excerpt'    => isset($_POST['include_excerpt']) ? (bool) rest_sanitize_boolean($_POST['include_excerpt']) : (bool) get_option('ai_assistant_scrape_include_excerpt', true),
-            'scrape_method'      => isset($_POST['scrape_method']) ? sanitize_key($_POST['scrape_method']) : sanitize_key(get_option('ai_assistant_scrape_method', 'db')),
+            'include_meta'       => isset($_POST['include_meta']) ? (bool) rest_sanitize_boolean(wp_unslash($_POST['include_meta'])) : (bool) crescelo_get_option('scrape_include_meta', true),
+            'include_taxonomies' => isset($_POST['include_taxonomies']) ? (bool) rest_sanitize_boolean(wp_unslash($_POST['include_taxonomies'])) : (bool) crescelo_get_option('scrape_include_taxonomies', true),
+            'include_excerpt'    => isset($_POST['include_excerpt']) ? (bool) rest_sanitize_boolean(wp_unslash($_POST['include_excerpt'])) : (bool) crescelo_get_option('scrape_include_excerpt', true),
+            'scrape_method'      => isset($_POST['scrape_method']) ? sanitize_key(wp_unslash($_POST['scrape_method'])) : sanitize_key(crescelo_get_option('scrape_method', 'db')),
         ];
 
         // Fetch batch safely from WordPress DB
@@ -241,7 +262,7 @@ class Crescelo_Wizard_Controller {
         $sync_res = $this->client->sync_batch($assistant_id, $batch_type, $items);
 
         if (empty($sync_res['success'])) {
-            wp_send_json_error(['error' => sanitize_text_field($sync_res['error'] ?? 'Batch synchronization failed.')]);
+            wp_send_json_error(['error' => sanitize_text_field($sync_res['error'] ?? esc_html__('Batch synchronization failed.', 'crescelo'))]);
         }
 
         $processed_count = count($items);
@@ -263,21 +284,24 @@ class Crescelo_Wizard_Controller {
     public function ajax_record_scrape_complete() {
         $this->verify_security();
 
-        $total_items  = absint($_POST['total_items'] ?? 0);
-        $total_chunks = absint($_POST['total_chunks'] ?? 0);
+        $total_items  = isset($_POST['total_items']) ? absint(wp_unslash($_POST['total_items'])) : 0;
+        $total_chunks = isset($_POST['total_chunks']) ? absint(wp_unslash($_POST['total_chunks'])) : 0;
         $post_types   = isset($_POST['scraped_post_types']) && is_array($_POST['scraped_post_types'])
-            ? array_map('sanitize_key', $_POST['scraped_post_types'])
+            ? array_map('sanitize_key', wp_unslash($_POST['scraped_post_types']))
             : [];
 
         $now = current_time('mysql');
-
-        update_option('ai_assistant_last_scraped', $now);
-        update_option('ai_assistant_scrape_stats', [
+        $stats = [
             'total_items'        => $total_items,
             'total_chunks'       => $total_chunks,
             'last_run'           => $now,
             'scraped_post_types' => $post_types,
-        ]);
+        ];
+
+        crescelo_update_option('last_scraped', $now);
+        crescelo_update_option('scrape_stats', $stats);
+        update_option('ai_assistant_last_scraped', $now);
+        update_option('ai_assistant_scrape_stats', $stats);
 
         wp_send_json_success([
             'recorded'    => true,
@@ -293,11 +317,13 @@ class Crescelo_Wizard_Controller {
     public function ajax_finish_setup() {
         $this->verify_security();
 
+        crescelo_update_option('enabled', true);
+        crescelo_update_option('wizard_completed', true);
         update_option('ai_assistant_enabled', true);
         update_option('ai_assistant_wizard_completed', true);
 
-        $host_url     = untrailingslashit(get_option('ai_assistant_host_url', CRESCELO_DEFAULT_HOST));
-        $assistant_id = sanitize_text_field(get_option('ai_assistant_id', ''));
+        $host_url     = untrailingslashit(crescelo_get_option('host_url', CRESCELO_DEFAULT_HOST));
+        $assistant_id = sanitize_text_field(crescelo_get_option('id', ''));
 
         wp_send_json_success([
             'enabled'     => true,
@@ -312,6 +338,7 @@ class Crescelo_Wizard_Controller {
     public function ajax_reset_configuration() {
         $this->verify_security();
 
+        crescelo_update_option('wizard_completed', false);
         update_option('ai_assistant_wizard_completed', false);
         wp_send_json_success(['reset' => true]);
     }
@@ -322,12 +349,12 @@ class Crescelo_Wizard_Controller {
     public function ajax_manual_connect_key() {
         $this->verify_security();
 
-        $api_key  = sanitize_text_field(trim($_POST['api_key'] ?? ''));
-        $raw_host = trim($_POST['host_url'] ?? get_option('ai_assistant_host_url', CRESCELO_DEFAULT_HOST));
+        $api_key  = isset($_POST['api_key']) ? sanitize_text_field(trim(wp_unslash($_POST['api_key']))) : '';
+        $raw_host = isset($_POST['host_url']) ? trim(wp_unslash($_POST['host_url'])) : crescelo_get_option('host_url', CRESCELO_DEFAULT_HOST);
         $host_url = esc_url_raw($raw_host);
 
         if (empty($api_key)) {
-            wp_send_json_error(['error' => 'Please enter a valid API Key.']);
+            wp_send_json_error(['error' => esc_html__('Please enter a valid API Key.', 'crescelo')]);
         }
 
         $endpoint = untrailingslashit($host_url) . '/api/connectors/wordpress/verify-key';
@@ -348,26 +375,41 @@ class Crescelo_Wizard_Controller {
         ]);
 
         if (is_wp_error($response)) {
-            wp_send_json_error(['error' => 'Connection failed: ' . $response->get_error_message()]);
+            wp_send_json_error(['error' => sprintf(
+                /* translators: %s: error message */
+                esc_html__('Connection failed: %s', 'crescelo'),
+                sanitize_text_field($response->get_error_message())
+            )]);
         }
 
         $code = (int) wp_remote_retrieve_response_code($response);
         $body = json_decode(wp_remote_retrieve_body($response), true);
 
         if ($code !== 200 || empty($body['success'])) {
-            wp_send_json_error(['error' => sanitize_text_field($body['error'] ?? 'Invalid API Key or server response.')]);
+            wp_send_json_error(['error' => sanitize_text_field($body['error'] ?? esc_html__('Invalid API Key or server response.', 'crescelo'))]);
         }
 
         $assistant_id   = sanitize_text_field($body['assistantId'] ?? '');
-        $assistant_name = sanitize_text_field($body['assistantName'] ?? 'AI Assistant');
+        $assistant_name = sanitize_text_field($body['assistantName'] ?? esc_html__('AI Assistant', 'crescelo'));
         $site_secret    = sanitize_text_field($body['siteSecret'] ?? $api_key);
+        $connected_now  = current_time('mysql');
 
+        crescelo_update_option('id', $assistant_id);
+        crescelo_update_option('assistant_name', $assistant_name);
+        crescelo_update_option('api_key', $api_key);
+        crescelo_update_option('site_secret', $site_secret);
+        crescelo_update_option('host_url', $host_url);
+        crescelo_update_option('connected_at', $connected_now);
+        crescelo_update_option('enabled', true);
+        crescelo_update_option('wizard_completed', true);
+
+        // Keep legacy options in sync
         update_option('ai_assistant_id', $assistant_id);
         update_option('ai_assistant_assistant_name', $assistant_name);
         update_option('ai_assistant_api_key', $api_key);
         update_option('ai_assistant_site_secret', $site_secret);
         update_option('ai_assistant_host_url', $host_url);
-        update_option('ai_assistant_connected_at', current_time('mysql'));
+        update_option('ai_assistant_connected_at', $connected_now);
         update_option('ai_assistant_enabled', true);
         update_option('ai_assistant_wizard_completed', true);
 
@@ -376,8 +418,8 @@ class Crescelo_Wizard_Controller {
             'assistantId'   => $assistant_id,
             'assistantName' => $assistant_name,
             'hostUrl'       => $host_url,
-            'connectedAt'   => current_time('mysql'),
-            'message'       => 'Connected successfully via API Key!',
+            'connectedAt'   => $connected_now,
+            'message'       => esc_html__('Connected successfully via API Key!', 'crescelo'),
         ]);
     }
 
@@ -387,25 +429,25 @@ class Crescelo_Wizard_Controller {
     public function ajax_test_connection() {
         $this->verify_security();
 
-        $assistant_id = sanitize_text_field(get_option('ai_assistant_id', ''));
-        $host_url     = esc_url_raw(get_option('ai_assistant_host_url', CRESCELO_DEFAULT_HOST));
+        $assistant_id = sanitize_text_field(crescelo_get_option('id', ''));
+        $host_url     = esc_url_raw(crescelo_get_option('host_url', CRESCELO_DEFAULT_HOST));
 
         if (empty($assistant_id)) {
-            wp_send_json_error(['error' => 'No assistant connected.']);
+            wp_send_json_error(['error' => esc_html__('No assistant connected.', 'crescelo')]);
         }
 
         $endpoint = untrailingslashit($host_url) . '/api/widget/' . $assistant_id . '/config';
         $res = wp_remote_get($endpoint, ['timeout' => 10]);
 
         if (is_wp_error($res) || wp_remote_retrieve_response_code($res) !== 200) {
-            wp_send_json_error(['error' => 'Could not communicate with Crescelo assistant. Check server status.']);
+            wp_send_json_error(['error' => esc_html__('Could not communicate with Crescelo assistant. Check server status.', 'crescelo')]);
         }
 
         wp_send_json_success([
             'healthy'       => true,
             'assistantId'   => $assistant_id,
-            'assistantName' => get_option('ai_assistant_assistant_name', 'Active Assistant'),
-            'message'       => 'Connection is healthy and active!',
+            'assistantName' => crescelo_get_option('assistant_name', esc_html__('Active Assistant', 'crescelo')),
+            'message'       => esc_html__('Connection is healthy and active!', 'crescelo'),
         ]);
     }
 
@@ -415,16 +457,16 @@ class Crescelo_Wizard_Controller {
     public function ajax_disconnect() {
         $this->verify_security();
 
-        update_option('ai_assistant_id', '');
-        update_option('ai_assistant_assistant_name', '');
-        update_option('ai_assistant_api_key', '');
-        update_option('ai_assistant_site_secret', '');
-        update_option('ai_assistant_account_email', '');
-        update_option('ai_assistant_connected_at', '');
+        crescelo_delete_option('id');
+        crescelo_delete_option('assistant_name');
+        crescelo_delete_option('api_key');
+        crescelo_delete_option('site_secret');
+        crescelo_delete_option('account_email');
+        crescelo_delete_option('connected_at');
 
         wp_send_json_success([
             'disconnected' => true,
-            'message'      => 'Disconnected from Crescelo.',
+            'message'      => esc_html__('Disconnected from Crescelo.', 'crescelo'),
         ]);
     }
 }

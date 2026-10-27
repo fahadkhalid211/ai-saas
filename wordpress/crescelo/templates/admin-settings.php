@@ -6,6 +6,8 @@
  * 1. Connection & Account (1-Click OAuth Connect + Connected Details Card + Manual API Key option)
  * 2. Knowledge Base Scraper (Allowed Post Types Grid + 1-Click Site Scraper Engine)
  * 3. Chat Widget & Actions (Widget Controls + Live Grounding REST Endpoint + Chat Preview)
+ *
+ * @package Crescelo
  */
 
 if (!defined('ABSPATH')) {
@@ -16,14 +18,14 @@ $scanner = new Crescelo_Site_Scanner();
 $available_post_types = $scanner->get_available_post_types();
 $allowed_post_types   = $scanner->get_allowed_post_types();
 
-$host_url       = get_option('ai_assistant_host_url', CRESCELO_DEFAULT_HOST);
-$assistant_id   = get_option('ai_assistant_id', '');
-$assistant_name = get_option('ai_assistant_assistant_name', '');
-$account_email  = get_option('ai_assistant_account_email', '');
-$connected_at   = get_option('ai_assistant_connected_at', '');
-$enabled        = (bool) get_option('ai_assistant_enabled', true);
-$api_key        = get_option('ai_assistant_api_key', '');
-$site_secret    = get_option('ai_assistant_site_secret', '');
+$host_url       = crescelo_get_option('host_url', CRESCELO_DEFAULT_HOST);
+$assistant_id   = crescelo_get_option('id', '');
+$assistant_name = crescelo_get_option('assistant_name', '');
+$account_email  = crescelo_get_option('account_email', '');
+$connected_at   = crescelo_get_option('connected_at', '');
+$enabled        = (bool) crescelo_get_option('enabled', true);
+$api_key        = crescelo_get_option('api_key', '');
+$site_secret    = crescelo_get_option('site_secret', '');
 $is_connected   = !empty($assistant_id);
 
 $nonce = wp_create_nonce('crescelo_wizard_nonce');
@@ -32,7 +34,7 @@ $nonce = wp_create_nonce('crescelo_wizard_nonce');
 $oauth_state = wp_create_nonce('crescelo_oauth_' . get_current_user_id() . '_' . wp_rand());
 set_transient('crescelo_oauth_state_' . $oauth_state, home_url(), 900); // 15 mins
 
-$return_url = admin_url('admin.php?page=ai-business-assistant');
+$return_url = admin_url('admin.php?page=crescelo');
 $connect_url = add_query_arg([
     'site_url'   => home_url(),
     'site_name'  => get_bloginfo('name'),
@@ -41,20 +43,20 @@ $connect_url = add_query_arg([
 ], untrailingslashit($host_url) . '/connect/wordpress');
 
 $disconnect_url = wp_nonce_url(
-    admin_url('admin.php?page=ai-business-assistant&crescelo_action=disconnect'),
+    admin_url('admin.php?page=crescelo&crescelo_action=disconnect'),
     'crescelo_disconnect_nonce'
 );
 
 // Scraper settings
-$include_meta       = (bool) get_option('ai_assistant_scrape_include_meta', true);
-$include_taxonomies = (bool) get_option('ai_assistant_scrape_include_taxonomies', true);
-$include_excerpt    = (bool) get_option('ai_assistant_scrape_include_excerpt', true);
-$scrape_method      = sanitize_key(get_option('ai_assistant_scrape_method', 'db'));
-$batch_size         = (int) get_option('ai_assistant_batch_size', 15);
-$auto_sync          = (bool) get_option('ai_assistant_auto_sync', true);
+$include_meta       = (bool) crescelo_get_option('scrape_include_meta', true);
+$include_taxonomies = (bool) crescelo_get_option('scrape_include_taxonomies', true);
+$include_excerpt    = (bool) crescelo_get_option('scrape_include_excerpt', true);
+$scrape_method      = sanitize_key(crescelo_get_option('scrape_method', 'db'));
+$batch_size         = (int) crescelo_get_option('batch_size', 15);
+$auto_sync          = (bool) crescelo_get_option('auto_sync', true);
 
-$last_scraped        = get_option('ai_assistant_last_scraped', '');
-$scrape_stats        = get_option('ai_assistant_scrape_stats', []);
+$last_scraped        = crescelo_get_option('last_scraped', '');
+$scrape_stats        = crescelo_get_option('scrape_stats', []);
 $total_scraped_items  = isset($scrape_stats['total_items']) ? (int) $scrape_stats['total_items'] : 0;
 $total_scraped_chunks = isset($scrape_stats['total_chunks']) ? (int) $scrape_stats['total_chunks'] : 0;
 ?>
@@ -71,8 +73,8 @@ $total_scraped_chunks = isset($scrape_stats['total_chunks']) ? (int) $scrape_sta
                 </svg>
             </div>
             <div>
-                <h1 class="crescelo-main-title">Crescelo AI Assistant</h1>
-                <p class="crescelo-sub-title">Intelligent AI Chatbot &amp; Website Knowledge Base Scraper</p>
+                <h1 class="crescelo-main-title"><?php esc_html_e('Crescelo AI Assistant', 'crescelo'); ?></h1>
+                <p class="crescelo-sub-title"><?php esc_html_e('Intelligent AI Chatbot & Website Knowledge Base Scraper', 'crescelo'); ?></p>
             </div>
         </div>
 
@@ -80,12 +82,12 @@ $total_scraped_chunks = isset($scrape_stats['total_chunks']) ? (int) $scrape_sta
             <?php if ($is_connected): ?>
                 <div class="crescelo-status-tag status-connected">
                     <span class="live-dot-lime"></span>
-                    <span>Connected: <strong><?php echo esc_html($assistant_name ?: $assistant_id); ?></strong></span>
+                    <span><?php esc_html_e('Connected:', 'crescelo'); ?> <strong><?php echo esc_html($assistant_name ? $assistant_name : $assistant_id); ?></strong></span>
                 </div>
             <?php else: ?>
                 <div class="crescelo-status-tag status-disconnected">
                     <span class="live-dot-gray"></span>
-                    <span>Not Connected</span>
+                    <span><?php esc_html_e('Not Connected', 'crescelo'); ?></span>
                 </div>
             <?php endif; ?>
         </div>
@@ -95,16 +97,16 @@ $total_scraped_chunks = isset($scrape_stats['total_chunks']) ? (int) $scrape_sta
     <nav class="crescelo-nav-tabs" role="tablist">
         <button type="button" class="crescelo-tab-btn active" data-tab="tab-connection" role="tab" aria-selected="true">
             <span class="tab-icon">🔗</span>
-            <span class="tab-text">Connection &amp; Account</span>
+            <span class="tab-text"><?php esc_html_e('Connection & Account', 'crescelo'); ?></span>
         </button>
         <button type="button" class="crescelo-tab-btn" data-tab="tab-scraper" role="tab" aria-selected="false">
             <span class="tab-icon">🕷️</span>
-            <span class="tab-text">Knowledge Base Scraper</span>
+            <span class="tab-text"><?php esc_html_e('Knowledge Base Scraper', 'crescelo'); ?></span>
             <span class="tab-badge" id="tab-pt-count"><?php echo count($allowed_post_types); ?></span>
         </button>
         <button type="button" class="crescelo-tab-btn" data-tab="tab-widget" role="tab" aria-selected="false">
             <span class="tab-icon">💬</span>
-            <span class="tab-text">Chat Widget &amp; Actions</span>
+            <span class="tab-text"><?php esc_html_e('Chat Widget & Actions', 'crescelo'); ?></span>
         </button>
     </nav>
 
@@ -122,29 +124,29 @@ $total_scraped_chunks = isset($scrape_stats['total_chunks']) ? (int) $scrape_sta
                     <div class="connected-card-header">
                         <div class="connected-status-pill">
                             <span class="pulse-lime-ring"></span>
-                            <span>Active Connection</span>
+                            <span><?php esc_html_e('Active Connection', 'crescelo'); ?></span>
                         </div>
                         <div class="connected-header-right">
-                            <span class="server-pill">Server: <?php echo esc_html($host_url); ?></span>
+                            <span class="server-pill"><?php echo esc_html(sprintf(__('Server: %s', 'crescelo'), $host_url)); ?></span>
                         </div>
                     </div>
 
                     <div class="connected-details-grid">
                         <div class="detail-box">
-                            <span class="detail-label">AI Assistant Name</span>
-                            <span class="detail-val highlight"><?php echo esc_html($assistant_name ?: 'AI Business Assistant'); ?></span>
+                            <span class="detail-label"><?php esc_html_e('AI Assistant Name', 'crescelo'); ?></span>
+                            <span class="detail-val highlight"><?php echo esc_html($assistant_name ? $assistant_name : __('AI Business Assistant', 'crescelo')); ?></span>
                         </div>
                         <div class="detail-box">
-                            <span class="detail-label">Assistant ID</span>
+                            <span class="detail-label"><?php esc_html_e('Assistant ID', 'crescelo'); ?></span>
                             <span class="detail-val mono"><code><?php echo esc_html($assistant_id); ?></code></span>
                         </div>
                         <div class="detail-box">
-                            <span class="detail-label">Connected Account</span>
-                            <span class="detail-val"><?php echo esc_html($account_email ?: 'Crescelo Authorized User'); ?></span>
+                            <span class="detail-label"><?php esc_html_e('Connected Account', 'crescelo'); ?></span>
+                            <span class="detail-val"><?php echo esc_html($account_email ? $account_email : __('Crescelo Authorized User', 'crescelo')); ?></span>
                         </div>
                         <div class="detail-box">
-                            <span class="detail-label">Connection Date</span>
-                            <span class="detail-val"><?php echo esc_html($connected_at ? date('M j, Y - H:i', strtotime($connected_at)) : 'Active'); ?></span>
+                            <span class="detail-label"><?php esc_html_e('Connection Date', 'crescelo'); ?></span>
+                            <span class="detail-val"><?php echo esc_html($connected_at ? date_i18n(get_option('date_format') . ' ' . get_option('time_format'), strtotime($connected_at)) : __('Active', 'crescelo')); ?></span>
                         </div>
                     </div>
 
@@ -152,16 +154,16 @@ $total_scraped_chunks = isset($scrape_stats['total_chunks']) ? (int) $scrape_sta
                     <div class="connected-actions-row">
                         <div class="actions-left">
                             <button type="button" class="btn-crescelo-lime" id="btn-test-connection">
-                                <span>⚡ Test Connection Health</span>
+                                <span><?php esc_html_e('⚡ Test Connection Health', 'crescelo'); ?></span>
                             </button>
                             <span id="test-connection-status" class="test-status-msg" style="display:none;"></span>
                         </div>
                         <div class="actions-right">
-                            <a href="<?php echo esc_url($connect_url); ?>" class="btn-crescelo-secondary" title="Switch to another assistant or refresh permissions">
-                                <span>Switch Assistant</span>
+                            <a href="<?php echo esc_url($connect_url); ?>" class="btn-crescelo-secondary" title="<?php esc_attr_e('Switch to another assistant or refresh permissions', 'crescelo'); ?>">
+                                <span><?php esc_html_e('Switch Assistant', 'crescelo'); ?></span>
                             </a>
-                            <a href="<?php echo esc_url($disconnect_url); ?>" class="btn-crescelo-danger" id="btn-disconnect-link" onclick="return confirm('Are you sure you want to disconnect this WordPress site from Crescelo? Your chat widget will be deactivated until you reconnect.');">
-                                <span>Disconnect Site</span>
+                            <a href="<?php echo esc_url($disconnect_url); ?>" class="btn-crescelo-danger" id="btn-disconnect-link" onclick="return confirm('<?php echo esc_js(__('Are you sure you want to disconnect this WordPress site from Crescelo? Your chat widget will be deactivated until you reconnect.', 'crescelo')); ?>');">
+                                <span><?php esc_html_e('Disconnect Site', 'crescelo'); ?></span>
                             </a>
                         </div>
                     </div>
@@ -170,15 +172,15 @@ $total_scraped_chunks = isset($scrape_stats['total_chunks']) ? (int) $scrape_sta
                 <!-- Grounding & Store Information Card -->
                 <div class="crescelo-subcard" style="margin-top: 24px;">
                     <div class="subcard-header">
-                        <h3>Real-Time Live Grounding Endpoint</h3>
-                        <span class="badge-status-ok">REST API Active</span>
+                        <h3><?php esc_html_e('Real-Time Live Grounding Endpoint', 'crescelo'); ?></h3>
+                        <span class="badge-status-ok"><?php esc_html_e('REST API Active', 'crescelo'); ?></span>
                     </div>
                     <p class="subcard-desc">
-                        Crescelo securely queries this endpoint in real time to fetch live WooCommerce product pricing, real-time stock levels, and store details during customer conversations.
+                        <?php esc_html_e('Crescelo securely queries this endpoint in real time to fetch live WooCommerce product pricing, real-time stock levels, and store details during customer conversations.', 'crescelo'); ?>
                     </p>
                     <div class="code-snippet-box">
                         <code><?php echo esc_url(rest_url('crescelo/v1/stock-check')); ?></code>
-                        <span class="protected-pill">🔒 Protected by Crescelo Key</span>
+                        <span class="protected-pill"><?php esc_html_e('🔒 Protected by Crescelo Key', 'crescelo'); ?></span>
                     </div>
                 </div>
 
@@ -186,10 +188,10 @@ $total_scraped_chunks = isset($scrape_stats['total_chunks']) ? (int) $scrape_sta
                 <!-- DISCONNECTED STATE: 1-Click Login / Connect + Manual API Key Option -->
                 <div class="crescelo-hero-connect-card">
                     <div class="hero-connect-inner">
-                        <div class="hero-badge">One-Click Setup</div>
-                        <h2 class="hero-title">Connect your WordPress Site to Crescelo</h2>
+                        <div class="hero-badge"><?php esc_html_e('One-Click Setup', 'crescelo'); ?></div>
+                        <h2 class="hero-title"><?php esc_html_e('Connect your WordPress Site to Crescelo', 'crescelo'); ?></h2>
                         <p class="hero-subtitle">
-                            No complicated configuration required. Click the button below to log in to your Crescelo account and automatically connect your AI Assistant.
+                            <?php esc_html_e('No complicated configuration required. Click the button below to log in to your Crescelo account and automatically connect your AI Assistant.', 'crescelo'); ?>
                         </p>
 
                         <div class="hero-cta-wrap">
@@ -199,22 +201,22 @@ $total_scraped_chunks = isset($scrape_stats['total_chunks']) ? (int) $scrape_sta
                                     <path d="M10 17L15 12L10 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
                                     <path d="M15 12H3" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
                                 </svg>
-                                <span>Log In &amp; Connect with Crescelo</span>
+                                <span><?php esc_html_e('Log In & Connect with Crescelo', 'crescelo'); ?></span>
                             </a>
                         </div>
 
                         <div class="hero-features-list">
                             <div class="feature-item">
                                 <span class="chk-icon">✓</span>
-                                <span>Automatic Assistant Selection or Creation</span>
+                                <span><?php esc_html_e('Automatic Assistant Selection or Creation', 'crescelo'); ?></span>
                             </div>
                             <div class="feature-item">
                                 <span class="chk-icon">✓</span>
-                                <span>Zero manual server or key configuration</span>
+                                <span><?php esc_html_e('Zero manual server or key configuration', 'crescelo'); ?></span>
                             </div>
                             <div class="feature-item">
                                 <span class="chk-icon">✓</span>
-                                <span>Encrypted end-to-end handshake</span>
+                                <span><?php esc_html_e('Encrypted end-to-end handshake', 'crescelo'); ?></span>
                             </div>
                         </div>
                     </div>
@@ -222,16 +224,16 @@ $total_scraped_chunks = isset($scrape_stats['total_chunks']) ? (int) $scrape_sta
 
                 <!-- Divider -->
                 <div class="crescelo-divider">
-                    <span>OR CONNECT MANUALLY WITH API KEY</span>
+                    <span><?php esc_html_e('OR CONNECT MANUALLY WITH API KEY', 'crescelo'); ?></span>
                 </div>
 
                 <!-- Manual Connection via API Key Card -->
                 <div class="crescelo-subcard">
                     <div class="subcard-header">
                         <div>
-                            <h3 style="margin:0 0 4px 0;">Manual Connection via API Key</h3>
+                            <h3 style="margin:0 0 4px 0;"><?php esc_html_e('Manual Connection via API Key', 'crescelo'); ?></h3>
                             <p class="subcard-desc" style="margin:0;">
-                                Prefer connecting with a key? Generate a WordPress connector key from your Crescelo Assistant and paste it here.
+                                <?php esc_html_e('Prefer connecting with a key? Generate a WordPress connector key from your Crescelo Assistant and paste it here.', 'crescelo'); ?>
                             </p>
                         </div>
                     </div>
@@ -239,41 +241,41 @@ $total_scraped_chunks = isset($scrape_stats['total_chunks']) ? (int) $scrape_sta
                     <div class="manual-steps-box">
                         <div class="manual-step-item">
                             <span class="step-num">1</span>
-                            <span>Log in to Crescelo and open your Assistant Settings</span>
+                            <span><?php esc_html_e('Log in to Crescelo and open your Assistant Settings', 'crescelo'); ?></span>
                         </div>
                         <div class="manual-step-item">
                             <span class="step-num">2</span>
-                            <span>Go to <strong>WordPress Integration</strong> &rarr; <strong>Generate Connector Key</strong></span>
+                            <span><?php esc_html_e('Go to WordPress Integration → Generate Connector Key', 'crescelo'); ?></span>
                         </div>
                         <div class="manual-step-item">
                             <span class="step-num">3</span>
-                            <span>Paste the generated <code>cres_wp_...</code> API key below</span>
+                            <span><?php esc_html_e('Paste the generated cres_wp_... API key below', 'crescelo'); ?></span>
                         </div>
                     </div>
 
                     <div class="manual-form-grid" style="margin-top: 18px;">
                         <div>
-                            <label for="input-manual-api-key" class="field-label">WordPress Connector API Key</label>
+                            <label for="input-manual-api-key" class="field-label"><?php esc_html_e('WordPress Connector API Key', 'crescelo'); ?></label>
                             <div class="input-with-toggle">
                                 <input type="password" id="input-manual-api-key" class="crescelo-input" placeholder="cres_wp_xxxxxxxxxxxxxxxxxxxxxxxxxxxx" autocomplete="off" />
-                                <button type="button" class="btn-toggle-secret" id="btn-toggle-key-visibility" title="Show/Hide Key">👁️</button>
+                                <button type="button" class="btn-toggle-secret" id="btn-toggle-key-visibility" title="<?php esc_attr_e('Show/Hide Key', 'crescelo'); ?>">👁️</button>
                             </div>
-                            <span class="field-help">Your secure assistant webhook secret or connector key.</span>
+                            <span class="field-help"><?php esc_html_e('Your secure assistant webhook secret or connector key.', 'crescelo'); ?></span>
                         </div>
 
                         <!-- Optional server URL toggle -->
                         <details class="server-config-details" style="margin-top: 14px;">
-                            <summary class="details-summary">Advanced Server Settings (Custom Host / Localhost)</summary>
+                            <summary class="details-summary"><?php esc_html_e('Advanced Server Settings (Custom Host / Staging)', 'crescelo'); ?></summary>
                             <div style="margin-top: 10px;">
-                                <label for="input-manual-host-url" class="field-label">Crescelo Server URL</label>
-                                <input type="url" id="input-manual-host-url" class="crescelo-input" value="<?php echo esc_attr($host_url); ?>" placeholder="http://localhost:3000" />
-                                <span class="field-help">Defaults to your active Crescelo host. Change only for custom instances.</span>
+                                <label for="input-manual-host-url" class="field-label"><?php esc_html_e('Crescelo Server URL', 'crescelo'); ?></label>
+                                <input type="url" id="input-manual-host-url" class="crescelo-input" value="<?php echo esc_attr($host_url); ?>" placeholder="https://www.crescelo.com" />
+                                <span class="field-help"><?php esc_html_e('Defaults to your active Crescelo host. Change only for custom instances.', 'crescelo'); ?></span>
                             </div>
                         </details>
 
                         <div style="margin-top: 20px; display:flex; align-items:center; gap:14px;">
                             <button type="button" class="btn-crescelo-lime" id="btn-submit-manual-key">
-                                <span>Verify &amp; Connect via Key</span>
+                                <span><?php esc_html_e('Verify & Connect via Key', 'crescelo'); ?></span>
                             </button>
                             <span id="manual-key-feedback" class="manual-feedback-text" style="display:none;"></span>
                         </div>
@@ -290,41 +292,41 @@ $total_scraped_chunks = isset($scrape_stats['total_chunks']) ? (int) $scrape_sta
         <section id="tab-scraper" class="crescelo-tab-pane" role="tabpanel">
 
             <form method="post" action="options.php" id="crescelo-scraper-form">
-                <?php settings_fields('ai_assistant_options'); ?>
-                <?php do_settings_sections('ai_assistant_options'); ?>
+                <?php settings_fields('crescelo_options'); ?>
+                <?php do_settings_sections('crescelo_options'); ?>
 
                 <!-- Hidden inputs to preserve non-scraper fields -->
-                <input type="hidden" name="ai_assistant_host_url" value="<?php echo esc_attr($host_url); ?>" />
-                <input type="hidden" name="ai_assistant_id" value="<?php echo esc_attr($assistant_id); ?>" />
-                <input type="hidden" name="ai_assistant_api_key" value="<?php echo esc_attr($api_key); ?>" />
-                <input type="hidden" name="ai_assistant_site_secret" value="<?php echo esc_attr($site_secret); ?>" />
-                <input type="hidden" name="ai_assistant_account_email" value="<?php echo esc_attr($account_email); ?>" />
-                <input type="hidden" name="ai_assistant_assistant_name" value="<?php echo esc_attr($assistant_name); ?>" />
-                <input type="hidden" name="ai_assistant_connected_at" value="<?php echo esc_attr($connected_at); ?>" />
-                <input type="hidden" name="ai_assistant_enabled" value="<?php echo $enabled ? '1' : '0'; ?>" />
+                <input type="hidden" name="crescelo_host_url" value="<?php echo esc_attr($host_url); ?>" />
+                <input type="hidden" name="crescelo_id" value="<?php echo esc_attr($assistant_id); ?>" />
+                <input type="hidden" name="crescelo_api_key" value="<?php echo esc_attr($api_key); ?>" />
+                <input type="hidden" name="crescelo_site_secret" value="<?php echo esc_attr($site_secret); ?>" />
+                <input type="hidden" name="crescelo_account_email" value="<?php echo esc_attr($account_email); ?>" />
+                <input type="hidden" name="crescelo_assistant_name" value="<?php echo esc_attr($assistant_name); ?>" />
+                <input type="hidden" name="crescelo_connected_at" value="<?php echo esc_attr($connected_at); ?>" />
+                <input type="hidden" name="crescelo_enabled" value="<?php echo $enabled ? '1' : '0'; ?>" />
 
                 <!-- Allowed Post Types Card -->
                 <div class="crescelo-card">
                     <div class="card-header-flex">
                         <div>
-                            <h2 class="card-section-title">Allowed Post Types for Scraping</h2>
+                            <h2 class="card-section-title"><?php esc_html_e('Allowed Post Types for Scraping', 'crescelo'); ?></h2>
                             <p class="card-section-desc">
-                                Choose which post types from your WordPress site should be vectorized into your Crescelo AI Knowledge Base.
+                                <?php esc_html_e('Choose which post types from your WordPress site should be vectorized into your Crescelo AI Knowledge Base.', 'crescelo'); ?>
                             </p>
                         </div>
                         <div>
                             <span class="count-badge has-items" id="total-selected-indicator">
-                                <?php echo count($allowed_post_types); ?> types allowed
+                                <?php echo esc_html(sprintf(__('%d types allowed', 'crescelo'), count($allowed_post_types))); ?>
                             </span>
                         </div>
                     </div>
 
                     <div class="pt-quick-actions">
-                        <button type="button" class="btn-text-action" id="action-select-all-pts">Select All</button>
+                        <button type="button" class="btn-text-action" id="action-select-all-pts"><?php esc_html_e('Select All', 'crescelo'); ?></button>
                         <span class="action-sep">|</span>
-                        <button type="button" class="btn-text-action" id="action-select-defaults-pts">Defaults (Pages, Posts, Products)</button>
+                        <button type="button" class="btn-text-action" id="action-select-defaults-pts"><?php esc_html_e('Defaults (Pages, Posts, Products)', 'crescelo'); ?></button>
                         <span class="action-sep">|</span>
-                        <button type="button" class="btn-text-action" id="action-deselect-all-pts">Deselect All</button>
+                        <button type="button" class="btn-text-action" id="action-deselect-all-pts"><?php esc_html_e('Deselect All', 'crescelo'); ?></button>
                     </div>
 
                     <!-- Dynamic Post Types Grid -->
@@ -333,15 +335,15 @@ $total_scraped_chunks = isset($scrape_stats['total_chunks']) ? (int) $scrape_sta
                             $is_checked = in_array($slug, $allowed_post_types, true);
                         ?>
                             <label class="post-type-card <?php echo $is_checked ? 'selected' : ''; ?>">
-                                <input type="checkbox" name="ai_assistant_allowed_post_types[]" value="<?php echo esc_attr($slug); ?>" <?php checked(true, $is_checked); ?> class="pt-checkbox" />
+                                <input type="checkbox" name="crescelo_allowed_post_types[]" value="<?php echo esc_attr($slug); ?>" <?php checked(true, $is_checked); ?> class="pt-checkbox" />
                                 <div class="pt-details">
                                     <div class="pt-header-row">
                                         <span class="pt-title"><?php echo esc_html($pt['label']); ?></span>
                                         <span class="count-badge <?php echo $pt['count'] > 0 ? 'has-items' : ''; ?>">
-                                            <?php echo esc_html($pt['count']); ?> <?php echo esc_html(_n('item', 'items', $pt['count'], 'ai-business-assistant')); ?>
+                                            <?php echo esc_html($pt['count']); ?> <?php echo esc_html(_n('item', 'items', $pt['count'], 'crescelo')); ?>
                                         </span>
                                     </div>
-                                    <div class="pt-slug">Type: <code><?php echo esc_html($slug); ?></code></div>
+                                    <div class="pt-slug"><?php esc_html_e('Type:', 'crescelo'); ?> <code><?php echo esc_html($slug); ?></code></div>
 
                                     <?php if (!empty($pt['taxonomies'])): ?>
                                         <div class="pt-taxonomies">
@@ -360,52 +362,52 @@ $total_scraped_chunks = isset($scrape_stats['total_chunks']) ? (int) $scrape_sta
 
                     <!-- Scraper Ingestion Configuration Options -->
                     <div class="scraper-options-panel">
-                        <h3 class="panel-subtitle">Scraper Ingestion Options</h3>
+                        <h3 class="panel-subtitle"><?php esc_html_e('Scraper Ingestion Options', 'crescelo'); ?></h3>
                         
                         <div class="options-grid-2">
                             <label class="crescelo-checkbox-label">
-                                <input type="checkbox" name="ai_assistant_scrape_include_meta" value="1" <?php checked(true, $include_meta); ?> id="opt-scrape-include-meta" />
-                                <span><strong>Include Custom Fields &amp; Meta</strong> (ACF, SKU, pricing, specs)</span>
+                                <input type="checkbox" name="crescelo_scrape_include_meta" value="1" <?php checked(true, $include_meta); ?> id="opt-scrape-include-meta" />
+                                <span><strong><?php esc_html_e('Include Custom Fields & Meta', 'crescelo'); ?></strong> <?php esc_html_e('(ACF, SKU, pricing, specs)', 'crescelo'); ?></span>
                             </label>
 
                             <label class="crescelo-checkbox-label">
-                                <input type="checkbox" name="ai_assistant_scrape_include_taxonomies" value="1" <?php checked(true, $include_taxonomies); ?> id="opt-scrape-include-tax" />
-                                <span><strong>Include Taxonomies &amp; Categories</strong> (Tags, terms, hierarchies)</span>
+                                <input type="checkbox" name="crescelo_scrape_include_taxonomies" value="1" <?php checked(true, $include_taxonomies); ?> id="opt-scrape-include-tax" />
+                                <span><strong><?php esc_html_e('Include Taxonomies & Categories', 'crescelo'); ?></strong> <?php esc_html_e('(Tags, terms, hierarchies)', 'crescelo'); ?></span>
                             </label>
 
                             <label class="crescelo-checkbox-label">
-                                <input type="checkbox" name="ai_assistant_scrape_include_excerpt" value="1" <?php checked(true, $include_excerpt); ?> id="opt-scrape-include-excerpt" />
-                                <span><strong>Include Excerpt &amp; Summary</strong></span>
+                                <input type="checkbox" name="crescelo_scrape_include_excerpt" value="1" <?php checked(true, $include_excerpt); ?> id="opt-scrape-include-excerpt" />
+                                <span><strong><?php esc_html_e('Include Excerpt & Summary', 'crescelo'); ?></strong></span>
                             </label>
 
                             <label class="crescelo-checkbox-label">
-                                <input type="checkbox" name="ai_assistant_auto_sync" value="1" <?php checked(true, $auto_sync); ?> id="opt-auto-sync" />
-                                <span><strong>Real-Time Auto-Sync</strong> (Sync content changes when published)</span>
+                                <input type="checkbox" name="crescelo_auto_sync" value="1" <?php checked(true, $auto_sync); ?> id="opt-auto-sync" />
+                                <span><strong><?php esc_html_e('Real-Time Auto-Sync', 'crescelo'); ?></strong> <?php esc_html_e('(Sync content changes when published)', 'crescelo'); ?></span>
                             </label>
                         </div>
 
                         <div class="options-grid-2" style="margin-top: 16px;">
                             <div>
-                                <label for="ai_assistant_scrape_method" class="field-label">Content Extraction Method</label>
-                                <select name="ai_assistant_scrape_method" id="ai_assistant_scrape_method" class="crescelo-select">
-                                    <option value="db" <?php selected('db', $scrape_method); ?>>Clean Database Content (Fast, stripped shortcodes &amp; blocks)</option>
-                                    <option value="html" <?php selected('html', $scrape_method); ?>>Rendered HTML Scraping (Captures Elementor/Divi output)</option>
+                                <label for="crescelo_scrape_method" class="field-label"><?php esc_html_e('Content Extraction Method', 'crescelo'); ?></label>
+                                <select name="crescelo_scrape_method" id="crescelo_scrape_method" class="crescelo-select">
+                                    <option value="db" <?php selected('db', $scrape_method); ?>><?php esc_html_e('Clean Database Content (Fast, stripped shortcodes & blocks)', 'crescelo'); ?></option>
+                                    <option value="html" <?php selected('html', $scrape_method); ?>><?php esc_html_e('Rendered HTML Scraping (Captures Elementor/Divi output)', 'crescelo'); ?></option>
                                 </select>
                             </div>
 
                             <div>
-                                <label for="ai_assistant_batch_size" class="field-label">Ingestion Batch Size</label>
-                                <select name="ai_assistant_batch_size" id="ai_assistant_batch_size" class="crescelo-select">
-                                    <option value="10" <?php selected(10, $batch_size); ?>>10 items per batch</option>
-                                    <option value="15" <?php selected(15, $batch_size); ?>>15 items per batch (Recommended)</option>
-                                    <option value="25" <?php selected(25, $batch_size); ?>>25 items per batch</option>
-                                    <option value="50" <?php selected(50, $batch_size); ?>>50 items per batch (High RAM)</option>
+                                <label for="crescelo_batch_size" class="field-label"><?php esc_html_e('Ingestion Batch Size', 'crescelo'); ?></label>
+                                <select name="crescelo_batch_size" id="crescelo_batch_size" class="crescelo-select">
+                                    <option value="10" <?php selected(10, $batch_size); ?>><?php esc_html_e('10 items per batch', 'crescelo'); ?></option>
+                                    <option value="15" <?php selected(15, $batch_size); ?>><?php esc_html_e('15 items per batch (Recommended)', 'crescelo'); ?></option>
+                                    <option value="25" <?php selected(25, $batch_size); ?>><?php esc_html_e('25 items per batch', 'crescelo'); ?></option>
+                                    <option value="50" <?php selected(50, $batch_size); ?>><?php esc_html_e('50 items per batch (High RAM)', 'crescelo'); ?></option>
                                 </select>
                             </div>
                         </div>
 
                         <div style="margin-top: 20px;">
-                            <?php submit_button('Save Scraper Settings', 'primary crescelo-btn-save', 'submit', false); ?>
+                            <?php submit_button(esc_html__('Save Scraper Settings', 'crescelo'), 'primary crescelo-btn-save', 'submit', false); ?>
                         </div>
                     </div>
                 </div>
@@ -415,22 +417,22 @@ $total_scraped_chunks = isset($scrape_stats['total_chunks']) ? (int) $scrape_sta
             <div class="crescelo-card scraper-engine-card" style="margin-top: 24px;">
                 <div class="scraper-header-row">
                     <div>
-                        <h3 class="engine-title">🕷️ One-Click Website Scraper</h3>
+                        <h3 class="engine-title"><?php esc_html_e('🕷️ One-Click Website Scraper', 'crescelo'); ?></h3>
                         <p class="engine-desc">
-                            Extracts and vectorizes all allowed content directly into your active Crescelo assistant knowledge base.
+                            <?php esc_html_e('Extracts and vectorizes all allowed content directly into your active Crescelo assistant knowledge base.', 'crescelo'); ?>
                         </p>
                         <div class="scraper-stats-row">
-                            <span>Last Scraped: <strong><?php echo !empty($last_scraped) ? esc_html($last_scraped) : 'Not yet scraped'; ?></strong></span>
-                            <span>Total Indexed: <strong><?php echo esc_html($total_scraped_items); ?> items</strong></span>
-                            <span>Vector Chunks: <strong><?php echo esc_html($total_scraped_chunks); ?></strong></span>
+                            <span><?php esc_html_e('Last Scraped:', 'crescelo'); ?> <strong><?php echo !empty($last_scraped) ? esc_html($last_scraped) : esc_html__('Not yet scraped', 'crescelo'); ?></strong></span>
+                            <span><?php esc_html_e('Total Indexed:', 'crescelo'); ?> <strong><?php echo esc_html(sprintf(__('%d items', 'crescelo'), $total_scraped_items)); ?></strong></span>
+                            <span><?php esc_html_e('Vector Chunks:', 'crescelo'); ?> <strong><?php echo esc_html($total_scraped_chunks); ?></strong></span>
                         </div>
                     </div>
                     <div>
                         <button type="button" class="btn-crescelo-lime btn-lg" id="btn-start-standalone-scrape" <?php disabled(false, $is_connected); ?>>
-                            <span>🕷️ Scrape Website &amp; Sync to Knowledge Base</span>
+                            <span><?php esc_html_e('🕷️ Scrape Website & Sync to Knowledge Base', 'crescelo'); ?></span>
                         </button>
                         <?php if (!$is_connected): ?>
-                            <div class="muted-warning">Connect an assistant in Tab 1 to run scraper.</div>
+                            <div class="muted-warning"><?php esc_html_e('Connect an assistant in Tab 1 to run scraper.', 'crescelo'); ?></div>
                         <?php endif; ?>
                     </div>
                 </div>
@@ -442,18 +444,18 @@ $total_scraped_chunks = isset($scrape_stats['total_chunks']) ? (int) $scrape_sta
                             <div class="progress-bar-fill" id="standalone-progress-fill" style="width: 0%;"></div>
                         </div>
                         <div class="progress-status-row">
-                            <span id="standalone-status-label">Initializing site-wide extraction...</span>
+                            <span id="standalone-status-label"><?php esc_html_e('Initializing site-wide extraction...', 'crescelo'); ?></span>
                             <span id="standalone-percent-label">0%</span>
                         </div>
                     </div>
 
                     <!-- Live Terminal Output -->
                     <div class="terminal-log" id="standalone-terminal-log">
-                        <div class="log-line info">[INIT] Preparing scraper across selected post types...</div>
+                        <div class="log-line info"><?php esc_html_e('[INIT] Preparing scraper across selected post types...', 'crescelo'); ?></div>
                     </div>
 
                     <div style="margin-top: 14px; display:flex; justify-content:flex-end;">
-                        <button type="button" class="btn-crescelo-danger" id="btn-cancel-standalone-scrape">Cancel Scraping</button>
+                        <button type="button" class="btn-crescelo-danger" id="btn-cancel-standalone-scrape"><?php esc_html_e('Cancel Scraping', 'crescelo'); ?></button>
                     </div>
                 </div>
             </div>
@@ -469,57 +471,57 @@ $total_scraped_chunks = isset($scrape_stats['total_chunks']) ? (int) $scrape_sta
             <div class="crescelo-grid-2col">
                 <!-- Widget Settings Form -->
                 <div class="crescelo-card">
-                    <h2 class="card-section-title">Chat Widget Configuration</h2>
-                    <p class="card-section-desc">Manage how the floating AI chatbot behaves and appears on your site.</p>
+                    <h2 class="card-section-title"><?php esc_html_e('Chat Widget Configuration', 'crescelo'); ?></h2>
+                    <p class="card-section-desc"><?php esc_html_e('Manage how the floating AI chatbot behaves and appears on your site.', 'crescelo'); ?></p>
 
                     <form method="post" action="options.php" id="crescelo-widget-form">
-                        <?php settings_fields('ai_assistant_options'); ?>
-                        <?php do_settings_sections('ai_assistant_options'); ?>
+                        <?php settings_fields('crescelo_options'); ?>
+                        <?php do_settings_sections('crescelo_options'); ?>
 
                         <!-- Preserve existing options -->
-                        <input type="hidden" name="ai_assistant_host_url" value="<?php echo esc_attr($host_url); ?>" />
-                        <input type="hidden" name="ai_assistant_api_key" value="<?php echo esc_attr($api_key); ?>" />
-                        <input type="hidden" name="ai_assistant_site_secret" value="<?php echo esc_attr($site_secret); ?>" />
-                        <input type="hidden" name="ai_assistant_account_email" value="<?php echo esc_attr($account_email); ?>" />
-                        <input type="hidden" name="ai_assistant_assistant_name" value="<?php echo esc_attr($assistant_name); ?>" />
-                        <input type="hidden" name="ai_assistant_connected_at" value="<?php echo esc_attr($connected_at); ?>" />
+                        <input type="hidden" name="crescelo_host_url" value="<?php echo esc_attr($host_url); ?>" />
+                        <input type="hidden" name="crescelo_api_key" value="<?php echo esc_attr($api_key); ?>" />
+                        <input type="hidden" name="crescelo_site_secret" value="<?php echo esc_attr($site_secret); ?>" />
+                        <input type="hidden" name="crescelo_account_email" value="<?php echo esc_attr($account_email); ?>" />
+                        <input type="hidden" name="crescelo_assistant_name" value="<?php echo esc_attr($assistant_name); ?>" />
+                        <input type="hidden" name="crescelo_connected_at" value="<?php echo esc_attr($connected_at); ?>" />
                         <?php foreach ($allowed_post_types as $pt): ?>
-                            <input type="hidden" name="ai_assistant_allowed_post_types[]" value="<?php echo esc_attr($pt); ?>" />
+                            <input type="hidden" name="crescelo_allowed_post_types[]" value="<?php echo esc_attr($pt); ?>" />
                         <?php endforeach; ?>
 
                         <div class="setting-row">
-                            <label for="ai_assistant_enabled" class="field-label">Public Chat Widget Display</label>
+                            <label for="crescelo_enabled" class="field-label"><?php esc_html_e('Public Chat Widget Display', 'crescelo'); ?></label>
                             <label class="crescelo-switch">
-                                <input name="ai_assistant_enabled" type="checkbox" id="ai_assistant_enabled" value="1" <?php checked(1, $enabled); ?> />
+                                <input name="crescelo_enabled" type="checkbox" id="crescelo_enabled" value="1" <?php checked(1, $enabled); ?> />
                                 <span class="crescelo-slider"></span>
                             </label>
-                            <span class="field-help">Renders the floating AI chat bubble on visitor pages.</span>
+                            <span class="field-help"><?php esc_html_e('Renders the floating AI chat bubble on visitor pages.', 'crescelo'); ?></span>
                         </div>
 
                         <div class="setting-row" style="margin-top: 18px;">
-                            <label for="ai_assistant_id" class="field-label">Assistant ID</label>
-                            <input name="ai_assistant_id" type="text" id="ai_assistant_id" value="<?php echo esc_attr($assistant_id); ?>" class="crescelo-input mono" />
-                            <span class="field-help">Linked identifier for this site's AI persona.</span>
+                            <label for="crescelo_id" class="field-label"><?php esc_html_e('Assistant ID', 'crescelo'); ?></label>
+                            <input name="crescelo_id" type="text" id="crescelo_id" value="<?php echo esc_attr($assistant_id); ?>" class="crescelo-input mono" />
+                            <span class="field-help"><?php esc_html_e('Linked identifier for this site persona.', 'crescelo'); ?></span>
                         </div>
 
                         <div class="setting-row" style="margin-top: 18px;">
-                            <label class="field-label">Injected Script URL</label>
+                            <label class="field-label"><?php esc_html_e('Injected Script URL', 'crescelo'); ?></label>
                             <div class="code-snippet-box">
                                 <code><?php echo esc_url(untrailingslashit($host_url) . '/widget.js'); ?></code>
                             </div>
-                            <span class="field-help">Automatically loaded asynchronously via WordPress footer hooks.</span>
+                            <span class="field-help"><?php esc_html_e('Automatically enqueued asynchronously via standard WordPress script APIs.', 'crescelo'); ?></span>
                         </div>
 
                         <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid #e8e6d1;">
-                            <?php submit_button('Save Widget Settings', 'primary crescelo-btn-save', 'submit', false); ?>
+                            <?php submit_button(esc_html__('Save Widget Settings', 'crescelo'), 'primary crescelo-btn-save', 'submit', false); ?>
                         </div>
                     </form>
                 </div>
 
                 <!-- Widget Preview Card -->
                 <div class="crescelo-card">
-                    <h2 class="card-section-title">Brand &amp; Chat Widget Preview</h2>
-                    <p class="card-section-desc">Live preview matching your Crescelo palette (#08251a &amp; #abff44).</p>
+                    <h2 class="card-section-title"><?php esc_html_e('Brand & Chat Widget Preview', 'crescelo'); ?></h2>
+                    <p class="card-section-desc"><?php esc_html_e('Live preview matching your Crescelo palette (#08251a & #abff44).', 'crescelo'); ?></p>
 
                     <div class="widget-preview-frame">
                         <div class="preview-chat-window">
@@ -527,8 +529,8 @@ $total_scraped_chunks = isset($scrape_stats['total_chunks']) ? (int) $scrape_sta
                                 <div class="preview-header-brand">
                                     <div class="preview-avatar">AI</div>
                                     <div>
-                                        <div class="preview-name"><?php echo esc_html($assistant_name ?: 'Crescelo Assistant'); ?></div>
-                                        <div class="preview-status">● Online &amp; Grounded</div>
+                                        <div class="preview-name"><?php echo esc_html($assistant_name ? $assistant_name : __('Crescelo Assistant', 'crescelo')); ?></div>
+                                        <div class="preview-status"><?php esc_html_e('● Online & Grounded', 'crescelo'); ?></div>
                                     </div>
                                 </div>
                                 <span class="preview-close">✕</span>
@@ -537,19 +539,19 @@ $total_scraped_chunks = isset($scrape_stats['total_chunks']) ? (int) $scrape_sta
                             <div class="preview-chat-body">
                                 <div class="preview-msg bot">
                                     <div class="preview-bubble">
-                                        Hi there! 👋 Welcome to <?php echo esc_html(get_bloginfo('name')); ?>. How can I assist you today?
+                                        <?php echo esc_html(sprintf(__('Hi there! 👋 Welcome to %s. How can I assist you today?', 'crescelo'), get_bloginfo('name'))); ?>
                                     </div>
                                 </div>
 
                                 <div class="preview-suggestions">
-                                    <span class="preview-pill">What are your top products?</span>
-                                    <span class="preview-pill">Check shipping policy</span>
-                                    <span class="preview-pill">Talk to support</span>
+                                    <span class="preview-pill"><?php esc_html_e('What are your top products?', 'crescelo'); ?></span>
+                                    <span class="preview-pill"><?php esc_html_e('Check shipping policy', 'crescelo'); ?></span>
+                                    <span class="preview-pill"><?php esc_html_e('Talk to support', 'crescelo'); ?></span>
                                 </div>
                             </div>
 
                             <div class="preview-chat-footer">
-                                <div class="preview-input-sim">Ask a question...</div>
+                                <div class="preview-input-sim"><?php esc_html_e('Ask a question...', 'crescelo'); ?></div>
                                 <div class="preview-send-btn">➤</div>
                             </div>
                         </div>
@@ -564,7 +566,7 @@ $total_scraped_chunks = isset($scrape_stats['total_chunks']) ? (int) $scrape_sta
 
                     <div style="margin-top: 16px; text-align:center;">
                         <a href="<?php echo esc_url(home_url()); ?>" target="_blank" class="btn-crescelo-secondary" style="display:inline-block; text-decoration:none;">
-                            <span>Open Public Website &rarr;</span>
+                            <span><?php esc_html_e('Open Public Website →', 'crescelo'); ?></span>
                         </a>
                     </div>
                 </div>

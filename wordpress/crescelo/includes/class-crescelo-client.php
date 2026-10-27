@@ -3,6 +3,8 @@
  * Crescelo API Client for WordPress
  *
  * Handles authenticated communication between WordPress and the Crescelo AI SaaS backend.
+ *
+ * @package Crescelo
  */
 
 if (!defined('ABSPATH')) {
@@ -16,7 +18,7 @@ class Crescelo_Client {
     private $site_secret;
 
     public function __construct($host_url = null, $api_key = null) {
-        $raw_host = $host_url ?: get_option('ai_assistant_host_url', CRESCELO_DEFAULT_HOST);
+        $raw_host = $host_url ?: crescelo_get_option('host_url', CRESCELO_DEFAULT_HOST);
         $clean_host = esc_url_raw(trim($raw_host));
         $parsed = wp_parse_url($clean_host);
 
@@ -26,12 +28,15 @@ class Crescelo_Client {
             $this->host_url = CRESCELO_DEFAULT_HOST;
         }
 
-        $this->api_key     = sanitize_text_field($api_key ?: get_option('ai_assistant_api_key', ''));
-        $this->site_secret = sanitize_text_field(get_option('ai_assistant_site_secret', ''));
+        $this->api_key     = sanitize_text_field($api_key ?: crescelo_get_option('api_key', ''));
+        $this->site_secret = sanitize_text_field(crescelo_get_option('site_secret', ''));
     }
 
     /**
      * Register or link the WordPress site with the Crescelo backend.
+     *
+     * @param array $data Site configuration data.
+     * @return array
      */
     public function register_site($data) {
         $endpoint = $this->host_url . '/api/connectors/wordpress/register';
@@ -43,7 +48,7 @@ class Crescelo_Client {
             'websiteType'         => 'woocommerce',
             'objective'           => 'sales',
             'features'            => [],
-            'existingAssistantId' => sanitize_text_field(get_option('ai_assistant_id', '')),
+            'existingAssistantId' => sanitize_text_field(crescelo_get_option('id', '')),
         ], $data);
 
         $headers = [
@@ -74,7 +79,13 @@ class Crescelo_Client {
         if ($code !== 200 || empty($body['success'])) {
             return [
                 'success' => false,
-                'error'   => !empty($body['error']) ? sanitize_text_field($body['error']) : 'Registration failed with HTTP code ' . $code,
+                'error'   => !empty($body['error']) 
+                    ? sanitize_text_field($body['error']) 
+                    : sprintf(
+                        /* translators: %d: HTTP status response code */
+                        esc_html__('Registration failed with HTTP code %d', 'crescelo'),
+                        $code
+                    ),
             ];
         }
 
@@ -83,6 +94,11 @@ class Crescelo_Client {
 
     /**
      * Dispatch a batch of extracted items (products, pages, documents) to Crescelo.
+     *
+     * @param string $assistant_id Target assistant identifier.
+     * @param string $batch_type   Type of items (e.g. 'page', 'post', 'products').
+     * @param array  $items        Array of formatted content items.
+     * @return array
      */
     public function sync_batch($assistant_id, $batch_type, $items) {
         $endpoint = $this->host_url . '/api/connectors/wordpress/sync';
@@ -121,7 +137,13 @@ class Crescelo_Client {
         if ($code !== 200 || empty($body['success'])) {
             return [
                 'success' => false,
-                'error'   => !empty($body['error']) ? sanitize_text_field($body['error']) : 'Sync failed with HTTP code ' . $code,
+                'error'   => !empty($body['error']) 
+                    ? sanitize_text_field($body['error']) 
+                    : sprintf(
+                        /* translators: %d: HTTP status response code */
+                        esc_html__('Sync failed with HTTP code %d', 'crescelo'),
+                        $code
+                    ),
             ];
         }
 
@@ -130,13 +152,18 @@ class Crescelo_Client {
 
     /**
      * Non-blocking single-item incremental sync (for save_post / woocommerce_update_product).
+     *
+     * @param string $assistant_id Target assistant identifier.
+     * @param string $action       Action performed ('update' or 'delete').
+     * @param string $batch_type   Type of item.
+     * @param array  $item         Content data.
      */
     public function sync_item_async($assistant_id, $action, $batch_type, $item) {
         $endpoint = $this->host_url . '/api/connectors/wordpress/sync-item';
 
         $payload = [
             'assistantId' => sanitize_text_field($assistant_id),
-            'action'      => sanitize_key($action), // 'update' or 'delete'
+            'action'      => sanitize_key($action),
             'batchType'   => sanitize_key($batch_type),
             'item'        => is_array($item) ? $item : [],
         ];
@@ -151,7 +178,7 @@ class Crescelo_Client {
 
         wp_remote_post($endpoint, [
             'timeout'     => 10,
-            'blocking'    => false, // Non-blocking so admin/author doesn't wait
+            'blocking'    => false, // Non-blocking so admin/author does not wait
             'headers'     => $headers,
             'body'        => wp_json_encode($payload),
             'data_format' => 'body',
