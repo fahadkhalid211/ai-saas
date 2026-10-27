@@ -255,6 +255,12 @@ export interface ChunkRecord {
 
 export interface ConversationData {
   id: string;
+  title?: string;
+  language?: string;
+  summary?: string;
+  rating?: number;
+  costUsd?: number;
+  tokensUsed?: number;
   assistantId: string;
   visitorId?: string;
   visitorEmail?: string;
@@ -272,6 +278,11 @@ export interface ConversationData {
 
 export interface MessageData {
   id: string;
+  toolsUsed?: any[];
+  skillsUsed?: string[];
+  costUsd?: number;
+  isWebSearch?: boolean;
+  webSearchQuery?: string;
   conversationId: string;
   role: 'user' | 'assistant' | 'system' | 'agent';
   content: string;

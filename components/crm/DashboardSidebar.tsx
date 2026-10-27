@@ -3,46 +3,41 @@
 import { T, useT } from '@/lib/i18n/context';
 import React, { useState } from 'react';
 import {
-  FileCheck,
+  Sparkles,
+  Users,
   BarChart3,
-  CreditCard,
   Globe,
-  UserCheck,
-  ShieldCheck,
-  ClipboardList,
-  Activity,
-  Newspaper,
-  Ticket,
-  Upload,
-  MessageSquare,
   Share2,
+  Calendar,
+  ChevronDown,
+  Upload,
   Cpu,
   Sliders,
   Palette,
-  Users,
-  Calendar,
-  History as HistoryIcon,
-  BookOpen,
+  CreditCard,
+  UserCheck,
+  ShieldCheck,
+  Shield,
+  ClipboardList,
   UserCircle,
-  ChevronDown,
+  LifeBuoy,
+  HelpCircle,
+  FileText,
+  FileCheck,
+  BookOpen,
+  History as HistoryIcon,
+  MessageSquare,
+  Building,
   SendHorizontal,
   Radio,
   PhoneCall,
   Webhook,
   Mail,
-  Shield,
-  LifeBuoy,
-  Sparkles,
 } from 'lucide-react';
-import {
-  IntegrationId,
-  INTEGRATIONS_CONFIG,
-  SlackIcon,
-  GoogleSheetsIcon,
-} from '@/components/crm/ChannelsTab';
+import { INTEGRATIONS_CONFIG, SlackIcon, GoogleSheetsIcon, type IntegrationId } from './ChannelsTab';
 
-function renderIntegrationIcon(id: IntegrationId | string) {
-  switch (id as string) {
+function renderIntegrationIcon(id: IntegrationId) {
+  switch (id) {
     case 'slack':
       return <SlackIcon className="h-3.5 w-3.5 shrink-0" />;
     case 'google-sheets':
@@ -59,40 +54,38 @@ function renderIntegrationIcon(id: IntegrationId | string) {
       return <Mail className="h-3.5 w-3.5 text-blue-500 shrink-0" />;
     case 'whitelabel':
       return <Shield className="h-3.5 w-3.5 text-purple-500 shrink-0" />;
-    case 'mcp':
-      return <Cpu className="h-3.5 w-3.5 text-purple-500 shrink-0" />;
     default:
       return <Share2 className="h-3.5 w-3.5 text-slate-400 shrink-0" />;
   }
 }
 
-interface TabItem {
+
+export interface TabItem {
   id: string;
   label: string;
-  icon: any;
+  icon: React.ComponentType<{ className?: string }>;
   count?: number;
   waitingCount?: number;
 }
 
-/** A category: a short row in the sidebar that opens to show its pages. */
-interface TabGroup {
+export interface TabGroup {
   id: string;
   title: string;
-  icon: any;
+  icon: React.ComponentType<{ className?: string }>;
   items: TabItem[];
 }
 
-interface DashboardSidebarProps {
+export interface DashboardSidebarProps {
   activeTab: string;
   setActiveTab: (tab: any) => void;
   selectedIntegration?: IntegrationId;
   setSelectedIntegration?: (id: IntegrationId) => void;
-  teamCount: number;
-  auditCount: number;
-  sourcesCount: number;
-  leadsCount: number;
-  appointmentsCount: number;
-  conversationsCount: number;
+  teamCount?: number;
+  auditCount?: number;
+  sourcesCount?: number;
+  leadsCount?: number;
+  appointmentsCount?: number;
+  conversationsCount?: number;
   waitingConversationsCount?: number;
   landingPagesCount?: number;
   isMasterAdmin?: boolean;
@@ -100,7 +93,7 @@ interface DashboardSidebarProps {
   onOpenSetup?: () => void;
 }
 
-const ROW_BASE = 'flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm font-medium transition cursor-pointer select-none';
+const ROW_BASE = 'flex w-full items-center justify-between rounded-lg px-2.5 py-1.5 text-[12.5px] font-medium transition cursor-pointer select-none';
 const ROW_ACTIVE = 'bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-400 font-semibold';
 const ROW_IDLE = 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-200';
 
@@ -116,6 +109,7 @@ export function DashboardSidebar({
   appointmentsCount,
   conversationsCount,
   waitingConversationsCount = 0,
+  landingPagesCount,
   isMasterAdmin = false,
   isOwner = false,
   onOpenSetup,
@@ -123,8 +117,6 @@ export function DashboardSidebar({
   const __t = useT();
   const canViewAudit = Boolean(isOwner || isMasterAdmin);
   const [isChannelsExpanded, setIsChannelsExpanded] = useState<boolean>(false);
-  // What the person opened or closed by hand. A category nobody touched is open only while it holds the page being shown,
-  // so the sidebar starts short and follows the person around instead of growing.
   const [manual, setManual] = useState<Record<string, boolean>>({});
 
   const overview: TabItem = { id: 'overview', label: 'Overview', icon: FileCheck };
@@ -178,22 +170,22 @@ export function DashboardSidebar({
       title: 'Help',
       icon: LifeBuoy,
       items: [
-        { id: 'support', label: isMasterAdmin ? 'Support Inbox' : 'Support', icon: LifeBuoy },
-        { id: 'docs', label: 'Guides & Docs', icon: BookOpen },
+        { id: 'support', label: 'Support & Tickets', icon: LifeBuoy },
+        { id: 'docs', label: 'Documentation', icon: BookOpen },
+        { id: 'templates', label: 'Industry Templates', icon: Building },
       ],
     },
-    // The platform owner's tools (the APIs behind them refuse everyone else with a 404).
     ...(isMasterAdmin
       ? [
           {
-            id: 'platform',
-            title: 'Platform admin',
-            icon: Shield,
+            id: 'master',
+            title: 'Platform administration',
+            icon: Building,
             items: [
               { id: 'customers', label: 'Customers', icon: Users },
-              { id: 'system_logs', label: 'System Logs', icon: Activity },
-              { id: 'blog_admin', label: 'Blog Articles', icon: Newspaper },
-              { id: 'access_codes', label: 'Access Codes', icon: Ticket },
+              { id: 'access_codes', label: 'Access Codes', icon: Building },
+              { id: 'blog_admin', label: 'Blog Posts', icon: FileText },
+              { id: 'system_logs', label: 'System Logs', icon: ClipboardList },
             ],
           },
         ]
@@ -215,16 +207,16 @@ export function DashboardSidebar({
             }}
             className={`${ROW_BASE} ${isChannelsActive ? ROW_ACTIVE : ROW_IDLE}`}
           >
-            <div className="flex items-center gap-2.5">
-              <Share2 className={`h-4 w-4 ${isChannelsActive ? 'text-blue-600 dark:text-blue-400' : 'text-slate-500'}`} />
-              <span><T>{tab.label}</T></span>
+            <div className="flex items-center gap-2 min-w-0 flex-1 mr-1">
+              <Share2 className={`h-4 w-4 shrink-0 ${isChannelsActive ? 'text-blue-600 dark:text-blue-400' : 'text-slate-500'}`} />
+              <span className="truncate whitespace-nowrap"><T>{tab.label}</T></span>
             </div>
-            <ChevronDown className={`h-3.5 w-3.5 text-slate-400 transition-transform duration-200 ${isChannelsExpanded ? 'rotate-0' : '-rotate-90'}`} />
+            <ChevronDown className={`h-3.5 w-3.5 shrink-0 text-slate-400 transition-transform duration-200 ${isChannelsExpanded ? 'rotate-0' : '-rotate-90'}`} />
           </button>
 
           {/* Integrations sub-list */}
           {isChannelsExpanded && (
-            <div className="ml-3 pl-2.5 my-1 border-l-2 border-slate-200 dark:border-slate-800 space-y-0.5 animate-in fade-in duration-150">
+            <div className="ml-2 pl-2 my-1 border-l-2 border-slate-200 dark:border-slate-800 space-y-0.5 animate-in fade-in duration-150">
               {INTEGRATIONS_CONFIG.filter((item) => item.id !== 'phone').map((item) => {
                 const isSelected = isChannelsActive && selectedIntegration === item.id;
                 return (
@@ -239,11 +231,11 @@ export function DashboardSidebar({
                       isSelected ? 'bg-blue-100/70 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 font-semibold' : ROW_IDLE
                     }`}
                   >
-                    <div className="flex items-center gap-1.5 truncate">
+                    <div className="flex items-center gap-1.5 min-w-0 flex-1 truncate">
                       {renderIntegrationIcon(item.id)}
-                      <span className="truncate">{item.shortName}</span>
+                      <span className="truncate whitespace-nowrap">{item.shortName}</span>
                     </div>
-                    {isSelected && <span className="h-1.5 w-1.5 rounded-full bg-blue-600 dark:bg-blue-400 shrink-0" />}
+                    {isSelected && <span className="h-1.5 w-1.5 rounded-full bg-blue-600 dark:bg-blue-400 shrink-0 ml-1" />}
                   </button>
                 );
               })}
@@ -263,19 +255,21 @@ export function DashboardSidebar({
         onClick={() => setActiveTab(tab.id as any)}
         className={`${ROW_BASE} ${isActive ? ROW_ACTIVE : ROW_IDLE}`}
       >
-        <div className="flex items-center gap-2.5">
-          <Icon className={`h-4 w-4 ${isActive ? 'text-blue-600 dark:text-blue-400' : 'text-slate-500'}`} />
-          <span><T>{tab.label}</T></span>
+        <div className="flex items-center gap-2 min-w-0 flex-1 mr-1">
+          <Icon className={`h-4 w-4 shrink-0 ${isActive ? 'text-blue-600 dark:text-blue-400' : 'text-slate-500'}`} />
+          <span className="truncate whitespace-nowrap"><T>{tab.label}</T></span>
         </div>
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1 shrink-0">
           {tab.waitingCount && tab.waitingCount > 0 ? (
-            <span className="rounded-full bg-amber-500 text-slate-950 px-1.5 py-0.2 text-[11px] font-bold animate-pulse">
-              {tab.waitingCount} <T>Waiting</T>
+            <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-700 dark:text-amber-400 px-1.5 py-0.5 text-[10px] font-bold shrink-0 animate-pulse">
+              <span className="h-1.5 w-1.5 rounded-full bg-amber-500 shrink-0" />
+              <span>{tab.waitingCount}</span>
+              <span className="hidden sm:inline"><T>waiting</T></span>
             </span>
           ) : null}
           {tab.count !== undefined && (
             <span
-              className={`rounded px-1.5 py-0.5 text-xs font-mono ${
+              className={`rounded px-1.5 py-0.5 text-[10.5px] font-mono shrink-0 ${
                 isActive ? 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-300 font-bold' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400'
               }`}
             >
@@ -288,7 +282,7 @@ export function DashboardSidebar({
   };
 
   return (
-    <aside className="w-60 h-full max-h-full border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3 flex flex-col justify-between shrink-0 overflow-hidden select-none">
+    <aside className="w-64 h-full max-h-full border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3 flex flex-col justify-between shrink-0 overflow-hidden select-none">
       <nav aria-label={__t("Dashboard")} className="flex flex-col flex-1 min-h-0 gap-1 overflow-y-auto pr-1 overscroll-contain mk-sidebar-scroll">
         {/* The home page of the dashboard: always in view, never inside a category */}
         {renderItem(overview)}
@@ -297,7 +291,6 @@ export function DashboardSidebar({
           const GroupIcon = group.icon;
           const holdsActive = group.items.some((i) => i.id === activeTab);
           const open = manual[group.id] ?? holdsActive;
-          // a closed category still shows when something in it needs attention (a customer is waiting for a person)
           const waiting = group.items.reduce((n, i) => n + (i.waitingCount || 0), 0);
           const regionId = `sidebar-group-${group.id}`;
           return (
@@ -309,19 +302,19 @@ export function DashboardSidebar({
                 onClick={() => setManual((m) => ({ ...m, [group.id]: !open }))}
                 className={`${ROW_BASE} ${holdsActive && !open ? ROW_ACTIVE : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/60'}`}
               >
-                <div className="flex items-center gap-2.5">
-                  <GroupIcon className={`h-4 w-4 ${holdsActive ? 'text-blue-600 dark:text-blue-400' : 'text-slate-500'}`} />
-                  <span><T>{group.title}</T></span>
+                <div className="flex items-center gap-2 min-w-0 flex-1 mr-1">
+                  <GroupIcon className={`h-4 w-4 shrink-0 ${holdsActive ? 'text-blue-600 dark:text-blue-400' : 'text-slate-500'}`} />
+                  <span className="truncate whitespace-nowrap text-[12px] font-semibold tracking-tight"><T>{group.title}</T></span>
                 </div>
-                <div className="flex items-center gap-1.5">
+                <div className="flex items-center gap-1 shrink-0">
                   {!open && waiting > 0 ? (
-                    <span className="rounded-full bg-amber-500 text-slate-950 px-1.5 py-0.2 text-[11px] font-bold animate-pulse">{waiting}</span>
+                    <span className="rounded-full bg-amber-500 text-slate-950 px-1.5 py-0.2 text-[10px] font-bold animate-pulse">{waiting}</span>
                   ) : null}
-                  <ChevronDown className={`h-3.5 w-3.5 text-slate-400 transition-transform duration-200 ${open ? 'rotate-0' : '-rotate-90'}`} />
+                  <ChevronDown className={`h-3.5 w-3.5 shrink-0 text-slate-400 transition-transform duration-200 ${open ? 'rotate-0' : '-rotate-90'}`} />
                 </div>
               </button>
               {open && (
-                <div id={regionId} className="ml-3 pl-2 mt-0.5 mb-1 border-l-2 border-slate-200 dark:border-slate-800 space-y-0.5 animate-in fade-in duration-150">
+                <div id={regionId} className="ml-2 pl-2 mt-0.5 mb-1 border-l-2 border-slate-200 dark:border-slate-800 space-y-0.5 animate-in fade-in duration-150">
                   {group.items.map(renderItem)}
                 </div>
               )}

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { Database } from '@/lib/db';
 import { verifyAdminRequest, verifyConversationAccessToken, getAuthContext } from '@/lib/security/auth';
 import { logged } from '@/lib/logging/route';
+import { enrichConversation } from '@/lib/chat/conversation-enrichment';
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
@@ -31,6 +32,8 @@ async function GETHandler(req: Request) {
     const { searchParams } = new URL(req.url);
     const id = searchParams.get('id');
     const assistantId = searchParams.get('assistantId');
+    const statusParam = searchParams.get('status');
+    const searchParam = searchParams.get('search')?.toLowerCase().trim();
 
     // Single conversation lookup (used for live sync in widget and dashboard).
     // The public widget has no login session, so it authorizes with a
@@ -45,17 +48,20 @@ async function GETHandler(req: Request) {
         return jsonResponse({ error: 'Unauthorized' }, 401);
       }
 
-      const conversation = await Database.getConversationById(id);
-      if (!conversation) {
+      const rawConversation = await Database.getConversationById(id);
+      if (!rawConversation) {
         return jsonResponse({ error: 'Conversation not found' }, 404);
       }
 
+      const ast = await Database.getAssistantById(rawConversation.assistantId);
+
       if (!hasValidToken && ctx.authenticated && ctx.workspaceId !== '*') {
-        const ast = await Database.getAssistantById(conversation.assistantId);
         if (!ast || (ast.workspaceId || 'default-workspace') !== ctx.workspaceId) {
           return jsonResponse({ error: 'Forbidden' }, 403);
         }
       }
+
+      const conversation = enrichConversation(rawConversation, ast);
 
       // Incremental polling support: when the caller already has the first
       // `sinceCount` messages, only return what's new plus lightweight
@@ -83,14 +89,47 @@ async function GETHandler(req: Request) {
       return jsonResponse({ error: 'Unauthorized: Admin authentication required' }, 401);
     }
 
+    let rawList: any[] = [];
+    let targetAssistant: any = null;
+
     // Assistant-specific conversations lookup
     if (assistantId) {
-      const conversations = await Database.getConversations(assistantId, ctx.workspaceId);
-      return jsonResponse({ conversations });
+      targetAssistant = await Database.getAssistantById(assistantId);
+      rawList = await Database.getConversations(assistantId, ctx.workspaceId);
+    } else {
+      rawList = await Database.getConversations(undefined, ctx.workspaceId);
     }
 
-    // Workspace-wide conversations lookup
-    const conversations = await Database.getConversations(undefined, ctx.workspaceId);
+    // Enrich every conversation so that title, language, summary, metrics, and tools are guaranteed
+    let conversations = rawList.map((c) => enrichConversation(c, targetAssistant));
+
+    // Optional status filter
+    if (statusParam && statusParam !== 'all') {
+      conversations = conversations.filter((c) => {
+        if (statusParam === 'waiting_for_agent') return c.status === 'waiting_for_agent' || (c.escalated && !c.resolved);
+        if (statusParam === 'live_agent') return c.status === 'live_agent' || c.isLiveTakeover;
+        if (statusParam === 'resolved') return c.status === 'resolved' || c.resolved;
+        if (statusParam === 'bot') return c.status === 'bot' || (!c.isLiveTakeover && c.status !== 'waiting_for_agent' && !c.resolved);
+        return c.status === statusParam;
+      });
+    }
+
+    // Optional search filter
+    if (searchParam) {
+      conversations = conversations.filter((c) => {
+        const matchesTitle = c.title?.toLowerCase().includes(searchParam);
+        const matchesSummary = c.summary?.toLowerCase().includes(searchParam);
+        const matchesVisitor = c.visitorId?.toLowerCase().includes(searchParam) ||
+          c.visitorEmail?.toLowerCase().includes(searchParam) ||
+          c.visitorName?.toLowerCase().includes(searchParam) ||
+          c.id?.toLowerCase().includes(searchParam);
+        const matchesMessages = (c.messages || []).some((m: any) =>
+          m.content?.toLowerCase().includes(searchParam)
+        );
+        return matchesTitle || matchesSummary || matchesVisitor || matchesMessages;
+      });
+    }
+
     return jsonResponse({ conversations });
   } catch (error: any) {
     return jsonResponse({ error: error?.message || 'Failed to fetch conversations' }, 500);
@@ -184,7 +223,19 @@ async function PATCHHandler(req: Request) {
     }
 
     const body = await req.json();
-    const { id, resolved, escalated, sentiment, isLiveTakeover, assignedAgentName, status } = body;
+    const {
+      id,
+      resolved,
+      escalated,
+      sentiment,
+      isLiveTakeover,
+      assignedAgentName,
+      status,
+      title,
+      language,
+      summary,
+      rating,
+    } = body;
 
     if (!id) {
       return jsonResponse({ error: 'Conversation id is required' }, 400);
@@ -245,6 +296,10 @@ async function PATCHHandler(req: Request) {
       ...(isLiveTakeover !== undefined ? { isLiveTakeover } : {}),
       ...(assignedAgentName !== undefined ? { assignedAgentName } : {}),
       ...(status !== undefined ? { status } : {}),
+      ...(title !== undefined ? { title } : {}),
+      ...(language !== undefined ? { language } : {}),
+      ...(summary !== undefined ? { summary } : {}),
+      ...(rating !== undefined ? { rating } : {}),
     });
 
     return jsonResponse({ success: updated });

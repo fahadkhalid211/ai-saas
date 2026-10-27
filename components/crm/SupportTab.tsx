@@ -132,13 +132,15 @@ export function SupportTab({ master }: { master: boolean }) {
     }
     setBusy(true);
     try {
-      const res = await fetch('/api/support/tickets', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(draft) });
+      const res = await fetch(base, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(draft) });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || 'Could not create the ticket.');
       setComposing(false);
       setDraft({ category: CATEGORIES[0], priority: 'normal', subject: '', message: '' });
       await loadList();
-      setSelected(data.ticket.ref);
+      if (data.ticket?.ref) {
+        setSelected(data.ticket.ref);
+      }
     } catch (e: any) {
       setError(e?.message || 'Could not create the ticket.');
     }
@@ -150,38 +152,36 @@ export function SupportTab({ master }: { master: boolean }) {
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <div className="flex items-center gap-2">
           <LifeBuoy className="h-5 w-5 text-blue-600" />
-          <h2 className="text-base font-bold text-slate-900 dark:text-white">{master ? <T>{'Support inbox'}</T> : <T>{'Support'}</T>}</h2>
+          <h2 className="text-base font-bold text-slate-900 dark:text-white">{master ? <T>Support inbox</T> : <T>Support</T>}</h2>
         </div>
         <div className="flex items-center gap-2">
           <button type="button" onClick={loadList} className="p-2 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer" aria-label={__t("Refresh")}>
             <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} />
           </button>
-          {!master && (
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => {
-                  setComposing(true);
-                  setSelected(null);
-                  setDraft({ category: 'Bug Report', priority: 'normal', subject: '', message: '' });
-                }}
-                className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-rose-200 dark:border-rose-900/60 bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 hover:bg-rose-100 dark:hover:bg-rose-900/60 text-xs font-semibold cursor-pointer transition-colors"
-              >
-                <Bug className="h-3.5 w-3.5" /> <T>Report a bug</T>
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setComposing(true);
-                  setSelected(null);
-                  setDraft({ category: 'Technical Support', priority: 'normal', subject: '', message: '' });
-                }}
-                className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold cursor-pointer transition-colors"
-              >
-                <Plus className="h-3.5 w-3.5" /> <T>New ticket</T>
-              </button>
-            </div>
-          )}
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                setComposing(true);
+                setSelected(null);
+                setDraft({ category: 'Bug Report', priority: 'normal', subject: '', message: '' });
+              }}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-rose-200 dark:border-rose-900/60 bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 hover:bg-rose-100 dark:hover:bg-rose-900/60 text-xs font-semibold cursor-pointer transition-colors"
+            >
+              <Bug className="h-3.5 w-3.5" /> <T>Report a bug</T>
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setComposing(true);
+                setSelected(null);
+                setDraft({ category: 'Technical Support', priority: 'normal', subject: '', message: '' });
+              }}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold cursor-pointer transition-colors shadow-xs"
+            >
+              <Plus className="h-3.5 w-3.5" /> <T>New ticket</T>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -207,7 +207,27 @@ export function SupportTab({ master }: { master: boolean }) {
 
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
         <div className="lg:col-span-2 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 divide-y divide-slate-100 dark:divide-slate-800 max-h-[70vh] overflow-y-auto">
-          {tickets.length === 0 && <p className="p-6 text-xs text-slate-500 text-center">{loading ? <T>{'Loading...'}</T> : master ? <T>{'No tickets match.'}</T> : <T>{'No tickets yet. Use "New ticket" or "Report a bug" to contact the Crescelo team.'}</T>}</p>}
+          {tickets.length === 0 && (
+            <div className="p-8 text-center space-y-3">
+              <p className="text-xs text-slate-500">
+                {loading ? <T>Loading...</T> : master ? <T>No tickets match your filters.</T> : <T>No tickets yet. Need help or have a question?</T>}
+              </p>
+              {!loading && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setComposing(true);
+                    setSelected(null);
+                    setDraft({ category: 'Technical Support', priority: 'normal', subject: '', message: '' });
+                  }}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold cursor-pointer shadow-xs transition"
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                  <span><T>Create a support ticket</T></span>
+                </button>
+              )}
+            </div>
+          )}
           {tickets.map((t) => (
             <button
               key={t.ref}
@@ -232,17 +252,19 @@ export function SupportTab({ master }: { master: boolean }) {
                 <span className={PRIORITY_STYLE[t.priority]}>{t.priority}</span>
               </div>
               <div className="text-[10px] text-slate-400">
-                {fmt(t.updatedAt)}{master && t.status === 'open' && t.lastReplyBy === 'customer' ? <T>{' · needs a reply'}</T> : ''}
+                {fmt(t.updatedAt)}{master && t.status === 'open' && t.lastReplyBy === 'customer' ? <T> · needs a reply</T> : ''}
               </div>
             </button>
           ))}
         </div>
 
         <div className="lg:col-span-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 min-h-[20rem]">
-          {composing && !master && (
+          {composing && (
             <div className="space-y-3">
-              <h3 className="text-sm font-bold text-slate-900 dark:text-white"><T>New ticket</T></h3>
-              <p className="text-[11px] text-slate-500"><T>We reply by e-mail to your account address, and you can follow the conversation here.</T></p>
+              <h3 className="text-sm font-bold text-slate-900 dark:text-white"><T>New support ticket</T></h3>
+              <p className="text-[11px] text-slate-500">
+                <T>Describe the inquiry, request, or issue. A confirmation email and tracking link will be dispatched immediately.</T>
+              </p>
               <div className="grid grid-cols-2 gap-3">
                 <select className={input} value={draft.category} onChange={(e) => setDraft({ ...draft, category: e.target.value })}>
                   {CATEGORIES.map((c) => <option key={c} value={c}>{__t(c)}</option>)}
@@ -252,18 +274,18 @@ export function SupportTab({ master }: { master: boolean }) {
                 </select>
               </div>
               <input className={input} placeholder={__t("Subject")} maxLength={120} value={draft.subject} onChange={(e) => setDraft({ ...draft, subject: e.target.value })} />
-              <textarea className={input} rows={7} maxLength={5000} placeholder={__t("Describe the problem or question")} value={draft.message} onChange={(e) => setDraft({ ...draft, message: e.target.value })} />
+              <textarea className={input} rows={7} maxLength={5000} placeholder={__t("Describe the problem or question in detail (at least 10 characters)")} value={draft.message} onChange={(e) => setDraft({ ...draft, message: e.target.value })} />
               {error && <p className="text-xs text-rose-500"><T>{error}</T></p>}
               <div className="flex gap-2">
-                <button type="button" disabled={busy} onClick={create} className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white text-xs font-semibold cursor-pointer">
-                  {busy ? <T>{'Sending...'}</T> : <T>{'Submit ticket'}</T>}
+                <button type="button" disabled={busy} onClick={create} className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white text-xs font-semibold cursor-pointer shadow-xs transition">
+                  {busy ? <T>Sending...</T> : <T>Submit ticket</T>}
                 </button>
-                <button type="button" onClick={() => setComposing(false)} className="px-4 py-2 rounded-xl text-xs text-slate-500 cursor-pointer"><T>Cancel</T></button>
+                <button type="button" onClick={() => setComposing(false)} className="px-4 py-2 rounded-xl text-xs text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 cursor-pointer"><T>Cancel</T></button>
               </div>
             </div>
           )}
 
-          {!composing && !detail && <p className="text-xs text-slate-500 text-center py-16"><T>Select a ticket to read the conversation.</T></p>}
+          {!composing && !detail && <p className="text-xs text-slate-500 text-center py-16"><T>Select a ticket to read the conversation or click &quot;New ticket&quot; above.</T></p>}
 
           {!composing && detail && (
             <div className="space-y-4">
@@ -291,7 +313,7 @@ export function SupportTab({ master }: { master: boolean }) {
                 {detail.messages.map((m) => (
                   <div key={m.id} className={`rounded-xl p-3 text-xs ${m.internal ? 'bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900' : m.author === 'staff' ? 'bg-blue-50 dark:bg-blue-950/30' : 'bg-slate-50 dark:bg-slate-800/50'}`}>
                     <div className="flex justify-between gap-3 text-[10px] text-slate-500 mb-1">
-                      <span className="font-semibold">{m.internal ? <T>{'Internal note'}</T> : m.author === 'staff' ? <T>{'Crescelo Support'}</T> : m.authorName}</span>
+                      <span className="font-semibold">{m.internal ? <T>Internal note</T> : m.author === 'staff' ? <T>Crescelo Support</T> : m.authorName}</span>
                       <span>{fmt(m.createdAt)}</span>
                     </div>
                     <div className="whitespace-pre-wrap text-slate-800 dark:text-slate-200 leading-relaxed">{m.body}</div>
@@ -304,8 +326,8 @@ export function SupportTab({ master }: { master: boolean }) {
                   <textarea className={input} rows={4} maxLength={5000} placeholder={master ? (internal ? 'Internal note (not e-mailed, not shown to the customer)' : 'Reply to the customer (sent by e-mail)') : 'Write a reply'} value={reply} onChange={(e) => setReply(e.target.value)} />
                   {error && <p className="text-xs text-rose-500"><T>{error}</T></p>}
                   <div className="flex items-center gap-2 flex-wrap">
-                    <button type="button" disabled={busy || !reply.trim()} onClick={() => send()} className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white text-xs font-semibold cursor-pointer">
-                      {internal ? <Lock className="h-3.5 w-3.5" /> : <Send className="h-3.5 w-3.5" />} {internal ? <T>{'Save note'}</T> : <T>{'Send reply'}</T>}
+                    <button type="button" disabled={busy || !reply.trim()} onClick={() => send()} className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white text-xs font-semibold cursor-pointer shadow-xs transition">
+                      {internal ? <Lock className="h-3.5 w-3.5" /> : <Send className="h-3.5 w-3.5" />} {internal ? <T>Save note</T> : <T>Send reply</T>}
                     </button>
                     {master && (
                       <>

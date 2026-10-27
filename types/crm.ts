@@ -78,3 +78,6 @@ export interface KnowledgeSource {
   }>;
   createdAt: string;
 }
+
+export type { ConversationData, MessageData } from '@/lib/db';
+export type { MessageToolCall } from '@/lib/chat/conversation-enrichment';

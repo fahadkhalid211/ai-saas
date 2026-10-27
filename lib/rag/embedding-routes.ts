@@ -13,9 +13,11 @@ export const EMBEDDING_ROUTES: string[] = [
   '/api/channels/telegram',
   '/api/channels/whatsapp',
   '/api/chat',
+  '/api/connectors/hospitable/sync',
   '/api/connectors/shopify/sync',
   '/api/connectors/wordpress/sync',
   '/api/connectors/wordpress/sync-item',
+  '/api/cron/hospitable-sync',
   '/api/cron/recrawl',
   '/api/cron/reembed',
   '/api/knowledge/correct',
@@ -27,6 +29,7 @@ export const EMBEDDING_ROUTES: string[] = [
   '/api/voice/end',
   '/api/voice/session',
   '/api/voice/turn',
+  '/api/webhook/hospitable',
 ];
 
 export const ONNX_RUNTIME_FILES = './node_modules/onnxruntime-node/bin/napi-v3/linux/x64/**/*';

@@ -150,6 +150,10 @@ function rowToConv(r: Record<string, any>): ConversationData {
     isLiveTakeover: r.is_live_takeover ?? false,
     assignedAgentName: r.assigned_agent_name ?? undefined,
     status: r.status ?? 'bot',
+    title: r.title ?? undefined,
+    language: r.language ?? undefined,
+    summary: r.summary ?? undefined,
+    rating: r.rating != null ? Number(r.rating) : undefined,
     createdAt: iso(r.created_at),
     updatedAt: r.updated_at ? iso(r.updated_at) : undefined,
   };
