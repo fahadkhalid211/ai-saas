@@ -150,16 +150,16 @@ export function GoogleRecaptchaNotice({ className = '' }: { className?: string }
 
   return (
     <div
-      className={`flex items-center gap-1.5 text-[11px] text-slate-400 py-1 select-none ${className}`}
+      className={`flex items-center gap-1.5 text-[11px] text-slate-500 dark:text-slate-400 py-1 select-none ${className}`}
     >
-      <ShieldCheck className="w-3.5 h-3.5 text-blue-400 shrink-0" />
+      <ShieldCheck className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 shrink-0" />
       <span>
         <T>Protected by</T>{' '}
         <a
           href="https://policies.google.com/privacy"
           target="_blank"
           rel="noopener noreferrer"
-          className="text-slate-300 hover:text-white underline underline-offset-2"
+          className="text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium underline underline-offset-2 transition-colors"
         >
           <T>reCAPTCHA</T>
         </a>{' '}
@@ -168,7 +168,7 @@ export function GoogleRecaptchaNotice({ className = '' }: { className?: string }
           href="https://policies.google.com/terms"
           target="_blank"
           rel="noopener noreferrer"
-          className="text-slate-300 hover:text-white underline underline-offset-2"
+          className="text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium underline underline-offset-2 transition-colors"
         >
           <T>Terms</T>
         </a>

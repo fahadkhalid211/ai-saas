@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import {
   ShieldCheck,
   AlertCircle,
+  CheckCircle2,
   Users,
   RefreshCw,
   Sparkles,
@@ -168,6 +169,35 @@ export function AdminLoginScreen({
   const [ssoInput, setSsoInput] = useState('');
   const [showRegPassword, setShowRegPassword] = useState(false);
   const [showStaffPassword, setShowStaffPassword] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState('');
+  const [forgotLoading, setForgotLoading] = useState(false);
+  const [forgotError, setForgotError] = useState<string | null>(null);
+  const [forgotSuccess, setForgotSuccess] = useState(false);
+
+  const handleRequestPasswordReset = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!forgotEmail.trim()) return;
+    setForgotLoading(true);
+    setForgotError(null);
+    try {
+      const res = await fetch('/api/auth/reset-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: forgotEmail.trim() }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data?.success) {
+        setForgotSuccess(true);
+      } else {
+        setForgotError(data?.error || __t('Failed to send reset link. Please try again.'));
+      }
+    } catch {
+      setForgotError(__t('Something went wrong. Please try again.'));
+    } finally {
+      setForgotLoading(false);
+    }
+  };
 
   const isRegEmailValid = !regEmailInput || EMAIL_REGEX.test(regEmailInput.trim());
   const isRegPasswordValid = !regPasswordInput || regPasswordInput.trim().length >= 6;
@@ -432,9 +462,23 @@ export function AdminLoginScreen({
                 )}
               </div>
               <div className="space-y-1.5">
-                <label htmlFor="staff-password" className="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center justify-between">
-                  <span>{auth?.staffPasswordLabel || <T>{'Password or Access Code'}</T>}</span>
-                </label>
+                <div className="flex items-center justify-between">
+                  <label htmlFor="staff-password" className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                    <span>{auth?.staffPasswordLabel || <T>{'Password or Access Code'}</T>}</span>
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setForgotEmail(staffEmailInput.trim());
+                      setForgotError(null);
+                      setForgotSuccess(false);
+                      setShowForgotPassword(true);
+                    }}
+                    className="text-xs font-semibold text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300 hover:underline cursor-pointer"
+                  >
+                    <T>Forgot password?</T>
+                  </button>
+                </div>
                 <PasswordField
                   id="staff-password"
                   name="password"
@@ -490,11 +534,11 @@ export function AdminLoginScreen({
           </button>
 
           {authLoginMode === 'register' && (
-            <p className="text-center text-[11px] leading-relaxed text-slate-500 dark:text-slate-400">
+            <p className="text-center text-[11px] leading-relaxed text-slate-600 dark:text-slate-400">
               <T>By starting your free trial you agree to our</T>{' '}
-              <a href="/terms" target="_blank" rel="noopener noreferrer" className="underline"><T>Terms of Service</T></a>,{' '}
-              <a href="/acceptable-use" target="_blank" rel="noopener noreferrer" className="underline"><T>Acceptable Use Policy</T></a> <T>and</T>{' '}
-              <a href="/privacy" target="_blank" rel="noopener noreferrer" className="underline"><T>Privacy Policy</T></a><T>, and confirm you are at least 18.</T>
+              <a href="/terms" target="_blank" rel="noopener noreferrer" className="underline hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors"><T>Terms of Service</T></a>,{' '}
+              <a href="/acceptable-use" target="_blank" rel="noopener noreferrer" className="underline hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors"><T>Acceptable Use Policy</T></a> <T>and</T>{' '}
+              <a href="/privacy" target="_blank" rel="noopener noreferrer" className="underline hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors"><T>Privacy Policy</T></a><T>, and confirm you are at least 18.</T>
             </p>
           )}
 
@@ -503,10 +547,113 @@ export function AdminLoginScreen({
           </div>
         </form>
 
-        <div className="pt-2 text-center text-[11px] text-slate-400 dark:text-slate-500 border-t border-slate-100 dark:border-slate-800">
-          <a href="/terms" className="underline"><T>Terms</T></a> · <a href="/privacy" className="underline"><T>Privacy</T></a> · <a href="/cookies" className="underline"><T>Cookies</T></a>
+        <div className="pt-2 text-center text-[11px] text-slate-500 dark:text-slate-400 border-t border-slate-100 dark:border-slate-800">
+          <a href="/terms" className="underline hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors"><T>Terms</T></a> · <a href="/privacy" className="underline hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors"><T>Privacy</T></a> · <a href="/cookies" className="underline hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors"><T>Cookies</T></a>
         </div>
       </div>
+      {showForgotPassword && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs"
+          onClick={() => setShowForgotPassword(false)}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="forgot-password-title"
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-sm rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 sm:p-7 shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-150"
+          >
+            <div className="text-center space-y-1.5">
+              <div className="h-11 w-11 mx-auto rounded-2xl bg-[#abff44]/40 border border-[#08251a]/15 flex items-center justify-center text-[#08251a] mb-1">
+                <KeyRound className="h-5 w-5" />
+              </div>
+              <h3 id="forgot-password-title" className="text-base font-bold text-slate-900 dark:text-white">
+                <T>Reset your password</T>
+              </h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                <T>Enter the email address for your account. We will send you instructions to reset your password.</T>
+              </p>
+            </div>
+
+            {forgotError && (
+              <div className="p-2.5 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900 text-rose-600 dark:text-rose-400 text-xs flex items-center gap-2">
+                <AlertCircle className="h-4 w-4 shrink-0" />
+                <span>{forgotError}</span>
+              </div>
+            )}
+
+            {forgotSuccess ? (
+              <div className="space-y-4 text-center py-2">
+                <div className="p-3.5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200 text-xs space-y-1">
+                  <CheckCircle2 className="h-5 w-5 text-emerald-600 dark:text-emerald-400 mx-auto" />
+                  <p className="font-semibold">
+                    <T>Instructions sent</T>
+                  </p>
+                  <p className="text-slate-600 dark:text-slate-300">
+                    <T>If an account exists for this address, please check your inbox and spam folder for the password reset link.</T>
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowForgotPassword(false)}
+                  className="w-full py-2.5 rounded-xl bg-[#abff44] hover:bg-[#9af02e] text-[#08251a] text-xs font-bold shadow-md shadow-[#abff44]/40 transition cursor-pointer"
+                >
+                  <T>Back to sign in</T>
+                </button>
+              </div>
+            ) : (
+              <form onSubmit={handleRequestPasswordReset} className="space-y-3.5">
+                <div className="space-y-1">
+                  <label htmlFor="forgot-email" className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                    <T>Account Email Address</T>
+                  </label>
+                  <input
+                    id="forgot-email"
+                    type="email"
+                    required
+                    autoFocus
+                    value={forgotEmail}
+                    onChange={(e) => setForgotEmail(e.target.value)}
+                    placeholder="name@company.com"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white text-xs placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                  />
+                </div>
+
+                <div className="flex gap-2 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => setShowForgotPassword(false)}
+                    className="flex-1 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-semibold transition cursor-pointer"
+                  >
+                    <T>Cancel</T>
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={forgotLoading || !forgotEmail.trim()}
+                    className="flex-1 py-2.5 rounded-xl bg-[#abff44] hover:bg-[#9af02e] disabled:opacity-50 text-[#08251a] text-xs font-bold shadow-md shadow-[#abff44]/40 transition flex items-center justify-center gap-1.5 cursor-pointer"
+                  >
+                    {forgotLoading ? (
+                      <>
+                        <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+                        <span><T>Sending...</T></span>
+                      </>
+                    ) : (
+                      <span><T>Send reset link</T></span>
+                    )}
+                  </button>
+                </div>
+
+                <p className="text-center text-[11px] text-slate-500 dark:text-slate-400 pt-1">
+                  <T>Still having trouble?</T>{' '}
+                  <a href="/support/contact" className="underline hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors">
+                    <T>Contact support</T>
+                  </a>
+                </p>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
