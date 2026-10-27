@@ -46,13 +46,14 @@ function b64url(buf: Buffer): string {
 }
 
 /** A fresh login attempt: the state to send to the provider, the PKCE pair, and the cookie that binds it to this browser. */
-export function createOAuthAttempt(platform?: string): { state: string; challenge: string; cookie: string } {
+export function createOAuthAttempt(platform?: string, action?: string): { state: string; challenge: string; cookie: string } {
   const state = b64url(crypto.randomBytes(24));
   const verifier = b64url(crypto.randomBytes(32));
   const challenge = b64url(crypto.createHash('sha256').update(verifier).digest());
   const secure = process.env.NODE_ENV === 'production' ? '; Secure' : '';
-  const plat = platform === 'mobile' ? '.mobile' : '';
-  const cookie = `${OAUTH_STATE_COOKIE}=${state}.${verifier}${plat}; Path=/api/auth/oauth; HttpOnly; SameSite=Lax; Max-Age=600${secure}`;
+  const plat = platform === 'mobile' ? 'mobile' : 'web';
+  const act = action === 'connect' ? 'connect' : 'login';
+  const cookie = `${OAUTH_STATE_COOKIE}=${state}.${verifier}.${plat}.${act}; Path=/api/auth/oauth; HttpOnly; SameSite=Lax; Max-Age=600${secure}`;
   return { state, challenge, cookie };
 }
 
@@ -62,7 +63,7 @@ export function clearOAuthCookie(): string {
 }
 
 /** Checks the `state` returned by the provider against this browser's cookie. Returns the PKCE verifier, or null. */
-export function verifyOAuthAttempt(req: Request, returnedState: string | null): { verifier: string; isMobile: boolean } | null {
+export function verifyOAuthAttempt(req: Request, returnedState: string | null): { verifier: string; isMobile: boolean; isConnect: boolean } | null {
   if (!returnedState) return null;
   const header = req.headers.get('cookie') || '';
   const match = header
@@ -74,8 +75,9 @@ export function verifyOAuthAttempt(req: Request, returnedState: string | null): 
   const state = parts[0];
   const verifier = parts[1];
   const isMobile = parts[2] === 'mobile';
+  const isConnect = parts[3] === 'connect' || parts[2] === 'connect';
   if (!state || !verifier) return null;
-  return timingSafeStringEqual(state, returnedState) ? { verifier, isMobile } : null;
+  return timingSafeStringEqual(state, returnedState) ? { verifier, isMobile, isConnect } : null;
 }
 
 /** The Google authorization URL for a login attempt created with createOAuthAttempt(). */

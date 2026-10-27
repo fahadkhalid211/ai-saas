@@ -47,6 +47,11 @@ async function GETHandler(req: Request) {
         createdAt: safeMember.createdAt,
         updatedAt: safeMember.updatedAt,
         lastLoginAt: safeMember.lastLoginAt,
+        authProvider: safeMember.authProvider || (safeMember.googleConnected ? 'google' : 'email'),
+        googleConnected: Boolean(safeMember.googleConnected),
+        googleEmail: safeMember.googleEmail || (safeMember.googleConnected ? safeMember.email : undefined),
+        googleConnectedAt: safeMember.googleConnectedAt,
+        hasPassword: Boolean(safeMember.password),
       },
       workspace: {
         id: workspace.id,
@@ -72,9 +77,45 @@ async function PATCHHandler(req: Request) {
     }
 
     const body = await req.json();
-    const { name, title, avatarUrl, currentPassword, newPassword } = body;
+    const { name, title, avatarUrl, currentPassword, newPassword, action } = body;
 
     const existingMember = await Database.getTeamMemberById(ctx.memberId, ctx.workspaceId);
+
+    // Disconnect Google account
+    if (action === 'disconnect_google') {
+      if (!existingMember?.password) {
+        return NextResponse.json({ error: 'Please set an account password first before disconnecting Google sign-in.' }, { status: 400 });
+      }
+      const updated = await Database.disconnectGoogleAccount(ctx.memberId);
+      const ip = getClientIp(req);
+      await Database.addAuditLog({
+        actor: { id: ctx.memberId, name: existingMember?.name || ctx.role, email: existingMember?.email || '', ip },
+        action: 'auth.google_disconnected',
+        targetType: 'user_profile',
+        targetId: ctx.memberId,
+        details: {},
+      });
+      return NextResponse.json({
+        success: true,
+        message: 'Google account disconnected successfully',
+        member: {
+          id: updated?.id || ctx.memberId,
+          workspaceId: updated?.workspaceId || ctx.workspaceId,
+          name: updated?.name || '',
+          email: updated?.email || '',
+          role: updated?.role || ctx.role,
+          title: updated?.title || '',
+          avatarUrl: updated?.avatarUrl || '',
+          status: updated?.status || 'active',
+          createdAt: updated?.createdAt || new Date().toISOString(),
+          updatedAt: updated?.updatedAt,
+          authProvider: 'email',
+          googleConnected: false,
+          googleEmail: undefined,
+          hasPassword: Boolean(updated?.password),
+        },
+      });
+    }
 
     // Password change validation
     if (newPassword) {
@@ -83,23 +124,26 @@ async function PATCHHandler(req: Request) {
         return NextResponse.json({ error: 'New password must be at least 6 characters long' }, { status: 400 });
       }
 
-      if (!currentPassword) {
-        return NextResponse.json({ error: 'Current password is required to set a new password' }, { status: 400 });
-      }
+      // If user already has a password, verify their current password
+      if (existingMember?.password) {
+        if (!currentPassword) {
+          return NextResponse.json({ error: 'Current password is required to set a new password' }, { status: 400 });
+        }
 
-      const cleanCurr = String(currentPassword).trim();
-      const masterKey = getAdminKey();
+        const cleanCurr = String(currentPassword).trim();
+        const masterKey = getAdminKey();
 
-      let passValid = verifyPassword(cleanCurr, existingMember?.password);
-      if (
-        !passValid &&
-        (ctx.role === 'admin' || ctx.role === 'owner' || ctx.memberId === 'master-admin' || ctx.memberId === 'admin')
-      ) {
-        passValid = timingSafeStringEqual(cleanCurr, masterKey);
-      }
+        let passValid = verifyPassword(cleanCurr, existingMember?.password);
+        if (
+          !passValid &&
+          (ctx.role === 'admin' || ctx.role === 'owner' || ctx.memberId === 'master-admin' || ctx.memberId === 'admin')
+        ) {
+          passValid = timingSafeStringEqual(cleanCurr, masterKey);
+        }
 
-      if (!passValid) {
-        return NextResponse.json({ error: 'Current password is incorrect' }, { status: 400 });
+        if (!passValid) {
+          return NextResponse.json({ error: 'Current password is incorrect' }, { status: 400 });
+        }
       }
     }
 
@@ -146,6 +190,11 @@ async function PATCHHandler(req: Request) {
         status: updated.status || 'active',
         createdAt: updated.createdAt || new Date().toISOString(),
         updatedAt: updated.updatedAt,
+        authProvider: updated.authProvider || (updated.googleConnected ? 'google' : 'email'),
+        googleConnected: Boolean(updated.googleConnected),
+        googleEmail: updated.googleEmail || (updated.googleConnected ? updated.email : undefined),
+        googleConnectedAt: updated.googleConnectedAt,
+        hasPassword: Boolean(updated.password),
       },
     });
     if (newPassword && !ctx.isMasterAdmin) {

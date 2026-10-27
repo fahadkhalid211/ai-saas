@@ -419,6 +419,12 @@ export interface TeamMemberData {
   emailVerifiedAt?: string;
   createdAt: string;
   updatedAt?: string;
+  authProvider?: 'email' | 'google' | 'sso';
+  googleConnected?: boolean;
+  googleEmail?: string;
+  googleId?: string;
+  googleConnectedAt?: string;
+  hasPassword?: boolean;
 }
 
 /**
@@ -3181,6 +3187,71 @@ export class Database {
     return member;
   }
 
+  /**
+   * Links a Google OAuth identity to an existing team member account for 1-click Google login.
+   */
+  static async linkGoogleAccount(
+    memberId: string,
+    data: { googleId: string; googleEmail: string; avatarUrl?: string }
+  ): Promise<TeamMemberData | null> {
+    const state = await ensureInitialized();
+    if (!state.teamMembers) state.teamMembers = [];
+    let member = state.teamMembers.find((m) => m.id === memberId);
+    if (!member && (memberId === 'admin' || memberId === 'master-admin' || memberId === 'tm_owner')) {
+      member = state.teamMembers.find((m) => m.role === 'owner');
+    }
+    if (!member) return null;
+
+    member.googleConnected = true;
+    member.googleId = data.googleId;
+    member.googleEmail = (data.googleEmail || '').toLowerCase().trim();
+    member.googleConnectedAt = new Date().toISOString();
+    if (data.avatarUrl && !member.avatarUrl) {
+      member.avatarUrl = data.avatarUrl;
+    }
+    member.updatedAt = new Date().toISOString();
+
+    const ws = (state.workspaces || []).find((w) => w.id === member!.workspaceId);
+    if (ws && (ws.ownerEmail || '').toLowerCase() === (member.email || '').toLowerCase()) {
+      (ws as any).googleConnected = true;
+      (ws as any).googleEmail = member.googleEmail;
+    }
+
+    await saveState(state);
+    return member;
+  }
+
+  /**
+   * Disconnects Google OAuth login from a team member account.
+   */
+  static async disconnectGoogleAccount(memberId: string): Promise<TeamMemberData | null> {
+    const state = await ensureInitialized();
+    if (!state.teamMembers) state.teamMembers = [];
+    let member = state.teamMembers.find((m) => m.id === memberId);
+    if (!member && (memberId === 'admin' || memberId === 'master-admin' || memberId === 'tm_owner')) {
+      member = state.teamMembers.find((m) => m.role === 'owner');
+    }
+    if (!member) return null;
+
+    member.googleConnected = false;
+    member.googleId = undefined;
+    member.googleEmail = undefined;
+    member.googleConnectedAt = undefined;
+    if (member.authProvider === 'google') {
+      member.authProvider = 'email';
+    }
+    member.updatedAt = new Date().toISOString();
+
+    const ws = (state.workspaces || []).find((w) => w.id === member!.workspaceId);
+    if (ws) {
+      (ws as any).googleConnected = false;
+      (ws as any).googleEmail = undefined;
+    }
+
+    await saveState(state);
+    return member;
+  }
+
   /** Plain lookup: unlike getTeamMemberById it never invents a member. Used to check a session against the account it names. */
   /**
    * Loads the shared state from the database now, instead of trusting this server's copy (which can be up to a minute old).
@@ -4193,10 +4264,6 @@ export class Database {
     const ownerOf = (wsId: string) =>
       (state.teamMembers || []).find((m) => m.workspaceId === wsId && (m.email || '').toLowerCase().trim() === cleanEmail);
 
-    // 1. Check if an existing workspace owner has this email
-    const existingWs = (state.workspaces || []).find(
-      (w: any) => (w.ownerEmail || '').toLowerCase() === cleanEmail && !isUnconfirmed(ownerOf(w.id)),
-    );
     // Fill in the person's own name and photo from the provider, without overwriting anything they set themselves.
     const applyProfile = (member: TeamMemberData, workspaceName?: string) => {
       const personName = (params.name || '').trim();
@@ -4208,7 +4275,39 @@ export class Database {
         ['Owner', 'Master Admin', 'Staff Member', 'Admin'].includes(member.name);
       if (personName && looksAutoNamed) member.name = personName;
       if (params.picture && !member.avatarUrl) member.avatarUrl = params.picture;
+      if (params.provider === 'google') {
+        member.authProvider = 'google';
+        member.googleConnected = true;
+        member.googleId = params.providerId;
+        member.googleEmail = cleanEmail;
+        member.googleConnectedAt = member.googleConnectedAt || new Date().toISOString();
+      }
     };
+
+    // 0. Check if a team member already linked this Google ID or Google Email
+    if (params.provider === 'google') {
+      const linkedMember = (state.teamMembers || []).find(
+        (m) =>
+          !isUnconfirmed(m) &&
+          ((params.providerId && m.googleId === params.providerId) ||
+           (m.googleEmail && m.googleEmail.toLowerCase() === cleanEmail))
+      );
+      if (linkedMember) {
+        linkedMember.lastLoginAt = new Date().toISOString();
+        linkedMember.googleConnected = true;
+        linkedMember.googleId = params.providerId;
+        linkedMember.googleEmail = cleanEmail;
+        const ws = await Database.getWorkspaceBilling(linkedMember.workspaceId || 'default-workspace');
+        applyProfile(linkedMember, ws?.name);
+        await saveState(state);
+        return { workspace: ws, member: linkedMember, isNewUser: false };
+      }
+    }
+
+    // 1. Check if an existing workspace owner has this email
+    const existingWs = (state.workspaces || []).find(
+      (w: any) => (w.ownerEmail || '').toLowerCase() === cleanEmail && !isUnconfirmed(ownerOf(w.id)),
+    );
 
     if (existingWs) {
       let ownerMember =

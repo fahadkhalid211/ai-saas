@@ -1,5 +1,5 @@
 import { describe, it, expect, afterAll } from 'vitest';
-import { safeAvatarUrl } from '../security/oauth';
+import { safeAvatarUrl, createOAuthAttempt, verifyOAuthAttempt } from '../security/oauth';
 
 const PHOTO = 'https://lh3.googleusercontent.com/a/abc123=s96-c';
 const created: string[] = [];
@@ -12,6 +12,19 @@ describe('safeAvatarUrl', () => {
     expect(safeAvatarUrl('https://googleusercontent.com.evil.com/a.png')).toBeUndefined();
     expect(safeAvatarUrl('javascript:alert(1)')).toBeUndefined();
     expect(safeAvatarUrl(undefined)).toBeUndefined();
+  });
+});
+
+describe('createOAuthAttempt and verifyOAuthAttempt', () => {
+  it('handles connect action state roundtrip', () => {
+    const attempt = createOAuthAttempt(undefined, 'connect');
+    const req = new Request('http://localhost:3000/api/auth/oauth/google', {
+      headers: { cookie: attempt.cookie },
+    });
+    const verified = verifyOAuthAttempt(req, attempt.state);
+    expect(verified).not.toBeNull();
+    expect(verified?.isConnect).toBe(true);
+    expect(verified?.isMobile).toBe(false);
   });
 });
 
@@ -29,6 +42,8 @@ describe('Google sign-in fills in the person\'s name and photo', () => {
     expect(r.isNewUser).toBe(true);
     expect(r.member.name).toBe('Ada Lovelace');
     expect(r.member.avatarUrl).toBe(PHOTO);
+    expect(r.member.googleConnected).toBe(true);
+    expect(r.member.googleEmail).toBe(email);
   });
 
   it('repairs an auto-generated name on the next sign-in but never overwrites a photo the user chose', async () => {
@@ -64,5 +79,42 @@ describe('Google sign-in fills in the person\'s name and photo', () => {
     first.member.name = 'Master Admin';
     const again = await Database.findOrCreateOAuthTenant({ email, name: 'Test Person', provider: 'google', providerId: 'g3' });
     expect(again.member.name).toBe('Test Person');
+  });
+
+  it('allows linking and disconnecting Google on an existing member account', async () => {
+    const { Database } = await import('./index');
+    const email = `oauth-link-${Date.now()}@example.com`;
+    const ws = await Database.createTenantWorkspace({
+      businessName: 'Link Test Co',
+      ownerEmail: email,
+      industryTemplateSlug: 'general',
+      emailVerified: true,
+    });
+    created.push(ws.workspace.id);
+
+    expect(ws.owner.googleConnected).toBeFalsy();
+
+    const linked = await Database.linkGoogleAccount(ws.owner.id, {
+      googleId: 'g_link_12345',
+      googleEmail: 'linked.google@gmail.com',
+      avatarUrl: PHOTO,
+    });
+    expect(linked?.googleConnected).toBe(true);
+    expect(linked?.googleEmail).toBe('linked.google@gmail.com');
+    expect(linked?.googleId).toBe('g_link_12345');
+
+    // Finding tenant by linked Google email
+    const found = await Database.findOrCreateOAuthTenant({
+      email: 'linked.google@gmail.com',
+      provider: 'google',
+      providerId: 'g_link_12345',
+    });
+    expect(found.isNewUser).toBe(false);
+    expect(found.member.id).toBe(ws.owner.id);
+
+    // Disconnecting Google
+    const unlinked = await Database.disconnectGoogleAccount(ws.owner.id);
+    expect(unlinked?.googleConnected).toBe(false);
+    expect(unlinked?.googleEmail).toBeUndefined();
   });
 });
