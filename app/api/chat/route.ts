@@ -21,6 +21,8 @@ import { applyCostCap, applyCostCapToMedia, COST_CAP_PAUSED_MESSAGE } from '@/li
 import { isLowConfidence, looksLikeUnknown, withUnknownOffer } from '@/lib/rag/confidence';
 import { FIGURE_REMOVED_NOTE, FigureGuard, allowedFigures } from '@/lib/ai/figure-guard';
 import { SERVICE_PAUSED_MESSAGE, serviceBlocked } from '@/lib/billing/trial';
+import { checkAvailability, formatAvailabilityContext } from '@/lib/integrations/hospitable/availability-tool';
+import { detectAvailabilityIntent, extractDates, extractGuestCount } from '@/lib/integrations/hospitable/intent-parser';
 
 // Streamed responses (token-by-token LLM output, plus an optional live web
 // search round-trip) can run well past a short default function timeout.
@@ -716,9 +718,33 @@ CRITICAL IDENTITY & BUSINESS SCOPE:
               ? '[NOTE: The knowledge base has no close match for this question. Only answer from it if the answer is clearly stated above or in your instructions; otherwise say you do not have that information.]'
               : '';
 
+          // Live availability lookup for Hospitable-connected property managers
+          let hospitableContext = '';
+          if (detectAvailabilityIntent(latestUserMsg)) {
+            const extracted = extractDates(latestUserMsg);
+            if (extracted) {
+              try {
+                const guests = extractGuestCount(latestUserMsg);
+                const availResults = await checkAvailability({
+                  assistantId: assistant.id,
+                  checkIn: extracted.checkIn,
+                  checkOut: extracted.checkOut,
+                  propertyName: extracted.propertyName,
+                  guests,
+                });
+                if (availResults.length > 0) {
+                  hospitableContext = formatAvailabilityContext(availResults);
+                }
+              } catch (availErr) {
+                console.warn('[ChatRoute] Hospitable availability check error:', availErr);
+              }
+            }
+          }
+
           const combinedContext = [
             retrieval.contextText ? `[OFFICIAL VERIFIED KNOWLEDGE BASE]:\n${retrieval.contextText}` : '',
             landingKnowledge,
+            hospitableContext,
             weakMatchNote,
           ].filter(Boolean).join('\n\n');
 

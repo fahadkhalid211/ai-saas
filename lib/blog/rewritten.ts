@@ -62,9 +62,19 @@ import { AI_RECRUITMENT_BATCH2_POSTS } from './rewritten/ai-recruitment-screenin
 import { AI_RECRUITMENT_BATCH3_POSTS } from './rewritten/ai-recruitment-screening-batch3';
 import { AI_RECRUITMENT_BATCH4_POSTS } from './rewritten/ai-recruitment-screening-batch4';
 import { HOW_TO_BUILD_CHATBOT_POST } from './rewritten/how-to-build-and-train-website-chatbot';
+import { HUMAN_GROWTH_BATCH1 } from './rewritten/human-growth-batch1';
+import { HUMAN_GROWTH_BATCH2 } from './rewritten/human-growth-batch2';
+import { HUMAN_GROWTH_BATCH3 } from './rewritten/human-growth-batch3';
+import { HUMAN_GROWTH_BATCH4 } from './rewritten/human-growth-batch4';
+import { HUMAN_GROWTH_BATCH5 } from './rewritten/human-growth-batch5';
 
 /** Articles written for readers. They replace the templated placeholder with the same address and are listed in search. */
 export const REWRITTEN_POSTS: BlogPost[] = [...BATCH1, ...BATCH2, ...BATCH3, ...BATCH4, ...BATCH5, ...BATCH6, ...BATCH7, ...BATCH8, ...BATCH9, ...BATCH10, ...BATCH11, ...BATCH12,
+  ...HUMAN_GROWTH_BATCH1,
+  ...HUMAN_GROWTH_BATCH2,
+  ...HUMAN_GROWTH_BATCH3,
+  ...HUMAN_GROWTH_BATCH4,
+  ...HUMAN_GROWTH_BATCH5,
   // in-depth versions of the highest-value articles: listed last so they replace the shorter ones
   ...PILLAR1,
   ...PILLAR2,

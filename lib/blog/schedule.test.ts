@@ -26,17 +26,31 @@ describe('article release schedule', () => {
     expect(all).toHaveLength(PUBLISHED_INDEX.filter((p) => isIndexable(p.slug)).length);
   });
 
-  it('submits the articles Google has not crawled before the ones it already has', () => {
+  it('keeps the articles already in the sitemap first, in the same order, then the ones Google has not crawled, then the rest', () => {
     const order = releasedSlugs(day(10_000));
-    const firstKnown = order.findIndex((s) => !NOT_CRAWLED_SLUGS.has(s));
-    expect(order.slice(0, firstKnown).every((s) => NOT_CRAWLED_SLUGS.has(s))).toBe(true);
-    expect(order.slice(firstKnown).some((s) => NOT_CRAWLED_SLUGS.has(s))).toBe(false);
+    expect(order.slice(0, 3)).toEqual(['sync-ai-booking-google-outlook-calendar', 'cost-estimators-vs-conversational-lead-capture', 'chat-behavior-lead-scoring']);
+    expect(releasedSlugs(day(2))).toHaveLength(15);
+    expect(releasedSlugs(day(2))).toEqual(order.slice(0, 15));
+    const afterFixed = order.slice(15);
+    const firstKnown = afterFixed.findIndex((s) => !NOT_CRAWLED_SLUGS.has(s));
+    expect(afterFixed.slice(0, firstKnown).every((s) => NOT_CRAWLED_SLUGS.has(s))).toBe(true);
+    expect(afterFixed.slice(firstKnown).some((s) => NOT_CRAWLED_SLUGS.has(s))).toBe(false);
   });
 
   it('only ever holds back articles Google has not crawled', () => {
     for (const p of PUBLISHED_INDEX) if (!isIndexable(p.slug)) expect(NOT_CRAWLED_SLUGS.has(p.slug), p.slug).toBe(true);
-    expect(isIndexable('how-to-grow-a-salon-in-new-york-with-ai')).toBe(false);
-    expect(isIndexable('how-to-grow-a-dental-practice-in-london-with-ai')).toBe(true); // matches the pattern but Google already has it
+    // a templated city article and a job-seeker article that Google has not crawled yet are held back
+    expect(isIndexable('how-to-grow-a-roofing-business-in-austin-with-ai')).toBe(false);
+    expect(isIndexable('what-personal-information-do-job-chatbots-collect-privacy')).toBe(false);
+    // the same kinds of article, once Google has crawled them, are not touched
+    expect(isIndexable('how-to-grow-a-salon-in-new-york-with-ai')).toBe(true);
+    expect(isIndexable('how-to-grow-a-dental-practice-in-london-with-ai')).toBe(true);
+    expect(isIndexable('is-it-legal-to-use-ai-chatbots-for-hiring')).toBe(true);
+    // and nothing else is ever noindex: exactly these two
+    expect(PUBLISHED_INDEX.filter((p) => !isIndexable(p.slug)).map((p) => p.slug).sort()).toEqual([
+      'how-to-grow-a-roofing-business-in-austin-with-ai',
+      'what-personal-information-do-job-chatbots-collect-privacy',
+    ]);
   });
 
   it('lists only articles that exist', () => {
@@ -47,8 +61,8 @@ describe('article release schedule', () => {
   it('agrees with releaseDate', () => {
     const first = releasedSlugs(day(0))[0];
     expect(releaseDate(first)?.getTime()).toBe(day(0).getTime());
-    expect(releaseDate('how-to-grow-a-med-spa-in-miami-with-ai')).toBeNull();
-    expect(releaseDate('how-to-grow-a-dental-practice-in-london-with-ai')).not.toBeNull();
+    expect(releaseDate('how-to-grow-a-roofing-business-in-austin-with-ai')).toBeNull(); // held back, never submitted
+    expect(releaseDate('how-to-grow-a-med-spa-in-miami-with-ai')).not.toBeNull();
     expect(lastReleaseDate()!.getTime()).toBeGreaterThan(day(0).getTime());
   });
 });
