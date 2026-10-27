@@ -314,16 +314,16 @@ export const OnboardingWizardModal: React.FC<OnboardingWizardModalProps> = ({
       <div className="w-full max-w-2xl rounded-2xl border border-slate-200 bg-white shadow-2xl overflow-hidden my-auto">
 
         {/* Sleek, light header and progress stepper - no dark headers */}
-        <div className="bg-gradient-to-r from-slate-50 via-white to-blue-50/40 border-b border-slate-200/90 px-6 py-4 text-slate-900">
+        <div className="bg-gradient-to-r from-slate-50 via-white to-slate-100/50 border-b border-slate-200/90 px-6 py-4 text-slate-900">
           <div className="flex items-center justify-between mb-3.5">
             <div className="flex items-center gap-3">
-              <span className="flex items-center justify-center w-8 h-8 rounded-xl bg-blue-50 border border-blue-200/70 text-blue-600">
+              <span className="flex items-center justify-center w-8 h-8 rounded-xl bg-slate-100 border border-slate-200/80 text-[#08251a]">
                 <Sparkles className="h-4 w-4" />
               </span>
               <div>
                 <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
                   <span><T>Quick Setup Wizard</T></span>
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200/80 uppercase tracking-wider">
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-[#08251a] border border-slate-200/80 uppercase tracking-wider">
                     <T>Step</T> {step} <T>of 4</T>
                   </span>
                 </h2>
@@ -359,7 +359,7 @@ export const OnboardingWizardModal: React.FC<OnboardingWizardModalProps> = ({
                   onClick={() => setStep(s.num)}
                   className={`flex items-center gap-2 p-2 rounded-xl border text-left transition cursor-pointer ${
                     isActive
-                      ? 'border-blue-600 bg-white shadow-xs ring-1 ring-blue-600/20 text-blue-700'
+                      ? 'border-[#08251a] bg-white shadow-xs ring-1 ring-[#08251a]/20 text-[#08251a]'
                       : isCompleted
                       ? 'border-emerald-200 bg-emerald-50/40 text-emerald-800'
                       : 'border-slate-200 bg-slate-50/60 text-slate-500 hover:bg-white'
@@ -368,7 +368,7 @@ export const OnboardingWizardModal: React.FC<OnboardingWizardModalProps> = ({
                   <span
                     className={`flex items-center justify-center w-6 h-6 rounded-lg text-xs font-bold shrink-0 ${
                       isActive
-                        ? 'bg-blue-600 text-white'
+                        ? 'bg-[#08251a] text-white'
                         : isCompleted
                         ? 'bg-emerald-600 text-white'
                         : 'bg-slate-200 text-slate-600'
@@ -378,7 +378,7 @@ export const OnboardingWizardModal: React.FC<OnboardingWizardModalProps> = ({
                   </span>
                   <div className="hidden sm:block min-w-0">
                     <div className="text-[10px] uppercase tracking-wider font-semibold opacity-75"><T>Step</T> {s.num}</div>
-                    <div className="text-xs font-bold truncate"><T>{s.title}</T></div>
+                    <div className={`text-xs font-bold truncate ${isActive ? 'text-[#08251a]' : ''}`}><T>{s.title}</T></div>
                   </div>
                 </button>
               );
@@ -411,12 +411,12 @@ export const OnboardingWizardModal: React.FC<OnboardingWizardModalProps> = ({
                       onClick={() => handleSelectIndustry(ind)}
                       className={`flex flex-col items-start p-3 rounded-xl border text-left transition cursor-pointer ${
                         isSelected
-                          ? 'border-blue-600 bg-blue-50/60 shadow-xs ring-1 ring-blue-600/30'
+                          ? 'border-[#08251a] bg-slate-100/70 shadow-xs ring-1 ring-[#08251a]/30'
                           : 'border-slate-200 bg-slate-50/50 hover:border-slate-300 hover:bg-slate-50'
                       }`}
                     >
-                      <Icon className={`h-5 w-5 mb-2 ${isSelected ? 'text-blue-600' : 'text-slate-500'}`} />
-                      <span className="text-xs font-bold text-slate-900 leading-tight"><T>{ind.label}</T></span>
+                      <Icon className={`h-5 w-5 mb-2 ${isSelected ? 'text-[#08251a]' : 'text-slate-500'}`} />
+                      <span className={`text-xs font-bold leading-tight ${isSelected ? 'text-[#08251a]' : 'text-slate-900'}`}><T>{ind.label}</T></span>
                     </button>
                   );
                 })}
@@ -432,7 +432,7 @@ export const OnboardingWizardModal: React.FC<OnboardingWizardModalProps> = ({
                   value={assistantName}
                   onChange={(e) => setAssistantName(e.target.value)}
                   placeholder={__t("e.g. Bella Salon Assistant")}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-600"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#08251a]"
                 />
                 <p className="text-[11px] text-slate-500"><T>Visitors will see this name in the chat header bubble.</T></p>
               </div>
@@ -458,12 +458,12 @@ export const OnboardingWizardModal: React.FC<OnboardingWizardModalProps> = ({
                         onClick={() => setPrimaryGoal(g.id)}
                         className={`flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-bold border transition cursor-pointer text-center ${
                           isSelected
-                            ? 'border-blue-600 bg-blue-50 text-blue-700 shadow-2xs ring-1 ring-blue-600/30'
+                            ? 'border-[#08251a] bg-slate-100 text-[#08251a] shadow-2xs ring-1 ring-[#08251a]/30'
                             : 'border-slate-200 bg-slate-50/50 text-slate-700 hover:border-slate-300 hover:bg-slate-50'
                         }`}
                       >
-                        <GoalIcon className={`h-3.5 w-3.5 ${isSelected ? 'text-blue-600' : 'text-slate-500'}`} />
-                        <span><T>{g.label}</T></span>
+                        <GoalIcon className={`h-3.5 w-3.5 ${isSelected ? 'text-[#08251a]' : 'text-slate-500'}`} />
+                        <span className={isSelected ? 'text-[#08251a]' : ''}><T>{g.label}</T></span>
                       </button>
                     );
                   })}
@@ -489,11 +489,11 @@ export const OnboardingWizardModal: React.FC<OnboardingWizardModalProps> = ({
                   onClick={() => setKnowledgeMode('text')}
                   className={`flex items-center justify-center gap-2 flex-1 py-2 text-xs font-bold rounded-lg transition cursor-pointer ${
                     knowledgeMode === 'text'
-                      ? 'bg-white text-blue-700 shadow-xs border border-slate-200/80'
+                      ? 'bg-white text-[#08251a] shadow-xs border border-slate-200/80 font-bold'
                       : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
-                  <FileText className="h-3.5 w-3.5 text-blue-600" />
+                  <FileText className={`h-3.5 w-3.5 ${knowledgeMode === 'text' ? 'text-[#08251a]' : 'text-slate-500'}`} />
                   <span><T>Type Business Information</T></span>
                 </button>
                 <button
@@ -501,11 +501,11 @@ export const OnboardingWizardModal: React.FC<OnboardingWizardModalProps> = ({
                   onClick={() => setKnowledgeMode('url')}
                   className={`flex items-center justify-center gap-2 flex-1 py-2 text-xs font-bold rounded-lg transition cursor-pointer ${
                     knowledgeMode === 'url'
-                      ? 'bg-white text-blue-700 shadow-xs border border-slate-200/80'
+                      ? 'bg-white text-[#08251a] shadow-xs border border-slate-200/80 font-bold'
                       : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
-                  <Globe className="h-3.5 w-3.5 text-blue-600" />
+                  <Globe className={`h-3.5 w-3.5 ${knowledgeMode === 'url' ? 'text-[#08251a]' : 'text-slate-500'}`} />
                   <span><T>Scan Website URL</T></span>
                 </button>
               </div>
@@ -520,12 +520,12 @@ export const OnboardingWizardModal: React.FC<OnboardingWizardModalProps> = ({
                     value={businessInfoText}
                     onChange={(e) => setBusinessInfoText(e.target.value)}
                     placeholder={__t("Enter your hours, prices, services, parking info, and answers to common customer questions...")}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-xs font-mono text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-600 leading-relaxed"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-xs font-mono text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#08251a] leading-relaxed"
                   />
-                  <div className="flex items-start gap-2 p-2.5 rounded-xl bg-blue-50/60 border border-blue-100 text-[11px] text-blue-900">
-                    <Sparkles className="h-3.5 w-3.5 text-blue-600 shrink-0 mt-0.5" />
+                  <div className="flex items-start gap-2 p-2.5 rounded-xl bg-slate-100/80 border border-slate-200 text-[11px] text-slate-800">
+                    <Sparkles className="h-3.5 w-3.5 text-[#08251a] shrink-0 mt-0.5" />
                     <span>
-                      <strong className="font-semibold text-blue-800"><T>Recommendation:</T></strong> <T>Include common details your customers call about (e.g. pricing, hours, parking, policies, and consultation requirements).</T>
+                      <strong className="font-semibold text-[#08251a]"><T>Recommendation:</T></strong> <T>Include common details your customers call about (e.g. pricing, hours, parking, policies, and consultation requirements).</T>
                     </span>
                   </div>
                 </div>
@@ -540,7 +540,7 @@ export const OnboardingWizardModal: React.FC<OnboardingWizardModalProps> = ({
                       value={websiteUrl}
                       onChange={(e) => setWebsiteUrl(e.target.value)}
                       placeholder={__t("https://mybusiness.com")}
-                      className="flex-1 px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-600"
+                      className="flex-1 px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#08251a]"
                     />
                   </div>
                   <p className="text-[11px] text-slate-500">
@@ -567,7 +567,7 @@ export const OnboardingWizardModal: React.FC<OnboardingWizardModalProps> = ({
                 <div className="grid grid-cols-3 gap-2">
                   {[
                     { id: 'friendly', label: 'Friendly & Welcoming', desc: 'Warm, helpful, and empathetic', icon: Sparkles, iconColor: 'text-amber-500' },
-                    { id: 'professional', label: 'Professional & Polished', desc: 'Direct, refined, and precise', icon: Briefcase, iconColor: 'text-blue-600' },
+                    { id: 'professional', label: 'Professional & Polished', desc: 'Direct, refined, and precise', icon: Briefcase, iconColor: 'text-[#08251a]' },
                     { id: 'enthusiastic', label: 'Proactive & Sales-Focused', desc: 'Engaging and conversion-driven', icon: Zap, iconColor: 'text-emerald-600' },
                   ].map((t) => {
                     const ToneIcon = t.icon;
@@ -579,13 +579,13 @@ export const OnboardingWizardModal: React.FC<OnboardingWizardModalProps> = ({
                         onClick={() => setTone(t.id as any)}
                         className={`p-3 rounded-xl border text-left transition cursor-pointer ${
                           isSelected
-                            ? 'border-blue-600 bg-blue-50/60 ring-1 ring-blue-600/30'
+                            ? 'border-[#08251a] bg-slate-100/70 ring-1 ring-[#08251a]/30'
                             : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50'
                         }`}
                       >
                         <div className="flex items-center gap-1.5 mb-1">
-                          <ToneIcon className={`h-4 w-4 ${t.iconColor}`} />
-                          <span className="text-xs font-bold text-slate-900"><T>{t.label}</T></span>
+                          <ToneIcon className={`h-4 w-4 ${isSelected ? 'text-[#08251a]' : t.iconColor}`} />
+                          <span className={`text-xs font-bold ${isSelected ? 'text-[#08251a]' : 'text-slate-900'}`}><T>{t.label}</T></span>
                         </div>
                         <div className="text-[10px] text-slate-500 leading-tight"><T>{t.desc}</T></div>
                       </button>
@@ -604,7 +604,7 @@ export const OnboardingWizardModal: React.FC<OnboardingWizardModalProps> = ({
                   value={greetingMessage}
                   onChange={(e) => setGreetingMessage(e.target.value)}
                   placeholder={__t("The first greeting bubble visitors see when the chat opens...")}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-600 leading-relaxed"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#08251a] leading-relaxed"
                 />
               </div>
 
@@ -621,7 +621,7 @@ export const OnboardingWizardModal: React.FC<OnboardingWizardModalProps> = ({
                       onClick={() => setPrimaryColor(p.hex)}
                       className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-semibold transition cursor-pointer ${
                         primaryColor === p.hex
-                          ? 'border-blue-600 bg-blue-50 text-blue-700 shadow-2xs ring-1 ring-blue-600/30'
+                          ? 'border-[#08251a] bg-slate-100 text-[#08251a] shadow-2xs ring-1 ring-[#08251a]/30 font-bold'
                           : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300'
                       }`}
                     >
@@ -665,7 +665,7 @@ export const OnboardingWizardModal: React.FC<OnboardingWizardModalProps> = ({
                       <div
                         className={`max-w-[85%] rounded-2xl px-3.5 py-2 text-xs leading-relaxed ${
                           m.sender === 'user'
-                            ? 'bg-blue-600 text-white rounded-br-xs shadow-2xs'
+                            ? 'bg-[#08251a] text-white rounded-br-xs shadow-2xs'
                             : 'bg-white text-slate-800 border border-slate-200 rounded-bl-xs shadow-2xs'
                         }`}
                       >
@@ -678,9 +678,9 @@ export const OnboardingWizardModal: React.FC<OnboardingWizardModalProps> = ({
                           <button
                             type="button"
                             onClick={() => handleSendTestMessage('Connect me to a live agent')}
-                            className="text-[11px] font-semibold px-2.5 py-1 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 transition flex items-center gap-1 cursor-pointer"
+                            className="text-[11px] font-semibold px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-[#08251a] border border-slate-200 transition flex items-center gap-1 cursor-pointer"
                           >
-                            <Users className="h-3 w-3" />
+                            <Users className="h-3 w-3 text-[#08251a]" />
                             <span><T>Connect to Live Agent</T></span>
                           </button>
                           <button
@@ -698,7 +698,7 @@ export const OnboardingWizardModal: React.FC<OnboardingWizardModalProps> = ({
 
                   {isTestResponding && (
                     <div className="flex items-center gap-1.5 text-[11px] text-slate-400 italic">
-                      <Loader2 className="h-3 w-3 animate-spin text-blue-600" />
+                      <Loader2 className="h-3 w-3 animate-spin text-[#08251a]" />
                       <span>{assistantName} <T>is typing...</T></span>
                     </div>
                   )}
@@ -717,7 +717,7 @@ export const OnboardingWizardModal: React.FC<OnboardingWizardModalProps> = ({
                       key={q}
                       type="button"
                       onClick={() => handleSendTestMessage(q)}
-                      className="text-[11px] px-2.5 py-0.5 rounded-full border border-slate-200 hover:border-blue-500 hover:text-blue-700 text-slate-600 transition cursor-pointer bg-slate-50"
+                      className="text-[11px] px-2.5 py-0.5 rounded-full border border-slate-200 hover:border-[#08251a] hover:text-[#08251a] text-slate-600 transition cursor-pointer bg-slate-50"
                     >
                       {q}
                     </button>
@@ -732,12 +732,12 @@ export const OnboardingWizardModal: React.FC<OnboardingWizardModalProps> = ({
                     onChange={(e) => setTestInput(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && handleSendTestMessage()}
                     placeholder={__t("Type a test question (e.g. asking about services, or something unknown)...")}
-                    className="flex-1 px-3 py-1.5 rounded-lg border border-slate-200 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-600"
+                    className="flex-1 px-3 py-1.5 rounded-lg border border-slate-200 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#08251a]"
                   />
                   <button
                     type="button"
                     onClick={() => handleSendTestMessage()}
-                    className="px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold cursor-pointer transition shadow-2xs flex items-center gap-1"
+                    className="px-3.5 py-1.5 rounded-lg bg-[#08251a] hover:bg-[#061e15] text-white text-xs font-bold cursor-pointer transition shadow-2xs flex items-center gap-1"
                   >
                     <span><T>Send</T></span>
                     <Send className="h-3 w-3" />
@@ -764,7 +764,7 @@ export const OnboardingWizardModal: React.FC<OnboardingWizardModalProps> = ({
                       setCopiedSnippet(true);
                       setTimeout(() => setCopiedSnippet(false), 2000);
                     }}
-                    className="px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold flex items-center gap-1.5 transition cursor-pointer shadow-xs"
+                    className="px-3.5 py-2 rounded-xl bg-[#08251a] hover:bg-[#061e15] text-white text-xs font-bold flex items-center gap-1.5 transition cursor-pointer shadow-xs"
                   >
                     {copiedSnippet ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
                     <span>{copiedSnippet ? <T>{'Copied'}</T> : <T>{'Copy Code'}</T>}</span>
@@ -776,7 +776,7 @@ export const OnboardingWizardModal: React.FC<OnboardingWizardModalProps> = ({
                   <a
                     href="/wordpress/ai-business-assistant.zip"
                     download
-                    className="text-blue-600 hover:text-blue-800 font-bold underline inline-flex items-center gap-1"
+                    className="text-[#08251a] hover:underline font-bold inline-flex items-center gap-1"
                   >
                     <Download className="h-3 w-3" />
                     <span><T>Download Crescelo WordPress Plugin (.zip)</T></span>
@@ -808,7 +808,7 @@ export const OnboardingWizardModal: React.FC<OnboardingWizardModalProps> = ({
               <button
                 type="button"
                 onClick={() => setStep((s) => s + 1)}
-                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition cursor-pointer shadow-xs"
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#08251a] hover:bg-[#061e15] text-white text-xs font-bold transition cursor-pointer shadow-xs"
               >
                 <span><T>Continue to Step</T> {step + 1}</span>
                 <ArrowRight className="h-3.5 w-3.5" />
@@ -818,7 +818,7 @@ export const OnboardingWizardModal: React.FC<OnboardingWizardModalProps> = ({
                 type="button"
                 disabled={isSaving}
                 onClick={handleFinishSetup}
-                className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-extrabold transition cursor-pointer shadow-sm"
+                className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-[#08251a] hover:bg-[#061e15] text-white text-xs font-extrabold transition cursor-pointer shadow-sm"
               >
                 {isSaving ? (
                   <>
