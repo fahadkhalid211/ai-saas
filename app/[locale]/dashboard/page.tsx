@@ -1149,7 +1149,7 @@ export default function DashboardPage() {
 
             {/* TAB: DOCS */}
             {activeTab === 'docs' && (
-              <DocsTab />
+              <DocsTab setActiveTab={setActiveTab} />
             )}
 
             {/* TAB: TEMPLATES */}

@@ -172,7 +172,6 @@ export function DashboardSidebar({
       items: [
         { id: 'support', label: 'Support & Tickets', icon: LifeBuoy },
         { id: 'docs', label: 'Documentation', icon: BookOpen },
-        { id: 'templates', label: 'Industry Templates', icon: Building },
       ],
     },
     ...(isMasterAdmin
