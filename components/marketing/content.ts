@@ -54,6 +54,7 @@ export const NAV: NavLink[] = [
   { label: "Who It's For", href: '/use-case', description: 'Tailored by business type' },
   { label: 'Integrations', href: '/integrations', description: 'Connect calendars, CRM and channels' },
   { label: 'Pricing', href: '/pricing', description: 'Predictable plans, zero token tax' },
+  { label: 'Custom AI', href: '/custom-ai', description: 'Hire us to build your AI solution' },
   { label: 'Try Demo', href: '/playground', description: 'Test with your own flyer in 2 minutes' },
   { label: 'Support', href: '/support', description: 'Documentation and help center' },
 ];
@@ -350,12 +351,14 @@ export const FOOTER = {
       title: 'Product',
       links: [
         { label: 'Overview', href: '/product' },
+        { label: 'Custom AI Solutions', href: '/custom-ai' },
         { label: 'Playground', href: '/playground' },
         { label: 'LLM cost calculator', href: '/tools/llm-cost-calculator' },
         { label: 'Architecture', href: '/product#pipeline-stages' },
         { label: 'Roadmap', href: '/roadmap' },
         { label: 'Integrations', href: '/integrations' },
         { label: 'Pricing', href: '/pricing' },
+        { label: 'Affiliate & Referral (10%)', href: '/referral' },
       ],
     },
     {

@@ -10,7 +10,9 @@
  */
 export const EMBEDDING_ROUTES: string[] = [
   '/api/analytics/unanswered',
+  '/api/channels/instagram',
   '/api/channels/telegram',
+  '/api/channels/tiktok',
   '/api/channels/whatsapp',
   '/api/chat',
   '/api/connectors/hospitable/sync',

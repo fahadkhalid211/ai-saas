@@ -138,6 +138,7 @@ export default function DashboardPage() {
   const [conversations, setConversations] = useState<any[]>([]);
   const [isLoadingConversations, setIsLoadingConversations] = useState(false);
   const [targetConversationId, setTargetConversationId] = useState<string | null>(null);
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
   const handleOpenConversation = (convId?: string) => {
     if (convId) setTargetConversationId(convId);
@@ -711,6 +712,8 @@ export default function DashboardPage() {
           dbStatus={dbStatus}
           onOpenSetup={() => setShowOnboarding(true)}
           onBillingChanged={() => billing.fetchBilling()}
+          isMobileSidebarOpen={isMobileSidebarOpen}
+          onToggleMobileSidebar={() => setIsMobileSidebarOpen((prev) => !prev)}
         />
 
         {supportAccess && (
@@ -819,10 +822,12 @@ export default function DashboardPage() {
             isMasterAdmin={isMasterAdmin}
             isOwner={currentUser?.role === 'owner' || isMasterAdmin}
             onOpenSetup={() => setShowOnboarding(true)}
+            isMobileOpen={isMobileSidebarOpen}
+            onCloseMobile={() => setIsMobileSidebarOpen(false)}
           />
 
           {/* Main Content Workspace */}
-          <main className="flex-1 overflow-y-auto bg-slate-50 dark:bg-slate-950 p-6 sm:p-8">
+          <main className="flex-1 overflow-y-auto bg-slate-50 dark:bg-slate-950 p-3 sm:p-6 md:p-8 min-w-0">
 
             {/* TAB: USER PROFILE */}
             {activeTab === 'profile' && (

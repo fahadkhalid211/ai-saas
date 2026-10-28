@@ -1,7 +1,8 @@
 'use client';
 
 import { T, useT } from '@/lib/i18n/context';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { BrandMark } from '@/components/brand/BrandMark';
 import {
   Sparkles,
   Users,
@@ -33,6 +34,7 @@ import {
   PhoneCall,
   Webhook,
   Mail,
+  X,
 } from 'lucide-react';
 import { INTEGRATIONS_CONFIG, SlackIcon, GoogleSheetsIcon, InstagramIcon, TikTokIcon, type IntegrationId } from './ChannelsTab';
 
@@ -95,6 +97,8 @@ export interface DashboardSidebarProps {
   isMasterAdmin?: boolean;
   isOwner?: boolean;
   onOpenSetup?: () => void;
+  isMobileOpen?: boolean;
+  onCloseMobile?: () => void;
 }
 
 const ROW_BASE = 'flex w-full items-center justify-between rounded-lg px-2.5 py-1.5 text-[12.5px] font-medium transition cursor-pointer select-none';
@@ -117,11 +121,24 @@ export function DashboardSidebar({
   isMasterAdmin = false,
   isOwner = false,
   onOpenSetup,
+  isMobileOpen = false,
+  onCloseMobile,
 }: DashboardSidebarProps) {
   const __t = useT();
   const canViewAudit = Boolean(isOwner || isMasterAdmin);
   const [isChannelsExpanded, setIsChannelsExpanded] = useState<boolean>(false);
   const [manual, setManual] = useState<Record<string, boolean>>({});
+
+  useEffect(() => {
+    if (!isMobileOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onCloseMobile?.();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isMobileOpen, onCloseMobile]);
 
   const overview: TabItem = { id: 'overview', label: 'Overview', icon: FileCheck };
 
@@ -206,7 +223,10 @@ export function DashboardSidebar({
             onClick={() => {
               const nextExpanded = !isChannelsExpanded;
               setIsChannelsExpanded(nextExpanded);
-              if (nextExpanded) setActiveTab('channels');
+              if (nextExpanded) {
+                setActiveTab('channels');
+                onCloseMobile?.();
+              }
             }}
             className={`${ROW_BASE} ${isChannelsActive ? ROW_ACTIVE : ROW_IDLE}`}
           >
@@ -229,6 +249,7 @@ export function DashboardSidebar({
                     onClick={() => {
                       setSelectedIntegration?.(item.id);
                       setActiveTab('channels');
+                      onCloseMobile?.();
                     }}
                     className={`w-full flex items-center justify-between rounded-md px-2 py-1 text-xs font-medium transition cursor-pointer ${
                       isSelected ? 'bg-blue-100/70 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 font-semibold' : ROW_IDLE
@@ -255,7 +276,10 @@ export function DashboardSidebar({
         key={tab.id}
         type="button"
         aria-current={isActive ? 'page' : undefined}
-        onClick={() => setActiveTab(tab.id as any)}
+        onClick={() => {
+          setActiveTab(tab.id as any);
+          onCloseMobile?.();
+        }}
         className={`${ROW_BASE} ${isActive ? ROW_ACTIVE : ROW_IDLE}`}
       >
         <div className="flex items-center gap-2 min-w-0 flex-1 mr-1">
@@ -284,8 +308,8 @@ export function DashboardSidebar({
     );
   };
 
-  return (
-    <aside className="w-64 h-full max-h-full border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3 flex flex-col justify-between shrink-0 overflow-hidden select-none">
+  const renderSidebarContent = () => (
+    <>
       <nav aria-label={__t("Dashboard")} className="flex flex-col flex-1 min-h-0 gap-1 overflow-y-auto pr-1 overscroll-contain mk-sidebar-scroll">
         {/* The home page of the dashboard: always in view, never inside a category */}
         {renderItem(overview)}
@@ -330,7 +354,10 @@ export function DashboardSidebar({
         {onOpenSetup ? (
           <button
             type="button"
-            onClick={onOpenSetup}
+            onClick={() => {
+              onOpenSetup();
+              onCloseMobile?.();
+            }}
             className="flex items-center gap-1.5 text-emerald-700 dark:text-emerald-400 hover:text-emerald-800 dark:hover:text-emerald-300 font-semibold cursor-pointer transition"
           >
             <Sparkles className="h-3.5 w-3.5" />
@@ -340,6 +367,51 @@ export function DashboardSidebar({
           <span className="text-slate-400 dark:text-slate-500"><T>Crescelo</T></span>
         )}
       </div>
-    </aside>
+    </>
+  );
+
+  return (
+    <>
+      {/* Desktop Persistent Sidebar */}
+      <aside className="hidden md:flex w-64 h-full max-h-full border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3 flex-col justify-between shrink-0 overflow-hidden select-none">
+        {renderSidebarContent()}
+      </aside>
+
+      {/* Mobile Drawer (visible only when toggled open) */}
+      {isMobileOpen && (
+        <div className="fixed inset-0 z-50 md:hidden flex">
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 bg-slate-950/60 backdrop-blur-xs transition-opacity animate-in fade-in duration-200"
+            onClick={onCloseMobile}
+            aria-hidden="true"
+          />
+
+          {/* Drawer Panel */}
+          <aside
+            role="dialog"
+            aria-modal="true"
+            aria-label={__t("Navigation Menu")}
+            className="relative z-10 w-72 max-w-[85vw] h-full border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3 flex flex-col justify-between shadow-2xl overflow-hidden select-none animate-in slide-in-from-left duration-200"
+          >
+            <div className="flex items-center justify-between pb-3 mb-2 border-b border-slate-200 dark:border-slate-800 shrink-0">
+              <div className="flex items-center gap-2.5">
+                <BrandMark size={28} showWord={false} />
+                <span className="font-bold text-sm tracking-tight text-slate-900 dark:text-white kx-brand-word">Crescelo</span>
+              </div>
+              <button
+                type="button"
+                onClick={onCloseMobile}
+                className="p-1.5 rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-50 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-750 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 transition cursor-pointer"
+                aria-label={__t("Close navigation")}
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            {renderSidebarContent()}
+          </aside>
+        </div>
+      )}
+    </>
   );
 }

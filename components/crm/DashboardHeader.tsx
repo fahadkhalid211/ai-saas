@@ -26,6 +26,8 @@ import {
   Languages,
   Accessibility,
   LogOut,
+  Menu,
+  X,
 } from 'lucide-react';
 
 /** One row of the profile menu. */
@@ -114,6 +116,8 @@ interface DashboardHeaderProps {
   onOpenSetup?: () => void;
   /** Called after the assistant changed the plan, so billing data can be reloaded. */
   onBillingChanged?: () => void;
+  isMobileSidebarOpen?: boolean;
+  onToggleMobileSidebar?: () => void;
 }
 
 export function DashboardHeader({
@@ -138,6 +142,8 @@ export function DashboardHeader({
   dbStatus,
   onOpenSetup,
   onBillingChanged,
+  isMobileSidebarOpen = false,
+  onToggleMobileSidebar,
 }: DashboardHeaderProps) {
   const __t = useT();
   const { locale, setLocale } = useI18n();
@@ -217,6 +223,19 @@ export function DashboardHeader({
     <header className="h-16 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 sm:px-6 flex items-center justify-between sticky top-0 z-40 shrink-0 gap-2">
       {/* Left Section: Brand & Assistant Dropdown */}
       <div className="flex items-center gap-2 sm:gap-6 min-w-0">
+        {/* Mobile Navigation Toggle Button */}
+        {onToggleMobileSidebar && (
+          <button
+            type="button"
+            onClick={onToggleMobileSidebar}
+            aria-label={isMobileSidebarOpen ? __t("Close navigation menu") : __t("Open navigation menu")}
+            aria-expanded={isMobileSidebarOpen}
+            className="md:hidden flex items-center justify-center p-2 rounded-xl border border-slate-200 dark:border-slate-700/80 bg-white hover:bg-slate-50 dark:bg-slate-800/80 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 transition shadow-2xs cursor-pointer shrink-0"
+          >
+            {isMobileSidebarOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+          </button>
+        )}
+
         {/* Brand Logo */}
         <button type="button" className="flex items-center gap-3 cursor-pointer text-left rounded-lg" aria-label={__t("Crescelo overview")} onClick={() => setActiveTab('overview')}>
           <BrandMark size={34} showWord={false} />

@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 
+export const dynamic = 'force-dynamic';
+
 /** IndexNow proves site ownership by serving the key at /<key>.txt (rewritten here from next.config.ts). Only the configured key answers. */
 export async function GET(_req: Request, { params }: { params: Promise<{ key: string }> }) {
   const { key } = await params;

@@ -20,6 +20,7 @@ import {
   DollarSign,
   ChevronDown,
   ChevronUp,
+  ChevronRight,
   Sparkles,
   Layers,
   ShieldCheck,
@@ -30,6 +31,7 @@ import {
   MoreVertical,
   Copy,
   Check,
+  ArrowLeft,
 } from 'lucide-react';
 import {
   enrichConversation,
@@ -61,6 +63,7 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
   onClearTargetConversationId,
 }) => {
   const [selectedConversation, setSelectedConversation] = useState<any | null>(null);
+  const [mobileView, setMobileView] = useState<'list' | 'chat'>('list');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'bot' | 'waiting_for_agent' | 'live_agent' | 'resolved'>('all');
   const [sentimentFilter, setSentimentFilter] = useState<'all' | 'urgent' | 'positive' | 'neutral'>('all');
@@ -71,6 +74,12 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
   const [isActionsMenuOpen, setIsActionsMenuOpen] = useState<boolean>(false);
   const [copiedSessionId, setCopiedSessionId] = useState<boolean>(false);
   const actionsMenuRef = useRef<HTMLDivElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll chat transcript to bottom when messages update
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [selectedConversation?.id, selectedConversation?.messages?.length]);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -435,9 +444,12 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
     URL.revokeObjectURL(url);
   }
 
-  const handleSelectConversation = async (conv: any) => {
+  const handleSelectConversation = async (conv: any, switchToChatOnMobile = true) => {
     const enriched = enrichConversation(conv, activeAssistant);
     setSelectedConversation(enriched);
+    if (switchToChatOnMobile) {
+      setMobileView('chat');
+    }
     selectedConvKnownCountRef.current = conv.messages?.length || 0;
     try {
       const res = await fetch(`/api/conversations?id=${encodeURIComponent(conv.id)}`);
@@ -459,7 +471,7 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
     if (targetConversationId && sortedConversations.length > 0) {
       const target = sortedConversations.find((c) => c.id === targetConversationId);
       if (target) {
-        handleSelectConversation(target);
+        handleSelectConversation(target, true);
         if (onClearTargetConversationId) onClearTargetConversationId();
         return;
       }
@@ -473,6 +485,7 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
             const enriched = enrichConversation(d.conversation, activeAssistant);
             setConversations((prev) => [enriched, ...prev.filter((c) => c.id !== d.conversation.id)]);
             setSelectedConversation(enriched);
+            setMobileView('chat');
             selectedConvKnownCountRef.current = enriched.messages?.length || 0;
             if (onClearTargetConversationId) onClearTargetConversationId();
           }
@@ -482,7 +495,7 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
     }
 
     if (!selectedConversation && sortedConversations.length > 0) {
-      handleSelectConversation(sortedConversations[0]);
+      handleSelectConversation(sortedConversations[0], false);
     }
   }, [targetConversationId, sortedConversations]);
 
@@ -574,12 +587,12 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
   }, [selectedConversation?.id, selectedConversation?.isLiveTakeover, selectedConversation?.status, playNotificationChime, activeAssistant]);
 
   return (
-    <div className="max-w-6xl space-y-6 mx-auto">
+    <div className="max-w-6xl space-y-4 sm:space-y-6 mx-auto">
       {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-4 ${mobileView === 'chat' ? 'hidden lg:flex' : 'flex'}`}>
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2.5">
-            <History className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2.5">
+            <History className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600 dark:text-blue-400" />
             <span><T>Chat History &amp; Admin Intelligence</T></span>
           </h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
@@ -590,7 +603,7 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
           type="button"
           onClick={() => activeAssistant && fetchConversations(activeAssistant.id)}
           disabled={isLoadingConversations}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 transition shadow-xs cursor-pointer"
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 transition shadow-xs cursor-pointer self-start sm:self-auto"
         >
           <RefreshCw className={`h-3.5 w-3.5 ${isLoadingConversations ? 'animate-spin text-blue-600' : 'text-slate-500'}`} />
           <span><T>Refresh Logs</T></span>
@@ -598,9 +611,9 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
       </div>
 
       {/* FEATURE 1: Conversations, ratings, usage and AI cost at a glance */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className={`grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4 ${mobileView === 'chat' ? 'hidden lg:grid' : 'grid'}`}>
         {/* Conversations at a glance */}
-        <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs relative overflow-hidden">
+        <div className="p-3 sm:p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs relative overflow-hidden">
           <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 text-xs font-semibold">
             <span><T>Conversations</T></span>
             <MessageSquare className="h-4 w-4 text-blue-500" />
@@ -632,7 +645,7 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
         </div>
 
         {/* Customer Ratings at a glance */}
-        <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs">
+        <div className="p-3 sm:p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs">
           <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 text-xs font-semibold">
             <span><T>Ratings &amp; CSAT</T></span>
             <Star className="h-4 w-4 text-amber-500 fill-amber-400" />
@@ -666,7 +679,7 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
         </div>
 
         {/* Usage at a glance */}
-        <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs">
+        <div className="p-3 sm:p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs">
           <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 text-xs font-semibold">
             <span><T>Usage &amp; Activity</T></span>
             <Zap className="h-4 w-4 text-indigo-500" />
@@ -686,7 +699,7 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
         </div>
 
         {/* AI Cost at a glance */}
-        <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs">
+        <div className="p-3 sm:p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs">
           <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 text-xs font-semibold">
             <span><T>AI Cost</T></span>
             <DollarSign className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
@@ -723,9 +736,46 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
           </button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-          {/* FEATURE 2: Search and filter conversations by status */}
-          <div className="lg:col-span-5 min-w-0 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden shadow-xs flex flex-col">
+        <div className="space-y-4">
+          {/* Mobile Sessions / Chat Switcher */}
+          <div className="lg:hidden flex items-center justify-between gap-1.5 p-1 bg-slate-200/80 dark:bg-slate-800/80 rounded-xl">
+            <button
+              type="button"
+              onClick={() => setMobileView('list')}
+              className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition cursor-pointer ${
+                mobileView === 'list'
+                  ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+              }`}
+            >
+              <MessageSquare className="h-3.5 w-3.5 text-blue-500" />
+              <span><T>All Sessions</T></span>
+              <span className="text-[10px] px-1.5 py-0.2 rounded-full font-mono bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+                {filteredConversations.length}
+              </span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setMobileView('chat')}
+              className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition cursor-pointer ${
+                mobileView === 'chat'
+                  ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+              }`}
+            >
+              <Headphones className="h-3.5 w-3.5 text-purple-600 dark:text-purple-400" />
+              <span className="truncate max-w-[120px]">
+                {selectedConversation ? (selectedConversation.title || `Chat #${selectedConversation.id.slice(0, 6)}`) : <T>{'Active Chat'}</T>}
+              </span>
+              {selectedConversation?.status === 'waiting_for_agent' && !selectedConversation?.isLiveTakeover && (
+                <span className="h-2 w-2 rounded-full bg-amber-500 animate-pulse shrink-0" />
+              )}
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            {/* FEATURE 2: Search and filter conversations by status */}
+            <div className={`${mobileView === 'chat' ? 'hidden lg:flex' : 'flex'} lg:col-span-5 min-w-0 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden shadow-xs flex-col`}>
             {/* Search Box */}
             <div className="p-3 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40 space-y-2.5">
               <div className="relative">
@@ -878,8 +928,9 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
                             ${(conv.costUsd || 0).toFixed(4)}
                           </span>
                         </div>
-                        <div>
-                          {new Date(conv.createdAt).toLocaleDateString([], { month: 'short', day: 'numeric' })}
+                        <div className="flex items-center gap-1">
+                          <span>{new Date(conv.createdAt).toLocaleDateString([], { month: 'short', day: 'numeric' })}</span>
+                          <ChevronRight className="h-3 w-3 text-slate-400 lg:hidden" />
                         </div>
                       </div>
                     </button>
@@ -890,9 +941,24 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
           </div>
 
           {/* Transcript & Details Panel */}
-          <div className="lg:col-span-7 min-w-0 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 sm:p-5 shadow-xs overflow-hidden">
+          <div className={`${mobileView === 'list' ? 'hidden lg:block' : 'block'} lg:col-span-7 min-w-0 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3 sm:p-5 shadow-xs overflow-hidden`}>
             {selectedConversation ? (
               <div className="space-y-4">
+                {/* Mobile Back Button to Sessions */}
+                <div className="flex items-center justify-between gap-2 pb-3 border-b border-slate-100 dark:border-slate-800 lg:hidden">
+                  <button
+                    type="button"
+                    onClick={() => setMobileView('list')}
+                    className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 hover:bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs font-semibold transition cursor-pointer"
+                  >
+                    <ArrowLeft className="h-3.5 w-3.5" />
+                    <span><T>All Sessions</T></span>
+                  </button>
+                  <span className="text-[11px] text-slate-400 font-mono truncate max-w-[150px]">
+                    #{selectedConversation.id.slice(0, 10)}
+                  </span>
+                </div>
+
                 {/* Transcript Header with Title, Language, Rating, Actions */}
                 <div className="pb-4 border-b border-slate-100 dark:border-slate-800 space-y-3">
                   <div className="flex items-start justify-between gap-3 min-w-0">
@@ -1107,7 +1173,7 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
                 )}
 
                 {/* FEATURE 4: Full transcripts that show which skills and tools the agent used */}
-                <div className="space-y-4 max-h-[460px] overflow-y-auto pr-2">
+                <div className="space-y-4 h-[48vh] sm:h-[460px] overflow-y-auto pr-1 sm:pr-2">
                   {(selectedConversation.messages || []).map((m: any, idx: number) => {
                     if (m.role === 'system') {
                       return (
@@ -1326,6 +1392,7 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
                       </div>
                     );
                   })}
+                  <div ref={messagesEndRef} />
                 </div>
 
                 {/* Live Operator Composer */}
@@ -1342,28 +1409,42 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
                         key={qIdx}
                         type="button"
                         onClick={() => setAgentReplyText(quickText)}
-                        className="px-2 py-0.5 rounded-full border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-purple-50 dark:hover:bg-purple-950/40 hover:text-purple-700 hover:border-purple-300 transition whitespace-nowrap cursor-pointer"
+                        className="px-2 py-0.5 rounded-full border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-purple-50 dark:hover:bg-purple-950/40 hover:text-purple-700 hover:border-purple-300 transition whitespace-nowrap cursor-pointer shrink-0"
                       >
                         {quickText}
                       </button>
                     ))}
                   </div>
 
-                  <div className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center min-w-0">
-                    <div className="flex items-center gap-2 shrink-0">
-                      <div className="relative">
+                  <div className="flex flex-col gap-2 min-w-0">
+                    {/* Top sub-row: Replying as and Booking Form button */}
+                    <div className="flex items-center justify-between gap-2 text-xs">
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        <span className="text-[11px] text-slate-400 font-medium shrink-0"><T>Replying as:</T></span>
                         <input
                           type="text"
                           value={agentNameInput}
                           onChange={(e) => setAgentNameInput(e.target.value)}
                           placeholder="Agent Name"
-                          className="w-28 sm:w-32 text-xs border border-slate-200 dark:border-slate-700 rounded-lg px-2.5 py-2 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-200 outline-none focus:ring-1 focus:ring-purple-500 font-medium"
+                          className="w-28 sm:w-36 text-xs border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-200 outline-none focus:ring-1 focus:ring-purple-500 font-semibold"
                           title="Your display name to the customer"
                         />
                       </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setAgentReplyText('[ACTION:BOOKING_FORM] Please select your service, date, and preferred time slot using our appointment booking form below:');
+                        }}
+                        className="flex items-center gap-1.5 px-2.5 py-1 bg-blue-50 dark:bg-blue-950/50 hover:bg-blue-100 dark:hover:bg-blue-900 border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300 rounded-lg text-xs font-semibold transition cursor-pointer shrink-0"
+                        title="Insert appointment booking card into chat for customer"
+                      >
+                        <Calendar className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
+                        <span><T>+ Booking Form</T></span>
+                      </button>
                     </div>
 
-                    <div className="flex-1 flex items-center gap-2 min-w-0">
+                    {/* Bottom main row: Input + Send */}
+                    <div className="flex items-center gap-2 min-w-0">
                       <input
                         type="text"
                         value={agentReplyText}
@@ -1379,28 +1460,16 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
                             ? "Type reply to visitor (AI paused)..."
                             : "Type reply to take over chat..."
                         }
-                        className="flex-1 min-w-0 text-xs border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 outline-none focus:ring-1 focus:ring-purple-500"
+                        className="flex-1 min-w-0 text-xs sm:text-sm border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 outline-none focus:ring-2 focus:ring-purple-500 shadow-2xs"
                       />
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setAgentReplyText('[ACTION:BOOKING_FORM] Please select your service, date, and preferred time slot using our appointment booking form below:');
-                        }}
-                        className="flex items-center gap-1.5 px-2.5 sm:px-3 py-2 bg-blue-50 dark:bg-blue-950/50 hover:bg-blue-100 dark:hover:bg-blue-900 border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300 rounded-lg text-xs font-semibold transition cursor-pointer shrink-0"
-                        title="Insert appointment booking card into chat for customer"
-                      >
-                        <Calendar className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
-                        <span className="hidden md:inline"><T>Booking Form</T></span>
-                        <span className="md:hidden"><T>Booking</T></span>
-                      </button>
                       <button
                         type="button"
                         onClick={handleSendAgentMessage}
                         disabled={isSendingAgentMessage || !agentReplyText.trim()}
-                        className="flex items-center gap-1.5 px-3 sm:px-3.5 py-2 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white rounded-lg text-xs font-semibold transition shadow-xs cursor-pointer shrink-0"
+                        className="flex items-center gap-1.5 px-3.5 sm:px-4 py-2.5 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white rounded-xl text-xs font-semibold transition shadow-xs cursor-pointer shrink-0"
                       >
                         <Send className="h-3.5 w-3.5" />
-                        <span>{isSendingAgentMessage ? <T>Sending...</T> : <T>Send</T>}</span>
+                        <span className="hidden sm:inline">{isSendingAgentMessage ? <T>Sending...</T> : <T>Send</T>}</span>
                       </button>
                     </div>
                   </div>
@@ -1413,7 +1482,8 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
             )}
           </div>
         </div>
-      )}
-    </div>
-  );
+      </div>
+    )}
+  </div>
+);
 };

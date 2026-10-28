@@ -1,3 +1,5 @@
+import { ReferralPartner, ReferralClick, ReferredCustomer, ReferralPayout, ReferralStats } from '@/types/referral';
+export * from '@/types/referral';
 import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
@@ -564,6 +566,10 @@ interface DatabaseState {
   pushTokens?: DevicePushTokenRecord[];
   mcpTokens?: McpTokenRecord[];
   mcpAuditLogs?: McpAuditLogRecord[];
+  referralPartners?: ReferralPartner[];
+  referralClicks?: ReferralClick[];
+  referredCustomers?: ReferredCustomer[];
+  referralPayouts?: ReferralPayout[];
 }
 
 const DATA_DIR = resolveDataDir();
@@ -5319,5 +5325,271 @@ export class Database {
     const filtered = workspaceId === '*' ? all : all.filter((l) => l.workspaceId === workspaceId);
     return filtered.slice(0, Math.max(1, Math.min(limit, 500)));
   }
-}
 
+  // ==========================================
+  // Referral & Affiliate Partner Program
+  // ==========================================
+  static async getReferralPartners(): Promise<ReferralPartner[]> {
+    const state = await ensureInitialized();
+    return state.referralPartners || [];
+  }
+
+  static async getReferralPartnerById(id: string): Promise<ReferralPartner | null> {
+    const state = await ensureInitialized();
+    return (state.referralPartners || []).find((p) => p.id === id) || null;
+  }
+
+  static async getReferralPartnerByCode(code: string): Promise<ReferralPartner | null> {
+    const state = await ensureInitialized();
+    const clean = code.toLowerCase().trim();
+    return (state.referralPartners || []).find((p) => p.referralCode.toLowerCase() === clean) || null;
+  }
+
+  static async getReferralPartnerByEmail(email: string): Promise<ReferralPartner | null> {
+    const state = await ensureInitialized();
+    const clean = email.toLowerCase().trim();
+    return (state.referralPartners || []).find((p) => p.email.toLowerCase() === clean) || null;
+  }
+
+  static async createReferralPartner(data: Omit<ReferralPartner, 'id' | 'createdAt' | 'updatedAt' | 'clicksCount'>): Promise<ReferralPartner> {
+    const state = await ensureInitialized();
+    if (!state.referralPartners) state.referralPartners = [];
+
+    const id = 'ref_' + crypto.randomBytes(8).toString('hex');
+    const partner: ReferralPartner = {
+      id,
+      clicksCount: 0,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      ...data,
+      referralCode: data.referralCode.toLowerCase().trim(),
+      email: data.email.toLowerCase().trim(),
+      commissionPercent: data.commissionPercent ?? 10,
+      status: data.status || 'active',
+    };
+
+    state.referralPartners.push(partner);
+    await saveState(state);
+    return partner;
+  }
+
+  static async updateReferralPartner(id: string, updates: Partial<ReferralPartner>): Promise<ReferralPartner | null> {
+    const state = await ensureInitialized();
+    if (!state.referralPartners) state.referralPartners = [];
+    const idx = state.referralPartners.findIndex((p) => p.id === id);
+    if (idx === -1) return null;
+
+    const current = state.referralPartners[idx];
+    const updated: ReferralPartner = {
+      ...current,
+      ...updates,
+      updatedAt: new Date().toISOString(),
+    };
+
+    state.referralPartners[idx] = updated;
+    await saveState(state);
+    return updated;
+  }
+
+  static async recordReferralClick(code: string, meta: { ip?: string; referrer?: string; userAgent?: string; landingPath?: string }): Promise<boolean> {
+    const state = await ensureInitialized();
+    if (!state.referralClicks) state.referralClicks = [];
+    const partner = (state.referralPartners || []).find((p) => p.referralCode.toLowerCase() === code.toLowerCase().trim());
+    if (!partner) return false;
+
+    partner.clicksCount = (partner.clicksCount || 0) + 1;
+    const click: ReferralClick = {
+      id: 'click_' + crypto.randomBytes(8).toString('hex'),
+      partnerId: partner.id,
+      referralCode: partner.referralCode,
+      referrer: meta.referrer,
+      landingPath: meta.landingPath,
+      userAgent: meta.userAgent,
+      timestamp: new Date().toISOString(),
+    };
+
+    state.referralClicks.unshift(click);
+    if (state.referralClicks.length > 5000) {
+      state.referralClicks = state.referralClicks.slice(0, 5000);
+    }
+
+    scheduleDeferredBlobSync(state);
+    return true;
+  }
+
+  static async linkWorkspaceToReferral(workspaceId: string, referralCode: string, ownerEmail: string, ownerName?: string): Promise<boolean> {
+    const state = await ensureInitialized();
+    if (!state.referredCustomers) state.referredCustomers = [];
+
+    const partner = (state.referralPartners || []).find((p) => p.referralCode.toLowerCase() === referralCode.toLowerCase().trim());
+    if (!partner || partner.status !== 'active') return false;
+
+    // Check if customer already recorded
+    const existing = state.referredCustomers.find((rc) => rc.workspaceId === workspaceId || rc.customerEmail.toLowerCase() === ownerEmail.toLowerCase().trim());
+    if (existing) return false;
+
+    const newCust: ReferredCustomer = {
+      id: 'ref_cust_' + crypto.randomBytes(8).toString('hex'),
+      partnerId: partner.id,
+      referralCode: partner.referralCode,
+      workspaceId,
+      customerEmail: ownerEmail.toLowerCase().trim(),
+      customerName: ownerName,
+      planId: 'starter',
+      planName: 'Starter Plan (14-day Free Trial)',
+      planPriceMonthly: 49,
+      billingInterval: 'monthly',
+      status: 'trial',
+      commissionPercent: partner.commissionPercent || 10,
+      monthlyCommission: 4.90,
+      totalEarned: 0,
+      totalPaidOut: 0,
+      joinedAt: new Date().toISOString(),
+    };
+
+    state.referredCustomers.push(newCust);
+
+    // Also update workspace object if present
+    const ws = (state.workspaces || []).find((w) => w.id === workspaceId);
+    if (ws) {
+      ws.referredByCode = partner.referralCode;
+      ws.referralPartnerId = partner.id;
+    }
+
+    await saveState(state);
+    return true;
+  }
+
+  static async getReferralStats(partnerId: string): Promise<ReferralStats | null> {
+    const state = await ensureInitialized();
+    const partner = (state.referralPartners || []).find((p) => p.id === partnerId);
+    if (!partner) return null;
+
+    const customers = (state.referredCustomers || []).filter((c) => c.partnerId === partnerId);
+    const clicks = (state.referralClicks || []).filter((c) => c.partnerId === partnerId);
+    const payouts = (state.referralPayouts || []).filter((p) => p.partnerId === partnerId);
+
+    // Sync active billing statuses and 10% monthly commissions from workspaces
+    for (const cust of customers) {
+      const ws = (state.workspaces || []).find((w) => w.id === cust.workspaceId);
+      if (ws) {
+        // Plan & price
+        const planPrice = ws.planId === 'scale' ? 299 : ws.planId === 'growth' ? 129 : 49;
+        cust.planId = ws.planId || 'starter';
+        cust.planName = ws.planName || (ws.planId === 'scale' ? 'Scale' : ws.planId === 'growth' ? 'Growth' : 'Starter');
+        cust.planPriceMonthly = planPrice;
+        cust.billingInterval = ws.billingInterval || 'monthly';
+
+        // Check trial or active subscription status
+        const isTrialActive = ws.trialEndsAt && new Date(ws.trialEndsAt).getTime() > Date.now();
+        const hasPaidInvoices = (ws.invoices || []).some((inv: any) => inv.status === 'paid');
+        const isBlocked = ws.subscriptionStatus === 'canceled' || ws.subscriptionStatus === 'past_due';
+
+        if (isBlocked) {
+          cust.status = 'cancelled';
+          cust.monthlyCommission = 0;
+        } else if (hasPaidInvoices || !isTrialActive) {
+          cust.status = 'active';
+          // 10% recurring of monthly subscription fee
+          cust.monthlyCommission = Math.round(planPrice * (partner.commissionPercent / 100) * 100) / 100;
+        } else {
+          cust.status = 'trial';
+          cust.monthlyCommission = Math.round(planPrice * (partner.commissionPercent / 100) * 100) / 100;
+        }
+      }
+    }
+
+    const totalClicks = partner.clicksCount || clicks.length;
+    const totalReferredCustomers = customers.length;
+    const activePayingCustomers = customers.filter((c) => c.status === 'active').length;
+    const trialCustomers = customers.filter((c) => c.status === 'trial').length;
+    
+    // Monthly recurring commission is 10% of every active paying client
+    const monthlyRecurringCommission = customers
+      .filter((c) => c.status === 'active')
+      .reduce((sum, c) => sum + (c.monthlyCommission || 0), 0);
+
+    // Accumulated earnings
+    const totalEarningsToDate = customers.reduce((sum, c) => sum + (c.totalEarned || (c.status === 'active' ? c.monthlyCommission : 0)), 0);
+    const totalPaidOut = payouts.filter((p) => p.status === 'paid').reduce((sum, p) => sum + p.amount, 0);
+    const pendingPayout = Math.max(0, Math.round((totalEarningsToDate - totalPaidOut) * 100) / 100);
+
+    // Mask customer email: e.g. j***@gmail.com
+    const maskEmail = (em: string) => {
+      const parts = em.split('@');
+      if (parts.length < 2) return 'client***';
+      const name = parts[0];
+      const maskedName = name.length <= 2 ? name[0] + '***' : name.slice(0, 2) + '***' + name.slice(-1);
+      return `${maskedName}@${parts[1]}`;
+    };
+
+    return {
+      partner: {
+        id: partner.id,
+        referralCode: partner.referralCode,
+        name: partner.name,
+        email: partner.email,
+        phone: partner.phone,
+        platforms: partner.platforms || [],
+        socialLinks: partner.socialLinks || {},
+        payoutMethod: partner.payoutMethod,
+        payoutDetails: partner.payoutDetails,
+        commissionPercent: partner.commissionPercent,
+        status: partner.status,
+        createdAt: partner.createdAt,
+      },
+      totalClicks,
+      totalReferredCustomers,
+      activePayingCustomers,
+      trialCustomers,
+      monthlyRecurringCommission: Math.round(monthlyRecurringCommission * 100) / 100,
+      totalEarningsToDate: Math.round(totalEarningsToDate * 100) / 100,
+      pendingPayout,
+      customers: customers.map((c) => ({
+        id: c.id,
+        customerEmailMasked: maskEmail(c.customerEmail),
+        planName: c.planName,
+        planPriceMonthly: c.planPriceMonthly,
+        billingInterval: c.billingInterval,
+        status: c.status,
+        monthlyCommission: c.monthlyCommission,
+        totalEarned: c.totalEarned,
+        joinedAt: c.joinedAt,
+      })),
+      recentClicks: clicks.slice(0, 50).map((cl) => ({
+        id: cl.id,
+        referrer: cl.referrer,
+        landingPath: cl.landingPath,
+        timestamp: cl.timestamp,
+      })),
+      payouts,
+    };
+  }
+
+  static async requestReferralPayout(partnerId: string, amount: number, method: string, details: string): Promise<{ success: boolean; error?: string; payout?: ReferralPayout }> {
+    const state = await ensureInitialized();
+    if (!state.referralPayouts) state.referralPayouts = [];
+
+    const stats = await this.getReferralStats(partnerId);
+    if (!stats) return { success: false, error: 'Partner not found' };
+
+    if (amount <= 0 || amount > stats.pendingPayout) {
+      return { success: false, error: `Invalid payout amount. Available balance is $${stats.pendingPayout.toFixed(2)}` };
+    }
+
+    const payout: ReferralPayout = {
+      id: 'payout_' + crypto.randomBytes(8).toString('hex'),
+      partnerId,
+      amount: Math.round(amount * 100) / 100,
+      status: 'pending',
+      payoutMethod: method,
+      payoutDetails: details,
+      requestedAt: new Date().toISOString(),
+    };
+
+    state.referralPayouts.unshift(payout);
+    await saveState(state);
+    return { success: true, payout };
+  }
+
+}

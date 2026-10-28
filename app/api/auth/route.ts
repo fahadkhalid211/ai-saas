@@ -215,6 +215,13 @@ async function POSTHandler(req: Request) {
             emailVerified: false,
           });
 
+          // Link referral if customer signed up via a partner link
+          const referralCookie = req.headers.get('cookie')?.split(';').map(c => c.trim()).find(c => c.startsWith('crescelo_ref='));
+          const referralCode = body?.referralCode || (referralCookie ? decodeURIComponent(referralCookie.slice('crescelo_ref='.length)) : undefined);
+          if (referralCode) {
+            await Database.linkWorkspaceToReferral(tenantResult.workspace.id, referralCode, email, businessName);
+          }
+
           // Ask the person to confirm the address. This happens after the response so a slow mail service never slows the sign-up.
           deferAfterResponse(() => sendVerificationEmail({ id: tenantResult.owner.id, email, name: tenantResult.owner.name }, req.url));
 

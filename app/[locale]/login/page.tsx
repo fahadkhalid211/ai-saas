@@ -9,6 +9,7 @@ import { RegistrationEmailNotice } from '@/components/crm/RegistrationEmailNotic
 import { useRecaptcha } from '@/components/security/GoogleRecaptcha';
 import { readSelectedPlan, rememberSelectedPlan, trackEvent } from '@/lib/analytics/track';
 import { BILLING_PLANS } from '@/lib/billing/plans';
+import { captureReferralFromUrl, getStoredReferralCode } from '@/lib/analytics/referral-client';
 
 /** Customer sign-in and registration. The platform-owner sign-in is a separate, unlinked page. */
 export default function LoginPage() {
@@ -37,6 +38,7 @@ export default function LoginPage() {
 
   // The plan and billing period chosen on the pricing page: kept for the whole sign-up and shown before the account is made.
   useEffect(() => {
+    captureReferralFromUrl();
     const params = new URLSearchParams(window.location.search);
     const plan = params.get('plan');
     const billing = params.get('billing') === 'monthly' ? 'monthly' : 'annual';
@@ -99,6 +101,7 @@ export default function LoginPage() {
             password: regPasswordInput.trim(),
             industryTemplateSlug: regTemplateInput,
             recaptchaToken,
+            referralCode: getStoredReferralCode() || undefined,
           }
         : {
             mode: 'staff',
