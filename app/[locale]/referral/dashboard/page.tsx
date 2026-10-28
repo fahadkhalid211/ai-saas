@@ -28,13 +28,15 @@ import {
   Sliders,
   Settings,
   ChevronRight,
+  CheckCircle2,
+  UserCheck,
+  Video,
+  MessageSquare,
+  Building2,
+  X,
 } from 'lucide-react';
 import { ReferralStats, ReferralPayout } from '@/types/referral';
 import { TwitterIcon, LinkedInIcon, YouTubeIcon, InstagramIcon } from '@/components/referral/SocialIcons';
-
-
-
-
 
 export default function ReferralDashboardPage() {
   const router = useRouter();
@@ -123,9 +125,17 @@ export default function ReferralDashboardPage() {
     setPayoutError(null);
     setPayoutSuccess(null);
 
-    const amount = Number(payoutAmount);
-    if (!amount || amount <= 0) {
-      setPayoutError('Please enter a valid payout amount.');
+    const amountNum = parseFloat(payoutAmount);
+    if (isNaN(amountNum) || amountNum <= 0) {
+      setPayoutError('Please enter a valid amount.');
+      return;
+    }
+    if (stats && amountNum > stats.pendingPayout) {
+      setPayoutError(`Amount exceeds available unpaid balance ($${stats.pendingPayout.toFixed(2)}).`);
+      return;
+    }
+    if (!payoutDetails.trim()) {
+      setPayoutError('Please specify payout account details (e.g. PayPal email or IBAN).');
       return;
     }
 
@@ -135,27 +145,29 @@ export default function ReferralDashboardPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          amount,
+          amount: amountNum,
           method: payoutMethod,
-          details: payoutDetails,
+          details: payoutDetails.trim(),
         }),
       });
 
       const data = await res.json();
       if (!res.ok || !data.success) {
-        setPayoutError(data.error || 'Payout request failed.');
+        setPayoutError(data.error || 'Failed to request payout.');
         setPayoutLoading(false);
         return;
       }
 
-      setPayoutSuccess('Payout request submitted successfully!');
+      setPayoutSuccess(`Payout request for $${amountNum.toFixed(2)} submitted successfully!`);
       setPayoutAmount('');
-      setPayoutLoading(false);
-      // Refresh data
-      fetchDashboardData();
-      setTimeout(() => setIsPayoutModalOpen(false), 2000);
+      await fetchDashboardData();
+      setTimeout(() => {
+        setIsPayoutModalOpen(false);
+        setPayoutSuccess(null);
+      }, 2000);
     } catch (err: any) {
-      setPayoutError(err?.message || 'Network error.');
+      setPayoutError(err?.message || 'Failed to submit payout request.');
+    } finally {
       setPayoutLoading(false);
     }
   };
@@ -166,94 +178,85 @@ export default function ReferralDashboardPage() {
     setSettingsSuccess(null);
     try {
       const res = await fetch('/api/referral/dashboard', {
-        method: 'PUT',
+        method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          phone: settingsPhone,
+          phone: settingsPhone.trim(),
           payoutMethod: settingsPayoutMethod,
-          payoutDetails: settingsPayoutDetails,
+          payoutDetails: settingsPayoutDetails.trim(),
           socialLinks: settingsSocials,
         }),
       });
-
       const data = await res.json();
-      if (res.ok && data.success) {
-        setSettingsSuccess('Settings updated successfully.');
-        setStats(data.stats);
+      if (!res.ok || !data.success) {
+        alert(data.error || 'Failed to update settings');
+        setSettingsSaving(false);
+        return;
       }
-    } catch {}
-    setSettingsSaving(false);
+      setSettingsSuccess('Partner profile updated successfully!');
+      await fetchDashboardData();
+      setTimeout(() => setSettingsSuccess(null), 3000);
+    } catch (err: any) {
+      alert(err?.message || 'Failed to save settings');
+    } finally {
+      setSettingsSaving(false);
+    }
   };
 
-  // Base URL calculation for link display
-  const origin = typeof window !== 'undefined' ? window.location.origin : 'https://crescelo.com';
-  const referralLink = stats ? `${origin}/ref/${stats.partner.referralCode}` : '';
-  const queryReferralLink = stats ? `${origin}?ref=${stats.partner.referralCode}` : '';
-
-  if (isLoading) {
+  if (isLoading && !stats) {
     return (
-      <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center">
-        <div className="flex flex-col items-center gap-3">
-          <div className="h-8 w-8 border-2 border-lime-400 border-t-transparent rounded-full animate-spin" />
-          <p className="text-xs text-slate-400 font-medium">Loading partner dashboard…</p>
-        </div>
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col items-center justify-center p-4">
+        <RefreshCw className="h-8 w-8 text-blue-600 animate-spin mb-3" />
+        <p className="text-xs text-slate-500 font-medium">Loading your partner portal...</p>
       </div>
     );
   }
 
-  if (error || !stats) {
+  if (error && !stats) {
     return (
-      <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center p-4">
-        <div className="max-w-md w-full p-6 rounded-2xl border border-slate-800 bg-slate-900 text-center space-y-4">
-          <AlertCircle className="h-10 w-10 text-red-400 mx-auto" />
-          <h2 className="text-base font-bold text-white">Dashboard Error</h2>
-          <p className="text-xs text-slate-400">{error || 'Unable to load partner dashboard.'}</p>
-          <div className="flex gap-3 justify-center">
-            <button
-              onClick={fetchDashboardData}
-              className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-white transition cursor-pointer"
-            >
-              Try Again
-            </button>
-            <Link
-              href="/referral/login"
-              className="px-4 py-2 rounded-xl bg-lime-400 text-slate-950 text-xs font-bold transition cursor-pointer"
-            >
-              Back to Sign In
-            </Link>
-          </div>
-        </div>
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col items-center justify-center p-4 text-center">
+        <AlertCircle className="h-10 w-10 text-rose-500 mb-3" />
+        <h2 className="text-lg font-bold text-slate-900 dark:text-white">Unable to load partner dashboard</h2>
+        <p className="text-xs text-slate-500 max-w-sm mt-1">{error}</p>
+        <button
+          onClick={fetchDashboardData}
+          className="mt-4 px-4 py-2 rounded-xl bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700 transition"
+        >
+          Try Again
+        </button>
       </div>
     );
   }
+
+  if (!stats) return null;
+
+  const referralLink = typeof window !== 'undefined'
+    ? `${window.location.origin}/ref/${stats.partner.referralCode}`
+    : `https://crescelo.com/ref/${stats.partner.referralCode}`;
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col selection:bg-lime-400 selection:text-black">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col justify-between selection:bg-blue-600 selection:text-white">
       {/* Top Navbar */}
-      <header className="border-b border-slate-800/80 bg-slate-950/80 backdrop-blur-md sticky top-0 z-40">
+      <header className="border-b border-slate-200 dark:border-slate-800 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Link href="/" className="flex items-center gap-2.5 group">
-              <CresceloMark size={28} />
-              <span className="font-bold text-base tracking-tight text-white group-hover:text-lime-400 transition">
-                Crescelo
+          <div className="flex items-center gap-3">
+            <Link href="/" className="flex items-center gap-2 group">
+              <CresceloMark size={26} />
+              <span className="font-bold text-base tracking-tight text-slate-900 dark:text-white">
+                Crescelo <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 ml-1">Partner Portal</span>
               </span>
             </Link>
-            <span className="text-slate-600">/</span>
-            <span className="text-xs font-semibold text-lime-400 flex items-center gap-1.5 bg-lime-400/10 px-2.5 py-0.5 rounded-full border border-lime-400/20">
-              <Sparkles className="h-3 w-3" />
-              <span>Partner Dashboard</span>
-            </span>
           </div>
 
           <div className="flex items-center gap-3">
             <div className="hidden sm:flex flex-col text-right">
-              <span className="text-xs font-bold text-white">{stats.partner.name}</span>
-              <span className="text-[10px] text-slate-400">{stats.partner.email}</span>
+              <span className="text-xs font-bold text-slate-900 dark:text-white">{stats.partner.name}</span>
+              <span className="text-[10px] text-slate-500 font-mono">{stats.partner.email}</span>
             </div>
+
             <button
               onClick={handleLogout}
-              className="p-2 rounded-xl border border-slate-800 bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white transition cursor-pointer"
+              className="p-2 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition"
               title="Sign Out"
             >
               <LogOut className="h-4 w-4" />
@@ -262,21 +265,21 @@ export default function ReferralDashboardPage() {
         </div>
       </header>
 
-      {/* Main Container */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8 flex-1 w-full space-y-7">
-        {/* 1. Header & Referral Link Showcase Card */}
-        <div className="p-6 sm:p-7 rounded-2xl border border-slate-800 bg-gradient-to-br from-slate-900 via-slate-900 to-slate-950 shadow-xl space-y-5">
+      {/* Main Content Area */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8 flex-1 w-full space-y-6">
+        {/* Banner: Referral Link & Payout Action */}
+        <div className="p-5 sm:p-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-5">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-xl sm:text-2xl font-extrabold text-white">
-                  Welcome back, {stats.partner.name}!
+                <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
+                  Welcome back, {stats.partner.name}
                 </h1>
-                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-lime-400/10 text-lime-400 border border-lime-400/30">
+                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
                   {stats.partner.commissionPercent}% Recurring Commission
                 </span>
               </div>
-              <p className="text-xs text-slate-400 mt-1">
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
                 Share your unique link across Instagram, YouTube, TikTok, and your channels. You earn 10% on every client each month for as long as they stay subscribed.
               </p>
             </div>
@@ -284,7 +287,7 @@ export default function ReferralDashboardPage() {
             <button
               onClick={() => setIsPayoutModalOpen(true)}
               disabled={stats.pendingPayout <= 0}
-              className="px-4 py-2.5 rounded-xl bg-lime-400 hover:bg-lime-300 active:bg-lime-500 disabled:opacity-40 disabled:cursor-not-allowed text-slate-950 text-xs font-bold transition flex items-center gap-2 self-start sm:self-auto cursor-pointer shadow-lg shadow-lime-400/10"
+              className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:opacity-40 disabled:cursor-not-allowed text-white text-xs font-semibold transition flex items-center gap-2 self-start sm:self-auto cursor-pointer shadow-xs"
             >
               <Wallet className="h-4 w-4" />
               <span>Request Payout (${stats.pendingPayout.toFixed(2)})</span>
@@ -292,19 +295,19 @@ export default function ReferralDashboardPage() {
           </div>
 
           {/* Unique Referral Link Box */}
-          <div className="p-4 rounded-xl border border-slate-800 bg-slate-950/80 space-y-3">
+          <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 space-y-3">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-              <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+              <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
                 Your Unique Referral Link:
               </span>
               <div className="flex items-center gap-2 text-xs">
-                <span className="text-slate-400">Referral Code:</span>
+                <span className="text-slate-500">Referral Code:</span>
                 <button
                   onClick={() => handleCopyCode(stats.partner.referralCode)}
-                  className="font-mono text-xs font-bold text-lime-400 bg-slate-900 px-2 py-0.5 rounded border border-slate-800 hover:border-lime-400/50 transition cursor-pointer flex items-center gap-1.5"
+                  className="font-mono text-xs font-bold text-blue-600 dark:text-blue-400 bg-white dark:bg-slate-900 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-700 hover:border-blue-500 transition cursor-pointer flex items-center gap-1.5"
                 >
                   <span>{stats.partner.referralCode}</span>
-                  {copiedCode ? <Check className="h-3 w-3 text-lime-400" /> : <Copy className="h-3 w-3" />}
+                  {copiedCode ? <Check className="h-3 w-3 text-emerald-500" /> : <Copy className="h-3 w-3 text-slate-400" />}
                 </button>
               </div>
             </div>
@@ -313,12 +316,12 @@ export default function ReferralDashboardPage() {
               <input
                 readOnly
                 value={referralLink}
-                className="flex-1 px-3.5 py-2 rounded-xl border border-slate-800 bg-slate-900 font-mono text-xs text-lime-300 select-all outline-none"
+                className="flex-1 px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 font-mono text-xs text-slate-900 dark:text-white select-all outline-none"
               />
               <button
                 type="button"
                 onClick={() => handleCopyLink(referralLink)}
-                className="px-5 py-2 rounded-xl bg-lime-400 hover:bg-lime-300 text-slate-950 text-xs font-bold transition flex items-center justify-center gap-2 cursor-pointer shrink-0"
+                className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold transition flex items-center justify-center gap-2 cursor-pointer shrink-0 shadow-xs"
               >
                 {copiedLink ? (
                   <>
@@ -334,478 +337,466 @@ export default function ReferralDashboardPage() {
               </button>
             </div>
 
-            {/* Social Sharing Shortcuts */}
-            <div className="pt-2 flex flex-wrap items-center gap-2 text-[11px] text-slate-400">
-              <span className="font-semibold text-slate-300">Quick Share:</span>
+            {/* Quick Share Buttons */}
+            <div className="flex items-center gap-2 pt-1 flex-wrap text-xs font-medium">
+              <span className="text-[11px] text-slate-500 mr-1">Quick Share:</span>
               <a
-                href={`https://twitter.com/intent/tweet?text=${encodeURIComponent('Build 24/7 autonomous AI assistants that book appointments and handle client chats with @Crescelo:')}&url=${encodeURIComponent(referralLink)}`}
+                href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(`Check out Crescelo to automate customer support with 24/7 AI: ${referralLink}`)}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="px-2.5 py-1 rounded-lg border border-slate-800 bg-slate-900 hover:bg-slate-800 text-slate-300 transition flex items-center gap-1.5"
+                className="px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-300 transition flex items-center gap-1.5"
               >
-                <TwitterIcon className="h-3 w-3 text-sky-400" />
+                <TwitterIcon className="h-3 w-3 text-sky-500" />
                 <span>X / Twitter</span>
               </a>
               <a
                 href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(referralLink)}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="px-2.5 py-1 rounded-lg border border-slate-800 bg-slate-900 hover:bg-slate-800 text-slate-300 transition flex items-center gap-1.5"
+                className="px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-300 transition flex items-center gap-1.5"
               >
-                <LinkedInIcon className="h-3 w-3 text-blue-400" />
+                <LinkedInIcon className="h-3 w-3 text-blue-600" />
                 <span>LinkedIn</span>
               </a>
               <a
                 href={`https://wa.me/?text=${encodeURIComponent(`Check out Crescelo for autonomous customer support and booking AI: ${referralLink}`)}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="px-2.5 py-1 rounded-lg border border-slate-800 bg-slate-900 hover:bg-slate-800 text-slate-300 transition flex items-center gap-1.5"
+                className="px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-300 transition flex items-center gap-1.5"
               >
+                <MessageSquare className="h-3 w-3 text-emerald-500" />
                 <span>WhatsApp</span>
               </a>
-              <a
-                href={`mailto:?subject=${encodeURIComponent('Autonomous AI Assistant for your business')}&body=${encodeURIComponent(`Hey,\n\nI recommend checking out Crescelo for automated 24/7 customer support and appointment booking:\n${referralLink}\n\nYou get a 14-day free trial.`)}`}
-                className="px-2.5 py-1 rounded-lg border border-slate-800 bg-slate-900 hover:bg-slate-800 text-slate-300 transition flex items-center gap-1.5"
-              >
-                <Mail className="h-3 w-3 text-slate-400" />
-                <span>Email</span>
-              </a>
             </div>
           </div>
         </div>
 
-        {/* 2. Key Metrics Overview (KPIs) */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          {/* Monthly Recurring Commission (The Star Metric) */}
-          <div className="p-5 rounded-2xl border border-lime-400/30 bg-gradient-to-b from-lime-400/10 to-slate-900 shadow-lg space-y-1">
-            <div className="flex items-center justify-between text-xs text-lime-400 font-bold uppercase tracking-wider">
-              <span>Monthly Recurring Commission</span>
-              <DollarSign className="h-4 w-4" />
+        {/* KPI Cards Row */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5">
+          <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs">
+            <div className="flex items-center justify-between text-slate-500">
+              <span className="text-xs font-medium">Lifetime Earnings</span>
+              <div className="h-7 w-7 rounded-lg bg-blue-50 dark:bg-blue-950/60 text-blue-600 flex items-center justify-center">
+                <DollarSign className="h-4 w-4" />
+              </div>
             </div>
-            <div className="text-2xl sm:text-3xl font-extrabold text-white">
-              ${stats.monthlyRecurringCommission.toFixed(2)}
-              <span className="text-xs font-semibold text-lime-400 ml-1">/mo</span>
+            <div className="mt-2 text-2xl font-bold text-slate-900 dark:text-white font-mono">
+              ${stats.totalEarningsToDate.toFixed(2)}
             </div>
-            <p className="text-[11px] text-slate-400 pt-1">
-              Recurring 10% earned every month from active clients
-            </p>
+            <div className="mt-1 text-[11px] text-slate-500">
+              Paid out + pending balance
+            </div>
           </div>
 
-          {/* Active Paying Customers */}
-          <div className="p-5 rounded-2xl border border-slate-800 bg-slate-900/80 shadow-xs space-y-1">
-            <div className="flex items-center justify-between text-xs text-slate-400 font-bold uppercase tracking-wider">
-              <span>Active Paying Clients</span>
-              <Users className="h-4 w-4 text-emerald-400" />
+          <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs">
+            <div className="flex items-center justify-between text-slate-500">
+              <span className="text-xs font-medium">Recurring Monthly (10%)</span>
+              <div className="h-7 w-7 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 flex items-center justify-center">
+                <TrendingUp className="h-4 w-4" />
+              </div>
             </div>
-            <div className="text-2xl sm:text-3xl font-extrabold text-white">
+            <div className="mt-2 text-2xl font-bold text-emerald-600 dark:text-emerald-400 font-mono">
+              ${stats.monthlyRecurringCommission.toFixed(2)}<span className="text-xs font-normal text-slate-400">/mo</span>
+            </div>
+            <div className="mt-1 text-[11px] text-emerald-600 font-medium">
+              Recurs every billing cycle
+            </div>
+          </div>
+
+          <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs">
+            <div className="flex items-center justify-between text-slate-500">
+              <span className="text-xs font-medium">Active Paying Clients</span>
+              <div className="h-7 w-7 rounded-lg bg-purple-50 dark:bg-purple-950/60 text-purple-600 flex items-center justify-center">
+                <UserCheck className="h-4 w-4" />
+              </div>
+            </div>
+            <div className="mt-2 text-2xl font-bold text-slate-900 dark:text-white font-mono">
               {stats.activePayingCustomers}
-              <span className="text-xs font-semibold text-slate-500 ml-2">
-                ({stats.trialCustomers} in 14d trial)
-              </span>
             </div>
-            <p className="text-[11px] text-slate-400 pt-1">
-              Clients currently paying monthly or annual subscriptions
-            </p>
+            <div className="mt-1 text-[11px] text-slate-500">
+              {stats.trialCustomers} currently in 14d trial
+            </div>
           </div>
 
-          {/* Total Link Clicks */}
-          <div className="p-5 rounded-2xl border border-slate-800 bg-slate-900/80 shadow-xs space-y-1">
-            <div className="flex items-center justify-between text-xs text-slate-400 font-bold uppercase tracking-wider">
-              <span>Total Link Clicks</span>
-              <MousePointerClick className="h-4 w-4 text-cyan-400" />
+          <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs">
+            <div className="flex items-center justify-between text-slate-500">
+              <span className="text-xs font-medium">Link Clicks</span>
+              <div className="h-7 w-7 rounded-lg bg-amber-50 dark:bg-amber-950/60 text-amber-600 flex items-center justify-center">
+                <MousePointerClick className="h-4 w-4" />
+              </div>
             </div>
-            <div className="text-2xl sm:text-3xl font-extrabold text-white">
+            <div className="mt-2 text-2xl font-bold text-slate-900 dark:text-white font-mono">
               {stats.totalClicks}
             </div>
-            <p className="text-[11px] text-slate-400 pt-1">
-              Visitors who landed on your referral link
-            </p>
+            <div className="mt-1 text-[11px] text-slate-500">
+              {stats.totalClicks > 0
+                ? `${((stats.totalReferredCustomers / stats.totalClicks) * 100).toFixed(1)}% conversion rate`
+                : 'No clicks yet'}
+            </div>
           </div>
 
-          {/* Total Earned / Available Payout */}
-          <div className="p-5 rounded-2xl border border-slate-800 bg-slate-900/80 shadow-xs space-y-1">
-            <div className="flex items-center justify-between text-xs text-slate-400 font-bold uppercase tracking-wider">
-              <span>Available for Payout</span>
-              <Wallet className="h-4 w-4 text-purple-400" />
+          <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs">
+            <div className="flex items-center justify-between text-slate-500">
+              <span className="text-xs font-medium">Available Payout</span>
+              <div className="h-7 w-7 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 flex items-center justify-center">
+                <Wallet className="h-4 w-4" />
+              </div>
             </div>
-            <div className="text-2xl sm:text-3xl font-extrabold text-white">
+            <div className="mt-2 text-2xl font-bold text-indigo-600 dark:text-indigo-400 font-mono">
               ${stats.pendingPayout.toFixed(2)}
             </div>
-            <p className="text-[11px] text-slate-400 pt-1">
-              All-time earned: ${stats.totalEarningsToDate.toFixed(2)}
-            </p>
+            <div className="mt-1 text-[11px] text-slate-500">
+              Ready for withdrawal
+            </div>
           </div>
         </div>
 
-        {/* 3. Navigation Tabs */}
-        <div className="flex items-center gap-2 border-b border-slate-800 pb-2 text-xs font-semibold overflow-x-auto">
+        {/* Tab Navigation */}
+        <div className="flex items-center gap-1.5 p-1 bg-slate-100 dark:bg-slate-850 rounded-xl w-fit flex-wrap">
           <button
             onClick={() => setActiveTab('overview')}
-            className={`px-4 py-2 rounded-xl transition cursor-pointer flex items-center gap-2 ${
+            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer flex items-center gap-1.5 ${
               activeTab === 'overview'
-                ? 'bg-lime-400 text-slate-950 font-bold'
-                : 'text-slate-400 hover:text-white hover:bg-slate-900'
+                ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
-            <TrendingUp className="h-4 w-4" />
-            <span>Overview &amp; Clients ({stats.customers.length})</span>
+            <TrendingUp className="h-3.5 w-3.5" />
+            <span>Overview &amp; Roster</span>
           </button>
-
+          <button
+            onClick={() => setActiveTab('customers')}
+            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer flex items-center gap-1.5 ${
+              activeTab === 'customers'
+                ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+            }`}
+          >
+            <Users className="h-3.5 w-3.5" />
+            <span>Referred Clients</span>
+            <span className="text-[10px] px-1.5 py-0.2 rounded-full font-mono bg-slate-200 dark:bg-slate-700">
+              {stats.customers.length}
+            </span>
+          </button>
           <button
             onClick={() => setActiveTab('clicks')}
-            className={`px-4 py-2 rounded-xl transition cursor-pointer flex items-center gap-2 ${
+            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer flex items-center gap-1.5 ${
               activeTab === 'clicks'
-                ? 'bg-lime-400 text-slate-950 font-bold'
-                : 'text-slate-400 hover:text-white hover:bg-slate-900'
+                ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
-            <MousePointerClick className="h-4 w-4" />
-            <span>Click Traffic ({stats.totalClicks})</span>
+            <MousePointerClick className="h-3.5 w-3.5" />
+            <span>Recent Clicks</span>
           </button>
-
           <button
             onClick={() => setActiveTab('payouts')}
-            className={`px-4 py-2 rounded-xl transition cursor-pointer flex items-center gap-2 ${
+            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer flex items-center gap-1.5 ${
               activeTab === 'payouts'
-                ? 'bg-lime-400 text-slate-950 font-bold'
-                : 'text-slate-400 hover:text-white hover:bg-slate-900'
+                ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
-            <Wallet className="h-4 w-4" />
-            <span>Payout History ({stats.payouts.length})</span>
+            <Wallet className="h-3.5 w-3.5" />
+            <span>Payouts &amp; Withdrawals</span>
           </button>
-
           <button
             onClick={() => setActiveTab('settings')}
-            className={`px-4 py-2 rounded-xl transition cursor-pointer flex items-center gap-2 ${
+            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer flex items-center gap-1.5 ${
               activeTab === 'settings'
-                ? 'bg-lime-400 text-slate-950 font-bold'
-                : 'text-slate-400 hover:text-white hover:bg-slate-900'
+                ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
-            <Settings className="h-4 w-4" />
-            <span>Partner Settings</span>
+            <Settings className="h-3.5 w-3.5" />
+            <span>Profile &amp; Channels</span>
           </button>
         </div>
 
-        {/* 4. Tab Content */}
-
-        {/* TAB A: OVERVIEW & REFERRED CLIENTS */}
+        {/* TAB 1: OVERVIEW & CLIENT ROSTER */}
         {activeTab === 'overview' && (
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/80 shadow-xs overflow-hidden space-y-4 p-5 sm:p-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-4">
-              <div>
-                <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                  <Users className="h-4 w-4 text-lime-400" />
-                  <span>Referred Clients Breakdown</span>
-                </h3>
-                <p className="text-xs text-slate-400 mt-0.5">
-                  Every active client pays you 10% monthly for as long as they stay subscribed.
-                </p>
+          <div className="space-y-6">
+            <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden shadow-xs">
+              <div className="p-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30 flex items-center justify-between">
+                <div>
+                  <h3 className="text-sm font-bold text-slate-900 dark:text-white">Active Referred Client Roster</h3>
+                  <p className="text-xs text-slate-500">
+                    You receive 10% each month for every active client. Emails are partially masked for customer privacy.
+                  </p>
+                </div>
               </div>
 
-              <div className="text-xs text-slate-400">
-                Total Referred: <span className="text-white font-bold">{stats.customers.length}</span>
-              </div>
-            </div>
-
-            {stats.customers.length === 0 ? (
-              <div className="py-12 text-center space-y-3">
-                <Users className="h-10 w-10 text-slate-700 mx-auto" />
-                <h4 className="text-sm font-bold text-slate-300">No referred clients yet</h4>
-                <p className="text-xs text-slate-500 max-w-sm mx-auto">
-                  Share your referral link on Instagram, YouTube, TikTok, or client consultations. As soon as someone signs up, they appear here!
-                </p>
-                <button
-                  onClick={() => handleCopyLink(referralLink)}
-                  className="px-4 py-2 rounded-xl bg-lime-400 text-slate-950 text-xs font-bold transition hover:bg-lime-300 cursor-pointer"
-                >
-                  Copy Referral Link
-                </button>
-              </div>
-            ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs">
-                  <thead>
-                    <tr className="border-b border-slate-800 text-slate-400 font-semibold text-[11px] uppercase tracking-wider">
-                      <th className="py-3 px-3">Referred Client</th>
-                      <th className="py-3 px-3">Subscription Plan</th>
-                      <th className="py-3 px-3">Status</th>
-                      <th className="py-3 px-3">Your Commission (10%)</th>
-                      <th className="py-3 px-3">Customer Since</th>
+                  <thead className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800 text-slate-500 font-semibold">
+                    <tr>
+                      <th className="py-3 px-4">Client Email</th>
+                      <th className="py-3 px-4">Subscription Plan</th>
+                      <th className="py-3 px-4 text-center">Status</th>
+                      <th className="py-3 px-4 text-right">Client Paid/Mo</th>
+                      <th className="py-3 px-4 text-right">Your 10% Commission</th>
+                      <th className="py-3 px-4 text-right">Joined Date</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-800/60 font-mono text-slate-300">
-                    {stats.customers.map((c) => (
-                      <tr key={c.id} className="hover:bg-slate-800/30 transition">
-                        <td className="py-3 px-3 font-semibold text-white">
-                          {c.customerEmailMasked}
-                        </td>
-                        <td className="py-3 px-3 text-slate-300">
-                          {c.planName} (${c.planPriceMonthly}/mo)
-                        </td>
-                        <td className="py-3 px-3">
-                          {c.status === 'active' && (
-                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
-                              Active Paying
-                            </span>
-                          )}
-                          {c.status === 'trial' && (
-                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-500/10 text-blue-400 border border-blue-500/30">
-                              14-Day Free Trial
-                            </span>
-                          )}
-                          {c.status === 'cancelled' && (
-                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-500/10 text-red-400 border border-red-500/30">
-                              Cancelled
-                            </span>
-                          )}
-                        </td>
-                        <td className="py-3 px-3 font-bold text-lime-400">
-                          +${c.monthlyCommission.toFixed(2)}/mo
-                        </td>
-                        <td className="py-3 px-3 text-slate-400 text-[11px]">
-                          {new Date(c.joinedAt).toLocaleDateString()}
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                    {stats.customers.length === 0 ? (
+                      <tr>
+                        <td colSpan={6} className="py-12 text-center text-slate-400">
+                          <Users className="h-8 w-8 mx-auto mb-2 opacity-40" />
+                          <p>No referred clients yet.</p>
+                          <p className="text-[11px] text-slate-500 mt-1">
+                            Share your referral link on Instagram, YouTube, TikTok, or client consultations to start earning.
+                          </p>
                         </td>
                       </tr>
-                    ))}
+                    ) : (
+                      stats.customers.map((cust) => (
+                        <tr key={cust.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition">
+                          <td className="py-3.5 px-4 font-mono font-semibold text-slate-900 dark:text-white">
+                            {cust.customerEmailMasked}
+                          </td>
+                          <td className="py-3.5 px-4">
+                            <span className="font-semibold capitalize text-slate-800 dark:text-slate-200">
+                              {cust.planName}
+                            </span>
+                            <span className="text-[10px] text-slate-400 block capitalize">
+                              {cust.billingInterval} billing
+                            </span>
+                          </td>
+                          <td className="py-3.5 px-4 text-center">
+                            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold capitalize ${
+                              cust.status === 'active'
+                                ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
+                                : cust.status === 'trial'
+                                ? 'bg-blue-100 text-blue-800 dark:bg-blue-950/60 dark:text-blue-300'
+                                : 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300'
+                            }`}>
+                              {cust.status}
+                            </span>
+                          </td>
+                          <td className="py-3.5 px-4 text-right font-mono text-slate-700 dark:text-slate-300">
+                            ${cust.planPriceMonthly}/mo
+                          </td>
+                          <td className="py-3.5 px-4 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400">
+                            ${cust.monthlyCommission.toFixed(2)}/mo
+                          </td>
+                          <td className="py-3.5 px-4 text-right text-slate-500 font-mono text-[11px]">
+                            {new Date(cust.joinedAt).toLocaleDateString()}
+                          </td>
+                        </tr>
+                      ))
+                    )}
                   </tbody>
                 </table>
               </div>
-            )}
+            </div>
           </div>
         )}
 
-        {/* TAB B: CLICK TRAFFIC */}
-        {activeTab === 'clicks' && (
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/80 shadow-xs p-5 sm:p-6 space-y-4">
-            <div className="border-b border-slate-800 pb-3 flex items-center justify-between">
-              <div>
-                <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                  <MousePointerClick className="h-4 w-4 text-cyan-400" />
-                  <span>Recent Referral Clicks</span>
-                </h3>
-                <p className="text-xs text-slate-400 mt-0.5">
-                  Live traffic logs of visitors who clicked your link.
-                </p>
-              </div>
-              <span className="text-xs font-bold text-white">
-                Total: {stats.totalClicks} clicks
-              </span>
-            </div>
-
-            {stats.recentClicks.length === 0 ? (
-              <p className="py-8 text-center text-xs text-slate-500">
-                No clicks recorded yet. Share your referral link to start tracking traffic!
+        {/* TAB 2: ALL CUSTOMERS */}
+        {activeTab === 'customers' && (
+          <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden shadow-xs">
+            <div className="p-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30">
+              <h3 className="text-sm font-bold text-slate-900 dark:text-white">Attributed Client Subscriptions</h3>
+              <p className="text-xs text-slate-500">
+                Full history of all workspaces linked to your referral code.
               </p>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs">
-                  <thead>
-                    <tr className="border-b border-slate-800 text-slate-400 font-semibold text-[11px] uppercase tracking-wider">
-                      <th className="py-2.5 px-3">Timestamp</th>
-                      <th className="py-2.5 px-3">Referrer / Source</th>
-                      <th className="py-2.5 px-3">Landing Path</th>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800 text-slate-500 font-semibold">
+                  <tr>
+                    <th className="py-3 px-4">Client Email</th>
+                    <th className="py-3 px-4">Plan Name</th>
+                    <th className="py-3 px-4 text-center">Status</th>
+                    <th className="py-3 px-4 text-right">Plan Price</th>
+                    <th className="py-3 px-4 text-right">Monthly (10%)</th>
+                    <th className="py-3 px-4 text-right">Lifetime Earned</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                  {stats.customers.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} className="py-12 text-center text-slate-400">
+                        No clients registered yet.
+                      </td>
                     </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-800/60 font-mono text-slate-300">
-                    {stats.recentClicks.map((click) => (
-                      <tr key={click.id} className="hover:bg-slate-800/30 transition">
-                        <td className="py-2.5 px-3 text-slate-400 text-[11px]">
-                          {new Date(click.timestamp).toLocaleString()}
+                  ) : (
+                    stats.customers.map((cust) => (
+                      <tr key={cust.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition">
+                        <td className="py-3.5 px-4 font-mono font-semibold">{cust.customerEmailMasked}</td>
+                        <td className="py-3.5 px-4 capitalize">{cust.planName}</td>
+                        <td className="py-3.5 px-4 text-center">
+                          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold capitalize ${
+                            cust.status === 'active'
+                              ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
+                              : 'bg-blue-100 text-blue-800 dark:bg-blue-950/60 dark:text-blue-300'
+                          }`}>
+                            {cust.status}
+                          </span>
                         </td>
-                        <td className="py-2.5 px-3 text-slate-300">
-                          {click.referrer || 'Direct / Bio Link / Ad'}
+                        <td className="py-3.5 px-4 text-right font-mono">${cust.planPriceMonthly}/mo</td>
+                        <td className="py-3.5 px-4 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400">
+                          ${cust.monthlyCommission.toFixed(2)}/mo
                         </td>
-                        <td className="py-2.5 px-3 text-cyan-400">
-                          {click.landingPath || '/'}
+                        <td className="py-3.5 px-4 text-right font-mono text-slate-700 dark:text-slate-300">
+                          ${cust.totalEarned.toFixed(2)}
                         </td>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
 
-        {/* TAB C: PAYOUTS */}
+        {/* TAB 3: CLICKS */}
+        {activeTab === 'clicks' && (
+          <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden shadow-xs">
+            <div className="p-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30">
+              <h3 className="text-sm font-bold text-slate-900 dark:text-white">Recent Referral Link Clicks</h3>
+              <p className="text-xs text-slate-500">
+                Track incoming traffic and discover which platforms drive the most visits.
+              </p>
+            </div>
+            <div className="p-8 text-center text-xs text-slate-500">
+              <MousePointerClick className="h-8 w-8 mx-auto mb-2 opacity-40 text-blue-500" />
+              <p className="font-semibold text-slate-700 dark:text-slate-300">Total Tracked Link Clicks: {stats.totalClicks}</p>
+              <p className="text-slate-400 mt-1">
+                Clicks set a 30-day attribution cookie on the visitor&apos;s browser.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* TAB 4: PAYOUTS */}
         {activeTab === 'payouts' && (
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/80 shadow-xs p-5 sm:p-6 space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+          <div className="space-y-4">
+            <div className="p-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-4">
               <div>
-                <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                  <Wallet className="h-4 w-4 text-purple-400" />
-                  <span>Payout History</span>
-                </h3>
-                <p className="text-xs text-slate-400 mt-0.5">
-                  Available to withdraw: <strong className="text-lime-400">${stats.pendingPayout.toFixed(2)}</strong>
-                </p>
+                <span className="text-xs text-slate-500">Available Unpaid Balance</span>
+                <div className="text-2xl font-bold font-mono text-slate-900 dark:text-white">
+                  ${stats.pendingPayout.toFixed(2)}
+                </div>
+                <p className="text-xs text-slate-400 mt-0.5">Minimum payout withdrawal is $50.00.</p>
               </div>
 
               <button
                 onClick={() => setIsPayoutModalOpen(true)}
                 disabled={stats.pendingPayout <= 0}
-                className="px-4 py-2 rounded-xl bg-lime-400 hover:bg-lime-300 disabled:opacity-40 disabled:cursor-not-allowed text-slate-950 text-xs font-bold transition cursor-pointer"
+                className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:opacity-40 text-white font-semibold text-xs transition shadow-xs cursor-pointer"
               >
                 Request Withdrawal
               </button>
             </div>
 
-            {stats.payouts.length === 0 ? (
-              <p className="py-8 text-center text-xs text-slate-500">
-                No past payout requests found.
-              </p>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs font-mono">
-                  <thead>
-                    <tr className="border-b border-slate-800 text-slate-400 font-semibold text-[11px] uppercase tracking-wider">
-                      <th className="py-2.5 px-3">Date Requested</th>
-                      <th className="py-2.5 px-3">Amount</th>
-                      <th className="py-2.5 px-3">Method</th>
-                      <th className="py-2.5 px-3">Destination</th>
-                      <th className="py-2.5 px-3">Status</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-800/60 text-slate-300">
-                    {stats.payouts.map((p) => (
-                      <tr key={p.id}>
-                        <td className="py-2.5 px-3 text-slate-400">
-                          {new Date(p.requestedAt).toLocaleDateString()}
-                        </td>
-                        <td className="py-2.5 px-3 font-bold text-white">
-                          ${p.amount.toFixed(2)}
-                        </td>
-                        <td className="py-2.5 px-3 uppercase text-[11px]">
-                          {p.payoutMethod}
-                        </td>
-                        <td className="py-2.5 px-3 text-slate-400">
-                          {p.payoutDetails}
-                        </td>
-                        <td className="py-2.5 px-3">
-                          <span
-                            className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                              p.status === 'paid'
-                                ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30'
-                                : p.status === 'rejected'
-                                ? 'bg-red-500/10 text-red-400 border border-red-500/30'
-                                : 'bg-amber-500/10 text-amber-400 border border-amber-500/30'
-                            }`}
-                          >
-                            {p.status.toUpperCase()}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+            <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden shadow-xs">
+              <div className="p-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30">
+                <h3 className="text-sm font-bold text-slate-900 dark:text-white">Payout History</h3>
               </div>
-            )}
+              <div className="p-8 text-center text-xs text-slate-400">
+                <Wallet className="h-8 w-8 mx-auto mb-2 opacity-40 text-emerald-500" />
+                <p>No payout requests on file yet.</p>
+              </div>
+            </div>
           </div>
         )}
 
-        {/* TAB D: PARTNER SETTINGS */}
+        {/* TAB 5: SETTINGS & CHANNELS */}
         {activeTab === 'settings' && (
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/80 shadow-xs p-5 sm:p-7 space-y-6 max-w-2xl">
-            <div className="border-b border-slate-800 pb-3">
-              <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                <Settings className="h-4 w-4 text-lime-400" />
-                <span>Partner Account Settings</span>
-              </h3>
-              <p className="text-xs text-slate-400 mt-0.5">
-                Update your contact phone number, payout account, and social media links.
+          <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-xs space-y-6">
+            <div className="border-b border-slate-200 dark:border-slate-800 pb-3">
+              <h3 className="text-base font-bold text-slate-900 dark:text-white">Partner Profile &amp; Channels</h3>
+              <p className="text-xs text-slate-500">
+                Update your contact phone, social channels, and preferred payout destination.
               </p>
             </div>
 
             {settingsSuccess && (
-              <div className="p-3 rounded-xl bg-lime-400/10 border border-lime-400/30 text-lime-400 text-xs flex items-center gap-2">
-                <Check className="h-4 w-4" />
+              <div className="p-3.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 text-xs flex items-center gap-2">
+                <Check className="h-4 w-4 shrink-0" />
                 <span>{settingsSuccess}</span>
               </div>
             )}
 
-            <form onSubmit={handleSaveSettings} className="space-y-4 text-xs">
+            <form onSubmit={handleSaveSettings} className="space-y-5 max-w-xl">
               <div>
-                <label className="block font-semibold text-slate-300 mb-1">Phone Number</label>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  Phone Number
+                </label>
                 <input
                   type="tel"
                   value={settingsPhone}
                   onChange={(e) => setSettingsPhone(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-700 bg-slate-950 text-white placeholder-slate-500 focus:outline-none focus:border-lime-400"
+                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white text-xs font-mono outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
 
-              <div>
-                <label className="block font-semibold text-slate-300 mb-1">Preferred Payout Method</label>
-                <select
-                  value={settingsPayoutMethod}
-                  onChange={(e) => setSettingsPayoutMethod(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-700 bg-slate-950 text-white focus:outline-none focus:border-lime-400"
-                >
-                  <option value="paypal">PayPal</option>
-                  <option value="bank_transfer">Direct Bank Transfer / Wire</option>
-                  <option value="wise">Wise (TransferWise)</option>
-                  <option value="crypto">USDT / USDC (Crypto)</option>
-                </select>
-              </div>
+              <div className="space-y-3 pt-2">
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
+                  Social Channels
+                </label>
 
-              <div>
-                <label className="block font-semibold text-slate-300 mb-1">Payout Account Details</label>
-                <input
-                  type="text"
-                  value={settingsPayoutDetails}
-                  onChange={(e) => setSettingsPayoutDetails(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-700 bg-slate-950 text-white placeholder-slate-500 focus:outline-none focus:border-lime-400"
-                />
-              </div>
-
-              <div className="pt-2 border-t border-slate-800 space-y-3">
-                <span className="font-semibold text-slate-300 block">Social Profiles &amp; Channels</span>
                 <div>
-                  <span className="text-[11px] text-slate-400">Instagram Handle / URL</span>
+                  <span className="text-[11px] text-slate-500 dark:text-slate-400">Instagram Handle / URL</span>
                   <input
                     type="text"
                     value={settingsSocials.instagram || ''}
                     onChange={(e) => setSettingsSocials({ ...settingsSocials, instagram: e.target.value })}
-                    className="w-full mt-1 px-3 py-2 rounded-lg border border-slate-800 bg-slate-950 text-white"
+                    className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white text-xs outline-none focus:ring-2 focus:ring-blue-500 mt-1"
                   />
                 </div>
+
                 <div>
-                  <span className="text-[11px] text-slate-400">YouTube Channel URL</span>
+                  <span className="text-[11px] text-slate-500 dark:text-slate-400">YouTube Channel URL</span>
                   <input
                     type="text"
                     value={settingsSocials.youtube || ''}
                     onChange={(e) => setSettingsSocials({ ...settingsSocials, youtube: e.target.value })}
-                    className="w-full mt-1 px-3 py-2 rounded-lg border border-slate-800 bg-slate-950 text-white"
+                    className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white text-xs outline-none focus:ring-2 focus:ring-blue-500 mt-1"
                   />
                 </div>
+
                 <div>
-                  <span className="text-[11px] text-slate-400">TikTok Handle / URL</span>
+                  <span className="text-[11px] text-slate-500 dark:text-slate-400">TikTok Handle</span>
                   <input
                     type="text"
                     value={settingsSocials.tiktok || ''}
                     onChange={(e) => setSettingsSocials({ ...settingsSocials, tiktok: e.target.value })}
-                    className="w-full mt-1 px-3 py-2 rounded-lg border border-slate-800 bg-slate-950 text-white"
+                    className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white text-xs outline-none focus:ring-2 focus:ring-blue-500 mt-1"
                   />
                 </div>
+
                 <div>
-                  <span className="text-[11px] text-slate-400">Website / Blog URL</span>
+                  <span className="text-[11px] text-slate-500 dark:text-slate-400">LinkedIn Profile</span>
                   <input
                     type="text"
-                    value={settingsSocials.website || ''}
-                    onChange={(e) => setSettingsSocials({ ...settingsSocials, website: e.target.value })}
-                    className="w-full mt-1 px-3 py-2 rounded-lg border border-slate-800 bg-slate-950 text-white"
+                    value={settingsSocials.linkedin || ''}
+                    onChange={(e) => setSettingsSocials({ ...settingsSocials, linkedin: e.target.value })}
+                    className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white text-xs outline-none focus:ring-2 focus:ring-blue-500 mt-1"
                   />
                 </div>
+              </div>
+
+              <div className="pt-2">
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  Default Payout Details (PayPal email or Bank IBAN)
+                </label>
+                <input
+                  type="text"
+                  value={settingsPayoutDetails}
+                  onChange={(e) => setSettingsPayoutDetails(e.target.value)}
+                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white text-xs font-mono outline-none focus:ring-2 focus:ring-blue-500"
+                />
               </div>
 
               <button
                 type="submit"
                 disabled={settingsSaving}
-                className="py-2.5 px-5 rounded-xl bg-lime-400 hover:bg-lime-300 text-slate-950 font-bold transition cursor-pointer"
+                className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-semibold text-xs transition shadow-xs cursor-pointer"
               >
-                {settingsSaving ? 'Saving…' : 'Save Changes'}
+                {settingsSaving ? 'Saving...' : 'Save Profile Changes'}
               </button>
             </form>
           </div>
@@ -814,92 +805,94 @@ export default function ReferralDashboardPage() {
 
       {/* Payout Request Modal */}
       {isPayoutModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-xs">
-          <div className="max-w-md w-full p-6 rounded-2xl border border-slate-800 bg-slate-900 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-              <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                <Wallet className="h-4 w-4 text-lime-400" />
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs">
+          <div className="w-full max-w-md rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-xl space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
+              <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <Wallet className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
                 <span>Request Commission Payout</span>
               </h3>
               <button
+                type="button"
                 onClick={() => setIsPayoutModalOpen(false)}
-                className="text-slate-500 hover:text-white text-xs cursor-pointer"
+                className="p-1 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
               >
-                Cancel
+                <X className="h-4 w-4" />
               </button>
             </div>
 
-            {payoutError && (
-              <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs flex items-center gap-2">
-                <AlertCircle className="h-4 w-4 shrink-0" />
-                <span>{payoutError}</span>
-              </div>
-            )}
-
             {payoutSuccess && (
-              <div className="p-3 rounded-xl bg-lime-400/10 border border-lime-400/30 text-lime-400 text-xs flex items-center gap-2">
-                <Check className="h-4 w-4 shrink-0" />
-                <span>{payoutSuccess}</span>
+              <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 text-xs">
+                {payoutSuccess}
               </div>
             )}
 
-            <form onSubmit={handleRequestPayout} className="space-y-3.5 text-xs">
+            {payoutError && (
+              <div className="p-3 rounded-xl bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-300 text-xs">
+                {payoutError}
+              </div>
+            )}
+
+            <form onSubmit={handleRequestPayout} className="space-y-4">
               <div>
-                <label className="block font-semibold text-slate-300 mb-1">
-                  Amount ($) — Max: ${stats.pendingPayout.toFixed(2)}
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  Available Unpaid Balance: <span className="font-mono text-emerald-600 font-bold">${stats.pendingPayout.toFixed(2)}</span>
                 </label>
-                <input
-                  type="number"
-                  step="0.01"
-                  max={stats.pendingPayout}
-                  required
-                  placeholder={`e.g. ${stats.pendingPayout.toFixed(2)}`}
-                  value={payoutAmount}
-                  onChange={(e) => setPayoutAmount(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl border border-slate-700 bg-slate-950 text-white font-mono"
-                />
+                <div className="relative">
+                  <span className="absolute left-3 top-2.5 text-slate-400 font-mono text-xs">$</span>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="1"
+                    max={stats.pendingPayout}
+                    required
+                    value={payoutAmount}
+                    onChange={(e) => setPayoutAmount(e.target.value)}
+                    placeholder={stats.pendingPayout.toFixed(2)}
+                    className="w-full pl-7 pr-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white text-xs font-mono outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
               </div>
 
               <div>
-                <label className="block font-semibold text-slate-300 mb-1">Payout Method</label>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Payout Method</label>
                 <select
                   value={payoutMethod}
                   onChange={(e) => setPayoutMethod(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl border border-slate-700 bg-slate-950 text-white"
+                  className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white text-xs outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
                 >
                   <option value="paypal">PayPal</option>
-                  <option value="bank_transfer">Direct Bank Transfer</option>
+                  <option value="bank_transfer">Bank Transfer (IBAN / ACH)</option>
                   <option value="wise">Wise</option>
-                  <option value="crypto">Crypto (USDT/USDC)</option>
                 </select>
               </div>
 
               <div>
-                <label className="block font-semibold text-slate-300 mb-1">Destination Details</label>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Account / Destination Details</label>
                 <input
                   type="text"
                   required
-                  placeholder="e.g. paypal-email@domain.com or IBAN"
                   value={payoutDetails}
                   onChange={(e) => setPayoutDetails(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl border border-slate-700 bg-slate-950 text-white"
+                  placeholder="e.g. payouts@agency.com"
+                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white text-xs font-mono outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
 
-              <div className="flex gap-2 pt-2">
+              <div className="flex items-center justify-end gap-2 pt-2">
                 <button
                   type="button"
                   onClick={() => setIsPayoutModalOpen(false)}
-                  className="flex-1 py-2 rounded-xl border border-slate-700 bg-slate-800 text-slate-300 hover:bg-slate-700 font-semibold cursor-pointer"
+                  className="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-semibold transition"
                 >
-                  Close
+                  Cancel
                 </button>
                 <button
                   type="submit"
-                  disabled={payoutLoading}
-                  className="flex-1 py-2 rounded-xl bg-lime-400 hover:bg-lime-300 text-slate-950 font-bold transition cursor-pointer disabled:opacity-50"
+                  disabled={payoutLoading || stats.pendingPayout <= 0}
+                  className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white text-xs font-semibold transition shadow-xs cursor-pointer"
                 >
-                  {payoutLoading ? 'Submitting…' : 'Submit Request'}
+                  {payoutLoading ? 'Submitting...' : 'Submit Request'}
                 </button>
               </div>
             </form>
@@ -908,8 +901,8 @@ export default function ReferralDashboardPage() {
       )}
 
       {/* Footer */}
-      <footer className="border-t border-slate-800/80 py-6 text-center text-xs text-slate-500">
-        <p>&copy; {new Date().getFullYear()} Crescelo Partner Program &middot; 10% Lifetime Recurring Commission.</p>
+      <footer className="border-t border-slate-200 dark:border-slate-800 py-6 text-center text-xs text-slate-500 dark:text-slate-400">
+        <p>&copy; {new Date().getFullYear()} Crescelo. 10% Recurring Partner Program.</p>
       </footer>
     </div>
   );

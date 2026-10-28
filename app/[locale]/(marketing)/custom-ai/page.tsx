@@ -5,12 +5,13 @@ import { Header } from '@/components/marketing/Header';
 import { Footer } from '@/components/marketing/Closing';
 import { Reveal, SectionHead } from '@/components/marketing/ui';
 import Link from '@/components/i18n/Link';
+import { Bot, Brain, BarChart3, Mic, Workflow, ShieldCheck, Check } from 'lucide-react';
 
 /* ─── Data ─────────────────────────────────────────────────────────────── */
 
 const SERVICES = [
   {
-    icon: '🤖',
+    icon: Bot,
     tone: 'lav',
     kicker: 'Custom LLM Integration',
     title: 'AI Chatbots & Assistants',
@@ -18,7 +19,7 @@ const SERVICES = [
     tags: ['GPT-4o', 'Claude', 'Gemini', 'Llama'],
   },
   {
-    icon: '🧠',
+    icon: Brain,
     tone: 'lime',
     kicker: 'Intelligent Automation',
     title: 'Agentic Workflows',
@@ -26,7 +27,7 @@ const SERVICES = [
     tags: ['RAG Pipelines', 'Tool Use', 'Multi-agent'],
   },
   {
-    icon: '📊',
+    icon: BarChart3,
     tone: 'mint',
     kicker: 'Data & Insights',
     title: 'AI-Powered Analytics',
@@ -34,7 +35,7 @@ const SERVICES = [
     tags: ['LLM Analytics', 'Vector Search', 'Forecasting'],
   },
   {
-    icon: '🗣️',
+    icon: Mic,
     tone: 'amber',
     kicker: 'Voice & Multimodal',
     title: 'Voice AI & Speech',
@@ -42,7 +43,7 @@ const SERVICES = [
     tags: ['Whisper', 'TTS', 'Real-time streaming'],
   },
   {
-    icon: '🔗',
+    icon: Workflow,
     tone: 'coral',
     kicker: 'System Integration',
     title: 'AI API & Connectors',
@@ -50,7 +51,7 @@ const SERVICES = [
     tags: ['REST APIs', 'Webhooks', 'SDKs'],
   },
   {
-    icon: '🛡️',
+    icon: ShieldCheck,
     tone: 'pink',
     kicker: 'Compliance & Security',
     title: 'Private AI Deployments',
@@ -214,7 +215,7 @@ function ServiceCard({ svc, index }: { svc: typeof SERVICES[0]; index: number })
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
       >
-      <div style={{ fontSize: '2.25rem', lineHeight: 1 }}>{svc.icon}</div>
+      <div style={{ lineHeight: 1 }}><svc.icon className="h-8 w-8 text-blue-600 dark:text-blue-400" /></div>
       <div>
         <p style={{ fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--mk-accent)', marginBottom: '0.35rem' }}>
           {svc.kicker}
@@ -330,9 +331,7 @@ function QuoteForm() {
             marginBottom: '1.25rem',
             boxShadow: '0 0.25rem 0 var(--mk-ink)',
           }}
-        >
-          ✓
-        </div>
+        ><Check className="h-6 w-6" /></div>
         <h3 style={{ fontSize: 'clamp(1.6rem, 3vw, 2.2rem)', marginBottom: '0.625rem' }}>Quote request received!</h3>
         <p style={{ color: 'var(--mk-muted)', maxWidth: '44ch', marginInline: 'auto', fontSize: '0.9688rem' }}>
           We&apos;ll review your project details and get back to you within 12 business hours with a tailored proposal. Check your inbox — a copy is on its way.
@@ -800,7 +799,7 @@ export default function CustomAIPage() {
                           color: 'var(--mk-deep)',
                         }}
                       >
-                        ✓
+                        <Check className="h-3.5 w-3.5" />
                       </span>
                       <span style={{ color: 'var(--mk-deep)', fontWeight: 500 }}>{pt}</span>
                     </li>

@@ -28,6 +28,7 @@ import {
   ArrowRight,
   UserCheck,
   Building,
+  X,
 } from 'lucide-react';
 import { T, useT } from '@/lib/i18n/context';
 import { TwitterIcon, LinkedInIcon, YouTubeIcon, InstagramIcon } from '@/components/referral/SocialIcons';
@@ -855,16 +856,16 @@ export function ReferralsAdminTab() {
               <button
                 type="button"
                 onClick={() => setSelectedPartner(null)}
-                className="p-1.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-400 hover:text-slate-700 transition"
+                className="p-1.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition"
               >
-                ✕
+                <X className="h-4 w-4" />
               </button>
             </div>
 
             {/* Referral Link & Code Box */}
-            <div className="p-3.5 rounded-xl border border-purple-200 dark:border-purple-900/60 bg-purple-50/60 dark:bg-purple-950/20 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div className="p-3.5 rounded-xl border border-blue-200 dark:border-blue-900/60 bg-blue-50/60 dark:bg-blue-950/20 flex flex-col sm:flex-row items-center justify-between gap-3">
               <div>
-                <span className="text-[11px] font-semibold text-purple-700 dark:text-purple-300 uppercase tracking-wide">
+                <span className="text-[11px] font-semibold text-blue-700 dark:text-blue-300 uppercase tracking-wide">
                   <T>Assigned Referral Link</T>
                 </span>
                 <div className="font-mono text-xs font-bold text-slate-900 dark:text-white mt-0.5 select-all">
@@ -874,7 +875,7 @@ export function ReferralsAdminTab() {
               <button
                 type="button"
                 onClick={() => handleCopy(`https://crescelo.com/ref/${selectedPartner.referralCode}`, 'modal-link')}
-                className="px-3 py-1.5 rounded-lg bg-purple-600 hover:bg-purple-700 text-white text-xs font-semibold flex items-center gap-1.5 shadow-xs transition shrink-0"
+                className="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold flex items-center gap-1.5 shadow-xs transition shrink-0"
               >
                 {copiedCode === 'modal-link' ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
                 <span>{copiedCode === 'modal-link' ? <T>Copied Link</T> : <T>Copy Link</T>}</span>
