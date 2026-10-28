@@ -23,7 +23,8 @@ import { faqItems } from '@/lib/blog/blocks';
 import { BlogViewBeacon } from '@/components/marketing/BlogViewBeacon';
 import { blogImageUrl, blogPostingSchema, breadcrumbSchema, faqSchema } from '@/lib/schema';
 import { withSocial } from '@/lib/seo';
-import { Check } from 'lucide-react';
+import { Check, Clock } from 'lucide-react';
+import { GoogleTranslateFallback } from '@/components/i18n/GoogleTranslateFallback';
 
 /**
  * Pages are built at deploy time, refreshed straight away when the owner saves an edit (app/api/master/blog), and rebuilt in the
@@ -39,8 +40,9 @@ export const dynamicParams = true;
  */
 export async function generateStaticParams({ params }: { params: { locale: string } }) {
   const { locale } = params;
-  if (!isLocaleCode(locale) || locale === 'en') return PUBLISHED_INDEX.map((p) => ({ slug: p.slug }));
-  return translatedSlugs(locale).map((slug) => ({ slug }));
+  if (!isLocaleCode(locale)) return PUBLISHED_INDEX.map((p) => ({ slug: p.slug }));
+  // Pre-render all published articles across all supported locales so none 404
+  return PUBLISHED_INDEX.map((p) => ({ slug: p.slug }));
 }
 
 
@@ -139,6 +141,10 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
               )}
             </nav>
 
+            {locale !== 'en' && !found.translated && (
+              <GoogleTranslateFallback targetLocale={locale} />
+            )}
+
             {/* Article Header */}
             <header style={{ marginBottom: '2.5rem' }}>
               <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.6rem', marginBottom: '0.85rem' }}>
@@ -171,7 +177,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
                     gap: '0.25rem',
                   }}
                 >
-                  ⏱️ <T>{post.readMinutes}</T> <T>min read</T>
+                  <Clock className="h-3.5 w-3.5 inline mr-1 text-slate-500" /> <T>{post.readMinutes}</T> <T>min read</T>
                 </span>
               </div>
 
