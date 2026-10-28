@@ -23,6 +23,7 @@ import { faqItems } from '@/lib/blog/blocks';
 import { BlogViewBeacon } from '@/components/marketing/BlogViewBeacon';
 import { blogImageUrl, blogPostingSchema, breadcrumbSchema, faqSchema } from '@/lib/schema';
 import { withSocial } from '@/lib/seo';
+import { Check } from 'lucide-react';
 
 /**
  * Pages are built at deploy time, refreshed straight away when the owner saves an edit (app/api/master/blog), and rebuilt in the
@@ -30,6 +31,7 @@ import { withSocial } from '@/lib/seo';
  * (about 44,000 rebuilds in one billing period) was the largest single use of server CPU.
  */
 export const revalidate = 604800;
+export const dynamicParams = true;
 
 /**
  * The written (published) articles are built at deploy time. A placeholder article, if one is ever added, stays reachable and is built
@@ -91,8 +93,6 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
   const locale = await getLocale();
   const found = await getPostInLocale(slug, locale);
   if (!found) notFound();
-  // A language the article was not translated into is never served: the visitor gets the English article.
-  if (locale !== 'en' && !found.translated) redirect(`/blog/${slug}`);
   const post = found.post;
   const alternates = Object.fromEntries(blogLanguages(post.slug).map((l) => [l, localizeHref(`/blog/${post.slug}`, l)]));
   // Related articles: shown in the reader's language when they exist in it, otherwise in English.
@@ -112,7 +112,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
 
   const toc = post.body.filter((b): b is Extract<(typeof post.body)[number], { type: 'h2' }> => b.type === 'h2');
   const related = relatedFound.map((r) => r.post);
-  const relatedHere = new Set(relatedFound.filter((r) => r.translated || locale === 'en').map((r) => r.post.slug));
+  const relatedHere = new Set(relatedFound.map((r) => r.post.slug));
 
   return (
     <>
@@ -204,7 +204,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
                 </time>
                 <span>·</span>
                 <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', color: '#16a34a', fontWeight: 600 }}>
-                  <T>✓ Fact-Checked & Grounded</T>
+                  <Check className="h-3.5 w-3.5 text-emerald-600 inline" /> <T>Fact-Checked & Grounded</T>
                 </span>
               </div>
             </header>

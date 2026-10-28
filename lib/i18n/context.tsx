@@ -57,13 +57,12 @@ function targetHref(newLocale: SupportedLocale): string | null {
   const { pathname, search, hash } = window.location;
   const { path } = splitLocale(pathname);
   if (!isLocalizablePath(path)) return null;
-  // A page whose translation may not exist (a blog article) lists where each language lives.
+  // A page whose translation may not exist lists where each language lives.
   const declared = document.querySelector('[data-locale-alternates]')?.getAttribute('data-locale-alternates');
   if (declared) {
     try {
       const map = JSON.parse(declared) as Partial<Record<SupportedLocale, string>>;
       if (map[newLocale]) return map[newLocale]! + search + hash;
-      return localizeHref('/blog', newLocale);
     } catch {
       /* fall through to the plain mapping */
     }

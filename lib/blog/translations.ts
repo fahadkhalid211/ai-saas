@@ -32,9 +32,9 @@ export function hasBlogTranslation(locale: SupportedLocale, slug: string): boole
   return locale === 'en' || translatedSlugs(locale).includes(slug);
 }
 
-/** The languages an article exists in, English first. */
-export function blogLanguages(slug: string): SupportedLocale[] {
-  return ['en', ...((['sv', 'fi', 'it', 'es'] as const).filter((l) => hasBlogTranslation(l, slug)))];
+/** The languages an article is available in, English first. All published articles are reachable in all supported locales. */
+export function blogLanguages(_slug?: string): SupportedLocale[] {
+  return ['en', 'sv', 'fi', 'it', 'es'];
 }
 
 export async function loadTranslation(locale: SupportedLocale, slug: string): Promise<BlogTranslation | null> {
@@ -62,5 +62,5 @@ export async function postsForHub<T extends BlogCard>(posts: T[], locale: Suppor
       return t ? { ...p, title: t.title, description: t.description, excerpt: t.excerpt, clusterName: t.clusterName || p.clusterName } : p;
     })
   );
-  return { posts: out, translated: [...slugs] };
+  return { posts: out, translated: posts.map((p) => p.slug) };
 }

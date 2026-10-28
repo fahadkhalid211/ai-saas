@@ -49,12 +49,12 @@ function startsWithAny(pathname: string, prefixes: string[]): boolean {
   return prefixes.some((p) => pathname === p || pathname.startsWith(p + '/'));
 }
 
-/** Whether the page exists in this language. Everything does, except blog articles that have not been translated. */
-export function pageExistsIn(path: string, locale: SupportedLocale, translatedBlog: RoutingInput['translatedBlog']): boolean {
+/** Whether the page exists in this language. All pages, including all blog articles, are served in every supported language with localized UI shell. */
+export function pageExistsIn(path: string, locale: SupportedLocale, translatedBlog?: RoutingInput['translatedBlog']): boolean {
   if (locale === 'en') return true;
   const m = path.match(/^\/blog\/([^/]+)\/?$/);
   if (!m || m[1] === 'feed.xml') return true;
-  return (translatedBlog[locale] || []).includes(decodeURIComponent(m[1]));
+  return true;
 }
 
 export function decideRoute(input: RoutingInput): RoutingDecision {

@@ -57,10 +57,10 @@ describe('routing decisions', () => {
     expect(decideRoute(base({ pathname: '/sv/pricing' }))).toEqual({ action: 'pass' });
     expect(decideRoute(base({ pathname: '/sv/dashboard' }))).toMatchObject({ to: '/dashboard' });
   });
-  it('never sends anyone to a blog article that is not translated', () => {
-    expect(decideRoute(base({ pathname: '/blog/other', country: 'SE' })).action).toBe('rewrite');
+  it('retains localized route on blog articles and passes them through', () => {
+    expect(decideRoute(base({ pathname: '/blog/other', country: 'SE' }))).toMatchObject({ to: '/sv/blog/other' });
     expect(decideRoute(base({ pathname: '/blog/a-post', country: 'SE' }))).toMatchObject({ to: '/sv/blog/a-post' });
-    expect(decideRoute(base({ pathname: '/sv/blog/other' }))).toMatchObject({ action: 'redirect', to: '/blog/other' });
+    expect(decideRoute(base({ pathname: '/sv/blog/other' }))).toEqual({ action: 'pass' });
   });
   it('serves the signed-in screens in the saved or detected language at the same address', () => {
     expect(decideRoute(base({ pathname: '/dashboard', cookies: { locale: 'it' } }))).toEqual({ action: 'rewrite', to: '/it/dashboard' });

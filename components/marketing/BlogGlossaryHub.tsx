@@ -4,6 +4,7 @@ import { T, useT, useI18n } from '@/lib/i18n/context';
 import { DATE_LOCALE } from '@/lib/i18n/format';
 import React, { useState, useMemo } from 'react';
 import Link from '@/components/i18n/Link';
+import { Search, X, Clock } from 'lucide-react';
 import type { BlogCard } from '@/lib/blog/card';
 
 /** What the hub needs of an article. Every field here is sent to the browser for every article, so only what is shown or searched. */
@@ -111,17 +112,7 @@ export function BlogGlossaryHub({ posts, clusters, translated }: BlogGlossaryHub
             <T>Search Knowledge Hub & Glossary</T>
           </label>
           <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-            <span
-              style={{
-                position: 'absolute',
-                left: '1rem',
-                fontSize: '1.1rem',
-                color: 'var(--mk-muted)',
-                pointerEvents: 'none',
-              }}
-            >
-              🔍
-            </span>
+            <span style={{ position: 'absolute', left: '1rem', display: 'inline-flex', alignItems: 'center', color: 'var(--mk-muted)', pointerEvents: 'none' }}><Search className="h-4 w-4" /></span>
             <input
               id="glossary-search"
               type="text"
@@ -161,7 +152,7 @@ export function BlogGlossaryHub({ posts, clusters, translated }: BlogGlossaryHub
                 }}
                 aria-label={__t("Clear search")}
               >
-                ✕
+                <X className="h-4 w-4 inline" />
               </button>
             )}
           </div>
@@ -419,14 +410,13 @@ export function BlogGlossaryHub({ posts, clusters, translated }: BlogGlossaryHub
                         </span>
                       )}
                       <span style={{ color: 'var(--mk-muted)', fontWeight: 600 }}>
-                        ⏱️ <T>{p.readMinutes}</T> <T>MIN READ</T>
+                        <Clock className="h-3.5 w-3.5 inline mr-1 text-slate-500" /> <T>{p.readMinutes}</T> <T>MIN READ</T>
                       </span>
                     </div>
 
                     <h2 style={{ fontSize: '1.35rem', margin: '0.4rem 0 0.5rem', lineHeight: 1.35 }}>
                       <Link
                         href={`/blog/${p.slug}`}
-                        locale={inLanguage && !inLanguage.has(p.slug) ? 'en' : undefined}
                         className="mk-animated-link"
                         style={{
                           color: 'var(--mk-ink, #0f172a)',
@@ -459,7 +449,6 @@ export function BlogGlossaryHub({ posts, clusters, translated }: BlogGlossaryHub
                       </time>
                       <Link
                         href={`/blog/${p.slug}`}
-                        locale={inLanguage && !inLanguage.has(p.slug) ? 'en' : undefined}
                         className="mk-animated-link"
                         style={{
                           fontWeight: 700,
