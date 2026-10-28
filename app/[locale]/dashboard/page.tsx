@@ -54,6 +54,7 @@ const CustomersTab = lazyTab(() => import('@/components/crm/CustomersTab').then(
 const SupportTab = lazyTab(() => import('@/components/crm/SupportTab').then((m) => m.SupportTab));
 const BlogAdminTab = lazyTab(() => import('@/components/crm/BlogAdminTab').then((m) => m.BlogAdminTab));
 const AccessCodesTab = lazyTab(() => import('@/components/crm/AccessCodesTab').then((m) => m.AccessCodesTab));
+const ReferralsAdminTab = lazyTab(() => import('@/components/crm/ReferralsAdminTab').then((m) => m.ReferralsAdminTab));
 const NewAssistantModal = lazyOverlay(() => import('@/components/crm/modals/NewAssistantModal').then((m) => m.NewAssistantModal), (p) => p.isOpen);
 const DiagnosticModal = lazyOverlay(() => import('@/components/crm/modals/DiagnosticModal').then((m) => m.DiagnosticModal), (p) => Boolean(p.failedSource));
 const CorrectionModal = lazyOverlay(() => import('@/components/crm/modals/CorrectionModal').then((m) => m.CorrectionModal), (p) => p.isOpen);
@@ -98,7 +99,7 @@ export default function DashboardPage() {
   const [leavingSupport, setLeavingSupport] = useState(false);
 
   const [activeTab, setActiveTab] = useState<
-    'overview' | 'profile' | 'analytics' | 'billing' | 'landing_page' | 'team' | 'security' | 'audit' | 'customers' | 'system_logs' | 'blog_admin' | 'access_codes' | 'support' | 'knowledge' | 'engine' | 'behavior' | 'widget' | 'channels' | 'playground' | 'leads' | 'appointments' | 'docs' | 'templates' | 'history'
+    'overview' | 'profile' | 'analytics' | 'billing' | 'landing_page' | 'team' | 'security' | 'audit' | 'customers' | 'referrals_admin' | 'system_logs' | 'blog_admin' | 'access_codes' | 'support' | 'knowledge' | 'engine' | 'behavior' | 'widget' | 'channels' | 'playground' | 'leads' | 'appointments' | 'docs' | 'templates' | 'history'
   >('overview');
   const [selectedIntegration, setSelectedIntegration] = useState<IntegrationId>('slack');
 
@@ -563,7 +564,7 @@ export default function DashboardPage() {
   // a link such as /dashboard?tab=support (support e-mails) or ?tab=billing opens that tab directly
   useEffect(() => {
     const tab = new URLSearchParams(window.location.search).get('tab');
-    const valid = ['customers', 'system_logs', 'overview', 'profile', 'analytics', 'billing', 'landing_page', 'team', 'security', 'audit', 'support', 'knowledge', 'engine', 'behavior', 'widget', 'channels', 'playground', 'leads', 'appointments', 'docs', 'templates', 'history'];
+    const valid = ['customers', 'referrals_admin', 'system_logs', 'overview', 'profile', 'analytics', 'billing', 'landing_page', 'team', 'security', 'audit', 'support', 'knowledge', 'engine', 'behavior', 'widget', 'channels', 'playground', 'leads', 'appointments', 'docs', 'templates', 'history'];
     if (tab && valid.includes(tab)) setActiveTab(tab as any);
   }, []);
 
@@ -943,6 +944,7 @@ export default function DashboardPage() {
             {/* TAB: AUDIT TRAIL */}
             {/* TAB: SYSTEM LOGS (platform owner only) */}
             {activeTab === 'customers' && isMasterAdmin && <CustomersTab />}
+            {activeTab === 'referrals_admin' && isMasterAdmin && <ReferralsAdminTab />}
             {activeTab === 'system_logs' && isMasterAdmin && <SystemLogsTab />}
             {activeTab === 'blog_admin' && isMasterAdmin && <BlogAdminTab />}
             {activeTab === 'access_codes' && isMasterAdmin && <AccessCodesTab />}

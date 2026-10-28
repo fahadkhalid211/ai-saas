@@ -74,7 +74,7 @@ export interface ReferralPayout {
   id: string;
   partnerId: string;
   amount: number;
-  status: 'pending' | 'paid' | 'rejected';
+  status: 'pending' | 'approved' | 'paid' | 'rejected';
   payoutMethod: string;
   payoutDetails: string;
   requestedAt: string;

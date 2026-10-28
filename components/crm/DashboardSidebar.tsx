@@ -203,6 +203,7 @@ export function DashboardSidebar({
             icon: Building,
             items: [
               { id: 'customers', label: 'Customers', icon: Users },
+              { id: 'referrals_admin', label: 'Referrals & Affiliates', icon: Share2 },
               { id: 'access_codes', label: 'Access Codes', icon: Building },
               { id: 'blog_admin', label: 'Blog Posts', icon: FileText },
               { id: 'system_logs', label: 'System Logs', icon: ClipboardList },

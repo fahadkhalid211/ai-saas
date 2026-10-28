@@ -5592,4 +5592,33 @@ export class Database {
     return { success: true, payout };
   }
 
+  static async updateReferralPayoutStatus(
+    payoutId: string,
+    status: 'pending' | 'approved' | 'paid' | 'rejected',
+    notes?: string
+  ): Promise<{ success: boolean; payout?: ReferralPayout; error?: string }> {
+    const state = await ensureInitialized();
+    if (!state.referralPayouts) return { success: false, error: 'No payouts found' };
+    const p = state.referralPayouts.find((item) => item.id === payoutId);
+    if (!p) return { success: false, error: 'Payout request not found' };
+    p.status = status;
+    if (status === 'paid' || status === 'approved') {
+      p.processedAt = new Date().toISOString();
+    }
+    if (notes !== undefined) {
+      p.notes = notes;
+    }
+    await saveState(state);
+    return { success: true, payout: p };
+  }
+
+  static async getAllReferralPayouts(): Promise<ReferralPayout[]> {
+    const state = await ensureInitialized();
+    return state.referralPayouts || [];
+  }
+
+  static async getRecentReferralClicks(limit = 100): Promise<ReferralClick[]> {
+    const state = await ensureInitialized();
+    return (state.referralClicks || []).slice(0, limit);
+  }
 }
