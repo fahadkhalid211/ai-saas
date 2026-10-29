@@ -358,7 +358,7 @@ export const FOOTER = {
         { label: 'Roadmap', href: '/roadmap' },
         { label: 'Integrations', href: '/integrations' },
         { label: 'Pricing', href: '/pricing' },
-        { label: 'Affiliate & Referral (10%)', href: '/referral' },
+        { label: 'Referral Program', href: '/referral' },
       ],
     },
     {

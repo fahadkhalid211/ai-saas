@@ -2,7 +2,8 @@ import React from 'react';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
-import { CresceloMark } from '@/components/brand/CresceloMark';
+import { Header } from '@/components/marketing/Header';
+import { Footer } from '@/components/marketing/Closing';
 import {
   Sparkles,
   DollarSign,
@@ -14,8 +15,17 @@ import {
   Users,
   Repeat,
   Zap,
+  Clock,
+  Wallet,
+  Globe,
+  Video,
+  Check,
+  Building2,
 } from 'lucide-react';
 import { verifyPartnerToken } from '@/lib/security/referral-auth';
+import { TwitterIcon, LinkedInIcon, YouTubeIcon, InstagramIcon } from '@/components/referral/SocialIcons';
+
+export const dynamic = 'force-dynamic';
 
 export default async function ReferralIndexPage() {
   const cookieStore = await cookies();
@@ -25,146 +35,284 @@ export default async function ReferralIndexPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col justify-between selection:bg-blue-600 selection:text-white">
-      {/* Top Navbar */}
-      <header className="border-b border-slate-200 dark:border-slate-800 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2.5 group">
-            <CresceloMark size={28} />
-            <span className="font-bold text-lg tracking-tight text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition">
-              Crescelo <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 ml-1">Partners</span>
+    <>
+      <Header />
+      <main id="main" className="pt-2 pb-16">
+        {/* Hero Section */}
+        <section className="mk-hero" style={{ marginTop: '0.75rem' }} aria-labelledby="mk-hero-title">
+          <div className="mk-hero-glow" aria-hidden="true" />
+          <div className="mk-wrap mk-hero-inner">
+            <p className="mk-eyebrow">
+              Official Affiliate &amp; Referral Program
+            </p>
+            <h1 id="mk-hero-title" className="mk-h1" style={{ maxWidth: '24ch' }}>
+              <span className="mk-echo">
+                Earn <span className="mk-echo-em">10% Lifetime Recurring</span> Commission on Every Business Client.
+              </span>
+            </h1>
+            <p className="mk-lead" style={{ maxWidth: '64ch' }}>
+              Recommend Crescelo&apos;s 24/7 autonomous AI assistant to businesses, service clinics, agencies, and online brands. For every client you refer, receive 10% each month for the entire lifetime of their subscription.
+            </p>
+
+            <div className="mk-cta-row flex flex-col sm:flex-row items-center justify-center gap-3.5 mt-8">
+              <Link
+                href="/referral/register"
+                className="mk-btn mk-btn-primary px-8 py-3.5 inline-flex items-center justify-center gap-2 text-sm shadow-[0_3px_0_var(--mk-ink)] hover:translate-y-[-2px] transition cursor-pointer"
+              >
+                <span>Get Your Unique Referral Link</span>
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+              <Link
+                href="/referral/login"
+                className="mk-btn mk-btn-ghost px-7 py-3.5 inline-flex items-center justify-center gap-2 text-sm border-[1.5px] border-white/60 text-white hover:bg-white hover:text-[#08251a] transition cursor-pointer"
+              >
+                <span>Partner Sign In</span>
+              </Link>
+            </div>
+
+            <ul className="mk-trust mt-8">
+              <li>10% Recurring Every Month</li>
+              <li>30-Day Clearance Guarantee</li>
+              <li>PayPal, Wise &amp; Bank Payouts</li>
+              <li>30-Day Attribution Cookie</li>
+              <li>Zero Platform Fees</li>
+            </ul>
+          </div>
+        </section>
+
+        {/* Section: Three Steps to Revenue */}
+        <section className="mk-wrap py-20">
+          <div className="text-center max-w-2xl mx-auto mb-14 space-y-3">
+            <p className="text-xs font-bold uppercase tracking-widest text-[#0f6e58]">
+              HOW IT WORKS
+            </p>
+            <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-[#1a1a1a]">
+              Three steps from link to monthly passive revenue.
+            </h2>
+            <p className="text-sm sm:text-base text-[#55554c] leading-relaxed">
+              No manual contracts or waiting weeks for review. Instant onboarding gives you your custom attribution slug immediately.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Step 1 */}
+            <div className="p-7 rounded-2xl border-[1.5px] border-[#1a1a1a] bg-[#fffdf6] shadow-[0_4px_0_#1a1a1a] space-y-4 hover:translate-y-[-2px] transition">
+              <div className="w-10 h-10 rounded-xl bg-[#abff44] text-[#08251a] border-[1.5px] border-[#1a1a1a] flex items-center justify-center font-bold text-sm shadow-[0_2px_0_#1a1a1a]">
+                01
+              </div>
+              <h3 className="text-lg font-bold text-[#1a1a1a]">Register &amp; Claim Your Slug</h3>
+              <p className="text-xs sm:text-sm text-[#55554c] leading-relaxed">
+                Sign up in 60 seconds with your preferred social channels or agency email. You receive an instant tracking link (<span className="font-mono font-semibold text-[#0f6e58]">crescelo.com/ref/yourname</span>).
+              </p>
+              <div className="pt-2">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-[#e8f5f2] border border-[#0f6e58]/30 text-[11px] font-mono font-semibold text-[#0f6e58]">
+                  30-day tracking cookie
+                </span>
+              </div>
+            </div>
+
+            {/* Step 2 */}
+            <div className="p-7 rounded-2xl border-[1.5px] border-[#1a1a1a] bg-[#fffdf6] shadow-[0_4px_0_#1a1a1a] space-y-4 hover:translate-y-[-2px] transition">
+              <div className="w-10 h-10 rounded-xl bg-[#f0d7ff] text-[#08251a] border-[1.5px] border-[#1a1a1a] flex items-center justify-center font-bold text-sm shadow-[0_2px_0_#1a1a1a]">
+                02
+              </div>
+              <h3 className="text-lg font-bold text-[#1a1a1a]">Promote Across Your Channels</h3>
+              <p className="text-xs sm:text-sm text-[#55554c] leading-relaxed">
+                Share YouTube reviews, Instagram reels, TikTok walkthroughs, client recommendations, or newsletter spotlights. Every click and registration is attributed to your profile.
+              </p>
+              <div className="flex items-center gap-2 pt-2 text-[#55554c]">
+                <YouTubeIcon className="w-4 h-4 text-[#ff0000]" />
+                <InstagramIcon className="w-4 h-4 text-[#e1306c]" />
+                <TwitterIcon className="w-4 h-4" />
+                <LinkedInIcon className="w-4 h-4 text-[#0077b5]" />
+                <Globe className="w-4 h-4 text-[#0f6e58]" />
+              </div>
+            </div>
+
+            {/* Step 3 */}
+            <div className="p-7 rounded-2xl border-[1.5px] border-[#1a1a1a] bg-[#fffdf6] shadow-[0_4px_0_#1a1a1a] space-y-4 hover:translate-y-[-2px] transition">
+              <div className="w-10 h-10 rounded-xl bg-[#abff44] text-[#08251a] border-[1.5px] border-[#1a1a1a] flex items-center justify-center font-bold text-sm shadow-[0_2px_0_#1a1a1a]">
+                03
+              </div>
+              <h3 className="text-lg font-bold text-[#1a1a1a]">Collect 10% Every Single Month</h3>
+              <p className="text-xs sm:text-sm text-[#55554c] leading-relaxed">
+                When a business subscribes to Starter ($49/mo), Growth ($129/mo), or Scale ($299/mo), you earn 10% each month. As long as they stay subscribed, you get paid.
+              </p>
+              <div className="pt-2">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-[#e6f9c8] border border-[#abff44] text-[11px] font-bold text-[#08251a]">
+                  Recurring lifetime payout
+                </span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Section: Calculator / Earning Potential */}
+        <section className="mk-wrap py-12">
+          <div className="rounded-3xl border-[1.5px] border-[#1a1a1a] bg-[#fffdf6] shadow-[0_6px_0_#1a1a1a] p-8 sm:p-12 space-y-8">
+            <div className="text-center max-w-xl mx-auto space-y-2">
+              <span className="text-xs font-bold uppercase tracking-widest text-[#0f6e58]">
+                MONTHLY EARNING POTENTIAL
+              </span>
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-[#1a1a1a]">
+                Compounding Recurring Revenue
+              </h2>
+              <p className="text-xs sm:text-sm text-[#55554c]">
+                Crescelo plans range from $49 to $299 per month. Unlike one-off affiliate deals, each client you refer adds to your predictable monthly cashflow:
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {/* Card 1 */}
+              <div className="p-6 rounded-2xl border-[1.5px] border-[#1a1a1a] bg-[#fffeeb] shadow-[0_3px_0_#1a1a1a] text-center space-y-3">
+                <span className="text-xs font-bold uppercase tracking-wider text-[#55554c]">
+                  10 Active Clients
+                </span>
+                <div className="text-3xl font-extrabold font-mono text-[#1a1a1a]">
+                  $129<span className="text-sm font-normal text-[#55554c]">/mo</span>
+                </div>
+                <div className="text-xs font-semibold text-[#0f6e58] bg-[#e8f5f2] py-1 px-3 rounded-full inline-block border border-[#0f6e58]/20">
+                  $1,548.00 / year recurring
+                </div>
+                <p className="text-[11.5px] text-[#55554c] leading-relaxed">
+                  Based on 10 business clients on our popular Growth plan ($129/mo).
+                </p>
+              </div>
+
+              {/* Card 2 - Featured */}
+              <div className="p-6 rounded-2xl border-[2px] border-[#1a1a1a] bg-[#abff44] shadow-[0_4px_0_#1a1a1a] text-center space-y-3 relative">
+                <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full bg-[#1a1a1a] text-[#abff44] text-[10px] font-bold uppercase tracking-wider">
+                  Popular Milestone
+                </span>
+                <span className="text-xs font-bold uppercase tracking-wider text-[#08251a]">
+                  50 Active Clients
+                </span>
+                <div className="text-3xl font-extrabold font-mono text-[#08251a]">
+                  $645<span className="text-sm font-normal text-[#08251a]/80">/mo</span>
+                </div>
+                <div className="text-xs font-bold text-[#08251a] bg-[#fffdf6] py-1 px-3 rounded-full inline-block border border-[#1a1a1a]">
+                  $7,740.00 / year recurring
+                </div>
+                <p className="text-[11.5px] text-[#08251a]/90 leading-relaxed font-medium">
+                  A predictable, hands-off passive income stream deposited each month.
+                </p>
+              </div>
+
+              {/* Card 3 */}
+              <div className="p-6 rounded-2xl border-[1.5px] border-[#1a1a1a] bg-[#f0d7ff] shadow-[0_3px_0_#1a1a1a] text-center space-y-3">
+                <span className="text-xs font-bold uppercase tracking-wider text-[#1a1a1a]">
+                  200 Active Clients
+                </span>
+                <div className="text-3xl font-extrabold font-mono text-[#1a1a1a]">
+                  $2,580<span className="text-sm font-normal text-[#55554c]">/mo</span>
+                </div>
+                <div className="text-xs font-bold text-[#1a1a1a] bg-[#fffdf6] py-1 px-3 rounded-full inline-block border border-[#1a1a1a]">
+                  $30,960.00 / year recurring
+                </div>
+                <p className="text-[11.5px] text-[#55554c] leading-relaxed">
+                  Full-time creator or digital agency recurring partnership income.
+                </p>
+              </div>
+            </div>
+
+            <div className="text-center pt-2">
+              <Link
+                href="/referral/register"
+                className="mk-btn mk-btn-primary px-8 py-3.5 inline-flex items-center gap-2 text-sm shadow-[0_3px_0_#1a1a1a] hover:translate-y-[-2px] transition cursor-pointer"
+              >
+                <span>Start Earning 10% Monthly</span>
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
+          </div>
+        </section>
+
+        {/* Section: Program Rules & 30-Day Clearance Holding Period */}
+        <section className="mk-wrap py-16">
+          <div className="text-center max-w-2xl mx-auto mb-12 space-y-2">
+            <span className="text-xs font-bold uppercase tracking-widest text-[#0f6e58]">
+              TRANSPARENT PROGRAM TERMS
             </span>
-          </Link>
-
-          <div className="flex items-center gap-3 text-xs">
-            <Link
-              href="/referral/login"
-              className="px-3.5 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-200 transition font-medium"
-            >
-              Partner Sign In
-            </Link>
-            <Link
-              href="/referral/register"
-              className="px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold transition shadow-xs"
-            >
-              Join Program
-            </Link>
-          </div>
-        </div>
-      </header>
-
-      {/* Hero Section */}
-      <main className="max-w-5xl mx-auto px-4 sm:px-6 py-16 flex-1 w-full space-y-16">
-        <div className="text-center max-w-3xl mx-auto space-y-5">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
-            <Sparkles className="h-3.5 w-3.5" />
-            <span>Official Affiliate &amp; Referral Program</span>
-          </div>
-
-          <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight text-slate-900 dark:text-white leading-tight">
-            Earn <span className="text-blue-600 dark:text-blue-400">10% Lifetime Recurring</span> Commission on Every Business Client
-          </h1>
-
-          <p className="text-slate-600 dark:text-slate-300 text-base sm:text-lg leading-relaxed max-w-2xl mx-auto">
-            Recommend Crescelo&apos;s 24/7 autonomous AI assistant to businesses, agencies, and store owners. For every paying client you refer, you earn 10% each month for as long as they stay subscribed.
-          </p>
-
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-3">
-            <Link
-              href="/referral/register"
-              className="w-full sm:w-auto px-7 py-3.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm transition shadow-sm flex items-center justify-center gap-2 cursor-pointer"
-            >
-              <span>Get Your Unique Referral Link</span>
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-
-            <Link
-              href="/referral/login"
-              className="w-full sm:w-auto px-7 py-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 font-semibold text-sm transition flex items-center justify-center gap-2 cursor-pointer"
-            >
-              <span>Partner Sign In</span>
-            </Link>
-          </div>
-        </div>
-
-        {/* How It Works (3 Steps) */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="p-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-3">
-            <div className="h-9 w-9 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 flex items-center justify-center font-bold text-sm border border-blue-200 dark:border-blue-800">
-              1
-            </div>
-            <h3 className="text-base font-bold text-slate-900 dark:text-white">Register &amp; Get Your Link</h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-              Sign up in 60 seconds with your social media profiles and channels. Instant approval gives you your unique tracking link (<code className="text-blue-600 dark:text-blue-400 font-mono">crescelo.com/ref/yourname</code>).
+            <h2 className="text-3xl font-extrabold text-[#1a1a1a]">
+              Built for trust, accuracy, and long-term partnerships.
+            </h2>
+            <p className="text-xs sm:text-sm text-[#55554c]">
+              We protect both our partners and our platform with verifiable attribution and prompt payouts.
             </p>
           </div>
 
-          <div className="p-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-3">
-            <div className="h-9 w-9 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 flex items-center justify-center font-bold text-sm border border-indigo-200 dark:border-indigo-800">
-              2
-            </div>
-            <h3 className="text-base font-bold text-slate-900 dark:text-white">Share on Your Channels</h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-              Post tutorials on YouTube, share reels on Instagram or TikTok, recommend to clients, or include in your newsletter. Our 30-day cookie tracks all clicks.
-            </p>
-          </div>
-
-          <div className="p-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-3">
-            <div className="h-9 w-9 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 flex items-center justify-center font-bold text-sm border border-emerald-200 dark:border-emerald-800">
-              3
-            </div>
-            <h3 className="text-base font-bold text-slate-900 dark:text-white">Get Paid 10% Every Month</h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-              When a business subscribes, you earn 10% of their subscription every month. If they pay for 2 years, you get paid for 2 years.
-            </p>
-          </div>
-        </div>
-
-        {/* Commission Calculator & Value Table */}
-        <div className="p-8 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-6">
-          <div className="text-center max-w-xl mx-auto space-y-1">
-            <h3 className="text-xl font-bold text-slate-900 dark:text-white">How Much Can You Earn?</h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
-              Crescelo plans range from $49 to $299 per month. Here is your monthly recurring revenue potential:
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="p-5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 text-center space-y-2">
-              <span className="text-xs text-slate-500 dark:text-slate-400 font-semibold uppercase tracking-wider">10 Active Clients</span>
-              <div className="text-2xl font-bold text-slate-900 dark:text-white font-mono">$129.00<span className="text-xs text-slate-500 font-normal">/mo</span></div>
-              <p className="text-[11px] text-slate-500 dark:text-slate-400">$1,548.00 recurring yearly passive income</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            <div className="p-6 rounded-2xl border-[1.5px] border-[#1a1a1a] bg-[#fffdf6] shadow-[0_3px_0_#1a1a1a] space-y-2.5">
+              <div className="w-8 h-8 rounded-lg bg-[#ffe7c2] border border-[#8a4a0a]/30 text-[#8a4a0a] flex items-center justify-center">
+                <Clock className="w-4 h-4" />
+              </div>
+              <h3 className="text-sm font-bold text-[#1a1a1a]">30-Day Clearance Guarantee</h3>
+              <p className="text-xs text-[#55554c] leading-relaxed">
+                When a user upgrades after trial, a pending clock displays in your portal and our admin dashboard for 30 days to safeguard against refunds before funds mature into withdrawable balance.
+              </p>
             </div>
 
-            <div className="p-5 rounded-xl border border-blue-200 dark:border-blue-800 bg-blue-50/50 dark:bg-blue-950/30 text-center space-y-2">
-              <span className="text-xs text-blue-700 dark:text-blue-300 font-bold uppercase tracking-wider">50 Active Clients</span>
-              <div className="text-2xl font-bold text-blue-600 dark:text-blue-400 font-mono">$645.00<span className="text-xs text-slate-500 font-normal">/mo</span></div>
-              <p className="text-[11px] text-slate-500 dark:text-slate-400">$7,740.00 recurring yearly passive income</p>
+            <div className="p-6 rounded-2xl border-[1.5px] border-[#1a1a1a] bg-[#fffdf6] shadow-[0_3px_0_#1a1a1a] space-y-2.5">
+              <div className="w-8 h-8 rounded-lg bg-[#e8f5f2] border border-[#0f6e58]/30 text-[#0f6e58] flex items-center justify-center">
+                <Repeat className="w-4 h-4" />
+              </div>
+              <h3 className="text-sm font-bold text-[#1a1a1a]">Recurring Lifetime Payouts</h3>
+              <p className="text-xs text-[#55554c] leading-relaxed">
+                As long as your referred customer keeps their subscription active, you continue to receive 10% every month. No expiration dates on active client relationships.
+              </p>
             </div>
 
-            <div className="p-5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 text-center space-y-2">
-              <span className="text-xs text-slate-500 dark:text-slate-400 font-semibold uppercase tracking-wider">200 Active Clients</span>
-              <div className="text-2xl font-bold text-slate-900 dark:text-white font-mono">$2,580.00<span className="text-xs text-slate-500 font-normal">/mo</span></div>
-              <p className="text-[11px] text-slate-500 dark:text-slate-400">$30,960.00 recurring yearly passive income</p>
+            <div className="p-6 rounded-2xl border-[1.5px] border-[#1a1a1a] bg-[#fffdf6] shadow-[0_3px_0_#1a1a1a] space-y-2.5">
+              <div className="w-8 h-8 rounded-lg bg-[#f0d7ff] border border-[#1a1a1a] text-[#1a1a1a] flex items-center justify-center">
+                <Wallet className="w-4 h-4" />
+              </div>
+              <h3 className="text-sm font-bold text-[#1a1a1a]">Multiple Payout Rails</h3>
+              <p className="text-xs text-[#55554c] leading-relaxed">
+                Withdraw your accumulated earnings via PayPal, Wise, or direct bank transfer. Submit withdrawal requests right from your partner dashboard whenever your balance reaches $50.
+              </p>
+            </div>
+
+            <div className="p-6 rounded-2xl border-[1.5px] border-[#1a1a1a] bg-[#fffdf6] shadow-[0_3px_0_#1a1a1a] space-y-2.5">
+              <div className="w-8 h-8 rounded-lg bg-[#abff44] border border-[#1a1a1a] text-[#08251a] flex items-center justify-center">
+                <ShieldCheck className="w-4 h-4" />
+              </div>
+              <h3 className="text-sm font-bold text-[#1a1a1a]">Privacy-Preserving Tracking</h3>
+              <p className="text-xs text-[#55554c] leading-relaxed">
+                Client email addresses are partially masked in reports for data security and GDPR compliance while maintaining exact transparent financial audit records.
+              </p>
             </div>
           </div>
+        </section>
 
-          <div className="text-center pt-2">
-            <Link
-              href="/referral/register"
-              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs transition shadow-xs cursor-pointer"
-            >
-              <span>Join as a Referral Partner</span>
-              <ArrowRight className="h-4 w-4" />
-            </Link>
+        {/* Final CTA Banner */}
+        <section className="mk-wrap mt-8">
+          <div className="rounded-3xl border-[1.5px] border-[#1a1a1a] bg-[#08251a] text-[#fffeeb] p-8 sm:p-14 text-center space-y-6 relative overflow-hidden shadow-[0_6px_0_#1a1a1a]">
+            <div className="mk-hero-glow" aria-hidden="true" />
+            <div className="relative z-10 max-w-2xl mx-auto space-y-4">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#abff44] text-[#08251a]">
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>Instant Partner Approval</span>
+              </span>
+              <h2 className="text-3xl sm:text-4xl font-extrabold text-[#fffeeb] tracking-tight">
+                Ready to turn your network into recurring monthly income?
+              </h2>
+              <p className="text-xs sm:text-sm text-[#cfe3d6] leading-relaxed">
+                Join our partner network today. Get your unique referral link, access your real-time analytics portal, and start receiving 10% monthly commissions.
+              </p>
+              <div className="pt-2">
+                <Link
+                  href="/referral/register"
+                  className="mk-btn mk-btn-primary px-8 py-3.5 inline-flex items-center gap-2 text-sm shadow-[0_3px_0_#1a1a1a] hover:translate-y-[-2px] transition cursor-pointer"
+                >
+                  <span>Register as a Referral Partner</span>
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
+              </div>
+            </div>
           </div>
-        </div>
+        </section>
       </main>
-
-      {/* Footer */}
-      <footer className="border-t border-slate-200 dark:border-slate-800 py-8 text-center text-xs text-slate-500 dark:text-slate-400">
-        <p>&copy; {new Date().getFullYear()} Crescelo. All rights reserved. 10% Lifetime Recurring Partner Program.</p>
-      </footer>
-    </div>
+      <Footer />
+    </>
   );
 }

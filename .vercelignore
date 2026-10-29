@@ -42,3 +42,8 @@ scripts/*
 
 # Unused social marketing asset renders
 public/instagram/
+
+# Local branding assets & generated graphics (device only)
+public/brand/c-logo-*
+public/brand/crescelo-logo-solid-*
+public/linkedin/

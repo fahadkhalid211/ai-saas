@@ -66,3 +66,11 @@ public/instagram/
 test-results/
 playwright-report/
 
+
+# Local branding assets & generated graphics (device only)
+public/brand/c-logo-*
+public/brand/crescelo-logo-solid-*
+public/linkedin/
+scripts/generate-solid-logos.mjs
+scripts/generate-c-logos.mjs
+scripts/generate-linkedin-covers.mjs
