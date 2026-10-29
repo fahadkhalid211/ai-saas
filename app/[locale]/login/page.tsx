@@ -69,7 +69,14 @@ export default function LoginPage() {
 
     // Already signed in: go straight to the dashboard.
     fetch('/api/auth')
-      .then((r) => r.json())
+      .then(async (r) => {
+        if (!r.ok) return null;
+        try {
+          return await r.json();
+        } catch {
+          return null;
+        }
+      })
       .then((d) => {
         if (d?.authenticated) router.replace('/dashboard');
       })

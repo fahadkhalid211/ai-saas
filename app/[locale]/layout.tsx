@@ -1,4 +1,5 @@
 import { CookieConsent } from '@/components/legal/CookieConsent';
+import { ReferralTracker } from '@/components/referral/ReferralTracker';
 import { AccessibilityMenu } from '@/components/a11y/AccessibilityMenu';
 import { PageAccessibility } from '@/components/a11y/PageAccessibility';
 import { I18nProvider } from '@/lib/i18n/context';
@@ -129,6 +130,7 @@ export default async function RootLayout({
       </head>
       <body className="min-h-full flex flex-col bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 selection:bg-blue-600 selection:text-white font-sans">
         <I18nProvider locale={locale}>
+          <ReferralTracker />
           <GeoLanguageBanner />
           {children}
           <PageAccessibility />

@@ -50,6 +50,8 @@ export interface ReferralClick {
   timestamp: string;
 }
 
+export type ReferralCustomerStatus = 'trial' | 'clearing' | 'active' | 'cancelled' | 'refunded' | 'delinquent';
+
 export interface ReferredCustomer {
   id: string;
   partnerId: string;
@@ -61,13 +63,20 @@ export interface ReferredCustomer {
   planName: string;
   planPriceMonthly: number;
   billingInterval: 'monthly' | 'annual';
-  status: 'trial' | 'active' | 'cancelled' | 'delinquent';
+  status: ReferralCustomerStatus;
   commissionPercent: number; // 10
   monthlyCommission: number; // e.g. 10% of monthly plan
   totalEarned: number;
   totalPaidOut: number;
   joinedAt: string;
   lastPaymentAt?: string;
+  firstChargeAt?: string;
+  clearsAt?: string;
+  isPending?: boolean;
+  daysRemaining?: number;
+  clearanceStatus?: 'trial' | 'clearing' | 'active' | 'refunded' | 'cancelled';
+  clearedManually?: boolean;
+  refundedAt?: string;
 }
 
 export interface ReferralPayout {
@@ -101,6 +110,8 @@ export interface ReferralStats {
   totalReferredCustomers: number;
   activePayingCustomers: number;
   trialCustomers: number;
+  clearingCustomers?: number;
+  pendingCommissions?: number;
   monthlyRecurringCommission: number;
   totalEarningsToDate: number;
   pendingPayout: number;
@@ -110,10 +121,16 @@ export interface ReferralStats {
     planName: string;
     planPriceMonthly: number;
     billingInterval: string;
-    status: 'trial' | 'active' | 'cancelled' | 'delinquent';
+    status: ReferralCustomerStatus;
     monthlyCommission: number;
     totalEarned: number;
     joinedAt: string;
+    isPending?: boolean;
+    clearanceStatus?: 'trial' | 'clearing' | 'active' | 'refunded' | 'cancelled';
+    daysRemaining?: number;
+    clearsAt?: string;
+    firstChargeAt?: string;
+    clearedManually?: boolean;
   }>;
   recentClicks: Array<{
     id: string;

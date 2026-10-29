@@ -89,7 +89,15 @@ export async function PATCH(req: Request) {
 
   try {
     const body = await req.json().catch(() => ({}));
-    const { action, payoutId, status, notes, partnerId, partnerStatus } = body;
+    const { action, payoutId, status, notes, partnerId, partnerStatus, customerId } = body;
+
+    if (action === 'clear_referral' && customerId) {
+      const res = await Database.manuallyClearReferralCustomer(customerId);
+      if (!res.success) {
+        return NextResponse.json({ error: res.error || 'Failed to clear referral customer' }, { status: 400 });
+      }
+      return NextResponse.json({ success: true, customer: res.customer, message: 'Referral customer cleared successfully' });
+    }
 
     if (action === 'update_payout' && payoutId && status) {
       const res = await Database.updateReferralPayoutStatus(payoutId, status, notes);

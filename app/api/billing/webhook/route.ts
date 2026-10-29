@@ -198,6 +198,13 @@ async function POSTHandler(req: NextRequest) {
       // A refund is a person's decision to look at (partial or full, goodwill or fraud); the plan is left as it is.
       const customerId = evt.attributes.customer_id !== undefined ? String(evt.attributes.customer_id) : '';
       const ws = customerId ? await Database.findWorkspaceByBillingCustomer(customerId) : null;
+      if (ws) {
+        const nowIso = new Date().toISOString();
+        await Database.updateWorkspaceBilling(ws.id, {
+          hasRefunded: true,
+          refundedAt: nowIso,
+        });
+      }
       logEvent({ level: 'warn', category: 'billing', event: 'billing.refund', meta: { type: evt.name, workspaceId: ws?.id ?? null } });
     }
     // anything else (orders, licence keys, ...) needs no action

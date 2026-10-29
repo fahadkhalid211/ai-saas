@@ -377,6 +377,8 @@ export interface WorkspaceBillingData {
   disabledAt?: string;
   /** Set when a payment was disputed or refunded as fraud; the workspace cannot start another trial. */
   billingRisk?: 'fraud_warning' | 'dispute';
+  hasRefunded?: boolean;
+  refundedAt?: string;
 }
 
 export interface AppointmentData {
@@ -5480,21 +5482,72 @@ export class Database {
         cust.planPriceMonthly = planPrice;
         cust.billingInterval = ws.billingInterval || 'monthly';
 
-        // Check trial or active subscription status
-        const isTrialActive = ws.trialEndsAt && new Date(ws.trialEndsAt).getTime() > Date.now();
-        const hasPaidInvoices = (ws.invoices || []).some((inv: any) => inv.status === 'paid');
+        const isRefunded = Boolean(ws.hasRefunded || ws.refundedAt || ws.billingRisk === 'dispute');
         const isBlocked = ws.subscriptionStatus === 'canceled' || ws.subscriptionStatus === 'past_due';
+        const isTrialActive = Boolean(ws.trialEndsAt && new Date(ws.trialEndsAt).getTime() > Date.now());
+        
+        // Find paid invoices and earliest payment date
+        const paidInvoices = (ws.invoices || []).filter((inv: any) => inv.status === 'paid');
+        let earliestPaidTime: number | null = null;
+        for (const inv of paidInvoices) {
+          const t = new Date(inv.date || ws.currentPeriodStart || cust.joinedAt).getTime();
+          if (!isNaN(t) && (earliestPaidTime === null || t < earliestPaidTime)) {
+            earliestPaidTime = t;
+          }
+        }
+        if (cust.firstChargeAt) {
+          const t = new Date(cust.firstChargeAt).getTime();
+          if (!isNaN(t) && (earliestPaidTime === null || t < earliestPaidTime)) {
+            earliestPaidTime = t;
+          }
+        }
 
-        if (isBlocked) {
-          cust.status = 'cancelled';
+        if (isRefunded) {
+          cust.status = 'refunded';
+          cust.clearanceStatus = 'refunded';
+          cust.isPending = false;
           cust.monthlyCommission = 0;
-        } else if (hasPaidInvoices || !isTrialActive) {
-          cust.status = 'active';
-          // 10% recurring of monthly subscription fee
+          cust.daysRemaining = 0;
+        } else if (isBlocked) {
+          cust.status = 'cancelled';
+          cust.clearanceStatus = 'cancelled';
+          cust.isPending = false;
+          cust.monthlyCommission = 0;
+          cust.daysRemaining = 0;
+        } else if (isTrialActive) {
+          cust.status = 'trial';
+          cust.clearanceStatus = 'trial';
+          cust.isPending = true;
+          cust.daysRemaining = Math.max(0, Math.ceil((new Date(ws.trialEndsAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24)));
+          cust.monthlyCommission = Math.round(planPrice * (partner.commissionPercent / 100) * 100) / 100;
+        } else if (!earliestPaidTime) {
+          // Trial ended or no trial, but first successful card payment has not occurred yet
+          cust.status = 'trial';
+          cust.clearanceStatus = 'trial';
+          cust.isPending = true;
+          cust.daysRemaining = 0;
           cust.monthlyCommission = Math.round(planPrice * (partner.commissionPercent / 100) * 100) / 100;
         } else {
-          cust.status = 'trial';
-          cust.monthlyCommission = Math.round(planPrice * (partner.commissionPercent / 100) * 100) / 100;
+          // First successful card charge occurred! Start 30-day clearance holding period
+          cust.firstChargeAt = new Date(earliestPaidTime).toISOString();
+          const clearanceTime = earliestPaidTime + (30 * 24 * 60 * 60 * 1000); // 30 days
+          cust.clearsAt = new Date(clearanceTime).toISOString();
+
+          if (cust.clearedManually || Date.now() >= clearanceTime) {
+            // Cleared! Customer is active paying and commission unlocks
+            cust.status = 'active';
+            cust.clearanceStatus = 'active';
+            cust.isPending = false;
+            cust.daysRemaining = 0;
+            cust.monthlyCommission = Math.round(planPrice * (partner.commissionPercent / 100) * 100) / 100;
+          } else {
+            // Still in 30-day post-charge holding period
+            cust.status = 'clearing';
+            cust.clearanceStatus = 'clearing';
+            cust.isPending = true;
+            cust.daysRemaining = Math.max(1, Math.ceil((clearanceTime - Date.now()) / (1000 * 60 * 60 * 24)));
+            cust.monthlyCommission = Math.round(planPrice * (partner.commissionPercent / 100) * 100) / 100;
+          }
         }
       }
     }
@@ -5503,13 +5556,18 @@ export class Database {
     const totalReferredCustomers = customers.length;
     const activePayingCustomers = customers.filter((c) => c.status === 'active').length;
     const trialCustomers = customers.filter((c) => c.status === 'trial').length;
+    const clearingCustomers = customers.filter((c) => c.status === 'clearing').length;
     
-    // Monthly recurring commission is 10% of every active paying client
+    // Monthly recurring commission is 10% of every active cleared paying client
     const monthlyRecurringCommission = customers
       .filter((c) => c.status === 'active')
       .reduce((sum, c) => sum + (c.monthlyCommission || 0), 0);
 
-    // Accumulated earnings
+    const pendingCommissions = customers
+      .filter((c) => c.isPending)
+      .reduce((sum, c) => sum + (c.monthlyCommission || 0), 0);
+
+    // Accumulated earnings: only active cleared customers contribute to withdrawable earnings
     const totalEarningsToDate = customers.reduce((sum, c) => sum + (c.totalEarned || (c.status === 'active' ? c.monthlyCommission : 0)), 0);
     const totalPaidOut = payouts.filter((p) => p.status === 'paid').reduce((sum, p) => sum + p.amount, 0);
     const pendingPayout = Math.max(0, Math.round((totalEarningsToDate - totalPaidOut) * 100) / 100);
@@ -5542,6 +5600,8 @@ export class Database {
       totalReferredCustomers,
       activePayingCustomers,
       trialCustomers,
+      clearingCustomers,
+      pendingCommissions: Math.round(pendingCommissions * 100) / 100,
       monthlyRecurringCommission: Math.round(monthlyRecurringCommission * 100) / 100,
       totalEarningsToDate: Math.round(totalEarningsToDate * 100) / 100,
       pendingPayout,
@@ -5555,6 +5615,12 @@ export class Database {
         monthlyCommission: c.monthlyCommission,
         totalEarned: c.totalEarned,
         joinedAt: c.joinedAt,
+        isPending: Boolean(c.isPending),
+        clearanceStatus: c.clearanceStatus,
+        daysRemaining: c.daysRemaining,
+        clearsAt: c.clearsAt,
+        firstChargeAt: c.firstChargeAt,
+        clearedManually: Boolean(c.clearedManually),
       })),
       recentClicks: clicks.slice(0, 50).map((cl) => ({
         id: cl.id,
@@ -5564,6 +5630,23 @@ export class Database {
       })),
       payouts,
     };
+  }
+
+  static async manuallyClearReferralCustomer(customerId: string): Promise<{ success: boolean; error?: string; customer?: ReferredCustomer }> {
+    const state = await ensureInitialized();
+    if (!state.referredCustomers) state.referredCustomers = [];
+    const cust = state.referredCustomers.find((c) => c.id === customerId);
+    if (!cust) return { success: false, error: 'Referred customer not found' };
+
+    cust.clearedManually = true;
+    cust.status = 'active';
+    cust.clearanceStatus = 'active';
+    cust.isPending = false;
+    cust.daysRemaining = 0;
+    cust.clearsAt = new Date().toISOString();
+
+    await saveState(state);
+    return { success: true, customer: cust };
   }
 
   static async requestReferralPayout(partnerId: string, amount: number, method: string, details: string): Promise<{ success: boolean; error?: string; payout?: ReferralPayout }> {

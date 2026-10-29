@@ -34,6 +34,7 @@ import {
   MessageSquare,
   Building2,
   X,
+  XCircle,
 } from 'lucide-react';
 import { ReferralStats, ReferralPayout } from '@/types/referral';
 import { TwitterIcon, LinkedInIcon, YouTubeIcon, InstagramIcon } from '@/components/referral/SocialIcons';
@@ -519,9 +520,9 @@ export default function ReferralDashboardPage() {
             <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden shadow-xs">
               <div className="p-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30 flex items-center justify-between">
                 <div>
-                  <h3 className="text-sm font-bold text-slate-900 dark:text-white">Active Referred Client Roster</h3>
+                  <h3 className="text-sm font-bold text-slate-900 dark:text-white">Active &amp; Pending Referred Clients</h3>
                   <p className="text-xs text-slate-500">
-                    You receive 10% each month for every active client. Emails are partially masked for customer privacy.
+                    Earn 10% monthly recurring commission. Referrals undergo a 30-day clearance following their first charge before funds unlock.
                   </p>
                 </div>
               </div>
@@ -532,7 +533,7 @@ export default function ReferralDashboardPage() {
                     <tr>
                       <th className="py-3 px-4">Client Email</th>
                       <th className="py-3 px-4">Subscription Plan</th>
-                      <th className="py-3 px-4 text-center">Status</th>
+                      <th className="py-3 px-4 text-center">Status &amp; Clearance</th>
                       <th className="py-3 px-4 text-right">Client Paid/Mo</th>
                       <th className="py-3 px-4 text-right">Your 10% Commission</th>
                       <th className="py-3 px-4 text-right">Joined Date</th>
@@ -552,8 +553,24 @@ export default function ReferralDashboardPage() {
                     ) : (
                       stats.customers.map((cust) => (
                         <tr key={cust.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition">
-                          <td className="py-3.5 px-4 font-mono font-semibold text-slate-900 dark:text-white">
-                            {cust.customerEmailMasked}
+                          <td className="py-3.5 px-4">
+                            <div className="flex items-center gap-2">
+                              {cust.isPending && (
+                                <span
+                                  className="inline-flex items-center justify-center text-amber-500 animate-pulse shrink-0"
+                                  title={
+                                    cust.status === 'clearing'
+                                      ? `Clearing period: Customer's card was charged. Commission unlocks after 30 days without refund (${cust.daysRemaining ?? 30} days left).`
+                                      : `Free trial period: ${cust.daysRemaining ?? 14} days remaining.`
+                                  }
+                                >
+                                  <Clock className="h-3.5 w-3.5" />
+                                </span>
+                              )}
+                              <span className="font-mono font-semibold text-slate-900 dark:text-white">
+                                {cust.customerEmailMasked}
+                              </span>
+                            </div>
                           </td>
                           <td className="py-3.5 px-4">
                             <span className="font-semibold capitalize text-slate-800 dark:text-slate-200">
@@ -564,21 +581,53 @@ export default function ReferralDashboardPage() {
                             </span>
                           </td>
                           <td className="py-3.5 px-4 text-center">
-                            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold capitalize ${
-                              cust.status === 'active'
-                                ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
-                                : cust.status === 'trial'
-                                ? 'bg-blue-100 text-blue-800 dark:bg-blue-950/60 dark:text-blue-300'
-                                : 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300'
-                            }`}>
-                              {cust.status}
-                            </span>
+                            {cust.status === 'active' ? (
+                              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300">
+                                <CheckCircle2 className="h-3 w-3" />
+                                <span>Active</span>
+                              </span>
+                            ) : cust.status === 'clearing' ? (
+                              <span
+                                className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-300 dark:border-amber-700/60"
+                                title={`Payment charged successfully. Under 30-day refund clearance guarantee: ${cust.daysRemaining ?? 30} days remaining.`}
+                              >
+                                <Clock className="h-3 w-3 animate-pulse text-amber-600 dark:text-amber-400" />
+                                <span>Clearing ({cust.daysRemaining ?? 30}d left)</span>
+                              </span>
+                            ) : cust.status === 'trial' ? (
+                              <span
+                                className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-800 dark:bg-blue-950/60 dark:text-blue-300"
+                                title={`In free trial: ${cust.daysRemaining ?? 14} days remaining.`}
+                              >
+                                <Clock className="h-3 w-3 text-blue-600 dark:text-blue-400" />
+                                <span>In Trial ({cust.daysRemaining ?? 14}d left)</span>
+                              </span>
+                            ) : cust.status === 'refunded' ? (
+                              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300">
+                                <XCircle className="h-3 w-3" />
+                                <span>Refunded</span>
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold capitalize bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300">
+                                {cust.status}
+                              </span>
+                            )}
                           </td>
                           <td className="py-3.5 px-4 text-right font-mono text-slate-700 dark:text-slate-300">
                             ${cust.planPriceMonthly}/mo
                           </td>
-                          <td className="py-3.5 px-4 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400">
-                            ${cust.monthlyCommission.toFixed(2)}/mo
+                          <td className="py-3.5 px-4 text-right font-mono font-bold">
+                            {cust.status === 'active' ? (
+                              <span className="text-emerald-600 dark:text-emerald-400">
+                                ${cust.monthlyCommission.toFixed(2)}/mo
+                              </span>
+                            ) : cust.status === 'refunded' || cust.status === 'cancelled' ? (
+                              <span className="text-slate-400 line-through">$0.00</span>
+                            ) : (
+                              <span className="text-amber-600 dark:text-amber-400" title="Pending clearance: unlocks after 30-day refund window">
+                                ~${cust.monthlyCommission.toFixed(2)}<span className="text-[10px] font-normal text-slate-400"> (est.)</span>
+                              </span>
+                            )}
                           </td>
                           <td className="py-3.5 px-4 text-right text-slate-500 font-mono text-[11px]">
                             {new Date(cust.joinedAt).toLocaleDateString()}
@@ -608,7 +657,7 @@ export default function ReferralDashboardPage() {
                   <tr>
                     <th className="py-3 px-4">Client Email</th>
                     <th className="py-3 px-4">Plan Name</th>
-                    <th className="py-3 px-4 text-center">Status</th>
+                    <th className="py-3 px-4 text-center">Status &amp; Clearance</th>
                     <th className="py-3 px-4 text-right">Plan Price</th>
                     <th className="py-3 px-4 text-right">Monthly (10%)</th>
                     <th className="py-3 px-4 text-right">Lifetime Earned</th>
@@ -624,20 +673,72 @@ export default function ReferralDashboardPage() {
                   ) : (
                     stats.customers.map((cust) => (
                       <tr key={cust.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition">
-                        <td className="py-3.5 px-4 font-mono font-semibold">{cust.customerEmailMasked}</td>
+                        <td className="py-3.5 px-4">
+                          <div className="flex items-center gap-2">
+                            {cust.isPending && (
+                              <span
+                                className="inline-flex items-center justify-center text-amber-500 animate-pulse shrink-0"
+                                title={
+                                  cust.status === 'clearing'
+                                    ? `Clearing period: Customer's card was charged. Commission unlocks after 30 days without refund (${cust.daysRemaining ?? 30} days left).`
+                                    : `Free trial period: ${cust.daysRemaining ?? 14} days remaining.`
+                                }
+                              >
+                                <Clock className="h-3.5 w-3.5" />
+                              </span>
+                            )}
+                            <span className="font-mono font-semibold text-slate-900 dark:text-white">
+                              {cust.customerEmailMasked}
+                            </span>
+                          </div>
+                        </td>
                         <td className="py-3.5 px-4 capitalize">{cust.planName}</td>
                         <td className="py-3.5 px-4 text-center">
-                          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold capitalize ${
-                            cust.status === 'active'
-                              ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
-                              : 'bg-blue-100 text-blue-800 dark:bg-blue-950/60 dark:text-blue-300'
-                          }`}>
-                            {cust.status}
-                          </span>
+                          {cust.status === 'active' ? (
+                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300">
+                              <CheckCircle2 className="h-3 w-3" />
+                              <span>Active</span>
+                            </span>
+                          ) : cust.status === 'clearing' ? (
+                            <span
+                              className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-300 dark:border-amber-700/60"
+                              title={`Payment charged successfully. Under 30-day refund clearance guarantee: ${cust.daysRemaining ?? 30} days remaining.`}
+                            >
+                              <Clock className="h-3 w-3 animate-pulse text-amber-600 dark:text-amber-400" />
+                              <span>Clearing ({cust.daysRemaining ?? 30}d left)</span>
+                            </span>
+                          ) : cust.status === 'trial' ? (
+                            <span
+                              className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-800 dark:bg-blue-950/60 dark:text-blue-300"
+                              title={`In free trial: ${cust.daysRemaining ?? 14} days remaining.`}
+                            >
+                              <Clock className="h-3 w-3 text-blue-600 dark:text-blue-400" />
+                              <span>In Trial ({cust.daysRemaining ?? 14}d left)</span>
+                            </span>
+                          ) : cust.status === 'refunded' ? (
+                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300">
+                              <XCircle className="h-3 w-3" />
+                              <span>Refunded</span>
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold capitalize bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300">
+                              {cust.status}
+                            </span>
+                          )}
                         </td>
                         <td className="py-3.5 px-4 text-right font-mono">${cust.planPriceMonthly}/mo</td>
-                        <td className="py-3.5 px-4 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400">
-                          ${cust.monthlyCommission.toFixed(2)}/mo
+                        <td className="py-3.5 px-4 text-right font-mono font-bold">
+                          {cust.status === 'active' ? (
+                            <span className="text-emerald-600 dark:text-emerald-400">
+                              ${cust.monthlyCommission.toFixed(2)}/mo
+                            </span>
+                          ) : cust.status === 'refunded' || cust.status === 'cancelled' ? (
+                            <span className="text-slate-400 line-through">$0.00</span>
+                          ) : (
+                            <span className="text-amber-600 dark:text-amber-400" title="Pending clearance: unlocks after 30-day refund window">
+                              ~${cust.monthlyCommission.toFixed(2)}<span className="text-[10px] font-normal text-slate-400"> (est.)</span>
+                            </span>
+                          )}
                         </td>
                         <td className="py-3.5 px-4 text-right font-mono text-slate-700 dark:text-slate-300">
                           ${cust.totalEarned.toFixed(2)}
