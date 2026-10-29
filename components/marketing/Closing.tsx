@@ -103,10 +103,29 @@ export function Footer() {
                 ))}
               </ul>
             )}
+            <div className="flex flex-wrap items-center gap-3">
             <a className="mk-footer-badge" href="https://saasbrowser.com/en/saas/1685880/crescelo" target="_blank" rel="nofollow noopener">
               {/* eslint-disable-next-line @next/next/no-img-element -- third-party badge SVG, served as-is */}
               <img src="https://static-files.saasbrowser.com/saas-browser-badge-17.svg" alt="Crescelo - SaaS search engine" width={200} />
             </a>
+            <a
+              className="mk-footer-badge"
+              href="https://www.codehype.ai/product/crescelo?utm_source=codehype_badge"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element -- third-party badge SVG, served as-is */}
+              <img
+                src="https://www.codehype.ai/badges/crescelo.svg?variant=find-us&v=20"
+                alt="Featured on CodeHype"
+                width={180}
+                height={65}
+                loading="lazy"
+                decoding="async"
+                style={{ display: 'inline-block', border: 0, width: '100%', maxWidth: '180px', height: 'auto', maxHeight: '65px' }}
+              />
+            </a>
+          </div>
           </div>
           {FOOTER.columns.map((c) => (
             <nav key={c.title} aria-label={c.title} className="mk-footer-col">
