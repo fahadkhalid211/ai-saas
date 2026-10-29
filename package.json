@@ -13,6 +13,9 @@
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run --fileParallelism=false",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:report": "playwright show-report",
     "test:load:smoke": "k6 run load-tests/smoke.js",
     "test:load:widget": "k6 run load-tests/widget.js",
     "test:load:poll": "k6 run load-tests/conversations-poll.js",
@@ -45,6 +48,7 @@
     "unpdf": "^1.8.1"
   },
   "devDependencies": {
+    "@playwright/test": "^1.64.1",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^22",
     "@types/nodemailer": "^8.0.1",
