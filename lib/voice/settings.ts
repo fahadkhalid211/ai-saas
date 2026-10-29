@@ -11,6 +11,9 @@ const PHONE_KEYS = [
   'phoneTransferNumber',
   'phoneAfterHours',
   'phoneMaxCallMinutes',
+  'phoneCarrier',
+  'phoneVoiceTier',
+  'phoneVoiceProvider',
   'timezone',
 ] as const;
 
@@ -64,6 +67,15 @@ export async function sanitizePhoneSettings(
     }
   }
 
+  if ('phoneCarrier' in out && !['telnyx', 'twilio'].includes(out.phoneCarrier)) {
+    return { ok: false, status: 400, error: 'phoneCarrier must be telnyx or twilio.' };
+  }
+  if ('phoneVoiceTier' in out && !['standard', 'premium'].includes(out.phoneVoiceTier)) {
+    return { ok: false, status: 400, error: 'phoneVoiceTier must be standard or premium.' };
+  }
+  if ('phoneVoiceProvider' in out && !['local', 'cartesia', 'elevenlabs'].includes(out.phoneVoiceProvider)) {
+    return { ok: false, status: 400, error: 'phoneVoiceProvider must be local, cartesia, or elevenlabs.' };
+  }
   if ('phoneAfterHours' in out && !['ai', 'voicemail', 'forward'].includes(out.phoneAfterHours)) {
     return { ok: false, status: 400, error: 'phoneAfterHours must be ai, voicemail or forward.' };
   }

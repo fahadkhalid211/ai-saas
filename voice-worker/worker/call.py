@@ -68,6 +68,9 @@ class CallSession:
         self._tasks: List["asyncio.Task[Any]"] = []
         self._voicemail: List[str] = []
         self._started = False
+        self.stream_sid = ""
+        self.voice_tier = "standard"
+        self.voice_provider = "local"
 
     # ------------------------------------------------------------------ lifecycle
     async def run(self) -> None:
@@ -118,6 +121,7 @@ class CallSession:
 
         self.call_id = payload["callId"]
         self.to = payload.get("to", "")
+        self.stream_sid = msg.get("streamSid") or start.get("streamSid") or ""
         session = await self.app.session(self.call_id, payload.get("from", ""), self.to)
 
         if not session.get("ok"):
@@ -132,6 +136,8 @@ class CallSession:
         self.state = session["state"]
         self.language = session.get("language") or "en"
         self.voice = session.get("voice") or ""
+        self.voice_tier = session.get("voiceTier") or "standard"
+        self.voice_provider = session.get("voiceProvider") or ("cartesia" if self.voice_tier == "premium" else "local")
         self.max_seconds = int(session.get("maxSeconds") or 600)
         self._started = True
 
@@ -165,11 +171,16 @@ class CallSession:
         """The caller spoke over us: stop talking now and drop any sentences still queued."""
         self._gen += 1
         self._speaking_until = 0.0
-        await self._send({"event": "clear"})
+        clear_msg = {"event": "clear"}
+        if self.stream_sid:
+            clear_msg["streamSid"] = self.stream_sid
+        await self._send(clear_msg)
 
     # ------------------------------------------------------------------ audio out
     async def _send(self, obj: Dict[str, Any]) -> None:
         try:
+            if self.stream_sid and "streamSid" not in obj and obj.get("event") in ("media", "clear"):
+                obj["streamSid"] = self.stream_sid
             await self.ws.send(json.dumps(obj))
         except Exception:
             self._closing = True
@@ -177,12 +188,18 @@ class CallSession:
     async def _speak(self, text: str, gen: int) -> None:
         if not text.strip() or self._closing:
             return
-        audio = await self.tts.synthesize(text, self.voice, self.language)
+        if hasattr(self.tts, "synthesize_tier"):
+            audio = await self.tts.synthesize_tier(text, self.voice, self.language, self.voice_tier, self.voice_provider)
+        else:
+            audio = await self.tts.synthesize(text, self.voice, self.language)
         if gen != self._gen or self._closing:
             return  # interrupted while synthesising
         for i in range(0, len(audio), SEND_CHUNK_BYTES):
             chunk = audio[i : i + SEND_CHUNK_BYTES]
-            await self._send({"event": "media", "media": {"payload": base64.b64encode(chunk).decode()}})
+            media_msg = {"event": "media", "media": {"payload": base64.b64encode(chunk).decode()}}
+            if self.stream_sid:
+                media_msg["streamSid"] = self.stream_sid
+            await self._send(media_msg)
         now = self.clock()
         self._speaking_until = max(now, self._speaking_until) + len(audio) / 8000.0
         self._last_activity = self._speaking_until

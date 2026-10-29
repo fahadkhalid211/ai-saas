@@ -55,8 +55,8 @@ async function knownCaller(assistantId: string, phone: string): Promise<{ name?:
 export type SessionResult =
   | { ok: false; action: 'reject'; reason: string }
   | { ok: true; mode: 'forward'; number: string }
-  | { ok: true; mode: 'voicemail'; greeting: string; state: VoiceCallState; language: string; voice: string }
-  | { ok: true; mode: 'ai'; greeting: string; state: VoiceCallState; language: string; voice: string; maxSeconds: number; transferNumber?: string };
+  | { ok: true; mode: 'voicemail'; greeting: string; state: VoiceCallState; language: string; voice: string; voiceTier?: 'standard' | 'premium'; voiceProvider?: 'local' | 'cartesia' | 'elevenlabs' }
+  | { ok: true; mode: 'ai'; greeting: string; state: VoiceCallState; language: string; voice: string; voiceTier?: 'standard' | 'premium'; voiceProvider?: 'local' | 'cartesia' | 'elevenlabs'; maxSeconds: number; transferNumber?: string };
 
 export async function startVoiceSession(input: { callId: string; from?: string; to: string }): Promise<SessionResult> {
   const to = normalizeE164(input.to);
@@ -89,6 +89,8 @@ export async function startVoiceSession(input: { callId: string; from?: string; 
   const business = assistant.landingPageConfig?.businessName || assistant.name;
   const language = assistant.phoneLanguage || 'en';
   const voice = assistant.phoneVoice || '';
+  const voiceTier = assistant.phoneVoiceTier || 'standard';
+  const voiceProvider = assistant.phoneVoiceProvider || (voiceTier === 'premium' ? 'cartesia' : 'local');
 
   if (!open && afterHours === 'voicemail') {
     return {
@@ -97,6 +99,8 @@ export async function startVoiceSession(input: { callId: string; from?: string; 
       state,
       language,
       voice,
+      voiceTier,
+      voiceProvider,
       greeting: `Thanks for calling ${business}. We're closed right now. This line is answered by an automated assistant. Please leave your name, number and a short message after the tone.`,
     };
   }
@@ -108,6 +112,8 @@ export async function startVoiceSession(input: { callId: string; from?: string; 
     state,
     language,
     voice,
+    voiceTier,
+    voiceProvider,
     maxSeconds: (assistant.phoneMaxCallMinutes || 10) * 60,
     transferNumber: assistant.phoneTransferNumber || undefined,
   };

@@ -17,9 +17,15 @@ log = logging.getLogger("voice.server")
 
 
 async def serve(cfg: Config) -> None:
+    import os
+    from .speech import MultiTierTTS, CartesiaTTS
+
     app = AppClient(cfg.app_base_url, cfg.secret)
     stt = WhisperSTT(cfg.stt_model, cfg.stt_compute, cfg.stt_threads)
-    tts = PiperTTS(cfg.piper_voice_dir, cfg.default_voice)
+    piper = PiperTTS(cfg.piper_voice_dir, cfg.default_voice)
+    cartesia_key = os.getenv("CARTESIA_API_KEY", "")
+    cartesia = CartesiaTTS(cartesia_key) if cartesia_key else None
+    tts = MultiTierTTS(piper, cartesia)
     carrier = TelnyxCarrier(cfg.telnyx_api_key, cfg.telnyx_account_sid) if cfg.telnyx_api_key else NoCarrier()
     if not cfg.telnyx_api_key:
         log.warning("TELNYX_API_KEY not set: transfers and hang-ups cannot be sent to the carrier")

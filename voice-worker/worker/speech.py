@@ -126,3 +126,65 @@ class FakeTTS:
     async def synthesize(self, text: str, voice: str, language: str) -> bytes:
         self.spoken.append(text)
         return b"\xff" * (8 * self.ms)  # 0xFF is mu-law silence
+
+
+class CartesiaTTS:
+    """Option B: Cartesia Sonic neural TTS (ultra-realistic, sub-100ms streaming voice)."""
+
+    def __init__(self, api_key: Optional[str] = None):
+        self.api_key = api_key or os.getenv("CARTESIA_API_KEY", "")
+
+    async def synthesize(self, text: str, voice: str, language: str) -> bytes:
+        if not self.api_key:
+            raise ValueError("CARTESIA_API_KEY is not configured")
+        import urllib.request
+        import json
+
+        voice_id = voice if (voice and len(voice) > 20) else "a0e99841-438c-4a64-b679-ae501e7d6091"
+        model_id = "sonic-english" if (language or "en").startswith("en") else "sonic-multilingual"
+
+        req = urllib.request.Request(
+            "https://api.cartesia.ai/tts/bytes",
+            data=json.dumps({
+                "model_id": model_id,
+                "transcript": text,
+                "voice": {"mode": "id", "id": voice_id},
+                "output_format": {
+                    "container": "raw",
+                    "encoding": "pcm_mulaw",
+                    "sample_rate": 8000
+                }
+            }).encode("utf-8"),
+            headers={
+                "X-API-Key": self.api_key,
+                "Cartesia-Version": "2024-06-10",
+                "Content-Type": "application/json"
+            }
+        )
+
+        def _fetch():
+            with urllib.request.urlopen(req, timeout=10) as resp:
+                return resp.read()
+
+        return await asyncio.to_thread(_fetch)
+
+
+class MultiTierTTS:
+    """Dispatches to PiperTTS for Option A (Standard), or CartesiaTTS for Option B (Premium)."""
+
+    def __init__(self, local_tts: TTS, cartesia_tts: Optional[TTS] = None):
+        self.local_tts = local_tts
+        self.cartesia_tts = cartesia_tts
+
+    async def synthesize_tier(self, text: str, voice: str, language: str, tier: str = "standard", provider: str = "local") -> bytes:
+        if tier == "premium" and (provider == "cartesia" or not provider):
+            if self.cartesia_tts:
+                try:
+                    return await self.cartesia_tts.synthesize(text, voice, language)
+                except Exception as err:
+                    import logging
+                    logging.getLogger("voice.speech").warning("Cartesia TTS synthesis failed (%s: %s), falling back to local Piper", type(err).__name__, err)
+        return await self.local_tts.synthesize(text, voice, language)
+
+    async def synthesize(self, text: str, voice: str, language: str) -> bytes:
+        return await self.local_tts.synthesize(text, voice, language)

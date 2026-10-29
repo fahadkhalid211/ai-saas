@@ -199,6 +199,9 @@ export interface AssistantData {
   phoneEnabled?: boolean;
   /** E.164 number callers dial. Unique across assistants; assigned by the platform admin. */
   phoneNumber?: string;
+  phoneCarrier?: 'telnyx' | 'twilio';
+  phoneVoiceTier?: 'standard' | 'premium';
+  phoneVoiceProvider?: 'local' | 'cartesia' | 'elevenlabs';
   phoneGreeting?: string;
   /** BCP-47 language for speech recognition and the voice, e.g. "en". */
   phoneLanguage?: string;
