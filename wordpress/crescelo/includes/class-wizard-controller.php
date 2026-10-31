@@ -317,16 +317,17 @@ class Crescelo_Wizard_Controller {
     public function ajax_finish_setup() {
         $this->verify_security();
 
-        crescelo_update_option('enabled', true);
+        $enabled = isset($_POST['enabled']) ? filter_var($_POST['enabled'], FILTER_VALIDATE_BOOLEAN) : true;
+        crescelo_update_option('enabled', $enabled);
         crescelo_update_option('wizard_completed', true);
-        update_option('ai_assistant_enabled', true);
+        update_option('ai_assistant_enabled', $enabled);
         update_option('ai_assistant_wizard_completed', true);
 
         $host_url     = untrailingslashit(crescelo_get_option('host_url', CRESCELO_DEFAULT_HOST));
         $assistant_id = sanitize_text_field(crescelo_get_option('id', ''));
 
         wp_send_json_success([
-            'enabled'     => true,
+            'enabled'     => $enabled,
             'widgetSrc'   => esc_url_raw($host_url . '/widget.js'),
             'assistantId' => $assistant_id,
         ]);

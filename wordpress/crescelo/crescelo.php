@@ -3,7 +3,7 @@
  * Plugin Name: Crescelo – AI Chatbot, Website Scraper & Customer Support Assistant
  * Plugin URI: https://crescelo.com
  * Description: Connect your website to an intelligent AI chatbot that scrapes your website (posts, pages, WooCommerce products, custom post types, and documents) into an active vector knowledge base with an automated setup wizard and real-time synchronization.
- * Version: 2.2.0
+ * Version: 2.2.1
  * Author: Crescelo
  * Author URI: https://crescelo.com
  * License: GPL-2.0-or-later
@@ -18,7 +18,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('CRESCELO_PLUGIN_VERSION', '2.2.0');
+define('CRESCELO_PLUGIN_VERSION', '2.2.1');
 define('CRESCELO_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('CRESCELO_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('CRESCELO_DEFAULT_HOST', 'https://www.crescelo.com');
@@ -310,6 +310,8 @@ class Crescelo_AI_Assistant {
             'connectUrl'         => $connect_url,
             'currentAssistantId' => $assistant_id,
             'isConnected'        => !empty($assistant_id),
+            'siteName'           => get_bloginfo('name'),
+            'siteUrl'            => home_url(),
             'assistantName'      => sanitize_text_field(crescelo_get_option('assistant_name', '')),
             'accountEmail'       => sanitize_email(crescelo_get_option('account_email', '')),
             'connectedAt'        => sanitize_text_field(crescelo_get_option('connected_at', '')),

@@ -11,6 +11,7 @@
         var scanData = null;
         var assistantId = data.currentAssistantId || '';
         var activeScraperAborted = false;
+        var scanInProgress = false;
 
         // Elements for Wizard
         var stepItems = document.querySelectorAll('.step-item');
@@ -30,6 +31,14 @@
             });
             var targetPane = document.getElementById('pane-step-' + step);
             if (targetPane) targetPane.classList.add('active');
+        }
+
+        // Auto-advance if already connected or just returned from OAuth
+        if (data.isConnected || data.currentAssistantId) {
+            goToStep(2);
+            runSiteScan();
+        } else {
+            goToStep(1);
         }
 
         // Selection Cards highlight
@@ -64,14 +73,60 @@
             });
         }
 
+        var btnRescanStep2 = document.getElementById('btn-rescan-step-2');
+        if (btnRescanStep2) {
+            btnRescanStep2.addEventListener('click', function () {
+                runSiteScan();
+            });
+        }
+
+        function getPostTypeIcon(slug) {
+            switch (slug) {
+                case 'product': return '🛍️';
+                case 'post': return '📝';
+                case 'page': return '📄';
+                case 'portfolio': return '💼';
+                case 'case_study': return '📊';
+                case 'e-floating-elements':
+                case 'floating-elements': return '✨';
+                case 'elementor_library':
+                case 'my_templates': return '📐';
+                case 'documents':
+                case 'attachment': return '📁';
+                default: return '🗂️';
+            }
+        }
+
         function runSiteScan() {
+            if (scanInProgress) return;
+            scanInProgress = true;
+
             var statusText = document.getElementById('scanner-status-text');
-            var metrics = document.getElementById('discovery-metrics');
+            var stepDetail = document.getElementById('scan-step-detail');
+            var scanFill = document.getElementById('scan-progress-fill');
+            var scanPerc = document.getElementById('scan-percent-text');
             var nextBtn = document.getElementById('btn-to-step-3');
+            var rescanBtn = document.getElementById('btn-rescan-step-2');
 
-            if (!statusText) return;
+            if (rescanBtn) rescanBtn.disabled = true;
+            if (nextBtn) nextBtn.disabled = true;
 
-            statusText.textContent = 'Discovering registered post types, content, and WooCommerce catalog...';
+            if (statusText) statusText.textContent = 'Discovering registered post types, taxonomies, and WooCommerce catalog...';
+            if (stepDetail) stepDetail.textContent = 'Connecting to database schema...';
+            if (scanFill) scanFill.style.width = '20%';
+            if (scanPerc) scanPerc.textContent = '20%';
+
+            var pVal = 20;
+            var scanTimer = setInterval(function () {
+                if (pVal < 80) {
+                    pVal += 15;
+                    if (scanFill) scanFill.style.width = pVal + '%';
+                    if (scanPerc) scanPerc.textContent = pVal + '%';
+                    if (pVal === 35 && stepDetail) stepDetail.textContent = 'Scanning public post types & custom taxonomies...';
+                    if (pVal === 50 && stepDetail) stepDetail.textContent = 'Inspecting WooCommerce products, orders & stock status...';
+                    if (pVal === 65 && stepDetail) stepDetail.textContent = 'Indexing media attachments and document libraries...';
+                }
+            }, 300);
 
             var formData = new FormData();
             formData.append('action', 'crescelo_wizard_scan');
@@ -83,50 +138,78 @@
             })
             .then(function (res) { return res.json(); })
             .then(function (response) {
+                clearInterval(scanTimer);
+                scanInProgress = false;
+                if (rescanBtn) rescanBtn.disabled = false;
+
                 if (!response.success) {
-                    statusText.textContent = 'Scan encountered an issue: ' + (response.data?.error || 'Unknown error');
+                    if (statusText) statusText.textContent = 'Scan encountered an issue: ' + (response.data?.error || 'Unknown error');
+                    if (stepDetail) stepDetail.textContent = 'Database check failed.';
                     return;
                 }
 
                 scanData = response.data;
-                statusText.textContent = 'Scan complete! Reviewing discovered post types and content.';
+                if (scanFill) scanFill.style.width = '100%';
+                if (scanPerc) scanPerc.textContent = '100%';
 
-                // Update metric counters dynamically
-                if (metrics) {
-                    var pagesCount = scanData.pages?.count || 0;
-                    var postsCount = scanData.posts?.count || 0;
-                    var prodCount  = scanData.woocommerce?.total_products || (scanData.post_types?.product?.count || 0);
-                    var docsCount  = scanData.documents?.count || 0;
+                var postTypesCount = Object.keys(scanData.post_types || {}).length;
+                var totalItems = scanData.total_items || 0;
+                if (statusText) statusText.textContent = 'Database scan complete! Discovered ' + postTypesCount + ' post types with ' + totalItems + ' items.';
+                if (stepDetail) stepDetail.textContent = 'Ready to configure post types and AI commerce features.';
 
-                    var pagesEl = document.getElementById('metric-pages');
-                    if (pagesEl) pagesEl.textContent = pagesCount;
-
-                    var postsEl = document.getElementById('metric-posts');
-                    if (postsEl) postsEl.textContent = postsCount;
-
-                    var prodEl = document.getElementById('metric-products');
-                    if (prodEl) prodEl.textContent = prodCount;
-
-                    var docsEl = document.getElementById('metric-docs');
-                    if (docsEl) docsEl.textContent = docsCount;
-
-                    // If WooCommerce is not active, hide products card or show 0
-                    var prodCard = document.getElementById('metric-card-products');
-                    if (prodCard && !scanData.woocommerce?.active && prodCount === 0) {
-                        prodCard.style.display = 'none';
-                    }
-
-                    metrics.style.display = 'grid';
-                }
+                // Render dynamic post type metrics cards in Step 2
+                renderDiscoveryMetrics(scanData);
 
                 if (nextBtn) nextBtn.disabled = false;
 
-                // Pre-populate Step 3 lists with discovered post types
+                // Pre-populate Step 3 lists with clean structured cards
                 populateStep3(scanData);
             })
             .catch(function (err) {
+                clearInterval(scanTimer);
+                scanInProgress = false;
+                if (rescanBtn) rescanBtn.disabled = false;
                 if (statusText) statusText.textContent = 'Failed to connect to database: ' + err.message;
             });
+        }
+
+        function renderDiscoveryMetrics(scan) {
+            var grid = document.getElementById('discovery-metrics');
+            if (!grid) return;
+            grid.innerHTML = '';
+
+            var postTypes = scan.post_types || {};
+            var keys = Object.keys(postTypes);
+
+            keys.forEach(function (slug) {
+                var pt = postTypes[slug];
+                var count = pt.count || 0;
+                var card = document.createElement('div');
+                card.className = 'metric-card';
+
+                var icon = getPostTypeIcon(slug);
+                var subText = count > 0 ? (count + ' published entries') : 'No entries published';
+
+                card.innerHTML = 
+                    '<div class="metric-icon">' + icon + '</div>' +
+                    '<div class="metric-num">' + count.toLocaleString() + '</div>' +
+                    '<div class="metric-label">' + escapeHtml(pt.label) + '</div>' +
+                    '<div class="metric-sub">' + subText + '</div>';
+
+                grid.appendChild(card);
+            });
+
+            // Media documents card if any
+            if (scan.documents && scan.documents.count > 0) {
+                var docCard = document.createElement('div');
+                docCard.className = 'metric-card';
+                docCard.innerHTML = 
+                    '<div class="metric-icon">📁</div>' +
+                    '<div class="metric-num">' + (scan.documents.count || 0).toLocaleString() + '</div>' +
+                    '<div class="metric-label">Media Documents</div>' +
+                    '<div class="metric-sub">PDFs & text files</div>';
+                grid.appendChild(docCard);
+            }
         }
 
         var btnToStep3 = document.getElementById('btn-to-step-3');
@@ -144,74 +227,148 @@
 
             var postTypes = scan.post_types || {};
             var allowed = scan.allowed_post_types || ['page', 'post', 'product'];
-            var totalSelectedCount = 0;
 
             Object.keys(postTypes).forEach(function (slug) {
                 var pt = postTypes[slug];
+                var count = pt.count || 0;
                 var isChecked = allowed.indexOf(slug) !== -1;
-                if (isChecked) totalSelectedCount += (pt.count || 0);
+                var icon = getPostTypeIcon(slug);
+                var hasSamples = (slug === 'product' && scan.woocommerce?.categories?.length > 0) || (pt.samples && pt.samples.length > 0);
 
-                var groupDiv = document.createElement('div');
-                groupDiv.className = 'content-group';
-                groupDiv.id = 'group-pt-' + slug;
+                var card = document.createElement('div');
+                card.className = 'pt-curate-card' + (isChecked ? ' selected' : '') + (count === 0 ? ' empty-items' : '');
+                card.id = 'curate-card-' + slug;
 
-                var headerHtml = '<label class="group-header">' +
-                    '<input type="checkbox" class="pt-group-check" data-slug="' + escapeHtml(slug) + '" ' + (isChecked ? 'checked' : '') + ' /> ' +
-                    '<strong>' + escapeHtml(pt.label) + ' (<span class="pt-count">' + (pt.count || 0) + '</span> items)</strong>' +
-                    '</label>';
+                var drawerId = 'drawer-samples-' + slug;
+                var sampleCount = slug === 'product' && scan.woocommerce?.categories?.length > 0 
+                    ? scan.woocommerce.categories.length + ' categories' 
+                    : (pt.samples ? pt.samples.length + ' samples' : '');
 
-                var itemsHtml = '<div class="group-items" id="items-pt-' + escapeHtml(slug) + '">';
+                var headerHtml = 
+                    '<div class="pt-card-header">' +
+                        '<label class="pt-card-left">' +
+                            '<input type="checkbox" class="pt-group-check" data-slug="' + escapeHtml(slug) + '" ' + (isChecked ? 'checked' : '') + ' />' +
+                            '<span class="pt-card-icon">' + icon + '</span>' +
+                            '<span class="pt-card-title">' + escapeHtml(pt.label) + '</span>' +
+                            '<span class="pt-count-badge">' + count.toLocaleString() + ' items</span>' +
+                        '</label>' +
+                        '<div class="pt-card-right">';
 
-                // If this is WooCommerce and categories exist
-                if (slug === 'product' && scan.woocommerce?.categories?.length > 0) {
-                    scan.woocommerce.categories.forEach(function (cat) {
-                        itemsHtml += '<label><input type="checkbox" class="cat-item-check" data-cat-id="' + cat.id + '" checked /> ' +
-                            escapeHtml(cat.name) + ' (' + (cat.count || 0) + ' products)</label>';
-                    });
-                } else if (pt.samples && pt.samples.length > 0) {
-                    pt.samples.forEach(function (item) {
-                        itemsHtml += '<label><input type="checkbox" class="item-check" value="' + item.id + '" checked /> ' +
-                            escapeHtml(item.title) + '</label>';
-                    });
-                } else {
-                    itemsHtml += '<div style="color:#64748b; font-size:12px;">No items published yet.</div>';
+                if (hasSamples) {
+                    headerHtml += '<button type="button" class="pt-toggle-samples-btn" data-target="' + drawerId + '">▾ View ' + sampleCount + '</button>';
+                } else if (count === 0) {
+                    headerHtml += '<span style="font-size:11px; color:#94a3b8;">No items</span>';
                 }
-                itemsHtml += '</div>';
 
-                groupDiv.innerHTML = headerHtml + itemsHtml;
-                container.appendChild(groupDiv);
+                headerHtml += '</div></div>';
 
-                // Add toggle event for parent checkbox
-                var groupCheck = groupDiv.querySelector('.pt-group-check');
+                var drawerHtml = '<div class="pt-samples-drawer" id="' + drawerId + '" style="display:none;">';
+
+                if (slug === 'product' && scan.woocommerce?.categories?.length > 0) {
+                    drawerHtml += '<div style="font-size:11px; font-weight:700; color:#475569; margin-bottom:6px;">Filter by WooCommerce Category:</div>';
+                    drawerHtml += '<div class="cat-pill-grid">';
+                    scan.woocommerce.categories.forEach(function (cat) {
+                        drawerHtml += '<label class="cat-pill">' +
+                            '<input type="checkbox" class="cat-item-check" data-cat-id="' + cat.id + '" checked /> ' +
+                            '<span>' + escapeHtml(cat.name) + ' (' + (cat.count || 0) + ')</span>' +
+                        '</label>';
+                    });
+                    drawerHtml += '</div>';
+                } else if (pt.samples && pt.samples.length > 0) {
+                    drawerHtml += '<div style="font-size:11px; font-weight:700; color:#475569; margin-bottom:6px;">Sample Discovered Entries (first ' + pt.samples.length + '):</div>';
+                    drawerHtml += '<div class="pt-samples-list">';
+                    pt.samples.forEach(function (item) {
+                        drawerHtml += '<div class="pt-sample-row">' +
+                            '<div class="pt-sample-left">' +
+                                '<input type="checkbox" class="item-check" value="' + item.id + '" checked /> ' +
+                                '<span class="pt-sample-title" title="' + escapeHtml(item.title) + '">' + escapeHtml(item.title) + '</span>' +
+                            '</div>' +
+                            '<span class="pt-sample-id">#' + item.id + '</span>' +
+                        '</div>';
+                    });
+                    drawerHtml += '</div>';
+                }
+
+                drawerHtml += '</div>';
+                card.innerHTML = headerHtml + drawerHtml;
+                container.appendChild(card);
+
+                // Master checkbox change
+                var groupCheck = card.querySelector('.pt-group-check');
                 groupCheck.addEventListener('change', function () {
                     var checked = this.checked;
-                    groupDiv.querySelectorAll('.group-items input[type="checkbox"]').forEach(function (c) {
+                    if (checked) {
+                        card.classList.add('selected');
+                    } else {
+                        card.classList.remove('selected');
+                    }
+                    card.querySelectorAll('.pt-samples-drawer input[type="checkbox"]').forEach(function (c) {
                         c.checked = checked;
                     });
                     updateCurateSummary();
                 });
+
+                // Toggle drawer button
+                var toggleBtn = card.querySelector('.pt-toggle-samples-btn');
+                if (toggleBtn) {
+                    toggleBtn.addEventListener('click', function (e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        var targetId = this.getAttribute('data-target');
+                        var drawer = document.getElementById(targetId);
+                        if (drawer) {
+                            var isOpen = drawer.style.display === 'block';
+                            drawer.style.display = isOpen ? 'none' : 'block';
+                            this.textContent = (isOpen ? '▾ View ' : '▴ Hide ') + sampleCount;
+                        }
+                    });
+                }
             });
 
-            // Documents Group
-            var docsGroup = document.getElementById('group-docs');
-            var docsLabel = document.getElementById('count-docs-label');
-            var docsList  = document.getElementById('items-docs-list');
+            // Media Documents List
+            var docsList = document.getElementById('items-docs-list');
+            var docsCountLabel = document.getElementById('count-docs-label');
+            var groupDocs = document.getElementById('group-docs');
+            var checkAllDocs = document.getElementById('check-all-docs');
 
-            if (docsGroup && docsList) {
-                var docCount = parseInt(scan.documents?.count, 10) || 0;
-                if (docCount > 0) {
-                    if (docsLabel) docsLabel.textContent = docCount;
+            if (checkAllDocs) {
+                checkAllDocs.onchange = function () {
+                    var chk = this.checked;
+                    var docCard = document.querySelector('#group-docs .pt-curate-card');
+                    if (docCard) {
+                        if (chk) docCard.classList.add('selected');
+                        else docCard.classList.remove('selected');
+                    }
+                    document.querySelectorAll('#items-docs-list input[type="checkbox"]').forEach(function (c) {
+                        c.checked = chk;
+                    });
+                    updateCurateSummary();
+                };
+            }
+
+            if (scan.documents && scan.documents.count > 0) {
+                if (docsCountLabel) docsCountLabel.textContent = scan.documents.count;
+                if (docsList) {
                     docsList.innerHTML = '';
                     scan.documents.samples.forEach(function (d) {
-                        var lbl = document.createElement('label');
-                        lbl.innerHTML = '<input type="checkbox" class="doc-item-check" value="' + d.id + '" checked /> ' +
-                            escapeHtml(d.title);
-                        docsList.appendChild(lbl);
+                        var row = document.createElement('div');
+                        row.className = 'pt-sample-row';
+                        row.innerHTML = 
+                            '<div class="pt-sample-left">' +
+                                '<input type="checkbox" class="doc-item-check" value="' + d.id + '" checked /> ' +
+                                '<span class="pt-sample-title" title="' + escapeHtml(d.title) + '">' + escapeHtml(d.title) + '</span>' +
+                            '</div>' +
+                            '<span class="pt-sample-id">#' + d.id + '</span>';
+                        docsList.appendChild(row);
                     });
-                    docsGroup.style.display = 'block';
-                } else {
-                    docsGroup.style.display = 'none';
                 }
+                if (groupDocs) {
+                    groupDocs.style.display = 'block';
+                    var dCard = groupDocs.querySelector('.pt-curate-card');
+                    if (dCard) dCard.classList.add('selected');
+                }
+            } else if (groupDocs) {
+                groupDocs.style.display = 'none';
             }
 
             updateCurateSummary();
@@ -230,7 +387,73 @@
                 }
             });
 
-            summaryEl.textContent = total + ' items ready to scrape';
+            if (document.getElementById('check-all-docs')?.checked && scanData?.documents?.count) {
+                total += (scanData.documents.count || 0);
+            }
+
+            summaryEl.textContent = total.toLocaleString() + ' items ready to scrape';
+        }
+
+        // Quick Curate Toolbar
+        var btnSelectAllCurate = document.getElementById('btn-curate-select-all');
+        if (btnSelectAllCurate) {
+            btnSelectAllCurate.addEventListener('click', function () {
+                document.querySelectorAll('#dynamic-post-types-curate .pt-curate-card').forEach(function (card) {
+                    var cb = card.querySelector('.pt-group-check');
+                    if (cb) cb.checked = true;
+                    card.classList.add('selected');
+                    card.querySelectorAll('.pt-samples-drawer input[type="checkbox"]').forEach(function (c) {
+                        c.checked = true;
+                    });
+                });
+                var docsMaster = document.getElementById('check-all-docs');
+                if (docsMaster) {
+                    docsMaster.checked = true;
+                    docsMaster.dispatchEvent(new Event('change'));
+                }
+                updateCurateSummary();
+            });
+        }
+
+        var btnSelectDefaultsCurate = document.getElementById('btn-curate-select-defaults');
+        if (btnSelectDefaultsCurate) {
+            btnSelectDefaultsCurate.addEventListener('click', function () {
+                var defaults = ['page', 'post', 'product'];
+                document.querySelectorAll('#dynamic-post-types-curate .pt-curate-card').forEach(function (card) {
+                    var cb = card.querySelector('.pt-group-check');
+                    if (cb) {
+                        var slug = cb.getAttribute('data-slug');
+                        var isDef = defaults.indexOf(slug) !== -1;
+                        cb.checked = isDef;
+                        if (isDef) card.classList.add('selected');
+                        else card.classList.remove('selected');
+                        card.querySelectorAll('.pt-samples-drawer input[type="checkbox"]').forEach(function (c) {
+                            c.checked = isDef;
+                        });
+                    }
+                });
+                updateCurateSummary();
+            });
+        }
+
+        var btnDeselectAllCurate = document.getElementById('btn-curate-deselect-all');
+        if (btnDeselectAllCurate) {
+            btnDeselectAllCurate.addEventListener('click', function () {
+                document.querySelectorAll('#dynamic-post-types-curate .pt-curate-card').forEach(function (card) {
+                    var cb = card.querySelector('.pt-group-check');
+                    if (cb) cb.checked = false;
+                    card.classList.remove('selected');
+                    card.querySelectorAll('.pt-samples-drawer input[type="checkbox"]').forEach(function (c) {
+                        c.checked = false;
+                    });
+                });
+                var docsMaster = document.getElementById('check-all-docs');
+                if (docsMaster) {
+                    docsMaster.checked = false;
+                    docsMaster.dispatchEvent(new Event('change'));
+                }
+                updateCurateSummary();
+            });
         }
 
         // ================= STEP 4: REGISTRATION & ASYNC BATCH SYNC =================
@@ -355,7 +578,16 @@
             if (queue.length === 0) {
                 appendLog('sync-terminal-log', '[NOTICE] No content types selected with published posts.', 'warn');
                 updateProgress('sync-progress-fill', 'sync-percent-label', 'sync-status-label', 100, 'Training complete.');
-                document.getElementById('btn-to-step-5').disabled = false;
+                
+                var completeNoticeEmpty = document.getElementById('sync-complete-notice');
+                var completeMetaEmpty = document.getElementById('sync-complete-meta');
+                if (completeNoticeEmpty) {
+                    if (completeMetaEmpty) completeMetaEmpty.textContent = 'Configuration saved. Ready for launch!';
+                    completeNoticeEmpty.style.display = 'flex';
+                }
+
+                var step5BtnEmpty = document.getElementById('btn-to-step-5');
+                if (step5BtnEmpty) step5BtnEmpty.disabled = false;
                 return;
             }
 
@@ -372,7 +604,21 @@
                     // Record scrape complete
                     recordScrapeComplete(totalItemsSynced, totalChunksSynced, selectedTypes);
 
-                    document.getElementById('btn-to-step-5').disabled = false;
+                    // Show completion card
+                    var completeNotice = document.getElementById('sync-complete-notice');
+                    var completeMeta = document.getElementById('sync-complete-meta');
+                    if (completeNotice) {
+                        if (completeMeta) {
+                            completeMeta.textContent = 'Indexed ' + totalItemsSynced + ' items across ' + selectedTypes.length + ' post types and generated ' + totalChunksSynced + ' Knowledge Base chunks. Your AI assistant is now fully trained and ready for live visitors.';
+                        }
+                        completeNotice.style.display = 'flex';
+                    }
+
+                    var step5Btn = document.getElementById('btn-to-step-5');
+                    if (step5Btn) {
+                        step5Btn.disabled = false;
+                        step5Btn.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    }
                     return;
                 }
 
@@ -441,13 +687,12 @@
             fetch(data.ajaxUrl, { method: 'POST', body: fd });
         }
 
-        // ================= STEP 5: FINALIZE =================
+        // ================= STEP 5: FINALIZE & INTERACTIVE SIMULATED PREVIEW =================
         var btnToStep5 = document.getElementById('btn-to-step-5');
         if (btnToStep5) {
             btnToStep5.addEventListener('click', function () {
                 goToStep(5);
-                var astDisplay = document.getElementById('display-assistant-id');
-                if (astDisplay) astDisplay.textContent = assistantId;
+                initStep5Preview();
 
                 var finData = new FormData();
                 finData.append('action', 'crescelo_wizard_finish');
@@ -457,16 +702,136 @@
             });
         }
 
+        function initStep5Preview() {
+            var astDisplay = document.getElementById('display-assistant-id');
+            if (astDisplay) astDisplay.textContent = assistantId || data.currentAssistantId || 'ast_ready';
+
+            var astName = data.siteName ? (data.siteName + ' AI') : 'Crescelo AI Assistant';
+            var astNameEl = document.getElementById('wizard-preview-ast-name');
+            if (astNameEl) astNameEl.textContent = astName;
+
+            var welcomeBubble = document.getElementById('wizard-welcome-bubble');
+            if (welcomeBubble && data.siteName) {
+                welcomeBubble.textContent = "Hi! 👋 Welcome to " + data.siteName + ". I'm your AI Shopping Assistant. Looking for a specific product or have a question?";
+            }
+
+            // Interactive input
+            var chatBody = document.getElementById('wizard-preview-chat-body');
+            var inputSim = document.getElementById('wizard-preview-input');
+            var sendBtn = document.getElementById('wizard-preview-send');
+
+            function sendSimulatedMessage(text) {
+                if (!text || !chatBody) return;
+
+                // Add user bubble
+                var userRow = document.createElement('div');
+                userRow.className = 'preview-msg user';
+                userRow.style.display = 'flex';
+                userRow.style.justifyContent = 'flex-end';
+                userRow.style.marginBottom = '10px';
+                userRow.innerHTML = '<div class="preview-bubble" style="background:#08251a; color:#abff44; border-radius:12px 12px 2px 12px; margin-left:auto;">' + escapeHtml(text) + '</div>';
+                chatBody.appendChild(userRow);
+                chatBody.scrollTop = chatBody.scrollHeight;
+
+                // Simulated thinking then bot response
+                setTimeout(function () {
+                    var lower = text.toLowerCase();
+                    var reply = '';
+
+                    if (lower.indexOf('order') !== -1 || lower.indexOf('track') !== -1 || lower.indexOf('dispatch') !== -1) {
+                        reply = '📦 I can check live order tracking and dispatch status! Please provide your Order # and email address, and I will verify it deterministically in your store.';
+                    } else if (lower.indexOf('cancel') !== -1) {
+                        reply = '🛑 To cancel an order, I will confirm your order details and mark it for cancellation, adding a 🤖 Bot Cancelled badge in your WooCommerce dashboard.';
+                    } else if (lower.indexOf('stock') !== -1 || lower.indexOf('available') !== -1 || lower.indexOf('acne') !== -1 || lower.indexOf('product') !== -1 || lower.indexOf('item') !== -1) {
+                        reply = '🛍️ Based on your store catalog, I found relevant items! I automatically verify real-time stock levels and pricing from your WooCommerce database before making any recommendation.';
+                    } else {
+                        reply = '✨ I am trained on your website content and catalog. I can recommend in-stock products, answer questions, and stage items to cart!';
+                    }
+
+                    var botRow = document.createElement('div');
+                    botRow.className = 'preview-msg bot';
+                    botRow.style.display = 'flex';
+                    botRow.style.marginBottom = '10px';
+                    botRow.innerHTML = '<div class="preview-bubble">' + reply + '</div>';
+                    chatBody.appendChild(botRow);
+                    chatBody.scrollTop = chatBody.scrollHeight;
+                }, 400);
+            }
+
+            if (sendBtn && inputSim) {
+                sendBtn.onclick = function () {
+                    var val = inputSim.value.trim();
+                    if (val) {
+                        sendSimulatedMessage(val);
+                        inputSim.value = '';
+                    }
+                };
+
+                inputSim.onkeydown = function (e) {
+                    if (e.key === 'Enter') {
+                        var val = inputSim.value.trim();
+                        if (val) {
+                            sendSimulatedMessage(val);
+                            inputSim.value = '';
+                        }
+                    }
+                };
+            }
+
+            // Suggestion pills
+            document.querySelectorAll('#wizard-preview-suggestions .preview-pill').forEach(function (pill) {
+                pill.onclick = function () {
+                    var msg = this.getAttribute('data-msg') || this.textContent;
+                    sendSimulatedMessage(msg);
+                };
+            });
+
+            // Toggle launcher
+            var launcher = document.getElementById('wizard-preview-launcher');
+            var chatWindow = document.getElementById('wizard-preview-chat-window');
+            var closeBtn = document.getElementById('wizard-preview-close');
+
+            if (launcher && chatWindow) {
+                launcher.onclick = function () {
+                    var isHidden = chatWindow.style.display === 'none';
+                    chatWindow.style.display = isHidden ? 'block' : 'none';
+                };
+            }
+            if (closeBtn && chatWindow) {
+                closeBtn.onclick = function () {
+                    chatWindow.style.display = 'none';
+                };
+            }
+        }
+
         var btnFinishAll = document.getElementById('btn-finish-all');
         if (btnFinishAll) {
             btnFinishAll.addEventListener('click', function () {
-                window.location.reload();
+                btnFinishAll.disabled = true;
+                btnFinishAll.textContent = 'Saving...';
+                var isEnabled = document.getElementById('toggle-widget-public')?.checked ? '1' : '0';
+                var finData = new FormData();
+                finData.append('action', 'crescelo_wizard_finish');
+                finData.append('nonce', data.nonce);
+                finData.append('enabled', isEnabled);
+
+                fetch(data.ajaxUrl, { method: 'POST', body: finData })
+                .then(function () {
+                    window.location.reload();
+                })
+                .catch(function () {
+                    window.location.reload();
+                });
             });
         }
 
         var btnReRun = document.getElementById('btn-re-run-wizard');
         if (btnReRun) {
             btnReRun.addEventListener('click', function () {
+                var resetData = new FormData();
+                resetData.append('action', 'crescelo_wizard_reset');
+                resetData.append('nonce', data.nonce);
+                fetch(data.ajaxUrl, { method: 'POST', body: resetData });
                 goToStep(1);
             });
         }

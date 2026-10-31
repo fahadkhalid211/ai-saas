@@ -191,28 +191,52 @@ $nonce        = wp_create_nonce('crescelo_wizard_nonce');
         <!-- =================== STEP 2: SCANNING WEBSITE =================== -->
         <div class="wizard-pane" id="pane-step-2">
             <h2 class="pane-title"><?php esc_html_e('Scanning Website & Knowledge Structure...', 'crescelo'); ?></h2>
-            <p class="pane-subtitle"><?php esc_html_e('Inspecting WordPress posts, pages, WooCommerce tables, and uploaded media documents.', 'crescelo'); ?></p>
+            <p class="pane-subtitle"><?php esc_html_e('Inspecting WordPress posts, pages, WooCommerce tables, custom post types, and media documents.', 'crescelo'); ?></p>
 
             <div class="scanner-visual">
                 <div class="radar-pulse"></div>
                 <div class="scanner-text" id="scanner-status-text"><?php esc_html_e('Connecting to local database...', 'crescelo'); ?></div>
             </div>
 
-            <div class="discovery-metrics-grid" id="discovery-metrics" style="display: none;">
+            <!-- Database Scan Progress Bar -->
+            <div class="scan-progress-container" id="scan-progress-container">
+                <div class="progress-bar-wrap">
+                    <div class="progress-bar-fill" id="scan-progress-fill" style="width: 15%;"></div>
+                </div>
+                <div class="progress-status-row">
+                    <span id="scan-step-detail"><?php esc_html_e('Analyzing database schema and registered post types...', 'crescelo'); ?></span>
+                    <span id="scan-percent-text">15%</span>
+                </div>
+            </div>
+
+            <div style="display:flex; justify-content:space-between; align-items:center; margin: 24px 0 14px 0;">
+                <div class="section-label" style="margin:0;"><?php esc_html_e('Discovered Post Types & Data Catalogs', 'crescelo'); ?></div>
+                <button type="button" class="btn btn-secondary" id="btn-rescan-step-2" style="padding:6px 14px; font-size:12.5px; display:inline-flex; align-items:center; gap:6px;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+                    <span><?php esc_html_e('Re-scan Database', 'crescelo'); ?></span>
+                </button>
+            </div>
+
+            <!-- Dynamic Post Type Discovery Grid -->
+            <div class="discovery-metrics-grid" id="discovery-metrics">
                 <!-- Populated dynamically via JS with all discovered post types -->
                 <div class="metric-card">
+                    <div class="metric-icon">📄</div>
                     <div class="metric-num" id="metric-pages">0</div>
                     <div class="metric-label"><?php esc_html_e('Published Pages', 'crescelo'); ?></div>
                 </div>
                 <div class="metric-card">
+                    <div class="metric-icon">📝</div>
                     <div class="metric-num" id="metric-posts">0</div>
                     <div class="metric-label"><?php esc_html_e('Blog Posts', 'crescelo'); ?></div>
                 </div>
                 <div class="metric-card" id="metric-card-products">
+                    <div class="metric-icon">🛍️</div>
                     <div class="metric-num" id="metric-products">0</div>
                     <div class="metric-label"><?php esc_html_e('WooCommerce Products', 'crescelo'); ?></div>
                 </div>
                 <div class="metric-card">
+                    <div class="metric-icon">📁</div>
                     <div class="metric-num" id="metric-docs">0</div>
                     <div class="metric-label"><?php esc_html_e('Media Documents', 'crescelo'); ?></div>
                 </div>
@@ -234,24 +258,39 @@ $nonce        = wp_create_nonce('crescelo_wizard_nonce');
             <div class="curate-columns">
                 <!-- Left: Content Checkboxes -->
                 <div class="curate-col">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; padding-bottom:8px; border-bottom:2px solid #f1f5f9;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; padding-bottom:8px; border-bottom:2px solid #f1f5f9; flex-wrap:wrap; gap:8px;">
                         <span class="col-title" style="margin:0; padding:0; border:none;"><?php esc_html_e('Discovered Post Types & Content', 'crescelo'); ?></span>
                         <span id="curate-selection-count" class="count-badge has-items"><?php esc_html_e('Loading...', 'crescelo'); ?></span>
                     </div>
 
+                    <!-- Post Types Quick Toolbar -->
+                    <div class="pt-toolbar" style="display:flex; gap:8px; margin-bottom:14px; flex-wrap:wrap;">
+                        <button type="button" class="btn-tool" id="btn-curate-select-all"><?php esc_html_e('Select All', 'crescelo'); ?></button>
+                        <button type="button" class="btn-tool" id="btn-curate-select-defaults"><?php esc_html_e('Recommended Defaults', 'crescelo'); ?></button>
+                        <button type="button" class="btn-tool" id="btn-curate-deselect-all"><?php esc_html_e('Deselect All', 'crescelo'); ?></button>
+                    </div>
+
                     <!-- Dynamic Post Types Container -->
                     <div id="dynamic-post-types-curate">
-                        <!-- Populated dynamically via JS for every registered post type -->
+                        <!-- Populated dynamically via JS for every registered post type as structured cards -->
                     </div>
 
                     <!-- Documents Accordion -->
-                    <div class="content-group" id="group-docs" style="display:none;">
-                        <label class="group-header">
-                            <input type="checkbox" id="check-all-docs" checked />
-                            <strong><?php esc_html_e('Media Documents', 'crescelo'); ?> (<span id="count-docs-label">0</span> <?php esc_html_e('files', 'crescelo'); ?>)</strong>
-                        </label>
-                        <div class="group-items" id="items-docs-list">
-                            <!-- Populated via JS -->
+                    <div class="content-group" id="group-docs" style="display:none; margin-top:14px;">
+                        <div class="pt-curate-card">
+                            <div class="pt-card-header">
+                                <label class="pt-card-left">
+                                    <input type="checkbox" id="check-all-docs" class="pt-group-check" checked />
+                                    <span class="pt-card-icon">📁</span>
+                                    <span class="pt-card-title"><?php esc_html_e('Media Documents', 'crescelo'); ?></span>
+                                    <span class="pt-count-badge"><span id="count-docs-label">0</span> <?php esc_html_e('files', 'crescelo'); ?></span>
+                                </label>
+                            </div>
+                            <div class="pt-samples-drawer" id="items-docs-drawer" style="display:block;">
+                                <div class="pt-samples-list" id="items-docs-list">
+                                    <!-- Populated via JS -->
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -367,10 +406,19 @@ $nonce        = wp_create_nonce('crescelo_wizard_nonce');
                 <div class="log-line info"><?php esc_html_e('[INIT] Preparing content extraction batches...', 'crescelo'); ?></div>
             </div>
 
+            <!-- Completion Banner (hidden until 100%) -->
+            <div class="sync-complete-notice" id="sync-complete-notice" style="display:none;">
+                <div class="sync-complete-icon">✓</div>
+                <div>
+                    <h3 style="margin:0 0 4px 0; font-size:16px; color:#08251a; font-weight:800;"><?php esc_html_e('AI Knowledge Base Training Completed!', 'crescelo'); ?></h3>
+                    <p id="sync-complete-meta" style="margin:0; font-size:13px; color:#1a4734;"></p>
+                </div>
+            </div>
+
             <div class="wizard-actions" style="margin-top: 24px;">
                 <div></div>
                 <button type="button" class="btn btn-primary" id="btn-to-step-5" disabled>
-                    <?php esc_html_e('Finalize & Test Assistant →', 'crescelo'); ?>
+                    <?php esc_html_e('Launch & Test Assistant →', 'crescelo'); ?>
                 </button>
             </div>
         </div>
@@ -389,7 +437,7 @@ $nonce        = wp_create_nonce('crescelo_wizard_nonce');
 
             <div class="launch-grid">
                 <div class="launch-settings">
-                    <h4 style="margin-top:0;"><?php esc_html_e('Widget Visibility & Controls', 'crescelo'); ?></h4>
+                    <h4 style="margin-top:0; font-size:16px; font-weight:800; color:var(--kx-deep);"><?php esc_html_e('Widget Visibility & Controls', 'crescelo'); ?></h4>
 
                     <div class="feature-item" style="border:none; padding:12px 0;">
                         <div class="feature-info">
@@ -404,33 +452,60 @@ $nonce        = wp_create_nonce('crescelo_wizard_nonce');
 
                     <div style="margin-top: 16px; background:#f8fafc; padding:14px; border-radius:8px; border:1px solid #e2e8f0;">
                         <div style="font-size:12px; font-weight:700; color:#1e293b; margin-bottom:4px;"><?php esc_html_e('Assistant ID', 'crescelo'); ?></div>
-                        <code id="display-assistant-id" style="font-size:13px; color:#2563eb; background:#fff; padding:4px 8px; border-radius:4px; border:1px solid #cbd5e1; display:inline-block;">ast_...</code>
+                        <code id="display-assistant-id" style="font-size:13px; color:#0f6e58; font-weight:700; background:#fff; padding:4px 8px; border-radius:4px; border:1px solid #cbd5e1; display:inline-block;">ast_...</code>
                     </div>
 
                     <div style="margin-top: 24px;">
-                        <a href="<?php echo esc_url(home_url()); ?>" target="_blank" class="btn btn-secondary" style="display:inline-block; text-decoration:none;">
+                        <a href="<?php echo esc_url(home_url()); ?>" target="_blank" class="btn btn-secondary" style="display:inline-flex; align-items:center; gap:8px; text-decoration:none;">
                             <span><?php esc_html_e('Preview on Your Live Website →', 'crescelo'); ?></span>
                         </a>
                     </div>
                 </div>
 
                 <div class="launch-preview-card">
-                    <h4><?php esc_html_e('Simulated Widget Preview', 'crescelo'); ?></h4>
-                    <div class="preview-chat-box">
-                        <div class="chat-mock-header">
-                            <span class="mock-dot"></span>
-                            <span id="preview-ast-name"><?php esc_html_e('AI Shopping Assistant', 'crescelo'); ?></span>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                        <h4 style="margin:0; font-size:15px; font-weight:800; color:var(--kx-deep);"><?php esc_html_e('Interactive Simulated Widget Preview', 'crescelo'); ?></h4>
+                        <span class="status-pill status-ready" style="font-size:11px; padding:2px 8px;"><?php esc_html_e('Interactive', 'crescelo'); ?></span>
+                    </div>
+
+                    <div class="widget-preview-frame">
+                        <div class="preview-chat-window" id="wizard-preview-chat-window">
+                            <div class="preview-chat-header">
+                                <div class="preview-header-brand">
+                                    <div class="preview-avatar">AI</div>
+                                    <div>
+                                        <div class="preview-name" id="wizard-preview-ast-name"><?php echo esc_html(get_bloginfo('name')); ?> AI</div>
+                                        <div class="preview-status"><?php esc_html_e('● Online & Grounded', 'crescelo'); ?></div>
+                                    </div>
+                                </div>
+                                <span class="preview-close" id="wizard-preview-close" title="<?php esc_attr_e('Close Preview', 'crescelo'); ?>">✕</span>
+                            </div>
+
+                            <div class="preview-chat-body" id="wizard-preview-chat-body">
+                                <div class="preview-msg bot">
+                                    <div class="preview-bubble" id="wizard-welcome-bubble">
+                                        <?php echo esc_html(sprintf(__('Hi! 👋 Welcome to %s. I have indexed your store content and products. Ask me anything!', 'crescelo'), get_bloginfo('name'))); ?>
+                                    </div>
+                                </div>
+
+                                <div class="preview-suggestions" id="wizard-preview-suggestions">
+                                    <span class="preview-pill" data-msg="<?php esc_attr_e('What products or services do you offer?', 'crescelo'); ?>"><?php esc_html_e('What products or services do you offer?', 'crescelo'); ?></span>
+                                    <span class="preview-pill" data-msg="<?php esc_attr_e('Check live stock and availability', 'crescelo'); ?>"><?php esc_html_e('Check live stock and availability', 'crescelo'); ?></span>
+                                    <span class="preview-pill" data-msg="<?php esc_attr_e('Can you check my order status?', 'crescelo'); ?>"><?php esc_html_e('Can you check my order status?', 'crescelo'); ?></span>
+                                </div>
+                            </div>
+
+                            <div class="preview-chat-footer">
+                                <input type="text" id="wizard-preview-input" class="preview-input-sim-interactive" placeholder="<?php esc_attr_e('Type a test message or question...', 'crescelo'); ?>" />
+                                <button type="button" id="wizard-preview-send" class="preview-send-btn">➤</button>
+                            </div>
                         </div>
-                        <div class="chat-mock-body">
-                            <div class="mock-bubble assistant" id="preview-welcome-msg">
-                                <?php esc_html_e("Hi! Welcome to our store. I'm your AI Shopping Assistant. Looking for a specific product or need a recommendation?", 'crescelo'); ?>
-                            </div>
-                            <div class="mock-bubble user">
-                                <?php esc_html_e('Do you have anything under $50?', 'crescelo'); ?>
-                            </div>
-                            <div class="mock-bubble assistant">
-                                <?php esc_html_e('Yes! I found several top-rated items matching your budget. Let me know if you would like me to check stock or add any to your cart!', 'crescelo'); ?>
-                            </div>
+
+                        <!-- Floating Launcher Preview -->
+                        <div class="preview-launcher-bubble" id="wizard-preview-launcher" title="<?php esc_attr_e('Click to toggle chat preview', 'crescelo'); ?>">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M21 11.5C21.0034 12.8199 20.6951 14.1219 20.1 15.3C19.3944 16.7118 18.3098 17.8992 16.9674 18.7293C15.6251 19.5594 14.0782 20.0001 12.5 20.0001C11.1801 20.0034 9.87812 19.6951 8.7 19.1L3 21L4.9 15.3C4.30493 14.1219 3.99656 12.8199 4 11.5C4 9.92179 4.44061 8.37488 5.27072 7.03258C6.10083 5.69028 7.28825 4.6056 8.7 3.90003C9.87812 3.30496 11.1801 2.99659 12.5 3.00003H13C15.0843 3.11502 17.053 3.99479 18.5291 5.47089C20.0052 6.94699 20.885 8.91568 21 11V11.5Z" stroke="#08251a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
                         </div>
                     </div>
                 </div>
@@ -451,7 +526,10 @@ if (!window.CresceloWizardData) {
         ajaxUrl: <?php echo wp_json_encode(admin_url('admin-ajax.php')); ?>,
         nonce: <?php echo wp_json_encode($nonce); ?>,
         hostUrl: <?php echo wp_json_encode(esc_url_raw($host_url)); ?>,
-        currentAssistantId: <?php echo wp_json_encode(sanitize_text_field($assistant_id)); ?>
+        currentAssistantId: <?php echo wp_json_encode(sanitize_text_field($assistant_id)); ?>,
+        isConnected: <?php echo wp_json_encode((bool) $is_connected); ?>,
+        siteName: <?php echo wp_json_encode(get_bloginfo('name')); ?>,
+        siteUrl: <?php echo wp_json_encode(home_url()); ?>
     };
 }
 </script>
