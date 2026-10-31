@@ -595,11 +595,17 @@
             var totalItemsSynced = 0;
             var totalChunksSynced = 0;
 
+            var grandTotalItems = 0;
+            queue.forEach(function (q) {
+                grandTotalItems += (q.total || 0);
+            });
+            if (grandTotalItems === 0) grandTotalItems = 1;
+
             function processNextQueueItem() {
                 if (currentQueueIdx >= queue.length) {
                     // All finished!
                     updateProgress('sync-progress-fill', 'sync-percent-label', 'sync-status-label', 100, 'Training complete!');
-                    appendLog('sync-terminal-log', '[DONE] Whole website scraped! Indexed ' + totalItemsSynced + ' items and generated ' + totalChunksSynced + ' Knowledge Base chunks.', 'success');
+                    appendLog('sync-terminal-log', '[DONE] Whole website scraped! Indexed ' + totalItemsSynced.toLocaleString() + ' items and generated ' + totalChunksSynced.toLocaleString() + ' Knowledge Base chunks.', 'success');
                     
                     // Record scrape complete
                     recordScrapeComplete(totalItemsSynced, totalChunksSynced, selectedTypes);
@@ -609,7 +615,7 @@
                     var completeMeta = document.getElementById('sync-complete-meta');
                     if (completeNotice) {
                         if (completeMeta) {
-                            completeMeta.textContent = 'Indexed ' + totalItemsSynced + ' items across ' + selectedTypes.length + ' post types and generated ' + totalChunksSynced + ' Knowledge Base chunks. Your AI assistant is now fully trained and ready for live visitors.';
+                            completeMeta.textContent = 'Indexed ' + totalItemsSynced.toLocaleString() + ' items across ' + selectedTypes.length + ' post types and generated ' + totalChunksSynced.toLocaleString() + ' Knowledge Base chunks. Your AI assistant is now fully trained and ready for live visitors.';
                         }
                         completeNotice.style.display = 'flex';
                     }
@@ -648,8 +654,11 @@
 
                             appendLog('sync-terminal-log', '[CHUNK] Stored ' + chunks + ' embeddings for ' + processed + ' ' + qItem.type + '.', 'success');
 
-                            var baseProg = 25 + Math.round((currentQueueIdx / queue.length) * 70);
-                            updateProgress('sync-progress-fill', 'sync-percent-label', 'sync-status-label', baseProg, 'Scraping ' + qItem.type + '...');
+                            // Scale smoothly from 25% up to 98% based on real items processed vs total items
+                            var scrapeFraction = Math.min(1, totalItemsSynced / grandTotalItems);
+                            var currentPercent = Math.min(98, Math.max(25, 25 + Math.round(scrapeFraction * 73)));
+                            var progressMsg = 'Scraping ' + qItem.type + ' (' + totalItemsSynced.toLocaleString() + ' / ' + grandTotalItems.toLocaleString() + ' items indexed)...';
+                            updateProgress('sync-progress-fill', 'sync-percent-label', 'sync-status-label', currentPercent, progressMsg);
 
                             if (resp.data.hasMore && resp.data.nextOffset) {
                                 offset = resp.data.nextOffset;
@@ -977,6 +986,13 @@
             var totalItemsScraped = 0;
             var totalChunksCreated = 0;
 
+            var grandTotalExpected = 0;
+            postTypes.forEach(function (t) {
+                var count = scanData?.post_types && scanData.post_types[t] ? scanData.post_types[t].count : 15;
+                grandTotalExpected += (count || 15);
+            });
+            if (grandTotalExpected === 0) grandTotalExpected = 1;
+
             function processNextType() {
                 if (activeScraperAborted) {
                     btnStartStandalone.disabled = false;
@@ -986,7 +1002,7 @@
                 if (currentTypeIdx >= postTypes.length) {
                     // Completed whole website scrape!
                     updateProgress('standalone-progress-fill', 'standalone-percent-label', 'standalone-status-label', 100, 'Website scrape completed!');
-                    appendLog('standalone-terminal-log', '[DONE] Whole website scraped! Indexed ' + totalItemsScraped + ' items and created ' + totalChunksCreated + ' knowledge chunks.', 'success');
+                    appendLog('standalone-terminal-log', '[DONE] Whole website scraped! Indexed ' + totalItemsScraped.toLocaleString() + ' items and created ' + totalChunksCreated.toLocaleString() + ' knowledge chunks.', 'success');
                     
                     recordScrapeComplete(totalItemsScraped, totalChunksCreated, postTypes);
 
@@ -1032,8 +1048,10 @@
 
                             appendLog('standalone-terminal-log', '[CHUNK] Stored ' + chunks + ' embeddings for ' + processed + ' ' + currentType + ' items.', 'success');
 
-                            var percent = Math.min(95, Math.round(((currentTypeIdx + (offset / (offset + 20))) / postTypes.length) * 90) + 10);
-                            updateProgress('standalone-progress-fill', 'standalone-percent-label', 'standalone-status-label', percent, 'Scraping ' + currentType + '...');
+                            var frac = Math.min(1, totalItemsScraped / grandTotalExpected);
+                            var percent = Math.min(98, Math.max(5, Math.round(frac * 93)));
+                            var progressMsg = 'Scraping ' + currentType + ' (' + totalItemsScraped.toLocaleString() + ' / ' + grandTotalExpected.toLocaleString() + ' items)...';
+                            updateProgress('standalone-progress-fill', 'standalone-percent-label', 'standalone-status-label', percent, progressMsg);
 
                             if (resp.data.hasMore && resp.data.nextOffset) {
                                 offset = resp.data.nextOffset;
