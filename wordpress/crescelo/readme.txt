@@ -4,7 +4,7 @@ Tags: ai-chatbot, customer-support, woocommerce-chatbot, website-scraper, knowle
 Requires at least: 5.8
 Tested up to: 6.7
 Requires PHP: 7.4
-Stable tag: 2.2.0
+Stable tag: 2.2.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -82,13 +82,21 @@ Yes. The setup wizard and scraper support blogs, corporate sites, documentation 
 
 == Screenshots ==
 
-1. Crescelo 5-Step Interactive Setup Wizard.
-2. Database content discovery with dynamic post type detection.
-3. Post type selection and scraper controls.
-4. Live batch indexing with terminal log and progress bar.
-5. In-chat product recommendations with direct Add to Cart.
+1. Interactive 5-step onboarding wizard with website type and goal selection.
+2. Step 2: Automated database scan discovering all registered post types with dynamic metrics.
+3. Step 3: Structured post type cards with collapsible sample drawers and WooCommerce category filter.
+4. Step 4: Real-time asynchronous content vectorization with progress bar and terminal logs.
+5. Step 5: Live simulated chat preview with interactive product advice, stock verification, and order tracking.
 
 == Changelog ==
+
+= 2.2.1 =
+* Fixed wizard step pane isolation so inactive steps do not render prematurely in the DOM flow.
+* Enhanced Step 2 database scanner with an animated multi-phase progress bar and dynamic metrics cards for all registered post types.
+* Redesigned Step 3 content curation with structured card components, collapsible sample content drawers, and quick selection toolbar.
+* Upgraded Step 5 with an interactive simulated preview supporting live test messages, deterministic stock verification, and order inquiry prompts.
+* Added deterministic WooCommerce stock checking (`/stock-check`), order lookup (`/order-lookup`), and customer-driven cancellation (`/order-cancel`) with HPOS admin badges.
+* Synchronized siteName and siteUrl parameters across WordPress localization and onboarding wizard state.
 
 = 2.2.0 =
 * Full WordPress.org compliance: slug updated to `crescelo`, text domain set to `crescelo`, strict sanitization and output escaping.
