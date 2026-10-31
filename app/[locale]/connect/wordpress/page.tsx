@@ -21,11 +21,22 @@ export default function WordPressConnectPage() {
   const [selectedAssistantId, setSelectedAssistantId] = useState('new');
   const [userEmail, setUserEmail] = useState('');
 
+  // Auth toggle: 'login' | 'register'
+  const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
+
   // Login form state (if not authenticated)
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
   const [loginError, setLoginError] = useState<string | null>(null);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
+
+  // Register form state (for new users)
+  const [registerBusinessName, setRegisterBusinessName] = useState('');
+  const [registerEmail, setRegisterEmail] = useState('');
+  const [registerPassword, setRegisterPassword] = useState('');
+  const [registerConfirmPassword, setRegisterConfirmPassword] = useState('');
+  const [registerError, setRegisterError] = useState<string | null>(null);
+  const [isRegistering, setIsRegistering] = useState(false);
 
   // Connecting state
   const [isAuthorizing, setIsAuthorizing] = useState(false);
@@ -39,8 +50,11 @@ export default function WordPressConnectPage() {
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    setSiteUrl(params.get('site_url') || '');
-    setSiteName(params.get('site_name') || 'WordPress Website');
+    const site = params.get('site_url') || '';
+    const name = params.get('site_name') || 'WordPress Website';
+    setSiteUrl(site);
+    setSiteName(name);
+    setRegisterBusinessName(name);
     setReturnUrl(params.get('return_url') || '');
     setStateParam(params.get('state') || '');
 
@@ -99,6 +113,51 @@ export default function WordPressConnectPage() {
       setLoginError(err?.message || 'Authentication failed');
     } finally {
       setIsLoggingIn(false);
+    }
+  };
+
+  const handleInlineRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const email = registerEmail.trim();
+    const password = registerPassword.trim();
+    const businessName = registerBusinessName.trim() || siteName || 'WordPress Business';
+
+    if (!email || !password) return;
+
+    if (password.length < 6) {
+      setRegisterError('Password must be at least 6 characters.');
+      return;
+    }
+
+    if (registerConfirmPassword && password !== registerConfirmPassword.trim()) {
+      setRegisterError('Passwords do not match.');
+      return;
+    }
+
+    setIsRegistering(true);
+    setRegisterError(null);
+    try {
+      const res = await fetch('/api/auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          mode: 'register',
+          businessName,
+          email,
+          password,
+          industryTemplateSlug: 'general',
+        }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        await checkAuthAndLoadAssistants();
+      } else {
+        setRegisterError(data.error || 'Registration failed. Please check your details.');
+      }
+    } catch (err: any) {
+      setRegisterError(err?.message || 'Registration failed');
+    } finally {
+      setIsRegistering(false);
     }
   };
 
@@ -193,66 +252,223 @@ export default function WordPressConnectPage() {
             Verifying your Crescelo session...
           </div>
         ) : !isAuthenticated ? (
-          // ================= LOGIN FORM =================
+          // ================= AUTH (LOGIN OR CREATE ACCOUNT) =================
           <div>
-            <h2 style={{ fontSize: '20px', fontWeight: 800, color: '#08251a', margin: '0 0 6px 0' }}>
-              Sign in to Connect WordPress
-            </h2>
-            <p style={{ fontSize: '13.5px', color: '#4b5b51', margin: '0 0 20px 0', lineHeight: 1.5 }}>
-              Sign in to your Crescelo account to link <strong>{siteName || 'your website'}</strong>.
-            </p>
-
-            {loginError && (
-              <div style={{ background: '#fef2f2', border: '1px solid #fecaca', color: '#991b1b', padding: '10px 14px', borderRadius: '8px', fontSize: '13px', marginBottom: '16px' }}>
-                {loginError}
-              </div>
-            )}
-
-            <form onSubmit={handleInlineLogin} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-              <div>
-                <label style={{ display: 'block', fontSize: '12.5px', fontWeight: 600, color: '#08251a', marginBottom: '4px' }}>Email Address</label>
-                <input
-                  type="email"
-                  value={loginEmail}
-                  onChange={(e) => setLoginEmail(e.target.value)}
-                  required
-                  placeholder="admin@example.com"
-                  style={{ width: '100%', padding: '10px 14px', border: '1px solid #cbd5e1', borderRadius: '8px', fontSize: '14px', boxSizing: 'border-box' }}
-                />
-              </div>
-
-              <div>
-                <label style={{ display: 'block', fontSize: '12.5px', fontWeight: 600, color: '#08251a', marginBottom: '4px' }}>Password</label>
-                <input
-                  type="password"
-                  value={loginPassword}
-                  onChange={(e) => setLoginPassword(e.target.value)}
-                  required
-                  placeholder="••••••••"
-                  style={{ width: '100%', padding: '10px 14px', border: '1px solid #cbd5e1', borderRadius: '8px', fontSize: '14px', boxSizing: 'border-box' }}
-                />
-              </div>
-
+            {/* Segmented Mode Selector */}
+            <div style={{ display: 'flex', background: '#f2f0dc', padding: '4px', borderRadius: '10px', marginBottom: '22px' }}>
               <button
-                type="submit"
-                disabled={isLoggingIn}
+                type="button"
+                onClick={() => { setAuthMode('login'); setLoginError(null); setRegisterError(null); }}
                 style={{
-                  marginTop: '8px',
-                  background: '#08251a',
-                  color: '#abff44',
+                  flex: 1,
+                  padding: '9px 12px',
+                  fontSize: '13.5px',
                   fontWeight: 700,
-                  fontSize: '14px',
-                  padding: '12px',
                   borderRadius: '8px',
                   border: 'none',
-                  cursor: isLoggingIn ? 'not-allowed' : 'pointer',
-                  opacity: isLoggingIn ? 0.7 : 1,
-                  transition: 'background 0.15s ease',
+                  cursor: 'pointer',
+                  background: authMode === 'login' ? '#ffffff' : 'transparent',
+                  color: authMode === 'login' ? '#08251a' : '#6b6b5c',
+                  boxShadow: authMode === 'login' ? '0 2px 6px rgba(0,0,0,0.06)' : 'none',
+                  transition: 'all 0.15s ease',
                 }}
               >
-                {isLoggingIn ? 'Authenticating...' : 'Sign in & Authorize'}
+                Sign In
               </button>
-            </form>
+              <button
+                type="button"
+                onClick={() => { setAuthMode('register'); setLoginError(null); setRegisterError(null); }}
+                style={{
+                  flex: 1,
+                  padding: '9px 12px',
+                  fontSize: '13.5px',
+                  fontWeight: 700,
+                  borderRadius: '8px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  background: authMode === 'register' ? '#ffffff' : 'transparent',
+                  color: authMode === 'register' ? '#08251a' : '#6b6b5c',
+                  boxShadow: authMode === 'register' ? '0 2px 6px rgba(0,0,0,0.06)' : 'none',
+                  transition: 'all 0.15s ease',
+                }}
+              >
+                ✨ Create Account
+              </button>
+            </div>
+
+            {authMode === 'login' ? (
+              // ---------------- LOGIN FORM ----------------
+              <div>
+                <h2 style={{ fontSize: '20px', fontWeight: 800, color: '#08251a', margin: '0 0 6px 0' }}>
+                  Sign in to Connect WordPress
+                </h2>
+                <p style={{ fontSize: '13.5px', color: '#4b5b51', margin: '0 0 20px 0', lineHeight: 1.5 }}>
+                  Sign in to your Crescelo account to link <strong>{siteName || 'your website'}</strong>.
+                </p>
+
+                {loginError && (
+                  <div style={{ background: '#fef2f2', border: '1px solid #fecaca', color: '#991b1b', padding: '10px 14px', borderRadius: '8px', fontSize: '13px', marginBottom: '16px' }}>
+                    {loginError}
+                  </div>
+                )}
+
+                <form onSubmit={handleInlineLogin} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '12.5px', fontWeight: 600, color: '#08251a', marginBottom: '4px' }}>Email Address</label>
+                    <input
+                      type="email"
+                      value={loginEmail}
+                      onChange={(e) => setLoginEmail(e.target.value)}
+                      required
+                      placeholder="admin@example.com"
+                      style={{ width: '100%', padding: '10px 14px', border: '1px solid #cbd5e1', borderRadius: '8px', fontSize: '14px', boxSizing: 'border-box' }}
+                    />
+                  </div>
+
+                  <div>
+                    <label style={{ display: 'block', fontSize: '12.5px', fontWeight: 600, color: '#08251a', marginBottom: '4px' }}>Password</label>
+                    <input
+                      type="password"
+                      value={loginPassword}
+                      onChange={(e) => setLoginPassword(e.target.value)}
+                      required
+                      placeholder="••••••••"
+                      style={{ width: '100%', padding: '10px 14px', border: '1px solid #cbd5e1', borderRadius: '8px', fontSize: '14px', boxSizing: 'border-box' }}
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={isLoggingIn}
+                    style={{
+                      marginTop: '8px',
+                      background: '#08251a',
+                      color: '#abff44',
+                      fontWeight: 700,
+                      fontSize: '14px',
+                      padding: '12px',
+                      borderRadius: '8px',
+                      border: 'none',
+                      cursor: isLoggingIn ? 'not-allowed' : 'pointer',
+                      opacity: isLoggingIn ? 0.7 : 1,
+                      transition: 'background 0.15s ease',
+                    }}
+                  >
+                    {isLoggingIn ? 'Authenticating...' : 'Sign in & Authorize'}
+                  </button>
+                </form>
+
+                <div style={{ marginTop: '20px', textAlign: 'center', fontSize: '13px', color: '#6b6b5c' }}>
+                  New to Crescelo?{' '}
+                  <button
+                    type="button"
+                    onClick={() => { setAuthMode('register'); setLoginError(null); }}
+                    style={{ background: 'none', border: 'none', color: '#0f6e58', fontWeight: 700, cursor: 'pointer', padding: 0, textDecoration: 'underline' }}
+                  >
+                    Create a free account
+                  </button>
+                </div>
+              </div>
+            ) : (
+              // ---------------- CREATE ACCOUNT FORM ----------------
+              <div>
+                <h2 style={{ fontSize: '20px', fontWeight: 800, color: '#08251a', margin: '0 0 6px 0' }}>
+                  Create Account & Connect Site
+                </h2>
+                <p style={{ fontSize: '13.5px', color: '#4b5b51', margin: '0 0 20px 0', lineHeight: 1.5 }}>
+                  Set up your Crescelo account to connect <strong>{siteName || 'your website'}</strong> in seconds.
+                </p>
+
+                {registerError && (
+                  <div style={{ background: '#fef2f2', border: '1px solid #fecaca', color: '#991b1b', padding: '10px 14px', borderRadius: '8px', fontSize: '13px', marginBottom: '16px' }}>
+                    {registerError}
+                  </div>
+                )}
+
+                <form onSubmit={handleInlineRegister} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '12.5px', fontWeight: 600, color: '#08251a', marginBottom: '4px' }}>Business or Website Name</label>
+                    <input
+                      type="text"
+                      value={registerBusinessName}
+                      onChange={(e) => setRegisterBusinessName(e.target.value)}
+                      required
+                      placeholder={siteName || 'The Penthouse Living'}
+                      style={{ width: '100%', padding: '10px 14px', border: '1px solid #cbd5e1', borderRadius: '8px', fontSize: '14px', boxSizing: 'border-box' }}
+                    />
+                  </div>
+
+                  <div>
+                    <label style={{ display: 'block', fontSize: '12.5px', fontWeight: 600, color: '#08251a', marginBottom: '4px' }}>Email Address</label>
+                    <input
+                      type="email"
+                      value={registerEmail}
+                      onChange={(e) => setRegisterEmail(e.target.value)}
+                      required
+                      placeholder="admin@thepenthouseliving.com"
+                      style={{ width: '100%', padding: '10px 14px', border: '1px solid #cbd5e1', borderRadius: '8px', fontSize: '14px', boxSizing: 'border-box' }}
+                    />
+                  </div>
+
+                  <div>
+                    <label style={{ display: 'block', fontSize: '12.5px', fontWeight: 600, color: '#08251a', marginBottom: '4px' }}>Password (min 6 characters)</label>
+                    <input
+                      type="password"
+                      value={registerPassword}
+                      onChange={(e) => setRegisterPassword(e.target.value)}
+                      required
+                      minLength={6}
+                      placeholder="Create a secure password"
+                      style={{ width: '100%', padding: '10px 14px', border: '1px solid #cbd5e1', borderRadius: '8px', fontSize: '14px', boxSizing: 'border-box' }}
+                    />
+                  </div>
+
+                  <div>
+                    <label style={{ display: 'block', fontSize: '12.5px', fontWeight: 600, color: '#08251a', marginBottom: '4px' }}>Confirm Password</label>
+                    <input
+                      type="password"
+                      value={registerConfirmPassword}
+                      onChange={(e) => setRegisterConfirmPassword(e.target.value)}
+                      required
+                      placeholder="Repeat your password"
+                      style={{ width: '100%', padding: '10px 14px', border: '1px solid #cbd5e1', borderRadius: '8px', fontSize: '14px', boxSizing: 'border-box' }}
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={isRegistering}
+                    style={{
+                      marginTop: '8px',
+                      background: '#08251a',
+                      color: '#abff44',
+                      fontWeight: 700,
+                      fontSize: '14px',
+                      padding: '12px',
+                      borderRadius: '8px',
+                      border: 'none',
+                      cursor: isRegistering ? 'not-allowed' : 'pointer',
+                      opacity: isRegistering ? 0.7 : 1,
+                      transition: 'background 0.15s ease',
+                      boxShadow: '0 4px 14px rgba(8, 37, 26, 0.12)',
+                    }}
+                  >
+                    {isRegistering ? 'Creating Account & Setting Up...' : 'Create Account & Continue →'}
+                  </button>
+                </form>
+
+                <div style={{ marginTop: '20px', textAlign: 'center', fontSize: '13px', color: '#6b6b5c' }}>
+                  Already have a Crescelo account?{' '}
+                  <button
+                    type="button"
+                    onClick={() => { setAuthMode('login'); setRegisterError(null); }}
+                    style={{ background: 'none', border: 'none', color: '#0f6e58', fontWeight: 700, cursor: 'pointer', padding: 0, textDecoration: 'underline' }}
+                  >
+                    Sign in here
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         ) : (
           // ================= AUTHORIZATION FORM =================
