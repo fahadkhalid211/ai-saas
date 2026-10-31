@@ -54,6 +54,8 @@ $include_excerpt    = (bool) crescelo_get_option('scrape_include_excerpt', true)
 $scrape_method      = sanitize_key(crescelo_get_option('scrape_method', 'db'));
 $batch_size         = (int) crescelo_get_option('batch_size', 15);
 $auto_sync          = (bool) crescelo_get_option('auto_sync', true);
+$ecommerce_enabled  = (bool) crescelo_get_option('ecommerce_enabled', true);
+$allow_order_cancel = (bool) crescelo_get_option('allow_order_cancellation', true);
 
 $last_scraped        = crescelo_get_option('last_scraped', '');
 $scrape_stats        = crescelo_get_option('scrape_stats', []);
@@ -172,15 +174,23 @@ $total_scraped_chunks = isset($scrape_stats['total_chunks']) ? (int) $scrape_sta
                 <!-- Grounding & Store Information Card -->
                 <div class="crescelo-subcard" style="margin-top: 24px;">
                     <div class="subcard-header">
-                        <h3><?php esc_html_e('Real-Time Live Grounding Endpoint', 'crescelo'); ?></h3>
+                        <h3><?php esc_html_e('E-Commerce Real-Time REST Endpoints', 'crescelo'); ?></h3>
                         <span class="badge-status-ok"><?php esc_html_e('REST API Active', 'crescelo'); ?></span>
                     </div>
                     <p class="subcard-desc">
-                        <?php esc_html_e('Crescelo securely queries this endpoint in real time to fetch live WooCommerce product pricing, real-time stock levels, and store details during customer conversations.', 'crescelo'); ?>
+                        <?php esc_html_e('Crescelo securely queries these endpoints in real time to verify live stock levels before making recommendations, check order dispatch status, and process verified customer cancellations.', 'crescelo'); ?>
                     </p>
-                    <div class="code-snippet-box">
+                    <div class="code-snippet-box" style="margin-bottom: 8px;">
+                        <span style="font-weight: 600; font-size: 11px; color: #475569; width: 110px; display: inline-block;"><?php esc_html_e('Live Stock Check:', 'crescelo'); ?></span>
                         <code><?php echo esc_url(rest_url('crescelo/v1/stock-check')); ?></code>
-                        <span class="protected-pill"><?php esc_html_e('🔒 Protected by Crescelo Key', 'crescelo'); ?></span>
+                    </div>
+                    <div class="code-snippet-box" style="margin-bottom: 8px;">
+                        <span style="font-weight: 600; font-size: 11px; color: #475569; width: 110px; display: inline-block;"><?php esc_html_e('Order Tracking:', 'crescelo'); ?></span>
+                        <code><?php echo esc_url(rest_url('crescelo/v1/order-lookup')); ?></code>
+                    </div>
+                    <div class="code-snippet-box">
+                        <span style="font-weight: 600; font-size: 11px; color: #475569; width: 110px; display: inline-block;"><?php esc_html_e('Order Cancel:', 'crescelo'); ?></span>
+                        <code><?php echo esc_url(rest_url('crescelo/v1/order-cancel')); ?></code>
                     </div>
                 </div>
 
@@ -255,12 +265,12 @@ $total_scraped_chunks = isset($scrape_stats['total_chunks']) ? (int) $scrape_sta
 
                     <div class="manual-form-grid" style="margin-top: 18px;">
                         <div>
-                            <label for="input-manual-api-key" class="field-label"><?php esc_html_e('WordPress Connector API Key', 'crescelo'); ?></label>
+                            <label for="input-manual-api-key" class="field-label"><?php esc_html_e('Crescelo Assistant ID or API Key', 'crescelo'); ?></label>
                             <div class="input-with-toggle">
-                                <input type="password" id="input-manual-api-key" class="crescelo-input" placeholder="cres_wp_xxxxxxxxxxxxxxxxxxxxxxxxxxxx" autocomplete="off" />
+                                <input type="text" id="input-manual-api-key" class="crescelo-input" placeholder="<?php esc_attr_e('Paste Assistant ID or cres_wp_... key', 'crescelo'); ?>" autocomplete="off" />
                                 <button type="button" class="btn-toggle-secret" id="btn-toggle-key-visibility" title="<?php esc_attr_e('Show/Hide Key', 'crescelo'); ?>">👁️</button>
                             </div>
-                            <span class="field-help"><?php esc_html_e('Your secure assistant webhook secret or connector key.', 'crescelo'); ?></span>
+                            <span class="field-help"><?php esc_html_e('Enter your Assistant ID (from your dashboard URL) or your secure WordPress connector key.', 'crescelo'); ?></span>
                         </div>
 
                         <!-- Optional server URL toggle -->
@@ -383,6 +393,18 @@ $total_scraped_chunks = isset($scrape_stats['total_chunks']) ? (int) $scrape_sta
                             <label class="crescelo-checkbox-label">
                                 <input type="checkbox" name="crescelo_auto_sync" value="1" <?php checked(true, $auto_sync); ?> id="opt-auto-sync" />
                                 <span><strong><?php esc_html_e('Real-Time Auto-Sync', 'crescelo'); ?></strong> <?php esc_html_e('(Sync content changes when published)', 'crescelo'); ?></span>
+                            </label>
+
+                            <label class="crescelo-checkbox-label" style="grid-column: 1 / -1; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 10px 14px;">
+                                <input type="hidden" name="crescelo_ecommerce_enabled" value="0" />
+                                <input type="checkbox" name="crescelo_ecommerce_enabled" value="1" <?php checked(true, $ecommerce_enabled); ?> id="opt-ecommerce-enabled" />
+                                <span><strong><?php esc_html_e('🛍️ E-Commerce & Live Store Intelligence', 'crescelo'); ?></strong> <?php esc_html_e('— Enables product recommendations (acne, skincare, attributes), live stock checks before suggesting items, and real-time order tracking.', 'crescelo'); ?></span>
+                            </label>
+
+                            <label class="crescelo-checkbox-label" style="grid-column: 1 / -1; margin-left: 20px;">
+                                <input type="hidden" name="crescelo_allow_order_cancellation" value="0" />
+                                <input type="checkbox" name="crescelo_allow_order_cancellation" value="1" <?php checked(true, $allow_order_cancel); ?> id="opt-allow-order-cancel" />
+                                <span><strong><?php esc_html_e('Allow In-Chat Order Cancellation', 'crescelo'); ?></strong> <?php esc_html_e('(Permits verified customers to cancel unfulfilled orders in chat; flags admin order list with 🤖 Bot Cancelled badge)', 'crescelo'); ?></span>
                             </label>
                         </div>
 

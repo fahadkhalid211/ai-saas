@@ -272,6 +272,8 @@
             if (document.getElementById('feat-add-to-cart')?.checked) features.push('add_to_cart');
             if (document.getElementById('feat-live-stock')?.checked) features.push('live_stock');
             if (document.getElementById('feat-comparison')?.checked) features.push('comparison');
+            if (document.getElementById('feat-order-tracking')?.checked) features.push('order_tracking');
+            if (document.getElementById('feat-order-cancel')?.checked) features.push('order_cancel');
             if (document.getElementById('feat-booking')?.checked) features.push('booking');
             if (document.getElementById('feat-lead-capture')?.checked) features.push('lead_capture');
 

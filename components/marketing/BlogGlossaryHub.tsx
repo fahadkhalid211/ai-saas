@@ -169,16 +169,18 @@ export function BlogGlossaryHub({ posts, clusters, translated }: BlogGlossaryHub
             }}
           >
             <div>
-              <T>Showing</T>{' '}
-              <strong>
-                {filteredPosts.length === 0
-                  ? 0
-                  : `${(currentPage - 1) * POSTS_PER_PAGE + 1}–${Math.min(
-                      currentPage * POSTS_PER_PAGE,
-                      filteredPosts.length
-                    )}`}
-              </strong>{' '}
-              <T>of</T> <T>{filteredPosts.length}</T> <T>articles</T>
+              <span>
+                {__t('Showing {range} of {total} articles', {
+                  range:
+                    filteredPosts.length === 0
+                      ? '0'
+                      : `${(currentPage - 1) * POSTS_PER_PAGE + 1}–${Math.min(
+                          currentPage * POSTS_PER_PAGE,
+                          filteredPosts.length
+                        )}`,
+                  total: filteredPosts.length,
+                })}
+              </span>
               {activeClusterName && (
                 <span>
                   {' '}
@@ -213,7 +215,8 @@ export function BlogGlossaryHub({ posts, clusters, translated }: BlogGlossaryHub
         {/* Left Sticky Sidebar: Topic Clusters */}
         <aside
           aria-label={__t("Topic Clusters")}
-          className="mk-sidebar-sticky mk-sidebar-scroll"
+          translate="no"
+          className="mk-sidebar-sticky mk-sidebar-scroll notranslate"
           style={{
             padding: '1.25rem',
             borderRadius: '10px',
@@ -374,10 +377,13 @@ export function BlogGlossaryHub({ posts, clusters, translated }: BlogGlossaryHub
           ) : (
             <>
               <div style={{ display: 'grid', gap: '1.25rem' }}>
-                {paginatedPosts.map((p) => (
+                {paginatedPosts.map((p) => {
+                  const isHumanTranslated = Boolean(inLanguage && inLanguage.has(p.slug));
+                  return (
                   <article
                     key={p.slug}
-                    className="mk-card"
+                    translate={isHumanTranslated ? 'no' : undefined}
+                    className={`mk-card ${isHumanTranslated ? 'notranslate' : ''}`}
                     style={{
                       padding: '1.5rem',
                       borderRadius: '10px',
@@ -459,7 +465,8 @@ export function BlogGlossaryHub({ posts, clusters, translated }: BlogGlossaryHub
                       </Link>
                     </div>
                   </article>
-                ))}
+                  );
+                })}
               </div>
 
               {/* Pagination Controls */}

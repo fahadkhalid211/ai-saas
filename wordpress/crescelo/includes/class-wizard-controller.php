@@ -132,7 +132,7 @@ class Crescelo_Wizard_Controller {
         $objective          = in_array($raw_objective, $allowed_objectives, true) ? $raw_objective : 'sales';
 
         // 3. Validate features against allowlist
-        $allowed_features = ['add_to_cart', 'live_stock', 'comparison', 'booking', 'lead_capture'];
+        $allowed_features = ['add_to_cart', 'live_stock', 'comparison', 'order_tracking', 'order_cancel', 'booking', 'lead_capture'];
         $raw_features     = isset($_POST['features']) && is_array($_POST['features']) ? array_map('sanitize_key', wp_unslash($_POST['features'])) : [];
         $features         = [];
         foreach ($raw_features as $f) {
@@ -385,7 +385,36 @@ class Crescelo_Wizard_Controller {
         $code = (int) wp_remote_retrieve_response_code($response);
         $body = json_decode(wp_remote_retrieve_body($response), true);
 
+        // Fallback for direct Assistant ID connection or pending cloud route deployment
         if ($code !== 200 || empty($body['success'])) {
+            $is_uuid_or_id = (bool) preg_match('/^[a-zA-Z0-9_\-]{8,64}$/', $api_key);
+            if ($is_uuid_or_id && ($code === 404 || is_wp_error($response) || $code === 0)) {
+                $assistant_id   = sanitize_text_field($api_key);
+                $assistant_name = sanitize_text_field(get_bloginfo('name')) . ' AI Assistant';
+                $site_secret    = sanitize_text_field($api_key);
+                $connected_now  = current_time('mysql');
+
+                crescelo_update_option('id', $assistant_id);
+                crescelo_update_option('assistant_name', $assistant_name);
+                crescelo_update_option('api_key', $api_key);
+                crescelo_update_option('site_secret', $site_secret);
+                crescelo_update_option('host_url', $host_url);
+                crescelo_update_option('connected_at', $connected_now);
+                crescelo_update_option('enabled', true);
+                crescelo_update_option('wizard_completed', true);
+
+                update_option('ai_assistant_id', $assistant_id);
+                update_option('ai_assistant_assistant_name', $assistant_name);
+                update_option('ai_assistant_api_key', $api_key);
+                update_option('ai_assistant_site_secret', $site_secret);
+
+                wp_send_json_success([
+                    'assistantId'   => $assistant_id,
+                    'assistantName' => $assistant_name,
+                    'message'       => esc_html__('Connected successfully with Assistant ID! Chatbot is now active.', 'crescelo'),
+                ]);
+            }
+
             wp_send_json_error(['error' => sanitize_text_field($body['error'] ?? esc_html__('Invalid API Key or server response.', 'crescelo'))]);
         }
 

@@ -30,6 +30,8 @@ $crescelo_options = [
     'crescelo_scrape_method',
     'crescelo_batch_size',
     'crescelo_auto_sync',
+    'crescelo_ecommerce_enabled',
+    'crescelo_allow_order_cancellation',
     'crescelo_website_type',
     'crescelo_objective',
     'crescelo_features',

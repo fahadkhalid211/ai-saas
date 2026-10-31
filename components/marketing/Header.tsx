@@ -188,7 +188,7 @@ export function Header() {
   const active = MEGA_MENUS.find((m) => m.id === menu) || null;
 
   return (
-    <header className={`mk-header ${scrolled ? 'is-scrolled' : ''}`}>
+    <header translate="no" className={`mk-header notranslate ${scrolled ? 'is-scrolled' : ''}`}>
       <A href="#main" className="mk-skip">
         <T>Skip to content</T>
       </A>

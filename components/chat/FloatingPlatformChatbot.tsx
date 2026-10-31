@@ -498,7 +498,8 @@ export function FloatingPlatformChatbot({ variant = 'floating', onNavigate, onBi
 
   return (
     <div
-      className={inHeader ? 'relative font-sans' : 'fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-[99999] font-sans'}
+      translate="no"
+      className={`${inHeader ? 'relative font-sans' : 'fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-[99999] font-sans'} notranslate`}
       onKeyDown={(e) => {
         if (e.key === 'Escape' && isOpen) setIsOpen(false);
       }}

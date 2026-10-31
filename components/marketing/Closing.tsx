@@ -83,7 +83,7 @@ export function Footer() {
   const __t = useT();
   const { dict } = useI18n();
   return (
-    <footer className="mk-footer">
+    <footer translate="no" className="mk-footer notranslate">
       <div className="mk-wrap">
         <div className="mk-footer-top">
           <div className="mk-footer-brand">

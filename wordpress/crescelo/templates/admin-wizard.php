@@ -295,6 +295,28 @@ $nonce        = wp_create_nonce('crescelo_wizard_nonce');
 
                     <div class="feature-item">
                         <div class="feature-info">
+                            <div class="feature-name"><?php esc_html_e('Live Order Tracking & Dispatch', 'crescelo'); ?></div>
+                            <div class="feature-desc"><?php esc_html_e('Checks real-time WooCommerce order status, fulfillment, carrier, and tracking numbers in chat.', 'crescelo'); ?></div>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="feat-order-tracking" checked />
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="feature-item">
+                        <div class="feature-info">
+                            <div class="feature-name"><?php esc_html_e('Self-Service Order Cancellation', 'crescelo'); ?></div>
+                            <div class="feature-desc"><?php esc_html_e('Allows verified shoppers to cancel unfulfilled orders, tagging WooCommerce admin with a 🤖 Bot Cancelled badge.', 'crescelo'); ?></div>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="feat-order-cancel" checked />
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="feature-item">
+                        <div class="feature-info">
                             <div class="feature-name"><?php esc_html_e('In-Chat Appointment Booking', 'crescelo'); ?></div>
                             <div class="feature-desc"><?php esc_html_e('Allows clients to select dates and schedule consultation slots within the chat bubble.', 'crescelo'); ?></div>
                         </div>

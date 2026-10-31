@@ -23,6 +23,22 @@ import { FIGURE_REMOVED_NOTE, FigureGuard, allowedFigures } from '@/lib/ai/figur
 import { SERVICE_PAUSED_MESSAGE, serviceBlocked } from '@/lib/billing/trial';
 import { checkAvailability, formatAvailabilityContext } from '@/lib/integrations/hospitable/availability-tool';
 import { detectAvailabilityIntent, extractDates, extractGuestCount } from '@/lib/integrations/hospitable/intent-parser';
+import {
+  detectOrderStatusIntent,
+  detectOrderCancelIntent,
+  detectProductRecommendationIntent,
+  extractOrderId,
+  extractEmail,
+  extractProductIdsFromContext,
+} from '@/lib/integrations/woocommerce/intent-parser';
+import {
+  lookupWooCommerceOrder,
+  cancelWooCommerceOrder,
+  checkLiveProductStock,
+  formatOrderContext,
+  formatCancellationContext,
+  formatStockVerificationContext,
+} from '@/lib/integrations/woocommerce/order-tool';
 
 // Streamed responses (token-by-token LLM output, plus an optional live web
 // search round-trip) can run well past a short default function timeout.
@@ -741,10 +757,152 @@ CRITICAL IDENTITY & BUSINESS SCOPE:
             }
           }
 
+          // Live WooCommerce order tracking, cancellation & stock verification
+          let wooCommerceContext = '';
+          const wooSiteUrl = assistant.webhookUrl || (assistant.allowedDomains && assistant.allowedDomains[0] ? `https://${assistant.allowedDomains[0]}` : '');
+          const wooSiteSecret = assistant.webhookSecret || '';
+
+          if (wooSiteUrl && wooSiteSecret) {
+            try {
+              const currentOrderId = extractOrderId(latestUserMsg);
+              const currentEmail = extractEmail(latestUserMsg);
+
+              // Detect if previous assistant message was specifically awaiting email to cancel an order
+              const lastAssistantMsg = Array.isArray(messages) && messages.length >= 2 ? messages[messages.length - 2] : null;
+              const isAwaitingCancelEmail = Boolean(
+                lastAssistantMsg &&
+                lastAssistantMsg.role === 'assistant' &&
+                typeof lastAssistantMsg.content === 'string' &&
+                /\bcancel\b/i.test(lastAssistantMsg.content) &&
+                /\b(?:email|billing)\b/i.test(lastAssistantMsg.content)
+              );
+
+              // Detect if previous assistant message was awaiting email for order status lookup
+              const isAwaitingLookupEmail = Boolean(
+                lastAssistantMsg &&
+                lastAssistantMsg.role === 'assistant' &&
+                typeof lastAssistantMsg.content === 'string' &&
+                /\b(?:track|status|dispatch)\b/i.test(lastAssistantMsg.content) &&
+                /\b(?:email|billing)\b/i.test(lastAssistantMsg.content)
+              );
+
+              // Resolve historical orderId and email safely
+              let historicalOrderId: number | null = null;
+              let historicalEmail: string | null = null;
+              if (Array.isArray(messages)) {
+                for (let i = messages.length - 2; i >= 0 && i >= messages.length - 6; i--) {
+                  const m = messages[i];
+                  if (m && m.role === 'user' && typeof m.content === 'string') {
+                    if (!historicalOrderId) historicalOrderId = extractOrderId(m.content);
+                    if (!historicalEmail) historicalEmail = extractEmail(m.content);
+                  }
+                }
+              }
+
+              // 1. ORDER CANCELLATION FLOW (Requires explicit order ID in current turn or verified 2-turn confirmation)
+              if (detectOrderCancelIntent(latestUserMsg) || (isAwaitingCancelEmail && currentEmail)) {
+                const cancelOrderId = currentOrderId || (isAwaitingCancelEmail ? historicalOrderId : null);
+                const cancelEmail = currentEmail || (cancelOrderId ? historicalEmail : null);
+
+                if (cancelOrderId && cancelEmail) {
+                  const cancelRes = await cancelWooCommerceOrder({
+                    siteUrl: wooSiteUrl,
+                    siteSecret: wooSiteSecret,
+                    orderId: cancelOrderId,
+                    email: cancelEmail,
+                  });
+                  if (cancelRes.ok) {
+                    wooCommerceContext = formatCancellationContext(
+                      true,
+                      cancelOrderId,
+                      cancelRes.data.message,
+                      cancelRes.data.was_paid
+                    );
+                  } else {
+                    wooCommerceContext = formatCancellationContext(false, cancelOrderId, cancelRes.error);
+                  }
+                } else if (cancelOrderId) {
+                  wooCommerceContext = [
+                    '[CUSTOMER ORDER CANCELLATION REQUEST]:',
+                    `- Order Number: #${cancelOrderId}`,
+                    `- Verification pending: Customer billing email is required.`,
+                    `- Instruction: Inform the customer that for security you must verify their billing email address before cancelling Order #${cancelOrderId}. Ask them politely to provide their billing email address.`,
+                  ].join('\n');
+                } else {
+                  wooCommerceContext = [
+                    '[CUSTOMER ORDER CANCELLATION REQUEST]:',
+                    '- The customer is asking about cancelling an order or policy.',
+                    '- Safety Rule: Do not assume an order number from past conversation for a cancellation.',
+                    '- Instruction: Courteously ask the customer to specify the exact Order Number (#...) and Billing Email address they wish to cancel.',
+                  ].join('\n');
+                }
+              } else if (
+                detectOrderStatusIntent(latestUserMsg) ||
+                (isAwaitingLookupEmail && currentEmail) ||
+                (currentOrderId && (latestUserMsg.toLowerCase().includes('status') || latestUserMsg.toLowerCase().includes('track') || latestUserMsg.toLowerCase().includes('where') || latestUserMsg.toLowerCase().includes('received')))
+              ) {
+                // 2. ORDER STATUS / TRACKING FLOW
+                const statusOrderId = currentOrderId || historicalOrderId;
+                const statusEmail = currentEmail || historicalEmail;
+
+                if (statusOrderId && statusEmail) {
+                  const lookupRes = await lookupWooCommerceOrder({
+                    siteUrl: wooSiteUrl,
+                    siteSecret: wooSiteSecret,
+                    orderId: statusOrderId,
+                    email: statusEmail,
+                  });
+                  if (lookupRes.ok) {
+                    wooCommerceContext = formatOrderContext(lookupRes.data);
+                  } else {
+                    wooCommerceContext = [
+                      '[REAL-TIME ORDER LOOKUP ISSUE]:',
+                      `- Order Number: #${statusOrderId}`,
+                      `- Result: ${lookupRes.error}`,
+                      `- Instruction: Inform the customer that no order could be found matching those details. Ask them to verify their order number and billing email address.`,
+                    ].join('\n');
+                  }
+                } else if (statusOrderId) {
+                  wooCommerceContext = [
+                    '[REAL-TIME ORDER STATUS INQUIRY]:',
+                    `- Order Number: #${statusOrderId}`,
+                    `- Verification pending: Customer billing email is required.`,
+                    `- Instruction: Inform the customer you are ready to check the live tracking and dispatch status for Order #${statusOrderId}, and politely request their billing email address to verify the order.`,
+                  ].join('\n');
+                } else {
+                  wooCommerceContext = [
+                    '[REAL-TIME ORDER STATUS INQUIRY]:',
+                    '- Customer is inquiring about order tracking or delivery.',
+                    '- Instruction: Courteously ask the customer for their Order Number and Billing Email address so you can look up their live dispatch and tracking details.',
+                  ].join('\n');
+                }
+              }
+
+              // 3. Just-in-Time Live Inventory Verification for retrieved products
+              if (retrieval.contextText && (detectProductRecommendationIntent(latestUserMsg) || retrieval.contextText.includes('Product ID'))) {
+                const productIds = extractProductIdsFromContext(retrieval.contextText);
+                if (productIds.length > 0) {
+                  const stockMap = await checkLiveProductStock({
+                    siteUrl: wooSiteUrl,
+                    siteSecret: wooSiteSecret,
+                    productIds: productIds.slice(0, 10),
+                  });
+                  const stockNote = formatStockVerificationContext(stockMap);
+                  if (stockNote) {
+                    wooCommerceContext = [wooCommerceContext, stockNote].filter(Boolean).join('\n\n');
+                  }
+                }
+              }
+            } catch (wooErr) {
+              console.warn('[ChatRoute] WooCommerce live grounding error:', wooErr);
+            }
+          }
+
           const combinedContext = [
             retrieval.contextText ? `[OFFICIAL VERIFIED KNOWLEDGE BASE]:\n${retrieval.contextText}` : '',
             landingKnowledge,
             hospitableContext,
+            wooCommerceContext,
             weakMatchNote,
           ].filter(Boolean).join('\n\n');
 

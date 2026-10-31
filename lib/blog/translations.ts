@@ -62,5 +62,5 @@ export async function postsForHub<T extends BlogCard>(posts: T[], locale: Suppor
       return t ? { ...p, title: t.title, description: t.description, excerpt: t.excerpt, clusterName: t.clusterName || p.clusterName } : p;
     })
   );
-  return { posts: out, translated: posts.map((p) => p.slug) };
+  return { posts: out, translated: [...slugs] };
 }

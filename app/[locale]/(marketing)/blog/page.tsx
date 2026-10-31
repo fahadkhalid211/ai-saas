@@ -14,6 +14,7 @@ import { withSocial } from '@/lib/seo';
 import { getLocale, getT } from '@/lib/i18n/server';
 import { postsForHub } from '@/lib/blog/translations';
 import { BlogGlossaryHub, type HubCard } from '@/components/marketing/BlogGlossaryHub';
+import { GoogleTranslateFallback } from '@/components/i18n/GoogleTranslateFallback';
 
 const description =
   'Guides for service businesses on AI website assistants, online booking, lead capture and knowledge bases, with a glossary of the terms.';
@@ -71,6 +72,7 @@ export default async function BlogIndexPage() {
               intro="Practical guides on AI website assistants, online booking, lead capture, costs and security, written for owners of appointment-based businesses."
               align="center"
             />
+            {locale !== 'en' && <GoogleTranslateFallback targetLocale={locale} />}
             <BlogGlossaryHub posts={hubCards} clusters={clusters} translated={translated} />
 
             <nav aria-labelledby="all-articles" style={{ marginTop: '4rem' }}>
@@ -85,7 +87,7 @@ export default async function BlogIndexPage() {
                   <ul style={{ columns: '18rem', columnGap: '2rem', margin: 0, paddingLeft: '1.1rem', lineHeight: 1.7 }}>
                     {list.map((p) => (
                       <li key={p.slug} style={{ breakInside: 'avoid', listStyle: 'disc' }}>
-                        <Link href={`/blog/${p.slug}`} locale={translated.includes(p.slug) ? undefined : 'en'} style={{ textDecoration: 'underline' }}><T>{p.title}</T></Link>
+                        <Link href={`/blog/${p.slug}`} style={{ textDecoration: 'underline' }}><T>{p.title}</T></Link>
                       </li>
                     ))}
                   </ul>

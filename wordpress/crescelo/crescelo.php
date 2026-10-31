@@ -32,11 +32,11 @@ define('CRESCELO_DEFAULT_HOST', 'https://www.crescelo.com');
  */
 function crescelo_get_option($key, $default = false) {
     $primary = get_option('crescelo_' . $key, null);
-    if ($primary !== null && $primary !== false) {
+    if ($primary !== null) {
         return $primary;
     }
     $legacy = get_option('ai_assistant_' . $key, null);
-    if ($legacy !== null && $legacy !== false) {
+    if ($legacy !== null) {
         return $legacy;
     }
     return $default;
@@ -69,6 +69,7 @@ require_once CRESCELO_PLUGIN_DIR . 'includes/class-site-scanner.php';
 require_once CRESCELO_PLUGIN_DIR . 'includes/class-wizard-controller.php';
 require_once CRESCELO_PLUGIN_DIR . 'includes/class-live-api.php';
 require_once CRESCELO_PLUGIN_DIR . 'includes/class-sync-hooks.php';
+require_once CRESCELO_PLUGIN_DIR . 'includes/class-woocommerce-admin.php';
 
 class Crescelo_AI_Assistant {
 
@@ -77,6 +78,7 @@ class Crescelo_AI_Assistant {
     private $wizard;
     private $live_api;
     private $sync_hooks;
+    private $wc_admin;
 
     public function __construct() {
         // Initialize Core Dependencies
@@ -85,8 +87,10 @@ class Crescelo_AI_Assistant {
         $this->wizard     = new Crescelo_Wizard_Controller($this->scanner, $this->client);
         $this->live_api   = new Crescelo_Live_API();
         $this->sync_hooks = new Crescelo_Sync_Hooks($this->client);
+        $this->wc_admin   = new Crescelo_WooCommerce_Admin();
 
         // WordPress Actions & Filters
+        add_action('before_woocommerce_init', [$this, 'declare_hpos_compatibility']);
         add_action('init', [$this, 'load_textdomain']);
         add_action('admin_menu', [$this, 'add_admin_menu']);
         add_action('admin_init', [$this, 'register_settings']);
@@ -96,6 +100,12 @@ class Crescelo_AI_Assistant {
         add_filter('script_loader_tag', [$this, 'filter_widget_script_tag'], 10, 3);
         add_action('admin_notices', [$this, 'render_admin_notices']);
         add_filter('plugin_action_links_' . plugin_basename(__FILE__), [$this, 'add_action_links']);
+    }
+
+    public function declare_hpos_compatibility() {
+        if (class_exists('\Automattic\WooCommerce\Utilities\FeaturesUtil')) {
+            \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility('custom_order_tables', __FILE__, true);
+        }
     }
 
     public function load_textdomain() {
@@ -138,6 +148,8 @@ class Crescelo_AI_Assistant {
             'crescelo_scrape_method'             => ['type' => 'string',  'sanitize' => 'sanitize_key', 'default' => 'db'],
             'crescelo_batch_size'                => ['type' => 'integer', 'sanitize' => 'absint', 'default' => 15],
             'crescelo_auto_sync'                 => ['type' => 'boolean', 'sanitize' => 'rest_sanitize_boolean', 'default' => true],
+            'crescelo_ecommerce_enabled'         => ['type' => 'boolean', 'sanitize' => 'rest_sanitize_boolean', 'default' => true],
+            'crescelo_allow_order_cancellation'  => ['type' => 'boolean', 'sanitize' => 'rest_sanitize_boolean', 'default' => true],
         ];
 
         foreach ($settings as $opt_name => $meta) {

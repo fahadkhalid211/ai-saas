@@ -1,31 +1,31 @@
-# Sub-projects and standalone runtimes
-mobile/
-voice-worker/
-wordpress/
-shopify/
+# Sub-projects and standalone runtimes (root-anchored to prevent ignoring app/api/connectors/*)
+/mobile/
+/voice-worker/
+/wordpress/
+/shopify/
 
 # Local databases, build artifacts, and caches
-.data/
-.next/
-.next-*/
+/.data/
+/.next/
+/.next-*/
 *.ndjson
 *.traineddata
 
 # IDEs, AI assistants, and test runners
-.cursor/
-.claude/
-.reticle/
+/.cursor/
+/.claude/
+/.reticle/
 .reticle.json
-.vscode/
-.idea/
-.github/
+/.vscode/
+/.idea/
+/.github/
 
 # Documentation, specifications, and architecture
-docs/
-eval/
-load-tests/
-ops/
-supabase/
+/docs/
+/eval/
+/load-tests/
+/ops/
+/supabase/
 *.md
 !AGENTS.md
 crescelo-platform-overview.html

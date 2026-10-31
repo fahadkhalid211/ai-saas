@@ -33,23 +33,25 @@ function buildPromptsAndConfig(
 
   if (isWoo || objective === 'sales') {
     systemPrompt = `You are the AI Sales Concierge and Personal Shopper for ${siteName}.
-Your primary mission is to assist customers, recommend the right products, answer technical questions, compare options, handle pre-purchase objections, and guide shoppers to checkout.
+Your primary mission is to assist customers, recommend the right products, answer technical questions, compare options, handle pre-purchase objections, check order status, and assist with store services.
 
 Key Operational Instructions:
 1. Product Expertise: Guide shoppers based strictly on the products and store details in your knowledge base. Highlight price, key specs, variations, and availability.
-2. Direct Recommendations: Compare differences clearly when customers ask "Which one should I buy?" or "What's the difference?".
+2. Direct Recommendations & Skin/Need Matching: When a shopper asks what to use for a condition or need (e.g. "I have acne on my skin, what should I use?"), recommend relevant products listed in your catalog. Explain why they fit the customer's need.
 3. Interactive Product Cards: When recommending a specific product, embed the structured card tag on its own line:
 [PRODUCT_CARD:{"id":PRODUCT_ID,"title":"PRODUCT_TITLE","price":"PRICE","url":"PRODUCT_URL","image":"IMAGE_URL","stock":"In Stock"}]
-4. Cart Additions: When a customer expresses purchase intent or asks to add an item to their cart, confirm cheerfully and include:
+4. Live Stock Awareness: Always respect live inventory notes. If a product is verified as out of stock, explicitly label it as "[Out of Stock]" and suggest an in-stock alternative. Never generate an [ADD_TO_CART] tag for an out of stock product.
+5. Cart Additions: When a customer expresses purchase intent or asks to add an in-stock item to their cart, confirm cheerfully and include:
 [ADD_TO_CART:{"id":PRODUCT_ID,"title":"PRODUCT_TITLE","price":"PRICE"}]
-5. Pre-Sale Reassurance: Answer shipping times, return policies, warranties, and sizing using store documentation.
-6. Honest Grounding: If a product is not in your catalog, politely clarify what you do carry. Never invent fake SKUs or prices.`;
+6. Order Tracking & Dispatch: When a customer asks about the status of an existing order (e.g. "my order #234 is not received yet"), use the verified real-time order context provided. If the customer has not yet provided their billing email address, courteously ask for it so you can verify their order.
+7. Order Cancellations: When a customer requests to cancel an order, report the outcome from the verified cancellation tool. If eligible, confirm that the order has been cancelled and flagged for the store admin. If the order has already shipped or completed, explain that it cannot be cancelled automatically and direct them to support.
+8. Honest Grounding: If a product is not in your catalog, politely clarify what you do carry. Never invent fake SKUs or prices.`;
 
     welcomeMessage = `Hi! Welcome to ${siteName}. I'm your AI Shopping Assistant. Looking for a specific product or need a recommendation?`;
     starterQuestions = [
       'What are your most popular products?',
       'Can you help me choose the right item?',
-      'What are your shipping and return policies?',
+      'Track or check my order status',
     ];
   } else if (objective === 'booking' || websiteType === 'service_booking') {
     bookingEnabled = true;
@@ -167,6 +169,8 @@ export async function POST(req: NextRequest) {
     // The key is the caller's own (it was just checked), so echoing it back reveals nothing new.
     const siteSecret = providedKey;
 
+    const cleanSiteUrl = siteUrl.trim().replace(/\/+$/, '');
+
     const updated = await Database.updateAssistant(assistant.id, {
       name: `${siteName} AI Assistant`,
       description: `WordPress Assistant for ${cleanDomain} (${websiteType} / ${objective})`,
@@ -176,6 +180,7 @@ export async function POST(req: NextRequest) {
       primaryColor: config.primaryColor,
       collectLeadEmail: config.collectLeadEmail,
       bookingEnabled: config.bookingEnabled,
+      webhookUrl: cleanSiteUrl.startsWith('http') ? cleanSiteUrl : `https://${cleanSiteUrl}`,
       allowedDomains: Array.from(new Set([...(assistant.allowedDomains || []), cleanDomain])),
     });
     if (updated) assistant = updated;
