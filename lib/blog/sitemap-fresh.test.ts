@@ -1,13 +1,14 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import sitemap, { dynamic } from '../../app/sitemap';
 import { ARTICLES_PER_DAY, FIRST_RELEASE } from './schedule';
+import { translatedSlugs } from './translations';
 
 afterEach(() => vi.useRealTimers());
 
 const articlesAt = (iso: string) => {
   vi.useFakeTimers();
   vi.setSystemTime(new Date(iso));
-  return sitemap().filter((e) => e.url.includes('/blog/')).length;
+  return sitemap().filter((e) => e.url.includes('/blog/') && !/\/(sv|fi|it|es)\//.test(e.url)).length; // the English articles, which are released daily
 };
 
 describe('the sitemap and the daily article release', () => {
@@ -23,6 +24,22 @@ describe('the sitemap and the daily article release', () => {
     expect(articlesAt(at(1))).toBe(ARTICLES_PER_DAY * 2);
     expect(articlesAt(at(2))).toBe(ARTICLES_PER_DAY * 3);
     expect(articlesAt(at(9))).toBe(ARTICLES_PER_DAY * 10);
+  });
+
+  it('submits the Spanish pages and the translated Spanish articles from the first day, with every language as an alternate', () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date(new Date(FIRST_RELEASE).getTime() - 3_600_000)); // before any English article is released
+    const urls = sitemap();
+    const es = urls.filter((e) => e.url.includes('/es'));
+    expect(es.some((e) => e.url === 'https://www.crescelo.com/es')).toBe(true);
+    expect(es.some((e) => e.url === 'https://www.crescelo.com/es/pricing')).toBe(true);
+    const spanishArticles = es.filter((e) => e.url.includes('/es/blog/'));
+    expect(spanishArticles.map((e) => e.url.split('/es/blog/')[1]).sort()).toEqual(translatedSlugs('es').sort());
+    // the target article, with its alternates complete (the page itself lists all five)
+    const target = urls.find((e) => e.url === 'https://www.crescelo.com/es/blog/conversational-lead-capture');
+    expect(Object.keys((target?.alternates?.languages as Record<string, string>) || {}).sort()).toEqual(['en', 'es', 'fi', 'it', 'sv', 'x-default']);
+    // Swedish, Finnish and Italian are not submitted yet
+    expect(urls.some((e) => /crescelo\.com\/(sv|fi|it)(\/|$)/.test(e.url))).toBe(false);
   });
 
   it('never loses an article from one day to the next', () => {

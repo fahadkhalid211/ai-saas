@@ -22,6 +22,12 @@ export interface BlogTranslation {
   body: BlogBlock[];
   /** The English article's modified date when it was translated: a later edit shows the article is out of date. */
   sourceModified?: string;
+  /**
+   * An edition written for this language and market rather than a line-by-line translation (for example a Spanish article with a
+   * section about Spanish law and WhatsApp). Its blocks may differ from the English article, so the shape check is skipped and its
+   * heading anchors come from its own headings.
+   */
+  localized?: boolean;
 }
 
 export function translatedSlugs(locale: SupportedLocale): string[] {
@@ -62,5 +68,8 @@ export async function postsForHub<T extends BlogCard>(posts: T[], locale: Suppor
       return t ? { ...p, title: t.title, description: t.description, excerpt: t.excerpt, clusterName: t.clusterName || p.clusterName } : p;
     })
   );
-  return { posts: out, translated: [...slugs] };
+  // The articles that exist in this language come first, so a Spanish reader meets Spanish articles before the English ones.
+  const inLanguage = out.filter((p) => slugs.has(p.slug));
+  const inEnglishOnly = out.filter((p) => !slugs.has(p.slug));
+  return { posts: [...inLanguage, ...inEnglishOnly], translated: [...slugs] };
 }

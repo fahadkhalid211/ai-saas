@@ -135,7 +135,7 @@ const ALL_PRODUCT_FEATURES: ProductFeature[] = [
       { q: 'Can visitors submit fake data?', a: 'Basic validation and rate limits reject junk, but like any form it cannot prove that details are genuine.' },
     ],
     related: ['appointment-booking', 'messaging-channels', 'human-handover'],
-    guides: [{ label: 'Integrations', href: '/integrations' }, { label: 'Roadmap', href: '/roadmap' }],
+    guides: [{ label: 'Conversational lead capture guide', href: '/blog/conversational-lead-capture' }, { label: 'Integrations', href: '/integrations' }, { label: 'Roadmap', href: '/roadmap' }],
   },
   {
     slug: 'knowledge-base',

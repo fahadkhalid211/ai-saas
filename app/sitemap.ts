@@ -2,16 +2,27 @@ import type { MetadataRoute } from 'next';
 import { SITE } from '@/components/marketing/content';
 import { PUBLISHED_INDEX } from '@/lib/blog';
 import { releasedSlugs } from '@/lib/blog/schedule';
-import { blogLanguages } from '@/lib/blog/translations';
-import { HREFLANG, isLocalizablePath, localizeHref } from '@/lib/i18n/paths';
+import { blogLanguages, translatedSlugs } from '@/lib/blog/translations';
+import { HREFLANG, LOCALES, isLocalizablePath, localizeHref } from '@/lib/i18n/paths';
 import type { SupportedLocale } from '@/lib/i18n/types';
 
 /**
- * Only the English pages are submitted for now. Google had not read most of the Swedish, Finnish, Italian and Spanish copies, and
- * spreading its attention over five versions of every page slowed down the English ones. Those pages stay live and indexable (they
- * link to each other with hreflang on the page); add 'sv', 'fi', 'it', 'es' back here once the English pages are indexed.
+ * The languages whose pages are submitted. English and Spanish: Spain is a market the site is being prepared for. The Swedish, Finnish
+ * and Italian pages stay live and indexable (they link to each other with hreflang on the page) but are not submitted yet; add
+ * 'sv', 'fi', 'it' here when those markets are next. A page's alternates always list every language it exists in, whichever are
+ * submitted, so the sitemap and the page agree.
  */
-const SITEMAP_LOCALES: readonly SupportedLocale[] = ['en'];
+const SITEMAP_LOCALES: readonly SupportedLocale[] = ['en', 'es'];
+
+/** Translated articles whose text was rewritten after their English release date, so the sitemap says they changed. */
+const TRANSLATION_UPDATED: Record<string, string> = {
+  'conversational-lead-capture': '2026-11-02',
+  'add-ai-chatbot-to-your-website': '2026-11-02',
+  'ai-appointment-booking': '2026-11-02',
+  'crescelo-vs-traditional-live-chat': '2026-11-02',
+  'audit-website-chatbot-conversations': '2026-11-02',
+  'website-chatbot-gdpr-checklist': '2026-11-02',
+};
 
 /** Bump this when the marketing pages change in a way worth re-crawling. */
 const SITE_UPDATED = '2026-10-23';
@@ -75,16 +86,24 @@ const PAGES: { path: string; priority: number; changeFrequency: 'weekly' | 'mont
   { path: '/subprocessors',    priority: 0.2, changeFrequency: 'yearly' },
 ];
 
-/** One entry per language, each listing its counterparts so search engines show every visitor the right one. */
-function entries(path: string, languages: readonly SupportedLocale[], rest: { lastModified: Date; changeFrequency: 'weekly' | 'monthly' | 'yearly'; priority: number }) {
+/**
+ * One entry for each language in `emit`, each listing every language the page exists in (`all`) so search engines show every
+ * visitor the right one.
+ */
+function entries(
+  path: string,
+  emit: readonly SupportedLocale[],
+  all: readonly SupportedLocale[],
+  rest: { lastModified: Date; changeFrequency: 'weekly' | 'monthly' | 'yearly'; priority: number }
+) {
   const base = path || '/';
   const urlFor = (l: SupportedLocale) => {
     const p = localizeHref(base, l);
     return `${SITE.url}${p === '/' ? '/' : p}`;
   };
   if (!isLocalizablePath(base)) return [{ url: urlFor('en'), ...rest }];
-  const alternates = { languages: { ...Object.fromEntries(languages.map((l) => [HREFLANG[l], urlFor(l)])), 'x-default': urlFor('en') } };
-  return languages.map((l) => ({ url: urlFor(l), ...rest, alternates }));
+  const alternates = { languages: { ...Object.fromEntries(all.map((l) => [HREFLANG[l], urlFor(l)])), 'x-default': urlFor('en') } };
+  return emit.filter((l) => all.includes(l)).map((l) => ({ url: urlFor(l), ...rest, alternates }));
 }
 
 /**
@@ -97,11 +116,23 @@ export const dynamic = 'force-dynamic';
 export default function sitemap(): MetadataRoute.Sitemap {
   // A page's date should change only when the page does; stamping "now" on everything teaches Google to ignore it.
   const lastModified = new Date(SITE_UPDATED);
-  const pages = PAGES.flatMap((p) => entries(p.path, SITEMAP_LOCALES, { lastModified, changeFrequency: p.changeFrequency, priority: p.priority }));
-  // Articles join the sitemap a few per day (lib/blog/schedule.ts), so Google meets the site gradually instead of 275 pages at once.
+  const pages = PAGES.flatMap((p) => entries(p.path, SITEMAP_LOCALES, LOCALES, { lastModified, changeFrequency: p.changeFrequency, priority: p.priority }));
+  // English articles join the sitemap a few per day (lib/blog/schedule.ts), so Google meets the site gradually instead of 275 pages
+  // at once. A translated article (the few that exist in Spanish) is submitted from the start: there are only a dozen, and they are
+  // written for readers who are not waiting for the English release.
   const released = new Set(releasedSlugs());
-  const posts = PUBLISHED_INDEX.filter((b) => released.has(b.slug)).flatMap((b) =>
-    entries(`/blog/${b.slug}`, blogLanguages(b.slug).filter((l) => SITEMAP_LOCALES.includes(l)), { lastModified: new Date(b.dateModified), changeFrequency: 'monthly' as const, priority: 0.6 })
-  );
+  // Every article page exists in every language (the others show the English text in the translated page layout), but only a real
+  // translation is worth submitting.
+  const translated = new Map(SITEMAP_LOCALES.filter((l) => l !== 'en').map((l) => [l, new Set(translatedSlugs(l))] as const));
+  const posts = PUBLISHED_INDEX.flatMap((b) => {
+    const available = blogLanguages(b.slug);
+    const emit = SITEMAP_LOCALES.filter((l) => (l === 'en' ? released.has(b.slug) : Boolean(translated.get(l)?.has(b.slug))));
+    const changed = TRANSLATION_UPDATED[b.slug];
+    return entries(`/blog/${b.slug}`, emit, available, {
+      lastModified: new Date(changed && !emit.includes('en') ? changed : b.dateModified),
+      changeFrequency: 'monthly' as const,
+      priority: 0.6,
+    });
+  });
   return [...pages, ...posts];
 }

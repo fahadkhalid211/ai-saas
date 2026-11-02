@@ -3,6 +3,7 @@ import type { SupportedLocale } from '@/lib/i18n/types';
 import { getPostResolved } from './resolve';
 import { hasBlogTranslation, loadTranslation } from './translations';
 import type { BlogBlock, BlogPost } from './posts';
+import { slugify } from './blocks';
 
 /**
  * A blog article in another language. The English article stays the source of truth: a translation holds only the words
@@ -36,11 +37,22 @@ export async function getPostInLocale(slug: string, locale: SupportedLocale): Pr
   if (!en) return undefined;
   if (locale === 'en' || !hasBlogTranslation(locale, slug)) return { post: en, translated: false };
   const t = await loadTranslation(locale, slug);
-  if (!t || !sameShape(en.body, t.body)) return { post: en, translated: false };
-  // headings keep the English ids, so links and the table of contents work the same in every language
+  if (!t || (!t.localized && !sameShape(en.body, t.body))) return { post: en, translated: false };
+  // A line-by-line translation keeps the English heading ids, so links and the table of contents work the same in every language.
+  // A localized edition has its own structure, so its ids come from its own headings (accents removed, repeats numbered).
+  const used = new Set<string>();
+  const ownId = (text: string) => {
+    const base = slugify(text.normalize('NFD').replace(/\p{M}/gu, '')) || 'seccion';
+    let id = base;
+    for (let n = 2; used.has(id); n++) id = `${base}-${n}`;
+    used.add(id);
+    return id;
+  };
   const body = t.body.map((b, i) => {
+    if (b.type !== 'h2') return b;
+    if (t.localized) return { ...b, id: ownId(b.text) };
     const src = en.body[i];
-    return b.type === 'h2' && src.type === 'h2' ? { ...b, id: src.id } : b;
+    return src.type === 'h2' ? { ...b, id: src.id } : b;
   });
   return {
     post: { ...en, title: t.title, seoTitle: t.seoTitle || t.title, description: t.description, excerpt: t.excerpt, clusterName: t.clusterName || en.clusterName, body },
