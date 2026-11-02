@@ -1,3 +1,5 @@
+import os from 'node:os';
+import path from 'node:path';
 import type { SearchResultChunk } from './types';
 
 /**
@@ -21,6 +23,10 @@ async function load() {
         const { AutoTokenizer, AutoModelForSequenceClassification, env } = await import('@xenova/transformers');
         env.allowLocalModels = false;
         env.useBrowserCache = false;
+        // Same as the embedder: the package folder is read-only on serverless hosts, the temp folder is where a download can be kept.
+        if (process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME) {
+          env.cacheDir = path.join(os.tmpdir(), 'transformers-cache');
+        }
         const name = MODEL();
         console.log(`[Reranker] Initializing cross-encoder ${name}...`);
         const [tokenizer, model] = await Promise.all([

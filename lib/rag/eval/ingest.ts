@@ -21,7 +21,13 @@ export async function ingestCorpus(set: EvalSet): Promise<{ assistantId: string;
 
     const parsed = await parseFileOrText({ filename, type: 'txt', buffer: Buffer.from(doc.text, 'utf-8') });
     const chunks = chunkDocument(parsed);
-    const embeddings = await generateEmbeddingsBatch(chunks.map((c) => c.content));
+    // Experiment: RAG_EVAL_CONTEXT=1 embeds each passage with its document title and section in front ("contextual" embeddings).
+    // The stored text is unchanged; only what the vector is made from.
+    const withContext = process.env.RAG_EVAL_CONTEXT === '1';
+    const embeddings = await generateEmbeddingsBatch(
+      chunks.map((c) => (withContext ? `${doc.title}${c.metadata?.section ? ' - ' + c.metadata.section : ''}
+${c.content}` : c.content))
+    );
     await Database.saveChunks(
       chunks.map((chunk, i) => ({
         assistantId: assistant.id,

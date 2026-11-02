@@ -2,6 +2,7 @@
  * Retrieval-quality evaluation.
  *
  *   npm run rag:eval                       measure the current pipeline on eval/rag/golden.ts
+ *   npm run rag:eval -- --set es           measure on the Spanish set (eval/rag/golden-es.ts) instead of the English one
  *   npm run rag:eval -- --k 5              cut-off (default 5)
  *   npm run rag:eval -- --save baseline    also write eval/rag/results/baseline.json (commit it to track progress)
  *   npm run rag:eval -- --compare baseline show deltas against a saved run
@@ -81,7 +82,8 @@ async function main() {
   const k = Number(flag('k') ?? 5);
   const resultsDir = path.join(process.cwd(), 'eval', 'rag', 'results');
 
-  const { GOLDEN } = await import('../eval/rag/golden');
+  const setName = flag('set') ?? 'en';
+  const GOLDEN = setName === 'es' ? (await import('../eval/rag/golden-es')).GOLDEN_ES : (await import('../eval/rag/golden')).GOLDEN;
   const { evaluate, formatReport } = await import('../lib/rag/eval/harness');
   const { ingestCorpus } = await import('../lib/rag/eval/ingest');
   const { retrieveRelevantContext } = await import('../lib/rag/retrieval');

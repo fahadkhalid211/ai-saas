@@ -52,6 +52,29 @@ Eval vs step 3 (hit@5 97.7%, MRR 0.771, AUC 0.74):
 Off by default: the gain is modest and the model has not been tried in a Vercel function (cold start, size). Its main value is a
 cleaner confidence score for step 5.
 
+### Larger sets, English and Spanish (2026-11-03)
+
+73 English questions (`eval/rag/golden.ts`) and 77 Spanish ones (`eval/rag/golden-es.ts`, a dental clinic knowledge base).
+Run the Spanish set with `npm run rag:eval -- --set es`; `RAG_EVAL_CONTEXT=1` embeds each chunk with its document title and section.
+
+| set | setup | hit@5 | MRR | AUC | p50 |
+|---|---|---|---|---|---|
+| en | bge (default) | 95.2% | 0.766 | 0.92 | 49 ms |
+| en | e5 | 88.7% | 0.728 | 0.88 | 59 ms |
+| en | bge + cross-encoder | 96.8% | 0.821 | 0.92 | 989 ms |
+| en | e5 + cross-encoder | 93.5% | 0.829 | 0.90 | 849 ms |
+| es | bge (default) | 87.1% | 0.721 | 0.67 | 38 ms |
+| es | e5 | 93.5% | 0.761 | 0.64 | 34 ms |
+| es | bge + cross-encoder | 93.5% | 0.837 | 0.66 | 895 ms |
+| es | e5 + cross-encoder | 95.2% | 0.836 | 0.61 | 921 ms |
+
+- `EMBEDDING_MODEL` is one setting for the whole platform, so e5 cannot be used for Spanish only. e5 on its own loses 6.5 points on
+  English; with the cross-encoder it still loses 3.3 points on English to gain 1.7 on Spanish.
+- bge + cross-encoder has the best average (95.2% vs 94.4%) and needs no re-embedding. It lifts Spanish from 87.1% to 93.5%.
+- No setup gives a usable answer-or-abstain score in Spanish (AUC 0.61 to 0.67), so do not lean on the confidence gate for Spanish.
+- Production confidence is the vector cosine (`lib/rag/confidence.ts`), which the cross-encoder does not change.
+- Result files are not kept in the repository; re-run the commands above to reproduce them.
+
 ## Confidence and "I don't know" (RAG step 5)
 
 `lib/rag/confidence.ts`: confidence = best question-to-passage cosine among the retrieved passages. The old fused rank score was
