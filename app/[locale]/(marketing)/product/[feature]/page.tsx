@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import { FeaturePage } from '@/components/marketing/FeaturePage';
 import { featureBySlug, PRODUCT_FEATURES } from '@/lib/product-features';
 import { withSocial } from '@/lib/seo';
+import { getT } from '@/lib/i18n/server';
 
 export const dynamicParams = false;
 
@@ -15,7 +16,10 @@ export async function generateMetadata({ params }: { params: Promise<{ feature: 
   const { feature } = await params;
   const f = featureBySlug(feature);
   if (!f) return {};
-  return localizeMeta(withSocial({ title: `${f.seoTitle} | Crescelo`, description: f.seoDescription, alternates: { canonical: `/product/${f.slug}` } }, `/product/${f.slug}`));
+  // The title is translated before the brand is added: "Title | Crescelo" as one string has no entry in the language files,
+  // so every product page except the first had an English title in every other language.
+  const t = await getT();
+  return localizeMeta(withSocial({ title: `${t(f.seoTitle)} | Crescelo`, description: f.seoDescription, alternates: { canonical: `/product/${f.slug}` } }, `/product/${f.slug}`));
 }
 
 export default async function ProductFeaturePage({ params }: { params: Promise<{ feature: string }> }) {
