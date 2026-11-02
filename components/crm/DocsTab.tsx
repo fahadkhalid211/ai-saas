@@ -31,7 +31,6 @@ import {
   ChevronRight,
   ArrowRight,
   CheckCircle2,
-  PhoneCall,
   Share2,
   Shield,
   Building,
@@ -272,24 +271,6 @@ export const DocsTab: React.FC<DocsTabProps> = ({ setActiveTab }) => {
       actionLabel: 'Behavior & Rules',
     },
     {
-      id: 'voice-agent',
-      title: 'Voice AI & Inbound Phone Receptionist',
-      category: 'Voice AI',
-      badge: 'Phone',
-      badgeColor: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300',
-      icon: PhoneCall,
-      steps: [
-        'Provision or connect your dedicated business phone number in Phone Channels.',
-        'Set your opening spoken greeting (e.g. "Thank you for calling Acme. How can I assist you today?").',
-        'Configure appointment booking triggers over voice — the AI collects time preferences and books slots hands-free.',
-        'Set transfer phone numbers for live escalation when high-urgency callers need a human.',
-        'Review real-time call audio logs, caller phone numbers, and call transcripts in Appointments.',
-      ],
-      tip: 'Voice agents share the exact same verified Knowledge Base as your web widget for 100% consistent business answers.',
-      targetTab: 'channels',
-      actionLabel: 'Voice Settings',
-    },
-    {
       id: 'white-label',
       title: 'White-Label Agency Reseller Branding',
       category: 'Agency & White-Label',
@@ -347,7 +328,7 @@ export const DocsTab: React.FC<DocsTabProps> = ({ setActiveTab }) => {
       if (selectedCategory === 'booking') return coreGuides.filter(g => ['appointment-booking'].includes(g.id));
       if (selectedCategory === 'leads') return coreGuides.filter(g => ['lead-capture'].includes(g.id));
       if (selectedCategory === 'rag') return coreGuides.filter(g => ['knowledge-base', 'figure-guard'].includes(g.id));
-      if (selectedCategory === 'integrations') return coreGuides.filter(g => ['whatsapp-integration', 'instagram-integration', 'tiktok-integration', 'telegram-bot', 'outbound-webhooks', 'voice-agent', 'white-label'].includes(g.id));
+      if (selectedCategory === 'integrations') return coreGuides.filter(g => ['whatsapp-integration', 'instagram-integration', 'tiktok-integration', 'telegram-bot', 'outbound-webhooks', 'white-label'].includes(g.id));
       return [];
     }
     if (!searchQuery.trim()) return coreGuides;

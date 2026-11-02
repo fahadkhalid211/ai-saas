@@ -157,7 +157,6 @@ export const COMPARE = {
     { feature: 'Answers from your own documents', values: ['Yes (and generates the lead with appointment booking)', 'Yes', 'No', 'No'] },
     { feature: 'AI provider pricing', values: ['0 cost plans available', 'Expensive tokens', 'Expensive tokens', 'Expensive tokens'] },
     { feature: 'WhatsApp and Telegram', values: ['Yes, easy connectors', 'Only in paid plans', 'No', 'No'] },
-    { feature: 'Mobile apps (iOS & Android)', values: ['Yes', 'No', 'No', 'No'] },
     { feature: 'Captures leads from the conversation', values: ['Yes', 'Yes', 'No', 'No'] },
     { feature: 'Human takeover of a live chat', values: ['Yes', 'Yes', 'No', 'Yes'] },
   ],

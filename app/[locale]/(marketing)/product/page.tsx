@@ -375,24 +375,6 @@ export default function ProductPage() {
           </div>
         </section>
 
-        {/* Phone voice calls: not available yet */}
-        <section className="mk-section mk-section-tint">
-          <div className="mk-wrap">
-            <SectionHead
-              eyebrow="COMING SOON"
-              title="Phone calls are under development."
-              intro="We are building an assistant that answers inbound phone calls from the same knowledge base and books appointments by voice. It is not available yet; follow its progress on the roadmap."
-              id="voice-lab-title"
-              align="center"
-            />
-            <div className="mk-cta-row" style={{ justifyContent: 'center', marginTop: '24px' }}>
-              <ButtonLink href="/roadmap" variant="ghost">
-                <T>See the roadmap</T>
-              </ButtonLink>
-            </div>
-          </div>
-        </section>
-
         {/* Technical Specs Table */}
         <section className="mk-section">
           <div className="mk-wrap">

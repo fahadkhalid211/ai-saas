@@ -17,7 +17,6 @@ const COMPARISON_ROWS = [
   { feature: 'Zero markup on AI costs (BYOK)', starter: 'Included', growth: 'Included', scale: 'Included' },
   { feature: 'Guaranteed No Double-Bookings', starter: 'Basic locking', growth: 'Instant Slot Lock', scale: 'Instant Slot Lock' },
   { feature: 'Google Calendar & Outlook Sync', starter: '—', growth: 'Included', scale: 'Included' },
-  { feature: 'Inbound Phone Voice Calling', starter: 'Coming soon', growth: 'Coming soon', scale: 'Coming soon' },
   { feature: 'WhatsApp & Telegram Bots', starter: '—', growth: '—', scale: 'Included' },
   { feature: 'Live Staff Audio Chimes & Takeover', starter: 'Email only', growth: 'Audio + Desktop', scale: 'Priority Multi-seat' },
   { feature: 'Custom website address (e.g. chat.yourshop.com)', starter: '—', growth: 'Included', scale: 'Included (Multi-domain)' },

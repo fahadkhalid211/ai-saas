@@ -31,9 +31,11 @@ export interface ProductFeature {
   faq: FeatureFaq[];
   related: string[];
   guides: { label: string; href: string }[];
+  /** Written but not ready: the page, its links and its sitemap entry do not exist until this is removed. */
+  hidden?: boolean;
 }
 
-export const PRODUCT_FEATURES: ProductFeature[] = [
+const ALL_PRODUCT_FEATURES: ProductFeature[] = [
   {
     slug: 'ai-assistant',
     name: 'AI website assistant',
@@ -268,6 +270,7 @@ export const PRODUCT_FEATURES: ProductFeature[] = [
   },
   {
     slug: 'mobile-apps',
+    hidden: true, // not ready yet: it stays on the roadmap only
     name: 'Mobile apps (iOS & Android)',
     eyebrow: 'Where it works',
     title: 'Deploy your AI assistant inside native iOS and Android apps.',
@@ -299,5 +302,8 @@ export const PRODUCT_FEATURES: ProductFeature[] = [
     guides: [{ label: 'Integrations', href: '/integrations' }, { label: 'Knowledge Base', href: '/product/knowledge-base' }],
   },
 ];
+
+/** The product pages that are published (a feature marked hidden is not served, listed or linked). */
+export const PRODUCT_FEATURES: ProductFeature[] = ALL_PRODUCT_FEATURES.filter((f) => !f.hidden);
 
 export const featureBySlug = (slug: string) => PRODUCT_FEATURES.find((f) => f.slug === slug);

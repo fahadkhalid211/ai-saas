@@ -178,6 +178,7 @@ const MILESTONES: Milestone[] = [
       'Two-way Google Calendar and Outlook 365 availability sync',
       'Custom domain mapping for hosted business pages with automatic SSL',
       'Inbound phone assistant (voice calls)',
+      'Mobile apps for iOS and Android: a ready-made way to put the assistant inside your own app',
       'More messaging channels',
     ],
   },

@@ -27,13 +27,6 @@ const TOPIC_HUBS = [
     count: '7 Guides',
   },
   {
-    title: 'Inbound Phone Voice Calling',
-    desc: 'Coming soon. Answering phone calls with your assistant is under development; the setup guide will be published when it ships.',
-    href: '/support/voice-agent',
-    tone: 'lav',
-    count: 'Coming soon',
-  },
-  {
     title: 'Calendar Sync & Concurrency Locks',
     desc: 'Connecting Google Calendar & Outlook, configuring buffer durations, and understanding atomic mutex slot locks.',
     href: '/support/calendar-booking',

@@ -6,6 +6,8 @@ import { Header } from '@/components/marketing/Header';
 import { Footer } from '@/components/marketing/Closing';
 import { ButtonLink, SectionHead } from '@/components/marketing/ui';
 
+// HIDDEN: this folder starts with an underscore, so Next.js does not serve it (/support/voice-agent is a 404). Phone calls are on the
+// roadmap only. To publish the page, move this folder back to support/voice-agent.
 // Not available yet: kept out of search results until phone calls ship.
 export async function generateMetadata(): Promise<Metadata> {
   return localizeMeta({

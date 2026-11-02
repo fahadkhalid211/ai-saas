@@ -25,9 +25,11 @@ interface IntegrationDetail {
   guideHref?: string;
   guideLabel?: string;
   samplePayload: Record<string, unknown>;
+  /** Written but not ready: not listed, not counted, no category. It stays on the roadmap only. */
+  hidden?: boolean;
 }
 
-const INTEGRATIONS: IntegrationDetail[] = [
+const ALL_INTEGRATIONS: IntegrationDetail[] = [
   {
     id: 'google-calendar',
     name: 'Calendar feed (Google Calendar, Outlook, Apple)',
@@ -56,6 +58,7 @@ const INTEGRATIONS: IntegrationDetail[] = [
   },
   {
     id: 'telnyx-voice',
+    hidden: true, // phone calls are not ready yet
     name: 'Phone Calls (Telnyx)',
     category: 'voice',
     categoryLabel: 'Phone & Voice',
@@ -373,10 +376,12 @@ const INTEGRATIONS: IntegrationDetail[] = [
   },
 ];
 
+/** What the page lists (an integration marked hidden is left out, and so is its category). */
+const INTEGRATIONS: IntegrationDetail[] = ALL_INTEGRATIONS.filter((i) => !i.hidden);
+
 const CATEGORIES = [
   { id: 'all', label: 'All Ecosystem' },
   { id: 'calendar', label: 'Calendars' },
-  { id: 'voice', label: 'Phone & Voice (soon)' },
   { id: 'messaging', label: 'Messaging Channels' },
   { id: 'ai', label: 'AI Engines (BYOK)' },
   { id: 'crm', label: 'Data & Webhooks' },

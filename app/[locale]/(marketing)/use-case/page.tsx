@@ -45,7 +45,7 @@ const INDUSTRIES: IndustrySimulation[] = [
     metric: '24/7',
     metricLabel: 'prices, hours and open slots, even mid-haircut',
     features: [
-      'In-chat booking (phone voice coming soon)',
+      'In-chat booking',
       'Calendly or Cal.com links for each stylist',
       'Atomic mutex lock prevents chair double-booking',
       'Self-service reschedule & cancellation links',
