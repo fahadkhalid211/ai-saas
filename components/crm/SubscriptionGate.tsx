@@ -2,7 +2,7 @@
 
 import { T, TRich, useT } from '@/lib/i18n/context';
 import { useCallback, useEffect, useState } from 'react';
-import { AlertTriangle, CreditCard, LogOut, Sparkles, Send, CheckCircle2 } from 'lucide-react';
+import { AlertTriangle, CreditCard, LogOut, Sparkles } from 'lucide-react';
 import { BILLING_PLANS, annualSavingsPercent, planAnnualSavingsDollars } from '@/lib/billing/plans';
 import { readSelectedPlan } from '@/lib/analytics/track';
 import { showErrorModal, SUBSCRIPTION_REQUIRED_EVENT } from '@/lib/ui/notify';
@@ -30,19 +30,13 @@ const fmtDate = (iso: string | null) => (iso ? new Date(iso).toLocaleDateString(
  *  - a warning if a payment failed.
  * Nothing is shown to older workspaces or to the platform owner.
  */
-export function SubscriptionGate({ isMasterAdmin, onLogout, onOpenBilling, onOpenSupport }: { isMasterAdmin: boolean; onLogout: () => void; onOpenBilling: () => void; onOpenSupport?: () => void }) {
+export function SubscriptionGate({ isMasterAdmin, onLogout, onOpenBilling }: { isMasterAdmin: boolean; onLogout: () => void; onOpenBilling: () => void }) {
   const __t = useT();
   const [data, setData] = useState<BillingSummary | null>(null);
   const [planId, setPlanId] = useState<string>('growth');
   const [interval, setInterval] = useState<'monthly' | 'annual'>('annual');
   const [busy, setBusy] = useState(false);
   const [confirming, setConfirming] = useState(false);
-  // manual payment: shown when card payments are not connected, or when checkout could not start
-  const [checkoutFailed, setCheckoutFailed] = useState(false);
-  const [note, setNote] = useState('');
-  const [sending, setSending] = useState(false);
-  const [ticketRef, setTicketRef] = useState('');
-  const [noteError, setNoteError] = useState('');
   // access code
   const [codeOpen, setCodeOpen] = useState(false);
   const [code, setCode] = useState('');
@@ -134,26 +128,10 @@ export function SubscriptionGate({ isMasterAdmin, onLogout, onOpenBilling, onOpe
         // Not a checkout problem: the person has not opened the link in the confirmation e-mail yet.
         showErrorModal({ title: 'Confirm your email first', message: out.error, hint: 'Open the link in the email we sent you, then press the button again. Nothing was charged.' });
       } else {
-        setCheckoutFailed(true);
-        showErrorModal({ title: "Card checkout isn't ready yet", message: out.error || 'Checkout could not be started.', hint: 'Nothing was charged. You can start your free trial without a card, or ask us to arrange payment: the options are right below.' });
+        showErrorModal({ title: "Card checkout could not be started", message: out.error || 'Checkout could not be started.', hint: 'Nothing was charged. Please check your details or try again.' });
       }
     } catch (err) {
-      setCheckoutFailed(true);
-      showErrorModal({ title: "Card checkout isn't ready yet", message: (err as Error)?.message || 'Network error.', hint: 'Nothing was charged. The options below still work.' });
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const startEarlyBird = async () => {
-    setBusy(true);
-    try {
-      const res = await fetch('/api/billing/early-bird', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ planId, billingInterval: interval }) });
-      const out = await res.json().catch(() => ({}));
-      if (res.ok) await load();
-      else showErrorModal({ title: "Couldn't start your free trial", message: out.error || 'Please try again, or use the contact form below.' });
-    } catch (err) {
-      showErrorModal({ title: "Couldn't start your free trial", message: (err as Error)?.message || 'Network error.' });
+      showErrorModal({ title: "Card checkout error", message: (err as Error)?.message || 'Network error.', hint: 'Nothing was charged. Please check your connection and try again.' });
     } finally {
       setBusy(false);
     }
@@ -175,27 +153,6 @@ export function SubscriptionGate({ isMasterAdmin, onLogout, onOpenBilling, onOpe
       setCodeError((err as Error)?.message || 'Network error.');
     } finally {
       setCodeBusy(false);
-    }
-  };
-
-  const sendNote = async () => {
-    setNoteError('');
-    const planName = BILLING_PLANS.find((p) => p.id === planId)?.name || planId;
-    const text = note.trim() || `I would like to pay for the ${planName} plan (${interval}) by hand. Please tell me how.`;
-    setSending(true);
-    try {
-      const res = await fetch('/api/support/tickets', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ category: 'Billing & Payments', priority: 'normal', subject: `Manual payment: ${planName} (${interval})`, message: `${text}\n\n(Plan chosen: ${planName}, ${interval} billing.)` }),
-      });
-      const out = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(out.error || 'Could not send your message.');
-      setTicketRef(out.ticket?.ref || 'sent');
-    } catch (err) {
-      setNoteError((err as Error)?.message || 'Could not send your message.');
-    } finally {
-      setSending(false);
     }
   };
 
@@ -233,9 +190,9 @@ export function SubscriptionGate({ isMasterAdmin, onLogout, onOpenBilling, onOpe
       <div role="status" className="flex flex-wrap items-center justify-between gap-2 bg-slate-900 px-4 py-2 text-xs font-medium text-slate-50 dark:bg-slate-800">
         <span className="flex items-center gap-2">
           <Sparkles className="h-4 w-4" />
-          {__t("Early-bird trial: {daysLeft} {n2} left, no card needed. To keep your assistants running after {n3}, message us and we will set up payment.", { daysLeft: trial.daysLeft, n2: trial.daysLeft === 1 ? __t("day") : __t("days"), n3: fmtDate(trial.endsAt) })}
+          {__t("Early-bird trial: {daysLeft} {n2} left, no card needed. To keep your assistants running after {n3}, choose a plan.", { daysLeft: trial.daysLeft, n2: trial.daysLeft === 1 ? __t("day") : __t("days"), n3: fmtDate(trial.endsAt) })}
         </span>
-        <button type="button" onClick={onOpenSupport || onOpenBilling} className="rounded-lg bg-white/95 px-3 py-1 text-[11px] font-bold text-slate-900 hover:bg-white cursor-pointer"><T>Contact us to pay</T></button>
+        <button type="button" onClick={onOpenBilling} className="rounded-lg bg-white/95 px-3 py-1 text-[11px] font-bold text-slate-900 hover:bg-white cursor-pointer"><T>Choose a plan</T></button>
       </div>
     );
   }
@@ -270,8 +227,6 @@ export function SubscriptionGate({ isMasterAdmin, onLogout, onOpenBilling, onOpe
   /* --------------------------------------------- the full-screen choice --------------------------------------------- */
   const expired = trial.status === 'expired';
   const cardsWork = data.payments?.available !== false;
-  const showManual = !cardsWork || checkoutFailed || expired;
-  const earlyBird = Boolean(data.earlyBird?.available);
   return (
     <div className="fixed inset-0 z-[9000] overflow-y-auto bg-[#fffeeb]/95 p-4 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="sg-title">
       <div className="mx-auto my-8 w-full max-w-3xl rounded-3xl border border-[#08251a]/10 bg-white ring-1 ring-[#08251a]/10 shadow-[0_30px_80px_-30px_rgba(8,37,26,0.45)] p-6 text-[#08251a] shadow-2xl sm:p-8">
@@ -287,14 +242,12 @@ export function SubscriptionGate({ isMasterAdmin, onLogout, onOpenBilling, onOpe
                 <CreditCard className="h-3.5 w-3.5" /> {expired ? <T>{'Subscription ended'}</T> : __t("{TRIAL_DAYS}-day free trial", { TRIAL_DAYS: TRIAL_DAYS })}
               </span>
               <h1 id="sg-title" className="mt-3 text-3xl text-[#08251a]" style={{ fontFamily: 'var(--kx-serif, Georgia, serif)' }}>
-                {expired ? <T>{'Choose a plan to switch your assistants back on'}</T> : earlyBird && !cardsWork ? <T>{'Early birds, this one is on us 🐣'}</T> : <T>{'Start your free trial'}</T>}
+                {expired ? <T>{'Choose a plan to switch your assistants back on'}</T> : <T>{'Start your free trial'}</T>}
               </h1>
               <p className="mx-auto mt-2 max-w-xl text-sm leading-relaxed text-[#33473d]">
                 {expired
-                  ? <T>{'Your assistants are paused. Your data is kept for 30 days. Pick a plan, or message us below and we will arrange payment by hand.'}</T>
-                  : earlyBird && !cardsWork
-                    ? __t("We are just launching, and our card payments are still getting their wings. So instead of making you hop through hoops, early birds get {TRIAL_DAYS} free days with every Growth feature. No card, no catch. Build your assistant, put it on your site and see what it can do.", { TRIAL_DAYS: TRIAL_DAYS })
-                    : __t("You pay nothing today. Your {TRIAL_DAYS}-day trial includes every Growth feature. If you do not cancel before it ends, your card is charged automatically. Cancel any time and you are never charged for the trial.", { TRIAL_DAYS: TRIAL_DAYS })}
+                  ? <T>{'Your assistants are paused. Your data is kept for 30 days. Pick a plan to switch your assistants back on.'}</T>
+                  : __t("You pay nothing today. Your {TRIAL_DAYS}-day trial includes every Growth feature. If you do not cancel before it ends, your card is charged automatically. Cancel any time and you are never charged for the trial.", { TRIAL_DAYS: TRIAL_DAYS })}
               </p>
             </div>
 
@@ -327,9 +280,7 @@ export function SubscriptionGate({ isMasterAdmin, onLogout, onOpenBilling, onOpe
             </div>
 
             <div className="mt-5 rounded-2xl border border-[#08251a]/10 bg-[#f5f3dd] p-4 text-sm leading-relaxed text-[#08251a]">
-              {earlyBird && !cardsWork ? (
-                <p><TRich text="Today: **$0**, and no card asked for. Your {days} early-bird days run until **{date}**. Loving it? Message us below and we will set up payment together." values={{ days: TRIAL_DAYS, date: fmtDate(new Date(Date.now() + TRIAL_DAYS * 86400000).toISOString()) }} /></p>
-              ) : expired ? (
+              {expired ? (
                 <p><TRich text={interval === 'annual' ? "Today: **${price}** for {plan}, then every year until you cancel." : "Today: **${price}** for {plan}, then every month until you cancel."} values={{ price, plan: plan.name }} /></p>
               ) : (
                 <p>
@@ -339,12 +290,14 @@ export function SubscriptionGate({ isMasterAdmin, onLogout, onOpenBilling, onOpe
             </div>
 
             <div className="mt-5 flex flex-col items-center gap-3">
-              {earlyBird && (!cardsWork || checkoutFailed) ? (
-                <SaveButton onClick={startEarlyBird} saving={busy} idleLabel="Start free trial" savingLabel="Getting things ready…" savedLabel="Welcome aboard!" className="px-6 py-3 text-sm" />
-              ) : null}
-              {cardsWork && !(earlyBird && checkoutFailed) ? (
-                <SaveButton onClick={startCheckout} saving={busy} idleLabel={expired ? `Subscribe to ${plan.name}` : earlyBird ? 'Start free trial with a card' : 'Start free trial'} savingLabel="Opening secure checkout…" savedLabel="Opening…" className="px-6 py-3 text-sm" />
-              ) : null}
+              <SaveButton
+                onClick={startCheckout}
+                saving={busy}
+                idleLabel={expired ? `Subscribe to ${plan.name}` : 'Start free trial'}
+                savingLabel="Opening secure checkout…"
+                savedLabel="Opening…"
+                className="px-6 py-3 text-sm"
+              />
               <p className="text-[11px] text-[#4b5d54]">{cardsWork ? <T>{'Secure payment by Lemon Squeezy. '}</T> : ''}<T>By continuing you agree to the</T> <a className="underline" href="/terms" target="_blank" rel="noopener noreferrer"><T>Terms</T></a> <T>and</T> <a className="underline" href="/privacy" target="_blank" rel="noopener noreferrer"><T>Privacy Policy</T></a>.</p>
               {data.complimentary?.canRedeem ? (
                 <div className="w-full max-w-sm text-center">
@@ -377,38 +330,6 @@ export function SubscriptionGate({ isMasterAdmin, onLogout, onOpenBilling, onOpe
               ) : null}
               <button type="button" onClick={onLogout} className="inline-flex items-center gap-1.5 text-[11px] text-[#4b5d54] underline cursor-pointer"><LogOut className="h-3 w-3" /> <T>Sign out</T></button>
             </div>
-
-            {showManual && (
-              <div className="mt-6 rounded-2xl border border-[#08251a]/25 bg-[#abff44]/20 p-5">
-                {ticketRef ? (
-                  <div className="text-center" role="status">
-                    <CheckCircle2 className="mx-auto h-8 w-8 text-[#0d5b2a]" />
-                    <p className="mt-2 text-base font-semibold text-[#08251a]"><T>Got it, thank you!</T></p>
-                    <p className="mt-1 text-sm text-[#33473d]">{ticketRef !== 'sent' ? __t("Ticket {ticketRef} is open. ", { ticketRef: ticketRef }) : ''}<T>We will email you shortly to arrange payment. You can follow the conversation in the Support tab.</T></p>
-                    {onOpenSupport && <button type="button" onClick={onOpenSupport} className="mt-3 rounded-full border border-[#08251a]/20 px-4 py-1.5 text-xs font-semibold text-[#08251a] hover:bg-[#08251a]/5 cursor-pointer"><T>Open Support</T></button>}
-                  </div>
-                ) : (
-                  <>
-                    <h2 className="text-lg text-[#08251a]" style={{ fontFamily: 'var(--kx-serif, Georgia, serif)' }}><T>Prefer to pay now? Let us sort it out by hand.</T></h2>
-                    <p className="mt-1 text-sm leading-relaxed text-[#33473d]"><T>Our automatic card payments are still on their way. Until they land, we will happily arrange payment with you directly. Tell us which plan you want and anything we should know, and we will reply by email with the next step.</T></p>
-                    <label htmlFor="sg-note" className="mt-4 block text-[11px] font-semibold uppercase tracking-[0.12em] text-[#4b5d54]"><T>Your message</T></label>
-                    <textarea
-                      id="sg-note"
-                      rows={3}
-                      maxLength={1500}
-                      value={note}
-                      onChange={(e) => setNote(e.target.value)}
-                      placeholder={`I would like to pay for the ${plan.name} plan (${interval}).`}
-                      className="mt-1 w-full rounded-xl border border-[#08251a]/15 bg-[#f5f3dd] px-3 py-2 text-sm text-[#08251a] placeholder:text-[#7a877f] focus:border-[#08251a]/60 focus:outline-none"
-                    />
-                    {noteError && <p role="alert" className="mt-1 text-xs text-rose-300">{noteError}</p>}
-                    <button type="button" onClick={sendNote} disabled={sending} className="mt-3 inline-flex items-center gap-2 rounded-full bg-[#abff44] px-5 py-2 text-sm font-semibold text-[#08251a] hover:brightness-105 disabled:opacity-60 cursor-pointer">
-                      <Send className="h-4 w-4" /> {sending ? <T>{'Sending…'}</T> : <T>{'Send to the team'}</T>}
-                    </button>
-                  </>
-                )}
-              </div>
-            )}
           </>
         )}
       </div>

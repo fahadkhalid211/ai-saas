@@ -745,7 +745,7 @@ export default function DashboardPage() {
 
         {!isMasterAdmin && !supportAccess ? <EmailVerificationBanner member={currentUser} /> : null}
 
-        <SubscriptionGate isMasterAdmin={isMasterAdmin || Boolean(supportAccess)} onLogout={handleLogout} onOpenBilling={() => setActiveTab('billing')} onOpenSupport={() => setActiveTab('support')} />
+        <SubscriptionGate isMasterAdmin={isMasterAdmin || Boolean(supportAccess)} onLogout={handleLogout} onOpenBilling={() => setActiveTab('billing')} />
 
         {/* The saved key is being refused by the provider */}
         <AiKeyAlert assistant={activeAssistant} onFix={() => setActiveTab('engine')} />
